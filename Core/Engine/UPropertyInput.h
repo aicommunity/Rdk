@@ -33,8 +33,14 @@ UPropertyInputPreBase(OwnerT * const owner, int input_type)
 // -----------------------------
 
 // --------------------------
-// Методы управления указателем
+// Методы управления данными
 // --------------------------
+/// Применяет время выхода к входу
+void ApplyOutputUpdateTime(void)
+{
+ if(ConnectedOutput)
+  UpdateTime=ConnectedOutput->GetUpdateTime();
+}
 // --------------------------
 };
 
@@ -157,7 +163,7 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value)
+bool SetPointer(int index, void* value, UIProperty* output)
 {
  if(*this->PData != UPropertyInputBase<T*,OwnerT,type>::Local)
   return false;
@@ -165,7 +171,9 @@ bool SetPointer(int index, void* value)
  if(value)
  {
   *this->PData=reinterpret_cast<T*>(value);
+  ConnectedOutput=output;
   UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag=true;
+  ResetUpdateTime();
   return true;
  }
 
@@ -179,6 +187,7 @@ bool ResetPointer(int index, void* value)
  {
   *this->PData=UPropertyInputBase<T*,OwnerT,type>::Local;
   UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag=false;
+  ConnectedOutput=0;
   return true;
  }
 
@@ -250,12 +259,14 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value)
+bool SetPointer(int index, void* value, UIProperty* output)
 {
  if(value)
  {
   this->PData=reinterpret_cast<T*>(value);
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=true;
+  ConnectedOutput=output;
+  ResetUpdateTime();
   return true;
  }
  return false;
@@ -268,6 +279,7 @@ bool ResetPointer(int index, void* value)
  {
   this->PData=&(this->Local);
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=false;
+  ConnectedOutput=0;
   return true;
  }
  return false;
@@ -346,13 +358,15 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value)
+bool SetPointer(int index, void* value, UIProperty* output)
 {
  if(value)
  {
   this->PData=reinterpret_cast<T*>(value);
   *UVPropertyInputBase<T,OwnerT>::ExternalPData=this->PData;
+  ConnectedOutput=output;
   UVPropertyInputBase<T,OwnerT>::IsConnectedFlag=true;
+  ResetUpdateTime();
   return true;
  }
  return false;
@@ -365,6 +379,7 @@ bool ResetPointer(int index, void* value)
  {
   this->PData=&(this->Local);
   *UVPropertyInputBase<T,OwnerT>::ExternalPData=0;
+  ConnectedOutput=0;
   UVPropertyInputBase<T,OwnerT>::IsConnectedFlag=false;
   return true;
  }
@@ -376,16 +391,19 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
+ ApplyOutputUpdateTime();
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 };
 
 T& operator * (void)
 {
+ ApplyOutputUpdateTime();
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?*this->PData:UVPropertyInputBase<T,OwnerT>::Local;
 };
 
 operator T* (void) const
 {
+ ApplyOutputUpdateTime();
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------
@@ -398,6 +416,9 @@ class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*pu
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
 std::vector<T*> Local;
+
+/// Указатель на подключенный выход
+std::vector<UIProperty*> ConnectedOutput;
 
 public: // Методы
 // --------------------------
@@ -442,7 +463,7 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value)
+bool SetPointer(int index, void* value, UIProperty* output)
 {
  if(index<0)
   return false;
@@ -455,12 +476,13 @@ bool SetPointer(int index, void* value)
   for(size_t i=new_size;i<old_size;i++)
    delete Local[i];
   Local.resize(new_size);
+  ConnectedOutput.resize(new_size,0);
 
   for(size_t i=old_size;i<new_size;i++)
    Local[i]=new T;
  }
  this->v[index]=reinterpret_cast<T*>(value);
-
+ ConnectedOutput[index]=output;
  return true;
 }
 
@@ -472,6 +494,7 @@ bool ResetPointer(int index, void* value)
   delete Local[index];
   Local.erase(Local.begin()+index);
   this->v.erase(this->v.begin()+index);
+  this->ConnectedOutput.erase(ConnectedOutput.begin()+index);
   return true;
  }
  return false;
@@ -488,6 +511,7 @@ void ClearAllPointers(void)
   delete Local[i];
  }
  Local.clear();
+ ConnectedOutput.clear();
  this->v.clear();
 }
 

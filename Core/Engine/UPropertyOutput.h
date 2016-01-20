@@ -89,7 +89,7 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные выхода
-bool SetPointer(int index, void* value)
+bool SetPointer(int index, void* value, UIProperty* output)
 {
  return true;
 }
@@ -261,7 +261,7 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные выхода
-bool SetPointer(int index, void* value)
+bool SetPointer(int index, void* value, UIProperty* output)
 {
  return true;
 }

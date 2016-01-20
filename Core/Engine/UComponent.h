@@ -403,11 +403,14 @@ virtual void UpdatePData(void* data)=0;
 /// Возвращает тип свойства ввода-вывода
 virtual int GetIoType(void) const=0;
 
-/// Возвращает время обновления данных свойства
-virtual double GetUpdateTime(void) const=0;
+/// Возвращает время обновления данных свойства (мс)
+virtual ULongTime GetUpdateTime(void) const=0;
 
 /// Устанавливает время обновления данных свойства
-virtual void SetUpdateTime(double value)=0;
+virtual void SetUpdateTime(ULongTime value)=0;
+
+/// Сбрасывает время обновления до нуля
+virtual void ResetUpdateTime(void)=0;
 
 /// Возвращает диапазон индексов входа/выхода
 //virtual bool CheckRange(int index)=0;
@@ -425,7 +428,7 @@ virtual void SetUpdateTime(double value)=0;
 virtual void const* GetPointer(int index) const=0;
 
 /// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value)=0;
+virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
 virtual bool ResetPointer(int index, void* value)=0;

@@ -53,8 +53,8 @@ protected: // Данные синхронизации
 /// Мьютекс этого свойства
 UGenericMutex *Mutex;
 
-/// Время обновления свойства
-double UpdateTime;
+/// Время обновления свойства (мс)
+ULongTime UpdateTime;
 
 public: // Методы
 // --------------------------
@@ -216,13 +216,13 @@ virtual int GetIoType(void) const
  return IoType;
 }
 
-virtual double GetUpdateTime(void) const
+virtual ULongTime GetUpdateTime(void) const
 {
 // UGenericLocker locker(Mutex);
  return UpdateTime;
 }
 
-virtual void SetUpdateTime(double value)
+virtual void SetUpdateTime(ULongTime value)
 {
 // UGenericLocker locker(Mutex);
  UpdateTime=value;
@@ -239,7 +239,7 @@ virtual void const* GetPointer(int index) const
 }
 
 /// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value)
+virtual bool SetPointer(int index, void* value, UIProperty* output)
 {
  return false;
 }
@@ -258,7 +258,13 @@ protected:
 /// Обновляет время изменения данных свойства
 void RenewUpdateTime(void)
 {
- UpdateTime=GetVariantLocalTime();
+ UpdateTime=GetCurrentStartupTime();
+}
+
+/// Сбрасывает время обновления до нуля
+void ResetUpdateTime(void)
+{
+ UpdateTime=0;
 }
 // --------------------------
 };

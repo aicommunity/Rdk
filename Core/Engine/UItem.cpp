@@ -387,7 +387,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 	{
 	 if(output_property->CompareLanguageType(*input_property))
 	 {
-	  if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0))))
+	  if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0)),output_property))
 	  {
 	   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetPointer ipSingle fail"));
       }
@@ -405,7 +405,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
    {
 	if(output_property)
 	{
-	 if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0))))
+	 if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0)),output_property))
 	 {
 	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetPointer ipRange fail"));
      }
@@ -415,7 +415,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
   else
   if(input_property->GetIoType() & ipComp)
   {
-   if(!input_property->SetPointer(c_index,na))
+   if(!input_property->SetPointer(c_index,na, 0))
     LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetPointer ipComp fail"));
 
   }
