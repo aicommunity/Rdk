@@ -32,6 +32,10 @@ if num_args != 3:
 
 lib_name=sys.argv[1]
 
+# Проверяем окончание имени библиотеки, и добавляем Lib, если нет окончания Lib или Library
+if (lib_name.rfind("Lib") != len(lib_name)-3) and (lib_name.rfind("Library") != len(lib_name)-6):
+    lib_name+="Lib"
+
 namespace_name=sys.argv[2]
 
 print 'Creating library: '+lib_name
@@ -69,8 +73,8 @@ createMapFile(template_data,dest_data,'CodeTemplates/ULibraryTemplate.cpp',new_p
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/U'+lib_name='.cpp')
 
 # Модифицируем файлы для сборки
-os.rename(new_path+'/Build/Bcb/Rdk-BasicLib.cbproj', new_path+'/Build/Bcb/'+namespace_name+'-'+lib_name+'.cbproj')
-os.rename(new_path+'/Build/CodeBlocks/Rdk-BasicLib.cbp', new_path+'/Build/CodeBlocks/'+namespace_name+'-'+lib_name+'.cbp')
-os.rename(new_path+'/Build/Vs/Rdk-BasicLib.vcxproj', new_path+'/Build/Vs/'+namespace_name+'-'+lib_name+'.vcxproj')
+os.rename(new_path+'/Build/Bcb/Rdk-BasicLib.cbproj', new_path+'/Build/Bcb/'+namespace_name.capitalize()+'-'+lib_name+'.cbproj')
+os.rename(new_path+'/Build/CodeBlocks/Rdk-BasicLib.cbp', new_path+'/Build/CodeBlocks/'+namespace_name.capitalize()+'-'+lib_name+'.cbp')
+os.rename(new_path+'/Build/Vs/Rdk-BasicLib.vcxproj', new_path+'/Build/Vs/'+namespace_name.capitalize()+'-'+lib_name+'.vcxproj')
 
 
