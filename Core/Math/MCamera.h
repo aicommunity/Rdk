@@ -86,6 +86,11 @@ MMatrix<T,3,3> InvIcc;
 // 2 - ћодель Artoolkit
 int DistortionMode;
 
+/// ћодель камеры
+/// 0 - обычна€ (pinhole)
+/// 1 - fisheye (opencv)
+int CameraMode;
+
 //  -ты дисторсии
 MDVector<double> DistortionCoeff;
 
@@ -107,6 +112,12 @@ bool SetInvIcc(const MMatrix<T,3,3>& value);
 // ћодель дисторсии
 const int& GetDistortionMode(void) const;
 bool SetDistortionMode(const int &value);
+
+/// ћодель камеры
+/// 0 - обычна€ (pinhole)
+/// 1 - fisheye (opencv)
+const int& GetCameraMode(void) const;
+bool SetCameraMode(const int& value);
 
 //  -ты дисторсии
 const MDVector<T>& GetDistortionCoeff(void) const;
@@ -135,6 +146,20 @@ virtual T CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distanc
 // ¬ычисл€ет и возвращает рассто€ние до отрезка по отрезку в пиксел€х и заданных метрических размерах
 virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length);
 
+
+/// ¬ычисл€ет угловое значение пиксел€ в модели камеры
+virtual T CalcAngleX(int pixel) const;
+virtual T CalcAngleY(int pixel) const;
+
+/// ¬ычисл€ет пиксельное значение угла в модели камеры
+virtual T CalcPixelXByAngle(T angle) const;
+virtual T CalcPixelYByAngle(T angle) const;
+
+/// ¬ычисл€ет матрицу внутренней калибровки по известным пол€м зрени€
+virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc);
+
+/// ¬ычисл€ет матрицу внутренней калибровки по известным пол€м зрени€
+virtual bool CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height);
 };
 
 // -----------------------------------------------------------------------------
@@ -241,14 +266,14 @@ void MCamera<T>::Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<
 // --------------------------
 template<class T>
 MCameraStandard<T>::MCameraStandard(void)
-: MCamera<T>(), DistortionMode(0)
+: MCamera<T>(), DistortionMode(0), CameraMode(0)
 {
  SetIcc(MMatrix<T,3,3>::Eye());
 }
 
 template<class T>
 MCameraStandard<T>::MCameraStandard(const MCameraStandard& copy)
-: MCamera<T>(copy), DistortionMode(0), DistortionCoeff(copy.DistortionCoeff)
+: MCamera<T>(copy), DistortionMode(copy.DistortionMode), CameraMode(copy.CameraMode), DistortionCoeff(copy.DistortionCoeff)
 {
  SetIcc(copy.GetIcc());
 }
@@ -303,6 +328,22 @@ bool MCameraStandard<T>::SetDistortionMode(const int &value)
  return true;
 }
 
+/// ћодель камеры
+/// 0 - обычна€ (pinhole)
+/// 1 - fisheye (opencv)
+template<class T>
+const int& MCameraStandard<T>::GetCameraMode(void) const
+{
+ return CameraMode;
+}
+
+template<class T>
+bool MCameraStandard<T>::SetCameraMode(const int& value)
+{
+ CameraMode=value;
+ return true;
+}
+
 //  -ты дисторсии
 template<class T>
 const MDVector<T>& MCameraStandard<T>::GetDistortionCoeff(void) const
@@ -322,108 +363,144 @@ bool MCameraStandard<T>::SetDistortionCoeff(const MDVector<T>& value)
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVector<T,3> &point)
 {
- if(DistortionMode == 0)
-  return point;
-
- if(DistortionMode == 1)
+ switch(CameraMode)
  {
-  if(DistortionCoeff.GetSize()<1)
+ case 0:
+ {
+  if(DistortionMode == 0)
    return point;
 
-  MVector<T,3> res;
-  res=point;
-  if(DistortionCoeff.GetSize() == 1)
+  if(DistortionMode == 1)
   {
-   T r=point.x*point.x+point.y*point.y;
-   T m1=(1.0+DistortionCoeff[0]*r);
-   res.x=m1*point.x;
-   res.y=m1*point.y;
-   res.z=1;
+   if(DistortionCoeff.GetSize()<1)
+	return point;
+
+   MVector<T,3> res;
+   res=point;
+   if(DistortionCoeff.GetSize() == 1)
+   {
+	T r=point.x*point.x+point.y*point.y;
+	T m1=(1.0+DistortionCoeff[0]*r);
+	res.x=m1*point.x;
+	res.y=m1*point.y;
+	res.z=1;
+   }
+   else
+   if(DistortionCoeff.GetSize() == 5)
+   {
+	T r=point.x*point.x+point.y*point.y;
+	T m1=(1.0+DistortionCoeff[0]*r+DistortionCoeff[1]*r*r+DistortionCoeff[4]*r*r*r);
+	res.x=m1*point.x;
+	res.y=m1*point.y;
+	res.z=1;
+
+	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
+	res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+   }
+   else
+   if(DistortionCoeff.GetSize() == 8)
+   {
+	T r2=point.x*point.x+point.y*point.y;
+	T r4=r2*r2;
+	T r6=r4*r2;
+	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
+	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
+	T m1=dividend/divider;
+	res.x=m1*point.x;
+	res.y=m1*point.y;
+	res.z=1;
+
+	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
+	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+   }
+   else
+   if(DistortionCoeff.GetSize() == 10)
+   {
+	T r2=point.x*point.x+point.y*point.y;
+	T r4=r2*r2;
+	T r6=r4*r2;
+	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
+	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
+	T m1=dividend/divider;
+	res.x=m1*point.x;
+	res.y=m1*point.y;
+	res.z=1;
+
+	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
+	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+
+	res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+	res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+   }
+   else
+   if(DistortionCoeff.GetSize() == 12)
+   {
+	T r2=point.x*point.x+point.y*point.y;
+	T r4=r2*r2;
+	T r6=r4*r2;
+	T r8=r4*r4;
+	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
+	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
+	T m1=dividend/divider;
+	res.x=m1*point.x;
+	res.y=m1*point.y;
+	res.z=1;
+
+	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
+	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+
+	res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4+DistortionCoeff[10]*r6+DistortionCoeff[11]*r8;
+	res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4+DistortionCoeff[10]*r6+DistortionCoeff[11]*r8;
+   }
+   return res;
   }
-  else
-  if(DistortionCoeff.GetSize() == 5)
+
+  if(DistortionMode == 2)
   {
-   T r=point.x*point.x+point.y*point.y;
-   T m1=(1.0+DistortionCoeff[0]*r+DistortionCoeff[1]*r*r+DistortionCoeff[4]*r*r*r);
-   res.x=m1*point.x;
-   res.y=m1*point.y;
+   if(DistortionCoeff.GetSize()<4)
+	return point;
+
+   MVector<T,3> res;
+   T x=DistortionCoeff[3]*(point.x-DistortionCoeff[0]);
+   T y=DistortionCoeff[3]*(point.y-DistortionCoeff[1]);
+   T d=x*x+y*y;
+   T p=1.0-(DistortionCoeff[2]*d)/100000000.0;
+   res.x=p*x+DistortionCoeff[0];
+   res.y=p*y+DistortionCoeff[1];
    res.z=1;
-
-   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+   return res;
   }
-  else
-  if(DistortionCoeff.GetSize() == 8)
-  {
-   T r2=point.x*point.x+point.y*point.y;
-   T r4=r2*r2;
-   T r6=r4*r2;
-   T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
-   T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
-   T m1=dividend/divider;
-   res.x=m1*point.x;
-   res.y=m1*point.y;
-   res.z=1;
-
-   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
-  }
-  else
-  if(DistortionCoeff.GetSize() == 10)
-  {
-   T r2=point.x*point.x+point.y*point.y;
-   T r4=r2*r2;
-   T r6=r4*r2;
-   T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
-   T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
-   T m1=dividend/divider;
-   res.x=m1*point.x;
-   res.y=m1*point.y;
-   res.z=1;
-
-   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
-
-   res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
-   res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
-  }
-  else
-  if(DistortionCoeff.GetSize() == 12)
-  {
-   T r2=point.x*point.x+point.y*point.y;
-   T r4=r2*r2;
-   T r6=r4*r2;
-   T r8=r4*r4;
-   T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
-   T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
-   T m1=dividend/divider;
-   res.x=m1*point.x;
-   res.y=m1*point.y;
-   res.z=1;
-
-   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
-
-   res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4+DistortionCoeff[10]*r6+DistortionCoeff[11]*r8;
-   res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4+DistortionCoeff[10]*r6+DistortionCoeff[11]*r8;
-  }
-  return res;
  }
+ break;
 
- if(DistortionMode == 2)
+ case 1:
  {
-  if(DistortionCoeff.GetSize()<4)
-   return point;
+  if(DistortionMode == 1)
+  {
+   if(DistortionCoeff.GetSize()<1)
+	return point;
 
-  MVector<T,3> res;
-  T x=DistortionCoeff[3]*(point.x-DistortionCoeff[0]);
-  T y=DistortionCoeff[3]*(point.y-DistortionCoeff[1]);
-  T d=x*x+y*y;
-  T p=1.0-(DistortionCoeff[2]*d)/100000000.0;
-  res.x=p*x+DistortionCoeff[0];
-  res.y=p*y+DistortionCoeff[1];
-  res.z=1;
-  return res;
+   MVector<T,3> res;
+   res=point;
+
+   if(DistortionCoeff.GetSize() == 4)
+   {
+	T r2=point.x*point.x+point.y*point.y;
+	T r=sqrt(r2);
+	T teta=atan(r);
+	T teta2=teta*teta;
+	T teta4=teta2*teta2;
+	T teta6=teta2*teta;
+	T teta8=teta4*teta4;
+	T teta_d=teta*(1.0+DistortionCoeff[0]*teta2+DistortionCoeff[1]*teta4+DistortionCoeff[2]*teta6+DistortionCoeff[3]*teta8);
+	res.x=(teta_d*point.x)/r;
+	res.y=(teta_d*point.y)/r;
+	res.z=1;
+   }
+   return res;
+  }
+ }
+ break;
  }
 
  return point;
@@ -531,6 +608,186 @@ T MCameraStandard<T>::CalcSpaceByScreenSegmentDistance(const UBRect &screen_segm
 {
  return 0;
 }
+
+
+/// ¬ычисл€ет угловое значение пиксел€ в модели камеры
+template<class T>
+T MCameraStandard<T>::CalcAngleX(int pixel) const
+{
+ switch(CameraMode)
+ {
+ case 0:
+ {
+  T center=pixel-GetIcc()(0,2);
+  T tg_res=center/GetIcc()(0,0);
+  T res=atan(tg_res);
+  return res;
+ }
+ break;
+
+ case 1:
+ {
+  T center=pixel-GetIcc()(0,2);
+  T tg_res=center/GetIcc()(0,0);
+  T res=atan(tg_res);
+  return res;
+ }
+ break;
+ }
+ return 0.0;
+}
+
+template<class T>
+T MCameraStandard<T>::CalcAngleY(int pixel) const
+{
+ switch(CameraMode)
+ {
+ case 0:
+ {
+  T center=pixel-GetIcc()(1,2);
+  T tg_res=center/GetIcc()(1,1);
+  T res=atan(tg_res);
+  return res;
+ }
+ break;
+
+ case 1:
+ {
+  T center=pixel-GetIcc()(1,2);
+  T tg_res=center/GetIcc()(1,1);
+  T res=atan(tg_res);
+  return res;
+ }
+ break;
+ }
+ return 0.0;
+}
+
+/// ¬ычисл€ет пиксельное значение угла в модели камеры
+template<class T>
+T MCameraStandard<T>::CalcPixelXByAngle(T angle) const
+{
+ switch(CameraMode)
+ {
+ case 0:
+ {
+  T tg_angle=tan(angle);
+  T res=tg_angle*GetIcc()(0,0)+GetIcc()(0,2);
+  return res;
+ }
+ break;
+
+ case 1:
+ {
+  T tg_angle=tan(angle);
+  T res=tg_angle*GetIcc()(0,0)+GetIcc()(0,2);
+  return res;
+ }
+ break;
+ }
+ return 0.0;
+}
+
+template<class T>
+T MCameraStandard<T>::CalcPixelYByAngle(T angle) const
+{
+ switch(CameraMode)
+ {
+ case 0:
+ {
+  T tg_angle=tan(angle);
+  T res=tg_angle*GetIcc()(1,1)+GetIcc()(1,2);
+  return res;
+ }
+ break;
+
+ case 1:
+ {
+  T tg_angle=tan(angle);
+  T res=tg_angle*GetIcc()(1,1)+GetIcc()(1,2);
+  return res;
+ }
+ break;
+ }
+ return 0.0;
+}
+
+
+/// ¬ычисл€ет матрицу внутренней калибровки по известным пол€м зрени€
+template<class T>
+bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc)
+{
+ switch(CameraMode)
+ {
+ case 0:
+ {
+  T h_angle((angle_x*M_PI/180.0)/2.0);
+  T w_angle((angle_y*M_PI/180.0)/2.0);
+
+  icc=icc.Zero();
+
+  if(image_width && h_angle)
+   icc(0,0)=(image_width/2.0)/tan(h_angle);
+  else
+   return false;
+
+  if(image_height && w_angle)
+   icc(1,1)=(image_height/2.0)/tan(w_angle);
+  else
+   return false;
+
+  icc(0,2)=principle_x*image_width;
+  icc(1,2)=principle_y*image_height;
+  icc(2,2)=1.0;
+ }
+ break;
+
+ case 1:
+ {
+ }
+ break;
+ }
+ return true;
+}
+
+/// ¬ычисл€ет матрицу внутренней калибровки по известным пол€м зрени€
+template<class T>
+bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height)
+{
+ switch(CameraMode)
+ {
+ case 0:
+ {
+  if(icc(0,0) > 1e-5)
+   angle_x=(atan(icc(0,2)/icc(0,0))+atan((image_width-icc(0,2))/icc(0,0)))*180.0/M_PI;
+  else
+   return false;
+
+  if(icc(1,1) > 1e-5)
+   angle_y=(atan(icc(1,2)/icc(1,1))+atan((image_height-icc(1,2))/icc(1,1)))*180.0/M_PI;
+  else
+   return false;
+
+  if(image_width)
+   principle_x=icc(0,2)/image_width;
+  else
+   principle_x=0;
+
+  if(image_height)
+   principle_y=icc(1,2)/image_height;
+  else
+   principle_y=0;
+ }
+ break;
+
+ case 1:
+ {
+ }
+ break;
+ }
+ return true;
+}
+
 
 }
 #endif
