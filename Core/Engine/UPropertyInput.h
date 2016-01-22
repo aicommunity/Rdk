@@ -39,7 +39,7 @@ UPropertyInputPreBase(OwnerT * const owner, int input_type)
 void ApplyOutputUpdateTime(void)
 {
  if(ConnectedOutput)
-  UpdateTime=ConnectedOutput->GetUpdateTime();
+  this->UpdateTime=ConnectedOutput->GetUpdateTime();
 }
 // --------------------------
 };
@@ -89,7 +89,7 @@ public: // Методы
 UVPropertyInputBase(OwnerT * const owner, T** data, int input_type)
  : UPropertyInputPreBase<T,OwnerT>(owner, input_type), ExternalPData(0), LocalExternalPData(0)
 {
- this->PData=&Local;
+ this->PData=&this->Local;
  if(data)
   ExternalPData=data;
  else
@@ -171,9 +171,9 @@ bool SetPointer(int index, void* value, UIProperty* output)
  if(value)
  {
   *this->PData=reinterpret_cast<T*>(value);
-  ConnectedOutput=output;
+  this->ConnectedOutput=output;
   UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag=true;
-  ResetUpdateTime();
+  this->ResetUpdateTime();
   return true;
  }
 
@@ -187,7 +187,7 @@ bool ResetPointer(int index, void* value)
  {
   *this->PData=UPropertyInputBase<T*,OwnerT,type>::Local;
   UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag=false;
-  ConnectedOutput=0;
+  this->ConnectedOutput=0;
   return true;
  }
 
@@ -265,8 +265,8 @@ bool SetPointer(int index, void* value, UIProperty* output)
  {
   this->PData=reinterpret_cast<T*>(value);
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=true;
-  ConnectedOutput=output;
-  ResetUpdateTime();
+  this->ConnectedOutput=output;
+  this->ResetUpdateTime();
   return true;
  }
  return false;
@@ -279,7 +279,7 @@ bool ResetPointer(int index, void* value)
  {
   this->PData=&(this->Local);
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=false;
-  ConnectedOutput=0;
+  this->ConnectedOutput=0;
   return true;
  }
  return false;
@@ -307,7 +307,7 @@ operator T* (void) const
 /// Возвращает true, если на подключенном выходе новые данные
 virtual bool IsNewData(void) const
 {
- return (ConnectedOutput)?ConnectedOutput->GetUpdateTime()>UpdateTime:true;
+ return (this->ConnectedOutput)?this->ConnectedOutput->GetUpdateTime()>this->UpdateTime:true;
 }
 
 };
@@ -364,9 +364,9 @@ bool SetPointer(int index, void* value, UIProperty* output)
  {
   this->PData=reinterpret_cast<T*>(value);
   *UVPropertyInputBase<T,OwnerT>::ExternalPData=this->PData;
-  ConnectedOutput=output;
+  this->ConnectedOutput=output;
   UVPropertyInputBase<T,OwnerT>::IsConnectedFlag=true;
-  ResetUpdateTime();
+  this->ResetUpdateTime();
   return true;
  }
  return false;
@@ -379,7 +379,7 @@ bool ResetPointer(int index, void* value)
  {
   this->PData=&(this->Local);
   *UVPropertyInputBase<T,OwnerT>::ExternalPData=0;
-  ConnectedOutput=0;
+  this->ConnectedOutput=0;
   UVPropertyInputBase<T,OwnerT>::IsConnectedFlag=false;
   return true;
  }
@@ -391,19 +391,19 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
- ApplyOutputUpdateTime();
+ this->ApplyOutputUpdateTime();
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 };
 
 T& operator * (void)
 {
- ApplyOutputUpdateTime();
+ this->ApplyOutputUpdateTime();
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?*this->PData:UVPropertyInputBase<T,OwnerT>::Local;
 };
 
 operator T* (void) const
 {
- ApplyOutputUpdateTime();
+ this->ApplyOutputUpdateTime();
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------

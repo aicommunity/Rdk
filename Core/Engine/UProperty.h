@@ -395,7 +395,7 @@ virtual void SetData(const T &value)
  if(this->PData && !SetterR)
  {
   *this->PData=value;
-  RenewUpdateTime();
+  this->RenewUpdateTime();
  }
 
  if(this->Owner && SetterR)
@@ -406,7 +406,7 @@ virtual void SetData(const T &value)
   if(this->PData)
   {
    *this->PData=value;
-   RenewUpdateTime();
+   this->RenewUpdateTime();
   }
  }
 };
@@ -513,7 +513,7 @@ virtual void SetData(const T &value)
  if(this->PData && !Setter)
  {
   *this->PData=value;
-  RenewUpdateTime();
+  this->RenewUpdateTime();
  }
 
  if(this->Owner && Setter)
@@ -524,7 +524,7 @@ virtual void SetData(const T &value)
   if(this->PData)
   {
    *this->PData=value;
-   RenewUpdateTime();
+   this->RenewUpdateTime();
   }
  }
 };
@@ -589,12 +589,12 @@ virtual void SetData(const T &value)
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
   v=value;
-  RenewUpdateTime();
+  this->RenewUpdateTime();
   return;
  }
 
  v=value;
- RenewUpdateTime();
+ this->RenewUpdateTime();
  return;
 };
 // -----------------------------
@@ -679,7 +679,7 @@ virtual void SetData(const T &value)
  }
 
  v=value;
- RenewUpdateTime();
+ this->RenewUpdateTime();
 };
 // -----------------------------
 };
