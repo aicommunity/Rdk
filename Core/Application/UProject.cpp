@@ -384,12 +384,12 @@ bool UProject::WriteToXml(USerStorageXML &xml)
 {
  xml.SelectNodeRoot("Project/MultiGeneral");
 
- if(Config.InterfaceFileName.empty())
-  Config.InterfaceFileName="Interface.xml";
-
- xml.WriteString("InterfaceFileName",Config.InterfaceFileName);
 
  xml.SelectNodeRoot("Project/General");
+
+ if(Config.InterfaceFileName.empty())
+  Config.InterfaceFileName="Interface.xml";
+ xml.WriteString("InterfaceFileName",Config.InterfaceFileName);
 
  if(Config.DescriptionFileName.empty())
   Config.DescriptionFileName="Description.rtf";
