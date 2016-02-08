@@ -439,14 +439,12 @@ void TUImagesFrame::AUpdateInterface(void)
 
 	 if(ComponentIndexes[i][j].empty())
 	 {
-//	  LockEngine();
 	  RDK::UBitmapParam bmp_param;
 	  int copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &bmp_param);
 	  if(copy_res == 0)
 	  {
 	   TempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
 	   MModel_CopyComponentBitmapOutputByIndex(eng_index, StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &TempBmp);
-//	   TempBmp=*bmp;
 	   SetBitmap(i, j, TempBmp);
 	  }
 	  else
@@ -455,11 +453,9 @@ void TUImagesFrame::AUpdateInterface(void)
 	   ComponentIndexesOld[i][j]=0;
 	   ComponentIndexes[i][j].clear();
 	  }
-//	  UnLockEngine();
 	 }
 	 else
 	 {
-//	  LockEngine();
 	  String s1 = String(StringIds[i][j].c_str());
 	  String s2 = String(ComponentIndexes[i][j].c_str());
 	  RDK::UBitmapParam bmp_param;
@@ -468,7 +464,6 @@ void TUImagesFrame::AUpdateInterface(void)
 	  {
 	   TempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
 	   MModel_CopyComponentBitmapOutput(eng_index, StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str(), &TempBmp);
-//	   TempBmp=*bmp;
 	   SetBitmap(i, j, TempBmp);
 	  }
 	  else
@@ -530,8 +525,8 @@ void TUImagesFrame::AUpdateInterface(void)
    }
   }
 
-  DrawGrid->Repaint();
-  DrawGrid->Update();
+//  DrawGrid->Repaint();
+//  DrawGrid->Update();
  }
 
  if(ScrollBox1->Visible)

@@ -512,6 +512,7 @@ try
  RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
 
  TProjectConfig config=Project->GetConfig();
+ ProjectXml.SelectNodeRoot("Project/General");
 
  if(!config.InterfaceFileName.empty())
  {
@@ -526,7 +527,6 @@ try
   InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
  }
 
- ProjectXml.SelectNodeRoot("Project/General");
 
  /*
  if(!config.DescriptionFileName.empty())

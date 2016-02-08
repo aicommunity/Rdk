@@ -146,7 +146,6 @@ virtual T CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distanc
 // ¬ычисл€ет и возвращает рассто€ние до отрезка по отрезку в пиксел€х и заданных метрических размерах
 virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length);
 
-
 /// ¬ычисл€ет угловое значение пиксел€ в модели камеры
 virtual T CalcAngleX(int pixel) const;
 virtual T CalcAngleY(int pixel) const;
@@ -614,6 +613,8 @@ T MCameraStandard<T>::CalcSpaceByScreenSegmentDistance(const UBRect &screen_segm
 template<class T>
 T MCameraStandard<T>::CalcAngleX(int pixel) const
 {
+ if(GetIcc()(0,0) < 1e-5 || GetIcc()(1,1)< 1e-5)
+  return 0; // TODO: тут исключение
  switch(CameraMode)
  {
  case 0:
@@ -627,9 +628,11 @@ T MCameraStandard<T>::CalcAngleX(int pixel) const
 
  case 1:
  {
-  T center=pixel-GetIcc()(0,2);
-  T tg_res=center/GetIcc()(0,0);
-  T res=atan(tg_res);
+  T x_diff=(pixel-GetIcc()(0,2))/GetIcc()(0,0);
+  T y_diff=(0-GetIcc()(0,1))/GetIcc()(1,1);
+  T teta=sqrt(x_diff*x_diff+y_diff*y_diff);
+  T beta=atan2(y_diff,x_diff);
+  T res=atan(tan(teta)*cos(beta));
   return res;
  }
  break;
@@ -640,6 +643,9 @@ T MCameraStandard<T>::CalcAngleX(int pixel) const
 template<class T>
 T MCameraStandard<T>::CalcAngleY(int pixel) const
 {
+ if(GetIcc()(0,0) < 1e-5 || GetIcc()(1,1)< 1e-5)
+  return 0; // TODO: тут исключение
+
  switch(CameraMode)
  {
  case 0:
@@ -653,9 +659,11 @@ T MCameraStandard<T>::CalcAngleY(int pixel) const
 
  case 1:
  {
-  T center=pixel-GetIcc()(1,2);
-  T tg_res=center/GetIcc()(1,1);
-  T res=atan(tg_res);
+  T x_diff=(0-GetIcc()(0,2))/GetIcc()(0,0);
+  T y_diff=(pixel-GetIcc()(0,1))/GetIcc()(1,1);
+  T teta=sqrt(x_diff*x_diff+y_diff*y_diff);
+  T beta=atan2(x_diff,y_diff);
+  T res=atan(tan(teta)*cos(beta));
   return res;
  }
  break;
@@ -744,6 +752,12 @@ bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_
 
  case 1:
  {
+  icc=icc.Zero();
+  icc(0,0)=image_width/angle_x;
+  icc(1,1)=image_height/angle_y;
+  icc(0,2)=principle_x*image_width;
+  icc(1,2)=principle_y*image_height;
+  icc(2,2)=1.0;
  }
  break;
  }
@@ -782,6 +796,25 @@ bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &ang
 
  case 1:
  {
+  if(icc(0,0) > 1e-5)
+   angle_x=image_width/icc(0,0);
+  else
+   return false;
+
+  if(icc(1,1) > 1e-5)
+   angle_y=image_height/icc(1,1);
+  else
+   return false;
+
+  if(image_width)
+   principle_x=icc(0,2)/image_width;
+  else
+   principle_x=0;
+
+  if(image_height)
+   principle_y=icc(1,2)/image_height;
+  else
+   principle_y=0;
  }
  break;
  }

@@ -109,6 +109,8 @@ __published:	// IDE-managed Components
 	void __fastcall MultiThreadingModeRadioGroupClick(TObject *Sender);
 	void __fastcall CalculationSourceTimeModeRadioGroupClick(TObject *Sender);
 	void __fastcall DisableStopVideoSourcesCheckBoxClick(TObject *Sender);
+	void __fastcall ProjectTimeStepEditChange(TObject *Sender);
+	void __fastcall GlobalTimeStepEditChange(TObject *Sender);
 
 
 

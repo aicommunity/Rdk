@@ -48,7 +48,8 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
   NextButton->Enabled=false;
  }
 
- ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProjectPath().c_str();
+ if(RdkApplication.GetProjectOpenFlag())
+  ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProjectPath().c_str();
  ProjectNameLabeledEdit->Text=ProjectConfig.ProjectName.c_str();
  ProjectDescriptionRichEdit->Clear();
  ProjectDescriptionRichEdit->Lines->Add(ProjectConfig.ProjectDescription.c_str());
@@ -316,6 +317,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *S
 	ProjectConfig.ChannelsConfig[i].GlobalTimeStep=30;
   }
  }
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::PredefinedModelRadioButtonClick(TObject *Sender)
@@ -391,6 +393,7 @@ void __fastcall TUCreateProjectWizardForm::ModelFileNameRadioButtonClick(TObject
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::FormShow(TObject *Sender)
 {
+ PageControl->ActivePageIndex=0;
  UClassesListFrame1->UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -525,22 +528,22 @@ void __fastcall TUCreateProjectWizardForm::ProjectTimeStepEditKeyPress(TObject *
  if(UpdateInterfaceFlag)
   return;
 
- int channels_index=ChannelsStringGrid->Row;
- if(channels_index<0)
-  return;
-
- if(Key == VK_RETURN)
- {
-  try
-  {
-   ProjectConfig.ChannelsConfig[channels_index].DefaultTimeStep=StrToInt(ProjectTimeStepEdit->Text);
-   UpdateInterface();
-  }
-  catch(EConvertError &ex)
-  {
-
-  }
- }
+// int channels_index=ChannelsStringGrid->Row;
+// if(channels_index<0)
+//  return;
+//
+// if(Key == VK_RETURN)
+// {
+//  try
+//  {
+//   ProjectConfig.ChannelsConfig[channels_index].DefaultTimeStep=StrToInt(ProjectTimeStepEdit->Text);
+//   UpdateInterface();
+//  }
+//  catch(EConvertError &ex)
+//  {
+//
+//  }
+// }
 }
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::GlobalTimeStepEditKeyPress(TObject *Sender,
@@ -549,22 +552,22 @@ void __fastcall TUCreateProjectWizardForm::GlobalTimeStepEditKeyPress(TObject *S
  if(UpdateInterfaceFlag)
   return;
 
- int channels_index=ChannelsStringGrid->Row;
- if(channels_index<0)
-  return;
-
- if(Key == VK_RETURN)
- {
-  try
-  {
-   ProjectConfig.ChannelsConfig[channels_index].DefaultTimeStep=StrToInt(GlobalTimeStepEdit->Text);
-   UpdateInterface();
-  }
-  catch(EConvertError &ex)
-  {
-
-  }
- }
+// int channels_index=ChannelsStringGrid->Row;
+// if(channels_index<0)
+//  return;
+//
+// if(Key == VK_RETURN)
+// {
+//  try
+//  {
+//   ProjectConfig.ChannelsConfig[channels_index].DefaultTimeStep=StrToInt(GlobalTimeStepEdit->Text);
+//   UpdateInterface();
+//  }
+//  catch(EConvertError &ex)
+//  {
+//
+//  }
+// }
 }
 //---------------------------------------------------------------------------
 
@@ -659,7 +662,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectDirectoryLabeledEditChange(TOb
  if(UpdateInterfaceFlag)
   return;
 
-// ProjectConfig.ProjectPath=AnsiString(ProjectDirectoryLabeledEdit->Text).c_str();
+// ProjectConfig.ProjectDir=AnsiString(ProjectDirectoryLabeledEdit->Text).c_str();
 }
 //---------------------------------------------------------------------------
 
@@ -759,6 +762,50 @@ void __fastcall TUCreateProjectWizardForm::DisableStopVideoSourcesCheckBoxClick(
   return;
 
  ProjectConfig.DisableStopVideoSources=DisableStopVideoSourcesCheckBox->Checked;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUCreateProjectWizardForm::ProjectTimeStepEditChange(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ int channels_index=ChannelsStringGrid->Row;
+ if(channels_index<0)
+  return;
+
+  try
+  {
+   ProjectConfig.ChannelsConfig[channels_index].DefaultTimeStep=StrToInt(ProjectTimeStepEdit->Text);
+   UpdateInterface();
+  }
+  catch(EConvertError &ex)
+  {
+
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUCreateProjectWizardForm::GlobalTimeStepEditChange(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ int channels_index=ChannelsStringGrid->Row;
+ if(channels_index<0)
+  return;
+
+  try
+  {
+   ProjectConfig.ChannelsConfig[channels_index].GlobalTimeStep=StrToInt(GlobalTimeStepEdit->Text);
+   UpdateInterface();
+  }
+  catch(EConvertError &ex)
+  {
+
+  }
 }
 //---------------------------------------------------------------------------
 
