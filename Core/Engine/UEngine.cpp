@@ -5077,7 +5077,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    }
    else
    {
-	if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
+	if((strlen(stringid) == 0) && (XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName()))
 	 RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
 
 	UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
