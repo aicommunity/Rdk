@@ -29,7 +29,7 @@ MDVector(T xv, T yv, T zv=0);
 MDVector(T xv, T yv, T zv, T dv);
 MDVector(const MDVector<T> &copy);
 MDVector(const MDMatrix<T> &copy);
-//MDVector(const T* data);
+//MDVector(int size, const T* data);
 ~MDVector(void);
 // --------------------------
 
@@ -60,7 +60,7 @@ void Assign(int size, T data);
 // Оператор присваивания
 MDVector<T>& operator = (const MDVector<T> &copy);
 MDVector<T>& operator = (const MDMatrix<T> &copy);
-//MDVector<T>& operator = (const T* data);
+MDVector<T>& operator = (const T* data);
 MDVector<T>& operator = (T value);
 
 // Доступ к элементу
@@ -115,11 +115,15 @@ MDVector<T>::MDVector(const MDVector<T> &copy)
 template<class T>
 MDVector<T>::MDVector(const MDMatrix<T> &copy)
 { *this=copy; };
-/*
-template<class T>
-MDVector<T>::MDVector(const T* data)
-{ *copy=data; };
-  */
+
+// template<class T>
+// MDVector<T>::MDVector(int size, const T* data)
+// { 
+// 	 MDMatrix<T>::Resize(size,1);
+// 	 MDMatrix<T>::operator = (data);
+// 	//*copy=data; 
+// };
+ 
 template<class T>
 MDVector<T>::~MDVector(void) {};
 // --------------------------
@@ -203,6 +207,14 @@ MDVector<T>& MDVector<T>::operator = (const MDMatrix<T> &copy)
  else
   memset(MDMatrix<T>::Data1D,0,sizeof(T)*this->GetRows());
  return *this;
+}
+
+template<class T>
+MDVector<T>& MDVector<T>::operator = (const T* data)
+{
+	MDMatrix<T>::operator = (data);
+
+	return *this;
 }
 
 template<class T>

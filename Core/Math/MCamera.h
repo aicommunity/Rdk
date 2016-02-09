@@ -66,8 +66,9 @@ virtual void Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeometry<
 virtual void Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<T> &geometry_2d);
 
 protected: // —крытые методы
-
 };
+
+
 
 // —тандартна€ модель камеры с произвольной дисторсией
 template<class T>
@@ -159,6 +160,15 @@ virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T princip
 
 /// ¬ычисл€ет матрицу внутренней калибровки по известным пол€м зрени€
 virtual bool CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height);
+
+protected: // —крытые методы
+
+// ‘ункци€ вычислени€ дисторсии дл€ fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
+T FuncTheta(T thetaD, T Xthet) const;
+
+// ћетод хорд дл€ нахождени€ численного решени€ уравнени€ относительно theta
+T ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const;
+
 };
 
 // -----------------------------------------------------------------------------
@@ -631,6 +641,7 @@ T MCameraStandard<T>::CalcAngleX(int pixel) const
   T x_diff=(pixel-GetIcc()(0,2))/GetIcc()(0,0);
   T y_diff=(0-GetIcc()(0,1))/GetIcc()(1,1);
   T teta=sqrt(x_diff*x_diff+y_diff*y_diff);
+  teta=ChordMethod(0,M_PI,1e-5,teta); // учет дисторсии
   T beta=atan2(y_diff,x_diff);
   T res=atan(tan(teta)*cos(beta));
   return res;
@@ -662,6 +673,7 @@ T MCameraStandard<T>::CalcAngleY(int pixel) const
   T x_diff=(0-GetIcc()(0,2))/GetIcc()(0,0);
   T y_diff=(pixel-GetIcc()(0,1))/GetIcc()(1,1);
   T teta=sqrt(x_diff*x_diff+y_diff*y_diff);
+  teta=ChordMethod(0,M_PI,1e-5,teta); // учет дисторсии
   T beta=atan2(x_diff,y_diff);
   T res=atan(tan(teta)*cos(beta));
   return res;
@@ -821,6 +833,34 @@ bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &ang
  return true;
 }
 
+// ‘ункци€ вычислени€ дисторсии дл€ fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
+template<class T>
+T MCameraStandard<T>::FuncTheta(T thetaD, T Xthet) const
+{
+	if(DistortionCoeff.GetSize()<4) return thetaD;
+
+	T Xthet3=Xthet*Xthet*Xthet;
+	T Xthet5=Xthet3*Xthet*Xthet;
+	T Xthet7=Xthet5*Xthet*Xthet;
+	T Xthet9=Xthet7*Xthet*Xthet;
+	T res= Xthet+DistortionCoeff(0)*Xthet3+DistortionCoeff(1)*Xthet5+DistortionCoeff(2)*Xthet7+DistortionCoeff(3)*Xthet9-thetaD;
+
+	return res;
+}
+
+// ћетод хорд дл€ нахождени€ численного решени€ уравнени€ относительно theta
+template<class T>
+T MCameraStandard<T>::ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const
+{
+	if( fabs(Cx2-Cx1)< epsilon) return (Cx1+Cx1)/2;
+
+	T Cy1 = FuncTheta(thetaD,Cx1);
+	T Cy2 = FuncTheta(thetaD,Cx2);
+
+	T Cx3 = Cx1-(Cx2-Cx1)*Cy1/(Cy2-Cy1);
+
+	return ChordMethod(Cx2, Cx3, epsilon, thetaD);
+}
 
 }
 #endif
