@@ -2868,6 +2868,8 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 
    if(!destcont)
    {
+	if(cont)
+     Storage->ReturnObject(cont);
 	DestroyTempString(TempString);
 	return 0;
    }
