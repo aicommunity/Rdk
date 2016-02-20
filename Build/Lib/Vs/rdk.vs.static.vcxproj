@@ -52,7 +52,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);RDK_UNICODE_RUN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);RDK_UNICODE_RUN;LIBRDK_LIBRARY_EXPORT</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -71,7 +71,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);RDK_UNICODE_RUN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);RDK_UNICODE_RUN;LIBRDK_LIBRARY_EXPORT</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -182,7 +182,6 @@
     <ClCompile Include="..\..\..\Deploy\Include\rdk.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk.win.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_cpp_initdll.cpp" />
-    <ClCompile Include="..\..\..\Deploy\Include\rdk_cpp_initlib.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_engine_support.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_exceptions.win.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_initdll.cpp" />
@@ -289,8 +288,9 @@
     <ClInclude Include="..\..\..\Core\Utilities\UTimeStamp.h" />
     <ClInclude Include="..\..\..\Core\Utilities\UTransferPacket.h" />
     <ClInclude Include="..\..\..\Core\Utilities\UTree.h" />
+    <ClInclude Include="..\..\..\Deploy\Include\initdll_defs.h" />
     <ClInclude Include="..\..\..\Deploy\Include\rdk.h" />
-    <ClInclude Include="..\..\..\Deploy\Include\rdk_cpp_initlib.h" />
+    <ClInclude Include="..\..\..\Deploy\Include\rdk_cpp_initdll.h" />
     <ClInclude Include="..\..\..\Deploy\Include\rdk_error_codes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

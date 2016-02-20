@@ -62,12 +62,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0.0)
+ : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0.0)
+ : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 

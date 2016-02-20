@@ -28,6 +28,10 @@
 	#define RDK_CALL
 #else
 	#if defined(LIBRDK_LIBRARY_EXPORT)
+		#ifdef _MSC_VER
+		#pragma warning(disable : 4251)
+		#pragma warning(disable : 4221)
+		#endif
 		#define RDK_LIB_TYPE __declspec(dllexport)
 		#define RDK_CALL __cdecl
 	#elif defined(LIBRDK_LIBRARY_IMPORT)

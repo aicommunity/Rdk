@@ -3367,6 +3367,7 @@ void DelEngine(RDK::UEngine* engine)
 }                    */
 // ----------------------------
 
+#ifndef _MSC_VER
 namespace boost {
 
 void tss_cleanup_implemented(void)
@@ -3394,6 +3395,7 @@ solution is no
 }
 
 }
+#endif
 
 void tss_cleanup_implemented(void)
 {

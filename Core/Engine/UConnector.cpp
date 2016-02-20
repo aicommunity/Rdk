@@ -470,7 +470,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   }
   else
   {
-   if(I->second.size()>c_index && I->second[c_index].Item == na)
+   if(int(I->second.size())>c_index && I->second[c_index].Item == na)
    {
 	return true;
    }
