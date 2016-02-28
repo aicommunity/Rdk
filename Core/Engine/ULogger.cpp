@@ -104,7 +104,7 @@ int ULogger::Clear(void)
  }
 
  LogEnabledFlag=true;
- return 0;
+ return RDK_SUCCESS;
 }
 
 
