@@ -13,7 +13,7 @@ DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 
-SOURCES += librdk.qt.cpp \
+SOURCES += rdk.qt.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -115,8 +115,8 @@ SOURCES += librdk.qt.cpp \
     ../../../Core/Application/UIVisualController.cpp \
     ../../../Deploy/Include/RdkDummyLibraries.cpp
 
-HEADERS += librdk.qt.h\
-        librdk.qt_global.h \
+HEADERS += rdk.qt.h\
+        rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
     ../../../Core/Engine/Engine.h.orig \
@@ -219,7 +219,7 @@ symbian {
     TARGET.UID3 = 0xE975DFAE
     TARGET.CAPABILITY = 
     TARGET.EPOCALLOWDLLDATA = 1
-    addFiles.sources = librdk.qt.dll
+    addFiles.sources = rdk.qt.dll
     addFiles.path = !:/sys/bin
     DEPLOYMENT += addFiles
 }
