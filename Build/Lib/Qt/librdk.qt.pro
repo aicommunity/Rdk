@@ -8,6 +8,7 @@ QT       -= gui
 
 TARGET = rdk.qt
 TEMPLATE = lib
+CONFIG += staticlib
 
 DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
@@ -112,8 +113,7 @@ SOURCES += librdk.qt.cpp \
     ../../../Deploy/Include/rdk_cpp_init.cpp \
     ../../../Deploy/Include/rdk_init.cpp \
     ../../../Deploy/Include/rdk_new.cpp \
-    ../../../Core/Application/UIVisualController.cpp \
-    ../../../Deploy/Include/RdkDummyLibraries.cpp
+    ../../../Core/Application/UIVisualController.cpp
 
 HEADERS += librdk.qt.h\
         librdk.qt_global.h \
@@ -211,8 +211,7 @@ HEADERS += librdk.qt.h\
     ../../../Deploy/Include/initdll_defs.h \
     ../../../Deploy/Include/rdk_engine_support.h \
     ../../../Deploy/Include/rdk_error_codes.h \
-    ../../../Deploy/Include/rdk_exceptions.h \
-    ../../../Deploy/Include/RdkDummyLibraries.h
+    ../../../Deploy/Include/rdk_exceptions.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
