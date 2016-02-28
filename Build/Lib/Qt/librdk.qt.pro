@@ -211,7 +211,8 @@ HEADERS += librdk.qt.h\
     ../../../Deploy/Include/initdll_defs.h \
     ../../../Deploy/Include/rdk_engine_support.h \
     ../../../Deploy/Include/rdk_error_codes.h \
-    ../../../Deploy/Include/rdk_exceptions.h
+    ../../../Deploy/Include/rdk_exceptions.h \
+    ../../../Deploy/Include/myrdk.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -235,7 +236,4 @@ unix:!symbian {
 
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
-    DEFINES += Q_DECL_EXPORT = __declspec(dllexport)
-    DEFINES += RDK_LIB_TYPE = Q_DECL_EXPORT
-    DEFINES += RDK_CALL
 }

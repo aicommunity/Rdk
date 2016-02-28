@@ -5,19 +5,6 @@
 #include "initdll_defs.h"
 #endif
 
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4100)
-#pragma warning(disable : 4355)
-#pragma warning(disable : 4800)
-#pragma warning(disable : 4503)
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wswitch"
-#endif
-
 #include "../../Deploy/Include/initdll_defs.h"
 #include "../../Core/System/rdk_system.h"
 #include "../../ThirdParty/ThirdParty.h"

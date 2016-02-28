@@ -2842,7 +2842,7 @@ void UBitmap::SwapRGBChannels(UBitmap *target)
    out=target->Data;
    data=Data;
 
-   UBColor temp;
+//   UBColor temp;
    UBColor *data1=Data+1;
    UBColor *data2=Data+2;
    UBColor *out1=out+1;

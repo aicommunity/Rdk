@@ -3,7 +3,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(LIBRDK_LIBRARY)
+#if defined(LIBRDK_LIBRARY_EXPORT)
 #  define LIBRDKSHARED_EXPORT Q_DECL_EXPORT
 #else
 #  define LIBRDKSHARED_EXPORT Q_DECL_IMPORT

@@ -500,7 +500,7 @@ void UADItem::FindInputProperty(int index, UIProperty* &property) const
 	std::string::size_type i=property->GetName().find("DataInput");
 	if(i != std::string::npos)
 	{
-	 int found_index=RDK::atoi(property->GetName().substr(9));
+//	 int found_index=RDK::atoi(property->GetName().substr(9));
 	 if(int(i) == index)
 	  break;
 	}
@@ -531,7 +531,7 @@ void UADItem::FindOutputProperty(int index, UIProperty* &property) const
 	std::string::size_type i=property->GetName().find("DataOutput");
 	if(i != std::string::npos)
 	{
-	 int found_index=RDK::atoi(property->GetName().substr(10));
+//	 int found_index=RDK::atoi(property->GetName().substr(10));
 	 if(int(i) == index)
 	  break;
 	}

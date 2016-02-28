@@ -470,7 +470,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   }
   else
   {
-   if(I->second.size()>c_index && I->second[c_index].Item == na)
+   if(int(I->second.size())>c_index && I->second[c_index].Item == na)
    {
 	return true;
    }
@@ -540,8 +540,8 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
  if(I == ConnectedItemList.end())
   return;
 
- int i=0;
 /*
+ int i=0;
  while(i<int(I->second.size()))
  {
   if(I->second[i].Item == na && I->second[i].Name == item_property_name)
