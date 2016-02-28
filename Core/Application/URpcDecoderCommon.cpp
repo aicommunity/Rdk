@@ -189,7 +189,7 @@ bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
  return true;
 }
 
-const char* RDK_CALL URpcDecoderCommon::RemoteCall(const char *request, int &return_value, int &channel_index)
+const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value, int &channel_index)
 {
  return_value=INT_MAX;
 
@@ -352,7 +352,7 @@ const char* RDK_CALL URpcDecoderCommon::RemoteCall(const char *request, int &ret
  return buffer.c_str();
 }
 
-std::string RDK_CALL URpcDecoderCommon::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value)
+std::string URpcDecoderCommon::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value)
 {
  return_value=2001;
  return "";

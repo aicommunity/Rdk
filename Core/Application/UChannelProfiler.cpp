@@ -224,6 +224,7 @@ bool UChannelProfiler::AddAllGui(void)
   GuiNames.push_back(interfaces[i]->GetName());
  }
  ClearPerfomanceData();
+ return true;
 }
 
 /// Возвращает имя компнента по индексу

@@ -104,6 +104,7 @@ int ULogger::Clear(void)
  }
 
  LogEnabledFlag=true;
+ return 0;
 }
 
 
