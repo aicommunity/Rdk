@@ -10,6 +10,8 @@ template<class T>
 class MDMatrix: public MMatrixBase
 {
 public:
+typedef T value_type;
+
 union
 {
  T* Data;

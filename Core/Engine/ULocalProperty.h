@@ -105,6 +105,9 @@ ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owner
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
+// -----------------------------
+// Операторы
+// -----------------------------
 // Оператор присваивания
 ULProperty<T,OwnerT, type>& operator = (const T &value)
 {
@@ -117,6 +120,7 @@ ULProperty<T,OwnerT, type>& operator = (const ULProperty<T,OwnerT> &v)
  this->SetData(v.GetData());
  return *this;
 };
+// -----------------------------
 
 };
 /* ************************************************************************* */

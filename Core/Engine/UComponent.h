@@ -29,7 +29,7 @@ See file license.txt for more information
 // 0x2 - Переменная состояния
 // 0x4 - Временная переменная
 // 0x8 - Вход
-enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
+enum {ptNone=0, ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 
 // Варианты групп свойства (битовая маска) pg - Property Group
 // 0x100 - Общедоступный
