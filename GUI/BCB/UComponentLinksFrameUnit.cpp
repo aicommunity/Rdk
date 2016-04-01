@@ -145,7 +145,18 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
  std::string conn_property_name=AnsiString(NANetFrameInputs->StringGrid->Cells[3][NANetFrameInputs->StringGrid->Row]).c_str();
  std::string item_property_name=AnsiString(NANetFrameOutputs->StringGrid->Cells[3][NANetFrameOutputs->StringGrid->Row]).c_str();
 
- Model_CreateLinkByName(itemname.c_str(), item_property_name.c_str(), connname.c_str(), conn_property_name.c_str());
+ if(item_property_name.find("DataOutput")!=std::string::npos)
+ {
+  int item_index, conn_index;
+  item_index = RDK::atoi(item_property_name.substr(item_property_name.find_last_of("DataOutput")+1));
+  if(conn_property_name.find("DataInput")!=std::string::npos)
+   conn_index = RDK::atoi(conn_property_name.substr(conn_property_name.find_last_of("DataInput")+1));
+  else
+   conn_index = RDK::atoi(conn_property_name);
+  Model_CreateLink(itemname.c_str(), item_index, connname.c_str(), conn_index);
+ }
+ else
+  Model_CreateLinkByName(itemname.c_str(), item_property_name.c_str(), connname.c_str(), conn_property_name.c_str());
  //Network->CreateLink(itemname,itemindex,connname,connindex);
  NANetFrameLinks->UpdateInterface();
  NANetFrameInputs->UpdateInterface();
