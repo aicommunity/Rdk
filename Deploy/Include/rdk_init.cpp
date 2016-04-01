@@ -2037,6 +2037,10 @@ int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_prop
  return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
+int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
+{
+ return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
+}
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int RDK_CALL Model_ChainLinking(const char* stringid)

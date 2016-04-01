@@ -4019,7 +4019,7 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
  return res;
 }
 
-int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -4037,7 +4037,7 @@ int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_n
    if(!model)
 	return RDK_E_MODEL_NOT_FOUND;
 
-   bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name);
+   bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name, connector_c_index);
    if(!res)
     return RDK_E_MODEL_CREATE_LINK_FAIL;
    res=RDK_SUCCESS;
