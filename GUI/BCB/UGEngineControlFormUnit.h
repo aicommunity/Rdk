@@ -157,6 +157,13 @@ __published:	// IDE-managed Components
 	TMenuItem *PauseChannel1;
 	TMenuItem *ResetChannel1;
 	TApplicationEvents *ApplicationEvents;
+	TPanel *Panel3;
+	TCheckBox *ShowDebugMessagesCheckBox;
+	TCheckBox *AutoupdatePropertiesCheckBox;
+	TCheckBox *AutosaveStatesCheckBox;
+	TCheckBox *AutosaveProjectCheckBox;
+	TRadioButton *MultiThreadedRadioButton;
+	TRadioButton *SingleThreadedRadioButton;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -233,6 +240,12 @@ __published:	// IDE-managed Components
 	void __fastcall UDrawEngineFrame1Reset1Click(TObject *Sender);
 	void __fastcall UDrawEngineFrame1Calculate1Click(TObject *Sender);
 	void __fastcall ApplicationEventsException(TObject *Sender, Exception *E);
+	void __fastcall ShowDebugMessagesCheckBoxClick(TObject *Sender);
+	void __fastcall AutoupdatePropertiesCheckBoxClick(TObject *Sender);
+	void __fastcall AutosaveProjectCheckBoxClick(TObject *Sender);
+	void __fastcall AutosaveStatesCheckBoxClick(TObject *Sender);
+	void __fastcall MultiThreadedRadioButtonClick(TObject *Sender);
+	void __fastcall SingleThreadedRadioButtonClick(TObject *Sender);
 
 
 
