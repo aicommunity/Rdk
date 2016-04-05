@@ -72,6 +72,9 @@ virtual int GetSize(int i) const;
 /// Возвращает суммраное число всех элементов
 virtual int GetSize(void) const;
 
+/// Возвращает true если суммарное число всех элементов == 0
+virtual bool IsEmpty(void) const;
+
 /// Возвращает число элементов по всем размерностям
 virtual MMatrixSize GetMatrixSize(void) const;
 
@@ -317,6 +320,13 @@ template<class T, unsigned Rows, unsigned Cols>
 int MMatrix<T,Rows,Cols>::GetSize(void) const
 {
  return Rows*Cols;
+}
+
+/// Возвращает true если суммарное число всех элементов == 0
+template<class T, unsigned Rows, unsigned Cols>
+bool MMatrix<T,Rows,Cols>::IsEmpty(void) const
+{
+ return (!Rows || !Cols);
 }
 
 /// Возвращает число элементов по всем размерностям

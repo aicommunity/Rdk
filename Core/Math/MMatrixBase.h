@@ -88,6 +88,9 @@ virtual int GetSize(int i) const=0;
 /// Возвращает суммраное число всех элементов
 virtual int GetSize(void) const=0;
 
+/// Возвращает true если суммарное число всех элементов == 0
+virtual bool IsEmpty(void) const=0;
+
 /// Возвращает число элементов по всем размерностям
 virtual MMatrixSize GetMatrixSize(void) const=0;
 
