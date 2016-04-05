@@ -135,6 +135,11 @@ UTime TimeStep;
 /// Если значение параметра <0, то нет ограничений
 long long MaxCalculationDuration;
 
+/// Время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
+/// Если значение параметра <0, то нет ограничений
+long long CalculationDurationThreshold;
+
 public: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double,3> Coord;
@@ -326,6 +331,12 @@ NameT GetLongName(const UEPtr<UContainer> &mainowner) const;
 /// Если значение параметра <0, то нет ограничений
 const long long& GetMaxCalculationDuration(void) const;
 bool SetMaxCalculationDuration(const long long &value);
+
+/// Время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
+/// Если значение параметра <0, то нет ограничений
+const long long& GetCalculationDurationThreshold(void) const;
+bool SetCalculationDurationThreshold(const long long& value);
 // --------------------------
 
 // --------------------------

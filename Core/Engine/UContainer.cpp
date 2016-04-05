@@ -67,9 +67,12 @@ UContainer::UContainer(void)
  AddLookupProperty("Activity",ptParameter | pgPublic,new UVProperty<bool,UContainer>(this,&UContainer::SetActivity,&UContainer::GetActivity));
  AddLookupProperty("Coord",ptParameter | pgPublic,new UVProperty<RDK::MVector<double,3>,UContainer>(this,&UContainer::SetCoord,&UContainer::GetCoord));
  AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
+ AddLookupProperty("CalculationDurationThreshold",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
+
 
  InitFlag=false;
 
+ CalculationDurationThreshold= -1;
  MaxCalculationDuration = -1;
 }
 
@@ -744,6 +747,23 @@ bool UContainer::SetMaxCalculationDuration(const long long &value)
   return true;
 
  MaxCalculationDuration=value;
+ return true;
+}
+
+/// Время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
+/// Если значение параметра <0, то нет ограничений
+const long long& UContainer::GetCalculationDurationThreshold(void) const
+{
+ return CalculationDurationThreshold;
+}
+
+bool UContainer::SetCalculationDurationThreshold(const long long& value)
+{
+ if(CalculationDurationThreshold == value)
+  return true;
+
+ CalculationDurationThreshold=value;
  return true;
 }
 // --------------------------
@@ -1584,6 +1604,7 @@ bool UContainer::Default(void)
 
    SetTimeStep(2000);
    SetMaxCalculationDuration(-1);
+   SetCalculationDurationThreshold(-1);
 
    if(original && original != this)
    {
@@ -1882,17 +1903,26 @@ bool UContainer::Calculate(void)
    UpdateMainOwner();
    InterstepsInterval-=StepDuration;
 
-   if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),tempstepduration) > ULongTime(MaxCalculationDuration)))
+   unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+
+   if((MaxCalculationDuration >= 0) && (calc_duration > ULongTime(MaxCalculationDuration)))
    {
 	if(Owner)
 	{
 	 GetOwner()->ForceSkipComponentCalculation();
 	 std::string temp;
-	 LogMessage(RDK_EX_DEBUG, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
+	 LogMessage(RDK_EX_WARNING, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
 	}
    }
 
    StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+
+   if((CalculationDurationThreshold >= 0) && (StepDuration > ULongTime(CalculationDurationThreshold)))
+   {
+	std::string temp;
+    LogMessageEx(RDK_EX_WARNING, string("Performance warning: StepDuration>")+RDK::sntoa(CalculationDurationThreshold)+" ms");
+   }
+
    // Обрабатываем контроллеры
    int numcontrollers=Controllers.size();
 
