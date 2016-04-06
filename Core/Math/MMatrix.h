@@ -244,6 +244,8 @@ static MMatrix<T,Rows,Cols> Eye(void);
 // --------------------------
 bool operator == (const MMatrix<T,Rows,Cols> &M) const;
 bool operator != (const MMatrix<T,Rows,Cols> &M) const;
+
+void Print(std::ostream &stream);
 };
 
 // --------------------------
@@ -1104,6 +1106,33 @@ bool MMatrix<T,Rows,Cols>::operator != (const MMatrix<T,Rows,Cols> &M) const
 }
 // --------------------------
 
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::Print(std::ostream &stream)
+{
+ using namespace std;
+ stream<<"["<<Rows<<"x"<<Cols<<"]"<<std::endl;
+ if(Rows == 0 || Cols == 0)
+ {
+ }
+ else
+ {
+  for(int i=0;i<Rows;i++)
+  {
+   for(int j=0;j<Cols;j++)
+   {
+	stream<<Data[i][j]<<"\t";
+   }
+   stream<<std::endl;
+  }
+ }
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+std::ostream& operator << (std::ostream &stream, MMatrix<T,Rows,Cols> &m)
+{
+ m.Print(stream);
+ return stream;
+}
 
 
 

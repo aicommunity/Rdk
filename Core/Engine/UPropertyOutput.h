@@ -294,5 +294,19 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int index)
 // -----------------------------
 };
 
+
+template<typename T, typename OwnerT, unsigned int type>
+std::ostream& operator << (std::ostream &stream, UPropertyOutputData<T,OwnerT,type> &output)
+{
+ using namespace std;
+ stream<<"Output "<<output.GetOwnerName()<<":"<<output.GetName();
+ stream<<endl;
+ stream<<"Data:"<<endl;
+ stream<<*output;
+ stream<<"--------------------";
+ return stream;
+}
+
+
 }
 #endif

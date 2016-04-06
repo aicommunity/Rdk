@@ -2,6 +2,7 @@
 #define MDMatrixH
 
 #include <limits>
+#include <iostream>
 #include "MMatrixBase.h"
 
 namespace RDK{
@@ -223,6 +224,8 @@ MDMatrix<T> Eye(void);
 bool operator == (const MDMatrix<T> &M) const;
 bool operator != (const MDMatrix<T> &M) const;
 // --------------------------
+
+void Print(std::ostream &stream);
 };
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
@@ -1231,5 +1234,34 @@ bool MDMatrix<T>::operator != (const MDMatrix<T> &M) const
 }
 // --------------------------
 
+template<class T>
+void MDMatrix<T>::Print(std::ostream &stream)
+{
+ using namespace std;
+ stream<<"["<<Rows<<"x"<<Cols<<"]"<<std::endl;
+ if(Rows == 0 || Cols == 0)
+ {
+ }
+ else
+ {
+  for(int i=0;i<Rows;i++)
+  {
+   for(int j=0;j<Cols;j++)
+   {
+	stream<<Data[i*Cols+j]<<"\t";
+   }
+   stream<<std::endl;
+  }
+ }
 }
+
+template<class T>
+std::ostream& operator << (std::ostream &stream, MDMatrix<T> &m)
+{
+ m.Print(stream);
+ return stream;
+}
+
+}
+
 #endif

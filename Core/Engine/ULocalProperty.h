@@ -247,6 +247,19 @@ const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
 };
 /* ************************************************************************* */
 
+
+template<typename T, typename OwnerT>
+std::ostream& operator << (std::ostream &stream, ULProperty<T,OwnerT> &property)
+{
+ using namespace std;
+ stream<<"Property "<<property.GetOwnerName()<<":"<<property.GetName();
+ stream<<endl;
+ stream<<"Data:"<<endl;
+ stream<<*property;
+ stream<<"--------------------";
+ return stream;
+}
+
 }
 #endif
 

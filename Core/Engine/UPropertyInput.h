@@ -69,6 +69,20 @@ virtual const type_info& GetLanguageType(void) const
  return typeid(T);
 }
 // --------------------------
+
+// Метод возвращает строковое имя свойства
+virtual const std::string& GetName(void) const
+{
+ return UPropertyInputPreBase<T,OwnerT>::GetName();
+};
+
+// Метод возвращает строковое имя компонента-владельца свойства
+virtual std::string GetOwnerName(void) const
+{
+ return UPropertyInputPreBase<T,OwnerT>::GetOwnerName();
+};
+
+
 };
 
 template<typename T, typename OwnerT>
@@ -608,6 +622,22 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int index)
 
 // -----------------------------
 };
+
+template<typename T, typename OwnerT, unsigned int type>
+std::ostream& operator << (std::ostream &stream, UPropertyInputData<T,OwnerT,type> &input)
+{
+ using namespace std;
+ stream<<"Input "<<input.GetOwnerName()<<":"<<input.GetName();
+ if(input.IsConnected())
+  stream<<" connected";
+ else
+  stream<<" NOT connected";
+ stream<<endl;
+ stream<<"Data:"<<endl;
+ stream<<*input;
+ stream<<"--------------------";
+ return stream;
+}
 
 
 }
