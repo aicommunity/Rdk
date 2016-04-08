@@ -48,6 +48,9 @@ ULongTime MinInterstepsInterval;
 /// Флаг включения режима отладки
 bool DebugMode;
 
+/// Маска системных событий для логирования
+unsigned long long DebugSysEvents;
+
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
 bool EventsLogMode;
@@ -180,6 +183,10 @@ bool SetMinInterstepsInterval(long long value);
 /// Флаг включения режима отладки
 bool GetDebugMode(void) const;
 bool SetDebugMode(bool value);
+
+/// Маска системных событий для логирования
+unsigned long long GetDebugSysEvents(void) const;
+bool SetDebugSysEvents(unsigned long long value);
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена

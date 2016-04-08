@@ -240,6 +240,7 @@ virtual void LogMessage(int msg_level, const std::string &line);
 virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
 virtual void LogMessageEx(int msg_level, const std::string &line);
 virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line);
+virtual void LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier);
 
 /// Возвращает состояние флага режима отладки
 virtual bool CheckDebugMode(void) const;

@@ -70,6 +70,7 @@ UEnvironment::UEnvironment(void)
  EventsLogMode=false;
  RTModelCalcTime=0.0;
 
+ DebugSysEvents=RDK_SYS_DEBUG_CALC;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -184,6 +185,21 @@ bool UEnvironment::SetDebugMode(bool value)
   return true;
 
  DebugMode=value;
+ return true;
+}
+
+/// ћаска системных событий дл€ логировани€
+unsigned long long UEnvironment::GetDebugSysEvents(void) const
+{
+ return DebugSysEvents;
+}
+
+bool UEnvironment::SetDebugSysEvents(unsigned long long value)
+{
+ if(DebugSysEvents == value)
+  return true;
+
+ DebugSysEvents=value;
  return true;
 }
 

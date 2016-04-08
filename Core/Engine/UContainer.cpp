@@ -264,6 +264,43 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, con
  }
 }
 
+void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)
+{
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & debug_sys_msg_type))
+ {
+  std::string prefix;
+  switch(debug_sys_msg_type)
+  {
+  case RDK_SYS_DEBUG_CALC:
+   prefix="Calculate: ";
+  break;
+
+  case RDK_SYS_DEBUG_RESET:
+   prefix="Reset: ";
+  break;
+  }
+
+  std::string suffix;
+  switch(modifier)
+  {
+  case RDK_SYS_MESSAGE_ENTER:
+   suffix="Enter";
+  break;
+
+  case RDK_SYS_MESSAGE_EXIT_OK:
+   suffix="Exit: OK";
+  break;
+
+  case RDK_SYS_MESSAGE_EXIT_ININIT_FAIL:
+   suffix="Exit: InInit == false";
+  break;
+  }
+
+  LogMessageEx(RDK_EX_DEBUG, prefix+suffix);
+ }
+}
+
+
 /// Возвращает состояние флага режима отладки
 bool UContainer::CheckDebugMode(void) const
 {
@@ -1773,13 +1810,17 @@ bool UContainer::Reset(void)
  {
   try
   {
+   LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_ENTER);
    Build();
 
    // Init(); // Заглушка
    BeforeReset();
 
    if(!IsInit())
+   {
+	LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_EXIT_ININIT_FAIL);
 	return true; // TODO //false;
+   }
 
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->Reset();
@@ -1793,6 +1834,7 @@ bool UContainer::Reset(void)
    InterstepsInterval=0;
    StepDuration=0;
    AfterReset();
+   LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_EXIT_OK);
   }
   catch(UException &exception)
   {
@@ -1840,8 +1882,12 @@ bool UContainer::Calculate(void)
   {
    Init(); // Заглушка
 
+   LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_ENTER);
    if(!IsInit())
+   {
+	LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_ININIT_FAIL);
 	return false;
+   }
 
    unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
    InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
@@ -1935,6 +1981,7 @@ bool UContainer::Calculate(void)
 	}
    }
    AfterCalculate();
+   LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
   catch(UException &exception)
   {

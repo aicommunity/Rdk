@@ -12,6 +12,17 @@
 #define RDK_EX_INFO 4
 #define RDK_EX_DEBUG 5
 
+#define RDK_SYS_DEBUG_CALC 1
+#define RDK_SYS_DEBUG_RESET 2
+#define RDK_SYS_DEBUG_PARAMETERS 4
+#define RDK_SYS_DEBUG_STATES 8
+#define RDK_SYS_DEBUG_INPUTS 16
+#define RDK_SYS_DEBUG_OUTPUTS 32
+
+#define RDK_SYS_MESSAGE_ENTER 1
+#define RDK_SYS_MESSAGE_EXIT_OK 2
+#define RDK_SYS_MESSAGE_EXIT_ININIT_FAIL 4
+
 namespace RDK {
 
 /* Базовый класс исключений */
