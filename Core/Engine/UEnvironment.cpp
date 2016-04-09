@@ -34,7 +34,7 @@ UEnvironment::UEnvironment(void)
 
  // Состояния
  // Признак успешной инициализации
- Initialized=false;
+ InitFlag=Initialized=false;
 
  // Признак наличия сформированной структуры
  Structured=false;
@@ -70,7 +70,6 @@ UEnvironment::UEnvironment(void)
  EventsLogMode=false;
  RTModelCalcTime=0.0;
 
- DebugSysEventsMask=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -185,21 +184,6 @@ bool UEnvironment::SetDebugMode(bool value)
   return true;
 
  DebugMode=value;
- return true;
-}
-
-/// Маска системных событий для логирования
-unsigned int UEnvironment::GetDebugSysEventsMask(void) const
-{
- return DebugSysEventsMask;
-}
-
-bool UEnvironment::SetDebugSysEventsMask(unsigned int value)
-{
- if(DebugSysEventsMask == value)
-  return true;
-
- DebugSysEventsMask=value;
  return true;
 }
 
@@ -529,7 +513,7 @@ void UEnvironment::Init(void)
  ModelCalculationComponent.Resize(0);
  if(Model)
   Model->Init();
- Initialized=true;
+ InitFlag=Initialized=true;
  return;
 }
 
@@ -544,7 +528,7 @@ void UEnvironment::UnInit(void)
 
  AUnInit();
 
- Initialized=false;
+ InitFlag=Initialized=false;
 }
 
 // Формирует предварительно заданную модель обработки
@@ -683,8 +667,6 @@ void UEnvironment::ProcessException(UException &exception) const
  {
   Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
  }
-
- RdkDebuggerMessage(log.first);
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
