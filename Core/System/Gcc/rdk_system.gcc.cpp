@@ -8,10 +8,13 @@
 #include <cerrno>
 #include <stdlib.h>
 #include <cstdio>
+#include <iostream>
 
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"
 #include "UGenericMutex.gcc.cpp"
+
+#define RDK_ENABLE_DEBUG_OUTPUT
 
 namespace RDK {
 
@@ -181,6 +184,14 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
  return 0;
 }
 
+
+/// Функция осуществляет вывод в отладочный лог, если сборка в отладке
+void RdkDebuggerMessage(const std::string &message)
+{
+#ifdef _DEBUG
+ std::cout<<message<<endl;
+#endif
+}
 
 }
 #endif

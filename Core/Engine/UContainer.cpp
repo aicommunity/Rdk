@@ -68,7 +68,7 @@ UContainer::UContainer(void)
  AddLookupProperty("Coord",ptParameter | pgPublic,new UVProperty<RDK::MVector<double,3>,UContainer>(this,&UContainer::SetCoord,&UContainer::GetCoord));
  AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
  AddLookupProperty("CalculationDurationThreshold",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
-
+ AddLookupProperty("DebugSysEventsMask",ptParameter | pgPublic,new UVProperty<unsigned int,UContainer>(this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
 
  InitFlag=false;
 
@@ -266,7 +266,7 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, con
 
 void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & debug_sys_msg_type))
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & (debug_sys_msg_type & DebugSysEventsMask)))
  {
   std::string prefix;
   switch(debug_sys_msg_type)
@@ -300,6 +300,60 @@ void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsig
  }
 }
 
+/// Логирует свойства при входе в расчет (входы, параметры, состояния)
+void UContainer::LogPropertiesBeforeCalc(void)
+{
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ {
+  std::string log_message;
+
+  if(PropertiesForDetailedLog.empty())
+  {
+   VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
+   for(; I != J; ++I)
+   {
+	if(PreparePropertyLogString(I->second, ptInput | ptParameter, log_message))
+	 LogMessageEx(RDK_EX_DEBUG, log_message);
+   }
+  }
+  else
+  {
+   for(size_t i=0;i<PropertiesForDetailedLog.size();i++)
+   {
+	VariableMapCIteratorT I=PropertiesLookupTable.find(PropertiesForDetailedLog[i]);
+	if(PreparePropertyLogString(I->second, ptInput | ptParameter, log_message))
+ 	 LogMessageEx(RDK_EX_DEBUG, log_message);
+   }
+  }
+ }
+}
+
+/// Логирует свойства при выходе из расчета (выходы)
+void UContainer::LogPropertiesAfterCalc(void)
+{
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ {
+  std::string log_message;
+  if(PropertiesForDetailedLog.empty())
+  {
+   VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
+   for(; I != J; ++I)
+   {
+	if(PreparePropertyLogString(I->second, ptOutput | ptState, log_message))
+	 LogMessageEx(RDK_EX_DEBUG, log_message);
+   }
+  }
+  else
+  {
+   for(size_t i=0;i<PropertiesForDetailedLog.size();i++)
+   {
+	VariableMapCIteratorT I=PropertiesLookupTable.find(PropertiesForDetailedLog[i]);
+	if(PreparePropertyLogString(I->second, ptOutput | ptState, log_message))
+	 LogMessageEx(RDK_EX_DEBUG, log_message);
+   }
+  }
+ }
+}
 
 /// Возвращает состояние флага режима отладки
 bool UContainer::CheckDebugMode(void) const
@@ -309,6 +363,15 @@ bool UContainer::CheckDebugMode(void) const
   return Environment->GetDebugMode();
  }
  return false;
+}
+
+
+/// Формирует список свйоств для детального лога из строки
+/// Разделитель - запятая
+void UContainer::SetPropertiesForDetailedLog(const std::string &str)
+{
+ PropertiesForDetailedLog.clear();
+ RDK::separatestring(str, PropertiesForDetailedLog, ',');
 }
 // --------------------------
 
@@ -801,6 +864,21 @@ bool UContainer::SetCalculationDurationThreshold(const long long& value)
   return true;
 
  CalculationDurationThreshold=value;
+ return true;
+}
+
+
+/// Флаги переопределения настроек вывода детальной отладочной информации
+const unsigned int& UContainer::GetDebugSysEventsMask(void) const
+{
+ return DebugSysEventsMask;
+}
+
+bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
+{
+ if(DebugSysEventsMask == value)
+  return true;
+ DebugSysEventsMask=value;
  return true;
 }
 // --------------------------
@@ -1642,6 +1720,8 @@ bool UContainer::Default(void)
    SetTimeStep(2000);
    SetMaxCalculationDuration(-1);
    SetCalculationDurationThreshold(-1);
+   SetDebugSysEventsMask(0xFFFFFFFF);
+
 
    if(original && original != this)
    {
@@ -1920,6 +2000,7 @@ bool UContainer::Calculate(void)
    SkipComponentCalculation=false;
    ComponentReCalculation=false;
 
+   LogPropertiesBeforeCalc();
    if(!Owner)
    {
 	ACalculate();
@@ -1945,6 +2026,7 @@ bool UContainer::Calculate(void)
 	for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
 	 ACalculate();
    }
+   LogPropertiesAfterCalc();
 
    UpdateMainOwner();
    InterstepsInterval-=StepDuration;
@@ -2744,6 +2826,54 @@ std::string UContainer::EComponentSystemException::CreateLogMessage(void) const
 }
 // --------------------------
 
+
+/// Функция подготавливает строку для логирования
+bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result)
+{
+ USerStorageXML xml;
+ std::string str_type;
+ unsigned int type=variable.GetPropertyType();
+
+ if(!(type & expected_type))
+  return false;
+
+ if(type & ptInput)
+  str_type="Input ";
+ else
+ if(type & ptOutput)
+  str_type="Output ";
+ else
+ if(type & ptParameter)
+  str_type="Parameter ";
+ else
+ if(type & ptState)
+  str_type="State ";
+
+ if((type & ptInput) && variable.Property->GetName().find("DataInput") != string::npos)
+  return false;
+
+ if((type & ptOutput) && variable.Property->GetName().find("DataOutput") != string::npos)
+  return false;
+
+ std::string line=str_type+variable.Property->GetName()+std::string(" = ");
+ result=line;
+ try
+ {
+  variable.Property->Save(&xml,true);
+  std::string str_data=xml.GetNodeText();
+  if(str_data.empty())
+  {
+   xml.Save(str_data);
+   line+="\n";
+  }
+  result=line+str_data;
+ }
+ catch(UIProperty::EPropertyZeroPtr &ex)
+ {
+  result=line+"<Disconnected>";
+ }
+ return true;
+}
 
 
 

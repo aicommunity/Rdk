@@ -70,7 +70,7 @@ UEnvironment::UEnvironment(void)
  EventsLogMode=false;
  RTModelCalcTime=0.0;
 
- DebugSysEvents=RDK_SYS_DEBUG_CALC;
+ DebugSysEvents=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -189,12 +189,12 @@ bool UEnvironment::SetDebugMode(bool value)
 }
 
 /// Маска системных событий для логирования
-unsigned long long UEnvironment::GetDebugSysEvents(void) const
+unsigned int UEnvironment::GetDebugSysEvents(void) const
 {
  return DebugSysEvents;
 }
 
-bool UEnvironment::SetDebugSysEvents(unsigned long long value)
+bool UEnvironment::SetDebugSysEvents(unsigned int value)
 {
  if(DebugSysEvents == value)
   return true;
@@ -683,6 +683,8 @@ void UEnvironment::ProcessException(UException &exception) const
  {
   Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
  }
+
+ RdkDebuggerMessage(log.first);
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);

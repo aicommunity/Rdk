@@ -151,6 +151,9 @@ unsigned long long StepDuration;
 // Время, прошедшее между двумя последними итерациями счета
 unsigned long long InterstepsInterval;
 
+/// Флаги переопределения настроек вывода детальной отладочной информации
+unsigned int DebugSysEventsMask;
+
 protected: // Временные переменные
 // Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
 // счетчиком текущего интервала ожидания.
@@ -185,6 +188,10 @@ unsigned long long StartCalcTime;
 
 // Время окончания счета компонента на предыдущем шаге
 unsigned long long LastCalcTime;
+
+protected:
+/// Список свойств, выводимых в детальный лог
+std::vector<std::string> PropertiesForDetailedLog;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -240,10 +247,21 @@ virtual void LogMessage(int msg_level, const std::string &line);
 virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
 virtual void LogMessageEx(int msg_level, const std::string &line);
 virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line);
+
 virtual void LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier);
+
+/// Логирует свойства при входе в расчет (входы, параметры, состояния)
+virtual void LogPropertiesBeforeCalc(void);
+
+/// Логирует свойства при выходе из расчета (выходы)
+virtual void LogPropertiesAfterCalc(void);
 
 /// Возвращает состояние флага режима отладки
 virtual bool CheckDebugMode(void) const;
+
+/// Формирует список свйоств для детального лога из строки
+/// Разделитель - запятая
+void SetPropertiesForDetailedLog(const std::string &str);
 // --------------------------
 
 // --------------------------
@@ -338,6 +356,10 @@ bool SetMaxCalculationDuration(const long long &value);
 /// Если значение параметра <0, то нет ограничений
 const long long& GetCalculationDurationThreshold(void) const;
 bool SetCalculationDurationThreshold(const long long& value);
+
+/// Флаги переопределения настроек вывода детальной отладочной информации
+const unsigned int& GetDebugSysEventsMask(void) const;
+bool SetDebugSysEventsMask(const unsigned int &value);
 // --------------------------
 
 // --------------------------
@@ -974,6 +996,9 @@ virtual std::string CreateLogMessage(void) const;
 /* **************************** */
 
 };
+
+/// Функция подготавливает строку для логирования
+bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result);
 
 }
 
