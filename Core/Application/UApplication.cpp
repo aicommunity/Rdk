@@ -401,6 +401,7 @@ try{
    Env_Init();
 
    Env_SetDebugMode(channel_config.DebugMode);
+   Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
 
    if(channel_config.PredefinedStructure == 0 && !channel_config.ModelFileName.empty())
    {

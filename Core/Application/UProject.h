@@ -51,6 +51,9 @@ bool ResetAfterLoad;
 /// Использовать отладочный режим
 bool DebugMode;
 
+/// Маска системных событий для логирования
+unsigned int DebugSysEventsMask;
+
 /// Включить запись событий в отдельный лог-файл канала
 bool EventsLogMode;
 

@@ -463,6 +463,12 @@ virtual bool Env_GetDebugMode(void) const;
 /// Устанавливает состояние флага отладочного режима среды
 virtual int Env_SetDebugMode(bool value);
 
+/// Возвращает маску системных событий для логирования
+virtual unsigned int Env_GetDebugSysEventsMask(void) const;
+
+/// Устанавливает маску системных событий для логирования
+virtual bool Env_SetDebugSysEventsMask(unsigned int value);
+
 // Перенесено из UBEngine
 // Задает число входов среды
 virtual void Env_SetNumInputImages(int number);

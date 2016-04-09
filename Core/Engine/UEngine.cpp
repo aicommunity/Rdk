@@ -2563,6 +2563,62 @@ int UEngine::Env_SetDebugMode(bool value)
  return res;
 }
 
+/// Возвращает маску системных событий для логирования
+unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetDebugSysEventsMask();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return false;
+}
+
+/// Устанавливает маску системных событий для логирования
+bool UEngine::Env_SetDebugSysEventsMask(unsigned int value)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->SetDebugSysEventsMask(value))
+   {
+    return RDK_E_ENV_SET_FLAG_FAIL;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
 // Задает число входов среды
 void UEngine::Env_SetNumInputImages(int number)
 {

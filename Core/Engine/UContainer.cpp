@@ -266,7 +266,7 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, con
 
 void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & (debug_sys_msg_type & DebugSysEventsMask)))
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (debug_sys_msg_type & DebugSysEventsMask)))
  {
   std::string prefix;
   switch(debug_sys_msg_type)
@@ -294,6 +294,10 @@ void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsig
   case RDK_SYS_MESSAGE_EXIT_ININIT_FAIL:
    suffix="Exit: InInit == false";
   break;
+
+  case RDK_SYS_MESSAGE_NEW_CALC_ITERATION:
+   suffix="<======== NEW ITERATION ========>";
+  break;
   }
 
   LogMessageEx(RDK_EX_DEBUG, prefix+suffix);
@@ -303,7 +307,7 @@ void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsig
 /// Логирует свойства при входе в расчет (входы, параметры, состояния)
 void UContainer::LogPropertiesBeforeCalc(void)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
  {
   std::string log_message;
 
@@ -312,8 +316,20 @@ void UContainer::LogPropertiesBeforeCalc(void)
    VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
    for(; I != J; ++I)
    {
-	if(PreparePropertyLogString(I->second, ptInput | ptParameter, log_message))
-	 LogMessageEx(RDK_EX_DEBUG, log_message);
+	if(I->second.GetPropertyType() == ptInput)
+	 if(PreparePropertyLogString(I->second, ptInput, log_message))
+	  LogMessageEx(RDK_EX_DEBUG, log_message);
+   }
+
+   I=PropertiesLookupTable.begin();
+   for(; I != J; ++I)
+   {
+	if(I->second.GetPropertyGroup() != pgPublic)
+	 continue;
+
+	if(I->second.GetPropertyType() == ptParameter)
+	 if(PreparePropertyLogString(I->second, ptParameter, log_message))
+	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
   }
   else
@@ -331,7 +347,7 @@ void UContainer::LogPropertiesBeforeCalc(void)
 /// Логирует свойства при выходе из расчета (выходы)
 void UContainer::LogPropertiesAfterCalc(void)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEvents() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
  {
   std::string log_message;
   if(PropertiesForDetailedLog.empty())
@@ -339,9 +355,22 @@ void UContainer::LogPropertiesAfterCalc(void)
    VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
    for(; I != J; ++I)
    {
-	if(PreparePropertyLogString(I->second, ptOutput | ptState, log_message))
-	 LogMessageEx(RDK_EX_DEBUG, log_message);
+	if(I->second.GetPropertyType() == ptOutput)
+	 if(PreparePropertyLogString(I->second, ptOutput, log_message))
+	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
+
+   I=PropertiesLookupTable.begin();
+   for(; I != J; ++I)
+   {
+	if(I->second.GetPropertyGroup() != pgPublic)
+	 continue;
+
+	if(I->second.GetPropertyType() == ptState && I->second.GetPropertyType() != ptOutput  && I->second.GetPropertyType() != ptInput)
+	 if(PreparePropertyLogString(I->second, ptState, log_message))
+	  LogMessageEx(RDK_EX_DEBUG, log_message);
+   }
+
   }
   else
   {
@@ -1961,6 +1990,11 @@ bool UContainer::Calculate(void)
   try
   {
    Init(); // Заглушка
+
+   if(!Owner)
+   {
+	LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_NEW_CALC_ITERATION);
+   }
 
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_ENTER);
    if(!IsInit())

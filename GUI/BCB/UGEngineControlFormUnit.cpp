@@ -326,6 +326,12 @@ void TUGEngineControlForm::AUpdateInterface(void)
   MultiThreadedRadioButton->Checked=true;
  break;
  }
+
+// if(config.ChannelsConfig.size()>0 && config.ChannelsConfig[0].DebugSysEventsMask != 0)
+ if(Env_GetDebugSysEventsMask() != 0)
+  DetailedDebugLogCheckBox->Checked=true;
+ else
+  DetailedDebugLogCheckBox->Checked=false;
 }
 
 
@@ -2832,6 +2838,32 @@ void __fastcall TUGEngineControlForm::SingleThreadedRadioButtonClick(TObject *Se
  SaveProject();
  if(Application->MessageBox(L"Project was be saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
   Application->Terminate();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+ int size=GetNumEngines();
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ if(config.ChannelsConfig.size() != size)
+ {
+  DetailedDebugLogCheckBox->Checked=false;
+  return;
+ }
+ for(int i=0;i<size;i++)
+ {
+  if(DetailedDebugLogCheckBox->Checked)
+   config.ChannelsConfig[i].DebugSysEventsMask=0xFFFFFFFF;
+  else
+   config.ChannelsConfig[i].DebugSysEventsMask=0;
+  MEnv_SetDebugSysEventsMask(i,config.ChannelsConfig[i].DebugSysEventsMask);
+ }
+ RdkApplication.SetProjectConfig(config);
 }
 //---------------------------------------------------------------------------
 

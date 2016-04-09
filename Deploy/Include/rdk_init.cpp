@@ -1494,6 +1494,35 @@ int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value)
  return DllManager.GetEngineLock(engine_index)->Env_SetDebugMode(value);
 }
 
+/// ¬озвращает маску системных событий дл€ логировани€
+unsigned int RDK_CALL Env_GetDebugSysEventsMask(void)
+{
+ return DllManager.GetEngineLock()->Env_GetDebugSysEventsMask();
+}
+
+unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetDebugSysEventsMask();
+}
+
+/// ”станавливает маску системных событий дл€ логировани€
+int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value)
+{
+ DllManager.GetEngineLock()->Env_SetDebugSysEventsMask(value);
+ return RDK_SUCCESS;
+}
+
+int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ DllManager.GetEngineLock(engine_index)->Env_SetDebugSysEventsMask(value);
+ return RDK_SUCCESS;
+}
 
 // ***********************************************
 // ћетоды управлени€ текущим компонентом

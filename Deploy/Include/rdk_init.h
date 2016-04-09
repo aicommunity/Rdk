@@ -19,15 +19,16 @@ typedef int bool;
 
 #define RDK_SYS_DEBUG_CALC 1
 #define RDK_SYS_DEBUG_RESET 2
-#define RDK_SYS_DEBUG_PARAMETERS 4
-#define RDK_SYS_DEBUG_STATES 8
-#define RDK_SYS_DEBUG_INPUTS 16
-#define RDK_SYS_DEBUG_OUTPUTS 32
-#define RDK_SYS_DEBUG_PROPERTIES 64
+#define RDK_SYS_DEBUG_PROPERTIES 4
+#define RDK_SYS_DEBUG_PARAMETERS 8
+#define RDK_SYS_DEBUG_STATES 16
+#define RDK_SYS_DEBUG_INPUTS 32
+#define RDK_SYS_DEBUG_OUTPUTS 64
 
 #define RDK_SYS_MESSAGE_ENTER 1
 #define RDK_SYS_MESSAGE_EXIT_OK 2
 #define RDK_SYS_MESSAGE_EXIT_ININIT_FAIL 4
+#define RDK_SYS_MESSAGE_NEW_CALC_ITERATION 8
 
 #endif
 
@@ -378,6 +379,14 @@ RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebugMode(int engine_index);
 /// Устанавливает состояние флага отладочного режима среды
 RDK_LIB_TYPE int RDK_CALL Env_SetDebugMode(bool value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value);
+
+/// Возвращает маску системных событий для логирования
+RDK_LIB_TYPE unsigned int RDK_CALL Env_GetDebugSysEventsMask(void);
+RDK_LIB_TYPE unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index);
+
+/// Устанавливает маску системных событий для логирования
+RDK_LIB_TYPE int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value);
 
 // ***********************************************
 // Методы управления текущим компонентом

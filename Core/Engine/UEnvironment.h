@@ -49,7 +49,7 @@ ULongTime MinInterstepsInterval;
 bool DebugMode;
 
 /// Маска системных событий для логирования
-unsigned int DebugSysEvents;
+unsigned int DebugSysEventsMask;
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
@@ -185,8 +185,8 @@ bool GetDebugMode(void) const;
 bool SetDebugMode(bool value);
 
 /// Маска системных событий для логирования
-unsigned int GetDebugSysEvents(void) const;
-bool SetDebugSysEvents(unsigned int value);
+unsigned int GetDebugSysEventsMask(void) const;
+bool SetDebugSysEventsMask(unsigned int value);
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена

@@ -70,7 +70,7 @@ UEnvironment::UEnvironment(void)
  EventsLogMode=false;
  RTModelCalcTime=0.0;
 
- DebugSysEvents=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
+ DebugSysEventsMask=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -189,17 +189,17 @@ bool UEnvironment::SetDebugMode(bool value)
 }
 
 /// ћаска системных событий дл€ логировани€
-unsigned int UEnvironment::GetDebugSysEvents(void) const
+unsigned int UEnvironment::GetDebugSysEventsMask(void) const
 {
- return DebugSysEvents;
+ return DebugSysEventsMask;
 }
 
-bool UEnvironment::SetDebugSysEvents(unsigned int value)
+bool UEnvironment::SetDebugSysEventsMask(unsigned int value)
 {
- if(DebugSysEvents == value)
+ if(DebugSysEventsMask == value)
   return true;
 
- DebugSysEvents=value;
+ DebugSysEventsMask=value;
  return true;
 }
 

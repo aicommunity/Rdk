@@ -32,6 +32,8 @@ TProjectChannelConfig::TProjectChannelConfig(void)
  DebugMode=true;
 
  EventsLogMode=false;
+
+ DebugSysEventsMask=0;
 }
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
@@ -56,6 +58,7 @@ TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
  ResetAfterLoad=copy.ResetAfterLoad;
 
  DebugMode=copy.DebugMode;
+ DebugSysEventsMask=copy.DebugSysEventsMask;
  EventsLogMode=copy.EventsLogMode;
 
 
@@ -78,7 +81,8 @@ bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) cons
  (ResetAfterLoad != copy.ResetAfterLoad) |
  (DebugMode != copy.DebugMode) |
  (EventsLogMode != copy.EventsLogMode) |
- (ChannelName != copy.ChannelName);
+ (ChannelName != copy.ChannelName) |
+ (DebugSysEventsMask != copy.DebugSysEventsMask);
 }
 
 bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) const
@@ -341,6 +345,8 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.ChannelsConfig[0].ParametersFileName=xml.ReadString("ParametersFileName","");
  Config.ChannelsConfig[0].StatesFileName=xml.ReadString("StatesFileName","");
  Config.ChannelsConfig[0].EventsLogMode=xml.ReadBool("EventsLogMode",false);
+ Config.ChannelsConfig[0].DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",Config.ChannelsConfig[0].DebugSysEventsMask);
+
 
  for(int i=1;i<num_engines;i++)
  {
@@ -359,6 +365,8 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
   Config.ChannelsConfig[i].ModelFileName=xml.ReadString(std::string("ModelFileName_")+RDK::sntoa(i),"");
   Config.ChannelsConfig[i].ParametersFileName=xml.ReadString(std::string("ParametersFileName_")+RDK::sntoa(i),"");
   Config.ChannelsConfig[i].StatesFileName=xml.ReadString(std::string("StatesFileName_")+RDK::sntoa(i),"");
+
+  Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned(std::string("DebugSysEventsMask_")+RDK::sntoa(i),Config.ChannelsConfig[i].DebugSysEventsMask);
  }
 
  // TODO: Реализовать загрузку описания
@@ -499,6 +507,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool("ResetAfterLoadFlag",channel_config.ResetAfterLoad);
    xml.WriteBool("DebugModeFlag",channel_config.DebugMode);
    xml.WriteBool("EventsLogMode",channel_config.EventsLogMode);
+   xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
   }
   else
   {
@@ -517,6 +526,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool(std::string("ResetAfterLoadFlag_")+suffix,channel_config.ResetAfterLoad);
    xml.WriteBool(std::string("DebugModeFlag_")+suffix,channel_config.DebugMode);
    xml.WriteBool(std::string("EventsLogMode_")+suffix,channel_config.EventsLogMode);
+   xml.WriteUnsigned(std::string("DebugSysEventsMask_")+suffix,channel_config.DebugSysEventsMask);
   }
  }
 

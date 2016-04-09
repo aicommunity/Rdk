@@ -164,6 +164,7 @@ __published:	// IDE-managed Components
 	TCheckBox *AutosaveProjectCheckBox;
 	TRadioButton *MultiThreadedRadioButton;
 	TRadioButton *SingleThreadedRadioButton;
+	TCheckBox *DetailedDebugLogCheckBox;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -246,6 +247,7 @@ __published:	// IDE-managed Components
 	void __fastcall AutosaveStatesCheckBoxClick(TObject *Sender);
 	void __fastcall MultiThreadedRadioButtonClick(TObject *Sender);
 	void __fastcall SingleThreadedRadioButtonClick(TObject *Sender);
+	void __fastcall DetailedDebugLogCheckBoxClick(TObject *Sender);
 
 
 

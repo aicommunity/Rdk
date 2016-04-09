@@ -435,6 +435,10 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -1006,7 +1010,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 19
     Align = alBottom
     TabOrder = 4
-    ExplicitLeft = -1
     object ShowDebugMessagesCheckBox: TCheckBox
       Left = 1
       Top = 1
@@ -1018,7 +1021,7 @@ object UGEngineControlForm: TUGEngineControlForm
       OnClick = ShowDebugMessagesCheckBoxClick
     end
     object AutoupdatePropertiesCheckBox: TCheckBox
-      Left = 137
+      Left = 217
       Top = 1
       Width = 144
       Height = 17
@@ -1026,6 +1029,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Caption = 'Autoupdate properties'
       TabOrder = 1
       OnClick = AutoupdatePropertiesCheckBoxClick
+      ExplicitLeft = 137
     end
     object AutosaveStatesCheckBox: TCheckBox
       Left = 864
@@ -1066,7 +1070,16 @@ object UGEngineControlForm: TUGEngineControlForm
       Caption = 'Single-threaded'
       TabOrder = 5
       OnClick = SingleThreadedRadioButtonClick
-      ExplicitLeft = 643
+    end
+    object DetailedDebugLogCheckBox: TCheckBox
+      Left = 137
+      Top = 1
+      Width = 80
+      Height = 17
+      Align = alLeft
+      Caption = 'Detailed log'
+      TabOrder = 6
+      OnClick = DetailedDebugLogCheckBoxClick
     end
   end
   object MainMenu: TMainMenu
@@ -1285,7 +1298,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03B40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03BC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
