@@ -188,8 +188,8 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
 /// Функция осуществляет вывод в отладочный лог, если сборка в отладке
 void RdkDebuggerMessage(const std::string &message)
 {
-#ifdef _DEBUG
- std::cout<<message<<endl;
+#ifndef NDEBUG
+ std::cout<<message<<std::endl;
 #endif
 }
 
