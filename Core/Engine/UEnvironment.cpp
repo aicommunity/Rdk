@@ -34,7 +34,7 @@ UEnvironment::UEnvironment(void)
 
  // Состояния
  // Признак успешной инициализации
- Initialized=false;
+ InitFlag=Initialized=false;
 
  // Признак наличия сформированной структуры
  Structured=false;
@@ -513,7 +513,7 @@ void UEnvironment::Init(void)
  ModelCalculationComponent.Resize(0);
  if(Model)
   Model->Init();
- Initialized=true;
+ InitFlag=Initialized=true;
  return;
 }
 
@@ -528,7 +528,7 @@ void UEnvironment::UnInit(void)
 
  AUnInit();
 
- Initialized=false;
+ InitFlag=Initialized=false;
 }
 
 // Формирует предварительно заданную модель обработки

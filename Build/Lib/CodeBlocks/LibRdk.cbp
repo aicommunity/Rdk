@@ -98,6 +98,8 @@
 		<Unit filename="../../../Core/Engine/UEPtr.h" />
 		<Unit filename="../../../Core/Engine/UEngine.cpp" />
 		<Unit filename="../../../Core/Engine/UEngine.h" />
+		<Unit filename="../../../Core/Engine/UEnvException.cpp" />
+		<Unit filename="../../../Core/Engine/UEnvException.h" />
 		<Unit filename="../../../Core/Engine/UEnvSupport.cpp" />
 		<Unit filename="../../../Core/Engine/UEnvSupport.h" />
 		<Unit filename="../../../Core/Engine/UEnvironment.cpp" />
@@ -110,6 +112,8 @@
 		<Unit filename="../../../Core/Engine/ULibrary.h" />
 		<Unit filename="../../../Core/Engine/ULocalProperty.cpp" />
 		<Unit filename="../../../Core/Engine/ULocalProperty.h" />
+		<Unit filename="../../../Core/Engine/ULogger.cpp" />
+		<Unit filename="../../../Core/Engine/ULogger.h" />
 		<Unit filename="../../../Core/Engine/UModule.cpp" />
 		<Unit filename="../../../Core/Engine/UModule.h" />
 		<Unit filename="../../../Core/Engine/UNet.cpp" />
@@ -235,6 +239,7 @@
 		<Unit filename="../../../Deploy/Include/rdk_cpp_initdll.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_engine_support.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_exceptions.gcc.cpp" />
+		<Unit filename="../../../Deploy/Include/rdk_exceptions.gcc.h" />
 		<Unit filename="../../../Deploy/Include/rdk_new.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_rpc.cpp" />
 		<Unit filename="../../../ThirdParty/ThirdParty.cpp" />
