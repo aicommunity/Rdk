@@ -50,8 +50,12 @@ bool LoadJpegFromFile(const char* filename, UBitmap &bmp)
   }
  }
  else
+ {
+  delete bytes;
   return false;
+ }
 
+ delete bytes;
  return true;
 }
 
