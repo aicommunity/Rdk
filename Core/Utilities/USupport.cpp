@@ -202,7 +202,6 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
 
 /// Извлекает путь из полного имени файла
 std::string extract_file_path(const std::string& full_name)
-
 {
 	 size_t pos = full_name.find_last_of("\\/");
 	 return (std::string::npos == pos)
@@ -212,11 +211,18 @@ std::string extract_file_path(const std::string& full_name)
 
 
 /// Извлекает имя файла из полного имени файла
-
 std::string extract_file_name(const std::string& full_name)
-
 {
 	 size_t pos = full_name.find_last_of("\\/");
+	 return (std::string::npos == pos)
+		 ? std::string("")
+		 : full_name.substr(pos+1);
+}
+
+/// Извлекает расширение файла из имени файла
+RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
+{
+	 size_t pos = full_name.find_last_of(".");
 	 return (std::string::npos == pos)
 		 ? std::string("")
 		 : full_name.substr(pos+1);
