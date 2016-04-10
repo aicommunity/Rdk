@@ -311,11 +311,26 @@ public:
 /// Возвращает указатель на компонент-источник
 UItem* GetItem(void);
 
+/// Возвращает имя подключенного компонента
+std::string GetItemName(void) const;
+
+/// Возвращает полное имя подключенного компонента
+std::string GetItemFullName(void) const;
+
 /// Возвращает имя подключенного выхода
-const std::string& GetItemOutputName(void);
+const std::string& GetItemOutputName(void) const;
 
 /// Возвращает true, если на подключенном выходе новые данные
 virtual bool IsNewData(void) const;
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const;
+
+/// Инициализирует данные
+void Init(UItem* item, const std::string &output_name);
+
+/// Деинициализирует данные
+void UnInit(void);
 };
 
 class RDK_LIB_TYPE UIPropertyOutput
@@ -445,8 +460,6 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 
  return linkslist;
 }
-
-
 
 }
 

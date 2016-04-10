@@ -2889,22 +2889,38 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  if((type & ptOutput) && variable.Property->GetName().find("DataOutput") != string::npos)
   return false;
 
- std::string line=str_type+variable.Property->GetName()+std::string(" = ");
+ std::string line=str_type+variable.Property->GetName();
  result=line;
- try
+
+ const UIPropertyInput *input_prop=dynamic_cast<const UIPropertyInput*>(variable.Property.Get());
+ if(input_prop && !input_prop->IsConnected())
  {
-  variable.Property->Save(&xml,true);
-  std::string str_data=xml.GetNodeText();
-  if(str_data.empty())
-  {
-   xml.Save(str_data);
-   line+="\n";
-  }
-  result=line+str_data;
+  result=line+"[<Disconnected>]";
  }
- catch(UIProperty::EPropertyZeroPtr &ex)
+ else
  {
-  result=line+"<Disconnected>";
+  if(input_prop)
+  {
+   line+=std::string("[")+input_prop->GetItemFullName()+std::string(":")+input_prop->GetItemOutputName()+"]";
+
+  }
+  line+=" = ";
+
+  try
+  {
+   variable.Property->Save(&xml,true);
+   std::string str_data=xml.GetNodeText();
+   if(str_data.empty())
+   {
+	xml.Save(str_data);
+	line+="\n";
+   }
+   result=line+str_data;
+  }
+  catch(UIProperty::EPropertyZeroPtr &ex)
+  {
+   result=line+"[<Disconnected>]";
+  }
  }
  return true;
 }

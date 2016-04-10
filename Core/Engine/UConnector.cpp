@@ -477,6 +477,12 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   }
  }
 
+ UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
+ if(input_prop)
+ {
+  input_prop->Init(na,item_property_name);
+ }
+
  // TODO: Этот код не будет работать в случае, если c_index будет подаваться на
  // вход не по возрастанию
  UCItem item;
@@ -572,7 +578,14 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
    {
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
-//	if(i_conn_property->CheckRange(index)) // TODO: тут возможно что-то другое
+
+	UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
+	if(input_prop)
+	{
+	 input_prop->UnInit();
+	}
+
+	//	if(i_conn_property->CheckRange(index)) // TODO: тут возможно что-то другое
 	UIProperty* output_property=I->second[index].Item->FindProperty(item_property_name);
 	if(output_property)
 	{
@@ -616,6 +629,11 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
 //	if(i_conn_property->CheckRange(i)) // TODO: воозможно тут что то другое
+	UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
+	if(input_prop)
+	{
+	 input_prop->UnInit();
+	}
 
 	UIProperty* output_property=I->second[i].Item->FindProperty(I->second[i].Name);
 	if(output_property)
@@ -764,8 +782,20 @@ UItem* UIPropertyInput::GetItem(void)
  return Item;
 }
 
+/// Возвращает имя подключенного компонента
+std::string UIPropertyInput::GetItemName(void) const
+{
+ return (Item)?Item->GetName():std::string("");
+}
+
+/// Возвращает полное имя подключенного компонента
+std::string UIPropertyInput::GetItemFullName(void) const
+{
+ return (Item)?Item->GetFullName():std::string("");
+}
+
 // Возвращает имя подключенного выхода
-const std::string& UIPropertyInput::GetItemOutputName(void)
+const std::string& UIPropertyInput::GetItemOutputName(void) const
 {
  return ItemOutputName;
 }
@@ -775,6 +805,27 @@ const std::string& UIPropertyInput::GetItemOutputName(void)
 bool UIPropertyInput::IsNewData(void) const
 {
  return true;
+}
+
+/// Возвращает true если вход имеет подключение
+bool UIPropertyInput::IsConnected(void) const
+{
+ return false;
+}
+
+
+/// Инициализирует данные
+void UIPropertyInput::Init(UItem* item, const std::string &output_name)
+{
+ Item=item;
+ ItemOutputName=output_name;
+}
+
+/// Деинициализирует данные
+void UIPropertyInput::UnInit(void)
+{
+ Item=0;
+ ItemOutputName.clear();
 }
 
 //class UIPropertyOutput: public UIPropertyIO
@@ -795,6 +846,8 @@ const std::string& UIPropertyOutput::GetConnectorInputName(int index)
 {
  return ConnectorInputNames[index];
 }
+
+
 
 
 }
