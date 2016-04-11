@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>
+#include <dirent.h>
 
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"
@@ -115,7 +116,18 @@ int CreateNewDirectory(const char* path)
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
  results.clear();
-
+ if(isfile)
+ {
+	DIR *dp;
+	struct dirent *dirp;
+	if((dp  = opendir(path.c_str())) == NULL)
+	 return errno;
+	while ((dirp = readdir(dp)) != NULL)
+	{
+	 results.push_back(std::string(dirp->d_name));
+	}
+	closedir(dp);
+ }
  return 0;
 }
 

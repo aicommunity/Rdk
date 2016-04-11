@@ -316,7 +316,7 @@ void UContainer::LogPropertiesBeforeCalc(void)
    VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
    for(; I != J; ++I)
    {
-	if(I->second.GetPropertyType() == ptInput)
+	if(I->second.GetPropertyType() & ptInput)
 	 if(PreparePropertyLogString(I->second, ptInput, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -327,7 +327,7 @@ void UContainer::LogPropertiesBeforeCalc(void)
 	if(I->second.GetPropertyGroup() != pgPublic)
 	 continue;
 
-	if(I->second.GetPropertyType() == ptParameter)
+	if(I->second.GetPropertyType() & ptParameter)
 	 if(PreparePropertyLogString(I->second, ptParameter, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -355,7 +355,7 @@ void UContainer::LogPropertiesAfterCalc(void)
    VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
    for(; I != J; ++I)
    {
-	if(I->second.GetPropertyType() == ptOutput)
+	if(I->second.GetPropertyType() & ptOutput)
 	 if(PreparePropertyLogString(I->second, ptOutput, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -366,7 +366,7 @@ void UContainer::LogPropertiesAfterCalc(void)
 	if(I->second.GetPropertyGroup() != pgPublic)
 	 continue;
 
-	if(I->second.GetPropertyType() == ptState && I->second.GetPropertyType() != ptOutput  && I->second.GetPropertyType() != ptInput)
+	if(I->second.GetPropertyType() & ptState && !(I->second.GetPropertyType() & ptOutput)  && !(I->second.GetPropertyType() & ptInput))
 	 if(PreparePropertyLogString(I->second, ptState, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
