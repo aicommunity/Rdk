@@ -5114,6 +5114,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
   {
    AccessCache.clear();
    XmlStorage.Load(buffer,"Save");
+   std::string xml_model_name=XmlStorage.GetNodeAttribute("ModelName");
    XmlStorage.SelectNode(0);
 
    Environment->Reset();
@@ -5135,8 +5136,8 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    }
    else
    {
-	if((strlen(stringid) == 0) && (XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName()))
-	 RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
+	if((strlen(stringid) == 0) && (xml_model_name != Environment->GetModel()->GetName()))
+	 RDK_RAW_THROW(EErrorEngineModelNameDontMatch(xml_model_name, Environment->GetModel()->GetName()));
 
 	UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
