@@ -54,6 +54,9 @@ bool DebugMode;
 /// Маска системных событий для логирования
 unsigned int DebugSysEventsMask;
 
+/// Флаг включения вывода лога в отладчик
+bool DebuggerMessageFlag;
+
 /// Включить запись событий в отдельный лог-файл канала
 bool EventsLogMode;
 

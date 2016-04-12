@@ -34,6 +34,8 @@ TProjectChannelConfig::TProjectChannelConfig(void)
  EventsLogMode=false;
 
  DebugSysEventsMask=0;
+
+ DebuggerMessageFlag=false;
 }
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
@@ -60,7 +62,7 @@ TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
  DebugMode=copy.DebugMode;
  DebugSysEventsMask=copy.DebugSysEventsMask;
  EventsLogMode=copy.EventsLogMode;
-
+ DebuggerMessageFlag=copy.DebuggerMessageFlag;
 
  ChannelName=copy.ChannelName;
 }
@@ -82,7 +84,8 @@ bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) cons
  (DebugMode != copy.DebugMode) |
  (EventsLogMode != copy.EventsLogMode) |
  (ChannelName != copy.ChannelName) |
- (DebugSysEventsMask != copy.DebugSysEventsMask);
+ (DebugSysEventsMask != copy.DebugSysEventsMask) |
+ (DebuggerMessageFlag != copy.DebuggerMessageFlag);
 }
 
 bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) const
@@ -346,6 +349,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.ChannelsConfig[0].StatesFileName=xml.ReadString("StatesFileName","");
  Config.ChannelsConfig[0].EventsLogMode=xml.ReadBool("EventsLogMode",false);
  Config.ChannelsConfig[0].DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",Config.ChannelsConfig[0].DebugSysEventsMask);
+ Config.ChannelsConfig[0].DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
 
 
  for(int i=1;i<num_engines;i++)
@@ -367,6 +371,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
   Config.ChannelsConfig[i].StatesFileName=xml.ReadString(std::string("StatesFileName_")+RDK::sntoa(i),"");
 
   Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned(std::string("DebugSysEventsMask_")+RDK::sntoa(i),Config.ChannelsConfig[i].DebugSysEventsMask);
+  Config.ChannelsConfig[i].DebuggerMessageFlag=xml.ReadBool(std::string("DebuggerMessageFlag_")+RDK::sntoa(i),false);
  }
 
  // TODO: Реализовать загрузку описания
@@ -508,6 +513,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool("DebugModeFlag",channel_config.DebugMode);
    xml.WriteBool("EventsLogMode",channel_config.EventsLogMode);
    xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
+   xml.WriteBool("DebuggerMessageFlag",Config.ChannelsConfig[0].DebuggerMessageFlag);
   }
   else
   {
@@ -527,6 +533,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool(std::string("DebugModeFlag_")+suffix,channel_config.DebugMode);
    xml.WriteBool(std::string("EventsLogMode_")+suffix,channel_config.EventsLogMode);
    xml.WriteUnsigned(std::string("DebugSysEventsMask_")+suffix,channel_config.DebugSysEventsMask);
+   xml.WriteBool(std::string("DebuggerMessageFlag_")+suffix,Config.ChannelsConfig[i].DebuggerMessageFlag);
   }
  }
 
