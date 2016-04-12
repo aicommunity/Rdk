@@ -337,7 +337,7 @@ void Init(UItem* item, const std::string &output_name);
 void UnInit(void);
 };
 
-class RDK_LIB_TYPE UIPropertyOutput
+class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
 {
 protected: // Данные
 /// Указатели на компоненты-приемники данных
