@@ -298,7 +298,7 @@ EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
 
-class RDK_LIB_TYPE UIPropertyInput
+class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
 {
 protected: // Данные
 /// Указатель на компонент-источник данных
@@ -308,6 +308,10 @@ UItem* Item;
 std::string ItemOutputName;
 
 public:
+/// Конструкторы и деструкторы
+UIPropertyInput(void);
+virtual ~UIPropertyInput(void);
+
 /// Возвращает указатель на компонент-источник
 UItem* GetItem(void);
 

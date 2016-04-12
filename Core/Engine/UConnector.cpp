@@ -776,6 +776,17 @@ bool UConnector::Build(void)
 /* *************************************************************************** */
 
 //class UIPropertyInput: public UIPropertyIO
+/// Конструкторы и деструкторы
+UIPropertyInput::UIPropertyInput(void)
+ : Item(0)
+{
+}
+
+UIPropertyInput::~UIPropertyInput(void)
+{
+}
+
+
 // Возвращает указатель на компонент-источник
 UItem* UIPropertyInput::GetItem(void)
 {

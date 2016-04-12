@@ -40,7 +40,7 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T>
-class UVBaseDataProperty: public UIProperty
+class UVBaseDataProperty: virtual public UIProperty
 {
 protected: // Данные
 // Прямой доступ к данным
