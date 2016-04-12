@@ -388,6 +388,14 @@ RDK_LIB_TYPE unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index);
 RDK_LIB_TYPE int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value);
 
+/// Возвращает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Env_GetDebuggerMessageFlag(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebuggerMessageFlag(int engine_index);
+
+/// Устанавливает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Env_SetDebuggerMessageFlag(bool value);
+RDK_LIB_TYPE bool RDK_CALL MEnv_SetDebuggerMessageFlag(int engine_index, bool value);
+
 // ***********************************************
 // Методы управления текущим компонентом
 // !!! Следующие методы влияют на все

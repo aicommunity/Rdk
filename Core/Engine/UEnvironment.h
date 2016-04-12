@@ -51,6 +51,9 @@ bool DebugMode;
 /// Маска системных событий для логирования
 unsigned int DebugSysEventsMask;
 
+/// Флаг включения вывода лога в отладчик
+bool DebuggerMessageFlag;
+
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
 bool EventsLogMode;
@@ -187,6 +190,12 @@ bool SetDebugMode(bool value);
 /// Маска системных событий для логирования
 unsigned int GetDebugSysEventsMask(void) const;
 bool SetDebugSysEventsMask(unsigned int value);
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool GetDebuggerMessageFlag(void) const;
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool SetDebuggerMessageFlag(bool value);
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена

@@ -1511,8 +1511,7 @@ unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index)
 /// Устанавливает маску системных событий для логирования
 int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value)
 {
- DllManager.GetEngineLock()->Env_SetDebugSysEventsMask(value);
- return RDK_SUCCESS;
+ return DllManager.GetEngineLock()->Env_SetDebugSysEventsMask(value);
 }
 
 int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value)
@@ -1520,8 +1519,36 @@ int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value)
  if(engine_index<0 || engine_index>=GetNumEngines())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- DllManager.GetEngineLock(engine_index)->Env_SetDebugSysEventsMask(value);
- return RDK_SUCCESS;
+ return DllManager.GetEngineLock(engine_index)->Env_SetDebugSysEventsMask(value);
+}
+
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool RDK_CALL Env_GetDebuggerMessageFlag(void)
+{
+ return DllManager.GetEngineLock()->Env_GetDebuggerMessageFlag();
+}
+
+bool RDK_CALL MEnv_GetDebuggerMessageFlag(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetDebuggerMessageFlag();
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool RDK_CALL Env_SetDebuggerMessageFlag(bool value)
+{
+ return DllManager.GetEngineLock()->Env_SetDebuggerMessageFlag(value);
+}
+
+bool RDK_CALL MEnv_SetDebuggerMessageFlag(int engine_index, bool value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetEngineLock(engine_index)->Env_SetDebuggerMessageFlag(value);
 }
 
 // ***********************************************

@@ -71,6 +71,8 @@ UEnvironment::UEnvironment(void)
  RTModelCalcTime=0.0;
 
  DebugSysEventsMask=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
+
+ DebuggerMessageFlag=false;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -203,6 +205,21 @@ bool UEnvironment::SetDebugSysEventsMask(unsigned int value)
  return true;
 }
 
+/// Возвращает флаг включения вывода лога в отладчик
+bool UEnvironment::GetDebuggerMessageFlag(void) const
+{
+ return DebuggerMessageFlag;
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool UEnvironment::SetDebuggerMessageFlag(bool value)
+{
+ if(DebuggerMessageFlag == value)
+  return true;
+
+ DebuggerMessageFlag=value;
+ return true;
+}
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
@@ -684,7 +701,8 @@ void UEnvironment::ProcessException(UException &exception) const
   Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
  }
 
- RdkDebuggerMessage(log.first);
+ if(DebuggerMessageFlag)
+  RdkDebuggerMessage(log.first);
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);

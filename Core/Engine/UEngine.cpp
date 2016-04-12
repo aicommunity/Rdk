@@ -2590,7 +2590,7 @@ unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
 }
 
 /// Устанавливает маску системных событий для логирования
-bool UEngine::Env_SetDebugSysEventsMask(unsigned int value)
+int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -2598,6 +2598,63 @@ bool UEngine::Env_SetDebugSysEventsMask(unsigned int value)
   try
   {
    if(!Environment->SetDebugSysEventsMask(value))
+   {
+    return RDK_E_ENV_SET_FLAG_FAIL;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool UEngine::Env_GetDebuggerMessageFlag(void) const
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetDebuggerMessageFlag();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return false;
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+int UEngine::Env_SetDebuggerMessageFlag(bool value)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->SetDebuggerMessageFlag(value))
    {
     return RDK_E_ENV_SET_FLAG_FAIL;
    }

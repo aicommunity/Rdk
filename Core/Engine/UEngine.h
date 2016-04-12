@@ -467,7 +467,13 @@ virtual int Env_SetDebugMode(bool value);
 virtual unsigned int Env_GetDebugSysEventsMask(void) const;
 
 /// Устанавливает маску системных событий для логирования
-virtual bool Env_SetDebugSysEventsMask(unsigned int value);
+virtual int Env_SetDebugSysEventsMask(unsigned int value);
+
+/// Возвращает флаг включения вывода лога в отладчик
+virtual bool Env_GetDebuggerMessageFlag(void) const;
+
+/// Устанавливает флаг включения вывода лога в отладчик
+virtual int Env_SetDebuggerMessageFlag(bool value);
 
 // Перенесено из UBEngine
 // Задает число входов среды

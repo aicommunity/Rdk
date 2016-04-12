@@ -32,6 +32,9 @@
 				</Linker>
 			</Target>
 		</Build>
+		<Compiler>
+			<Add option="-std=c++11" />
+		</Compiler>
 		<Unit filename="../../../Core/Application/UAppCore.cpp" />
 		<Unit filename="../../../Core/Application/UAppCore.h" />
 		<Unit filename="../../../Core/Application/UApplication.cpp" />
