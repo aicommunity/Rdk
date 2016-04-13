@@ -839,7 +839,7 @@ UIPropertyOutput::~UIPropertyOutput(void)
 }
 
 // Возвращает число подключенных входов
-size_t UIPropertyOutput::GetNumConnectors(void)
+size_t UIPropertyOutput::GetNumConnectors(void) const
 {
  return Connectors.size();
 }
@@ -851,7 +851,7 @@ UEPtr<UConnector> UIPropertyOutput::GetConnector(int index)
 }
 
 // Возвращает имя подключенного входа компонента-приемника
-const std::string& UIPropertyOutput::GetConnectorInputName(int index)
+const std::string& UIPropertyOutput::GetConnectorInputName(int index) const
 {
  return ConnectorInputNames[index];
 }

@@ -346,13 +346,13 @@ UIPropertyOutput(void);
 virtual ~UIPropertyOutput(void);
 
 /// Возвращает число подключенных входов
-size_t GetNumConnectors(void);
+size_t GetNumConnectors(void) const;
 
 /// Возвращает указатель на компонент-приемник
 UEPtr<UConnector> GetConnector(int index);
 
 /// Возвращает имя подключенного входа компонента-приемника
-const std::string& GetConnectorInputName(int index);
+const std::string& GetConnectorInputName(int index) const;
 };
 
 // Template methods UConnector
