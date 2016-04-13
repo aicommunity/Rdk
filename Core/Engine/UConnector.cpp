@@ -477,11 +477,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   }
  }
 
- UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
- if(input_prop)
- {
-  input_prop->Init(na,item_property_name);
- }
+ i_conn_property->Init(na,item_property_name);
 
  // TODO: Этот код не будет работать в случае, если c_index будет подаваться на
  // вход не по возрастанию
@@ -579,11 +575,8 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
 
-	UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
-	if(input_prop)
-	{
-	 input_prop->UnInit();
-	}
+    if(i_conn_property)
+     i_conn_property->UnInit();
 
 	//	if(i_conn_property->CheckRange(index)) // TODO: тут возможно что-то другое
 	UIProperty* output_property=I->second[index].Item->FindProperty(item_property_name);

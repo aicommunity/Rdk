@@ -103,6 +103,18 @@ virtual std::string GetItemOutputName(void) const
 {
  return UIPropertyInput::GetItemOutputName();
 }
+
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name)
+{
+ UIPropertyInput::Init(item, output_name);
+}
+
+/// Деинициализирует данные
+virtual void UnInit(void)
+{
+ UIPropertyInput::UnInit();
+}
 // --------------------------
 };
 

@@ -354,6 +354,8 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
     */
 };
 
+class UItem;
+
 // Класс сериализации свойств
 class RDK_LIB_TYPE UIProperty
 {
@@ -451,6 +453,12 @@ virtual bool IsNewData(void) const=0;
 
 /// Возвращает true если вход имеет подключение
 virtual bool IsConnected(void) const=0;
+
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name)=0;
+
+/// Деинициализирует данные
+virtual void UnInit(void)=0;
 // --------------------------
 
 // --------------------------

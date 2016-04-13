@@ -273,6 +273,16 @@ virtual std::string GetItemOutputName(void) const
  return std::string("");
 }
 
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name)
+{
+}
+
+/// Деинициализирует данные
+virtual void UnInit(void)
+{
+}
+
 /// Возвращает true, если на подключенном выходе новые данные
 virtual bool IsNewData(void) const
 {
