@@ -784,6 +784,7 @@ UIPropertyInput::UIPropertyInput(void)
 
 UIPropertyInput::~UIPropertyInput(void)
 {
+ Item=0;
 }
 
 
@@ -811,20 +812,6 @@ const std::string& UIPropertyInput::GetItemOutputName(void) const
  return ItemOutputName;
 }
 
-
-/// Возвращает true, если на подключенном выходе новые данные
-bool UIPropertyInput::IsNewData(void) const
-{
- return true;
-}
-
-/// Возвращает true если вход имеет подключение
-bool UIPropertyInput::IsConnected(void) const
-{
- return false;
-}
-
-
 /// Инициализирует данные
 void UIPropertyInput::Init(UItem* item, const std::string &output_name)
 {
@@ -840,6 +827,17 @@ void UIPropertyInput::UnInit(void)
 }
 
 //class UIPropertyOutput: public UIPropertyIO
+/// Конструкторы и деструкторы
+UIPropertyOutput::UIPropertyOutput(void)
+{
+}
+
+UIPropertyOutput::~UIPropertyOutput(void)
+{
+ Connectors.clear();
+ ConnectorInputNames.clear();
+}
+
 // Возвращает число подключенных входов
 size_t UIPropertyOutput::GetNumConnectors(void)
 {

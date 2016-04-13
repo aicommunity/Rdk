@@ -40,7 +40,7 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T>
-class UVBaseDataProperty: virtual public UIProperty
+class UVBaseDataProperty: public UIProperty
 {
 protected: // Данные
 // Прямой доступ к данным
@@ -248,6 +248,63 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)
 virtual bool ResetPointer(int index, void* value)
 {
  return false;
+}
+// --------------------------
+
+protected:
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return std::string("");
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return std::string("");
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return std::string("");
+}
+
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const
+{
+ return true;
+}
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const
+{
+ return false;
+}
+// --------------------------
+
+// --------------------------
+// Методы управления выходами
+// --------------------------
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const
+{
+ return 0;
+}
+
+/// Возвращает указатель на компонент-приемник
+virtual UComponent* GetConnector(int index)
+{
+ return 0;
+}
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const
+{
+ return std::string("");
 }
 // --------------------------
 

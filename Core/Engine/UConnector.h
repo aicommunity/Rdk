@@ -298,7 +298,7 @@ EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
 
-class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
+class RDK_LIB_TYPE UIPropertyInput
 {
 protected: // Данные
 /// Указатель на компонент-источник данных
@@ -324,12 +324,6 @@ std::string GetItemFullName(void) const;
 /// Возвращает имя подключенного выхода
 const std::string& GetItemOutputName(void) const;
 
-/// Возвращает true, если на подключенном выходе новые данные
-virtual bool IsNewData(void) const;
-
-/// Возвращает true если вход имеет подключение
-virtual bool IsConnected(void) const;
-
 /// Инициализирует данные
 void Init(UItem* item, const std::string &output_name);
 
@@ -337,7 +331,7 @@ void Init(UItem* item, const std::string &output_name);
 void UnInit(void);
 };
 
-class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
+class RDK_LIB_TYPE UIPropertyOutput
 {
 protected: // Данные
 /// Указатели на компоненты-приемники данных
@@ -347,6 +341,10 @@ std::vector<UItem*> Connectors;
 std::vector<std::string> ConnectorInputNames;
 
 public:
+/// Конструкторы и деструкторы
+UIPropertyOutput(void);
+virtual ~UIPropertyOutput(void);
+
 /// Возвращает число подключенных входов
 size_t GetNumConnectors(void);
 

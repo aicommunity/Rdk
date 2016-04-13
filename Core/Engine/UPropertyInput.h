@@ -83,6 +83,27 @@ virtual std::string GetOwnerName(void) const
 };
 
 
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return UIPropertyInput::GetItemName();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return UIPropertyInput::GetItemFullName();
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return UIPropertyInput::GetItemOutputName();
+}
+// --------------------------
 };
 
 template<typename T, typename OwnerT>
@@ -127,6 +148,28 @@ virtual void UpdatePData(void* data)
  if(data)
   this->PData=*reinterpret_cast<T**>(data);
  ExternalPData=reinterpret_cast<T**>(data);
+}
+// --------------------------
+
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return UIPropertyInput::GetItemName();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return UIPropertyInput::GetItemFullName();
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return UIPropertyInput::GetItemOutputName();
 }
 // --------------------------
 };

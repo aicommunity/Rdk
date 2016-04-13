@@ -434,6 +434,38 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 virtual bool ResetPointer(int index, void* value)=0;
 // --------------------------
 
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const=0;
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const=0;
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const=0;
+
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const=0;
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const=0;
+// --------------------------
+
+// --------------------------
+// Методы управления выходами
+// --------------------------
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const=0;
+
+/// Возвращает указатель на компонент-приемник
+virtual UComponent* GetConnector(int index)=0;
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const=0;
+// --------------------------
+
 public: // Исключения
 // Обращение к неинициализированным данным свойства
 struct EPropertyError: public EError
