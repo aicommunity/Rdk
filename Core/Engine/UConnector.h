@@ -313,22 +313,22 @@ UIPropertyInput(void);
 virtual ~UIPropertyInput(void);
 
 /// Возвращает указатель на компонент-источник
-UItem* GetItem(void);
+virtual UItem* GetItem(void);
 
 /// Возвращает имя подключенного компонента
-std::string GetItemName(void) const;
+virtual std::string GetItemName(void) const;
 
 /// Возвращает полное имя подключенного компонента
-std::string GetItemFullName(void) const;
+virtual std::string GetItemFullName(void) const;
 
 /// Возвращает имя подключенного выхода
-const std::string& GetItemOutputName(void) const;
+virtual std::string GetItemOutputName(void) const;
 
 /// Инициализирует данные
-void Init(UItem* item, const std::string &output_name);
+virtual void Init(UItem* item, const std::string &output_name);
 
 /// Деинициализирует данные
-void UnInit(void);
+virtual void UnInit(void);
 };
 
 class RDK_LIB_TYPE UIPropertyOutput
@@ -346,13 +346,13 @@ UIPropertyOutput(void);
 virtual ~UIPropertyOutput(void);
 
 /// Возвращает число подключенных входов
-size_t GetNumConnectors(void) const;
+virtual size_t GetNumConnectors(void) const;
 
 /// Возвращает указатель на компонент-приемник
-UEPtr<UConnector> GetConnector(int index);
+virtual UConnector* GetConnector(int index);
 
 /// Возвращает имя подключенного входа компонента-приемника
-const std::string& GetConnectorInputName(int index) const;
+virtual std::string GetConnectorInputName(int index) const;
 };
 
 // Template methods UConnector

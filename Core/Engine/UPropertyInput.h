@@ -45,7 +45,7 @@ void ApplyOutputUpdateTime(void)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, public UIPropertyInput
+class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
 {
 protected:
 public: // Методы
@@ -107,7 +107,7 @@ virtual std::string GetItemOutputName(void) const
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, public UIPropertyInput
+class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
 {
 protected:
 /// Внешний указатель, передаваемый в виртуальный вход

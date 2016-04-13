@@ -807,7 +807,7 @@ std::string UIPropertyInput::GetItemFullName(void) const
 }
 
 // Возвращает имя подключенного выхода
-const std::string& UIPropertyInput::GetItemOutputName(void) const
+std::string UIPropertyInput::GetItemOutputName(void) const
 {
  return ItemOutputName;
 }
@@ -845,13 +845,13 @@ size_t UIPropertyOutput::GetNumConnectors(void) const
 }
 
 // Возвращает указатель на компонент-приемник
-UEPtr<UConnector> UIPropertyOutput::GetConnector(int index)
+UConnector* UIPropertyOutput::GetConnector(int index)
 {
  return Connectors[index];
 }
 
 // Возвращает имя подключенного входа компонента-приемника
-const std::string& UIPropertyOutput::GetConnectorInputName(int index) const
+std::string UIPropertyOutput::GetConnectorInputName(int index) const
 {
  return ConnectorInputNames[index];
 }
