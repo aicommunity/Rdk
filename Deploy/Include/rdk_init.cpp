@@ -2494,6 +2494,15 @@ int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
  return DllManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
 }
 
+int RDK_CALL MModel_LoadComponentState(int engine_index, const char *stringid, char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return DllManager.GetEngineLock(engine_index)->Model_LoadComponentProperties(stringid, buffer);
+}
+
+
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
 const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)

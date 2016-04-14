@@ -901,6 +901,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid
 // Загружает состояние компонента и его дочерних компонент из xml
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_LoadComponentState(int engine_index, const char *stringid, char* buffer);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
