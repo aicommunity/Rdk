@@ -36,7 +36,7 @@ UPropertyInputPreBase(OwnerT * const owner, int input_type)
 // Методы управления данными
 // --------------------------
 /// Применяет время выхода к входу
-void ApplyOutputUpdateTime(void)
+void ApplyOutputUpdateTime(void) const
 {
  if(ConnectedOutput)
   this->UpdateTime=ConnectedOutput->GetUpdateTime();
@@ -359,16 +359,19 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
+ this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 };
 
 T& operator * (void)
 {
+ this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?*this->PData:UPropertyInputBase<T,OwnerT,type>::Local;
 };
 
 operator T* (void) const
 {
+ this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------

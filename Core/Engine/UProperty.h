@@ -54,7 +54,7 @@ protected: // Данные синхронизации
 UGenericMutex *Mutex;
 
 /// Время обновления свойства (мс)
-ULongTime UpdateTime;
+mutable ULongTime UpdateTime;
 
 public: // Методы
 // --------------------------
