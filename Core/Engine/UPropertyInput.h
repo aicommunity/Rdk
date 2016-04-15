@@ -82,6 +82,10 @@ virtual std::string GetOwnerName(void) const
  return UPropertyInputPreBase<T,OwnerT>::GetOwnerName();
 };
 
+virtual ULongTime GetUpdateTime(void) const
+{
+ return UPropertyInputPreBase<T,OwnerT>::GetUpdateTime();
+}
 
 // --------------------------
 // Методы управления входами
