@@ -371,8 +371,8 @@ void ClearLog(void);
 void ClearReadLog(void);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-void LogMessage(int msg_level, const std::string &line);
-void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
+void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
+void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 // --------------------------
 
 // --------------------------

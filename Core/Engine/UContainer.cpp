@@ -230,37 +230,37 @@ void UContainer::ProcessException(UException &exception)
 
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-void UContainer::LogMessage(int msg_level, const std::string &line)
+void UContainer::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
  if(Environment)
  {
-  Environment->LogMessage(msg_level, line);
+  Environment->LogMessage(msg_level, line, error_event_number);
  }
 }
 
-void UContainer::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+void UContainer::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
  if(Environment)
  {
-  Environment->LogMessage(msg_level, method_name, line);
+  Environment->LogMessage(msg_level, method_name, line, error_event_number);
  }
 }
 
-void UContainer::LogMessageEx(int msg_level, const std::string &line)
+void UContainer::LogMessageEx(int msg_level, const std::string &line, int error_event_number)
 {
  if(Environment)
  {
   std::string full_name;
-  Environment->LogMessage(msg_level, GetFullName(full_name)+std::string(" - ")+line);
+  Environment->LogMessage(msg_level, GetFullName(full_name)+std::string(" - ")+line, error_event_number);
  }
 }
 
-void UContainer::LogMessageEx(int msg_level, const std::string &method_name, const std::string &line)
+void UContainer::LogMessageEx(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
  if(Environment)
  {
   std::string full_name;
-  Environment->LogMessage(msg_level, method_name, GetFullName(full_name)+std::string(" - ")+line);
+  Environment->LogMessage(msg_level, method_name, GetFullName(full_name)+std::string(" - ")+line, error_event_number);
  }
 }
 

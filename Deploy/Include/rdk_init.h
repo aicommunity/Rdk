@@ -10,12 +10,13 @@ typedef int bool;
 #endif
 
 #ifndef RDK_EX_UNKNOWN
-#define RDK_EX_UNKNOWN 0
-#define RDK_EX_FATAL 1
-#define RDK_EX_ERROR 2
-#define RDK_EX_WARNING 3
-#define RDK_EX_INFO 4
-#define RDK_EX_DEBUG 5
+#define RDK_EX_UNKNOWN 0 // Unknown exception
+#define RDK_EX_FATAL 1 // Fatal error (correction impossible)
+#define RDK_EX_ERROR 2 // Correctable error
+#define RDK_EX_WARNING 3 // Warning (performance, possible errors etc)
+#define RDK_EX_INFO 4 // Information (port open, client connected etc)
+#define RDK_EX_APP 5 // Application-defined event (high-level errors, etc)
+#define RDK_EX_DEBUG 6 // Debug messages (can be switched off)
 
 #define RDK_SYS_DEBUG_CALC 1
 #define RDK_SYS_DEBUG_RESET 2
@@ -1066,6 +1067,10 @@ RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, i
 // Записывает в лог новое сообщение
 RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
 RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message);
+
+// Записывает в лог новое сообщение с кодом ошибки
+RDK_LIB_TYPE int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number);
+RDK_LIB_TYPE int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number);
 
 /// Возвращает число непрочитанных строк лога
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);

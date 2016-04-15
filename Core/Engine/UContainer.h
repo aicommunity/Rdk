@@ -243,10 +243,10 @@ virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 virtual void ProcessException(UException &exception);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-virtual void LogMessage(int msg_level, const std::string &line);
-virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
-virtual void LogMessageEx(int msg_level, const std::string &line);
-virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line);
+virtual void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
+virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
+virtual void LogMessageEx(int msg_level, const std::string &line, int error_event_number=0);
+virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 
 virtual void LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier);
 

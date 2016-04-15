@@ -873,34 +873,34 @@ void UEnvironment::ClearReadLog(void)
 }
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-void UEnvironment::LogMessage(int msg_level, const std::string &line)
+void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
  switch (msg_level)
  {
  case RDK_EX_FATAL:
  {
-  EStringFatal exception(line);
+  EStringFatal exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
 
  case RDK_EX_ERROR:
  {
-  EStringError exception(line);
+  EStringError exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
 
  case RDK_EX_WARNING:
  {
-  EStringWarning exception(line);
+  EStringWarning exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
 
  case RDK_EX_INFO:
  {
-  EStringInfo exception(line);
+  EStringInfo exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
@@ -909,17 +909,23 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line)
  {
   if(DebugMode)
   {
-   EStringDebug exception(line);
+   EStringDebug exception(line,error_event_number);
    ProcessException(exception);
   }
+ }
+
+ case RDK_EX_APP:
+ {
+  EStringApp exception(line,error_event_number);
+  ProcessException(exception);
  }
  break;
  }
 }
 
-void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
- LogMessage(msg_level, method_name+std::string(" - ")+line);
+ LogMessage(msg_level, method_name+std::string(" - ")+line, error_event_number);
 }
 
 // --------------------------

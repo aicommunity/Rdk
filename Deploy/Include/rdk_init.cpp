@@ -2794,6 +2794,22 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
  return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message);
 }
 
+// Записывает в лог новое сообщение с кодом ошибки
+int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number)
+{
+ return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message,error_event_number);
+}
+
+int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message,error_event_number);
+}
+
+
+
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией

@@ -6589,7 +6589,7 @@ const char* UEngine::GetUnreadLog(int &error_level)
 }
 
 /// Записывает в лог новое сообщение
-int UEngine::Engine_LogMessage(int log_level, const char *message)
+int UEngine::Engine_LogMessage(int log_level, const char *message, int error_event_number)
 {
  if(!Environment)
   return RDK_E_ENV_NOT_FOUND;
@@ -6599,7 +6599,7 @@ int UEngine::Engine_LogMessage(int log_level, const char *message)
  {
   try
   {
-   Environment->LogMessage(log_level,message);
+   Environment->LogMessage(log_level,message,error_event_number);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
