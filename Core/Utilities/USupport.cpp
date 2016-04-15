@@ -72,19 +72,19 @@ std::string get_text_time_from_seconds(double time_data, char date_sep, char tim
  if(time_data<1e-6)
   return "0:000s";
 
- years=time_data/(365*86400.0);
+ years=int(time_data/(365*86400.0));
  time_data-=years*(365*86400.0);
- mons=time_data/(30*86400.0);
+ mons=int(time_data/(30*86400.0));
  time_data-=mons*(30*86400.0);
- days=time_data/86400.0;
+ days=int(time_data/86400.0);
  time_data-=days*86400.0;
- hours=time_data/3600.0;
+ hours=int(time_data/3600.0);
  time_data-=hours*3600.0;
- mins=time_data/60.0;
+ mins=int(time_data/60.0);
  time_data-=mins*60.0;
- secs=time_data;
+ secs=int(time_data);
  time_data-=secs;
- msecs=time_data*1000;
+ msecs=int(time_data*1000);
 
  if(years)
   result+=sntoa(years)+date_sep;
@@ -202,17 +202,27 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
 
 /// Извлекает путь из полного имени файла
 std::string extract_file_path(const std::string& full_name)
-{
+{
 	 size_t pos = full_name.find_last_of("\\/");
 	 return (std::string::npos == pos)
 		 ? std::string("")
 		 : full_name.substr(0, pos+1);
 }
 
-/// Извлекает имя файла из полного имени файла
-std::string extract_file_name(const std::string& full_name)
-{
+
+/// Извлекает имя файла из полного имени файла
+std::string extract_file_name(const std::string& full_name)
+{
 	 size_t pos = full_name.find_last_of("\\/");
+	 return (std::string::npos == pos)
+		 ? std::string("")
+		 : full_name.substr(pos+1);
+}
+
+/// Извлекает расширение файла из имени файла
+RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
+{
+	 size_t pos = full_name.find_last_of(".");
 	 return (std::string::npos == pos)
 		 ? std::string("")
 		 : full_name.substr(pos+1);

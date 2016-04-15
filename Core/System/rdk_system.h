@@ -45,6 +45,8 @@ RDK_LIB_TYPE int RdkCopyFile(const std::string &source_file, const std::string &
 /// Копирует каталог с содержимым
 RDK_LIB_TYPE int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask);
 
+/// Функция осуществляет вывод в отладочный лог, если сборка в отладке
+RDK_LIB_TYPE void RdkDebuggerMessage(const std::string &message);
 
 }
 

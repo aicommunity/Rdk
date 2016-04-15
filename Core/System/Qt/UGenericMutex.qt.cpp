@@ -1,5 +1,5 @@
-#ifndef UGENERIC_MUTEX_WIN_CPP
-#define UGENERIC_MUTEX_WIN_CPP
+#ifndef UGENERIC_MUTEX_QT_CPP
+#define UGENERIC_MUTEX_QT_CPP
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
@@ -14,9 +14,13 @@ public:
 UGenericMutexQt();
 virtual ~UGenericMutexQt();
 
-virtual bool lock(int lock_id=-1);
-virtual bool unlock();
 virtual bool wait(int timeout);
+
+virtual bool shared_lock(void);
+virtual bool shared_unlock(void);
+
+virtual bool exclusive_lock(void);
+virtual bool exclusive_unlock(void);
 };
 
 
@@ -30,18 +34,6 @@ UGenericMutexQt::~UGenericMutexQt()
     //mutex.unlock();
 }
 
-bool UGenericMutexQt::lock(int lock_id)
-{
- m_mutex.lock();
- return true;
-}
-
-bool UGenericMutexQt::unlock()
-{
- m_mutex.unlock();
- return true;
-}
-
 bool UGenericMutexQt::wait(int timeout)
 {
  /*if (WaitForSingleObject(m_UnlockEvent, timeout) != WAIT_TIMEOUT)
@@ -50,6 +42,71 @@ bool UGenericMutexQt::wait(int timeout)
  } */
  return m_mutex.tryLock(timeout);
 }
+
+bool UGenericMutexQt::shared_lock(void)
+{
+    m_mutex.lock();
+    return true;
+}
+
+bool UGenericMutexQt::shared_unlock(void)
+{
+    m_mutex.unlock();
+    return true;
+}
+
+bool UGenericMutexQt::exclusive_lock(void)
+{
+    m_mutex.lock();
+    return true;
+
+}
+
+bool UGenericMutexQt::exclusive_unlock(void)
+{
+    m_mutex.unlock();
+    return true;
+}
+
+
+// ---------------------------------------------------------------------------
+class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
+{
+protected:
+
+public:
+UGenericEventQt();
+virtual ~UGenericEventQt();
+
+virtual bool set(void);
+virtual bool reset(void);
+virtual bool wait(unsigned wait_time);
+};
+
+UGenericEventQt::UGenericEventQt()
+{
+}
+
+UGenericEventQt::~UGenericEventQt()
+{
+
+}
+
+bool UGenericEventQt::set(void)
+{
+ return true; // TODO:
+}
+
+bool UGenericEventQt::reset(void)
+{
+ return true; // TODO:
+}
+
+bool UGenericEventQt::wait(unsigned wait_time)
+{
+ return true; // TODO:
+}
+
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)
 {
@@ -62,6 +119,27 @@ void UDestroyMutex(UGenericMutex* mutex)
   delete mutex;
 }
 
+UGenericEvent* UCreateEvent(void)
+{
+ return new UGenericEventQt;
+}
+/*
+UGenericEvent* UCreateEvent(bool initial_state)
+{
+ UGenericEventQt* res= new UGenericEventQt;
+ if(initial_state)
+  res->set();
+ return res;
+}*/
+
+void UDestroyEvent(UGenericEvent* event)
+{
+ if(event)
+ {
+  delete event;
+ }
+}
+/*
 UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m)
 {
  if(m)
@@ -77,5 +155,5 @@ UGenericMutexLocker::~UGenericMutexLocker()
 {
  if(m_mutex)
   m_mutex->unlock();
-}
+}*/
 #endif

@@ -10,12 +10,27 @@ typedef int bool;
 #endif
 
 #ifndef RDK_EX_UNKNOWN
-#define RDK_EX_UNKNOWN 0
-#define RDK_EX_FATAL 1
-#define RDK_EX_ERROR 2
-#define RDK_EX_WARNING 3
-#define RDK_EX_INFO 4
-#define RDK_EX_DEBUG 5
+#define RDK_EX_UNKNOWN 0 // Unknown exception
+#define RDK_EX_FATAL 1 // Fatal error (correction impossible)
+#define RDK_EX_ERROR 2 // Correctable error
+#define RDK_EX_WARNING 3 // Warning (performance, possible errors etc)
+#define RDK_EX_INFO 4 // Information (port open, client connected etc)
+#define RDK_EX_APP 5 // Application-defined event (high-level errors, etc)
+#define RDK_EX_DEBUG 6 // Debug messages (can be switched off)
+
+#define RDK_SYS_DEBUG_CALC 1
+#define RDK_SYS_DEBUG_RESET 2
+#define RDK_SYS_DEBUG_PROPERTIES 4
+#define RDK_SYS_DEBUG_PARAMETERS 8
+#define RDK_SYS_DEBUG_STATES 16
+#define RDK_SYS_DEBUG_INPUTS 32
+#define RDK_SYS_DEBUG_OUTPUTS 64
+
+#define RDK_SYS_MESSAGE_ENTER 1
+#define RDK_SYS_MESSAGE_EXIT_OK 2
+#define RDK_SYS_MESSAGE_EXIT_ININIT_FAIL 4
+#define RDK_SYS_MESSAGE_NEW_CALC_ITERATION 8
+
 #endif
 
 #ifndef RDK_PROPERTY_TYPES
@@ -365,6 +380,22 @@ RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebugMode(int engine_index);
 /// Устанавливает состояние флага отладочного режима среды
 RDK_LIB_TYPE int RDK_CALL Env_SetDebugMode(bool value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value);
+
+/// Возвращает маску системных событий для логирования
+RDK_LIB_TYPE unsigned int RDK_CALL Env_GetDebugSysEventsMask(void);
+RDK_LIB_TYPE unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index);
+
+/// Устанавливает маску системных событий для логирования
+RDK_LIB_TYPE int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value);
+
+/// Возвращает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Env_GetDebuggerMessageFlag(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebuggerMessageFlag(int engine_index);
+
+/// Устанавливает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Env_SetDebuggerMessageFlag(bool value);
+RDK_LIB_TYPE bool RDK_CALL MEnv_SetDebuggerMessageFlag(int engine_index, bool value);
 
 // ***********************************************
 // Методы управления текущим компонентом
@@ -721,6 +752,7 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentStateValue(const char *stringid, con
 // Связывает выбранные компоненты друг с другом
 RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
+RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index);
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 RDK_LIB_TYPE int RDK_CALL Model_ChainLinking(const char* stringid);
@@ -870,6 +902,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid
 // Загружает состояние компонента и его дочерних компонент из xml
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_LoadComponentState(int engine_index, const char *stringid, char* buffer);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
@@ -1034,6 +1067,10 @@ RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, i
 // Записывает в лог новое сообщение
 RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
 RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message);
+
+// Записывает в лог новое сообщение с кодом ошибки
+RDK_LIB_TYPE int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number);
+RDK_LIB_TYPE int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number);
 
 /// Возвращает число непрочитанных строк лога
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);

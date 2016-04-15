@@ -308,14 +308,27 @@ UItem* Item;
 std::string ItemOutputName;
 
 public:
+/// Конструкторы и деструкторы
+UIPropertyInput(void);
+virtual ~UIPropertyInput(void);
+
 /// Возвращает указатель на компонент-источник
-UItem* GetItem(void);
+virtual UItem* GetItem(void);
+
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const;
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const;
 
 /// Возвращает имя подключенного выхода
-const std::string& GetItemOutputName(void);
+virtual std::string GetItemOutputName(void) const;
 
-/// Возвращает true, если на подключенном выходе новые данные
-virtual bool IsNewData(void) const;
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name);
+
+/// Деинициализирует данные
+virtual void UnInit(void);
 };
 
 class RDK_LIB_TYPE UIPropertyOutput
@@ -328,14 +341,18 @@ std::vector<UItem*> Connectors;
 std::vector<std::string> ConnectorInputNames;
 
 public:
+/// Конструкторы и деструкторы
+UIPropertyOutput(void);
+virtual ~UIPropertyOutput(void);
+
 /// Возвращает число подключенных входов
-size_t GetNumConnectors(void);
+virtual size_t GetNumConnectors(void) const;
 
 /// Возвращает указатель на компонент-приемник
-UEPtr<UConnector> GetConnector(int index);
+virtual UConnector* GetConnector(int index);
 
 /// Возвращает имя подключенного входа компонента-приемника
-const std::string& GetConnectorInputName(int index);
+virtual std::string GetConnectorInputName(int index) const;
 };
 
 // Template methods UConnector
@@ -445,8 +462,6 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 
  return linkslist;
 }
-
-
 
 }
 

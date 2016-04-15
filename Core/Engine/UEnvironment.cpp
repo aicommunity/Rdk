@@ -34,7 +34,7 @@ UEnvironment::UEnvironment(void)
 
  // Состояния
  // Признак успешной инициализации
- Initialized=false;
+ InitFlag=Initialized=false;
 
  // Признак наличия сформированной структуры
  Structured=false;
@@ -70,6 +70,9 @@ UEnvironment::UEnvironment(void)
  EventsLogMode=false;
  RTModelCalcTime=0.0;
 
+ DebugSysEventsMask=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
+
+ DebuggerMessageFlag=false;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -187,6 +190,36 @@ bool UEnvironment::SetDebugMode(bool value)
  return true;
 }
 
+/// Маска системных событий для логирования
+unsigned int UEnvironment::GetDebugSysEventsMask(void) const
+{
+ return DebugSysEventsMask;
+}
+
+bool UEnvironment::SetDebugSysEventsMask(unsigned int value)
+{
+ if(DebugSysEventsMask == value)
+  return true;
+
+ DebugSysEventsMask=value;
+ return true;
+}
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool UEnvironment::GetDebuggerMessageFlag(void) const
+{
+ return DebuggerMessageFlag;
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool UEnvironment::SetDebuggerMessageFlag(bool value)
+{
+ if(DebuggerMessageFlag == value)
+  return true;
+
+ DebuggerMessageFlag=value;
+ return true;
+}
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
@@ -513,7 +546,7 @@ void UEnvironment::Init(void)
  ModelCalculationComponent.Resize(0);
  if(Model)
   Model->Init();
- Initialized=true;
+ InitFlag=Initialized=true;
  return;
 }
 
@@ -528,7 +561,7 @@ void UEnvironment::UnInit(void)
 
  AUnInit();
 
- Initialized=false;
+ InitFlag=Initialized=false;
 }
 
 // Формирует предварительно заданную модель обработки
@@ -667,6 +700,9 @@ void UEnvironment::ProcessException(UException &exception) const
  {
   Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
  }
+
+ if(DebuggerMessageFlag)
+  RdkDebuggerMessage(log.first);
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
@@ -837,34 +873,34 @@ void UEnvironment::ClearReadLog(void)
 }
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-void UEnvironment::LogMessage(int msg_level, const std::string &line)
+void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
  switch (msg_level)
  {
  case RDK_EX_FATAL:
  {
-  EStringFatal exception(line);
+  EStringFatal exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
 
  case RDK_EX_ERROR:
  {
-  EStringError exception(line);
+  EStringError exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
 
  case RDK_EX_WARNING:
  {
-  EStringWarning exception(line);
+  EStringWarning exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
 
  case RDK_EX_INFO:
  {
-  EStringInfo exception(line);
+  EStringInfo exception(line,error_event_number);
   ProcessException(exception);
  }
  break;
@@ -873,17 +909,23 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line)
  {
   if(DebugMode)
   {
-   EStringDebug exception(line);
+   EStringDebug exception(line,error_event_number);
    ProcessException(exception);
   }
+ }
+
+ case RDK_EX_APP:
+ {
+  EStringApp exception(line,error_event_number);
+  ProcessException(exception);
  }
  break;
  }
 }
 
-void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
- LogMessage(msg_level, method_name+std::string(" - ")+line);
+ LogMessage(msg_level, method_name+std::string(" - ")+line, error_event_number);
 }
 
 // --------------------------

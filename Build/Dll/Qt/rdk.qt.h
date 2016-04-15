@@ -1,7 +1,7 @@
 #ifndef LIBRDK_H
 #define LIBRDK_H
 
-#include "librdk.qt_global.h"
+#include "rdk.qt_global.h"
 
 class LIBRDKSHARED_EXPORT Librdk {
 public:

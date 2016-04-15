@@ -7,7 +7,7 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Left = 0
     Top = 0
     Width = 568
-    Height = 369
+    Height = 388
     Align = alClient
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -42,34 +42,6 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
       item
         Width = 70
       end>
-  end
-  object Panel1: TPanel
-    Left = 0
-    Top = 369
-    Width = 568
-    Height = 19
-    Align = alBottom
-    TabOrder = 2
-    object ShowDebugMessagesCheckBox: TCheckBox
-      Left = 1
-      Top = 1
-      Width = 136
-      Height = 17
-      Align = alLeft
-      Caption = 'Show debug messages'
-      TabOrder = 0
-      OnClick = ShowDebugMessagesCheckBoxClick
-    end
-    object AutoupdatePropertiesCheckBox: TCheckBox
-      Left = 137
-      Top = 1
-      Width = 144
-      Height = 17
-      Align = alLeft
-      Caption = 'Autoupdate properties'
-      TabOrder = 1
-      OnClick = AutoupdatePropertiesCheckBoxClick
-    end
   end
   object MainMenu: TMainMenu
     Left = 16

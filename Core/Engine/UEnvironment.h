@@ -48,6 +48,12 @@ ULongTime MinInterstepsInterval;
 /// Флаг включения режима отладки
 bool DebugMode;
 
+/// Маска системных событий для логирования
+unsigned int DebugSysEventsMask;
+
+/// Флаг включения вывода лога в отладчик
+bool DebuggerMessageFlag;
+
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
 bool EventsLogMode;
@@ -180,6 +186,16 @@ bool SetMinInterstepsInterval(long long value);
 /// Флаг включения режима отладки
 bool GetDebugMode(void) const;
 bool SetDebugMode(bool value);
+
+/// Маска системных событий для логирования
+unsigned int GetDebugSysEventsMask(void) const;
+bool SetDebugSysEventsMask(unsigned int value);
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool GetDebuggerMessageFlag(void) const;
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool SetDebuggerMessageFlag(bool value);
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
@@ -355,8 +371,8 @@ void ClearLog(void);
 void ClearReadLog(void);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-void LogMessage(int msg_level, const std::string &line);
-void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
+void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
+void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 // --------------------------
 
 // --------------------------

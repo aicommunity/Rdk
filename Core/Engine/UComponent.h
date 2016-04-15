@@ -29,7 +29,7 @@ See file license.txt for more information
 // 0x2 - Переменная состояния
 // 0x4 - Временная переменная
 // 0x8 - Вход
-enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
+enum {ptNone=0, ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 
 // Варианты групп свойства (битовая маска) pg - Property Group
 // 0x100 - Общедоступный
@@ -354,6 +354,8 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
     */
 };
 
+class UItem;
+
 // Класс сериализации свойств
 class RDK_LIB_TYPE UIProperty
 {
@@ -432,6 +434,44 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
 virtual bool ResetPointer(int index, void* value)=0;
+// --------------------------
+
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const=0;
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const=0;
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const=0;
+
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const=0;
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const=0;
+
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name)=0;
+
+/// Деинициализирует данные
+virtual void UnInit(void)=0;
+// --------------------------
+
+// --------------------------
+// Методы управления выходами
+// --------------------------
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const=0;
+
+/// Возвращает указатель на компонент-приемник
+virtual UComponent* GetConnector(int index)=0;
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const=0;
 // --------------------------
 
 public: // Исключения

@@ -177,6 +177,9 @@ const std::string ReadString(int node_index, const std::string &default_value);
 int ReadInteger(const std::string &name, int default_value);
 int ReadInteger(const std::string &name, int node_index, int default_value);
 int ReadInteger(int node_index, int default_value);
+unsigned int ReadUnsigned(const std::string &name, unsigned int default_value);
+unsigned int ReadUnsigned(const std::string &name, int node_index, unsigned int default_value);
+unsigned int ReadUnsigned(int node_index, unsigned int default_value);
 double ReadFloat(const std::string &name, double default_value);
 double ReadFloat(const std::string &name, int node_index, double default_value);
 double ReadFloat(int node_index, double default_value);
@@ -187,6 +190,7 @@ bool ReadBool(int node_index, bool default_value);
 // «аписывает данные как соответствующий тип
 void WriteString(const std::string &name, const std::string &value);
 void WriteInteger(const std::string &name, int value);
+void WriteUnsigned(const std::string &name, unsigned int value);
 void WriteFloat(const std::string &name, double value);
 void WriteBool(const std::string &name, bool value);
 // --------------------------

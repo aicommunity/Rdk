@@ -311,7 +311,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
 
  UApplication::SetNumEngines(project_config.NumChannels);
 
- for(size_t i=0;i<project_config.NumChannels;i++)
+ for(int i=0;i<project_config.NumChannels;i++)
  {
   RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
 
@@ -401,6 +401,7 @@ try{
    Env_Init();
 
    Env_SetDebugMode(channel_config.DebugMode);
+   Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
 
    if(channel_config.PredefinedStructure == 0 && !channel_config.ModelFileName.empty())
    {

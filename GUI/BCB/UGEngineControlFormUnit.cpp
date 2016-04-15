@@ -311,7 +311,27 @@ void TUGEngineControlForm::AUpdateInterface(void)
   ChannelsStringGrid->Visible=true;
  }
 
+ ShowDebugMessagesCheckBox->Checked=MEnv_GetDebugMode(0);
 
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ AutosaveProjectCheckBox->Checked=config.ProjectAutoSaveFlag;
+ AutosaveStatesCheckBox->Checked=config.ProjectAutoSaveStatesFlag;
+ switch(config.MultiThreadingMode)
+ {
+ case 0:
+  SingleThreadedRadioButton->Checked=true;
+ break;
+
+ case 1:
+  MultiThreadedRadioButton->Checked=true;
+ break;
+ }
+
+// if(config.ChannelsConfig.size()>0 && config.ChannelsConfig[0].DebugSysEventsMask != 0)
+ if(Env_GetDebugSysEventsMask() != 0)
+  DetailedDebugLogCheckBox->Checked=true;
+ else
+  DetailedDebugLogCheckBox->Checked=false;
 }
 
 
@@ -329,6 +349,7 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 // Сохраняет параметры интерфейса в xml
 void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
  xml.SelectNodeForce("Pages");
  xml.DelNodeInternalContent();
  int count=0;
@@ -441,6 +462,9 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
  }
  xml.SelectUp();
+
+ AutoupdatePropertiesCheckBox->Checked=xml.ReadBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
+ AutoupdatePropertiesCheckBoxClick(this);
 }
 
 // Создает новый проект
@@ -2733,6 +2757,113 @@ void __fastcall TUGEngineControlForm::ApplicationEventsException(TObject *Sender
  }
  else
   ShowMessage(E->Message);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ShowDebugMessagesCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+ int size=GetNumEngines();
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ if(config.ChannelsConfig.size() != size)
+ {
+  ShowDebugMessagesCheckBox->Checked=false;
+  return;
+ }
+ for(int i=0;i<size;i++)
+ {
+  config.ChannelsConfig[i].DebugMode=ShowDebugMessagesCheckBox->Checked;
+  MEnv_SetDebugMode(i,config.ChannelsConfig[i].DebugMode);
+ }
+ RdkApplication.SetProjectConfig(config);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::AutoupdatePropertiesCheckBoxClick(TObject *Sender)
+
+{
+ if(AutoupdatePropertiesCheckBox->Checked == true)
+  UComponentsListFrame1->UpdateInterval=100;
+ else
+  UComponentsListFrame1->UpdateInterval=-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::AutosaveProjectCheckBoxClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ config.ProjectAutoSaveFlag=AutosaveProjectCheckBox->Checked;
+ RdkApplication.SetProjectConfig(config);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::AutosaveStatesCheckBoxClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ config.ProjectAutoSaveStatesFlag=AutosaveStatesCheckBox->Checked;
+ RdkApplication.SetProjectConfig(config);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::MultiThreadedRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ config.MultiThreadingMode=1;
+ RdkApplication.SetProjectConfig(config);
+ SaveProject();
+ if(Application->MessageBox(L"Project was be saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
+ {
+  Application->Terminate();
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::SingleThreadedRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ config.MultiThreadingMode=0;
+ RdkApplication.SetProjectConfig(config);
+ SaveProject();
+ if(Application->MessageBox(L"Project was be saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
+  Application->Terminate();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+ int size=GetNumEngines();
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ if(config.ChannelsConfig.size() != size)
+ {
+  DetailedDebugLogCheckBox->Checked=false;
+  return;
+ }
+ for(int i=0;i<size;i++)
+ {
+  if(DetailedDebugLogCheckBox->Checked)
+   config.ChannelsConfig[i].DebugSysEventsMask=0xFFFFFFFF;
+  else
+   config.ChannelsConfig[i].DebugSysEventsMask=0;
+  MEnv_SetDebugSysEventsMask(i,config.ChannelsConfig[i].DebugSysEventsMask);
+ }
+ RdkApplication.SetProjectConfig(config);
 }
 //---------------------------------------------------------------------------
 

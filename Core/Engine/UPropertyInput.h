@@ -36,7 +36,7 @@ UPropertyInputPreBase(OwnerT * const owner, int input_type)
 // Методы управления данными
 // --------------------------
 /// Применяет время выхода к входу
-void ApplyOutputUpdateTime(void)
+void ApplyOutputUpdateTime(void) const
 {
  if(ConnectedOutput)
   this->UpdateTime=ConnectedOutput->GetUpdateTime();
@@ -45,7 +45,7 @@ void ApplyOutputUpdateTime(void)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, public UIPropertyInput
+class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
 {
 protected:
 public: // Методы
@@ -82,11 +82,48 @@ virtual std::string GetOwnerName(void) const
  return UPropertyInputPreBase<T,OwnerT>::GetOwnerName();
 };
 
+virtual ULongTime GetUpdateTime(void) const
+{
+ return UPropertyInputPreBase<T,OwnerT>::GetUpdateTime();
+}
 
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return UIPropertyInput::GetItemName();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return UIPropertyInput::GetItemFullName();
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return UIPropertyInput::GetItemOutputName();
+}
+
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name)
+{
+ UIPropertyInput::Init(item, output_name);
+}
+
+/// Деинициализирует данные
+virtual void UnInit(void)
+{
+ UIPropertyInput::UnInit();
+}
+// --------------------------
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, public UIPropertyInput
+class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
 {
 protected:
 /// Внешний указатель, передаваемый в виртуальный вход
@@ -127,6 +164,28 @@ virtual void UpdatePData(void* data)
  if(data)
   this->PData=*reinterpret_cast<T**>(data);
  ExternalPData=reinterpret_cast<T**>(data);
+}
+// --------------------------
+
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return UIPropertyInput::GetItemName();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return UIPropertyInput::GetItemFullName();
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return UIPropertyInput::GetItemOutputName();
 }
 // --------------------------
 };
@@ -304,16 +363,19 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
+ this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 };
 
 T& operator * (void)
 {
+ this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?*this->PData:UPropertyInputBase<T,OwnerT,type>::Local;
 };
 
 operator T* (void) const
 {
+ this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------

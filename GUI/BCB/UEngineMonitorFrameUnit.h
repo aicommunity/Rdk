@@ -150,15 +150,10 @@ __published:	// IDE-managed Components
 	TMenuItem *ools1;
 	TMenuItem *SaveClassesDescriptions1;
 	TMenuItem *LoadAllClassesDescriptions1;
-	TPanel *Panel1;
-	TCheckBox *ShowDebugMessagesCheckBox;
-	TCheckBox *AutoupdatePropertiesCheckBox;
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 	void __fastcall LoadAllClassesDescriptions1Click(TObject *Sender);
 	void __fastcall RichEditMouseEnter(TObject *Sender);
-	void __fastcall ShowDebugMessagesCheckBoxClick(TObject *Sender);
-	void __fastcall AutoupdatePropertiesCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);

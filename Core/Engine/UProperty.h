@@ -54,7 +54,7 @@ protected: // Данные синхронизации
 UGenericMutex *Mutex;
 
 /// Время обновления свойства (мс)
-ULongTime UpdateTime;
+mutable ULongTime UpdateTime;
 
 public: // Методы
 // --------------------------
@@ -62,12 +62,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0.0)
+ : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0.0)
+ : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
@@ -248,6 +248,73 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)
 virtual bool ResetPointer(int index, void* value)
 {
  return false;
+}
+// --------------------------
+
+protected:
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return std::string("");
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return std::string("");
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return std::string("");
+}
+
+/// Инициализирует данные
+virtual void Init(UItem* item, const std::string &output_name)
+{
+}
+
+/// Деинициализирует данные
+virtual void UnInit(void)
+{
+}
+
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const
+{
+ return true;
+}
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const
+{
+ return false;
+}
+// --------------------------
+
+// --------------------------
+// Методы управления выходами
+// --------------------------
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const
+{
+ return 0;
+}
+
+/// Возвращает указатель на компонент-приемник
+virtual UComponent* GetConnector(int index)
+{
+ return 0;
+}
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const
+{
+ return std::string("");
 }
 // --------------------------
 

@@ -1494,6 +1494,62 @@ int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value)
  return DllManager.GetEngineLock(engine_index)->Env_SetDebugMode(value);
 }
 
+/// Возвращает маску системных событий для логирования
+unsigned int RDK_CALL Env_GetDebugSysEventsMask(void)
+{
+ return DllManager.GetEngineLock()->Env_GetDebugSysEventsMask();
+}
+
+unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetDebugSysEventsMask();
+}
+
+/// Устанавливает маску системных событий для логирования
+int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value)
+{
+ return DllManager.GetEngineLock()->Env_SetDebugSysEventsMask(value);
+}
+
+int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetEngineLock(engine_index)->Env_SetDebugSysEventsMask(value);
+}
+
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool RDK_CALL Env_GetDebuggerMessageFlag(void)
+{
+ return DllManager.GetEngineLock()->Env_GetDebuggerMessageFlag();
+}
+
+bool RDK_CALL MEnv_GetDebuggerMessageFlag(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetDebuggerMessageFlag();
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool RDK_CALL Env_SetDebuggerMessageFlag(bool value)
+{
+ return DllManager.GetEngineLock()->Env_SetDebuggerMessageFlag(value);
+}
+
+bool RDK_CALL MEnv_SetDebuggerMessageFlag(int engine_index, bool value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetEngineLock(engine_index)->Env_SetDebuggerMessageFlag(value);
+}
 
 // ***********************************************
 // Методы управления текущим компонентом
@@ -2037,6 +2093,10 @@ int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_prop
  return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
+int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
+{
+ return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
+}
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int RDK_CALL Model_ChainLinking(const char* stringid)
@@ -2434,6 +2494,15 @@ int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
  return DllManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
 }
 
+int RDK_CALL MModel_LoadComponentState(int engine_index, const char *stringid, char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return DllManager.GetEngineLock(engine_index)->Model_LoadComponentProperties(stringid, buffer);
+}
+
+
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
 const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
@@ -2724,6 +2793,22 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
 //  return 0;
  return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message);
 }
+
+// Записывает в лог новое сообщение с кодом ошибки
+int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number)
+{
+ return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message,error_event_number);
+}
+
+int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message,error_event_number);
+}
+
+
 
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
@@ -3367,6 +3452,7 @@ void DelEngine(RDK::UEngine* engine)
 }                    */
 // ----------------------------
 
+#ifndef _MSC_VER
 namespace boost {
 
 void tss_cleanup_implemented(void)
@@ -3394,6 +3480,7 @@ solution is no
 }
 
 }
+#endif
 
 void tss_cleanup_implemented(void)
 {

@@ -2563,6 +2563,119 @@ int UEngine::Env_SetDebugMode(bool value)
  return res;
 }
 
+/// Возвращает маску системных событий для логирования
+unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetDebugSysEventsMask();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return false;
+}
+
+/// Устанавливает маску системных событий для логирования
+int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->SetDebugSysEventsMask(value))
+   {
+    return RDK_E_ENV_SET_FLAG_FAIL;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool UEngine::Env_GetDebuggerMessageFlag(void) const
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetDebuggerMessageFlag();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return false;
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+int UEngine::Env_SetDebuggerMessageFlag(bool value)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->SetDebuggerMessageFlag(value))
+   {
+    return RDK_E_ENV_SET_FLAG_FAIL;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
 // Задает число входов среды
 void UEngine::Env_SetNumInputImages(int number)
 {
@@ -2868,6 +2981,8 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 
    if(!destcont)
    {
+	if(cont)
+     Storage->ReturnObject(cont);
 	DestroyTempString(TempString);
 	return 0;
    }
@@ -4017,7 +4132,7 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
  return res;
 }
 
-int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -4035,7 +4150,7 @@ int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_n
    if(!model)
 	return RDK_E_MODEL_NOT_FOUND;
 
-   bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name);
+   bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name, connector_c_index);
    if(!res)
     return RDK_E_MODEL_CREATE_LINK_FAIL;
    res=RDK_SUCCESS;
@@ -6474,7 +6589,7 @@ const char* UEngine::GetUnreadLog(int &error_level)
 }
 
 /// Записывает в лог новое сообщение
-int UEngine::Engine_LogMessage(int log_level, const char *message)
+int UEngine::Engine_LogMessage(int log_level, const char *message, int error_event_number)
 {
  if(!Environment)
   return RDK_E_ENV_NOT_FOUND;
@@ -6484,7 +6599,7 @@ int UEngine::Engine_LogMessage(int log_level, const char *message)
  {
   try
   {
-   Environment->LogMessage(log_level,message);
+   Environment->LogMessage(log_level,message,error_event_number);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)

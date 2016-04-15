@@ -5,12 +5,27 @@
 #include <string>
 #include "../../Deploy/Include/initdll_defs.h"
 
-#define RDK_EX_UNKNOWN 0
-#define RDK_EX_FATAL 1
-#define RDK_EX_ERROR 2
-#define RDK_EX_WARNING 3
-#define RDK_EX_INFO 4
-#define RDK_EX_DEBUG 5
+#define RDK_EX_UNKNOWN 0 // Unknown exception
+#define RDK_EX_FATAL 1 // Fatal error (correction impossible)
+#define RDK_EX_ERROR 2 // Correctable error
+#define RDK_EX_WARNING 3 // Warning (performance, possible errors etc)
+#define RDK_EX_INFO 4 // Information (port open, client connected etc)
+#define RDK_EX_APP 5 // Application-defined event (high-level errors, etc)
+#define RDK_EX_DEBUG 6 // Debug messages (can be switched off)
+
+#define RDK_SYS_DEBUG_CALC 1
+#define RDK_SYS_DEBUG_RESET 2
+#define RDK_SYS_DEBUG_PROPERTIES 4
+#define RDK_SYS_DEBUG_PARAMETERS 8
+#define RDK_SYS_DEBUG_STATES 16
+#define RDK_SYS_DEBUG_INPUTS 32
+#define RDK_SYS_DEBUG_OUTPUTS 64
+
+#define RDK_SYS_MESSAGE_ENTER 1
+#define RDK_SYS_MESSAGE_EXIT_OK 2
+#define RDK_SYS_MESSAGE_EXIT_ININIT_FAIL 4
+#define RDK_SYS_MESSAGE_NEW_CALC_ITERATION 8
+
 
 namespace RDK {
 
@@ -18,8 +33,8 @@ namespace RDK {
 class RDK_LIB_TYPE UException: public std::exception
 {
 protected: // Данные исключения
-// Порядковый номер исключения
-//long long Number;
+// Номер исключения
+int Number;
 
 /// Тип исключения
 /// 0 - неопределено
@@ -158,6 +173,18 @@ struct RDK_LIB_TYPE EDebug: public UException
 EDebug(void);
 EDebug(const EDebug &copy);
 virtual ~EDebug(void) throw();
+// --------------------------
+};
+
+/// Исключение для информирования о высокоуровневом событии приложения
+struct RDK_LIB_TYPE EApp: public UException
+{
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EApp(void);
+EApp(const EApp &copy);
+virtual ~EApp(void) throw();
 // --------------------------
 };
 
@@ -376,7 +403,7 @@ std::string Str;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringFatal(const std::string &str);
+EStringFatal(const std::string &str, int number=0);
 virtual ~EStringFatal(void) throw();
 // --------------------------
 
@@ -396,7 +423,7 @@ std::string Str;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringError(const std::string &str);
+EStringError(const std::string &str, int number=0);
 virtual ~EStringError(void) throw();
 // --------------------------
 
@@ -416,7 +443,7 @@ std::string Str;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringWarning(const std::string &str);
+EStringWarning(const std::string &str, int number=0);
 virtual ~EStringWarning(void) throw();
 // --------------------------
 
@@ -436,7 +463,7 @@ std::string Str;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringInfo(const std::string &str);
+EStringInfo(const std::string &str, int number=0);
 virtual ~EStringInfo(void) throw();
 // --------------------------
 
@@ -448,7 +475,7 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
-// Исключение с простой строкой текста как информационное сообщение
+// Исключение с простой строкой текста как отладочное сообщение
 struct RDK_LIB_TYPE EStringDebug: public EDebug
 {
 std::string Str;
@@ -456,7 +483,7 @@ std::string Str;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringDebug(const std::string &str);
+EStringDebug(const std::string &str, int number=0);
 virtual ~EStringDebug(void) throw();
 // --------------------------
 
@@ -467,6 +494,28 @@ virtual ~EStringDebug(void) throw();
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
+
+/// Исключение для информирования о высокоуровневом событии приложения
+struct RDK_LIB_TYPE EStringApp: public EApp
+{
+std::string Str;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringApp(const std::string &str, int number=0);
+virtual ~EStringApp(void) throw();
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+
 
 // Исключение, которое невозможно обработать
 struct RDK_LIB_TYPE UExceptionUnhandled: public EFatal

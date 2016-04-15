@@ -94,6 +94,28 @@ bool SetPointer(int index, void* value, UIProperty* output)
  return true;
 }
 // --------------------------
+
+// --------------------------
+// Методы управления выходами
+// --------------------------
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const
+{
+ return UIPropertyOutput::GetNumConnectors();
+}
+
+/// Возвращает указатель на компонент-приемник
+virtual UConnector* GetConnector(int index)
+{
+ return UIPropertyOutput::GetConnector(index);
+}
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const
+{
+ return UIPropertyOutput::GetConnectorInputName(index);
+}
+// --------------------------
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>

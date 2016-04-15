@@ -536,6 +536,39 @@ int USerStorageXML::ReadInteger(int node_index, int default_value)
  return res;
 }
 
+unsigned int USerStorageXML::ReadUnsigned(const std::string &name, unsigned int default_value)
+{
+ if(!SelectNode(name))
+  return default_value;
+
+ int res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+unsigned int USerStorageXML::ReadUnsigned(const std::string &name, int node_index, unsigned int default_value)
+{
+ if(!SelectNode(name,node_index))
+  return default_value;
+
+ unsigned int res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+unsigned int USerStorageXML::ReadUnsigned(int node_index, unsigned int default_value)
+{
+ if(!SelectNode(node_index))
+  return default_value;
+
+ unsigned int res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
 double USerStorageXML::ReadFloat(const std::string &name, double default_value)
 {
  if(!SelectNode(name))
@@ -614,6 +647,16 @@ void USerStorageXML::WriteString(const std::string &name, const std::string &val
 }
 
 void USerStorageXML::WriteInteger(const std::string &name, int value)
+{
+ if(!SelectNode(name))
+  AddNode(name);
+
+ SetNodeText(sntoa(value));
+
+ SelectUp();
+}
+
+void USerStorageXML::WriteUnsigned(const std::string &name, unsigned int value)
 {
  if(!SelectNode(name))
   AddNode(name);

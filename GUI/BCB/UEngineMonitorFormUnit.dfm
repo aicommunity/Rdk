@@ -34,31 +34,17 @@ object UEngineMonitorForm: TUEngineMonitorForm
     ExplicitHeight = 234
     inherited RichEdit: TRichEdit
       Width = 600
-      Height = 196
+      Height = 215
       Font.Height = -12
       OnMouseEnter = EngineMonitorFrameRichEditMouseEnter
       ExplicitWidth = 600
-      ExplicitHeight = 200
+      ExplicitHeight = 196
     end
     inherited StatusBar: TStatusBar
-      Top = 196
-      Width = 600
-      ExplicitTop = 200
-      ExplicitWidth = 750
-    end
-    inherited Panel1: TPanel
       Top = 215
       Width = 600
-      ExplicitTop = 215
+      ExplicitTop = 196
       ExplicitWidth = 600
-      inherited ShowDebugMessagesCheckBox: TCheckBox
-        Width = 147
-        ExplicitWidth = 147
-      end
-      inherited AutoupdatePropertiesCheckBox: TCheckBox
-        Left = 148
-        ExplicitLeft = 148
-      end
     end
   end
   object LogTimer: TTimer

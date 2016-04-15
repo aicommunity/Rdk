@@ -44,14 +44,14 @@ bool UException::SetDispatcher(ExceptionDispatcher* value)
 // Конструкторы и деструкторы
 // --------------------------
 UException::UException(void)
-: Type(0), ExLineNumber(-1)
+: Number(0), Type(0), ExLineNumber(-1)
 {
 //Number=++LastNumber;
  std::time(&Time);
 }
 
 UException::UException(const UException &copy)
-: Type(copy.Type), ExFileName(copy.ExFileName), ExLineNumber(copy.ExLineNumber),
+: Number(copy.Number), Type(copy.Type), ExFileName(copy.ExFileName), ExLineNumber(copy.ExLineNumber),
   ObjectName(copy.ObjectName)
 {
 // Number=copy.Number;
@@ -161,8 +161,14 @@ std::string UException::CreateLogMessage(void) const
  result+=" ";
 
  result+=sntoa(GetType());
- result+="> ";
+ result+="> [";
+ if(Number != 0)
+ {
+  result+=sntoa(Number);
+  result+=": ";
+ }
  result+=typeid(*this).name();
+ result+="]";
 
  if(!ExFileName.empty())
  {
@@ -195,7 +201,7 @@ std::string UException::CreateLogMessage(void) const
 // --------------------------
 EFatal::EFatal(void)
 {
- Type=1;
+ Type=RDK_EX_FATAL;
 }
 
 EFatal::EFatal(const EFatal &copy)
@@ -219,7 +225,7 @@ EFatal::~EFatal(void) throw()
 // --------------------------
 EError::EError(void)
 {
- Type=2;
+ Type=RDK_EX_ERROR;
 }
 
 EError::EError(const EError &copy)
@@ -243,7 +249,7 @@ EError::~EError(void) throw()
 // --------------------------
 EWarning::EWarning(void)
 {
- Type=3;
+ Type=RDK_EX_WARNING;
 }
 
 EWarning::EWarning(const EWarning &copy)
@@ -266,7 +272,7 @@ EWarning::~EWarning(void) throw()
 // --------------------------
 EInfo::EInfo(void)
 {
- Type=4;
+ Type=RDK_EX_INFO;
 }
 
 EInfo::EInfo(const EInfo &copy)
@@ -288,7 +294,7 @@ EInfo::~EInfo(void) throw()
 // --------------------------
 EDebug::EDebug(void)
 {
- Type=5;
+ Type=RDK_EX_DEBUG;
 }
 
 EDebug::EDebug(const EDebug &copy)
@@ -303,6 +309,23 @@ EDebug::~EDebug(void) throw()
 }
 // --------------------------
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EApp::EApp(void)
+{
+ Type=RDK_EX_APP;
+}
+
+EApp::EApp(const EApp &copy)
+ : UException(copy)
+{
+}
+
+EApp::~EApp(void) throw()
+{
+}
+// --------------------------
 
 /* Ошибка преобразования строки в число */
 // --------------------------
@@ -491,8 +514,10 @@ std::string EFunctionReturnError::CreateLogMessage(void) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringFatal::EStringFatal(const std::string &str) : Str(str)
+EStringFatal::EStringFatal(const std::string &str, int number)
+ : Str(str)
 {
+ Number=number;
 }
 
 EStringFatal::~EStringFatal(void) throw()
@@ -514,8 +539,10 @@ std::string EStringFatal::CreateLogMessage(void) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringError::EStringError(const std::string &str) : Str(str)
+EStringError::EStringError(const std::string &str, int number)
+ : Str(str)
 {
+ Number=number;
 }
 
 EStringError::~EStringError(void) throw()
@@ -537,8 +564,10 @@ std::string EStringError::CreateLogMessage(void) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringWarning::EStringWarning(const std::string &str) : Str(str)
+EStringWarning::EStringWarning(const std::string &str, int number)
+ : Str(str)
 {
+ Number=number;
 }
 
 EStringWarning::~EStringWarning(void) throw()
@@ -561,8 +590,10 @@ std::string EStringWarning::CreateLogMessage(void) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringInfo::EStringInfo(const std::string &str) : Str(str)
+EStringInfo::EStringInfo(const std::string &str, int number)
+ : Str(str)
 {
+ Number=number;
 }
 
 EStringInfo::~EStringInfo(void) throw()
@@ -580,12 +611,14 @@ std::string EStringInfo::CreateLogMessage(void) const
 }
 // --------------------------
 
-// Исключение с простой строкой текста как информационное сообщение
+// Исключение с простой строкой текста как отладочное сообщение
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStringDebug::EStringDebug(const std::string &str) : Str(str)
+EStringDebug::EStringDebug(const std::string &str, int number)
+ : Str(str)
 {
+ Number=number;
 }
 
 EStringDebug::~EStringDebug(void) throw()
@@ -600,6 +633,31 @@ EStringDebug::~EStringDebug(void) throw()
 std::string EStringDebug::CreateLogMessage(void) const
 {
  return EDebug::CreateLogMessage()+std::string(" ")+Str;
+}
+// --------------------------
+
+/// Исключение для информирования о высокоуровневом событии приложения
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringApp::EStringApp(const std::string &str, int number)
+ : Str(str)
+{
+ Number=number;
+}
+
+EStringApp::~EStringApp(void) throw()
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringApp::CreateLogMessage(void) const
+{
+ return EApp::CreateLogMessage()+std::string(" ")+Str;
 }
 // --------------------------
 

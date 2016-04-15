@@ -46,6 +46,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 /// ¬озвращает локальное врем€ в дн€х (с точностью до миллисекунд) от начала времен
 double GetVariantLocalTime(void)
 {
+ return 0.0;
 // TODO:
 }
 
@@ -129,6 +130,12 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
     return 1;
  }
  return 0;
+}
+
+
+/// ‘ункци€ осуществл€ет вывод в отладочный лог, если сборка в отладке
+void RdkDebuggerMessage(const std::string &message)
+{
 }
 
 }
