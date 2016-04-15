@@ -913,6 +913,7 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_
    ProcessException(exception);
   }
  }
+ break;
 
  case RDK_EX_APP:
  {
