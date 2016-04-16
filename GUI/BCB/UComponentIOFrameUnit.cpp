@@ -307,12 +307,51 @@ void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::
  std::vector<std::string> name_list;
  RDK::separatestring(source,propertries_names_list,',');
 
+ int nonamed_num=0;
+ bool is_named = false;
  for(size_t i=0;i<propertries_names_list.size();i++)
+ {
+  if((propertries_names_list[i].find("DataOutput")!=std::string::npos)||(propertries_names_list[i].find("DataInput")!=std::string::npos))
+   nonamed_num++;
+ }
+ if(nonamed_num<propertries_names_list.size())
+ {
+  is_named = true;
+ }
+ for(size_t i=0, j=0;i<propertries_names_list.size();i++)
  {
   RDK::separatestring(propertries_names_list[i],name_list,':');
   if(name_list.size() == 2)
+  {
 //   result[RDK::atoi(name_list[1])]=name_list[0];
-   result[i]=name_list[0];
+   if(is_named)
+   {
+	if((name_list[0].find("DataOutput")==std::string::npos)&&(name_list[0].find("DataInput")==std::string::npos))
+	{
+	 result[j]=name_list[0];
+	 j++;
+	}
+   }
+   else
+   {
+	if(name_list[0].find("DataInput")!=std::string::npos)
+	{
+	 if(j==0)
+	 {
+	  result[0]="-1";
+	  j++;
+	 }
+	 result[j]=name_list[0];
+	 j++;
+	}
+	else if(name_list[0].find("DataOutput")!=std::string::npos)
+	{
+
+	 result[j]=name_list[0];
+	 j++;
+	}
+   }
+  }
  }
 }
 // -----------------
