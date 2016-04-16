@@ -58,7 +58,7 @@ UEnvironment::UEnvironment(void)
  ExceptionHandler=0;
 
  LastReadExceptionLogIndex=0;
- MaxExceptionsLogSize=1000;
+ MaxExceptionsLogSize=100000;
 
  LastErrorLevel=INT_MAX;
  DebugMode=false;
@@ -758,7 +758,6 @@ int UEnvironment::GetNumUnreadLogLines(void) const
   return int(LogList.size());
 
  int size=0;
- //int(LogList.size())-LastReadExceptionLogIndex-1;
  for(;I!=LogList.end();++I)
   ++size;
  return size;
@@ -848,6 +847,7 @@ void UEnvironment::ClearLog(void)
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
  LogList.clear();
+ LogIndex=1;
 }
 
 /// Очищает лог прочитанных сообщений
@@ -866,8 +866,11 @@ void UEnvironment::ClearReadLog(void)
    J=K;
   }
  }
- LastReadExceptionLogIndex=0;
- CurrentExceptionsLogSize=0;
+ if(!LogList.empty())
+  LastReadExceptionLogIndex=LogList.begin()->first;
+ else
+  LastReadExceptionLogIndex=0;
+ CurrentExceptionsLogSize=LogList.size();
  LastErrorLevel=INT_MAX;
 // TempLogString.clear();
 }
