@@ -15,19 +15,7 @@ TUComponentIOFrame *UComponentIOFrame;
 __fastcall TUComponentIOFrame::TUComponentIOFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
- // Указатель на рассматриваемую сеть
-// Net=0;
-
- // Режим работы:
- // 1 - показывать входы
- // 2 - показывать выходы
- // 3 - показывать входы и выходы
- // 4 - показывать существующие связи
  Mode=1;
-
- // Модификатор режима показа
- // 1 - показывать только входы (выходы, связи) своего уровня
- // 2 - показывать входы (выходы, связи) своего уровня, и всех вложенных сетей
  ShowModifier=2;
 }
 //---------------------------------------------------------------------------
@@ -233,58 +221,23 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 
  StringGrid->RowCount=1;
 
-// LinksListCIterator K,I,J,endI;
-// pair<LinksListCIterator,LinksListCIterator> b;
-
-// NAItem *item;
-// NAConnector *connector;
-// NameT s1,s2;
-
-// I=linkslist.begin();
-// endI=linkslist.end();
  std::string itemname,connname;
  int k=1;
  for(int i=0;i<linkslist.GetSize();i++)
   {
-   itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
+   itemname=linkslist[i].Item.Id;
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
-/*
-   const char *p_buf=Model_GetComponentPropertiesLookupList(itemname.c_str(),ptPubOutput);
-   if(p_buf)
-	item_properties_names=p_buf;
-   else
-	item_properties_names.clear();
-   Engine_FreeBufString(p_buf);
-
-   DecodePropertiesIOList(item_properties_names,item_propertries_names_list);
-  */
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
 	 connname=linkslist[i].Connector[j].Id;
-/*
-	 const char *p_buf=Model_GetComponentPropertiesLookupList(connname.c_str(),ptPubInput);
-	 if(p_buf)
-	  conn_properties_names=p_buf;
-	 else
-	  conn_properties_names.clear();
-	 Engine_FreeBufString(p_buf);
-
-	 DecodePropertiesIOList(conn_properties_names,conn_propertries_names_list);
-*/
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
 	 StringGrid->Cells[1][k]=StrToInt(linkslist[i].Item.Index);
 	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
 	 StringGrid->Cells[3][k]=itemname.c_str();
 
-//	 if(int(item_propertries_names_list.size())>linkslist[i].Item.Index)
-//	  StringGrid->Cells[4][k]=item_propertries_names_list[linkslist[i].Item.Index].c_str();
-//	 else
 	 StringGrid->Cells[4][k]=linkslist[i].Item.Name.c_str();
 	 StringGrid->Cells[5][k]=connname.c_str();
-//	 if(int(conn_propertries_names_list.size())>linkslist[i].Connector[j].Index)
-//	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
-//	 else
-	  StringGrid->Cells[6][k]=linkslist[i].Connector[j].Name.c_str();
+     StringGrid->Cells[6][k]=linkslist[i].Connector[j].Name.c_str();
 	 ++k;
 	}
   }
@@ -298,6 +251,143 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  if(StringGrid->RowCount>current_row && current_row>0)
   StringGrid->Row=current_row;
 }
+
+// Заполняет таблицу входящими связями
+void __fastcall TUComponentIOFrame::ShowInputLinks(void)
+{
+ int current_row=StringGrid->Row;
+ StringGrid->ColCount=3;
+ StringGrid->Cells[0][0]="#";
+ StringGrid->Cells[1][0]="Item";
+ StringGrid->Cells[2][0]="Connector";
+
+ RDK::UStringLinksList linkslist;
+ std::string stringid;
+ std::string conn_properties_names,item_properties_names;
+ std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
+
+ const char *p_buf=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
+ std::string xmlbuffer;
+ if(p_buf)
+  xmlbuffer=p_buf;
+ Engine_FreeBufString(p_buf);
+
+ RDK::USerStorageXML storage;
+ storage.Load(xmlbuffer,"Links");
+ RDK::operator >> (storage,linkslist);
+
+ StringGrid->RowCount=1;
+
+ std::string itemname,connname;
+ int k=1;
+ StringGrid->ColWidths[0]=20;
+ for(int i=0;i<linkslist.GetSize();i++)
+  {
+   itemname=linkslist[i].Item.Id;
+   StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
+   for(size_t j=0;j<linkslist[i].Connector.size();j++)
+	{
+	 connname=linkslist[i].Connector[j].Id;
+	 StringGrid->Cells[0][k]=IntToStr(int(i));
+	 std::string::size_type dot_n=connname.find(".",ViewComponentLongId.size());
+	 std::string::size_type n=connname.find(ViewComponentLongId);
+//	 std::string part_name=connname.substr(0,n);
+//	 if(part_name == ViewComponentLongId)
+	 if(n==0 && (dot_n == std::string::npos || dot_n == ViewComponentLongId.size()))
+	 {
+	  StringGrid->Cells[1][k]=(itemname+std::string(":")+linkslist[i].Item.Name).c_str();
+	  StringGrid->Cells[2][k]=(connname+std::string(":")+linkslist[i].Connector[j].Name).c_str();
+	  int line_size=StringGrid->Canvas->TextWidth(StringGrid->Cells[1][k]);
+	  if(StringGrid->ColWidths[1]<line_size+10)
+	   StringGrid->ColWidths[1]=line_size+10;
+	  line_size=StringGrid->Canvas->TextWidth(StringGrid->Cells[2][k]);
+	  if(StringGrid->ColWidths[2]<line_size+10)
+	   StringGrid->ColWidths[2]=line_size+10;
+	  ++k;
+	 }
+	}
+  }
+ StringGrid->RowCount=k;
+ if(StringGrid->RowCount>1)
+ {
+  StringGrid->FixedRows=1;
+  StringGrid->FixedCols=1;
+ }
+
+ if(StringGrid->RowCount>current_row && current_row>0)
+  StringGrid->Row=current_row;
+}
+
+// Заполняет таблицу исходящими связями
+void __fastcall TUComponentIOFrame::ShowOutputLinks(void)
+{
+ int current_row=StringGrid->Row;
+ StringGrid->ColCount=3;
+ StringGrid->Cells[0][0]="#";
+ StringGrid->Cells[1][0]="Item";
+ StringGrid->Cells[2][0]="Connector";
+
+ RDK::UStringLinksList linkslist;
+ std::string stringid;
+ std::string conn_properties_names,item_properties_names;
+ std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
+
+ const char *p_buf=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
+ std::string xmlbuffer;
+ if(p_buf)
+  xmlbuffer=p_buf;
+ Engine_FreeBufString(p_buf);
+
+ RDK::USerStorageXML storage;
+ storage.Load(xmlbuffer,"Links");
+ RDK::operator >> (storage,linkslist);
+
+ StringGrid->RowCount=1;
+
+ std::string itemname,connname;
+ int k=1;
+ StringGrid->ColWidths[0]=20;
+ for(int i=0;i<linkslist.GetSize();i++)
+  {
+   itemname=linkslist[i].Item.Id;
+   StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
+   for(size_t j=0;j<linkslist[i].Connector.size();j++)
+	{
+	 connname=linkslist[i].Connector[j].Id;
+	 StringGrid->Cells[0][k]=IntToStr(int(i));
+//	 std::string::size_type n=itemname.find(".");
+//	 std::string part_name=itemname.substr(0,n);
+	 std::string::size_type dot_n=itemname.find(".",ViewComponentLongId.size());
+	 std::string::size_type n=itemname.find(ViewComponentLongId);
+//	 if(itemname.substr(0,n) == ViewComponentLongId)
+	 if(n==0 && (dot_n == std::string::npos || dot_n == ViewComponentLongId.size()))
+	 {
+      StringGrid->Cells[0][k]=k;
+	  StringGrid->Cells[1][k]=(itemname+std::string(":")+linkslist[i].Item.Name).c_str();
+	  StringGrid->Cells[2][k]=(connname+std::string(":")+linkslist[i].Connector[j].Name).c_str();
+	  int line_size=StringGrid->Canvas->TextWidth(StringGrid->Cells[1][k]);
+	  if(StringGrid->ColWidths[1]<line_size+10)
+	   StringGrid->ColWidths[1]=line_size+10;
+	  line_size=StringGrid->Canvas->TextWidth(StringGrid->Cells[2][k]);
+	  if(StringGrid->ColWidths[2]<line_size+10)
+	   StringGrid->ColWidths[2]=line_size+10;
+	  ++k;
+	 }
+	}
+  }
+
+ StringGrid->RowCount=k;
+ if(StringGrid->RowCount>1)
+ {
+  StringGrid->FixedRows=1;
+  StringGrid->FixedCols=1;
+ }
+
+ if(StringGrid->RowCount>current_row && current_row>0)
+  StringGrid->Row=current_row;
+}
+
+
 
 // Декодирует список свойств-входов/выходов в map
 void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::map<int, std::string> &result)
@@ -496,6 +586,14 @@ void TUComponentIOFrame::AUpdateInterface(void)
  case 4:
   ShowLinks();
  break;
+
+ case 5:
+  ShowInputLinks();
+ break;
+
+ case 6:
+  ShowOutputLinks();
+ break;
  }
 
  FrameResize(this);
@@ -550,8 +648,8 @@ void __fastcall TUComponentIOFrame::FrameResize(TObject *Sender)
 
  case 4:
   StringGrid->ColWidths[0]=40;
-  StringGrid->ColWidths[1]=40;
-  StringGrid->ColWidths[2]=40;
+  StringGrid->ColWidths[1]=0;
+  StringGrid->ColWidths[2]=0;
   StringGrid->ColWidths[3]=(StringGrid->Width-120)/4;
   StringGrid->ColWidths[4]=(StringGrid->Width-120)/4;
   StringGrid->ColWidths[5]=(StringGrid->Width-120)/4;
