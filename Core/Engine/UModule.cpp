@@ -169,6 +169,7 @@ void UModule::Init(void)
 
  BeforeInit();
  AInit();
+ InitFlag=true;
  AfterInit();
 }
 

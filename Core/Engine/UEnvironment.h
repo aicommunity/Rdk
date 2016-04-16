@@ -65,7 +65,7 @@ protected: // Состояния
 bool StoragePresent;
 
 // Признак успешной инициализации
-bool Initialized;
+//bool Initialized;
 
 // Признак наличия сформированной структуры
 bool Structured;
@@ -316,12 +316,6 @@ void IncreaseModelTimeByStep(void);
 // Методы управления
 // --------------------------
 public:
-// Инициализация среды
-virtual void Init(void);
-
-// Деинициализация среды
-virtual void UnInit(void);
-
 // Формирует предварительно заданную модель обработки
 virtual bool CreateStructure(void);
 

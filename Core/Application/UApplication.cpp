@@ -395,13 +395,13 @@ try{
 //   UComponentsControlForm->ComponentsControlFrame->LoadCommonClassesDescriptionFromFile("CommonClassesDescription.xml");
 //   UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
+   Env_SetDebugMode(channel_config.DebugMode);
+   Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_SetEventsLogMode(channel_config.EventsLogMode);
    Env_CreateStructure();
    Env_Init();
 
-   Env_SetDebugMode(channel_config.DebugMode);
-   Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
 
    if(channel_config.PredefinedStructure == 0 && !channel_config.ModelFileName.empty())
    {

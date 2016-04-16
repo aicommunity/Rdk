@@ -32,10 +32,6 @@ UEnvironment::UEnvironment(void)
  // 0 - Структура определяется извне
  PredefinedStructure=0;
 
- // Состояния
- // Признак успешной инициализации
- InitFlag=Initialized=false;
-
  // Признак наличия сформированной структуры
  Structured=false;
 
@@ -73,6 +69,7 @@ UEnvironment::UEnvironment(void)
  DebugSysEventsMask=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
 
  DebuggerMessageFlag=false;
+ Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
 }
 
 UEnvironment::~UEnvironment(void)
@@ -308,6 +305,12 @@ UEPtr<UContainer> UEnvironment::GetModel(void)
 // Создает новую модель из хранилища по имени класса
 bool UEnvironment::CreateModel(const NameT& classname)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return false;
+ }
+
  if(!IsStoragePresent())
   return false;
 
@@ -325,6 +328,12 @@ bool UEnvironment::CreateModel(const NameT& classname)
 // Создает новую модель из хранилища по id класса
 bool UEnvironment::CreateModel(const UId& classid)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return false;
+ }
+
  if(!IsStoragePresent())
   return false;
 
@@ -368,6 +377,12 @@ UEPtr<UContainer> UEnvironment::GetCurrentComponent(void)
 // Устанавливает указатель на текущий компонент модели
 void UEnvironment::SelectCurrentComponent(const NameT &name)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  if(name == ForbiddenName)
   CurrentComponent=Model;
  else
@@ -376,6 +391,12 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
 
 void UEnvironment::SelectCurrentComponent(const ULongId &id)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  if(id.GetSize() == 0 || id[0] == ForbiddenId)
   CurrentComponent=Model;
  else
@@ -385,6 +406,12 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
 // Устанавливает указатель на текущий компонент модели на саму модель
 void UEnvironment::ResetCurrentComponent(void)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  CurrentComponent=Model;
 }
 
@@ -392,6 +419,12 @@ void UEnvironment::ResetCurrentComponent(void)
 // (переход на уровень вверх). Если уже указывает на модель, то не делает ничего
 void UEnvironment::UpCurrentComponent(void)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  if(CurrentComponent == Model)
   return;
 
@@ -402,11 +435,23 @@ void UEnvironment::UpCurrentComponent(void)
 // любом уровне (переход на уровень вниз).
 void UEnvironment::DownCurrentComponent(const NameT &name)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  CurrentComponent=GetCurrentComponent()->GetComponentL(name);
 }
 
 void UEnvironment::DownCurrentComponent(const ULongId &id)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  CurrentComponent=GetCurrentComponent()->GetComponentL(id);
 }
 
@@ -432,12 +477,19 @@ bool UEnvironment::SetChannelIndex(int value)
  if(ChannelIndex == value)
   return true;
 
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return false;
+ }
+
+
  ChannelIndex=value;
 
+ Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
  if(EventsLogMode && IsInit())
  {
   Logger.Clear();
-  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
   Logger.InitLog();
  }
 
@@ -466,6 +518,12 @@ bool UEnvironment::SetFonts(const RDK::UBitmapFontCollection& value)
 /// источника данных
 bool UEnvironment::RegisterSourceController(const std::string &component_name, const std::string &property_name)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return false;
+ }
+
  SourceControllerName=component_name;
  SourceControllerProperty=property_name;
  return true;
@@ -475,6 +533,12 @@ bool UEnvironment::RegisterSourceController(const std::string &component_name, c
 /// Активация извещения о сбое в работе источника данных
 bool UEnvironment::CallSourceController(void)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return false;
+ }
+
  if(SourceControllerName.empty() || SourceControllerProperty.empty())
   return false;
  try
@@ -503,6 +567,12 @@ bool UEnvironment::CallSourceController(void)
 // Производит увеличение времени модели на требуемую величину
 void UEnvironment::IncreaseModelTimeByStep(void)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  Time.IncreaseModelTimeByStep(GetModel()->GetTimeStep());
 }
 // --------------------------
@@ -527,43 +597,6 @@ bool UEnvironment::IsStoragePresent(void) const
 // --------------------------
 // Методы управления
 // --------------------------
-// Инициализация среды
-void UEnvironment::Init(void)
-{
- if(IsInit())
-  return;
-
- if(EventsLogMode)
- {
-  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
-  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
-  Logger.InitLog();
- }
-
- SetFonts(RDK::GlobalFonts);
- AInit();
-
- ModelCalculationComponent.Resize(0);
- if(Model)
-  Model->Init();
- InitFlag=Initialized=true;
- return;
-}
-
-// Деинициализация среды
-void UEnvironment::UnInit(void)
-{
- if(Model)
-  Model->UnInit();
-
- if(!IsInit())
-  return;
-
- AUnInit();
-
- InitFlag=Initialized=false;
-}
-
 // Формирует предварительно заданную модель обработки
 bool UEnvironment::CreateStructure(void)
 {
@@ -602,6 +635,12 @@ bool UEnvironment::DestroyStructure(void)
 // Расчет модели в реальном времени
 void UEnvironment::RTCalculate(void)
 {
+ if(!IsInit())
+ {
+  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
  Build();
 
  CurrentTime=GetCurrentStartupTime();
@@ -941,12 +980,27 @@ void UEnvironment::LogMessage(int msg_level, const std::string &method_name, con
 // Инициализация среды
 void UEnvironment::AInit(void)
 {
+ if(EventsLogMode)
+ {
+  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
+  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+  Logger.InitLog();
+ }
+
+ SetFonts(RDK::GlobalFonts);
+
+ ModelCalculationComponent.Resize(0);
+ if(Model)
+  Model->Init();
  return;
 }
 
 // Деинициализация среды
 void UEnvironment::AUnInit(void)
 {
+ if(Model)
+  Model->UnInit();
+
  return;
 }
 
