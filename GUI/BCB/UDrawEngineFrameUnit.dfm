@@ -245,8 +245,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Width = 107
       Height = 17
       Caption = 'Show links detail'
-      Checked = True
-      State = cbChecked
       TabOrder = 6
     end
   end

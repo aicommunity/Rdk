@@ -158,6 +158,7 @@ void TUDrawEngineFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("FontSize",FontSize);
  xml.WriteInteger("RectWidth",DrawEngine.GetRectWidth());
  xml.WriteInteger("RectHeight",DrawEngine.GetRectHeight());
+ xml.WriteBool("ShowLinksDetail",ShowLinkDetailCheckBox->Checked);
 }
 
 // Загружает параметры интерфейса из xml
@@ -186,6 +187,8 @@ void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
   Font=*font;
  GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
  SetNet(ComponentName);
+
+ ShowLinkDetailCheckBox->Checked=xml.ReadBool("ShowLinksDetail",false);
 }
 // -----------------------------
 
