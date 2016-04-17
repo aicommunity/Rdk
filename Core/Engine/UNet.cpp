@@ -88,11 +88,14 @@ bool UNet::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // существует в списке компонент
 bool UNet::ADelComponent(UEPtr<UContainer> comp)
 {
- if(dynamic_pointer_cast<UItem>(comp))
-  static_pointer_cast<UItem>(comp)->DisconnectBy(this);
- else
- if(dynamic_pointer_cast<UNet>(comp))
-  static_pointer_cast<UNet>(comp)->BreakLinks(this);
+ if(!comp->IsMoving())
+ {
+  if(dynamic_pointer_cast<UItem>(comp))
+   static_pointer_cast<UItem>(comp)->DisconnectBy(this);
+  else
+  if(dynamic_pointer_cast<UNet>(comp))
+   static_pointer_cast<UNet>(comp)->BreakLinks(this);
+ }
  return true;
 }
 // --------------------------

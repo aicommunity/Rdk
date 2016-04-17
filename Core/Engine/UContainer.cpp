@@ -74,6 +74,7 @@ UContainer::UContainer(void)
 
  CalculationDurationThreshold= -1;
  MaxCalculationDuration = -1;
+ MovingFlag=false;
 }
 
 UContainer::~UContainer(void)
@@ -1238,9 +1239,18 @@ bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
  if(!target->CheckComponentType(comp))
   return false;
 
- DelComponent(comp,false);
- if(target->AddComponent(comp) == ForbiddenId)
-  return false;
+ comp->MovingFlag=true;
+ try
+ {
+  DelComponent(comp,false);
+  if(target->AddComponent(comp) == ForbiddenId)
+   return false;
+ }
+ catch(...)
+ {
+  comp->MovingFlag=false;
+  throw;
+ }
 
  return true;
 }
@@ -1398,6 +1408,11 @@ bool UContainer::SetComponentPosition(const NameT &name, int new_position)
  return false;
 }
 
+/// Флаг, выставляемый на время перемещения компонента
+bool UContainer::IsMoving(void) const
+{
+ return MovingFlag;
+}
 // --------------------------
 
 

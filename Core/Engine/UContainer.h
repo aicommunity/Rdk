@@ -189,6 +189,9 @@ unsigned long long StartCalcTime;
 // Время окончания счета компонента на предыдущем шаге
 unsigned long long LastCalcTime;
 
+/// Флаг, выставляемый на время перемещения компонента
+bool MovingFlag;
+
 protected:
 /// Список свойств, выводимых в детальный лог
 std::vector<std::string> PropertiesForDetailedLog;
@@ -559,6 +562,9 @@ virtual bool ChangeComponentPosition(const NameT &name, int step);
 // Применяется для изменения порядка расчета компонент
 virtual bool SetComponentPosition(int index, int new_position);
 virtual bool SetComponentPosition(const NameT &name, int new_position);
+
+/// Флаг, выставляемый на время перемещения компонента
+bool IsMoving(void) const;
 // --------------------------
 
 // ----------------------
