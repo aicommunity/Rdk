@@ -10,6 +10,7 @@
 //#include "ULinkSelectionFormUnit.h"
 #include "UComponentLinksFormUnit.h"
 #include "UComponentsListFrameUnit.h"
+#include "UComponentsLinksHintFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -35,6 +36,7 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
  StopY=0;
  PopupX=0;
  PopupY=0;
+ LinksHintVisibility=false;
 }
 
 // -----------------------------
@@ -141,6 +143,8 @@ void TUDrawEngineFrame::AUpdateInterface(void)
 void TUDrawEngineFrame::AClearInterface(void)
 {
  NetXml.Destroy();
+ LinksHintVisibility=false;
+// BalloonHint1->HideHint();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -154,6 +158,7 @@ void TUDrawEngineFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("FontSize",FontSize);
  xml.WriteInteger("RectWidth",DrawEngine.GetRectWidth());
  xml.WriteInteger("RectHeight",DrawEngine.GetRectHeight());
+ xml.WriteBool("ShowLinksDetail",ShowLinkDetailCheckBox->Checked);
 }
 
 // Загружает параметры интерфейса из xml
@@ -182,6 +187,8 @@ void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
   Font=*font;
  GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
  SetNet(ComponentName);
+
+ ShowLinkDetailCheckBox->Checked=xml.ReadBool("ShowLinksDetail",false);
 }
 // -----------------------------
 
@@ -276,6 +283,33 @@ void __fastcall TUDrawEngineFrame::ImageMouseDown(TObject *Sender, TMouseButton 
 void __fastcall TUDrawEngineFrame::ImageMouseMove(TObject *Sender, TShiftState Shift,
           int X, int Y)
 {
+ if(ShowLinkDetailCheckBox->Checked || Shift.Contains(ssShift))
+ {
+  std::string name=DrawEngine.FindComponent(X,Y);
+  if(name.empty())
+  {
+   if(UComponentsLinksHintForm->Visible)
+   {
+	UComponentsLinksHintForm->Hide();
+   }
+  }
+  else
+  {
+   if(!UComponentsLinksHintForm->Visible)
+   {
+    TPoint p=Image->ClientToScreen(TPoint(X,Y));
+	if(!ComponentName.empty())
+	{
+	 name=ComponentName+std::string(".")+name;
+    }
+	UComponentsLinksHintForm->ShowLinks(name,"",p.X,p.Y);
+   }
+  }
+ }
+ else
+ if(UComponentsLinksHintForm->Visible && !Shift.Contains(ssShift))
+  UComponentsLinksHintForm->Hide();
+
  if(StartX<0 || StartY <0)
   return;
 
@@ -285,17 +319,7 @@ void __fastcall TUDrawEngineFrame::ImageMouseMove(TObject *Sender, TShiftState S
   DrawEngine.MoveComponent(MoveComponentName, X,Y);
   UpdateInterface();
  }
- /*
- if(LongLinkFlag)//DownShift.Contains(ssRight) && !StartName.empty())
- {
-  ShowCanvas>>Image->Picture->Bitmap;
-  Image->Canvas->Pen->Color=clGreen;
-  Image->Canvas->Pen->Width=1;
-  Image->Canvas->Pen->Style=psDot;
-  Image->Canvas->PenPos=TPoint(StartX,StartY);
-  Image->Canvas->LineTo(StopX,StopY);
- }
-*/
+
 }
 //---------------------------------------------------------------------------
 
@@ -343,15 +367,6 @@ void __fastcall TUDrawEngineFrame::ImageMouseUp(TObject *Sender, TMouseButton Bu
    ImageDragDrop(Sender, UClassesListFrame->StringGrid, X, Y);
   }
  }
-/* else
- if(DownShift.Contains(ssRight) && !DownShift.Contains(ssDouble))
- {
-  if(!LongLinkFlag)
-  {
-   PopupX=X; PopupY=Y;
-   Finishlonglink1Click(Sender);
-  }
- }*/
 
  StartX=StartY=StopX=StopY=-1;
 }
@@ -760,4 +775,6 @@ void __fastcall TUDrawEngineFrame::CopyclasstoClipboard1Click(TObject *Sender)
   ComponentsListFrame->CopyclasstoClipboard2Click(Sender);
 }
 //---------------------------------------------------------------------------
+
+
 

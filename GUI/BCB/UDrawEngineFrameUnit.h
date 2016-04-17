@@ -15,6 +15,8 @@
 #include "TUVisualControllerFrameUnit.h"
 #include "UClassesListFrameUnit.h"
 #include <Vcl.Menus.hpp>
+#include <Vcl.CustomizeDlg.hpp>
+#include "UComponentsLinksHintFormUnit.h"
 
 class TUComponentsListFrame;
 //---------------------------------------------------------------------------
@@ -58,6 +60,7 @@ __published:    // IDE-managed Components
 	TMenuItem *CopynametoClipboard1;
 	TMenuItem *CopylongnametoClipboard1;
 	TMenuItem *CopyclasstoClipboard1;
+	TCheckBox *ShowLinkDetailCheckBox;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -149,6 +152,9 @@ bool LongLinkFlag;
 
 // Флаг, выставляемый в процессе перемещения объекта
 bool MoveFlag;
+
+/// Флаг, выставляемый на время показа подсказки о связях
+bool LinksHintVisibility;
 
 
 // -----------------------------

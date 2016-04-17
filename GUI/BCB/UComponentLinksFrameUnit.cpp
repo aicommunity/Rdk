@@ -132,10 +132,28 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
  if(NANetFrameOutputs->StringGrid->Row <= 0 || NANetFrameInputs->StringGrid->Row <= 0)
   return;
 
- int itemindex=StrToInt(NANetFrameOutputs->StringGrid->Cells[1][NANetFrameOutputs->StringGrid->Row]);
- std::string itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][1]).c_str();
- int connindex=StrToInt(NANetFrameInputs->StringGrid->Cells[1][NANetFrameInputs->StringGrid->Row]);
- std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][1]).c_str();
+ std::string itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][NANetFrameOutputs->StringGrid->Row]).c_str();
+ std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][NANetFrameInputs->StringGrid->Row]).c_str();
+
+ if(itemname.empty())
+ {
+  for(int i=NANetFrameOutputs->StringGrid->Row-1;i>=1;i--)
+  {
+   itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][i]).c_str();
+   if(!itemname.empty())
+	break;
+  }
+ }
+
+ if(connname.empty())
+ {
+  for(int i=NANetFrameInputs->StringGrid->Row-1;i>=1;i--)
+  {
+   connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][i]).c_str();
+   if(!connname.empty())
+	break;
+  }
+ }
 
  if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
  {

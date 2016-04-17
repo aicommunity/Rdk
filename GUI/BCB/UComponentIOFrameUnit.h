@@ -38,6 +38,8 @@ std::string ViewComponentLongId;
 // 2 - показывать выходы
 // 3 - показывать и входы и выходы
 // 4 - показывать существующие связи
+// 5 - показать только входящие связи
+// 6 - показать только исходящие связи
 int Mode;
 
 // Модификатор режима показа
@@ -63,6 +65,12 @@ void __fastcall ShowInputsOutputs(void);
 
 // Заполняет таблицу установленными связями
 void __fastcall ShowLinks(void);
+
+// Заполняет таблицу входящими связями
+void __fastcall ShowInputLinks(void);
+
+// Заполняет таблицу исходящими связями
+void __fastcall ShowOutputLinks(void);
 
 // Декодирует список свойств-входов/выходов в map
 void DecodePropertiesIOList(const std::string &source, std::map<int, std::string> &result);

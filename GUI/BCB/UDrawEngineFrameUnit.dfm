@@ -56,10 +56,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 515
           inherited TreeView: TTreeView
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
@@ -242,6 +238,14 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Caption = 'Restore'
       TabOrder = 5
       OnClick = RestoreButtonClick
+    end
+    object ShowLinkDetailCheckBox: TCheckBox
+      Left = 310
+      Top = 24
+      Width = 107
+      Height = 17
+      Caption = 'Show links detail'
+      TabOrder = 6
     end
   end
   object PopupMenu: TPopupMenu
