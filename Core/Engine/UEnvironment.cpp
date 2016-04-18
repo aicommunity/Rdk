@@ -477,13 +477,6 @@ bool UEnvironment::SetChannelIndex(int value)
  if(ChannelIndex == value)
   return true;
 
- if(!IsInit())
- {
-  LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
-  return false;
- }
-
-
  ChannelIndex=value;
 
  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
