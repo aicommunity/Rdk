@@ -723,18 +723,17 @@ void UEnvironment::ProcessException(UException &exception) const
    LogList.clear();
  }
 
- pair<std::string, int> log;
- log.first=sntoa(ChannelIndex)+std::string("> ")+exception.what();
- log.second=exception.GetType();
+ UException log(exception);
+ log.SetMessage(sntoa(ChannelIndex)+std::string("> ")+exception.what());
  LogList[LogIndex++]=log;
 
  if(EventsLogMode) // Если включено, то сохраняем события в файл
  {
-  Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
+  Logger.LogMessage(log.GetMessage());  // TODO: Проверить на RDK_SUCCESS
  }
 
  if(DebuggerMessageFlag)
-  RdkDebuggerMessage(log.first);
+  RdkDebuggerMessage(log.GetMessage());
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
@@ -745,11 +744,11 @@ const char* UEnvironment::GetLog(int &error_level) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
  TempString.clear();
- std::map<unsigned, pair<std::string, int> >::const_iterator I,J;
+ std::map<unsigned, UException >::const_iterator I,J;
  I=LogList.begin(); J=LogList.end();
  for(;I != J;++I)
  {
-  TempString+=I->second.first;
+  TempString+=I->second.GetMessage();
   TempString+="/r/n";
  }
  error_level=LastErrorLevel;
@@ -765,10 +764,10 @@ int UEnvironment::GetNumLogLines(void) const
 }
 
 /// Возвращает строку лога с индексом i
-const char* UEnvironment::GetLogLine(int i) const
+const char* UEnvironment::GetLogLine(int i, int &error_level, int &number, time_t &time) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
- std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(i);
+ std::map<unsigned, UException >::const_iterator I=LogList.find(i);
 
  if(I == LogList.end())
  {
@@ -776,7 +775,10 @@ const char* UEnvironment::GetLogLine(int i) const
   return TempString.c_str();
  }
 
- TempString=I->second.first;
+ TempString=I->second.GetMessage();
+ error_level=I->second.GetType();
+ number=I->second.GetNumber();
+ time=I->second.GetTime();
  return TempString.c_str();
 }
 
@@ -785,7 +787,7 @@ int UEnvironment::GetNumUnreadLogLines(void) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
 
- std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
+ std::map<unsigned, UException >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
  if(I == LogList.end())
   return int(LogList.size());
 
@@ -797,11 +799,13 @@ int UEnvironment::GetNumUnreadLogLines(void) const
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* UEnvironment::GetUnreadLog(int &error_level)
+const char* UEnvironment::GetUnreadLog(int &error_level, int &number, time_t &time)
 {
  UGenericMutexSharedLocker lock(LogMutex);
  TempString.clear();
  error_level=INT_MAX;
+ number=0;
+ time=time_t();
 
  if(LogList.empty())
   return TempString.c_str();
@@ -809,20 +813,24 @@ const char* UEnvironment::GetUnreadLog(int &error_level)
  if(LastReadExceptionLogIndex == 0)
  {
   LastReadExceptionLogIndex=LogList.begin()->first;
-  TempString=LogList.begin()->second.first;
-  error_level=LogList.begin()->second.second;
+  TempString=LogList.begin()->second.GetMessage();
+  error_level=LogList.begin()->second.GetType();
+  number=LogList.begin()->second.GetNumber();
+  time=LogList.begin()->second.GetTime();
  }
  else
  {
-  std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
+  std::map<unsigned, UException >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
   if(I != LogList.end())
   {
    ++I;
    if(I != LogList.end())
    {
 	LastReadExceptionLogIndex=I->first;
-	TempString=I->second.first;
-	error_level=I->second.second;
+	TempString=I->second.GetMessage();
+	error_level=I->second.GetType();
+	number=I->second.GetNumber();
+	time=I->second.GetTime();
 	return TempString.c_str();
    }
   }
@@ -886,11 +894,11 @@ void UEnvironment::ClearLog(void)
 void UEnvironment::ClearReadLog(void)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
- std::map<unsigned, pair<std::string, int> >::iterator I=LogList.find(LastReadExceptionLogIndex);
+ std::map<unsigned, UException >::iterator I=LogList.find(LastReadExceptionLogIndex);
  if(I != LogList.end())
  {
   ++I;
-  std::map<unsigned, pair<std::string, int> >::iterator J=LogList.begin(),K;
+  std::map<unsigned, UException >::iterator J=LogList.begin(),K;
   while(J != I)
   {
    K=J; ++K;

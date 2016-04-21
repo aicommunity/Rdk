@@ -69,11 +69,11 @@ UException::~UException(void) throw()
 // --------------------------
 // Методы упрвления данными исключения
 // --------------------------
-// Возвращает порядковый номер исключения
-/*long long UException::GetNumber(void) const
+// Возвращает номер исключения
+int UException::GetNumber(void) const
 {
  return Number;
-} */
+}
 
 // Тип исключения
 int UException::GetType(void) const
@@ -123,6 +123,17 @@ std::string UException::GetObjectName(void) const
 void UException::SetObjectName(const std::string &value)
 {
  ObjectName=value;
+}
+
+/// Сообщение исключения сохраненное во внутреннем буфере
+const std::string& UException::GetMessage(void) const
+{
+ return Message;
+}
+
+void UException::SetMessage(const std::string& value)
+{
+ Message=value;
 }
 // --------------------------
 

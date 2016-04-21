@@ -140,7 +140,7 @@ double RTModelCalcTime;
 // Временное хранилище строк
 mutable string TempString;
 
-mutable std::map<unsigned, pair<std::string, int> > LogList;
+mutable std::map<unsigned, UException > LogList;
 
 /// Индекс последней строки лога
 mutable unsigned LogIndex;
@@ -345,14 +345,15 @@ const char* GetLog(int &error_level) const;
 int GetNumLogLines(void) const;
 
 /// Возвращает строку лога с индексом i
-const char* GetLogLine(int i) const;
+const char* GetLogLine(int i, int &error_level, int &number, time_t &time) const;
 
 /// Возвращает число непрочитанных строк лога
 int GetNumUnreadLogLines(void) const;
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* GetUnreadLog(int &error_level);
+const char* GetUnreadLog(int &error_level, int &number, time_t &time);
+bool GetUnreadLog(UException &ex);
 
 // Управление функцией-обработчиком исключений
 PExceptionHandler GetExceptionHandler(void) const;
