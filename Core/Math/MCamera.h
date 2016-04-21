@@ -458,8 +458,8 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
 	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
 
-	res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4+DistortionCoeff[10]*r6+DistortionCoeff[11]*r8;
-	res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4+DistortionCoeff[10]*r6+DistortionCoeff[11]*r8;
+	res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+	res.y+=DistortionCoeff[10]*r2+DistortionCoeff[11]*r4;
    }
    return res;
   }
