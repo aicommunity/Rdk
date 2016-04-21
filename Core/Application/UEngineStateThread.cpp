@@ -354,10 +354,12 @@ void UEngineStateThread::ProcessLog(void)
    if(!MIsEngineInit(*I))
     continue;
    int error_level=-1;
+   int number=0;
+   unsigned long long time=0;
    int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
    for(int k=0;k<num_log_lines;k++)
    {
-	const char * data=MEngine_GetUnreadLog(*I, error_level);
+	const char * data=MEngine_GetUnreadLog(*I, error_level,number,time);
 	if(!data)
 	 continue;
 	if(global_error_level>error_level)

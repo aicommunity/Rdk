@@ -77,8 +77,8 @@ virtual ~UException(void) throw();
 // --------------------------
 // Методы упрвления данными исключения
 // --------------------------
-// Возвращает порядковый номер исключения
-//long long GetNumber(void) const;
+// Возвращает номер исключения
+int GetNumber(void) const;
 
 // Тип исключения
 int GetType(void) const;
@@ -98,6 +98,10 @@ void SetExLineNumber(int value);
 /// Имя объекта сгенерировавшего искючение
 std::string GetObjectName(void) const;
 void SetObjectName(const std::string &value);
+
+/// Сообщение исключения сохраненное во внутреннем буфере
+const std::string& GetMessage(void) const;
+void SetMessage(const std::string& value);
 // --------------------------
 
 // --------------------------

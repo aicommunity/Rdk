@@ -163,7 +163,7 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
  std::string conn_property_name=AnsiString(NANetFrameInputs->StringGrid->Cells[3][NANetFrameInputs->StringGrid->Row]).c_str();
  std::string item_property_name=AnsiString(NANetFrameOutputs->StringGrid->Cells[3][NANetFrameOutputs->StringGrid->Row]).c_str();
 
- if(item_property_name.find("DataOutput")!=std::string::npos)
+ if(item_property_name.find("DataOutput")!=std::string::npos && (conn_property_name.find("DataInput")!=std::string::npos || conn_property_name.find("-1")!=std::string::npos))
  {
   int item_index, conn_index;
   item_index = RDK::atoi(item_property_name.substr(item_property_name.find_last_of("DataOutput")+1));
