@@ -4,16 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UException.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UIniFile.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UPtr.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/URegistry.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/USupport.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UTimeStamp.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UTransferPacket.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UTree.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/Utilities.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/Utilities_lite.cpp 
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UException.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UIniFile.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UPtr.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/URegistry.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/USupport.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UTimeStamp.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UTransferPacket.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UTree.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/Utilities.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/Utilities_lite.cpp 
 
 OBJS += \
 ./Core/Utilities/UException.o \
@@ -41,70 +41,70 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Core/Utilities/UException.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UException.cpp
+Core/Utilities/UException.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UException.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/UIniFile.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UIniFile.cpp
+Core/Utilities/UIniFile.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UIniFile.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/UPtr.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UPtr.cpp
+Core/Utilities/UPtr.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UPtr.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/URegistry.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/URegistry.cpp
+Core/Utilities/URegistry.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/URegistry.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/USupport.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/USupport.cpp
+Core/Utilities/USupport.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/USupport.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/UTimeStamp.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UTimeStamp.cpp
+Core/Utilities/UTimeStamp.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UTimeStamp.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/UTransferPacket.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UTransferPacket.cpp
+Core/Utilities/UTransferPacket.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UTransferPacket.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/UTree.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/UTree.cpp
+Core/Utilities/UTree.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/UTree.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/Utilities.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/Utilities.cpp
+Core/Utilities/Utilities.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/Utilities.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Utilities/Utilities_lite.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Utilities/Utilities_lite.cpp
+Core/Utilities/Utilities_lite.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Utilities/Utilities_lite.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"

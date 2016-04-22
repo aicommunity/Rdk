@@ -4,19 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MCamera.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MCorrelation.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MDKalmanFilter.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MGeometry.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MGraphics.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MMatrix.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MMatrixBase.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MUBinarySerialize.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MUIOStream.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MUXMLSerialize.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MVector.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/UMath.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/UMath_lite.cpp 
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MCamera.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MCorrelation.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MDKalmanFilter.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MGeometry.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MGraphics.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MMatrix.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MMatrixBase.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MUBinarySerialize.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MUIOStream.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MUXMLSerialize.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/MVector.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/UMath.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Math/UMath_lite.cpp 
 
 OBJS += \
 ./Core/Math/MCamera.o \
@@ -50,91 +50,91 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Core/Math/MCamera.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MCamera.cpp
+Core/Math/MCamera.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MCamera.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MCorrelation.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MCorrelation.cpp
+Core/Math/MCorrelation.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MCorrelation.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MDKalmanFilter.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MDKalmanFilter.cpp
+Core/Math/MDKalmanFilter.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MDKalmanFilter.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MGeometry.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MGeometry.cpp
+Core/Math/MGeometry.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MGeometry.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MGraphics.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MGraphics.cpp
+Core/Math/MGraphics.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MGraphics.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MMatrix.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MMatrix.cpp
+Core/Math/MMatrix.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MMatrix.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MMatrixBase.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MMatrixBase.cpp
+Core/Math/MMatrixBase.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MMatrixBase.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MUBinarySerialize.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MUBinarySerialize.cpp
+Core/Math/MUBinarySerialize.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MUBinarySerialize.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MUIOStream.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MUIOStream.cpp
+Core/Math/MUIOStream.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MUIOStream.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MUXMLSerialize.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MUXMLSerialize.cpp
+Core/Math/MUXMLSerialize.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MUXMLSerialize.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/MVector.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/MVector.cpp
+Core/Math/MVector.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/MVector.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/UMath.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/UMath.cpp
+Core/Math/UMath.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/UMath.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Math/UMath_lite.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Math/UMath_lite.cpp
+Core/Math/UMath_lite.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Math/UMath_lite.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"

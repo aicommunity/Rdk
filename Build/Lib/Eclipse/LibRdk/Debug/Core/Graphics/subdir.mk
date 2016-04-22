@@ -4,18 +4,18 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/Graphics.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/Gui.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/Kernel.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UAGraphics.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UBitmap.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UBitmapVector.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UDrawEngine.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UFont.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphics.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphicsBinarySerialize.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphicsIO.cpp \
-/home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphicsXMLSerialize.cpp 
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/Graphics.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/Gui.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/Kernel.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UAGraphics.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UBitmap.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UBitmapVector.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UDrawEngine.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UFont.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphics.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphicsBinarySerialize.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphicsIO.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphicsXMLSerialize.cpp 
 
 OBJS += \
 ./Core/Graphics/Graphics.o \
@@ -47,84 +47,84 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Core/Graphics/Graphics.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/Graphics.cpp
+Core/Graphics/Graphics.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/Graphics.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/Gui.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/Gui.cpp
+Core/Graphics/Gui.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/Gui.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/Kernel.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/Kernel.cpp
+Core/Graphics/Kernel.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/Kernel.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UAGraphics.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UAGraphics.cpp
+Core/Graphics/UAGraphics.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UAGraphics.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UBitmap.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UBitmap.cpp
+Core/Graphics/UBitmap.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UBitmap.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UBitmapVector.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UBitmapVector.cpp
+Core/Graphics/UBitmapVector.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UBitmapVector.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UDrawEngine.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UDrawEngine.cpp
+Core/Graphics/UDrawEngine.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UDrawEngine.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UFont.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UFont.cpp
+Core/Graphics/UFont.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UFont.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UGraphics.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphics.cpp
+Core/Graphics/UGraphics.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphics.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UGraphicsBinarySerialize.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphicsBinarySerialize.cpp
+Core/Graphics/UGraphicsBinarySerialize.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphicsBinarySerialize.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UGraphicsIO.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphicsIO.cpp
+Core/Graphics/UGraphicsIO.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphicsIO.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Core/Graphics/UGraphicsXMLSerialize.o: /home/klavesin/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Graphics/UGraphicsXMLSerialize.cpp
+Core/Graphics/UGraphicsXMLSerialize.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Graphics/UGraphicsXMLSerialize.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
