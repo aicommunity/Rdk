@@ -31,6 +31,9 @@ public:
 // Прототип функции обратного вызова обработчика исключений
 typedef void (*PExceptionHandler)(int channel_index);
 
+// Прототип функции предобработки исключений
+typedef bool (*PExceptionPreprocessor)(RDK::UEnvironment * env, RDK::UContainer *model, UException &in_exception, UException &out_exception);
+
 protected: // Параметры
 // Индекс предварительно заданной модели обработки
 // 0 - Структура определяется извне
@@ -92,6 +95,9 @@ double MaxModelDuration;
 
 // Внешний обработчик исключений
 PExceptionHandler ExceptionHandler;
+
+// Внешняя функция предобработки исключений
+PExceptionPreprocessor ExceptionPreprocessor;
 
 // Текущее число исключений системы
 mutable int CurrentExceptionsLogSize;
@@ -358,6 +364,10 @@ bool GetUnreadLog(UException &ex);
 // Управление функцией-обработчиком исключений
 PExceptionHandler GetExceptionHandler(void) const;
 bool SetExceptionHandler(PExceptionHandler value);
+
+/// Управление функцией-предобработчиком исключений
+PExceptionPreprocessor GetExceptionPreprocessor(void) const;
+bool SetExceptionPreprocessor(PExceptionPreprocessor value);
 
 /// Очищает лог
 void ClearLog(void);

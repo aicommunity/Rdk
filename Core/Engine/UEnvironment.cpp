@@ -52,6 +52,7 @@ UEnvironment::UEnvironment(void)
 
  CurrentExceptionsLogSize=0;
  ExceptionHandler=0;
+ ExceptionPreprocessor=0;
 
  LastReadExceptionLogIndex=0;
  MaxExceptionsLogSize=100000;
@@ -708,8 +709,16 @@ void UEnvironment::ProcessException(UException &exception) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
 
- if(LastErrorLevel>exception.GetType())
-  LastErrorLevel=exception.GetType();
+ UException* processed_exception=&exception;
+ UException temp_ex;
+ if(ExceptionPreprocessor)
+ {
+  if(ExceptionPreprocessor(const_cast<UEnvironment*>(this),Model, exception,temp_ex))
+   processed_exception=&temp_ex;
+ }
+
+ if(LastErrorLevel>processed_exception->GetType())
+  LastErrorLevel=processed_exception->GetType();
  ++CurrentExceptionsLogSize;
  if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
@@ -723,8 +732,8 @@ void UEnvironment::ProcessException(UException &exception) const
    LogList.clear();
  }
 
- UException log(exception);
- log.SetMessage(sntoa(ChannelIndex)+std::string("> ")+exception.what());
+ UException log(*processed_exception);
+ log.SetMessage(sntoa(ChannelIndex)+std::string("> ")+processed_exception->what());
  LogList[LogIndex++]=log;
 
  if(EventsLogMode) // Если включено, то сохраняем события в файл
@@ -856,6 +865,22 @@ bool UEnvironment::SetExceptionHandler(PExceptionHandler value)
  ExceptionHandler=value;
  return true;
 }
+
+// Управление функцией-предобработчиком исключений
+UEnvironment::PExceptionPreprocessor UEnvironment::GetExceptionPreprocessor(void) const
+{
+ return ExceptionPreprocessor;
+}
+
+bool UEnvironment::SetExceptionPreprocessor(PExceptionPreprocessor value)
+{
+ if(ExceptionPreprocessor == value)
+  return true;
+
+ ExceptionPreprocessor=value;
+ return true;
+}
+
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
