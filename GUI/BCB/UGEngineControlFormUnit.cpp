@@ -102,6 +102,53 @@ bool RdkIsApplicationRunning(void)
  return false;
 }
 
+/// Получение версии приложения
+bool GetBuildInfo(WORD &v1, WORD &v2, WORD &v3, WORD &v4)
+{
+ DWORD VerInfoSize, Dummy;
+ unsigned int VerValueSize;
+ void* VerInfo(0);
+ PVSFixedFileInfo VerValue(0);
+
+  VerInfoSize = GetFileVersionInfoSize(AnsiString(Application->ExeName).c_str(), &Dummy);
+  if(VerInfoSize > 0)
+  {
+	  VerInfo=GetMemory(VerInfoSize);
+	  try
+	  {
+		if(GetFileVersionInfo(AnsiString(Application->ExeName).c_str(), 0, VerInfoSize, VerInfo))
+		{
+		  VerQueryValue(VerInfo, "\\", (void**)&VerValue, &VerValueSize);
+		  if(VerValue)
+		  {
+			v1 = VerValue->dwFileVersionMS >> 16;
+			v2 = VerValue->dwFileVersionMS & 0xFFFF;
+			v3 = VerValue->dwFileVersionLS >> 16;
+			v4 = VerValue->dwFileVersionLS & 0xFFFF;
+			return true;
+		  }
+		}
+	  }
+	  __finally
+	  {
+		FreeMemory(VerInfo);
+      }
+   return false;
+  }
+ return false;
+}
+
+String GetBuildInfoAsString(void)
+{
+ WORD v1, v2, v3, v4;
+ if(GetBuildInfo(v1, v2, v3, v4))
+ {
+  return IntToStr(v1) + "." + IntToStr(v2) + "." +
+	IntToStr(v3) + "." + IntToStr(v4);
+ }
+ return "";
+}
+
 //---------------------------------------------------------------------------
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
@@ -245,6 +292,11 @@ void TUGEngineControlForm::AUpdateInterface(void)
 #endif
 
  Caption=ProgramName;
+ if(VersionString.Length()>0)
+ {
+  Caption=Caption+" Build ";
+  Caption=Caption+VersionString;
+ }
  if(RdkApplication.GetProjectOpenFlag())
  {
   Caption=Caption+String(" ")+RdkApplication.GetAppCaption().c_str();
@@ -2214,6 +2266,14 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
  RdkApplication.Init();
+
+ VersionString=GetBuildInfoAsString();
+ Caption=ProgramName;
+ if(VersionString.Length()>0)
+ {
+  Caption=Caption+" Build ";
+  Caption=Caption+VersionString;
+ }
 
 
 }
