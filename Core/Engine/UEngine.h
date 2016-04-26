@@ -926,7 +926,7 @@ const char* GetLog(int &error_level) const;
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* GetUnreadLog(int &error_level);
+const char* GetUnreadLog(int &error_level, int &number, time_t &time);
 
 /// Записывает в лог новое сообщение
 int Engine_LogMessage(int log_level, const char *message, int error_event_number=0);
