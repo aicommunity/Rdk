@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <iostream>
 #include <dirent.h>
+#include <string.h>
 
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"
@@ -124,6 +125,8 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 	 return errno;
 	while ((dirp = readdir(dp)) != NULL)
 	{
+	if((strcmp(dirp->d_name, ".") == 0) || (strcmp(dirp->d_name, "..") == 0))
+		continue;
 	 results.push_back(std::string(dirp->d_name));
 	}
 	closedir(dp);
