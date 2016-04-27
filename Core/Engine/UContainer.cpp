@@ -265,6 +265,12 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, con
  }
 }
 
+void UContainer::LogMessageEx(int msg_level, const std::string &method_name, int line, int error_event_number)
+{
+	std::string str_line = sntoa(line);
+	LogMessageEx(msg_level, method_name, str_line, error_event_number);
+}
+
 void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)
 {
  if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (debug_sys_msg_type & DebugSysEventsMask)))
