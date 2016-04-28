@@ -624,6 +624,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
    xml.WriteString(std::string("CellMouseClickComponent")+name,MouseClickComponents[i][j].first.c_str());
    xml.WriteString(std::string("CellMouseClickProperty")+name,MouseClickComponents[i][j].second.c_str());
+   xml.WriteInteger(std::string("ComponentChannelIndexes")+name,ComponentChannelIndexes[i][j]);
   }
  }
 
@@ -661,6 +662,7 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
    StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
    ComponentIndexes[i][j]=xml.ReadString(std::string("CellIndexNew")+name,"");
    ComponentIndexesOld[i][j]=xml.ReadInteger(std::string("CellIndex")+name,-1);
+   ComponentChannelIndexes[i][j]=xml.ReadInteger(std::string("ComponentChannelIndexes")+name,0);
    Legends[i][j]=xml.ReadString(std::string("CellLegend")+name,Legends[i][j].c_str());
    if(Legends[i][j].empty())
    {
