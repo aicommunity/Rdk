@@ -250,6 +250,7 @@ virtual void LogMessage(int msg_level, const std::string &line, int error_event_
 virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 virtual void LogMessageEx(int msg_level, const std::string &line, int error_event_number=0);
 virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
+virtual void LogMessageEx(int msg_level, const std::string &method_name, int line, int error_event_number=0);
 
 virtual void LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier);
 
