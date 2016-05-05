@@ -235,7 +235,7 @@ void UContainer::LogMessage(int msg_level, const std::string &line, int error_ev
 {
  if(Environment)
  {
-  Environment->LogMessage(msg_level, line, error_event_number);
+  Environment->LogMessageEx(msg_level, GetFullName(), line, error_event_number);
  }
 }
 
@@ -243,7 +243,7 @@ void UContainer::LogMessage(int msg_level, const std::string &method_name, const
 {
  if(Environment)
  {
-  Environment->LogMessage(msg_level, method_name, line, error_event_number);
+  Environment->LogMessageEx(msg_level, GetFullName(), method_name, line, error_event_number);
  }
 }
 
@@ -252,7 +252,8 @@ void UContainer::LogMessageEx(int msg_level, const std::string &line, int error_
  if(Environment)
  {
   std::string full_name;
-  Environment->LogMessage(msg_level, GetFullName(full_name)+std::string(" - ")+line, error_event_number);
+  GetFullName(full_name);
+  Environment->LogMessageEx(msg_level, full_name, full_name+std::string(" - ")+line, error_event_number);
  }
 }
 
@@ -261,14 +262,15 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, con
  if(Environment)
  {
   std::string full_name;
-  Environment->LogMessage(msg_level, method_name, GetFullName(full_name)+std::string(" - ")+line, error_event_number);
+  GetFullName(full_name);
+  Environment->LogMessageEx(msg_level, full_name, method_name, full_name+std::string(" - ")+line, error_event_number);
  }
 }
 
 void UContainer::LogMessageEx(int msg_level, const std::string &method_name, int line, int error_event_number)
 {
-	std::string str_line = sntoa(line);
-	LogMessageEx(msg_level, method_name, str_line, error_event_number);
+ std::string str_line = sntoa(line);
+ LogMessageEx(msg_level, method_name, str_line, error_event_number);
 }
 
 void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)

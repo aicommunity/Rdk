@@ -943,18 +943,28 @@ void UEnvironment::ClearReadLog(void)
 // Вызов обработчика исключений среды для простой записи данных в лог
 void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
+ LogMessageEx(msg_level, "", line, error_event_number);
+}
+
+void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
+{
+ LogMessageEx(msg_level, "", method_name, line, error_event_number);
+}
+
+void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number)
+{
  switch (msg_level)
  {
  case RDK_EX_FATAL:
  {
   EStringFatal exception(line,error_event_number);
-  ProcessException(exception);
  }
  break;
 
  case RDK_EX_ERROR:
  {
   EStringError exception(line,error_event_number);
+  exception.SetObjectName(object_name);
   ProcessException(exception);
  }
  break;
@@ -962,6 +972,7 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_
  case RDK_EX_WARNING:
  {
   EStringWarning exception(line,error_event_number);
+  exception.SetObjectName(object_name);
   ProcessException(exception);
  }
  break;
@@ -969,6 +980,7 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_
  case RDK_EX_INFO:
  {
   EStringInfo exception(line,error_event_number);
+  exception.SetObjectName(object_name);
   ProcessException(exception);
  }
  break;
@@ -978,6 +990,7 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_
   if(DebugMode)
   {
    EStringDebug exception(line,error_event_number);
+   exception.SetObjectName(object_name);
    ProcessException(exception);
   }
  }
@@ -986,17 +999,17 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_
  case RDK_EX_APP:
  {
   EStringApp exception(line,error_event_number);
+  exception.SetObjectName(object_name);
   ProcessException(exception);
  }
  break;
  }
 }
 
-void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
+void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number)
 {
- LogMessage(msg_level, method_name+std::string(" - ")+line, error_event_number);
+ LogMessageEx(msg_level, object_name, method_name+std::string(" - ")+line, error_event_number);
 }
-
 // --------------------------
 
 
