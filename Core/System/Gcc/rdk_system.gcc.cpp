@@ -27,7 +27,7 @@ unsigned long long GetCurrentStartupTime(void)
 
  timeval currentTime;
  gettimeofday(&currentTime, NULL);
- unsigned long long result = currentTime.tv_sec*1000 + currentTime.tv_usec/1000;
+ unsigned long long result = ((unsigned long long)currentTime.tv_sec)*1000 + currentTime.tv_usec/1000;
 
  return result;
 }
