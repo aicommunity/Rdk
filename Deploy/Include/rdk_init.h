@@ -96,7 +96,7 @@ RDK_LIB_TYPE const char* RDK_CALL Core_GetSystemDir(void);
 RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void); // deprecated
 
 // Устанавливает имя каталога бинарных файлов
-RDK_LIB_TYPE int RDK_CALL Coe_SetSystemDir(const char *dir);
+RDK_LIB_TYPE int RDK_CALL Core_SetSystemDir(const char *dir);
 RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir); // deprecated
 
 // Загружает глобальные шрифты
