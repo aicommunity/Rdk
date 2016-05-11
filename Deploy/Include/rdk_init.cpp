@@ -461,7 +461,7 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
   {
    if(GetNumEngines()<=DllManager.GetSelectedChannelIndex())
    {
-    res=SetNumEngines(DllManager.GetSelectedChannelIndex()+1);
+	res=SetNumEngines(DllManager.GetSelectedChannelIndex()+1);
 
 	if(res != RDK_SUCCESS)
 	 return res;

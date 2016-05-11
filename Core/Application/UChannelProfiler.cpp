@@ -279,7 +279,7 @@ void UChannelProfiler::ClearPerfomanceData(void)
 void UChannelProfiler::AddComponentPerfomanceData(int index, long long value)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- if(index<0 || index>=ComponentsPerfomance.size())
+ if(index<0 || index>=int(ComponentsPerfomance.size()))
   return;
 
  ComponentsPerfomance[index].AddHistory(value,AverageIterations);
@@ -294,7 +294,7 @@ void UChannelProfiler::AddComponentPerfomanceData(const std::string &name, long 
 void UChannelProfiler::AddGuiPerfomanceData(int index, long long value)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- if(index<0 || index>=GuiPerfomance.size())
+ if(index<0 || index>=int(GuiPerfomance.size()))
   return;
 
  GuiPerfomance[index].AddHistory(value,AverageIterations);
@@ -304,18 +304,32 @@ void UChannelProfiler::AddGuiPerfomanceData(int index, long long value)
 void UChannelProfiler::LoadCorePerfomanceData(void)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- for(size_t i=0;i<ComponentsName.size();i++)
+ UELockPtr<UEngine> engine(GetEngineLock(ChannelIndex));
+ UEPtr<UNet> model(GetModel<UNet>(ChannelIndex));
+ if(!model)
+  return;
+ try
  {
-  AddComponentPerfomanceData(i, MModel_GetFullStepDuration(ChannelIndex, ComponentsName[i].c_str()));
- }
- ModelPerfomance.AddHistory(MModel_GetFullStepDuration(ChannelIndex, ""),AverageIterations);
- OtherPerfomance.AddHistory(MModel_GetInterstepsInterval(ChannelIndex, ""),AverageIterations);
+  for(size_t i=0;i<ComponentsName.size();i++)
+  {
+   UEPtr<UNet> component=model->GetComponentL<UNet>(ComponentsName[i],true);
+   if(component)
+	AddComponentPerfomanceData(i, component->GetFullStepDuration());
+  }
+  ModelPerfomance.AddHistory(model->GetFullStepDuration(),AverageIterations);
+  OtherPerfomance.AddHistory(model->GetInterstepsInterval(),AverageIterations);
 
- IntegralPerfomanceResults.ModelTime=MModel_GetDoubleTime(ChannelIndex);
- IntegralPerfomanceResults.RealTime=MModel_GetDoubleRealTime(ChannelIndex);
- IntegralPerfomanceResults.RtCalcDuration=MEnv_GetRTLastDuration(ChannelIndex);
- IntegralPerfomanceResults.RtModelDuration=MEnv_GetRTModelCalcTime(ChannelIndex);
- IntegralPerfomanceResults.RtPerfomance=MEnv_CalcRTPerformance(ChannelIndex);
+  UEPtr<UEnvironment> env=GetEnvironment(ChannelIndex);
+  IntegralPerfomanceResults.ModelTime=env->GetTime().GetDoubleTime();
+  IntegralPerfomanceResults.RealTime=env->GetTime().GetDoubleRealTime();
+  IntegralPerfomanceResults.RtCalcDuration=env->GetRTLastDuration();
+  IntegralPerfomanceResults.RtModelDuration=env->GetRTModelCalcTime();
+  IntegralPerfomanceResults.RtPerfomance=env->CalcRTPerformance();
+ }
+ catch(UException &ex)
+ {
+  engine->ProcessException(ex);
+ }
 }
 
 /// Выполняет считывание сырых данных gui о производительности
@@ -467,7 +481,7 @@ UPerfomanceResults UChannelProfiler::GetComponentPerfomance(const std::string &n
 UPerfomanceResults UChannelProfiler::GetComponentPerfomance(int index) const
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- if(index<0 || index>=ComponentsPerfomance.size())
+ if(index<0 || index>=int(ComponentsPerfomance.size()))
   return UPerfomanceResults();
  return ComponentsPerfomance[index];
 }
@@ -476,7 +490,7 @@ UPerfomanceResults UChannelProfiler::GetComponentPerfomance(int index) const
 UPerfomanceResults UChannelProfiler::GetGuiPerfomance(int index) const
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- if(index<0 || index>=GuiPerfomance.size())
+ if(index<0 || index>=int(GuiPerfomance.size()))
   return UPerfomanceResults();
  return GuiPerfomance[index];
 }

@@ -50,7 +50,7 @@ namespace RDK {
 template<class T>
 RDK::UELockPtr<T> GetModelLock(void)
 {
- RDK::UEPtr<T> p=dynamic_pointer_cast<T>(GetModel());
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel());
  if(!p)
   return RDK::UELockPtr<T>();
  return RDK::UELockPtr<T>((UGenericMutex*)Engine_GetMutex(),p);
@@ -59,10 +59,22 @@ RDK::UELockPtr<T> GetModelLock(void)
 template<class T>
 RDK::UELockPtr<T> GetModelLock(int engine_index)
 {
- RDK::UEPtr<T> p=dynamic_pointer_cast<T>(GetModel(engine_index));
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel(engine_index));
  if(!p)
   return RDK::UELockPtr<T>();
  return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(engine_index),p);
+}
+
+template<class T>
+RDK::UEPtr<T> GetModel(void)
+{
+ return dynamic_pointer_cast<T>(::GetModel());
+}
+
+template<class T>
+RDK::UEPtr<T> GetModel(int engine_index)
+{
+ return dynamic_pointer_cast<T>(::GetModel(engine_index));
 }
 
 // Исключения
