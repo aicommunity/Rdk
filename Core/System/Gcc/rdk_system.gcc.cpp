@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <iostream>
 #include <dirent.h>
+#include <string.h>
 
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"
@@ -27,7 +28,7 @@ unsigned long long GetCurrentStartupTime(void)
 
  timeval currentTime;
  gettimeofday(&currentTime, NULL);
- unsigned long long result = currentTime.tv_sec*1000 + currentTime.tv_usec/1000;
+ unsigned long long result = ((unsigned long long)currentTime.tv_sec)*1000 + currentTime.tv_usec/1000;
 
  return result;
 }
@@ -124,6 +125,8 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 	 return errno;
 	while ((dirp = readdir(dp)) != NULL)
 	{
+	if((strcmp(dirp->d_name, ".") == 0) || (strcmp(dirp->d_name, "..") == 0))
+		continue;
 	 results.push_back(std::string(dirp->d_name));
 	}
 	closedir(dp);
