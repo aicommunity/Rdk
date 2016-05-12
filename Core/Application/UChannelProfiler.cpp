@@ -316,8 +316,10 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
    if(component)
 	AddComponentPerfomanceData(i, component->GetFullStepDuration());
   }
-  ModelPerfomance.AddHistory(model->GetFullStepDuration(),AverageIterations);
-  OtherPerfomance.AddHistory(model->GetInterstepsInterval(),AverageIterations);
+  long long full_step=model->GetFullStepDuration();
+  long long interstep_interval=model->GetInterstepsInterval();
+  ModelPerfomance.AddHistory(full_step,AverageIterations);
+  OtherPerfomance.AddHistory(interstep_interval,AverageIterations);
 
   UEPtr<UEnvironment> env=GetEnvironment(ChannelIndex);
   IntegralPerfomanceResults.ModelTime=env->GetTime().GetDoubleTime();
@@ -443,8 +445,8 @@ void UChannelProfiler::CalcProfilerOutputData(void)
  perf.second=SummaryGuiPerfomance;
  ComponentsProfilerOutputData.push_back(perf);
  perf.first="Overhead";
- perf.second.AvgDuration=OtherPerfomance.AvgDuration-SummaryGuiPerfomance.AvgDuration;
- perf.second.Percentage=OtherPerfomance.Percentage-SummaryGuiPerfomance.Percentage;
+ perf.second.AvgDuration=OtherPerfomance.AvgDuration;
+ perf.second.Percentage=OtherPerfomance.Percentage;
  ComponentsProfilerOutputData.push_back(perf);
 
  perf.first="Full Step";
@@ -456,11 +458,21 @@ void UChannelProfiler::CalcProfilerOutputData(void)
 /// Производит полный расчет данных профайлера
 void UChannelProfiler::Calculate(void)
 {
+ CalculateCore();
+ CalculateGui();
+ CalcProfilerOutputData();
+}
+
+void UChannelProfiler::CalculateCore(void)
+{
  LoadCorePerfomanceData();
  CalcCorePerfomance();
+}
+
+void UChannelProfiler::CalculateGui(void)
+{
  LoadGuiPerfomanceData();
  CalcGuiPerfomance();
- CalcProfilerOutputData();
 }
 /// --------------------------
 

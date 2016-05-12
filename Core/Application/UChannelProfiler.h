@@ -206,6 +206,8 @@ void CalcProfilerOutputData(void);
 
 /// Производит полный расчет данных профайлера
 void Calculate(void);
+void CalculateCore(void);
+void CalculateGui(void);
 /// --------------------------
 
 /// --------------------------
