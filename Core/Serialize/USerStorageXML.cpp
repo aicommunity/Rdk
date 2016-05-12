@@ -173,7 +173,6 @@ bool USerStorageXML::SaveFromNode(std::string &str)
 bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root)
 {
  fstream file(file_name.c_str(), ios::in);
-// char buffer[4096];
 
  string result;
 
