@@ -94,9 +94,9 @@ UELockPtr<T>::~UELockPtr(void)
 template<typename T>
 UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
 {
- PData=p;
+ this->PData=p;
  Mutex=p.Mutex;
- P.ForceForget();
+ p.ForceForget();
  return *this;
 };
 
@@ -115,7 +115,7 @@ UELockPtr<T>::UELockPtr(UELockPtr<T> const &p)
 template<typename T>
 void UELockPtr<T>::ForceForget(void)
 {
- PData=0;
+ this->PData=0;
  Mutex=0;
 }
 // --------------------------
