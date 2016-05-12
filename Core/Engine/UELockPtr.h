@@ -12,12 +12,6 @@ class UELockPtr: public UEPtr<T>
 /// Мьютекс для блокировки
 UGenericMutex* Mutex;
 
-/// Блокировщик
-UGenericMutexExclusiveLocker* Locker;
-
-// Счетчик ссылок
-long* Counter;
-
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -26,18 +20,24 @@ UELockPtr(void);
 UELockPtr(UGenericMutex* mutex);
 UELockPtr(UGenericMutex* mutex, T* pdata);
 UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
-//UELockPtr(const UELockPtr<T> &p);
+UELockPtr(UELockPtr<T> &p);
+UELockPtr(UELockPtr<T> const &p);
 virtual ~UELockPtr(void);
 // --------------------------
 
 // --------------------------
 // Операторы
 // --------------------------
-private:
-UELockPtr<T>& operator = (const UELockPtr<T> &p);
-//UELockPtr<T>& operator = (T *p);
+public:
+UELockPtr<T>& operator = (UELockPtr<T> const &p);
 // --------------------------
 
+// --------------------------
+// Методы
+// --------------------------
+/// Принудительное отключение обертки от данных без снятия блокировки
+void ForceForget(void);
+// --------------------------
 };
 
 // --------------------------
@@ -45,58 +45,46 @@ UELockPtr<T>& operator = (const UELockPtr<T> &p);
 // --------------------------
 template<typename T>
 UELockPtr<T>::UELockPtr(void)
- : Mutex(0), Locker(0), Counter(new long(1))
+ : Mutex(0)
 {
 
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex)
- : Mutex(mutex), Locker(new UGenericMutexExclusiveLocker(mutex)), Counter(new long(1))
+ : Mutex(mutex)
 {
-
+ Mutex->exclusive_lock();
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata)
- : UEPtr<T>(pdata), Mutex(mutex), Locker(new UGenericMutexExclusiveLocker(mutex)), Counter(new long(1))
+ : UEPtr<T>(pdata), Mutex(mutex)
 {
-
+ Mutex->exclusive_lock();
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
- : UEPtr<T>(pdata.Get()), Mutex(mutex), Locker(new UGenericMutexExclusiveLocker(mutex)), Counter(new long(1))
+ : UEPtr<T>(pdata.Get()), Mutex(mutex)
 {
-
+ Mutex->exclusive_lock();
 }
-   /*
+
 template<typename T>
-UELockPtr<T>::UELockPtr(const UELockPtr<T> &p)
- : UEPtr<T>(p), Mutex(p.Mutex), Locker(p.Locker), Counter(p.Counter)
+UELockPtr<T>::UELockPtr(UELockPtr<T> &p)
+ : UEPtr<T>(p), Mutex(p.Mutex)
 {
- if(Counter)
-  ++(*Counter);
-}  */
+ p.PData=0;
+ p.Mutex=0;
+}
 
 template<typename T>
 UELockPtr<T>::~UELockPtr(void)
 {
+ if(Mutex)
+  Mutex->exclusive_unlock();
  Mutex=0;
- if(Counter)
- {
-  --(*Counter);
-  if(*Counter == 0)
-  {
-   delete Counter;
-   Counter=0;
-   if(Locker)
-   {
-	delete Locker;
-	Locker=0;
-   }
-  }
- }
 }
 // --------------------------
 
@@ -106,55 +94,31 @@ UELockPtr<T>::~UELockPtr(void)
 template<typename T>
 UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
 {
-/*
- if(Counter)
- {
-  if(--(*Counter) == 0)
-  {
-   delete Counter;
-   Counter=0;
-   if(Locker)
-   {
-	delete Locker;
-	Locker=0;
-   }
-  }
- }
- UEPtr<T>::PData=p.PData;
-
- {
-  Counter=p.Counter;
-  ++(*Counter);
- }
-  */
+ PData=p;
+ Mutex=p.Mutex;
+ P.ForceForget();
  return *this;
 };
-/*
+
 template<typename T>
-UELockPtr<T>& UELockPtr<T>::operator = (T *p)
+UELockPtr<T>::UELockPtr(UELockPtr<T> const &p)
+ : UEPtr<T>(p), Mutex(p.Mutex)
 {
- if(Counter)
- {
-  if(--(*Counter) == 0)
-  {
-   delete Counter;
-   Counter=0;
-   if(Locker)
-   {
-	delete Locker;
-	Locker=0;
-   }
-  }
- }
- PData=p;
-
- Counter=new long(1);
-
- return *this;
-};  */
+ const_cast<UELockPtr<T>&>(p).ForceForget();
+}
 // --------------------------
 
-
+// --------------------------
+// Методы
+// --------------------------
+/// Принудительное отключение обертки от данных без снятия блокировки
+template<typename T>
+void UELockPtr<T>::ForceForget(void)
+{
+ PData=0;
+ Mutex=0;
+}
+// --------------------------
 }
 
 #endif
