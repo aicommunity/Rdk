@@ -445,11 +445,14 @@ void UEngineControl::TimerExecute(void)
   SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
+  for(int i=0;i<GetNumEngines();i++)
+   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
   RDK::UIVisualControllerStorage::UpdateInterface();
 
   for(int i=0;i<GetNumEngines();i++)
   {
-   EngineControlThreads[i]->GetProfiler()->Calculate();
+   EngineControlThreads[i]->GetProfiler()->CalculateGui();
+   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
   }
  }
  break;

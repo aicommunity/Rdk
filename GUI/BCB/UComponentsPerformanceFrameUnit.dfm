@@ -8,15 +8,11 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Top = 0
     Width = 454
     Height = 280
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 298
       object Chart: TChart
         Left = 0
         Top = 0
@@ -124,10 +120,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     object TabSheet3: TTabSheet
       Caption = 'Components Details'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox2: TGroupBox
         Left = 0
         Top = 0
@@ -136,8 +128,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         Align = alClient
         Caption = ' Components '
         TabOrder = 0
-        ExplicitWidth = 211
-        ExplicitHeight = 298
         object ComponentsStringGrid: TStringGrid
           Left = 2
           Top = 15
@@ -146,17 +136,12 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
           Align = alClient
           DefaultRowHeight = 20
           TabOrder = 0
-          ExplicitWidth = 207
         end
       end
     end
     object TabSheet2: TTabSheet
       Caption = 'Interface Details'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -214,7 +199,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         Width = 43
         Height = 22
         MaxValue = 1000
-        MinValue = 0
+        MinValue = 1
         TabOrder = 0
         Value = 10
         OnChange = AverageIntervalSpinEditChange

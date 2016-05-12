@@ -1,5 +1,6 @@
 #include "UChannelProfiler.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_exceptions.h"
 #include "UIVisualController.h"
 
 namespace RDK {
@@ -308,27 +309,40 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
  UEPtr<UNet> model(GetModel<UNet>(ChannelIndex));
  if(!model)
   return;
- try
+ RDK_SYS_TRY
  {
-  for(size_t i=0;i<ComponentsName.size();i++)
+  try
   {
-   UEPtr<UNet> component=model->GetComponentL<UNet>(ComponentsName[i],true);
-   if(component)
-	AddComponentPerfomanceData(i, component->GetFullStepDuration());
-  }
-  ModelPerfomance.AddHistory(model->GetFullStepDuration(),AverageIterations);
-  OtherPerfomance.AddHistory(model->GetInterstepsInterval(),AverageIterations);
+   for(size_t i=0;i<ComponentsName.size();i++)
+   {
+	UEPtr<UNet> component=model->GetComponentL<UNet>(ComponentsName[i],true);
+	if(component)
+	 AddComponentPerfomanceData(i, component->GetFullStepDuration());
+   }
+   long long full_step=model->GetFullStepDuration();
+   long long interstep_interval=model->GetInterstepsInterval();
+   ModelPerfomance.AddHistory(full_step,AverageIterations);
+   OtherPerfomance.AddHistory(interstep_interval,AverageIterations);
 
-  UEPtr<UEnvironment> env=GetEnvironment(ChannelIndex);
-  IntegralPerfomanceResults.ModelTime=env->GetTime().GetDoubleTime();
-  IntegralPerfomanceResults.RealTime=env->GetTime().GetDoubleRealTime();
-  IntegralPerfomanceResults.RtCalcDuration=env->GetRTLastDuration();
-  IntegralPerfomanceResults.RtModelDuration=env->GetRTModelCalcTime();
-  IntegralPerfomanceResults.RtPerfomance=env->CalcRTPerformance();
+   UEPtr<UEnvironment> env=GetEnvironment(ChannelIndex);
+   IntegralPerfomanceResults.ModelTime=env->GetTime().GetDoubleTime();
+   IntegralPerfomanceResults.RealTime=env->GetTime().GetDoubleRealTime();
+   IntegralPerfomanceResults.RtCalcDuration=env->GetRTLastDuration();
+   IntegralPerfomanceResults.RtModelDuration=env->GetRTModelCalcTime();
+   IntegralPerfomanceResults.RtPerfomance=env->CalcRTPerformance();
+  }
+  catch (RDK::UException &exception)
+  {
+   engine->ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   engine->ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch(UException &ex)
+ RDK_SYS_CATCH
  {
-  engine->ProcessException(ex);
+  engine->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 }
 
@@ -439,28 +453,39 @@ void UChannelProfiler::CalcProfilerOutputData(void)
  perf.second=ModelPerfomance;
  ComponentsProfilerOutputData.push_back(perf);
 
- perf.first="Gui";
- perf.second=SummaryGuiPerfomance;
- ComponentsProfilerOutputData.push_back(perf);
  perf.first="Overhead";
- perf.second.AvgDuration=OtherPerfomance.AvgDuration-SummaryGuiPerfomance.AvgDuration;
- perf.second.Percentage=OtherPerfomance.Percentage-SummaryGuiPerfomance.Percentage;
+ perf.second.AvgDuration=OtherPerfomance.AvgDuration;
+ perf.second.Percentage=OtherPerfomance.Percentage;
  ComponentsProfilerOutputData.push_back(perf);
 
  perf.first="Full Step";
  perf.second.AvgDuration=OtherPerfomance.AvgDuration+ModelPerfomance.AvgDuration;
  perf.second.Percentage=OtherPerfomance.Percentage+ModelPerfomance.Percentage;
  ComponentsProfilerOutputData.push_back(perf);
+
+ perf.first="Gui";
+ perf.second=SummaryGuiPerfomance;
+ ComponentsProfilerOutputData.push_back(perf);
 }
 
 /// Производит полный расчет данных профайлера
 void UChannelProfiler::Calculate(void)
 {
+ CalculateCore();
+ CalculateGui();
+ CalcProfilerOutputData();
+}
+
+void UChannelProfiler::CalculateCore(void)
+{
  LoadCorePerfomanceData();
  CalcCorePerfomance();
+}
+
+void UChannelProfiler::CalculateGui(void)
+{
  LoadGuiPerfomanceData();
  CalcGuiPerfomance();
- CalcProfilerOutputData();
 }
 /// --------------------------
 

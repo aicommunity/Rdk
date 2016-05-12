@@ -243,6 +243,14 @@ void UEngineControlThread::Calculate(void)
   if(use_controllers_mode == 1)
    RDK::UIControllerStorage::AfterCalculate(EngineIndex);
   CalculationNotInProgress->set();
+  try
+  {
+   Profiler->CalculateCore();
+  }
+  catch(...)
+  {
+
+  }
 }
 
 void UEngineControlThread::Execute(void)
