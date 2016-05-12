@@ -31,6 +31,9 @@ public:
 // Прототип функции обратного вызова обработчика исключений
 typedef void (*PExceptionHandler)(int channel_index);
 
+// Прототип функции предобработки исключений
+typedef bool (*PExceptionPreprocessor)(RDK::UEnvironment * env, RDK::UContainer *model, UException &in_exception, UException &out_exception);
+
 protected: // Параметры
 // Индекс предварительно заданной модели обработки
 // 0 - Структура определяется извне
@@ -93,6 +96,9 @@ double MaxModelDuration;
 // Внешний обработчик исключений
 PExceptionHandler ExceptionHandler;
 
+// Внешняя функция предобработки исключений
+PExceptionPreprocessor ExceptionPreprocessor;
+
 // Текущее число исключений системы
 mutable int CurrentExceptionsLogSize;
 
@@ -140,7 +146,7 @@ double RTModelCalcTime;
 // Временное хранилище строк
 mutable string TempString;
 
-mutable std::map<unsigned, pair<std::string, int> > LogList;
+mutable std::map<unsigned, UException > LogList;
 
 /// Индекс последней строки лога
 mutable unsigned LogIndex;
@@ -345,18 +351,23 @@ const char* GetLog(int &error_level) const;
 int GetNumLogLines(void) const;
 
 /// Возвращает строку лога с индексом i
-const char* GetLogLine(int i) const;
+const char* GetLogLine(int i, int &error_level, int &number, time_t &time) const;
 
 /// Возвращает число непрочитанных строк лога
 int GetNumUnreadLogLines(void) const;
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* GetUnreadLog(int &error_level);
+const char* GetUnreadLog(int &error_level, int &number, time_t &time);
+bool GetUnreadLog(UException &ex);
 
 // Управление функцией-обработчиком исключений
 PExceptionHandler GetExceptionHandler(void) const;
 bool SetExceptionHandler(PExceptionHandler value);
+
+/// Управление функцией-предобработчиком исключений
+PExceptionPreprocessor GetExceptionPreprocessor(void) const;
+bool SetExceptionPreprocessor(PExceptionPreprocessor value);
 
 /// Очищает лог
 void ClearLog(void);
@@ -367,6 +378,8 @@ void ClearReadLog(void);
 // Вызов обработчика исключений среды для простой записи данных в лог
 void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
 void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
+void LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number=0);
+void LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number=0);
 // --------------------------
 
 // --------------------------

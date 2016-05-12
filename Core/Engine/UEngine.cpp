@@ -6569,7 +6569,7 @@ const char* UEngine::GetLog(int &error_level) const
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* UEngine::GetUnreadLog(int &error_level)
+const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
 {
  std::string& TempString=CreateTempString();
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6577,7 +6577,7 @@ const char* UEngine::GetUnreadLog(int &error_level)
  {
   try
   {
-   TempString=Environment->GetUnreadLog(error_level);
+   TempString=Environment->GetUnreadLog(error_level, number, time);
   }
   catch (RDK::UException &exception)
   {

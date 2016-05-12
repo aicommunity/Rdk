@@ -2813,28 +2813,40 @@ int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *m
 
 // ¬озвращает частичный массив строк лога с момента последнего считывани€ лога
 // этой функцией
-const char* RDK_CALL Engine_GetUnreadLog(int &error_level)
+const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
 {
- return DllManager.GetEngineLock()->GetUnreadLog(error_level);
+ time_t read_time;
+ const char* res=DllManager.GetEngineLock()->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
 }
 
-const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level)
+const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level, int &number, unsigned long long &time)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
- return DllManager.GetEngineLock(engine_index)->GetUnreadLog(error_level);
+ time_t read_time;
+ const char* res=DllManager.GetEngineLock(engine_index)->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
 }
 
-const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level)
+const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
 {
- return DllManager.GetEngine()->GetUnreadLog(error_level);
+ time_t read_time;
+ const char* res=DllManager.GetEngine()->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
 }
 
-const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level)
+const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level, int &number, unsigned long long &time)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
- return DllManager.GetEngine(engine_index)->GetUnreadLog(error_level);
+ time_t read_time;
+ const char* res=DllManager.GetEngine(engine_index)->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
 }
 
 /// ¬озвращает число непрочитанных строк лога

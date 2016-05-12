@@ -72,11 +72,13 @@ UpgradeLog.XML
 *.?0Z
 Log
 Log0328
-Release
-Debug
 *.dcu
 *.identcache
 *.local
 ipch
 *.ipch
 .metadata
+*.o
+*.d
+*.so
+

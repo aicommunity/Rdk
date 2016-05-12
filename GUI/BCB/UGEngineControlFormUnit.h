@@ -362,6 +362,9 @@ std::map<std::string, TUVisualControllerForm*> SpecialForms;
 /// Лицензия TVideoGrabber
 String VideoGrabberLicenseString;
 
+/// Версия ПО
+String VersionString;
+
 /// Список последних открытых проектов
 //std::list<std::string> LastProjectsList;
 

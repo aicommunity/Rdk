@@ -96,7 +96,7 @@ RDK_LIB_TYPE const char* RDK_CALL Core_GetSystemDir(void);
 RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void); // deprecated
 
 // Устанавливает имя каталога бинарных файлов
-RDK_LIB_TYPE int RDK_CALL Coe_SetSystemDir(const char *dir);
+RDK_LIB_TYPE int RDK_CALL Core_SetSystemDir(const char *dir);
 RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir); // deprecated
 
 // Загружает глобальные шрифты
@@ -1059,10 +1059,10 @@ RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_le
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(int &error_level);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level);
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level, int &number, unsigned long long &time);
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level, int &number, unsigned long long &time);
 
 // Записывает в лог новое сообщение
 RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
