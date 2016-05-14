@@ -2840,6 +2840,7 @@ void __fastcall TUGEngineControlForm::ShowDebugMessagesCheckBoxClick(TObject *Se
   MEnv_SetDebugMode(i,config.ChannelsConfig[i].DebugMode);
  }
  RdkApplication.SetProjectConfig(config);
+ RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
 
@@ -2860,6 +2861,7 @@ void __fastcall TUGEngineControlForm::AutosaveProjectCheckBoxClick(TObject *Send
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
  config.ProjectAutoSaveFlag=AutosaveProjectCheckBox->Checked;
  RdkApplication.SetProjectConfig(config);
+ RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
 
@@ -2870,6 +2872,7 @@ void __fastcall TUGEngineControlForm::AutosaveStatesCheckBoxClick(TObject *Sende
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
  config.ProjectAutoSaveStatesFlag=AutosaveStatesCheckBox->Checked;
  RdkApplication.SetProjectConfig(config);
+ RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
 
@@ -2881,7 +2884,7 @@ void __fastcall TUGEngineControlForm::MultiThreadedRadioButtonClick(TObject *Sen
  config.MultiThreadingMode=1;
  RdkApplication.SetProjectConfig(config);
  SaveProject();
- if(Application->MessageBox(L"Project was be saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
+ if(Application->MessageBox(L"The project has been saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
  {
   Application->Terminate();
  }
@@ -2896,7 +2899,7 @@ void __fastcall TUGEngineControlForm::SingleThreadedRadioButtonClick(TObject *Se
  config.MultiThreadingMode=0;
  RdkApplication.SetProjectConfig(config);
  SaveProject();
- if(Application->MessageBox(L"Project was be saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
+ if(Application->MessageBox(L"The project has been saved. You need to restart the application. Close now?",L"Warning", MB_YESNO) == IDYES)
   Application->Terminate();
 }
 //---------------------------------------------------------------------------
@@ -2924,6 +2927,7 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
   MEnv_SetDebugSysEventsMask(i,config.ChannelsConfig[i].DebugSysEventsMask);
  }
  RdkApplication.SetProjectConfig(config);
+ RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
 

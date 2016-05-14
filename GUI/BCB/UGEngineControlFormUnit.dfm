@@ -435,10 +435,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -465,7 +461,6 @@ object UGEngineControlForm: TUGEngineControlForm
               Margins.Top = 2
               Margins.Right = 2
               Margins.Bottom = 2
-              ActivePage = UComponentsPerformanceFrame1.TabSheet1
               ExplicitWidth = 802
               ExplicitHeight = 124
               inherited TabSheet1: TTabSheet
@@ -503,8 +498,6 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Top = 2
                   Margins.Right = 2
                   Margins.Bottom = 2
-                  ExplicitWidth = 446
-                  ExplicitHeight = 252
                   inherited ComponentsStringGrid: TStringGrid
                     Top = 16
                     Height = 234
@@ -513,7 +506,6 @@ object UGEngineControlForm: TUGEngineControlForm
                     Margins.Right = 2
                     Margins.Bottom = 2
                     ExplicitTop = 16
-                    ExplicitWidth = 442
                     ExplicitHeight = 234
                   end
                 end
@@ -1055,6 +1047,8 @@ object UGEngineControlForm: TUGEngineControlForm
       Caption = 'Autosave project'
       TabOrder = 3
       OnClick = AutosaveProjectCheckBoxClick
+      ExplicitLeft = 964
+      ExplicitTop = 4
     end
     object MultiThreadedRadioButton: TRadioButton
       Left = 760
@@ -1303,7 +1297,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03C40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03C80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

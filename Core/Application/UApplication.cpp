@@ -528,23 +528,6 @@ try
   InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
  }
 
-
- /*
- if(!config.DescriptionFileName.empty())
- {
-  TRichEdit* RichEdit=new TRichEdit(this);
-  RichEdit->Parent=this;
-  RichEdit->PlainText=true;
-  RichEdit->Visible=false;
-  RichEdit->Text=ProjectDescription;
-
-  if(ExtractFilePath(descriptionfilename).Length() == 0)
-   RichEdit->Lines->SaveToFile(ProjectPath+descriptionfilename);
-  else
-   RichEdit->Lines->SaveToFile(descriptionfilename);
-  delete RichEdit;
- } */
-
  for(int i=0;i<config.NumChannels;i++)
  {
   SelectEngine(i);
@@ -799,6 +782,34 @@ bool UApplication::CopyProject(const std::string &new_path)
 
  SaveProject();
  RDK::CopyDir(ProjectPath, new_path, "*.*");
+ return true;
+}
+
+/// Сохраняет только файл настроек проекта
+bool UApplication::SaveProjectConfig(void)
+{
+ if(!ProjectOpenFlag)
+  return false;
+
+ Project->WriteToXml(ProjectXml);
+
+ try
+ {
+  TProjectConfig config=Project->GetConfig();
+  ProjectXml.SelectNodeRoot("Project/General");
+
+  if(config.InterfaceFileName.empty())
+  {
+   ProjectXml.WriteString("InterfaceFileName","Interface.xml");
+  }
+
+  ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
+ }
+ catch(RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ }
+
  return true;
 }
 // --------------------------

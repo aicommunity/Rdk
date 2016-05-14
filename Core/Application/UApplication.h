@@ -191,6 +191,9 @@ virtual bool CloneProject(int source_id, int cloned_id);
 virtual void ReloadParameters(void);
 
 virtual bool CopyProject(const std::string &new_path);
+
+/// Сохраняет только файл настроек проекта
+virtual bool SaveProjectConfig(void);
 // --------------------------
 
 // --------------------------
