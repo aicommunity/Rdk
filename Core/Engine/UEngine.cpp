@@ -5225,23 +5225,30 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
-{    /*
+{ 
  try
  {
-  UFileIO file;
-  file.Default();
-  file.SetDirection(0);
-  file.SetFileName(file_name);
-  file.SetBinFlag(0);
-  file.Calculate();
-  if(file.GetDataString().empty())
-   return 871122;
-  return Model_LoadComponent(stringid, file.GetDataString().c_str());
+  fstream file(file_name, ios::in);
+  string result;
+
+  if(!file || !file.is_open())
+   return false;
+
+  while(!file.eof() && !file.fail())
+  {
+   std::string buffer;
+   if(!std::getline(file,buffer))
+    break;
+   result+=buffer;
+  }
+
+  file.close();
+  return Model_LoadComponent(stringid, result.c_str());
  }
  catch (UException &exception)
  {
   ProcessException(exception);
- }*/
+ }
  return 0;
 }
 
