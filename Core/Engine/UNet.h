@@ -138,6 +138,10 @@ virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 // и коннектором 'connectorid'
 virtual bool BreakLink(const NameT &itemname, const NameT &connectorname);
 
+// –азрывает все св€зи между выходом элемента сети и любыми коннекторами
+virtual bool BreakAllOutgoingLinks(const NameT &itemname);
+virtual bool BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_property_name);
+
 // –азрывает все св€зи сети
 // исключа€ ее внутренние св€зи и обратные св€зи
 // brklevel - объект, относительно которого св€зи считаютс€ внутренними

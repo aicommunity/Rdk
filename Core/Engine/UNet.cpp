@@ -345,6 +345,32 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  return true;
 }
 
+// –азрывает все св€зи между выходом элемента сети и любыми коннекторами
+bool UNet::BreakAllOutgoingLinks(const NameT &itemname)
+{
+ UEPtr<UItem> item;
+ if(itemname.size() == 0)
+  item=this;
+ else
+  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+
+ item->DisconnectAll();
+
+ return true;
+}
+
+bool UNet::BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_property_name)
+{
+ UEPtr<UItem> item;
+ if(itemname.size() == 0)
+  item=this;
+ else
+  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+
+ item->DisconnectAll(item_property_name);
+
+ return true;
+}
 
 bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index)
