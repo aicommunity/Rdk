@@ -191,7 +191,8 @@ unsigned TriangleBareis(void);
 MMatrix<T,Rows,Cols>& Inverse(MMatrix<T,Cols,Rows> &res) const;
 MMatrix<T,Rows,Cols> Inverse(void) const;
 
-// Дискриминант
+// Детерминант
+T Det3x3(void) const;
 T Det(void) const;
 
 // Вычисление минорной матрицы
@@ -909,10 +910,48 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Inverse(void) const
  return Inverse(res);
 }
 
-// Дискриминант
+// Детерминант 3x3
+template<class T, unsigned Rows, unsigned Cols>
+T MMatrix<T,Rows,Cols>::Det3x3(void) const
+{
+	if(Rows != 3 || Cols != 3) return T(0.0);
+	MMatrix<T,Rows,Cols> Temp(*this);
+	T ret;
+	ret= Temp(0,0)*Temp(1,1)*Temp(2,2)
+		+Temp(0,1)*Temp(1,2)*Temp(2,0)
+		+Temp(1,0)*Temp(2,1)*Temp(0,2)
+		-Temp(2,0)*Temp(1,1)*Temp(0,2)
+		-Temp(0,1)*Temp(1,0)*Temp(2,2)
+		-Temp(0,0)*Temp(1,2)*Temp(2,1);
+	return ret;
+}
+
+// Детерминант
 template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::Det(void) const
 {
+
+ if(Rows == 0 || Cols == 0)
+  return T(0.0);
+
+ if(Rows == 1 && Cols == 1)
+ {
+  return (*this)(0,0);
+ }
+
+ if(Rows == 3 && Cols == 3)
+ {
+  return this->Det3x3();
+ }
+
+ if(Rows == 4 && Cols == 4)
+ {
+  return (*this)(0,0)*this->GetMinor(0,0).Det3x3()
+		-(*this)(0,1)*this->GetMinor(0,1).Det3x3()
+		+(*this)(0,2)*this->GetMinor(0,2).Det3x3()
+		-(*this)(0,3)*this->GetMinor(0,3).Det3x3();
+ }
+
  MMatrix<T,Rows,Cols> Temp=*this;
 
  unsigned numcombos=Temp.TriangleBareis();

@@ -173,7 +173,8 @@ int TriangleBareis(void);
 MDMatrix<T>& Inverse(MDMatrix<T> &res) const;
 MDMatrix<T> Inverse(void) const;
 
-// Дискриминант
+// Детерминант
+T Det3x3(void) const;
 T Det(void) const;
 
 // Вычисление минорной матрицы
@@ -954,7 +955,23 @@ MDMatrix<T> MDMatrix<T>::Inverse(void) const
  return Inverse(res);
 }
 
-// Дискриминант
+// Детерминант 3x3
+template<class T>
+T MDMatrix<T>::Det3x3(void) const
+{
+	if(Rows != 3 || Cols != 3) return T(0.0);
+	MDMatrix<T> Temp(*this);
+	T ret;
+	ret= Temp(0,0)*Temp(1,1)*Temp(2,2)
+		+Temp(0,1)*Temp(1,2)*Temp(2,0)
+		+Temp(1,0)*Temp(2,1)*Temp(0,2)
+		-Temp(2,0)*Temp(1,1)*Temp(0,2)
+		-Temp(0,1)*Temp(1,0)*Temp(2,2)
+		-Temp(0,0)*Temp(1,2)*Temp(2,1);
+	return ret;
+}
+
+// Детерминант
 template<class T>
 T MDMatrix<T>::Det(void) const
 {
@@ -965,6 +982,19 @@ T MDMatrix<T>::Det(void) const
  if(Rows == 1 && Cols == 1)
  {
   return (*this)(0,0);
+ }
+
+ if(Rows == 3 && Cols == 3)
+ {
+  return this->Det3x3();
+ }
+
+ if(Rows == 4 && Cols == 4)
+ {
+  return (*this)(0,0)*this->GetMinor(0,0).Det3x3()
+		-(*this)(0,1)*this->GetMinor(0,1).Det3x3()
+		+(*this)(0,2)*this->GetMinor(0,2).Det3x3()
+		-(*this)(0,3)*this->GetMinor(0,3).Det3x3();
  }
 
  MDMatrix<T> Temp(*this);
