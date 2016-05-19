@@ -174,7 +174,9 @@ MDMatrix<T>& Inverse(MDMatrix<T> &res) const;
 MDMatrix<T> Inverse(void) const;
 
 // Детерминант
+protected:
 T Det3x3(void) const;
+public:
 T Det(void) const;
 
 // Вычисление минорной матрицы

@@ -192,7 +192,9 @@ MMatrix<T,Rows,Cols>& Inverse(MMatrix<T,Cols,Rows> &res) const;
 MMatrix<T,Rows,Cols> Inverse(void) const;
 
 // Детерминант
+protected:
 T Det3x3(void) const;
+public:
 T Det(void) const;
 
 // Вычисление минорной матрицы
