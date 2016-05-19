@@ -796,6 +796,7 @@ MDMatrix<T> MDMatrix<T>::Transpose(void) const
 template<class T>
 int MDMatrix<T>::TriangleGauss(void)
 {
+ double teEps=1e-5;
  int numcombos=0;
 
  int i, j, k;
@@ -805,14 +806,14 @@ int MDMatrix<T>::TriangleGauss(void)
  {
   cWorkElem = (*this)(i,i);
 
-  if(cWorkElem == 0)
+  if(fabs(cWorkElem) <= teEps)
   {
    // пытаемся найти строку с ненулевым элементом,
    // среди строк, лежащих ниже
    for (j=i+1; i<Rows; i++)
    {
 	cWorkElem = (*this)(j,i);
-	if (cWorkElem!=0)
+	if (fabs(cWorkElem) > teEps)
 	{
 	 // добавляем найденную строку к рабочей
 	 for (k=0; k<Rows; k++)
@@ -822,7 +823,7 @@ int MDMatrix<T>::TriangleGauss(void)
    }
   }
 
-  if (cWorkElem!=0)
+  if (fabs(cWorkElem) > teEps)
   {
    // рабочий элемент корректен -
    // обрабатываем все нижлежащие строки

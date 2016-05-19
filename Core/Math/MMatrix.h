@@ -775,6 +775,7 @@ MMatrix<T,Cols,Rows> MMatrix<T,Rows,Cols>::Transpose(void) const
 template<class T, unsigned Rows, unsigned Cols>
 unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
 {
+ double teEps=1e-5;
  unsigned numcombos=0;
 
  int i, j, k;
@@ -784,14 +785,14 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
  {
   cWorkElem = Data[i][i];
 
-  if(cWorkElem == 0)
+  if(fabs(cWorkElem) <= teEps)
   {
    // пытаемся найти строку с ненулевым элементом,
    // среди строк, лежащих ниже
    for (j=i+1; i<Rows; i++)
    {
 	cWorkElem = Data[j][i];
-	if (cWorkElem!=0)
+	if (fabs(cWorkElem) > teEps)
 	{
 	 // добавляем найденную строку к рабочей
 	 for (k=0; k<Rows; k++)
@@ -801,7 +802,7 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
    }
   }
 
-  if (cWorkElem!=0)
+  if (fabs(cWorkElem) > teEps)
   {
    // рабочий элемент корректен -
    // обрабатываем все нижлежащие строки
