@@ -130,7 +130,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksListT<T> &data)
   return storage;
 
  int size=0;
- size=RDK::atoi(storage.GetNodeAttribute("Size"));
+// size=RDK::atoi(storage.GetNodeAttribute("Size"));
+ size=storage.GetNumNodes();
 
  if(size <= 0)
  {
