@@ -962,15 +962,14 @@ template<class T>
 T MDMatrix<T>::Det3x3(void) const
 {
 	if(Rows != 3 || Cols != 3) return T(0.0);
-	MDMatrix<T> Temp(*this);
-	T ret;
-	ret= Temp(0,0)*Temp(1,1)*Temp(2,2)
-		+Temp(0,1)*Temp(1,2)*Temp(2,0)
-		+Temp(1,0)*Temp(2,1)*Temp(0,2)
-		-Temp(2,0)*Temp(1,1)*Temp(0,2)
-		-Temp(0,1)*Temp(1,0)*Temp(2,2)
-		-Temp(0,0)*Temp(1,2)*Temp(2,1);
-	return ret;
+
+	return
+		 (*this)(0,0)*(*this)(1,1)*(*this)(2,2)
+		+(*this)(0,1)*(*this)(1,2)*(*this)(2,0)
+		+(*this)(1,0)*(*this)(2,1)*(*this)(0,2)
+		-(*this)(2,0)*(*this)(1,1)*(*this)(0,2)
+		-(*this)(0,1)*(*this)(1,0)*(*this)(2,2)
+		-(*this)(0,0)*(*this)(1,2)*(*this)(2,1);
 }
 
 // Детерминант
@@ -984,6 +983,11 @@ T MDMatrix<T>::Det(void) const
  if(Rows == 1 && Cols == 1)
  {
   return (*this)(0,0);
+ }
+
+ if(Rows == 2 && Cols == 2)
+ {
+  return (*this)(0,0)*(*this)(1,1)-(*this)(0,1)*(*this)(1,0);
  }
 
  if(Rows == 3 && Cols == 3)

@@ -915,15 +915,14 @@ template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::Det3x3(void) const
 {
 	if(Rows != 3 || Cols != 3) return T(0.0);
-	MMatrix<T,Rows,Cols> Temp(*this);
-	T ret;
-	ret= Temp(0,0)*Temp(1,1)*Temp(2,2)
-		+Temp(0,1)*Temp(1,2)*Temp(2,0)
-		+Temp(1,0)*Temp(2,1)*Temp(0,2)
-		-Temp(2,0)*Temp(1,1)*Temp(0,2)
-		-Temp(0,1)*Temp(1,0)*Temp(2,2)
-		-Temp(0,0)*Temp(1,2)*Temp(2,1);
-	return ret;
+
+	return
+		 Data[0][0]*Data[1][1]*Data[2][2]
+		+Data[0][1]*Data[1][2]*Data[2][0]
+		+Data[1][0]*Data[2][1]*Data[0][2]
+		-Data[2][0]*Data[1][1]*Data[0][2]
+		-Data[0][1]*Data[1][0]*Data[2][2]
+		-Data[0][0]*Data[1][2]*Data[2][1];
 }
 
 // Детерминант
@@ -936,7 +935,12 @@ T MMatrix<T,Rows,Cols>::Det(void) const
 
  if(Rows == 1 && Cols == 1)
  {
-  return (*this)(0,0);
+  return Data[0][0];
+ }
+
+ if(Rows == 2 && Cols == 2)
+ {
+  return Data[0][0]*Data[1][1]-Data[0][1]*Data[1][0];
  }
 
  if(Rows == 3 && Cols == 3)
@@ -946,10 +950,10 @@ T MMatrix<T,Rows,Cols>::Det(void) const
 
  if(Rows == 4 && Cols == 4)
  {
-  return (*this)(0,0)*this->GetMinor(0,0).Det3x3()
-		-(*this)(0,1)*this->GetMinor(0,1).Det3x3()
-		+(*this)(0,2)*this->GetMinor(0,2).Det3x3()
-		-(*this)(0,3)*this->GetMinor(0,3).Det3x3();
+  return Data[0][0]*this->GetMinor(0,0).Det3x3()
+		-Data[0][1]*this->GetMinor(0,1).Det3x3()
+		+Data[0][2]*this->GetMinor(0,2).Det3x3()
+		-Data[0][3]*this->GetMinor(0,3).Det3x3();
  }
 
  MMatrix<T,Rows,Cols> Temp=*this;
