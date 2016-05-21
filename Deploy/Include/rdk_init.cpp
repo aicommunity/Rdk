@@ -664,7 +664,7 @@ int RDK_CALL MCore_ChannelUnInit(int engine_index)
    if(DllManager.EngineList[engine_index])
    {
 	res = MEnv_UnInit(engine_index);
-	if(res!=RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL)
+	if(res==RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL)
 	 return res;
    }
 
