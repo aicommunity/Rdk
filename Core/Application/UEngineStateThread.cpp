@@ -194,7 +194,7 @@ void UEngineStateThread::Execute(void)
 	  continue;
 	 }
 
-	 RDK::ULongTime last_calc_time=thread->GetRealLastCalculationTime();
+	 double last_calc_time=thread->GetRealLastCalculationTime();
 	 if(CalcThreadSuccessTime[i] != last_calc_time)
 	 {
 	  CalcThreadSuccessTime[i]=last_calc_time;

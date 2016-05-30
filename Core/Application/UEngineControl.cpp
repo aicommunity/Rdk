@@ -632,6 +632,8 @@ bool UEngineControl::SetNumEngines(int num)
   GlobalThreadInfoMap[info.Pid]=info;
   #endif
   EngineControlThreads[i]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
+  if(EngineStateThread)
+   EngineStateThread->RegisterCalcThread(i,EngineControlThreads[i]);
 
 //  ThreadChannels[i]->FreeOnTerminate=false;
  }
@@ -646,13 +648,20 @@ bool UEngineControl::InsertEngine(int index)
  int new_num=GetNumEngines();
 
  EngineControlThreads.resize(new_num);
+
  for(int i=new_num-1;i>index;i--)
  {
+  if(EngineStateThread)
+   EngineStateThread->UnRegisterCalcThread(i-1);
   EngineControlThreads[i]=EngineControlThreads[i-1];
+  if(EngineStateThread)
+   EngineStateThread->RegisterCalcThread(i,EngineControlThreads[i]);
  }
 
  EngineControlThreads[index]=CreateEngineThread(this, index);
  EngineControlThreads[index]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
+ if(EngineStateThread)
+  EngineStateThread->RegisterCalcThread(index,EngineControlThreads[index]);
  return true;
 }
 
@@ -666,6 +675,8 @@ bool UEngineControl::DeleteEngine(int index)
  if(EngineControlThreads[index])
  {
 //  ThreadChannels[index]->Terminate();
+  if(EngineStateThread)
+   EngineStateThread->UnRegisterCalcThread(index);
   delete EngineControlThreads[index];
   EngineControlThreads[index]=0;
  }
@@ -678,7 +689,11 @@ bool UEngineControl::DeleteEngine(int index)
 
  for(int i=index;i<new_num;i++)
  {
+  if(EngineStateThread)
+   EngineStateThread->UnRegisterCalcThread(i+1);
   EngineControlThreads[i]=EngineControlThreads[i+1];
+  if(EngineStateThread)
+   EngineStateThread->RegisterCalcThread(i,EngineControlThreads[i]);
  }
 
 
