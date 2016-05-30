@@ -52,7 +52,7 @@ UException::UException(void)
 
 UException::UException(const UException &copy)
 : Number(copy.Number), Type(copy.Type), ExFileName(copy.ExFileName), ExLineNumber(copy.ExLineNumber),
-  ObjectName(copy.ObjectName)
+  ObjectName(copy.ObjectName), InfoMessageString(copy.InfoMessageString)
 {
 // Number=copy.Number;
  Time=copy.Time;
@@ -143,17 +143,45 @@ void UException::SetMessage(const std::string& value)
 /// Возвращает строку лога об исключении
 char const * UException::what() const throw()
 {
- Message=CreateLogMessage();
+ Message=GenerateLogPrefix();
+ Message+=CreateLogMessage();
+ Message+=InfoMessageString;
  return Message.c_str();
+}
+
+/// Оборачивает этим исключнением уже существующее, с возможностью подмены требуемых данных
+void UException::Wrap(const UException &ex, const std::string &new_message)
+{
+ Number=ex.Number;
+ Time=ex.Time;
+ ExFileName=ex.ExFileName;
+ ExLineNumber=ex.ExLineNumber;
+ ObjectName=ex.ObjectName;
+ InfoMessageString=ex.CreateLogMessage()+ex.InfoMessageString+new_message;
+}
+
+void UException::Wrap(const UException &ex, const std::string &new_message, int number)
+{
+ Wrap(ex, new_message);
+ Number=number;
+}
+
+void UException::Wrap(const UException &ex, const std::string &new_message, int number, int new_type)
+{
+ Wrap(ex, new_message, number);
+ Type=new_type;
 }
 
 std::string UException::CreateLogMessage(void) const
 {
  std::string result;
-  /*
- result+=sntoa(GetNumber(),4);
- result+=" ";
-    */
+ return result;
+};
+
+std::string UException::GenerateLogPrefix(void) const
+{
+ std::string result;
+
  std::time_t ex_time=GetTime();
  tm* time_stuct=localtime(&ex_time);
 
@@ -192,12 +220,13 @@ std::string UException::CreateLogMessage(void) const
 
  if(!ObjectName.empty())
  {
+  result+=" ";
   result+=ObjectName;
   result+="> ";
  }
 
  return result;
-};
+}
 // --------------------------
 
 

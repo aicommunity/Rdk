@@ -185,7 +185,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
   unsigned int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size"));
+//  size=RDK::atoi(storage.GetNodeAttribute("Size"));
+  size=storage.GetNumNodes();
 
   if(size <= 0)
   {
@@ -206,7 +207,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
   data.resize(size);
 
   if(size>0)
@@ -254,7 +255,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
   unsigned int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size"));
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
 
   if(size <= 0)
   {
@@ -275,7 +276,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
   data.resize(size);
 
   if(size>0)

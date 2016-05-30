@@ -173,7 +173,10 @@ int TriangleBareis(void);
 MDMatrix<T>& Inverse(MDMatrix<T> &res) const;
 MDMatrix<T> Inverse(void) const;
 
-// Дискриминант
+// Детерминант
+protected:
+T Det3x3(void) const;
+public:
 T Det(void) const;
 
 // Вычисление минорной матрицы
@@ -796,6 +799,7 @@ MDMatrix<T> MDMatrix<T>::Transpose(void) const
 template<class T>
 int MDMatrix<T>::TriangleGauss(void)
 {
+ double teEps=1e-5;
  int numcombos=0;
 
  int i, j, k;
@@ -805,14 +809,14 @@ int MDMatrix<T>::TriangleGauss(void)
  {
   cWorkElem = (*this)(i,i);
 
-  if(cWorkElem == 0)
+  if(fabs(cWorkElem) <= teEps)
   {
    // пытаемся найти строку с ненулевым элементом,
    // среди строк, лежащих ниже
    for (j=i+1; i<Rows; i++)
    {
 	cWorkElem = (*this)(j,i);
-	if (cWorkElem!=0)
+	if (fabs(cWorkElem) > teEps)
 	{
 	 // добавляем найденную строку к рабочей
 	 for (k=0; k<Rows; k++)
@@ -822,7 +826,7 @@ int MDMatrix<T>::TriangleGauss(void)
    }
   }
 
-  if (cWorkElem!=0)
+  if (fabs(cWorkElem) > teEps)
   {
    // рабочий элемент корректен -
    // обрабатываем все нижлежащие строки
@@ -953,7 +957,22 @@ MDMatrix<T> MDMatrix<T>::Inverse(void) const
  return Inverse(res);
 }
 
-// Дискриминант
+// Детерминант 3x3
+template<class T>
+T MDMatrix<T>::Det3x3(void) const
+{
+	if(Rows != 3 || Cols != 3) return T(0.0);
+
+	return
+		 (*this)(0,0)*(*this)(1,1)*(*this)(2,2)
+		+(*this)(0,1)*(*this)(1,2)*(*this)(2,0)
+		+(*this)(1,0)*(*this)(2,1)*(*this)(0,2)
+		-(*this)(2,0)*(*this)(1,1)*(*this)(0,2)
+		-(*this)(0,1)*(*this)(1,0)*(*this)(2,2)
+		-(*this)(0,0)*(*this)(1,2)*(*this)(2,1);
+}
+
+// Детерминант
 template<class T>
 T MDMatrix<T>::Det(void) const
 {
@@ -964,6 +983,24 @@ T MDMatrix<T>::Det(void) const
  if(Rows == 1 && Cols == 1)
  {
   return (*this)(0,0);
+ }
+
+ if(Rows == 2 && Cols == 2)
+ {
+  return (*this)(0,0)*(*this)(1,1)-(*this)(0,1)*(*this)(1,0);
+ }
+
+ if(Rows == 3 && Cols == 3)
+ {
+  return this->Det3x3();
+ }
+
+ if(Rows == 4 && Cols == 4)
+ {
+  return (*this)(0,0)*this->GetMinor(0,0).Det3x3()
+		-(*this)(0,1)*this->GetMinor(0,1).Det3x3()
+		+(*this)(0,2)*this->GetMinor(0,2).Det3x3()
+		-(*this)(0,3)*this->GetMinor(0,3).Det3x3();
  }
 
  MDMatrix<T> Temp(*this);

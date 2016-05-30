@@ -191,7 +191,8 @@ unsigned TriangleBareis(void);
 MMatrix<T,Rows,Cols>& Inverse(MMatrix<T,Cols,Rows> &res) const;
 MMatrix<T,Rows,Cols> Inverse(void) const;
 
-// Дискриминант
+// Детерминант
+T Det3x3(void) const;
 T Det(void) const;
 
 // Вычисление минорной матрицы
@@ -775,6 +776,7 @@ MMatrix<T,Cols,Rows> MMatrix<T,Rows,Cols>::Transpose(void) const
 template<class T, unsigned Rows, unsigned Cols>
 unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
 {
+ double teEps=1e-5;
  unsigned numcombos=0;
 
  int i, j, k;
@@ -784,14 +786,14 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
  {
   cWorkElem = Data[i][i];
 
-  if(cWorkElem == 0)
+  if(fabs(cWorkElem) <= teEps)
   {
    // пытаемся найти строку с ненулевым элементом,
    // среди строк, лежащих ниже
    for (j=i+1; i<Rows; i++)
    {
 	cWorkElem = Data[j][i];
-	if (cWorkElem!=0)
+	if (fabs(cWorkElem) > teEps)
 	{
 	 // добавляем найденную строку к рабочей
 	 for (k=0; k<Rows; k++)
@@ -801,7 +803,7 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
    }
   }
 
-  if (cWorkElem!=0)
+  if (fabs(cWorkElem) > teEps)
   {
    // рабочий элемент корректен -
    // обрабатываем все нижлежащие строки
@@ -908,10 +910,52 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Inverse(void) const
  return Inverse(res);
 }
 
-// Дискриминант
+// Детерминант 3x3
+template<class T, unsigned Rows, unsigned Cols>
+T MMatrix<T,Rows,Cols>::Det3x3(void) const
+{
+	if(Rows != 3 || Cols != 3) return T(0.0);
+
+	return
+		 Data[0][0]*Data[1][1]*Data[2][2]
+		+Data[0][1]*Data[1][2]*Data[2][0]
+		+Data[1][0]*Data[2][1]*Data[0][2]
+		-Data[2][0]*Data[1][1]*Data[0][2]
+		-Data[0][1]*Data[1][0]*Data[2][2]
+		-Data[0][0]*Data[1][2]*Data[2][1];
+}
+
+// Детерминант
 template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::Det(void) const
 {
+
+ if(Rows == 0 || Cols == 0)
+  return T(0.0);
+
+ if(Rows == 1 && Cols == 1)
+ {
+  return Data[0][0];
+ }
+
+ if(Rows == 2 && Cols == 2)
+ {
+  return Data[0][0]*Data[1][1]-Data[0][1]*Data[1][0];
+ }
+
+ if(Rows == 3 && Cols == 3)
+ {
+  return this->Det3x3();
+ }
+
+ if(Rows == 4 && Cols == 4)
+ {
+  return Data[0][0]*this->GetMinor(0,0).Det3x3()
+		-Data[0][1]*this->GetMinor(0,1).Det3x3()
+		+Data[0][2]*this->GetMinor(0,2).Det3x3()
+		-Data[0][3]*this->GetMinor(0,3).Det3x3();
+ }
+
  MMatrix<T,Rows,Cols> Temp=*this;
 
  unsigned numcombos=Temp.TriangleBareis();

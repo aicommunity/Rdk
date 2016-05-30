@@ -5,6 +5,7 @@
 #include <string>
 #include "../../Deploy/Include/initdll_defs.h"
 
+/// Exception Type
 #define RDK_EX_UNKNOWN 0 // Unknown exception
 #define RDK_EX_FATAL 1 // Fatal error (correction impossible)
 #define RDK_EX_ERROR 2 // Correctable error
@@ -37,12 +38,6 @@ protected: // Данные исключения
 int Number;
 
 /// Тип исключения
-/// 0 - неопределено
-/// 1 - фатальное
-/// 2 - ошибка, требующая вмешательства
-/// 3 - предупреждение
-/// 4 - информация
-/// 5 - отладка
 int Type;
 
 // Время возникновения исключения
@@ -59,6 +54,9 @@ mutable std::string ObjectName;
 
 /// Сообщение исключения
 mutable std::string Message;
+
+/// Строка, содержащая опциональную информацию о произошедшем
+mutable std::string InfoMessageString;
 
 public: // Методы
 // --------------------------
@@ -110,9 +108,15 @@ void SetMessage(const std::string& value);
 /// Возвращает строку лога об исключении
 virtual char const * what() const throw();
 
+/// Оборачивает этим исключнением уже существующее, с возможностью подмены требуемых данных
+void Wrap(const UException &ex, const std::string &new_message);
+void Wrap(const UException &ex, const std::string &new_message, int number);
+void Wrap(const UException &ex, const std::string &new_message, int number, int new_type);
+
 protected:
 /// Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const;
+virtual std::string GenerateLogPrefix(void) const;
 // --------------------------
 };
 

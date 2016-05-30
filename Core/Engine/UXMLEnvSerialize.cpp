@@ -68,7 +68,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
 //  return storage;
 
  int size=0;
- std::string str=storage.GetNodeAttribute("Size");
+ std::string str=storage.GetNodeAttribute("Size"); // TODO: заменить
  if(!str.empty())
   size=atoi(str);
 
@@ -141,9 +141,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data)
 //  return storage;
 
  int size=0;
- std::string str=storage.GetNodeAttribute("Size");
- if(!str.empty())
-  size=atoi(str);
+// std::string str=storage.GetNodeAttribute("Size");
+// if(!str.empty())
+//  size=atoi(str);
+
+ size=storage.GetNumNodes();
 
  if(size <= 0)
  {

@@ -371,7 +371,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBitmapVector &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data)
 {
- int size=atoi(storage.GetNodeAttribute("Size"));
+// int size=atoi(storage.GetNodeAttribute("Size"));
+ int size=storage.GetNumNodes();
 
  data.Resize(size);
  for(int i=0;i<data.GetSize();i++)

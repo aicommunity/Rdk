@@ -233,7 +233,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
 //  return storage;
 
  size_t size=0;
- size=atoi(storage.GetNodeAttribute("Size"));
+// size=atoi(storage.GetNodeAttribute("Size"));
+ size=storage.GetNumNodes();
  data.clear();
 
  if(size == 0)
@@ -290,7 +291,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 //  return storage;
 
  unsigned int size=0;
- size=RDK::atoi(storage.GetNodeAttribute("Size"));
+// size=RDK::atoi(storage.GetNodeAttribute("Size"));
+ size=storage.GetNumNodes();
  data.clear();
 
  if(size == 0)
@@ -349,7 +351,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 //  return storage;
 
  unsigned int size=0;
- size=RDK::atoi(storage.GetNodeAttribute("Size"));
+// size=RDK::atoi(storage.GetNodeAttribute("Size"));
+ size=storage.GetNumNodes();
 
  if(size == 0)
  {
