@@ -53,6 +53,7 @@ UEnvironment::UEnvironment(void)
  CurrentExceptionsLogSize=0;
  ExceptionHandler=0;
  ExceptionPreprocessor=0;
+ ExceptionPostprocessor=0;
 
  LastReadExceptionLogIndex=0;
  MaxExceptionsLogSize=100000;
@@ -744,6 +745,9 @@ void UEnvironment::ProcessException(UException &exception) const
  if(DebuggerMessageFlag)
   RdkDebuggerMessage(log.GetMessage());
 
+ if(ExceptionPostprocessor)
+  ExceptionPostprocessor(const_cast<UEnvironment*>(this),Model, *processed_exception); // TODO: Нет проверки возвращаемого значения
+
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
 }
@@ -880,6 +884,22 @@ bool UEnvironment::SetExceptionPreprocessor(PExceptionPreprocessor value)
  ExceptionPreprocessor=value;
  return true;
 }
+
+/// Управление функцией-постобработки исключений
+UEnvironment::PExceptionPostprocessor UEnvironment::GetExceptionPostprocessor(void) const
+{
+ return ExceptionPostprocessor;
+}
+
+bool UEnvironment::SetExceptionPostprocessor(PExceptionPostprocessor value)
+{
+ if(ExceptionPostprocessor == value)
+  return true;
+
+ ExceptionPostprocessor=value;
+ return true;
+}
+
 
 
 // Максимальное число хранимых исключений

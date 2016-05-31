@@ -28,11 +28,14 @@ extern RDK_LIB_TYPE bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment
 class RDK_LIB_TYPE UEnvironment: virtual public UModule
 {
 public:
-// Прототип функции обратного вызова обработчика исключений
+/// Прототип функции обратного вызова обработчика исключений
 typedef void (*PExceptionHandler)(int channel_index);
 
-// Прототип функции предобработки исключений
+/// Прототип функции предобработки исключений
 typedef bool (*PExceptionPreprocessor)(RDK::UEnvironment * env, RDK::UContainer *model, UException &in_exception, UException &out_exception);
+
+/// Прототип функции постобработки исключений
+typedef bool (*PExceptionPostprocessor)(RDK::UEnvironment * env, RDK::UContainer *model, const UException &exception);
 
 protected: // Параметры
 // Индекс предварительно заданной модели обработки
@@ -98,6 +101,10 @@ PExceptionHandler ExceptionHandler;
 
 // Внешняя функция предобработки исключений
 PExceptionPreprocessor ExceptionPreprocessor;
+
+// Внешняя функция постобработки исключений
+PExceptionPostprocessor ExceptionPostprocessor;
+
 
 // Текущее число исключений системы
 mutable int CurrentExceptionsLogSize;
@@ -368,6 +375,10 @@ bool SetExceptionHandler(PExceptionHandler value);
 /// Управление функцией-предобработчиком исключений
 PExceptionPreprocessor GetExceptionPreprocessor(void) const;
 bool SetExceptionPreprocessor(PExceptionPreprocessor value);
+
+/// Управление функцией-постобработки исключений
+PExceptionPostprocessor GetExceptionPostprocessor(void) const;
+bool SetExceptionPostprocessor(PExceptionPostprocessor value);
 
 /// Очищает лог
 void ClearLog(void);
