@@ -372,6 +372,7 @@ RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
 
 // ”станавливает им€ текущего каталога дл€ хранени€ данных
 RDK_LIB_TYPE int RDK_CALL Env_SetCurrentDataDir(const char *dir);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetCurrentDataDir(int engine_index, const char *dir);
 
 /// ¬озвращает состо€ние флага отладочного режима среды
 RDK_LIB_TYPE bool RDK_CALL Env_GetDebugMode(void);

@@ -1468,6 +1468,11 @@ int RDK_CALL Env_SetCurrentDataDir(const char *dir)
  return DllManager.GetEngineLock()->Env_SetCurrentDataDir(dir);
 }
 
+int RDK_CALL MEnv_SetCurrentDataDir(int engine_index, const char *dir)
+{
+ return DllManager.GetEngineLock(engine_index)->Env_SetCurrentDataDir(dir);
+}
+
 /// Возвращает состояние флага отладочного режима среды
 bool RDK_CALL Env_GetDebugMode(void)
 {
