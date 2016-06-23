@@ -513,6 +513,14 @@ bool UContainer::CheckComponent(const NameT &name)
 {
   return !CheckName(name);
 }
+
+bool UContainer::CheckComponentL(const NameT &name)
+{
+ if(GetComponentL(name,true) != 0)
+  return true;
+ return false;
+}
+
 // Проверяет предлагаемое имя 'name' на уникальность в рамках
 // данного объекта.
 bool UContainer::CheckName(const NameT &name)

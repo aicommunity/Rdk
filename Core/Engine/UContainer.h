@@ -440,6 +440,7 @@ int GetNumComponents(void) const;
 int GetNumAllComponents(void) const;
 
 bool CheckComponent(const NameT &name);
+bool CheckComponentL(const NameT &name);
 
 // Метод проверяет на допустимость объекта данного типа
 // в качестве компоненты данного объекта

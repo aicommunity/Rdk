@@ -397,8 +397,8 @@ try{
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Env_SetDebugMode(channel_config.DebugMode);
    Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
-   Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_SetEventsLogMode(channel_config.EventsLogMode);
+   Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
    Env_Init();
 
