@@ -329,6 +329,10 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
  if(SaveProject())
  {
   std::string file_name=ProjectFileName;
+  fstream file((ProjectPath+project_config.DescriptionFileName).c_str(),ios::out | ios::trunc);
+  file<<project_config.ProjectDescription;
+  file.flush();
+  file.close();
   return OpenProject(file_name);
  }
  else
@@ -357,6 +361,8 @@ bool UApplication::OpenProject(const std::string &filename)
 // int engines_mode=ProjectXml.ReadInteger("EnginesMode",0);
  EngineControl->SetThreadMode(config.MultiThreadingMode);
  CalcAppCaption();
+
+ LoadFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription);
  /*
  UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
@@ -401,7 +407,6 @@ try{
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
    Env_Init();
-
 
    if(channel_config.PredefinedStructure == 0 && !channel_config.ModelFileName.empty())
    {
@@ -514,6 +519,8 @@ try
 
  TProjectConfig config=Project->GetConfig();
  ProjectXml.SelectNodeRoot("Project/General");
+
+ SaveFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription);
 
  if(!config.InterfaceFileName.empty())
  {

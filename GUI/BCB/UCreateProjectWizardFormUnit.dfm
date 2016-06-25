@@ -607,10 +607,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                       end
                       inherited LibsTabSheet: TTabSheet
                         TabVisible = False
-                        ExplicitLeft = 4
-                        ExplicitTop = 24
-                        ExplicitWidth = 499
-                        ExplicitHeight = 515
                       end
                       inherited LibsControlTabSheet: TTabSheet
                         ExplicitLeft = 4

@@ -1047,8 +1047,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Caption = 'Autosave project'
       TabOrder = 3
       OnClick = AutosaveProjectCheckBoxClick
-      ExplicitLeft = 964
-      ExplicitTop = 4
     end
     object MultiThreadedRadioButton: TRadioButton
       Left = 760
@@ -1111,7 +1109,6 @@ object UGEngineControlForm: TUGEngineControlForm
       end
       object ProjectOptions1: TMenuItem
         Caption = 'Project Options'
-        Enabled = False
         OnClick = ProjectOptions1Click
       end
       object ApplicationOptions1: TMenuItem
@@ -1297,7 +1294,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03C80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03CC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

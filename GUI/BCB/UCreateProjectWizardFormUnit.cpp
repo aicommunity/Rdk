@@ -51,8 +51,8 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
  if(RdkApplication.GetProjectOpenFlag())
   ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProjectPath().c_str();
  ProjectNameLabeledEdit->Text=ProjectConfig.ProjectName.c_str();
- ProjectDescriptionRichEdit->Clear();
- ProjectDescriptionRichEdit->Lines->Add(ProjectConfig.ProjectDescription.c_str());
+// ProjectDescriptionRichEdit->Clear();
+// ProjectDescriptionRichEdit->Lines->Add(ProjectConfig.ProjectDescription.c_str());
  ProjectAutoSaveFlagCheckBox->Checked=ProjectConfig.ProjectAutoSaveFlag;
  ProjectAutoSaveStatesFlagCheckBox->Checked=ProjectConfig.ProjectAutoSaveStatesFlag;
  EventsLogFlagCheckBox->Checked=ProjectConfig.EventsLogFlag;
@@ -245,6 +245,16 @@ void TUCreateProjectWizardForm::ApplyWizardMode(int wizard_mode)
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::FinishButtonClick(TObject *Sender)
 {
+ std::string str;
+ for(int i=0;i<ProjectDescriptionRichEdit->Lines->Count;i++)
+ {
+  str+=AnsiString(ProjectDescriptionRichEdit->Lines->Strings[i]).c_str();
+  if(i<ProjectDescriptionRichEdit->Lines->Count-1)
+   str+="\n";
+ }
+
+ ProjectConfig.ProjectDescription=str;
+
  if(ProjectDirectoryLabeledEdit->Text.Length() != 0)
  {
   try
@@ -681,7 +691,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectDescriptionRichEditChange(TObj
 {
  if(UpdateInterfaceFlag)
   return;
-
+/*
  std::string str;
  for(int i=0;i<ProjectDescriptionRichEdit->Lines->Count;i++)
  {
@@ -690,7 +700,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectDescriptionRichEditChange(TObj
    str+="/r/n";
  }
 
- ProjectConfig.ProjectName=str;
+ ProjectConfig.ProjectDescription=str;*/
 }
 //---------------------------------------------------------------------------
 

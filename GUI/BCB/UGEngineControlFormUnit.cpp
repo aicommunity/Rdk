@@ -2173,6 +2173,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
  UCreateProjectWizardForm->Caption="Update Project Wizard";
  UCreateProjectWizardForm->ProjectConfig=config;
+ UCreateProjectWizardForm->ProjectDescriptionRichEdit->Lines->LoadFromFile((RdkApplication.GetProjectPath()+"Description.rtf").c_str());
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
  {
   UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
@@ -2180,9 +2181,10 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
   UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[channel_index].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[channel_index].DefaultTimeStep;
 
   UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
-  UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
+//  UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
   //RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
   RdkApplication.SetProjectConfig(UCreateProjectWizardForm->ProjectConfig);
+  UCreateProjectWizardForm->ProjectDescriptionRichEdit->Lines->SaveToFile((RdkApplication.GetProjectPath()+"Description.rtf").c_str());
   UpdateInterface(true);
  }
 }
