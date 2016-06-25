@@ -315,6 +315,16 @@ long TUVisualControllerForm::GetUpdateInterval(void)
  return UpdateInterval;
 }
 
+// Задает интервал обновления интерфейса
+bool TUVisualControllerForm::SetUpdateInterval(long value)
+{
+ if(value<0)
+  return false;
+
+ UpdateInterval=value;
+ return true;
+}
+
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
 bool TUVisualControllerForm::GetAlwaysUpdateFlag(void)
 {

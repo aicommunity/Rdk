@@ -4,7 +4,7 @@ object USeriesControlForm: TUSeriesControlForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077'/'#1091#1076#1072#1083#1077#1085#1080#1077'/'#1085#1072#1089#1090#1088#1086#1081#1082#1072' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1081
-  ClientHeight = 494
+  ClientHeight = 520
   ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,7 +23,7 @@ object USeriesControlForm: TUSeriesControlForm
     Left = 0
     Top = 0
     Width = 367
-    Height = 494
+    Height = 520
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -31,11 +31,12 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 494
     object Panel4: TPanel
       Left = 0
       Top = 0
       Width = 367
-      Height = 229
+      Height = 225
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -43,11 +44,12 @@ object USeriesControlForm: TUSeriesControlForm
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
+      ExplicitHeight = 229
       object Panel5: TPanel
         Left = 295
         Top = 0
         Width = 72
-        Height = 229
+        Height = 225
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -55,6 +57,7 @@ object USeriesControlForm: TUSeriesControlForm
         Align = alRight
         BevelOuter = bvNone
         TabOrder = 0
+        ExplicitHeight = 229
         object Button1: TButton
           Left = 12
           Top = 16
@@ -168,9 +171,9 @@ object USeriesControlForm: TUSeriesControlForm
     end
     object Panel1: TPanel
       Left = 0
-      Top = 229
+      Top = 225
       Width = 367
-      Height = 265
+      Height = 295
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -179,10 +182,10 @@ object USeriesControlForm: TUSeriesControlForm
       BevelOuter = bvNone
       TabOrder = 1
       object GroupBox2: TGroupBox
-        Left = 7
-        Top = 1
+        Left = 13
+        Top = 0
         Width = 281
-        Height = 256
+        Height = 289
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -191,7 +194,7 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 0
         DesignSize = (
           281
-          256)
+          289)
         object Label7: TLabel
           Left = 25
           Top = 166
@@ -215,6 +218,18 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = 'Watch interval (sec, -1 - inf):'
+        end
+        object Label9: TLabel
+          Left = 67
+          Top = 257
+          Width = 123
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Alignment = taRightJustify
+          Caption = 'Update interval (ms):'
         end
         object CheckBox2: TCheckBox
           Left = 9
@@ -340,6 +355,22 @@ object USeriesControlForm: TUSeriesControlForm
           OnExit = Edit4Exit
           OnKeyDown = Edit4KeyDown
         end
+        object UpdateIntervalEdit: TEdit
+          Left = 198
+          Top = 253
+          Width = 67
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 8
+          Text = '100'
+          OnChange = WatchIntervalEditChange
+          OnExit = Edit4Exit
+          OnKeyDown = Edit4KeyDown
+        end
       end
     end
   end
@@ -347,7 +378,7 @@ object USeriesControlForm: TUSeriesControlForm
     Left = 367
     Top = 0
     Width = 284
-    Height = 494
+    Height = 520
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -355,11 +386,12 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitHeight = 494
     object Panel6: TPanel
       Left = 0
-      Top = 222
+      Top = 223
       Width = 284
-      Height = 272
+      Height = 297
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -369,7 +401,7 @@ object USeriesControlForm: TUSeriesControlForm
       TabOrder = 0
       DesignSize = (
         284
-        272)
+        297)
       object Label1: TLabel
         Left = 9
         Top = 9
@@ -382,7 +414,7 @@ object USeriesControlForm: TUSeriesControlForm
       end
       object BitBtn1: TBitBtn
         Left = 55
-        Top = 234
+        Top = 259
         Width = 107
         Height = 32
         Margins.Left = 4
@@ -412,12 +444,13 @@ object USeriesControlForm: TUSeriesControlForm
         NumGlyphs = 2
         TabOrder = 0
         OnClick = BitBtn1Click
+        ExplicitTop = 234
       end
       object GroupBox1: TGroupBox
         Left = 0
-        Top = 7
+        Top = 2
         Width = 281
-        Height = 219
+        Height = 248
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -426,7 +459,7 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 1
         DesignSize = (
           281
-          219)
+          248)
         object Label2: TLabel
           Left = 25
           Top = 25
@@ -626,13 +659,14 @@ object USeriesControlForm: TUSeriesControlForm
       end
       object BitBtn2: TBitBtn
         Left = 170
-        Top = 234
+        Top = 258
         Width = 104
         Height = 32
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
+        Anchors = [akLeft, akBottom]
         Caption = #1054#1090#1084#1077#1085#1072
         Kind = bkCancel
         NumGlyphs = 2

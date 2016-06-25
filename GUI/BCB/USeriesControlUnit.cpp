@@ -165,7 +165,7 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
   CheckBox5->Checked=true;
 
  WatchIntervalEdit->Text=FloatToStrF(GrSender->GetWatchInterval(),ffFixed,5,5);
-
+ UpdateIntervalEdit->Text=IntToStr(int(GrSender->GetUpdateInterval()));
 
  UpdateSelectedWatch(); 
 }
@@ -510,6 +510,14 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
    GrSender->SetWatchInterval(StrToFloat(WatchIntervalEdit->Text));
   }
 
+ try
+ {
+  GrSender->SetUpdateInterval(StrToInt(UpdateIntervalEdit->Text));
+ }
+ catch(EConvertError &ex)
+ {
+
+ }
  Hide();
 }
 //---------------------------------------------------------------------------

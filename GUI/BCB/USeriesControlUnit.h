@@ -59,6 +59,8 @@ __published:	// IDE-managed Components
 	TButton *DelPointButton;
 	TLabel *Label8;
 	TEdit *WatchIntervalEdit;
+	TLabel *Label9;
+	TEdit *UpdateIntervalEdit;
         void __fastcall OutterCPanelDblClick(TObject *Sender);
         void __fastcall InnerCPanelDblClick(TObject *Sender);
         void __fastcall FormHide(TObject *Sender);

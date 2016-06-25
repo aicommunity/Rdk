@@ -298,6 +298,17 @@ long TUVisualControllerFrame::GetUpdateInterval(void)
  return UpdateInterval;
 }
 
+// Задает интервал обновления интерфейса
+bool TUVisualControllerFrame::SetUpdateInterval(long value)
+{
+ if(value<0)
+  return false;
+
+ UpdateInterval=value;
+ return true;
+}
+
+
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
 bool TUVisualControllerFrame::GetAlwaysUpdateFlag(void)
 {

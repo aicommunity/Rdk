@@ -71,6 +71,9 @@ virtual void ClearInterface(void)=0;
 // Возвращает интервал обновления интерфейса
 virtual long GetUpdateInterval(void)=0;
 
+// Задает интервал обновления интерфейса
+virtual bool SetUpdateInterval(long value)=0;
+
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
 virtual bool GetAlwaysUpdateFlag(void)=0;
 

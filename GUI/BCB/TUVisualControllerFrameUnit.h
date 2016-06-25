@@ -89,6 +89,9 @@ virtual std::string GetClassName(void);
 // Возвращает интервал обновления интерфейса
 virtual long GetUpdateInterval(void);
 
+// Задает интервал обновления интерфейса
+virtual bool SetUpdateInterval(long value);
+
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
 virtual bool GetAlwaysUpdateFlag(void);
 
