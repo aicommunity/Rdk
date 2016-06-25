@@ -362,7 +362,6 @@ bool UApplication::OpenProject(const std::string &filename)
  EngineControl->SetThreadMode(config.MultiThreadingMode);
  CalcAppCaption();
 
- LoadFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription);
  /*
  UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
@@ -381,6 +380,12 @@ try{
  int selected_engine_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
 
  ProjectXml.SelectNodeRoot("Project/General");
+
+ if(LoadFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription))
+ {
+  Project->SetConfig(config);
+  Project->ResetModified();
+ }
 
  for(int i=0;i<config.NumChannels;i++)
  {

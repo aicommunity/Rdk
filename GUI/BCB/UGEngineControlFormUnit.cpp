@@ -2173,7 +2173,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
  UCreateProjectWizardForm->Caption="Update Project Wizard";
  UCreateProjectWizardForm->ProjectConfig=config;
- UCreateProjectWizardForm->ProjectDescriptionRichEdit->Lines->LoadFromFile((RdkApplication.GetProjectPath()+"Description.rtf").c_str());
+// UCreateProjectWizardForm->ProjectDescriptionRichEdit->Lines->LoadFromFile((RdkApplication.GetProjectPath()+"Description.rtf").c_str());
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
  {
   UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;

@@ -329,8 +329,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  std::string descriptionfilename=xml.ReadString("ProjectDescriptionFileName","");
- if(extract_file_path(descriptionfilename).empty())
-  descriptionfilename=ProjectPath+descriptionfilename;
+ Config.DescriptionFileName=descriptionfilename;
 
  Config.InterfaceFileName=xml.ReadString("InterfaceFileName","");
 
