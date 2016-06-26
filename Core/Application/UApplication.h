@@ -220,6 +220,9 @@ virtual void ResetEngine(int engine_index);
 
 /// ƒелает шаг расчета выбранного канала, или всех, если engine_index == -1
 virtual void StepEngine(int engine_index);
+
+/// ¬озвращает true если канал запущен
+virtual bool IsEngineStarted(int engine_index);
 // --------------------------
 
 // --------------------------

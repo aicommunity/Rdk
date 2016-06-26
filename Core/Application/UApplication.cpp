@@ -897,6 +897,14 @@ void UApplication::StepEngine(int engine_index)
 {
  EngineControl->StepEngine(engine_index);
 }
+
+/// Возвращает true если канал запущен
+bool UApplication::IsEngineStarted(int engine_index)
+{
+ if(!EngineControl)
+  return false;
+ return EngineControl->CheckCalcState(engine_index);
+}
 // --------------------------
 
 // --------------------------

@@ -467,7 +467,17 @@ int UEngineControl::CheckCalcState(int channel_id) const
  if(channel_id<0 || channel_id>GetNumEngines())
   return 0;
 
- return EngineControlThreads[channel_id]->CheckCalcState();
+ switch(ThreadMode)
+ {
+ case 0:
+  return 0;
+ break;
+
+ case 1:
+  return EngineControlThreads[channel_id]->CheckCalcState();
+ break;
+ }
+ return 0;
 }
 
 /// ¬клчает мониторинг сервера
