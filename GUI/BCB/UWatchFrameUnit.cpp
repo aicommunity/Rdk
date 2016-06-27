@@ -47,6 +47,8 @@ TUWatchInfo::TUWatchInfo(void)
  //  оординаты выхода, хран€щего данные по оси Y дл€ случа€ MDMatrix
  MRow=0;
  MCol=0;
+ MVectorIndexX=0;
+ MVectorIndexY=0;
 }
 
 TUWatchInfo::~TUWatchInfo(void)
@@ -131,6 +133,7 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  WatchInterval=-1;
  UpdateInterval=200;
  AlwaysUpdateFlag=true;
+ CacheIndex=0;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)

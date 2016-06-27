@@ -23,6 +23,12 @@ __fastcall TEnchancedSG::TEnchancedSG(TComponent* Owner) : TFrame(Owner) {
 	m_editing = false;
 	m_bCellChanged = false;
 	m_FlagChanged = false;
+
+	m_end_editing=false;
+	m_editingCol=0;
+	m_editingRow=0;
+	m_cellChanged=false;
+
 }
 
 void TEnchancedSG::Refresh()
@@ -38,8 +44,13 @@ void TEnchancedSG::Refresh()
 // ---------------------------------------------------------------------------
 // TProperty Members
 // ---------------------------------------------------------------------------
-TProperty::TProperty() {
-
+TProperty::TProperty()
+{
+ m_listed=false;
+ m_lowBorder=0;
+ m_upBorder=0;
+ m_step=0;
+ m_number=0;
 }
 
 TProperty& TProperty::operator =(const TProperty &p)

@@ -33,6 +33,10 @@ __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
  ShowXMLComponentParameters=true;
  UpdateInterval=-1;
  DrawEngineFrame=0;
+ TreeReadOnlyFlag=false;
+ ParamReadOnlyFlag=false;
+ RegistryModified=false;
+ SelectedId=0;
 }
 //---------------------------------------------------------------------------
 

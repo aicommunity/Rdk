@@ -346,7 +346,10 @@ bool LoadBitmapFromFile(String FileName, UBitmap *target)
 
  ifstream stream(AnsiString(FileName).c_str(),ios::in);
  if(!stream)
+ {
+  delete source;
   return false;
+ }
  stream.read(reinterpret_cast<char*>(&type),sizeof(type)/sizeof(char));
  stream.read(reinterpret_cast<char*>(&header),sizeof(header)/sizeof(char));
  stream.close();

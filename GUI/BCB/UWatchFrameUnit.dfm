@@ -9,7 +9,6 @@ inherited UWatchFrame: TUWatchFrame
     Top = 0
     Width = 656
     Height = 469
-    BackWall.Brush.Color = clWhite
     BackWall.Brush.Style = bsClear
     Legend.Alignment = laBottom
     Legend.CheckBoxesStyle = cbsRadio
@@ -32,13 +31,13 @@ inherited UWatchFrame: TUWatchFrame
     DepthAxis.AutomaticMinimum = False
     DepthAxis.Maximum = -0.700000000000000600
     DepthAxis.Minimum = -1.700000000000001000
-    LeftAxis.Title.Angle = 0
     View3D = False
     Zoom.Pen.Mode = pmNotXor
     Align = alClient
     Color = clWhite
     PopupMenu = PopupMenu
     TabOrder = 0
+    DefaultCanvas = 'TGDIPlusCanvas'
     ColorPaletteIndex = 13
   end
   object SavePictureDialog: TSavePictureDialog

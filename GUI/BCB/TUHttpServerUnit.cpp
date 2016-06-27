@@ -46,6 +46,7 @@ __fastcall TUHttpServerFrame::TUHttpServerFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  MemStream=0;
+ DataStream=0;
  Bitmap=0;
  Init();
 }

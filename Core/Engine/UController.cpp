@@ -23,6 +23,7 @@ namespace RDK {
 // --------------------------
 UController::UController(void)
 {
+ Enabled=false;
 }
 
 UController::~UController(void)

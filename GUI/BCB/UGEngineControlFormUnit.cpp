@@ -166,6 +166,10 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  DisableAdminForm=false;
 
  DisableStopVideoSources=false;
+ HideAdminFormFlag=false;
+ AutoStartProjectFlag=false;
+ MinimizeToTray=false;
+ StartMinimized=false;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)

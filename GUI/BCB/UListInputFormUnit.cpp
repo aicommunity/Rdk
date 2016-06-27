@@ -27,6 +27,7 @@ __fastcall TUListInputForm::TUListInputForm(TComponent* Owner)
  PresentSelect=0;
  MustInput=true;
  Sort=true;
+ top=left=width=height=0;
 }
 
 //---------------------------------------------------------------------------

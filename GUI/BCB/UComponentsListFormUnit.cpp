@@ -16,6 +16,7 @@ TUComponentsListForm *UComponentsListForm;
 __fastcall TUComponentsListForm::TUComponentsListForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
+ Mode=0;
 }
 //---------------------------------------------------------------------------
 // Метод открытия диалога для выбора компонента

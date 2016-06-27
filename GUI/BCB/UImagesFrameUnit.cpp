@@ -24,6 +24,8 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  SizeMode=0;
  ShowMode=0;
  SingleBackgroundColor=clBtnFace;
+ presIm=false;
+ x2=y2=0;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)

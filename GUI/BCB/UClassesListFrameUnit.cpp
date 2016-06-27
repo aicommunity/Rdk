@@ -18,6 +18,7 @@ __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 {
  UpdateInterfaceFlag=false;
  CheckModelFlag=false;
+ RepaintNeeded=false;
 }
 //---------------------------------------------------------------------------
 

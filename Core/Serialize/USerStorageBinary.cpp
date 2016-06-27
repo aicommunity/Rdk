@@ -27,6 +27,8 @@ USerStorageBinary::USerStorageBinary(void)
  Size = 0;
  MaxSize = 0;
  m_pData=0;
+ Front=0;
+ Back=0;
 };
 
 // Создает очередь с резервированым максимальным размером

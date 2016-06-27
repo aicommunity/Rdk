@@ -48,6 +48,28 @@ NCC2D::NCC2D(void)
  PassCStepSize=0;
 
  CStep=1;
+
+ IWidth=0;
+ IHeight=0;
+
+ TWidth=0;
+ THeight=0;
+
+ SubAverageFlag=false;
+
+ NumCalcPasses=1;
+ AutoPassParametersFlag=false;
+ CalcMode=0;
+
+ CWidth=0;
+ CHeight=0;
+
+ WorkIX=WorkIY=WorkIWidth=WorkIHeight=0;
+ TSumNorm=0;
+ TSumAverage=0;
+
+ MaxResult=MinResult=0;
+ MaxResX=MaxResY=MinResX=MinResY=0;
 }
 
 NCC2D::~NCC2D(void)
