@@ -219,10 +219,13 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   }
  }
 
- if(ComponentControlName.size()>0)
-  Caption=(PureFormCaption+std::string(" [")+ComponentControlName+std::string("]")).c_str();
- else
-  Caption=PureFormCaption.c_str();
+ if(this != RdkMainForm)
+ {
+  if(ComponentControlName.size()>0)
+   Caption=(PureFormCaption+std::string(" [")+ComponentControlName+std::string("]")).c_str();
+  else
+   Caption=PureFormCaption.c_str();
+ }
 
  if(!IsEngineInit())
  {

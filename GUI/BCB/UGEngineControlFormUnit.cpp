@@ -399,7 +399,7 @@ void TUGEngineControlForm::AClearInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
-// HideTimer->Enabled=true;
+//
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -2274,14 +2274,6 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.Init();
 
  VersionString=GetBuildInfoAsString();
- Caption=ProgramName;
- if(VersionString.Length()>0)
- {
-  Caption=Caption+" Build ";
-  Caption=Caption+VersionString;
- }
-
-
 }
 //---------------------------------------------------------------------------
 
@@ -2290,7 +2282,15 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  if(!ApplicationInitialized)
   return;
  HideTimer->Enabled=false;
-// UEngineMonitorForm->LogTimer->Enabled=true;
+
+ Caption=ProgramName;
+ if(VersionString.Length()>0)
+ {
+  Caption=Caption+" Build ";
+  Caption=Caption+VersionString;
+ }
+ Repaint();
+ Update();
 
  if(UServerControlForm)
   UServerControlForm->SetServerBinding(RdkApplication.GetProjectConfig().ServerInterfaceAddress, RdkApplication.GetProjectConfig().ServerInterfacePort);
@@ -2936,4 +2936,5 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
  RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
+
 

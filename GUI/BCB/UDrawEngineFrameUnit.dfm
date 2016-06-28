@@ -56,6 +56,10 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited TreeView: TTreeView
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
@@ -162,9 +166,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     Height = 49
     Align = alBottom
     TabOrder = 2
-    DesignSize = (
-      781
-      49)
     object Label1: TLabel
       Left = 3
       Top = 5
@@ -219,22 +220,20 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Text = '20'
     end
     object ApplyButton: TButton
-      Left = 615
-      Top = 12
+      Left = 418
+      Top = 13
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
       Caption = 'Apply'
       Default = True
       TabOrder = 4
       OnClick = ApplyButtonClick
     end
     object RestoreButton: TButton
-      Left = 696
-      Top = 12
+      Left = 499
+      Top = 13
       Width = 75
       Height = 25
-      Anchors = [akRight, akBottom]
       Caption = 'Restore'
       TabOrder = 5
       OnClick = RestoreButtonClick
