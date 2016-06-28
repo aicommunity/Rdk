@@ -354,6 +354,8 @@ bool UNet::BreakAllOutgoingLinks(const NameT &itemname)
  else
   item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
+ if(!item)
+  return false;
  item->DisconnectAll();
 
  return true;
@@ -367,6 +369,8 @@ bool UNet::BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_proper
  else
   item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
+ if(!item)
+  return false;
  item->DisconnectAll(item_property_name);
 
  return true;
