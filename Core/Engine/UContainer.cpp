@@ -1737,10 +1737,13 @@ void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 // объекта владельцу
 void UContainer::SharesInit(void)
 {
- ShareMapIteratorT I=ShareLookupTable.begin();
- ShareMapIteratorT J=ShareLookupTable.end();
- for(;I != J;++I)
-  I->second->Init(MainOwner);
+ if(!ShareLookupTable.empty())
+ {
+  ShareMapIteratorT I=ShareLookupTable.begin();
+  ShareMapIteratorT J=ShareLookupTable.end();
+  for(;I != J;++I)
+   I->second->Init(MainOwner);
+ }
  ASharesInit();
 }
 
@@ -1749,10 +1752,13 @@ void UContainer::SharesInit(void)
 void UContainer::SharesUnInit(void)
 {
  ASharesUnInit();
- ShareMapIteratorT I=ShareLookupTable.begin();
- ShareMapIteratorT J=ShareLookupTable.end();
- for(;I != J;++I)
-  I->second->UnInit();
+ if(!ShareLookupTable.empty())
+ {
+  ShareMapIteratorT I=ShareLookupTable.begin();
+  ShareMapIteratorT J=ShareLookupTable.end();
+  for(;I != J;++I)
+   I->second->UnInit();
+ }
 }
 // --------------------------
 
