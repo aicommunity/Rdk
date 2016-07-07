@@ -692,7 +692,7 @@ void TUGEngineControlForm::CloseProject(void)
   RdkApplication.SetProjectPath("");
  }
  RdkApplication.SetProjectOpenFlag(false);
- for(int i=GetNumEngines();i>=0;i--)
+ for(int i=GetNumEngines()-1;i>=0;i--)
  {
   SelectEngine(i);
   if(GetEngine())

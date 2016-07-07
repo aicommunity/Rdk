@@ -30,6 +30,8 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
 
  CheckModelFlag=true;
 
+ ComponentControlChannel=0;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -427,6 +429,15 @@ bool TUVisualControllerForm::SetComponentControlName(const std::string& name)
  ComponentControlName=name;
  UpdateInterface();
  return true;
+}
+
+const int TUVisualControllerForm::GetComponentControlChannel(void) const
+{
+ return ComponentControlChannel;
+}
+bool TUVisualControllerForm::SetComponentControlChannel(const int index)
+{
+ ComponentControlChannel = index;
 }
 
 // Служебные методы управления интерфейсом
