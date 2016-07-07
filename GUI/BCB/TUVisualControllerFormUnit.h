@@ -28,6 +28,9 @@ bool AlwaysUpdateFlag;
 // Длинное имя управляемого компонента модели (опционально)
 std::string ComponentControlName;
 
+// Индекс канала, в котором находится компонент
+int ComponentControlChannel;
+
 // Заголовок окна без указания управляемого компонента
 std::string PureFormCaption;
 
@@ -108,6 +111,9 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // Длинное имя управляемого компонента модели (опционально)
 const std::string& GetComponentControlName(void) const;
 virtual bool SetComponentControlName(const std::string& name);
+
+const int GetComponentControlChannel(void) const;
+virtual bool SetComponentControlChannel(const int index);
 
 // Создание копии этого компонента
 virtual TUVisualControllerForm* New(TComponent *owner=0)=0;

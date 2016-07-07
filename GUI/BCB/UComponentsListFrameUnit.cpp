@@ -1231,6 +1231,8 @@ void __fastcall TUComponentsListFrame::GUI1Click(TObject *Sender)
  if(I != ComponentControllers.end() && I->second)
  {
   I->second->SetComponentControlName(SelectedComponentName);
+  int id = GetSelectedEngineIndex();
+  I->second->SetComponentControlChannel(id);
   I->second->Show();
   I->second->UpdateInterface(true);
  }
@@ -2114,4 +2116,5 @@ void __fastcall TUComponentsListFrame::CopylongnametoClipboard1Click(TObject *Se
  Clipboard()->AsText=stringcompid.c_str();
 }
 //---------------------------------------------------------------------------
+
 

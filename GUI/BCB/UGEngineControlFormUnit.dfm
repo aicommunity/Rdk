@@ -316,10 +316,6 @@ object UGEngineControlForm: TUGEngineControlForm
               end
             end
             inherited TabSheet3: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
               inherited Splitter2: TSplitter
                 Top = 250
                 ExplicitTop = 250
@@ -389,8 +385,8 @@ object UGEngineControlForm: TUGEngineControlForm
             DefaultRowHeight = 18
             OnMouseEnter = UComponentsListFrame1StringGridMouseEnter
             ExplicitTop = 22
-            ExplicitWidth = 257
-            ExplicitHeight = 183
+            ExplicitWidth = 260
+            ExplicitHeight = 199
           end
           inherited HeaderControl: THeaderControl
             Width = 257
@@ -1047,8 +1043,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Caption = 'Autosave project'
       TabOrder = 3
       OnClick = AutosaveProjectCheckBoxClick
-      ExplicitLeft = 964
-      ExplicitTop = 4
     end
     object MultiThreadedRadioButton: TRadioButton
       Left = 760
@@ -1297,7 +1291,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03C80310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03D40310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2277,8 +2271,8 @@ object UGEngineControlForm: TUGEngineControlForm
     Top = 88
   end
   object TrayPopupMenu: TPopupMenu
-    Left = 120
-    Top = 152
+    Left = 32
+    Top = 136
     object Open1: TMenuItem
       Caption = 'Open'
       Default = True
@@ -2312,8 +2306,8 @@ object UGEngineControlForm: TUGEngineControlForm
     end
   end
   object ChannelsPopupMenu: TPopupMenu
-    Left = 344
-    Top = 128
+    Left = 240
+    Top = 120
     object AddChannel1: TMenuItem
       Caption = 'Add Channel'
       OnClick = AddChannel1Click
