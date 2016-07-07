@@ -1400,12 +1400,18 @@ void __fastcall TUComponentsListFrame::Movedown1Click(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::Rename1Click(TObject *Sender)
 {
- String value = InputBox("Rename component", "Please enter new component name", SelectedComponentName.c_str());
+ std::string::size_type i=SelectedComponentName.find_last_of(".");
+ std::string rename_name;
+ if(i == std::string::npos)
+  rename_name=SelectedComponentName;
+ else
+  rename_name=SelectedComponentName.substr(i+1);
+ String value = InputBox("Rename component", "Please enter new component name", rename_name.c_str());
  if(value.Length()==0)
   return;
 
  std::string new_name=AnsiString(value).c_str();
- if(new_name == SelectedComponentName)
+ if(new_name == rename_name)
   return;
 
  Model_SetComponentPropertyData(SelectedComponentName.c_str(),"Name",&new_name);
