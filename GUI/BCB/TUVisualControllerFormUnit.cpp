@@ -32,6 +32,8 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
 
  ComponentControlChannel=0;
 
+ ShowTabbedFlag = true;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -465,6 +467,13 @@ unsigned long long TUVisualControllerForm::GetUpdateTime(void)
  return UpdateTime;
 }
 
+// Вызывается при попытке показать форму нетрадиционным способом, когда не вызывается обычный OnFormShow
+// (пример - открытие GUI компонента, когда уже открыт GUI того же компонента, но с другого канала)
+void TUVisualControllerForm::ComponentFormShowManually(const std::string& component_name, int ChannelIndex)
+{
+
+}
+
 // -----------------------------
 
 // --------------------------
@@ -510,4 +519,5 @@ void TUVisualControllerForm::LoadFormPosition(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 // --------------------------
+
 
