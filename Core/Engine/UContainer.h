@@ -327,6 +327,9 @@ bool SetId(const UId &id);
 // Проверяет предлагаемое имя 'name' на уникальность в рамках данного объекта
 bool CheckName(const NameT &name);
 
+// Проверяет предлагаемое имя 'name' на синтаксическую корректность
+bool ValidateName(const NameT &name);
+
 // Генерирует имя уникальное в компонентах этого объекта
 virtual NameT& GenerateName(const NameT &prefix, NameT &namebuffer);
 
@@ -893,6 +896,11 @@ struct EComponentNameAlreadyExist: public ENameAlreadyExist
 EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
+// Имя компонента недопустимо
+struct EComponentNameInvalid: public ENameError
+{
+EComponentNameInvalid(const std::string &name) : ENameError(name) {};
+};
 
 // Id указателя не найден
 struct EPointerIdNotExist: public EIdNotExist
