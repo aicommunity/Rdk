@@ -393,11 +393,19 @@ const UId& GetPointerId(const NameT &name) const;
 const vector<UEPtr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all=false);
 
 // Осуществляет поиск всех компонент по заданному имени класса
-// и возвращает вектор длинных имен компонент либо пустой вектор
+// и возвращает вектор длинных имен компонент относительно текущего либо пустой вектор
 // find_all
 // false - искать в текущей компоненте
 // true -  искать в текущей компоненте и глубже
 const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all=false);
+
+// Осуществляет поиск всех компонент приводимых к заданному C++ типу
+// и возвращает вектор длинных имен компонент относительно текущего либо пустой вектор
+// find_all
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+template<class T>
+const vector<NameT>& GetComponentsNameByClassType(vector<NameT> &buffer, bool find_all=false);
 // --------------------------
 
 public:
@@ -1015,6 +1023,50 @@ virtual std::string CreateLogMessage(void) const;
 
 /// Функция подготавливает строку для логирования
 bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result);
+
+
+// Осуществляет поиск всех компонент приводимых к заданному C++ типу
+// и возвращает вектор длинных имен компонент относительно текущего либо пустой вектор
+// find_all
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+template<class T>
+const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, bool find_all)
+{
+ size_t numComp=GetNumComponents();
+ UEPtr<UContainer> comp;
+ string compName;
+
+ switch(find_all)
+ {
+  case false:
+   for(size_t i=0; i<numComp; i++)
+   {
+	comp=GetComponentByIndex(i);
+	if(dynamic_pointer_cast<T>(comp))
+	{
+	 compName=comp->GetLongName(this, compName);
+	 buffer.push_back(compName);
+	}
+   }
+   break;
+
+  case true:
+   for(size_t i=0; i<numComp; i++)
+   {
+	comp=GetComponentByIndex(i);
+	comp->GetComponentsNameByClassType(buffer, true);
+	if(dynamic_pointer_cast<T>(comp))
+	{
+	 compName=comp->GetLongName(this, compName);
+	 buffer.push_back(compName);
+	}
+   }
+   break;
+ }
+
+ return buffer;
+}
 
 }
 
