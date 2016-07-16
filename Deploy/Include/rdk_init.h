@@ -33,6 +33,12 @@ typedef int bool;
 
 #endif
 
+/// Идентификатор системного канала логгирования
+#ifndef RDK_SYS_MESSAGE
+#define RDK_SYS_MESSAGE -1
+#endif
+
+
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type

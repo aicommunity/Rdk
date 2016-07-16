@@ -104,7 +104,7 @@ const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &cha
 // Возвращает имя каталога бинарных файлов
 const char* RDK_CALL Core_GetSystemDir(void)
 {
- return RdkSystemDir.c_str();
+ return DllManager.GetSystemDir().c_str();
 }
 
 const char* RDK_CALL GetSystemDir(void)
@@ -115,8 +115,7 @@ const char* RDK_CALL GetSystemDir(void)
 // Устанавливает имя каталога бинарных файлов
 int RDK_CALL Core_SetSystemDir(const char *dir)
 {
- RdkSystemDir=dir;
- return RDK_SUCCESS;
+ return DllManager.SetSystemDir(dir);
 }
 
 int RDK_CALL SetSystemDir(const char *dir)
@@ -134,18 +133,16 @@ int RDK_CALL Core_LoadFonts(void)
   {
    // Грузим шрифты
    std::vector<std::string> font_names;
-   std::string font_path=RdkSystemDir+"Fonts/";
+   std::string font_path=DllManager.GetSystemDir()+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   if(DllManager.GetEnvironment())
-	DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
+   DllManager.GetGlobalLogger()->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
 
    RDK::ClearClobalFonts();
    RDK::UBitmapFont font;
    for(size_t i=0;i<font_names.size();i++)
    {
 	RDK::AddGlobalFont(font_path+font_names[i]);
-	if(DllManager.GetEnvironment())
-	 DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
+    DllManager.GetGlobalLogger()->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
    }
    res=RDK_SUCCESS;
   }
@@ -2755,7 +2752,7 @@ void* RDK_CALL MEngine_GetExceptionHandler(int engine_index)
 int RDK_CALL Engine_SetExceptionHandler(void* value)
 {
 
- return DllManager.GetEngineLock()->SetExceptionHandler(reinterpret_cast<RDK::UEnvironment::PExceptionHandler>(value));
+ return DllManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
 }
 
 int RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
@@ -2763,14 +2760,14 @@ int RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
  if(engine_index<0 || engine_index>=GetNumEngines())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(engine_index)->SetExceptionHandler(reinterpret_cast<RDK::UEnvironment::PExceptionHandler>(value));
+ return DllManager.GetLogger(engine_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
 }
 
 // Возвращает массив строк лога
 const char* RDK_CALL Engine_GetLog(int &error_level)
 {
 
- return DllManager.GetEngineLock()->GetLog(error_level);
+ return DllManager.GetLogger()->GetLog(error_level);
 }
 
 const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)

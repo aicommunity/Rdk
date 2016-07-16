@@ -225,6 +225,23 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
  return true;
 }
 
+// Указатель на логгер
+UEPtr<ULoggerEnv> const UComponent::GetLogger(void) const
+{
+ return Logger;
+}
+
+bool UComponent::SetLogger(UEPtr<ULoggerEnv> logger)
+{
+ if(Logger == logger)
+  return true;
+
+ Logger=logger;
+ UpdateInternalData();
+ return true;
+}
+
+
 /// Возвращает ссылку на класс управления времени из Environment.
 /// Если Environment отсутствует то возвращает указатель на заглушку
 /// DummyTime

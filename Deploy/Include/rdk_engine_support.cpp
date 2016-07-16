@@ -14,8 +14,6 @@ RDKDllManager DllManager;
 
 //int SelectedEngineIndex=0;
 
-std::string RdkSystemDir;
-
 int BufObjectsMode=0;
 
 
@@ -57,6 +55,11 @@ RDKDllManager::~RDKDllManager(void)
 
  EngineList.resize(0);
 
+ for(size_t i=0;i<LoggerList.size();i++)
+  if(LoggerList[i])
+   delete LoggerList[i];
+ LoggerList.resize(0);
+
  for(size_t i=0;i<MutexList.size();i++)
   if(MutexList[i])
    UDestroyMutex(MutexList[i]);
@@ -70,6 +73,23 @@ RDKDllManager::~RDKDllManager(void)
   UDestroyMutex(GlobalMutex);
   GlobalMutex=0;
  }
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Возвращает имя каталога бинарных файлов
+std::string RDKDllManager::GetSystemDir(void)
+{
+ return RdkSystemDir;
+}
+
+// Устанавливает имя каталога бинарных файлов
+int RDKDllManager::SetSystemDir(const char *dir)
+{
+ RdkSystemDir=dir;
+ return RDK_SUCCESS;
 }
 // --------------------------
 
@@ -117,6 +137,7 @@ int RDKDllManager::SetNumEngines(int num)
   EnvironmentList.resize(num,0);
   MutexList.resize(num,0);
   LockerList.resize(num,0);
+  LoggerList.resize(num,0);
   for(int i=old_num;i<num;i++)
   {
    MutexList[i]=UCreateMutex();
@@ -150,6 +171,7 @@ int RDKDllManager::Add(int index)
   EnvironmentList.resize(num,0);
   MutexList.resize(num,0);
   LockerList.resize(num,0);
+  LoggerList.resize(num,0);
  }
 
  for(int i=int(EngineList.size())-1;i>index;i--)
@@ -160,6 +182,7 @@ int RDKDllManager::Add(int index)
   EnvironmentList[i]=EnvironmentList[i-1];
   MutexList[i]=MutexList[i-1];
   LockerList[i]=LockerList[i-1];
+  LoggerList[i]=LoggerList[i-1];
  }
 
  EngineList[index]=0;
@@ -167,6 +190,7 @@ int RDKDllManager::Add(int index)
  EnvironmentList[index]=0;
  MutexList[index]=0;
  LockerList[index]=0;
+ LoggerList[index]=0;
  MutexList[index]=UCreateMutex();
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  MutexList[index]->DebugId=index;
@@ -196,13 +220,13 @@ int RDKDllManager::Del(int index)
  UDestroyMutex(MutexList[index]);
  for(int i=index+1;i<int(EngineList.size());i++)
  {
-//  UGenericMutexLocker lock1(MutexList[i-1]);
   UGenericMutexExclusiveLocker lock2(MutexList[i]);
   EngineList[i-1]=EngineList[i];
   StorageList[i-1]=StorageList[i];
   EnvironmentList[i-1]=EnvironmentList[i];
   MutexList[i-1]=MutexList[i];
   LockerList[i-1]=LockerList[i];
+  LoggerList[i-1]=LoggerList[i];
  }
 
  int new_num_size=0;
@@ -214,6 +238,7 @@ int RDKDllManager::Del(int index)
   StorageList.resize(StorageList.size()-1);
   EnvironmentList.resize(EnvironmentList.size()-1);
   MutexList.resize(MutexList.size()-1);
+  LoggerList.resize(LoggerList.size()-1);
   LockerList.resize(LockerList.size()-1);
   new_num_size=NumEngines=int(EngineList.size());
   curr_selected_channel_index=SelectedChannelIndex;
@@ -236,6 +261,9 @@ int RDKDllManager::EngineCreate(int index)
  if(EngineList[index])
   return RDK_SUCCESS;
 
+ // TODO: здесь инициализация параметров логгера и его запуск
+ LoggerList[index]=new RDK::ULoggerEnv;
+
  EngineList[index]=FuncCreateNewEngine();
  if(!EngineList[index])
  {
@@ -243,44 +271,40 @@ int RDKDllManager::EngineCreate(int index)
   return RDK_E_CORE_ENGINE_CREATE_FAIL;
  }
 
-// try
-// {
-  StorageList[index]=FuncCreateNewStorage();
-  if(!StorageList[index])
-  {
-   EngineDestroy(index);
-   return RDK_E_CORE_STORAGE_CREATE_FAIL;
-  }
+ EngineList[index]->SetLogger(LoggerList[index]);
 
-  EnvironmentList[index]=FuncCreateNewEnvironment();
-  if(!EnvironmentList[index])
-  {
-   EngineDestroy(index);
-   return RDK_E_CORE_ENVIRONMENT_CREATE_FAIL;
-  }
+ StorageList[index]=FuncCreateNewStorage();
+ if(!StorageList[index])
+ {
+  EngineDestroy(index);
+  return RDK_E_CORE_STORAGE_CREATE_FAIL;
+ }
 
-  EngineList[index]->Default();
+ EnvironmentList[index]=FuncCreateNewEnvironment();
+ if(!EnvironmentList[index])
+ {
+  EngineDestroy(index);
+  return RDK_E_CORE_ENVIRONMENT_CREATE_FAIL;
+ }
 
-  EnvironmentList[index]->SetSystemDir(RdkSystemDir);
-  if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
-  {
-   EngineDestroy(index);
-   return RDK_E_CORE_ENGINE_INIT_FAIL;
-  }
+ EngineList[index]->Default();
 
-//  if(index == SelectedChannelIndex)
+ EnvironmentList[index]->SetSystemDir(RdkSystemDir);
+ if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
+ {
+  EngineDestroy(index);
+  return RDK_E_CORE_ENGINE_INIT_FAIL;
+ }
+
   {
    UGenericMutexExclusiveLocker lock(GlobalMutex);
    /// Данные текущего выбранного канала
    Engine=EngineList[SelectedChannelIndex];
    Environment=EnvironmentList[SelectedChannelIndex];
    Storage=StorageList[SelectedChannelIndex];
+   Logger=LoggerList[SelectedChannelIndex];
   }
-// }
-// catch (RDK::UException &exception)
-// {
-//  EngineList[index]->ProcessException(exception);
-// }
+
  return RDK_SUCCESS;
 }
 
@@ -314,6 +338,9 @@ int RDKDllManager::EngineDestroy(int index)
   delete StorageList[index];
   StorageList[index]=0;
  }
+
+ delete LoggerList[index];
+ LoggerList[index]=0;
  return RDK_SUCCESS;
 }
 // --------------------------
@@ -340,6 +367,7 @@ bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
  Engine=EngineList[channel_index];
  Environment=EnvironmentList[channel_index];
  Storage=StorageList[channel_index];
+ Logger=LoggerList[channel_index];
 
  return true;
 }
@@ -498,6 +526,121 @@ RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(int engine_index)
  return RDK::UELockPtr<RDK::UContainer>(MutexList[engine_index],GetModel(engine_index));
 #endif
 }
+// --------------------------
+
+// --------------------------
+/// Средства логгирования
+// --------------------------
+// Возвращает ссылку на указатель на логгер
+RDK::UEPtr<RDK::ULoggerEnv>& RDKDllManager::GetLogger(void)
+{
+ return Logger;
+}
+
+RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetLogger(int engine_index)
+{
+ return LoggerList[engine_index];
+}
+
+/// Возвращает ссылку на глобальный логгер
+RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetGlobalLogger(void)
+{
+ return &GlobalLogger;
+}
+
+      /*
+// Записывает в лог новое сообщение с кодом ошибки
+int RDK_CALL RDKDllManager::LogMessage(int engine_index, int log_level, const std::string &message, int error_event_number)
+{
+ std::string line; // TODO: Заглушка
+ std::string object_name; // TODO: Заглушка
+ if(engine_index == RDK_SYS_MESSAGE)
+ {
+  switch (log_level)
+  {
+  case RDK_EX_FATAL:
+  {
+   RDK::EStringFatal exception(line,error_event_number);
+  }
+  break;
+
+  case RDK_EX_ERROR:
+  {
+   RDK::EStringError exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_WARNING:
+  {
+   RDK::EStringWarning exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_INFO:
+  {
+   RDK::EStringInfo exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_DEBUG:
+  {
+   if(DebugMode)
+   {
+	RDK::EStringDebug exception(line,error_event_number);
+	exception.SetObjectName(object_name);
+	ProcessException(exception);
+   }
+  }
+  break;
+
+  case RDK_EX_APP:
+  {
+   RDK::EStringApp exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+  }
+ }
+ else
+ {
+  RDK::UELockPtr<RDK::UEngine> engine=GetEngineLock(engine_index);
+  if(!engine)
+  {
+   GlobalLogger.LogMessage(std::string("From ")+RDK::sntoa(engine_index)+std::string(": ")+message);
+  }
+  else
+   engine->Engine_LogMessage(log_level,message.c_str());
+ }
+ return RDK_SUCCESS;
+}
+
+// Обрабатывает возникшее исключение
+void RDKDllManager::ProcessException(RDK::UException &exception)
+{
+// UGenericMutexExclusiveLocker lock(LogMutex);
+
+ RDK::UException log(exception);
+ log.SetMessage(std::string("S> ")+exception.what());
+
+ if(EventsLogMode) // Если включено, то сохраняем события в файл
+ {
+  GlobalLogger.LogMessage(log.GetMessage());  // TODO: Проверить на RDK_SUCCESS
+ }
+
+ if(DebuggerMessageFlag)
+  RdkDebuggerMessage(log.GetMessage());
+
+ if(ExceptionHandler)
+  ExceptionHandler(RDK_SYS_MESSAGE);
+}
+		*/
 // --------------------------
 
 

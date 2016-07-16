@@ -24,8 +24,15 @@ std::vector<RDK::UEngine*> EngineList;
 // Массив мьютексов
 std::vector<UGenericMutex*> MutexList;
 
+
 // Массив локеров
 std::vector<UGenericMutexExclusiveLocker*> LockerList;
+
+// Массив логгеров
+std::vector<RDK::ULoggerEnv*> LoggerList;
+
+// Системный (глобальный) логгер
+RDK::ULoggerEnv GlobalLogger;
 
 UGenericMutex* GlobalMutex;
 
@@ -36,9 +43,13 @@ RDK::UELockVar<int> SelectedChannelIndex;
 RDK::UELockVar<int> NumEngines;
 
 /// Данные текущего выбранного канала
+RDK::UEPtr<RDK::ULoggerEnv> Logger;
 RDK::UEPtr<RDK::UEngine> Engine;
 RDK::UEPtr<RDK::UEnvironment> Environment;
 RDK::UEPtr<RDK::UStorage> Storage;
+
+/// Путь до директории с бинарными файлами ядра (приложения)
+std::string RdkSystemDir;
 
 
 // ----------------------------------------------------------
@@ -66,6 +77,16 @@ public:
 // --------------------------
 RDKDllManager(void);
 virtual ~RDKDllManager(void);
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Возвращает имя каталога бинарных файлов
+std::string GetSystemDir(void);
+
+// Устанавливает имя каталога бинарных файлов
+int SetSystemDir(const char *dir);
 // --------------------------
 
 // --------------------------
@@ -145,6 +166,24 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(void);
 RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
 // --------------------------
 
+// --------------------------
+/// Средства логгирования
+// --------------------------
+// Возвращает ссылку на указатель на логгер
+RDK::UEPtr<RDK::ULoggerEnv>& GetLogger(void);
+RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int engine_index);
+
+/// Возвращает ссылку на глобальный логгер
+RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
+
+// Записывает в лог новое сообщение с кодом ошибки
+//int RDK_CALL LogMessage(int engine_index, int log_level, const std::string &message, int error_event_number);
+
+// Обрабатывает возникшее исключение
+//protected:
+//void ProcessException(RDK::UException &exception);
+// --------------------------
+
 };
 
 //extern RDK::UEPtr<RDK::UEngine> PEngine;
@@ -153,7 +192,7 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
 
 //extern int SelectedEngineIndex;
 
-extern RDK_LIB_TYPE std::string RdkSystemDir;
+//extern RDK_LIB_TYPE std::string RdkSystemDir;
 
 // Экземпляр менеджера
 extern RDK_LIB_TYPE RDKDllManager DllManager;

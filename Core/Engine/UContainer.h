@@ -242,6 +242,9 @@ bool CheckLongId(const std::string &id) const;
 // Управление средой выполнения этого объекта
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 
+// Указатель на логгер
+virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+
 // Вызов обработчика исключений среды
 virtual void ProcessException(UException &exception);
 

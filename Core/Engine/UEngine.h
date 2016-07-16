@@ -72,6 +72,9 @@ protected: // Данные
 // Данные инициализации
 UIniFile<char> Options;
 
+// Логгер
+RDK::UEPtr<ULoggerEnv> Logger;
+
 // Хранилище
 RDK::UEPtr<UStorage> Storage;
 
@@ -206,6 +209,10 @@ virtual UContainer* GetModel(void);
 // Методы управления движком
 // Методы пишут в лог по необходимости
 // --------------------------
+// Указатель на логгер
+UEPtr<ULoggerEnv> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+
 // Инициализирует данные движка
 virtual void Init(void);
 virtual bool Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env);
@@ -932,8 +939,8 @@ const char* GetUnreadLog(int &error_level, int &number, time_t &time);
 int Engine_LogMessage(int log_level, const char *message, int error_event_number=0);
 
 // Управление функцией-обработчиком исключений
-UEnvironment::PExceptionHandler GetExceptionHandler(void) const;
-int SetExceptionHandler(UEnvironment::PExceptionHandler value);
+ULoggerEnv::PExceptionHandler GetExceptionHandler(void) const;
+int SetExceptionHandler(ULoggerEnv::PExceptionHandler value);
 
 /// Очищает лог
 int ClearLog(void);

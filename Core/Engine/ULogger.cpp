@@ -6,6 +6,7 @@ namespace RDK {
 
 ULogger::ULogger(void)
 {
+ LogMutex=UCreateMutex();
  LogEnabledFlag=true;
 }
 
@@ -13,6 +14,8 @@ ULogger::ULogger(void)
 ULogger::~ULogger(void)
 {
  Clear();
+ if(LogMutex)
+  UDestroyMutex(LogMutex);
 }
 
 /// ѕуть до папки с логами

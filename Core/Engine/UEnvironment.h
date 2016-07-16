@@ -16,7 +16,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "ULibrary.h"
 #include "../System/rdk_system.h"
-#include "ULogger.h"
+#include "ULoggerEnv.h"
 
 namespace RDK {
 
@@ -27,16 +27,6 @@ extern RDK_LIB_TYPE bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment
 
 class RDK_LIB_TYPE UEnvironment: virtual public UModule
 {
-public:
-/// Прототип функции обратного вызова обработчика исключений
-typedef void (*PExceptionHandler)(int channel_index);
-
-/// Прототип функции предобработки исключений
-typedef bool (*PExceptionPreprocessor)(RDK::UEnvironment * env, RDK::UContainer *model, UException &in_exception, UException &out_exception);
-
-/// Прототип функции постобработки исключений
-typedef bool (*PExceptionPostprocessor)(RDK::UEnvironment * env, RDK::UContainer *model, const UException &exception);
-
 protected: // Параметры
 // Индекс предварительно заданной модели обработки
 // 0 - Структура определяется извне
@@ -50,19 +40,6 @@ std::string SystemDir;
 
 /// Минимальный интервал времени между итерациями счета (мс)
 ULongTime MinInterstepsInterval;
-
-/// Флаг включения режима отладки
-bool DebugMode;
-
-/// Маска системных событий для логирования
-unsigned int DebugSysEventsMask;
-
-/// Флаг включения вывода лога в отладчик
-bool DebuggerMessageFlag;
-
-/// Флаг включения внутренней регистрации событий в лог-файл
-/// true - регистрация включена
-bool EventsLogMode;
 
 protected: // Состояния
 // Флаг состояния инициализации
@@ -96,29 +73,6 @@ RDK::UBitmapFontCollection Fonts;
 // расчета реального времени (мс)
 double MaxModelDuration;
 
-// Внешний обработчик исключений
-PExceptionHandler ExceptionHandler;
-
-// Внешняя функция предобработки исключений
-PExceptionPreprocessor ExceptionPreprocessor;
-
-// Внешняя функция постобработки исключений
-PExceptionPostprocessor ExceptionPostprocessor;
-
-
-// Текущее число исключений системы
-mutable int CurrentExceptionsLogSize;
-
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
-int MaxExceptionsLogSize;
-
-// Индекс последнего считанного символа лога исключений
-unsigned LastReadExceptionLogIndex;
-
-// Максимальный уровень непрочитанных сообщений в логе
-mutable int LastErrorLevel;
-
 /// Индекс текущего канала в многоканальной библиотеке
 int ChannelIndex;
 
@@ -130,11 +84,6 @@ std::string SourceControllerName;
 /// сигнал о сбое в работе источника данных
 std::string SourceControllerProperty;
 
-protected: // Контроллеры
-
-protected: // Данные графического интерфеса пользователя
-
-
 protected: // Переменные быстрого доступа
 // Текущий компонент модели
 UEPtr<UComponent> CurrentComponent;
@@ -142,26 +91,13 @@ UEPtr<UComponent> CurrentComponent;
 protected: // Временные переменные
 unsigned long long StartupTime;
 
-unsigned long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
+unsigned long long CurrentTime,LastDuration, ProcEndTime, LastStepStartTime;
 
 /// Время, расчитанное в модели за один вызов RTCalculate;
 double RTModelCalcTime;
 
-// Временное хранилище буфера для лога
-//mutable string TempLogString;
-
-// Временное хранилище строк
-mutable string TempString;
-
-mutable std::map<unsigned, UException > LogList;
-
-/// Индекс последней строки лога
-mutable unsigned LogIndex;
-
-UGenericMutex* LogMutex;
-
 /// Экземпляр класса для логирования
-mutable ULogger Logger;
+mutable UEPtr<ULoggerEnv> Logger;
 
 
 public: // Public methods
@@ -197,23 +133,23 @@ long long GetMinInterstepsInterval(void) const;
 bool SetMinInterstepsInterval(long long value);
 
 /// Флаг включения режима отладки
-bool GetDebugMode(void) const;
-bool SetDebugMode(bool value);
+//bool GetDebugMode(void) const;
+//bool SetDebugMode(bool value);
 
 /// Маска системных событий для логирования
-unsigned int GetDebugSysEventsMask(void) const;
-bool SetDebugSysEventsMask(unsigned int value);
+//unsigned int GetDebugSysEventsMask(void) const;
+//bool SetDebugSysEventsMask(unsigned int value);
 
 /// Возвращает флаг включения вывода лога в отладчик
-bool GetDebuggerMessageFlag(void) const;
+//bool GetDebuggerMessageFlag(void) const;
 
 /// Устанавливает флаг включения вывода лога в отладчик
-bool SetDebuggerMessageFlag(bool value);
+//bool SetDebuggerMessageFlag(bool value);
 
 /// Флаг включения внутренней регистрации событий в лог-файл
 /// true - регистрация включена
-bool GetEventsLogMode(void) const;
-bool SetEventsLogMode(bool value);
+//bool GetEventsLogMode(void) const;
+//bool SetEventsLogMode(bool value);
 // --------------------------
 
 // --------------------------
@@ -241,6 +177,10 @@ double CalcRTPerformance(void) const;
 // --------------------------
 // Методы управления данными среды
 // --------------------------
+// Указатель на логгер
+UEPtr<ULoggerEnv> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+
 // Возвращает указатель на хранилище
 virtual UStorage* GetStorage(void);
 
@@ -273,11 +213,6 @@ bool SetChannelIndex(int value);
 /// Шрифты
 RDK::UBitmapFontCollection& GetFonts(void);
 bool SetFonts(const RDK::UBitmapFontCollection& value);
-// --------------------------
-
-// --------------------------
-// Методы управления моделью
-// --------------------------
 // --------------------------
 
 // --------------------------
@@ -342,6 +277,7 @@ virtual void RTCalculate(void);
 // --------------------------
 // Методы управления исключениями
 // --------------------------
+/*
 public:
 // Обрабатывает возникшее исключение
 virtual void ProcessException(UException &exception) const;
@@ -391,6 +327,7 @@ void LogMessage(int msg_level, const std::string &line, int error_event_number=0
 void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 void LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number=0);
 void LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number=0);
+*/
 // --------------------------
 
 // --------------------------

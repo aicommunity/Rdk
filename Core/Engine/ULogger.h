@@ -26,6 +26,7 @@ RDK::UEPtr<std::ofstream> EventsLogFile;
 /// сбрасывается, если невозможно создать катлог, или файл
 bool LogEnabledFlag;
 
+UGenericMutex* LogMutex;
 
 public: // Конструкторы и деструкторы
 ULogger(void);
