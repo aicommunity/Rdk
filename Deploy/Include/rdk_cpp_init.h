@@ -4,8 +4,15 @@
 #include "rdk_init.h"
 #include "rdk.h"
 #include "rdk_rpc.h"
+#include "rdk_engine_support.h"
 
 extern "C++"  {
+
+// --------------------------
+// Методы доступа к ядру без блокировки
+// --------------------------
+// Возвращает ссылку на указатель ядра
+RDK_LIB_TYPE RDK::UEPtr<RDKDllManager> RDK_CALL GetCore(void);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
@@ -22,10 +29,14 @@ RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int engine_index);
 // Возвращает указатель на текущую модель
 RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void);
 RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index);
+// --------------------------
 
 // --------------------------
-// Методы доступа к каналам с блокировкой
+// Методы доступа к ядру с блокировкой
 // --------------------------
+// Возвращает ссылку на указатель ядра
+RDK_LIB_TYPE RDK::UELockPtr<RDKDllManager> RDK_CALL GetCoreLock(void);
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int engine_index);

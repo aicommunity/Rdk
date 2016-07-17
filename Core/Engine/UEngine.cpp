@@ -6578,6 +6578,92 @@ int UEngine::Engine_LogMessage(int log_level, const char *message, int error_eve
  return res;
 }
 
+int UEngine::Engine_LogMessage(int msg_level, const char *method_name, const char *message, int error_event_number)
+{
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Logger->LogMessage(msg_level,method_name,message,error_event_number);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const char *message, int error_event_number)
+{
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Logger->LogMessageEx(msg_level,object_name,message,error_event_number);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const char *method_name, const char *message, int error_event_number)
+{
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Logger->LogMessageEx(msg_level,object_name,method_name,message,error_event_number);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
 
 // Управление функцией-обработчиком исключений
 ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const

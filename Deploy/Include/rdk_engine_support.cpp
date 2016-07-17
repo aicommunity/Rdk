@@ -431,6 +431,12 @@ RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(int engine_index)
 // --------------------------
 // Методы доступа к каналам с блокировками
 // --------------------------
+/// Метод доступа к глобальному лучше
+UGenericMutex* RDKDllManager::GetGlobalMutex(void)
+{
+ return GlobalMutex;
+}
+
 /// Метод доступ к мьютексу
 UGenericMutex* RDKDllManager::GetEngineMutex(void)
 {

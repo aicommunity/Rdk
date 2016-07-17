@@ -937,6 +937,9 @@ const char* GetUnreadLog(int &error_level, int &number, time_t &time);
 
 /// Записывает в лог новое сообщение
 int Engine_LogMessage(int log_level, const char *message, int error_event_number=0);
+int Engine_LogMessage(int msg_level, const char *method_name, const char *message, int error_event_number=0);
+int Engine_LogMessageEx(int msg_level, const char *object_name, const char *message, int error_event_number=0);
+int Engine_LogMessageEx(int msg_level, const char *object_name, const char *method_name, const char *message, int error_event_number=0);
 
 // Управление функцией-обработчиком исключений
 ULoggerEnv::PExceptionHandler GetExceptionHandler(void) const;

@@ -145,6 +145,9 @@ RDK::UEPtr<RDK::UContainer> GetModel(int engine_index);
 // --------------------------
 // Методы доступа к каналам с блокировкой
 // --------------------------
+/// Метод доступа к глобальному лучше
+UGenericMutex* GetGlobalMutex(void);
+
 /// Метод доступ к мьютексу
 UGenericMutex* GetEngineMutex(void);
 UGenericMutex* GetEngineMutex(int index);

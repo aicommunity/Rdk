@@ -4,6 +4,15 @@
 #include "rdk_cpp_init.h"
 #include "rdk_init.cpp"
 
+// --------------------------
+// ћетоды доступа к €дру без блокировки
+// --------------------------
+// ¬озвращает ссылку на указатель €дра
+RDK::UEPtr<RDKDllManager> RDK_CALL GetCore(void)
+{
+ return &DllManager;
+}
+
 // ¬озвращает ссылку на указатель управл€ющего €дра
 RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
 {
@@ -48,11 +57,21 @@ RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index)
 {
  return DllManager.GetModel(engine_index);
 }
-
+// --------------------------
 
 // --------------------------
 // ћетоды доступа к каналам с блокировкой
 // --------------------------
+// ¬озвращает ссылку на указатель €дра
+RDK::UELockPtr<RDKDllManager> RDK_CALL GetCoreLock(void)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDKDllManager>(0,&DllManager);
+#else
+ return RDK::UELockPtr<RDKDllManager>(DllManager.GetGlobalMutex(),&DllManager);
+#endif
+}
+
 // ¬озвращает ссылку на указатель управл€ющего €дра
 RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
 {
