@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
  ui.pMenuWindow->addAction(toggleModelStructure);
 
  performance = new PerformanceView(this);
- //ui.performanceViewDockWidget->setWidget(performance);
+ ui.performanceViewDockWidget->setWidget(performance);
 
  settingsFileName = "Settings.ini";
 
