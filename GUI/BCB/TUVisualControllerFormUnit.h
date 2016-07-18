@@ -28,6 +28,9 @@ bool AlwaysUpdateFlag;
 // Длинное имя управляемого компонента модели (опционально)
 std::string ComponentControlName;
 
+// Индекс канала, в котором находится компонент
+int ComponentControlChannel;
+
 // Заголовок окна без указания управляемого компонента
 std::string PureFormCaption;
 
@@ -46,6 +49,9 @@ bool CalculationStepUpdatedFlag;
 
 /// Флаг, разрешающий проверку на существование модели перед обновлением интерфейса
 bool CheckModelFlag;
+
+/// Флаг, регулирующий, будет данная форма отображаться как таб на UGEngineControlForm или как самостоятельная форма
+bool ShowTabbedFlag;
 
 /// Время, потраченное на обновление интерфейса
 unsigned long long UpdateTime;
@@ -99,6 +105,10 @@ virtual bool SetUpdateInterval(long value);
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
 virtual bool GetAlwaysUpdateFlag(void);
 
+// Вызывается при попытке показать форму нетрадиционным способом, когда не вызывается обычный OnFormShow
+// (пример - открытие GUI компонента, когда уже открыт GUI того же компонента, но с другого канала)
+virtual void ComponentFormShowManually(const std::string& component_name, int ChannelIndex);
+
 // Сохраняет параметры интерфейса в xml
 virtual void SaveParameters(RDK::USerStorageXML &xml);
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
@@ -111,6 +121,9 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // Длинное имя управляемого компонента модели (опционально)
 const std::string& GetComponentControlName(void) const;
 virtual bool SetComponentControlName(const std::string& name);
+
+const int GetComponentControlChannel(void) const;
+virtual bool SetComponentControlChannel(const int index);
 
 // Создание копии этого компонента
 virtual TUVisualControllerForm* New(TComponent *owner=0)=0;

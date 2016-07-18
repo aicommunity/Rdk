@@ -30,6 +30,10 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
 
  CheckModelFlag=true;
 
+ ComponentControlChannel=0;
+
+ ShowTabbedFlag = true;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -219,10 +223,13 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   }
  }
 
- if(ComponentControlName.size()>0)
-  Caption=(PureFormCaption+std::string(" [")+ComponentControlName+std::string("]")).c_str();
- else
-  Caption=PureFormCaption.c_str();
+ if(this != RdkMainForm)
+ {
+  if(ComponentControlName.size()>0)
+   Caption=(PureFormCaption+std::string(" [")+ComponentControlName+std::string("]")).c_str();
+  else
+   Caption=PureFormCaption.c_str();
+ }
 
  if(!IsEngineInit())
  {
@@ -426,6 +433,15 @@ bool TUVisualControllerForm::SetComponentControlName(const std::string& name)
  return true;
 }
 
+const int TUVisualControllerForm::GetComponentControlChannel(void) const
+{
+ return ComponentControlChannel;
+}
+bool TUVisualControllerForm::SetComponentControlChannel(const int index)
+{
+ ComponentControlChannel = index;
+}
+
 // Служебные методы управления интерфейсом
 /// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
 void TUVisualControllerForm::ResetCalculationStepUpdatedFlag(void)
@@ -449,6 +465,13 @@ bool TUVisualControllerForm::GetCalculationStepUpdatedFlag(void)
 unsigned long long TUVisualControllerForm::GetUpdateTime(void)
 {
  return UpdateTime;
+}
+
+// Вызывается при попытке показать форму нетрадиционным способом, когда не вызывается обычный OnFormShow
+// (пример - открытие GUI компонента, когда уже открыт GUI того же компонента, но с другого канала)
+void TUVisualControllerForm::ComponentFormShowManually(const std::string& component_name, int ChannelIndex)
+{
+
 }
 
 // -----------------------------
@@ -496,4 +519,5 @@ void TUVisualControllerForm::LoadFormPosition(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 // --------------------------
+
 

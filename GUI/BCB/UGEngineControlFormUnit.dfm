@@ -316,10 +316,6 @@ object UGEngineControlForm: TUGEngineControlForm
               end
             end
             inherited TabSheet3: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
               inherited Splitter2: TSplitter
                 Top = 250
                 ExplicitTop = 250
@@ -435,10 +431,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -472,7 +464,6 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Top = 2
                 Margins.Right = 2
                 Margins.Bottom = 2
-                ExplicitLeft = 4
                 ExplicitTop = 25
                 ExplicitWidth = 794
                 ExplicitHeight = 95
@@ -813,19 +804,19 @@ object UGEngineControlForm: TUGEngineControlForm
               ExplicitHeight = 22
             end
             inherited ApplyButton: TButton
-              Left = 526
-              Top = 13
+              Left = 439
+              Top = 15
               Width = 79
-              ExplicitLeft = 526
-              ExplicitTop = 13
+              ExplicitLeft = 439
+              ExplicitTop = 15
               ExplicitWidth = 79
             end
             inherited RestoreButton: TButton
-              Left = 611
-              Top = 13
+              Left = 524
+              Top = 15
               Width = 79
-              ExplicitLeft = 611
-              ExplicitTop = 13
+              ExplicitLeft = 524
+              ExplicitTop = 15
               ExplicitWidth = 79
             end
             inherited ShowLinkDetailCheckBox: TCheckBox
@@ -1298,7 +1289,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03D00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03DC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2278,8 +2269,8 @@ object UGEngineControlForm: TUGEngineControlForm
     Top = 88
   end
   object TrayPopupMenu: TPopupMenu
-    Left = 120
-    Top = 152
+    Left = 32
+    Top = 136
     object Open1: TMenuItem
       Caption = 'Open'
       Default = True
@@ -2313,8 +2304,8 @@ object UGEngineControlForm: TUGEngineControlForm
     end
   end
   object ChannelsPopupMenu: TPopupMenu
-    Left = 344
-    Top = 128
+    Left = 240
+    Top = 120
     object AddChannel1: TMenuItem
       Caption = 'Add Channel'
       OnClick = AddChannel1Click

@@ -259,6 +259,27 @@ void WriteParameterValue(const std::string &comp_name, const std::string &param_
  WritePropertyValue(comp_name.c_str(),param_name.c_str(),res);
 }
 
+// Кодирует и записывает содержимое свойства компонента
+template<typename T>
+void MWritePropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name, const T &res)
+{
+ const char *param_value=MModel_GetComponentPropertyValue(engine_index, comp_name.c_str(),property_name.c_str());
+ if(!param_value)
+  throw EEnginePropertyNotFound(comp_name, property_name);
+ MEngine_FreeBufString(engine_index, param_value);
+
+ std::string property_value;
+ RDK::EncodePropertyValue(res,property_value);
+ MModel_SetComponentPropertyValue(engine_index, comp_name.c_str(),property_name.c_str(), property_value.c_str());
+}
+
+// Кодирует и записывает содержимое свойства компонента
+template<typename T>
+void MWriteParameterValue(int engine_index, const std::string &comp_name, const std::string &property_name, const T &res)
+{
+	MWritePropertyValue(engine_index, comp_name, property_name, res);
+}
+
 // Кодирует и записывает содержимое переменной состояния компонента
 template<typename T>
 void WriteStateValue(const std::string &comp_name, const std::string &param_name, const T &res)

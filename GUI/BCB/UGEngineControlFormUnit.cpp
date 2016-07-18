@@ -399,7 +399,7 @@ void TUGEngineControlForm::AClearInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
-// HideTimer->Enabled=true;
+//
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -692,7 +692,7 @@ void TUGEngineControlForm::CloseProject(void)
   RdkApplication.SetProjectPath("");
  }
  RdkApplication.SetProjectOpenFlag(false);
- for(int i=GetNumEngines();i>=0;i--)
+ for(int i=GetNumEngines()-1;i>=0;i--)
  {
   SelectEngine(i);
   if(GetEngine())
@@ -2274,14 +2274,6 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.Init();
 
  VersionString=GetBuildInfoAsString();
- Caption=ProgramName;
- if(VersionString.Length()>0)
- {
-  Caption=Caption+" Build ";
-  Caption=Caption+VersionString;
- }
-
-
 }
 //---------------------------------------------------------------------------
 
@@ -2290,7 +2282,15 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  if(!ApplicationInitialized)
   return;
  HideTimer->Enabled=false;
-// UEngineMonitorForm->LogTimer->Enabled=true;
+
+ Caption=ProgramName;
+ if(VersionString.Length()>0)
+ {
+  Caption=Caption+" Build ";
+  Caption=Caption+VersionString;
+ }
+ Repaint();
+ Update();
 
  if(UServerControlForm)
   UServerControlForm->SetServerBinding(RdkApplication.GetProjectConfig().ServerInterfaceAddress, RdkApplication.GetProjectConfig().ServerInterfacePort);
@@ -2413,9 +2413,36 @@ void __fastcall TUGEngineControlForm::Watches2Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Sender)
 
 {
- TTabSheet* tab=AddComponentControlFormPage(UComponentsListFrame1->GetSelectedComponentLongName());
- if(tab)
-  tab->PageControl->ActivePageIndex=tab->TabIndex;
+ //Получить имя компонента
+ std::string c_name = UComponentsListFrame1->GetSelectedComponentLongName();
+
+ //Получить имя класса компонента
+ const char *pname=Model_GetComponentClassName(c_name.c_str());
+ std::string class_name;
+ if(pname)
+  class_name=pname;
+ Engine_FreeBufString(pname);
+
+ //Найдем форму нужного компонента
+ std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(class_name);
+ if(I != UComponentsListFrame1->ComponentControllers.end() && I->second)
+ {
+  //Нашли компонент, проверяем, хочет он быть показанным как таб или отдельно:
+  if(I->second->ShowTabbedFlag==true)
+  {
+	 TTabSheet* tab=AddComponentControlFormPage(class_name);
+	 if(tab)
+	  tab->PageControl->ActivePageIndex=tab->TabIndex;
+  }
+  else
+  {
+	//I->second->SetComponentControlName(component_name);
+	int index = GetSelectedEngineIndex();
+	I->second->ComponentFormShowManually(c_name.c_str(), index);
+  }
+
+ }
+
 }
 //---------------------------------------------------------------------------
 
@@ -2936,4 +2963,5 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
  RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
+
 

@@ -525,16 +525,28 @@ bool UContainer::CheckComponentL(const NameT &name)
 // данного объекта.
 bool UContainer::CheckName(const NameT &name)
 {
-// if(Name == name)
-//  return true;
-
-// if(!GetOwner())
-//  return true;
-
  if(CompsLookupTable.find(name) == CompsLookupTable.end())
   return true;
 
  return false;
+}
+
+// Проверяет предлагаемое имя 'name' на синтаксическую корректность
+bool UContainer::ValidateName(const NameT &name)
+{
+ if(name.empty())
+  return false;
+ if(name.find_first_of(" ") != std::string::npos)
+  return false;
+ std::locale loc;
+ if(!std::isalpha(*name.begin(),loc))
+  return false;
+ for (std::string::const_iterator it=name.begin(); it!=name.end(); ++it)
+  {
+	if (!std::isalnum(*it,loc) && *it != '_')
+	 return false;
+  }
+ return true;
 }
 
 // Генерирует уникальный Id.
@@ -591,6 +603,9 @@ bool UContainer::SetName(const NameT &name)
 
  if(name.empty())
   return false;
+
+ if(!ValidateName(name))
+  RDK_THROW(EComponentNameInvalid(name));
 
   if(GetOwner() != 0)
   {
@@ -1737,10 +1752,13 @@ void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 // объекта владельцу
 void UContainer::SharesInit(void)
 {
- ShareMapIteratorT I=ShareLookupTable.begin();
- ShareMapIteratorT J=ShareLookupTable.end();
- for(;I != J;++I)
-  I->second->Init(MainOwner);
+ if(!ShareLookupTable.empty())
+ {
+  ShareMapIteratorT I=ShareLookupTable.begin();
+  ShareMapIteratorT J=ShareLookupTable.end();
+  for(;I != J;++I)
+   I->second->Init(MainOwner);
+ }
  ASharesInit();
 }
 
@@ -1749,10 +1767,13 @@ void UContainer::SharesInit(void)
 void UContainer::SharesUnInit(void)
 {
  ASharesUnInit();
- ShareMapIteratorT I=ShareLookupTable.begin();
- ShareMapIteratorT J=ShareLookupTable.end();
- for(;I != J;++I)
-  I->second->UnInit();
+ if(!ShareLookupTable.empty())
+ {
+  ShareMapIteratorT I=ShareLookupTable.begin();
+  ShareMapIteratorT J=ShareLookupTable.end();
+  for(;I != J;++I)
+   I->second->UnInit();
+ }
 }
 // --------------------------
 
