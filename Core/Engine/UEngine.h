@@ -917,16 +917,10 @@ virtual int Model_SetComponentBitmapInput(const char *stringid, int index, const
 // --------------------------
 // Методы управления исключениями
 // --------------------------
-// Формирует строку лога об исключении
-//virtual string CreateLogMessage(UException &exception) const;
-
-// Возвращает массив зарегистрированных исключений
-//const vector<USharedPtr<UException> > GetExceptionsLog(void) const;
-
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
-int GetMaxExceptionsLogSize(void) const;
-int SetMaxExceptionsLogSize(int value);
+//int GetMaxExceptionsLogSize(void) const;
+//int SetMaxExceptionsLogSize(int value);
 
 // Возвращает массив строк лога
 const char* GetLog(int &error_level) const;

@@ -271,7 +271,9 @@ bool UApplication::Init(void)
 
  std::string font_path=extract_file_path(ApplicationFileName);
  SetSystemDir(font_path.c_str());
- GraphicalEngineInit(0,1,1,320,240,1,(void*)ExceptionHandler);
+ Core_SetLogDir(font_path.c_str());
+ MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
+ MCore_ChannelInit(0,0,(void*)ExceptionHandler);
  Engine_LoadFonts();
 
  SetWorkDirectory(font_path);
@@ -315,8 +317,8 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
  {
   RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
 
-  if(!MIsEngineInit(i))
-   MGraphicalEngineInit(i,channel.PredefinedStructure,1,1,640, 480 ,project_config.ReflectionFlag,(void*)ExceptionHandler);
+  if(!MCore_IsChannelInit(i))
+   MCore_ChannelInit(i,channel.PredefinedStructure,(void*)ExceptionHandler);
   else
    MEnv_SetPredefinedStructure(i,channel.PredefinedStructure);
 
@@ -344,11 +346,10 @@ bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
 
-// UShowProgressBarForm->SetWinTitle(Lang_LoadProjectTitle);
-
  ProjectXml.LoadFromFile(filename,"");
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
+ Core_SetLogDir(ProjectPath.c_str());
 
  Project->SetProjectPath(ProjectPath);
  Project->ReadFromXml(ProjectXml);
@@ -357,21 +358,9 @@ bool UApplication::OpenProject(const std::string &filename)
  EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
  EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
 
-// ProjectXml.SelectNodeRoot("Project/MultiGeneral");
-// int engines_mode=ProjectXml.ReadInteger("EnginesMode",0);
  EngineControl->SetThreadMode(config.MultiThreadingMode);
  CalcAppCaption();
 
- /*
- UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
- UShowProgressBarForm->SetBarHeader(2,Lang_Total);
- UShowProgressBarForm->ResetBarStatus(1, 1, num_engines-1);
- UShowProgressBarForm->ResetBarStatus(2, 1, 2);
-
- if(AppWinState)
-  UShowProgressBarForm->Show();
- UShowProgressBarForm->Update();
-   */
 try{
 
  EngineControl->SetNumEngines(config.NumChannels);
@@ -396,15 +385,13 @@ try{
    EngineControl->SetMinInterstepsInterval(i,channel_config.MinInterstepsInterval);
 
    SelectEngine(i);
-   if(!IsEngineInit())
-	GraphicalEngineInit(channel_config.PredefinedStructure,1,1,640, 480 ,true,(void*)ExceptionHandler);
+   if(!Core_IsChannelInit())
+	Core_ChannelInit(channel_config.PredefinedStructure,(void*)ExceptionHandler);
    else
 	Env_SetPredefinedStructure(channel_config.PredefinedStructure);
 
    // TODO: Реалиовать загрузку описаний классов
    // Загрузка описаний классов
-//   UComponentsControlForm->ComponentsControlFrame->LoadCommonClassesDescriptionFromFile("CommonClassesDescription.xml");
-//   UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Env_SetDebugMode(channel_config.DebugMode);
    Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
@@ -455,7 +442,7 @@ try{
   }
   catch(RDK::UException &exception)
   {
-   Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
   }
   Sleep(0);
  }
@@ -488,7 +475,7 @@ try{
 catch(RDK::UException &exception)
 {
 // UShowProgressBarForm->Hide();
- Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
 }
 
  std::list<std::string> last_list=LastProjectsList;
@@ -574,7 +561,7 @@ try
 }
 catch(RDK::UException &exception)
 {
- Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
 }
 
  return true;
@@ -819,7 +806,7 @@ bool UApplication::SaveProjectConfig(void)
  }
  catch(RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
  }
 
  return true;
@@ -912,7 +899,7 @@ bool UApplication::IsEngineStarted(int engine_index)
 // --------------------------
 bool UApplication::LoadModelFromFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  std::string data;
@@ -930,7 +917,7 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string file_n
 
 bool UApplication::SaveModelToFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  const char *p_buf=MModel_SaveComponent(channel_index, "");
@@ -945,7 +932,7 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string file_nam
 
 bool UApplication::LoadParametersFromFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  std::string data;
@@ -962,7 +949,7 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string f
 
 bool UApplication::SaveParametersToFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  const char *p_buf=MModel_SaveComponentParameters(channel_index, "");
@@ -977,7 +964,7 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string fil
 
 bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  std::string data;
@@ -997,7 +984,7 @@ bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_
 
 bool UApplication::SaveStatesToFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  int i=GetSelectedEngineIndex();
@@ -1025,7 +1012,7 @@ bool UApplication::SaveDescriptionToFile(int channel_index, const std::string fi
 
 bool UApplication::LoadClassesDescriptionsFromFile(const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return false;
 
  std::string data;
@@ -1054,7 +1041,7 @@ bool UApplication::SaveClassesDescriptionsToFile(const std::string file_name)
 
 bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return false;
 
  std::string data;

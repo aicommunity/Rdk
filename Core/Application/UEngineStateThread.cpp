@@ -162,10 +162,14 @@ void UEngineStateThread::Execute(void)
  while(!Terminated)
  {
   if(CalcStarted->wait(30) == false)
+  {
+   ProcessLog();
    continue;
+  }
 
   if(CalculationNotInProgress->wait(30) == false)
   {
+   ProcessLog();
    continue;
   }
   CalculationNotInProgress->reset();
@@ -234,17 +238,17 @@ void UEngineStateThread::Execute(void)
   catch(UException &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
   }
   catch(std::exception &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
   }
   catch(...)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
   }
 
   ProcessLog();
@@ -351,29 +355,29 @@ void UEngineStateThread::ProcessLog(void)
   std::list<int>::iterator I=ch_indexes.begin();
   for(;I!=ch_indexes.end();++I)
   {
-   if(!MIsEngineInit(*I))
-    continue;
+//   if(!MCore_IsEngineInit(*I))
+//    continue;
    int error_level=-1;
    int number=0;
    unsigned long long time=0;
-   int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
+   int num_log_lines=MLog_GetNumUnreadLogLines(*I);
    for(int k=0;k<num_log_lines;k++)
    {
-	const char * data=MEngine_GetUnreadLog(*I, error_level,number,time);
+	const char * data=MLog_GetUnreadLog(*I, error_level,number,time);
 	if(!data)
 	 continue;
 	if(global_error_level>error_level)
 	 global_error_level=error_level;
 
 	std::string new_log_data=data;
-	MEngine_FreeBufString(*I,data);
+//	MLog_FreeBufString(*I,data);
 	if(!new_log_data.empty())
 	{
 	 UnsentLog.push_back(new_log_data);
      GuiUnsentLog.push_back(new_log_data);
 	}
    }
-   MEngine_ClearReadLog(*I);
+   MLog_ClearReadLog(*I);
   }
  }
  catch(...)

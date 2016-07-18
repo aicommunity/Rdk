@@ -5178,31 +5178,43 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
-{ 
- try
+{
+ int res=RDK_SUCCESS;
+ RDK_SYS_TRY
  {
-  fstream file(file_name, ios::in);
-  string result;
-
-  if(!file || !file.is_open())
-   return false;
-
-  while(!file.eof() && !file.fail())
+  try
   {
-   std::string buffer;
-   if(!std::getline(file,buffer))
-    break;
-   result+=buffer;
-  }
+   fstream file(file_name, ios::in);
+   string result;
 
-  file.close();
-  return Model_LoadComponent(stringid, result.c_str());
+   if(!file || !file.is_open())
+	return false;
+
+   while(!file.eof() && !file.fail())
+   {
+	std::string buffer;
+	if(!std::getline(file,buffer))
+	 break;
+	result+=buffer;
+   }
+
+   file.close();
+   return Model_LoadComponent(stringid, result.c_str());
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
@@ -6727,7 +6739,7 @@ int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
-int UEngine::GetMaxExceptionsLogSize(void) const
+/*int UEngine::GetMaxExceptionsLogSize(void) const
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6781,7 +6793,7 @@ int UEngine::SetMaxExceptionsLogSize(int value)
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
-}
+}     */
 
 
 /// Возвращает число непрочитанных строк лога
@@ -7012,13 +7024,6 @@ int UEngine::LoadLibraries(void)
 // Если строковое id не задано, то возвращает указатель на модель
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
-/* if(stringid && !AccessCache.empty())
- {
-  std::map<std::string, UEPtr<UContainer> >::iterator I=AccessCache.find(stringid);
-  if(I != AccessCache.end())
-   return I->second;
- }
-   */
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
  if(!model)

@@ -49,8 +49,10 @@ RDK::UEPtr<RDK::UEnvironment> Environment;
 RDK::UEPtr<RDK::UStorage> Storage;
 
 /// Путь до директории с бинарными файлами ядра (приложения)
-std::string RdkSystemDir;
+std::string SystemDir;
 
+/// Путь до директории с логами
+std::string LogDir;
 
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
@@ -87,12 +89,19 @@ std::string GetSystemDir(void);
 
 // Устанавливает имя каталога бинарных файлов
 int SetSystemDir(const char *dir);
+
+// Возвращает имя каталога бинарных файлов
+const char* GetLogDir(void);
+
+// Устанавливает имя каталога бинарных файлов
+int SetLogDir(const char *dir);
 // --------------------------
 
 // --------------------------
 // Методы управления созданием каналов
 // --------------------------
-bool Init(PCreateNewStorage fCreateNewStorage,
+/// Устанавливает указатели на глобальные функции, создающие экземпляр движка, среды и хранилища
+bool SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
             PCreateNewEnvironment fCreateNewEnvironment,
 			PCreateNewEngine fCreateNewEngine);
 
@@ -172,8 +181,10 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
 // --------------------------
 /// Средства логгирования
 // --------------------------
-// Возвращает ссылку на указатель на логгер
+// Возвращает ссылку на указатель на логгер текущего канала
 RDK::UEPtr<RDK::ULoggerEnv>& GetLogger(void);
+
+// Возвращает указатель на логгер выбранного канала, или GlobalLogger
 RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int engine_index);
 
 /// Возвращает ссылку на глобальный логгер

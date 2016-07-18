@@ -12,6 +12,28 @@
 #include "../../Core/System/UGenericMutex.h"
 namespace RDK {
 
+
+/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
+/// иначе возвращает RDK_EXCEPTION_CATCHED
+int ProcessException(int channel_index, UException &ex)
+{
+ UEPtr<ULoggerEnv> logger=DllManager.GetLogger(channel_index);
+ if(!logger)
+  return RDK_UNHANDLED_EXCEPTION;
+ logger->ProcessException(ex);
+ return RDK_EXCEPTION_CATCHED;
+}
+		 /*
+int ProcessException(int channel_index, const UException &ex)
+{
+ UEPtr<ULoggerEnv> logger=DllManager.GetLogger(channel_index);
+ if(!logger)
+  return RDK_UNHANDLED_EXCEPTION;
+ logger->ProcessException(ex);
+ return RDK_EXCEPTION_CATCHED;
+}          */
+
+
 // Глобальная коллекция шрифтов
 RDK::UBitmapFontCollection GlobalFonts;
 
@@ -24,55 +46,46 @@ void ClearClobalFonts(void)
 // Загружает новый глобальный шрифт
 bool AddGlobalFont(const std::string &font_file_name)
 {
- RDK::UBitmapFont font;
- std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
- std::string font_name;
- if(dir_sep_pos != std::string::npos)
-  font_name=font_file_name.substr(dir_sep_pos+1);
- else
-  font_name=font_file_name;
- std::size_t _pos=font_name.find_first_of("_");
- std::size_t _pos2=font_name.find_first_not_of("0123456789",_pos+1);
- if(_pos != std::string::npos)
+ int res=RDK_SUCCESS;
+ RDK_SYS_TRY
  {
-  std::string font_string_size=font_name.substr(_pos+1,_pos2-_pos-1);
-  int size=RDK::atoi(font_string_size);
-  if(!font.LoadFromFile(font_name.substr(0,_pos),font_file_name,size))
-   return false;
-  return RDK::GlobalFonts.AddFont(font.GetName(),size,font);
+  try
+  {
+   RDK::UBitmapFont font;
+   std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
+   std::string font_name;
+   if(dir_sep_pos != std::string::npos)
+	font_name=font_file_name.substr(dir_sep_pos+1);
+   else
+	font_name=font_file_name;
+   std::size_t _pos=font_name.find_first_of("_");
+   std::size_t _pos2=font_name.find_first_not_of("0123456789",_pos+1);
+   if(_pos != std::string::npos)
+   {
+	std::string font_string_size=font_name.substr(_pos+1,_pos2-_pos-1);
+	int size=RDK::atoi(font_string_size);
+	if(!font.LoadFromFile(font_name.substr(0,_pos),font_file_name,size))
+	 return false;
+	return RDK::GlobalFonts.AddFont(font.GetName(),size,font);
+   }
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
 
-/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
-/// иначе возвращает RDK_EXCEPTION_CATCHED
-int ProcessException(int channel_index, UException &ex)
-{
- UELockPtr<UEngine> engine=DllManager.GetEngineLock(channel_index);
- if(!engine)
-  return RDK_UNHANDLED_EXCEPTION;
- engine->ProcessException(ex);
- return RDK_EXCEPTION_CATCHED;
 }
-
-int ProcessException(int channel_index, const UException &ex)
-{
- UELockPtr<UEngine> engine=DllManager.GetEngineLock(channel_index);
- if(!engine)
-  return RDK_UNHANDLED_EXCEPTION;
- engine->ProcessException(ex);
- return RDK_EXCEPTION_CATCHED;
-}
-
-}
-
-// --------------------------------------
-// Объявления дополнительных функций
-// --------------------------------------
-// Инициализация dll
-bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
-// --------------------------------------
-
 
 /*****************************************************************************/
 extern RDK::UStorage* CreateNewStorage(void);
@@ -94,6 +107,274 @@ extern RDK::UEngine* CreateNewEngine(void);
 const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &channel_index)
 {
  return RDK::RemoteCallInternal(request, return_value, channel_index);
+}
+// ----------------------------
+
+// ----------------------------
+// Функции логирования
+// ----------------------------
+// Возвращает состояние внутренего логгирования
+bool RDK_CALL Log_GetEventsLogMode(void)
+{
+ return DllManager.GetLogger()->GetEventsLogMode();
+}
+
+bool RDK_CALL MLog_GetEventsLogMode(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return false;
+
+ return DllManager.GetLogger(engine_index)->GetEventsLogMode();
+}
+
+// Включает/выключает внутренне логгирование
+int RDK_CALL Log_SetEventsLogMode(bool value)
+{
+ return DllManager.GetLogger()->SetEventsLogMode(value);
+}
+
+int RDK_CALL MLog_SetEventsLogMode(int engine_index, bool value)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetLogger(engine_index)->SetEventsLogMode(value);
+}
+
+/// Возвращает состояние флага отладочного режима среды
+bool RDK_CALL Log_GetDebugMode(void)
+{
+ return DllManager.GetLogger()->GetDebugMode();
+}
+
+bool RDK_CALL MLog_GetDebugMode(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return false;
+ return DllManager.GetLogger(engine_index)->GetDebugMode();
+}
+
+/// Устанавливает состояние флага отладочного режима среды
+int RDK_CALL Log_SetDebugMode(bool value)
+{
+ return DllManager.GetLogger()->SetDebugMode(value);
+}
+
+int RDK_CALL MLog_SetDebugMode(int engine_index, bool value)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+ return DllManager.GetLogger(engine_index)->SetDebugMode(value);
+}
+
+/// Возвращает маску системных событий для логирования
+unsigned int RDK_CALL Log_GetDebugSysEventsMask(void)
+{
+ return DllManager.GetLogger()->GetDebugSysEventsMask();
+}
+
+unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetLogger(engine_index)->GetDebugSysEventsMask();
+}
+
+/// Устанавливает маску системных событий для логирования
+int RDK_CALL Log_SetDebugSysEventsMask(unsigned int value)
+{
+ return DllManager.GetLogger()->SetDebugSysEventsMask(value);
+}
+
+int RDK_CALL MLog_SetDebugSysEventsMask(int engine_index, unsigned int value)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetLogger(engine_index)->SetDebugSysEventsMask(value);
+}
+
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool RDK_CALL Log_GetDebuggerMessageFlag(void)
+{
+ return DllManager.GetLogger()->GetDebuggerMessageFlag();
+}
+
+bool RDK_CALL MLog_GetDebuggerMessageFlag(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetLogger(engine_index)->GetDebuggerMessageFlag();
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+bool RDK_CALL Log_SetDebuggerMessageFlag(bool value)
+{
+ return DllManager.GetLogger()->SetDebuggerMessageFlag(value);
+}
+
+bool RDK_CALL MLog_SetDebuggerMessageFlag(int engine_index, bool value)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetLogger(engine_index)->SetDebuggerMessageFlag(value);
+}
+
+// Управление функцией-обработчиком исключений
+void* RDK_CALL Log_GetExceptionHandler(void)
+{
+ return DllManager.GetLogger()->GetExceptionHandler();
+}
+
+void* RDK_CALL MLog_GetExceptionHandler(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetLogger(engine_index)->GetExceptionHandler();
+}
+
+int RDK_CALL Log_SetExceptionHandler(void* value)
+{
+ return DllManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+}
+
+int RDK_CALL MLog_SetExceptionHandler(int engine_index, void* value)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return DllManager.GetLogger(engine_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+}
+
+// Возвращает массив строк лога
+const char* RDK_CALL Log_GetLog(int &error_level)
+{
+ return DllManager.GetLogger()->GetLog(error_level);
+}
+
+const char* RDK_CALL MLog_GetLog(int engine_index, int &error_level)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetLogger(engine_index)->GetLog(error_level);
+}
+
+// Записывает в лог новое сообщение
+int RDK_CALL Log_LogMessage(int log_level, const char *message)
+{
+ DllManager.GetLogger()->LogMessage(log_level, message);
+ return RDK_SUCCESS;
+}
+
+int RDK_CALL MLog_LogMessage(int engine_index, int log_level, const char *message)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ DllManager.GetLogger(engine_index)->LogMessage(log_level, message);
+ return RDK_SUCCESS;
+}
+
+// Записывает в лог новое сообщение с кодом ошибки
+int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_event_number)
+{
+ DllManager.GetLogger()->LogMessage(log_level, message,error_event_number);
+ return RDK_SUCCESS;
+}
+
+int RDK_CALL MLog_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ DllManager.GetLogger(engine_index)->LogMessage(log_level, message,error_event_number);
+ return RDK_SUCCESS;
+}
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
+{
+ time_t read_time;
+ const char* res=DllManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
+}
+
+const char* RDK_CALL MLog_GetUnreadLog(int engine_index, int &error_level, int &number, unsigned long long &time)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+ time_t read_time;
+ const char* res=DllManager.GetLogger(engine_index)->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
+}
+
+const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
+{
+ time_t read_time;
+ const char* res=DllManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
+}
+
+const char* RDK_CALL MLog_GetUnreadLogUnsafe(int engine_index, int &error_level, int &number, unsigned long long &time)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+ time_t read_time;
+ const char* res=DllManager.GetLogger(engine_index)->GetUnreadLog(error_level, number, read_time);
+ time=read_time;
+ return res;
+}
+
+/// Возвращает число непрочитанных строк лога
+int RDK_CALL Log_GetNumUnreadLogLines(void)
+{
+ return DllManager.GetLogger()->GetNumUnreadLogLines();
+}
+
+int RDK_CALL MLog_GetNumUnreadLogLines(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetLogger(engine_index)->GetNumUnreadLogLines();
+}
+
+/// Возвращает число строк лога
+int RDK_CALL Log_GetNumLogLines(void)
+{
+ return DllManager.GetLogger()->GetNumLogLines();
+}
+
+int RDK_CALL MLog_GetNumLogLines(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetLogger(engine_index)->GetNumLogLines();
+}
+
+
+/// Очищает лог прочитанных сообщений
+int RDK_CALL Log_ClearReadLog(void)
+{
+ DllManager.GetLogger()->ClearReadLog();
+ return RDK_SUCCESS;
+}
+
+int RDK_CALL MLog_ClearReadLog(int engine_index)
+{
+ if(engine_index<RDK_SYS_MESSAGE || engine_index>=GetNumEngines())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ DllManager.GetLogger(engine_index)->ClearReadLog();
+ return RDK_SUCCESS;
 }
 // ----------------------------
 
@@ -123,6 +404,18 @@ int RDK_CALL SetSystemDir(const char *dir)
  return Core_SetSystemDir(dir);
 }
 
+// Возвращает имя каталога бинарных файлов
+const char* RDK_CALL Core_GetLogDir(void)
+{
+ return DllManager.GetLogDir();
+}
+
+// Устанавливает имя каталога бинарных файлов
+int RDK_CALL Core_SetLogDir(const char *dir)
+{
+ return DllManager.SetLogDir(dir);
+}
+
 // Загружает глобальные шрифты
 int RDK_CALL Core_LoadFonts(void)
 {
@@ -148,16 +441,16 @@ int RDK_CALL Core_LoadFonts(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -194,23 +487,25 @@ int RDK_CALL Core_SetNumChannels(int num)
  {
   try
   {
-   if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
+   if(!DllManager.SetCoreElementsCreationFunctions(reinterpret_cast<RDKDllManager::PCreateNewStorage>(CreateNewStorage),
+						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(CreateNewEnvironment),
+						reinterpret_cast<RDKDllManager::PCreateNewEngine>(CreateNewEngine)))
 	return RDK_E_CORE_INIT_FAIL;
 
    res=DllManager.SetNumEngines(num);
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -231,23 +526,27 @@ int RDK_CALL Core_AddChannel(int index)
  {
   try
   {
-   if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
+//   if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
+//	return RDK_E_CORE_INIT_FAIL;
+   if(!DllManager.SetCoreElementsCreationFunctions(reinterpret_cast<RDKDllManager::PCreateNewStorage>(CreateNewStorage),
+						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(CreateNewEnvironment),
+						reinterpret_cast<RDKDllManager::PCreateNewEngine>(CreateNewEngine)))
 	return RDK_E_CORE_INIT_FAIL;
 
    res=DllManager.Add(index);
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -271,16 +570,16 @@ int RDK_CALL Core_DelChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -328,16 +627,16 @@ int RDK_CALL Core_SelectChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -379,16 +678,16 @@ int RDK_CALL MCore_LockChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -429,16 +728,16 @@ int RDK_CALL MCore_UnLockChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -468,16 +767,16 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -508,7 +807,7 @@ int RDK_CALL MCore_ChannelInit(int engine_index, int predefined_structure, void*
 
    DllManager.GetEngineLock(engine_index)->SetChannelIndex(engine_index);
    DllManager.GetEngineLock(engine_index)->SetBufObjectsMode(BufObjectsMode);
-   MEngine_SetExceptionHandler(engine_index, exception_handler);
+   MLog_SetExceptionHandler(engine_index, exception_handler);
 
    MEnv_SetPredefinedStructure(engine_index, predefined_structure);
    MEnv_CreateStructure(engine_index);
@@ -517,16 +816,16 @@ int RDK_CALL MCore_ChannelInit(int engine_index, int predefined_structure, void*
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -575,7 +874,7 @@ int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, in
    DllManager.GetEngineLock(engine_index)->SetChannelIndex(engine_index);
    DllManager.GetEngineLock(engine_index)->SetBufObjectsMode(BufObjectsMode);
 
-   MEngine_SetExceptionHandler(engine_index, exception_handler);
+   MLog_SetExceptionHandler(engine_index, exception_handler);
 
    // Задает число входов среды
    MEnv_SetNumInputImages(engine_index, num_inputs);
@@ -594,16 +893,16 @@ int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, in
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -628,16 +927,16 @@ int RDK_CALL Core_ChannelUnInit(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -669,16 +968,16 @@ int RDK_CALL MCore_ChannelUnInit(int engine_index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return res;
@@ -743,16 +1042,16 @@ int RDK_CALL Engine_SetBufObjectsMode(int mode)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
 }
@@ -770,16 +1069,16 @@ int RDK_CALL Engine_FreeBufString(const char *pointer)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
 }
@@ -824,16 +1123,16 @@ int RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(RDK_SYS_MESSAGE,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
 }
@@ -1211,29 +1510,23 @@ bool RDK_CALL MEnv_IsStructured(int engine_index)
 // Возвращает состояние внутренего логгирования
 bool RDK_CALL Env_GetEventsLogMode(void)
 {
- return DllManager.GetEngineLock()->Env_GetEventsLogMode();
+ return Log_GetEventsLogMode();
 }
 
 bool RDK_CALL MEnv_GetEventsLogMode(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return false;
-
- return DllManager.GetEngineLock(engine_index)->Env_GetEventsLogMode();
+ return MLog_GetEventsLogMode(engine_index);
 }
 
 // Включает/выключает внутренне логгирование
 int RDK_CALL Env_SetEventsLogMode(bool value)
 {
- return DllManager.GetEngineLock()->Env_SetEventsLogMode(value);
+ return Log_SetEventsLogMode(value);
 }
 
 int RDK_CALL MEnv_SetEventsLogMode(int engine_index, bool value)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- return DllManager.GetEngineLock(engine_index)->Env_SetEventsLogMode(value);
+ return MLog_SetEventsLogMode(engine_index,value);
 }
 
 // Инициализация среды
@@ -1473,84 +1766,68 @@ int RDK_CALL MEnv_SetCurrentDataDir(int engine_index, const char *dir)
 /// Возвращает состояние флага отладочного режима среды
 bool RDK_CALL Env_GetDebugMode(void)
 {
- return DllManager.GetEngineLock()->Env_GetDebugMode();
+ return Log_GetDebugMode();
 }
 
 bool RDK_CALL MEnv_GetDebugMode(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return false;
- return DllManager.GetEngineLock(engine_index)->Env_GetDebugMode();
+ return MLog_GetDebugMode(engine_index);
 }
 
 /// Устанавливает состояние флага отладочного режима среды
 int RDK_CALL Env_SetDebugMode(bool value)
 {
- return DllManager.GetEngineLock()->Env_SetDebugMode(value);
+ return Log_SetDebugMode(value);
 }
 
 int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(engine_index)->Env_SetDebugMode(value);
+ return MLog_SetDebugMode(engine_index, value);
 }
 
 /// Возвращает маску системных событий для логирования
 unsigned int RDK_CALL Env_GetDebugSysEventsMask(void)
 {
- return DllManager.GetEngineLock()->Env_GetDebugSysEventsMask();
+ return Log_GetDebugSysEventsMask();
 }
 
 unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
-
- return DllManager.GetEngineLock(engine_index)->Env_GetDebugSysEventsMask();
+ return MLog_GetDebugSysEventsMask(engine_index);
 }
 
 /// Устанавливает маску системных событий для логирования
 int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value)
 {
- return DllManager.GetEngineLock()->Env_SetDebugSysEventsMask(value);
+ return Log_SetDebugSysEventsMask(value);
 }
 
 int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- return DllManager.GetEngineLock(engine_index)->Env_SetDebugSysEventsMask(value);
+ return MLog_SetDebugSysEventsMask(engine_index, value);
 }
 
 
 /// Возвращает флаг включения вывода лога в отладчик
 bool RDK_CALL Env_GetDebuggerMessageFlag(void)
 {
- return DllManager.GetEngineLock()->Env_GetDebuggerMessageFlag();
+ return Log_GetDebuggerMessageFlag();
 }
 
 bool RDK_CALL MEnv_GetDebuggerMessageFlag(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
-
- return DllManager.GetEngineLock(engine_index)->Env_GetDebuggerMessageFlag();
+ return MLog_GetDebuggerMessageFlag(engine_index);
 }
 
 /// Устанавливает флаг включения вывода лога в отладчик
 bool RDK_CALL Env_SetDebuggerMessageFlag(bool value)
 {
- return DllManager.GetEngineLock()->Env_SetDebuggerMessageFlag(value);
+ return Log_SetDebuggerMessageFlag(value);
 }
 
 bool RDK_CALL MEnv_SetDebuggerMessageFlag(int engine_index, bool value)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- return DllManager.GetEngineLock(engine_index)->Env_SetDebuggerMessageFlag(value);
+ return MLog_SetDebuggerMessageFlag(engine_index, value);
 }
 
 // ***********************************************
@@ -2738,157 +3015,111 @@ unsigned long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const
 void* RDK_CALL Engine_GetExceptionHandler(void)
 {
 
- return reinterpret_cast<void*>(DllManager.GetEngineLock()->GetExceptionHandler());
+ return Log_GetExceptionHandler();
 }
 
 void* RDK_CALL MEngine_GetExceptionHandler(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
-
- return reinterpret_cast<void*>(DllManager.GetEngineLock(engine_index)->GetExceptionHandler());
+ return MLog_GetExceptionHandler(engine_index);
 }
 
 int RDK_CALL Engine_SetExceptionHandler(void* value)
 {
-
- return DllManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ return Log_SetExceptionHandler(value);
 }
 
 int RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
-
- return DllManager.GetLogger(engine_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ return MLog_SetExceptionHandler(engine_index, value);
 }
 
 // Возвращает массив строк лога
 const char* RDK_CALL Engine_GetLog(int &error_level)
 {
-
- return DllManager.GetLogger()->GetLog(error_level);
+ return Log_GetLog(error_level);
 }
 
 const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
-
- return DllManager.GetEngineLock(engine_index)->GetLog(error_level);
+ return MLog_GetLog(engine_index, error_level);
 }
 
 // Записывает в лог новое сообщение
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
-// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine()->Env_GetDebugMode())
-//  return 0;
- return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message);
+ return Log_LogMessage(log_level, message);
 }
 
 int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
-
-// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine(engine_index)->Env_GetDebugMode())
-//  return 0;
- return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message);
+ return MLog_LogMessage(engine_index, log_level, message);
 }
 
 // Записывает в лог новое сообщение с кодом ошибки
 int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number)
 {
- return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message,error_event_number);
+ return Log_LogMessageEx(log_level, message, error_event_number);
 }
 
 int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
-
- return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message,error_event_number);
+ return MLog_LogMessageEx(engine_index, log_level, message, error_event_number);
 }
-
-
-
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
 {
- time_t read_time;
- const char* res=DllManager.GetEngineLock()->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
+ return Log_GetUnreadLog(error_level, number, time);
 }
 
 const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level, int &number, unsigned long long &time)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
- time_t read_time;
- const char* res=DllManager.GetEngineLock(engine_index)->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
+ return MLog_GetUnreadLog(engine_index, error_level, number, time);
 }
 
 const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
 {
- time_t read_time;
- const char* res=DllManager.GetEngine()->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
+ return Log_GetUnreadLogUnsafe(error_level, number, time);
 }
 
 const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level, int &number, unsigned long long &time)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
- time_t read_time;
- const char* res=DllManager.GetEngine(engine_index)->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
+ return MLog_GetUnreadLogUnsafe(engine_index, error_level, number, time);
 }
 
 /// Возвращает число непрочитанных строк лога
 int RDK_CALL Engine_GetNumUnreadLogLines(void)
 {
- return DllManager.GetEngineLock()->GetNumUnreadLogLines();
+ return Log_GetNumUnreadLogLines();
 }
 
 int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
- return DllManager.GetEngineLock(engine_index)->GetNumUnreadLogLines();
+ return MLog_GetNumUnreadLogLines(engine_index);
 }
 
 /// Возвращает число строк лога
 int RDK_CALL Engine_GetNumLogLines(void)
 {
- return DllManager.GetEngineLock()->GetNumLogLines();
+ return Log_GetNumLogLines();
 }
 
 int RDK_CALL MEngine_GetNumLogLines(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
- return DllManager.GetEngineLock(engine_index)->GetNumLogLines();
+ return MLog_GetNumLogLines(engine_index);
 }
 
 
 /// Очищает лог прочитанных сообщений
 int RDK_CALL Engine_ClearReadLog(void)
 {
- return DllManager.GetEngineLock()->ClearReadLog();
+ return Log_ClearReadLog();
 }
 
 int RDK_CALL MEngine_ClearReadLog(int engine_index)
 {
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
- return DllManager.GetEngineLock(engine_index)->ClearReadLog();
+ return MLog_ClearReadLog(engine_index);
 }
 // ----------------------------
 
@@ -3239,73 +3470,6 @@ int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int inde
 // ----------------------------
 // Внутренние методы инициализации
 // ----------------------------
-/*
-int Init(void* exception_handler)
-{
- UnInit();
- if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
-  return -2;
-
- PEngine=dynamic_cast<RDK::UEngine*>(AddNewEngine());
-
- if(!PEngine)
-  return -3;
-
- DllManager.GetEngineLock()->Default();
- Engine_SetExceptionHandler(exception_handler);
-
- try {
-  PEnvironment=AddNewEnvironment();
-  PStorage=AddNewStorage();
-  if(!PEnvironment)
-  {
-   UnInit();
-   return 3;
-  }
-
-  if(!PStorage)
-  {
-   UnInit();
-   return 4;
-  }
-
-  if(!DllManager.GetEngineLock()->Init(PStorage,PEnvironment))
-  {
-   UnInit();
-   return 3;
-  }
- }
- catch (RDK::UException &exception)
- {
-  DllManager.GetEngineLock()->ProcessException(exception);
- }
- return 0;
-}
-
-int UnInit(void)
-{
- try
- {
-  if(PEngine)
-  {
-   DllManager.GetEngineLock()->UnInit();
-  }
- }
- catch (RDK::UException &exception)
- {
-  DllManager.GetEngineLock()->ProcessException(exception);
- }
-
- DelEngine(PEngine);
- PEngine=0;
- DelEnvironment(PEnvironment);
- PEnvironment=0;
- DelStorage(PStorage);
- PStorage=0;
-
- return 0;
-}
-        */
 // Обработчик исключений библиотеки
 // Должен быть вызван в глобальном обработчике пользовательского ПО
 int RDK_CALL ExceptionDispatcher(void *exception)
@@ -3321,149 +3485,6 @@ int RDK_CALL ExceptionDispatcher(void *exception)
 
  return 0;
 }
-
-// Инициализация dll
-bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine)
-{
- return DllManager.Init(reinterpret_cast<RDKDllManager::PCreateNewStorage>(pfstorage),
-						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(pfenvironment),
-						reinterpret_cast<RDKDllManager::PCreateNewEngine>(pfengine));
-}
-	   /*
-// Возвращает число хранилищ в библиотеке
-int GetNumStorages(void)
-{
- return DllManager.StorageList.size();
-}
-
-// Возвращает число сред в библиотеке
-int GetNumEnvironments(void)
-{
- return DllManager.EnvironmentList.size();
-}                     */
- /*
-// Возвращает число движков в библиотеке
-int GetNumEngines(void)
-{
- return DllManager.EngineList.size();
-}
-	  */      /*
-// Возвращает хранилище по индексу
-RDK::UStorage* GetStorage(size_t i)
-{
- if(i>=DllManager.StorageList.size())
-  return 0;
-
- return DllManager.StorageList[i];
-}
-
-// Возвращает среду по индексу
-RDK::UEnvironment* GetEnvironment(size_t i)
-{
- if(i>=DllManager.EnvironmentList.size())
-  return 0;
-
- return DllManager.EnvironmentList[i];
-}
-
-// Возвращает движок по индексу
-RDK::UEngine* GetEngine(size_t i)
-{
- if(i>=DllManager.EngineList.size())
-  return 0;
-
- return DllManager.EngineList[i];
-}
-
-
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
-RDK::UStorage* AddNewStorage(void)
-{
- if(!DllManager.FuncCreateNewStorage)
-  return 0;
-
- RDK::UStorage* storage=DllManager.FuncCreateNewStorage();
- if(storage)
- {
-//  CreateStorage(storage);
-  DllManager.StorageList.push_back(storage);
- }
- return storage;
-}
-
-// Удаляет существующее хранилище
-void DelStorage(RDK::UStorage* storage)
-{
- if(storage)
- {
-  for(size_t i=0;i<DllManager.StorageList.size();i++)
-   if(DllManager.StorageList[i] == storage)
-   {
-	DllManager.StorageList.erase(DllManager.StorageList.begin()+i);
-	delete storage;
-   }
- }
-}
-
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
-RDK::UEnvironment* AddNewEnvironment(void)
-{
- if(!DllManager.FuncCreateNewEnvironment)
-  return 0;
-
- RDK::UEnvironment* environment=DllManager.FuncCreateNewEnvironment();
- if(environment)
- {
-//  CreateEnvironment(environment, storage,isinit,external_classes, external_libs);
-  DllManager.EnvironmentList.push_back(environment);
- }
- return environment;
-}
-
-// Удаляет существующую среду
-void DelEnvironment(RDK::UEnvironment* env)
-{
- if(env)
- {
-  for(size_t i=0;i<DllManager.EnvironmentList.size();i++)
-   if(DllManager.EnvironmentList[i] == env)
-   {
-	DllManager.EnvironmentList.erase(DllManager.EnvironmentList.begin()+i);
-	delete env;
-   }
- }
-}
-
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
-RDK::UEngine* AddNewEngine(void)
-{
- if(!DllManager.FuncCreateNewEngine)
-  return 0;
-
- RDK::UEngine* engine=DllManager.FuncCreateNewEngine();
- if(engine)
- {
-  DllManager.EngineList.push_back(engine);
- }
- return engine;
-}
-
-// Удаляет существую среду
-void DelEngine(RDK::UEngine* engine)
-{
- if(engine)
- {
-  for(size_t i=0;i<DllManager.EngineList.size();i++)
-   if(DllManager.EngineList[i] == engine)
-   {
-	DllManager.EngineList.erase(DllManager.EngineList.begin()+i);
-	delete engine;
-   }
- }
-}                    */
 // ----------------------------
 
 #ifndef _MSC_VER

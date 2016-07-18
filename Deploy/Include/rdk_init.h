@@ -97,6 +97,79 @@ RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_va
 // ----------------------------
 // Функции логирования
 // ----------------------------
+// Возвращает состояние внутренего логгирования
+RDK_LIB_TYPE bool RDK_CALL Log_GetEventsLogMode(void);
+RDK_LIB_TYPE bool RDK_CALL MLog_GetEventsLogMode(int engine_index);
+
+// Включает/выключает внутренне логгирование
+RDK_LIB_TYPE int RDK_CALL Log_SetEventsLogMode(bool value);
+RDK_LIB_TYPE int RDK_CALL MLog_SetEventsLogMode(int engine_index, bool value);
+
+// !
+// Устанавливает имя текущего каталога для хранения данных
+RDK_LIB_TYPE int RDK_CALL Log_SetCurrentDataDir(const char *dir);
+RDK_LIB_TYPE int RDK_CALL MLog_SetCurrentDataDir(int engine_index, const char *dir);
+
+/// Возвращает состояние флага отладочного режима среды
+RDK_LIB_TYPE bool RDK_CALL Log_GetDebugMode(void);
+RDK_LIB_TYPE bool RDK_CALL MLog_GetDebugMode(int engine_index);
+
+/// Устанавливает состояние флага отладочного режима среды
+RDK_LIB_TYPE int RDK_CALL Log_SetDebugMode(bool value);
+RDK_LIB_TYPE int RDK_CALL MLog_SetDebugMode(int engine_index, bool value);
+
+/// Возвращает маску системных событий для логирования
+RDK_LIB_TYPE unsigned int RDK_CALL Log_GetDebugSysEventsMask(void);
+RDK_LIB_TYPE unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int engine_index);
+
+/// Устанавливает маску системных событий для логирования
+RDK_LIB_TYPE int RDK_CALL Log_SetDebugSysEventsMask(unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MLog_SetDebugSysEventsMask(int engine_index, unsigned int value);
+
+/// Возвращает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Log_GetDebuggerMessageFlag(void);
+RDK_LIB_TYPE bool RDK_CALL MLog_GetDebuggerMessageFlag(int engine_index);
+
+/// Устанавливает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Log_SetDebuggerMessageFlag(bool value);
+RDK_LIB_TYPE bool RDK_CALL MLog_SetDebuggerMessageFlag(int engine_index, bool value);
+// !
+
+RDK_LIB_TYPE void* RDK_CALL Log_GetExceptionHandler(void);
+RDK_LIB_TYPE void* RDK_CALL MLog_GetExceptionHandler(int engine_index);
+RDK_LIB_TYPE int RDK_CALL Log_SetExceptionHandler(void* value);
+RDK_LIB_TYPE int RDK_CALL MLog_SetExceptionHandler(int engine_index, void* value);
+
+// Возвращает массив строк лога
+RDK_LIB_TYPE const char* RDK_CALL Log_GetLog(int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL MLog_GetLog(int engine_index, int &error_level);
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+RDK_LIB_TYPE const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned long long &time);
+RDK_LIB_TYPE const char* RDK_CALL MLog_GetUnreadLog(int engine_index, int &error_level, int &number, unsigned long long &time);
+RDK_LIB_TYPE const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time);
+RDK_LIB_TYPE const char* RDK_CALL MLog_GetUnreadLogUnsafe(int engine_index, int &error_level, int &number, unsigned long long &time);
+
+// Записывает в лог новое сообщение
+RDK_LIB_TYPE int RDK_CALL Log_LogMessage(int log_level, const char *message);
+RDK_LIB_TYPE int RDK_CALL MLog_LogMessage(int engine_index, int log_level, const char *message);
+
+// Записывает в лог новое сообщение с кодом ошибки
+RDK_LIB_TYPE int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_event_number);
+RDK_LIB_TYPE int RDK_CALL MLog_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number);
+
+/// Возвращает число непрочитанных строк лога
+RDK_LIB_TYPE int RDK_CALL Log_GetNumUnreadLogLines(void);
+RDK_LIB_TYPE int RDK_CALL MLog_GetNumUnreadLogLines(int engine_index);
+
+/// Возвращает число строк лога
+RDK_LIB_TYPE int RDK_CALL Log_GetNumLogLines(void);
+RDK_LIB_TYPE int RDK_CALL MLog_GetNumLogLines(int engine_index);
+
+/// Очищает лог прочитанных сообщений
+RDK_LIB_TYPE int RDK_CALL Log_ClearReadLog(void);
+RDK_LIB_TYPE int RDK_CALL MLog_ClearReadLog(int engine_index);
 // ----------------------------
 
 // ----------------------------
@@ -109,6 +182,12 @@ RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void); // deprecated
 // Устанавливает имя каталога бинарных файлов
 RDK_LIB_TYPE int RDK_CALL Core_SetSystemDir(const char *dir);
 RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir); // deprecated
+
+// Возвращает имя каталога бинарных файлов
+RDK_LIB_TYPE const char* RDK_CALL Core_GetLogDir(void);
+
+// Устанавливает имя каталога бинарных файлов
+RDK_LIB_TYPE int RDK_CALL Core_SetLogDir(const char *dir);
 
 // Загружает глобальные шрифты
 RDK_LIB_TYPE int RDK_CALL Core_LoadFonts(void);
@@ -163,6 +242,7 @@ RDK_LIB_TYPE int RDK_CALL MEngineInit(int engine_index, int predefined_structure
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
+// deprecated
 RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx=false,
 		void* exception_handler=0); // deprecated
@@ -386,26 +466,32 @@ RDK_LIB_TYPE int RDK_CALL Env_SetCurrentDataDir(const char *dir);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetCurrentDataDir(int engine_index, const char *dir);
 
 /// Возвращает состояние флага отладочного режима среды
+/// Deprecated
 RDK_LIB_TYPE bool RDK_CALL Env_GetDebugMode(void);
 RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebugMode(int engine_index);
 
 /// Устанавливает состояние флага отладочного режима среды
+/// Deprecated
 RDK_LIB_TYPE int RDK_CALL Env_SetDebugMode(bool value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value);
 
 /// Возвращает маску системных событий для логирования
+/// Deprecated
 RDK_LIB_TYPE unsigned int RDK_CALL Env_GetDebugSysEventsMask(void);
 RDK_LIB_TYPE unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int engine_index);
 
 /// Устанавливает маску системных событий для логирования
+/// Deprecated
 RDK_LIB_TYPE int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugSysEventsMask(int engine_index, unsigned int value);
 
 /// Возвращает флаг включения вывода лога в отладчик
+/// Deprecated
 RDK_LIB_TYPE bool RDK_CALL Env_GetDebuggerMessageFlag(void);
 RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebuggerMessageFlag(int engine_index);
 
 /// Устанавливает флаг включения вывода лога в отладчик
+/// Deprecated
 RDK_LIB_TYPE bool RDK_CALL Env_SetDebuggerMessageFlag(bool value);
 RDK_LIB_TYPE bool RDK_CALL MEnv_SetDebuggerMessageFlag(int engine_index, bool value);
 
@@ -463,10 +549,12 @@ RDK_LIB_TYPE int RDK_CALL Env_Init(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_Init(int engine_index);
 
 // Возвращает состояние внутренего логгирования
+// deprecated. use Log_GetEventsLogMode
 RDK_LIB_TYPE bool RDK_CALL Env_GetEventsLogMode(void);
 RDK_LIB_TYPE bool RDK_CALL MEnv_GetEventsLogMode(int engine_index);
 
 // Включает/выключает внутренне логгирование
+// deprecated. Use Log_SetEventsLogMode
 RDK_LIB_TYPE int RDK_CALL Env_SetEventsLogMode(bool value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetEventsLogMode(int engine_index, bool value);
 
@@ -1060,39 +1148,47 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *strin
 // Функции управления исключениями
 // ----------------------------
 // Управление функцией-обработчиком исключений
+// deprecated. See Log_ functions
 RDK_LIB_TYPE void* RDK_CALL Engine_GetExceptionHandler(void);
 RDK_LIB_TYPE void* RDK_CALL MEngine_GetExceptionHandler(int engine_index);
 RDK_LIB_TYPE int RDK_CALL Engine_SetExceptionHandler(void* value);
 RDK_LIB_TYPE int RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value);
 
 // Возвращает массив строк лога
+// deprecated. See Log_ functions
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(int &error_level);
 RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level);
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
+// deprecated. See Log_ functions
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time);
 RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level, int &number, unsigned long long &time);
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time);
 RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level, int &number, unsigned long long &time);
 
 // Записывает в лог новое сообщение
+// deprecated
 RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
 RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message);
 
 // Записывает в лог новое сообщение с кодом ошибки
+// deprecated
 RDK_LIB_TYPE int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number);
 RDK_LIB_TYPE int RDK_CALL MEngine_LogMessageEx(int engine_index, int log_level, const char *message, int error_event_number);
 
 /// Возвращает число непрочитанных строк лога
+// deprecated
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);
 RDK_LIB_TYPE int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index);
 
 /// Возвращает число строк лога
+// deprecated
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumLogLines(void);
 RDK_LIB_TYPE int RDK_CALL MEngine_GetNumLogLines(int engine_index);
 
 /// Очищает лог прочитанных сообщений
+// deprecated
 RDK_LIB_TYPE int RDK_CALL Engine_ClearReadLog(void);
 RDK_LIB_TYPE int RDK_CALL MEngine_ClearReadLog(int engine_index);
 // ----------------------------
