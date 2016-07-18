@@ -1055,7 +1055,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
    for(size_t i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
-	comp->GetComponentsNameByClassType(buffer, true);
+	comp->GetComponentsNameByClassType<T>(buffer, true);
 	if(dynamic_pointer_cast<T>(comp))
 	{
 	 compName=comp->GetLongName(this, compName);
