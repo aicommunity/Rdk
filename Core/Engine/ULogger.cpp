@@ -21,11 +21,13 @@ ULogger::~ULogger(void)
 /// Путь до папки с логами
 std::string ULogger::GetLogPath(void) const
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  return LogPath;
 }
 
 bool ULogger::SetLogPath(const std::string &value)
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  if(LogPath == value)
   return true;
 
@@ -39,11 +41,13 @@ bool ULogger::SetLogPath(const std::string &value)
 /// 2 - сохранять все каналы в единый файл лога
 std::string ULogger::GetSuffix(void) const
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  return Suffix;
 }
 
 bool ULogger::SetSuffix(const std::string &value)
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  if(Suffix == value)
   return true;
 
@@ -54,6 +58,7 @@ bool ULogger::SetSuffix(const std::string &value)
 /// Инициализирует лог
 int ULogger::InitLog(void)
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  Clear();
 
  if(!LogPath.Get().empty())
@@ -71,6 +76,7 @@ int ULogger::InitLog(void)
 /// Сохраняет строку в лог
 int ULogger::LogMessage(const std::string &str)
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  if(!EventsLogFile)
  {
   std::string file_name;
@@ -100,6 +106,7 @@ int ULogger::LogMessage(const std::string &str)
 /// Закрывает файлы с логами и удаляет связанные файловые переменные
 int ULogger::Clear(void)
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  if(EventsLogFile)
  {
   delete EventsLogFile;
