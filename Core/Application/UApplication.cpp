@@ -393,9 +393,10 @@ try{
    // TODO: Реалиовать загрузку описаний классов
    // Загрузка описаний классов
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
-   Env_SetDebugMode(channel_config.DebugMode);
-   Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
-   Env_SetEventsLogMode(channel_config.EventsLogMode);
+   Log_SetDebugMode(config.DebugMode);
+   Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
+   Log_SetEventsLogMode(config.EventsLogMode);
+   Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
    Env_Init();

@@ -2842,9 +2842,10 @@ void __fastcall TUGEngineControlForm::ShowDebugMessagesCheckBoxClick(TObject *Se
  }
  for(int i=0;i<size;i++)
  {
-  config.ChannelsConfig[i].DebugMode=ShowDebugMessagesCheckBox->Checked;
-  MEnv_SetDebugMode(i,config.ChannelsConfig[i].DebugMode);
+  config.DebugMode=ShowDebugMessagesCheckBox->Checked;
+  MLog_SetDebugMode(i,config.DebugMode);
  }
+ MLog_SetDebugMode(RDK_SYS_MESSAGE,config.DebugMode);
  RdkApplication.SetProjectConfig(config);
  RdkApplication.SaveProjectConfig();
 }
@@ -2927,11 +2928,12 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
  for(int i=0;i<size;i++)
  {
   if(DetailedDebugLogCheckBox->Checked)
-   config.ChannelsConfig[i].DebugSysEventsMask=0xFFFFFFFF;
+   config.DebugSysEventsMask=0xFFFFFFFF;
   else
-   config.ChannelsConfig[i].DebugSysEventsMask=0;
-  MEnv_SetDebugSysEventsMask(i,config.ChannelsConfig[i].DebugSysEventsMask);
+   config.DebugSysEventsMask=0;
+  MLog_SetDebugSysEventsMask(i,config.DebugSysEventsMask);
  }
+ MLog_SetDebugMode(RDK_SYS_MESSAGE,config.DebugSysEventsMask);
  RdkApplication.SetProjectConfig(config);
  RdkApplication.SaveProjectConfig();
 }

@@ -120,6 +120,12 @@ TProjectConfig::TProjectConfig(void)
  ServerInterfacePort=45045;
  ServerInterfaceAddress="127.0.0.1";
 
+ DebugMode=false;
+ DebugSysEventsMask=0;
+ DebuggerMessageFlag=false;
+ EventsLogMode=false;
+
+
  NumChannels=1;
  ChannelsConfig.resize(1);
 }
@@ -161,6 +167,10 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  InterfaceFileName=copy.InterfaceFileName;
 
  DescriptionFileName=copy.DescriptionFileName;
+ DebugMode=copy.DebugMode;
+ DebugSysEventsMask=copy.DebugSysEventsMask;
+ DebuggerMessageFlag=copy.DebuggerMessageFlag;
+ EventsLogMode=copy.EventsLogMode;
 }
 
 bool TProjectConfig::operator != (const TProjectConfig& copy) const
@@ -183,7 +193,11 @@ bool TProjectConfig::operator != (const TProjectConfig& copy) const
  (ServerInterfacePort != copy.ServerInterfacePort) |
  (ProjectShowChannelsStates != copy.ProjectShowChannelsStates) |
  (InterfaceFileName != copy.InterfaceFileName) |
- (DescriptionFileName != copy.DescriptionFileName);
+ (DescriptionFileName != copy.DescriptionFileName) |
+ (DebugMode != copy.DebugMode) |
+ (DebugSysEventsMask != copy.DebugSysEventsMask) |
+ (DebuggerMessageFlag != copy.DebuggerMessageFlag) |
+ (EventsLogMode != copy.EventsLogMode);
 }
 
 bool TProjectConfig::operator == (const TProjectConfig& copy) const
@@ -279,6 +293,11 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  ModifiedFlag=false;
 
  xml.SelectNodeRoot("Project/MultiGeneral");
+ Config.DebugMode=xml.ReadBool("DebugModeFlag",false);
+ Config.DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",0);
+ Config.DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
+ Config.EventsLogMode=xml.ReadBool("EventsLogMode",false);
+
  Config.MultiThreadingMode=xml.ReadInteger("EnginesMode",0);
 
  Config.EventsLogFlag=xml.ReadBool("EventsLogEnabled",true);
@@ -395,7 +414,10 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 bool UProject::WriteToXml(USerStorageXML &xml)
 {
  xml.SelectNodeRoot("Project/MultiGeneral");
-
+ xml.WriteBool("DebugModeFlag",Config.DebugMode);
+ xml.WriteUnsigned("DebugSysEventsMask",Config.DebugSysEventsMask);
+ xml.WriteBool("DebuggerMessageFlag",Config.DebuggerMessageFlag);
+ xml.WriteBool("EventsLogMode",Config.EventsLogMode);
 
  xml.SelectNodeRoot("Project/General");
 
@@ -406,23 +428,6 @@ bool UProject::WriteToXml(USerStorageXML &xml)
  if(Config.DescriptionFileName.empty())
   Config.DescriptionFileName="Description.rtf";
  xml.WriteString("ProjectDescriptionFileName",Config.DescriptionFileName);
-
- // TODO: реализовать сохранение Описания
- /*
- if(descriptionfilename.Length() != 0)
- {
-  TRichEdit* RichEdit=new TRichEdit(this);
-  RichEdit->Parent=this;
-  RichEdit->PlainText=true;
-  RichEdit->Visible=false;
-  RichEdit->Text=ProjectDescription;
-
-  if(ExtractFilePath(descriptionfilename).Length() == 0)
-   RichEdit->Lines->SaveToFile(ProjectPath+descriptionfilename);
-  else
-   RichEdit->Lines->SaveToFile(descriptionfilename);
-  delete RichEdit;
- }*/
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);

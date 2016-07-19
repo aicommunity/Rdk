@@ -122,6 +122,18 @@ int NumChannels;
 /// Флаг запрета останова источников видео-сигнала при остановке проекта
 bool DisableStopVideoSources;
 
+/// Использовать отладочный режим
+bool DebugMode;
+
+/// Маска системных событий для логирования
+unsigned int DebugSysEventsMask;
+
+/// Флаг включения вывода лога в отладчик
+bool DebuggerMessageFlag;
+
+/// Включить запись событий в отдельный лог-файл канала
+bool EventsLogMode;
+
 /// Адрес интерфейса управления сервером
 std::string ServerInterfaceAddress;
 

@@ -330,6 +330,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   Logger->SetChannelIndex(ChannelIndex);
  }
  Environment->SetChannelIndex(ChannelIndex);
+ Environment->SetLogger(Logger);
  CreateStorage();
 
  if(!Storage)
