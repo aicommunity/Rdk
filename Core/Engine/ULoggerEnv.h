@@ -16,7 +16,7 @@ public:
 typedef void (*PExceptionHandler)(int channel_index);
 
 /// Прототип функции предобработки исключений
-typedef bool (*PExceptionPreprocessor)(UEnvironment * env, UContainer *model, UException &in_exception, UException &out_exception);
+typedef bool (*PExceptionPreprocessor)(UEnvironment * env, UContainer *model, const UException &in_exception, UException &out_exception);
 
 /// Прототип функции постобработки исключений
 typedef bool (*PExceptionPostprocessor)(UEnvironment * env, UContainer *model, const UException &exception);
@@ -115,7 +115,7 @@ bool RegisterEnvironment(UEnvironment* env);
 void UnRegisterEnvironment(void);
 
 /// Обрабатывает возникшее исключение
-virtual void ProcessException(UException &exception) const;
+virtual void ProcessException(const UException &exception) const;
 
 /// Максимальное число хранимых исключений
 /// Если 0, то неограниченно
@@ -164,6 +164,7 @@ void ClearLog(void);
 void ClearReadLog(void);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
+int LogMessage(const std::string &str);
 void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
 void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 void LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number=0);

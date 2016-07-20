@@ -1,3 +1,4 @@
+#include "limits.h"
 #include "ULoggerEnv.h"
 #include "UContainer.h"
 #include "UEnvironment.h"
@@ -143,11 +144,11 @@ void ULoggerEnv::UnRegisterEnvironment(void)
 }
 
 // Обрабатывает возникшее исключение
-void ULoggerEnv::ProcessException(UException &exception) const
+void ULoggerEnv::ProcessException(const UException &exception) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
 
- UException* processed_exception=&exception;
+ const UException* processed_exception=&exception;
  UException temp_ex;
  if(Environment && ExceptionPreprocessor)
  {
@@ -176,7 +177,7 @@ void ULoggerEnv::ProcessException(UException &exception) const
 
  if(EventsLogMode) // Если включено, то сохраняем события в файл
  {
-  ULogger::LogMessage(result_message.GetMessage());  // TODO: Проверить на RDK_SUCCESS
+  const_cast<ULoggerEnv* const>(this)->LogMessage(result_message.GetMessage());  // TODO: Проверить на RDK_SUCCESS
  }
 
  if(DebuggerMessageFlag)
@@ -398,6 +399,11 @@ void ULoggerEnv::ClearReadLog(void)
  CurrentExceptionsLogSize=LogList.size();
  LastErrorLevel=INT_MAX;
 // TempLogString.clear();
+}
+
+int ULoggerEnv::LogMessage(const std::string &str)
+{
+ return ULogger::LogMessage(str);
 }
 
 // Вызов обработчика исключений среды для простой записи данных в лог

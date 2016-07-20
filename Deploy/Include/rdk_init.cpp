@@ -15,7 +15,7 @@ namespace RDK {
 
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
 /// иначе возвращает RDK_EXCEPTION_CATCHED
-int ProcessException(int channel_index, UException &ex)
+int ProcessException(int channel_index, const UException &ex)
 {
  UEPtr<ULoggerEnv> logger=DllManager.GetLogger(channel_index);
  if(!logger)
@@ -227,7 +227,7 @@ bool RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
 // Управление функцией-обработчиком исключений
 void* RDK_CALL Log_GetExceptionHandler(void)
 {
- return DllManager.GetLogger()->GetExceptionHandler();
+ return (void*)DllManager.GetLogger()->GetExceptionHandler();
 }
 
 void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
@@ -235,7 +235,7 @@ void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=GetNumEngines())
   return 0;
 
- return DllManager.GetLogger(channel_index)->GetExceptionHandler();
+ return (void*)DllManager.GetLogger(channel_index)->GetExceptionHandler();
 }
 
 int RDK_CALL Log_SetExceptionHandler(void* value)
