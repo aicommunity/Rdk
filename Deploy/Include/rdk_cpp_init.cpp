@@ -19,9 +19,9 @@ RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
  return DllManager.GetEngine();
 }
 
-RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int engine_index)
+RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index)
 {
- return DllManager.GetEngine(engine_index);
+ return DllManager.GetEngine(channel_index);
 }
 
 
@@ -31,9 +31,9 @@ RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void)
  return DllManager.GetEnvironment();
 }
 
-RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int engine_index)
+RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int channel_index)
 {
- return DllManager.GetEnvironment(engine_index);
+ return DllManager.GetEnvironment(channel_index);
 }
 
 // Возвращает ссылку на указатель хранилища
@@ -42,9 +42,9 @@ RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void)
  return DllManager.GetStorage();
 }
 
-RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int engine_index)
+RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int channel_index)
 {
- return DllManager.GetStorage(engine_index);
+ return DllManager.GetStorage(channel_index);
 }
 
 // Возвращает указатель на текущую модель
@@ -53,9 +53,9 @@ RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void)
  return DllManager.GetModel();
 }
 
-RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index)
+RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index)
 {
- return DllManager.GetModel(engine_index);
+ return DllManager.GetModel(channel_index);
 }
 // --------------------------
 
@@ -78,9 +78,9 @@ RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
  return DllManager.GetEngineLock(0);
 }
 
-RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int engine_index)
+RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index)
 {
- return DllManager.GetEngineLock(engine_index);
+ return DllManager.GetEngineLock(channel_index);
 }
 
 // Возвращает ссылку на указатель среды выполнения
@@ -89,9 +89,9 @@ RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void)
  return DllManager.GetEnvironmentLock(0);
 }
 
-RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int engine_index)
+RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index)
 {
- return DllManager.GetEnvironmentLock(engine_index);
+ return DllManager.GetEnvironmentLock(channel_index);
 }
 
 // Возвращает ссылку на указатель хранилища
@@ -100,9 +100,9 @@ RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void)
  return DllManager.GetStorageLock(0);
 }
 
-RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int engine_index)
+RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index)
 {
- return DllManager.GetStorageLock(engine_index);
+ return DllManager.GetStorageLock(channel_index);
 }
 
 // Возвращает указатель на текущую модель
@@ -111,9 +111,9 @@ RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void)
  return DllManager.GetModelLock(0);
 }
 
-RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_index)
+RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index)
 {
- return DllManager.GetModelLock(engine_index);
+ return DllManager.GetModelLock(channel_index);
 }
 // --------------------------
 

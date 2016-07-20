@@ -13,7 +13,7 @@ class ULogger
 {
 protected: // Параметры
 /// Путь до папки с логами
-RDK::UELockVar<std::string> LogPath;
+RDK::UELockVar<std::string> LogDir;
 
 /// Суффикс имени файла с логом
 RDK::UELockVar<std::string> Suffix;
@@ -34,8 +34,8 @@ virtual ~ULogger(void);
 
 public: // Методы управления параметрами
 /// Путь до папки с логами
-std::string GetLogPath(void) const;
-bool SetLogPath(const std::string &value);
+std::string GetLogDir(void) const;
+bool SetLogDir(const std::string &value);
 
 /// Режим логгирования
 /// 0 - отключен

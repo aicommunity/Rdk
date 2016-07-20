@@ -84,7 +84,7 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineControlThread(UEngineControl* engine_control, int engine_index);
+UEngineControlThread(UEngineControl* engine_control, int channel_index);
 virtual ~UEngineControlThread(void);
 // --------------------------
 

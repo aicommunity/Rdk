@@ -16,19 +16,19 @@ RDK_LIB_TYPE RDK::UEPtr<RDKDllManager> RDK_CALL GetCore(void);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int engine_index);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index);
 
 // Возвращает ссылку на указатель среды выполнения
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int engine_index);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int channel_index);
 
 // Возвращает ссылку на указатель хранилища
 RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int engine_index);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int channel_index);
 
 // Возвращает указатель на текущую модель
 RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index);
 // --------------------------
 
 // --------------------------
@@ -39,19 +39,19 @@ RDK_LIB_TYPE RDK::UELockPtr<RDKDllManager> RDK_CALL GetCoreLock(void);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void);
-RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int engine_index);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index);
 
 // Возвращает ссылку на указатель среды выполнения
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void);
-RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int engine_index);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index);
 
 // Возвращает ссылку на указатель хранилища
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void);
-RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int engine_index);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index);
 
 // Возвращает указатель на текущую модель
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void);
-RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_index);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index);
 // --------------------------
 }
 
@@ -68,12 +68,12 @@ RDK::UELockPtr<T> GetModelLock(void)
 }
 
 template<class T>
-RDK::UELockPtr<T> GetModelLock(int engine_index)
+RDK::UELockPtr<T> GetModelLock(int channel_index)
 {
- RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel(engine_index));
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel(channel_index));
  if(!p)
   return RDK::UELockPtr<T>();
- return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(engine_index),p);
+ return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(channel_index),p);
 }
 
 template<class T>
@@ -83,9 +83,9 @@ RDK::UEPtr<T> GetModel(void)
 }
 
 template<class T>
-RDK::UEPtr<T> GetModel(int engine_index)
+RDK::UEPtr<T> GetModel(int channel_index)
 {
- return dynamic_pointer_cast<T>(::GetModel(engine_index));
+ return dynamic_pointer_cast<T>(::GetModel(channel_index));
 }
 
 // Исключения
@@ -201,14 +201,14 @@ T& ReadPropertyValue(const std::string &comp_name, const std::string &property_n
 
 // Считывает и декодирует содержимое свойства компонента
 template<typename T>
-T& MReadPropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name, T &res)
+T& MReadPropertyValue(int channel_index, const std::string &comp_name, const std::string &property_name, T &res)
 {
- const char *param_value=MModel_GetComponentPropertyValue(engine_index, comp_name.c_str(),property_name.c_str());
+ const char *param_value=MModel_GetComponentPropertyValue(channel_index, comp_name.c_str(),property_name.c_str());
  if(!param_value)
   throw EEnginePropertyNotFound(comp_name, property_name);
 
  RDK::DecodePropertyValue(param_value,res);
- MEngine_FreeBufString(engine_index, param_value);
+ MEngine_FreeBufString(channel_index, param_value);
  return res;
 }
 
@@ -220,10 +220,10 @@ T ReadPropertyValue(const std::string &comp_name, const std::string &property_na
 }
 
 template<typename T>
-T MReadPropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name)
+T MReadPropertyValue(int channel_index, const std::string &comp_name, const std::string &property_name)
 {
  T res;
- return MReadPropertyValue(engine_index, comp_name, property_name,res);
+ return MReadPropertyValue(channel_index, comp_name, property_name,res);
 }
 
 // Считывает и декодирует содержимое параметра компонента

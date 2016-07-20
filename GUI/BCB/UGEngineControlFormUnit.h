@@ -269,6 +269,8 @@ bool AutoStartProjectFlag;
 bool MinimizeToTray;
 bool StartMinimized;
 String ProgramName;
+String LogDir;
+bool LogDebugMode;
 
 // Файл настроек проекта
 //RDK::USerStorageXML ProjectXml;

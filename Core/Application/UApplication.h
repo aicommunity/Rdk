@@ -51,6 +51,11 @@ std::list<std::string> LastProjectsList;
 /// Размер истории последних открытых проектов
 int LastProjectsListMaxSize;
 
+/// Каталог логов
+//std::string LogDir;
+
+/// Флаг включения отладочного режима логирования
+//bool DebugMode;
 
 protected: // Модули приложения
 /// Диспетчер команд
@@ -122,6 +127,17 @@ const RDK::USerStorageXML& GetProjectXml(void) const;
 
 // Файл настроек интефрейса
 const RDK::USerStorageXML& GetInterfaceXml(void) const;
+
+/// Каталог логов (глобальная настройка)
+std::string GetLogDir(void) const;
+bool SetLogDir(const std::string& value);
+
+/// Флаг включения отладочного режима логирования
+bool GetDebugMode(void) const;
+bool SetDebugMode(bool value);
+
+/// Текущий каталог логов (с учетом переопределения в проекте)
+std::string CalcCurrentLogDir(void) const;
 // --------------------------
 
 // --------------------------
@@ -209,20 +225,20 @@ bool DeleteEngine(int index);
 // --------------------------
 // Методы управления счетом
 // --------------------------
-/// Запускает аналитику выбранного канала, или всех, если engine_index == -1
-virtual void StartEngine(int engine_index);
+/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void StartEngine(int channel_index);
 
-/// Останавливает аналитику выбранного канала, или всех, если engine_index == -1
-virtual void PauseEngine(int engine_index);
+/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void PauseEngine(int channel_index);
 
-/// Сбрасывает аналитику выбранного канала, или всех, если engine_index == -1
-virtual void ResetEngine(int engine_index);
+/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void ResetEngine(int channel_index);
 
-/// Делает шаг расчета выбранного канала, или всех, если engine_index == -1
-virtual void StepEngine(int engine_index);
+/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+virtual void StepEngine(int channel_index);
 
 /// Возвращает true если канал запущен
-virtual bool IsEngineStarted(int engine_index);
+virtual bool IsEngineStarted(int channel_index);
 // --------------------------
 
 // --------------------------
@@ -259,6 +275,9 @@ protected:
 // --------------------------
 /// Вычисляет заголовок приложения
 void CalcAppCaption(void);
+
+/// Обновляет состояние средств логгирования
+void UpdateLoggers(void);
 
 /// Загружает файл в строку
 bool LoadFile(const std::string file_name, std::string &buffer) const;

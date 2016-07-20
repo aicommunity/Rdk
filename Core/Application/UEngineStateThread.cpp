@@ -3,6 +3,8 @@
 
 #include "UEngineStateThread.h"
 #include "UEngineControlThread.h"
+#include "UApplication.h"
+#include "UEngineControl.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 void ExceptionHandler(int channel_index)
@@ -84,21 +86,21 @@ UEngineStateThread::~UEngineStateThread(void)
 // Управление параметрами
 // --------------------------
 /// Путь до папки с логами
-std::string UEngineStateThread::GetLogPath(void) const
+/*std::string UEngineStateThread::GetLogDir(void) const
 {
- return LogPath;
+ return LogDir;
 }
 
-bool UEngineStateThread::SetLogPath(const std::string& value)
+bool UEngineStateThread::SetLogDir(const std::string& value)
 {
- if(LogPath == value)
+ if(LogDir == value)
   return true;
 
- LogPath=value;
+ LogDir=value;
  RecreateEventsLogFile();
  return true;
 }
-
+          */
 /// Флаг разрешения логгирования
 bool UEngineStateThread::GetLogFlag(void) const
 {
@@ -272,7 +274,13 @@ void UEngineStateThread::RecreateEventsLogFile(void)
  CalculationNotInProgress->reset();
 
  Logger.Clear();
- Logger.SetLogPath(LogPath.Get()+"EventsLog/");
+ std::string log_dir;
+ if(EngineControl && EngineControl->GetApplication())
+  log_dir=EngineControl->GetApplication()->CalcCurrentLogDir();
+ else
+  log_dir="EventsLog/";
+
+ Logger.SetLogDir(log_dir);
  if(Logger.InitLog() != RDK_SUCCESS)
  {
   EventsLogFlag=false;
@@ -280,7 +288,7 @@ void UEngineStateThread::RecreateEventsLogFile(void)
  }
  else
  {
-  EventsLogFilePath=LogPath.Get()+"EventsLog/";
+  EventsLogFilePath=log_dir;//LogDir.Get()+"EventsLog/";
  }
 
  /// Сохраняем лог в файл если это необходимо
@@ -289,6 +297,19 @@ void UEngineStateThread::RecreateEventsLogFile(void)
  else
   EventsLogFlag=true;
 
+ CalculationNotInProgress->set();
+}
+
+/// Закрывает текущий лог
+void UEngineStateThread::CloseEventsLogFile(void)
+{
+ if(!CalculationNotInProgress)
+  return;
+ if(!CalculationNotInProgress->wait(100))
+  return;
+ CalculationNotInProgress->reset();
+
+ Logger.Clear();
  CalculationNotInProgress->set();
 }
 
@@ -387,11 +408,6 @@ void UEngineStateThread::ProcessLog(void)
 
  try
  {
-/*  if(global_error_level>=0 && global_error_level<3)
-  {
-   EngineControl->GetApplication()->PauseEngine(-1);
-  }
-*/
   while(!UnsentLog.empty())
   {
    if(EventsLogFlag)

@@ -54,6 +54,9 @@ std::string SystemDir;
 /// Путь до директории с логами
 std::string LogDir;
 
+/// Флаг режима отладки
+bool DebugMode;
+
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
 // ----------------------------------------------------------
@@ -95,6 +98,10 @@ const char* GetLogDir(void);
 
 // Устанавливает имя каталога бинарных файлов
 int SetLogDir(const char *dir);
+
+/// Флаг режима отладки
+bool GetDebugMode(void);
+int SetDebugMode(bool value);
 // --------------------------
 
 // --------------------------
@@ -136,19 +143,19 @@ bool SetSelectedChannelIndex(int channel_index);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UEPtr<RDK::UEngine>& GetEngine(void);
-RDK::UEPtr<RDK::UEngine> GetEngine(int engine_index);
+RDK::UEPtr<RDK::UEngine> GetEngine(int channel_index);
 
 // Возвращает ссылку на указатель среды выполнения
 RDK::UEPtr<RDK::UEnvironment>& GetEnvironment(void);
-RDK::UEPtr<RDK::UEnvironment> GetEnvironment(int engine_index);
+RDK::UEPtr<RDK::UEnvironment> GetEnvironment(int channel_index);
 
 // Возвращает ссылку на указатель хранилища
 RDK::UEPtr<RDK::UStorage>& GetStorage(void);
-RDK::UEPtr<RDK::UStorage> GetStorage(int engine_index);
+RDK::UEPtr<RDK::UStorage> GetStorage(int channel_index);
 
 // Возвращает указатель на текущую модель
 RDK::UEPtr<RDK::UContainer> GetModel(void);
-RDK::UEPtr<RDK::UContainer> GetModel(int engine_index);
+RDK::UEPtr<RDK::UContainer> GetModel(int channel_index);
 // --------------------------
 
 // --------------------------
@@ -163,19 +170,19 @@ UGenericMutex* GetEngineMutex(int index);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(void);
-RDK::UELockPtr<RDK::UEngine> GetEngineLock(int engine_index);
+RDK::UELockPtr<RDK::UEngine> GetEngineLock(int channel_index);
 
 // Возвращает ссылку на указатель среды выполнения
 RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(void);
-RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(int engine_index);
+RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(int channel_index);
 
 // Возвращает ссылку на указатель хранилища
 RDK::UELockPtr<RDK::UStorage> GetStorageLock(void);
-RDK::UELockPtr<RDK::UStorage> GetStorageLock(int engine_index);
+RDK::UELockPtr<RDK::UStorage> GetStorageLock(int channel_index);
 
 // Возвращает указатель на текущую модель
 RDK::UELockPtr<RDK::UContainer> GetModelLock(void);
-RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
+RDK::UELockPtr<RDK::UContainer> GetModelLock(int channel_index);
 // --------------------------
 
 // --------------------------
@@ -185,13 +192,13 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
 RDK::UEPtr<RDK::ULoggerEnv>& GetLogger(void);
 
 // Возвращает указатель на логгер выбранного канала, или GlobalLogger
-RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int engine_index);
+RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int channel_index);
 
 /// Возвращает ссылку на глобальный логгер
 RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
 
 // Записывает в лог новое сообщение с кодом ошибки
-//int RDK_CALL LogMessage(int engine_index, int log_level, const std::string &message, int error_event_number);
+//int RDK_CALL LogMessage(int channel_index, int log_level, const std::string &message, int error_event_number);
 
 // Обрабатывает возникшее исключение
 //protected:

@@ -2256,10 +2256,11 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
-// LastProjectsListMaxSize=app_ini->ReadInteger("General","LastProjectsListMaxSize",10);
+ LogDir=app_ini->ReadString("Log","Dir","");
+ if(LogDir.Length() == 0)
+  LogDir = "EventsLog/";
 
-// ServerInterfaceAddress=AnsiString(app_ini->ReadString("Server","BindAddress","127.0.0.1")).c_str();
-// ServerInterfacePort=app_ini->ReadInteger("Server","BindPort",45045);
+ LogDebugMode=app_ini->ReadBool("Log","DebugMode",false);
 
  DisableAdminForm=app_ini->ReadBool("General","DisableAdminForm",false);
 
@@ -2271,6 +2272,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
+ RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
+ RdkApplication.SetDebugMode(LogDebugMode);
  RdkApplication.Init();
 
  VersionString=GetBuildInfoAsString();

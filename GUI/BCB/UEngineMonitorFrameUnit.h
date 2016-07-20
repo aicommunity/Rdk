@@ -40,7 +40,7 @@ virtual ~UEngineControlVcl(void);
 // Методы управления
 // --------------------------
 /// Создание нового треда расчета
-virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engine_control, int engine_index);
+virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engine_control, int channel_index);
 
 /// Создание нового треда расчета
 virtual RDK::UEngineStateThread* CreateEngineStateThread(RDK::UEngineControl* engine_control);

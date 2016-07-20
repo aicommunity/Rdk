@@ -31,6 +31,7 @@ UApplication::UApplication(void)
  Name="Application";
  LastProjectsListMaxSize=10;
  ProjectOpenFlag=false;
+// DebugMode=false;
 }
 
 UApplication::~UApplication(void)
@@ -92,7 +93,8 @@ bool UApplication::SetProjectPath(const std::string& value)
  if(ProjectPath == value)
   return true;
  ProjectPath=value;
- EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
+ UpdateLoggers();
+// EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
  return true;
 }
@@ -158,6 +160,61 @@ const RDK::USerStorageXML& UApplication::GetInterfaceXml(void) const
  return InterfaceXml;
 }
 
+
+///  аталог логов
+std::string UApplication::GetLogDir(void) const
+{
+ return Core_GetLogDir();
+}
+
+bool UApplication::SetLogDir(const std::string& value)
+{
+ if(value == Core_GetLogDir())
+  return true;
+
+// LogDir=value;
+ if(Core_SetLogDir(value.c_str()) == RDK_SUCCESS)
+ {
+  UpdateLoggers();
+  return true;
+ }
+ return false;
+}
+
+/// ‘лаг включени€ отладочного режима логировани€
+bool UApplication::GetDebugMode(void) const
+{
+ return Core_GetDebugMode();
+}
+
+bool UApplication::SetDebugMode(bool value)
+{
+ if(value == Core_GetDebugMode())
+  return true;
+ if(Core_SetDebugMode(value) == RDK_SUCCESS)
+  return true;
+ return true;
+}
+
+
+/// “екущий каталог логов (с учетом переопределени€ в проекте)
+std::string UApplication::CalcCurrentLogDir(void) const
+{
+ std::string log_dir;
+ if(Project && Project->GetConfig().OverrideLogParameters)
+ {
+  log_dir=ProjectPath+"EventsLog/";
+ }
+ else
+ {
+  log_dir=Core_GetLogDir();
+  if(log_dir.empty())
+   log_dir=WorkDirectory+"EventsLog/";
+  if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
+   log_dir+="/";
+ }
+ return log_dir;
+}
 // --------------------------
 
 // --------------------------
@@ -271,7 +328,7 @@ bool UApplication::Init(void)
 
  std::string font_path=extract_file_path(ApplicationFileName);
  SetSystemDir(font_path.c_str());
- Core_SetLogDir(font_path.c_str());
+// SetLogDir(font_path);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
  MCore_ChannelInit(0,0,(void*)ExceptionHandler);
  Engine_LoadFonts();
@@ -349,14 +406,14 @@ bool UApplication::OpenProject(const std::string &filename)
  ProjectXml.LoadFromFile(filename,"");
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
- Core_SetLogDir(ProjectPath.c_str());
-
  Project->SetProjectPath(ProjectPath);
  Project->ReadFromXml(ProjectXml);
+ UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
  EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
- EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
+ EngineControl->GetEngineStateThread()->CloseEventsLogFile();
+// EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);
 
  EngineControl->SetThreadMode(config.MultiThreadingMode);
  CalcAppCaption();
@@ -366,7 +423,7 @@ try{
  EngineControl->SetNumEngines(config.NumChannels);
 
  ProjectXml.SelectNodeRoot("Project/MultiGeneral");
- int selected_engine_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
+ int selected_channel_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
 
  ProjectXml.SelectNodeRoot("Project/General");
 
@@ -448,10 +505,10 @@ try{
   Sleep(0);
  }
 
- if(selected_engine_index>=GetNumEngines())
-  selected_engine_index=0;
+ if(selected_channel_index>=GetNumEngines())
+  selected_channel_index=0;
 
- SelectEngine(selected_engine_index);
+ SelectEngine(selected_channel_index);
  InterfaceXml.Destroy();
 
  if(!config.InterfaceFileName.empty())
@@ -500,7 +557,7 @@ bool UApplication::SaveProject(void)
  if(!ProjectOpenFlag)
   return false;
 
- int selected_engine_index=GetSelectedEngineIndex();
+ int selected_channel_index=GetSelectedEngineIndex();
 
  Project->WriteToXml(ProjectXml);
 
@@ -555,7 +612,7 @@ try
   Sleep(0);
  }
 
- SelectEngine(selected_engine_index);
+ SelectEngine(selected_channel_index);
 
 
  ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
@@ -862,36 +919,36 @@ bool UApplication::DeleteEngine(int index)
 // --------------------------
 // ћетоды управлени€ счетом
 // --------------------------
-/// «апускает аналитику выбранного канала, или всех, если engine_index == -1
-void UApplication::StartEngine(int engine_index)
+/// «апускает аналитику выбранного канала, или всех, если channel_index == -1
+void UApplication::StartEngine(int channel_index)
 {
- EngineControl->StartEngine(engine_index);
+ EngineControl->StartEngine(channel_index);
 }
 
-/// ќстанавливает аналитику выбранного канала, или всех, если engine_index == -1
-void UApplication::PauseEngine(int engine_index)
+/// ќстанавливает аналитику выбранного канала, или всех, если channel_index == -1
+void UApplication::PauseEngine(int channel_index)
 {
- EngineControl->PauseEngine(engine_index);
+ EngineControl->PauseEngine(channel_index);
 }
 
-/// —брасывает аналитику выбранного канала, или всех, если engine_index == -1
-void UApplication::ResetEngine(int engine_index)
+/// —брасывает аналитику выбранного канала, или всех, если channel_index == -1
+void UApplication::ResetEngine(int channel_index)
 {
- EngineControl->ResetEngine(engine_index);
+ EngineControl->ResetEngine(channel_index);
 }
 
-/// ƒелает шаг расчета выбранного канала, или всех, если engine_index == -1
-void UApplication::StepEngine(int engine_index)
+/// ƒелает шаг расчета выбранного канала, или всех, если channel_index == -1
+void UApplication::StepEngine(int channel_index)
 {
- EngineControl->StepEngine(engine_index);
+ EngineControl->StepEngine(channel_index);
 }
 
 /// ¬озвращает true если канал запущен
-bool UApplication::IsEngineStarted(int engine_index)
+bool UApplication::IsEngineStarted(int channel_index)
 {
  if(!EngineControl)
   return false;
- return EngineControl->CheckCalcState(engine_index);
+ return EngineControl->CheckCalcState(channel_index);
 }
 // --------------------------
 
@@ -1119,6 +1176,14 @@ void UApplication::SaveProjectsHistory(void)
 void UApplication::CalcAppCaption(void)
 {
  AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
+}
+
+/// ќбновл€ет состо€ние средств логгировани€
+void UApplication::UpdateLoggers(void)
+{
+ DllManager.SetLogDir(CalcCurrentLogDir().c_str());
+ if(EngineControl && EngineControl->GetEngineStateThread())
+  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
 }
 
 /// «агружает файл в строку

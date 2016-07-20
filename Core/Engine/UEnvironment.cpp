@@ -112,13 +112,6 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
 
  if(CurrentDataDir.size()>0 && CurrentDataDir[CurrentDataDir.size()-1] != '/')
   CurrentDataDir+='/';
-/*
- if(EventsLogMode && IsInit())
- {
-  Logger.Clear();
-  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
-  Logger.InitLog();
- }*/
 }
 
 // Имя каталога бинарных файлов
@@ -1032,13 +1025,6 @@ void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, c
 // Инициализация среды
 void UEnvironment::AInit(void)
 {
-/* if(EventsLogMode)
- {
-  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
-  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
-  Logger.InitLog();
- }
-  */
  SetFonts(RDK::GlobalFonts);
 
  ModelCalculationComponent.Resize(0);

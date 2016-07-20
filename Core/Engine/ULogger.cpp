@@ -19,19 +19,19 @@ ULogger::~ULogger(void)
 }
 
 /// ѕуть до папки с логами
-std::string ULogger::GetLogPath(void) const
+std::string ULogger::GetLogDir(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
- return LogPath;
+ return LogDir;
 }
 
-bool ULogger::SetLogPath(const std::string &value)
+bool ULogger::SetLogDir(const std::string &value)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
- if(LogPath == value)
+ if(LogDir == value)
   return true;
 
- LogPath=value;
+ LogDir=value;
  return true;
 }
 
@@ -61,9 +61,9 @@ int ULogger::InitLog(void)
  UGenericMutexExclusiveLocker lock(LogMutex);
  Clear();
 
- if(!LogPath.Get().empty())
+ if(!LogDir.Get().empty())
  {
-  if(CreateNewDirectory(LogPath.Get().c_str()) != 0)
+  if(CreateNewDirectory(LogDir.Get().c_str()) != 0)
   {
    LogEnabledFlag=false;
    return RDK_E_LOGGER_CANT_CREATE_LOG_PATH;
@@ -83,7 +83,7 @@ int ULogger::LogMessage(const std::string &str)
   time_t time_data;
   time(&time_data);
   file_name=RDK::get_text_time(time_data, '.', '_');
-  EventsLogFile=new std::ofstream((LogPath.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
+  EventsLogFile=new std::ofstream((LogDir.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
 
   if(!EventsLogFile->is_open())
   {

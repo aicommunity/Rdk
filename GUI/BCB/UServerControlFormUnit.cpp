@@ -279,7 +279,7 @@ URpcDecoderCommonVcl* URpcDecoderCommonVcl::New(void)
  return new URpcDecoderCommonVcl;
 }
 
-std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value)
+std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int channel_index, int &return_value)
 {
  ControlResponseString.clear();
  RDK::USerStorageXML result;
@@ -289,7 +289,7 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
  if(cmd == "GetChannelVideoSource")
  {
 #ifdef RDK_VIDEO
- TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+ TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_index);
  if(!frame)
  {
   return_value=1;
@@ -311,7 +311,7 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
  if(cmd == "SetChannelVideoSource")
  {
 #ifdef RDK_VIDEO
-  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_index);
   if(!frame)
    return_value=1;
   int mode=xml.ReadInteger("Mode",0);
@@ -326,14 +326,14 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
 //   frame->Init(mode);
 //   frame->CaptureThread->LoadParametersEx(xml);
    xml.SelectUp();
-   return_value=0;//SetChannelVideoSource(engine_index,mode);
+   return_value=0;//SetChannelVideoSource(channel_index,mode);
   }
 #endif
  }
  else
  if(cmd == "CheckChannelVideoSourceConnection")
  {
-	result.WriteInteger("State",UServerControlForm->CheckChannelVideoSourceConnection(engine_index));
+	result.WriteInteger("State",UServerControlForm->CheckChannelVideoSourceConnection(channel_index));
 	return_value=0;
  }
  else
@@ -344,7 +344,7 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
 #ifdef DVA_GEVISCOPE
   if(type == 1000)
   {
-	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(channel_index);
 	if(frame)
 	{
 	 result.WriteString("ChannelIndex",AnsiString(frame->ChannelIndexLabeledEdit->Text).c_str());
@@ -375,7 +375,7 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
 #ifdef DVA_GEVISCOPE
   if(type == 1000)
   {
-	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(channel_index);
 	if(frame)
 	{
 	 frame->DisconnectButtonClick(this);
@@ -400,8 +400,8 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
  if(cmd == "ReadImageFromVideoSource")
  {
 #ifdef RDK_VIDEO
-  int video_source_index=engine_index;
-  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  int video_source_index=channel_index;
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_index);
   if(!frame)
    return_value=2;
 
@@ -449,7 +449,7 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
  if(cmd == "StartVideoSource")
  {
 #ifdef RDK_VIDEO
-  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(channel_index);
   if(frame)
   {
    frame->StartButtonClick(UServerControlForm);
@@ -465,7 +465,7 @@ std::string URpcDecoderCommonVcl::ARemoteCall(const std::string &cmd, RDK::USerS
  if(cmd == "StopVideoSource")
  {
 #ifdef RDK_VIDEO
-  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(channel_index);
   if(frame)
   {
    frame->StopButtonClick(UServerControlForm);

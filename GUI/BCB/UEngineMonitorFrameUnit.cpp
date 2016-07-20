@@ -194,9 +194,9 @@ UEngineControlVcl::~UEngineControlVcl(void)
 // Методы управления
 // --------------------------
 /// Создание нового треда расчета
-RDK::UEngineControlThread* UEngineControlVcl::CreateEngineThread(RDK::UEngineControl* engine_control, int engine_index)
+RDK::UEngineControlThread* UEngineControlVcl::CreateEngineThread(RDK::UEngineControl* engine_control, int channel_index)
 {
- return new TEngineThread(engine_control, engine_index);
+ return new TEngineThread(engine_control, channel_index);
 }
 
 /// Создание нового треда расчета

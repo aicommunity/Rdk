@@ -917,11 +917,6 @@ virtual int Model_SetComponentBitmapInput(const char *stringid, int index, const
 // --------------------------
 // Методы управления исключениями
 // --------------------------
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
-//int GetMaxExceptionsLogSize(void) const;
-//int SetMaxExceptionsLogSize(int value);
-
 // Возвращает массив строк лога
 const char* GetLog(int &error_level) const;
 
@@ -966,9 +961,6 @@ public:
 virtual int ProcessException(UException &exception) const;
 virtual int ProcessException(const UException &exception) const;
 
-// Инициализирует пустое хранилище
-void CreateStorage(void);
-
 // Инициализирует среду
 // Если задано хранилище 'storage', то связывает его со средой.
 // Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
@@ -986,96 +978,7 @@ int LoadLibraries(void);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления средой
-// --------------------------
-protected:
-/// Метод сброса параметров на значения по умолчанию
-/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
-//virtual bool Env_Default(RDK::UContainer* cont, bool subcomps);
-     /*
-// Возвращает свойства компонента по идентификатору
-virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
-
-// Возвращает выборочные свойства компонента по идентификатору
-virtual bool Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage);
-
-// Возвращает свойства компонента по идентификатору с описаниями
-virtual bool Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
-
-// Устанавливает свойства компонента по идентификатору
-virtual int Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage);
-   */
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// включая этот компонент
-//virtual void Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
-
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-//virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
-/*
-// Возращает все связи внутри компонента cont в виде xml в буфер buffer
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
-
-// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-// Имена применяются до уровня компонента owner_level
-// Если owner_level не задан, то имена применяются до уровня текущего компонента
-virtual int Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
-
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
-
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
-
-// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
-// Информация о связях формируется относительно владельца компонента cont!
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
-
-// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния в xml
-virtual bool Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
-
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
-virtual bool Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links);
-
-// Сохраняет все свойства компонента и его дочерних компонент в xml
-virtual bool Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
-
-// Загружает все свойства компонента и его дочерних компонент из xml
-virtual bool Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
-*/
-// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
-// переменные состояния в xml
-//virtual bool Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
-// --------------------------
-
-// --------------------------
-// Методы внутреннего управления консолью
-// --------------------------
-protected:
-// --------------------------
-
-// --------------------------
-// Скрытые методы управления счетом
+// Методы управления счетом
 // --------------------------
 public:
 // Осуществляет поиск компонента по длинному строковому id
@@ -1107,8 +1010,8 @@ protected: // Данные исключения
 int EngineIndex;
 
 public:
-EErrorEngine(void)//int engine_index)
-: EError(), EngineIndex(0) /*EngineIndex(engine_index) */{};
+EErrorEngine(void)//int channel_index)
+: EError(), EngineIndex(0) /*EngineIndex(channel_index) */{};
 /*
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const

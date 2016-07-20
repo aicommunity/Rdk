@@ -125,7 +125,7 @@ TProjectConfig::TProjectConfig(void)
  DebuggerMessageFlag=false;
  EventsLogMode=false;
 
-
+ OverrideLogParameters=true;
  NumChannels=1;
  ChannelsConfig.resize(1);
 }
@@ -171,6 +171,7 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  DebugSysEventsMask=copy.DebugSysEventsMask;
  DebuggerMessageFlag=copy.DebuggerMessageFlag;
  EventsLogMode=copy.EventsLogMode;
+ OverrideLogParameters=copy.OverrideLogParameters;
 }
 
 bool TProjectConfig::operator != (const TProjectConfig& copy) const
@@ -197,7 +198,8 @@ bool TProjectConfig::operator != (const TProjectConfig& copy) const
  (DebugMode != copy.DebugMode) |
  (DebugSysEventsMask != copy.DebugSysEventsMask) |
  (DebuggerMessageFlag != copy.DebuggerMessageFlag) |
- (EventsLogMode != copy.EventsLogMode);
+ (EventsLogMode != copy.EventsLogMode) |
+ (OverrideLogParameters != copy.OverrideLogParameters);
 }
 
 bool TProjectConfig::operator == (const TProjectConfig& copy) const
@@ -297,6 +299,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",0);
  Config.DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
  Config.EventsLogMode=xml.ReadBool("EventsLogMode",false);
+ Config.OverrideLogParameters=xml.ReadBool("OverrideLogParameters",true);
 
  Config.MultiThreadingMode=xml.ReadInteger("EnginesMode",0);
 
@@ -326,7 +329,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.NumChannels=num_engines;
  Config.ChannelsConfig.resize(num_engines);
 
-// int selected_engine_index=xml.ReadInteger("SelectedEngineIndex",0);
+// int selected_channel_index=xml.ReadInteger("SelectedEngineIndex",0);
 
  xml.SelectNodeRoot("Project/General");
 
@@ -418,6 +421,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
  xml.WriteUnsigned("DebugSysEventsMask",Config.DebugSysEventsMask);
  xml.WriteBool("DebuggerMessageFlag",Config.DebuggerMessageFlag);
  xml.WriteBool("EventsLogMode",Config.EventsLogMode);
+ xml.WriteBool("OverrideLogParameters",Config.OverrideLogParameters);
 
  xml.SelectNodeRoot("Project/General");
 

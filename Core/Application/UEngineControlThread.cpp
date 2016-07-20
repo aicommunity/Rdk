@@ -16,8 +16,8 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int engine_index)
-: EngineControl(engine_control), EngineIndex(engine_index), Terminated(false)
+UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
+: EngineControl(engine_control), EngineIndex(channel_index), Terminated(false)
 {
  CalcState=UCreateEvent(false);
 
@@ -35,7 +35,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int e
  MinInterstepsInterval=0;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
  Profiler=new UChannelProfiler;
- Profiler->SetChannelIndex(engine_index);
+ Profiler->SetChannelIndex(channel_index);
  Profiler->AddAllGui();
 }
 

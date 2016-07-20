@@ -312,11 +312,8 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 {
-// if(!Options.LoadFromFile(OptionsFileName))
-// {
-  if(!Default())
-   return false;
-// }
+ if(!Default())
+  return false;
 
  AccessCache.clear();
 
@@ -331,20 +328,38 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  }
  Environment->SetChannelIndex(ChannelIndex);
  Environment->SetLogger(Logger);
- CreateStorage();
 
  if(!Storage)
   return false;
 
-  LibrariesList.clear();
-  ClassesList.clear();
-  if(LoadPredefinedLibraries())
-   return false;
-  if(LoadClasses())
-   return false;
-  if(LoadLibraries())
-   return false;
-  CreateEnvironment(true,&ClassesList, &LibrariesList);
+ RDK_SYS_TRY
+ {
+  try
+  {
+   LibrariesList.clear();
+   ClassesList.clear();
+   if(LoadPredefinedLibraries())
+	return false;
+   if(LoadClasses())
+	return false;
+   if(LoadLibraries())
+	return false;
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+
+ CreateEnvironment(true,&ClassesList, &LibrariesList);
 
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
@@ -6915,11 +6930,6 @@ int UEngine::ProcessException(const UException &exception) const
  return RDK_EXCEPTION_CATCHED;
 }
 
-// —оздает пустое хранилище и возвращает указатель на него
-void UEngine::CreateStorage(void)
-{
-}
-
 // —оздает среду и возвращает указатель на нее.
 // ≈сли задано хранилище 'storage', то св€зывает его со средой.
 // ≈сли флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
@@ -6932,36 +6942,54 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
  if(!Environment)
   return;
 
- Environment->Default();
-
- if(!Environment->SetStorage(Storage) || !isinit)
-  return;
-
- if(external_classes != 0)
+ RDK_SYS_TRY
  {
-  list<UContainer*>::iterator I,J;
-  I=external_classes->begin();
-  J=external_classes->end();
-  while(I != J)
+  try
   {
-   Storage->AddClass(*I);
-   ++I;
+   Environment->Default();
+
+   if(!Environment->SetStorage(Storage) || !isinit)
+	return;
+
+   if(external_classes != 0)
+   {
+	list<UContainer*>::iterator I,J;
+	I=external_classes->begin();
+	J=external_classes->end();
+	while(I != J)
+	{
+	 Storage->AddClass(*I);
+	 ++I;
+	}
+   }
+
+   if(external_libs != 0)
+   {
+	list<ULibrary*>::iterator I,J;
+	I=external_libs->begin();
+	J=external_libs->end();
+	while(I != J)
+	{
+	 Storage->AddCollection(*I);
+	 ++I;
+	}
+   }
+
+   Storage->BuildStorage();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
-
- if(external_libs != 0)
+ RDK_SYS_CATCH
  {
-  list<ULibrary*>::iterator I,J;
-  I=external_libs->begin();
-  J=external_libs->end();
-  while(I != J)
-  {
-   Storage->AddCollection(*I);
-   ++I;
-  }
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- Storage->BuildStorage();
 }
 
 // «агружает набор предустановленных библиотек

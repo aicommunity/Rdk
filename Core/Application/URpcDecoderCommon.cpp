@@ -189,7 +189,7 @@ bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
  return true;
 }
 
-const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value, int &channel_index)
+const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value, int &res_channel_index)
 {
  return_value=INT_MAX;
 
@@ -197,10 +197,10 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
 
  xml.Load(request,"RpcRequest");
 
- int engine_index=-1;
+ int channel_index=-1;
  std::string cmd;
  std::string component_name;
- channel_index=0;
+ res_channel_index=0;
 
 
  if(!ExtractCmd(xml,cmd) || cmd.empty())
@@ -209,20 +209,20 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   return 0;
  }
 
- if(!ExtractCC(xml,engine_index,component_name))
+ if(!ExtractCC(xml,channel_index,component_name))
  {
-  ExtractChannel(xml,engine_index);
+  ExtractChannel(xml,channel_index);
   ExtractComponent(xml,component_name);
  }
   /*
- if((engine_index < 0 || engine_index >= GetNumEngines()) &&
+ if((channel_index < 0 || channel_index >= GetNumEngines()) &&
 	(cmd != "GetNumChannels" && cmd !="SetNumChannels"))
  {
   return_value=2001;
   return 0;
  }  */
 
- channel_index=engine_index;
+ res_channel_index=channel_index;
  std::string response,temp;
  std::string name;
 
@@ -234,7 +234,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
 // }
 // else
 // {
- response=ARemoteCall(cmd,xml,component_name, engine_index, return_value);
+ response=ARemoteCall(cmd,xml,component_name, channel_index, return_value);
  if(return_value == 2001)
  {
   if(cmd == "RpcPing")
@@ -271,7 +271,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   else
   if(cmd == "GetChannelName")
   {
-   response=GetApplication()->GetProjectConfig().ChannelsConfig[engine_index].ChannelName;
+   response=GetApplication()->GetProjectConfig().ChannelsConfig[channel_index].ChannelName;
    return_value=0;
   }
   else
@@ -281,7 +281,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    if(!ch_name.empty())
    {
 	TProjectConfig config=GetApplication()->GetProjectConfig();
-	config.ChannelsConfig[engine_index].ChannelName=ch_name;
+	config.ChannelsConfig[channel_index].ChannelName=ch_name;
 	GetApplication()->SetProjectConfig(config);
    }
    return_value=0;
@@ -289,19 +289,19 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   else
   if(cmd == "ResetChannel")
   {
-   GetApplication()->ResetEngine(engine_index);
+   GetApplication()->ResetEngine(channel_index);
    return_value=0;
   }
   else
   if(cmd == "StartChannel")
   {
-   GetApplication()->StartEngine(engine_index);
+   GetApplication()->StartEngine(channel_index);
    return_value=0;
   }
   else
   if(cmd == "StopChannel")
   {
-   GetApplication()->PauseEngine(engine_index);
+   GetApplication()->PauseEngine(channel_index);
    return_value=0;
   }
   else
@@ -324,7 +324,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    std::string file_name=xml.ReadString("FileName","");
    if(!file_name.empty())
    {
-	return_value=1;//UServerControlForm->LoadProject(engine_index,file_name);
+	return_value=1;//UServerControlForm->LoadProject(channel_index,file_name);
    }
   }
   else
@@ -339,7 +339,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
  if(!response.empty())
  {
   result.WriteString("Data",response);
-//  MEngine_FreeBufString(engine_index,response);
+//  MEngine_FreeBufString(channel_index,response);
  }
  else
   result.WriteString("Data","");
@@ -352,7 +352,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
  return buffer.c_str();
 }
 
-std::string URpcDecoderCommon::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value)
+std::string URpcDecoderCommon::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int channel_index, int &return_value)
 {
  return_value=2001;
  return "";
