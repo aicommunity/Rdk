@@ -14,6 +14,10 @@ extern "C++"  {
 // Возвращает ссылку на указатель ядра
 RDK_LIB_TYPE RDK::UEPtr<RDKDllManager> RDK_CALL GetCore(void);
 
+// Возвращает указатель на логгер
+RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void);
+RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index);
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index);

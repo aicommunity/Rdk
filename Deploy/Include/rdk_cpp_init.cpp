@@ -13,6 +13,17 @@ RDK::UEPtr<RDKDllManager> RDK_CALL GetCore(void)
  return &DllManager;
 }
 
+// Возвращает указатель на логгер
+RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void)
+{
+ return DllManager.GetLogger();
+}
+
+RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index)
+{
+ return DllManager.GetLogger(channel_index);
+}
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
 {
