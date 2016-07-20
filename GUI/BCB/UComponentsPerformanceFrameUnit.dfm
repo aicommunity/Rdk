@@ -120,6 +120,10 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     object TabSheet3: TTabSheet
       Caption = 'Components Details'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox2: TGroupBox
         Left = 0
         Top = 0
@@ -142,6 +146,10 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     object TabSheet2: TTabSheet
       Caption = 'Interface Details'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0

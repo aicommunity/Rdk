@@ -1187,7 +1187,7 @@ bool TVideoOutputFrame::SendToComponentIO(void)
   return false;
 
  SendBmpSource.ReflectionX(&SendReflectedBmpSource);
- int num_channels=GetNumEngines();
+ int num_channels=Core_GetNumChannels();
  switch(LinkedMode)
  {
  case 0:
@@ -1245,7 +1245,7 @@ void TVideoOutputFrame::DynamicMenuFilling(TMenuItem* target, std::vector<std::s
 // Ìועמה, גûחûגאולûי ןונוה ראדמל נאסקועא
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
- int num_channels=GetNumEngines();
+ int num_channels=Core_GetNumChannels();
  if(CaptureThread)
  {
   double time_stamp=0;
@@ -1295,7 +1295,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 // Ìועמה, גûחûגאולûי ןונוה סבנמסמל
 void TVideoOutputFrame::ABeforeReset(void)
 {
- int num_channels=GetNumEngines();
+ int num_channels=Core_GetNumChannels();
  if(num_channels == 1)
  {
   if(Model_Check() && SendBmpSource.GetByteLength()>0)

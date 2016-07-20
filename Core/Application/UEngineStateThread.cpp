@@ -141,7 +141,7 @@ UEngineControl* UEngineStateThread::GetEngineControl(void)
 /// Регистрация потока расчета
 void UEngineStateThread::RegisterCalcThread(int index, UEngineControlThread *calc_thread)
 {
- int num_engines=GetNumEngines();
+ int num_engines=Core_GetNumChannels();
  CalcThreads.resize(num_engines,0);
  if(index<0 || index>=num_engines)
   return;
@@ -151,7 +151,7 @@ void UEngineStateThread::RegisterCalcThread(int index, UEngineControlThread *cal
 
 void UEngineStateThread::UnRegisterCalcThread(int index)
 {
- int num_engines=GetNumEngines();
+ int num_engines=Core_GetNumChannels();
  CalcThreads.resize(num_engines,0);
  if(index<0 || index>=num_engines)
   return;
@@ -181,7 +181,7 @@ void UEngineStateThread::Execute(void)
    // Определяем состояние тредов расчета
    std::vector<int> calc_thread_states;
 
-   int num_channels=GetNumEngines();
+   int num_channels=Core_GetNumChannels();
    calc_thread_states.assign(num_channels,1);
    CalcThreadStateTime.resize(num_channels,0);
    CalcThreadSuccessTime.resize(num_channels,0);

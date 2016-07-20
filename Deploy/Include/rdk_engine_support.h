@@ -40,7 +40,7 @@ UGenericMutex* GlobalMutex;
 RDK::UELockVar<int> SelectedChannelIndex;
 
 /// Текущее число каналов
-RDK::UELockVar<int> NumEngines;
+RDK::UELockVar<int> NumChannels;
 
 /// Данные текущего выбранного канала
 RDK::UEPtr<RDK::ULoggerEnv> Logger;
@@ -113,13 +113,13 @@ bool SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
 			PCreateNewEngine fCreateNewEngine);
 
 /// Возвращает число движков
-int GetNumEngines(void) const;
+int GetNumChannels(void) const;
 
 /// Создает требуемое число пустых движков
-int SetNumEngines(int num);
+int SetNumChannels(int num);
 
 /// Добавляет новый движок в позицию index
-/// Если index <0 или >= NumEngines то добавляет в конец
+/// Если index <0 или >= NumChannels то добавляет в конец
 int Add(int index);
 
 /// Удаляет движок из позиции index

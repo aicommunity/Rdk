@@ -47,9 +47,9 @@ private:
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-virtual bool ASetNumEngines(int old_num);
-virtual bool AInsertEngine(int index);
-virtual bool ADeleteEngine(int index);
+virtual bool ASetNumChannels(int old_num);
+virtual bool AInsertChannel(int index);
+virtual bool ADeleteChannel(int index);
 // --------------------------
 
 public: // TODO: костыль

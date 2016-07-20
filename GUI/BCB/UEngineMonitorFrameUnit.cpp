@@ -151,7 +151,7 @@ UEngineControlVcl* TEngineThread::GetEngineControl(void)
 void TEngineThread::ABeforeCalculate(void)
 {
    #ifdef RDK_VIDEO
-   if(GetNumEngines() == 1)
+   if(Core_GetNumChannels() == 1)
    {
 	for(int i=0;i<VideoOutputForm->GetNumSources();i++)
 	{
@@ -206,9 +206,9 @@ RDK::UEngineStateThread* UEngineControlVcl::CreateEngineStateThread(RDK::UEngine
 }
 
 /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
-void UEngineControlVcl::StartEngine(int channel_index)
+void UEngineControlVcl::StartChannel(int channel_index)
 {
- RDK::UEngineControl::StartEngine(channel_index);
+ RDK::UEngineControl::StartChannel(channel_index);
  switch(GetThreadMode())
  {
  case 0:
@@ -229,9 +229,9 @@ void UEngineControlVcl::StartEngine(int channel_index)
 }
 
 /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
-void UEngineControlVcl::PauseEngine(int channel_index)
+void UEngineControlVcl::PauseChannel(int channel_index)
 {
- RDK::UEngineControl::PauseEngine(channel_index);
+ RDK::UEngineControl::PauseChannel(channel_index);
  switch(GetThreadMode())
  {
  case 0:
@@ -273,7 +273,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   return;
  }
 
- int sel_index=GetSelectedEngineIndex();
+ int sel_index=Core_GetSelectedChannelIndex();
  RDK::UChannelProfiler * profiler=RdkApplication.GetEngineControl()->GetChannelProfiler(sel_index);
  if(!profiler)
   return;
@@ -318,7 +318,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  StatusBar->Panels->Items[3]->Width=width;
 
  StatusBar->Panels->Items[4]->Text=
-				String("Logs: [")+IntToStr(Engine_GetNumUnreadLogLines())+String(":")+IntToStr(Engine_GetNumLogLines())+String("]");
+				String("Logs: [")+IntToStr(Log_GetNumUnreadLogLines())+String(":")+IntToStr(Log_GetNumLogLines())+String("]");
  width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[4]->Text)+25;
  StatusBar->Panels->Items[4]->Width=width;
  StatusBar->Repaint();

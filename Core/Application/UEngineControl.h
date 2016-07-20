@@ -127,16 +127,16 @@ double GetServerTimeStamp(int channel_index) const;
 void SetServerTimeStamp(int channel_index, double stamp);
 
 /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void StartEngine(int channel_index);
+virtual void StartChannel(int channel_index);
 
 /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void PauseEngine(int channel_index);
+virtual void PauseChannel(int channel_index);
 
 /// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void ResetEngine(int channel_index);
+virtual void ResetChannel(int channel_index);
 
 /// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
-virtual void StepEngine(int channel_index);
+virtual void StepChannel(int channel_index);
 
 /// Проверяет состояние расчета по id канала
 /// 0 - Не считает
@@ -178,10 +178,10 @@ private: // Вспомогательные методы
 // --------------------------
 /// Управление числом каналов
 // --------------------------
-virtual int GetNumEngines(void) const;
-virtual bool SetNumEngines(int num);
-virtual bool InsertEngine(int index);
-virtual bool DeleteEngine(int index);
+virtual int GetNumChannels(void) const;
+virtual bool SetNumChannels(int num);
+virtual bool InsertChannel(int index);
+virtual bool DeleteChannel(int index);
 // --------------------------
 
 

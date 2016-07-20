@@ -205,7 +205,7 @@ void UEngineControlThread::Calculate(void)
   }
 
   CalculationNotInProgress->reset();
-  if(EngineIndex>=GetNumEngines())
+  if(EngineIndex>=Core_GetNumChannels())
   {
    CalculationNotInProgress->set();
    return;
@@ -294,7 +294,7 @@ bool UEngineControlThread::EnableCalculation(void)
 /// Запускает аналитику канала
 void UEngineControlThread::Start(void)
 {
- if(EngineIndex<0 || EngineIndex>GetNumEngines())
+ if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
   return;
 
  CalcStarted->set();
@@ -304,7 +304,7 @@ void UEngineControlThread::Start(void)
 /// Останавливает аналитику канала
 void UEngineControlThread::Pause(void)
 {
- if(EngineIndex<0 || EngineIndex>GetNumEngines())
+ if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
   return;
 
  CalcStarted->reset();
@@ -314,7 +314,7 @@ void UEngineControlThread::Pause(void)
 /// Сбрасывает аналитику канала
 void UEngineControlThread::Reset(void)
 {
- if(EngineIndex<0 || EngineIndex>GetNumEngines())
+ if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
   return;
 
  MEnv_Reset(EngineIndex,0);

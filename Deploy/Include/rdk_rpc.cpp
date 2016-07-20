@@ -96,7 +96,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   ExtractComponent(xml,component_name);
  }
 
- if((channel_index < 0 || channel_index >= GetNumEngines()) &&
+ if((channel_index < 0 || channel_index >= Core_GetNumChannels()) &&
 	(cmd != "GetNumChannels" || cmd !="SetNumChannels"))
  {
   return_value=2001;
@@ -116,12 +116,12 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
  {
   int predefined_structure=xml.ReadInteger("PredefinedStructure",0);
 
-  return_value=MEngineInit(channel_index, predefined_structure);
+  return_value=MCore_ChannelInit(channel_index, predefined_structure);
  }
  else
  if(cmd == "EngineUnInit")
  {
-  return_value=MEngineUnInit(channel_index);
+  return_value=MCore_ChannelUnInit(channel_index);
  }
  else
  if(cmd == "Env_Reset")
@@ -225,10 +225,10 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
  else
   result.WriteString("Data","");
  result.WriteInteger("Res",return_value);
- MLockEngine(channel_index);
+ MCore_LockChannel(channel_index);
  std::string &buffer=GetEngine(channel_index)->CreateTempString();
  result.Save(buffer);
- MUnLockEngine(channel_index);
+ MCore_UnLockChannel(channel_index);
 
  return buffer.c_str();
 }

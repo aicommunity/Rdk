@@ -36,7 +36,8 @@ RDKDllManager::RDKDllManager(void)
 
 RDKDllManager::~RDKDllManager(void)
 {
- EngineUnInit();
+ for(int i=0;i<NumChannels;i++)
+  MCore_ChannelUnInit(i);
 
  RDK_SYS_TRY
  {
@@ -174,13 +175,13 @@ bool RDKDllManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNe
 }
 
 /// Возвращает число движков
-int RDKDllManager::GetNumEngines(void) const
+int RDKDllManager::GetNumChannels(void) const
 {
- return NumEngines;
+ return NumChannels;
 }
 
 /// Создает требуемое число пустых движков
-int RDKDllManager::SetNumEngines(int num)
+int RDKDllManager::SetNumChannels(int num)
 {
  {
   UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -209,7 +210,7 @@ int RDKDllManager::SetNumEngines(int num)
    MutexList[i]->DebugId=i;
    #endif
   }
-  NumEngines=int(EngineList.size());
+  NumChannels=int(EngineList.size());
  }
 
  SetSelectedChannelIndex(num-1);
@@ -219,13 +220,13 @@ int RDKDllManager::SetNumEngines(int num)
 
 
 /// Добавляет новый движок в позицию index
-/// Если index <0 или >= NumEngines то добавляет в конец
+/// Если index <0 или >= NumChannels то добавляет в конец
 int RDKDllManager::Add(int index)
 {
- if(index<0 || index >= GetNumEngines())
-  return SetNumEngines(GetNumEngines()+1);
+ if(index<0 || index >= GetNumChannels())
+  return SetNumChannels(GetNumChannels()+1);
 
- int old_num=GetNumEngines();
+ int old_num=GetNumChannels();
  int num=old_num+1;
 
  {
@@ -263,7 +264,7 @@ int RDKDllManager::Add(int index)
  SetSelectedChannelIndex(SelectedChannelIndex);
  {
   UGenericMutexExclusiveLocker lock(GlobalMutex);
-  NumEngines=int(EngineList.size());
+  NumChannels=int(EngineList.size());
  }
  return RDK_SUCCESS;
 }
@@ -271,10 +272,10 @@ int RDKDllManager::Add(int index)
 /// Удаляет движок из позиции index
 int RDKDllManager::Del(int index)
 {
- if(index<0 || index >= GetNumEngines())
+ if(index<0 || index >= GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- if(GetNumEngines() == 1)
+ if(GetNumChannels() == 1)
   return RDK_E_CORE_ZERO_CHANNEL_MUST_EXIST;
 
  {
@@ -304,7 +305,7 @@ int RDKDllManager::Del(int index)
   MutexList.resize(MutexList.size()-1);
   LoggerList.resize(LoggerList.size()-1);
   LockerList.resize(LockerList.size()-1);
-  new_num_size=NumEngines=int(EngineList.size());
+  new_num_size=NumChannels=int(EngineList.size());
   curr_selected_channel_index=SelectedChannelIndex;
  }
 
@@ -319,7 +320,7 @@ int RDKDllManager::Del(int index)
 /// (если движок уже инициализирован, то не делает ничего
 int RDKDllManager::EngineCreate(int index)
 {
- if(index<0 || index>=GetNumEngines())
+ if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  if(EngineList[index])
@@ -377,7 +378,7 @@ int RDKDllManager::EngineCreate(int index)
 /// (если движок уже уничтожен, то не делает ничего
 int RDKDllManager::EngineDestroy(int index)
 {
- if(index<0 || index>=GetNumEngines())
+ if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  if(EngineList[index])
@@ -423,7 +424,7 @@ int RDKDllManager::GetSelectedChannelIndex(void) const
 bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
 {
 // UGenericMutexExclusiveLocker lock(GlobalMutex);
- if(channel_index<0 || channel_index>=GetNumEngines())
+ if(channel_index<0 || channel_index>=GetNumChannels())
   return false;
 
  SelectedChannelIndex=channel_index;

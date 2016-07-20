@@ -49,7 +49,7 @@ void UEngineControl::SetThreadMode(int mode)
  if(ThreadMode == mode)
   return;
 
- PauseEngine(-1);
+ PauseChannel(-1);
  ThreadMode=mode;
 }
 
@@ -66,7 +66,7 @@ void UEngineControl::SetUseControllersMode(int value)
  if(UseControllersMode == value)
   return;
 
- PauseEngine(-1);
+ PauseChannel(-1);
  UseControllersMode=value;
  return;
 }
@@ -218,7 +218,7 @@ UEngineStateThread* UEngineControl::CreateEngineStateThread(UEngineControl* engi
 // Управление временной меткой сервера
 double UEngineControl::GetServerTimeStamp(int channel_index) const
 {
- if(channel_index>=GetNumEngines())
+ if(channel_index>=GetNumChannels())
   return 0.0;
 
  return EngineControlThreads[channel_index]->GetServerTimeStamp();
@@ -226,24 +226,24 @@ double UEngineControl::GetServerTimeStamp(int channel_index) const
 
 void UEngineControl::SetServerTimeStamp(int channel_index, double stamp)
 {
- if(channel_index>=GetNumEngines())
+ if(channel_index>=GetNumChannels())
   return;
  EngineControlThreads[channel_index]->SetServerTimeStamp(stamp);
  EngineControlThreads[channel_index]->EnableCalculation();
 }
 
 /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
-void UEngineControl::StartEngine(int channel_index)
+void UEngineControl::StartChannel(int channel_index)
 {
- if(channel_index>=GetNumEngines())
+ if(channel_index>=GetNumChannels())
   return;
 
  EngineStateThread->RecreateEventsLogFile();
  switch(ThreadMode)
  {
  case 0:
-  if(EngineControlThreads[GetSelectedEngineIndex()]->GetCalculateMode() == 1)
-   ResetEngine(-1);
+  if(EngineControlThreads[Core_GetSelectedChannelIndex()]->GetCalculateMode() == 1)
+   ResetChannel(-1);
 //  Timer->Interval=1;
 //  Timer->Enabled=true;
 //  for(size_t i=0; i<EngineControlThreads.size(); i++)
@@ -276,9 +276,9 @@ void UEngineControl::StartEngine(int channel_index)
 }
 
 /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
-void UEngineControl::PauseEngine(int channel_index)
+void UEngineControl::PauseChannel(int channel_index)
 {
- if(channel_index>=GetNumEngines())
+ if(channel_index>=GetNumChannels())
   return;
 
 // if(Timer->Enabled == false)
@@ -336,9 +336,9 @@ void UEngineControl::PauseEngine(int channel_index)
 }
 
 /// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
-void UEngineControl::ResetEngine(int channel_index)
+void UEngineControl::ResetChannel(int channel_index)
 {
- if(channel_index>=GetNumEngines())
+ if(channel_index>=GetNumChannels())
   return;
 
  EngineStateThread->RecreateEventsLogFile();
@@ -351,7 +351,7 @@ void UEngineControl::ResetEngine(int channel_index)
   }
 
   RDK::UIVisualControllerStorage::BeforeReset();
-  for(int i=0;i<GetNumEngines();i++)
+  for(int i=0;i<GetNumChannels();i++)
   {
    RDK::UIControllerStorage::BeforeReset(i);
    EngineControlThreads[i]->Reset();
@@ -378,9 +378,9 @@ void UEngineControl::ResetEngine(int channel_index)
 }
 
 /// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
-void UEngineControl::StepEngine(int channel_index)
+void UEngineControl::StepChannel(int channel_index)
 {
- if(channel_index>=GetNumEngines())
+ if(channel_index>=GetNumChannels())
   return;
 
  RDK::UIVisualControllerStorage::BeforeCalculate();
@@ -390,9 +390,9 @@ void UEngineControl::StepEngine(int channel_index)
 
  if(channel_index <0)
  {
-  for(int i=0;i<GetNumEngines();i++)
+  for(int i=0;i<GetNumChannels();i++)
   {
-   if(MIsEngineInit(i) && MModel_Check(i))
+   if(MCore_IsChannelInit(i) && MModel_Check(i))
    {
 	EngineControlThreads[i]->EnableCalculation();
 	EngineControlThreads[i]->Calculate();
@@ -401,7 +401,7 @@ void UEngineControl::StepEngine(int channel_index)
  }
  else
  {
-  if(MIsEngineInit(channel_index) && MModel_Check(channel_index))
+  if(MCore_IsChannelInit(channel_index) && MModel_Check(channel_index))
   {
    EngineControlThreads[channel_index]->EnableCalculation();
    EngineControlThreads[channel_index]->Calculate();
@@ -417,7 +417,7 @@ void UEngineControl::StepEngine(int channel_index)
 
  if(channel_index <0)
  {
-  for(int i=0;i<GetNumEngines();i++)
+  for(int i=0;i<GetNumChannels();i++)
   {
    EngineControlThreads[i]->GetProfiler()->Calculate();
   }
@@ -435,7 +435,7 @@ void UEngineControl::TimerExecute(void)
  {
  case 0:
  {
-  StepEngine(-1);
+  StepChannel(-1);
  }
  break;
 
@@ -446,11 +446,11 @@ void UEngineControl::TimerExecute(void)
   SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
-  for(int i=0;i<GetNumEngines();i++)
+  for(int i=0;i<GetNumChannels();i++)
    EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
   RDK::UIVisualControllerStorage::UpdateInterface();
 
-  for(int i=0;i<GetNumEngines();i++)
+  for(int i=0;i<GetNumChannels();i++)
   {
    EngineControlThreads[i]->GetProfiler()->CalculateGui();
    EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
@@ -465,7 +465,7 @@ void UEngineControl::TimerExecute(void)
 /// 1 - Идет расчет
 int UEngineControl::CheckCalcState(int channel_id) const
 {
- if(channel_id<0 || channel_id>GetNumEngines())
+ if(channel_id<0 || channel_id>GetNumChannels())
   return 0;
 
  switch(ThreadMode)
@@ -614,17 +614,17 @@ void UEngineControl::LoadParameters(RDK::USerStorageXML &xml)
 /// Управление числом каналов
 // --------------------------
 /// Управление числом каналов
-int UEngineControl::GetNumEngines(void) const
+int UEngineControl::GetNumChannels(void) const
 {
- return ::GetNumEngines();
+ return ::Core_GetNumChannels();
 }
 
-bool UEngineControl::SetNumEngines(int num)
+bool UEngineControl::SetNumChannels(int num)
 {
  if(num == int(EngineControlThreads.size()))
   return true;
- int old_num=GetNumEngines();
- ::SetNumEngines(num);
+ int old_num=GetNumChannels();
+ ::Core_SetNumChannels(num);
 
  int old_size=int(EngineControlThreads.size());
  for(int i=num;i<old_size;i++)
@@ -652,11 +652,11 @@ bool UEngineControl::SetNumEngines(int num)
  return true;
 }
 
-bool UEngineControl::InsertEngine(int index)
+bool UEngineControl::InsertChannel(int index)
 {
- int old_num=GetNumEngines();
- Engine_Add(index);
- int new_num=GetNumEngines();
+ int old_num=GetNumChannels();
+ Core_AddChannel(index);
+ int new_num=GetNumChannels();
 
  EngineControlThreads.resize(new_num);
 
@@ -676,9 +676,9 @@ bool UEngineControl::InsertEngine(int index)
  return true;
 }
 
-bool UEngineControl::DeleteEngine(int index)
+bool UEngineControl::DeleteChannel(int index)
 {
- int old_num=GetNumEngines();
+ int old_num=GetNumChannels();
 
 // if(index<0 || index>=int(ThreadChannels.size()))
 //  return true;
@@ -692,8 +692,8 @@ bool UEngineControl::DeleteEngine(int index)
   EngineControlThreads[index]=0;
  }
 
- int del_res=Engine_Del(index);
- int new_num=GetNumEngines();
+ int del_res=Core_DelChannel(index);
+ int new_num=Core_GetNumChannels();
 
  if(new_num == old_num)
   return true;

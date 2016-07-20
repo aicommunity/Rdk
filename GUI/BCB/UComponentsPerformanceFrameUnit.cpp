@@ -49,7 +49,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  if(!Model_Check())
   return;
 
- int sel_index=GetSelectedEngineIndex();
+ int sel_index=Core_GetSelectedChannelIndex();
  RDK::UChannelProfiler* profiler=RdkApplication.GetEngineControl()->GetChannelProfiler(sel_index);
  if(!profiler)
   return;
@@ -132,7 +132,7 @@ void TUComponentsPerformanceFrame::ALoadParameters(RDK::USerStorageXML &xml)
 // Добавляет компонент для мониторинга
 void TUComponentsPerformanceFrame::AddComponent(const std::string &componentname)
 {
- RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(GetSelectedEngineIndex());
+ RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
  pefromance->AddComponent(componentname);
 
  UpdateInterface();
@@ -141,7 +141,7 @@ void TUComponentsPerformanceFrame::AddComponent(const std::string &componentname
 // Добавляет все компоненты, содержащиеся непосредственно в выбранном компоненте
 void TUComponentsPerformanceFrame::AddAllComponents(const std::string &componentname)
 {
- RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(GetSelectedEngineIndex());
+ RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
  pefromance->AddAllComponents(componentname);
 
  UpdateInterface();
@@ -150,14 +150,14 @@ void TUComponentsPerformanceFrame::AddAllComponents(const std::string &component
 // Удаляет наблюдаемый компонент
 void TUComponentsPerformanceFrame::DelComponent(const std::string &componentname)
 {
- RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(GetSelectedEngineIndex());
+ RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
  pefromance->DelComponent(componentname);
  UpdateInterface();
 }
 
 void TUComponentsPerformanceFrame::DelComponent(std::size_t index)
 {
- RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(GetSelectedEngineIndex());
+ RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
  pefromance->DelComponent(index);
  UpdateInterface();
 }
@@ -165,7 +165,7 @@ void TUComponentsPerformanceFrame::DelComponent(std::size_t index)
 // Удаляет все наблюдаемые компоненты
 void TUComponentsPerformanceFrame::ClearComponents(void)
 {
- RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(GetSelectedEngineIndex());
+ RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
  pefromance->DelAllComponents();
  UpdateInterface();
 }
@@ -190,7 +190,7 @@ void __fastcall TUComponentsPerformanceFrame::AverageIntervalSpinEditChange(TObj
  if(UpdateInterfaceFlag)
   return;
 
- RDK::UChannelProfiler* perfomance=RdkApplication.GetEngineControl()->GetChannelProfiler(GetSelectedEngineIndex());
+ RDK::UChannelProfiler* perfomance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
  perfomance->SetAverageIterations(AverageIntervalSpinEdit->Value);
 }
 //---------------------------------------------------------------------------

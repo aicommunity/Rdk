@@ -68,7 +68,7 @@ int UServerControlVcl::RegisterMetadataReceiver(const std::string &address, int 
    broadcaster->XmlComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
    broadcaster->EnableXmlTranslationCheckBox->Checked=true;
    broadcaster->ConnectButtonClick(UServerControlForm);
-   Engine_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
+   Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
   }
  }
 
@@ -88,7 +88,7 @@ int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, in
   {
    IdTcpResultBroadcasterForm->DelBroadcaster(index);
   }
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
+  Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
  }
 
  return 0;
@@ -101,9 +101,9 @@ int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, in
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-bool UServerControlVcl::ASetNumEngines(int old_num)
+bool UServerControlVcl::ASetNumChannels(int old_num)
 {
- int num=GetNumEngines();
+ int num=Core_GetNumChannels();
  if(num<=0)
   return false;
 
@@ -111,10 +111,10 @@ bool UServerControlVcl::ASetNumEngines(int old_num)
 
  for(int i=old_num;i<num;i++)
  {
-  if(GetNumEngines()<=i)
+  if(Core_GetNumChannels()<=i)
    break;
 
-  if(!MIsEngineInit(i) || !MModel_Check(i))
+  if(!MCore_IsChannelInit(i) || !MModel_Check(i))
   {
    UGEngineControlForm->CloneProject(0, i);
    MEnv_Reset(i,0);
@@ -221,12 +221,12 @@ bool UServerControlVcl::ASetNumEngines(int old_num)
  return true;
 }
 
-bool UServerControlVcl::AInsertEngine(int index)
+bool UServerControlVcl::AInsertChannel(int index)
 {
  return true;
 }
 
-bool UServerControlVcl::ADeleteEngine(int index)
+bool UServerControlVcl::ADeleteChannel(int index)
 {
  return true;
 }
@@ -541,7 +541,7 @@ void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest
 	 std::string str;
 	str.resize(packet.GetParamSize(0));
 	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
-	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+	Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
 }
 
 
@@ -563,7 +563,7 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 	if(current_bind == client_binding)
 	{
 	 SendCommandResponse(context, dest, binary_data);
-	 Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+string(" To: ")+current_bind).c_str());
+	 Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+string(" To: ")+current_bind).c_str());
 	 break;
 	}
    }
@@ -653,7 +653,7 @@ const std::vector<RDK::ULongTime> &model_avg=RdkApplication.GetServerControl()->
   ChannelNamesStringGrid->Cells[1][i+1]=RdkApplication.GetProjectConfig().ChannelsConfig[i].ChannelName.c_str();
  }
 
- NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumEngines());
+ NumberOfChannelsLabeledEdit->Text=IntToStr(Core_GetNumChannels());
  ServerNameLabeledEdit->Text=RdkApplication.GetServerControl()->GetServerName().c_str();
  ServerIdLabeledEdit->Text=RdkApplication.GetServerControl()->GetServerId().c_str();
  ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;
@@ -678,7 +678,7 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 // xml.WriteInteger("ServerControlPort", GetServerBindingPort());
 // xml.WriteString("ServerControlAddress", GetServerBindingInterfaceAddress());
 
- xml.WriteInteger("NumberOfChannels",RdkApplication.GetNumEngines());
+ xml.WriteInteger("NumberOfChannels",RdkApplication.Core_GetNumChannels());
  xml.WriteInteger("AutoStartFlag",RdkApplication.GetServerControl()->GetAutoStartFlag());
  xml.WriteString("ServerName",RdkApplication.GetServerControl()->GetServerName());
  xml.WriteString("ServerId",RdkApplication.GetServerControl()->GetServerId());
@@ -701,7 +701,7 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
  RdkApplication.GetServerControl()->SetMetaComponentName(xml.ReadString("MetadataComponentName",""));
  RdkApplication.GetServerControl()->SetMetaComponentStateName(xml.ReadString("MetadataComponentStateName",""));
 
- int source_num_channels=RdkApplication.GetNumEngines();//xml.ReadInteger("NumberOfChannels",RdkApplication.GetNumEngines());
+ int source_num_channels=RdkApplication.GetNumChannels();//xml.ReadInteger("NumberOfChannels",RdkApplication.Core_GetNumChannels());
 // RdkApplication.SetNumEngines(source_num_channels);
  TProjectConfig config=RdkApplication.GetProjectConfig();
  for(size_t i=0;i<RdkApplication.GetProjectConfig().ChannelsConfig.size();i++)
@@ -745,7 +745,7 @@ int TUServerControlForm::GetChannelVideoSource(int channel_id)
 int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 {
 #ifdef RDK_VIDEO
- int num=RdkApplication.GetNumEngines();
+ int num=RdkApplication.GetNumChannels();
  if(channel_id<0)
  {
   for(int i=0;i<num;i++)
@@ -779,7 +779,7 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 int TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
 {
 #ifdef RDK_VIDEO
- int num=RdkApplication.GetNumEngines();
+ int num=RdkApplication.GetNumChannels();
 
   TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_id);
   if(!frame)
@@ -840,11 +840,11 @@ void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
  }
  catch(EIdSocketError &ex)
  {
-  Engine_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
  catch(EIdCouldNotBindSocket &ex)
  {
-  Engine_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
 
 // TcpServer->Active=true;
@@ -882,12 +882,12 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  if(new_num_channels < 1)
   return;
 
- if(new_num_channels != GetNumEngines())
+ if(new_num_channels != Core_GetNumChannels())
  {
   UGEngineControlForm->Pause1Click(Sender);
 
-  RdkApplication.SetNumEngines(new_num_channels);
-//  SetNumChannels(GetNumEngines());
+  RdkApplication.SetNumChannels(new_num_channels);
+//  SetNumChannels(Core_GetNumChannels());
  }
 
 // UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
@@ -929,7 +929,7 @@ void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
 {
 // ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
  ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;//TcpServer->LocalPort;
- NumberOfChannelsLabeledEdit->Text=IntToStr(RdkApplication.GetNumEngines());
+ NumberOfChannelsLabeledEdit->Text=IntToStr(RdkApplication.GetNumChannels());
 
  TProjectConfig config=RdkApplication.GetProjectConfig();
  ChannelNamesStringGrid->RowCount=config.ChannelsConfig.size()+1;
@@ -965,7 +965,7 @@ try
 }
 catch (...)
 {
- Engine_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
+ Log_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
 // throw;
 }
 // SetEvent(CommandQueueUnlockEvent);
@@ -991,7 +991,7 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
   PacketReaders.erase(I);
  }
 
- Engine_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
+ Log_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
 }
 //---------------------------------------------------------------------------
 
@@ -1015,7 +1015,7 @@ try
    AContext->Connection->IOHandler->ReadBytes(VBuffer, length);
    length=VBuffer.Length;
    client_buffer.resize(length);
-   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
 
    if(length>0)
    {
@@ -1029,7 +1029,7 @@ try
 	 return;
 	}
 	I->second.ProcessDataPart2(client_buffer);
-	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
+	Log_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
 	while(I->second.GetNumPackets()>0)
 	{
 	 UTransferPacket packet=I->second.GetFirstPacket();
@@ -1066,7 +1066,7 @@ try
 		RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
 //	   else
 //	    delete pcmd;
-	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
 
 	  }
 	 }
@@ -1080,7 +1080,7 @@ try
 catch(Exception &ex)
 {
 // SetEvent(ServerReceivingNotInProgress);
- Engine_LogMessage(RDK_EX_DEBUG, (std::string("Server Tcp command receiver error: ")+AnsiString(ex.Message).c_str()).c_str());
+ Log_LogMessage(RDK_EX_DEBUG, (std::string("Server Tcp command receiver error: ")+AnsiString(ex.Message).c_str()).c_str());
 }
 catch(...)
 {
@@ -1101,7 +1101,7 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
  PacketReaders[bind].ResetProcessing();
  PacketReaders[bind].ClearPacketList();
- Engine_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
+ Log_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
 }
 //---------------------------------------------------------------------------
 

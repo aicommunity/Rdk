@@ -177,11 +177,11 @@ RDK_LIB_TYPE int RDK_CALL MLog_ClearReadLog(int channel_index);
 // ----------------------------
 // Возвращает имя каталога бинарных файлов
 RDK_LIB_TYPE const char* RDK_CALL Core_GetSystemDir(void);
-RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void); // deprecated
+//RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void); // deprecated
 
 // Устанавливает имя каталога бинарных файлов
 RDK_LIB_TYPE int RDK_CALL Core_SetSystemDir(const char *dir);
-RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir); // deprecated
+//RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir); // deprecated
 
 // Возвращает имя каталога бинарных файлов
 RDK_LIB_TYPE const char* RDK_CALL Core_GetLogDir(void);
@@ -197,76 +197,76 @@ RDK_LIB_TYPE int RDK_CALL Core_SetDebugMode(bool value);
 
 // Загружает глобальные шрифты
 RDK_LIB_TYPE int RDK_CALL Core_LoadFonts(void);
-RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void); // deprecated
+//RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void); // deprecated
 
 // Возвращает число дивжков
 RDK_LIB_TYPE int RDK_CALL Core_GetNumChannels(void);
-RDK_LIB_TYPE int RDK_CALL GetNumEngines(void); // deprecated
+//RDK_LIB_TYPE int RDK_CALL GetNumEngines(void); // deprecated
 
 // Создает требуемое число движков
 // num > 0
 RDK_LIB_TYPE int RDK_CALL Core_SetNumChannels(int num);
-RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num); // deprecated
+//RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num); // deprecated
 
 // Добавляет движок в позицию заданного индекса
 // Если позиция лежит вне пределов диапазона то
 // добавляет в конец
 RDK_LIB_TYPE int RDK_CALL Core_AddChannel(int index);
-RDK_LIB_TYPE int RDK_CALL Engine_Add(int index); // deprecated
+//RDK_LIB_TYPE int RDK_CALL Engine_Add(int index); // deprecated
 
 // Удаляет движок по индексу
 RDK_LIB_TYPE int RDK_CALL Core_DelChannel(int index);
-RDK_LIB_TYPE int RDK_CALL Engine_Del(int index); // deprecated
+//RDK_LIB_TYPE int RDK_CALL Engine_Del(int index); // deprecated
 
 // Возвращает индекс текущего выбранного движка
 RDK_LIB_TYPE int RDK_CALL Core_GetSelectedChannelIndex(void);
-RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void); // deprecated
+//RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void); // deprecated
 
 // Настраивает обычный интерфейс на работу с заданным движком
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
 RDK_LIB_TYPE int RDK_CALL Core_SelectChannel(int index);
-RDK_LIB_TYPE int RDK_CALL SelectEngine(int index); // deprecated
+//RDK_LIB_TYPE int RDK_CALL SelectEngine(int index); // deprecated
 
 /// Блокирует канал до вызова функции UnlockEngine, Core_UnlockChannel
 RDK_LIB_TYPE int RDK_CALL Core_LockChannel(void);
-RDK_LIB_TYPE int RDK_CALL LockEngine(void); // deprecated
+//RDK_LIB_TYPE int RDK_CALL LockEngine(void); // deprecated
 RDK_LIB_TYPE int RDK_CALL MCore_LockChannel(int index);
-RDK_LIB_TYPE int RDK_CALL MLockEngine(int index); // deprecated
+//RDK_LIB_TYPE int RDK_CALL MLockEngine(int index); // deprecated
 
 /// Разблокирует канал
 RDK_LIB_TYPE int RDK_CALL Core_UnLockChannel(void);
-RDK_LIB_TYPE int RDK_CALL UnLockEngine(void); // deprecated
+//RDK_LIB_TYPE int RDK_CALL UnLockEngine(void); // deprecated
 RDK_LIB_TYPE int RDK_CALL MCore_UnLockChannel(int index);
-RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index); // deprecated
+//RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index); // deprecated
 
 // Инициализирует движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
 RDK_LIB_TYPE int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler=0);
-RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0); // deprecated
+//RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0); // deprecated
 RDK_LIB_TYPE int RDK_CALL MCore_ChannelInit(int channel_index, int predefined_structure, void* exception_handler=0);
-RDK_LIB_TYPE int RDK_CALL MEngineInit(int channel_index, int predefined_structure, void* exception_handler=0); // deprecated
+//RDK_LIB_TYPE int RDK_CALL MEngineInit(int channel_index, int predefined_structure, void* exception_handler=0); // deprecated
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
 // deprecated
-RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height, bool reflectionx=false,
-		void* exception_handler=0); // deprecated
-RDK_LIB_TYPE int RDK_CALL MGraphicalEngineInit(int channel_index, int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height, bool reflectionx=false,
-		void* exception_handler=0); // deprecated
+//RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
+//		int num_outputs, int input_width, int input_height, bool reflectionx=false,
+//		void* exception_handler=0); // deprecated
+//RDK_LIB_TYPE int RDK_CALL MGraphicalEngineInit(int channel_index, int predefined_structure, int num_inputs,
+//		int num_outputs, int input_width, int input_height, bool reflectionx=false,
+//		void* exception_handler=0); // deprecated
 
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
 RDK_LIB_TYPE int RDK_CALL Core_ChannelUnInit(void);
-RDK_LIB_TYPE int RDK_CALL EngineUnInit(void); // deprecated
+//RDK_LIB_TYPE int RDK_CALL EngineUnInit(void); // deprecated
 RDK_LIB_TYPE int RDK_CALL MCore_ChannelUnInit(int channel_index);
-RDK_LIB_TYPE int RDK_CALL MEngineUnInit(int channel_index); // deprecated
+//RDK_LIB_TYPE int RDK_CALL MEngineUnInit(int channel_index); // deprecated
 
 /// Проверяет инициализирован ли движок
 RDK_LIB_TYPE bool RDK_CALL Core_IsChannelInit(void);
-RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void); // deprecated
+//RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void); // deprecated
 RDK_LIB_TYPE bool RDK_CALL MCore_IsChannelInit(int channel_index);
-RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int channel_index); // deprecated
+//RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int channel_index); // deprecated
 
 /// Высвобождает буферную строку движка, по заданному указателю
 RDK_LIB_TYPE int RDK_CALL Engine_FreeBufString(const char *pointer);
@@ -556,13 +556,13 @@ RDK_LIB_TYPE int RDK_CALL MEnv_Init(int channel_index);
 
 // Возвращает состояние внутренего логгирования
 // deprecated. use Log_GetEventsLogMode
-RDK_LIB_TYPE bool RDK_CALL Env_GetEventsLogMode(void);
-RDK_LIB_TYPE bool RDK_CALL MEnv_GetEventsLogMode(int channel_index);
+//RDK_LIB_TYPE bool RDK_CALL Env_GetEventsLogMode(void);
+//RDK_LIB_TYPE bool RDK_CALL MEnv_GetEventsLogMode(int channel_index);
 
 // Включает/выключает внутренне логгирование
 // deprecated. Use Log_SetEventsLogMode
-RDK_LIB_TYPE int RDK_CALL Env_SetEventsLogMode(bool value);
-RDK_LIB_TYPE int RDK_CALL MEnv_SetEventsLogMode(int channel_index, bool value);
+//RDK_LIB_TYPE int RDK_CALL Env_SetEventsLogMode(bool value);
+//RDK_LIB_TYPE int RDK_CALL MEnv_SetEventsLogMode(int channel_index, bool value);
 
 // Деинициализация среды
 RDK_LIB_TYPE int RDK_CALL Env_UnInit(void);
@@ -1156,48 +1156,48 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *strin
 // ----------------------------
 // Управление функцией-обработчиком исключений
 // deprecated. See Log_ functions
-RDK_LIB_TYPE void* RDK_CALL Engine_GetExceptionHandler(void);
-RDK_LIB_TYPE void* RDK_CALL MEngine_GetExceptionHandler(int channel_index);
-RDK_LIB_TYPE int RDK_CALL Engine_SetExceptionHandler(void* value);
-RDK_LIB_TYPE int RDK_CALL MEngine_SetExceptionHandler(int channel_index, void* value);
+//RDK_LIB_TYPE void* RDK_CALL Engine_GetExceptionHandler(void);
+//RDK_LIB_TYPE void* RDK_CALL MEngine_GetExceptionHandler(int channel_index);
+//RDK_LIB_TYPE int RDK_CALL Engine_SetExceptionHandler(void* value);
+//RDK_LIB_TYPE int RDK_CALL MEngine_SetExceptionHandler(int channel_index, void* value);
 
 // Возвращает массив строк лога
 // deprecated. See Log_ functions
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(int &error_level);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int channel_index, int &error_level);
+//RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(int &error_level);
+//RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int channel_index, int &error_level);
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 // deprecated. See Log_ functions
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int channel_index, int &error_level, int &number, unsigned long long &time);
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int channel_index, int &error_level, int &number, unsigned long long &time);
+//RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time);
+//RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int channel_index, int &error_level, int &number, unsigned long long &time);
+//RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time);
+//RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int channel_index, int &error_level, int &number, unsigned long long &time);
 
 // Записывает в лог новое сообщение
 // deprecated
-RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
-RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int channel_index, int log_level, const char *message);
+//RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
+//RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int channel_index, int log_level, const char *message);
 
 // Записывает в лог новое сообщение с кодом ошибки
 // deprecated
-RDK_LIB_TYPE int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number);
-RDK_LIB_TYPE int RDK_CALL MEngine_LogMessageEx(int channel_index, int log_level, const char *message, int error_event_number);
+//RDK_LIB_TYPE int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number);
+//RDK_LIB_TYPE int RDK_CALL MEngine_LogMessageEx(int channel_index, int log_level, const char *message, int error_event_number);
 
 /// Возвращает число непрочитанных строк лога
 // deprecated
-RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);
-RDK_LIB_TYPE int RDK_CALL MEngine_GetNumUnreadLogLines(int channel_index);
+//RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);
+//RDK_LIB_TYPE int RDK_CALL MEngine_GetNumUnreadLogLines(int channel_index);
 
 /// Возвращает число строк лога
 // deprecated
-RDK_LIB_TYPE int RDK_CALL Engine_GetNumLogLines(void);
-RDK_LIB_TYPE int RDK_CALL MEngine_GetNumLogLines(int channel_index);
+//RDK_LIB_TYPE int RDK_CALL Engine_GetNumLogLines(void);
+//RDK_LIB_TYPE int RDK_CALL MEngine_GetNumLogLines(int channel_index);
 
 /// Очищает лог прочитанных сообщений
 // deprecated
-RDK_LIB_TYPE int RDK_CALL Engine_ClearReadLog(void);
-RDK_LIB_TYPE int RDK_CALL MEngine_ClearReadLog(int channel_index);
+//RDK_LIB_TYPE int RDK_CALL Engine_ClearReadLog(void);
+//RDK_LIB_TYPE int RDK_CALL MEngine_ClearReadLog(int channel_index);
 // ----------------------------
 
 // Здесь RDK_CALL не нужен!

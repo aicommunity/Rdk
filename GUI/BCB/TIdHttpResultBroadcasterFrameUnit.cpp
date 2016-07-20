@@ -54,7 +54,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
   return;
 
  int channel_index=StrToInt(ChannelIndexLabeledEdit->Text);
- if(channel_index>GetNumEngines())
+ if(channel_index>Core_GetNumChannels())
   return;
 
  if(LastSentTimeStamp == RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationServerTimeStamp()*86400.0*1000.0)

@@ -429,7 +429,7 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 {
  if(!UEngineMonitorForm || !UEngineMonitorForm->EngineMonitorFrame)
   return;
- if(GetNumEngines() > ChannelIndex)
+ if(Core_GetNumChannels() > ChannelIndex)
  RdkEngineControl.SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe());
 }
 

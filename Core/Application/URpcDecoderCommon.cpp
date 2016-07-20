@@ -166,7 +166,7 @@ bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
  if(!cmd)
  {
   // Ошибка - команда не поддерживается декодером
-  MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 
@@ -181,7 +181,7 @@ bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
 
  if(cmd->ResponseStatus == 2001)
  {
-  MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 
@@ -244,8 +244,8 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   else
   if(cmd == "SetNumChannels")
   {
-   int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
-   if(GetApplication()->SetNumEngines(num_engines))
+   int num_engines=xml.ReadInteger("NumChannels",Core_GetNumChannels());
+   if(GetApplication()->SetNumChannels(num_engines))
 	return_value=0;//UServerControlForm->SetNumChannels(num_engines);
    else
 	return_value=112112;//UServerControlForm->SetNumChannels(num_engines);
@@ -253,7 +253,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   else
   if(cmd == "GetNumChannels")
   {
-   response=RDK::sntoa(GetApplication()->GetNumEngines());
+   response=RDK::sntoa(GetApplication()->GetNumChannels());
    return_value=0;
   }
   else
@@ -289,19 +289,19 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   else
   if(cmd == "ResetChannel")
   {
-   GetApplication()->ResetEngine(channel_index);
+   GetApplication()->ResetChannel(channel_index);
    return_value=0;
   }
   else
   if(cmd == "StartChannel")
   {
-   GetApplication()->StartEngine(channel_index);
+   GetApplication()->StartChannel(channel_index);
    return_value=0;
   }
   else
   if(cmd == "StopChannel")
   {
-   GetApplication()->PauseEngine(channel_index);
+   GetApplication()->PauseChannel(channel_index);
    return_value=0;
   }
   else
@@ -344,10 +344,10 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
  else
   result.WriteString("Data","");
  result.WriteInteger("Res",return_value);
- MLockEngine(0);
+ MCore_LockChannel(0);
  std::string &buffer=GetEngine(0)->CreateTempString();
  result.Save(buffer);
- MUnLockEngine(0);
+ MCore_UnLockChannel(0);
 
  return buffer.c_str();
 }

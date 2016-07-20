@@ -172,14 +172,14 @@ virtual void AfterCalculate(void);
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-virtual bool SetNumEngines(int num);
-virtual bool ASetNumEngines(int num);
+virtual bool SetNumChannels(int num);
+virtual bool ASetNumChannels(int num);
 
-virtual bool InsertEngine(int index);
-virtual bool AInsertEngine(int index);
+virtual bool InsertChannel(int index);
+virtual bool AInsertChannel(int index);
 
-virtual bool DeleteEngine(int index);
-virtual bool ADeleteEngine(int index);
+virtual bool DeleteChannel(int index);
+virtual bool ADeleteChannel(int index);
 // --------------------------
 };
 

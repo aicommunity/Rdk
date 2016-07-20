@@ -471,7 +471,7 @@ bool TTVideoRegistratorFrame::WriteLogMessage(const int &err)
 {
  if(Errors[err] != "")
  {
-  Engine_LogMessage(RDK_EX_DEBUG, Errors[err].c_str());
+  Log_LogMessage(RDK_EX_DEBUG, Errors[err].c_str());
   return false;
  }
 
@@ -690,11 +690,11 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
  VideoGrabber->StartPreview();
  if(VideoGrabber->StreamingURL!="")
  {
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming started: ")+AnsiString(VideoGrabber->StreamingURL).c_str()).c_str());
+  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming started: ")+AnsiString(VideoGrabber->StreamingURL).c_str()).c_str());
  }
 
  else
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running")).c_str());
+  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running")).c_str());
 }
 //---------------------------------------------------------------------------
 
@@ -705,7 +705,7 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
 
  VideoGrabber->NetworkStreaming=ns_Disabled;
  VideoGrabber->StopPreview();
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming stopped")).c_str());
+  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming stopped")).c_str());
 
  if(BitmapFrameThread)
  {
@@ -734,10 +734,10 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNe
 void __fastcall TTVideoRegistratorFrame::GetStreamingHostButtonClick(TObject *Sender)
 {
  if(VideoGrabber->StreamingURL != "")
-  Engine_LogMessage(RDK_EX_INFO, (AnsiString(VideoGrabber->StreamingURL)).c_str());
+  Log_LogMessage(RDK_EX_INFO, (AnsiString(VideoGrabber->StreamingURL)).c_str());
 
  else
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running").c_str()));
+  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running").c_str()));
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::InitButtonClick(TObject *Sender)
@@ -793,11 +793,11 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
 
  if(VideoGrabber->StartRecording())
  {
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Recording started").c_str()));
+  Log_LogMessage(RDK_EX_INFO, (std::string("Recording started").c_str()));
  }
  else
  {
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Recording not started").c_str()));
+  Log_LogMessage(RDK_EX_INFO, (std::string("Recording not started").c_str()));
  }
 }
 //---------------------------------------------------------------------------
@@ -805,7 +805,7 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
 void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sender)
 {
  VideoGrabber->StopRecording();
- Engine_LogMessage(RDK_EX_INFO, (std::string("Recording stopped").c_str()));
+ Log_LogMessage(RDK_EX_INFO, (std::string("Recording stopped").c_str()));
 
  if(BitmapFrameThread)
  {
@@ -858,14 +858,14 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
 
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  if(VideoGrabber->StartPreview())
-  Engine_LogMessage(RDK_EX_INFO, (std::string("Preview started").c_str()));
+  Log_LogMessage(RDK_EX_INFO, (std::string("Preview started").c_str()));
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
 {
  VideoGrabber->StopPreview();
- Engine_LogMessage(RDK_EX_INFO, (std::string("Preview stopped").c_str()));
+ Log_LogMessage(RDK_EX_INFO, (std::string("Preview stopped").c_str()));
 
  if(BitmapFrameThread)
  {

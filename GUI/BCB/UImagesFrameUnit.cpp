@@ -70,7 +70,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   Legends[i].resize(height);
-  ComponentChannelIndexes[i].resize(height,GetSelectedEngineIndex());
+  ComponentChannelIndexes[i].resize(height,Core_GetSelectedChannelIndex());
 //  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
 //  	ComponentChannelIndexes[i][k]=-1;
 
@@ -437,7 +437,7 @@ void TUImagesFrame::AUpdateInterface(void)
    {
 	 int eng_index = ComponentChannelIndexes[i][j];
 	 if(eng_index<0 || IndChannelsCheckBox->Checked == false)
-	  eng_index=GetSelectedEngineIndex();
+	  eng_index=Core_GetSelectedChannelIndex();
 
 	 if(ComponentIndexes[i][j].empty())
 	 {
@@ -544,7 +544,7 @@ void TUImagesFrame::AUpdateInterface(void)
 
   int eng_index = ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row];
   if(eng_index<0 || IndChannelsCheckBox->Checked == false)
-   eng_index=GetSelectedEngineIndex();
+   eng_index=Core_GetSelectedChannelIndex();
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
    copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &bmp_param);
   else
@@ -746,7 +746,7 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
 
  StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row]=GetSelectedEngineIndex();
+ ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row]=Core_GetSelectedChannelIndex();
 
  if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
  {

@@ -1235,7 +1235,7 @@ void __fastcall TUComponentsListFrame::GUI1Click(TObject *Sender)
  if(I != ComponentControllers.end() && I->second)
  {
   I->second->SetComponentControlName(SelectedComponentName);
-  int id = GetSelectedEngineIndex();
+  int id = Core_GetSelectedChannelIndex();
   I->second->SetComponentControlChannel(id);
   I->second->Show();
   I->second->UpdateInterface(true);

@@ -242,7 +242,7 @@ void UServerControl::LoadParameters(RDK::USerStorageXML &xml)
  SetMetaComponentName(xml.ReadString("MetadataComponentName",""));
  SetMetaComponentStateName(xml.ReadString("MetadataComponentStateName",""));
 
- int source_num_channels=xml.ReadInteger("NumberOfChannels",GetNumEngines());
+ int source_num_channels=xml.ReadInteger("NumberOfChannels",Core_GetNumChannels());
 // SetNumEngines(source_num_channels);
  TProjectConfig config=GetApplication()->GetProjectConfig();
  for(size_t i=0;i<GetApplication()->GetProjectConfig().ChannelsConfig.size();i++)
@@ -269,11 +269,11 @@ void UServerControl::CalculatePerformance(void)
 
  if(ModelPerformanceResults.size() == 0)
   AfterReset();
- ModelPerformanceResults[PerformancePushIndex].assign(GetNumEngines(),0);
- TransportPerformanceResults[PerformancePushIndex].assign(GetNumEngines(),0);
+ ModelPerformanceResults[PerformancePushIndex].assign(Core_GetNumChannels(),0);
+ TransportPerformanceResults[PerformancePushIndex].assign(Core_GetNumChannels(),0);
  for(size_t i=0;i<ModelPerformanceResults[PerformancePushIndex].size();i++)
  {
-  if(!MIsEngineInit(i) || !MModel_Check(i))
+  if(!MCore_IsChannelInit(i) || !MModel_Check(i))
    continue;
   RDK::ULongTime model_time=MModel_GetFullStepDuration(i,"");
   RDK::ULongTime ext_gui=MModel_GetInterstepsInterval(i,"");
@@ -284,8 +284,8 @@ void UServerControl::CalculatePerformance(void)
  if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
   PerformancePushIndex=0;
 
- ModelAvg.assign(GetNumEngines(),0);
- TransportAvg.assign(GetNumEngines(),0);
+ ModelAvg.assign(Core_GetNumChannels(),0);
+ TransportAvg.assign(Core_GetNumChannels(),0);
  int sum_number=0;
 
  /// Результаты измерений производительности, мс
@@ -422,44 +422,44 @@ void UServerControl::AfterCalculate(void)
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-bool UServerControl::SetNumEngines(int num)
+bool UServerControl::SetNumChannels(int num)
 {
 
- if(!ASetNumEngines(num))
+ if(!ASetNumChannels(num))
   return false;
  AfterReset();
  return true;
 }
 
-bool UServerControl::ASetNumEngines(int num)
+bool UServerControl::ASetNumChannels(int num)
 {
  return true;
 }
 
-bool UServerControl::InsertEngine(int index)
+bool UServerControl::InsertChannel(int index)
 {
 
- if(!AInsertEngine(index))
+ if(!AInsertChannel(index))
   return false;
  AfterReset();
  return true;
 }
 
-bool UServerControl::AInsertEngine(int index)
+bool UServerControl::AInsertChannel(int index)
 {
  return true;
 }
 
-bool UServerControl::DeleteEngine(int index)
+bool UServerControl::DeleteChannel(int index)
 {
 
- if(!ADeleteEngine(index))
+ if(!ADeleteChannel(index))
   return false;
  AfterReset();
  return true;
 }
 
-bool UServerControl::ADeleteEngine(int index)
+bool UServerControl::ADeleteChannel(int index)
 {
  return true;
 }

@@ -226,7 +226,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
 /// Приводит в соответствие список декодеров и число каналов
 void URpcDispatcher::UpdateDecoders(void)
 {
- int num_channels=GetNumEngines(); //TODO необходимо убрать!
+ int num_channels=Core_GetNumChannels(); //TODO необходимо убрать!
  if(num_channels == int(Decoders.size()))
   return;
 

@@ -46,10 +46,10 @@ virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engin
 virtual RDK::UEngineStateThread* CreateEngineStateThread(RDK::UEngineControl* engine_control);
 
 /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void StartEngine(int channel_index);
+virtual void StartChannel(int channel_index);
 
 /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void PauseEngine(int channel_index);
+virtual void PauseChannel(int channel_index);
 // --------------------------
 };
 
