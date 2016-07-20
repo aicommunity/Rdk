@@ -50,6 +50,9 @@ bool CalculationStepUpdatedFlag;
 /// Флаг, разрешающий проверку на существование модели перед обновлением интерфейса
 bool CheckModelFlag;
 
+/// Флаг, регулирующий, будет данная форма отображаться как таб на UGEngineControlForm или как самостоятельная форма
+bool ShowTabbedFlag;
+
 /// Время, потраченное на обновление интерфейса
 unsigned long long UpdateTime;
 
@@ -101,6 +104,10 @@ virtual bool SetUpdateInterval(long value);
 
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
 virtual bool GetAlwaysUpdateFlag(void);
+
+// Вызывается при попытке показать форму нетрадиционным способом, когда не вызывается обычный OnFormShow
+// (пример - открытие GUI компонента, когда уже открыт GUI того же компонента, но с другого канала)
+virtual void ComponentFormShowManually(const std::string& component_name, int ChannelIndex);
 
 // Сохраняет параметры интерфейса в xml
 virtual void SaveParameters(RDK::USerStorageXML &xml);

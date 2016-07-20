@@ -2416,9 +2416,36 @@ void __fastcall TUGEngineControlForm::Watches2Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Sender)
 
 {
- TTabSheet* tab=AddComponentControlFormPage(UComponentsListFrame1->GetSelectedComponentLongName());
- if(tab)
-  tab->PageControl->ActivePageIndex=tab->TabIndex;
+ //Получить имя компонента
+ std::string c_name = UComponentsListFrame1->GetSelectedComponentLongName();
+
+ //Получить имя класса компонента
+ const char *pname=Model_GetComponentClassName(c_name.c_str());
+ std::string class_name;
+ if(pname)
+  class_name=pname;
+ Engine_FreeBufString(pname);
+
+ //Найдем форму нужного компонента
+ std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(class_name);
+ if(I != UComponentsListFrame1->ComponentControllers.end() && I->second)
+ {
+  //Нашли компонент, проверяем, хочет он быть показанным как таб или отдельно:
+  if(I->second->ShowTabbedFlag==true)
+  {
+	 TTabSheet* tab=AddComponentControlFormPage(class_name);
+	 if(tab)
+	  tab->PageControl->ActivePageIndex=tab->TabIndex;
+  }
+  else
+  {
+	//I->second->SetComponentControlName(component_name);
+	int index = GetSelectedEngineIndex();
+	I->second->ComponentFormShowManually(c_name.c_str(), index);
+  }
+
+ }
+
 }
 //---------------------------------------------------------------------------
 

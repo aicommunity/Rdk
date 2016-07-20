@@ -783,6 +783,7 @@ RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentPropertyValue(int channel_
 
 // Устанавливает свойства компонента по идентификатору
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentProperties(int engine_index, const char *stringid, const char* buffer);
 
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);

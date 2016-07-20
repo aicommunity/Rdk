@@ -2235,6 +2235,14 @@ int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buff
  return DllManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
 }
 
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentProperties(int engine_index, const char *stringid, const char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Model_SetComponentProperties(stringid,buffer);
+}
+
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 int RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
