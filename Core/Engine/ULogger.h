@@ -9,7 +9,7 @@
 
 namespace RDK {
 
-class ULogger
+class RDK_LIB_TYPE ULogger
 {
 protected: // Параметры
 /// Путь до папки с логами

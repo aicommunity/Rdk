@@ -14,7 +14,7 @@ DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 
-SOURCES += rdk.qt.cpp \
+SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -115,7 +115,7 @@ SOURCES += rdk.qt.cpp \
     ../../../Deploy/Include/rdk_new.cpp \
     ../../../Core/Application/UIVisualController.cpp
 
-HEADERS += rdk.qt.h\
+HEADERS +=\
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
