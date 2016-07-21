@@ -557,7 +557,7 @@ bool UContainer::ValidateName(const NameT &name)
   return false;
  for (std::string::const_iterator it=name.begin(); it!=name.end(); ++it)
   {
-	if (!std::isalnum(*it,loc) && *it != '_')
+	if (!std::isalnum(*it,loc) && *it != '_' && *it != '-')
 	 return false;
   }
  return true;
