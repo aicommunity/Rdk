@@ -113,7 +113,8 @@ SOURCES += \
     ../../../Deploy/Include/rdk_cpp_init.cpp \
     ../../../Deploy/Include/rdk_init.cpp \
     ../../../Deploy/Include/rdk_new.cpp \
-    ../../../Core/Application/UIVisualController.cpp
+    ../../../Core/Application/UIVisualController.cpp \
+    ../../../Core/Engine/ULoggerEnv.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
@@ -212,7 +213,8 @@ HEADERS +=\
     ../../../Deploy/Include/rdk_engine_support.h \
     ../../../Deploy/Include/rdk_error_codes.h \
     ../../../Deploy/Include/rdk_exceptions.h \
-    ../../../Deploy/Include/myrdk.h
+    ../../../Deploy/Include/myrdk.h \
+    ../../../Core/Engine/ULoggerEnv.h
 
 unix {
     target.path = /usr/lib
