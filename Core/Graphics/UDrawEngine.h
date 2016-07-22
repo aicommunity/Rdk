@@ -131,6 +131,8 @@ DescriptionsTableT Descriptions;
 // Связи
 DescriptionsLinksTableT Links;
 
+/// Шрифты
+RDK::UBitmapFontCollection Fonts;
 
 // Движок для отображения сети
 UEPtr<UAGraphics> GEngine;
@@ -246,6 +248,10 @@ void MoveComponent(const string &name, int x, int y);
 
 // Обновляет размеры всех элементов в соответствии с размерами по умолчанию
 void UpdateAllElementsSize(void);
+
+/// Шрифты
+RDK::UBitmapFontCollection& GetFonts(void);
+void SetFonts(RDK::UBitmapFontCollection& value);
 // ---------------------------
 
 // ---------------------------

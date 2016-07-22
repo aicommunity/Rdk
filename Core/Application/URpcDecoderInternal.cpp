@@ -170,7 +170,7 @@ bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
   return false;
  }
 
- const char* response=RemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
+ const char* response=Core_RemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
 /*
  if(cmd->ResponseStatus == 2001)
  {

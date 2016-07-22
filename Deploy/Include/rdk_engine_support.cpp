@@ -9,15 +9,6 @@
 // Экземпляр менеджера
 RDKDllManager DllManager;
 
-//RDK::UEPtr<RDK::UEngine> PEngine=0;
-//RDK::UEPtr<RDK::UEnvironment> PEnvironment=0;
-//RDK::UEPtr<RDK::UStorage> PStorage=0;
-
-//int SelectedEngineIndex=0;
-
-int BufObjectsMode=0;
-
-
 // Менеджер DLL
 // --------------------------
 // Конструкторы и деструкторы
@@ -32,6 +23,7 @@ RDKDllManager::RDKDllManager(void)
  Engine=0;
  Environment=0;
  Storage=0;
+ BufObjectsMode=0;
 }
 
 RDKDllManager::~RDKDllManager(void)
@@ -158,6 +150,152 @@ int RDKDllManager::SetDebugMode(bool value)
  GlobalLogger.SetDebugMode(DebugMode);
  return RDK_SUCCESS;
 }
+
+int RDKDllManager::GetBufObjectsMode(void)
+{
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
+ return BufObjectsMode;
+}
+
+int RDKDllManager::SetBufObjectsMode(int value)
+{
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(BufObjectsMode == value)
+	return RDK_SUCCESS;
+
+   for(size_t i=0;i<EngineList.size();i++)
+   {
+	GetEngineLock(i)->SetBufObjectsMode(value);
+   }
+   BufObjectsMode=value;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   GlobalLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+ return res;
+}
+
+// Очищает коллекцию глобальных шрифтов
+int RDKDllManager::ClearFonts(void)
+{
+ Fonts.DelAllFonts();
+ return RDK_SUCCESS;
+}
+
+// Загружает глобальные шрифты
+int RDK_CALL RDKDllManager::LoadFonts(void)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   // Грузим шрифты
+   std::vector<std::string> font_names;
+   std::string font_path=SystemDir+"Fonts/";
+   RDK::FindFilesList(font_path, "*.fnt", true, font_names);
+   GlobalLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
+
+   ClearFonts();
+   RDK::UBitmapFont font;
+   for(size_t i=0;i<font_names.size();i++)
+   {
+	AddFont(font_path+font_names[i]);
+    GlobalLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   GlobalLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+ return res;
+}
+
+// Загружает новый глобальный шрифт
+bool RDKDllManager::AddFont(const std::string &font_file_name)
+{
+ int res=RDK_SUCCESS;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   RDK::UBitmapFont font;
+   std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
+   std::string font_name;
+   if(dir_sep_pos != std::string::npos)
+	font_name=font_file_name.substr(dir_sep_pos+1);
+   else
+	font_name=font_file_name;
+   std::size_t _pos=font_name.find_first_of("_");
+   std::size_t _pos2=font_name.find_first_not_of("0123456789",_pos+1);
+   if(_pos != std::string::npos)
+   {
+	std::string font_string_size=font_name.substr(_pos+1,_pos2-_pos-1);
+	int size=RDK::atoi(font_string_size);
+	if(!font.LoadFromFile(font_name.substr(0,_pos),font_file_name,size))
+	 return false;
+	return Fonts.AddFont(font.GetName(),size,font);
+   }
+  }
+  catch (RDK::UException &exception)
+  {
+   GlobalLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+ return false;
+}
+
+// Возвращает ссылку на коллекцию шрифтов
+RDK::UBitmapFontCollection& RDKDllManager::GetFonts(void)
+{
+ return Fonts;
+}
 // --------------------------
 
 // --------------------------
@@ -191,7 +329,7 @@ int RDKDllManager::SetNumChannels(int num)
 
   for(int i=num;i<int(EngineList.size());i++)
   {
-   EngineDestroy(i);
+   ChannelDestroy(i);
    UDestroyMutex(MutexList[i]);
   }
 
@@ -218,6 +356,54 @@ int RDKDllManager::SetNumChannels(int num)
  return RDK_SUCCESS;
 }
 
+/// Делает текущим канала с заданным индексом
+int RDKDllManager::SelectChannel(int index)
+{
+ if(index<0 || index>=NumChannels)
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(SelectedChannelIndex == index)
+	return RDK_SUCCESS;
+
+   RDK::UELockPtr<RDK::UEngine> ptr1(GetEngineLock(SelectedChannelIndex));
+   RDK::UELockPtr<RDK::UEngine> ptr2(GetEngineLock(index));
+
+   if(!SetSelectedChannelIndex(index))
+	res=RDK_E_CORE_CHANNEL_NOT_FOUND;
+   else
+    res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   GlobalLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+
+ return res;
+}
+
+/// Возвращает индекс текущего выбраного канала
+int RDKDllManager::GetSelectedChannelIndex(void) const
+{
+ return SelectedChannelIndex;
+}
 
 /// Добавляет новый движок в позицию index
 /// Если index <0 или >= NumChannels то добавляет в конец
@@ -280,7 +466,7 @@ int RDKDllManager::Del(int index)
 
  {
   UGenericMutexExclusiveLocker lock(MutexList[index]);
-  EngineDestroy(index);
+  ChannelDestroy(index);
  }
  UDestroyMutex(MutexList[index]);
  for(int i=index+1;i<int(EngineList.size());i++)
@@ -316,9 +502,9 @@ int RDKDllManager::Del(int index)
  return RDK_SUCCESS;
 }
 
-/// Создаает требуемый движок
-/// (если движок уже инициализирован, то не делает ничего
-int RDKDllManager::EngineCreate(int index)
+/// Создаает требуемый канал
+/// (если канал уже инициализирован, то не делает ничего
+int RDKDllManager::ChannelCreate(int index)
 {
  if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -333,7 +519,7 @@ int RDKDllManager::EngineCreate(int index)
  EngineList[index]=FuncCreateNewEngine();
  if(!EngineList[index])
  {
-  EngineDestroy(index);
+  ChannelDestroy(index);
   return RDK_E_CORE_ENGINE_CREATE_FAIL;
  }
 
@@ -342,23 +528,24 @@ int RDKDllManager::EngineCreate(int index)
  StorageList[index]=FuncCreateNewStorage();
  if(!StorageList[index])
  {
-  EngineDestroy(index);
+  ChannelDestroy(index);
   return RDK_E_CORE_STORAGE_CREATE_FAIL;
  }
 
  EnvironmentList[index]=FuncCreateNewEnvironment();
  if(!EnvironmentList[index])
  {
-  EngineDestroy(index);
+  ChannelDestroy(index);
   return RDK_E_CORE_ENVIRONMENT_CREATE_FAIL;
  }
 
+ EnvironmentList[index]->SetFonts(Fonts);
  EngineList[index]->Default();
 
  EnvironmentList[index]->SetSystemDir(SystemDir);
  if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
  {
-  EngineDestroy(index);
+  ChannelDestroy(index);
   return RDK_E_CORE_ENGINE_INIT_FAIL;
  }
 
@@ -376,7 +563,7 @@ int RDKDllManager::EngineCreate(int index)
 
 /// Уничтожает требуемый движок
 /// (если движок уже уничтожен, то не делает ничего
-int RDKDllManager::EngineDestroy(int index)
+int RDKDllManager::ChannelDestroy(int index)
 {
  if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -409,35 +596,101 @@ int RDKDllManager::EngineDestroy(int index)
  LoggerList[index]=0;
  return RDK_SUCCESS;
 }
+
+// Инициализирует канал (функция должна быть вызвана первой!)
+// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
+int RDKDllManager::ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(channel_index<0 || channel_index>=NumChannels)
+    return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+   res=ChannelUnInit(channel_index);
+   if(res != RDK_SUCCESS)
+	return res;
+
+   res=ChannelCreate(channel_index);
+   if(res != RDK_SUCCESS)
+	return res;
+
+   GetEngineLock(channel_index)->SetChannelIndex(channel_index);
+   GetEngineLock(channel_index)->SetBufObjectsMode(BufObjectsMode);
+   MLog_SetExceptionHandler(channel_index, exception_handler);
+
+   MEnv_SetPredefinedStructure(channel_index, predefined_structure);
+   MEnv_CreateStructure(channel_index);
+   MEnv_Init(channel_index);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   GlobalLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+ return res;
+}
+
+// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
+int RDKDllManager::ChannelUnInit(int channel_index)
+{
+ if(channel_index<0 || channel_index>=NumChannels)
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(EngineList[channel_index])
+   {
+	res = MEnv_UnInit(channel_index);
+	if(res==RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL)
+	 return res;
+   }
+
+   res=ChannelDestroy(channel_index);
+  }
+  catch (RDK::UException &exception)
+  {
+   GlobalLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+
+ return res;
+}
 // --------------------------
 
 // --------------------------
 // Методы доступа к каналам
 // --------------------------
-/// Текущий выбраный канал
-int RDKDllManager::GetSelectedChannelIndex(void) const
-{
-// UGenericMutexSharedLocker lock(GlobalMutex);
- return SelectedChannelIndex;
-}
-
-bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
-{
-// UGenericMutexExclusiveLocker lock(GlobalMutex);
- if(channel_index<0 || channel_index>=GetNumChannels())
-  return false;
-
- SelectedChannelIndex=channel_index;
-// ::SelectedEngineIndex=SelectedChannelIndex;
- /// Данные текущего выбранного канала
- Engine=EngineList[channel_index];
- Environment=EnvironmentList[channel_index];
- Storage=StorageList[channel_index];
- Logger=LoggerList[channel_index];
-
- return true;
-}
-
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UEPtr<RDK::UEngine>& RDKDllManager::GetEngine(void)
 {
@@ -624,5 +877,26 @@ RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetGlobalLogger(void)
 }
 // --------------------------
 
+// --------------------------
+// Вспомогательные методы управления
+// --------------------------
+/// Меняет текущий выбраный канал
+bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
+{
+// UGenericMutexExclusiveLocker lock(GlobalMutex);
+ if(channel_index<0 || channel_index>=GetNumChannels())
+  return false;
+
+ SelectedChannelIndex=channel_index;
+// ::SelectedEngineIndex=SelectedChannelIndex;
+ /// Данные текущего выбранного канала
+ Engine=EngineList[channel_index];
+ Environment=EnvironmentList[channel_index];
+ Storage=StorageList[channel_index];
+ Logger=LoggerList[channel_index];
+
+ return true;
+}
+// --------------------------
 
 #endif

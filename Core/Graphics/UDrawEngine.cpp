@@ -314,6 +314,17 @@ void UDrawEngine::UpdateAllElementsSize(void)
   I->second.Height=RectHeight;
  }
 }
+
+/// ״נטפעû
+RDK::UBitmapFontCollection& UDrawEngine::GetFonts(void)
+{
+ return Fonts;
+}
+
+void UDrawEngine::SetFonts(RDK::UBitmapFontCollection& value)
+{
+ Fonts=value;
+}
 // ---------------------------
 
 // ---------------------------
@@ -585,7 +596,7 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  UAFont *font=GEngine->GetFont();
  GEngine->TextRect(ndescr.Header,rect,alCenter);
  rect.Y+=int(ndescr.Height*1.2);
- UAFont *class_font=RDK::GlobalFonts.GetFont(font->GetName(),font->GetSize()-4);
+ UAFont *class_font=Fonts.GetFont(font->GetName(),font->GetSize()-4);
  if(class_font)
  {
   GEngine->SetFont(class_font);

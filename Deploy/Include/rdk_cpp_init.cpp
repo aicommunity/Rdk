@@ -128,6 +128,18 @@ RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index)
 }
 // --------------------------
 
+
+// --------------------------
+// Методы доступа к щрифтам
+// --------------------------
+/// Возвращает ссылку на шрифты
+/// (не потокобезопасно!)
+RDK::UBitmapFontCollection& GetFonts(void)
+{
+ return DllManager.GetFonts();
+}
+// --------------------------
+
 namespace RDK {
 
 // --------------------------

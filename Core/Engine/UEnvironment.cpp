@@ -1025,8 +1025,6 @@ void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, c
 // Инициализация среды
 void UEnvironment::AInit(void)
 {
- SetFonts(RDK::GlobalFonts);
-
  ModelCalculationComponent.Resize(0);
  if(Model)
   Model->Init();

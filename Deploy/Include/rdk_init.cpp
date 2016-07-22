@@ -10,6 +10,7 @@
 #include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
 #include "../../Core/System/UGenericMutex.h"
+
 namespace RDK {
 
 
@@ -23,20 +24,7 @@ int ProcessException(int channel_index, const UException &ex)
  logger->ProcessException(ex);
  return RDK_EXCEPTION_CATCHED;
 }
-		 /*
-int ProcessException(int channel_index, const UException &ex)
-{
- UEPtr<ULoggerEnv> logger=DllManager.GetLogger(channel_index);
- if(!logger)
-  return RDK_UNHANDLED_EXCEPTION;
- logger->ProcessException(ex);
- return RDK_EXCEPTION_CATCHED;
-}          */
-
-
-// Глобальная коллекция шрифтов
-RDK::UBitmapFontCollection GlobalFonts;
-
+/*
 // Очищает коллекцию глобальных шрифтов
 void ClearClobalFonts(void)
 {
@@ -84,7 +72,7 @@ bool AddGlobalFont(const std::string &font_file_name)
  }
  return false;
 }
-
+      */
 }
 
 /*****************************************************************************/
@@ -104,7 +92,7 @@ extern RDK::UEngine* CreateNewEngine(void);
 /// request - xml описание запроса
 /// return_value - возвращаемое значение для тех функций, которые его имеют
 /// для остальных возвращает 0
-const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &channel_index)
+const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int &channel_index)
 {
  return RDK::RemoteCallInternal(request, return_value, channel_index);
 }
@@ -194,7 +182,6 @@ int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
 
  return DllManager.GetLogger(channel_index)->SetDebugSysEventsMask(value);
 }
-
 
 /// Возвращает флаг включения вывода лога в отладчик
 bool RDK_CALL Log_GetDebuggerMessageFlag(void)
@@ -381,7 +368,6 @@ int RDK_CALL MLog_ClearReadLog(int channel_index)
 // ----------------------------
 // Методы инициализации
 // ----------------------------
-
 // Возвращает имя каталога бинарных файлов
 const char* RDK_CALL Core_GetSystemDir(void)
 {
@@ -428,49 +414,16 @@ int RDK_CALL Core_SetDebugMode(bool value)
  return DllManager.SetDebugMode(value);
 }
 
+// Очищает глобальные шрифты
+int RDK_CALL Core_ClearFonts(void)
+{
+ return DllManager.ClearFonts();
+}
+
 // Загружает глобальные шрифты
 int RDK_CALL Core_LoadFonts(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   // Грузим шрифты
-   std::vector<std::string> font_names;
-   std::string font_path=DllManager.GetSystemDir()+"Fonts/";
-   RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   DllManager.GetGlobalLogger()->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
-
-   RDK::ClearClobalFonts();
-   RDK::UBitmapFont font;
-   for(size_t i=0;i<font_names.size();i++)
-   {
-	RDK::AddGlobalFont(font_path+font_names[i]);
-    DllManager.GetGlobalLogger()->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
-   }
-   res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
-
- return res;
-}
-
-int RDK_CALL Engine_LoadFonts(void)
-{
- return Core_LoadFonts();
+ return DllManager.LoadFonts();
 }
 
 // Возвращает число движков
@@ -478,11 +431,6 @@ int RDK_CALL Core_GetNumChannels(void)
 {
  return DllManager.GetNumChannels();
 }
-/*
-int RDK_CALL Core_GetNumChannels(void)
-{
- return Core_GetNumChannels();
-} */
 
 // Создает требуемое число движков
 // num > 0
@@ -538,8 +486,6 @@ int RDK_CALL Core_AddChannel(int index)
  {
   try
   {
-//   if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
-//	return RDK_E_CORE_INIT_FAIL;
    if(!DllManager.SetCoreElementsCreationFunctions(reinterpret_cast<RDKDllManager::PCreateNewStorage>(CreateNewStorage),
 						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(CreateNewEnvironment),
 						reinterpret_cast<RDKDllManager::PCreateNewEngine>(CreateNewEngine)))
@@ -563,12 +509,6 @@ int RDK_CALL Core_AddChannel(int index)
 
  return res;
 }
-
-int RDK_CALL Engine_Add(int index)
-{
- return Core_AddChannel(index);
-}
-
 
 // Удаляет движок по индексу
 int RDK_CALL Core_DelChannel(int index)
@@ -597,78 +537,23 @@ int RDK_CALL Core_DelChannel(int index)
  return res;
 }
 
-int RDK_CALL Engine_Del(int index)
-{
- return Core_DelChannel(index);
-}
-
 // Возвращает индекс текущего выбранного движка
 int RDK_CALL Core_GetSelectedChannelIndex(void)
 {
  return DllManager.GetSelectedChannelIndex();
 }
 
-int RDK_CALL GetSelectedEngineIndex(void)
-{
- return Core_GetSelectedChannelIndex();
-}
-
-
 // Настраивает обычный интерфейс на работу с заданным движком
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
 int RDK_CALL Core_SelectChannel(int index)
 {
- if(index<0 || index>=Core_GetNumChannels())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(DllManager.GetSelectedChannelIndex() == index)
-	return RDK_SUCCESS;
-
-   RDK::UELockPtr<RDK::UEngine> ptr1(DllManager.GetEngineLock(DllManager.GetSelectedChannelIndex()));
-   RDK::UELockPtr<RDK::UEngine> ptr2(DllManager.GetEngineLock(index));
-
-   if(!DllManager.SetSelectedChannelIndex(index))
-	res=RDK_E_CORE_CHANNEL_NOT_FOUND;
-   else
-    res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
-
- return res;
+ return DllManager.SelectChannel(index);
 }
-
-int RDK_CALL SelectEngine(int index)
-{
- return Core_SelectChannel(index);
-}
-
 
 /// Блокирует канал до вызова функции UnlockEngine
 int RDK_CALL Core_LockChannel(void)
 {
  return MCore_LockChannel(DllManager.GetSelectedChannelIndex());
-}
-
-int RDK_CALL LockEngine(void)
-{
- return Core_LockChannel();
 }
 
 int RDK_CALL MCore_LockChannel(int index)
@@ -705,20 +590,10 @@ int RDK_CALL MCore_LockChannel(int index)
  return res;
 }
 
-int RDK_CALL MLockEngine(int index)
-{
- return MCore_LockChannel(index);
-}
-
 /// Разблокирует канал
 int RDK_CALL Core_UnLockChannel(void)
 {
  return MCore_UnLockChannel(DllManager.GetSelectedChannelIndex());
-}
-
-int RDK_CALL UnLockEngine(void)
-{
- return Core_UnLockChannel();
 }
 
 int RDK_CALL MCore_UnLockChannel(int index)
@@ -755,11 +630,6 @@ int RDK_CALL MCore_UnLockChannel(int index)
  return res;
 }
 
-int RDK_CALL MUnLockEngine(int index)
-{
- return MCore_UnLockChannel(index);
-}
-
 int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -794,221 +664,26 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
  return res;
 }
 
-int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
-{
- return Core_ChannelInit(predefined_structure, exception_handler);
-}
-
 int RDK_CALL MCore_ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(channel_index<0 || channel_index>=Core_GetNumChannels())
-    return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
-   res=MCore_ChannelUnInit(channel_index);
-   if(res != RDK_SUCCESS)
-	return res;
-
-   res=DllManager.EngineCreate(channel_index);
-   if(res != RDK_SUCCESS)
-	return res;
-
-   DllManager.GetEngineLock(channel_index)->SetChannelIndex(channel_index);
-   DllManager.GetEngineLock(channel_index)->SetBufObjectsMode(BufObjectsMode);
-   MLog_SetExceptionHandler(channel_index, exception_handler);
-
-   MEnv_SetPredefinedStructure(channel_index, predefined_structure);
-   MEnv_CreateStructure(channel_index);
-   MEnv_Init(channel_index);
-   res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
-
- return res;
+ return DllManager.ChannelInit(channel_index, predefined_structure, exception_handler);
 }
 
-int RDK_CALL MEngineInit(int channel_index, int predefined_structure, void* exception_handler)
-{
- return MCore_ChannelInit(channel_index, predefined_structure, exception_handler);
-}
-
-					/*
-int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height, bool reflectionx,
-		void* exception_handler)
-{
- int res=RDK_SUCCESS;
- if(Core_GetNumChannels()<=DllManager.GetSelectedChannelIndex())
-  res=SetNumChannels(DllManager.GetSelectedChannelIndex()+1);
-
- if(res != RDK_SUCCESS)
-  return res;
-
- res=MGraphicalEngineInit(DllManager.GetSelectedChannelIndex(), predefined_structure, num_inputs,
-		num_outputs, input_width, input_height, reflectionx, exception_handler);
-
- return res;
-}
-
-int RDK_CALL MGraphicalEngineInit(int channel_index, int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height, bool reflectionx,
-		void* exception_handler)
-{
- if(channel_index<0 || channel_index>=Core_GetNumChannels())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   MCore_ChannelUnInit(channel_index);
-   res=DllManager.EngineCreate(channel_index);
-   if(res != RDK_SUCCESS)
-	return res;
-
-   DllManager.GetEngineLock(channel_index)->SetChannelIndex(channel_index);
-   DllManager.GetEngineLock(channel_index)->SetBufObjectsMode(BufObjectsMode);
-
-   MLog_SetExceptionHandler(channel_index, exception_handler);
-
-   // Задает число входов среды
-   MEnv_SetNumInputImages(channel_index, num_inputs);
-   MEnv_SetNumOutputImages(channel_index, num_outputs);
-
-   // Задает разрешение по умолчанию (рабочее разрешение)
-   for(int i=0;i<num_inputs;i++)
-	MEnv_SetInputRes(channel_index, i, input_width, input_height);
-
-   MEnv_SetReflectionXFlag(channel_index, reflectionx);
-
-   MEnv_SetPredefinedStructure(channel_index, predefined_structure);
-   MEnv_CreateStructure(channel_index);
-   MEnv_Init(channel_index);
-   res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
-
- return res;
-}
-                      */
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
 int RDK_CALL Core_ChannelUnInit(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(DllManager.GetEngine())
-   {
-	res=Env_UnInit();
-	if(res != RDK_SUCCESS)
-     return res;
-   }
-
-   res=DllManager.EngineDestroy(DllManager.GetSelectedChannelIndex());
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
-
- return res;
-}
-
-int RDK_CALL EngineUnInit(void)
-{
- return Core_ChannelUnInit();
+ return MCore_ChannelUnInit(Core_GetSelectedChannelIndex());
 }
 
 int RDK_CALL MCore_ChannelUnInit(int channel_index)
 {
- if(channel_index<0 || channel_index>=Core_GetNumChannels())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(DllManager.EngineList[channel_index])
-   {
-	res = MEnv_UnInit(channel_index);
-	if(res==RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL)
-	 return res;
-   }
-
-   res=DllManager.EngineDestroy(channel_index);
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
-
- return res;
-}
-
-int RDK_CALL MEngineUnInit(int channel_index)
-{
- return MCore_ChannelUnInit(channel_index);
+ return DllManager.ChannelUnInit(channel_index);
 }
 
 /// Проверяет инициализирован ли движок
 bool RDK_CALL Core_IsChannelInit(void)
 {
  return (DllManager.GetEngine())?true:false;
-}
-
-bool RDK_CALL IsEngineInit(void)
-{
- return Core_IsChannelInit();
 }
 
 bool RDK_CALL MCore_IsChannelInit(int channel_index)
@@ -1019,53 +694,18 @@ bool RDK_CALL MCore_IsChannelInit(int channel_index)
  return (DllManager.GetEngine(channel_index))?true:false;
 }
 
-bool RDK_CALL MIsEngineInit(int channel_index)
-{
- return MCore_IsChannelInit(channel_index);
-}
-
 /// Режим создания внутренних временных переменных для
 /// возвращаемых значений
 /// 0 - одна переменная для всех методов, возвращающих такой тип
 /// 1 - уникальные переменные с необходимостью вызвова функции очистки
 int RDK_CALL Engine_GetBufObjectsMode(void)
 {
- UGenericMutexExclusiveLocker lock(DllManager.GlobalMutex);
- return BufObjectsMode;
+ return DllManager.GetBufObjectsMode();
 }
 
 int RDK_CALL Engine_SetBufObjectsMode(int mode)
 {
- UGenericMutexExclusiveLocker lock(DllManager.GlobalMutex);
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(BufObjectsMode == mode)
-	return RDK_SUCCESS;
-
-   for(size_t i=0;i<DllManager.EngineList.size();i++)
-   {
-	DllManager.GetEngineLock(i)->SetBufObjectsMode(mode);
-   }
-   BufObjectsMode=mode;
-   res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return res;
+ return DllManager.SetBufObjectsMode(mode);
 }
 
 /// Высвобождает буферную строку движка, по заданному указателю

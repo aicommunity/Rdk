@@ -57,6 +57,9 @@ std::string LogDir;
 /// Флаг режима отладки
 bool DebugMode;
 
+int BufObjectsMode;
+
+
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
 // ----------------------------------------------------------
@@ -75,6 +78,10 @@ PCreateNewEnvironment FuncCreateNewEnvironment;
 typedef RDK::UEngine* (*PCreateNewEngine)(void);
 PCreateNewEngine FuncCreateNewEngine;
 // ----------------------------------------------------------
+
+// Глобальная коллекция шрифтов
+RDK::UBitmapFontCollection Fonts;
+
 
 public:
 // --------------------------
@@ -102,6 +109,21 @@ int SetLogDir(const char *dir);
 /// Флаг режима отладки
 bool GetDebugMode(void);
 int SetDebugMode(bool value);
+
+int GetBufObjectsMode(void);
+int SetBufObjectsMode(int value);
+
+// Очищает коллекцию глобальных шрифтов
+int ClearFonts(void);
+
+// Загружает глобальные шрифты
+int LoadFonts(void);
+
+// Загружает новый глобальный шрифт
+bool AddFont(const std::string &font_file_name);
+
+// Возвращает ссылку на коллекцию шрифтов
+RDK::UBitmapFontCollection& GetFonts(void);
 // --------------------------
 
 // --------------------------
@@ -118,6 +140,12 @@ int GetNumChannels(void) const;
 /// Создает требуемое число пустых движков
 int SetNumChannels(int num);
 
+/// Делает текущим канала с заданным индексом
+int SelectChannel(int index);
+
+/// Возвращает индекс текущего выбраного канала
+int GetSelectedChannelIndex(void) const;
+
 /// Добавляет новый движок в позицию index
 /// Если index <0 или >= NumChannels то добавляет в конец
 int Add(int index);
@@ -125,22 +153,25 @@ int Add(int index);
 /// Удаляет движок из позиции index
 int Del(int index);
 
-/// Создаает требуемый движок
-/// (если движок уже инициализирован, то не делает ничего
-int EngineCreate(int index);
+/// Создаает требуемый канал
+/// (если канал уже инициализирован, то не делает ничего
+int ChannelCreate(int index);
 
-/// Уничтожает требуемый движок
-/// (если движок уже уничтожен, то не делает ничего
-int EngineDestroy(int index);
+/// Уничтожает требуемый канал
+/// (если канал уже уничтожен, то не делает ничего
+int ChannelDestroy(int index);
+
+// Инициализирует канал (функция должна быть вызвана первой!)
+// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
+int ChannelInit(int channel_index, int predefined_structure, void* exception_handler);
+
+// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
+int ChannelUnInit(int channel_index);
 // --------------------------
 
 // --------------------------
 // Методы доступа к каналам
 // --------------------------
-/// Текущий выбраный канал
-int GetSelectedChannelIndex(void) const;
-bool SetSelectedChannelIndex(int channel_index);
-
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UEPtr<RDK::UEngine>& GetEngine(void);
 RDK::UEPtr<RDK::UEngine> GetEngine(int channel_index);
@@ -205,6 +236,17 @@ RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
 //void ProcessException(RDK::UException &exception);
 // --------------------------
 
+
+// --------------------------
+// Вспомогательные методы управления
+// --------------------------
+protected:
+/// Меняет текущий выбраный канал
+bool SetSelectedChannelIndex(int channel_index);
+// --------------------------
+
+
+
 };
 
 //extern RDK::UEPtr<RDK::UEngine> PEngine;
@@ -217,7 +259,5 @@ RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
 
 // Экземпляр менеджера
 extern RDK_LIB_TYPE RDKDllManager DllManager;
-
-extern RDK_LIB_TYPE int BufObjectsMode;
 
 #endif

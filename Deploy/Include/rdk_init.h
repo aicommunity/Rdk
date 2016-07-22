@@ -91,7 +91,7 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 ///     <Res>идентификатор возвращаемой ошибки или 0 если вызов успешен</Res>
 /// </RpcResponse>
-RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &channel_index);
+RDK_LIB_TYPE const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int &channel_index);
 // ----------------------------
 
 // ----------------------------
@@ -195,9 +195,11 @@ RDK_LIB_TYPE bool RDK_CALL Core_GetDebugMode(void);
 // Устанавливает глобальную настройку включения отладочного режима
 RDK_LIB_TYPE int RDK_CALL Core_SetDebugMode(bool value);
 
+// Очищает глобальные шрифты
+RDK_LIB_TYPE int RDK_CALL Core_ClearFonts(void);
+
 // Загружает глобальные шрифты
 RDK_LIB_TYPE int RDK_CALL Core_LoadFonts(void);
-//RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void); // deprecated
 
 // Возвращает число дивжков
 RDK_LIB_TYPE int RDK_CALL Core_GetNumChannels(void);
@@ -220,7 +222,6 @@ RDK_LIB_TYPE int RDK_CALL Core_DelChannel(int index);
 
 // Возвращает индекс текущего выбранного движка
 RDK_LIB_TYPE int RDK_CALL Core_GetSelectedChannelIndex(void);
-//RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void); // deprecated
 
 // Настраивает обычный интерфейс на работу с заданным движком
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
@@ -239,8 +240,8 @@ RDK_LIB_TYPE int RDK_CALL Core_UnLockChannel(void);
 RDK_LIB_TYPE int RDK_CALL MCore_UnLockChannel(int index);
 //RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index); // deprecated
 
-// Инициализирует движок (функция должна быть вызвана первой!)
-// Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
+// Инициализирует канал (функция должна быть вызвана первой!)
+// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
 RDK_LIB_TYPE int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler=0);
 //RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0); // deprecated
 RDK_LIB_TYPE int RDK_CALL MCore_ChannelInit(int channel_index, int predefined_structure, void* exception_handler=0);
@@ -256,7 +257,7 @@ RDK_LIB_TYPE int RDK_CALL MCore_ChannelInit(int channel_index, int predefined_st
 //		int num_outputs, int input_width, int input_height, bool reflectionx=false,
 //		void* exception_handler=0); // deprecated
 
-// Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
+// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
 RDK_LIB_TYPE int RDK_CALL Core_ChannelUnInit(void);
 //RDK_LIB_TYPE int RDK_CALL EngineUnInit(void); // deprecated
 RDK_LIB_TYPE int RDK_CALL MCore_ChannelUnInit(int channel_index);
