@@ -120,6 +120,11 @@ bool ULoggerEnv::SetChannelIndex(int value)
  if(ChannelIndex == value)
   return true;
  ChannelIndex=value;
+ if(ChannelIndex >=0)
+  SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+ else
+  SetSuffix(std::string(" Sys"));
+ Clear();
  return true;
 }
 // --------------------------
@@ -172,7 +177,12 @@ void ULoggerEnv::ProcessException(const UException &exception) const
  }
 
  UException result_message(*processed_exception);
- result_message.SetMessage(sntoa(ChannelIndex)+std::string("> ")+processed_exception->what());
+ std::string ch_prefix;
+ if(ChannelIndex>=0)
+  ch_prefix=sntoa(ChannelIndex);
+ else
+  ch_prefix="S";
+ result_message.SetMessage(ch_prefix+std::string("> ")+processed_exception->what());
  LogList[LogIndex++]=result_message;
 
  if(EventsLogMode) // Если включено, то сохраняем события в файл

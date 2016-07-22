@@ -37,10 +37,7 @@ public: // Методы управления параметрами
 std::string GetLogDir(void) const;
 bool SetLogDir(const std::string &value);
 
-/// Режим логгирования
-/// 0 - отключен
-/// 1 - сохранять каждый канал в отдельный файл лога
-/// 2 - сохранять все каналы в единый файл лога
+/// Суффикс имени файла
 std::string GetSuffix(void) const;
 bool SetSuffix(const std::string &value);
 
