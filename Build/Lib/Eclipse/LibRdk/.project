@@ -271,6 +271,11 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/ULogger.cpp</locationURI>
 		</link>
 		<link>
+			<name>Core/Engine/ULoggerEnv.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/ULoggerEnv.cpp</locationURI>
+		</link>
+		<link>
 			<name>Core/Engine/UModule.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/UModule.cpp</locationURI>
