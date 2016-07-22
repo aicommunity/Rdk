@@ -18,7 +18,7 @@ namespace RDK {
 /// иначе возвращает RDK_EXCEPTION_CATCHED
 int ProcessException(int channel_index, const UException &ex)
 {
- UEPtr<ULoggerEnv> logger=DllManager.GetLogger(channel_index);
+ UEPtr<ULoggerEnv> logger=RdkCoreManager.GetLogger(channel_index);
  if(!logger)
   return RDK_UNHANDLED_EXCEPTION;
  logger->ProcessException(ex);
@@ -104,7 +104,7 @@ const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int
 // Возвращает состояние внутренего логгирования
 bool RDK_CALL Log_GetEventsLogMode(void)
 {
- return DllManager.GetLogger()->GetEventsLogMode();
+ return RdkCoreManager.GetLogger()->GetEventsLogMode();
 }
 
 bool RDK_CALL MLog_GetEventsLogMode(int channel_index)
@@ -112,13 +112,13 @@ bool RDK_CALL MLog_GetEventsLogMode(int channel_index)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return false;
 
- return DllManager.GetLogger(channel_index)->GetEventsLogMode();
+ return RdkCoreManager.GetLogger(channel_index)->GetEventsLogMode();
 }
 
 // Включает/выключает внутренне логгирование
 int RDK_CALL Log_SetEventsLogMode(bool value)
 {
- return DllManager.GetLogger()->SetEventsLogMode(value);
+ return RdkCoreManager.GetLogger()->SetEventsLogMode(value);
 }
 
 int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value)
@@ -126,39 +126,39 @@ int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetLogger(channel_index)->SetEventsLogMode(value);
+ return RdkCoreManager.GetLogger(channel_index)->SetEventsLogMode(value);
 }
 
 /// Возвращает состояние флага отладочного режима среды
 bool RDK_CALL Log_GetDebugMode(void)
 {
- return DllManager.GetLogger()->GetDebugMode();
+ return RdkCoreManager.GetLogger()->GetDebugMode();
 }
 
 bool RDK_CALL MLog_GetDebugMode(int channel_index)
 {
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return false;
- return DllManager.GetLogger(channel_index)->GetDebugMode();
+ return RdkCoreManager.GetLogger(channel_index)->GetDebugMode();
 }
 
 /// Устанавливает состояние флага отладочного режима среды
 int RDK_CALL Log_SetDebugMode(bool value)
 {
- return DllManager.GetLogger()->SetDebugMode(value);
+ return RdkCoreManager.GetLogger()->SetDebugMode(value);
 }
 
 int RDK_CALL MLog_SetDebugMode(int channel_index, bool value)
 {
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetLogger(channel_index)->SetDebugMode(value);
+ return RdkCoreManager.GetLogger(channel_index)->SetDebugMode(value);
 }
 
 /// Возвращает маску системных событий для логирования
 unsigned int RDK_CALL Log_GetDebugSysEventsMask(void)
 {
- return DllManager.GetLogger()->GetDebugSysEventsMask();
+ return RdkCoreManager.GetLogger()->GetDebugSysEventsMask();
 }
 
 unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int channel_index)
@@ -166,13 +166,13 @@ unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int channel_index)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetLogger(channel_index)->GetDebugSysEventsMask();
+ return RdkCoreManager.GetLogger(channel_index)->GetDebugSysEventsMask();
 }
 
 /// Устанавливает маску системных событий для логирования
 int RDK_CALL Log_SetDebugSysEventsMask(unsigned int value)
 {
- return DllManager.GetLogger()->SetDebugSysEventsMask(value);
+ return RdkCoreManager.GetLogger()->SetDebugSysEventsMask(value);
 }
 
 int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
@@ -180,13 +180,13 @@ int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetLogger(channel_index)->SetDebugSysEventsMask(value);
+ return RdkCoreManager.GetLogger(channel_index)->SetDebugSysEventsMask(value);
 }
 
 /// Возвращает флаг включения вывода лога в отладчик
 bool RDK_CALL Log_GetDebuggerMessageFlag(void)
 {
- return DllManager.GetLogger()->GetDebuggerMessageFlag();
+ return RdkCoreManager.GetLogger()->GetDebuggerMessageFlag();
 }
 
 bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
@@ -194,13 +194,13 @@ bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetLogger(channel_index)->GetDebuggerMessageFlag();
+ return RdkCoreManager.GetLogger(channel_index)->GetDebuggerMessageFlag();
 }
 
 /// Устанавливает флаг включения вывода лога в отладчик
 bool RDK_CALL Log_SetDebuggerMessageFlag(bool value)
 {
- return DllManager.GetLogger()->SetDebuggerMessageFlag(value);
+ return RdkCoreManager.GetLogger()->SetDebuggerMessageFlag(value);
 }
 
 bool RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
@@ -208,13 +208,13 @@ bool RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetLogger(channel_index)->SetDebuggerMessageFlag(value);
+ return RdkCoreManager.GetLogger(channel_index)->SetDebuggerMessageFlag(value);
 }
 
 // Управление функцией-обработчиком исключений
 void* RDK_CALL Log_GetExceptionHandler(void)
 {
- return (void*)DllManager.GetLogger()->GetExceptionHandler();
+ return (void*)RdkCoreManager.GetLogger()->GetExceptionHandler();
 }
 
 void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
@@ -222,12 +222,12 @@ void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
 
- return (void*)DllManager.GetLogger(channel_index)->GetExceptionHandler();
+ return (void*)RdkCoreManager.GetLogger(channel_index)->GetExceptionHandler();
 }
 
 int RDK_CALL Log_SetExceptionHandler(void* value)
 {
- return DllManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ return RdkCoreManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
 }
 
 int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
@@ -235,13 +235,13 @@ int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ return RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
 }
 
 // Возвращает массив строк лога
 const char* RDK_CALL Log_GetLog(int &error_level)
 {
- return DllManager.GetLogger()->GetLog(error_level);
+ return RdkCoreManager.GetLogger()->GetLog(error_level);
 }
 
 const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level)
@@ -249,13 +249,13 @@ const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level)
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetLogger(channel_index)->GetLog(error_level);
+ return RdkCoreManager.GetLogger(channel_index)->GetLog(error_level);
 }
 
 // Записывает в лог новое сообщение
 int RDK_CALL Log_LogMessage(int log_level, const char *message)
 {
- DllManager.GetLogger()->LogMessage(log_level, message);
+ RdkCoreManager.GetLogger()->LogMessage(log_level, message);
  return RDK_SUCCESS;
 }
 
@@ -264,14 +264,14 @@ int RDK_CALL MLog_LogMessage(int channel_index, int log_level, const char *messa
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- DllManager.GetLogger(channel_index)->LogMessage(log_level, message);
+ RdkCoreManager.GetLogger(channel_index)->LogMessage(log_level, message);
  return RDK_SUCCESS;
 }
 
 // Записывает в лог новое сообщение с кодом ошибки
 int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_event_number)
 {
- DllManager.GetLogger()->LogMessage(log_level, message,error_event_number);
+ RdkCoreManager.GetLogger()->LogMessage(log_level, message,error_event_number);
  return RDK_SUCCESS;
 }
 
@@ -280,7 +280,7 @@ int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *mes
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- DllManager.GetLogger(channel_index)->LogMessage(log_level, message,error_event_number);
+ RdkCoreManager.GetLogger(channel_index)->LogMessage(log_level, message,error_event_number);
  return RDK_SUCCESS;
 }
 
@@ -289,7 +289,7 @@ int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *mes
 const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
 {
  time_t read_time;
- const char* res=DllManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
+ const char* res=RdkCoreManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
  time=read_time;
  return res;
 }
@@ -299,7 +299,7 @@ const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int 
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
  time_t read_time;
- const char* res=DllManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
+ const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
  time=read_time;
  return res;
 }
@@ -307,7 +307,7 @@ const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int 
 const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
 {
  time_t read_time;
- const char* res=DllManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
+ const char* res=RdkCoreManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
  time=read_time;
  return res;
 }
@@ -317,7 +317,7 @@ const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
  time_t read_time;
- const char* res=DllManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
+ const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
  time=read_time;
  return res;
 }
@@ -325,34 +325,34 @@ const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level
 /// Возвращает число непрочитанных строк лога
 int RDK_CALL Log_GetNumUnreadLogLines(void)
 {
- return DllManager.GetLogger()->GetNumUnreadLogLines();
+ return RdkCoreManager.GetLogger()->GetNumUnreadLogLines();
 }
 
 int RDK_CALL MLog_GetNumUnreadLogLines(int channel_index)
 {
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetLogger(channel_index)->GetNumUnreadLogLines();
+ return RdkCoreManager.GetLogger(channel_index)->GetNumUnreadLogLines();
 }
 
 /// Возвращает число строк лога
 int RDK_CALL Log_GetNumLogLines(void)
 {
- return DllManager.GetLogger()->GetNumLogLines();
+ return RdkCoreManager.GetLogger()->GetNumLogLines();
 }
 
 int RDK_CALL MLog_GetNumLogLines(int channel_index)
 {
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetLogger(channel_index)->GetNumLogLines();
+ return RdkCoreManager.GetLogger(channel_index)->GetNumLogLines();
 }
 
 
 /// Очищает лог прочитанных сообщений
 int RDK_CALL Log_ClearReadLog(void)
 {
- DllManager.GetLogger()->ClearReadLog();
+ RdkCoreManager.GetLogger()->ClearReadLog();
  return RDK_SUCCESS;
 }
 
@@ -360,7 +360,7 @@ int RDK_CALL MLog_ClearReadLog(int channel_index)
 {
  if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
- DllManager.GetLogger(channel_index)->ClearReadLog();
+ RdkCoreManager.GetLogger(channel_index)->ClearReadLog();
  return RDK_SUCCESS;
 }
 // ----------------------------
@@ -371,7 +371,7 @@ int RDK_CALL MLog_ClearReadLog(int channel_index)
 // Возвращает имя каталога бинарных файлов
 const char* RDK_CALL Core_GetSystemDir(void)
 {
- return DllManager.GetSystemDir().c_str();
+ return RdkCoreManager.GetSystemDir().c_str();
 }
 
 const char* RDK_CALL GetSystemDir(void)
@@ -382,7 +382,7 @@ const char* RDK_CALL GetSystemDir(void)
 // Устанавливает имя каталога бинарных файлов
 int RDK_CALL Core_SetSystemDir(const char *dir)
 {
- return DllManager.SetSystemDir(dir);
+ return RdkCoreManager.SetSystemDir(dir);
 }
 
 int RDK_CALL SetSystemDir(const char *dir)
@@ -393,43 +393,43 @@ int RDK_CALL SetSystemDir(const char *dir)
 // Возвращает имя каталога бинарных файлов
 const char* RDK_CALL Core_GetLogDir(void)
 {
- return DllManager.GetLogDir();
+ return RdkCoreManager.GetLogDir();
 }
 
 // Устанавливает имя каталога бинарных файлов
 int RDK_CALL Core_SetLogDir(const char *dir)
 {
- return DllManager.SetLogDir(dir);
+ return RdkCoreManager.SetLogDir(dir);
 }
 
 // Возвращает глобальную настройку включения отладочного режима
 bool RDK_CALL Core_GetDebugMode(void)
 {
- return DllManager.GetDebugMode();
+ return RdkCoreManager.GetDebugMode();
 }
 
 // Устанавливает глобальную настройку включения отладочного режима
 int RDK_CALL Core_SetDebugMode(bool value)
 {
- return DllManager.SetDebugMode(value);
+ return RdkCoreManager.SetDebugMode(value);
 }
 
 // Очищает глобальные шрифты
 int RDK_CALL Core_ClearFonts(void)
 {
- return DllManager.ClearFonts();
+ return RdkCoreManager.ClearFonts();
 }
 
 // Загружает глобальные шрифты
 int RDK_CALL Core_LoadFonts(void)
 {
- return DllManager.LoadFonts();
+ return RdkCoreManager.LoadFonts();
 }
 
 // Возвращает число движков
 int RDK_CALL Core_GetNumChannels(void)
 {
- return DllManager.GetNumChannels();
+ return RdkCoreManager.GetNumChannels();
 }
 
 // Создает требуемое число движков
@@ -447,12 +447,12 @@ int RDK_CALL Core_SetNumChannels(int num)
  {
   try
   {
-   if(!DllManager.SetCoreElementsCreationFunctions(reinterpret_cast<RDKDllManager::PCreateNewStorage>(CreateNewStorage),
-						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(CreateNewEnvironment),
-						reinterpret_cast<RDKDllManager::PCreateNewEngine>(CreateNewEngine)))
+   if(!RdkCoreManager.SetCoreElementsCreationFunctions(reinterpret_cast<URdkCoreManager::PCreateNewStorage>(CreateNewStorage),
+						reinterpret_cast<URdkCoreManager::PCreateNewEnvironment>(CreateNewEnvironment),
+						reinterpret_cast<URdkCoreManager::PCreateNewEngine>(CreateNewEngine)))
 	return RDK_E_CORE_INIT_FAIL;
 
-   res=DllManager.SetNumChannels(num);
+   res=RdkCoreManager.SetNumChannels(num);
   }
   catch (RDK::UException &exception)
   {
@@ -486,12 +486,12 @@ int RDK_CALL Core_AddChannel(int index)
  {
   try
   {
-   if(!DllManager.SetCoreElementsCreationFunctions(reinterpret_cast<RDKDllManager::PCreateNewStorage>(CreateNewStorage),
-						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(CreateNewEnvironment),
-						reinterpret_cast<RDKDllManager::PCreateNewEngine>(CreateNewEngine)))
+   if(!RdkCoreManager.SetCoreElementsCreationFunctions(reinterpret_cast<URdkCoreManager::PCreateNewStorage>(CreateNewStorage),
+						reinterpret_cast<URdkCoreManager::PCreateNewEnvironment>(CreateNewEnvironment),
+						reinterpret_cast<URdkCoreManager::PCreateNewEngine>(CreateNewEngine)))
 	return RDK_E_CORE_INIT_FAIL;
 
-   res=DllManager.Add(index);
+   res=RdkCoreManager.Add(index);
   }
   catch (RDK::UException &exception)
   {
@@ -518,7 +518,7 @@ int RDK_CALL Core_DelChannel(int index)
  {
   try
   {
-   res=DllManager.Del(index);
+   res=RdkCoreManager.Del(index);
   }
   catch (RDK::UException &exception)
   {
@@ -540,20 +540,20 @@ int RDK_CALL Core_DelChannel(int index)
 // Возвращает индекс текущего выбранного движка
 int RDK_CALL Core_GetSelectedChannelIndex(void)
 {
- return DllManager.GetSelectedChannelIndex();
+ return RdkCoreManager.GetSelectedChannelIndex();
 }
 
 // Настраивает обычный интерфейс на работу с заданным движком
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
 int RDK_CALL Core_SelectChannel(int index)
 {
- return DllManager.SelectChannel(index);
+ return RdkCoreManager.SelectChannel(index);
 }
 
 /// Блокирует канал до вызова функции UnlockEngine
 int RDK_CALL Core_LockChannel(void)
 {
- return MCore_LockChannel(DllManager.GetSelectedChannelIndex());
+ return MCore_LockChannel(RdkCoreManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MCore_LockChannel(int index)
@@ -566,11 +566,11 @@ int RDK_CALL MCore_LockChannel(int index)
  {
   try
   {
-   if(DllManager.LockerList[index])
+   if(RdkCoreManager.LockerList[index])
 	return RDK_SUCCESS;
 
-   if(!DllManager.LockerList[index])
-	DllManager.LockerList[index]=new UGenericMutexExclusiveLocker(DllManager.MutexList[index]);
+   if(!RdkCoreManager.LockerList[index])
+	RdkCoreManager.LockerList[index]=new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -593,7 +593,7 @@ int RDK_CALL MCore_LockChannel(int index)
 /// Разблокирует канал
 int RDK_CALL Core_UnLockChannel(void)
 {
- return MCore_UnLockChannel(DllManager.GetSelectedChannelIndex());
+ return MCore_UnLockChannel(RdkCoreManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MCore_UnLockChannel(int index)
@@ -606,11 +606,11 @@ int RDK_CALL MCore_UnLockChannel(int index)
  {
   try
   {
-   if(!DllManager.LockerList[index])
+   if(!RdkCoreManager.LockerList[index])
 	return RDK_SUCCESS;
 
-   delete DllManager.LockerList[index];
-   DllManager.LockerList[index]=0;
+   delete RdkCoreManager.LockerList[index];
+   RdkCoreManager.LockerList[index]=0;
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -637,15 +637,15 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
  {
   try
   {
-   if(Core_GetNumChannels()<=DllManager.GetSelectedChannelIndex())
+   if(Core_GetNumChannels()<=RdkCoreManager.GetSelectedChannelIndex())
    {
-	res=SetNumChannels(DllManager.GetSelectedChannelIndex()+1);
+	res=SetNumChannels(RdkCoreManager.GetSelectedChannelIndex()+1);
 
 	if(res != RDK_SUCCESS)
 	 return res;
    }
 
-   res=MCore_ChannelInit(DllManager.GetSelectedChannelIndex(), predefined_structure, exception_handler);
+   res=MCore_ChannelInit(RdkCoreManager.GetSelectedChannelIndex(), predefined_structure, exception_handler);
   }
   catch (RDK::UException &exception)
   {
@@ -666,7 +666,7 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
 
 int RDK_CALL MCore_ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
 {
- return DllManager.ChannelInit(channel_index, predefined_structure, exception_handler);
+ return RdkCoreManager.ChannelInit(channel_index, predefined_structure, exception_handler);
 }
 
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
@@ -677,13 +677,13 @@ int RDK_CALL Core_ChannelUnInit(void)
 
 int RDK_CALL MCore_ChannelUnInit(int channel_index)
 {
- return DllManager.ChannelUnInit(channel_index);
+ return RdkCoreManager.ChannelUnInit(channel_index);
 }
 
 /// Проверяет инициализирован ли движок
 bool RDK_CALL Core_IsChannelInit(void)
 {
- return (DllManager.GetEngine())?true:false;
+ return (RdkCoreManager.GetEngine())?true:false;
 }
 
 bool RDK_CALL MCore_IsChannelInit(int channel_index)
@@ -691,7 +691,7 @@ bool RDK_CALL MCore_IsChannelInit(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
 
- return (DllManager.GetEngine(channel_index))?true:false;
+ return (RdkCoreManager.GetEngine(channel_index))?true:false;
 }
 
 /// Режим создания внутренних временных переменных для
@@ -700,12 +700,12 @@ bool RDK_CALL MCore_IsChannelInit(int channel_index)
 /// 1 - уникальные переменные с необходимостью вызвова функции очистки
 int RDK_CALL Engine_GetBufObjectsMode(void)
 {
- return DllManager.GetBufObjectsMode();
+ return RdkCoreManager.GetBufObjectsMode();
 }
 
 int RDK_CALL Engine_SetBufObjectsMode(int mode)
 {
- return DllManager.SetBufObjectsMode(mode);
+ return RdkCoreManager.SetBufObjectsMode(mode);
 }
 
 /// Высвобождает буферную строку движка, по заданному указателю
@@ -716,7 +716,7 @@ int RDK_CALL Engine_FreeBufString(const char *pointer)
  {
   try
   {
-   DllManager.GetEngineLock()->DestroyTempString(pointer);
+   RdkCoreManager.GetEngineLock()->DestroyTempString(pointer);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -744,7 +744,7 @@ int RDK_CALL MEngine_FreeBufString(int channel_index,const char *pointer)
   {
    if(channel_index<0 || channel_index>=Core_GetNumChannels())
 	return RDK_E_CORE_CHANNEL_NOT_FOUND;
-   DllManager.GetEngineLock(channel_index)->DestroyTempString(pointer);
+   RdkCoreManager.GetEngineLock(channel_index)->DestroyTempString(pointer);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -770,7 +770,7 @@ int RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer)
  {
   try
   {
-   DllManager.GetEngine()->DestroyTempString(pointer);
+   RdkCoreManager.GetEngine()->DestroyTempString(pointer);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -798,7 +798,7 @@ int RDK_CALL MEngine_FreeBufStringUnsafe(int channel_index,const char *pointer)
  {
   try
   {
-   DllManager.GetEngineLock(channel_index)->DestroyTempString(pointer);
+   RdkCoreManager.GetEngineLock(channel_index)->DestroyTempString(pointer);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -820,25 +820,25 @@ int RDK_CALL MEngine_FreeBufStringUnsafe(int channel_index,const char *pointer)
 /// Возвращает число буферных строк движка
 int RDK_CALL Engine_GetNumBufStrings(void)
 {
- return DllManager.GetEngineLock()->GetNumTempStrings();
+ return RdkCoreManager.GetEngineLock()->GetNumTempStrings();
 }
 
 int RDK_CALL MEngine_GetNumBufStrings(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock()->GetNumTempStrings();
+ return RdkCoreManager.GetEngineLock()->GetNumTempStrings();
 }
 
 /// Доступ к мьютексу
 void* RDK_CALL Engine_GetMutex(void)
 {
- return DllManager.GetEngineMutex();
+ return RdkCoreManager.GetEngineMutex();
 }
 
 void* RDK_CALL MEngine_GetMutex(int index)
 {
- return DllManager.GetEngineMutex(index);
+ return RdkCoreManager.GetEngineMutex(index);
 }
 // ----------------------------
 
@@ -848,31 +848,31 @@ void* RDK_CALL MEngine_GetMutex(int index)
 // Возвращает число классов в хранилище
 int RDK_CALL Storage_GetNumClasses(void)
 {
- return DllManager.GetEngineLock()->Storage_GetNumClasses();
+ return RdkCoreManager.GetEngineLock()->Storage_GetNumClasses();
 }
 
 // Возвращает id классов в хранилище. Память должна быть выделена
 int RDK_CALL Storage_GetClassesList(int *buffer)
 {
- return DllManager.GetEngineLock()->Storage_GetClassesList(buffer);
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassesList(buffer);
 }
 
 // Возвращает имена классов в хранилище в виде строки разделенной запятыми
 const char * RDK_CALL Storage_GetClassesNameList(void)
 {
- return DllManager.GetEngineLock()->Storage_GetClassesNameList();
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassesNameList();
 }
 
 // Возвращает имя класса по его id.
 const char * RDK_CALL Storage_GetClassName(int id)
 {
- return DllManager.GetEngineLock()->Storage_GetClassName(id);
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassName(id);
 }
 
 // Возвращает Id класса по его имени
 int RDK_CALL Storage_GetClassId(const char *name)
 {
- return DllManager.GetEngineLock()->Storage_GetClassId(name);
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassId(name);
 }
 
 // Удаляет образец класса объекта из хранилища
@@ -880,59 +880,59 @@ int RDK_CALL Storage_GetClassId(const char *name)
 // или присутствуют объекты этого класса
 int RDK_CALL Storage_DelClass(int classid)
 {
- return DllManager.GetEngineLock()->Storage_DelClass(classid);
+ return RdkCoreManager.GetEngineLock()->Storage_DelClass(classid);
 }
 
 // Удалаяет все свободные объекты из хранилища
 int RDK_CALL Storage_FreeObjectsStorage(void)
 {
- return DllManager.GetEngineLock()->Storage_FreeObjectsStorage();
+ return RdkCoreManager.GetEngineLock()->Storage_FreeObjectsStorage();
 }
 
 // Удаляет все объекты из хранилища
 int RDK_CALL Storage_ClearObjectsStorage(void)
 {
- return DllManager.GetEngineLock()->Storage_ClearObjectsStorage();
+ return RdkCoreManager.GetEngineLock()->Storage_ClearObjectsStorage();
 }
 
 // Вычисляет суммарное число объектов в хранилище
 int RDK_CALL Storage_CalcNumObjects(void)
 {
- return DllManager.GetEngineLock()->Storage_CalcNumObjects();
+ return RdkCoreManager.GetEngineLock()->Storage_CalcNumObjects();
 }
 
 int RDK_CALL Storage_CalcNumObjectsById(int classid)
 {
- return DllManager.GetEngineLock()->Storage_CalcNumObjectsById(classid);
+ return RdkCoreManager.GetEngineLock()->Storage_CalcNumObjectsById(classid);
 }
 
 int RDK_CALL Storage_CalcNumObjectsByName(const char* classname)
 {
- return DllManager.GetEngineLock()->Storage_CalcNumObjectsByName(classname);
+ return RdkCoreManager.GetEngineLock()->Storage_CalcNumObjectsByName(classname);
 }
 
 // Возвращает описание класса по его id в формате xml
 const char* RDK_CALL Storage_GetClassDescription(const char* classname)
 {
- return DllManager.GetEngineLock()->Storage_GetClassDescription(classname);
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassDescription(classname);
 }
 
 // Устанавливает описание класса по его id, считывая его из формата xml
 int RDK_CALL Storage_SetClassDescription(const char* classname, const char* description)
 {
- return DllManager.GetEngineLock()->Storage_SetClassDescription(classname, description);
+ return RdkCoreManager.GetEngineLock()->Storage_SetClassDescription(classname, description);
 }
 
 // Сохраняет описание всех классов в xml
 const char* RDK_CALL Storage_SaveClassesDescription(void)
 {
- return DllManager.GetEngineLock()->Storage_SaveClassesDescription();
+ return RdkCoreManager.GetEngineLock()->Storage_SaveClassesDescription();
 }
 
 // Загружает описание всех классов из xml
 int RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext);
+ return RdkCoreManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext);
 }
 
 int RDK_CALL MStorage_LoadClassesDescription(int channel_index, const char* xmltext)
@@ -940,19 +940,19 @@ int RDK_CALL MStorage_LoadClassesDescription(int channel_index, const char* xmlt
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetEngineLock(channel_index)->Storage_LoadClassesDescription(xmltext);
+ return RdkCoreManager.GetEngineLock(channel_index)->Storage_LoadClassesDescription(xmltext);
 }
 
 // Сохраняет общее описание всех классов в xml
 const char* RDK_CALL Storage_SaveCommonClassesDescription(void)
 {
- return DllManager.GetEngineLock()->Storage_SaveCommonClassesDescription();
+ return RdkCoreManager.GetEngineLock()->Storage_SaveCommonClassesDescription();
 }
 
 // Загружает общее описание всех классов из xml
 int RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext);
+ return RdkCoreManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext);
 }
 
 int RDK_CALL MStorage_LoadCommonClassesDescription(int channel_index, const char* xmltext)
@@ -960,20 +960,20 @@ int RDK_CALL MStorage_LoadCommonClassesDescription(int channel_index, const char
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetEngineLock(channel_index)->Storage_LoadCommonClassesDescription(xmltext);
+ return RdkCoreManager.GetEngineLock(channel_index)->Storage_LoadCommonClassesDescription(xmltext);
 }
 
 
 // Сохраняет описание всех классов в xml включая общее описание
 const char* RDK_CALL Storage_SaveAllClassesDescription(void)
 {
- return DllManager.GetEngineLock()->Storage_SaveAllClassesDescription();
+ return RdkCoreManager.GetEngineLock()->Storage_SaveAllClassesDescription();
 }
 
 // Загружает описание всех классов из xml включая общее описание
 int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadAllClassesDescription(xmltext);
+ return RdkCoreManager.GetEngineLock()->Storage_LoadAllClassesDescription(xmltext);
 }
 // ----------------------------
 
@@ -983,108 +983,108 @@ int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
 // Возвращает число библиотек
 int RDK_CALL Storage_GetNumClassLibraries(void)
 {
- return DllManager.GetEngineLock()->Storage_GetNumClassLibraries();
+ return RdkCoreManager.GetEngineLock()->Storage_GetNumClassLibraries();
 }
 
 // Возвращает список библиотек в виде строки, разделенной запятыми
 const char* RDK_CALL Storage_GetClassLibrariesList(void)
 {
- return DllManager.GetEngineLock()->Storage_GetClassLibrariesList();
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassLibrariesList();
 }
 
 // Возвращает список классов библиотеки в виде строки, разделенной запятыми
 // library_name - имя библиотеки
 const char* RDK_CALL Storage_GetLibraryClassNames(const char *library_name)
 {
- return DllManager.GetEngineLock()->Storage_GetLibraryClassNames(library_name);
+ return RdkCoreManager.GetEngineLock()->Storage_GetLibraryClassNames(library_name);
 }
 
 // Возвращает список классов библиотеки в виде строки, разделенной запятыми
 // index - индекс библиотеки
 const char* RDK_CALL Storage_GetLibraryClassNamesByIndex(int index)
 {
- return DllManager.GetEngineLock()->Storage_GetLibraryClassNamesByIndex(index);
+ return RdkCoreManager.GetEngineLock()->Storage_GetLibraryClassNamesByIndex(index);
 }
 
 // Возвращает имя библиотеки по индексу
 const char * RDK_CALL Storage_GetClassLibraryNameByIndex(int index)
 {
- return DllManager.GetEngineLock()->Storage_GetClassLibraryNameByIndex(index);
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassLibraryNameByIndex(index);
 }
 
 // Возвращает версию библиотеки по индексу
 const char * RDK_CALL Storage_GetClassLibraryVersionByIndex(int index)
 {
- return DllManager.GetEngineLock()->Storage_GetClassLibraryVersionByIndex(index);
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassLibraryVersionByIndex(index);
 }
 
 /// Создает новую runtime-библиотеку
 int RDK_CALL Storage_CreateRuntimeCollection(const char *collection_name)
 {
- return DllManager.GetEngineLock()->Storage_CreateRuntimeCollection(collection_name);
+ return RdkCoreManager.GetEngineLock()->Storage_CreateRuntimeCollection(collection_name);
 }
 
 // Загружает коллекцию по имени dll-файла
 int RDK_CALL Storage_LoadBinaryCollectionFromFile(const char *filename)
 {
- return DllManager.GetEngineLock()->Storage_LoadBinaryCollectionFromFile(filename);
+ return RdkCoreManager.GetEngineLock()->Storage_LoadBinaryCollectionFromFile(filename);
 }
 
 // Загружает runtime-коллекцию
 int RDK_CALL Storage_LoadRuntimeCollectionFromFile(const char *filename)
 {
- return DllManager.GetEngineLock()->Storage_LoadRuntimeCollectionFromFile(filename);
+ return RdkCoreManager.GetEngineLock()->Storage_LoadRuntimeCollectionFromFile(filename);
 }
 
 int RDK_CALL Storage_LoadRuntimeCollectionFromString(const char *buffer)
 {
- return DllManager.GetEngineLock()->Storage_LoadRuntimeCollectionFromString(buffer);
+ return RdkCoreManager.GetEngineLock()->Storage_LoadRuntimeCollectionFromString(buffer);
 }
 
 // Сохраняет runtime-коллекцию
 int RDK_CALL Storage_SaveRuntimeCollectionToFile(const char *filename)
 {
- return DllManager.GetEngineLock()->Storage_SaveRuntimeCollectionToFile(filename);
+ return RdkCoreManager.GetEngineLock()->Storage_SaveRuntimeCollectionToFile(filename);
 }
 
 int RDK_CALL Storage_SaveRuntimeCollectionToString(const char *buffer)
 {
- return DllManager.GetEngineLock()->Storage_SaveRuntimeCollectionToString(buffer);
+ return RdkCoreManager.GetEngineLock()->Storage_SaveRuntimeCollectionToString(buffer);
 }
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 int RDK_CALL Storage_DelClassLibraryByIndex(int index)
 {
- return DllManager.GetEngineLock()->Storage_DelClassLibraryByIndex(index);
+ return RdkCoreManager.GetEngineLock()->Storage_DelClassLibraryByIndex(index);
 }
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 int RDK_CALL Storage_DelClassLibraryByName(const char *name)
 {
- return DllManager.GetEngineLock()->Storage_DelClassLibraryByName(name);
+ return RdkCoreManager.GetEngineLock()->Storage_DelClassLibraryByName(name);
 }
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 int RDK_CALL Storage_DelAllClassLibraries(void)
 {
- return DllManager.GetEngineLock()->Storage_DelAllClassLibraries();
+ return RdkCoreManager.GetEngineLock()->Storage_DelAllClassLibraries();
 }
 
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
 int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname, const char *collection_name)
 {
- return DllManager.GetEngineLock()->Storage_CreateClass(stringid, classname, collection_name);
+ return RdkCoreManager.GetEngineLock()->Storage_CreateClass(stringid, classname, collection_name);
 }
 
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
 int RDK_CALL Storage_BuildStorage(void)
 {
- return DllManager.GetEngineLock()->Storage_BuildStorage();
+ return RdkCoreManager.GetEngineLock()->Storage_BuildStorage();
 }
 // ----------------------------
 
@@ -1095,26 +1095,26 @@ int RDK_CALL Storage_BuildStorage(void)
 // Индекс предарительно заданной модели обработки
 int RDK_CALL Env_GetPredefinedStructure(void)
 {
- return DllManager.GetEngineLock()->Env_GetPredefinedStructure();
+ return RdkCoreManager.GetEngineLock()->Env_GetPredefinedStructure();
 }
 
 int RDK_CALL MEnv_GetPredefinedStructure(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_GetPredefinedStructure();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_GetPredefinedStructure();
 }
 
 int RDK_CALL Env_SetPredefinedStructure(int value)
 {
- return DllManager.GetEngineLock()->Env_SetPredefinedStructure(value);
+ return RdkCoreManager.GetEngineLock()->Env_SetPredefinedStructure(value);
 }
 
 int RDK_CALL MEnv_SetPredefinedStructure(int channel_index, int value)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_SetPredefinedStructure(value);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetPredefinedStructure(value);
 }
 
 // Флаг состояния инициализации
@@ -1122,41 +1122,41 @@ int RDK_CALL MEnv_SetPredefinedStructure(int channel_index, int value)
 // false - хранилище не готово
 bool RDK_CALL Env_IsStoragePresent(void)
 {
- return DllManager.GetEngineLock()->Env_IsStoragePresent();
+ return RdkCoreManager.GetEngineLock()->Env_IsStoragePresent();
 }
 
 bool RDK_CALL MEnv_IsStoragePresent(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
- return DllManager.GetEngineLock(channel_index)->Env_IsStoragePresent();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_IsStoragePresent();
 }
 
 // Возвращает состояние инициализации
 bool RDK_CALL Env_IsInit(void)
 {
- return DllManager.GetEngineLock()->Env_IsInit();
+ return RdkCoreManager.GetEngineLock()->Env_IsInit();
 }
 
 bool RDK_CALL MEnv_IsInit(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
- return DllManager.GetEngineLock(channel_index)->Env_IsInit();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_IsInit();
 }
 
 
 // Признак наличия сформированной структуры
 bool RDK_CALL Env_IsStructured(void)
 {
- return DllManager.GetEngineLock()->Env_IsStructured();
+ return RdkCoreManager.GetEngineLock()->Env_IsStructured();
 }
 
 bool RDK_CALL MEnv_IsStructured(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
- return DllManager.GetEngineLock(channel_index)->Env_IsStructured();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_IsStructured();
 }
 
 // Возвращает состояние внутренего логгирования
@@ -1184,66 +1184,66 @@ int RDK_CALL MEnv_SetEventsLogMode(int channel_index, bool value)
 // Инициализация среды
 int RDK_CALL Env_Init(void)
 {
- return DllManager.GetEngineLock()->Env_Init();
+ return RdkCoreManager.GetEngineLock()->Env_Init();
 }
 
 int RDK_CALL MEnv_Init(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_Init();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_Init();
 }
 
 // Деинициализация среды
 int RDK_CALL Env_UnInit(void)
 {
- return DllManager.GetEngineLock()->Env_UnInit();
+ return RdkCoreManager.GetEngineLock()->Env_UnInit();
 }
 
 int RDK_CALL MEnv_UnInit(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_UnInit();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_UnInit();
 }
 
 // Формирует предварительно заданную модель обработки
 int RDK_CALL Env_CreateStructure(void)
 {
- return DllManager.GetEngineLock()->Env_CreateStructure();
+ return RdkCoreManager.GetEngineLock()->Env_CreateStructure();
 }
 
 int RDK_CALL MEnv_CreateStructure(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_CreateStructure();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_CreateStructure();
 }
 
 // Уничтожает текущую модель обработки
 int RDK_CALL Env_DestroyStructure(void)
 {
- return DllManager.GetEngineLock()->Env_DestroyStructure();
+ return RdkCoreManager.GetEngineLock()->Env_DestroyStructure();
 }
 
 int RDK_CALL MEnv_DestroyStructure(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_DestroyStructure();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_DestroyStructure();
 }
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 int RDK_CALL Env_Destroy(void)
 {
- return DllManager.GetEngineLock()->Env_Destroy();
+ return RdkCoreManager.GetEngineLock()->Env_Destroy();
 }
 
 int RDK_CALL MEnv_Destroy(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_Destroy();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_Destroy();
 }
 
 // Метод счета
@@ -1252,9 +1252,9 @@ int RDK_CALL MEnv_Destroy(int channel_index)
 int RDK_CALL Env_Calculate(const char* stringid)
 {
 #ifdef RDK_UNSAFE_CALCULATE
- return DllManager.GetEngine()->Env_Calculate(stringid);
+ return RdkCoreManager.GetEngine()->Env_Calculate(stringid);
 #endif
- return DllManager.GetEngineLock()->Env_Calculate(stringid);
+ return RdkCoreManager.GetEngineLock()->Env_Calculate(stringid);
 }
 
 int RDK_CALL MEnv_Calculate(int channel_index, const char* stringid)
@@ -1262,22 +1262,22 @@ int RDK_CALL MEnv_Calculate(int channel_index, const char* stringid)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 #ifdef RDK_UNSAFE_CALCULATE
- return DllManager.GetEngine(channel_index)->Env_Calculate(stringid);
+ return RdkCoreManager.GetEngine(channel_index)->Env_Calculate(stringid);
 #endif
- return DllManager.GetEngineLock(channel_index)->Env_Calculate(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_Calculate(stringid);
 }
 
 int RDK_CALL MEnv_CalculateUnsafe(int channel_index, const char* stringid)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngine(channel_index)->Env_Calculate(stringid);
+ return RdkCoreManager.GetEngine(channel_index)->Env_Calculate(stringid);
 }
 
 // Расчет всей модели в реальном времени
 int RDK_CALL Env_RTCalculate(void)
 {
- return DllManager.GetEngineLock()->Env_RTCalculate();
+ return RdkCoreManager.GetEngineLock()->Env_RTCalculate();
 }
 
 int RDK_CALL MEnv_RTCalculate(int channel_index)
@@ -1285,7 +1285,7 @@ int RDK_CALL MEnv_RTCalculate(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetEngineLock(channel_index)->Env_RTCalculate();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_RTCalculate();
 }
 
 // Метод сброса счета
@@ -1293,14 +1293,14 @@ int RDK_CALL MEnv_RTCalculate(int channel_index)
 // иначе - только указанный компонент модели
 int RDK_CALL Env_Reset(const char* stringid)
 {
- return DllManager.GetEngineLock()->Env_Reset(stringid);
+ return RdkCoreManager.GetEngineLock()->Env_Reset(stringid);
 }
 
 int RDK_CALL MEnv_Reset(int channel_index, const char* stringid)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_Reset(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_Reset(stringid);
 }
 
 /// Метод сброса параметров на значения по умолчанию
@@ -1309,20 +1309,20 @@ int RDK_CALL MEnv_Reset(int channel_index, const char* stringid)
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
 int RDK_CALL Env_Default(const char* stringid, bool subcomps)
 {
- return DllManager.GetEngineLock()->Env_Default(stringid,subcomps);
+ return RdkCoreManager.GetEngineLock()->Env_Default(stringid,subcomps);
 }
 
 int RDK_CALL MEnv_Default(int channel_index, const char* stringid, bool subcomps)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_Default(stringid,subcomps);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_Default(stringid,subcomps);
 }
 
 // Производит увеличение времени модели на требуемую величину
 int RDK_CALL Env_IncreaseModelTimeByStep(void)
 {
- return DllManager.GetEngineLock()->Env_IncreaseModelTimeByStep();
+ return RdkCoreManager.GetEngineLock()->Env_IncreaseModelTimeByStep();
 }
 
 /// Устанавливает минимальный интервал времени между шагами расчета (мс)
@@ -1330,14 +1330,14 @@ int RDK_CALL Env_IncreaseModelTimeByStep(void)
 /// последней итерации не станет больше чем эта величина
 int RDK_CALL Env_SetMinInterstepsInterval(unsigned long long value)
 {
- return DllManager.GetEngineLock()->Env_SetMinInterstepsInterval(value);
+ return RdkCoreManager.GetEngineLock()->Env_SetMinInterstepsInterval(value);
 }
 
 int RDK_CALL MEnv_SetMinInterstepsInterval(int channel_index, unsigned long long value)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_SetMinInterstepsInterval(value);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetMinInterstepsInterval(value);
 }
 
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
@@ -1345,21 +1345,21 @@ int RDK_CALL MEnv_SetMinInterstepsInterval(int channel_index, unsigned long long
 /// последней итерации не станет больше чем эта величина
 unsigned long long RDK_CALL Env_GetMinInterstepsInterval(void)
 {
- return DllManager.GetEngineLock()->Env_GetMinInterstepsInterval();
+ return RdkCoreManager.GetEngineLock()->Env_GetMinInterstepsInterval();
 }
 
 unsigned long long RDK_CALL Env_GetMinInterstepsInterval(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetEngineLock(channel_index)->Env_GetMinInterstepsInterval();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_GetMinInterstepsInterval();
 }
 
 
 // Время, потраченное на последний RT-расчет
 double RDK_CALL Env_GetRTLastDuration(void)
 {
- return DllManager.GetEngineLock()->Env_GetRTLastDuration();
+ return RdkCoreManager.GetEngineLock()->Env_GetRTLastDuration();
 }
 
 double RDK_CALL MEnv_GetRTLastDuration(int channel_index)
@@ -1367,13 +1367,13 @@ double RDK_CALL MEnv_GetRTLastDuration(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Env_GetRTLastDuration();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_GetRTLastDuration();
 }
 
 /// Время, расчитанное в модели за один вызов RTCalculate;
 double RDK_CALL Env_GetRTModelCalcTime(void)
 {
- return DllManager.GetEngineLock()->Env_GetRTModelCalcTime();
+ return RdkCoreManager.GetEngineLock()->Env_GetRTModelCalcTime();
 }
 
 double RDK_CALL MEnv_GetRTModelCalcTime(int channel_index)
@@ -1381,13 +1381,13 @@ double RDK_CALL MEnv_GetRTModelCalcTime(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Env_GetRTModelCalcTime();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_GetRTModelCalcTime();
 }
 
 /// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
 double RDK_CALL Env_CalcRTPerformance(void)
 {
- return DllManager.GetEngineLock()->Env_CalcRTPerformance();
+ return RdkCoreManager.GetEngineLock()->Env_CalcRTPerformance();
 }
 
 double RDK_CALL MEnv_CalcRTPerformance(int channel_index)
@@ -1395,24 +1395,24 @@ double RDK_CALL MEnv_CalcRTPerformance(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Env_CalcRTPerformance();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_CalcRTPerformance();
 }
 
 // Возвращает имя текущего каталога для хранения данных
 const char* RDK_CALL Env_GetCurrentDataDir(void)
 {
- return DllManager.GetEngineLock()->Env_GetCurrentDataDir();
+ return RdkCoreManager.GetEngineLock()->Env_GetCurrentDataDir();
 }
 
 // Устанавливает имя текущего каталога для хранения данных
 int RDK_CALL Env_SetCurrentDataDir(const char *dir)
 {
- return DllManager.GetEngineLock()->Env_SetCurrentDataDir(dir);
+ return RdkCoreManager.GetEngineLock()->Env_SetCurrentDataDir(dir);
 }
 
 int RDK_CALL MEnv_SetCurrentDataDir(int channel_index, const char *dir)
 {
- return DllManager.GetEngineLock(channel_index)->Env_SetCurrentDataDir(dir);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetCurrentDataDir(dir);
 }
 
 /// Возвращает состояние флага отладочного режима среды
@@ -1490,53 +1490,53 @@ bool RDK_CALL MEnv_SetDebuggerMessageFlag(int channel_index, bool value)
 // Устанавливает текущий компонент (адресация относительно корня - модели)
 int RDK_CALL Env_SelectCurrentComponent(const char *stringid)
 {
- return DllManager.GetEngineLock()->Env_SelectCurrentComponent(stringid);
+ return RdkCoreManager.GetEngineLock()->Env_SelectCurrentComponent(stringid);
 }
 
 // Сбрасывает текущий компонент в состояние по умолчению (модель)
 int RDK_CALL Env_ResetCurrentComponent(const char *stringid)
 {
- return DllManager.GetEngineLock()->Env_ResetCurrentComponent(stringid);
+ return RdkCoreManager.GetEngineLock()->Env_ResetCurrentComponent(stringid);
 }
 
 // Меняет текущий компонент на его родителя (подъем на уровень вверх)
 // Если уже на верхнем уровне, то не делает ничего
 int RDK_CALL Env_UpCurrentComponent(void)
 {
- return DllManager.GetEngineLock()->Env_UpCurrentComponent();
+ return RdkCoreManager.GetEngineLock()->Env_UpCurrentComponent();
 }
 
 // Меняет текущий компонент на его дочерний на произвольном уровне вложенности
 // (спуск на N уровней вниз относительно текущего компонента)
 int RDK_CALL Env_DownCurrentComponent(const char *stringid)
 {
- return DllManager.GetEngineLock()->Env_DownCurrentComponent(stringid);
+ return RdkCoreManager.GetEngineLock()->Env_DownCurrentComponent(stringid);
 }
 
 // Возвращает длинное имя текущего компонента
 const char* RDK_CALL Env_GetCurrentComponentName(void)
 {
- return DllManager.GetEngineLock()->Env_GetCurrentComponentName();
+ return RdkCoreManager.GetEngineLock()->Env_GetCurrentComponentName();
 }
 
 // Возвращает длинный строковой id текущего компонента
 const char* RDK_CALL Env_GetCurrentComponentId(void)
 {
- return DllManager.GetEngineLock()->Env_GetCurrentComponentId();
+ return RdkCoreManager.GetEngineLock()->Env_GetCurrentComponentId();
 }
 // ***********************************************
 
 /// Инициирует извещение о сбое в работе источника данных
 int RDK_CALL Env_CallSourceController(void)
 {
- return DllManager.GetEngineLock()->Env_CallSourceController();
+ return RdkCoreManager.GetEngineLock()->Env_CallSourceController();
 }
 
 int RDK_CALL MEnv_CallSourceController(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Env_CallSourceController();
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_CallSourceController();
 }
 // --------------------------
 
@@ -1546,50 +1546,50 @@ int RDK_CALL MEnv_CallSourceController(int channel_index)
 // Удаляет модель
 int RDK_CALL Model_Destroy(void)
 {
- return DllManager.GetEngineLock()->Model_Destroy();
+ return RdkCoreManager.GetEngineLock()->Model_Destroy();
 }
 
 int RDK_CALL MModel_Destroy(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Model_Destroy();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_Destroy();
 }
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
 int RDK_CALL Model_Create(const char *classname)
 {
- return DllManager.GetEngineLock()->Model_Create(classname);
+ return RdkCoreManager.GetEngineLock()->Model_Create(classname);
 }
 
 int RDK_CALL MModel_Create(int channel_index, const char *classname)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Model_Create(classname);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_Create(classname);
 }
 
 // Очищает модель
 int RDK_CALL Model_Clear(void)
 {
- return DllManager.GetEngineLock()->Model_Clear();
+ return RdkCoreManager.GetEngineLock()->Model_Clear();
 }
 
 int RDK_CALL MModel_Clear(int channel_index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Model_Clear();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_Clear();
 }
 
 
 // Проверяет, существует ли модель
 bool RDK_CALL Model_Check(void)
 {
- if(!DllManager.GetEngine())
+ if(!RdkCoreManager.GetEngine())
   return false;
- return DllManager.GetEngineLock()->Model_Check();
+ return RdkCoreManager.GetEngineLock()->Model_Check();
 }
 
 bool RDK_CALL MModel_Check(int channel_index)
@@ -1597,22 +1597,22 @@ bool RDK_CALL MModel_Check(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
 
- if(!DllManager.GetEngine(channel_index))
+ if(!RdkCoreManager.GetEngine(channel_index))
   return false;
- return DllManager.GetEngineLock(channel_index)->Model_Check();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_Check();
 }
 
 // Проверяет, существует ли в модели компонент с именем stringid)
 bool RDK_CALL Model_CheckComponent(const char* stringid)
 {
- return DllManager.GetEngineLock()->Model_CheckComponent(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_CheckComponent(stringid);
 }
 
 bool RDK_CALL MModel_CheckComponent(int channel_index, const char* stringid)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
- return DllManager.GetEngineLock(channel_index)->Model_CheckComponent(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CheckComponent(stringid);
 }
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр
@@ -1621,14 +1621,14 @@ bool RDK_CALL MModel_CheckComponent(int channel_index, const char* stringid)
 // Возвращает имя компонента в случае успеха
 const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname)
 {
- return DllManager.GetEngineLock()->Model_AddComponent(stringid, classname);
+ return RdkCoreManager.GetEngineLock()->Model_AddComponent(stringid, classname);
 }
 
 const char* RDK_CALL MModel_AddComponent(int channel_index, const char* stringid, const char *classname)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetEngineLock(channel_index)->Model_AddComponent(stringid, classname);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_AddComponent(stringid, classname);
 }
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
@@ -1636,14 +1636,14 @@ const char* RDK_CALL MModel_AddComponent(int channel_index, const char* stringid
 // если stringid - пустая строка, то удаляет из самой модели
 int RDK_CALL Model_DelComponent(const char* stringid, const char *name)
 {
- return DllManager.GetEngineLock()->Model_DelComponent(stringid, name);
+ return RdkCoreManager.GetEngineLock()->Model_DelComponent(stringid, name);
 }
 
 int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const char *name)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Model_DelComponent(stringid, name);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_DelComponent(stringid, name);
 }
 
 /// Перемещает компоненту в другой компонент
@@ -1652,21 +1652,21 @@ int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const 
 /// то возвращает false и не делает ничего
 int RDK_CALL Model_MoveComponent(const char* component, const char* target)
 {
- return DllManager.GetEngineLock()->Model_MoveComponent(component, target);
+ return RdkCoreManager.GetEngineLock()->Model_MoveComponent(component, target);
 }
 
 int RDK_CALL MModel_MoveComponent(int channel_index, const char* component, const char* target)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return DllManager.GetEngineLock(channel_index)->Model_MoveComponent(component, target);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_MoveComponent(component, target);
 }
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int RDK_CALL Model_GetNumComponents(const char* stringid)
 {
- return DllManager.GetEngineLock()->Model_GetNumComponents(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetNumComponents(stringid);
 }
 
 // Возвращает массив всех id заданного компонента 'stringid'
@@ -1674,7 +1674,7 @@ int RDK_CALL Model_GetNumComponents(const char* stringid)
 int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentsList(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentsList(stringid, buffer);
 }
 
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
@@ -1682,7 +1682,7 @@ int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentsNameList(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentsNameList(stringid);
 }
 
 const char* RDK_CALL MModel_GetComponentsNameList(int channel_index, const char* stringid)
@@ -1690,7 +1690,7 @@ const char* RDK_CALL MModel_GetComponentsNameList(int channel_index, const char*
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentsNameList(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentsNameList(stringid);
 }
 
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
@@ -1699,7 +1699,7 @@ const char* RDK_CALL MModel_GetComponentsNameList(int channel_index, const char*
 const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
 {
 
- return DllManager.GetEngineLock()->Model_FindComponentsByClassName(stringid,class_name,find_all);
+ return RdkCoreManager.GetEngineLock()->Model_FindComponentsByClassName(stringid,class_name,find_all);
 }
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
@@ -1710,7 +1710,7 @@ const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const
 int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step)
 {
 
- return DllManager.GetEngineLock()->Model_ChangeComponentPosition(stringid, step);
+ return RdkCoreManager.GetEngineLock()->Model_ChangeComponentPosition(stringid, step);
 }
 
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
@@ -1726,7 +1726,7 @@ const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 						  int sublevel, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetConnectorsList(stringid, sublevel, owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetConnectorsList(stringid, sublevel, owner_level_stringid);
 }
 
 // Возвращает xml-список длинных идентификаторов всех элементов сети.
@@ -1742,7 +1742,7 @@ const char* RDK_CALL Model_GetItemsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetItemsList(stringid, sublevel, owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetItemsList(stringid, sublevel, owner_level_stringid);
 }
 
 // Возвращает xml-список длинных идентификаторов всех подсетей сети.
@@ -1757,7 +1757,7 @@ const char* RDK_CALL Model_GetItemsList(const char* stringid,
 const char* RDK_CALL Model_GetNetsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
- return DllManager.GetEngineLock()->Model_GetNetsList(stringid, sublevel, owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetNetsList(stringid, sublevel, owner_level_stringid);
 }
 
 // Возвращает имя компонента по заданному 'stringid'
@@ -1766,7 +1766,7 @@ const char* RDK_CALL Model_GetNetsList(const char* stringid,
 const char* RDK_CALL Model_GetComponentName(const char* stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentName(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentName(stringid);
 }
 
 // Возвращает длинное имя компонента по заданному 'stringid'
@@ -1777,7 +1777,7 @@ const char* RDK_CALL Model_GetComponentName(const char* stringid)
 const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentLongName(stringid,owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
 const char* RDK_CALL MModel_GetComponentLongName(int channel_index, const char* stringid, const char* owner_level_stringid)
@@ -1785,7 +1785,7 @@ const char* RDK_CALL MModel_GetComponentLongName(int channel_index, const char* 
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentLongName(stringid,owner_level_stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
 // Возвращает длинный id компонента по заданному 'stringid'
@@ -1796,7 +1796,7 @@ const char* RDK_CALL MModel_GetComponentLongName(int channel_index, const char* 
 const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentLongId(stringid,owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentLongId(stringid,owner_level_stringid);
 }
 
 // Возвращает имя класса компонента в хранилище по длинному 'stringid'
@@ -1804,7 +1804,7 @@ const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* 
 const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentClassName(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentClassName(stringid);
 }
 
 const char* RDK_CALL MModel_GetComponentClassName(int channel_index, const char* stringid)
@@ -1812,7 +1812,7 @@ const char* RDK_CALL MModel_GetComponentClassName(int channel_index, const char*
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentClassName(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentClassName(stringid);
 }
 
 
@@ -1820,7 +1820,7 @@ const char* RDK_CALL MModel_GetComponentClassName(int channel_index, const char*
 const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertiesList(stringid,type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesList(stringid,type_mask);
 }
 
 // Возвращает список имен и индексов свойств компонента разделенный запятыми
@@ -1828,35 +1828,35 @@ const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsi
 const char* RDK_CALL Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertiesLookupList(stringid,type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesLookupList(stringid,type_mask);
 }
 
 // Возвращает свойства компонента по идентификатору
 const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentProperties(stringid,type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentProperties(stringid,type_mask);
 }
 
 // Возвращает свойства компонента по идентификатору с описаниями
 const char * RDK_CALL Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertiesEx(stringid, type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesEx(stringid, type_mask);
 }
 
 // Возвращает выборочные свойства компонента по идентификатору
 const char * RDK_CALL Model_GetComponentSelectedProperties(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает значение свойства компонента по идентификатору компонента и имени свойства
 const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertyValue(stringid,paramname);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 const char * RDK_CALL MModel_GetComponentPropertyValue(int channel_index, const char *stringid, const char *paramname)
@@ -1865,14 +1865,14 @@ const char * RDK_CALL MModel_GetComponentPropertyValue(int channel_index, const 
   return 0;
 
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,paramname);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 // Устанавливает свойства компонента по идентификатору
 int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
 }
 
 RDK_LIB_TYPE int RDK_CALL MModel_SetComponentProperties(int engine_index, const char *stringid, const char* buffer)
@@ -1880,13 +1880,13 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentProperties(int engine_index, const 
  if(engine_index<0 || engine_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(engine_index)->Model_SetComponentProperties(stringid,buffer);
+ return RdkCoreManager.GetEngineLock(engine_index)->Model_SetComponentProperties(stringid,buffer);
 }
 
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 int RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
- return DllManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
 int RDK_CALL MModel_SetComponentPropertyValue(int channel_index, const char *stringid, const char *paramname, const char *buffer)
@@ -1894,7 +1894,7 @@ int RDK_CALL MModel_SetComponentPropertyValue(int channel_index, const char *str
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
@@ -1902,7 +1902,7 @@ int RDK_CALL MModel_SetComponentPropertyValue(int channel_index, const char *str
 int RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
 
- return DllManager.GetEngineLock()->Model_SetGlobalComponentPropertyValue(stringid,class_stringid, paramname,buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetGlobalComponentPropertyValue(stringid,class_stringid, paramname,buffer);
 }
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
@@ -1910,14 +1910,14 @@ int RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const c
 int RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
 {
 
- return DllManager.GetEngineLock()->Model_SetGlobalOwnerComponentPropertyValue(stringid, class_stringid, class_owner_stringid, paramname,buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetGlobalOwnerComponentPropertyValue(stringid, class_stringid, class_owner_stringid, paramname,buffer);
 }
 
 // Возвращает указатель void* на данные свойства компонента
 const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertyData(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertyData(stringid, property_name);
 }
 
 const void* RDK_CALL MModel_GetComponentPropertyData(int channel_index, const char *stringid, const char *property_name)
@@ -1925,14 +1925,14 @@ const void* RDK_CALL MModel_GetComponentPropertyData(int channel_index, const ch
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentPropertyData(stringid, property_name);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyData(stringid, property_name);
 }
 
 // Копирует данные 'data' в заданное свойство компонента
 int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentPropertyData(stringid, property_name, data);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentPropertyData(stringid, property_name, data);
 }
 
 int RDK_CALL MModel_SetComponentPropertyData(int channel_index, const char *stringid, const char *property_name, const void *data)
@@ -1940,7 +1940,7 @@ int RDK_CALL MModel_SetComponentPropertyData(int channel_index, const char *stri
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentPropertyData(stringid, property_name, data);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentPropertyData(stringid, property_name, data);
 }
 
 // Возвращает параметры компонента по идентификатору
@@ -1948,7 +1948,7 @@ int RDK_CALL MModel_SetComponentPropertyData(int channel_index, const char *stri
 const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
 const char * RDK_CALL MModel_GetComponentParameters(int channel_index, const char *stringid, unsigned int type_mask)
@@ -1956,7 +1956,7 @@ const char * RDK_CALL MModel_GetComponentParameters(int channel_index, const cha
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
 // Возвращает выборочные параметры компонента по идентификатору
@@ -1964,21 +1964,21 @@ const char * RDK_CALL MModel_GetComponentParameters(int channel_index, const cha
 const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает параметры компонента по идентификатору с описаниями
 const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertiesEx(stringid, type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesEx(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
 const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertyValue(stringid,paramname);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 const char * RDK_CALL MModel_GetComponentParameterValue(int channel_index, const char *stringid, const char *paramname)
@@ -1986,14 +1986,14 @@ const char * RDK_CALL MModel_GetComponentParameterValue(int channel_index, const
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,paramname);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 // Устанавливает параметры компонента по идентификатору
 int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
 }
 
 int RDK_CALL MModel_SetComponentParameters(int channel_index, const char *stringid, const char* buffer)
@@ -2001,14 +2001,14 @@ int RDK_CALL MModel_SetComponentParameters(int channel_index, const char *string
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 int RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
 {
 
- DllManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ RdkCoreManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,paramname,buffer);
  return 0;
 }
 
@@ -2017,91 +2017,91 @@ int RDK_CALL MModel_SetComponentParameterValue(int channel_index, const char *st
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- DllManager.GetEngineLock(channel_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
  return 0;
 }
 
 // Связывает выбранные контейнеры друг с другом
 int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
- return DllManager.GetEngineLock()->Model_CreateLink(stringid1, output_number, stringid2, input_number);
+ return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, output_number, stringid2, input_number);
 }
 
 int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
+ return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
 {
- return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
+ return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
 }
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int RDK_CALL Model_ChainLinking(const char* stringid)
 {
- return DllManager.GetEngineLock()->Model_ChainLinking(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_ChainLinking(stringid);
 }
 
 // Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
 // Используется для тестирования производительности
 int RDK_CALL Model_ParallelLinking(const char* stringid)
 {
- return DllManager.GetEngineLock()->Model_ParallelLinking(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_ParallelLinking(stringid);
 }
 
 // Разрывает выбранную связь
 int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
- return DllManager.GetEngineLock()->Model_BreakLink(stringid1, output_number, stringid2, input_number);
+ return RdkCoreManager.GetEngineLock()->Model_BreakLink(stringid1, output_number, stringid2, input_number);
 }
 
 int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- return DllManager.GetEngineLock()->Model_BreakLink(stringid1, item_property_name, stringid2, connector_property_name);
+ return RdkCoreManager.GetEngineLock()->Model_BreakLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 // Разрывает все связи
 int RDK_CALL Model_BreakAllLinks(void)
 {
- return DllManager.GetEngineLock()->Model_BreakAllLinks();
+ return RdkCoreManager.GetEngineLock()->Model_BreakAllLinks();
 }
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index)
 {
- return DllManager.GetEngineLock()->Model_BreakConnectorLink(connectorname, connector_index);
+ return RdkCoreManager.GetEngineLock()->Model_BreakConnectorLink(connectorname, connector_index);
 }
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
 {
- return DllManager.GetEngineLock()->Model_BreakAllComponentLinks(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentLinks(stringid);
 }
 
 // Разрывает все входные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid)
 {
- return DllManager.GetEngineLock()->Model_BreakAllComponentInputLinks(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentInputLinks(stringid);
 }
 
 // Разрывает все выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid)
 {
 
- return DllManager.GetEngineLock()->Model_BreakAllComponentOutputLinks(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentOutputLinks(stringid);
 }
 
 // Проверяет, существует ли заданна связь
 bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
 
- return DllManager.GetEngineLock()->Model_CheckLink(stringid1, output_number, stringid2, input_number);
+ return RdkCoreManager.GetEngineLock()->Model_CheckLink(stringid1, output_number, stringid2, input_number);
 }
 
 bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- return DllManager.GetEngineLock()->Model_CheckLink(stringid1, item_property_name, stringid2, connector_property_name);
+ return RdkCoreManager.GetEngineLock()->Model_CheckLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
@@ -2110,7 +2110,7 @@ bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_prop
 const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentInternalLinks(stringid, owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentInternalLinks(stringid, owner_level_stringid);
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
@@ -2119,7 +2119,7 @@ const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid, cons
 int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentInternalLinks(stringid,buffer, owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentInternalLinks(stringid,buffer, owner_level_stringid);
 }
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
@@ -2133,7 +2133,7 @@ int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* b
 const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentInputLinks(stringid,owner_level_stringid, sublevel);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentInputLinks(stringid,owner_level_stringid, sublevel);
 }
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
@@ -2147,7 +2147,7 @@ const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const c
 const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutputLinks(stringid,owner_level_stringid, sublevel);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputLinks(stringid,owner_level_stringid, sublevel);
 }
 
 // Возращает все связи между двумя компонентами в виде xml в буфер buffer
@@ -2160,7 +2160,7 @@ const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const 
 const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPersonalLinks(stringid,owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPersonalLinks(stringid,owner_level_stringid);
 }
 
 // Возвращает состояние компонента по идентификатору
@@ -2168,7 +2168,7 @@ const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const
 const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
 const char * RDK_CALL MModel_GetComponentState(int channel_index, const char *stringid, unsigned int type_mask)
@@ -2176,7 +2176,7 @@ const char * RDK_CALL MModel_GetComponentState(int channel_index, const char *st
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
 // Возвращает выборочные данные состояния компонента по идентификатору
@@ -2184,14 +2184,14 @@ const char * RDK_CALL MModel_GetComponentState(int channel_index, const char *st
 const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
 const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentPropertyValue(stringid,statename);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertyValue(stringid,statename);
 }
 
 const char * RDK_CALL MModel_GetComponentStateValue(int channel_index, const char *stringid, const char *statename)
@@ -2199,14 +2199,14 @@ const char * RDK_CALL MModel_GetComponentStateValue(int channel_index, const cha
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,statename);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,statename);
 }
 
 // Устанавливает состояние компонента по идентификатору
 int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentProperties(stringid, buffer);
 }
 
 int RDK_CALL MModel_SetComponentState(int channel_index, const char *stringid, const char* buffer)
@@ -2214,42 +2214,42 @@ int RDK_CALL MModel_SetComponentState(int channel_index, const char *stringid, c
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
 int RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,statename,buffer);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,statename,buffer);
 }
 
 // Возвращает число входов у компонента
 int RDK_CALL Model_GetComponentNumInputs(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentNumInputs(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentNumInputs(stringid);
 }
 
 // Возвращает размер входа компонента в числе элементов
 int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentInputDataSize(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentInputDataSize(stringid, index);
 }
 
 // Возвращает размер элемента входа в байтах
 int RDK_CALL Model_GetComponentInputElementSize(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentInputElementSize(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentInputElementSize(stringid, index);
 }
 
 // Возвращает размер входа компонента в байтах элементов
 int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentInputByteSize(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentInputByteSize(stringid, index);
 }
 
 // Возвращает указатель на данные входа как на массив байт
@@ -2257,35 +2257,35 @@ int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index)
 unsigned char* RDK_CALL Model_GetComponentInputData(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentInputData(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentInputData(stringid, index);
 }
 
 // Возвращает число выходов у компонента
 int RDK_CALL Model_GetComponentNumOutputs(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentNumOutputs(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentNumOutputs(stringid);
 }
 
 // Возвращает размер выхода компонента в числе элементов
 int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutputDataSize(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputDataSize(stringid, index);
 }
 
 // Возвращает размер элемента выхода в байтах
 //int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index)
 //{
 //
-// return DllManager.GetEngineLock()->Model_GetComponentOutputElementSize(stringid, index);
+// return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputElementSize(stringid, index);
 //}
 
 // Возвращает размер выхода компонента в байтах элементов
 int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutputByteSize(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputByteSize(stringid, index);
 }
 
 // Возвращает указатель на данные выхода как на массив байт
@@ -2293,7 +2293,7 @@ int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index)
 unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutputData(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputData(stringid, index);
 }
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -2301,7 +2301,7 @@ unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int i
 const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponent(stringid, params_type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponent(stringid, params_type_mask);
 }
 
 const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *stringid, unsigned int params_type_mask)
@@ -2309,7 +2309,7 @@ const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *string
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_SaveComponent(stringid, params_type_mask);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponent(stringid, params_type_mask);
 }
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -2317,7 +2317,7 @@ const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *string
 int RDK_CALL Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
 }
 
 int RDK_CALL MModel_SaveComponentToFile(int channel_index, const char *stringid, const char* file_name, unsigned int params_type_mask)
@@ -2325,7 +2325,7 @@ int RDK_CALL MModel_SaveComponentToFile(int channel_index, const char *stringid,
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -2333,7 +2333,7 @@ int RDK_CALL MModel_SaveComponentToFile(int channel_index, const char *stringid,
 int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_LoadComponent(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_LoadComponent(stringid, buffer);
 }
 
 int RDK_CALL MModel_LoadComponent(int channel_index, const char *stringid, const char* buffer)
@@ -2341,7 +2341,7 @@ int RDK_CALL MModel_LoadComponent(int channel_index, const char *stringid, const
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_LoadComponent(stringid, buffer);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponent(stringid, buffer);
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -2349,7 +2349,7 @@ int RDK_CALL MModel_LoadComponent(int channel_index, const char *stringid, const
 int RDK_CALL Model_LoadComponentFromFile(const char *stringid, const char* file_name)
 {
 
- return DllManager.GetEngineLock()->Model_LoadComponentFromFile(stringid, file_name);
+ return RdkCoreManager.GetEngineLock()->Model_LoadComponentFromFile(stringid, file_name);
 }
 
 int RDK_CALL MModel_LoadComponentFromFile(int channel_index, const char *stringid, const char* file_name)
@@ -2357,42 +2357,42 @@ int RDK_CALL MModel_LoadComponentFromFile(int channel_index, const char *stringi
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_LoadComponentFromFile(stringid, file_name);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponentFromFile(stringid, file_name);
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask);
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 int RDK_CALL Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponentPropertiesToFile(stringid, file_name, type_mask);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentPropertiesToFile(stringid, file_name, type_mask);
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
 {
 
- return DllManager.GetEngineLock()->Model_LoadComponentPropertiesFromFile(stringid, file_name);
+ return RdkCoreManager.GetEngineLock()->Model_LoadComponentPropertiesFromFile(stringid, file_name);
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
@@ -2401,14 +2401,14 @@ const char * RDK_CALL MModel_SaveComponentParameters(int channel_index, const ch
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
 }
 
 int RDK_CALL MModel_LoadComponentParameters(int channel_index, const char *stringid, const char* buffer)
@@ -2416,21 +2416,21 @@ int RDK_CALL MModel_LoadComponentParameters(int channel_index, const char *strin
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_LoadComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentState(const char *stringid, unsigned int type_mask)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF02);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
 // Загружает состояние компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 {
 
- return DllManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
 }
 
 int RDK_CALL MModel_LoadComponentState(int channel_index, const char *stringid, char* buffer)
@@ -2438,7 +2438,7 @@ int RDK_CALL MModel_LoadComponentState(int channel_index, const char *stringid, 
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_LoadComponentProperties(stringid, buffer);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponentProperties(stringid, buffer);
 }
 
 
@@ -2447,47 +2447,47 @@ int RDK_CALL MModel_LoadComponentState(int channel_index, const char *stringid, 
 const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_SaveComponentDrawInfo(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentDrawInfo(stringid);
 }
 
 // Управляет шагом счета модели по умолчанию
 unsigned int RDK_CALL Model_GetDefaultTimeStep(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetDefaultTimeStep();
+ return RdkCoreManager.GetEngineLock()->Model_GetDefaultTimeStep();
 }
 
 int RDK_CALL Model_SetDefaultTimeStep(unsigned int value)
 {
 
- return DllManager.GetEngineLock()->Model_SetDefaultTimeStep(value);
+ return RdkCoreManager.GetEngineLock()->Model_SetDefaultTimeStep(value);
 }
 
 // Управляет шагом счета компонента
 unsigned int RDK_CALL Model_GetTimeStep(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetTimeStep(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetTimeStep(stringid);
 }
 
 int RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int value)
 {
 
- return DllManager.GetEngineLock()->Model_SetTimeStep(stringid, value);
+ return RdkCoreManager.GetEngineLock()->Model_SetTimeStep(stringid, value);
 }
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
 int RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
 
- return DllManager.GetEngineLock()->Model_SetGlobalTimeStep(stringid, value);
+ return RdkCoreManager.GetEngineLock()->Model_SetGlobalTimeStep(stringid, value);
 }
 
 // Возвращает текущее время модели
 unsigned long long RDK_CALL Model_GetTime(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetTime();
+ return RdkCoreManager.GetEngineLock()->Model_GetTime();
 }
 
 unsigned long long RDK_CALL MModel_GetTime(int channel_index)
@@ -2495,13 +2495,13 @@ unsigned long long RDK_CALL MModel_GetTime(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetTime();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetTime();
 }
 
 double RDK_CALL Model_GetDoubleTime(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetDoubleTime();
+ return RdkCoreManager.GetEngineLock()->Model_GetDoubleTime();
 }
 
 double RDK_CALL MModel_GetDoubleTime(int channel_index)
@@ -2509,27 +2509,27 @@ double RDK_CALL MModel_GetDoubleTime(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetDoubleTime();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetDoubleTime();
 }
 
 // Устанавливает текущее время модели
 int RDK_CALL Model_SetTime(unsigned long long value)
 {
 
- return DllManager.GetEngineLock()->Model_SetTime(value);
+ return RdkCoreManager.GetEngineLock()->Model_SetTime(value);
 }
 
 // Возвращает реальное время
 unsigned long long RDK_CALL Model_GetRealTime(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetRealTime();
+ return RdkCoreManager.GetEngineLock()->Model_GetRealTime();
 }
 
 double RDK_CALL Model_GetDoubleRealTime(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetDoubleRealTime();
+ return RdkCoreManager.GetEngineLock()->Model_GetDoubleRealTime();
 }
 
 double RDK_CALL MModel_GetDoubleRealTime(int channel_index)
@@ -2537,40 +2537,40 @@ double RDK_CALL MModel_GetDoubleRealTime(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetDoubleRealTime();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetDoubleRealTime();
 }
 
 // Устанавливает реальное время
 int RDK_CALL Model_SetRealTime(unsigned long long value)
 {
 
- return DllManager.GetEngineLock()->Model_SetRealTime(value);
+ return RdkCoreManager.GetEngineLock()->Model_SetRealTime(value);
 }
 
 // Увеличивает реальное время на заданную величину
 int RDK_CALL Model_IncreaseRealTime(unsigned long long value)
 {
 
- return DllManager.GetEngineLock()->Model_IncreaseRealTime(value);
+ return RdkCoreManager.GetEngineLock()->Model_IncreaseRealTime(value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
 unsigned long long RDK_CALL Model_GetRealTimeStep(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetRealTimeStep();
+ return RdkCoreManager.GetEngineLock()->Model_GetRealTimeStep();
 }
 
 double RDK_CALL Model_GetDoubleRealTimeStep(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetDoubleRealTimeStep();
+ return RdkCoreManager.GetEngineLock()->Model_GetDoubleRealTimeStep();
 }
 
 double RDK_CALL Model_GetDoubleSourceTime(void)
 {
 
- return DllManager.GetEngineLock()->Model_GetDoubleSourceTime();
+ return RdkCoreManager.GetEngineLock()->Model_GetDoubleSourceTime();
 }
 
 double RDK_CALL MModel_GetDoubleSourceTime(int channel_index)
@@ -2578,14 +2578,14 @@ double RDK_CALL MModel_GetDoubleSourceTime(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetDoubleSourceTime();
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetDoubleSourceTime();
 }
 
 // Устанавливает время внешних источников данных
 int RDK_CALL Model_SetDoubleSourceTime(double value)
 {
 
- return DllManager.GetEngineLock()->Model_SetDoubleSourceTime(value);
+ return RdkCoreManager.GetEngineLock()->Model_SetDoubleSourceTime(value);
 }
 
 int RDK_CALL MModel_SetDoubleSourceTime(int channel_index, double value)
@@ -2593,7 +2593,7 @@ int RDK_CALL MModel_SetDoubleSourceTime(int channel_index, double value)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetDoubleSourceTime(value);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetDoubleSourceTime(value);
 }
 
 int RDK_CALL Model_SetDoubleSourceTimeAll(double value)
@@ -2601,7 +2601,7 @@ int RDK_CALL Model_SetDoubleSourceTimeAll(double value)
  int res=RDK_SUCCESS;
  for(int i=0;i<Core_GetNumChannels();i++)
  {
-  int temp_res=DllManager.GetEngineLock(i)->Model_SetDoubleSourceTime(value);
+  int temp_res=RdkCoreManager.GetEngineLock(i)->Model_SetDoubleSourceTime(value);
   if(temp_res != RDK_SUCCESS)
    res=temp_res;
  }
@@ -2611,7 +2611,7 @@ int RDK_CALL Model_SetDoubleSourceTimeAll(double value)
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
 unsigned long long RDK_CALL Model_GetStepDuration(const char *stringid)
 {
- return DllManager.GetEngineLock()->Model_GetStepDuration(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetStepDuration(stringid);
 }
 
 unsigned long long RDK_CALL MModel_GetStepDuration(int channel_index, const char *stringid)
@@ -2619,7 +2619,7 @@ unsigned long long RDK_CALL MModel_GetStepDuration(int channel_index, const char
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetStepDuration(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetStepDuration(stringid);
 }
 
 // Возвращает время, затраченное на обработку объекта
@@ -2627,7 +2627,7 @@ unsigned long long RDK_CALL MModel_GetStepDuration(int channel_index, const char
 unsigned long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
 {
 
- return DllManager.GetEngineLock()->Model_GetFullStepDuration(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetFullStepDuration(stringid);
 }
 
 unsigned long long RDK_CALL MModel_GetFullStepDuration(int channel_index, const char *stringid)
@@ -2635,14 +2635,14 @@ unsigned long long RDK_CALL MModel_GetFullStepDuration(int channel_index, const 
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetFullStepDuration(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetFullStepDuration(stringid);
 }
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 double RDK_CALL Model_GetInstantPerformance(const char *stringid)
 {
- return DllManager.GetEngineLock()->Model_GetInstantPerformance(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetInstantPerformance(stringid);
 }
 
 double RDK_CALL MModel_GetInstantPerformance(int channel_index, const char *stringid)
@@ -2650,13 +2650,13 @@ double RDK_CALL MModel_GetInstantPerformance(int channel_index, const char *stri
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0.0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetInstantPerformance(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetInstantPerformance(stringid);
 }
 
 // Время, прошедшее между двумя последними итерациями счета
 unsigned long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
 {
- return DllManager.GetEngineLock()->Model_GetInterstepsInterval(stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetInterstepsInterval(stringid);
 }
 
 unsigned long long RDK_CALL MModel_GetInterstepsInterval(int channel_index, const char *stringid)
@@ -2664,7 +2664,7 @@ unsigned long long RDK_CALL MModel_GetInterstepsInterval(int channel_index, cons
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return DllManager.GetEngineLock(channel_index)->Model_GetInterstepsInterval(stringid);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetInterstepsInterval(stringid);
 }
 // --------------------------
 
@@ -2791,7 +2791,7 @@ int RDK_CALL MEngine_ClearReadLog(int channel_index)
 void RDK_CALL Env_SetNumInputImages(int number)
 {
 
- return DllManager.GetEngineLock()->Env_SetNumInputImages(number);
+ return RdkCoreManager.GetEngineLock()->Env_SetNumInputImages(number);
 }
 
 void RDK_CALL MEnv_SetNumInputImages(int channel_index, int number)
@@ -2799,14 +2799,14 @@ void RDK_CALL MEnv_SetNumInputImages(int channel_index, int number)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return;
 
- return DllManager.GetEngineLock(channel_index)->Env_SetNumInputImages(number);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetNumInputImages(number);
 }
 
 // Задает число выходов среды
 void RDK_CALL Env_SetNumOutputImages(int number)
 {
 
- return DllManager.GetEngineLock()->Env_SetNumOutputImages(number);
+ return RdkCoreManager.GetEngineLock()->Env_SetNumOutputImages(number);
 }
 
 void RDK_CALL MEnv_SetNumOutputImages(int channel_index, int number)
@@ -2814,28 +2814,28 @@ void RDK_CALL MEnv_SetNumOutputImages(int channel_index, int number)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return;
 
- return DllManager.GetEngineLock(channel_index)->Env_SetNumOutputImages(number);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetNumOutputImages(number);
 }
 
 // Задает число входов среды
 int RDK_CALL Env_GetNumInputImages(void)
 {
 
- return DllManager.GetEngineLock()->Env_GetNumInputImages();
+ return RdkCoreManager.GetEngineLock()->Env_GetNumInputImages();
 }
 
 // Задает число выходов среды
 int RDK_CALL Env_GetNumOutputImages(void)
 {
 
- return DllManager.GetEngineLock()->Env_GetNumInputImages();
+ return RdkCoreManager.GetEngineLock()->Env_GetNumInputImages();
 }
 
 // Задает разрешение по умолчанию (рабочее разрешение)
 void RDK_CALL Env_SetInputRes(int number, int width, int height)
 {
 
- return DllManager.GetEngineLock()->Env_SetInputRes(number, width, height);
+ return RdkCoreManager.GetEngineLock()->Env_SetInputRes(number, width, height);
 }
 
 void RDK_CALL MEnv_SetInputRes(int channel_index, int number, int width, int height)
@@ -2843,21 +2843,21 @@ void RDK_CALL MEnv_SetInputRes(int channel_index, int number, int width, int hei
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return;
 
- return DllManager.GetEngineLock(channel_index)->Env_SetInputRes(number, width, height);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetInputRes(number, width, height);
 }
 
 // Задает данные изображения
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
 
- return DllManager.GetEngineLock()->Env_SetInputImage(number, image, width, height,cmodel);
+ return RdkCoreManager.GetEngineLock()->Env_SetInputImage(number, image, width, height,cmodel);
 }
 
 // Задает флаг отражения входного изображения вокруг горизонтальной оси
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
 {
 
- return DllManager.GetEngineLock()->Env_SetReflectionXFlag(value);
+ return RdkCoreManager.GetEngineLock()->Env_SetReflectionXFlag(value);
 }
 
 RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int channel_index, bool value)
@@ -2865,7 +2865,7 @@ RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int channel_index, bool value)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return;
 
- return DllManager.GetEngineLock(channel_index)->Env_SetReflectionXFlag(value);
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_SetReflectionXFlag(value);
 }
 
 
@@ -2873,56 +2873,56 @@ RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int channel_index, bool value)
 int RDK_CALL Env_GetInputImageWidth(int number)
 {
 
- return DllManager.GetEngineLock()->Env_GetInputImageWidth(number);
+ return RdkCoreManager.GetEngineLock()->Env_GetInputImageWidth(number);
 }
 
 int RDK_CALL Env_GetInputImageHeight(int number)
 {
 
- return DllManager.GetEngineLock()->Env_GetInputImageHeight(number);
+ return RdkCoreManager.GetEngineLock()->Env_GetInputImageHeight(number);
 }
 
 int RDK_CALL Env_GetInputImageColorModel(int number)
 {
 
- return DllManager.GetEngineLock()->Env_GetInputImageColorModel(number);
+ return RdkCoreManager.GetEngineLock()->Env_GetInputImageColorModel(number);
 }
 
 // Возвращает текущее выходное разрешение
 int RDK_CALL Env_GetOutputImageWidth(int number)
 {
 
- return DllManager.GetEngineLock()->Env_GetOutputImageWidth(number);
+ return RdkCoreManager.GetEngineLock()->Env_GetOutputImageWidth(number);
 }
 
 int RDK_CALL Env_GetOutputImageHeight(int number)
 {
 
- return DllManager.GetEngineLock()->Env_GetOutputImageHeight(number);
+ return RdkCoreManager.GetEngineLock()->Env_GetOutputImageHeight(number);
 }
 
 int RDK_CALL Env_GetOutputImageColorModel(int number)
 {
 
- return DllManager.GetEngineLock()->Env_GetOutputImageColorModel(number);
+ return RdkCoreManager.GetEngineLock()->Env_GetOutputImageColorModel(number);
 }
 
 unsigned char* RDK_CALL Env_GetInputImage(int index)
 {
 
- return DllManager.GetEngineLock()->Env_GetInputImage(index);
+ return RdkCoreManager.GetEngineLock()->Env_GetInputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImage(int index)
 {
 
- return DllManager.GetEngineLock()->Env_GetOutputImage(index);
+ return RdkCoreManager.GetEngineLock()->Env_GetOutputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 {
 
- return DllManager.GetEngineLock()->Env_GetOutputImageY8(index);
+ return RdkCoreManager.GetEngineLock()->Env_GetOutputImageY8(index);
 }
 // --------------------------
 
@@ -2935,85 +2935,85 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, property_name);
 }
 
 const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex(const char *stringid, int  index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, index);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
 }
 
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index)
 {
- return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
 }
 const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutput(int channel_index, const char *stringid, const char *property_name)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
 }
 
 const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutputByIndex(int channel_index,const char *stringid, int index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
 }
 
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
 }
 
 const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int channel_index,const char *stringid, const char *property_name)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
 
 }
 const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int channel_index,const char *stringid, int index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
- return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
 }
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, property_name);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, property_name);
 }
 
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(const char *stringid, int index)
 {
 
- return DllManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, index);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, index);
 }
 
 /// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
 /// в стрктуру bmp_param
 int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
 {
- return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
+ return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
 }
 
 int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int channel_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
@@ -3021,12 +3021,12 @@ int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int channel_index, const cha
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
 }
 
 int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
 {
- return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
+ return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
 }
 
 int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int channel_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
@@ -3034,14 +3034,14 @@ int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int channel_index, co
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
 }
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
 int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /*RDK::UBitmap* */ void* bmp)
 {
- return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
+ return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
 }
 
 RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp)
@@ -3049,26 +3049,26 @@ RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int channel_index, co
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
-  return DllManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
+  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
 }
 
 int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
 {
- return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
+ return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
 }
 
 int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
- return DllManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 int RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3076,7 +3076,7 @@ int RDK_CALL MModel_SetComponentBitmapOutput(int channel_index, const char *stri
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3084,13 +3084,13 @@ int RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int channel_index, const char
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngine(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngine(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 int RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3098,13 +3098,13 @@ int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const cha
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
 int RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- return DllManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapInput(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3112,13 +3112,13 @@ int RDK_CALL MModel_SetComponentBitmapInput(int channel_index, const char *strin
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return DllManager.GetEngineLock(channel_index)->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
- return DllManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 // --------------------------
 
@@ -3134,14 +3134,14 @@ int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int inde
 // Должен быть вызван в глобальном обработчике пользовательского ПО
 int RDK_CALL ExceptionDispatcher(void *exception)
 {
- if(!DllManager.GetEngine())
+ if(!RdkCoreManager.GetEngine())
   return 1;
 
  if(!exception)
   return 2;
 
  RDK::UException *exc=reinterpret_cast<RDK::UException*>(exception);
- DllManager.GetEngineLock()->ProcessException(*exc);
+ RdkCoreManager.GetEngineLock()->ProcessException(*exc);
 
  return 0;
 }

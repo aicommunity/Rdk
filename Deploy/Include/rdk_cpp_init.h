@@ -12,7 +12,7 @@ extern "C++"  {
 // Методы доступа к ядру без блокировки
 // --------------------------
 // Возвращает ссылку на указатель ядра
-RDK_LIB_TYPE RDK::UEPtr<RDKDllManager> RDK_CALL GetCore(void);
+RDK_LIB_TYPE RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void);
 
 // Возвращает указатель на логгер
 RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void);
@@ -39,7 +39,7 @@ RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index);
 // Методы доступа к ядру с блокировкой
 // --------------------------
 // Возвращает ссылку на указатель ядра
-RDK_LIB_TYPE RDK::UELockPtr<RDKDllManager> RDK_CALL GetCoreLock(void);
+RDK_LIB_TYPE RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void);

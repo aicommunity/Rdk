@@ -440,6 +440,7 @@ const int TUVisualControllerForm::GetComponentControlChannel(void) const
 bool TUVisualControllerForm::SetComponentControlChannel(const int index)
 {
  ComponentControlChannel = index;
+ return true;
 }
 
 // Служебные методы управления интерфейсом

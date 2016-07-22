@@ -7,13 +7,13 @@
 #include "rdk_exceptions.h"
 
 // Экземпляр менеджера
-RDKDllManager DllManager;
+URdkCoreManager RdkCoreManager;
 
 // Менеджер DLL
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-RDKDllManager::RDKDllManager(void)
+URdkCoreManager::URdkCoreManager(void)
 {
  FuncCreateNewStorage=0;//&RDK::NewUStorage;
  FuncCreateNewEnvironment=0;//&RDK::NewUAContainerEnvironment;
@@ -26,7 +26,7 @@ RDKDllManager::RDKDllManager(void)
  BufObjectsMode=0;
 }
 
-RDKDllManager::~RDKDllManager(void)
+URdkCoreManager::~URdkCoreManager(void)
 {
  for(int i=0;i<NumChannels;i++)
   MCore_ChannelUnInit(i);
@@ -92,14 +92,14 @@ RDKDllManager::~RDKDllManager(void)
 // Методы управления данными
 // --------------------------
 // Возвращает имя каталога бинарных файлов
-std::string RDKDllManager::GetSystemDir(void)
+std::string URdkCoreManager::GetSystemDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return SystemDir;
 }
 
 // Устанавливает имя каталога бинарных файлов
-int RDKDllManager::SetSystemDir(const char *dir)
+int URdkCoreManager::SetSystemDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  SystemDir=dir;
@@ -107,14 +107,14 @@ int RDKDllManager::SetSystemDir(const char *dir)
 }
 
 // Возвращает имя каталога бинарных файлов
-const char* RDKDllManager::GetLogDir(void)
+const char* URdkCoreManager::GetLogDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return LogDir.c_str();
 }
 
 // Устанавливает имя каталога бинарных файлов
-int RDKDllManager::SetLogDir(const char *dir)
+int URdkCoreManager::SetLogDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  if(LogDir == dir)
@@ -130,13 +130,13 @@ int RDKDllManager::SetLogDir(const char *dir)
 }
 
 /// Флаг режима отладки
-bool RDKDllManager::GetDebugMode(void)
+bool URdkCoreManager::GetDebugMode(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return DebugMode;
 }
 
-int RDKDllManager::SetDebugMode(bool value)
+int URdkCoreManager::SetDebugMode(bool value)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  if(DebugMode == value)
@@ -151,13 +151,13 @@ int RDKDllManager::SetDebugMode(bool value)
  return RDK_SUCCESS;
 }
 
-int RDKDllManager::GetBufObjectsMode(void)
+int URdkCoreManager::GetBufObjectsMode(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return BufObjectsMode;
 }
 
-int RDKDllManager::SetBufObjectsMode(int value)
+int URdkCoreManager::SetBufObjectsMode(int value)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -196,14 +196,14 @@ int RDKDllManager::SetBufObjectsMode(int value)
 }
 
 // Очищает коллекцию глобальных шрифтов
-int RDKDllManager::ClearFonts(void)
+int URdkCoreManager::ClearFonts(void)
 {
  Fonts.DelAllFonts();
  return RDK_SUCCESS;
 }
 
 // Загружает глобальные шрифты
-int RDK_CALL RDKDllManager::LoadFonts(void)
+int RDK_CALL URdkCoreManager::LoadFonts(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -246,7 +246,7 @@ int RDK_CALL RDKDllManager::LoadFonts(void)
 }
 
 // Загружает новый глобальный шрифт
-bool RDKDllManager::AddFont(const std::string &font_file_name)
+bool URdkCoreManager::AddFont(const std::string &font_file_name)
 {
  int res=RDK_SUCCESS;
  RDK_SYS_TRY
@@ -292,7 +292,7 @@ bool RDKDllManager::AddFont(const std::string &font_file_name)
 }
 
 // Возвращает ссылку на коллекцию шрифтов
-RDK::UBitmapFontCollection& RDKDllManager::GetFonts(void)
+RDK::UBitmapFontCollection& URdkCoreManager::GetFonts(void)
 {
  return Fonts;
 }
@@ -301,7 +301,7 @@ RDK::UBitmapFontCollection& RDKDllManager::GetFonts(void)
 // --------------------------
 // Методы управления созданием каналов
 // --------------------------
-bool RDKDllManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
+bool URdkCoreManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
 							PCreateNewEnvironment fCreateNewEnvironment,
 							PCreateNewEngine fCreateNewEngine)
 {
@@ -313,13 +313,13 @@ bool RDKDllManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNe
 }
 
 /// Возвращает число движков
-int RDKDllManager::GetNumChannels(void) const
+int URdkCoreManager::GetNumChannels(void) const
 {
  return NumChannels;
 }
 
 /// Создает требуемое число пустых движков
-int RDKDllManager::SetNumChannels(int num)
+int URdkCoreManager::SetNumChannels(int num)
 {
  {
   UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -357,7 +357,7 @@ int RDKDllManager::SetNumChannels(int num)
 }
 
 /// Делает текущим канала с заданным индексом
-int RDKDllManager::SelectChannel(int index)
+int URdkCoreManager::SelectChannel(int index)
 {
  if(index<0 || index>=NumChannels)
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -400,14 +400,14 @@ int RDKDllManager::SelectChannel(int index)
 }
 
 /// Возвращает индекс текущего выбраного канала
-int RDKDllManager::GetSelectedChannelIndex(void) const
+int URdkCoreManager::GetSelectedChannelIndex(void) const
 {
  return SelectedChannelIndex;
 }
 
 /// Добавляет новый движок в позицию index
 /// Если index <0 или >= NumChannels то добавляет в конец
-int RDKDllManager::Add(int index)
+int URdkCoreManager::Add(int index)
 {
  if(index<0 || index >= GetNumChannels())
   return SetNumChannels(GetNumChannels()+1);
@@ -456,7 +456,7 @@ int RDKDllManager::Add(int index)
 }
 
 /// Удаляет движок из позиции index
-int RDKDllManager::Del(int index)
+int URdkCoreManager::Del(int index)
 {
  if(index<0 || index >= GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -504,7 +504,7 @@ int RDKDllManager::Del(int index)
 
 /// Создаает требуемый канал
 /// (если канал уже инициализирован, то не делает ничего
-int RDKDllManager::ChannelCreate(int index)
+int URdkCoreManager::ChannelCreate(int index)
 {
  if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -563,7 +563,7 @@ int RDKDllManager::ChannelCreate(int index)
 
 /// Уничтожает требуемый движок
 /// (если движок уже уничтожен, то не делает ничего
-int RDKDllManager::ChannelDestroy(int index)
+int URdkCoreManager::ChannelDestroy(int index)
 {
  if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -599,7 +599,7 @@ int RDKDllManager::ChannelDestroy(int index)
 
 // Инициализирует канал (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
-int RDKDllManager::ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
+int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -647,7 +647,7 @@ int RDKDllManager::ChannelInit(int channel_index, int predefined_structure, void
 }
 
 // Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
-int RDKDllManager::ChannelUnInit(int channel_index)
+int URdkCoreManager::ChannelUnInit(int channel_index)
 {
  if(channel_index<0 || channel_index>=NumChannels)
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
@@ -692,40 +692,40 @@ int RDKDllManager::ChannelUnInit(int channel_index)
 // Методы доступа к каналам
 // --------------------------
 // Возвращает ссылку на указатель управляющего ядра
-RDK::UEPtr<RDK::UEngine>& RDKDllManager::GetEngine(void)
+RDK::UEPtr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
 {
  return Engine;
 }
 
-RDK::UEPtr<RDK::UEngine> RDKDllManager::GetEngine(int channel_index)
+RDK::UEPtr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
 {
  return EngineList[channel_index];
 }
 
 // Возвращает ссылку на указатель среды выполнения
-RDK::UEPtr<RDK::UEnvironment>& RDKDllManager::GetEnvironment(void)
+RDK::UEPtr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
 {
  return Environment;
 }
 
-RDK::UEPtr<RDK::UEnvironment> RDKDllManager::GetEnvironment(int channel_index)
+RDK::UEPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
 {
  return EnvironmentList[channel_index];
 }
 
 // Возвращает ссылку на указатель хранилища
-RDK::UEPtr<RDK::UStorage>& RDKDllManager::GetStorage(void)
+RDK::UEPtr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
 {
  return Storage;
 }
 
-RDK::UEPtr<RDK::UStorage> RDKDllManager::GetStorage(int channel_index)
+RDK::UEPtr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
 {
  return StorageList[channel_index];
 }
 
 // Возвращает указатель на текущую модель
-RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(void)
+RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(void)
 {
  if(Environment)
   return Environment->GetModel();
@@ -733,7 +733,7 @@ RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(void)
  return 0;
 }
 
-RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(int channel_index)
+RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EnvironmentList.size()))
   return 0;
@@ -751,20 +751,20 @@ RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(int channel_index)
 // Методы доступа к каналам с блокировками
 // --------------------------
 /// Метод доступа к глобальному лучше
-UGenericMutex* RDKDllManager::GetGlobalMutex(void)
+UGenericMutex* URdkCoreManager::GetGlobalMutex(void)
 {
  return GlobalMutex;
 }
 
 /// Метод доступ к мьютексу
-UGenericMutex* RDKDllManager::GetEngineMutex(void)
+UGenericMutex* URdkCoreManager::GetEngineMutex(void)
 {
  if(MutexList.empty())
   return 0;
  return MutexList[0];
 }
 
-UGenericMutex* RDKDllManager::GetEngineMutex(int index)
+UGenericMutex* URdkCoreManager::GetEngineMutex(int index)
 {
  if(index<0 || index>=int(MutexList.size()))
   return 0;
@@ -773,7 +773,7 @@ UGenericMutex* RDKDllManager::GetEngineMutex(int index)
 }
 
 // Возвращает ссылку на указатель управляющего ядра
-RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(void)
+RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEngine>(0,GetEngine());
@@ -783,7 +783,7 @@ RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(void)
 #endif
 }
 
-RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(int channel_index)
+RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(int channel_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEngine>(0,GetEngine(channel_index));
@@ -793,7 +793,7 @@ RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(int channel_index)
 }
 
 // Возвращает ссылку на указатель среды выполнения
-RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(void)
+RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEnvironment>(0,GetEnvironment());
@@ -803,7 +803,7 @@ RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(void)
 #endif
 }
 
-RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(int channel_index)
+RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(int channel_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEnvironment>(0,GetEnvironment(channel_index));
@@ -813,7 +813,7 @@ RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(int channel_
 }
 
 // Возвращает ссылку на указатель хранилища
-RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(void)
+RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UStorage>(0,GetStorage());
@@ -823,7 +823,7 @@ RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(void)
 #endif
 }
 
-RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(int channel_index)
+RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(int channel_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UStorage>(0,GetStorage(channel_index));
@@ -833,7 +833,7 @@ RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(int channel_index)
 }
 
 // Возвращает указатель на текущую модель
-RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(void)
+RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UContainer>(0,GetModel());
@@ -843,7 +843,7 @@ RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(void)
 #endif
 }
 
-RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(int channel_index)
+RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(int channel_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
@@ -857,12 +857,12 @@ RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(int channel_index)
 /// Средства логгирования
 // --------------------------
 // Возвращает ссылку на указатель на логгер
-RDK::UEPtr<RDK::ULoggerEnv>& RDKDllManager::GetLogger(void)
+RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
 {
  return Logger;
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetLogger(int channel_index)
+RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
 {
  if(channel_index == RDK_SYS_MESSAGE)
   return &GlobalLogger;
@@ -871,7 +871,7 @@ RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetLogger(int channel_index)
 }
 
 /// Возвращает ссылку на глобальный логгер
-RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetGlobalLogger(void)
+RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
 {
  return &GlobalLogger;
 }
@@ -881,7 +881,7 @@ RDK::UEPtr<RDK::ULoggerEnv> RDKDllManager::GetGlobalLogger(void)
 // Вспомогательные методы управления
 // --------------------------
 /// Меняет текущий выбраный канал
-bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
+bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
 {
 // UGenericMutexExclusiveLocker lock(GlobalMutex);
  if(channel_index<0 || channel_index>=GetNumChannels())

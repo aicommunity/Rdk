@@ -9,7 +9,7 @@
 #include "../../Core/Engine/UEnvironment.h"
 
 // Менеджер DLL
-class RDK_LIB_TYPE RDKDllManager
+class RDK_LIB_TYPE URdkCoreManager
 {
 public:
 // Массив хранилищ
@@ -87,8 +87,8 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-RDKDllManager(void);
-virtual ~RDKDllManager(void);
+URdkCoreManager(void);
+virtual ~URdkCoreManager(void);
 // --------------------------
 
 // --------------------------
@@ -258,6 +258,6 @@ bool SetSelectedChannelIndex(int channel_index);
 //extern RDK_LIB_TYPE std::string RdkSystemDir;
 
 // Экземпляр менеджера
-extern RDK_LIB_TYPE RDKDllManager DllManager;
+extern RDK_LIB_TYPE URdkCoreManager RdkCoreManager;
 
 #endif

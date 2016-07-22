@@ -1181,7 +1181,7 @@ void UApplication::CalcAppCaption(void)
 /// Обновляет состояние средств логгирования
 void UApplication::UpdateLoggers(void)
 {
- DllManager.SetLogDir(CalcCurrentLogDir().c_str());
+ RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
  if(EngineControl && EngineControl->GetEngineStateThread())
   EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
 }

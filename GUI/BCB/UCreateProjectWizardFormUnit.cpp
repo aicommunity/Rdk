@@ -430,7 +430,7 @@ void __fastcall TUCreateProjectWizardForm::ChannelsNumberLabeledEditChange(TObje
  int old_channels=ProjectConfig.NumChannels;
  ProjectConfig.NumChannels=num_channels;
  ProjectConfig.ChannelsConfig.resize(ProjectConfig.NumChannels);
- for(size_t i=old_channels;i<num_channels;i++)
+ for(int i=old_channels;i<num_channels;i++)
  {
   switch(WizardMode)
   {

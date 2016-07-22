@@ -404,7 +404,7 @@ void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::
   if((propertries_names_list[i].find("DataOutput")!=std::string::npos)||(propertries_names_list[i].find("DataInput")!=std::string::npos))
    nonamed_num++;
  }
- if(nonamed_num<propertries_names_list.size())
+ if(nonamed_num<int(propertries_names_list.size()))
  {
   is_named = true;
  }
@@ -467,7 +467,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
   Engine_FreeBufString(p_buf);
 
   DecodePropertiesIOList(properties_names, propertries_names_list);
-  for(int j=0;j<propertries_names_list.size();j++)
+  for(size_t j=0;j<propertries_names_list.size();j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
    if(j == 0)
@@ -481,7 +481,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
 	 string_grid->Cells[2][string_grid->RowCount-1]="";
 	Engine_FreeBufString(p_buf);
 
-	if(int(propertries_names_list.size())>j)
+	if(propertries_names_list.size()>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -490,7 +490,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-	if(int(propertries_names_list.size())>j)
+	if(propertries_names_list.size()>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -518,7 +518,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
   Engine_FreeBufString(p_buf);
 
   DecodePropertiesIOList(properties_names, propertries_names_list);
-  for(int j=0;j<propertries_names_list.size();j++)
+  for(size_t j=0;j<propertries_names_list.size();j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
    if(j==0)
@@ -537,11 +537,11 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
    }
-   if(int(propertries_names_list.size())>j)
+   if(propertries_names_list.size()>j)
 	string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
    else
 	string_grid->Cells[3][string_grid->RowCount-1]="";
-   string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(j);
+   string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(int(j));
   }
  }
 
