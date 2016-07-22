@@ -105,11 +105,6 @@ RDK_LIB_TYPE bool RDK_CALL MLog_GetEventsLogMode(int channel_index);
 RDK_LIB_TYPE int RDK_CALL Log_SetEventsLogMode(bool value);
 RDK_LIB_TYPE int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value);
 
-// !
-// ”станавливает им€ текущего каталога дл€ хранени€ данных
-RDK_LIB_TYPE int RDK_CALL Log_SetCurrentDataDir(const char *dir);
-RDK_LIB_TYPE int RDK_CALL MLog_SetCurrentDataDir(int channel_index, const char *dir);
-
 /// ¬озвращает состо€ние флага отладочного режима среды
 RDK_LIB_TYPE bool RDK_CALL Log_GetDebugMode(void);
 RDK_LIB_TYPE bool RDK_CALL MLog_GetDebugMode(int channel_index);
