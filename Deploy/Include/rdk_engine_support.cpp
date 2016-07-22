@@ -106,14 +106,14 @@ int URdkCoreManager::SetSystemDir(const char *dir)
  return RDK_SUCCESS;
 }
 
-// Возвращает имя каталога бинарных файлов
+// Возвращает имя каталога логов
 const char* URdkCoreManager::GetLogDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return LogDir.c_str();
 }
 
-// Устанавливает имя каталога бинарных файлов
+// Устанавливает имя каталога логов
 int URdkCoreManager::SetLogDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);

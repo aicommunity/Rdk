@@ -264,18 +264,18 @@ RDK_LIB_TYPE bool RDK_CALL Core_IsChannelInit(void);
 RDK_LIB_TYPE bool RDK_CALL MCore_IsChannelInit(int channel_index);
 //RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int channel_index); // deprecated
 
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+RDK_LIB_TYPE int RDK_CALL Core_GetBufObjectsMode(void);
+RDK_LIB_TYPE int RDK_CALL Core_SetBufObjectsMode(int mode);
+
 /// Высвобождает буферную строку движка, по заданному указателю
 RDK_LIB_TYPE int RDK_CALL Engine_FreeBufString(const char *pointer);
 RDK_LIB_TYPE int RDK_CALL MEngine_FreeBufString(int channel_index,const char *pointer);
 RDK_LIB_TYPE int RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer);
 RDK_LIB_TYPE int RDK_CALL MEngine_FreeBufStringUnsafe(int channel_index,const char *pointer);
-
-/// Режим создания внутренних временных переменных для
-/// возвращаемых значений
-/// 0 - одна переменная для всех методов, возвращающих такой тип
-/// 1 - уникальные переменные с необходимостью вызвова функции очистки
-RDK_LIB_TYPE int RDK_CALL Engine_GetBufObjectsMode(void);
-RDK_LIB_TYPE int RDK_CALL Engine_SetBufObjectsMode(int mode);
 
 /// Возвращает число буферных строк движка
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumBufStrings(void);

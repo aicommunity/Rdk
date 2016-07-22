@@ -324,7 +324,7 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
- Engine_SetBufObjectsMode(1);
+ Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
  Core_SetSystemDir(font_path.c_str());

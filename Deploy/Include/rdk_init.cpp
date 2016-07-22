@@ -698,12 +698,12 @@ bool RDK_CALL MCore_IsChannelInit(int channel_index)
 /// возвращаемых значений
 /// 0 - одна переменная для всех методов, возвращающих такой тип
 /// 1 - уникальные переменные с необходимостью вызвова функции очистки
-int RDK_CALL Engine_GetBufObjectsMode(void)
+int RDK_CALL Core_GetBufObjectsMode(void)
 {
  return RdkCoreManager.GetBufObjectsMode();
 }
 
-int RDK_CALL Engine_SetBufObjectsMode(int mode)
+int RDK_CALL Core_SetBufObjectsMode(int mode)
 {
  return RdkCoreManager.SetBufObjectsMode(mode);
 }
