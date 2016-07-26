@@ -26,6 +26,7 @@ CPP_SRCS += \
 ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/ULibrary.cpp \
 ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/ULocalProperty.cpp \
 ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/ULogger.cpp \
+../../../../../../../Klavesin-STZ/Rdk/Core/Engine/ULoggerEnv.cpp \
 ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/UModule.cpp \
 ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/UNet.cpp \
 ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/UPointer.cpp \
@@ -61,6 +62,7 @@ OBJS += \
 ./Core/Engine/ULibrary.o \
 ./Core/Engine/ULocalProperty.o \
 ./Core/Engine/ULogger.o \
+./Core/Engine/ULoggerEnv.o \
 ./Core/Engine/UModule.o \
 ./Core/Engine/UNet.o \
 ./Core/Engine/UPointer.o \
@@ -96,6 +98,7 @@ CPP_DEPS += \
 ./Core/Engine/ULibrary.d \
 ./Core/Engine/ULocalProperty.d \
 ./Core/Engine/ULogger.d \
+./Core/Engine/ULoggerEnv.d \
 ./Core/Engine/UModule.d \
 ./Core/Engine/UNet.d \
 ./Core/Engine/UPointer.d \
@@ -258,6 +261,13 @@ Core/Engine/ULocalProperty.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/
 	@echo ' '
 
 Core/Engine/ULogger.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/ULogger.cpp
+	@echo 'Building file: $<'
+	@echo 'Invoking: GCC C++ Compiler'
+	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+Core/Engine/ULoggerEnv.o: ../../../../../../../Klavesin-STZ/Rdk/Core/Engine/ULoggerEnv.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
 	g++ -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
