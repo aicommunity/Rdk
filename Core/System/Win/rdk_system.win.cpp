@@ -28,9 +28,9 @@ unsigned long long GetCurrentStartupTime(void)
 void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
 {
  FILETIME ft;
- unsigned long long tmpres = 0;
+ long long tmpres = 0;
 
- GetLocalTimeAsFileTime(&ft);
+ GetSystemTimeAsFileTime(&ft);
 
  tmpres |= ft.dwHighDateTime;
  tmpres <<= 32;
@@ -39,6 +39,7 @@ void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long 
  // converting file time to unix epoch
  tmpres -= DELTA_EPOCH_IN_MICROSECS;
  tmpres /= 10;  /*convert into microseconds*/
+ time_t secs=(int)(tmpres / 1000000UL);
  seconds = (unsigned long long)(tmpres / 1000000UL);
  useconds = (unsigned long long)(tmpres % 1000000UL);
 }
