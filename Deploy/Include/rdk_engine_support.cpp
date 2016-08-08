@@ -204,7 +204,7 @@ int URdkCoreManager::ClearFonts(void)
 }
 
 // Загружает глобальные шрифты
-int RDK_CALL URdkCoreManager::LoadFonts(void)
+int URdkCoreManager::LoadFonts(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
