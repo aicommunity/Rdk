@@ -24,7 +24,7 @@ virtual bool exclusive_unlock(void);
 };
 
 
-UGenericMutexQt::UGenericMutexQt()
+UGenericMutexQt::UGenericMutexQt() : m_mutex(QMutex::Recursive)
 {
     //mutex.lock();
 }
