@@ -58,9 +58,9 @@ bool ULogger::SetSuffix(const std::string &value)
 /// Инициализирует лог
 int ULogger::InitLog(void)
 {
- UGenericMutexExclusiveLocker lock(LogMutex);
  Clear();
 
+ UGenericMutexExclusiveLocker lock(LogMutex);
  if(!LogDir.Get().empty())
  {
   if(CreateNewDirectory(LogDir.Get().c_str()) != 0)

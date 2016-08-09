@@ -116,12 +116,14 @@ int ULoggerEnv::GetChannelIndex(void) const
 
 bool ULoggerEnv::SetChannelIndex(int value)
 {
- UGenericMutexExclusiveLocker lock(LogMutex);
- if(ChannelIndex == value)
-  return true;
- ChannelIndex=value;
- if(ChannelIndex >=0)
-  SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+ {
+  UGenericMutexExclusiveLocker lock(LogMutex);
+  if(ChannelIndex == value)
+   return true;
+  ChannelIndex=value;
+ }
+ if(value >=0)
+  SetSuffix(std::string(" Ch")+sntoa(value,2));
  else
   SetSuffix(std::string(" Sys"));
  Clear();
