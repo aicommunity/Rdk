@@ -977,7 +977,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::Calculate(void)
  {
   LoadImageFromSequence(CurrentBmpSequenceIndex,TempSource);
   TempSource.SetColorModel(RDK::ubmRGB24);
-  LastReadSequenceIndex=0;
+  //LastReadSequenceIndex=0;
  }
  else
  {
