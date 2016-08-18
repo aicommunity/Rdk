@@ -926,6 +926,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 UBHistogram(void);
+UBHistogram(const UBHistogram &copy);
 ~UBHistogram(void);
 // --------------------------
 
