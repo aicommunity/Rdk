@@ -16,7 +16,7 @@ namespace RDK {
 
 /// ¬озвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключени€
 /// иначе возвращает RDK_EXCEPTION_CATCHED
-int ProcessException(int channel_index, const UException &ex)
+int RDK_CALL ProcessException(int channel_index, const UException &ex)
 {
  UEPtr<ULoggerEnv> logger=RdkCoreManager.GetLogger(channel_index);
  if(!logger)

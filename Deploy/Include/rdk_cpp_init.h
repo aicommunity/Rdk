@@ -69,6 +69,10 @@ RDK::UBitmapFontCollection& GetFonts(void);
 
 namespace RDK {
 
+/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
+/// иначе возвращает RDK_EXCEPTION_CATCHED
+RDK_LIB_TYPE int RDK_CALL ProcessException(int channel_index, const UException &ex);
+
 // Возвращает указатель на текущую модель
 template<class T>
 RDK::UELockPtr<T> GetModelLock(void)
