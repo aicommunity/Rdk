@@ -191,6 +191,8 @@ template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
 	T C, trX, trY;
+	// Порог для "Шарнирного замка"
+	double MGThresholdAS = 1e-2;
 
 		//!!!Порядок перемножения!!!
 	switch (seqmat)
@@ -202,7 +204,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z
 		C = cos( anglesANDshifts(5) );
 
-		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)?
+		if ( fabs( C ) > MGThresholdAS )          // "Шарнирный замок" (Gimball lock)?
 		{
 			trX      =  ExtMat(0,0) / C;        // Если нет, то получаем угол вращения вокруг оси Y
 			trY      = ExtMat(0,2) / C;
@@ -241,7 +243,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		anglesANDshifts(3) = -asin( ExtMat(1,2));
 		C = cos( anglesANDshifts(3) );
 
-		if ( fabs( C ) > 0.005 )
+		if ( fabs( C ) > MGThresholdAS )
 		{
 			trX      =  ExtMat(1,1) / C;
 			trY      = ExtMat(1,0) / C;
@@ -280,7 +282,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		anglesANDshifts(5) = asin( ExtMat(1,0));
 		C = cos( anglesANDshifts(5) );
 
-		if ( fabs( C ) > 0.005 )
+		if ( fabs( C ) > MGThresholdAS )
 		{
 			trX      =  ExtMat(1,1) / C;
 			trY      = -ExtMat(1,2) / C;
@@ -319,7 +321,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		anglesANDshifts(3) = asin( ExtMat(2,1));
 		C = cos( anglesANDshifts(3) );
 
-		if ( fabs( C ) > 0.005 )
+		if ( fabs( C ) > MGThresholdAS )
 		{
 			trX      =  ExtMat(2,2) / C;
 			trY      = -ExtMat(2,0) / C;
@@ -358,7 +360,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		anglesANDshifts(4) = -asin( ExtMat(2,0));
 		C = cos( anglesANDshifts(4) );
 
-		if ( fabs( C ) > 0.005 )
+		if ( fabs( C ) > MGThresholdAS )
 		{
 			trX      =  ExtMat(2,2) / C;
 			trY      = ExtMat(2,1) / C;
@@ -435,7 +437,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y
 		C = cos( anglesANDshifts(4) );
 
-		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)?
+		if ( fabs( C ) > MGThresholdAS )          // "Шарнирный замок" (Gimball lock)?
 		{
 			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X
 			trY      = -ExtMat(1,2) / C;
