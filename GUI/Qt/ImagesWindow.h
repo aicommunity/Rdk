@@ -1,7 +1,7 @@
 #ifndef IMAGESWINDOW_H
 #define IMAGESWINDOW_H
 
-#include "../../../../Rdk/Deploy/Include/myrdk.h"
+#include "../../Deploy/Include/myrdk.h"
 
 #include <QWidget>
 #include <QGridLayout>
@@ -11,7 +11,7 @@
 
 #include "Image.h"
 #include "ui_imageswindow.h"
-#include "../../../../Rdk/Gui/Qt/VideoCaptureClass.h"
+#include "VideoCaptureClass.h"
 
 
 class ImagesWindow : public QWidget

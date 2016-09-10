@@ -8,8 +8,8 @@
 #include "ModelStructure.h"
 #include "PerformanceView.h"
 #include "ui_mainwindow.h"
-#include "../../../../Rdk/Gui/Qt/VideoCaptureClass.h"
-#include "../../../../RDK/Deploy/Include/myrdk.h"
+#include "VideoCaptureClass.h"
+#include "../../Deploy/Include/myrdk.h"
 
 extern void ExceptionHandler();
 
