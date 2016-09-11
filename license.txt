@@ -1,4 +1,4 @@
-        RDK (Runtime/Realtime/Research Development Kit) Software License Agreement
+        RDK (Research Development Kit) Software License Agreement
                                        
 The RDK software is the successor project MySDK and includes parts of the project NMSDK.  
 The RDK software included some third party components. See below.
@@ -43,7 +43,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************
 
-* Thirs party components *
+* Third party components *
 The program includes an XML parser developed by Frank Vanden Berghen.
 Below is a copy of the license.
 
