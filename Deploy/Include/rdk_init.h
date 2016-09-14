@@ -661,6 +661,7 @@ RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int channel_index, const c
 // ”дал€ет из выбранного компонента модели с идентификатором 'stringid' экземпл€р
 // компонента с заданным 'name'
 // если stringid - пуста€ строка, то удал€ет из самой модели
+// name может быть длинным id
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
 RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const char *name);
 

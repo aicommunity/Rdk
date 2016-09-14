@@ -19,8 +19,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type)
- : ULProperty<T,OwnerT,type>(name, owner)
+UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : ULProperty<T,OwnerT,type>(name, owner,setmethod)
 {
  this->IoType=input_type;
 };
@@ -129,15 +129,15 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputData(const string &name, OwnerT * const owner)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
+UPropertyOutputData(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
 {
 
 };
 
 /// Deprecated
-UPropertyOutputData(const string &name, OwnerT * const owner, int index)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
+UPropertyOutputData(const string &name, OwnerT * const owner, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
 {
 
 };
@@ -154,8 +154,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type)
- : UCLProperty<std::vector<T>,OwnerT,type>(name, owner)
+UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UCLProperty<std::vector<T>,OwnerT,type>(name, owner, setmethod)
 {
  this->IoType=input_type;
 };
@@ -233,16 +233,16 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputCData(const string &name, OwnerT * const owner)
- : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+UPropertyOutputCData(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData, setmethod)
 {
 
 };
 
 
 /// Deprecated
-UPropertyOutputCData(const string &name, OwnerT * const owner, int index)
- : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+UPropertyOutputCData(const string &name, OwnerT * const owner, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData, setmethod)
 {
 
 };
@@ -262,8 +262,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyOutputBase(OwnerT * const owner, T* data, int input_type)
- : UVProperty<T,OwnerT>(owner,data)
+UVPropertyOutputBase(OwnerT * const owner, T* data, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UVProperty<T,OwnerT>(owner,data, setmethod)
 {
  this->IoType=input_type;
 };
@@ -301,15 +301,15 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyOutputData(OwnerT * const owner, T* data)
- : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData)
+UVPropertyOutputData(OwnerT * const owner, T* data, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData, setmethod)
 {
 
 };
 
 /// Deprecated
-UVPropertyOutputData(OwnerT * const owner, T* data, int index)
- : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData)
+UVPropertyOutputData(OwnerT * const owner, T* data, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData, setmethod)
 {
 
 };

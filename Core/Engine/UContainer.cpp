@@ -1232,23 +1232,23 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-void UContainer::DelComponent(const UId &id, bool canfree)
+/*void UContainer::DelComponent(const UId &id, bool canfree)
 {
  UEPtr<UContainer> comp=GetComponent(id);
 
  DelComponent(comp, canfree);
-}
+} */
 
 // Удаляет дочерний компонент из этого объекта.
 // Удаляемый компонент должен содержаться именно в этом объекте.
-// Таким образом 'name' - должно быть коротким именем
-// удаляемого объекта
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
 void UContainer::DelComponent(const NameT &name, bool canfree)
 {
- DelComponent(GetComponentId(name),canfree);
+ UEPtr<UContainer> comp=GetComponentL(name,true);
+ if(comp && comp->GetOwner())
+  comp->GetOwner()->DelComponent(comp,canfree);
 }
 
 // Принудительно удаляет все дочерние компоненты
