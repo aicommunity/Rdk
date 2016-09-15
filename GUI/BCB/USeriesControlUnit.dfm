@@ -4,7 +4,7 @@ object USeriesControlForm: TUSeriesControlForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077'/'#1091#1076#1072#1083#1077#1085#1080#1077'/'#1085#1072#1089#1090#1088#1086#1081#1082#1072' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1081
-  ClientHeight = 520
+  ClientHeight = 549
   ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,12 +18,12 @@ object USeriesControlForm: TUSeriesControlForm
   OnHide = FormHide
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 16
+  TextHeight = 13
   object Panel2: TPanel
     Left = 0
     Top = 0
     Width = 367
-    Height = 520
+    Height = 549
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -31,7 +31,7 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 494
+    ExplicitHeight = 520
     object Panel4: TPanel
       Left = 0
       Top = 0
@@ -44,7 +44,6 @@ object USeriesControlForm: TUSeriesControlForm
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitHeight = 229
       object Panel5: TPanel
         Left = 295
         Top = 0
@@ -57,7 +56,9 @@ object USeriesControlForm: TUSeriesControlForm
         Align = alRight
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitHeight = 229
+        ExplicitLeft = 296
+        ExplicitTop = -1
+        ExplicitHeight = 254
         object Button1: TButton
           Left = 12
           Top = 16
@@ -152,9 +153,9 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 1
         object StringGrid1: TStringGrid
           Left = 2
-          Top = 18
+          Top = 15
           Width = 290
-          Height = 190
+          Height = 193
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -173,7 +174,7 @@ object USeriesControlForm: TUSeriesControlForm
       Left = 0
       Top = 225
       Width = 367
-      Height = 295
+      Height = 324
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -185,7 +186,7 @@ object USeriesControlForm: TUSeriesControlForm
         Left = 13
         Top = 0
         Width = 281
-        Height = 289
+        Height = 313
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -194,12 +195,12 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 0
         DesignSize = (
           281
-          289)
+          313)
         object Label7: TLabel
-          Left = 25
-          Top = 166
-          Width = 62
-          Height = 16
+          Left = 11
+          Top = 194
+          Width = 44
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -208,10 +209,10 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1051#1077#1075#1077#1085#1076#1072':'
         end
         object Label8: TLabel
-          Left = 30
-          Top = 223
-          Width = 160
-          Height = 16
+          Left = 60
+          Top = 251
+          Width = 130
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -220,10 +221,10 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = 'Watch interval (sec, -1 - inf):'
         end
         object Label9: TLabel
-          Left = 67
-          Top = 257
-          Width = 123
-          Height = 16
+          Left = 93
+          Top = 285
+          Width = 97
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -248,7 +249,7 @@ object USeriesControlForm: TUSeriesControlForm
           Left = 28
           Top = 138
           Width = 237
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -278,7 +279,7 @@ object USeriesControlForm: TUSeriesControlForm
           Left = 27
           Top = 68
           Width = 238
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -318,10 +319,10 @@ object USeriesControlForm: TUSeriesControlForm
           OnClick = CheckBox3Click
         end
         object ComboBox3: TComboBox
-          Left = 28
-          Top = 187
-          Width = 237
-          Height = 24
+          Left = 11
+          Top = 215
+          Width = 254
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -341,9 +342,9 @@ object USeriesControlForm: TUSeriesControlForm
         end
         object WatchIntervalEdit: TEdit
           Left = 198
-          Top = 219
+          Top = 247
           Width = 67
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -357,9 +358,9 @@ object USeriesControlForm: TUSeriesControlForm
         end
         object UpdateIntervalEdit: TEdit
           Left = 198
-          Top = 253
+          Top = 281
           Width = 67
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -371,6 +372,24 @@ object USeriesControlForm: TUSeriesControlForm
           OnExit = Edit4Exit
           OnKeyDown = Edit4KeyDown
         end
+        object AutoMinYValueCheckBox: TCheckBox
+          Left = 16
+          Top = 168
+          Width = 97
+          Height = 17
+          Caption = #1040#1074#1090#1086' min(Y)'
+          TabOrder = 9
+          OnClick = AutoMinYValueCheckBoxClick
+        end
+        object AutoMaxYValueCheckBox: TCheckBox
+          Left = 136
+          Top = 168
+          Width = 97
+          Height = 17
+          Caption = #1040#1074#1090#1086' max(Y)'
+          TabOrder = 10
+          OnClick = AutoMaxYValueCheckBoxClick
+        end
       end
     end
   end
@@ -378,7 +397,7 @@ object USeriesControlForm: TUSeriesControlForm
     Left = 367
     Top = 0
     Width = 284
-    Height = 520
+    Height = 549
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -386,12 +405,12 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitHeight = 494
+    ExplicitHeight = 520
     object Panel6: TPanel
       Left = 0
-      Top = 223
+      Top = 225
       Width = 284
-      Height = 297
+      Height = 324
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -401,12 +420,12 @@ object USeriesControlForm: TUSeriesControlForm
       TabOrder = 0
       DesignSize = (
         284
-        297)
+        324)
       object Label1: TLabel
         Left = 9
         Top = 9
         Width = 3
-        Height = 16
+        Height = 13
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -414,7 +433,7 @@ object USeriesControlForm: TUSeriesControlForm
       end
       object BitBtn1: TBitBtn
         Left = 55
-        Top = 259
+        Top = 285
         Width = 107
         Height = 32
         Margins.Left = 4
@@ -444,13 +463,12 @@ object USeriesControlForm: TUSeriesControlForm
         NumGlyphs = 2
         TabOrder = 0
         OnClick = BitBtn1Click
-        ExplicitTop = 234
       end
       object GroupBox1: TGroupBox
         Left = 0
-        Top = 2
+        Top = 0
         Width = 281
-        Height = 248
+        Height = 277
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -459,12 +477,12 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 1
         DesignSize = (
           281
-          248)
+          277)
         object Label2: TLabel
           Left = 25
           Top = 25
-          Width = 65
-          Height = 16
+          Width = 49
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -472,10 +490,10 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1055#1086#1076#1087#1080#1089#1100': '
         end
         object Label3: TLabel
-          Left = 45
+          Left = 56
           Top = 89
-          Width = 37
-          Height = 16
+          Width = 26
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -484,10 +502,10 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1062#1074#1077#1090':'
         end
         object Label4: TLabel
-          Left = 7
+          Left = 28
           Top = 57
-          Width = 75
-          Height = 16
+          Width = 54
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -496,10 +514,10 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1057#1084#1077#1097#1077#1085#1080#1077':'
         end
         object Label5: TLabel
-          Left = 7
+          Left = 27
           Top = 121
-          Width = 75
-          Height = 16
+          Width = 55
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -508,10 +526,10 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1058#1080#1087' '#1083#1080#1085#1080#1080':'
         end
         object Label6: TLabel
-          Left = 18
+          Left = 36
           Top = 156
-          Width = 64
-          Height = 16
+          Width = 46
+          Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -523,7 +541,7 @@ object USeriesControlForm: TUSeriesControlForm
           Left = 89
           Top = 20
           Width = 184
-          Height = 24
+          Height = 21
           Cursor = crHandPoint
           Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100
           Margins.Left = 4
@@ -542,7 +560,7 @@ object USeriesControlForm: TUSeriesControlForm
           Left = 89
           Top = 53
           Width = 184
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -615,7 +633,7 @@ object USeriesControlForm: TUSeriesControlForm
           Left = 89
           Top = 117
           Width = 184
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -634,7 +652,7 @@ object USeriesControlForm: TUSeriesControlForm
           Left = 89
           Top = 153
           Width = 184
-          Height = 24
+          Height = 21
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -659,7 +677,7 @@ object USeriesControlForm: TUSeriesControlForm
       end
       object BitBtn2: TBitBtn
         Left = 170
-        Top = 258
+        Top = 285
         Width = 104
         Height = 32
         Margins.Left = 4
@@ -672,6 +690,7 @@ object USeriesControlForm: TUSeriesControlForm
         NumGlyphs = 2
         TabOrder = 2
         OnClick = BitBtn2Click
+        ExplicitTop = 258
       end
     end
     object GroupBox4: TGroupBox
@@ -687,9 +706,9 @@ object USeriesControlForm: TUSeriesControlForm
       TabOrder = 1
       object StringGrid2: TStringGrid
         Left = 2
-        Top = 18
+        Top = 15
         Width = 277
-        Height = 190
+        Height = 193
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4

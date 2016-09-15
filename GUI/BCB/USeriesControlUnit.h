@@ -61,6 +61,8 @@ __published:	// IDE-managed Components
 	TEdit *WatchIntervalEdit;
 	TLabel *Label9;
 	TEdit *UpdateIntervalEdit;
+	TCheckBox *AutoMinYValueCheckBox;
+	TCheckBox *AutoMaxYValueCheckBox;
         void __fastcall OutterCPanelDblClick(TObject *Sender);
         void __fastcall InnerCPanelDblClick(TObject *Sender);
         void __fastcall FormHide(TObject *Sender);
@@ -90,6 +92,8 @@ __published:	// IDE-managed Components
 	void __fastcall DelPointButtonClick(TObject *Sender);
 	void __fastcall WatchIntervalEditChange(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall AutoMinYValueCheckBoxClick(TObject *Sender);
+	void __fastcall AutoMaxYValueCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUSeriesControlForm(TComponent* Owner);
