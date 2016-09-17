@@ -2970,3 +2970,12 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
 //---------------------------------------------------------------------------
 
 
+void __fastcall TUGEngineControlForm::OpenProjectFolder1Click(TObject *Sender)
+{
+ //
+ if(RdkApplication.GetProjectOpenFlag())
+//  WinExec("EXPLORER /e, "+'"c:\"', SW_SHOW);
+  ShellExecute(Handle, "explore", RdkApplication.GetProjectPath().c_str(), "", "", SW_SHOWNORMAL);
+}
+//---------------------------------------------------------------------------
+
