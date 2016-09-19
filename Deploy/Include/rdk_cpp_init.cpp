@@ -4,97 +4,139 @@
 #include "rdk_cpp_init.h"
 #include "rdk_init.cpp"
 
+// --------------------------
+// Методы доступа к ядру без блокировки
+// --------------------------
+// Возвращает ссылку на указатель ядра
+RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void)
+{
+ return &RdkCoreManager;
+}
+
+// Возвращает указатель на логгер
+RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void)
+{
+ return RdkCoreManager.GetLogger();
+}
+
+RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index)
+{
+ return RdkCoreManager.GetLogger(channel_index);
+}
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
 {
- return DllManager.GetEngine();
+ return RdkCoreManager.GetEngine();
 }
 
-RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int engine_index)
+RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index)
 {
- return DllManager.GetEngine(engine_index);
+ return RdkCoreManager.GetEngine(channel_index);
 }
 
 
 // Возвращает ссылку на указатель среды выполнения
 RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void)
 {
- return DllManager.GetEnvironment();
+ return RdkCoreManager.GetEnvironment();
 }
 
-RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int engine_index)
+RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int channel_index)
 {
- return DllManager.GetEnvironment(engine_index);
+ return RdkCoreManager.GetEnvironment(channel_index);
 }
 
 // Возвращает ссылку на указатель хранилища
 RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void)
 {
- return DllManager.GetStorage();
+ return RdkCoreManager.GetStorage();
 }
 
-RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int engine_index)
+RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int channel_index)
 {
- return DllManager.GetStorage(engine_index);
+ return RdkCoreManager.GetStorage(channel_index);
 }
 
 // Возвращает указатель на текущую модель
 RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void)
 {
- return DllManager.GetModel();
+ return RdkCoreManager.GetModel();
 }
 
-RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index)
+RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index)
 {
- return DllManager.GetModel(engine_index);
+ return RdkCoreManager.GetModel(channel_index);
 }
-
+// --------------------------
 
 // --------------------------
 // Методы доступа к каналам с блокировкой
 // --------------------------
+// Возвращает ссылку на указатель ядра
+RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<URdkCoreManager>(0,&RdkCoreManager);
+#else
+ return RDK::UELockPtr<URdkCoreManager>(RdkCoreManager.GetGlobalMutex(),&RdkCoreManager);
+#endif
+}
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
 {
- return DllManager.GetEngineLock(0);
+ return RdkCoreManager.GetEngineLock(0);
 }
 
-RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int engine_index)
+RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index)
 {
- return DllManager.GetEngineLock(engine_index);
+ return RdkCoreManager.GetEngineLock(channel_index);
 }
 
 // Возвращает ссылку на указатель среды выполнения
 RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void)
 {
- return DllManager.GetEnvironmentLock(0);
+ return RdkCoreManager.GetEnvironmentLock(0);
 }
 
-RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int engine_index)
+RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index)
 {
- return DllManager.GetEnvironmentLock(engine_index);
+ return RdkCoreManager.GetEnvironmentLock(channel_index);
 }
 
 // Возвращает ссылку на указатель хранилища
 RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void)
 {
- return DllManager.GetStorageLock(0);
+ return RdkCoreManager.GetStorageLock(0);
 }
 
-RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int engine_index)
+RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index)
 {
- return DllManager.GetStorageLock(engine_index);
+ return RdkCoreManager.GetStorageLock(channel_index);
 }
 
 // Возвращает указатель на текущую модель
 RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void)
 {
- return DllManager.GetModelLock(0);
+ return RdkCoreManager.GetModelLock(0);
 }
 
-RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_index)
+RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index)
 {
- return DllManager.GetModelLock(engine_index);
+ return RdkCoreManager.GetModelLock(channel_index);
+}
+// --------------------------
+
+
+// --------------------------
+// Методы доступа к щрифтам
+// --------------------------
+/// Возвращает ссылку на шрифты
+/// (не потокобезопасно!)
+RDK::UBitmapFontCollection& GetFonts(void)
+{
+ return RdkCoreManager.GetFonts();
 }
 // --------------------------
 

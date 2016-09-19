@@ -10,6 +10,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTime>
+#include <QtCore/QMutex>
 
 namespace RDK {
 

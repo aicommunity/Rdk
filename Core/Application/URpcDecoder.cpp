@@ -56,10 +56,10 @@ void URpcDecoder::Process(void)
    if(!ProcessCommand(command))
    {
 	// ошибка выполения команды
-	MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
+	MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
    }
    else
-	MEngine_LogMessage(command->ChannelIndex, RDK_EX_DEBUG, (std::string("RPC Decoder: Process - Processed Command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
+	MLog_LogMessage(command->ChannelIndex, RDK_EX_DEBUG, (std::string("RPC Decoder: Process - Processed Command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
 
    if(Dispatcher)
 	Dispatcher->PushToProcessedQueue(command);
@@ -79,11 +79,11 @@ void URpcDecoder::Process(void)
   switch(ex_flag)
   {
   case 1:
-   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - std::exception - ")+ex_info).c_str());
+   MLog_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - std::exception - ")+ex_info).c_str());
   break;
 
   case 2:
-   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - RDK::UException - ")+ex_info).c_str());
+   MLog_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - RDK::UException - ")+ex_info).c_str());
   break;
   }
   ex_flag=0;

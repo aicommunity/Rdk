@@ -707,9 +707,12 @@ bool DecodeAsVariable(const StringT &str, SizeT &startname, SizeT &stopname, Siz
   i=str.find_first_of(" \r\n",startname);
   if(i == StringT::npos)
    stopname=str.size()-1;
+  else
+   stopname=i-1;
  }
+ else
+  stopname=i-1;
 
- stopname=i-1;
 
  while(stopname > startname && str[stopname] == ' ')
   --stopname;

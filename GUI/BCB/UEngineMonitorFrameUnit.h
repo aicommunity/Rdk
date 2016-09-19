@@ -40,16 +40,16 @@ virtual ~UEngineControlVcl(void);
 // Методы управления
 // --------------------------
 /// Создание нового треда расчета
-virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engine_control, int engine_index);
+virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engine_control, int channel_index);
 
 /// Создание нового треда расчета
 virtual RDK::UEngineStateThread* CreateEngineStateThread(RDK::UEngineControl* engine_control);
 
 /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void StartEngine(int channel_index);
+virtual void StartChannel(int channel_index);
 
 /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void PauseEngine(int channel_index);
+virtual void PauseChannel(int channel_index);
 // --------------------------
 };
 

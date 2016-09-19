@@ -19,6 +19,7 @@ See file license.txt for more information
 #include "UEPtr.h"
 #include "UContainerDescription.h"
 #include "UTime.h"
+#include "ULoggerEnv.h"
 #include "../Serialize/Serialize.h"
 #include "../Graphics/UFont.h"
 
@@ -141,6 +142,9 @@ UEPtr<UStorage> Storage;
 // Указатель на среду выполнения этого объекта
 UEPtr<UEnvironment> Environment;
 
+// Указатель на логгер
+UEPtr<ULoggerEnv> Logger;
+
 protected: // Данные
 // Идентификатор класса
 UId Class;
@@ -191,6 +195,10 @@ virtual bool SetStorage(UEPtr<UStorage> storage);
 // Возвращает среду выполнения этого объекта
 UEPtr<UEnvironment> const GetEnvironment(void) const;
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
+
+// Указатель на логгер
+UEPtr<ULoggerEnv> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
 
 /// Возвращает ссылку на класс управления времени из Environment.
 /// Если Environment отсутствует то возвращает указатель на заглушку

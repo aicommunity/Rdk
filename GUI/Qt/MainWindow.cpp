@@ -81,7 +81,7 @@ void MainWindow::InitializeGraphicalEngine()
  OpenCaptures();
 
  // source 0
- GraphicalEngineInit(29, 1, 1, cap.GetSize(0).first, cap.GetSize(0).second, false, (void*)ExceptionHandler);
+ Core_ChannelInit(29, (void*)ExceptionHandler);
  Env_SetDebugMode(true);
  //SetSystemDir("e:/Work/RTC/14/RTV/Bin/Platform/Win/");
  //Engine_LoadFonts();

@@ -167,7 +167,10 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
  WatchIntervalEdit->Text=FloatToStrF(GrSender->GetWatchInterval(),ffFixed,5,5);
  UpdateIntervalEdit->Text=IntToStr(int(GrSender->GetUpdateInterval()));
 
- UpdateSelectedWatch(); 
+ AutoMinYValueCheckBox->Checked=GrSender->GetAutoMinYValue();
+ AutoMaxYValueCheckBox->Checked=GrSender->GetAutoMaxYValue();
+
+ UpdateSelectedWatch();
 }
 
 
@@ -508,6 +511,8 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
    GrSender->SetLegendPosition(ComboBox3->ItemIndex);
 
    GrSender->SetWatchInterval(StrToFloat(WatchIntervalEdit->Text));
+   GrSender->SetAutoMinYValue(AutoMinYValueCheckBox->Checked);
+   GrSender->SetAutoMaxYValue(AutoMaxYValueCheckBox->Checked);
   }
 
  try
@@ -639,6 +644,18 @@ void __fastcall TUSeriesControlForm::WatchIntervalEditChange(TObject *Sender)
 void __fastcall TUSeriesControlForm::FormShow(TObject *Sender)
 {
  DelWatchList.clear();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUSeriesControlForm::AutoMinYValueCheckBoxClick(TObject *Sender)
+{
+ GraphChanged=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUSeriesControlForm::AutoMaxYValueCheckBoxClick(TObject *Sender)
+{
+ GraphChanged=true;
 }
 //---------------------------------------------------------------------------
 

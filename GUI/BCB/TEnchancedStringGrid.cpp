@@ -7,6 +7,7 @@
 
 #include <ClipBrd.hpp>
 #include "TEnchancedStringGrid.h"
+#include<StrUtils.hpp>
 // ---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -363,7 +364,8 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 					cmbListEdit->Items->Clear();
 					for(size_t i = 0; i<vec->size();i++)
 					{
-						cmbListEdit->Items->Add(vec->at(i));
+					 String v=AnsiReplaceStr(vec->at(i), "\t", " ");
+						cmbListEdit->Items->Add(v);
 					}
 					cmbListEdit->Visible = True;
 					cmbListEdit->SetFocus();
@@ -377,7 +379,8 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 					{
 						if(BasicStringGrid->Cells[ACol][ARow]!="")
 							m_cellChanged=true;
-						BasicStringGrid->Cells[ACol][ARow] = p.GetString();
+					 String v=AnsiReplaceStr(p.GetString(), "\t", " ");
+					 BasicStringGrid->Cells[ACol][ARow] = v;
 					}
 				}
 			}
@@ -405,7 +408,8 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 							{
 								if(BasicStringGrid->Cells[ACol][ARow]!="")
 									m_cellChanged=true;
-								BasicStringGrid->Cells[ACol][ARow] = p.GetString();
+							 String v=AnsiReplaceStr(p.GetString(), "\t", " ");
+							 BasicStringGrid->Cells[ACol][ARow] = v;
 							}
 						}
 					break;

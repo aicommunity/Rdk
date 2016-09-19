@@ -152,7 +152,7 @@ void VideoCaptureClass::WriteSettings(QString &fileName)
 {
  QSettings settings(fileName, QSettings::IniFormat);
  settings.beginGroup("VideoCaptures");
- settings.setValue("num_captures", capturesList.size());
+ settings.setValue("num_captures", int(capturesList.size()));
  settings.remove("sources");
 
  for(std::vector<cv::VideoCapture *>::size_type i = 0; i < capturesList.size(); i++)

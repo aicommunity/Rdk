@@ -220,11 +220,25 @@ bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
  return res;
 }
 
+// Указатель на логгер
+bool UContainer::SetLogger(UEPtr<ULoggerEnv> logger)
+{
+ if(!UComponent::SetLogger(logger))
+  return false;
+
+ bool res=true;
+
+ for(int i=0;i<NumComponents;i++)
+  res&=PComponents[i]->SetLogger(logger);
+
+ return res;
+}
+
 // Вызов обработчика исключений среды
 void UContainer::ProcessException(UException &exception)
 {
- if(Environment)
-  Environment->ProcessException(exception);
+ if(Logger)
+  Logger->ProcessException(exception);
  else
   throw exception;
 }
@@ -233,37 +247,37 @@ void UContainer::ProcessException(UException &exception)
 // Вызов обработчика исключений среды для простой записи данных в лог
 void UContainer::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
- if(Environment)
+ if(Logger)
  {
-  Environment->LogMessageEx(msg_level, GetFullName(), line, error_event_number);
+  Logger->LogMessageEx(msg_level, GetFullName(), line, error_event_number);
  }
 }
 
 void UContainer::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
- if(Environment)
+ if(Logger)
  {
-  Environment->LogMessageEx(msg_level, GetFullName(), method_name, line, error_event_number);
+  Logger->LogMessageEx(msg_level, GetFullName(), method_name, line, error_event_number);
  }
 }
 
 void UContainer::LogMessageEx(int msg_level, const std::string &line, int error_event_number)
 {
- if(Environment)
+ if(Logger)
  {
   std::string full_name;
   GetFullName(full_name);
-  Environment->LogMessageEx(msg_level, full_name, full_name+std::string(" - ")+line, error_event_number);
+  Logger->LogMessageEx(msg_level, full_name, full_name+std::string(" - ")+line, error_event_number);
  }
 }
 
 void UContainer::LogMessageEx(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
- if(Environment)
+ if(Logger)
  {
   std::string full_name;
   GetFullName(full_name);
-  Environment->LogMessageEx(msg_level, full_name, method_name, full_name+std::string(" - ")+line, error_event_number);
+  Logger->LogMessageEx(msg_level, full_name, method_name, full_name+std::string(" - ")+line, error_event_number);
  }
 }
 
@@ -275,7 +289,7 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, int
 
 void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (debug_sys_msg_type & DebugSysEventsMask)))
+ if(Logger && Logger->GetDebugMode() && (Logger->GetDebugSysEventsMask() & (debug_sys_msg_type & DebugSysEventsMask)))
  {
   std::string prefix;
   switch(debug_sys_msg_type)
@@ -316,7 +330,7 @@ void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsig
 /// Логирует свойства при входе в расчет (входы, параметры, состояния)
 void UContainer::LogPropertiesBeforeCalc(void)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ if(Logger && Logger->GetDebugMode() && (Logger->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
  {
   std::string log_message;
 
@@ -356,7 +370,7 @@ void UContainer::LogPropertiesBeforeCalc(void)
 /// Логирует свойства при выходе из расчета (выходы)
 void UContainer::LogPropertiesAfterCalc(void)
 {
- if(Environment && Environment->GetDebugMode() && (Environment->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ if(Logger && Logger->GetDebugMode() && (Logger->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
  {
   std::string log_message;
   if(PropertiesForDetailedLog.empty())
@@ -396,9 +410,9 @@ void UContainer::LogPropertiesAfterCalc(void)
 /// Возвращает состояние флага режима отладки
 bool UContainer::CheckDebugMode(void) const
 {
- if(Environment)
+ if(Logger)
  {
-  return Environment->GetDebugMode();
+  return Logger->GetDebugMode();
  }
  return false;
 }
@@ -543,7 +557,7 @@ bool UContainer::ValidateName(const NameT &name)
   return false;
  for (std::string::const_iterator it=name.begin(); it!=name.end(); ++it)
   {
-	if (!std::isalnum(*it,loc) && *it != '_')
+	if (!std::isalnum(*it,loc) && *it != '_' && *it != '-')
 	 return false;
   }
  return true;
@@ -1171,6 +1185,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
  if(!res)
   RDK_THROW(EComponentIdAlreadyExist(id));
 
+ comp->SetLogger(Logger);
  comp->SetId(id);
  comp->SetOwner(this);
 
@@ -1217,23 +1232,23 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-void UContainer::DelComponent(const UId &id, bool canfree)
+/*void UContainer::DelComponent(const UId &id, bool canfree)
 {
  UEPtr<UContainer> comp=GetComponent(id);
 
  DelComponent(comp, canfree);
-}
+} */
 
 // Удаляет дочерний компонент из этого объекта.
 // Удаляемый компонент должен содержаться именно в этом объекте.
-// Таким образом 'name' - должно быть коротким именем
-// удаляемого объекта
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
 void UContainer::DelComponent(const NameT &name, bool canfree)
 {
- DelComponent(GetComponentId(name),canfree);
+ UEPtr<UContainer> comp=GetComponentL(name,true);
+ if(comp && comp->GetOwner())
+  comp->GetOwner()->DelComponent(comp,canfree);
 }
 
 // Принудительно удаляет все дочерние компоненты
@@ -2611,6 +2626,7 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
 /// Производит необходимые операции по добавлению статического компонента
 UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp)
 {
+ comp->SetLogger(GetLogger());
  comp->SetStorage(GetStorage());
  comp->SetEnvironment(GetEnvironment());
  if(GetStorage())
@@ -2664,6 +2680,7 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
 
  if(!NumComponents)
   LastId=0;
+ comp->SetLogger(0);
 }
 
 

@@ -5294,6 +5294,11 @@ UBHistogram::UBHistogram(void)
  Max.Number.Int=0;
 }
 
+UBHistogram::UBHistogram(const UBHistogram &copy)
+{
+ (*this)=copy;
+}
+
 UBHistogram::~UBHistogram(void)
 {
  if(Data)

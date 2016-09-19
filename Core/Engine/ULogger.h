@@ -9,11 +9,11 @@
 
 namespace RDK {
 
-class ULogger
+class RDK_LIB_TYPE ULogger
 {
 protected: // Параметры
 /// Путь до папки с логами
-RDK::UELockVar<std::string> LogPath;
+RDK::UELockVar<std::string> LogDir;
 
 /// Суффикс имени файла с логом
 RDK::UELockVar<std::string> Suffix;
@@ -26,6 +26,7 @@ RDK::UEPtr<std::ofstream> EventsLogFile;
 /// сбрасывается, если невозможно создать катлог, или файл
 bool LogEnabledFlag;
 
+UGenericMutex* LogMutex;
 
 public: // Конструкторы и деструкторы
 ULogger(void);
@@ -33,13 +34,10 @@ virtual ~ULogger(void);
 
 public: // Методы управления параметрами
 /// Путь до папки с логами
-std::string GetLogPath(void) const;
-bool SetLogPath(const std::string &value);
+std::string GetLogDir(void) const;
+bool SetLogDir(const std::string &value);
 
-/// Режим логгирования
-/// 0 - отключен
-/// 1 - сохранять каждый канал в отдельный файл лога
-/// 2 - сохранять все каналы в единый файл лога
+/// Суффикс имени файла
 std::string GetSuffix(void) const;
 bool SetSuffix(const std::string &value);
 

@@ -48,8 +48,8 @@ void TUImagesFrame::SetCellRes(int width, int height)
 // ”станавливает число €чеек
 void TUImagesFrame::SetNumCells(int width, int height)
 {
- DrawGrid->ColCount=width;
- DrawGrid->RowCount=height;
+ DrawGrid->ColCount=NumCols=width;
+ DrawGrid->RowCount=NumRows=height;
 
  for(size_t i=0;i<Images.size();i++)
   for(size_t j=0;j<Images[i].size();j++)
@@ -70,7 +70,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   Legends[i].resize(height);
-  ComponentChannelIndexes[i].resize(height,GetSelectedEngineIndex());
+  ComponentChannelIndexes[i].resize(height,Core_GetSelectedChannelIndex());
 //  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
 //  	ComponentChannelIndexes[i][k]=-1;
 
@@ -108,7 +108,7 @@ void TUImagesFrame::SetReflectionXFlag(bool value)
 // —в€зывает €чейку с идентификатором компонента
 void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, std::string index, int channel_id)
 {
- if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
+ if(i <0 || j<0 || i>= i>= NumCols || j>= NumRows)
   return;
 
  StringIds[i][j]=stringid;
@@ -135,7 +135,7 @@ void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, s
 // ”станавливает заданное изображение в €чейку с координатами i,j
 bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 {
- if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
+ if(i <0 || j<0 || i>= NumCols || j>= NumRows)
   return false;
 
  UBitmapToTBitmap(bitmap,Images[i][j]->Picture->Bitmap,true);
@@ -216,7 +216,7 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 
 bool TUImagesFrame::SetImage(int i, int j, const TImage *image)
 {
- if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
+ if(i <0 || j<0 || i>= NumCols || j>= NumRows)
   return false;
 
  Images[i][j]->Assign(image->Picture->Bitmap);
@@ -225,6 +225,9 @@ bool TUImagesFrame::SetImage(int i, int j, const TImage *image)
 
 bool TUImagesFrame::SetImage(int i, int j, int width, int height, int colormodel, unsigned char *buffer)
 {
+ if(i <0 || j<0 || i>= NumCols || j>= NumRows)
+  return false;
+
  struct {
   TLogPalette lpal;
   TPaletteEntry dummy[256];
@@ -348,7 +351,7 @@ int TUImagesFrame::GetY(void)
 // ¬озвращает изображение в выбранной €чейке
 Graphics::TBitmap* TUImagesFrame::GetImage(int i, int j)
 {
- if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
+ if(i <0 || j<0 || i>= NumCols || j>= NumRows)
   return 0;
 
  return Images[i][j]->Picture->Bitmap;
@@ -429,6 +432,9 @@ void TUImagesFrame::AUpdateInterface(void)
    ScrollBox1->Visible=true;
  }
 
+ if(NumCols <=0 || NumRows <=0)
+  return;
+
  if(DrawGrid->Visible)
  {
   for(size_t i=0;i<Images.size();i++)
@@ -437,7 +443,7 @@ void TUImagesFrame::AUpdateInterface(void)
    {
 	 int eng_index = ComponentChannelIndexes[i][j];
 	 if(eng_index<0 || IndChannelsCheckBox->Checked == false)
-	  eng_index=GetSelectedEngineIndex();
+	  eng_index=Core_GetSelectedChannelIndex();
 
 	 if(ComponentIndexes[i][j].empty())
 	 {
@@ -544,7 +550,7 @@ void TUImagesFrame::AUpdateInterface(void)
 
   int eng_index = ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row];
   if(eng_index<0 || IndChannelsCheckBox->Checked == false)
-   eng_index=GetSelectedEngineIndex();
+   eng_index=Core_GetSelectedChannelIndex();
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
    copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &bmp_param);
   else
@@ -605,6 +611,10 @@ void TUImagesFrame::AUpdateInterface(void)
 void TUImagesFrame::AClearInterface(void)
 {
  SetNumCells(0,0);
+ FullImage->Picture->Bitmap->Height=0;
+ FullImage->Picture->Bitmap->Width=0;
+ FullImage->Repaint();
+ FullImage->Update();
 }
 
 // —охран€ет параметры интерфейса в xml
@@ -746,7 +756,7 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
 
  StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row]=GetSelectedEngineIndex();
+ ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row]=Core_GetSelectedChannelIndex();
 
  if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
  {

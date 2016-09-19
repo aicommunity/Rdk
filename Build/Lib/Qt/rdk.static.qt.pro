@@ -14,7 +14,7 @@ DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 
-SOURCES += rdk.qt.cpp \
+SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -113,9 +113,28 @@ SOURCES += rdk.qt.cpp \
     ../../../Deploy/Include/rdk_cpp_init.cpp \
     ../../../Deploy/Include/rdk_init.cpp \
     ../../../Deploy/Include/rdk_new.cpp \
-    ../../../Core/Application/UIVisualController.cpp
+    ../../../Core/Application/UIVisualController.cpp \
+    ../../../Core/Engine/ULoggerEnv.cpp \
+    ../../../Core/Application/UAppCore.cpp \
+    ../../../Core/Application/UApplication.cpp \
+    ../../../Core/Application/UBroadcasterInterface.cpp \
+    ../../../Core/Application/UChannelProfiler.cpp \
+    ../../../Core/Application/UEngineControl.cpp \
+    ../../../Core/Application/UEngineControlThread.cpp \
+    ../../../Core/Application/UEngineStateThread.cpp \
+    ../../../Core/Application/UProject.cpp \
+    ../../../Core/Application/URpcCommand.cpp \
+    ../../../Core/Application/URpcCommandInternal.cpp \
+    ../../../Core/Application/URpcDecoder.cpp \
+    ../../../Core/Application/URpcDecoderCommon.cpp \
+    ../../../Core/Application/URpcDecoderInternal.cpp \
+    ../../../Core/Application/URpcDispatcher.cpp \
+    ../../../Core/Application/URpcDispatcherQueues.cpp \
+    ../../../Core/Application/UServerControl.cpp \
+    ../../../Core/Application/UServerTransport.cpp \
+    ../../../Core/Application/UServerTransportTcp.cpp
 
-HEADERS += rdk.qt.h\
+HEADERS +=\
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
@@ -212,7 +231,26 @@ HEADERS += rdk.qt.h\
     ../../../Deploy/Include/rdk_engine_support.h \
     ../../../Deploy/Include/rdk_error_codes.h \
     ../../../Deploy/Include/rdk_exceptions.h \
-    ../../../Deploy/Include/myrdk.h
+    ../../../Deploy/Include/myrdk.h \
+    ../../../Core/Engine/ULoggerEnv.h \
+    ../../../Core/Application/UAppCore.h \
+    ../../../Core/Application/UApplication.h \
+    ../../../Core/Application/UBroadcasterInterface.h \
+    ../../../Core/Application/UChannelProfiler.h \
+    ../../../Core/Application/UEngineControl.h \
+    ../../../Core/Application/UEngineControlThread.h \
+    ../../../Core/Application/UEngineStateThread.h \
+    ../../../Core/Application/UProject.h \
+    ../../../Core/Application/URpcCommand.h \
+    ../../../Core/Application/URpcCommandInternal.h \
+    ../../../Core/Application/URpcDecoder.h \
+    ../../../Core/Application/URpcDecoderCommon.h \
+    ../../../Core/Application/URpcDecoderInternal.h \
+    ../../../Core/Application/URpcDispatcher.h \
+    ../../../Core/Application/URpcDispatcherQueues.h \
+    ../../../Core/Application/UServerControl.h \
+    ../../../Core/Application/UServerTransport.h \
+    ../../../Core/Application/UServerTransportTcp.h
 
 unix {
     target.path = /usr/lib

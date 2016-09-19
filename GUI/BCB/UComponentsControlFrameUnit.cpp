@@ -35,7 +35,7 @@ void TUComponentsControlFrame::AClearInterface(void)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
  try
  {
@@ -62,7 +62,7 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
  }
  catch(Exception &exception)
  {
-  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 
 }
@@ -71,7 +71,7 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  try
@@ -101,7 +101,7 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  }
  catch(Exception &exception)
  {
-  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -109,7 +109,7 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  String FileName=filename;
@@ -138,7 +138,7 @@ void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  String FileName=filename;
@@ -168,7 +168,7 @@ void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  String FileName=filename;
@@ -198,7 +198,7 @@ void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  String FileName=filename;
@@ -228,7 +228,7 @@ void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
 /// «агружает общее описание классов
 void TUComponentsControlFrame::LoadCommonClassesDescriptionFromFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  String FileName=filename;
@@ -257,7 +257,7 @@ void TUComponentsControlFrame::LoadCommonClassesDescriptionFromFile(const String
 /// «агружает детальное описание классов
 void TUComponentsControlFrame::LoadClassesDescriptionFromFile(const String &filename)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return;
 
  String FileName=filename;

@@ -179,6 +179,10 @@ protected:	// Данные
 
 		// Интервал наблюдения
 		double WatchInterval;
+
+		// Автоматически подстраивать верхнюю и нижнюю границы оси
+		bool AutoMinYValue;
+		bool AutoMaxYValue;
 		// -----------------------------------------
 
 		// -----------------------------------------
@@ -268,6 +272,12 @@ public:	// Методы
 		// Размер кеша отображаемых данных
 		int GetCacheSize(void) const;
 		bool SetCacheSize(int value);
+
+		// Автоматически подстраивать верхнюю и нижнюю границы оси
+		bool GetAutoMinYValue(void) const;
+		bool GetAutoMaxYValue(void) const;
+		void SetAutoMinYValue(bool value);
+		void SetAutoMaxYValue(bool value);
 		// ------------------------------
 
 		// ------------------------------

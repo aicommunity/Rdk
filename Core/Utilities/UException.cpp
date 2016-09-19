@@ -4,6 +4,7 @@
 #include <typeinfo>
 #include "UException.h"
 #include "USupport.h"
+#include "../System/rdk_system.h"
 //#include "ExceptionDispatcher.h"
 
 namespace RDK {
@@ -46,8 +47,11 @@ bool UException::SetDispatcher(ExceptionDispatcher* value)
 UException::UException(void)
 : Number(0), Type(0), ExLineNumber(-1)
 {
-//Number=++LastNumber;
- std::time(&Time);
+ unsigned long long seconds(0);
+ GetTimeOfDayInMicroseconds(seconds, TimeMsecs);
+ Time=seconds;
+// std::time(&Time);
+ Time=seconds;
 }
 
 UException::UException(const UException &copy)
@@ -183,20 +187,25 @@ std::string UException::GenerateLogPrefix(void) const
  std::string result;
 
  std::time_t ex_time=GetTime();
- tm* time_stuct=localtime(&ex_time);
+ tm* time_struct=localtime(&ex_time);
 
- result+=sntoa(time_stuct->tm_mday,2);
+ if(!time_struct)
+  return result;
+
+ result+=sntoa(time_struct->tm_mday,2);
  result+="/";
- result+=sntoa(time_stuct->tm_mon+1,2);
+ result+=sntoa(time_struct->tm_mon+1,2);
  result+="/";
- result+=sntoa(time_stuct->tm_year+1900,4);
+ result+=sntoa(time_struct->tm_year+1900,4);
  result+=" ";
 
- result+=sntoa(time_stuct->tm_hour,2);
+ result+=sntoa(time_struct->tm_hour,2);
  result+=":";
- result+=sntoa(time_stuct->tm_min,2);
+ result+=sntoa(time_struct->tm_min,2);
  result+=":";
- result+=sntoa(time_stuct->tm_sec,2);
+ result+=sntoa(time_struct->tm_sec,2);
+ result+=".";
+ result+=sntoa(TimeMsecs/1000,3);
  result+=" ";
 
  result+=sntoa(GetType());

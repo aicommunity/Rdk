@@ -3,6 +3,8 @@
 
 #include "UEngineStateThread.h"
 #include "UEngineControlThread.h"
+#include "UApplication.h"
+#include "UEngineControl.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 void ExceptionHandler(int channel_index)
@@ -84,21 +86,21 @@ UEngineStateThread::~UEngineStateThread(void)
 // Управление параметрами
 // --------------------------
 /// Путь до папки с логами
-std::string UEngineStateThread::GetLogPath(void) const
+/*std::string UEngineStateThread::GetLogDir(void) const
 {
- return LogPath;
+ return LogDir;
 }
 
-bool UEngineStateThread::SetLogPath(const std::string& value)
+bool UEngineStateThread::SetLogDir(const std::string& value)
 {
- if(LogPath == value)
+ if(LogDir == value)
   return true;
 
- LogPath=value;
+ LogDir=value;
  RecreateEventsLogFile();
  return true;
 }
-
+          */
 /// Флаг разрешения логгирования
 bool UEngineStateThread::GetLogFlag(void) const
 {
@@ -139,7 +141,7 @@ UEngineControl* UEngineStateThread::GetEngineControl(void)
 /// Регистрация потока расчета
 void UEngineStateThread::RegisterCalcThread(int index, UEngineControlThread *calc_thread)
 {
- int num_engines=GetNumEngines();
+ int num_engines=Core_GetNumChannels();
  CalcThreads.resize(num_engines,0);
  if(index<0 || index>=num_engines)
   return;
@@ -149,7 +151,7 @@ void UEngineStateThread::RegisterCalcThread(int index, UEngineControlThread *cal
 
 void UEngineStateThread::UnRegisterCalcThread(int index)
 {
- int num_engines=GetNumEngines();
+ int num_engines=Core_GetNumChannels();
  CalcThreads.resize(num_engines,0);
  if(index<0 || index>=num_engines)
   return;
@@ -162,10 +164,14 @@ void UEngineStateThread::Execute(void)
  while(!Terminated)
  {
   if(CalcStarted->wait(30) == false)
+  {
+   ProcessLog();
    continue;
+  }
 
   if(CalculationNotInProgress->wait(30) == false)
   {
+   ProcessLog();
    continue;
   }
   CalculationNotInProgress->reset();
@@ -175,7 +181,7 @@ void UEngineStateThread::Execute(void)
    // Определяем состояние тредов расчета
    std::vector<int> calc_thread_states;
 
-   int num_channels=GetNumEngines();
+   int num_channels=Core_GetNumChannels();
    calc_thread_states.assign(num_channels,1);
    CalcThreadStateTime.resize(num_channels,0);
    CalcThreadSuccessTime.resize(num_channels,0);
@@ -234,17 +240,17 @@ void UEngineStateThread::Execute(void)
   catch(UException &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
   }
   catch(std::exception &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
   }
   catch(...)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
   }
 
   ProcessLog();
@@ -268,7 +274,13 @@ void UEngineStateThread::RecreateEventsLogFile(void)
  CalculationNotInProgress->reset();
 
  Logger.Clear();
- Logger.SetLogPath(LogPath.Get()+"EventsLog/");
+ std::string log_dir;
+ if(EngineControl && EngineControl->GetApplication())
+  log_dir=EngineControl->GetApplication()->CalcCurrentLogDir();
+ else
+  log_dir="EventsLog/";
+
+ Logger.SetLogDir(log_dir);
  if(Logger.InitLog() != RDK_SUCCESS)
  {
   EventsLogFlag=false;
@@ -276,7 +288,7 @@ void UEngineStateThread::RecreateEventsLogFile(void)
  }
  else
  {
-  EventsLogFilePath=LogPath.Get()+"EventsLog/";
+  EventsLogFilePath=log_dir;//LogDir.Get()+"EventsLog/";
  }
 
  /// Сохраняем лог в файл если это необходимо
@@ -285,6 +297,19 @@ void UEngineStateThread::RecreateEventsLogFile(void)
  else
   EventsLogFlag=true;
 
+ CalculationNotInProgress->set();
+}
+
+/// Закрывает текущий лог
+void UEngineStateThread::CloseEventsLogFile(void)
+{
+ if(!CalculationNotInProgress)
+  return;
+ if(!CalculationNotInProgress->wait(100))
+  return;
+ CalculationNotInProgress->reset();
+
+ Logger.Clear();
  CalculationNotInProgress->set();
 }
 
@@ -351,29 +376,29 @@ void UEngineStateThread::ProcessLog(void)
   std::list<int>::iterator I=ch_indexes.begin();
   for(;I!=ch_indexes.end();++I)
   {
-   if(!MIsEngineInit(*I))
-    continue;
+//   if(!MCore_IsEngineInit(*I))
+//    continue;
    int error_level=-1;
    int number=0;
    unsigned long long time=0;
-   int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
+   int num_log_lines=MLog_GetNumUnreadLogLines(*I);
    for(int k=0;k<num_log_lines;k++)
    {
-	const char * data=MEngine_GetUnreadLog(*I, error_level,number,time);
+	const char * data=MLog_GetUnreadLog(*I, error_level,number,time);
 	if(!data)
 	 continue;
 	if(global_error_level>error_level)
 	 global_error_level=error_level;
 
 	std::string new_log_data=data;
-	MEngine_FreeBufString(*I,data);
+//	MLog_FreeBufString(*I,data);
 	if(!new_log_data.empty())
 	{
 	 UnsentLog.push_back(new_log_data);
      GuiUnsentLog.push_back(new_log_data);
 	}
    }
-   MEngine_ClearReadLog(*I);
+   MLog_ClearReadLog(*I);
   }
  }
  catch(...)
@@ -383,11 +408,6 @@ void UEngineStateThread::ProcessLog(void)
 
  try
  {
-/*  if(global_error_level>=0 && global_error_level<3)
-  {
-   EngineControl->GetApplication()->PauseEngine(-1);
-  }
-*/
   while(!UnsentLog.empty())
   {
    if(EventsLogFlag)

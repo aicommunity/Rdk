@@ -242,6 +242,9 @@ bool CheckLongId(const std::string &id) const;
 // Управление средой выполнения этого объекта
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 
+// Указатель на логгер
+virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+
 // Вызов обработчика исключений среды
 virtual void ProcessException(UException &exception);
 
@@ -528,12 +531,10 @@ virtual UId AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-virtual void DelComponent(const UId &id, bool canfree=true);
+//virtual void DelComponent(const UId &id, bool canfree=true);
 
 // Удаляет дочерний компонент из этого объекта.
 // Удаляемый компонент должен содержаться именно в этом объекте.
-// Таким образом 'name' - должно быть коротким именем
-// удаляемого объекта
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено

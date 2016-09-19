@@ -9,7 +9,7 @@ namespace RDK{
 
 //extern std::vector<std::string> RpcReturnString;
 
-RDK_LIB_TYPE const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &channel_index);
+RDK_LIB_TYPE const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &res_channel_index);
 
 //RDK_LIB_TYPE const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &channel_index);
 

@@ -73,18 +73,18 @@ int GetUseControllersMode(void) const;
 void SetUseControllersMode(int value);
 
 // Управление режимом расчетов
-int GetCalculateMode(int engine_index) const;
-void SetCalculateMode(int engine_index, int value);
+int GetCalculateMode(int channel_index) const;
+void SetCalculateMode(int channel_index, int value);
 
 /// Режим использования времени для расчета
 /// 0 - системное время
 /// 1 - время источника данных
-int GetCalculationTimeSource(int engine_index) const;
-bool SetCalculationTimeSource(int engine_index, int value);
+int GetCalculationTimeSource(int channel_index) const;
+bool SetCalculationTimeSource(int channel_index, int value);
 
 /// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-RDK::UTime GetMinInterstepsInterval(int engine_index) const;
-bool SetMinInterstepsInterval(int engine_index, RDK::UTime value);
+RDK::UTime GetMinInterstepsInterval(int channel_index) const;
+bool SetMinInterstepsInterval(int channel_index, RDK::UTime value);
 // --------------------------
 
 // --------------------------
@@ -117,26 +117,26 @@ virtual void UnInit(void);
 bool IsInit(void) const;
 
 /// Создание нового треда расчета
-virtual UEngineControlThread* CreateEngineThread(UEngineControl* engine_control, int engine_index);
+virtual UEngineControlThread* CreateEngineThread(UEngineControl* engine_control, int channel_index);
 
 /// Создание нового треда расчета
 virtual UEngineStateThread* CreateEngineStateThread(UEngineControl* engine_control);
 
 // Управление временной меткой сервера
-double GetServerTimeStamp(int engine_index) const;
-void SetServerTimeStamp(int engine_index, double stamp);
+double GetServerTimeStamp(int channel_index) const;
+void SetServerTimeStamp(int channel_index, double stamp);
 
-/// Запускает аналитику выбранного канала, или всех, если engine_index == -1
-virtual void StartEngine(int engine_index);
+/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void StartChannel(int channel_index);
 
-/// Останавливает аналитику выбранного канала, или всех, если engine_index == -1
-virtual void PauseEngine(int engine_index);
+/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void PauseChannel(int channel_index);
 
-/// Сбрасывает аналитику выбранного канала, или всех, если engine_index == -1
-virtual void ResetEngine(int engine_index);
+/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void ResetChannel(int channel_index);
 
-/// Делает шаг расчета выбранного канала, или всех, если engine_index == -1
-virtual void StepEngine(int engine_index);
+/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+virtual void StepChannel(int channel_index);
 
 /// Проверяет состояние расчета по id канала
 /// 0 - Не считает
@@ -178,10 +178,10 @@ private: // Вспомогательные методы
 // --------------------------
 /// Управление числом каналов
 // --------------------------
-virtual int GetNumEngines(void) const;
-virtual bool SetNumEngines(int num);
-virtual bool InsertEngine(int index);
-virtual bool DeleteEngine(int index);
+virtual int GetNumChannels(void) const;
+virtual bool SetNumChannels(int num);
+virtual bool InsertChannel(int index);
+virtual bool DeleteChannel(int index);
 // --------------------------
 
 

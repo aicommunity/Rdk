@@ -69,7 +69,7 @@ bool RDK_CALL ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
 ///     <Class>имя класса</Class>
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 /// </RPC_Request>
-const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &channel_index)
+const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &res_channel_index)
 {
  const char* ReturnString=0;
  return_value=INT_MAX;
@@ -78,10 +78,10 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
 
  xml.Load(request,"RpcRequest");
 
- int engine_index=-1;
+ int channel_index=-1;
  std::string cmd;
  std::string component_name;
- channel_index=0;
+ res_channel_index=0;
 
 
  if(!ExtractCmd(xml,cmd) || cmd.empty())
@@ -90,22 +90,22 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   return 0;
  }
 
- if(!ExtractCC(xml,engine_index,component_name))
+ if(!ExtractCC(xml,channel_index,component_name))
  {
-  ExtractChannel(xml,engine_index);
+  ExtractChannel(xml,channel_index);
   ExtractComponent(xml,component_name);
  }
 
- if((engine_index < 0 || engine_index >= GetNumEngines()) &&
+ if((channel_index < 0 || channel_index >= Core_GetNumChannels()) &&
 	(cmd != "GetNumChannels" || cmd !="SetNumChannels"))
  {
   return_value=2001;
   return 0;
  }
 
-// if(engine_index>=0)
-//  MEngine_LogMessage(engine_index, RDK_EX_INFO, (std::string("Rec cmd id: ")+xml.ReadString("Id","")+std::string(" Cmd=")+cmd).c_str());
- channel_index=engine_index;
+// if(channel_index>=0)
+//  MEngine_LogMessage(channel_index, RDK_EX_INFO, (std::string("Rec cmd id: ")+xml.ReadString("Id","")+std::string(" Cmd=")+cmd).c_str());
+ res_channel_index=channel_index;
  std::string response,temp;
  std::string name;
 
@@ -116,22 +116,22 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
  {
   int predefined_structure=xml.ReadInteger("PredefinedStructure",0);
 
-  return_value=MEngineInit(engine_index, predefined_structure);
+  return_value=MCore_ChannelInit(channel_index, predefined_structure);
  }
  else
  if(cmd == "EngineUnInit")
  {
-  return_value=MEngineUnInit(engine_index);
+  return_value=MCore_ChannelUnInit(channel_index);
  }
  else
  if(cmd == "Env_Reset")
  {
-  return_value=MEnv_Reset(engine_index, component_name.c_str());
+  return_value=MEnv_Reset(channel_index, component_name.c_str());
  }
  else
  if(cmd == "Env_Calculate")
  {
-  return_value=MEnv_Calculate(engine_index, component_name.c_str());
+  return_value=MEnv_Calculate(channel_index, component_name.c_str());
  }
  else
  if(cmd == "Model_Create")
@@ -139,7 +139,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   std::string class_name=xml.ReadString("Class","");
   if(!class_name.empty())
   {
-   return_value=MModel_Create(engine_index, class_name.c_str());
+   return_value=MModel_Create(channel_index, class_name.c_str());
   }
   else
    return_value=100;
@@ -151,7 +151,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   std::string data;
   xml.SaveFromNode(data);
 
-  return_value=MModel_LoadComponent(engine_index, component_name.c_str(),data.c_str());
+  return_value=MModel_LoadComponent(channel_index, component_name.c_str(),data.c_str());
  }
  else
  if(cmd == "Model_LoadComponentParameters")
@@ -160,12 +160,12 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   std::string data;
   xml.SaveFromNode(data);
 
-  return_value=MModel_LoadComponentParameters(engine_index, component_name.c_str(),data.c_str());
+  return_value=MModel_LoadComponentParameters(channel_index, component_name.c_str(),data.c_str());
  }
  else
  if(cmd == "Model_GetComponentParameters")
  {
-  ReturnString=MModel_GetComponentParameters(engine_index, component_name.c_str());
+  ReturnString=MModel_GetComponentParameters(channel_index, component_name.c_str());
   if(ReturnString)
   {
    return_value=0;
@@ -176,7 +176,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
  else
  if(cmd == "Model_GetComponentsNameList")
  {
-  ReturnString=MModel_GetComponentsNameList(engine_index, component_name.c_str());
+  ReturnString=MModel_GetComponentsNameList(channel_index, component_name.c_str());
   if(ReturnString)
   {
    return_value=0;
@@ -187,7 +187,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
  else
  if(cmd == "Model_GetComponentStates")
  {
-  ReturnString=MModel_GetComponentState(engine_index, component_name.c_str());
+  ReturnString=MModel_GetComponentState(channel_index, component_name.c_str());
   if(ReturnString)
   {
    return_value=0;
@@ -202,7 +202,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   std::string data;
   xml.SaveFromNode(data);
 
-  return_value=MModel_SetComponentParameters(engine_index, component_name.c_str(),data.c_str());
+  return_value=MModel_SetComponentParameters(channel_index, component_name.c_str(),data.c_str());
  }
  else
  if(cmd == "Model_SetComponentState")
@@ -211,7 +211,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
   std::string data;
   xml.SaveFromNode(data);
 
-  return_value=MModel_SetComponentState(engine_index, component_name.c_str(),data.c_str());
+  return_value=MModel_SetComponentState(channel_index, component_name.c_str(),data.c_str());
  }
  else
   return_value=2001;
@@ -220,15 +220,15 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
  if(ReturnString)
  {
   result.WriteString("Data",ReturnString);
-  MEngine_FreeBufString(engine_index,ReturnString);
+  MEngine_FreeBufString(channel_index,ReturnString);
  }
  else
   result.WriteString("Data","");
  result.WriteInteger("Res",return_value);
- MLockEngine(engine_index);
- std::string &buffer=GetEngine(engine_index)->CreateTempString();
+ MCore_LockChannel(channel_index);
+ std::string &buffer=GetEngine(channel_index)->CreateTempString();
  result.Save(buffer);
- MUnLockEngine(engine_index);
+ MCore_UnLockChannel(channel_index);
 
  return buffer.c_str();
 }
@@ -245,7 +245,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
 
  xml.Load(request,"RpcRequest");
 
- int engine_index=-1;
+ int channel_index=-1;
  std::string cmd;
  std::string camera;
 
@@ -255,61 +255,61 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   return 0;
  }
 
- if(!ExtractCC(xml,engine_index, camera))
+ if(!ExtractCC(xml,channel_index, camera))
  {
-  if(!ExtractChannel(xml,engine_index))
+  if(!ExtractChannel(xml,channel_index))
    return 0;
   ExtractComponent(xml,camera);
  }
 
- if(engine_index < 0 || engine_index >= GetNumEngines())
+ if(channel_index < 0 || channel_index >= GetNumEngines())
  {
   return_value=2001;
   return 0;
  }
- channel_index=engine_index;
+ channel_index=channel_index;
 
  response.Create("RpcResponse");
  response.WriteString("Id", xml.ReadString("Id",""));
 
  if(cmd == "Ptz_GetCameraNames")
  {
-  ReturnString=Ptz_GetCameraNames(engine_index);
+  ReturnString=Ptz_GetCameraNames(channel_index);
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetCameraType")
  {
-  ReturnString=Ptz_GetCameraType(engine_index,camera.c_str());
+  ReturnString=Ptz_GetCameraType(channel_index,camera.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetCameraTypes")
  {
-  ReturnString=Ptz_GetCameraTypes(engine_index);
+  ReturnString=Ptz_GetCameraTypes(channel_index);
   return_value=0;
  }
  else
  if(cmd == "Ptz_AddCamera")
  {
   std::string camera_type=xml.ReadString("CameraType","");
-  return_value=Ptz_AddCamera(engine_index,camera.c_str(),camera_type.c_str());
+  return_value=Ptz_AddCamera(channel_index,camera.c_str(),camera_type.c_str());
  }
  else
  if(cmd == "Ptz_DelCamera")
  {
-  return_value=Ptz_DelCamera(engine_index,camera.c_str());
+  return_value=Ptz_DelCamera(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_DelAllCameras")
  {
-  return_value=Ptz_DelAllCameras(engine_index);
+  return_value=Ptz_DelAllCameras(channel_index);
  }
  else
  if(cmd == "Ptz_GetCameraParameter")
  {
   std::string param_name=xml.ReadString("Parameter","");
-  ReturnString=Ptz_GetCameraParameter(engine_index,camera.c_str(),param_name.c_str());
+  ReturnString=Ptz_GetCameraParameter(channel_index,camera.c_str(),param_name.c_str());
   return_value=0;
  }
  else
@@ -317,42 +317,42 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   std::string param_name=xml.ReadString("Parameter","");
   std::string value=xml.ReadString("Value","");
-  return_value=Ptz_SetCameraParameter(engine_index,camera.c_str(),param_name.c_str(),value.c_str());
+  return_value=Ptz_SetCameraParameter(channel_index,camera.c_str(),param_name.c_str(),value.c_str());
  }
  else
  if(cmd == "Ptz_GetImplementedCommands")
  {
-  ReturnString=Ptz_GetImplementedCommands(engine_index,camera.c_str());
+  ReturnString=Ptz_GetImplementedCommands(channel_index,camera.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_CameraConnect")
  {
-  return_value=Ptz_CameraConnect(engine_index,camera.c_str());
+  return_value=Ptz_CameraConnect(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_CameraDisconnect")
  {
-  return_value=Ptz_CameraDisconnect(engine_index,camera.c_str());
+  return_value=Ptz_CameraDisconnect(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_IsCmdImplemented")
  {
   std::string cmd_name=xml.ReadString("CommandName","");
-  response.WriteString("Data",sntoa(Ptz_IsCmdImplemented(engine_index,camera.c_str(),cmd_name.c_str())));
+  response.WriteString("Data",sntoa(Ptz_IsCmdImplemented(channel_index,camera.c_str(),cmd_name.c_str())));
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetImplementedMoveParamsList")
  {
-  ReturnString=Ptz_GetImplementedMoveParamsList(engine_index,camera.c_str());
+  ReturnString=Ptz_GetImplementedMoveParamsList(channel_index,camera.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_IsMoveParamImplemented")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  response.WriteString("Data",sntoa(Ptz_IsMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str())));
+  response.WriteString("Data",sntoa(Ptz_IsMoveParamImplemented(channel_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -360,7 +360,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   std::string param_name=xml.ReadString("ParamName","");
   bool param_value=xml.ReadBool("ParamValue",false);
-  if(Ptz_SetMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str(),param_value))
+  if(Ptz_SetMoveParamImplemented(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
    return_value=11000; // Исходная функция вернула false
@@ -369,7 +369,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_GetMoveParamMinNativeValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  response.WriteString("Data",sntoa(Ptz_GetMoveParamMinNativeValue(engine_index,camera.c_str(),param_name.c_str())));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMinNativeValue(channel_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -377,7 +377,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   std::string param_name=xml.ReadString("ParamName","");
   double param_value=xml.ReadFloat("ParamValue",0.0);
-  if(Ptz_SetMoveParamMinNativeValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+  if(Ptz_SetMoveParamMinNativeValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
    return_value=11000; // Исходная функция вернула false
@@ -386,7 +386,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_GetMoveParamMaxNativeValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  response.WriteString("Data",sntoa(Ptz_GetMoveParamMaxNativeValue(engine_index,camera.c_str(),param_name.c_str())));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMaxNativeValue(channel_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -394,7 +394,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   std::string param_name=xml.ReadString("ParamName","");
   double param_value=xml.ReadFloat("ParamValue",0.0);
-  if(Ptz_SetMoveParamMaxNativeValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+  if(Ptz_SetMoveParamMaxNativeValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
    return_value=11000; // Исходная функция вернула false
@@ -403,7 +403,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_GetMoveParamMinValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  response.WriteString("Data",sntoa(Ptz_GetMoveParamMinValue(engine_index,camera.c_str(),param_name.c_str())));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMinValue(channel_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -411,7 +411,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   std::string param_name=xml.ReadString("ParamName","");
   double param_value=xml.ReadFloat("ParamValue",0.0);
-  if(Ptz_SetMoveParamMinValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+  if(Ptz_SetMoveParamMinValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
    return_value=11000; // Исходная функция вернула false
@@ -420,7 +420,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_GetMoveParamMaxValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  response.WriteString("Data",sntoa(Ptz_GetMoveParamMaxValue(engine_index,camera.c_str(),param_name.c_str())));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMaxValue(channel_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -428,7 +428,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   std::string param_name=xml.ReadString("ParamName","");
   double param_value=xml.ReadFloat("ParamValue",0.0);
-  if(Ptz_SetMoveParamMaxValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+  if(Ptz_SetMoveParamMaxValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
    return_value=11000; // Исходная функция вернула false
@@ -436,36 +436,36 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  else
  if(cmd == "Ptz_Stop")
  {
-  return_value=Ptz_Stop(engine_index,camera.c_str());
+  return_value=Ptz_Stop(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_GotoHome")
  {
-  return_value=Ptz_GotoHome(engine_index,camera.c_str());
+  return_value=Ptz_GotoHome(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_PresetPoint")
  {
   int point_index=xml.ReadInteger("Point",0);
-  return_value=Ptz_PresetPoint(engine_index,camera.c_str(),point_index);
+  return_value=Ptz_PresetPoint(channel_index,camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_GotoPoint")
  {
   int point_index=xml.ReadInteger("Point",0);
-  return_value=Ptz_GotoPoint(engine_index,camera.c_str(),point_index);
+  return_value=Ptz_GotoPoint(channel_index,camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_RemovePoint")
  {
   int point_index=xml.ReadInteger("Point",0);
-  return_value=Ptz_RemovePoint(engine_index,camera.c_str(),point_index);
+  return_value=Ptz_RemovePoint(channel_index,camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_GetNumPresetPoints")
  {
   int value=0;
-  return_value=Ptz_GetNumPresetPoints(engine_index,camera.c_str(),value);
+  return_value=Ptz_GetNumPresetPoints(channel_index,camera.c_str(),value);
   response.WriteInteger("NumPresetPoints",value);
  }
  else
@@ -473,12 +473,12 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  {
   int point_index=xml.ReadInteger("Point",0);
   std::string name=xml.ReadString("PointName","");
-  return_value=Ptz_SetPresetPointName(engine_index,camera.c_str(),point_index,name.c_str());
+  return_value=Ptz_SetPresetPointName(channel_index,camera.c_str(),point_index,name.c_str());
  }
  else
  if(cmd == "Ptz_GetPresetPointsList")
  {
-  const char *str=Ptz_GetPresetPointsList(engine_index,camera.c_str());
+  const char *str=Ptz_GetPresetPointsList(channel_index,camera.c_str());
   if(str)
   {
    return_value=0;
@@ -493,7 +493,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan,tilt,zoom;
   unsigned long long pan_time_stamp=0, tilt_time_stamp=0, zoom_time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom,
+  return_value=Ptz_ReadPTZPosition(channel_index,camera.c_str(),pan, tilt, zoom,
 		pan_time_stamp, tilt_time_stamp, zoom_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
@@ -509,7 +509,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan,tilt;
   unsigned long long pan_time_stamp=0, tilt_time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt, pan_time_stamp, tilt_time_stamp, async_mode);
+  return_value=Ptz_ReadPTPosition(channel_index,camera.c_str(),pan, tilt, pan_time_stamp, tilt_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
@@ -522,7 +522,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadPanPosition(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
   response.WriteFloat("PanTimeStamp",time_stamp);
@@ -533,7 +533,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value,time_stamp, async_mode);
+  return_value=Ptz_ReadTiltPosition(channel_index,camera.c_str(),value,time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
   response.WriteFloat("TiltTimeStamp",time_stamp);
@@ -544,7 +544,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadZoomPosition(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
   response.WriteFloat("ZoomTimeStamp",time_stamp);
@@ -555,7 +555,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadFocusPosition(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
   response.WriteFloat("FocusTimeStamp",time_stamp);
@@ -566,7 +566,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadIrisPosition(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
   response.WriteFloat("IrisTimeStamp",time_stamp);
@@ -577,7 +577,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadBrightnessPosition(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
   response.WriteFloat("BrightnessTimeStamp",time_stamp);
@@ -588,7 +588,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan,tilt,zoom;
   unsigned long long pan_time_stamp=0, tilt_time_stamp=0, zoom_time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom,
+  return_value=Ptz_ReadPTZPositionNative(channel_index,camera.c_str(),pan, tilt, zoom,
 			pan_time_stamp, tilt_time_stamp, zoom_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
@@ -605,7 +605,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   unsigned long long time_stamp=0;
   unsigned long long pan_time_stamp=0, tilt_time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt, pan_time_stamp, tilt_time_stamp, async_mode);
+  return_value=Ptz_ReadPTPositionNative(channel_index,camera.c_str(),pan, tilt, pan_time_stamp, tilt_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
@@ -618,7 +618,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
+  return_value=Ptz_ReadPanPositionNative(channel_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
   response.WriteFloat("PanTimeStamp",time_stamp);
@@ -629,7 +629,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
+  return_value=Ptz_ReadTiltPositionNative(channel_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
   response.WriteFloat("TiltTimeStamp",time_stamp);
@@ -640,7 +640,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
+  return_value=Ptz_ReadZoomPositionNative(channel_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
   response.WriteFloat("ZoomTimeStamp",time_stamp);
@@ -651,7 +651,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
+  return_value=Ptz_ReadFocusPositionNative(channel_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
   response.WriteFloat("FocusTimeStamp",time_stamp);
@@ -662,7 +662,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
+  return_value=Ptz_ReadIrisPositionNative(channel_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
   response.WriteFloat("IrisTimeStamp",time_stamp);
@@ -673,7 +673,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
+  return_value=Ptz_ReadBrightnessPositionNative(channel_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
   response.WriteFloat("BrightnessTimeStamp",time_stamp);
@@ -684,57 +684,57 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=Ptz_MovePTZ(engine_index,camera.c_str(),pan_speed,tilt_speed,zoom_speed);
+  return_value=Ptz_MovePTZ(channel_index,camera.c_str(),pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_MovePT")
  {
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
-  return_value=Ptz_MovePT(engine_index,camera.c_str(),pan_speed,tilt_speed);
+  return_value=Ptz_MovePT(channel_index,camera.c_str(),pan_speed,tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveDirection")
  {
   int direction=xml.ReadFloat("Direction",0);
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveDirection(engine_index,camera.c_str(),(TPtzDirection)direction,speed);
+  return_value=Ptz_MoveDirection(channel_index,camera.c_str(),(TPtzDirection)direction,speed);
  }
  else
  if(cmd == "Ptz_MovePan")
  {
   double pan_speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MovePan(engine_index,camera.c_str(),pan_speed);
+  return_value=Ptz_MovePan(channel_index,camera.c_str(),pan_speed);
  }
  else
  if(cmd == "Ptz_MoveTilt")
  {
   double tilt_speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveTilt(engine_index,camera.c_str(),tilt_speed);
+  return_value=Ptz_MoveTilt(channel_index,camera.c_str(),tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveZoom")
  {
   double zoom_speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveZoom(engine_index,camera.c_str(),zoom_speed);
+  return_value=Ptz_MoveZoom(channel_index,camera.c_str(),zoom_speed);
  }
  else
  if(cmd == "Ptz_MoveFocus")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveFocus(engine_index,camera.c_str(),speed);
+  return_value=Ptz_MoveFocus(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_MoveIris")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveIris(engine_index,camera.c_str(),speed);
+  return_value=Ptz_MoveIris(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_MoveBrightness")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveBrightness(engine_index,camera.c_str(),speed);
+  return_value=Ptz_MoveBrightness(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_MovePTZNative")
@@ -742,118 +742,118 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=Ptz_MovePTZNative(engine_index,camera.c_str(),pan_speed,tilt_speed,zoom_speed);
+  return_value=Ptz_MovePTZNative(channel_index,camera.c_str(),pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_MovePTNative")
  {
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
-  return_value=Ptz_MovePTNative(engine_index,camera.c_str(),pan_speed,tilt_speed);
+  return_value=Ptz_MovePTNative(channel_index,camera.c_str(),pan_speed,tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveDirectionNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   int direction=xml.ReadFloat("Direction",0);
-  return_value=Ptz_MoveDirectionNative(engine_index,camera.c_str(),(TPtzDirection)direction, speed);
+  return_value=Ptz_MoveDirectionNative(channel_index,camera.c_str(),(TPtzDirection)direction, speed);
  }
  else
  if(cmd == "Ptz_MovePanNative")
  {
   double pan_speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MovePanNative(engine_index,camera.c_str(),pan_speed);
+  return_value=Ptz_MovePanNative(channel_index,camera.c_str(),pan_speed);
  }
  else
  if(cmd == "Ptz_MoveTiltNative")
  {
   double tilt_speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveTiltNative(engine_index,camera.c_str(),tilt_speed);
+  return_value=Ptz_MoveTiltNative(channel_index,camera.c_str(),tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveZoomNative")
  {
   double zoom_speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveZoomNative(engine_index,camera.c_str(),zoom_speed);
+  return_value=Ptz_MoveZoomNative(channel_index,camera.c_str(),zoom_speed);
  }
  else
  if(cmd == "Ptz_MoveFocusNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveFocusNative(engine_index,camera.c_str(),speed);
+  return_value=Ptz_MoveFocusNative(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_MoveIrisNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveIrisNative(engine_index,camera.c_str(),speed);
+  return_value=Ptz_MoveIrisNative(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_MoveBrightnessNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_MoveBrightnessNative(engine_index,camera.c_str(),speed);
+  return_value=Ptz_MoveBrightnessNative(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_Rain")
  {
   double state=xml.ReadFloat("State",0.0);
-  return_value=Ptz_Rain(engine_index,camera.c_str(),state);
+  return_value=Ptz_Rain(channel_index,camera.c_str(),state);
  }
  else
  if(cmd == "Ptz_Light")
  {
   double state=xml.ReadFloat("State",0.0);
-  return_value=Ptz_Light(engine_index,camera.c_str(),state);
+  return_value=Ptz_Light(channel_index,camera.c_str(),state);
  }
  else
  if(cmd == "Ptz_AutoFocus")
  {
   double state=xml.ReadFloat("State",0.0);
-  return_value=Ptz_AutoFocus(engine_index,camera.c_str(),state);
+  return_value=Ptz_AutoFocus(channel_index,camera.c_str(),state);
  }
  else
  if(cmd == "Ptz_AutoIris")
  {
   double state=xml.ReadFloat("State",0.0);
-  return_value=Ptz_AutoIris(engine_index,camera.c_str(),state);
+  return_value=Ptz_AutoIris(channel_index,camera.c_str(),state);
  }
  else
  if(cmd == "Ptz_AutoBrightness")
  {
   double state=xml.ReadFloat("State",0.0);
-  return_value=Ptz_AutoBrightness(engine_index,camera.c_str(),state);
+  return_value=Ptz_AutoBrightness(channel_index,camera.c_str(),state);
  }
  else
  if(cmd == "Ptz_SetRelayState")
  {
   int id=xml.ReadInteger("Index",0);
   int value=xml.ReadInteger("Value",0);
-  return_value=Ptz_SetRelayState(engine_index,camera.c_str(),id,value);
+  return_value=Ptz_SetRelayState(channel_index,camera.c_str(),id,value);
  }
  else
  if(cmd == "Ptz_SetPowerOn")
  {
   int value=xml.ReadInteger("Value",0);
-  return_value=Ptz_SetPowerOn(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetPowerOn(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_SetPowerOff")
  {
   int value=xml.ReadInteger("Value",0);
-  return_value=Ptz_SetPowerOff(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetPowerOff(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_SetZoomSpeed")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_SetZoomSpeed(engine_index,camera.c_str(),speed);
+  return_value=Ptz_SetZoomSpeed(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_SetFocusSpeed")
  {
   double speed=xml.ReadFloat("Speed",0.0);
-  return_value=Ptz_SetFocusSpeed(engine_index,camera.c_str(),speed);
+  return_value=Ptz_SetFocusSpeed(channel_index,camera.c_str(),speed);
  }
  else
  if(cmd == "Ptz_SetPTZ")
@@ -864,7 +864,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
   double zoom=xml.ReadFloat("Zoom",0.0);
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=Ptz_SetPTZ(engine_index,camera.c_str(),pan,tilt,zoom,pan_speed,tilt_speed,zoom_speed);
+  return_value=Ptz_SetPTZ(channel_index,camera.c_str(),pan,tilt,zoom,pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_SetPT")
@@ -873,21 +873,21 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt=xml.ReadFloat("Tilt",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
-  return_value=Ptz_SetPT(engine_index,camera.c_str(),pan,tilt,pan_speed,tilt_speed);
+  return_value=Ptz_SetPT(channel_index,camera.c_str(),pan,tilt,pan_speed,tilt_speed);
  }
  else
  if(cmd == "Ptz_SetPan")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetPan(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetPan(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetTilt")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetTilt(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetTilt(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetPTZNative")
@@ -898,7 +898,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
   double zoom=xml.ReadFloat("Zoom",0.0);
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=Ptz_SetPTZNative(engine_index,camera.c_str(),pan,tilt,zoom,pan_speed,tilt_speed,zoom_speed);
+  return_value=Ptz_SetPTZNative(channel_index,camera.c_str(),pan,tilt,zoom,pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_SetPTNative")
@@ -907,92 +907,92 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt=xml.ReadFloat("Tilt",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
-  return_value=Ptz_SetPTNative(engine_index,camera.c_str(),pan,tilt,pan_speed,tilt_speed);
+  return_value=Ptz_SetPTNative(channel_index,camera.c_str(),pan,tilt,pan_speed,tilt_speed);
  }
  else
  if(cmd == "Ptz_SetPanNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetPanNative(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetPanNative(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetTiltNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetTiltNative(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetTiltNative(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetZoom")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetZoom(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetZoom(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetZoomNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetZoomNative(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetZoomNative(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetFocus")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetFocus(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetFocus(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetFocusNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetFocusNative(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetFocusNative(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetIris")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetIris(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetIris(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetIrisNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetIrisNative(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetIrisNative(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetBrightness")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetBrightness(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetBrightness(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SetBrightnessNative")
  {
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetBrightnessNative(engine_index,camera.c_str(),value,speed);
+  return_value=Ptz_SetBrightnessNative(channel_index,camera.c_str(),value,speed);
  }
  else
  if(cmd == "Ptz_SyncPanAbsolutePosition")
  {
-  return_value=Ptz_SyncPanAbsolutePosition(engine_index,camera.c_str());
+  return_value=Ptz_SyncPanAbsolutePosition(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_SyncTiltAbsolutePosition")
  {
-  return_value=Ptz_SyncTiltAbsolutePosition(engine_index,camera.c_str());
+  return_value=Ptz_SyncTiltAbsolutePosition(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_SyncPTAbsolutePosition")
  {
-  return_value=Ptz_SyncPTAbsolutePosition(engine_index,camera.c_str());
+  return_value=Ptz_SyncPTAbsolutePosition(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_ReadSyncPanState")
@@ -1001,7 +1001,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   unsigned long long time_stamp=0;
 
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadSyncPanState(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadSyncPanState(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1012,7 +1012,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadSyncTiltState(engine_index,camera.c_str(),value, time_stamp, async_mode);
+  return_value=Ptz_ReadSyncTiltState(channel_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1023,7 +1023,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double sync_pan_state, sync_tilt_state;
   unsigned long long pan_time_stamp=0, tilt_time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadSyncPTState(engine_index,camera.c_str(),sync_pan_state, sync_tilt_state, pan_time_stamp, tilt_time_stamp, async_mode);
+  return_value=Ptz_ReadSyncPTState(channel_index,camera.c_str(),sync_pan_state, sync_tilt_state, pan_time_stamp, tilt_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("SyncPanState",sync_pan_state);
   response.WriteFloat("SyncTiltState",sync_tilt_state);
@@ -1034,7 +1034,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_SetStabilizationState")
  {
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetStabilizationState(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetStabilizationState(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_ReadStabilizationState")
@@ -1042,7 +1042,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadStabilizationState(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadStabilizationState(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1050,13 +1050,13 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  else
  if(cmd == "Ptz_ResetServo")
  {
-  return_value=Ptz_ResetServo(engine_index,camera.c_str());
+  return_value=Ptz_ResetServo(channel_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_SetAbsoluteLatitudePosition")
  {
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetAbsoluteLatitudePosition(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetAbsoluteLatitudePosition(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_ReadAbsoluteLatitudePosition")
@@ -1064,7 +1064,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadAbsoluteLatitudePosition(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadAbsoluteLatitudePosition(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1073,7 +1073,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_SetAbsoluteNorthPosition")
  {
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetAbsoluteNorthPosition(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetAbsoluteNorthPosition(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_ReadAbsoluteNorthPosition")
@@ -1081,7 +1081,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadAbsoluteNorthPosition(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadAbsoluteNorthPosition(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1092,7 +1092,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadPanGyroDriftState(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1103,7 +1103,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadTiltGyroDriftState(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadTiltGyroDriftState(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1112,13 +1112,13 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(cmd == "Ptz_SetPanGyroDriftCorrection")
  {
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetPanGyroDriftCorrection(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetPanGyroDriftCorrection(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_SetTiltGyroDriftCorrection")
  {
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetTiltGyroDriftCorrection(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetTiltGyroDriftCorrection(channel_index,camera.c_str(),value);
  }
  else
  if(cmd == "Ptz_SetSerialLineMode")
@@ -1130,7 +1130,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   data_bits=xml.ReadInteger("DataBits",0);
   stop_bits=xml.ReadInteger("StopBits",0);
   parity=xml.ReadInteger("Parity",0);
-  return_value=Ptz_SetSerialLineMode(engine_index,camera.c_str(), line_number, rate, data_bits, stop_bits, parity);
+  return_value=Ptz_SetSerialLineMode(channel_index,camera.c_str(), line_number, rate, data_bits, stop_bits, parity);
  }
  else
  if(cmd == "Ptz_SendDataToSerialLine")
@@ -1140,7 +1140,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   line_number=xml.ReadInteger("LineNumber",0);
   size=xml.ReadInteger("DataSize",0);
   //data_bits=xml.ReadInteger("DataBits",0);
-  return_value=Ptz_SendDataToSerialLine(engine_index,camera.c_str(), line_number, size, data);
+  return_value=Ptz_SendDataToSerialLine(channel_index,camera.c_str(), line_number, size, data);
  }
  else
  if(cmd == "Ptz_ReadDataFromSerialLine")
@@ -1151,7 +1151,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   int data_size=0;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadDataFromSerialLine(engine_index,camera.c_str(), line_number, data_size, data, time_stamp, async_mode);
+  return_value=Ptz_ReadDataFromSerialLine(channel_index,camera.c_str(), line_number, data_size, data, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("DataSize",data_size);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1162,7 +1162,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPanErrorState(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadPanErrorState(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1173,7 +1173,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadTiltErrorState(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadTiltErrorState(channel_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
@@ -1186,14 +1186,14 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  if(ReturnString)
  {
   response.WriteString("Data",ReturnString);
-  MEngine_FreeBufString(engine_index, ReturnString);
+  MEngine_FreeBufString(channel_index, ReturnString);
  }
 
-// MLockEngine(engine_index);
- UELockPtr<UEngine> eng=GetEngineLock(engine_index);
+// MLockEngine(channel_index);
+ UELockPtr<UEngine> eng=GetEngineLock(channel_index);
  std::string &buffer=eng->CreateTempString();
  response.Save(buffer);
-// MUnLockEngine(engine_index);
+// MUnLockEngine(channel_index);
 
  return buffer.c_str();
 }

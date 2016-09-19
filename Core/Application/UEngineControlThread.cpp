@@ -16,8 +16,8 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int engine_index)
-: EngineControl(engine_control), EngineIndex(engine_index), Terminated(false)
+UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
+: EngineControl(engine_control), EngineIndex(channel_index), Terminated(false)
 {
  CalcState=UCreateEvent(false);
 
@@ -35,7 +35,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int e
  MinInterstepsInterval=0;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
  Profiler=new UChannelProfiler;
- Profiler->SetChannelIndex(engine_index);
+ Profiler->SetChannelIndex(channel_index);
  Profiler->AddAllGui();
 }
 
@@ -205,7 +205,7 @@ void UEngineControlThread::Calculate(void)
   }
 
   CalculationNotInProgress->reset();
-  if(EngineIndex>=GetNumEngines())
+  if(EngineIndex>=Core_GetNumChannels())
   {
    CalculationNotInProgress->set();
    return;
@@ -294,7 +294,7 @@ bool UEngineControlThread::EnableCalculation(void)
 /// Запускает аналитику канала
 void UEngineControlThread::Start(void)
 {
- if(EngineIndex<0 || EngineIndex>GetNumEngines())
+ if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
   return;
 
  CalcStarted->set();
@@ -304,7 +304,7 @@ void UEngineControlThread::Start(void)
 /// Останавливает аналитику канала
 void UEngineControlThread::Pause(void)
 {
- if(EngineIndex<0 || EngineIndex>GetNumEngines())
+ if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
   return;
 
  CalcStarted->reset();
@@ -314,7 +314,7 @@ void UEngineControlThread::Pause(void)
 /// Сбрасывает аналитику канала
 void UEngineControlThread::Reset(void)
 {
- if(EngineIndex<0 || EngineIndex>GetNumEngines())
+ if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
   return;
 
  MEnv_Reset(EngineIndex,0);

@@ -154,7 +154,7 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, dou
  if(!SendEnableFlag)
   return true;
 
- if(channel_index>GetNumEngines())
+ if(channel_index>Core_GetNumChannels())
   return false;
 
  const char* xml_data=0;

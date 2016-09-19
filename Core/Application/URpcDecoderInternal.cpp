@@ -166,11 +166,11 @@ bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
  if(!cmd)
  {
   // Ошибка - команда не поддерживается декодером
-  MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 
- const char* response=RemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
+ const char* response=Core_RemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
 /*
  if(cmd->ResponseStatus == 2001)
  {
@@ -188,7 +188,7 @@ bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
 
  if(cmd->ResponseStatus == 2001)
  {
-  MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 

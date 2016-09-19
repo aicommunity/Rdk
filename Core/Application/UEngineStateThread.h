@@ -20,7 +20,7 @@ class RDK_LIB_TYPE UEngineStateThread
 {
 protected: // Параметры
 /// Путь до папки с логами
-RDK::UELockVar<std::string> LogPath;
+//RDK::UELockVar<std::string> LogDir;
 
 /// Флаг разрешения логгирования
 RDK::UELockVar<bool> LogFlag;
@@ -105,8 +105,8 @@ virtual ~UEngineStateThread(void);
 // Управление параметрами
 // --------------------------
 /// Путь до папки с логами
-std::string GetLogPath(void) const;
-bool SetLogPath(const std::string& value);
+//std::string GetLogDir(void) const;
+//bool SetLogDir(const std::string& value);
 
 /// Флаг разрешения логгирования
 bool GetLogFlag(void) const;
@@ -135,6 +135,9 @@ virtual void AdditionExecute(void);
 
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
 void RecreateEventsLogFile(void);
+
+/// Закрывает текущий лог
+void CloseEventsLogFile(void);
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной

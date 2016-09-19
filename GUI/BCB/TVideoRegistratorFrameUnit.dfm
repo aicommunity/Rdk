@@ -183,10 +183,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordingTabSheet: TTabSheet
         Caption = 'RecordingTabSheet'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object RecordingSettingsScrollBox: TScrollBox
           Left = 0
           Top = 0
@@ -202,7 +198,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Height = 565
             Align = alTop
             TabOrder = 0
-            ExplicitWidth = 345
             object RecordingControlGroupBox: TGroupBox
               Left = 2
               Top = 505
@@ -240,7 +235,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               Align = alTop
               Caption = 'Recording Settings'
               TabOrder = 1
-              ExplicitWidth = 341
               DesignSize = (
                 345
                 490)

@@ -3,12 +3,12 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
-#include <QMutex>
+#include <QReadWriteLock>
 
 class RDK_LIB_TYPE UGenericMutexQt: public UGenericMutex
 {
 private:
-QMutex m_mutex;
+QReadWriteLock m_mutex;
 
 public:
 UGenericMutexQt();
@@ -24,7 +24,7 @@ virtual bool exclusive_unlock(void);
 };
 
 
-UGenericMutexQt::UGenericMutexQt()
+UGenericMutexQt::UGenericMutexQt() : m_mutex(QReadWriteLock::Recursive)
 {
     //mutex.lock();
 }
@@ -40,13 +40,12 @@ bool UGenericMutexQt::wait(int timeout)
  {
   return true;
  } */
- return m_mutex.tryLock(timeout);
+ return m_mutex.tryLockForWrite(timeout);
 }
 
 bool UGenericMutexQt::shared_lock(void)
 {
-    m_mutex.lock();
-    return true;
+    return m_mutex.tryLockForRead();
 }
 
 bool UGenericMutexQt::shared_unlock(void)
@@ -57,9 +56,7 @@ bool UGenericMutexQt::shared_unlock(void)
 
 bool UGenericMutexQt::exclusive_lock(void)
 {
-    m_mutex.lock();
-    return true;
-
+    return m_mutex.tryLockForWrite();
 }
 
 bool UGenericMutexQt::exclusive_unlock(void)

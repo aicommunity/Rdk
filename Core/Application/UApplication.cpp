@@ -31,6 +31,7 @@ UApplication::UApplication(void)
  Name="Application";
  LastProjectsListMaxSize=10;
  ProjectOpenFlag=false;
+// DebugMode=false;
 }
 
 UApplication::~UApplication(void)
@@ -92,7 +93,8 @@ bool UApplication::SetProjectPath(const std::string& value)
  if(ProjectPath == value)
   return true;
  ProjectPath=value;
- EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
+ UpdateLoggers();
+// EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
  return true;
 }
@@ -158,6 +160,61 @@ const RDK::USerStorageXML& UApplication::GetInterfaceXml(void) const
  return InterfaceXml;
 }
 
+
+/// Каталог логов
+std::string UApplication::GetLogDir(void) const
+{
+ return Core_GetLogDir();
+}
+
+bool UApplication::SetLogDir(const std::string& value)
+{
+ if(value == Core_GetLogDir())
+  return true;
+
+// LogDir=value;
+ if(Core_SetLogDir(value.c_str()) == RDK_SUCCESS)
+ {
+  UpdateLoggers();
+  return true;
+ }
+ return false;
+}
+
+/// Флаг включения отладочного режима логирования
+bool UApplication::GetDebugMode(void) const
+{
+ return Core_GetDebugMode();
+}
+
+bool UApplication::SetDebugMode(bool value)
+{
+ if(value == Core_GetDebugMode())
+  return true;
+ if(Core_SetDebugMode(value) == RDK_SUCCESS)
+  return true;
+ return true;
+}
+
+
+/// Текущий каталог логов (с учетом переопределения в проекте)
+std::string UApplication::CalcCurrentLogDir(void) const
+{
+ std::string log_dir;
+ if(Project && Project->GetConfig().OverrideLogParameters)
+ {
+  log_dir=ProjectPath+"EventsLog/";
+ }
+ else
+ {
+  log_dir=Core_GetLogDir();
+  if(log_dir.empty())
+   log_dir=WorkDirectory+"EventsLog/";
+  if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
+   log_dir+="/";
+ }
+ return log_dir;
+}
 // --------------------------
 
 // --------------------------
@@ -198,7 +255,7 @@ bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
 
  if(EngineControl)
  {
-  EngineControl->PauseEngine(-1);
+  EngineControl->PauseChannel(-1);
   EngineControl->SetApplication(0);
  }
 
@@ -267,12 +324,14 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
- Engine_SetBufObjectsMode(1);
+ Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
- SetSystemDir(font_path.c_str());
- GraphicalEngineInit(0,1,1,320,240,1,(void*)ExceptionHandler);
- Engine_LoadFonts();
+ Core_SetSystemDir(font_path.c_str());
+// SetLogDir(font_path);
+ MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
+ MCore_ChannelInit(0,0,(void*)ExceptionHandler);
+ Core_LoadFonts();
 
  SetWorkDirectory(font_path);
  EngineControl->Init();
@@ -286,7 +345,7 @@ bool UApplication::UnInit(void)
 {
  if(EngineControl)
  {
-  EngineControl->PauseEngine(-1);
+  EngineControl->PauseChannel(-1);
   EngineControl->StopEngineStateThread();
  }
  Sleep(10);
@@ -309,14 +368,14 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
  Project->SetProjectPath(ProjectPath);
  ProjectFileName=file_name;
 
- UApplication::SetNumEngines(project_config.NumChannels);
+ UApplication::SetNumChannels(project_config.NumChannels);
 
  for(int i=0;i<project_config.NumChannels;i++)
  {
   RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
 
-  if(!MIsEngineInit(i))
-   MGraphicalEngineInit(i,channel.PredefinedStructure,1,1,640, 480 ,project_config.ReflectionFlag,(void*)ExceptionHandler);
+  if(!MCore_IsChannelInit(i))
+   MCore_ChannelInit(i,channel.PredefinedStructure,(void*)ExceptionHandler);
   else
    MEnv_SetPredefinedStructure(i,channel.PredefinedStructure);
 
@@ -344,40 +403,27 @@ bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
 
-// UShowProgressBarForm->SetWinTitle(Lang_LoadProjectTitle);
-
  ProjectXml.LoadFromFile(filename,"");
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
-
  Project->SetProjectPath(ProjectPath);
  Project->ReadFromXml(ProjectXml);
+ UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
  EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
- EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
+ EngineControl->GetEngineStateThread()->CloseEventsLogFile();
+// EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);
 
-// ProjectXml.SelectNodeRoot("Project/MultiGeneral");
-// int engines_mode=ProjectXml.ReadInteger("EnginesMode",0);
  EngineControl->SetThreadMode(config.MultiThreadingMode);
  CalcAppCaption();
 
- /*
- UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
- UShowProgressBarForm->SetBarHeader(2,Lang_Total);
- UShowProgressBarForm->ResetBarStatus(1, 1, num_engines-1);
- UShowProgressBarForm->ResetBarStatus(2, 1, 2);
-
- if(AppWinState)
-  UShowProgressBarForm->Show();
- UShowProgressBarForm->Update();
-   */
 try{
 
- EngineControl->SetNumEngines(config.NumChannels);
+ EngineControl->SetNumChannels(config.NumChannels);
 
  ProjectXml.SelectNodeRoot("Project/MultiGeneral");
- int selected_engine_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
+ int selected_channel_index=ProjectXml.ReadInteger("SelectedChannelIndex",0);
 
  ProjectXml.SelectNodeRoot("Project/General");
 
@@ -395,20 +441,19 @@ try{
    EngineControl->SetCalculationTimeSource(i, config.CalcSourceTimeMode);
    EngineControl->SetMinInterstepsInterval(i,channel_config.MinInterstepsInterval);
 
-   SelectEngine(i);
-   if(!IsEngineInit())
-	GraphicalEngineInit(channel_config.PredefinedStructure,1,1,640, 480 ,true,(void*)ExceptionHandler);
+   Core_SelectChannel(i);
+   if(!Core_IsChannelInit())
+	Core_ChannelInit(channel_config.PredefinedStructure,(void*)ExceptionHandler);
    else
 	Env_SetPredefinedStructure(channel_config.PredefinedStructure);
 
    // TODO: Реалиовать загрузку описаний классов
    // Загрузка описаний классов
-//   UComponentsControlForm->ComponentsControlFrame->LoadCommonClassesDescriptionFromFile("CommonClassesDescription.xml");
-//   UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
-   Env_SetDebugMode(channel_config.DebugMode);
-   Env_SetDebugSysEventsMask(channel_config.DebugSysEventsMask);
-   Env_SetEventsLogMode(channel_config.EventsLogMode);
+   Log_SetDebugMode(config.DebugMode);
+   Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
+   Log_SetEventsLogMode(config.EventsLogMode);
+   Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
    Env_Init();
@@ -455,15 +500,15 @@ try{
   }
   catch(RDK::UException &exception)
   {
-   Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
+   MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
   }
   Sleep(0);
  }
 
- if(selected_engine_index>=GetNumEngines())
-  selected_engine_index=0;
+ if(selected_channel_index>=GetNumChannels())
+  selected_channel_index=0;
 
- SelectEngine(selected_engine_index);
+ Core_SelectChannel(selected_channel_index);
  InterfaceXml.Destroy();
 
  if(!config.InterfaceFileName.empty())
@@ -475,7 +520,7 @@ try{
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
- ServerControl->SetNumEngines(config.NumChannels);
+ ServerControl->SetNumChannels(config.NumChannels);
 
  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
@@ -488,7 +533,7 @@ try{
 catch(RDK::UException &exception)
 {
 // UShowProgressBarForm->Hide();
- Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
 }
 
  std::list<std::string> last_list=LastProjectsList;
@@ -512,7 +557,7 @@ bool UApplication::SaveProject(void)
  if(!ProjectOpenFlag)
   return false;
 
- int selected_engine_index=GetSelectedEngineIndex();
+ int selected_channel_index=Core_GetSelectedChannelIndex();
 
  Project->WriteToXml(ProjectXml);
 
@@ -542,7 +587,7 @@ try
 
  for(int i=0;i<config.NumChannels;i++)
  {
-  SelectEngine(i);
+  Core_SelectChannel(i);
 
   TProjectChannelConfig &channel_config=config.ChannelsConfig[i];
 
@@ -567,14 +612,14 @@ try
   Sleep(0);
  }
 
- SelectEngine(selected_engine_index);
+ Core_SelectChannel(selected_channel_index);
 
 
  ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
 }
 catch(RDK::UException &exception)
 {
- Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
 }
 
  return true;
@@ -588,7 +633,7 @@ bool UApplication::SaveProjectAs(const std::string &filename)
 /// Закрывает проект
 bool UApplication::CloseProject(void)
 {
- PauseEngine(-1);
+ PauseChannel(-1);
 
  RDK::TProjectConfig config=GetProjectConfig();
 
@@ -604,9 +649,9 @@ bool UApplication::CloseProject(void)
   SetProjectPath("");
  }
  SetProjectOpenFlag(false);
- for(int i=GetNumEngines()-1;i>=0;i--)
+ for(int i=GetNumChannels()-1;i>=0;i--)
  {
-  SelectEngine(i);
+  Core_SelectChannel(i);
   if(GetEngine())
   {
    Env_UnInit();
@@ -626,20 +671,20 @@ bool UApplication::CloneProject(const std::string &filename)
 
 bool UApplication::CloneProject(int source_id, int cloned_id)
 {
- if(source_id>=GetNumEngines() || cloned_id >= GetNumEngines())
+ if(source_id>=GetNumChannels() || cloned_id >= GetNumChannels())
   return false;
 /*
  try {
  RDK::TProjectConfig config=GetProjectConfig();
- PredefinedStructure.resize(GetNumEngines());
+ PredefinedStructure.resize(GetNumChannels());
  PredefinedStructure[cloned_id]=PredefinedStructure[source_id];
 
  // Шаг счета по умолчанию
- DefaultTimeStep.resize(GetNumEngines());
+ DefaultTimeStep.resize(GetNumChannels());
  DefaultTimeStep[cloned_id]=DefaultTimeStep[source_id];
 
  // Глобальный шаг счета модели
- GlobalTimeStep.resize(GetNumEngines());
+ GlobalTimeStep.resize(GetNumChannels());
  GlobalTimeStep[cloned_id]=GlobalTimeStep[source_id];
 
  if(!ProjectXml.SelectNodeRoot("Project/General"))
@@ -647,19 +692,19 @@ bool UApplication::CloneProject(int source_id, int cloned_id)
 
  ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
 
- CalculationMode.resize(GetNumEngines());
+ CalculationMode.resize(GetNumChannels());
  CalculationMode[cloned_id]=CalculationMode[source_id];
 
- InitAfterLoadFlag.resize(GetNumEngines());
+ InitAfterLoadFlag.resize(GetNumChannels());
  InitAfterLoadFlag[cloned_id]=InitAfterLoadFlag[source_id];
 
- ResetAfterLoadFlag.resize(GetNumEngines());
+ ResetAfterLoadFlag.resize(GetNumChannels());
  ResetAfterLoadFlag[cloned_id]=ResetAfterLoadFlag[source_id];
 
- DebugModeFlag.resize(GetNumEngines());
+ DebugModeFlag.resize(GetNumChannels());
  DebugModeFlag[cloned_id]=DebugModeFlag[source_id];
 
- MinInterstepsInterval.resize(GetNumEngines());
+ MinInterstepsInterval.resize(GetNumChannels());
  MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
 
 
@@ -667,8 +712,8 @@ bool UApplication::CloneProject(int source_id, int cloned_id)
  // Флаг автоматического сохранения проекта
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
- int selected_engine=GetSelectedEngineIndex();
- SelectEngine(cloned_id);
+ int selected_engine=GetSelectedChannelIndex();
+ Core_SelectChannel(cloned_id);
  String modelfilename;
 
  if(source_id == 0)
@@ -677,7 +722,7 @@ bool UApplication::CloneProject(int source_id, int cloned_id)
    modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(source_id),"").c_str();
 
 
- if(!IsEngineInit())
+ if(!IsChannelInit())
   GraphicalEngineInit(PredefinedStructure[cloned_id],NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
  else
   Env_SetPredefinedStructure(PredefinedStructure[cloned_id]);
@@ -736,7 +781,7 @@ bool UApplication::CloneProject(int source_id, int cloned_id)
   if(ResetAfterLoadFlag[cloned_id])
    MEnv_Reset(cloned_id,0);
  }
- SelectEngine(selected_engine);
+ Core_SelectChannel(selected_engine);
 }
 catch(RDK::UException &exception)
 {
@@ -762,10 +807,10 @@ void UApplication::ReloadParameters(void)
  if(!ProjectOpenFlag)
   return;
 
- int channel_index=GetSelectedEngineIndex();
+ int channel_index=Core_GetSelectedChannelIndex();
 
  TProjectConfig config=Project->GetConfig();
- std::string params_file_name=config.ChannelsConfig[GetSelectedEngineIndex()].ParametersFileName;
+ std::string params_file_name=config.ChannelsConfig[Core_GetSelectedChannelIndex()].ParametersFileName;
  if(params_file_name.empty())
  {
   config.ChannelsConfig[channel_index].ParametersFileName="Parameters.xml";
@@ -819,7 +864,7 @@ bool UApplication::SaveProjectConfig(void)
  }
  catch(RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
  }
 
  return true;
@@ -831,40 +876,40 @@ bool UApplication::SaveProjectConfig(void)
 // Методы управления движком
 // --------------------------
 /// Управление числом каналов
-int UApplication::GetNumEngines(void) const
+int UApplication::GetNumChannels(void) const
 {
- return EngineControl->GetNumEngines();
+ return EngineControl->GetNumChannels();
 }
 
-bool UApplication::SetNumEngines(int num)
+bool UApplication::SetNumChannels(int num)
 {
- int old_num=GetNumEngines();
- if(!EngineControl->SetNumEngines(num))
+ int old_num=GetNumChannels();
+ if(!EngineControl->SetNumChannels(num))
   return false;
 
- if(!ServerControl->SetNumEngines(old_num))
+ if(!ServerControl->SetNumChannels(old_num))
   return false;
 
  return true;
 }
 
-bool UApplication::InsertEngine(int index)
+bool UApplication::InsertChannel(int index)
 {
- if(!EngineControl->InsertEngine(index))
+ if(!EngineControl->InsertChannel(index))
   return false;
 
- if(!ServerControl->InsertEngine(index))
+ if(!ServerControl->InsertChannel(index))
   return false;
 
  return true;
 }
 
-bool UApplication::DeleteEngine(int index)
+bool UApplication::DeleteChannel(int index)
 {
- if(!EngineControl->DeleteEngine(index))
+ if(!EngineControl->DeleteChannel(index))
   return false;
 
- if(!ServerControl->DeleteEngine(index))
+ if(!ServerControl->DeleteChannel(index))
   return false;
 
  return true;
@@ -874,36 +919,36 @@ bool UApplication::DeleteEngine(int index)
 // --------------------------
 // Методы управления счетом
 // --------------------------
-/// Запускает аналитику выбранного канала, или всех, если engine_index == -1
-void UApplication::StartEngine(int engine_index)
+/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+void UApplication::StartChannel(int channel_index)
 {
- EngineControl->StartEngine(engine_index);
+ EngineControl->StartChannel(channel_index);
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если engine_index == -1
-void UApplication::PauseEngine(int engine_index)
+/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+void UApplication::PauseChannel(int channel_index)
 {
- EngineControl->PauseEngine(engine_index);
+ EngineControl->PauseChannel(channel_index);
 }
 
-/// Сбрасывает аналитику выбранного канала, или всех, если engine_index == -1
-void UApplication::ResetEngine(int engine_index)
+/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+void UApplication::ResetChannel(int channel_index)
 {
- EngineControl->ResetEngine(engine_index);
+ EngineControl->ResetChannel(channel_index);
 }
 
-/// Делает шаг расчета выбранного канала, или всех, если engine_index == -1
-void UApplication::StepEngine(int engine_index)
+/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+void UApplication::StepChannel(int channel_index)
 {
- EngineControl->StepEngine(engine_index);
+ EngineControl->StepChannel(channel_index);
 }
 
 /// Возвращает true если канал запущен
-bool UApplication::IsEngineStarted(int engine_index)
+bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
   return false;
- return EngineControl->CheckCalcState(engine_index);
+ return EngineControl->CheckCalcState(channel_index);
 }
 // --------------------------
 
@@ -912,7 +957,7 @@ bool UApplication::IsEngineStarted(int engine_index)
 // --------------------------
 bool UApplication::LoadModelFromFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  std::string data;
@@ -930,7 +975,7 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string file_n
 
 bool UApplication::SaveModelToFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  const char *p_buf=MModel_SaveComponent(channel_index, "");
@@ -945,7 +990,7 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string file_nam
 
 bool UApplication::LoadParametersFromFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  std::string data;
@@ -962,7 +1007,7 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string f
 
 bool UApplication::SaveParametersToFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  const char *p_buf=MModel_SaveComponentParameters(channel_index, "");
@@ -977,7 +1022,7 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string fil
 
 bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
  std::string data;
@@ -986,10 +1031,10 @@ bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_
 
  if(!data.empty())
  {
-  int i=GetSelectedEngineIndex();
-  SelectEngine(channel_index);
+  int i=Core_GetSelectedChannelIndex();
+  Core_SelectChannel(channel_index);
   Model_LoadComponentState("",&data[0]);
-  SelectEngine(i);
+  Core_SelectChannel(i);
   return true;
  }
  return false;
@@ -997,11 +1042,11 @@ bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_
 
 bool UApplication::SaveStatesToFile(int channel_index, const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!MCore_IsChannelInit(channel_index))
   return false;
 
- int i=GetSelectedEngineIndex();
- SelectEngine(channel_index);
+ int i=Core_GetSelectedChannelIndex();
+ Core_SelectChannel(channel_index);
  const char *p_buf=Model_SaveComponentState("");
  bool res=true;
  if(p_buf)
@@ -1009,7 +1054,7 @@ bool UApplication::SaveStatesToFile(int channel_index, const std::string file_na
   res=SaveFile(file_name,p_buf);
  }
  Engine_FreeBufString(p_buf);
- SelectEngine(i);
+ Core_SelectChannel(i);
  return res;
 }
 
@@ -1025,7 +1070,7 @@ bool UApplication::SaveDescriptionToFile(int channel_index, const std::string fi
 
 bool UApplication::LoadClassesDescriptionsFromFile(const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return false;
 
  std::string data;
@@ -1054,7 +1099,7 @@ bool UApplication::SaveClassesDescriptionsToFile(const std::string file_name)
 
 bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string file_name)
 {
- if(!IsEngineInit())
+ if(!Core_IsChannelInit())
   return false;
 
  std::string data;
@@ -1131,6 +1176,14 @@ void UApplication::SaveProjectsHistory(void)
 void UApplication::CalcAppCaption(void)
 {
  AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
+}
+
+/// Обновляет состояние средств логгирования
+void UApplication::UpdateLoggers(void)
+{
+ RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
+ if(EngineControl && EngineControl->GetEngineStateThread())
+  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
 }
 
 /// Загружает файл в строку

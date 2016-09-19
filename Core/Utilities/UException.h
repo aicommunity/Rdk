@@ -42,6 +42,7 @@ int Type;
 
 // Время возникновения исключения
 std::time_t Time;
+unsigned long long TimeMsecs;
 
 /// Имя файла в котором произошло исключение
 mutable std::string ExFileName;

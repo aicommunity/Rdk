@@ -4,7 +4,7 @@
 #include "../System/UGenericMutex.h"
 
 namespace RDK {
-
+///Создает потокобезопасную переменную с доступом через её собственный мьютекс
 template<typename T>
 class UELockVar
 {

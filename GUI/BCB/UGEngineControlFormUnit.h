@@ -165,6 +165,7 @@ __published:	// IDE-managed Components
 	TRadioButton *MultiThreadedRadioButton;
 	TRadioButton *SingleThreadedRadioButton;
 	TCheckBox *DetailedDebugLogCheckBox;
+	TMenuItem *OpenProjectFolder1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -248,6 +249,7 @@ __published:	// IDE-managed Components
 	void __fastcall MultiThreadedRadioButtonClick(TObject *Sender);
 	void __fastcall SingleThreadedRadioButtonClick(TObject *Sender);
 	void __fastcall DetailedDebugLogCheckBoxClick(TObject *Sender);
+	void __fastcall OpenProjectFolder1Click(TObject *Sender);
 
 
 
@@ -269,6 +271,8 @@ bool AutoStartProjectFlag;
 bool MinimizeToTray;
 bool StartMinimized;
 String ProgramName;
+String LogDir;
+bool LogDebugMode;
 
 // Файл настроек проекта
 //RDK::USerStorageXML ProjectXml;

@@ -8,6 +8,12 @@
 //#include "USharedMemoryLoader.win.cpp"
 //#include "UGenericMutex.win.cpp"
 
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+  #define DELTA_EPOCH_IN_MICROSECS  116444736000000000Ui64
+#else
+  #define DELTA_EPOCH_IN_MICROSECS  116444736000000000ULL
+#endif
+
 namespace RDK {
 
 // Возвращает текущее время в миллисекундах от некоторого фиксированного момента
@@ -21,9 +27,21 @@ unsigned long long GetCurrentStartupTime(void)
 // прошедших с некоторого фиксированного момента
 void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
 {
- unsigned long long currentTime = GetCurrentStartupTime();
- seconds = currentTime/1000;
- useconds = (currentTime % 1000) * 1000;
+ FILETIME ft;
+ long long tmpres = 0;
+
+ GetSystemTimeAsFileTime(&ft);
+
+ tmpres |= ft.dwHighDateTime;
+ tmpres <<= 32;
+ tmpres |= ft.dwLowDateTime;
+
+ // converting file time to unix epoch
+ tmpres -= DELTA_EPOCH_IN_MICROSECS;
+ tmpres /= 10;  /*convert into microseconds*/
+ time_t secs=(int)(tmpres / 1000000UL);
+ seconds = (unsigned long long)(tmpres / 1000000UL);
+ useconds = (unsigned long long)(tmpres % 1000000UL);
 }
 
 // Вычисляет разницу во времени в миллисекундах

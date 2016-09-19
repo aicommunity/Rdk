@@ -536,6 +536,12 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
    if(!params.empty())
    {
     int ch=0;
+    //Поправка для qt
+    if(params[0].size()<2)
+    {
+        continue;
+    }
+    //конец поправки для qt
 	if(params[0][0] == '"')
 	{
      ch=params[0][1];

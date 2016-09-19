@@ -229,8 +229,9 @@ bool USerStorageXML::ReadData(const std::string &name, T &data)
 template<typename T>
 bool USerStorageXML::WriteData(const std::string &name, const T &data)
 {
- if(!AddNode(name))
-  return false;
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
 
  operator << (*this,data);
  //(*this)<<data;

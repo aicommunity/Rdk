@@ -315,11 +315,11 @@ void TUGEngineControlForm::AUpdateInterface(void)
  StatusBar->Repaint();
  StatusBar->Update();
 
- if(GetNumEngines()<=1)
+ if(Core_GetNumChannels()<=1)
   ChannelsStringGrid->Visible=false;
  else
  {
-  ChannelsStringGrid->RowCount=GetNumEngines();
+  ChannelsStringGrid->RowCount=Core_GetNumChannels();
   const TEngineMonitorThread * monitor=UEngineMonitorForm->EngineMonitorFrame->GetEngineMonitorThread();
   std::vector<int> CalcThreadStates;
   std::vector<int> VideoCaptureStates;
@@ -362,7 +362,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
    }
   }
 
-  ChannelsStringGrid->Row=GetSelectedEngineIndex();
+  ChannelsStringGrid->Row=Core_GetSelectedChannelIndex();
 
   ChannelsStringGrid->Visible=true;
  }
@@ -692,7 +692,7 @@ void TUGEngineControlForm::CloseProject(void)
   RdkApplication.SetProjectPath("");
  }
  RdkApplication.SetProjectOpenFlag(false);
- for(int i=GetNumEngines()-1;i>=0;i--)
+ for(int i=Core_GetNumChannels()-1;i>=0;i--)
  {
   SelectEngine(i);
   if(GetEngine())
@@ -721,7 +721,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  catch(Exception &exception)
  {
   // UShowProgressBarForm->Hide();
-  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Open project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Open project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
  catch(...)
  {
@@ -783,11 +783,11 @@ try{
 
  ProjectMode=ProjectXml.ReadInteger("ProjectMode",1);
 
- PredefinedStructure.resize(GetNumEngines());
+ PredefinedStructure.resize(Core_GetNumChannels());
  PredefinedStructure[0]=ProjectXml.ReadInteger("PredefinedStructure",0);
 
  RdkEngineControl.SetCalculationTimeSource(0, calc_time_mode);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   RdkEngineControl.SetCalculationTimeSource(i, calc_time_mode);
 
@@ -801,55 +801,55 @@ try{
  ProjectAutoSaveStateFlag=ProjectXml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  // Шаг счета по умолчанию
- DefaultTimeStep.resize(GetNumEngines());
+ DefaultTimeStep.resize(Core_GetNumChannels());
  DefaultTimeStep[0]=ProjectXml.ReadInteger("DefaultTimeStep",30);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   DefaultTimeStep[i]=ProjectXml.ReadInteger(std::string("DefaultTimeStep_")+RDK::sntoa(i),30);
  }
 
  // Глобальный шаг счета модели
- GlobalTimeStep.resize(GetNumEngines());
+ GlobalTimeStep.resize(Core_GetNumChannels());
  GlobalTimeStep[0]=ProjectXml.ReadInteger("GlobalTimeStep",30);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   GlobalTimeStep[i]=ProjectXml.ReadInteger(std::string("GlobalTimeStep_")+RDK::sntoa(i),30);
  }
 
  ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
 
- CalculationMode.resize(GetNumEngines());
+ CalculationMode.resize(Core_GetNumChannels());
  CalculationMode[0]=ProjectXml.ReadInteger("CalculationMode",2);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   CalculationMode[i]=ProjectXml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),2);
  }
 
- InitAfterLoadFlag.resize(GetNumEngines());
+ InitAfterLoadFlag.resize(Core_GetNumChannels());
  InitAfterLoadFlag[0]=ProjectXml.ReadBool("InitAfterLoadFlag",1);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   InitAfterLoadFlag[i]=ProjectXml.ReadBool(std::string("InitAfterLoadFlag_")+RDK::sntoa(i),1);
  }
 
- ResetAfterLoadFlag.resize(GetNumEngines());
+ ResetAfterLoadFlag.resize(Core_GetNumChannels());
  ResetAfterLoadFlag[0]=ProjectXml.ReadBool("ResetAfterLoadFlag",true);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   ResetAfterLoadFlag[i]=ProjectXml.ReadBool(std::string("ResetAfterLoadFlag_")+RDK::sntoa(i),true);
  }
 
- DebugModeFlag.resize(GetNumEngines());
+ DebugModeFlag.resize(Core_GetNumChannels());
  DebugModeFlag[0]=ProjectXml.ReadBool("DebugModeFlag",false);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   DebugModeFlag[i]=ProjectXml.ReadBool(std::string("DebugModeFlag_")+RDK::sntoa(i),false);
  }
 
- MinInterstepsInterval.resize(GetNumEngines());
+ MinInterstepsInterval.resize(Core_GetNumChannels());
  MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",20);
  RdkEngineControl.SetMinInterstepsInterval(0,MinInterstepsInterval[0]);
- for(int i=1;i<GetNumEngines();i++)
+ for(int i=1;i<Core_GetNumChannels();i++)
  {
   MinInterstepsInterval[i]=ProjectXml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),20);
   RdkEngineControl.SetMinInterstepsInterval(i,MinInterstepsInterval[i]);
@@ -878,7 +878,7 @@ try{
 //   VideoOutputForm->AddSource();
 // #endif
 
- for(int i=0;i<GetNumEngines();i++)
+ for(int i=0;i<Core_GetNumChannels();i++)
  {
   try
   {
@@ -979,7 +979,7 @@ try{
  UShowProgressBarForm->Update();
  Sleep(0);
 
- if(selected_engine_index>=GetNumEngines())
+ if(selected_engine_index>=Core_GetNumChannels())
   selected_engine_index=0;
 
  SelectEngine(selected_engine_index);
@@ -1041,19 +1041,19 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 {
  RdkApplication.CloneProject(source_id, cloned_id);
 /*
- if(source_id>=GetNumEngines() || cloned_id >= GetNumEngines())
+ if(source_id>=Core_GetNumChannels() || cloned_id >= Core_GetNumChannels())
   return;
 
  try {
- PredefinedStructure.resize(GetNumEngines());
+ PredefinedStructure.resize(Core_GetNumChannels());
  PredefinedStructure[cloned_id]=PredefinedStructure[source_id];
 
  // Шаг счета по умолчанию
- DefaultTimeStep.resize(GetNumEngines());
+ DefaultTimeStep.resize(Core_GetNumChannels());
  DefaultTimeStep[cloned_id]=DefaultTimeStep[source_id];
 
  // Глобальный шаг счета модели
- GlobalTimeStep.resize(GetNumEngines());
+ GlobalTimeStep.resize(Core_GetNumChannels());
  GlobalTimeStep[cloned_id]=GlobalTimeStep[source_id];
 
  if(!ProjectXml.SelectNodeRoot("Project/General"))
@@ -1061,19 +1061,19 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 
  ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
 
- CalculationMode.resize(GetNumEngines());
+ CalculationMode.resize(Core_GetNumChannels());
  CalculationMode[cloned_id]=CalculationMode[source_id];
 
- InitAfterLoadFlag.resize(GetNumEngines());
+ InitAfterLoadFlag.resize(Core_GetNumChannels());
  InitAfterLoadFlag[cloned_id]=InitAfterLoadFlag[source_id];
 
- ResetAfterLoadFlag.resize(GetNumEngines());
+ ResetAfterLoadFlag.resize(Core_GetNumChannels());
  ResetAfterLoadFlag[cloned_id]=ResetAfterLoadFlag[source_id];
 
- DebugModeFlag.resize(GetNumEngines());
+ DebugModeFlag.resize(Core_GetNumChannels());
  DebugModeFlag[cloned_id]=DebugModeFlag[source_id];
 
- MinInterstepsInterval.resize(GetNumEngines());
+ MinInterstepsInterval.resize(Core_GetNumChannels());
  MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
 
 
@@ -1190,7 +1190,7 @@ try
 catch(Exception &exception)
 {
  UShowProgressBarForm->Hide();
- MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("GUI-SaveProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
+ MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("GUI-SaveProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
 }
 catch(...)
 {
@@ -1265,12 +1265,12 @@ try{
 
  UShowProgressBarForm->IncBarStatus(2);
  UShowProgressBarForm->SetBarHeader(1,Lang_SavingData);
- UShowProgressBarForm->ResetBarStatus(1, 1, GetNumEngines()-1);
+ UShowProgressBarForm->ResetBarStatus(1, 1, Core_GetNumChannels()-1);
  UShowProgressBarForm->Update();
  Sleep(0);
 
  int selected_engine_index=GetSelectedEngineIndex();
- for(int i=0;i<GetNumEngines();i++)
+ for(int i=0;i<Core_GetNumChannels();i++)
  {
   SelectEngine(i);
   String modelfilename;
@@ -1419,7 +1419,7 @@ try{
  ProjectXml.WriteInteger("EnginesMode",RdkEngineControl.GetThreadMode());
  ProjectXml.WriteInteger("CalculationTimeSourceMode",RdkEngineControl.GetCalculationTimeSource(0));
 
- ProjectXml.WriteInteger("NumEngines",GetNumEngines());
+ ProjectXml.WriteInteger("NumEngines",Core_GetNumChannels());
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
 
  ProjectXml.WriteBool("ProjectShowChannelsStates",ProjectShowChannelsStates);
@@ -1804,7 +1804,7 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  if(AppWinState)
   UShowProgressBarForm->Show();
 
- RdkApplication.StartEngine(channel_index);
+ RdkApplication.StartChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 #ifdef RDK_VIDEO
  VideoOutputForm->Start(channel_index);
@@ -1829,7 +1829,7 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  if(AppWinState)
   UShowProgressBarForm->Show();
 
- RdkApplication.PauseEngine(channel_index);
+ RdkApplication.PauseChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
  UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
@@ -1846,7 +1846,7 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
  if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- RdkApplication.ResetEngine(channel_index);
+ RdkApplication.ResetChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->ResetChannel(channel_index);
 #ifdef RDK_VIDEO
  if(!DisableStopVideoSources)
@@ -1860,7 +1860,7 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 /// Возвращает число каналов
 int TUGEngineControlForm::GetNumChannels(void) const
 {
- return GetNumEngines();
+ return Core_GetNumChannels();
 }
 
 /// Устанавливает число каналов
@@ -1868,7 +1868,7 @@ int TUGEngineControlForm::GetNumChannels(void) const
 int TUGEngineControlForm::SetNumChannels(int value)
 {
  Pause1Click(this);
- RdkApplication.SetNumEngines(value);
+ RdkApplication.SetNumChannels(value);
 // RdkEngineControl.SetNumEngines(value);
 // UServerControlForm->SetNumChannels(value);
  return 0;
@@ -1880,7 +1880,7 @@ int TUGEngineControlForm::SetNumChannels(int value)
 int TUGEngineControlForm::AddChannel(int index)
 {
  Pause1Click(this);
- RdkApplication.InsertEngine(index);
+ RdkApplication.InsertChannel(index);
 // UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
 }
@@ -1889,7 +1889,7 @@ int TUGEngineControlForm::AddChannel(int index)
 int TUGEngineControlForm::DelChannel(int index)
 {
  Pause1Click(this);
- RdkApplication.DeleteEngine(index);
+ RdkApplication.DeleteChannel(index);
 // UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
 }
@@ -1945,7 +1945,7 @@ void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
  if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- RdkApplication.StepEngine(-1);
+ RdkApplication.StepChannel(-1);
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -2145,7 +2145,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- int channel_index=GetSelectedEngineIndex();
+ int channel_index=Core_GetSelectedChannelIndex();
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
  UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProjectPath().c_str();
  UCreateProjectWizardForm->ProjectNameLabeledEdit->Text=config.ProjectName.c_str();
@@ -2256,10 +2256,11 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
-// LastProjectsListMaxSize=app_ini->ReadInteger("General","LastProjectsListMaxSize",10);
+ LogDir=app_ini->ReadString("Log","Dir","");
+ if(LogDir.Length() == 0)
+  LogDir = "EventsLog/";
 
-// ServerInterfaceAddress=AnsiString(app_ini->ReadString("Server","BindAddress","127.0.0.1")).c_str();
-// ServerInterfacePort=app_ini->ReadInteger("Server","BindPort",45045);
+ LogDebugMode=app_ini->ReadBool("Log","DebugMode",false);
 
  DisableAdminForm=app_ini->ReadBool("General","DisableAdminForm",false);
 
@@ -2271,6 +2272,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
+ RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
+ RdkApplication.SetDebugMode(LogDebugMode);
  RdkApplication.Init();
 
  VersionString=GetBuildInfoAsString();
@@ -2437,7 +2440,7 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Se
   else
   {
 	//I->second->SetComponentControlName(component_name);
-	int index = GetSelectedEngineIndex();
+	int index = Core_GetSelectedChannelIndex();
 	I->second->ComponentFormShowManually(c_name.c_str(), index);
   }
 
@@ -2509,7 +2512,7 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
 
  if(ChannelsStringGrid->Row != ARow)
  {
-  SelectEngine(ARow);
+  Core_SelectChannel(ARow);
   UDrawEngineFrame1->ReloadNet();
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
@@ -2521,7 +2524,7 @@ void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
  if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- SetNumChannels(GetNumEngines()+1);
+ SetNumChannels(Core_GetNumChannels()+1);
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2531,7 +2534,7 @@ void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
  if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- SetNumChannels(GetNumEngines()-1);
+ SetNumChannels(Core_GetNumChannels()-1);
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2796,21 +2799,21 @@ void __fastcall TUGEngineControlForm::ClassesDescription1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::StartChannel1Click(TObject *Sender)
 {
- StartChannel(GetSelectedEngineIndex());
+ StartChannel(Core_GetSelectedChannelIndex());
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::PauseChannel1Click(TObject *Sender)
 {
- PauseChannel(GetSelectedEngineIndex());
+ PauseChannel(Core_GetSelectedChannelIndex());
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::ResetChannel1Click(TObject *Sender)
 {
- ResetChannel(GetSelectedEngineIndex());
+ ResetChannel(Core_GetSelectedChannelIndex());
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -2841,12 +2844,12 @@ void __fastcall TUGEngineControlForm::UDrawEngineFrame1Calculate1Click(TObject *
 void __fastcall TUGEngineControlForm::ApplicationEventsException(TObject *Sender,
           Exception *E)
 {
- if(GetNumEngines()>0 && MIsEngineInit(0))
+ if(Core_GetNumChannels()>0 && MCore_IsChannelInit(0))
  {
   std::string message=std::string("Unhandled exception: ")+AnsiString(E->Message).c_str();
   message+=" in class ";
   message+=AnsiString(Sender->ToString()).c_str();
-  MEngine_LogMessage(0, RDK_EX_ERROR, message.c_str());
+  MLog_LogMessage(0, RDK_EX_ERROR, message.c_str());
  }
  else
   ShowMessage(E->Message);
@@ -2858,20 +2861,21 @@ void __fastcall TUGEngineControlForm::ShowDebugMessagesCheckBoxClick(TObject *Se
 {
  if(UpdateInterfaceFlag)
   return;
- int size=GetNumEngines();
+ int size=Core_GetNumChannels();
 
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
 
- if(config.ChannelsConfig.size() != size)
+ if(int(config.ChannelsConfig.size()) != size)
  {
   ShowDebugMessagesCheckBox->Checked=false;
   return;
  }
  for(int i=0;i<size;i++)
  {
-  config.ChannelsConfig[i].DebugMode=ShowDebugMessagesCheckBox->Checked;
-  MEnv_SetDebugMode(i,config.ChannelsConfig[i].DebugMode);
+  config.DebugMode=ShowDebugMessagesCheckBox->Checked;
+  MLog_SetDebugMode(i,config.DebugMode);
  }
+ MLog_SetDebugMode(RDK_SYS_MESSAGE,config.DebugMode);
  RdkApplication.SetProjectConfig(config);
  RdkApplication.SaveProjectConfig();
 }
@@ -2942,11 +2946,11 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
 {
  if(UpdateInterfaceFlag)
   return;
- int size=GetNumEngines();
+ int size=Core_GetNumChannels();
 
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
 
- if(config.ChannelsConfig.size() != size)
+ if(int(config.ChannelsConfig.size()) != size)
  {
   DetailedDebugLogCheckBox->Checked=false;
   return;
@@ -2954,14 +2958,24 @@ void __fastcall TUGEngineControlForm::DetailedDebugLogCheckBoxClick(TObject *Sen
  for(int i=0;i<size;i++)
  {
   if(DetailedDebugLogCheckBox->Checked)
-   config.ChannelsConfig[i].DebugSysEventsMask=0xFFFFFFFF;
+   config.DebugSysEventsMask=0xFFFFFFFF;
   else
-   config.ChannelsConfig[i].DebugSysEventsMask=0;
-  MEnv_SetDebugSysEventsMask(i,config.ChannelsConfig[i].DebugSysEventsMask);
+   config.DebugSysEventsMask=0;
+  MLog_SetDebugSysEventsMask(i,config.DebugSysEventsMask);
  }
+ MLog_SetDebugMode(RDK_SYS_MESSAGE,config.DebugSysEventsMask);
  RdkApplication.SetProjectConfig(config);
  RdkApplication.SaveProjectConfig();
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUGEngineControlForm::OpenProjectFolder1Click(TObject *Sender)
+{
+ //
+ if(RdkApplication.GetProjectOpenFlag())
+//  WinExec("EXPLORER /e, "+'"c:\"', SW_SHOW);
+  ShellExecute(Handle, "explore", RdkApplication.GetProjectPath().c_str(), "", "", SW_SHOWNORMAL);
+}
+//---------------------------------------------------------------------------
 

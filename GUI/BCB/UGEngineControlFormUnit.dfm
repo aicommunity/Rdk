@@ -316,6 +316,10 @@ object UGEngineControlForm: TUGEngineControlForm
               end
             end
             inherited TabSheet3: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
               inherited Splitter2: TSplitter
                 Top = 250
                 ExplicitTop = 250
@@ -464,6 +468,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Top = 2
                 Margins.Right = 2
                 Margins.Bottom = 2
+                ExplicitLeft = 4
                 ExplicitTop = 25
                 ExplicitWidth = 794
                 ExplicitHeight = 95
@@ -1114,6 +1119,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Classes Description'
         OnClick = ClassesDescription1Click
       end
+      object OpenProjectFolder1: TMenuItem
+        Caption = 'Open Project Folder'
+        OnClick = OpenProjectFolder1Click
+      end
       object N2: TMenuItem
         Caption = '-'
       end
@@ -1289,7 +1298,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03DC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03F00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -2,7 +2,7 @@
 #define MYRDK_H
 
 #ifndef INIT_DLL_DEFS_H
-#include "initdll_defs.h"
+#include "../../Deploy/Include/initdll_defs.h"
 #endif
 
 #include "../../Deploy/Include/initdll_defs.h"

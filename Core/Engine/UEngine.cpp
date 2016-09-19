@@ -248,6 +248,9 @@ bool UEngine::SetChannelIndex(int value)
  ChannelIndex=value;
  if(Environment)
   Environment->SetChannelIndex(ChannelIndex);
+
+ if(Logger)
+  Logger->SetChannelIndex(ChannelIndex);
  return true;
 }
 // --------------------------
@@ -272,6 +275,35 @@ UContainer* UEngine::GetModel(void)
 // --------------------------
 // Методы управления счетом
 // --------------------------
+// Указатель на логгер
+UEPtr<ULoggerEnv> const UEngine::GetLogger(void) const
+{
+ return Logger;
+}
+
+bool UEngine::SetLogger(UEPtr<ULoggerEnv> logger)
+{
+ if(Logger == logger)
+  return true;
+
+ if(Logger)
+ {
+  Logger->UnRegisterEnvironment();
+ }
+
+ Logger=logger;
+ if(!Logger)
+  return true;
+
+ Logger->SetChannelIndex(ChannelIndex);
+ if(Environment)
+ {
+  Logger->ClearLog();
+  Logger->RegisterEnvironment(Environment);
+ }
+ return true;
+}
+
 // Инициализирует данные движка
 void UEngine::Init(void)
 {
@@ -280,64 +312,59 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 {
-// if(!Options.LoadFromFile(OptionsFileName))
-// {
-  if(!Default())
-   return false;
-// }
+ if(!Default())
+  return false;
 
  AccessCache.clear();
-
-// StorageIndex=atoi(Options("General","StorageIndex",sntoa(StorageIndex).c_str()));
-// EnvironmentIndex=atoi(Options("General","EnvironmentIndex",sntoa(EnvironmentIndex).c_str()));
-
-// if(StorageIndex>=0)
-//  Storage=DLLGetStorage(StorageIndex);
-// else
-//  Storage=AddNewStorage();
 
  Storage=storage;
  Environment=env;
 
- Environment->ClearLog();
+ if(Logger)
+ {
+  Logger->ClearLog();
+  Logger->RegisterEnvironment(Environment);
+  Logger->SetChannelIndex(ChannelIndex);
+ }
  Environment->SetChannelIndex(ChannelIndex);
- CreateStorage();
+ Environment->SetLogger(Logger);
 
  if(!Storage)
   return false;
 
-// if(EnvironmentIndex>=0)
-//  Environment=DLLGetEnvironment(EnvironmentIndex);
-// else
-// {
-  LibrariesList.clear();
-  ClassesList.clear();
-  if(LoadPredefinedLibraries())
-   return false;
-  if(LoadClasses())
-   return false;
-  if(LoadLibraries())
-   return false;
-//  Environment=AddNewEnvironment();
-  CreateEnvironment(true,&ClassesList, &LibrariesList);
-// }
+ RDK_SYS_TRY
+ {
+  try
+  {
+   LibrariesList.clear();
+   ClassesList.clear();
+   if(LoadPredefinedLibraries())
+	return false;
+   if(LoadClasses())
+	return false;
+   if(LoadLibraries())
+	return false;
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+
+ CreateEnvironment(true,&ClassesList, &LibrariesList);
 
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
   return false;
  }
-/*
- UFileIO FileIO;
- FileIO.Default();
- FileIO.SetDirection(0);
- FileIO.SetFileName(ClassesDescriptionFileName);
- FileIO.Calculate();
- if(!FileIO.GetDataString().empty())
- {
-  Storage_LoadCommonClassesDescription(FileIO.GetDataString().c_str());
-  Storage_LoadClassesDescription(FileIO.GetDataString().c_str());
- }
-  */
 
  return true;
 }
@@ -347,65 +374,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 void UEngine::UnInit(void)
 {
  AccessCache.clear();
-/* if(!Stop())
-  return;
-  */
-/* Options("General","StorageIndex",sntoa(StorageIndex));
- Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
-
- if(!Options.SaveToFile(OptionsFileName))
-  return false;
-  */
 }
-   /*
-// Запускает систему
-bool UEngine::Start(void)
-{
- if(IsRunned() == 1)
- {
-  return true;
- }
-
- if(!IsReady())
-  if(!Reset())
-  {
-   return false;
-  }
-
-
- Runned=1;
- return true;
-}
-
-// Приостанавливает систему
-bool UEngine::Pause(void)
-{
- if(IsRunned() == 0)
- {
-  return true;
- }
-
- if(!IsReady())
-  if(!Reset())
-  {
-   return false;
-  }
-
- Runned=0;
- return true;
-}
-
-// Останавливает систему
-bool UEngine::Stop(void)
-{
- if(IsRunned() == -1)
- {
-  return true;
- }
-
- Runned=-1;
- return true;
-}                  */
 // --------------------------
 
 // --------------------------
@@ -1681,7 +1650,7 @@ bool UEngine::Env_GetEventsLogMode(void) const
  {
   try
   {
-   return Environment->GetEventsLogMode();
+   return Logger->GetEventsLogMode();
   }
   catch (RDK::UException &exception)
   {
@@ -1707,8 +1676,8 @@ int UEngine::Env_SetEventsLogMode(bool value)
  {
   try
   {
-   if(!Environment->SetEventsLogMode(value))
-	res=RDK_E_ENV_SET_EVENTS_LOG_MODE_FAIL;
+   if(!Logger->SetEventsLogMode(value))
+	res=RDK_E_LOGGER_SET_EVENTS_LOG_MODE_FAIL;
    else
     res=RDK_SUCCESS;
   }
@@ -2515,7 +2484,7 @@ bool UEngine::Env_GetDebugMode(void) const
  {
   try
   {
-   return Environment->GetDebugMode();
+   return Logger->GetDebugMode();
   }
   catch (RDK::UException &exception)
   {
@@ -2541,9 +2510,9 @@ int UEngine::Env_SetDebugMode(bool value)
  {
   try
   {
-   if(!Environment->SetDebugMode(value))
+   if(!Logger->SetDebugMode(value))
    {
-    return RDK_E_ENV_SET_FLAG_FAIL;
+    return RDK_E_LOGGER_SET_FLAG_FAIL;
    }
    res=RDK_SUCCESS;
   }
@@ -2571,7 +2540,7 @@ unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
  {
   try
   {
-   return Environment->GetDebugSysEventsMask();
+   return Logger->GetDebugSysEventsMask();
   }
   catch (RDK::UException &exception)
   {
@@ -2597,9 +2566,9 @@ int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
  {
   try
   {
-   if(!Environment->SetDebugSysEventsMask(value))
+   if(!Logger->SetDebugSysEventsMask(value))
    {
-    return RDK_E_ENV_SET_FLAG_FAIL;
+    return RDK_E_LOGGER_SET_FLAG_FAIL;
    }
    res=RDK_SUCCESS;
   }
@@ -2628,7 +2597,7 @@ bool UEngine::Env_GetDebuggerMessageFlag(void) const
  {
   try
   {
-   return Environment->GetDebuggerMessageFlag();
+   return Logger->GetDebuggerMessageFlag();
   }
   catch (RDK::UException &exception)
   {
@@ -2654,9 +2623,9 @@ int UEngine::Env_SetDebuggerMessageFlag(bool value)
  {
   try
   {
-   if(!Environment->SetDebuggerMessageFlag(value))
+   if(!Logger->SetDebuggerMessageFlag(value))
    {
-    return RDK_E_ENV_SET_FLAG_FAIL;
+    return RDK_E_LOGGER_SET_FLAG_FAIL;
    }
    res=RDK_SUCCESS;
   }
@@ -5225,31 +5194,43 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
-{ 
- try
+{
+ int res=RDK_SUCCESS;
+ RDK_SYS_TRY
  {
-  fstream file(file_name, ios::in);
-  string result;
-
-  if(!file || !file.is_open())
-   return false;
-
-  while(!file.eof() && !file.fail())
+  try
   {
-   std::string buffer;
-   if(!std::getline(file,buffer))
-    break;
-   result+=buffer;
-  }
+   fstream file(file_name, ios::in);
+   string result;
 
-  file.close();
-  return Model_LoadComponent(stringid, result.c_str());
+   if(!file || !file.is_open())
+	return false;
+
+   while(!file.eof() && !file.fail())
+   {
+	std::string buffer;
+	if(!std::getline(file,buffer))
+	 break;
+	result+=buffer;
+   }
+
+   file.close();
+   return Model_LoadComponent(stringid, result.c_str());
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
@@ -6549,7 +6530,7 @@ const char* UEngine::GetLog(int &error_level) const
  {
   try
   {
-   TempString=Environment->GetLog(error_level);
+   TempString=Logger->GetLog(error_level);
   }
   catch (RDK::UException &exception)
   {
@@ -6577,7 +6558,7 @@ const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
  {
   try
   {
-   TempString=Environment->GetUnreadLog(error_level, number, time);
+   TempString=Logger->GetUnreadLog(error_level, number, time);
   }
   catch (RDK::UException &exception)
   {
@@ -6598,15 +6579,15 @@ const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
 /// Записывает в лог новое сообщение
 int UEngine::Engine_LogMessage(int log_level, const char *message, int error_event_number)
 {
- if(!Environment)
-  return RDK_E_ENV_NOT_FOUND;
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Environment->LogMessage(log_level,message,error_event_number);
+   Logger->LogMessage(log_level,message,error_event_number);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6625,11 +6606,97 @@ int UEngine::Engine_LogMessage(int log_level, const char *message, int error_eve
  return res;
 }
 
+int UEngine::Engine_LogMessage(int msg_level, const char *method_name, const char *message, int error_event_number)
+{
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Logger->LogMessage(msg_level,method_name,message,error_event_number);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const char *message, int error_event_number)
+{
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Logger->LogMessageEx(msg_level,object_name,message,error_event_number);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const char *method_name, const char *message, int error_event_number)
+{
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Logger->LogMessageEx(msg_level,object_name,method_name,message,error_event_number);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
 
 // Управление функцией-обработчиком исключений
-UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
+ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {
- if(!Environment)
+ if(!Logger)
   return 0;
 
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6637,7 +6704,7 @@ UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
  {
   try
   {
-   return Environment->GetExceptionHandler();
+   return Logger->GetExceptionHandler();
   }
   catch (RDK::UException &exception)
   {
@@ -6655,18 +6722,18 @@ UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
  return 0;
 }
 
-int UEngine::SetExceptionHandler(UEnvironment::PExceptionHandler value)
+int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
 {
- if(!Environment)
-  return RDK_E_ENV_NOT_FOUND;
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   if(!Environment->SetExceptionHandler(value))
-    res=RDK_E_ENV_SET_EXCEPTION_HANDLER_FAIL;
+   if(!Logger->SetExceptionHandler(value))
+    res=RDK_E_LOGGER_SET_EXCEPTION_HANDLER_FAIL;
    else
 	res=RDK_SUCCESS;
   }
@@ -6688,16 +6755,16 @@ int UEngine::SetExceptionHandler(UEnvironment::PExceptionHandler value)
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
-int UEngine::GetMaxExceptionsLogSize(void) const
+/*int UEngine::GetMaxExceptionsLogSize(void) const
 {
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   if(!Environment)
+   if(!Logger)
     return 0;
-   return Environment->GetMaxExceptionsLogSize();
+   return Logger->GetMaxExceptionsLogSize();
   }
   catch (RDK::UException &exception)
   {
@@ -6717,15 +6784,15 @@ int UEngine::GetMaxExceptionsLogSize(void) const
 
 int UEngine::SetMaxExceptionsLogSize(int value)
 {
- if(!Environment)
-  return RDK_E_ENV_NOT_FOUND;
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Environment->SetMaxExceptionsLogSize(value);
+   Logger->SetMaxExceptionsLogSize(value);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6742,13 +6809,13 @@ int UEngine::SetMaxExceptionsLogSize(int value)
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
-}
+}     */
 
 
 /// Возвращает число непрочитанных строк лога
 int UEngine::GetNumUnreadLogLines(void) const
 {
- if(!Environment)
+ if(!Logger)
   return 0;
 
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6756,7 +6823,7 @@ int UEngine::GetNumUnreadLogLines(void) const
  {
   try
   {
-   return Environment->GetNumUnreadLogLines();
+   return Logger->GetNumUnreadLogLines();
   }
   catch (RDK::UException &exception)
   {
@@ -6777,7 +6844,7 @@ int UEngine::GetNumUnreadLogLines(void) const
 /// Возвращает число строк лога
 int UEngine::GetNumLogLines(void) const
 {
- if(!Environment)
+ if(!Logger)
   return 0;
 
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6785,7 +6852,7 @@ int UEngine::GetNumLogLines(void) const
  {
   try
   {
-   return Environment->GetNumLogLines();
+   return Logger->GetNumLogLines();
   }
   catch (RDK::UException &exception)
   {
@@ -6806,15 +6873,15 @@ int UEngine::GetNumLogLines(void) const
 /// Очищает лог прочитанных сообщений
 int UEngine::ClearReadLog(void)
 {
- if(!Environment)
-  return RDK_E_ENV_NOT_FOUND;
+ if(!Logger)
+  return RDK_E_LOGGER_NOT_FOUND;
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Environment->ClearReadLog();
+   Logger->ClearReadLog();
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6844,8 +6911,8 @@ int UEngine::ClearReadLog(void)
 /// иначе возвращает RDK_EXCEPTION_CATCHED
 int UEngine::ProcessException(UException &exception) const
 {
- if(Environment)
-  Environment->ProcessException(exception);
+ if(Logger)
+  Logger->ProcessException(exception);
  else
   return RDK_UNHANDLED_EXCEPTION;
 
@@ -6855,17 +6922,12 @@ int UEngine::ProcessException(UException &exception) const
 
 int UEngine::ProcessException(const UException &exception) const
 {
- if(Environment)
-  Environment->ProcessException(const_cast<UException &>(exception));
+ if(Logger)
+  Logger->ProcessException(const_cast<UException &>(exception));
  else
   return RDK_UNHANDLED_EXCEPTION;
 
  return RDK_EXCEPTION_CATCHED;
-}
-
-// Создает пустое хранилище и возвращает указатель на него
-void UEngine::CreateStorage(void)
-{
 }
 
 // Создает среду и возвращает указатель на нее.
@@ -6880,36 +6942,54 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
  if(!Environment)
   return;
 
- Environment->Default();
-
- if(!Environment->SetStorage(Storage) || !isinit)
-  return;
-
- if(external_classes != 0)
+ RDK_SYS_TRY
  {
-  list<UContainer*>::iterator I,J;
-  I=external_classes->begin();
-  J=external_classes->end();
-  while(I != J)
+  try
   {
-   Storage->AddClass(*I);
-   ++I;
+   Environment->Default();
+
+   if(!Environment->SetStorage(Storage) || !isinit)
+	return;
+
+   if(external_classes != 0)
+   {
+	list<UContainer*>::iterator I,J;
+	I=external_classes->begin();
+	J=external_classes->end();
+	while(I != J)
+	{
+	 Storage->AddClass(*I);
+	 ++I;
+	}
+   }
+
+   if(external_libs != 0)
+   {
+	list<ULibrary*>::iterator I,J;
+	I=external_libs->begin();
+	J=external_libs->end();
+	while(I != J)
+	{
+	 Storage->AddCollection(*I);
+	 ++I;
+	}
+   }
+
+   Storage->BuildStorage();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
-
- if(external_libs != 0)
+ RDK_SYS_CATCH
  {
-  list<ULibrary*>::iterator I,J;
-  I=external_libs->begin();
-  J=external_libs->end();
-  while(I != J)
-  {
-   Storage->AddCollection(*I);
-   ++I;
-  }
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- Storage->BuildStorage();
 }
 
 // Загружает набор предустановленных библиотек
@@ -6973,13 +7053,6 @@ int UEngine::LoadLibraries(void)
 // Если строковое id не задано, то возвращает указатель на модель
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
-/* if(stringid && !AccessCache.empty())
- {
-  std::map<std::string, UEPtr<UContainer> >::iterator I=AccessCache.find(stringid);
-  if(I != AccessCache.end())
-   return I->second;
- }
-   */
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
  if(!model)

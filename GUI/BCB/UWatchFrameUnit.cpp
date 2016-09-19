@@ -134,6 +134,8 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  UpdateInterval=200;
  AlwaysUpdateFlag=true;
  CacheIndex=0;
+ AutoMinYValue=true;
+ AutoMaxYValue=true;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -425,6 +427,29 @@ bool TUWatchFrame::SetCacheSize(int value)
 
  CacheSize=value;
  return true;
+}
+
+// Автоматически подстраивать верхнюю и нижнюю границы оси
+bool TUWatchFrame::GetAutoMinYValue(void) const
+{
+ return AutoMinYValue;
+}
+
+bool TUWatchFrame::GetAutoMaxYValue(void) const
+{
+ return AutoMaxYValue;
+}
+
+void TUWatchFrame::SetAutoMinYValue(bool value)
+{
+ AutoMinYValue=value;
+ Chart1->LeftAxis->AutomaticMinimum=value;
+}
+
+void TUWatchFrame::SetAutoMaxYValue(bool value)
+{
+ AutoMaxYValue=value;
+ Chart1->LeftAxis->AutomaticMaximum=value;
 }
 // ------------------------------
 
@@ -816,6 +841,9 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 
   TChartSeries* series=Chart1->Series[seriesindex];
 
+  if(!series)
+   continue;
+
   static_cast<TFastLineSeries*>(series)->DrawAllPoints=true;
 //  static_cast<TFastLineSeries*>(series)->Stairs=true;
 
@@ -980,8 +1008,8 @@ void __fastcall TUWatchFrame::StepUpdate(void)
   }
   else
   {
-   if(wd->WatchInterval < 0)
-	continue;
+//   if(wd->WatchInterval < 0)
+//	continue;
 
 //   if(!wd->YDataSourceName.size())
 //	continue;
@@ -1010,6 +1038,12 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	  ser_min=0;
 	 }
 
+	 if(ser_max-wd->WatchInterval<0)
+	 {
+	  Chart1->BottomAxis->Minimum=0;
+	  Chart1->BottomAxis->Maximum=wd->WatchInterval;
+	 }
+	 else
 	 if(ser_max-wd->WatchInterval<Chart1->BottomAxis->Maximum)
 	 {
 	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;
@@ -1028,6 +1062,10 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 }
 	}while (fabs(ser_max-ser_min) > wd->WatchInterval);
    }
+   else
+   {
+	Chart1->BottomAxis->Automatic=true;
+   }
    static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }
   ModifyState=true;
@@ -1042,8 +1080,27 @@ void __fastcall TUWatchFrame::Reset(void)
  for(int i=0;i<Chart1->SeriesCount();i++)
   {
    Chart1->Series[i]->Clear();
+   if(GetWatchInterval()>0)
+   {
+	Chart1->BottomAxis->Minimum=0;
+	Chart1->BottomAxis->Maximum=GetWatchInterval();
+   }
+   else
+   {
+	Chart1->BottomAxis->Minimum=0;
+	Chart1->BottomAxis->Maximum=1;
+	Chart1->BottomAxis->Automatic=true;
+   }
    ModifyState=true;
   }
+// TChartSeries *ser(0);
+// for(int i=0;i<Chart1->SeriesCount();)
+//  {
+//   ser=Chart1->Series[i];
+//   Chart1->RemoveSeries(ser);
+//   delete ser;
+//   ModifyState=true;
+//  }
 
  CacheIndex=0;
 
@@ -1375,6 +1432,8 @@ void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
   }
 
  xml.WriteFloat("WatchInterval",WatchInterval);
+ xml.WriteBool("AutoMinYValue",AutoMinYValue);
+ xml.WriteBool("AutoMaxYValue",AutoMaxYValue);
 
  ModifyState=false;
 }
@@ -1399,7 +1458,8 @@ void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
  for(int i=0;i<num_series;i++)
   {
    xml.SelectNode(i);
-   if(xml.GetNodeName() == "UpdateInterval" || xml.GetNodeName() == "WatchInterval" || xml.GetNodeName() == "ComponentControlName" || xml.GetNodeName() == "AlwaysUpdateFlag")
+   if(xml.GetNodeName() == "UpdateInterval" || xml.GetNodeName() == "WatchInterval" || xml.GetNodeName() == "ComponentControlName" || xml.GetNodeName() == "AlwaysUpdateFlag"
+	   || xml.GetNodeName() == "AutoMinYValue"  || xml.GetNodeName() == "AutoMaxYValue")
    {
 	xml.SelectUp();
 	UShowProgressBarForm->IncBarStatus(1);
@@ -1468,6 +1528,8 @@ void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
   }
 
  SetWatchInterval(xml.ReadFloat("WatchInterval",5));
+ SetAutoMinYValue(xml.ReadBool("AutoMinYValue",true));
+ SetAutoMaxYValue(xml.ReadBool("AutoMaxYValue",true));
  ModifyState=false;
 }
 // -----------------------------

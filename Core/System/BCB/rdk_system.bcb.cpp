@@ -12,6 +12,11 @@
 #include <vector>
 #include <string>
 
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+  #define DELTA_EPOCH_IN_MICROSECS  116444736000000000Ui64
+#else
+  #define DELTA_EPOCH_IN_MICROSECS  116444736000000000ULL
+#endif
 
 namespace RDK {
 
@@ -19,16 +24,32 @@ namespace RDK {
 // (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
- return GetTickCount();
+ return (unsigned long long)(TDateTime::CurrentDateTime().operator double()*86400000.0);
 }
 
 // «аписывает в seconds и useconds текущие значени€ секунд и микросекунд,
 // прошедших с некоторого фиксированного момента
 void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
 {
- unsigned long long currentTime = GetCurrentStartupTime();
- seconds = currentTime/1000;
- useconds = (currentTime % 1000) * 1000;
+/*
+ double currentTime = TDateTime::CurrentDateTime().operator double()*86400.0;
+ seconds = (unsigned long long)currentTime;
+ useconds = (unsigned long long)((double(currentTime)-seconds)) * 1000;*/
+ FILETIME ft;
+ long long tmpres = 0;
+
+ GetSystemTimeAsFileTime(&ft);
+
+ tmpres |= ft.dwHighDateTime;
+ tmpres <<= 32;
+ tmpres |= ft.dwLowDateTime;
+
+ // converting file time to unix epoch
+ tmpres -= DELTA_EPOCH_IN_MICROSECS;
+ tmpres /= 10;  /*convert into microseconds*/
+ time_t secs=(int)(tmpres / 1000000UL);
+ seconds = (unsigned long long)(tmpres / 1000000UL);
+ useconds = (unsigned long long)(tmpres % 1000000UL);
 }
 
 // ¬ычисл€ет разницу во времени в миллисекундах
@@ -43,7 +64,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 /// ¬озвращает локальное врем€ в дн€х (с точностью до миллисекунд) от начала времен
 double GetVariantLocalTime(void)
 {
- return TDateTime::CurrentDateTime().operator double();;
+ return TDateTime::CurrentDateTime().operator double();
 }
 
 

@@ -32,8 +32,8 @@ virtual URpcDecoderCommon* New(void);
 /// Возвращает false если команда не поддерживается
 virtual bool AProcessCommand(const UEPtr<URpcCommand> &command);
 
-virtual const char* RemoteCall(const char *request, int &return_value, int &channel_index);
-virtual std::string ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value);
+virtual const char* RemoteCall(const char *request, int &return_value, int &res_channel_index);
+virtual std::string ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int channel_index, int &return_value);
 // --------------------------
 };
 

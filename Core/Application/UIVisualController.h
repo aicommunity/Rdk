@@ -16,7 +16,7 @@
 namespace RDK {
 
 // Глобальная коллекция шрифтов
-extern RDK_LIB_TYPE RDK::UBitmapFontCollection GlobalFonts;
+//extern RDK_LIB_TYPE RDK::UBitmapFontCollection GlobalFonts;
 //extern RDK_LIB_TYPE RDK::UELockVar<RDK::UBitmapFontCollection> GlobalFonts;
 
 // Очищает коллекцию глобальных шрифтов
