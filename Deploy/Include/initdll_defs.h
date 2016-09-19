@@ -1,6 +1,8 @@
 #ifndef INIT_DLL_DEFS_H
 #define INIT_DLL_DEFS_H
 
+#define RDK_CORE
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4100)
 #pragma warning(disable : 4355)

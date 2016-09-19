@@ -1,6 +1,8 @@
 #ifndef initlib_DEFS_H
 #define initlib_DEFS_H
 
+#define RDK_CORE
+
 #ifdef __BORLANDC__
 #define RDK_LIB_TYPE
 #define RDK_CALL

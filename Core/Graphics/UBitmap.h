@@ -799,6 +799,7 @@ int X,Y;
 // Конструкторы и деструкторы
 // --------------------------
 UBPoint(void);
+UBPoint(const UBPoint &copy);
 UBPoint(int x, int y);
 ~UBPoint(void);
 // --------------------------

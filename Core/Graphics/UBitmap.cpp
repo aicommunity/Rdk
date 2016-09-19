@@ -5095,6 +5095,12 @@ UBPoint::UBPoint(void)
  X=Y=0;
 }
 
+UBPoint::UBPoint(const UBPoint &copy)
+ : X(copy.X), Y(copy.Y)
+{
+}
+
+
 UBPoint::UBPoint(int x, int y)
 {
  X=x;
