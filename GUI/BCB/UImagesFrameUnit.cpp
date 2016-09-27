@@ -941,6 +941,8 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
  MouseClickComponents[0][0].first="Tracker";
  MouseClickComponents[0][0].second="MouseClickPoint";
 
+ if(!Core_IsChannelInit())
+  return;
  if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()))
  {
   const char *p=Model_GetComponentClassName(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str());

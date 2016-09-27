@@ -45,7 +45,7 @@ public:
 	void SetBool(bool value);
 	bool GetBool();
 	void SetString(String value);
-	String GetString();
+	const String& GetString() const;
 	void SetInt(int value);
 	int GetInt();
 	void SetDouble(double value);

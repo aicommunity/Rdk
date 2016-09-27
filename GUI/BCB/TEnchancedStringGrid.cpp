@@ -124,7 +124,7 @@ void TProperty::SetString(String value) {
 	m_value = value;
 }
 //---------------------------------------------------------------------------
-String TProperty::GetString() {
+const String& TProperty::GetString() const {
 	return m_value;
 }
 //---------------------------------------------------------------------------
@@ -364,8 +364,8 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 					cmbListEdit->Items->Clear();
 					for(size_t i = 0; i<vec->size();i++)
 					{
-					 String v=AnsiReplaceStr(vec->at(i), "\t", " ");
-						cmbListEdit->Items->Add(v);
+//					 String v=ReplaceStr(vec->at(i), "\t", " ");
+						cmbListEdit->Items->Add(vec->at(i));
 					}
 					cmbListEdit->Visible = True;
 					cmbListEdit->SetFocus();
@@ -379,8 +379,8 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 					{
 						if(BasicStringGrid->Cells[ACol][ARow]!="")
 							m_cellChanged=true;
-					 String v=AnsiReplaceStr(p.GetString(), "\t", " ");
-					 BasicStringGrid->Cells[ACol][ARow] = v;
+//					 String v=ReplaceStr(p.GetString(), "\t", " ");
+					 BasicStringGrid->Cells[ACol][ARow] = p.GetString();//v;
 					}
 				}
 			}
@@ -408,8 +408,13 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 							{
 								if(BasicStringGrid->Cells[ACol][ARow]!="")
 									m_cellChanged=true;
-							 String v=AnsiReplaceStr(p.GetString(), "\t", " ");
-							 BasicStringGrid->Cells[ACol][ARow] = v;
+//							 String v=p.GetString();//ReplaceStr(p.GetString(), "\t", " ");
+//							 for(int i=1;i<=v.Length();i++)
+//							 {
+//							  if(v[i] == L'\t')
+//							   v[i]=L' ';
+//							 }
+							 BasicStringGrid->Cells[ACol][ARow] = p.GetString();//v;//ReplaceStr(v, "\t", " ");//v;
 							}
 						}
 					break;
