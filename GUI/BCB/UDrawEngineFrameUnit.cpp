@@ -425,7 +425,7 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
 
   if(ComponentsListFrame)
    ComponentsListFrame->UpdateInterface();
-  UpdateInterface();
+  RDK::UIVisualControllerStorage::UpdateInterface();
  }
 }
 //---------------------------------------------------------------------------

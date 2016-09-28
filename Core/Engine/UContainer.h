@@ -407,8 +407,9 @@ const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<Name
 // find_all
 // false - искать в текущей компоненте
 // true -  искать в текущей компоненте и глубже
+// имена возвращются относительно уровня net
 template<class T>
-const vector<NameT>& GetComponentsNameByClassType(vector<NameT> &buffer, bool find_all=false);
+const vector<NameT>& GetComponentsNameByClassType(vector<NameT> &buffer, UEPtr<UContainer> net=0, bool find_all=false);
 // --------------------------
 
 public:
@@ -1032,11 +1033,15 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
 // false - искать в текущей компоненте
 // true -  искать в текущей компоненте и глубже
 template<class T>
-const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, bool find_all)
+const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, UEPtr<UContainer> net, bool find_all)
 {
  size_t numComp=GetNumComponents();
  UEPtr<UContainer> comp;
+ UEPtr<UContainer> root(net);
  string compName;
+
+ if(!net)
+  root=this;
 
  switch(find_all)
  {
@@ -1046,7 +1051,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
 	comp=GetComponentByIndex(i);
 	if(dynamic_pointer_cast<T>(comp))
 	{
-	 compName=comp->GetLongName(this, compName);
+	 compName=comp->GetLongName(root, compName);
 	 buffer.push_back(compName);
 	}
    }
@@ -1056,10 +1061,10 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
    for(size_t i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
-	comp->GetComponentsNameByClassType<T>(buffer, true);
+	comp->GetComponentsNameByClassType<T>(buffer, root, true);
 	if(dynamic_pointer_cast<T>(comp))
 	{
-	 compName=comp->GetLongName(this, compName);
+	 compName=comp->GetLongName(root, compName);
 	 buffer.push_back(compName);
 	}
    }

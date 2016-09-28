@@ -48,6 +48,10 @@ void TUImagesFrame::SetCellRes(int width, int height)
 // ”станавливает число €чеек
 void TUImagesFrame::SetNumCells(int width, int height)
 {
+ if(DrawGrid->ColCount == width && DrawGrid->RowCount == height &&
+	NumCols==width && NumRows==height && ComponentIndexes.size() == width &&
+    (ComponentIndexes.size()>0 && ComponentIndexes[0].size() == height))
+  return;
  DrawGrid->ColCount=NumCols=width;
  DrawGrid->RowCount=NumRows=height;
 
@@ -108,7 +112,10 @@ void TUImagesFrame::SetReflectionXFlag(bool value)
 // —в€зывает €чейку с идентификатором компонента
 void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, std::string index, int channel_id)
 {
- if(i <0 || j<0 || i>= i>= NumCols || j>= NumRows)
+ if(i <0 || j<0 || i>= NumCols || j>= NumRows)
+  return;
+
+ if(StringIds[i][j] == stringid && ComponentIndexes[i][j] == index)
   return;
 
  StringIds[i][j]=stringid;
