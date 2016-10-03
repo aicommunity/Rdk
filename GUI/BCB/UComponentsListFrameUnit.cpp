@@ -303,6 +303,10 @@ void TUComponentsListFrame::UpdateIO(void)
 {
  if(PageControl1->ActivePage != TabSheet3)
   return;
+
+ if(!Core_IsChannelInit())
+  return;
+
  UpdateInterfaceFlag=true;
 
  std::string output_names;
@@ -598,6 +602,10 @@ void TUComponentsListFrame::UpdateNiceStatesList(TEnchancedSG *frame)
 {
  if(PageControl1->ActivePage != TabSheet7)
   return;
+
+ if(!Core_IsChannelInit())
+  return;
+
  UpdateInterfaceFlag=true;
 
  std::string xml_data;
@@ -781,6 +789,8 @@ void TUComponentsListFrame::UpdateStatesList(void)
 // Обновляет длинные имена выбранных компонент
 void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
 {
+ if(!Core_IsChannelInit())
+  return;
  if(StringGrid->Row<1)
  {
   SelectedComponentName="";
@@ -1497,8 +1507,8 @@ void __fastcall TUComponentsListFrame::Reset1Click(TObject *Sender)
  if(stringcompid == "..")
   return;
 
- std::string stringid=GetCurrentComponentId();
- Env_Reset(stringid.c_str());
+// std::string stringid=GetCurrentComponentId();
+ Env_Reset(SelectedComponentName.c_str());
 
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -1506,53 +1516,29 @@ void __fastcall TUComponentsListFrame::Reset1Click(TObject *Sender)
 
 
 
-void __fastcall TUComponentsListFrame::ParametersListStringGridMouseEnter(TObject *Sender)
-
-{
-// ParametersListStringGrid->SetFocus();
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StringGridMouseEnter(TObject *Sender)
 {
- StringGrid->SetFocus();
+// StringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUComponentsListFrame::StatesListStringGridMouseEnter(TObject *Sender)
-
-{
-// StatesListStringGrid->SetFocus();
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::OutputsStringGridMouseEnter(TObject *Sender)
 
 {
- OutputsStringGrid->SetFocus();
+// OutputsStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::InputsStringGridMouseEnter(TObject *Sender)
 
 {
- InputsStringGrid->SetFocus();
+// InputsStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUComponentsListFrame::ParameterValueRichEditMouseEnter(TObject *Sender)
 
-{
-// ParameterValueRichEdit->SetFocus();
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TUComponentsListFrame::StateValueRichEditMouseEnter(TObject *Sender)
-
-{
-// StateValueRichEdit->SetFocus();
-}
-//---------------------------------------------------------------------------
 
 
 void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridDrawCell(TObject *Sender,
@@ -1636,7 +1622,7 @@ void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl
 void __fastcall TUComponentsListFrame::NiceParamValRichEditMouseEnter(TObject *Sender)
 
 {
- NiceParamValRichEdit->SetFocus();
+// NiceParamValRichEdit->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -1691,7 +1677,7 @@ void __fastcall TUComponentsListFrame::NiceStateValRichEditChange(TObject *Sende
 void __fastcall TUComponentsListFrame::NiceStateValRichEditMouseEnter(TObject *Sender)
 
 {
- NiceStateValRichEdit->SetFocus();
+// NiceStateValRichEdit->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -1761,21 +1747,21 @@ if(EnchancedSG2->BasicStringGrid->Row<0 || EnchancedSG2->BasicStringGrid->Row>=E
 
 void __fastcall TUComponentsListFrame::EnchancedSG2MouseEnter(TObject *Sender)
 {
- EnchancedSG2->SetFocus();
+// EnchancedSG2->SetFocus();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridMouseEnter(TObject *Sender)
 
 {
- EnchancedSG1->BasicStringGrid->SetFocus();
+// EnchancedSG1->BasicStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridMouseEnter(TObject *Sender)
 
 {
- EnchancedSG2->BasicStringGrid->SetFocus();
+// EnchancedSG2->BasicStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -2090,8 +2076,8 @@ void __fastcall TUComponentsListFrame::Calculate1Click(TObject *Sender)
  if(stringcompid == "..")
   return;
 
- std::string stringid=GetCurrentComponentId();
- Env_Calculate(stringid.c_str());
+// std::string stringid=GetCurrentComponentId();
+ Env_Calculate(SelectedComponentName.c_str());
 
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -2127,4 +2113,54 @@ void __fastcall TUComponentsListFrame::CopylongnametoClipboard1Click(TObject *Se
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridClick(TObject *Sender)
+
+{
+ NiceParamValRichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridClick(TObject *Sender)
+
+{
+ NiceStateValRichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::FrameMouseWheel(TObject *Sender, TShiftState Shift,
+		  int WheelDelta, TPoint &MousePos, bool &Handled)
+{
+ TControl* control=ControlAtPos(MousePos, false);
+ if(control == EnchancedSG1->BasicStringGrid || control == StringGrid ||
+	control == EnchancedSG2->BasicStringGrid)
+ {
+  control->Perform(WM_VSCROLL, SB_BOTTOM, 0);
+ }
+/* TRect sg_rect=StringGrid->BoundsRect;
+ sg_rect.Top=StringGrid->Top;
+ sg_rect.Left=StringGrid->Left;
+ TRect nice_params_sg_rect=EnchancedSG1->BasicStringGrid->BoundsRect;
+ nice_params_sg_rect.Top=EnchancedSG1->BasicStringGrid->Top;
+ nice_params_sg_rect.Left=EnchancedSG1->BasicStringGrid->Left;
+ TRect nice_states_sg_rect=EnchancedSG2->BasicStringGrid->BoundsRect;
+ nice_states_sg_rect.Top=EnchancedSG2->BasicStringGrid->Top;
+ nice_states_sg_rect.Left=EnchancedSG2->BasicStringGrid->Left;
+ if(PtInRect(sg_rect, MousePos))
+ {
+  StringGrid->Perform(WM_VSCROLL, SB_BOTTOM, 0);
+ }
+ else
+ if(PtInRect(nice_params_sg_rect, MousePos))
+ {
+  EnchancedSG1->BasicStringGrid->Perform(WM_VSCROLL, SB_BOTTOM, 0);
+ }
+ else
+ if(PtInRect(nice_states_sg_rect, MousePos))
+ {
+  EnchancedSG2->BasicStringGrid->Perform(WM_VSCROLL, SB_BOTTOM, 0);
+ }   */
+ //
+}
+//---------------------------------------------------------------------------
 

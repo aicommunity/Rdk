@@ -1,6 +1,7 @@
 inherited UComponentsListFrame: TUComponentsListFrame
   Width = 755
   Height = 567
+  OnMouseWheel = FrameMouseWheel
   OnResize = FrameResize
   ExplicitWidth = 755
   ExplicitHeight = 567
@@ -53,6 +54,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             FixedCols = 1
             RowCount = 2
             FixedRows = 1
+            OnClick = EnchancedSG1BasicStringGridClick
             OnDblClick = EnchancedSG1BasicStringGridDblClick
             OnDrawCell = EnchancedSG1BasicStringGridDrawCell
             OnKeyPress = EnchancedSG1BasicStringGridKeyPress
@@ -274,6 +276,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             FixedCols = 1
             RowCount = 2
             FixedRows = 1
+            OnClick = EnchancedSG2BasicStringGridClick
             OnDblClick = EnchancedSG2BasicStringGridDblClick
             OnDrawCell = EnchancedSG2BasicStringGridDrawCell
             OnKeyPress = EnchancedSG2BasicStringGridKeyPress
@@ -348,10 +351,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239

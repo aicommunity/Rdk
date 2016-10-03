@@ -102,13 +102,9 @@ __published:	// IDE-managed Components
 	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall StringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
 	void __fastcall Reset1Click(TObject *Sender);
-	void __fastcall ParametersListStringGridMouseEnter(TObject *Sender);
 	void __fastcall StringGridMouseEnter(TObject *Sender);
-	void __fastcall StatesListStringGridMouseEnter(TObject *Sender);
 	void __fastcall OutputsStringGridMouseEnter(TObject *Sender);
 	void __fastcall InputsStringGridMouseEnter(TObject *Sender);
-	void __fastcall ParameterValueRichEditMouseEnter(TObject *Sender);
-	void __fastcall StateValueRichEditMouseEnter(TObject *Sender);
 	void __fastcall EnchancedSG1BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow,
           TRect &Rect, TGridDrawState State);
 	void __fastcall HeaderControl2SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
@@ -146,6 +142,10 @@ __published:	// IDE-managed Components
 	void __fastcall CopynametoClipboard1Click(TObject *Sender);
 	void __fastcall CopyclasstoClipboard2Click(TObject *Sender);
 	void __fastcall CopylongnametoClipboard1Click(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridClick(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridClick(TObject *Sender);
+	void __fastcall FrameMouseWheel(TObject *Sender, TShiftState Shift, int WheelDelta,
+          TPoint &MousePos, bool &Handled);
 
 
 
