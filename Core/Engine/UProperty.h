@@ -163,8 +163,15 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
    if(xml->GetNodeName() != GetName())
 	return false;
    operator >> (*xml,temp);
-   SetData(temp);
-   xml->SelectUp();
+   try
+   {
+	SetData(temp);
+	xml->SelectUp();
+   }
+   catch(...)
+   {
+	xml->SelectUp();
+   }
    return true;
   }
   else
@@ -172,8 +179,15 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
    if(!xml->SelectNode(GetName()))
 	return false;
    operator >> (*xml,temp);
-   SetData(temp);
-   xml->SelectUp();
+   try
+   {
+	SetData(temp);
+	xml->SelectUp();
+   }
+   catch(...)
+   {
+	xml->SelectUp();
+   }
    return true;
   }
  }

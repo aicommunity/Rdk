@@ -2132,8 +2132,17 @@ void __fastcall TUComponentsListFrame::FrameMouseWheel(TObject *Sender, TShiftSt
 		  int WheelDelta, TPoint &MousePos, bool &Handled)
 {
  TControl* control=ControlAtPos(MousePos, false);
- if(control == EnchancedSG1->BasicStringGrid || control == StringGrid ||
-	control == EnchancedSG2->BasicStringGrid)
+ if(control == EnchancedSG1->BasicStringGrid)
+ {
+  control->Perform(WM_VSCROLL, SB_BOTTOM, 0);
+ }
+ else
+ if(control == StringGrid)
+ {
+  control->Perform(WM_VSCROLL, SB_BOTTOM, 0);
+ }
+ else
+ if(control == EnchancedSG2->BasicStringGrid)
  {
   control->Perform(WM_VSCROLL, SB_BOTTOM, 0);
  }
