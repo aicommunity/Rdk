@@ -30,7 +30,7 @@ MDVector(T xv, T yv, T zv, T dv);
 MDVector(const MDVector<T> &copy);
 MDVector(const MDMatrix<T> &copy);
 //MDVector(int size, const T* data);
-~MDVector(void);
+virtual ~MDVector(void);
 // --------------------------
 
 // -----------------------------------
@@ -118,12 +118,12 @@ MDVector<T>::MDVector(const MDMatrix<T> &copy)
 
 // template<class T>
 // MDVector<T>::MDVector(int size, const T* data)
-// { 
+// {
 // 	 MDMatrix<T>::Resize(size,1);
 // 	 MDMatrix<T>::operator = (data);
-// 	//*copy=data; 
+// 	//*copy=data;
 // };
- 
+
 template<class T>
 MDVector<T>::~MDVector(void) {};
 // --------------------------

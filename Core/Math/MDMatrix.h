@@ -43,7 +43,7 @@ MDMatrix(int rows, int cols);
 MDMatrix(int rows, int cols, T defvalue);
 MDMatrix(const MDMatrix<T> &copy);
 MDMatrix(int rows, int cols, const T* data);
-~MDMatrix();
+virtual ~MDMatrix();
 // --------------------------
 
 // --------------------------
