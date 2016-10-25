@@ -4,6 +4,9 @@
 
 #include "../UGenericMutex.h"
 #include <QReadWriteLock>
+#include <QMutex>
+#include <QWaitCondition>
+#include <QAtomicInt>
 
 class RDK_LIB_TYPE UGenericMutexQt: public UGenericMutex
 {
@@ -31,7 +34,17 @@ UGenericMutexQt::UGenericMutexQt() : m_mutex(QReadWriteLock::Recursive)
 
 UGenericMutexQt::~UGenericMutexQt()
 {
-    //mutex.unlock();
+    //m_mutex.unlock();
+    //m_mutex.try
+
+    /*try
+    {
+        m_mutex.unlock();
+    }
+    catch(...)
+    {
+
+    }*/
 }
 
 bool UGenericMutexQt::wait(int timeout)
@@ -45,7 +58,8 @@ bool UGenericMutexQt::wait(int timeout)
 
 bool UGenericMutexQt::shared_lock(void)
 {
-    return m_mutex.tryLockForRead();
+    m_mutex.lockForRead();
+    return true;
 }
 
 bool UGenericMutexQt::shared_unlock(void)
@@ -56,7 +70,8 @@ bool UGenericMutexQt::shared_unlock(void)
 
 bool UGenericMutexQt::exclusive_lock(void)
 {
-    return m_mutex.tryLockForWrite();
+    m_mutex.lockForWrite();
+    return true;
 }
 
 bool UGenericMutexQt::exclusive_unlock(void)
@@ -70,38 +85,53 @@ bool UGenericMutexQt::exclusive_unlock(void)
 class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
 {
 protected:
+    QMutex mutex;
+    QWaitCondition condition;
+    QAtomicInt isLocked;
 
 public:
-UGenericEventQt();
-virtual ~UGenericEventQt();
+    UGenericEventQt();
+    virtual ~UGenericEventQt();
 
-virtual bool set(void);
-virtual bool reset(void);
-virtual bool wait(unsigned wait_time);
+    virtual bool set(void);
+    virtual bool reset(void);
+    virtual bool wait(unsigned wait_time);
 };
 
-UGenericEventQt::UGenericEventQt()
+UGenericEventQt::UGenericEventQt():mutex(QMutex::NonRecursive)
 {
+    set();
+    isLocked = 0;
 }
 
 UGenericEventQt::~UGenericEventQt()
 {
-
+    if(isLocked) mutex.unlock();
 }
 
 bool UGenericEventQt::set(void)
 {
- return true; // TODO:
+    condition.wakeAll();
+    if(isLocked)
+    {
+        mutex.unlock();
+        isLocked = 0;
+    }
+    return true;
 }
 
 bool UGenericEventQt::reset(void)
 {
- return true; // TODO:
+    mutex.lock();
+    isLocked = 1;
+ return true;
 }
 
 bool UGenericEventQt::wait(unsigned wait_time)
 {
- return true; // TODO:
+    if(isLocked)
+        return condition.wait(&mutex, wait_time);
+    else return false;
 }
 
 // ---------------------------------------------------------------------------
