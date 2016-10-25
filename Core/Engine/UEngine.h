@@ -397,6 +397,9 @@ virtual int Env_Calculate(const char* stringid=0);
 // Расчет всей модели в реальном времени
 virtual int Env_RTCalculate(void);
 
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+virtual int Env_FastCalculate(double calc_interval);
+
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели

@@ -1288,6 +1288,21 @@ int RDK_CALL MEnv_RTCalculate(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_RTCalculate();
 }
 
+
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+int RDK_CALL Env_FastCalculate(double calc_interval)
+{
+ return RdkCoreManager.GetEngineLock()->Env_FastCalculate(calc_interval);
+}
+
+int RDK_CALL MEnv_FastCalculate(int channel_index, double calc_interval)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_FastCalculate(calc_interval);
+}
+
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели
