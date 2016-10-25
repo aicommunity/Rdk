@@ -32,7 +32,7 @@ MVector(T xv, T yv, T zv, T dv);
 MVector(const MVector<T,Rows> &copy);
 MVector(const MMatrix<T,Rows,1> &copy);
 //MVector(const T* data);
-~MVector(void);
+virtual ~MVector(void);
 // --------------------------
 
 // -----------------------------------

@@ -1,6 +1,8 @@
 inherited UComponentsListFrame: TUComponentsListFrame
   Width = 755
   Height = 567
+  DoubleBuffered = True
+  ParentDoubleBuffered = False
   OnMouseWheel = FrameMouseWheel
   OnResize = FrameResize
   ExplicitWidth = 755

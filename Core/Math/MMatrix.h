@@ -57,7 +57,7 @@ MMatrix(const MDMatrix<T> &copy);
 MMatrix(const MMatrix<T,Rows,Cols> &copy);
 MMatrix(const T data[Rows][Cols]);
 MMatrix(const T* data);
-~MMatrix(void);
+virtual ~MMatrix(void);
 // --------------------------
 
 // -----------------------------------

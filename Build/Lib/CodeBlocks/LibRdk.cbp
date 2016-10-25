@@ -114,6 +114,8 @@
 		<Unit filename="../../../Core/Engine/ULocalProperty.h" />
 		<Unit filename="../../../Core/Engine/ULogger.cpp" />
 		<Unit filename="../../../Core/Engine/ULogger.h" />
+		<Unit filename="../../../Core/Engine/ULoggerEnv.cpp" />
+		<Unit filename="../../../Core/Engine/ULoggerEnv.h" />
 		<Unit filename="../../../Core/Engine/UModule.cpp" />
 		<Unit filename="../../../Core/Engine/UModule.h" />
 		<Unit filename="../../../Core/Engine/UNet.cpp" />
@@ -206,6 +208,8 @@
 		<Unit filename="../../../Core/Serialize/UXMLStdSerialize.h" />
 		<Unit filename="../../../Core/System/Gcc/UGenericMutex.gcc.cpp" />
 		<Unit filename="../../../Core/System/Gcc/USharedMemoryLoader.gcc.cpp" />
+		<Unit filename="../../../Core/System/Gcc/pevents.cpp" />
+		<Unit filename="../../../Core/System/Gcc/pevents.h" />
 		<Unit filename="../../../Core/System/Gcc/rdk_system.gcc.cpp" />
 		<Unit filename="../../../Core/System/UGenericMutex.cpp" />
 		<Unit filename="../../../Core/System/UGenericMutex.h" />

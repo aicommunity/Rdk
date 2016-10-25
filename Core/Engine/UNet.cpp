@@ -680,8 +680,6 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
   if(!cont || !serstorage)
    return 1;
 
-  std::string name;
-
   const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
@@ -696,7 +694,51 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
    }
    catch(UIProperty::EPropertyError &exception)
    {
-	cont->ProcessException(exception);
+	std::string value("<ZeroPtr>");
+	if(serstorage)
+	{
+	 value=serstorage->GetNodeText();
+	 if(value.empty())
+	  serstorage->SaveFromNode(value);
+	}
+
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+   }
+   catch(UException &exception)
+   {
+	std::string value("<ZeroPtr>");
+	if(serstorage)
+	{
+	 value=serstorage->GetNodeText();
+	 if(value.empty())
+	  serstorage->SaveFromNode(value);
+	}
+
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+   }
+   catch(std::exception &exception)
+   {
+	std::string value("<ZeroPtr>");
+	if(serstorage)
+	{
+	 value=serstorage->GetNodeText();
+	 if(value.empty())
+	  serstorage->SaveFromNode(value);
+	}
+
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+   }
+   catch(...)
+   {
+	std::string value("<ZeroPtr>");
+	if(serstorage)
+	{
+	 value=serstorage->GetNodeText();
+	 if(value.empty())
+	  serstorage->SaveFromNode(value);
+	}
+
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: Undefined exception"));
    }
    ++I;
   }
