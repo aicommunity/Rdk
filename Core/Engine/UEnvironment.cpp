@@ -38,7 +38,7 @@ UEnvironment::UEnvironment(void)
  Storage=0;
  StoragePresent=false;
 
- MaxModelDuration=100;
+ MaxModelDuration=1000;
 
  // Текущий компонент модели
 // CurrentComponent=0;
@@ -53,6 +53,8 @@ UEnvironment::UEnvironment(void)
  LastStepStartTime=0;
 
  RTModelCalcTime=0.0;
+ MaxCalcTime=0.0;
+ CalcFinishedFlag=false;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -145,6 +147,23 @@ bool UEnvironment::SetMinInterstepsInterval(long long value)
  MinInterstepsInterval = value;
  return true;
 }
+
+/// Максимальное время расчета модели (сек)
+/// если 0 - то не ограничено
+UTime UEnvironment::GetMaxCalcTime(void) const
+{
+ return MaxCalcTime;
+}
+
+bool UEnvironment::SetMaxCalcTime(UTime value)
+{
+ if(value<0)
+  return false;
+ MaxCalcTime=value;
+ return true;
+}
+
+
 /*
 /// Флаг включения режима отладки
 bool UEnvironment::GetDebugMode(void) const
@@ -554,6 +573,8 @@ void UEnvironment::IncreaseModelTimeByStep(void)
  }
 
  Time.IncreaseModelTimeByStep(GetModel()->GetTimeStep());
+ if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
+  CalcFinishedFlag=true;
 }
 // --------------------------
 
@@ -612,6 +633,12 @@ bool UEnvironment::DestroyStructure(void)
  return true;
 }
 
+/// Флаг, выставляемый если достигнут конец расчета (по MaxCalcTime)
+bool UEnvironment::IsCalcFinished(void) const
+{
+ return CalcFinishedFlag;
+}
+
 // Расчет модели в реальном времени
 void UEnvironment::RTCalculate(void)
 {
@@ -621,6 +648,8 @@ void UEnvironment::RTCalculate(void)
   return;
  }
 
+ if(IsCalcFinished())
+  return;
  Build();
 
  CurrentTime=GetCurrentStartupTime();
@@ -670,6 +699,11 @@ void UEnvironment::RTCalculate(void)
 
   ++i;
   curtime=GetCurrentStartupTime();
+  if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
+  {
+   CalcFinishedFlag=true;
+   break;
+  }
  }
 
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
@@ -682,8 +716,84 @@ void UEnvironment::RTCalculate(void)
  ProcEndTime=GetCurrentStartupTime();
  double model_stop_calc_time=Time.GetDoubleTime();
  RTModelCalcTime=model_stop_calc_time-model_start_calc_time;
+}
 
- return;
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+void UEnvironment::FastCalculate(UTime calc_interval)
+{
+ if(!IsInit())
+ {
+  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  return;
+ }
+
+ if(IsCalcFinished())
+  return;
+ Build();
+
+ CurrentTime=GetCurrentStartupTime();
+ Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
+
+ // Если первый шаг расчета после Reset
+ if(Time.GetTime() == 0)
+ {
+  Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
+  Time.SetSourceStartGlobalTime(Time.GetSourceCurrentGlobalTime());
+  StartupTime=CurrentTime;
+  ProcEndTime=StartupTime;
+ }
+
+
+ unsigned long long curtime;
+ unsigned long long timer_interval=0;
+ //double devicemodeltime=0;
+
+ timer_interval=CalcDiffTime(GetCurrentStartupTime(),ProcEndTime);
+ if(timer_interval<=0)
+  timer_interval=1;
+
+ int i=0;
+ if(LastDuration < timer_interval)
+  LastDuration=timer_interval;
+ double model_duration=calc_interval*1000.0;
+ double model_start_calc_time=Time.GetDoubleTime();
+
+ if(model_duration>MaxModelDuration)
+  model_duration=MaxModelDuration;
+
+ int elapsed_counter=0;
+ if(model_duration>0)
+ {
+  elapsed_counter=int((model_duration*Model->GetTimeStep())/1000);
+ }
+ else
+ {
+  elapsed_counter=0;
+ }
+
+ while(i<elapsed_counter)
+ {
+  Calculate();
+
+  ++i;
+  if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
+  {
+   CalcFinishedFlag=true;
+   break;
+  }
+ }
+ curtime=GetCurrentStartupTime();
+
+ if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
+ {
+  Sleep(int(Time.GetDoubleTime()*1000-Time.GetRealTime()/1000));
+  Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
+ }
+
+ LastDuration=CalcDiffTime(GetCurrentStartupTime(),CurrentTime);
+ ProcEndTime=GetCurrentStartupTime();
+ double model_stop_calc_time=Time.GetDoubleTime();
+ RTModelCalcTime=model_stop_calc_time-model_start_calc_time;
 }
 // --------------------------
 
@@ -1118,6 +1228,7 @@ bool UEnvironment::ABuild(void)
 // Сброс процесса счета.
 bool UEnvironment::AReset(void)
 {
+ CalcFinishedFlag=false;
  StartupTime=0;
  ProcEndTime=StartupTime;
  LastDuration=1;
@@ -1177,6 +1288,9 @@ bool UEnvironment::ACalculate(void)
 
  // Проверяем, достаточно ли велик интервал времени между итерациями счета
  if(MinInterstepsInterval>0 && CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
+  return true;
+
+ if(IsCalcFinished())
   return true;
 
  LastStepStartTime=cur_time;

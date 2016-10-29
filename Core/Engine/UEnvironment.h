@@ -41,6 +41,10 @@ std::string SystemDir;
 /// Минимальный интервал времени между итерациями счета (мс)
 ULongTime MinInterstepsInterval;
 
+/// Максимальное время расчета модели (сек)
+/// если 0 - то не ограничено
+UTime MaxCalcTime;
+
 protected: // Состояния
 // Флаг состояния инициализации
 // true - хранилище готово к использованию
@@ -99,6 +103,8 @@ double RTModelCalcTime;
 /// Экземпляр класса для логирования
 mutable UEPtr<ULoggerEnv> Logger;
 
+/// Флаг, выставляемый если достигнут конец расчета (по MaxCalcTime)
+bool CalcFinishedFlag;
 
 public: // Public methods
 // --------------------------
@@ -131,6 +137,11 @@ void SetSystemDir(const std::string& dir);
 /// Минимальный интервал времени между итерациями счета (мс)
 long long GetMinInterstepsInterval(void) const;
 bool SetMinInterstepsInterval(long long value);
+
+/// Максимальное время расчета модели (сек)
+/// если 0 - то не ограничено
+UTime GetMaxCalcTime(void) const;
+bool SetMaxCalcTime(UTime value);
 
 /// Флаг включения режима отладки
 //bool GetDebugMode(void) const;
@@ -270,8 +281,15 @@ virtual bool CreateStructure(void);
 // Уничтожает текущую модель обработки
 virtual bool DestroyStructure(void);
 
+/// Флаг, выставляемый если достигнут конец расчета (по MaxCalcTime)
+bool IsCalcFinished(void) const;
+
 // Расчет модели в реальном времени
 virtual void RTCalculate(void);
+
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+virtual void FastCalculate(UTime calc_interval);
+
 // --------------------------
 
 // --------------------------

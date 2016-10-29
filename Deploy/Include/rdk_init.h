@@ -420,6 +420,10 @@ RDK_LIB_TYPE int RDK_CALL MEnv_CalculateUnsafe(int channel_index, const char* st
 RDK_LIB_TYPE int RDK_CALL Env_RTCalculate(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_RTCalculate(int channel_index);
 
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+RDK_LIB_TYPE int RDK_CALL Env_FastCalculate(double calc_interval);
+RDK_LIB_TYPE int RDK_CALL MEnv_FastCalculate(int channel_index, double calc_interval);
+
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели
