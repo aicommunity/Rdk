@@ -132,7 +132,8 @@ SOURCES += \
     ../../../Core/Application/URpcDispatcherQueues.cpp \
     ../../../Core/Application/UServerControl.cpp \
     ../../../Core/Application/UServerTransport.cpp \
-    ../../../Core/Application/UServerTransportTcp.cpp
+    ../../../Core/Application/UServerTransportTcp.cpp \
+    ../../../Core/System/Gcc/pevents.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
