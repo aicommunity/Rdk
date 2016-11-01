@@ -277,6 +277,31 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2
 // --------------------------
 };
 
+// --------------------------
+// Методы доступа к свойствам
+// --------------------------
+template<typename T>
+ULinksListT<T>& UNet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
+{
+ GetLinks(const_cast<UNet*>(this), linkslist, netlevel, exclude_internals, internal_level);
+
+ return linkslist;
+}
+
+// Возращает все связи между двумя компонентами в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+template<typename T>
+ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel)
+{
+ GetPersonalLinks(const_cast<UNet*>(this), cont, linkslist, netlevel);
+
+ return linkslist;
+}
+// --------------------------
+
 // ----------------------
 // Методы управления компонентами верхнего уровня
 // ----------------------
