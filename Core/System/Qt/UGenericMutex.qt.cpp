@@ -85,9 +85,9 @@ bool UGenericMutexQt::exclusive_unlock(void)
 class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
 {
 protected:
-    QMutex mutex;
+    //QMutex mutex;
     QWaitCondition condition;
-    QAtomicInt isLocked;
+    QAtomicInt isReseted;
 
 public:
     UGenericEventQt();
@@ -98,40 +98,41 @@ public:
     virtual bool wait(unsigned wait_time);
 };
 
-UGenericEventQt::UGenericEventQt():mutex(QMutex::NonRecursive)
+UGenericEventQt::UGenericEventQt()
 {
-    set();
-    isLocked = 0;
+    isReseted = 0;
 }
 
 UGenericEventQt::~UGenericEventQt()
 {
-    if(isLocked) mutex.unlock();
+
 }
 
 bool UGenericEventQt::set(void)
 {
     condition.wakeAll();
-    if(isLocked)
-    {
-        mutex.unlock();
-        isLocked = 0;
-    }
+    //isReseted = 0;
     return true;
 }
 
 bool UGenericEventQt::reset(void)
 {
-    mutex.lock();
-    isLocked = 1;
- return true;
+    isReseted = 1;
+    return true;
 }
 
 bool UGenericEventQt::wait(unsigned wait_time)
 {
-    if(isLocked)
-        return condition.wait(&mutex, wait_time);
-    else return false;
+    if(!isReseted) return false;
+    QMutex mutex;
+    mutex.lock();
+    bool b = condition.wait(&mutex, wait_time);
+    if(b)
+    {
+        isReseted = 0;
+    }
+    mutex.unlock();
+    return b;
 }
 
 // ---------------------------------------------------------------------------

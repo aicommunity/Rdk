@@ -11,6 +11,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QTime>
 #include <QtCore/QMutex>
+#include <QtCore/QDateTime>
 
 namespace RDK {
 
@@ -47,7 +48,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 /// Возвращает локальное время в днях (с точностью до миллисекунд) от начала времен
 double GetVariantLocalTime(void)
 {
- return 0.0;
+    return static_cast<double>(QDateTime::currentMSecsSinceEpoch())/86400000.0;
 // TODO:
 }
 
