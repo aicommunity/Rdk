@@ -16,11 +16,11 @@ typedef T value_type;
 union
 {
  T* Data;
- T* Data1D;
+/* T* Data1D;
  struct
  {
   T x,y,z,d;
- };
+ };*/
  double *Double;
  int *Int;
  unsigned char *UChar;
@@ -537,13 +537,13 @@ int MDMatrix<T>::GetRows(void) const
 template<class T>
 T& MDMatrix<T>::operator [] (int i)
 {
- return Data1D[i];
+ return Data[i];
 }
 
 template<class T>
 const T& MDMatrix<T>::operator [] (int i) const
 {
- return Data1D[i];
+ return Data[i];
 }
 
 template<class T>

@@ -274,10 +274,10 @@ std::string UDrawEngine::FindComponent(int x, int y)
 
  for(;I != J;++I)
  {
-//  double dist=sqrt(double((x-I->second.Position.x)*(x-I->second.Position.x)+(y-I->second.Position.y)*(y-I->second.Position.y)));
+//  double dist=sqrt(double((x-I->second.Position[0])*(x-I->second.Position[0])+(y-I->second.Position[1])*(y-I->second.Position[1])));
 
 //  name=I->first;
-  if(abs(int(x-I->second.Position.x))<=I->second.Width && abs(int(y-I->second.Position.y))<=I->second.Height)
+  if(abs(int(x-I->second.Position[0]))<=I->second.Width && abs(int(y-I->second.Position[1]))<=I->second.Height)
 //  if(dist<=I->second.Height)// Заглушка!!
    return I->first;
  }
@@ -294,11 +294,11 @@ void UDrawEngine::MoveComponent(const string &name, int x, int y)
   return;
  UGEDescription &descr=I->second;
 
- if(fabs(descr.Position.x-x)>BackgroundLineStep)
-  descr.Position.x+=(int(x-descr.Position.x)/BackgroundLineStep)*BackgroundLineStep;
+ if(fabs(descr.Position[0]-x)>BackgroundLineStep)
+  descr.Position[0]+=(int(x-descr.Position[0])/BackgroundLineStep)*BackgroundLineStep;
 
- if(fabs(descr.Position.y-y)>BackgroundLineStep)
-  descr.Position.y+=(int(y-descr.Position.y)/BackgroundLineStep)*BackgroundLineStep;
+ if(fabs(descr.Position[1]-y)>BackgroundLineStep)
+  descr.Position[1]+=(int(y-descr.Position[1])/BackgroundLineStep)*BackgroundLineStep;
 }
 
 // Обновляет размеры всех элементов в соответствии с размерами по умолчанию
@@ -574,8 +574,8 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
 
  // Отрисовываем индикаторы
  for(size_t i=0;i<ndescr.Indicators.size();i++)
-  PaintIndicator(int(ndescr.Position.x) - ndescr.Width,
-		int(ndescr.Position.y) + ndescr.Height + ndescr.ContourWidth, ndescr.Width * 2,
+  PaintIndicator(int(ndescr.Position[0]) - ndescr.Width,
+		int(ndescr.Position[1]) + ndescr.Height + ndescr.ContourWidth, ndescr.Width * 2,
 		ndescr.Height / 2, ndescr.Indicators[i], 1, (i<FullIndicatorColors.size())?FullIndicatorColors[i]:BackgroundColor,
 		(i<EmptyIndicatorColors.size())?EmptyIndicatorColors[i]:BackgroundColor);
 
@@ -587,10 +587,10 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
   font_color=ndescr.InactiveFontColor;
 
  GEngine->SetPenColor(font_color);
-// GEngine->Text(ndescr.Header,int(ndescr.Position.x+ndescr.Radius*1.5),static_cast<int>(int(ndescr.Position.y)-ndescr.Radius/2));
+// GEngine->Text(ndescr.Header,int(ndescr.Position[0]+ndescr.Radius*1.5),static_cast<int>(int(ndescr.Position[1])-ndescr.Radius/2));
  UBRect rect;
- rect.X=int(ndescr.Position.x)-(ndescr.Width-2);
- rect.Y=int(ndescr.Position.y)-ndescr.Height;
+ rect.X=int(ndescr.Position[0])-(ndescr.Width-2);
+ rect.Y=int(ndescr.Position[1])-ndescr.Height;
  rect.Width=(ndescr.Width-2)*2;
  rect.Height=ndescr.Height;
  UAFont *font=GEngine->GetFont();
@@ -620,7 +620,7 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
  if (ndescr.ContourColor == ndescr.FillColor)
  {
   GEngine->SetPenColor(ndescr.ContourColor);
-  GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, true);
+  GEngine->Rect(int(int(ndescr.Position[0]))-ndescr.Width, int(int(ndescr.Position[1]))-ndescr.Height, int(int(ndescr.Position[0]))+ndescr.Width, int(int(ndescr.Position[1]))+ndescr.Height, true);
  }
  else
  {
@@ -639,16 +639,16 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
 
   if (ndescr.Highlight)
   {
-   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, false);
+   GEngine->Rect(int(int(ndescr.Position[0]))-ndescr.Width, int(int(ndescr.Position[1]))-ndescr.Height, int(int(ndescr.Position[0]))+ndescr.Width, int(int(ndescr.Position[1]))+ndescr.Height, false);
    GEngine->SetPenColor(selected_color);
-   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width+shift, int(int(ndescr.Position.y))-ndescr.Height+shift, int(int(ndescr.Position.x))+ndescr.Width-ndescr.ContourWidth, int(int(ndescr.Position.y))+ndescr.Height-ndescr.ContourWidth, true);
+   GEngine->Rect(int(int(ndescr.Position[0]))-ndescr.Width+shift, int(int(ndescr.Position[1]))-ndescr.Height+shift, int(int(ndescr.Position[0]))+ndescr.Width-ndescr.ContourWidth, int(int(ndescr.Position[1]))+ndescr.Height-ndescr.ContourWidth, true);
   }
   else
   {
    GEngine->SetPenColor(ndescr.ContourColor);
-   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, false);
+   GEngine->Rect(int(int(ndescr.Position[0]))-ndescr.Width, int(int(ndescr.Position[1]))-ndescr.Height, int(int(ndescr.Position[0]))+ndescr.Width, int(int(ndescr.Position[1]))+ndescr.Height, false);
    GEngine->SetPenColor(common_color);
-   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width+shift, int(int(ndescr.Position.y))-ndescr.Height+shift, int(int(ndescr.Position.x))+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Height-ndescr.ContourWidth, true);
+   GEngine->Rect(int(int(ndescr.Position[0]))-ndescr.Width+shift, int(int(ndescr.Position[1]))-ndescr.Height+shift, int(int(ndescr.Position[0]))+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position[1])+ndescr.Height-ndescr.ContourWidth, true);
   }
  }
 }
@@ -667,7 +667,7 @@ void UDrawEngine::PaintNet(UGEDescription &ndescr)
  if (ndescr.ContourColor == ndescr.FillColor)
  {
   GEngine->SetPenColor(ndescr.ContourColor);
-  GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, true);
+  GEngine->Rect(int(int(ndescr.Position[0]))-ndescr.Width, int(int(ndescr.Position[1]))-ndescr.Height, int(int(ndescr.Position[0]))+ndescr.Width, int(int(ndescr.Position[1]))+ndescr.Height, true);
  }
  else
  {
@@ -686,16 +686,16 @@ void UDrawEngine::PaintNet(UGEDescription &ndescr)
 
   if (ndescr.Highlight)
   {
-   GEngine->Rect(int(ndescr.Position.x)-ndescr.Width, int(ndescr.Position.y)-ndescr.Height, int(ndescr.Position.x)+ndescr.Width, int(ndescr.Position.y)+ndescr.Height, false);
+   GEngine->Rect(int(ndescr.Position[0])-ndescr.Width, int(ndescr.Position[1])-ndescr.Height, int(ndescr.Position[0])+ndescr.Width, int(ndescr.Position[1])+ndescr.Height, false);
    GEngine->SetPenColor(SelectedColor);
-   GEngine->Rect(int(ndescr.Position.x)-ndescr.Width+shift, int(ndescr.Position.y)-ndescr.Height+shift, int(ndescr.Position.x)+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Height-ndescr.ContourWidth, true);
+   GEngine->Rect(int(ndescr.Position[0])-ndescr.Width+shift, int(ndescr.Position[1])-ndescr.Height+shift, int(ndescr.Position[0])+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position[1])+ndescr.Height-ndescr.ContourWidth, true);
   }
   else
   {
    GEngine->SetPenColor(ndescr.ContourColor);
-   GEngine->Rect(int(ndescr.Position.x)-ndescr.Width, int(ndescr.Position.y)-ndescr.Height, int(ndescr.Position.x)+ndescr.Width, int(ndescr.Position.y)+ndescr.Height, false);
+   GEngine->Rect(int(ndescr.Position[0])-ndescr.Width, int(ndescr.Position[1])-ndescr.Height, int(ndescr.Position[0])+ndescr.Width, int(ndescr.Position[1])+ndescr.Height, false);
    GEngine->SetPenColor(ndescr.FillColor);
-   GEngine->Rect(int(ndescr.Position.x)-ndescr.Width+shift, int(ndescr.Position.y)-ndescr.Height+shift, int(ndescr.Position.x)+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Height-ndescr.ContourWidth, true);
+   GEngine->Rect(int(ndescr.Position[0])-ndescr.Width+shift, int(ndescr.Position[1])-ndescr.Height+shift, int(ndescr.Position[0])+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position[1])+ndescr.Height-ndescr.ContourWidth, true);
   }
  }
 }
@@ -757,37 +757,37 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
   GEngine->SetPenWidth(out.LinkWidth);
   RDK::MVector<double,3> &c_out=out.Position;
   RDK::MVector<double,3> &c_in=in.Position;
-  double x_diff=fabs(c_out.x-c_in.x), y_diff=fabs(c_out.y-c_in.y);
-  if(c_out.x<c_in.x && x_diff>y_diff)
+  double x_diff=fabs(c_out[0]-c_in[0]), y_diff=fabs(c_out[1]-c_in[1]);
+  if(c_out[0]<c_in[0] && x_diff>y_diff)
   {
-   GEngine->Line(int(c_out.x) + out.Width, int(c_out.y), int(c_in.x) - in.Width, int(c_in.y));
-   GEngine->Rect(int(in.Position.x) - in.Width - out.LinkWidth,
-			int(c_in.y) - out.LinkWidth,
-			int(c_in.x) - in.Width + out.LinkWidth, int(c_in.y) + out.LinkWidth, true);
+   GEngine->Line(int(c_out[0]) + out.Width, int(c_out[1]), int(c_in[0]) - in.Width, int(c_in[1]));
+   GEngine->Rect(int(in.Position[0]) - in.Width - out.LinkWidth,
+			int(c_in[1]) - out.LinkWidth,
+			int(c_in[0]) - in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
   }
   else
-  if(c_out.y<c_in.y && x_diff<=y_diff)
+  if(c_out[1]<c_in[1] && x_diff<=y_diff)
   {
-   GEngine->Line(int(c_out.x), int(c_out.y) + out.Height, int(c_in.x), int(c_in.y) - in.Height);
-   GEngine->Rect(int(in.Position.x) - out.LinkWidth,
-			int(c_in.y) - in.Height - out.LinkWidth,
-			int(c_in.x) + out.LinkWidth, int(c_in.y) - in.Height + out.LinkWidth, true);
+   GEngine->Line(int(c_out[0]), int(c_out[1]) + out.Height, int(c_in[0]), int(c_in[1]) - in.Height);
+   GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
+			int(c_in[1]) - in.Height - out.LinkWidth,
+			int(c_in[0]) + out.LinkWidth, int(c_in[1]) - in.Height + out.LinkWidth, true);
   }
   else
-  if(c_out.x>=c_in.x && x_diff>y_diff)
+  if(c_out[0]>=c_in[0] && x_diff>y_diff)
   {
-   GEngine->Line(int(c_out.x) - out.Width, int(c_out.y), int(c_in.x) + in.Width, int(c_in.y));
-   GEngine->Rect(int(in.Position.x) + in.Width - out.LinkWidth,
-			int(c_in.y) - out.LinkWidth,
-			int(c_in.x) + in.Width + out.LinkWidth, int(c_in.y) + out.LinkWidth, true);
+   GEngine->Line(int(c_out[0]) - out.Width, int(c_out[1]), int(c_in[0]) + in.Width, int(c_in[1]));
+   GEngine->Rect(int(in.Position[0]) + in.Width - out.LinkWidth,
+			int(c_in[1]) - out.LinkWidth,
+			int(c_in[0]) + in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
   }
   else
-  if(c_out.y>=c_in.y && x_diff<=y_diff)
+  if(c_out[1]>=c_in[1] && x_diff<=y_diff)
   {
-   GEngine->Line(int(c_out.x), int(c_out.y) - out.Height, int(c_in.x), int(c_in.y) + in.Height);
-   GEngine->Rect(int(in.Position.x) - out.LinkWidth,
-			int(c_in.y) + in.Height - out.LinkWidth,
-			int(c_in.x) + out.LinkWidth, int(c_in.y) + in.Height + out.LinkWidth, true);
+   GEngine->Line(int(c_out[0]), int(c_out[1]) - out.Height, int(c_in[0]), int(c_in[1]) + in.Height);
+   GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
+			int(c_in[1]) + in.Height - out.LinkWidth,
+			int(c_in[0]) + out.LinkWidth, int(c_in[1]) + in.Height + out.LinkWidth, true);
   }
  }
 /*

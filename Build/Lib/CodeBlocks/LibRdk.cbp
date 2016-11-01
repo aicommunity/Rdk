@@ -27,9 +27,6 @@
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
-				<Linker>
-					<Add option="-s" />
-				</Linker>
 			</Target>
 		</Build>
 		<Unit filename="../../../Core/Application/UAppCore.cpp" />

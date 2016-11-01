@@ -194,7 +194,7 @@ template<class T>
 MDVector<T>& MDVector<T>::operator = (const MDVector<T> &copy)
 {
  Resize(copy.GetRows());
- memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*this->GetRows());
+ memcpy(MDMatrix<T>::Data,copy.Data,sizeof(T)*this->GetRows());
  return *this;
 };
 
@@ -203,9 +203,9 @@ MDVector<T>& MDVector<T>::operator = (const MDMatrix<T> &copy)
 {
  Resize(copy.GetRows());
  if(copy.GetCols() > 0)
-  memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*this->GetRows());
+  memcpy(MDMatrix<T>::Data,copy.Data,sizeof(T)*this->GetRows());
  else
-  memset(MDMatrix<T>::Data1D,0,sizeof(T)*this->GetRows());
+  memset(MDMatrix<T>::Data,0,sizeof(T)*this->GetRows());
  return *this;
 }
 
