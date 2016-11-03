@@ -330,11 +330,12 @@ bool UApplication::Init(void)
  Core_SetSystemDir(font_path.c_str());
 // SetLogDir(font_path);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
- MCore_ChannelInit(0,0,(void*)ExceptionHandler);
  Core_LoadFonts();
 
  SetWorkDirectory(font_path);
  EngineControl->Init();
+ UApplication::SetNumChannels(1);
+ MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();
  return true;
@@ -838,6 +839,7 @@ bool UApplication::CopyProject(const std::string &new_path)
   return true;
 
  SaveProject();
+
  RDK::CopyDir(ProjectPath, new_path, "*.*");
  return true;
 }
