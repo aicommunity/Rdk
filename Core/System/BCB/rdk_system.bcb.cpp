@@ -137,11 +137,15 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 
 int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
 {
- if(CopyFileEx(source_file.c_str(), dest_file.c_str(),0,0,
+ DWORD error=0;
+ if(!CopyFileEx(source_file.c_str(), dest_file.c_str(),0,0,
   false, COPY_FILE_OPEN_SOURCE_FOR_WRITE))
-  return 0;
+ {
+  error=GetLastError();
+  return error;
+ }
 
- return 1;
+ return 0;
 }
 
 int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask)
@@ -152,8 +156,11 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
  if(!res)
  {
   for(size_t i=0;i<results.size();i++)
-   if(RdkCopyFile(source_dir+results[i],dest_dir+results[i]))
-    return 1;
+  {
+   DWORD error=RdkCopyFile(source_dir+results[i],dest_dir+results[i]);
+   if(error != 0)
+	return error;
+  }
  }
  return 0;
 }
