@@ -401,6 +401,12 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
  property=0;
 
  VariableMapCIteratorT I=PropertiesLookupTable.find(connector_property_name);
+// // TODO: Сначала проверяем алиасы
+// VariableMapCIteratorT I=PropertiesLookupTable.end();
+// if(CheckAlias(connector_property_name))
+//  I=PropertiesLookupTable.find(GetPropertyNameByAlias(connector_property_name));
+// else
+//  I=PropertiesLookupTable.find(connector_property_name);
 
  if(I == PropertiesLookupTable.end())
   return;
@@ -470,7 +476,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   }
   else
   {
-   if(int(I->second.size())>c_index && I->second[c_index].Item == na)
+   if(int(I->second.size())>c_index && I->second[c_index].Item == na && ((i_conn_property->GetIoType() & ipRange) && I->second[c_index].Name != item_property_name))
    {
 	return true;
    }
