@@ -43,7 +43,7 @@ ULongTime MinInterstepsInterval;
 
 /// Максимальное время расчета модели (сек)
 /// если 0 - то не ограничено
-UTime MaxCalcTime;
+double MaxCalcTime;
 
 protected: // Состояния
 // Флаг состояния инициализации
@@ -140,8 +140,8 @@ bool SetMinInterstepsInterval(long long value);
 
 /// Максимальное время расчета модели (сек)
 /// если 0 - то не ограничено
-UTime GetMaxCalcTime(void) const;
-bool SetMaxCalcTime(UTime value);
+double GetMaxCalcTime(void) const;
+bool SetMaxCalcTime(double value);
 
 /// Флаг включения режима отладки
 //bool GetDebugMode(void) const;

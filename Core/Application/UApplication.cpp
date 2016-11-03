@@ -957,7 +957,7 @@ bool UApplication::IsChannelStarted(int channel_index)
 // --------------------------
 // Методы загрузки сохранения данных в файл
 // --------------------------
-bool UApplication::LoadModelFromFile(int channel_index, const std::string file_name)
+bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_name)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -975,7 +975,7 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string file_n
  return false;
 }
 
-bool UApplication::SaveModelToFile(int channel_index, const std::string file_name)
+bool UApplication::SaveModelToFile(int channel_index, const std::string &file_name)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -990,7 +990,7 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string file_nam
  return res;
 }
 
-bool UApplication::LoadParametersFromFile(int channel_index, const std::string file_name)
+bool UApplication::LoadParametersFromFile(int channel_index, const std::string &file_name)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -1007,7 +1007,7 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string f
  return false;
 }
 
-bool UApplication::SaveParametersToFile(int channel_index, const std::string file_name)
+bool UApplication::SaveParametersToFile(int channel_index, const std::string &file_name)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -1022,7 +1022,7 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string fil
  return res;
 }
 
-bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_name)
+bool UApplication::LoadStatesFromFile(int channel_index, const std::string &file_name)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -1042,7 +1042,7 @@ bool UApplication::LoadStatesFromFile(int channel_index, const std::string file_
  return false;
 }
 
-bool UApplication::SaveStatesToFile(int channel_index, const std::string file_name)
+bool UApplication::SaveStatesToFile(int channel_index, const std::string &file_name)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -1060,17 +1060,17 @@ bool UApplication::SaveStatesToFile(int channel_index, const std::string file_na
  return res;
 }
 
-bool UApplication::LoadDescriptionFromFile(int channel_index, const std::string file_name)
+bool UApplication::LoadDescriptionFromFile(int channel_index, const std::string &file_name)
 {
  return false;
 }
 
-bool UApplication::SaveDescriptionToFile(int channel_index, const std::string file_name)
+bool UApplication::SaveDescriptionToFile(int channel_index, const std::string &file_name)
 {
  return false;
 }
 
-bool UApplication::LoadClassesDescriptionsFromFile(const std::string file_name)
+bool UApplication::LoadClassesDescriptionsFromFile(const std::string &file_name)
 {
  if(!Core_IsChannelInit())
   return false;
@@ -1087,7 +1087,7 @@ bool UApplication::LoadClassesDescriptionsFromFile(const std::string file_name)
  return false;
 }
 
-bool UApplication::SaveClassesDescriptionsToFile(const std::string file_name)
+bool UApplication::SaveClassesDescriptionsToFile(const std::string &file_name)
 {
  const char *p=Storage_SaveClassesDescription();
  bool res=true;
@@ -1099,7 +1099,7 @@ bool UApplication::SaveClassesDescriptionsToFile(const std::string file_name)
  return res;
 }
 
-bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string file_name)
+bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string &file_name)
 {
  if(!Core_IsChannelInit())
   return false;
@@ -1116,7 +1116,7 @@ bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string file_
  return false;
 }
 
-bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string file_name)
+bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string &file_name)
 {
  const char *p=Storage_SaveCommonClassesDescription();
  bool res=true;
@@ -1189,36 +1189,44 @@ void UApplication::UpdateLoggers(void)
 }
 
 /// Загружает файл в строку
-bool UApplication::LoadFile(const std::string file_name, std::string &buffer) const
+bool UApplication::LoadFile(const std::string &file_name, std::string &buffer) const
 {
  std::ifstream t(file_name.c_str(), ios::in);
 
- if(!t)
+ if(!t || t.fail() || t.bad())
  {
   buffer.clear();
   return false;
  }
 
  t.seekg(0, std::ios::end);
+ if(t.fail() || t.bad())
+  return false;
  buffer.reserve(t.tellg());
  t.seekg(0, std::ios::beg);
+ if(t.fail() || t.bad())
+  return false;
 
  buffer.assign((std::istreambuf_iterator<char>(t)),
 			std::istreambuf_iterator<char>());
+ if(t.fail() || t.bad())
+  return false;
  return true;
 }
 
 /// Сохраняет файл из строки
-bool UApplication::SaveFile(const std::string file_name, const std::string &buffer) const
+bool UApplication::SaveFile(const std::string &file_name, const std::string &buffer) const
 {
  std::ofstream t(file_name.c_str(), ios::trunc);
 
- if(!t)
+ if(!t || t.fail() || t.bad())
  {
   return false;
  }
 
  t<<buffer;
+ if(t.fail() || t.bad())
+  return false;
  return true;
 }
 // --------------------------

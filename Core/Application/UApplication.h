@@ -244,23 +244,23 @@ virtual bool IsChannelStarted(int channel_index);
 // --------------------------
 // Методы загрузки сохранения данных в файл
 // --------------------------
-bool LoadModelFromFile(int channel_index, const std::string file_name);
-bool SaveModelToFile(int channel_index, const std::string file_name);
+bool LoadModelFromFile(int channel_index, const std::string &file_name);
+bool SaveModelToFile(int channel_index, const std::string &file_name);
 
-bool LoadParametersFromFile(int channel_index, const std::string file_name);
-bool SaveParametersToFile(int channel_index, const std::string file_name);
+bool LoadParametersFromFile(int channel_index, const std::string &file_name);
+bool SaveParametersToFile(int channel_index, const std::string &file_name);
 
-bool LoadStatesFromFile(int channel_index, const std::string file_name);
-bool SaveStatesToFile(int channel_index, const std::string file_name);
+bool LoadStatesFromFile(int channel_index, const std::string &file_name);
+bool SaveStatesToFile(int channel_index, const std::string &file_name);
 
-bool LoadDescriptionFromFile(int channel_index, const std::string file_name);
-bool SaveDescriptionToFile(int channel_index, const std::string file_name);
+bool LoadDescriptionFromFile(int channel_index, const std::string &file_name);
+bool SaveDescriptionToFile(int channel_index, const std::string &file_name);
 
-bool LoadClassesDescriptionsFromFile(const std::string file_name);
-bool SaveClassesDescriptionsToFile(const std::string file_name);
+bool LoadClassesDescriptionsFromFile(const std::string &file_name);
+bool SaveClassesDescriptionsToFile(const std::string &file_name);
 
-bool LoadCommonClassesDescriptionsFromFile(const std::string file_name);
-bool SaveCommonClassesDescriptionsToFile(const std::string file_name);
+bool LoadCommonClassesDescriptionsFromFile(const std::string &file_name);
+bool SaveCommonClassesDescriptionsToFile(const std::string &file_name);
 
 /// Загружает историю проектов из файла
 void LoadProjectsHistory(void);
@@ -280,10 +280,10 @@ void CalcAppCaption(void);
 void UpdateLoggers(void);
 
 /// Загружает файл в строку
-bool LoadFile(const std::string file_name, std::string &buffer) const;
+bool LoadFile(const std::string &file_name, std::string &buffer) const;
 
 /// Сохраняет файл из строки
-bool SaveFile(const std::string file_name, const std::string &buffer) const;
+bool SaveFile(const std::string &file_name, const std::string &buffer) const;
 // --------------------------
 };
 

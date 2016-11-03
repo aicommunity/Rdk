@@ -150,12 +150,12 @@ bool UEnvironment::SetMinInterstepsInterval(long long value)
 
 /// Максимальное время расчета модели (сек)
 /// если 0 - то не ограничено
-UTime UEnvironment::GetMaxCalcTime(void) const
+double UEnvironment::GetMaxCalcTime(void) const
 {
  return MaxCalcTime;
 }
 
-bool UEnvironment::SetMaxCalcTime(UTime value)
+bool UEnvironment::SetMaxCalcTime(double value)
 {
  if(value<0)
   return false;
