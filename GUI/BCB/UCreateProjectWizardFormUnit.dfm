@@ -192,10 +192,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet2: TTabSheet
       Caption = 'Type'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -400,12 +396,13 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Height = 43
               Align = alTop
               Caption = ' Calculation Mode '
-              Columns = 3
+              Columns = 4
               ItemIndex = 0
               Items.Strings = (
                 'Simple'
                 'Real-Time'
-                'By Signal')
+                'By Signal'
+                'Fastest')
               TabOrder = 1
               OnClick = CalculationModeRadioGroupClick
             end
@@ -470,7 +467,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Top = 1
               Width = 546
               Height = 381
-              ActivePage = ModelFromComponentTabSheet
+              ActivePage = DontChangeTabSheet
               Align = alClient
               MultiLine = True
               TabOrder = 0
@@ -594,6 +591,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                     inherited PageControl: TPageControl
                       Width = 534
                       Height = 336
+                      ActivePage = UClassesListFrame1.LibsTabSheet
                       ExplicitWidth = 534
                       ExplicitHeight = 336
                       inherited NameTabSheet: TTabSheet
@@ -610,68 +608,85 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         end
                       end
                       inherited LibsTabSheet: TTabSheet
-                        TabVisible = False
+                        inherited TreeView: TTreeView
+                          Width = 526
+                          Height = 307
+                          ExplicitWidth = 526
+                          ExplicitHeight = 307
+                        end
                       end
                       inherited LibsControlTabSheet: TTabSheet
+                        TabVisible = False
                         ExplicitLeft = 4
                         ExplicitTop = 24
                         ExplicitWidth = 499
                         ExplicitHeight = 515
                         inherited Splitter1: TSplitter
-                          Top = 291
+                          Top = 83
+                          Width = 526
                           ExplicitTop = 188
                           ExplicitWidth = 399
                         end
                         inherited Panel1: TPanel
-                          Top = 386
+                          Top = 178
+                          Width = 526
                           Height = 129
                           Visible = False
                           ExplicitTop = 386
                           ExplicitHeight = 129
                           inherited LoadLibraryButton: TButton
+                            Width = 524
                             Height = 26
                             ExplicitHeight = 26
                           end
                           inherited CreateRuntimeLibraryButton: TButton
                             Top = 27
+                            Width = 524
                             Height = 27
                             ExplicitTop = 27
                             ExplicitHeight = 27
                           end
                           inherited DeleteLibraryButton: TButton
                             Top = 54
+                            Width = 524
                             ExplicitTop = 54
                           end
                           inherited RenameRuntimeLibraryButton: TButton
                             Top = 79
+                            Width = 524
                             Height = 27
                             ExplicitTop = 79
                             ExplicitHeight = 27
                           end
                           inherited AddClassButton: TButton
                             Top = 106
+                            Width = 524
                             Height = 26
                             ExplicitTop = 106
                             ExplicitHeight = 26
                           end
                         end
                         inherited GroupBox1: TGroupBox
-                          Height = 291
+                          Width = 526
+                          Height = 83
                           ExplicitHeight = 291
                           inherited LibsListStringGrid: TStringGrid
                             Top = 16
-                            Height = 273
+                            Width = 522
+                            Height = 65
                             ExplicitTop = 16
                             ExplicitHeight = 273
                           end
                         end
                         inherited GroupBox2: TGroupBox
-                          Top = 298
+                          Top = 90
+                          Width = 526
                           Height = 88
                           ExplicitTop = 298
                           ExplicitHeight = 88
                           inherited LibComponentListStringGrid: TStringGrid
                             Top = 16
+                            Width = 522
                             Height = 70
                             OnClick = UClassesListFrame1LibComponentListStringGridClick
                             ExplicitTop = 16

@@ -527,6 +527,9 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
  RdkApplication.CreateProject(file_name, project_config);
+ UDrawEngineFrame1->FontTypeComboBox->ItemIndex=1;
+ UDrawEngineFrame1->FontSizeComboBox->ItemIndex=9;
+ UDrawEngineFrame1->ApplyButtonClick(this);
 /*
  CloseProject();
 
