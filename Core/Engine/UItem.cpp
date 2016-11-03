@@ -330,7 +330,15 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
 {
  // »щем указатель на выходные данные
  property=0;
+
  VariableMapCIteratorT I=PropertiesLookupTable.find(item_property_name);
+// // TODO: —начала провер€ем алиасы
+// VariableMapCIteratorT I=PropertiesLookupTable.end();
+// if(CheckAlias(item_property_name))
+//  I=PropertiesLookupTable.find(GetPropertyNameByAlias(item_property_name));
+// else
+//  I=PropertiesLookupTable.find(item_property_name);
+
  if(I == PropertiesLookupTable.end())
   return;
 

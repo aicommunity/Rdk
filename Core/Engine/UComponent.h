@@ -161,6 +161,10 @@ protected:
 // Таблица соответствий Id и общего свойства
 ShareMapT ShareLookupTable;
 
+protected: // Временные алиасы для свойств
+/// Карта алиасов вида <алиса, имя свойства>
+std::map<std::string, std::string> Aliases;
+
 
 protected: // Временные переменные
 
@@ -248,6 +252,7 @@ virtual void AUpdateInternalData(void);
 // --------------------------
 public:
 // Возвращает указатель на данные свойства
+const UEPtr<UIProperty> FindProperty(const NameT &name) const;
 UEPtr<UIProperty> FindProperty(const NameT &name);
 
 // Возвращает значение параметра по имени 'name'
@@ -307,6 +312,25 @@ public:
 UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
 // --------------------------
 
+// --------------------------
+// Методы управления алиасами
+// --------------------------
+protected:
+/// Добавление алисаса
+bool AddAlias(const std::string &alias, const std::string &property_name);
+
+/// Удаление алисаса
+void DelAlias(const std::string &alias);
+
+public:
+/// Проверка наличия алиаса
+bool CheckAlias(const std::string &alias) const;
+
+/// Получение имени свойства по алиасу
+const std::string& GetPropertyNameByAlias(const std::string &alias) const;
+// --------------------------
+
+
 public: // Исключения
 struct EEnvironmentNotExist: public EError
 {
@@ -334,6 +358,12 @@ EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {};
 struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
 EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+};
+
+// Имя алиаса не найдено
+struct EAliasNameNotExist: public ENameNotExist
+{
+EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 /*
 // Id переменной состояния не найден

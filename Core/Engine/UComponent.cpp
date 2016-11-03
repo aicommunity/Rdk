@@ -354,9 +354,15 @@ void UComponent::AUpdateInternalData(void)
 // Методы доступа к параметрам
 // --------------------------
 // Возвращает указатель на данные свойства
-UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
+const UEPtr<UIProperty> UComponent::FindProperty(const NameT &name) const
 {
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+ VariableMapCIteratorT I=PropertiesLookupTable.end();
+
+ // TODO: Сначала проверяем алиасы
+ if(CheckAlias(name))
+  I=PropertiesLookupTable.find(GetPropertyNameByAlias(name));
+ else
+  I=PropertiesLookupTable.find(name);
 
  if(I != PropertiesLookupTable.end())
   return I->second.Property;
@@ -364,13 +370,28 @@ UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
  return UEPtr<UIProperty>(0);
 }
 
-// Возвращает значение параметра по имени 'name'
-UEPtr<UVariableData> UComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
+UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
 {
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+ VariableMapCIteratorT I=PropertiesLookupTable.end();
+
+ // TODO: Сначала проверяем алиасы
+ if(CheckAlias(name))
+  I=PropertiesLookupTable.find(GetPropertyNameByAlias(name));
+ else
+  I=PropertiesLookupTable.find(name);
 
  if(I != PropertiesLookupTable.end())
-  I->second.Property->Save(values);
+  return I->second.Property;
+
+ return UEPtr<UIProperty>(0);
+}
+
+UEPtr<UVariableData> UComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+
+ if(property)
+  property->Save(values);
 
  return values;
 }
@@ -379,11 +400,11 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
 {
  USerStorageXML data;
 
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+ UEPtr<UIProperty> property=FindProperty(name);
 
- if(I != PropertiesLookupTable.end())
+ if(property)
  {
-  I->second.Property->Save(&data,true);
+  property->Save(&data,true);
   if(data.GetNumNodes() == 0)
    values=data.GetNodeText();
   else
@@ -396,30 +417,30 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
 // Устанавливает значение параметра по имени 'name'
 void UComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+ UEPtr<UIProperty> property=FindProperty(name);
 
- if(I != PropertiesLookupTable.end())
-  I->second.Property->Load(values);
+ if(property)
+  property->Load(values);
 }
 
 void UComponent::SetPropertyValue(const NameT &name, const std::string &values)
 {
  USerStorageXML data;
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+ UEPtr<UIProperty> property=FindProperty(name);
 
- if(I != PropertiesLookupTable.end())
+ if(property)
  {
   if(values.size()>0 && values[0]=='<')
   {
    data.Load(values,"");
-   data.RenameNode(I->second.Property->GetName());
-   I->second.Property->Load(&data,true);
+   data.RenameNode(property->GetName());
+   property->Load(&data,true);
   }
   else
   {
-   I->second.Property->Save(&data,true);
+   property->Save(&data,true);
    data.SetNodeText(values);
-   I->second.Property->Load(&data,true);
+   property->Load(&data,true);
   }
  }
 }
@@ -528,6 +549,20 @@ void UComponent::DelLookupProperty(const NameT &name)
  PropertiesLookupTable.erase(I);
  if(prop && del_enable)
   delete prop;
+
+ std::map<std::string, std::string>::iterator J=Aliases.begin(),K;
+
+ for(;J != Aliases.end();)
+ {
+  if(J->second == name)
+  {
+   K=J; ++K;
+   Aliases.erase(J);
+   J=K;
+  }
+  else
+   ++J;
+ }
 }
 
 // Удаляет всю таблицу соответствий
@@ -542,6 +577,7 @@ void UComponent::ClearLookupPropertyTable(void)
   if(prop && del_enable)
    delete prop;
  }
+ Aliases.clear();
 }
 // --------------------------
 
@@ -565,6 +601,50 @@ UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 }
 // --------------------------
 
+
+// --------------------------
+// Методы управления алиасами
+// --------------------------
+/// Добавление алисаса
+bool UComponent::AddAlias(const std::string &alias, const std::string &property_name)
+{
+ if(CheckAlias(alias))
+  return false;
+
+// if(PropertiesLookupTable.find(property_name) == PropertiesLookupTable.end())
+//  return false;
+
+ Aliases[alias]=property_name;
+ return true;
+}
+
+/// Удаление алисаса
+void UComponent::DelAlias(const std::string &alias)
+{
+ std::map<std::string, std::string>::iterator I=Aliases.find(alias);
+ if(I == Aliases.end())
+  return;
+ Aliases.erase(I);
+}
+
+/// Проверка наличия алиаса
+bool UComponent::CheckAlias(const std::string &alias) const
+{
+ std::map<std::string, std::string>::const_iterator I=Aliases.find(alias);
+ if(I == Aliases.end())
+  return false;
+ return true;
+}
+
+/// Получение имени свойства по алиасу
+const std::string& UComponent::GetPropertyNameByAlias(const std::string &alias) const
+{
+ std::map<std::string, std::string>::const_iterator I=Aliases.find(alias);
+ if(I == Aliases.end())
+  throw EAliasNameNotExist(alias);
+ return I->second;
+}
+// --------------------------
 
 
 }

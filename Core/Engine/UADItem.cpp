@@ -865,8 +865,19 @@ bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, cons
    conn_property_name=std::string("DataInput")+sntoa(c_index);
   }
 
+ std::string aliased_item_property_name;
+ std::string aliased_conn_property_name;
+// if(CheckAlias(item_property_name))
+//  aliased_item_property_name=GetPropertyNameByAlias(item_property_name);
+// else
+  aliased_item_property_name=item_property_name;
 
- if(!UItem::Connect(c, item_property_name, conn_property_name, c_index))
+// if(c->CheckAlias(conn_property_name))
+//  aliased_conn_property_name=c->GetPropertyNameByAlias(conn_property_name);
+// else
+  aliased_conn_property_name=conn_property_name;
+
+ if(!UItem::Connect(c, aliased_item_property_name, aliased_conn_property_name, c_index))
   return false;
  CalcMinMaxInputDataSize();
  return true;
