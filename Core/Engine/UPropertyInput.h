@@ -517,6 +517,12 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
 // --------------------------
 // Методы управления указателем
 // --------------------------
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+ return !this->v.empty();
+}
+
 // Число указателей на данные
 int GetNumPointers(void) const
 {
