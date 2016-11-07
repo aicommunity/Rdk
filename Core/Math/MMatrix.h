@@ -459,7 +459,7 @@ void MMatrix<T,Rows,Cols>::Assign(T value)
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::Assign(const MDMatrix<T> &copy)
 {
- *this=value;
+ *this=copy;
 }
 
 /// Копирует данные в двумерный массив
