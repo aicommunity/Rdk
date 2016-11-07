@@ -25,7 +25,6 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
  Graph.SetCanvas(&GraphCanvas);
  Graph.SetFont(&Font);
  DrawEngine.SetEngine(&Graph);
- DrawEngine.SetFonts(GetCoreLock()->GetFonts());
  UpdateInterval=-1;
  DragDropFlag=false;
  LongLinkFlag=false;
@@ -106,6 +105,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
  Image->Width=new_img_width;
  Image->Height=new_img_height;
  Graph.SetCanvas(&GraphCanvas);
+ DrawEngine.SetFonts(GetCoreLock()->GetFonts());
  DrawEngine.Draw();
  GraphCanvas.ReflectionX(&ShowCanvas);
  ShowCanvas>>Image->Picture->Bitmap;
