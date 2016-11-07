@@ -388,78 +388,78 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res=point;
    if(DistortionCoeff.GetSize() == 1)
    {
-	T r=point.x*point.x+point.y*point.y;
+	T r=point(0)*point(0)+point(1)*point(1);
 	T m1=(1.0+DistortionCoeff[0]*r);
-	res.x=m1*point.x;
-	res.y=m1*point.y;
-	res.z=1;
+	res(0)=m1*point(0);
+	res(1)=m1*point(1);
+	res(2)=1;
    }
    else
    if(DistortionCoeff.GetSize() == 5)
    {
-	T r=point.x*point.x+point.y*point.y;
+	T r=point(0)*point(0)+point(1)*point(1);
 	T m1=(1.0+DistortionCoeff[0]*r+DistortionCoeff[1]*r*r+DistortionCoeff[4]*r*r*r);
-	res.x=m1*point.x;
-	res.y=m1*point.y;
-	res.z=1;
+	res(0)=m1*point(0);
+	res(1)=m1*point(1);
+	res(2)=1;
 
-	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
-	res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+	res(0)+=2*DistortionCoeff[2]*point(0)*point(1)+DistortionCoeff[3]*(r+2*point(0)*point(0));
+	res(1)+=DistortionCoeff[2]*(r+2*point(1)*point(1))+2*DistortionCoeff[3]*point(0)*point(1);
    }
    else
    if(DistortionCoeff.GetSize() == 8)
    {
-	T r2=point.x*point.x+point.y*point.y;
+	T r2=point(0)*point(0)+point(1)*point(1);
 	T r4=r2*r2;
 	T r6=r4*r2;
 	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
 	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
 	T m1=dividend/divider;
-	res.x=m1*point.x;
-	res.y=m1*point.y;
-	res.z=1;
+	res(0)=m1*point(0);
+	res(1)=m1*point(1);
+	res(2)=1;
 
-	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+	res(0)+=2*DistortionCoeff[2]*point(0)*point(1)+DistortionCoeff[3]*(r2+2*point(0)*point(0));
+	res(1)+=DistortionCoeff[2]*(r2+2*point(1)*point(1))+2*DistortionCoeff[3]*point(0)*point(1);
    }
    else
    if(DistortionCoeff.GetSize() == 10)
    {
-	T r2=point.x*point.x+point.y*point.y;
+	T r2=point(0)*point(0)+point(1)*point(1);
 	T r4=r2*r2;
 	T r6=r4*r2;
 	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
 	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
 	T m1=dividend/divider;
-	res.x=m1*point.x;
-	res.y=m1*point.y;
-	res.z=1;
+	res(0)=m1*point(0);
+	res(1)=m1*point(1);
+	res(2)=1;
 
-	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+	res(0)+=2*DistortionCoeff[2]*point(0)*point(1)+DistortionCoeff[3]*(r2+2*point(0)*point(0));
+	res(1)+=DistortionCoeff[2]*(r2+2*point(1)*point(1))+2*DistortionCoeff[3]*point(0)*point(1);
 
-	res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
-	res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+	res(0)+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+	res(1)+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
    }
    else
    if(DistortionCoeff.GetSize() == 12)
    {
-	T r2=point.x*point.x+point.y*point.y;
+	T r2=point(0)*point(0)+point(1)*point(1);
 	T r4=r2*r2;
 	T r6=r4*r2;
 	T r8=r4*r4;
 	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
 	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
 	T m1=dividend/divider;
-	res.x=m1*point.x;
-	res.y=m1*point.y;
-	res.z=1;
+	res(0)=m1*point(0);
+	res(1)=m1*point(1);
+	res(2)=1;
 
-	res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-	res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+	res(0)+=2*DistortionCoeff[2]*point(0)*point(1)+DistortionCoeff[3]*(r2+2*point(0)*point(0));
+	res(1)+=DistortionCoeff[2]*(r2+2*point(1)*point(1))+2*DistortionCoeff[3]*point(0)*point(1);
 
-	res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
-	res.y+=DistortionCoeff[10]*r2+DistortionCoeff[11]*r4;
+	res(0)+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+	res(1)+=DistortionCoeff[10]*r2+DistortionCoeff[11]*r4;
    }
    return res;
   }
@@ -470,13 +470,13 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 	return point;
 
    MVector<T,3> res;
-   T x=DistortionCoeff[3]*(point.x-DistortionCoeff[0]);
-   T y=DistortionCoeff[3]*(point.y-DistortionCoeff[1]);
+   T x=DistortionCoeff[3]*(point(0)-DistortionCoeff[0]);
+   T y=DistortionCoeff[3]*(point(1)-DistortionCoeff[1]);
    T d=x*x+y*y;
    T p=1.0-(DistortionCoeff[2]*d)/100000000.0;
-   res.x=p*x+DistortionCoeff[0];
-   res.y=p*y+DistortionCoeff[1];
-   res.z=1;
+   res(0)=p*x+DistortionCoeff[0];
+   res(1)=p*y+DistortionCoeff[1];
+   res(2)=1;
    return res;
   }
  }
@@ -494,7 +494,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 
    if(DistortionCoeff.GetSize() == 4)
    {
-	T r2=point.x*point.x+point.y*point.y;
+	T r2=point(0)*point(0)+point(1)*point(1);
 	T r=sqrt(r2);
 	T teta=atan(r);
 	T teta2=teta*teta;
@@ -502,9 +502,9 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 	T teta6=teta2*teta;
 	T teta8=teta4*teta4;
 	T teta_d=teta*(1.0+DistortionCoeff[0]*teta2+DistortionCoeff[1]*teta4+DistortionCoeff[2]*teta6+DistortionCoeff[3]*teta8);
-	res.x=(teta_d*point.x)/r;
-	res.y=(teta_d*point.y)/r;
-	res.z=1;
+	res(0)=(teta_d*point(0))/r;
+	res(1)=(teta_d*point(1))/r;
+	res(2)=1;
    }
    return res;
   }
@@ -547,11 +547,11 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &spac
  MMatrix<T,3,4> E=MMatrix<T,3,4>::Eye();
 
  cameraspacepoint=E*(MCamera<T>::GetEcc()*space_point);
- if(fabs(cameraspacepoint.z)>10e-7)
+ if(fabs(cameraspacepoint(2))>10e-7)
  {
-  normalpoint.x=cameraspacepoint.x/cameraspacepoint.z;
-  normalpoint.y=cameraspacepoint.y/cameraspacepoint.z;
-  normalpoint.z=1;
+  normalpoint(0)=cameraspacepoint(0)/cameraspacepoint(2);
+  normalpoint(1)=cameraspacepoint(1)/cameraspacepoint(2);
+  normalpoint(2)=1;
  }
  else
   return screenpoint;
@@ -573,17 +573,17 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &spac
  MMatrix<T,3,4> E=MMatrix<T,3,4>::Eye();
 
  cameraspacepoint=E*(MCamera<T>::GetEcc()*space_point);
- if(fabs(cameraspacepoint.z)>10e-7)
+ if(fabs(cameraspacepoint(2))>10e-7)
  {
-  normalpoint.x=cameraspacepoint.x/cameraspacepoint.z;
-  normalpoint.y=cameraspacepoint.y/cameraspacepoint.z;
-  normalpoint.z=1;
+  normalpoint(0)=cameraspacepoint(0)/cameraspacepoint(2);
+  normalpoint(1)=cameraspacepoint(1)/cameraspacepoint(2);
+  normalpoint(2)=1;
  }
  else
   return screenpoint;
 
  screenpoint=Icc*normalpoint;
- if(screenpoint.x<0 || screenpoint.x>=image_width || screenpoint.y<0 || screenpoint.y>=image_height)
+ if(screenpoint(0)<0 || screenpoint(0)>=image_width || screenpoint(1)<0 || screenpoint(1)>=image_height)
  {
   return screenpoint;
  }

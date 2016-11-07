@@ -55,12 +55,14 @@ void Resize(int size, T def_value);
 
 void Assign(int size, const T *data);
 void Assign(int size, T data);
+void Assign(int size, const void *data);
 
 
 // Оператор присваивания
 MDVector<T>& operator = (const MDVector<T> &copy);
 MDVector<T>& operator = (const MDMatrix<T> &copy);
 MDVector<T>& operator = (const T* data);
+MDVector<T>& operator = (const void* data);
 MDVector<T>& operator = (T value);
 
 // Доступ к элементу
@@ -83,10 +85,10 @@ MDVector<T>::MDVector(int size, T defvalue)
 {
  MDMatrix<T>::Resize(size,1);
  if(defvalue == 0)
-  memset(MDMatrix<T>::Data1D,0,this->GetRows()*sizeof(T));
+  memset(MDMatrix<T>::Data,0,this->GetRows()*sizeof(T));
  else
  {
-  T* p=MDMatrix<T>::Data1D;
+  T* p=MDMatrix<T>::Data;
   for(int i=0;i<MDMatrix<T>::GetRows();i++)
    *p++=defvalue;
  }
@@ -188,6 +190,13 @@ void MDVector<T>::Assign(int size, T data)
  MDMatrix<T>::Assign(size,1,data);
 }
 
+template<class T>
+void MDVector<T>::Assign(int size, const void *data)
+{
+ MDMatrix<T>::Assign(size,1,data);
+}
+
+
 
 // Оператор присваивания
 template<class T>
@@ -212,15 +221,22 @@ MDVector<T>& MDVector<T>::operator = (const MDMatrix<T> &copy)
 template<class T>
 MDVector<T>& MDVector<T>::operator = (const T* data)
 {
-	MDMatrix<T>::operator = (data);
-
-	return *this;
+ MDMatrix<T>::operator = (data);
+ return *this;
 }
+
+template<class T>
+MDVector<T>& MDVector<T>::operator = (const void* data)
+{
+ MDMatrix<T>::operator = (data);
+ return *this;
+}
+
 
 template<class T>
 MDVector<T>& MDVector<T>::operator = (T value)
 {
- T* pm1=MDMatrix<T>::Data1D;
+ T* pm1=MDMatrix<T>::Data;
 
  for(unsigned i=0;i<this->GetRows();i++)
   *pm1++ = value;
@@ -231,13 +247,13 @@ MDVector<T>& MDVector<T>::operator = (T value)
 template<class T>
 T& MDVector<T>::operator () (int i)
 {
- return *(MDMatrix<T>::Data1D+i);
+ return *(MDMatrix<T>::Data+i);
 }
 
 template<class T>
 const T& MDVector<T>::operator () (int i) const
 {
- return *(MDMatrix<T>::Data1D+i);
+ return *(MDMatrix<T>::Data+i);
 }
 // --------------------------
 

@@ -202,13 +202,13 @@ void MVector<T,Rows>::Assign(T value)
 template<class T, unsigned Rows>
 T& MVector<T,Rows>::operator () (int i)
 {
- return *(MMatrix<T,Rows,1>::Data+i);
+ return (MMatrix<T,Rows,1>::Data[i][0]);
 }
 
 template<class T, unsigned Rows>
 const T& MVector<T,Rows>::operator () (int i) const
 {
- return *(MMatrix<T,Rows,1>::Data+i);
+ return (MMatrix<T,Rows,1>::Data[i][0]);
 }
 // --------------------------
 

@@ -107,6 +107,7 @@ MMatrix<T,Rows,Cols>& operator = (const T* data);
 
 void Assign(const T *data);
 void Assign(T value);
+void Assign(const MDMatrix<T> &copy);
 
 /// Копирует данные в двумерный массив
 void CopyTo(T data[Rows][Cols]);
@@ -268,8 +269,11 @@ MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
  if(defvalue == 0)
   memset(Data,0,Rows*Cols*sizeof(T));
  else
-  for(unsigned i=0;i<Rows*Cols;i++)
-   Data[i]=defvalue;
+ {
+  T *data=&Data[0][0];
+  for(unsigned i=0;i<Rows*Cols;i++,data++)
+   *data=defvalue;
+ }
 }
 
 template<class T, unsigned Rows, unsigned Cols>
@@ -417,7 +421,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (T value)
 {
- T* pm1=Data;
+ T* pm1=&Data[0][0];
 
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = value;
@@ -434,7 +438,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T data[Rows][Cols]
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
 {
- T* pm1=Data;
+ T* pm1=&Data[0][0];
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = *data++;
  return *this;
@@ -451,6 +455,13 @@ void MMatrix<T,Rows,Cols>::Assign(T value)
 {
  *this=value;
 }
+
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::Assign(const MDMatrix<T> &copy)
+{
+ *this=value;
+}
+
 /// Копирует данные в двумерный массив
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::CopyTo(T data[Rows][Cols])
@@ -514,7 +525,7 @@ T& MMatrix<T,Rows,Cols>::operator [] (int i)
 template<class T, unsigned Rows, unsigned Cols>
 const T& MMatrix<T,Rows,Cols>::operator [] (int i) const
 {
- return *(Data+i);
+ return *(reinterpret_cast<const T*>(Data)+i);
 }
 
 template<class T, unsigned Rows, unsigned Cols>
@@ -632,8 +643,8 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::operator - (void) const
 {
  MMatrix<T,Rows,Cols> res;
 
- const T* pm1=Data;
- T* pm2=res.Data;
+ const T* pm1=&Data[0][0];
+ T* pm2=&res.Data[0][0];
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm2++ = -*pm1++;
 

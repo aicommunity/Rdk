@@ -863,7 +863,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).VertexName(i)<<" ";
 //  RDK::operator <<(stream,GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i));
   PointsCheckListBox->Items->Strings[i]=stream.str().c_str();// Add(stream.str().c_str());
-   if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i).z>=0)
+   if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i)(2)>=0)
    {
     PointsCheckListBox->Checked[i]=true;
    }
@@ -917,8 +917,8 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
   return;
 
  RDK::MVector<double,2> point;
- point.x=l+w/2;
- point.y=(t+h/2);
+ point(0)=l+w/2;
+ point(1)=(t+h/2);
  EditPoint(FigureIndex,PointIndex,point);
 
  UpdateVideo();
@@ -1001,8 +1001,8 @@ int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<double,2> &
 
  GeometryGraphics.Geometry(figure_index).SetNumVertices(GeometryGraphics.Geometry(figure_index).GetNumVertices()+1);
  int index=GeometryGraphics.Geometry(figure_index).GetNumVertices()-1;
- GeometryGraphics.Geometry(figure_index).Vertex(index).x=point_data.x;
- GeometryGraphics.Geometry(figure_index).Vertex(index).y=point_data.y;
+ GeometryGraphics.Geometry(figure_index).Vertex(index)(0)=point_data(0);
+ GeometryGraphics.Geometry(figure_index).Vertex(index)(1)=point_data(1);
  return index;
 }
 
@@ -1017,8 +1017,8 @@ int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name,
  GeometryGraphics.Geometry(figure_index).SetNumVertices(GeometryGraphics.Geometry(figure_index).GetNumVertices()+1);
  int index=GeometryGraphics.Geometry(figure_index).GetNumVertices()-1;
  GeometryGraphics.Geometry(figure_index).VertexName(index)=point_name;
- GeometryGraphics.Geometry(figure_index).Vertex(index).x=point_data.x;
- GeometryGraphics.Geometry(figure_index).Vertex(index).y=point_data.y;
+ GeometryGraphics.Geometry(figure_index).Vertex(index)(0)=point_data(0);
+ GeometryGraphics.Geometry(figure_index).Vertex(index)(1)=point_data(1);
  return index;
 }
 
@@ -1052,8 +1052,8 @@ void TVideoOutputFrame::EditPoint(int figure_index, int point_index, const RDK::
  if(point_index < 0 || point_index >= int(GeometryGraphics.Geometry(figure_index).GetNumVertices()))
   return;
 
- GeometryGraphics.Geometry(figure_index).Vertex(point_index).x=point_data.x;
- GeometryGraphics.Geometry(figure_index).Vertex(point_index).y=point_data.y;
+ GeometryGraphics.Geometry(figure_index).Vertex(point_index)(0)=point_data(0);
+ GeometryGraphics.Geometry(figure_index).Vertex(point_index)(1)=point_data(1);
 }
 
 /// Модифицирует имя точки

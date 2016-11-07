@@ -30,18 +30,18 @@ namespace RDK {
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T,3> &data)
 {
- operator <<(storage,data.x);
- operator <<(storage,data.y);
- operator <<(storage,data.z);
+ operator <<(storage,data.Data[0][0]);
+ operator <<(storage,data.Data[1][0]);
+ operator <<(storage,data.Data[2][0]);
  return storage;
 }
 
 template<typename T>
 USerStorageBinary& operator >> (USerStorageBinary& storage, MVector<T,3> &data)
 {
- operator >>(storage,data.x);
- operator >>(storage,data.y);
- operator >>(storage,data.z);
+ operator >>(storage,data.Data[0][0]);
+ operator >>(storage,data.Data[1][0]);
+ operator >>(storage,data.Data[2][0]);
  return storage;
 }
 
@@ -49,7 +49,7 @@ template<typename T, unsigned Rows>
 USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T,Rows> &data)
 {
  for(unsigned i=0;i<Rows;i++)
-  operator <<(storage,data.Data1D[i]);
+  operator <<(storage,data.Data[i][0]);
  return storage;
 }
 
@@ -57,7 +57,7 @@ template<typename T, unsigned Rows>
 USerStorageBinary& operator >> (USerStorageBinary& storage, MVector<T,Rows> &data)
 {
  for(unsigned i=0;i<Rows;i++)
-  operator >>(storage,data.Data1D[i]);
+  operator >>(storage,data.Data[i][0]);
  return storage;
 }
 
@@ -92,7 +92,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MDVector<T> &d
  operator <<(storage,size);
 
  for(int i=0;i<data.GetRows();i++)
-  operator <<(storage,data.Data1D[i]);
+  operator <<(storage,data.Data[i]);
  return storage;
 }
 
@@ -105,7 +105,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MDVector<T> &data)
  data.Resize(size);
 
  for(int i=0;i<data.GetRows();i++)
-  operator >>(storage,data.Data1D[i]);
+  operator >>(storage,data.Data[i]);
  return storage;
 }
 

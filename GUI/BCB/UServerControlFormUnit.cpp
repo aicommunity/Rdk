@@ -122,7 +122,7 @@ bool UServerControlVcl::ASetNumChannels(int old_num)
  }
 
 #ifdef RDK_VIDEO
- if(RdkApplication.GetProjectConfig().ProjectMode == 1)
+ if(RdkApplication.GetProjectConfig().ProjectMode == 1 && VideoOutputForm)
  {
   if(VideoOutputForm->GetNumSources()<num)
   {
