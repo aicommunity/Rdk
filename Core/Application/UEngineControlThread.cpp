@@ -206,6 +206,12 @@ void UEngineControlThread::Calculate(void)
    return;
   }
 
+  if(CalculateMode == 3 && MinInterstepsInterval == 0 && diff<1)
+  {
+   Sleep(1);
+   return;
+  }
+
   CalculationNotInProgress->reset();
   if(EngineIndex>=Core_GetNumChannels())
   {
