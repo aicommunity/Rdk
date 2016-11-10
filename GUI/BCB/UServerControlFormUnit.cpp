@@ -116,8 +116,8 @@ bool UServerControlVcl::ASetNumChannels(int old_num)
 
   if((!MCore_IsChannelInit(i) || !MModel_Check(i)) && i != 0)
   {
-   UGEngineControlForm->CloneProject(0, i);
-   MEnv_Reset(i,0);
+//   UGEngineControlForm->CloneProject(0, i); // TODO: необходимо починить клонирование
+//   MEnv_Reset(i,0);
   }
  }
 

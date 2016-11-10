@@ -892,6 +892,12 @@ bool UApplication::SetNumChannels(int num)
  if(!ServerControl->SetNumChannels(old_num))
   return false;
 
+ for(size_t i=old_num;i<num;i++)
+ {
+  if(!MCore_IsChannelInit(i))
+   MCore_ChannelInit(i,0,(void*)ExceptionHandler);
+ }
+
  return true;
 }
 
@@ -903,6 +909,8 @@ bool UApplication::InsertChannel(int index)
  if(!ServerControl->InsertChannel(index))
   return false;
 
+ if(!MCore_IsChannelInit(index))
+  MCore_ChannelInit(index,0,(void*)ExceptionHandler);
  return true;
 }
 

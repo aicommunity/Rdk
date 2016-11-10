@@ -310,6 +310,8 @@ void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *S
 
    if(global_ts == 2000 || global_ts == 30)
 	ProjectConfig.ChannelsConfig[i].GlobalTimeStep=2000;
+
+   ProjectConfig.ChannelsConfig[i].CalculationMode=1;
   }
  }
  else
@@ -325,6 +327,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *S
 
    if(global_ts == 2000 || global_ts == 30)
 	ProjectConfig.ChannelsConfig[i].GlobalTimeStep=30;
+   ProjectConfig.ChannelsConfig[i].CalculationMode=0;
   }
  }
  UpdateInterface();
@@ -385,7 +388,13 @@ void __fastcall TUCreateProjectWizardForm::OpenModelButtonClick(TObject *Sender)
  int channels_index=ChannelsStringGrid->Row;
  if(channels_index>=0)
  {
-  ProjectConfig.ChannelsConfig[channels_index].ModelFileName=AnsiString(ProjectModelFileNameLabeledEdit->Text).c_str();
+  DWORD err=0;
+  String file_name=ExtractFileName(ProjectModelFileNameLabeledEdit->Text);
+  if(!CopyFile(AnsiString(ProjectModelFileNameLabeledEdit->Text).c_str(),AnsiString(ProjectDirectoryLabeledEdit->Text+String("\\")+file_name).c_str(),TRUE))
+  {
+   err=GetLastError();
+  }
+  ProjectConfig.ChannelsConfig[channels_index].ModelFileName=AnsiString(file_name).c_str();
  }
 }
 //---------------------------------------------------------------------------
@@ -405,6 +414,7 @@ void __fastcall TUCreateProjectWizardForm::FormShow(TObject *Sender)
 {
  PageControl->ActivePageIndex=0;
  UClassesListFrame1->UpdateInterface(true);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

@@ -99,11 +99,13 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
         Width = 606
         Height = 469
         Align = alClient
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ExplicitLeft = 2
@@ -214,6 +216,12 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               ExplicitWidth = 300
               ExplicitHeight = 469
             end
+          end
+          inherited LibsTabSheet: TTabSheet
+            ExplicitLeft = 4
+            ExplicitTop = 24
+            ExplicitWidth = 499
+            ExplicitHeight = 515
           end
           inherited LibsControlTabSheet: TTabSheet
             ExplicitLeft = 4

@@ -37,6 +37,7 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
  PopupX=0;
  PopupY=0;
  LinksHintVisibility=false;
+ CheckModelFlag=false;
 }
 
 // -----------------------------
@@ -69,6 +70,15 @@ void TUDrawEngineFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TUDrawEngineFrame::AUpdateInterface(void)
 {
+ if(!Model_Check())
+ {
+  Image->Picture->Bitmap->Width=0;
+  Image->Picture->Bitmap->Height=0;
+  Image->Repaint();
+  Image->Update();
+  return;
+ }
+
  if(!NetXml.GetNumNodes())
  {
   const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());

@@ -170,6 +170,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  AutoStartProjectFlag=false;
  MinimizeToTray=false;
  StartMinimized=false;
+ CheckModelFlag=false;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -2056,13 +2057,13 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
+ CloseProject();
  TProjectConfig clean_project;
  UCreateProjectWizardForm->ProjectConfig=clean_project;
  UCreateProjectWizardForm->ClearWizard();
  UCreateProjectWizardForm->Caption="Create Project Wizard";
  if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
-  CloseProject();
   UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
 
   UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
@@ -2981,4 +2982,5 @@ void __fastcall TUGEngineControlForm::OpenProjectFolder1Click(TObject *Sender)
   ShellExecute(Handle, "explore", RdkApplication.GetProjectPath().c_str(), "", "", SW_SHOWNORMAL);
 }
 //---------------------------------------------------------------------------
+
 
