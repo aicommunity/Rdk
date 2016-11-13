@@ -379,7 +379,7 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
  if(!cont)
   return 0;
 
- if(!cont->LoadComponent(cont,&xml,true))
+ if(!cont->LoadComponent(&xml,true))
  {
   storage->ReturnObject(cont);
   return 0;

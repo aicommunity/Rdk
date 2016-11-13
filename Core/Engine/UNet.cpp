@@ -555,12 +555,12 @@ bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int conne
 // Методы сериализации компонент
 // --------------------------
 // Возвращает свойства компонента по идентификатору
-bool UNet::GetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
-  const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
+  const RDK::UContainer::VariableMapT &props=GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
@@ -572,11 +572,11 @@ bool UNet::GetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageX
    {
 	try
 	{
-	 cont->GetProperty(I->first,serstorage);
+	 GetProperty(I->first,serstorage);
 	}
 	catch(UIProperty::EPropertyError &exception)
 	{
-	 cont->ProcessException(exception);
+	 ProcessException(exception);
 	}
 
 	std::string paramname=I->first;//I->second.Property->GetName();
@@ -594,9 +594,9 @@ bool UNet::GetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageX
 
 // Возвращает выборочные свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UNet::GetComponentSelectedProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage)
+bool UNet::GetComponentSelectedProperties(RDK::USerStorageXML *serstorage)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
  return true;
@@ -604,16 +604,16 @@ bool UNet::GetComponentSelectedProperties(UEPtr<RDK::UContainer> cont, RDK::USer
 
 // Возвращает свойства компонента по идентификатору с описаниями
 // Память для buffer должна быть выделена!
-bool UNet::GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
-  const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
+  const RDK::UContainer::VariableMapT &props=GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(cont->GetClass())));
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass())));
 
   I=props.begin();
   J=props.end();
@@ -623,11 +623,11 @@ bool UNet::GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorag
    {
 	try
 	{
-	 cont->GetProperty(I->first,serstorage);
+	 GetProperty(I->first,serstorage);
 	}
 	catch(UIProperty::EPropertyError &exception)
 	{
-	 cont->ProcessException(exception);
+	 ProcessException(exception);
 	}
 
 	std::string paramname=I->first;//I->second.Property->GetName();
@@ -649,12 +649,12 @@ bool UNet::GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorag
 
 
 // устанавливает свойства компонента по идентификатору
-int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage)
+int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return 1;
 
-  const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
+  const RDK::UContainer::VariableMapT &props=GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
@@ -664,7 +664,7 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
   {
    try
    {
-	cont->SetProperty(I->first,serstorage);
+	SetProperty(I->first,serstorage);
    }
    catch(UIProperty::EPropertyError &exception)
    {
@@ -676,7 +676,7 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
 	  serstorage->SaveFromNode(value);
 	}
 
-	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
    }
    catch(UException &exception)
    {
@@ -688,7 +688,7 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
 	  serstorage->SaveFromNode(value);
 	}
 
-	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
    }
    catch(std::exception &exception)
    {
@@ -700,7 +700,7 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
 	  serstorage->SaveFromNode(value);
 	}
 
-	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
    }
    catch(...)
    {
@@ -712,7 +712,7 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
 	  serstorage->SaveFromNode(value);
 	}
 
-	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+cont->GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: Undefined exception"));
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: Undefined exception"));
    }
    ++I;
   }
@@ -722,33 +722,33 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-bool UNet::SaveComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
+bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+  serstorage->AddNode(GetName());
+  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
-  if(!GetComponentProperties(cont, serstorage,params_type_mask))
+  if(!GetComponentProperties(serstorage,params_type_mask))
    return false;
   serstorage->SelectUp();
 
   if(links)
   {
    serstorage->AddNode("Links");
-   if(GetComponentInternalLinks(cont,serstorage,0))
+   if(GetComponentInternalLinks(serstorage,0))
     return false;
    serstorage->SelectUp();
   }
 
   serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
-   if(!SaveComponent(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,false,params_type_mask))
+   if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponent(serstorage,false,params_type_mask))
    {
 	std::string name;
-	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Sub component not found: ")+cont->GetFullName(name));
+	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Sub component not found: ")+GetFullName(name));
 //	return false;
    }
   }
@@ -761,21 +761,21 @@ bool UNet::SaveComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage,
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, bool links)
+bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 {
-  if(!serstorage || !cont)
+  if(!serstorage)
    return false;
 
   std::string name=serstorage->GetNodeAttribute("Class");
   UId id=Storage->FindClassId(name);
 
-  if(cont->GetClass() != id)
+  if(GetClass() != id)
   {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(cont->GetClass())+std::string(" found ")+sntoa(id));
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(GetClass())+std::string(" found ")+sntoa(id));
    return false;
   }
 
-  cont->SetName(serstorage->GetNodeName());
+  SetName(serstorage->GetNodeName());
 
   for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
   {
@@ -783,29 +783,29 @@ bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage,
    {
 	try
 	{
-	 if(SetComponentProperties(cont, serstorage))
+	 if(SetComponentProperties(serstorage))
 	 {
 	  std::string name;
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+cont->GetFullName(name));
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
 //	  return false;
 	 }
 	}
 	catch(UException &exception)
 	{
-	 cont->ProcessException(exception);
+	 ProcessException(exception);
     }
 	serstorage->SelectUp();
    }
   }
 
-  cont->DelAllComponents();
+  DelAllComponents();
 
   if(!serstorage->SelectNode("Components"))
   {
    LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
    return false;
   }
-  UStorage* storage=cont->GetStorage();
+  UStorage* storage=GetStorage();
   for(int i=0;i<serstorage->GetNumNodes();i++)
   {
    serstorage->SelectNode(i);
@@ -817,10 +817,10 @@ bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage,
 	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
 	 continue;
-	if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+	if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
 	 continue;
 
-	if(!LoadComponent(newcont,serstorage,false))
+	if(!newcont->LoadComponent(serstorage,false))
 	{
 	 std::string name;
 	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(name));
@@ -829,7 +829,7 @@ bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage,
    }
    catch(UException &exception)
    {
-	cont->ProcessException(exception);
+	ProcessException(exception);
    }
    serstorage->SelectUp();
   }
@@ -838,7 +838,7 @@ bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage,
   if(links)
   {
    serstorage->SelectNode("Links");
-   if(!SetComponentInternalLinks(cont,serstorage,0))
+   if(!SetComponentInternalLinks(serstorage,0))
 	return false;
    serstorage->SelectUp();
   }
@@ -848,33 +848,33 @@ bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage,
 
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-bool UNet::SaveComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
+  serstorage->AddNode(GetName());
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(GetClass()));
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
-  if(!GetComponentProperties(cont, serstorage,type_mask))
+  if(!GetComponentProperties(serstorage,type_mask))
    return false;
   serstorage->SelectUp();
 
   serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
    try
    {
-	if(!SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
+	if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponentProperties(serstorage,type_mask))
 	{
 	 std::string name;
-	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SaveComponentProperties failed: ")+cont->GetFullName(name));
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SaveComponentProperties failed: ")+GetFullName(name));
 //	 return false;
 	}
    }
    catch (UException &exception)
    {
-	cont->ProcessException(exception);
+	ProcessException(exception);
    }
   }
   serstorage->SelectUp();
@@ -885,16 +885,16 @@ bool UNet::SaveComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *s
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-bool UNet::LoadComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage)
+bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
   std::string name=serstorage->GetNodeAttribute("Class");
   UId id=Storage->FindClassId(name);
-  if(cont->GetClass() != id)
+  if(GetClass() != id)
   {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(cont->GetClass())+std::string(" found ")+sntoa(id));
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(GetClass())+std::string(" found ")+sntoa(id));
    return false;
   }
 
@@ -904,39 +904,39 @@ bool UNet::LoadComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *s
    {
 	try
 	{
-	 if(SetComponentProperties(cont, serstorage))
+	 if(SetComponentProperties(serstorage))
 	 {
 	  std::string name;
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+cont->GetFullName(name));
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
 //	  return false;
 	 }
 	}
 	catch (UException &exception)
 	{
-	 cont->ProcessException(exception);
+	 ProcessException(exception);
     }
     serstorage->SelectUp();
    }
   }
 
   serstorage->SelectNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
-   if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
+   if(!serstorage->SelectNode(GetComponentByIndex(i)->GetName()))
 	continue;
    std::string nodename=serstorage->GetNodeName();
    try
    {
-	if(!LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
+	if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->LoadComponentProperties(serstorage))
 	{
 	 std::string name;
-	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+cont->GetFullName(name));
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+GetFullName(name));
 //	 return false;
 	}
    }
    catch (UException &exception)
    {
-	cont->ProcessException(exception);
+	ProcessException(exception);
    }
    serstorage->SelectUp();
   }
@@ -947,67 +947,67 @@ bool UNet::LoadComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *s
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
-void UNet::SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer)
+void UNet::SetGlobalComponentPropertyValue(UId classid, const char *paramname, const char *buffer)
 {
-  if(!cont || classid == ForbiddenId)
+  if(classid == ForbiddenId)
    return;
 
-  if(cont->GetClass() == classid)
+  if(GetClass() == classid)
   {
    try
    {
-	cont->SetPropertyValue(paramname,buffer);
+	SetPropertyValue(paramname,buffer);
    }
    catch(UIProperty::EPropertyError &exception)
    {
-	cont->ProcessException(exception);
+	ProcessException(exception);
    }
   }
 
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
-   SetGlobalComponentPropertyValue(cont->GetComponentByIndex(i), classid, paramname, buffer);
+   dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SetGlobalComponentPropertyValue(classid, paramname, buffer);
   }
 }
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-void UNet::SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer)
+void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, const char *paramname, const char *buffer)
 {
-  if(!cont || classid == ForbiddenId)
+  if(classid == ForbiddenId)
    return;
 
-  if(cont->GetClass() == classid && cont->GetOwner() && cont->GetOwner()->GetClass() == owner_classid)
+  if(GetClass() == classid && GetOwner() && GetOwner()->GetClass() == owner_classid)
   {
    try
    {
-	cont->SetPropertyValue(paramname,buffer);
+	SetPropertyValue(paramname,buffer);
    }
    catch(UIProperty::EPropertyError &exception)
    {
-	cont->ProcessException(exception);
+	ProcessException(exception);
    }
   }
 
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
-   SetGlobalOwnerComponentPropertyValue(cont->GetComponentByIndex(i), classid, owner_classid, paramname, buffer);
+   dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SetGlobalOwnerComponentPropertyValue(classid, owner_classid, paramname, buffer);
   }
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UNet::GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return 1;
 
   UStringLinksList linkslist;
   if(owner_level)
-   cont->GetLinks(linkslist, owner_level);
+   GetLinks(linkslist, owner_level);
   else
-   cont->GetLinks(linkslist, cont);
+   GetLinks(linkslist, this);
 
 
   *serstorage<<linkslist;
@@ -1017,16 +1017,16 @@ int UNet::GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *sersto
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-int UNet::SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return 1;
 
   UStringLinksList linkslist;
   *serstorage>>linkslist;
 
-  cont->BreakLinks();
-  cont->CreateLinks(linkslist, owner_level);
+  BreakLinks();
+  CreateLinks(linkslist, owner_level);
 
  return true;
 }
@@ -1039,9 +1039,9 @@ int UNet::SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *sersto
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UNet::GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
+int UNet::GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return 1;
 
   UStringLinksList linkslist;
@@ -1059,9 +1059,9 @@ int UNet::GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UNet::GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
+int UNet::GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return 1;
 
   UStringLinksList linkslist;
@@ -1071,20 +1071,20 @@ int UNet::GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstora
  return 0;
 }
 
-// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Возращает все внешние связи c компонентом и его дочерними компонентами в виде xml в буфер buffer
 // Информация о связях формируется относительно владельца компонента cont!
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UNet::GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return 1;
 
   UStringLinksList linkslist;
   if(owner_level)
-   cont->GetLinks(linkslist, owner_level, true, cont);
+   GetLinks(linkslist, owner_level, true, this);
   else
-   cont->GetLinks(linkslist, cont->GetOwner(), true, cont);
+   GetLinks(linkslist, GetOwner(), true, this);
 
   *serstorage<<linkslist;
  return 0;
@@ -1092,41 +1092,41 @@ int UNet::GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *sersto
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
+bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
 {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
+  serstorage->AddNode(GetName());
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(GetClass()));
 
   serstorage->AddNode("Links");
 
   UStringLinksList linkslist;
 
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
-   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(cont->GetComponentByIndex(i));
-   sub_cont->GetLinks(linkslist, cont,true,sub_cont);
+   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
+   sub_cont->GetLinks(linkslist, this, true, sub_cont);
   }
   *serstorage<<linkslist;
   serstorage->SelectUp();
 
   serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
+  for(int i=0;i<GetNumComponents();i++)
   {
-   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(cont->GetComponentByIndex(i));
+   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
    serstorage->AddNode(sub_cont->GetName());
    serstorage->SetNodeAttribute("Class",Storage->FindClassName(sub_cont->GetClass()));
    serstorage->AddNode("Parameters");
    try
    {
-	if(!cont->GetComponentProperties(sub_cont,serstorage,ptPubParameter))
+	if(!sub_cont->GetComponentProperties(serstorage,ptPubParameter))
 	 return false;
    }
    catch (UException &exception)
    {
-	cont->ProcessException(exception);
+	ProcessException(exception);
    }
    serstorage->SelectUp();
    serstorage->SelectUp();
@@ -1139,45 +1139,6 @@ bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 }
 // --------------------------
 
-// --------------------------
-// Скрытые методы доступа к свойствам
-// --------------------------
-template<typename T>
-ULinksListT<T>& UNet::GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
-{
- if(dynamic_pointer_cast<UItem>(cont))
- {
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-  static_pointer_cast<UItem>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
- }
- else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-
- for(int i=0;i<cont->GetNumComponents();i++)
-  GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel, exclude_internals,internal_level);
-
- return linkslist;
-}
-
-template<typename T>
-ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
-{
- if(dynamic_pointer_cast<UItem>(cont))
- {
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-  static_pointer_cast<UItem>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
- }
- else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-
- for(int i=0;i<cont->GetNumComponents();i++)
-  GetPersonalLinks(cont->GetComponentByIndex(i), cont2, linkslist, netlevel);
-
- return linkslist;
-}
-// --------------------------
 
 }
 #endif
