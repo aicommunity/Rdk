@@ -15,7 +15,7 @@ TProjectChannelConfig::TProjectChannelConfig(void)
 
  PredefinedStructure=0;
 
- ClassName="Model";
+ ClassName="UModel";
 
  GlobalTimeStep=30;
 

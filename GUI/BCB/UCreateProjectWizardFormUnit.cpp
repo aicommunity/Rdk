@@ -274,6 +274,24 @@ void __fastcall TUCreateProjectWizardForm::FinishButtonClick(TObject *Sender)
   return;
  }
 
+ if(ProjectConfig.ChannelsConfig.empty())
+ {
+  Application->MessageBox(L"Please set more than 0 calculation channels", L"Error", MB_OK);
+  PageControl->ActivePage=TabSheet3;
+  return;
+ }
+
+ for(size_t i=0;i<ProjectConfig.ChannelsConfig.size();i++)
+ {
+  if(ProjectConfig.ChannelsConfig[i].ClassName.empty() && ProjectConfig.ChannelsConfig[i].PredefinedStructure == 0)
+  {
+   Application->MessageBox((String(L"Please select model for channel ")+IntToStr(int(i))).c_str(), L"Error", MB_OK);
+   PageControl->ActivePage=TabSheet3;
+   ChannelsStringGrid->Row=i;
+   return;
+  }
+ }
+
 // std::map<std::string, int>::iterator I=PredefinedModels.find(AnsiString(PredefinedModelComboBox->Text).c_str());
 
  ModalResult=mrOk;
