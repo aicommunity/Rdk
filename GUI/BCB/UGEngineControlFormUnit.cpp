@@ -2064,18 +2064,18 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
  UCreateProjectWizardForm->Caption="Create Project Wizard";
  if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
-  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+//  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
 
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=2;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=1;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=1;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=false;
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoadFlag;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoadFlag;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugModeFlag;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
 
   UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
   UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();

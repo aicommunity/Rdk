@@ -115,7 +115,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object Button1: TButton
         Left = 520
-        Top = 59
+        Top = 60
         Width = 78
         Height = 26
         Anchors = [akTop, akRight]
@@ -467,7 +467,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Top = 1
               Width = 546
               Height = 381
-              ActivePage = DontChangeTabSheet
+              ActivePage = ModelFromComponentTabSheet
               Align = alClient
               MultiLine = True
               TabOrder = 0
@@ -615,6 +615,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         inherited TreeView: TTreeView
                           Width = 526
                           Height = 307
+                          OnChange = UClassesListFrame1TreeViewChange
                           ExplicitWidth = 526
                           ExplicitHeight = 307
                         end

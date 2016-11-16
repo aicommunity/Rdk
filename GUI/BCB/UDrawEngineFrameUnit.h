@@ -196,6 +196,9 @@ void SelectComponent(const std::string &comp_name);
 
 // Сохраняет положение компонента в заданных координатах
 void SaveComponentPosition(const std::string &name);
+
+/// Применяет текущий шрифт
+void ApplyFont(void);
 // -----------------------------
 };
 

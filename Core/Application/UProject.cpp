@@ -69,28 +69,28 @@ TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
 
 bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) const
 {
- return (ModelMode != copy.ModelMode) |
- (PredefinedStructure != copy.PredefinedStructure) |
- (ClassName != copy.ClassName) |
- (ModelFileName != copy.ModelFileName) |
- (ParametersFileName != copy.ParametersFileName) |
- (StatesFileName != copy.StatesFileName) |
- (GlobalTimeStep != copy.GlobalTimeStep) |
- (DefaultTimeStep != copy.DefaultTimeStep) |
- (CalculationMode != copy.CalculationMode) |
- (MinInterstepsInterval != copy.MinInterstepsInterval) |
- (InitAfterLoad != copy.InitAfterLoad) |
- (ResetAfterLoad != copy.ResetAfterLoad) |
- (DebugMode != copy.DebugMode) |
- (EventsLogMode != copy.EventsLogMode) |
- (ChannelName != copy.ChannelName) |
- (DebugSysEventsMask != copy.DebugSysEventsMask) |
+ return (ModelMode != copy.ModelMode) ||
+ (PredefinedStructure != copy.PredefinedStructure) ||
+ (ClassName != copy.ClassName) ||
+ (ModelFileName != copy.ModelFileName) ||
+ (ParametersFileName != copy.ParametersFileName) ||
+ (StatesFileName != copy.StatesFileName) ||
+ (GlobalTimeStep != copy.GlobalTimeStep) ||
+ (DefaultTimeStep != copy.DefaultTimeStep) ||
+ (CalculationMode != copy.CalculationMode) ||
+ (MinInterstepsInterval != copy.MinInterstepsInterval) ||
+ (InitAfterLoad != copy.InitAfterLoad) ||
+ (ResetAfterLoad != copy.ResetAfterLoad) ||
+ (DebugMode != copy.DebugMode) ||
+ (EventsLogMode != copy.EventsLogMode) ||
+ (ChannelName != copy.ChannelName) ||
+ (DebugSysEventsMask != copy.DebugSysEventsMask) ||
  (DebuggerMessageFlag != copy.DebuggerMessageFlag);
 }
 
 bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) const
 {
- return ((*this) != copy);
+ return !((*this) != copy);
 }
 
 TProjectConfig::TProjectConfig(void)
@@ -176,29 +176,29 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
 
 bool TProjectConfig::operator != (const TProjectConfig& copy) const
 {
- return (ProjectName != copy.ProjectName) |
- (ProjectDescription != copy.ProjectDescription) |
- (ProjectAutoSaveFlag != copy.ProjectAutoSaveFlag) |
- (ProjectAutoSaveStatesFlag != copy.ProjectAutoSaveStatesFlag) |
- (EventsLogFlag != copy.EventsLogFlag) |
- (ProjectMode != copy.ProjectMode) |
- (ProjectType != copy.ProjectType) |
- (MultiThreadingMode != copy.MultiThreadingMode) |
- (CalcSourceTimeMode != copy.CalcSourceTimeMode) |
- (ShowChannelsStateFlag != copy.ShowChannelsStateFlag) |
- (ReflectionFlag != copy.ReflectionFlag) |
- (DisableStopVideoSources != copy.DisableStopVideoSources) |
- (NumChannels != copy.NumChannels) |
- (ChannelsConfig != copy.ChannelsConfig) |
- (ServerInterfaceAddress != copy.ServerInterfaceAddress) |
- (ServerInterfacePort != copy.ServerInterfacePort) |
- (ProjectShowChannelsStates != copy.ProjectShowChannelsStates) |
- (InterfaceFileName != copy.InterfaceFileName) |
- (DescriptionFileName != copy.DescriptionFileName) |
- (DebugMode != copy.DebugMode) |
- (DebugSysEventsMask != copy.DebugSysEventsMask) |
- (DebuggerMessageFlag != copy.DebuggerMessageFlag) |
- (EventsLogMode != copy.EventsLogMode) |
+ return (ProjectName != copy.ProjectName) ||
+ (ProjectDescription != copy.ProjectDescription) ||
+ (ProjectAutoSaveFlag != copy.ProjectAutoSaveFlag) ||
+ (ProjectAutoSaveStatesFlag != copy.ProjectAutoSaveStatesFlag) ||
+ (EventsLogFlag != copy.EventsLogFlag) ||
+ (ProjectMode != copy.ProjectMode) ||
+ (ProjectType != copy.ProjectType) ||
+ (MultiThreadingMode != copy.MultiThreadingMode) ||
+ (CalcSourceTimeMode != copy.CalcSourceTimeMode) ||
+ (ShowChannelsStateFlag != copy.ShowChannelsStateFlag) ||
+ (ReflectionFlag != copy.ReflectionFlag) ||
+ (DisableStopVideoSources != copy.DisableStopVideoSources) ||
+ (NumChannels != copy.NumChannels) ||
+ (ChannelsConfig != copy.ChannelsConfig) ||
+ (ServerInterfaceAddress != copy.ServerInterfaceAddress) ||
+ (ServerInterfacePort != copy.ServerInterfacePort) ||
+ (ProjectShowChannelsStates != copy.ProjectShowChannelsStates) ||
+ (InterfaceFileName != copy.InterfaceFileName) ||
+ (DescriptionFileName != copy.DescriptionFileName) ||
+ (DebugMode != copy.DebugMode) ||
+ (DebugSysEventsMask != copy.DebugSysEventsMask) ||
+ (DebuggerMessageFlag != copy.DebuggerMessageFlag) ||
+ (EventsLogMode != copy.EventsLogMode) ||
  (OverrideLogParameters != copy.OverrideLogParameters);
 }
 

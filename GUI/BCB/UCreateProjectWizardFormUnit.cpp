@@ -3,7 +3,7 @@
 #include <vcl.h>
 #include <Vcl.FileCtrl.hpp>
 #pragma hdrstop
-
+#include <dirent.h>
 #include "UCreateProjectWizardFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -283,8 +283,7 @@ void __fastcall TUCreateProjectWizardForm::Button1Click(TObject *Sender)
 {
  String chosenDir=ExtractFilePath(Application->ExeName);
 
-// if(SelectDirectory(chosenDir,TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,SELDIRHELP))
- if(SelectDirectory("Select project directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
+ if(SelectDirectory("Select project directory", "", chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI << sdShowEdit << sdValidateDir, this))
  {
   ProjectDirectoryLabeledEdit->Text=chosenDir;
  }
@@ -413,6 +412,14 @@ void __fastcall TUCreateProjectWizardForm::ModelFileNameRadioButtonClick(TObject
 void __fastcall TUCreateProjectWizardForm::FormShow(TObject *Sender)
 {
  PageControl->ActivePageIndex=0;
+#ifdef NMSDK_LIB
+ ProjectTypeRadioGroup->ItemIndex=0;
+ ProjectTypeRadioGroupClick(Sender);
+#else
+ ProjectTypeRadioGroup->ItemIndex=1;
+ ProjectTypeRadioGroupClick(Sender);
+#endif
+
  UClassesListFrame1->UpdateInterface(true);
  UpdateInterface();
 }
@@ -826,6 +833,20 @@ void __fastcall TUCreateProjectWizardForm::GlobalTimeStepEditChange(TObject *Sen
   {
 
   }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUCreateProjectWizardForm::UClassesListFrame1TreeViewChange(TObject *Sender,
+          TTreeNode *Node)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ int channels_index=ChannelsStringGrid->Row;
+ if(channels_index>=0)
+ {
+  ProjectConfig.ChannelsConfig[channels_index].ClassName=AnsiString(UClassesListFrame1->GetSelectedName()).c_str();
+ }
 }
 //---------------------------------------------------------------------------
 
