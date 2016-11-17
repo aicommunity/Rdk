@@ -31,6 +31,7 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
  LongLinkFlag=false;
  MoveFlag=false;
  FontSize=16;
+ FontType="Tahoma";
  StartX=0;
  StartY=0;
  StopX=0;
@@ -117,11 +118,6 @@ void TUDrawEngineFrame::AUpdateInterface(void)
  Image->Height=new_img_height;
  Graph.SetCanvas(&GraphCanvas);
  DrawEngine.SetFonts(GetCoreLock()->GetFonts());
- ApplyFont();
- DrawEngine.Draw();
- GraphCanvas.ReflectionX(&ShowCanvas);
- ShowCanvas>>Image->Picture->Bitmap;
- Image->Repaint();
 
  FontTypeComboBox->Clear();
  std::vector<std::string> buffer;
@@ -149,6 +145,13 @@ void TUDrawEngineFrame::AUpdateInterface(void)
 
  RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
+
+ ApplyFont();
+ DrawEngine.Draw();
+ GraphCanvas.ReflectionX(&ShowCanvas);
+ ShowCanvas>>Image->Picture->Bitmap;
+ Image->Repaint();
+
  UClassesListFrame->UpdateInterface();
 }
 
@@ -266,7 +269,8 @@ void TUDrawEngineFrame::SaveComponentPosition(const std::string &name)
 /// Применяет текущий шрифт
 void TUDrawEngineFrame::ApplyFont(void)
 {
- FontType=AnsiString(FontTypeComboBox->Text).c_str();
+ if(FontTypeComboBox->Text.Length() != 0)
+  FontType=AnsiString(FontTypeComboBox->Text).c_str();
 
  try
  {
@@ -274,7 +278,6 @@ void TUDrawEngineFrame::ApplyFont(void)
  }
  catch(EConvertError &err)
  {
-  return;
  }
 
  RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
