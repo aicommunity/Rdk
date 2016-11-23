@@ -606,6 +606,16 @@
 			<locationURI>PARENT-4-PROJECT_LOC/ThirdParty/xmlParser/xmlParser.cpp</locationURI>
 		</link>
 		<link>
+			<name>Core/System/Gcc/UGenericMutex.gcc.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Core/System/Gcc/UGenericMutex.gcc.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/System/Gcc/pevents.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Core/System/Gcc/pevents.cpp</locationURI>
+		</link>
+		<link>
 			<name>Core/System/Gcc/rdk_system.gcc.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Core/System/Gcc/rdk_system.gcc.cpp</locationURI>
