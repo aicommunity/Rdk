@@ -592,8 +592,8 @@ MMatrix<T,Rows,Cols> operator + (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator -= (const MMatrix<T,Rows,Cols> &M)
 {
- T* pm1=Data;
- const T* pm2=M.Data;
+ T* pm1=Data[0];
+ const T* pm2=M.Data[0];
 
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ -= *pm2++;
@@ -1068,7 +1068,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
  if(!norm)
   return *this;
 
- T* pm1=Data;
+ T* pm1=Data[0];
  for(int i=0;i<Cols*Rows;i++,pm1++)
   *pm1/=norm;
 
