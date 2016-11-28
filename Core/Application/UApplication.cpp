@@ -367,7 +367,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
  ProjectPath=extract_file_path(file_name);
  Project->SetConfig(project_config);
  Project->SetProjectPath(ProjectPath);
- ProjectFileName=file_name;
+ ProjectFileName=extract_file_name(file_name);
 
  UApplication::SetNumChannels(project_config.NumChannels);
 
@@ -388,12 +388,11 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
 
  if(SaveProject())
  {
-  std::string file_name=ProjectFileName;
   fstream file((ProjectPath+project_config.DescriptionFileName).c_str(),ios::out | ios::trunc);
   file<<project_config.ProjectDescription;
   file.flush();
   file.close();
-  return OpenProject(file_name);
+  return OpenProject(ProjectPath+ProjectFileName);
  }
  else
   return false;

@@ -454,31 +454,16 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
  if(I != ConnectedItemList.end())
  {
-  if(c_index == -1)
+  for(size_t i=0;i<I->second.size();i++)
   {
-   for(size_t i=0;i<I->second.size();i++)
+   if(I->second[i].Item == na)
    {
-	if(I->second[i].Item == na)
+	if(I->second[i].Name == item_property_name)
 	{
-	 if(I->second[i].Name == item_property_name)
-	 {
+	 if(c_index == -1)
 	  c_index=i;
-	  return true;
-	 }
-	 else
-	 {
-//	  I->second[i].Name = item_property_name;
-//	  c_index=i;
-//	  return true;
-	 }
+	 return true;
 	}
-   }
-  }
-  else
-  {
-   if(int(I->second.size())>c_index && I->second[c_index].Item == na && ((i_conn_property->GetIoType() & ipRange) && I->second[c_index].Name != item_property_name))
-   {
-	return true;
    }
   }
  }
