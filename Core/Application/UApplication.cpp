@@ -367,7 +367,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
  ProjectPath=extract_file_path(file_name);
  Project->SetConfig(project_config);
  Project->SetProjectPath(ProjectPath);
- ProjectFileName=file_name;
+ ProjectFileName=extract_file_name(file_name);
 
  UApplication::SetNumChannels(project_config.NumChannels);
 
@@ -388,12 +388,11 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
 
  if(SaveProject())
  {
-  std::string file_name=ProjectFileName;
   fstream file((ProjectPath+project_config.DescriptionFileName).c_str(),ios::out | ios::trunc);
   file<<project_config.ProjectDescription;
   file.flush();
   file.close();
-  return OpenProject(file_name);
+  return OpenProject(ProjectPath+ProjectFileName);
  }
  else
   return false;
@@ -670,139 +669,6 @@ bool UApplication::CloneProject(const std::string &filename)
  return true;
 }
 
-bool UApplication::CloneProject(int source_id, int cloned_id)
-{
- if(source_id>=GetNumChannels() || cloned_id >= GetNumChannels())
-  return false;
-/*
- try {
- RDK::TProjectConfig config=GetProjectConfig();
- PredefinedStructure.resize(GetNumChannels());
- PredefinedStructure[cloned_id]=PredefinedStructure[source_id];
-
- // Шаг счета по умолчанию
- DefaultTimeStep.resize(GetNumChannels());
- DefaultTimeStep[cloned_id]=DefaultTimeStep[source_id];
-
- // Глобальный шаг счета модели
- GlobalTimeStep.resize(GetNumChannels());
- GlobalTimeStep[cloned_id]=GlobalTimeStep[source_id];
-
- if(!ProjectXml.SelectNodeRoot("Project/General"))
-  return;
-
- ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
-
- CalculationMode.resize(GetNumChannels());
- CalculationMode[cloned_id]=CalculationMode[source_id];
-
- InitAfterLoadFlag.resize(GetNumChannels());
- InitAfterLoadFlag[cloned_id]=InitAfterLoadFlag[source_id];
-
- ResetAfterLoadFlag.resize(GetNumChannels());
- ResetAfterLoadFlag[cloned_id]=ResetAfterLoadFlag[source_id];
-
- DebugModeFlag.resize(GetNumChannels());
- DebugModeFlag[cloned_id]=DebugModeFlag[source_id];
-
- MinInterstepsInterval.resize(GetNumChannels());
- MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
-
-
- ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
- // Флаг автоматического сохранения проекта
- ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
-
- int selected_engine=GetSelectedChannelIndex();
- Core_SelectChannel(cloned_id);
- String modelfilename;
-
- if(source_id == 0)
-   modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
-  else
-   modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(source_id),"").c_str();
-
-
- if(!IsChannelInit())
-  GraphicalEngineInit(PredefinedStructure[cloned_id],NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
- else
-  Env_SetPredefinedStructure(PredefinedStructure[cloned_id]);
-
- Model_SetDefaultTimeStep(DefaultTimeStep[cloned_id]);
- Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
-
- Env_CreateStructure();
- Env_Init();
-
- if(PredefinedStructure[cloned_id] == 0 && modelfilename.Length() != 0)
- {
-  if(ExtractFilePath(modelfilename).Length() == 0)
-   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
-  else
-   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
- }
-
- String paramsfilename;
-
- if(source_id == 0)
-  paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
- else
-  paramsfilename=ProjectXml.ReadString(std::string("ParametersFileName_")+RDK::sntoa(source_id),"").c_str();
-
- if(paramsfilename.Length() != 0)
- {
-  if(ExtractFilePath(paramsfilename).Length() == 0)
-   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
-  else
-   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
- }
-
- if(ProjectAutoSaveStateFlag)
- {
-  String statesfilename;
-  if(source_id == 0)
-   statesfilename=ProjectXml.ReadString("StatesFileName","").c_str();
-  else
-   statesfilename=ProjectXml.ReadString(std::string("StatesFileName_")+RDK::sntoa(source_id),"").c_str();
-
-  if(statesfilename.Length() != 0)
-  {
-   if(ExtractFilePath(statesfilename).Length() == 0)
-	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(ProjectPath+statesfilename);
-   else
-	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
-  }
- }
-
- if(Model_Check())
- {
-  Model_SetGlobalTimeStep("",GlobalTimeStep[cloned_id]);
-  if(InitAfterLoadFlag[cloned_id])
-   MEnv_Init(cloned_id);
-  if(ResetAfterLoadFlag[cloned_id])
-   MEnv_Reset(cloned_id,0);
- }
- Core_SelectChannel(selected_engine);
-}
-catch(RDK::UException &exception)
-{
- UShowProgressBarForm->Hide();
- Engine_LogMessage(exception.GetType(), (std::string("Core-CloneProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
-}
-catch(Exception &exception)
-{
- UShowProgressBarForm->Hide();
- MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("GUI-CloneProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
-}
-catch(...)
-{
- UShowProgressBarForm->Hide();
- throw;
-}
-   */
- return true;
-}
-
 void UApplication::ReloadParameters(void)
 {
  if(!ProjectOpenFlag)
@@ -892,7 +758,9 @@ bool UApplication::SetNumChannels(int num)
  if(!ServerControl->SetNumChannels(old_num))
   return false;
 
- for(size_t i=old_num;i<num;i++)
+ Project->SetNumChannels(num);
+
+ for(int i=old_num;i<num;i++)
  {
   if(!MCore_IsChannelInit(i))
    MCore_ChannelInit(i,0,(void*)ExceptionHandler);
@@ -909,6 +777,8 @@ bool UApplication::InsertChannel(int index)
  if(!ServerControl->InsertChannel(index))
   return false;
 
+ Project->InsertChannel(index);
+
  if(!MCore_IsChannelInit(index))
   MCore_ChannelInit(index,0,(void*)ExceptionHandler);
  return true;
@@ -922,8 +792,129 @@ bool UApplication::DeleteChannel(int index)
  if(!ServerControl->DeleteChannel(index))
   return false;
 
+ Project->DeleteChannel(index);
+
  return true;
 }
+
+/// Клонирует канал source_id в cloned_id
+bool UApplication::CloneChannel(int source_id, int cloned_id)
+{
+ if(source_id<0 || cloned_id <0 || source_id>=GetNumChannels() || cloned_id >=GetNumChannels())
+  return false;
+
+ try
+ {
+  RDK::TProjectConfig config=GetProjectConfig();
+  config.ChannelsConfig[cloned_id]=config.ChannelsConfig[source_id];
+
+  TProjectChannelConfig &source_channel=config.ChannelsConfig[source_id];
+  TProjectChannelConfig &cloned_channel=config.ChannelsConfig[cloned_id];
+
+  // Меняем номера индексов в именах файлов модели, параметров и состояний
+  if(cloned_id>0)
+   cloned_channel.ModelFileName=std::string("model_")+sntoa(cloned_id+1)+".xml";
+  else
+   cloned_channel.ModelFileName=std::string("model")+".xml";
+
+  if(cloned_id>0)
+   cloned_channel.ParametersFileName=std::string("parameters_")+sntoa(cloned_id+1)+".xml";
+  else
+   cloned_channel.ParametersFileName=std::string("parameters")+".xml";
+
+  if(cloned_id>0)
+   cloned_channel.StatesFileName=std::string("states_")+sntoa(cloned_id+1)+".xml";
+  else
+   cloned_channel.StatesFileName=std::string("states")+".xml";
+
+  int selected_engine=Core_GetSelectedChannelIndex();
+  Core_SelectChannel(cloned_id);
+
+  if(!Core_IsChannelInit())
+   Core_ChannelInit(cloned_channel.PredefinedStructure,ExceptionHandler);
+  else
+   Env_SetPredefinedStructure(cloned_channel.PredefinedStructure);
+
+   Model_SetDefaultTimeStep(cloned_channel.DefaultTimeStep);
+   Log_SetDebugMode(config.DebugMode);
+   Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
+   Log_SetEventsLogMode(config.EventsLogMode);
+   Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
+   Env_SetCurrentDataDir(ProjectPath.c_str());
+   Env_CreateStructure();
+   Env_Init();
+
+ if(cloned_channel.PredefinedStructure == 0 && !cloned_channel.ModelFileName.empty())
+ {
+  if(extract_file_path(cloned_channel.ModelFileName).empty())
+  {
+   RdkCopyFile(ProjectPath+source_channel.ModelFileName, ProjectPath+cloned_channel.ModelFileName);
+   LoadModelFromFile(cloned_id, ProjectPath+cloned_channel.ModelFileName);
+  }
+  else
+  {
+   RdkCopyFile(source_channel.ModelFileName, ProjectPath+cloned_channel.ModelFileName);
+   LoadModelFromFile(cloned_id, cloned_channel.ModelFileName);
+  }
+ }
+
+ if(!cloned_channel.ParametersFileName.empty())
+ {
+  if(extract_file_path(cloned_channel.ParametersFileName).empty())
+  {
+   RdkCopyFile(ProjectPath+source_channel.ParametersFileName, ProjectPath+cloned_channel.ParametersFileName);
+   LoadParametersFromFile(cloned_id, ProjectPath+cloned_channel.ParametersFileName);
+  }
+  else
+  {
+   RdkCopyFile(source_channel.ParametersFileName, ProjectPath+cloned_channel.ParametersFileName);
+   LoadParametersFromFile(cloned_id, cloned_channel.ParametersFileName);
+  }
+ }
+
+ if(config.ProjectAutoSaveStatesFlag)
+ {
+  if(!cloned_channel.StatesFileName.empty())
+  {
+   if(extract_file_path(cloned_channel.StatesFileName).empty())
+   {
+	RdkCopyFile(ProjectPath+source_channel.StatesFileName, ProjectPath+cloned_channel.StatesFileName);
+	LoadStatesFromFile(cloned_id, ProjectPath+cloned_channel.StatesFileName);
+   }
+   else
+   {
+	RdkCopyFile(source_channel.StatesFileName, ProjectPath+cloned_channel.StatesFileName);
+	LoadStatesFromFile(cloned_id, cloned_channel.StatesFileName);
+   }
+  }
+ }
+
+ if(Model_Check())
+ {
+  Model_SetGlobalTimeStep("",cloned_channel.GlobalTimeStep);
+  if(cloned_channel.InitAfterLoad)
+   MEnv_Init(cloned_id);
+  if(cloned_channel.ResetAfterLoad)
+   MEnv_Reset(cloned_id,0);
+ }
+ EngineControl->SetCalculateMode(cloned_id, cloned_channel.CalculationMode);
+
+ Core_SelectChannel(selected_engine);
+ SetProjectConfig(config);
+}
+catch(RDK::UException &exception)
+{
+ MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenCloneChannel Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+}
+catch(...)
+{
+ throw;
+}
+
+ return true;
+}
+
+
 // --------------------------
 
 // --------------------------

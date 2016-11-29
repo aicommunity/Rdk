@@ -1043,7 +1043,15 @@ catch(...)
 // Загружает проект с индексом source_id, в движок с индексом cloned_id
 void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 {
- RdkApplication.CloneProject(source_id, cloned_id);
+ if(cloned_id>=Core_GetNumChannels())
+ {
+  if(!RdkApplication.SetNumChannels(cloned_id+1))
+   return;
+ }
+
+ RdkApplication.CloneChannel(source_id, cloned_id);
+ RDK::UIVisualControllerStorage::UpdateInterface();
+
 /*
  if(source_id>=Core_GetNumChannels() || cloned_id >= Core_GetNumChannels())
   return;
@@ -2064,18 +2072,18 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
  UCreateProjectWizardForm->Caption="Create Project Wizard";
  if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
-  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+//  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
 
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=2;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=1;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=1;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=false;
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoadFlag;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoadFlag;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugModeFlag;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
 
   UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
   UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
@@ -2983,4 +2991,11 @@ void __fastcall TUGEngineControlForm::OpenProjectFolder1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
+{
+ int cloned_id=Core_GetNumChannels();
+ CloneProject(Core_GetSelectedChannelIndex(), cloned_id);
+}
+//---------------------------------------------------------------------------
 

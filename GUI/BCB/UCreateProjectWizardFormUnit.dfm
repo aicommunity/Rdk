@@ -61,7 +61,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Top = 0
     Width = 610
     Height = 678
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
@@ -115,7 +115,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object Button1: TButton
         Left = 520
-        Top = 59
+        Top = 60
         Width = 78
         Height = 26
         Anchors = [akTop, akRight]
@@ -467,7 +467,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Top = 1
               Width = 546
               Height = 381
-              ActivePage = DontChangeTabSheet
+              ActivePage = ModelFromComponentTabSheet
               Align = alClient
               MultiLine = True
               TabOrder = 0
@@ -533,6 +533,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               object ModelFromFileTabSheet: TTabSheet
                 Caption = 'From File'
                 ImageIndex = 1
+                TabVisible = False
                 DesignSize = (
                   538
                   353)
@@ -595,7 +596,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                       ExplicitWidth = 534
                       ExplicitHeight = 336
                       inherited NameTabSheet: TTabSheet
-                        ExplicitLeft = 4
                         ExplicitTop = 25
                         ExplicitWidth = 526
                         ExplicitHeight = 307
@@ -615,16 +615,13 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         inherited TreeView: TTreeView
                           Width = 526
                           Height = 307
+                          OnChange = UClassesListFrame1TreeViewChange
                           ExplicitWidth = 526
                           ExplicitHeight = 307
                         end
                       end
                       inherited LibsControlTabSheet: TTabSheet
                         TabVisible = False
-                        ExplicitLeft = 4
-                        ExplicitTop = 24
-                        ExplicitWidth = 499
-                        ExplicitHeight = 515
                         inherited Splitter1: TSplitter
                           Top = 291
                           ExplicitTop = 188

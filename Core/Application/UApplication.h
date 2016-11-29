@@ -202,7 +202,6 @@ virtual bool CloseProject(void);
 
 /// Клонирует проект в новое расположение
 virtual bool CloneProject(const std::string &filename);
-virtual bool CloneProject(int source_id, int cloned_id);
 
 virtual void ReloadParameters(void);
 
@@ -220,6 +219,9 @@ int GetNumChannels(void) const;
 bool SetNumChannels(int num);
 bool InsertChannel(int index);
 bool DeleteChannel(int index);
+
+/// Клонирует канал source_id в cloned_id
+virtual bool CloneChannel(int source_id, int cloned_id);
 // --------------------------
 
 // --------------------------
