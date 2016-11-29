@@ -1043,7 +1043,15 @@ catch(...)
 // Загружает проект с индексом source_id, в движок с индексом cloned_id
 void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 {
- RdkApplication.CloneProject(source_id, cloned_id);
+ if(cloned_id>=Core_GetNumChannels())
+ {
+  if(!RdkApplication.SetNumChannels(cloned_id+1))
+   return;
+ }
+
+ RdkApplication.CloneChannel(source_id, cloned_id);
+ RDK::UIVisualControllerStorage::UpdateInterface();
+
 /*
  if(source_id>=Core_GetNumChannels() || cloned_id >= Core_GetNumChannels())
   return;
@@ -2983,4 +2991,11 @@ void __fastcall TUGEngineControlForm::OpenProjectFolder1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
+{
+ int cloned_id=Core_GetNumChannels();
+ CloneProject(Core_GetSelectedChannelIndex(), cloned_id);
+}
+//---------------------------------------------------------------------------
 

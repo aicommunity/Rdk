@@ -166,6 +166,7 @@ __published:	// IDE-managed Components
 	TRadioButton *SingleThreadedRadioButton;
 	TCheckBox *DetailedDebugLogCheckBox;
 	TMenuItem *OpenProjectFolder1;
+	TMenuItem *ClonetoNewChannel1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -250,6 +251,7 @@ __published:	// IDE-managed Components
 	void __fastcall SingleThreadedRadioButtonClick(TObject *Sender);
 	void __fastcall DetailedDebugLogCheckBoxClick(TObject *Sender);
 	void __fastcall OpenProjectFolder1Click(TObject *Sender);
+	void __fastcall ClonetoNewChannel1Click(TObject *Sender);
 
 
 

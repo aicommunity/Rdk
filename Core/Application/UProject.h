@@ -160,6 +160,16 @@ TProjectConfig(const TProjectConfig& copy);
 
 bool operator != (const TProjectConfig& copy) const;
 bool operator == (const TProjectConfig& copy) const;
+
+
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+int GetNumChannels(void) const;
+bool SetNumChannels(int num);
+bool InsertChannel(int index);
+bool DeleteChannel(int index);
+// --------------------------
 };
 
 class RDK_LIB_TYPE UProject
@@ -215,6 +225,15 @@ bool ReadFromXml(USerStorageXML &xml);
 
 /// Сохраняет конфигурацию проекта в xml
 bool WriteToXml(USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+int GetNumChannels(void) const;
+bool SetNumChannels(int num);
+bool InsertChannel(int index);
+bool DeleteChannel(int index);
 // --------------------------
 };
 

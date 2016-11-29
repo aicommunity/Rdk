@@ -207,6 +207,50 @@ bool TProjectConfig::operator == (const TProjectConfig& copy) const
  return !((*this) != copy);
 }
 
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+int TProjectConfig::GetNumChannels(void) const
+{
+ return NumChannels;
+}
+
+bool TProjectConfig::SetNumChannels(int num)
+{
+ NumChannels=num;
+ ChannelsConfig.resize(num);
+ return true;
+}
+
+bool TProjectConfig::InsertChannel(int index)
+{
+ int old_num=NumChannels;
+ int num=old_num+1;
+
+ ChannelsConfig.resize(num);
+
+ for(int i=int(ChannelsConfig.size())-1;i>index;i--)
+ {
+  ChannelsConfig[i]=ChannelsConfig[i-1];
+ }
+
+ return true;
+}
+
+bool TProjectConfig::DeleteChannel(int index)
+{
+ if(index<0 || index >= NumChannels)
+  return false;
+
+ if(NumChannels == 1)
+  return false;
+
+ ChannelsConfig.erase(ChannelsConfig.begin()+index);
+ --NumChannels;
+ return true;
+}
+// --------------------------
+
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -580,6 +624,44 @@ bool UProject::WriteToXml(USerStorageXML &xml)
  return true;
 }
 // --------------------------
+
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+int UProject::GetNumChannels(void) const
+{
+ return Config.NumChannels;
+}
+
+bool UProject::SetNumChannels(int num)
+{
+ if(!Config.SetNumChannels(num))
+  return false;
+
+ ModifiedFlag=true;
+ return true;
+}
+
+bool UProject::InsertChannel(int index)
+{
+ if(!Config.InsertChannel(index))
+  return false;
+
+ ModifiedFlag=true;
+ return true;
+}
+
+bool UProject::DeleteChannel(int index)
+{
+ if(!Config.DeleteChannel(index))
+  return false;
+
+ ModifiedFlag=true;
+ return true;
+
+}
+// --------------------------
+
 
 
 }
