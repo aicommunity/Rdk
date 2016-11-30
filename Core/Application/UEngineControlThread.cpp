@@ -206,7 +206,7 @@ void UEngineControlThread::Calculate(void)
    return;
   }
 
-  if(CalculateMode == 3 && MinInterstepsInterval == 0 && diff<1)
+  if(CalculateMode == 3 && MinInterstepsInterval == UTime(0) && diff<1)
   {
    Sleep(1);
    return;

@@ -139,6 +139,9 @@ bool UGenericEventQt::wait(unsigned wait_time)
 }
 #else
     #if defined(_MSC_VER)
+
+#include <Windows.h>
+
 class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
 {
 protected:

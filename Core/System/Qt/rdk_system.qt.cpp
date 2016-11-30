@@ -12,6 +12,7 @@
 #include <QtCore/QTime>
 #include <QtCore/QMutex>
 #include <QtCore/QDateTime>
+#include <QtCore/QtDebug>
 
 namespace RDK {
 
@@ -140,6 +141,7 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
 /// Функция осуществляет вывод в отладочный лог, если сборка в отладке
 void RdkDebuggerMessage(const std::string &message)
 {
+    qDebug() << QString::fromStdString(message);
 }
 
 }
