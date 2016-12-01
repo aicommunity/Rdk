@@ -118,8 +118,9 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  return 0;
 }
 
-int CopyFile(const std::string &source_file, const std::string &dest_file)
+int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
 {
+    QFile::copy(QString::fromStdString(source_file), QString::fromStdString(dest_file));
  return 1;
 }
 
@@ -131,7 +132,7 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
  if(!res)
  {
   for(size_t i=0;i<results.size();i++)
-   if(CopyFile(source_dir+results[i],dest_dir+results[i]))
+   if(RdkCopyFile(source_dir+results[i],dest_dir+results[i]))
     return 1;
  }
  return 0;
