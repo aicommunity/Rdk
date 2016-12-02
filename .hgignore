@@ -82,4 +82,7 @@ ipch
 *.d
 *.so
 *.a
-
+*.cmake
+CMakeFiles
+CMakeCache.txt
+Makefile
