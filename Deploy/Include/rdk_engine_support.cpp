@@ -24,7 +24,9 @@ URdkCoreManager::URdkCoreManager(void)
  Environment=0;
  Storage=0;
  BufObjectsMode=0;
- GlobalLogger.SetChannelIndex(RDK_SYS_MESSAGE);
+ GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
+ SystemLogger.RegisterGlobalLogger(&GlobalLogger);
+ SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
 }
 
 URdkCoreManager::~URdkCoreManager(void)
@@ -75,16 +77,16 @@ URdkCoreManager::~URdkCoreManager(void)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 }
 // --------------------------
@@ -126,6 +128,7 @@ int URdkCoreManager::SetLogDir(const char *dir)
   if(LoggerList[i])
    LoggerList[i]->SetLogDir(LogDir);
  }
+ SystemLogger.SetLogDir(LogDir);
  GlobalLogger.SetLogDir(LogDir);
  return RDK_SUCCESS;
 }
@@ -148,7 +151,7 @@ int URdkCoreManager::SetDebugMode(bool value)
   if(LoggerList[i])
    LoggerList[i]->SetDebugMode(DebugMode);
  }
- GlobalLogger.SetDebugMode(DebugMode);
+ SystemLogger.SetDebugMode(DebugMode);
  return RDK_SUCCESS;
 }
 
@@ -178,18 +181,18 @@ int URdkCoreManager::SetBufObjectsMode(int value)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -215,31 +218,31 @@ int URdkCoreManager::LoadFonts(void)
    std::vector<std::string> font_names;
    std::string font_path=SystemDir+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   GlobalLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
+   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
 
    ClearFonts();
    RDK::UBitmapFont font;
    for(size_t i=0;i<font_names.size();i++)
    {
 	AddFont(font_path+font_names[i]);
-    GlobalLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
+    SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
    }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -274,18 +277,18 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -381,18 +384,18 @@ int URdkCoreManager::SelectChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -515,6 +518,7 @@ int URdkCoreManager::ChannelCreate(int index)
 
  // TODO: здесь инициализация параметров логгера и его запуск
  LoggerList[index]=new RDK::ULoggerEnv;
+ LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
  LoggerList[index]->SetLogDir(LogDir);
 
  EngineList[index]=FuncCreateNewEngine();
@@ -629,18 +633,18 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -669,18 +673,18 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -751,7 +755,7 @@ RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 // --------------------------
 // Методы доступа к каналам с блокировками
 // --------------------------
-/// Метод доступа к глобальному лучше
+/// Метод доступа к глобальному мьютексу
 UGenericMutex* URdkCoreManager::GetGlobalMutex(void)
 {
  return GlobalMutex;
@@ -866,12 +870,21 @@ RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
 RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
 {
  if(channel_index == RDK_SYS_MESSAGE)
+  return &SystemLogger;
+
+ if(channel_index == RDK_GLOB_MESSAGE)
   return &GlobalLogger;
 
  return LoggerList[channel_index];
 }
 
-/// Возвращает ссылку на глобальный логгер
+/// Возвращает ссылку на системный логгер
+RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
+{
+ return &SystemLogger;
+}
+
+/// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
 RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
 {
  return &GlobalLogger;

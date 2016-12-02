@@ -21,26 +21,16 @@ void ExceptionHandler(int channel_index)
 
 namespace RDK {
 
-//UGenericMutex* UEngineStateThread::RdkExceptionHandlerMutex=0;
-
-//std::list<int> UEngineStateThread::UnsentLogChannelIndexes;
-
-//std::list<std::string> UEngineStateThread::UnsentLog;
-
-
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 : EngineControl(engine_control)
 {
-// ProcessLogMutex=UCreateMutex();
  if(!GetRdkExceptionHandlerMutex())
   GetRdkExceptionHandlerMutex()=UCreateMutex();
-// LogTimer->Enabled=true;
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  TUThreadInfo info;
-// info.Pid=Thread.;
  info.Name="UEngineStateThread";
  GlobalThreadInfoMap[info.Pid]=info;
  #endif
@@ -58,8 +48,8 @@ UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 
  NumAvgIterations=200;
  AvgThreshold=5.0;
- EventsLogFlag=true;
- LogFlag=true;
+// EventsLogFlag=true;
+// LogFlag=true;
 }
 
 UEngineStateThread::~UEngineStateThread(void)
@@ -77,45 +67,27 @@ UEngineStateThread::~UEngineStateThread(void)
   GetRdkExceptionHandlerMutex()=0;
  }
 
-// UDestroyMutex(ProcessLogMutex);
-// ProcessLogMutex=0;
 }
 // --------------------------
 
 // --------------------------
 // Управление параметрами
 // --------------------------
-/// Путь до папки с логами
-/*std::string UEngineStateThread::GetLogDir(void) const
-{
- return LogDir;
-}
-
-bool UEngineStateThread::SetLogDir(const std::string& value)
-{
- if(LogDir == value)
-  return true;
-
- LogDir=value;
- RecreateEventsLogFile();
- return true;
-}
-          */
 /// Флаг разрешения логгирования
-bool UEngineStateThread::GetLogFlag(void) const
-{
- return LogFlag;
-}
-
-bool UEngineStateThread::SetLogFlag(bool value)
-{
- if(LogFlag == value)
-  return true;
-
- LogFlag=value;
- RecreateEventsLogFile();
- return true;
-}
+//bool UEngineStateThread::GetLogFlag(void) const
+//{
+// return LogFlag;
+//}
+//
+//bool UEngineStateThread::SetLogFlag(bool value)
+//{
+// if(LogFlag == value)
+//  return true;
+//
+// LogFlag=value;
+// RecreateEventsLogFile();
+// return true;
+//}
 // --------------------------
 
 // --------------------------
@@ -265,53 +237,53 @@ void UEngineStateThread::AdditionExecute(void)
 }
 
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
-void UEngineStateThread::RecreateEventsLogFile(void)
-{
- if(!CalculationNotInProgress)
-  return;
- if(!CalculationNotInProgress->wait(100))
-  return;
- CalculationNotInProgress->reset();
-
- Logger.Clear();
- std::string log_dir;
- if(EngineControl && EngineControl->GetApplication())
-  log_dir=EngineControl->GetApplication()->CalcCurrentLogDir();
- else
-  log_dir="EventsLog/";
-
- Logger.SetLogDir(log_dir);
- if(Logger.InitLog() != RDK_SUCCESS)
- {
-  EventsLogFlag=false;
-  return;
- }
- else
- {
-  EventsLogFilePath=log_dir;//LogDir.Get()+"EventsLog/";
- }
-
- /// Сохраняем лог в файл если это необходимо
- if(!LogFlag)
-  EventsLogFlag=false;
- else
-  EventsLogFlag=true;
-
- CalculationNotInProgress->set();
-}
-
-/// Закрывает текущий лог
-void UEngineStateThread::CloseEventsLogFile(void)
-{
- if(!CalculationNotInProgress)
-  return;
- if(!CalculationNotInProgress->wait(100))
-  return;
- CalculationNotInProgress->reset();
-
- Logger.Clear();
- CalculationNotInProgress->set();
-}
+//void UEngineStateThread::RecreateEventsLogFile(void)
+//{
+// if(!CalculationNotInProgress)
+//  return;
+// if(!CalculationNotInProgress->wait(100))
+//  return;
+// CalculationNotInProgress->reset();
+//
+// Logger.Clear();
+// std::string log_dir;
+// if(EngineControl && EngineControl->GetApplication())
+//  log_dir=EngineControl->GetApplication()->CalcCurrentLogDir();
+// else
+//  log_dir="EventsLog/";
+//
+// Logger.SetLogDir(log_dir);
+// if(Logger.InitLog() != RDK_SUCCESS)
+// {
+//  EventsLogFlag=false;
+//  return;
+// }
+// else
+// {
+//  EventsLogFilePath=log_dir;
+// }
+//
+// /// Сохраняем лог в файл если это необходимо
+// if(!LogFlag)
+//  EventsLogFlag=false;
+// else
+//  EventsLogFlag=true;
+//
+// CalculationNotInProgress->set();
+//}
+//
+///// Закрывает текущий лог
+//void UEngineStateThread::CloseEventsLogFile(void)
+//{
+// if(!CalculationNotInProgress)
+//  return;
+// if(!CalculationNotInProgress->wait(100))
+//  return;
+// CalculationNotInProgress->reset();
+//
+// Logger.Clear();
+// CalculationNotInProgress->set();
+//}
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
@@ -370,49 +342,48 @@ void UEngineStateThread::ProcessLog(void)
   GetUnsentLogChannelIndexes().clear();
  }
 
+ if(ch_indexes.empty())
+  return;
+
+ if(find(ch_indexes.begin(),ch_indexes.end(),RDK_GLOB_MESSAGE) == ch_indexes.end())
+  return;
+
  int global_error_level=-1;
  try
  {
-  std::list<int>::iterator I=ch_indexes.begin();
-  for(;I!=ch_indexes.end();++I)
-  {
-//   if(!MCore_IsEngineInit(*I))
-//    continue;
    int error_level=-1;
    int number=0;
    unsigned long long time=0;
-   int num_log_lines=MLog_GetNumUnreadLogLines(*I);
+   int num_log_lines=MLog_GetNumUnreadLogLines(RDK_GLOB_MESSAGE);
    for(int k=0;k<num_log_lines;k++)
    {
-	const char * data=MLog_GetUnreadLog(*I, error_level,number,time);
+	const char * data=MLog_GetUnreadLog(RDK_GLOB_MESSAGE, error_level,number,time);
 	if(!data)
 	 continue;
 	if(global_error_level>error_level)
 	 global_error_level=error_level;
 
 	std::string new_log_data=data;
-//	MLog_FreeBufString(*I,data);
 	if(!new_log_data.empty())
 	{
-	 UnsentLog.push_back(new_log_data);
+//	 UnsentLog.push_back(new_log_data);
      GuiUnsentLog.push_back(new_log_data);
 	}
    }
-   MLog_ClearReadLog(*I);
-  }
+   MLog_ClearReadLog(RDK_GLOB_MESSAGE);
  }
  catch(...)
  {
   throw;
  }
-
+/*
  try
  {
   while(!UnsentLog.empty())
   {
    if(EventsLogFlag)
    {
-	Logger.LogMessage(UnsentLog.front());// TODO: Проверить на RDK_SUCCESS
+	Logger.WriteMessageToFile(UnsentLog.front());// TODO: Проверить на RDK_SUCCESS
    }
 
    UnsentLog.pop_front();
@@ -421,7 +392,7 @@ void UEngineStateThread::ProcessLog(void)
  catch(...)
  {
   throw;
- }
+ }      */
 }
 // --------------------------
 

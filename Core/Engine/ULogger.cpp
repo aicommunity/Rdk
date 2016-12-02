@@ -74,7 +74,7 @@ int ULogger::InitLog(void)
 }
 
 /// Сохраняет строку в лог
-int ULogger::LogMessage(const std::string &str)
+int ULogger::WriteMessageToFile(const std::string &str)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
  if(!EventsLogFile)

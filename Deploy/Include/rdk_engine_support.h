@@ -12,26 +12,28 @@
 class RDK_LIB_TYPE URdkCoreManager
 {
 public:
-// Массив хранилищ
+/// Массив хранилищ
 std::vector<RDK::UStorage*> StorageList;
 
-// Массив сред
+/// Массив сред
 std::vector<RDK::UEnvironment*> EnvironmentList;
 
-// Массив движков
+/// Массив движков
 std::vector<RDK::UEngine*> EngineList;
 
-// Массив мьютексов
+/// Массив мьютексов
 std::vector<UGenericMutex*> MutexList;
 
-
-// Массив локеров
+/// Массив локеров
 std::vector<UGenericMutexExclusiveLocker*> LockerList;
 
-// Массив логгеров
+/// Массив логгеров
 std::vector<RDK::ULoggerEnv*> LoggerList;
 
-// Системный (глобальный) логгер
+/// Системный логгер
+RDK::ULoggerEnv SystemLogger;
+
+/// Глобальный логгер (интегрирует информацию со всех логгеров)
 RDK::ULoggerEnv GlobalLogger;
 
 UGenericMutex* GlobalMutex;
@@ -192,7 +194,7 @@ RDK::UEPtr<RDK::UContainer> GetModel(int channel_index);
 // --------------------------
 // Методы доступа к каналам с блокировкой
 // --------------------------
-/// Метод доступа к глобальному лучше
+/// Метод доступа к глобальному мьютексу
 UGenericMutex* GetGlobalMutex(void);
 
 /// Метод доступ к мьютексу
@@ -222,18 +224,14 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int channel_index);
 // Возвращает ссылку на указатель на логгер текущего канала
 RDK::UEPtr<RDK::ULoggerEnv>& GetLogger(void);
 
-// Возвращает указатель на логгер выбранного канала, или GlobalLogger
+// Возвращает указатель на логгер выбранного канала, или SystemLogger
 RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int channel_index);
 
-/// Возвращает ссылку на глобальный логгер
+/// Возвращает указатель на системный логгер
+RDK::UEPtr<RDK::ULoggerEnv> GetSystemLogger(void);
+
+/// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
 RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
-
-// Записывает в лог новое сообщение с кодом ошибки
-//int RDK_CALL LogMessage(int channel_index, int log_level, const std::string &message, int error_event_number);
-
-// Обрабатывает возникшее исключение
-//protected:
-//void ProcessException(RDK::UException &exception);
 // --------------------------
 
 
