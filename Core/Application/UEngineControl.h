@@ -28,6 +28,10 @@ RDK::UELockVar<int> ThreadMode;
 /// 1 - индивидуально для каждого канала во время каждого расчета канала
 RDK::UELockVar<int> UseControllersMode;
 
+/// Время обновления интерфейсов, в мс.
+/// По умолчанию равно 100, может меняться методами get/set
+RDK::UELockVar<int> UpdateInterval;
+
 protected: // Данные
 /// Указатель на экземпляр приложения
 UEPtr<UApplication> Application;
@@ -173,6 +177,12 @@ virtual void SaveParameters(RDK::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 virtual void LoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
+
+///Установка значения инетрвала обновления в мс.
+int getUpdateInterval() const;
+
+///Получение значения инетрвала обновления в мс.
+void setUpdateInterval(int value);
 
 private: // Вспомогательные методы
 // --------------------------

@@ -16,15 +16,17 @@ namespace RDK {
 // --------------------------
 UEngineControl::UEngineControl(void)
 {
- ThreadCalcCompleteEvent=0;//UCreateEvent(false);
+    ThreadCalcCompleteEvent=0;//UCreateEvent(false);
+    
+    EngineStateThread=0;
+    
+    UseControllersMode=0;
 
- EngineStateThread=0;
-
- UseControllersMode=0;
-
- InitFlag=false;
-
- Name="EngineControl";
+    UpdateInterval = 100;
+    
+    InitFlag=false;
+    
+    Name="EngineControl";
 }
 
 UEngineControl::~UEngineControl(void)
@@ -712,6 +714,17 @@ bool UEngineControl::DeleteChannel(int index)
 
  return true;
 }
+
+int UEngineControl::getUpdateInterval() const
+{
+    return UpdateInterval;
+}
+
+void UEngineControl::setUpdateInterval(const int value)
+{
+    UpdateInterval = value;
+}
+
 // --------------------------
 
 }
