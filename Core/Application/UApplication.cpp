@@ -296,7 +296,8 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
  if(!Project->SetConfig(value))
   return false;
 
- EngineControl->GetEngineStateThread()->SetLogFlag(value.EventsLogFlag);
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(value.EventsLogFlag);
+// EngineControl->GetEngineStateThread()->SetLogFlag(value.EventsLogFlag);
  return true;
 }
 
@@ -329,6 +330,7 @@ bool UApplication::Init(void)
  std::string font_path=extract_file_path(ApplicationFileName);
  Core_SetSystemDir(font_path.c_str());
 // SetLogDir(font_path);
+ MLog_SetExceptionHandler(RDK_GLOB_MESSAGE,(void*)ExceptionHandler);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
  Core_LoadFonts();
 
@@ -411,8 +413,10 @@ bool UApplication::OpenProject(const std::string &filename)
  UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
- EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
- EngineControl->GetEngineStateThread()->CloseEventsLogFile();
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(config.EventsLogFlag);
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
+// EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
+// EngineControl->GetEngineStateThread()->CloseEventsLogFile();
 // EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);
 
  EngineControl->SetThreadMode(config.MultiThreadingMode);
@@ -1184,7 +1188,10 @@ void UApplication::UpdateLoggers(void)
 {
  RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
  if(EngineControl && EngineControl->GetEngineStateThread())
-  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
+ {
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+ }
+//  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
 }
 
 /// Загружает файл в строку

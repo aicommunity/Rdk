@@ -38,6 +38,11 @@ typedef int bool;
 #define RDK_SYS_MESSAGE -1
 #endif
 
+#ifndef RDK_GLOB_MESSAGE
+#define RDK_GLOB_MESSAGE -2
+#endif
+
+
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
