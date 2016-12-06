@@ -468,6 +468,8 @@ void UEngineControl::TimerExecute(void)
 /// Проверяет состояние расчета
 /// 0 - Не считает
 /// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
 int UEngineControl::CheckCalcState(int channel_id) const
 {
  if(channel_id<0 || channel_id>GetNumChannels())
@@ -480,10 +482,36 @@ int UEngineControl::CheckCalcState(int channel_id) const
  break;
 
  case 1:
-  return EngineControlThreads[channel_id]->CheckCalcState();
+ {
+  int state=EngineControlThreads[channel_id]->CheckCalcState();
+  if(state == 0)
+   return 0;
+  else
+  if(state == 1)
+  {
+   if(EngineStateThread)
+   {
+	int thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
+	if(thread_state == 0)
+	 return 1;
+	else
+	if(thread_state == 1)
+	 return 0;
+	else
+	if(thread_state == 2)
+	 return 2;
+	else
+     return 4;
+   }
+   else
+    return 4;
+  }
+  else
+   return 4;
+ }
  break;
  }
- return 0;
+ return 4;
 }
 
 /// Вклчает мониторинг сервера

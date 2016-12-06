@@ -115,6 +115,9 @@ virtual ~UEngineStateThread(void);
 // --------------------------
 /// Возвращает вектор состояний тредов
 std::vector<int> ReadCalcThreadStates(void) const;
+
+/// Возвращает состояние одного потока
+int ReadCalcThreadState(int channel_index);
 // --------------------------
 
 // --------------------------

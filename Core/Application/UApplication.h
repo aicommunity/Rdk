@@ -241,6 +241,13 @@ virtual void StepChannel(int channel_index);
 
 /// Возвращает true если канал запущен
 virtual bool IsChannelStarted(int channel_index);
+
+/// Проверяет состояние расчета по id канала
+/// 0 - Выключен
+/// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
+virtual int CheckCalcState(int channel_id) const;
 // --------------------------
 
 // --------------------------

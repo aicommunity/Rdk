@@ -98,6 +98,16 @@ std::vector<int> UEngineStateThread::ReadCalcThreadStates(void) const
 {
  return CalcThreadStates;
 }
+
+/// Возвращает состояние одного потока
+int UEngineStateThread::ReadCalcThreadState(int channel_index)
+{
+ std::vector<int> tmp=CalcThreadStates;
+ if(channel_index<0 || channel_index>int(tmp.size()))
+  return -1;
+
+ return tmp[channel_index];
+}
 // --------------------------
 
 // --------------------------
