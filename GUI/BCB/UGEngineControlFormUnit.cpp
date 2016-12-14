@@ -2445,7 +2445,7 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Se
   //Нашли компонент, проверяем, хочет он быть показанным как таб или отдельно:
   if(I->second->ShowTabbedFlag==true)
   {
-	 TTabSheet* tab=AddComponentControlFormPage(class_name);
+	 TTabSheet* tab=AddComponentControlFormPage(c_name);
 	 if(tab)
 	  tab->PageControl->ActivePageIndex=tab->TabIndex;
   }
@@ -2998,4 +2998,5 @@ void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
  CloneProject(Core_GetSelectedChannelIndex(), cloned_id);
 }
 //---------------------------------------------------------------------------
+
 
