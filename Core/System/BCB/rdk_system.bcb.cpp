@@ -11,6 +11,7 @@
 #include <vcl.h>
 #include <vector>
 #include <string>
+#include <time.h>
 
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
   #define DELTA_EPOCH_IN_MICROSECS  116444736000000000Ui64
