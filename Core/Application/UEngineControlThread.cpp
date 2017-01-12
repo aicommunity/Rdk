@@ -202,7 +202,7 @@ void UEngineControlThread::Calculate(void)
   double diff=(RDK::GetVariantLocalTime()-RealLastCalculationTime)*86400*1000.0;
   if(diff<MinInterstepsInterval)
   {
-   Sleep(MinInterstepsInterval-diff);
+   Sleep(int(static_cast<int>(MinInterstepsInterval)-diff));
    return;
   }
 

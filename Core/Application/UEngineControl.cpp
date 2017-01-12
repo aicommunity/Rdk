@@ -656,7 +656,6 @@ bool UEngineControl::SetNumChannels(int num)
 {
  if(num == int(EngineControlThreads.size()))
   return true;
- int old_num=GetNumChannels();
  ::Core_SetNumChannels(num);
 
  int old_size=int(EngineControlThreads.size());
@@ -687,7 +686,6 @@ bool UEngineControl::SetNumChannels(int num)
 
 bool UEngineControl::InsertChannel(int index)
 {
- int old_num=GetNumChannels();
  Core_AddChannel(index);
  int new_num=GetNumChannels();
 
