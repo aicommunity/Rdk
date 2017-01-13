@@ -309,7 +309,7 @@ void UComponentLinksWidget::addLinks(QString componentName)
     try
     {
         RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
-        RDK::UEPtr<RDK::UNet> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        RDK::UEPtr<RDK::UNet> cont = model->GetComponentL<RDK::UNet>(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
         RDK::UStringLinksList linksList;
@@ -317,7 +317,7 @@ void UComponentLinksWidget::addLinks(QString componentName)
         RDK::ULinkT<std::string>* linksListIterator = linksList.GetData();
         for(int i = 0; i < linksList.size(); i++)
         {
-            for(std::vector<RDK::ULinkSideT<std::string>>::iterator connectorIterator = linksListIterator->Connector.begin();
+            for(std::vector<RDK::ULinkSideT<std::string> >::iterator connectorIterator = linksListIterator->Connector.begin();
                 connectorIterator != linksListIterator->Connector.end(); connectorIterator++)
             {
                 QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetLinks);

@@ -201,7 +201,7 @@ UGenericEventQt& UGenericEventQt::operator = (const UGenericEventQt &copy)
 }
 
     #elif defined(__GNUC__)
-#include "pevents.h" // got from https://github.com/NeoSmart/PEvents
+#include "../Gcc/pevents.h" // got from https://github.com/NeoSmart/PEvents
 
 class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
 {

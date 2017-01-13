@@ -827,7 +827,7 @@ void UComponentsListWidget::componentRename()
                                              restoreName, &ok);
         if (ok && !text.isEmpty())
         {
-            std::string new_name = text.toLocal8Bit();
+            std::string new_name(text.toLocal8Bit());
             Model_SetComponentPropertyData(selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
 
             QStringList nameSeparator = selectedComponentLongName.split(".");

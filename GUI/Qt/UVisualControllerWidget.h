@@ -38,7 +38,7 @@ public:
     RDK::UELockVar<long> UpdateInterval;
 
     /// ¬рем€ последнего обновлени€
-    DWORD LastUpdateTime;
+    unsigned long long LastUpdateTime;
 
     /// ¬ыставл€етс€ если форма была перерисованна (обновлена)
     bool CalculationStepUpdatedFlag;

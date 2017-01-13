@@ -835,7 +835,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
   Core_SelectChannel(cloned_id);
 
   if(!Core_IsChannelInit())
-   Core_ChannelInit(cloned_channel.PredefinedStructure,ExceptionHandler);
+   Core_ChannelInit(cloned_channel.PredefinedStructure,reinterpret_cast<void*>(ExceptionHandler));
   else
    Env_SetPredefinedStructure(cloned_channel.PredefinedStructure);
 

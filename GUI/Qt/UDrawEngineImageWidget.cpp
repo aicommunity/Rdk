@@ -381,7 +381,7 @@ void UDrawEngineImageWidget::componentRename()
                                          QString::fromStdString(selectedComponent), &ok);
     if (ok && !text.isEmpty())
     {
-        std::string new_name = text.toLocal8Bit();
+        std::string new_name(text.toLocal8Bit());
         Model_SetComponentPropertyData(myLongName().toLocal8Bit(),"Name", &new_name);
 
         emit updateComponentsList();

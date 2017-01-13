@@ -1,5 +1,5 @@
 #include "UGEngineControllWidget.h"
-#include "ui_ugenginecontrollwidget.h"
+#include "ui_UGEngineControllWidget.h"
 
 
 #include <rdk_application.h>

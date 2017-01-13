@@ -1,5 +1,5 @@
 #include "UCalculationChannelsWidget.h"
-#include "ui_ucalculationchannelswidget.h"
+#include "ui_UCalculationChannelsWidget.h"
 
 UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent),

@@ -180,8 +180,8 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
             }
             if(UpdateInterval>0 && CalculationModeFlag)
             {
-                DWORD curr_time=RDK::GetCurrentStartupTime();
-                if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
+                unsigned long long curr_time=RDK::GetCurrentStartupTime();
+                if(curr_time-LastUpdateTime<(unsigned long long)(UpdateInterval))
                 {
                     UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                     return;

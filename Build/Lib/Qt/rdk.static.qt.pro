@@ -251,7 +251,8 @@ HEADERS +=\
     ../../../Core/Application/URpcDispatcherQueues.h \
     ../../../Core/Application/UServerControl.h \
     ../../../Core/Application/UServerTransport.h \
-    ../../../Core/Application/UServerTransportTcp.h
+    ../../../Core/Application/UServerTransportTcp.h \
+    ../../../Core/System/Gcc/pevents.h
 
 unix {
     target.path = /usr/lib
@@ -262,3 +263,4 @@ unix {
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
 }
+
