@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UComponentsListWidget</class>
+ <widget class="QWidget" name="UComponentsListWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>253</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_9">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="QWidget" name="verticalLayoutWidget_2">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayoutTreeWidget"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelComponentClassName">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QTabWidget" name="tabWidgetComponentInfo">
+         <property name="tabPosition">
+          <enum>QTabWidget::South</enum>
+         </property>
+         <property name="tabShape">
+          <enum>QTabWidget::Rounded</enum>
+         </property>
+         <property name="currentIndex">
+          <number>3</number>
+         </property>
+         <widget class="QWidget" name="tabParameters">
+          <attribute name="title">
+           <string>Parameters</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSplitter" name="splitter_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="childrenCollapsible">
+              <bool>true</bool>
+             </property>
+             <widget class="QTreeWidget" name="treeWidgetParameters">
+              <column>
+               <property name="text">
+                <string>Name</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Value</string>
+               </property>
+              </column>
+             </widget>
+             <widget class="QPlainTextEdit" name="plainTextEditParameters">
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="tabStopWidth">
+               <number>20</number>
+              </property>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolBar" name="toolBarParameters"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabState">
+          <attribute name="title">
+           <string>State</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSplitter" name="splitter_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="childrenCollapsible">
+              <bool>true</bool>
+             </property>
+             <widget class="QTreeWidget" name="treeWidgetState">
+              <column>
+               <property name="text">
+                <string>Name</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Value</string>
+               </property>
+              </column>
+             </widget>
+             <widget class="QPlainTextEdit" name="plainTextEditState">
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="tabStopWidth">
+               <number>20</number>
+              </property>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolBar" name="toolBarState"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabInputs">
+          <attribute name="title">
+           <string>Inputs</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSplitter" name="splitter_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="childrenCollapsible">
+              <bool>true</bool>
+             </property>
+             <widget class="QTreeWidget" name="treeWidgetInputs">
+              <column>
+               <property name="text">
+                <string>Name</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Value</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Type</string>
+               </property>
+              </column>
+             </widget>
+             <widget class="QPlainTextEdit" name="plainTextEditInputs">
+              <property name="tabStopWidth">
+               <number>20</number>
+              </property>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolBar" name="toolBarInputs"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_8">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabOutputs">
+          <attribute name="title">
+           <string>Outputs</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSplitter" name="splitter_5">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="childrenCollapsible">
+              <bool>true</bool>
+             </property>
+             <widget class="QTreeWidget" name="treeWidgetOutputs">
+              <column>
+               <property name="text">
+                <string>Name</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Value</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Type</string>
+               </property>
+              </column>
+             </widget>
+             <widget class="QPlainTextEdit" name="plainTextEditOutputs">
+              <property name="tabStopWidth">
+               <number>20</number>
+              </property>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolBar" name="toolBarOutputs"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionSetGlobalParameters">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerParameters">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadParameters">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllParameters">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalState">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerState">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadState">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllState">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalInputs">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerInputs">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadInputs">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllInputs">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOutputs">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerOutputs">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadOutputs">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllOutputs">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionComponentMoveUp">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Move up</string>
+   </property>
+  </action>
+  <action name="actionComponentMoveDown">
+   <property name="text">
+    <string>Move down</string>
+   </property>
+  </action>
+  <action name="actionComponentRename">
+   <property name="text">
+    <string>Rename</string>
+   </property>
+  </action>
+  <action name="actionComponentDelete">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionComponentReset">
+   <property name="text">
+    <string>Reset</string>
+   </property>
+  </action>
+  <action name="actionComponentCalculate">
+   <property name="text">
+    <string>Calculate</string>
+   </property>
+  </action>
+  <action name="actionComponentGUI">
+   <property name="text">
+    <string>GUI</string>
+   </property>
+  </action>
+  <action name="actionCopyNameToClipboard">
+   <property name="text">
+    <string>Copy name to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopyLongNameToClipboard">
+   <property name="text">
+    <string>Copy long name to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopyClassNameToClipboard">
+   <property name="text">
+    <string>Copy class to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionShowParametersXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionShowStateXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionShowInputsXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionShowOutputsXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Show XML</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
