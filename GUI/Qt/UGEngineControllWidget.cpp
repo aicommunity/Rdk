@@ -34,7 +34,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     application.SetDebugMode(true);
     application.Init();
 
-    initGraphicalEngine();
+//    initGraphicalEngine();
     settingsFileName = "settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 

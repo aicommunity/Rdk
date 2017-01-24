@@ -65,6 +65,48 @@
 		#define RDK_CALL
 	#endif
 #endif
+/*
+#if __cplusplus >= 201103L
+    #include <cstdint>
+#else
+// WARNING! ILP64 & SILP64 platforms don't detected by code below!!!
+    // Check windows
+    #if defined(_MSC_VER) || defined(__BORLANDC__)
+        typedef __int8 int8_t;
+        typedef __uint8 uint8_t;
+        typedef __int16 int16_t;
+        typedef __uint16 uint16_t;
+        typedef __int32 int32_t;
+        typedef __uint32 uint32_t;
+        typedef __int64 int64_t;
+        typedef __uint64 uint64_t;
+// Check GCC
+    #elif __GNUC__
+        #include <stdlib.h>
+       #if __x86_64__ || __ppc64__
+            typedef char int8_t;
+            typedef unsigned char uint8_t;
+            typedef short int16_t;
+            typedef unsigned short uint16_t;
+            typedef int int32_t;
+            typedef unsigned int uint32_t;
+            typedef long long int64_t;
+            typedef unsigned long long uint64_t;
+        #else
+            typedef char int8_t;
+            typedef unsigned char uint8_t;
+            typedef short int16_t;
+            typedef unsigned short uint16_t;
+            typedef int int32_t;
+            typedef unsigned int uint32_t;
+            typedef long long int64_t;
+            typedef unsigned long long uint64_t;
+        #endif
+    #else
+        #error "unknown platform"
+    #endif
 
+#endif
+*/
 #endif
 
