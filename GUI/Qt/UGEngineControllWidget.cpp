@@ -44,6 +44,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     images = NULL;
     imagesWindow = NULL;
     channels = NULL;
+    createConfigurationWizardWidget = NULL;
 
     readSettings(settingsFileName, settingsGroupName);
 
@@ -96,6 +97,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
 
     logger = new ULoggerWidget(this, &application);
     ui->dockWidgetLoger->setWidget(logger);
+
+    createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this);
 
     // GUI actions:
     connect(ui->actionComponentsControl, SIGNAL(triggered(bool)), this, SLOT(actionComponentsControl()));
@@ -161,7 +164,8 @@ void UGEngineControllWidget::actionLoadConfig()
 
 void UGEngineControllWidget::actionCreateConfig()
 {
-    QMessageBox::information(this,"Create new project", "He-he-he, NO! >:]", QMessageBox::Ok);
+    createConfigurationWizardWidget->show();
+    //QMessageBox::information(this,"Create new project", "He-he-he, NO! >:]", QMessageBox::Ok);
 }
 
 void UGEngineControllWidget::actionSaveConfig()

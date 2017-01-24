@@ -15,6 +15,7 @@
 #include "UCalculationChannelsWidget.h"
 #include "UEngineControlQt.h"
 #include "ULoggerWidget.h"
+#include "UCreateConfigurationWizardWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -97,6 +98,7 @@ private:
     QMainWindow *imagesWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
+    UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
 
     //methods
     void initGraphicalEngine();
