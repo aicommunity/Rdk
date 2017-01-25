@@ -408,6 +408,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 QString parameterName = QString::fromStdString(i->first);
                 parametersItem->setText(0, parameterName);
                 cont->GetPropertyValue(i->first, buffer);
+                parametersItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
                 parametersItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
                 if(parameterName == selectedParameterName)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
@@ -418,6 +419,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 QString stateName = QString::fromStdString(i->first);
                 stateItem->setText(0, stateName);
                 cont->GetPropertyValue(i->first, buffer);
+                stateItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
                 stateItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
@@ -441,6 +443,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 QString outputName = QString::fromStdString(i->first);
                 outputItem->setText(0, outputName);
                 cont->GetPropertyValue(i->first, buffer);
+                outputItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
                 outputItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
                 outputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
                 if(outputName == selectedOutputName)
@@ -468,7 +471,7 @@ void UComponentsListWidget::parametersListSelectionChanged()
 
     selectedParameterName = changedParameterName;
     ui->plainTextEditParameters->clear();
-    ui->plainTextEditParameters->setPlainText(item->data(1, Qt::DisplayRole).toString());
+    ui->plainTextEditParameters->setPlainText(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::stateListSelectionChanged()
@@ -481,7 +484,7 @@ void UComponentsListWidget::stateListSelectionChanged()
 
     selectedStateName = changedStateName;
     ui->plainTextEditState->clear();
-    ui->plainTextEditState->setPlainText(item->data(1, Qt::DisplayRole).toString());
+    ui->plainTextEditState->setPlainText(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::inputsListSelectionChanged()
@@ -494,7 +497,7 @@ void UComponentsListWidget::inputsListSelectionChanged()
 
     selectedInputName = changedInputName;
     ui->plainTextEditInputs->clear();
-    ui->plainTextEditInputs->setPlainText(item->data(1, Qt::DisplayRole).toString());
+    ui->plainTextEditInputs->setPlainText(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::outputsListSelectionChanged()
@@ -507,7 +510,7 @@ void UComponentsListWidget::outputsListSelectionChanged()
 
     selectedOutputName = changedOutputName;
     ui->plainTextEditOutputs->clear();
-    ui->plainTextEditOutputs->setPlainText(item->data(1, Qt::DisplayRole).toString());
+    ui->plainTextEditOutputs->setPlainText(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::componentSelectedFromScheme(QString name)
