@@ -63,6 +63,9 @@ signals:
 protected:
     void timerEvent(QTimerEvent *);*/
 
+private slots:
+    void on_actionExit_triggered();
+
 private:
     //data
     Ui::UGEngineControllWidget *ui;

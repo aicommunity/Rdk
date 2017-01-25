@@ -323,3 +323,8 @@ void UGEngineControllWidget::readSettings(QString file, QString group)
     if(componentLinks) componentLinks->readSettings(settingsFileName);
     if(images) images->readSettings(settingsFileName);
 }
+
+void UGEngineControllWidget::on_actionExit_triggered()
+{
+ QApplication::quit();
+}

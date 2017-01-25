@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -76,6 +76,8 @@
     <addaction name="separator"/>
     <addaction name="actionSaveCommonDescriptions"/>
     <addaction name="actionSaveClassesDescriptions"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuChannels">
     <property name="title">
@@ -534,6 +536,14 @@
    </property>
    <property name="toolTip">
     <string>Channels Control</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Close Application</string>
    </property>
   </action>
  </widget>
