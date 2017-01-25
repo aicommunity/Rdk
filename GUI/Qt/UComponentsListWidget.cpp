@@ -407,7 +407,8 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
                 QString parameterName = QString::fromStdString(i->first);
                 parametersItem->setText(0, parameterName);
-                parametersItem->setText(1, QString::fromStdString(cont->GetPropertyValue(i->first, buffer)));
+                cont->GetPropertyValue(i->first, buffer);
+                parametersItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
                 if(parameterName == selectedParameterName)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
             }
@@ -416,7 +417,8 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 QTreeWidgetItem* stateItem = new QTreeWidgetItem(ui->treeWidgetState);
                 QString stateName = QString::fromStdString(i->first);
                 stateItem->setText(0, stateName);
-                stateItem->setText(1, QString::fromStdString(cont->GetPropertyValue(i->first, buffer)));
+                cont->GetPropertyValue(i->first, buffer);
+                stateItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
             }
@@ -438,7 +440,8 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 QTreeWidgetItem* outputItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
                 QString outputName = QString::fromStdString(i->first);
                 outputItem->setText(0, outputName);
-                outputItem->setText(1, QString::fromStdString(cont->GetPropertyValue(i->first, buffer)));
+                cont->GetPropertyValue(i->first, buffer);
+                outputItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
                 outputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
                 if(outputName == selectedOutputName)
                     ui->treeWidgetOutputs->setCurrentItem(outputItem);
@@ -930,6 +933,51 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
             addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
         }
     }
+}
+
+/// Удаляет из переданных данных лидирующие переводы строк
+std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
+{
+ std::string::size_type data_i=value.find_first_of("\n");
+ if(data_i != std::string::npos)
+ {
+  value.erase(value.begin(),value.begin()+data_i+1);
+ }
+ return value;
+}
+
+/// Удаляет из переданных данных лидирующие и завершающие переводы строк
+std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
+{
+ std::string::size_type data_i=value.find_first_of("\n");
+ if(data_i != std::string::npos && data_i<2)
+ {
+  value.erase(value.begin(),value.begin()+data_i+1);
+ }
+
+ data_i=value.find_last_of("\r\n");
+ if(data_i != std::string::npos && data_i>=value.size()-1)
+ {
+  value.erase(value.begin()+data_i,value.end());
+ }
+ return value;
+}
+
+/// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
+/// на "[SEE BELOW]"
+std::string& UComponentsListWidget::PreparePropertyValueToListView(std::string &value)
+{
+ EraseRangeEndls(value);
+ if(value.empty())
+ {
+  value="[EMPTY]";
+ }
+ else
+ {
+  if(value.find_first_of("\n") != std::string::npos)
+   value="[SEE BELOW]";
+ }
+ return value;
 }
 
 

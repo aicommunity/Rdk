@@ -34,7 +34,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     application.SetDebugMode(true);
     application.Init();
 
-    initGraphicalEngine();
+//    initGraphicalEngine();
     settingsFileName = "settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
@@ -322,4 +322,9 @@ void UGEngineControllWidget::readSettings(QString file, QString group)
     if(drawEngine) drawEngine->readSettings(settingsFileName);
     if(componentLinks) componentLinks->readSettings(settingsFileName);
     if(images) images->readSettings(settingsFileName);
+}
+
+void UGEngineControllWidget::on_actionExit_triggered()
+{
+ QApplication::quit();
 }
