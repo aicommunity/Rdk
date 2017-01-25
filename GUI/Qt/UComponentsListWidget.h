@@ -148,6 +148,16 @@ public slots:
     void showOutputsXMLClicked();
 
 private:
+    /// Удаляет из переданных данных лидирующие переводы строк
+    std::string& EraseLeadEndls(std::string &value);
+
+    /// Удаляет из переданных данных лидирующие и завершающие переводы строк
+    std::string& EraseRangeEndls(std::string &value);
+
+    /// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
+    /// на "[SEE BELOW]"
+    std::string& PreparePropertyValueToListView(std::string &value);
+private:
     QString settingsFileName;
     QString settingsGroupName;
 
