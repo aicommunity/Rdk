@@ -255,12 +255,12 @@ HEADERS +=\
     ../../../Core/System/Gcc/pevents.h
 
 unix {
-    target.path = /usr/lib
-    INSTALLS += target
-    DESTDIR = $$PWD/../../../../Bin/Platform/Unix/Lib.Qt
+    DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
 }
 
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
+
+    INCLUDEPATH += $$(BOOST_PATH)/include/boost-1_54
 }
 
