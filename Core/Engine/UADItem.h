@@ -199,7 +199,7 @@ virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &pr
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
 virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
-virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
+virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
 
 /// Разрывает связь с элементом сети 'na', подключенную от i_index
 virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index);
@@ -240,7 +240,7 @@ virtual NameT FindFreeInputName(void);
 
 // Устанавливает связь с коннектором 'c'
 virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1);
-virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
+virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
 virtual void Disconnect(UEPtr<UConnector> c, int i_index, int c_index);

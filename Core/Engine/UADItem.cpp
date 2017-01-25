@@ -742,9 +742,9 @@ NameT UADItem::FindFreeInputName(void)
  return std::string("");
 }
 
-bool UADItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UADItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
- if(!UItem::ConnectToItem(na, item_property_name, connector_property_name, c_index))
+ if(!UItem::ConnectToItem(na, item_property_name, connector_property_name, c_index, forced_connect_same_item))
   return false;
  return true;
 }
@@ -835,7 +835,7 @@ bool UADItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
  return Connect(c, item_property_name, conn_property_name, cc_index);
 }
 
-bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  std::string conn_property_name;
  UEPtr<UADItem> ad_c=dynamic_pointer_cast<UADItem>(c);
@@ -877,7 +877,7 @@ bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, cons
 // else
   aliased_conn_property_name=conn_property_name;
 
- if(!UItem::Connect(c, aliased_item_property_name, aliased_conn_property_name, c_index))
+ if(!UItem::Connect(c, aliased_item_property_name, aliased_conn_property_name, c_index, forced_connect_same_item))
   return false;
  CalcMinMaxInputDataSize();
  return true;

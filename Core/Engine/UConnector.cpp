@@ -422,7 +422,7 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
 // Коммуникационные методы
 // ----------------------
 // Устанавливает связь с элементом сети 'na'.
-bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!na)
   return false;
@@ -462,7 +462,8 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 	{
 	 if(c_index == -1)
 	  c_index=i;
-	 return true;
+	 if(!forced_connect_same_item)
+	  return true;
 	}
    }
   }

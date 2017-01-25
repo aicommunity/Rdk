@@ -366,9 +366,9 @@ void UItem::Free(void)
 // Защищенные коммуникационные методы
 // ----------------------
 
-bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
- if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index))
+ if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item))
   return false;
 
  // Ищем указатель на выходные данные
@@ -433,7 +433,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 }
 
 // Устанавливает связь с коннектором 'c'.
-bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!c)
   return false;
@@ -441,7 +441,7 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
  if(!Build())
   return false;
 
- if(!c->ConnectToItem(this,item_property_name, connector_property_name, c_index))
+ if(!c->ConnectToItem(this,item_property_name, connector_property_name, c_index, forced_connect_same_item))
   return false;
 
  std::vector<PUAConnector> &vec=RelatedConnectors[item_property_name];
