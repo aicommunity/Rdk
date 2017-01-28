@@ -331,6 +331,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 
  if(!Storage)
   return false;
+ Storage->SetLogger(Logger);
+
 
  RDK_SYS_TRY
  {
@@ -7002,7 +7004,9 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	}
    }
 
+   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
    Storage->BuildStorage();
+   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
   }
   catch (RDK::UException &exception)
   {

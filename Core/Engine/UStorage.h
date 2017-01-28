@@ -94,6 +94,9 @@ std::map<std::string,UId> ClassesLookupTable;
 // ’ранилище образцов классов
 UClassesStorage ClassesStorage;
 
+/// Ёкземпл€р класса дл€ логировани€
+mutable UEPtr<ULoggerEnv> Logger;
+
 protected: // ќписани€ классов
 // XML описани€ всех классов хранилища
 UClassesDescription ClassesDescription;
@@ -257,6 +260,10 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // --------------------------
 // ћетоды управлени€ библиотеками
 // --------------------------
+// ”казатель на логгер
+UEPtr<ULoggerEnv> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+
 // ¬озвращает библиотеку по индексу
 UEPtr<ULibrary> GetCollection(int index);
 

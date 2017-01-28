@@ -679,6 +679,21 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 // --------------------------
 // Методы управления библиотеками
 // --------------------------
+// Указатель на логгер
+UEPtr<ULoggerEnv> const UStorage::GetLogger(void) const
+{
+ return Logger;
+}
+
+bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
+{
+ if(Logger == logger)
+  return true;
+
+ Logger=logger;
+ return true;
+}
+
 // Возвращает библиотеку по индексу
 UEPtr<ULibrary> UStorage::GetCollection(int index)
 {
@@ -842,10 +857,14 @@ bool UStorage::BuildStorage(void)
 {
  for(size_t i=0;i<CollectionList.size();i++)
  {
-  CollectionList[i]->Upload(this);
   UEPtr<ULibrary> lib=CollectionList[i];
   if(lib)
   {
+   Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
+   CollectionList[i]->Upload(this);
+   Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
+   if(!lib->GetIncomplete().empty())
+    Logger->LogMessage(RDK_EX_DEBUG, std::string("Failed to add [")+sntoa(lib->GetIncomplete().size())+std::string("]: ")+concat_strings(lib->GetIncomplete(),std::string(",")));
    CompletedClassNames.insert(CompletedClassNames.end(),
 							 lib->GetComplete().begin(),
 							 lib->GetComplete().end());

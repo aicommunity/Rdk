@@ -155,6 +155,14 @@ int Add(int index);
 /// Удаляет движок из позиции index
 int Del(int index);
 
+/// Инициализирует канал (функция должна быть вызвана первой!)
+/// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
+int ChannelInit(int channel_index, int predefined_structure, void* exception_handler);
+
+/// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
+int ChannelUnInit(int channel_index);
+
+protected:
 /// Создаает требуемый канал
 /// (если канал уже инициализирован, то не делает ничего
 int ChannelCreate(int index);
@@ -162,18 +170,12 @@ int ChannelCreate(int index);
 /// Уничтожает требуемый канал
 /// (если канал уже уничтожен, то не делает ничего
 int ChannelDestroy(int index);
-
-// Инициализирует канал (функция должна быть вызвана первой!)
-// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
-int ChannelInit(int channel_index, int predefined_structure, void* exception_handler);
-
-// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
-int ChannelUnInit(int channel_index);
 // --------------------------
 
 // --------------------------
 // Методы доступа к каналам
 // --------------------------
+public:
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UEPtr<RDK::UEngine>& GetEngine(void);
 RDK::UEPtr<RDK::UEngine> GetEngine(int channel_index);

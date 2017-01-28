@@ -66,6 +66,7 @@ int ULogger::InitLog(void)
   if(CreateNewDirectory(LogDir.Get().c_str()) != 0)
   {
    LogEnabledFlag=false;
+   RdkDebuggerMessage(std::string("Failed to create log directory ")+LogDir.Get());
    return RDK_E_LOGGER_CANT_CREATE_LOG_PATH;
   }
  }
@@ -88,6 +89,7 @@ int ULogger::WriteMessageToFile(const std::string &str)
   if(!EventsLogFile->is_open())
   {
    Clear();
+   RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");
    return RDK_E_LOGGER_CANT_CREATE_LOG_FILE;
   }
  }
@@ -97,6 +99,7 @@ int ULogger::WriteMessageToFile(const std::string &str)
  if(EventsLogFile->fail())
  {
   Clear();
+  RdkDebuggerMessage(std::string("Failed to write log message"));
   return RDK_E_LOGGER_LOG_FILE_WRITE_ERROR;
  }
 

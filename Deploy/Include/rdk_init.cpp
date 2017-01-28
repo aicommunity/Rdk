@@ -10,6 +10,7 @@
 #include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
 #include "../../Core/System/UGenericMutex.h"
+#include "rdk_assert.h"
 
 namespace RDK {
 
@@ -24,55 +25,26 @@ int RDK_CALL ProcessException(int channel_index, const UException &ex)
  logger->ProcessException(ex);
  return RDK_EXCEPTION_CATCHED;
 }
-/*
-// Очищает коллекцию глобальных шрифтов
-void ClearClobalFonts(void)
+
+/// Записывает в отладочную консоль сообщение, если result != RDK_SUCCESS
+/// работает только если включен отладочный режим
+void AssertDebugger(int result, const char* function, const char* file, int line)
 {
- GlobalFonts.DelAllFonts();
+ if(result != 0)
+  RdkDebuggerMessage(std::string("Assertion in ")+std::string(function)+std::string(" in ")+extract_file_name(file)+std::string(":")+sntoa(line)+std::string(" code=")+sntoa(result));
 }
 
-// Загружает новый глобальный шрифт
-bool AddGlobalFont(const std::string &font_file_name)
+/// Записывает в лог сообщение, если result != RDK_SUCCESS
+void AssertLog(int result, const char* function, const char* file, int line)
 {
- int res=RDK_SUCCESS;
- RDK_SYS_TRY
+ if(result != 0)
  {
-  try
-  {
-   RDK::UBitmapFont font;
-   std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
-   std::string font_name;
-   if(dir_sep_pos != std::string::npos)
-	font_name=font_file_name.substr(dir_sep_pos+1);
-   else
-	font_name=font_file_name;
-   std::size_t _pos=font_name.find_first_of("_");
-   std::size_t _pos2=font_name.find_first_not_of("0123456789",_pos+1);
-   if(_pos != std::string::npos)
-   {
-	std::string font_string_size=font_name.substr(_pos+1,_pos2-_pos-1);
-	int size=RDK::atoi(font_string_size);
-	if(!font.LoadFromFile(font_name.substr(0,_pos),font_file_name,size))
-	 return false;
-	return RDK::GlobalFonts.AddFont(font.GetName(),size,font);
-   }
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
+   std::string message(std::string("Assertion in ")+std::string(function)+std::string(" in ")+extract_file_name(file)+std::string(":")+sntoa(line)+std::string(" code=")+sntoa(result));
+   if(MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, message.c_str()) != RDK_SUCCESS)
+    RdkDebuggerMessage(message);
  }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return false;
 }
-      */
+
 }
 
 /*****************************************************************************/
@@ -639,7 +611,8 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
   {
    if(Core_GetNumChannels()<=RdkCoreManager.GetSelectedChannelIndex())
    {
-	res=SetNumChannels(RdkCoreManager.GetSelectedChannelIndex()+1);
+    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (std::string("Automatic increase channels quantity to ")+RDK::sntoa(RdkCoreManager.GetSelectedChannelIndex()+1)).c_str());
+    res=SetNumChannels(RdkCoreManager.GetSelectedChannelIndex()+1);
 
 	if(res != RDK_SUCCESS)
 	 return res;

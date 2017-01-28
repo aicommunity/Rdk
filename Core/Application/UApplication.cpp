@@ -337,7 +337,7 @@ bool UApplication::Init(void)
  SetWorkDirectory(font_path);
  EngineControl->Init();
  UApplication::SetNumChannels(1);
- MCore_ChannelInit(0,0,(void*)ExceptionHandler);
+// MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();
  return true;
