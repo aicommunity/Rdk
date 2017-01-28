@@ -10,7 +10,6 @@
 #include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
 #include "../../Core/System/UGenericMutex.h"
-#include "rdk_assert.h"
 
 namespace RDK {
 

@@ -289,7 +289,7 @@ std::basic_string<CharT> concat_strings(const std::vector<std::basic_string<Char
  if (!elements.empty())
  {
   std::basic_stringstream<CharT> ss;
-  std::vector<std::basic_string<CharT> >::const_iterator it = elements.begin();
+  typename std::vector<std::basic_string<CharT> >::const_iterator it = elements.begin();
   while (true)
   {
    ss << *it++;
