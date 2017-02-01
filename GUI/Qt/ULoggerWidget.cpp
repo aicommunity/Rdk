@@ -6,6 +6,7 @@ ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
     setAccessibleName("ULoggerWidget");
     UpdateInterval = 200;
     application = app;
+    CheckModelFlag = false; // for updating logger when model not loaded yet
 
     layout = new QVBoxLayout(this);
     textEdit = new QPlainTextEdit(this);
@@ -24,7 +25,7 @@ ULoggerWidget::~ULoggerWidget()
 void ULoggerWidget::AUpdateInterface()
 {
     if(!application) return;
-    std::list<std::string> log=application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
+    std::list<std::string> log = application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
     for(std::list<std::string>::iterator i = log.begin(); i != log.end(); ++i)
         textEdit->appendPlainText(QString::fromStdString(*i));
 }
