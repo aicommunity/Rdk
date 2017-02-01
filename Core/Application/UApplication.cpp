@@ -325,6 +325,8 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
+
  Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
@@ -340,12 +342,14 @@ bool UApplication::Init(void)
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been finished.");
  return true;
 }
 
 /// Деинициализирует приложение
 bool UApplication::UnInit(void)
 {
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
  if(EngineControl)
  {
   EngineControl->PauseChannel(-1);
@@ -353,6 +357,7 @@ bool UApplication::UnInit(void)
  }
  Sleep(10);
  CloseProject();
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
  return true;
 }
 // --------------------------
@@ -405,6 +410,7 @@ bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
 
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Open project ")+filename+"...").c_str());
  ProjectXml.LoadFromFile(filename,"");
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
@@ -552,6 +558,7 @@ catch(RDK::UException &exception)
 
  SaveProjectsHistory();
 
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Project ")+filename+" has been opened successfully.").c_str());
  return true;
 }
 
