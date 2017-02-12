@@ -169,6 +169,7 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
  if(ClassesStorage.find(id) != ClassesStorage.end())
   throw EClassIdAlreadyExist(id);
 
+ classtemplate->SetLogger(Logger);
  if(!classtemplate->Build())
   return ForbiddenId;
 
@@ -419,6 +420,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  // Если свободного объекта не нашли
  UEPtr<UContainer> obj=classtemplate->New();
  PushObject(classid,obj);
+ obj->SetLogger(Logger);
  obj->Default();
 
  // В случае, если объект создается непосредственно как копия из хранилища...
