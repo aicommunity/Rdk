@@ -572,7 +572,7 @@ void UComponentsListWidget::setParametersClicked()
                     item->data(0, Qt::DisplayRole).toString().toLocal8Bit(),
                     ui->plainTextEditParameters->toPlainText().toLocal8Bit());
         reloadPropertys();
-        ui->plainTextEditParameters->clear();
+        //ui->plainTextEditParameters->clear();
     }
 }
 
@@ -587,7 +587,7 @@ void UComponentsListWidget::setGlobalParametersClicked()
                     item->data(0, Qt::DisplayRole).toString().toLocal8Bit(),
                     ui->plainTextEditParameters->toPlainText().toLocal8Bit());
         reloadPropertys();
-        ui->plainTextEditParameters->clear();
+        //ui->plainTextEditParameters->clear();
     }
 }
 
@@ -603,7 +603,7 @@ void UComponentsListWidget::setGlobalOwnerParametersClicked()
                     item->data(0, Qt::DisplayRole).toString().toLocal8Bit(),
                     ui->plainTextEditParameters->toPlainText().toLocal8Bit());
         reloadPropertys();
-        ui->plainTextEditParameters->clear();
+        //ui->plainTextEditParameters->clear();
     }
 }
 

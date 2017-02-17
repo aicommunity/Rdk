@@ -7,6 +7,7 @@
 #include "../rdk_system.h"
 //#include "USharedMemoryLoader.win.cpp"
 //#include "UGenericMutex.win.cpp"
+#include "UDllLoader.win.cpp"
 
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
   #define DELTA_EPOCH_IN_MICROSECS  116444736000000000Ui64
@@ -159,6 +160,24 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
 void RdkDebuggerMessage(const std::string &message)
 {
 }
+
+/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+{
+    UDllLoader * loader = new UDllLoaderWin(dll_name);
+    if (loader->Load())
+        return loader;
+    else
+        return NULL;
+}
+
+/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
+{
+    if (handle)
+      delete handle;
+}
+
 
 }
 #endif
