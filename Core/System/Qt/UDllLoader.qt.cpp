@@ -65,7 +65,7 @@ bool UDllLoaderQt::UnLoad(void)
 
 void *UDllLoaderQt::Resolve(std::string symbol)
 {
-    return library.resolve(symbol.c_str());
+    return (void *)library.resolve(symbol.c_str());
 }
 
 std::string UDllLoaderQt::GetErrorString()

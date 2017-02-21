@@ -151,10 +151,8 @@ void RdkDebuggerMessage(const std::string &message)
 RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
 {
     UDllLoader *loader = new UDllLoaderQt(dll_name);
-    if (loader->Load())
-        return loader;
-    else
-        return NULL;
+    loader->Load();
+    return loader;
 }
 
 /// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
