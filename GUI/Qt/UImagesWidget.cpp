@@ -76,11 +76,8 @@ UImagesWidget::~UImagesWidget()
 
 void UImagesWidget::AUpdateInterface()
 {
-    RDK::UBitmap tempBmp;
-
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
     {
-        RDK::UBitmapParam bmp_param;
 
         int calcChannel = indChannels?(*i)->getCalcChannel():Core_GetSelectedChannelIndex();
 
@@ -112,40 +109,65 @@ QPixmap UImagesWidget::fromUBitmap(RDK::UBitmap *tempBmp)
     {
     case RDK::ubmRGB24:
         {
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888);
-            return QPixmap::fromImage(image.rgbSwapped());
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            /*QPixmap tempPixmap;
+            tempPixmap.convertFromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                               tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped(),
+                                        Qt::OrderedDither);*/
+            return QPixmap::fromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped(),
+                                      Qt::OrderedDither);
         }
 
     case RDK::ubmRGB32:
         {
-        QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+        /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                  tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32);
-        return QPixmap::fromImage(image.rgbSwapped());
+        return QPixmap::fromImage(image.rgbSwapped());*/
+        return QPixmap::fromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                         tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped(),
+                                  Qt::OrderedDither);
         }
 
     case RDK::ubmRGB96:
         {
             //RDK::UBitmap otherTypeBmp
             tempBmp->SetColorModel(RDK::ubmRGB24, true);
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32);
-            return QPixmap::fromImage(image.rgbSwapped());
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            return QPixmap::fromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped(),
+                                      Qt::OrderedDither);
         }
 
     case RDK::ubmY8:
         {
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8);
-            return QPixmap::fromImage(image.rgbSwapped());
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            return QPixmap::fromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).rgbSwapped(),
+                                      Qt::OrderedDither);
         }
 
     case RDK::ubmY32:
         {
             tempBmp->SetColorModel(RDK::ubmY8, true);
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8);
-            return QPixmap::fromImage(image.rgbSwapped());
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            return QPixmap::fromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).rgbSwapped(),
+                                      Qt::OrderedDither);
         }
     }
 

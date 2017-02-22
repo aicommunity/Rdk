@@ -45,6 +45,12 @@ public slots:
     void showFullScreenImage(USingleImageWidget *item);
     void updateImages();
 
+protected:
+    //buffers
+    RDK::UBitmap tempBmp;
+    RDK::UBitmapParam bmp_param;
+
+
 private:
     Ui::UImagesWidget *ui;
 
