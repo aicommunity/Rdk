@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <iostream>
+#include <string.h>
 #include "MMatrixBase.h"
 
 namespace RDK{
