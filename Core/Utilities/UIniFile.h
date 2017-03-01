@@ -402,7 +402,7 @@ bool Delete(const StringT &section, const StringT &variable)
 bool LoadFromFile(const StringT &FileName)
 {
  basic_fstream<CharT> file(FileName.c_str(), ios::in);
- CharT buffer[4096];
+ StringT buffer;
 
  Lines.clear();
 
@@ -411,7 +411,9 @@ bool LoadFromFile(const StringT &FileName)
 
  while(!file.eof() && !file.fail())
   {
-   file.getline(buffer,4096);
+   getline(file,buffer);
+   if(!buffer.empty() && *buffer.rbegin() == '\r')
+    buffer.erase(buffer.size() - 1);
    Lines.push_back(buffer);
   }
 

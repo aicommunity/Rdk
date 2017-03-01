@@ -16,11 +16,11 @@ typedef T value_type;
 union
 {
  T* Data;
- T* Data1D;
+/* T* Data1D;
  struct
  {
   T x,y,z,d;
- };
+ };*/
  double *Double;
  int *Int;
  unsigned char *UChar;
@@ -43,6 +43,7 @@ MDMatrix(int rows, int cols);
 MDMatrix(int rows, int cols, T defvalue);
 MDMatrix(const MDMatrix<T> &copy);
 MDMatrix(int rows, int cols, const T* data);
+MDMatrix(int rows, int cols, const void* data);
 virtual ~MDMatrix();
 // --------------------------
 
@@ -53,6 +54,7 @@ void Resize(int rows, int cols, T defvalue=0);
 
 void Assign(int rows, int cols, const T *data);
 void Assign(int rows, int cols, T value);
+void Assign(int rows, int cols, const void *data);
 
 void InsertRows(int index, int num_rows=1);
 void InsertCols(int index, int num_cols=1);
@@ -102,6 +104,7 @@ virtual void* GetVoid(void);
 const MDMatrix<T>& operator = (const MDMatrix<T> &copy);
 MDMatrix<T>& operator = (T value);
 MDMatrix<T>& operator = (const T* data);
+MDMatrix<T>& operator = (const void* data);
 
 // Получение размерности матриц
 int GetCols(void) const;
@@ -273,6 +276,13 @@ MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
 };
 
 template<class T>
+MDMatrix<T>::MDMatrix(const int rows, const  int cols, const void* data)
+: Data(0),Rows(0),Cols(0)
+{
+ Assign(rows,cols,data);
+};
+
+template<class T>
 MDMatrix<T>::~MDMatrix()
 {
  if(Data)
@@ -337,6 +347,13 @@ void MDMatrix<T>::Assign(int rows, int cols, T value)
 {
  Resize(rows, cols);
  *this=value;
+}
+
+template<class T>
+void MDMatrix<T>::Assign(int rows, int cols, const void *data)
+{
+ Resize(rows,cols);
+ *this=data;
 }
 
 template<class T>
@@ -518,6 +535,14 @@ MDMatrix<T>& MDMatrix<T>::operator = (const T* data)
  return *this;
 }
 
+template<class T>
+MDMatrix<T>& MDMatrix<T>::operator = (const void* data)
+{
+ memcpy(Data,data,Rows*Cols*sizeof(T));
+ return *this;
+}
+
+
 // Получение размерности матриц
 template<class T>
 int MDMatrix<T>::GetCols(void) const
@@ -537,13 +562,13 @@ int MDMatrix<T>::GetRows(void) const
 template<class T>
 T& MDMatrix<T>::operator [] (int i)
 {
- return Data1D[i];
+ return Data[i];
 }
 
 template<class T>
 const T& MDMatrix<T>::operator [] (int i) const
 {
- return Data1D[i];
+ return Data[i];
 }
 
 template<class T>

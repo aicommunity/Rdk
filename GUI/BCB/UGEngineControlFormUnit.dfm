@@ -57,11 +57,13 @@ object UGEngineControlForm: TUGEngineControlForm
         Width = 259
         Height = 382
         Align = alClient
+        DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -12
         Font.Name = 'Tahoma'
         Font.Style = []
+        ParentDoubleBuffered = False
         ParentFont = False
         TabOrder = 0
         ExplicitLeft = 1
@@ -634,6 +636,12 @@ object UGEngineControlForm: TUGEngineControlForm
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
                 ExplicitWidth = 236
                 ExplicitHeight = 302
+                inherited NameTabSheet: TTabSheet
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
+                  ExplicitWidth = 499
+                  ExplicitHeight = 515
+                end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitTop = 25
                   ExplicitWidth = 228
@@ -646,6 +654,8 @@ object UGEngineControlForm: TUGEngineControlForm
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
                   inherited Splitter1: TSplitter
                     Top = 90
                     Height = 8
@@ -1201,6 +1211,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Delete Selected'
         OnClick = DeleteSelected1Click
       end
+      object ClonetoNewChannel1: TMenuItem
+        Caption = 'Clone to New Channel'
+        OnClick = ClonetoNewChannel1Click
+      end
     end
     object Calculate1: TMenuItem
       Caption = 'Calculate'
@@ -1298,7 +1312,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03F00310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03FC0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

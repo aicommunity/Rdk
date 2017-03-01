@@ -401,6 +401,12 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
  property=0;
 
  VariableMapCIteratorT I=PropertiesLookupTable.find(connector_property_name);
+// // TODO: Сначала проверяем алиасы
+// VariableMapCIteratorT I=PropertiesLookupTable.end();
+// if(CheckAlias(connector_property_name))
+//  I=PropertiesLookupTable.find(GetPropertyNameByAlias(connector_property_name));
+// else
+//  I=PropertiesLookupTable.find(connector_property_name);
 
  if(I == PropertiesLookupTable.end())
   return;
@@ -416,7 +422,7 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
 // Коммуникационные методы
 // ----------------------
 // Устанавливает связь с элементом сети 'na'.
-bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!na)
   return false;
@@ -448,31 +454,17 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
  if(I != ConnectedItemList.end())
  {
-  if(c_index == -1)
+  for(size_t i=0;i<I->second.size();i++)
   {
-   for(size_t i=0;i<I->second.size();i++)
+   if(I->second[i].Item == na)
    {
-	if(I->second[i].Item == na)
+	if(I->second[i].Name == item_property_name)
 	{
-	 if(I->second[i].Name == item_property_name)
-	 {
+	 if(c_index == -1)
 	  c_index=i;
+	 if(!forced_connect_same_item)
 	  return true;
-	 }
-	 else
-	 {
-//	  I->second[i].Name = item_property_name;
-//	  c_index=i;
-//	  return true;
-	 }
 	}
-   }
-  }
-  else
-  {
-   if(int(I->second.size())>c_index && I->second[c_index].Item == na)
-   {
-	return true;
    }
   }
  }

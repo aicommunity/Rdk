@@ -5,6 +5,7 @@
 #include "../UGenericMutex.h"
 #include <pthread.h>
 #include <iostream>
+#include "pevents.h" // got from https://github.com/NeoSmart/PEvents
 
 class RDK_LIB_TYPE UGenericMutexGcc: public UGenericMutex
 {
@@ -25,7 +26,7 @@ public:
 class RDK_LIB_TYPE UGenericEventGcc: public UGenericEvent
 {
 protected:
- //HANDLE Event;
+neosmart::neosmart_event_t Event;
 
 public:
  UGenericEventGcc();
@@ -146,6 +147,7 @@ bool UGenericMutexGcc::exclusive_unlock(void)
 
 UGenericEventGcc::UGenericEventGcc()
 {
+ Event=neosmart::CreateEvent(true,true);
  //Event=CreateEvent(0,FALSE,TRUE,0);
 
  // Может быть удобно реализовать с помощью
@@ -154,27 +156,27 @@ UGenericEventGcc::UGenericEventGcc()
 
 UGenericEventGcc::~UGenericEventGcc()
 {
- //if(Event)
- // CloseHandle(Event);
+ neosmart::DestroyEvent(Event);
 }
 
 bool UGenericEventGcc::set(void)
 {
- //SetEvent(Event);
+ neosmart::SetEvent(Event);
  return true;
 }
 
 bool UGenericEventGcc::reset(void)
 {
- //ResetEvent(Event);
+ neosmart::ResetEvent(Event);
  return true;
 }
 
 bool UGenericEventGcc::wait(unsigned wait_time)
 {
- //if(WaitForSingleObject(Event,wait_time) == WAIT_TIMEOUT)
- // return false;
+ if(neosmart::WaitForEvent(Event,wait_time) == WAIT_TIMEOUT)
+  return false;
  return true;
+// return false;
 }
 
 UGenericEventGcc::UGenericEventGcc(const UGenericEventGcc &copy)

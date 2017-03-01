@@ -733,6 +733,12 @@ void SetCheckEquals(bool value)
 // -----------------------------
 // Операторы доступа
 // -----------------------------
+// Возврат значения
+virtual const T& GetData(void) const
+{
+ return v;
+};
+
 virtual void SetData(const T &value)
 {
  if(CheckEqualsFlag && v == value)

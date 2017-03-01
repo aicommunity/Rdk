@@ -24,13 +24,22 @@ URdkCoreManager::URdkCoreManager(void)
  Environment=0;
  Storage=0;
  BufObjectsMode=0;
- GlobalLogger.SetChannelIndex(RDK_SYS_MESSAGE);
+ GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
+ GlobalLogger.SetDebugMode(true);
+ GlobalLogger.SetEventsLogMode(true);
+ SystemLogger.RegisterGlobalLogger(&GlobalLogger);
+ SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
+ SystemLogger.SetDebugMode(true);
 }
 
 URdkCoreManager::~URdkCoreManager(void)
 {
  for(int i=0;i<NumChannels;i++)
+ {
+  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
   MCore_ChannelUnInit(i);
+  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
+ }
 
  RDK_SYS_TRY
  {
@@ -38,25 +47,37 @@ URdkCoreManager::~URdkCoreManager(void)
   {
    for(size_t i=0;i<EnvironmentList.size();i++)
 	if(EnvironmentList[i])
-	 delete EnvironmentList[i];
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
+     delete EnvironmentList[i];
+    }
 
    EnvironmentList.resize(0);
 
    for(size_t i=0;i<StorageList.size();i++)
 	if(StorageList[i])
-	 delete StorageList[i];
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
+     delete StorageList[i];
+    }
 
    StorageList.resize(0);
 
    for(size_t i=0;i<EngineList.size();i++)
 	if(EngineList[i])
-	 delete EngineList[i];
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
+     delete EngineList[i];
+    }
 
    EngineList.resize(0);
 
    for(size_t i=0;i<LoggerList.size();i++)
 	if(LoggerList[i])
-	 delete LoggerList[i];
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted channel logger ")+RDK::sntoa(i));
+     delete LoggerList[i];
+    }
    LoggerList.resize(0);
 
    for(size_t i=0;i<MutexList.size();i++)
@@ -75,16 +96,16 @@ URdkCoreManager::~URdkCoreManager(void)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 }
 // --------------------------
@@ -118,14 +139,19 @@ const char* URdkCoreManager::GetLogDir(void)
 int URdkCoreManager::SetLogDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
+
  if(LogDir == dir)
   return RDK_SUCCESS;
+ if(GlobalLogger.IsLogFileCreated())
+  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
  LogDir=dir;
  for(size_t i=0;i<LoggerList.size();i++)
  {
   if(LoggerList[i])
    LoggerList[i]->SetLogDir(LogDir);
  }
+
+ SystemLogger.SetLogDir(LogDir);
  GlobalLogger.SetLogDir(LogDir);
  return RDK_SUCCESS;
 }
@@ -148,7 +174,7 @@ int URdkCoreManager::SetDebugMode(bool value)
   if(LoggerList[i])
    LoggerList[i]->SetDebugMode(DebugMode);
  }
- GlobalLogger.SetDebugMode(DebugMode);
+ SystemLogger.SetDebugMode(DebugMode);
  return RDK_SUCCESS;
 }
 
@@ -178,18 +204,18 @@ int URdkCoreManager::SetBufObjectsMode(int value)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -215,31 +241,33 @@ int URdkCoreManager::LoadFonts(void)
    std::vector<std::string> font_names;
    std::string font_path=SystemDir+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   GlobalLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
+   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path);
 
    ClearFonts();
    RDK::UBitmapFont font;
    for(size_t i=0;i<font_names.size();i++)
    {
-	AddFont(font_path+font_names[i]);
-    GlobalLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
+    if(AddFont(font_path+font_names[i]))
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]);
+    else
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Failed to load font ")+font_names[i]);
    }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -274,18 +302,18 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -322,42 +350,66 @@ int URdkCoreManager::GetNumChannels(void) const
 /// Создает требуемое число пустых движков
 int URdkCoreManager::SetNumChannels(int num)
 {
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UGenericMutexExclusiveLocker lock(GlobalMutex);
-
-  if(num<0)
-   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
-
-  for(int i=num;i<int(EngineList.size());i++)
+  try
   {
-   ChannelDestroy(i);
-   UDestroyMutex(MutexList[i]);
+   {
+    UGenericMutexExclusiveLocker lock(GlobalMutex);
+
+    if(num<0)
+     return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+    for(int i=num;i<int(EngineList.size());i++)
+    {
+     ChannelDestroy(i);
+     UDestroyMutex(MutexList[i]);
+    }
+
+    int old_num=EngineList.size();
+
+    EngineList.resize(num,0);
+    StorageList.resize(num,0);
+    EnvironmentList.resize(num,0);
+    MutexList.resize(num,0);
+    LockerList.resize(num,0);
+    LoggerList.resize(num,0);
+    for(int i=old_num;i<num;i++)
+    {
+     MutexList[i]=UCreateMutex();
+     #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+     MutexList[i]->DebugId=i;
+     #endif
+    }
+    NumChannels=int(EngineList.size());
+   }
+
+   SetSelectedChannelIndex(num-1);
+
+   res=RDK_SUCCESS;
   }
-
-  int old_num=EngineList.size();
-
-  EngineList.resize(num,0);
-  StorageList.resize(num,0);
-  EnvironmentList.resize(num,0);
-  MutexList.resize(num,0);
-  LockerList.resize(num,0);
-  LoggerList.resize(num,0);
-  for(int i=old_num;i<num;i++)
+  catch (RDK::UException &exception)
   {
-   MutexList[i]=UCreateMutex();
-   #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-   MutexList[i]->DebugId=i;
-   #endif
+   SystemLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
   }
-  NumChannels=int(EngineList.size());
+  catch (std::exception &exception)
+  {
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
  }
 
- SetSelectedChannelIndex(num-1);
-
- return RDK_SUCCESS;
+ return res;
 }
 
-/// Делает текущим канала с заданным индексом
+/// Делает текущим канал с заданным индексом
 int URdkCoreManager::SelectChannel(int index)
 {
  if(index<0 || index>=NumChannels)
@@ -381,18 +433,18 @@ int URdkCoreManager::SelectChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -465,42 +517,67 @@ int URdkCoreManager::Del(int index)
  if(GetNumChannels() == 1)
   return RDK_E_CORE_ZERO_CHANNEL_MUST_EXIST;
 
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UGenericMutexExclusiveLocker lock(MutexList[index]);
-  ChannelDestroy(index);
+  try
+  {
+   {
+    UGenericMutexExclusiveLocker lock(MutexList[index]);
+    ChannelDestroy(index);
+   }
+   UDestroyMutex(MutexList[index]);
+   for(int i=index+1;i<int(EngineList.size());i++)
+   {
+    UGenericMutexExclusiveLocker lock2(MutexList[i]);
+    EngineList[i-1]=EngineList[i];
+    StorageList[i-1]=StorageList[i];
+    EnvironmentList[i-1]=EnvironmentList[i];
+    MutexList[i-1]=MutexList[i];
+    LockerList[i-1]=LockerList[i];
+    LoggerList[i-1]=LoggerList[i];
+   }
+
+   int new_num_size=0;
+   int curr_selected_channel_index=0;
+
+   {
+    UGenericMutexExclusiveLocker lock(GlobalMutex);
+    EngineList.resize(EngineList.size()-1);
+    StorageList.resize(StorageList.size()-1);
+    EnvironmentList.resize(EnvironmentList.size()-1);
+    MutexList.resize(MutexList.size()-1);
+    LoggerList.resize(LoggerList.size()-1);
+    LockerList.resize(LockerList.size()-1);
+    new_num_size=NumChannels=int(EngineList.size());
+    curr_selected_channel_index=SelectedChannelIndex;
+   }
+
+   if(curr_selected_channel_index>=new_num_size)
+    SetSelectedChannelIndex(curr_selected_channel_index-1);
+   else
+    SetSelectedChannelIndex(curr_selected_channel_index);
+
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   SystemLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
  }
- UDestroyMutex(MutexList[index]);
- for(int i=index+1;i<int(EngineList.size());i++)
+ RDK_SYS_CATCH
  {
-  UGenericMutexExclusiveLocker lock2(MutexList[i]);
-  EngineList[i-1]=EngineList[i];
-  StorageList[i-1]=StorageList[i];
-  EnvironmentList[i-1]=EnvironmentList[i];
-  MutexList[i-1]=MutexList[i];
-  LockerList[i-1]=LockerList[i];
-  LoggerList[i-1]=LoggerList[i];
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
  }
 
- int new_num_size=0;
- int curr_selected_channel_index=0;
-
- {
-  UGenericMutexExclusiveLocker lock(GlobalMutex);
-  EngineList.resize(EngineList.size()-1);
-  StorageList.resize(StorageList.size()-1);
-  EnvironmentList.resize(EnvironmentList.size()-1);
-  MutexList.resize(MutexList.size()-1);
-  LoggerList.resize(LoggerList.size()-1);
-  LockerList.resize(LockerList.size()-1);
-  new_num_size=NumChannels=int(EngineList.size());
-  curr_selected_channel_index=SelectedChannelIndex;
- }
-
- if(curr_selected_channel_index>=new_num_size)
-  SetSelectedChannelIndex(curr_selected_channel_index-1);
- else
-  SetSelectedChannelIndex(curr_selected_channel_index);
- return RDK_SUCCESS;
+ return res;
 }
 
 /// Создаает требуемый канал
@@ -513,53 +590,81 @@ int URdkCoreManager::ChannelCreate(int index)
  if(EngineList[index])
   return RDK_SUCCESS;
 
- // TODO: здесь инициализация параметров логгера и его запуск
- LoggerList[index]=new RDK::ULoggerEnv;
- LoggerList[index]->SetLogDir(LogDir);
-
- EngineList[index]=FuncCreateNewEngine();
- if(!EngineList[index])
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ChannelDestroy(index);
-  return RDK_E_CORE_ENGINE_CREATE_FAIL;
- }
-
- EngineList[index]->SetLogger(LoggerList[index]);
-
- StorageList[index]=FuncCreateNewStorage();
- if(!StorageList[index])
- {
-  ChannelDestroy(index);
-  return RDK_E_CORE_STORAGE_CREATE_FAIL;
- }
-
- EnvironmentList[index]=FuncCreateNewEnvironment();
- if(!EnvironmentList[index])
- {
-  ChannelDestroy(index);
-  return RDK_E_CORE_ENVIRONMENT_CREATE_FAIL;
- }
-
- EnvironmentList[index]->SetFonts(Fonts);
- EngineList[index]->Default();
-
- EnvironmentList[index]->SetSystemDir(SystemDir);
- if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
- {
-  ChannelDestroy(index);
-  return RDK_E_CORE_ENGINE_INIT_FAIL;
- }
-
+  try
   {
-   UGenericMutexExclusiveLocker lock(GlobalMutex);
-   /// Данные текущего выбранного канала
-   Engine=EngineList[SelectedChannelIndex];
-   Environment=EnvironmentList[SelectedChannelIndex];
-   Storage=StorageList[SelectedChannelIndex];
-   Logger=LoggerList[SelectedChannelIndex];
-  }
+   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to create channel ")+RDK::sntoa(index));
+   // TODO: здесь инициализация параметров логгера и его запуск
+   LoggerList[index]=new RDK::ULoggerEnv;
+   LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
+   LoggerList[index]->SetLogDir(LogDir);
+   LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
 
- return RDK_SUCCESS;
+   EngineList[index]=FuncCreateNewEngine();
+   if(!EngineList[index])
+   {
+    ChannelDestroy(index);
+    return RDK_E_CORE_ENGINE_CREATE_FAIL;
+   }
+
+   EngineList[index]->SetLogger(LoggerList[index]);
+
+   StorageList[index]=FuncCreateNewStorage();
+   if(!StorageList[index])
+   {
+    ChannelDestroy(index);
+    return RDK_E_CORE_STORAGE_CREATE_FAIL;
+   }
+
+   EnvironmentList[index]=FuncCreateNewEnvironment();
+   if(!EnvironmentList[index])
+   {
+    ChannelDestroy(index);
+    return RDK_E_CORE_ENVIRONMENT_CREATE_FAIL;
+   }
+
+   EnvironmentList[index]->SetFonts(Fonts);
+   EngineList[index]->Default();
+
+   EnvironmentList[index]->SetSystemDir(SystemDir);
+   if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
+   {
+    ChannelDestroy(index);
+    return RDK_E_CORE_ENGINE_INIT_FAIL;
+   }
+
+   {
+    UGenericMutexExclusiveLocker lock(GlobalMutex);
+    /// Данные текущего выбранного канала
+    Engine=EngineList[SelectedChannelIndex];
+    Environment=EnvironmentList[SelectedChannelIndex];
+    Storage=StorageList[SelectedChannelIndex];
+    Logger=LoggerList[SelectedChannelIndex];
+   }
+
+   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(index)+" has been created");
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   SystemLogger.ProcessException(exception);
+   res=RDK_EXCEPTION_CATCHED;
+  }
+  catch (std::exception &exception)
+  {
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   res=RDK_EXCEPTION_CATCHED;
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=RDK_EXCEPTION_CATCHED;
+ }
+
+ return res;
 }
 
 /// Уничтожает требуемый движок
@@ -610,37 +715,48 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    if(channel_index<0 || channel_index>=NumChannels)
     return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
-   res=ChannelUnInit(channel_index);
+   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to initialize channel ")+RDK::sntoa(channel_index));
+   res=RDK_ASSERT_LOG(ChannelUnInit(channel_index));
    if(res != RDK_SUCCESS)
+   {
 	return res;
+   }
 
-   res=ChannelCreate(channel_index);
+   res=RDK_ASSERT_LOG(ChannelCreate(channel_index));
    if(res != RDK_SUCCESS)
 	return res;
 
    GetEngineLock(channel_index)->SetChannelIndex(channel_index);
    GetEngineLock(channel_index)->SetBufObjectsMode(BufObjectsMode);
-   MLog_SetExceptionHandler(channel_index, exception_handler);
+   RDK_ASSERT_LOG(MLog_SetExceptionHandler(channel_index, exception_handler));
 
-   MEnv_SetPredefinedStructure(channel_index, predefined_structure);
-   MEnv_CreateStructure(channel_index);
-   MEnv_Init(channel_index);
-   res=RDK_SUCCESS;
+   res=RDK_ASSERT_LOG(MEnv_SetPredefinedStructure(channel_index, predefined_structure));
+   if(res != RDK_SUCCESS)
+    return res;
+
+   res=RDK_ASSERT_LOG(MEnv_CreateStructure(channel_index));
+   if(res != RDK_SUCCESS)
+    return res;
+
+   res=RDK_ASSERT_LOG(MEnv_Init(channel_index));
+   if(res != RDK_SUCCESS)
+    return res;
+   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(channel_index)+" has been initialized successfully");
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -660,7 +776,7 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
   {
    if(EngineList[channel_index])
    {
-	res = MEnv_UnInit(channel_index);
+    res = RDK_ASSERT_LOG(MEnv_UnInit(channel_index));
 	if(res==RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL)
 	 return res;
    }
@@ -669,18 +785,18 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
   }
   catch (RDK::UException &exception)
   {
-   GlobalLogger.ProcessException(exception);
+   SystemLogger.ProcessException(exception);
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   GlobalLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  GlobalLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -751,7 +867,7 @@ RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 // --------------------------
 // Методы доступа к каналам с блокировками
 // --------------------------
-/// Метод доступа к глобальному лучше
+/// Метод доступа к глобальному мьютексу
 UGenericMutex* URdkCoreManager::GetGlobalMutex(void)
 {
  return GlobalMutex;
@@ -866,12 +982,21 @@ RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
 RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
 {
  if(channel_index == RDK_SYS_MESSAGE)
+  return &SystemLogger;
+
+ if(channel_index == RDK_GLOB_MESSAGE)
   return &GlobalLogger;
 
  return LoggerList[channel_index];
 }
 
-/// Возвращает ссылку на глобальный логгер
+/// Возвращает ссылку на системный логгер
+RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
+{
+ return &SystemLogger;
+}
+
+/// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
 RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
 {
  return &GlobalLogger;

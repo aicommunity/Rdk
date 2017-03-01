@@ -32,6 +32,7 @@ bool ULogger::SetLogDir(const std::string &value)
   return true;
 
  LogDir=value;
+ Clear();
  return true;
 }
 
@@ -66,6 +67,7 @@ int ULogger::InitLog(void)
   if(CreateNewDirectory(LogDir.Get().c_str()) != 0)
   {
    LogEnabledFlag=false;
+   RdkDebuggerMessage(std::string("Failed to create log directory ")+LogDir.Get());
    return RDK_E_LOGGER_CANT_CREATE_LOG_PATH;
   }
  }
@@ -74,7 +76,7 @@ int ULogger::InitLog(void)
 }
 
 /// Сохраняет строку в лог
-int ULogger::LogMessage(const std::string &str)
+int ULogger::WriteMessageToFile(const std::string &str)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
  if(!EventsLogFile)
@@ -88,6 +90,7 @@ int ULogger::LogMessage(const std::string &str)
   if(!EventsLogFile->is_open())
   {
    Clear();
+   RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");
    return RDK_E_LOGGER_CANT_CREATE_LOG_FILE;
   }
  }
@@ -97,6 +100,7 @@ int ULogger::LogMessage(const std::string &str)
  if(EventsLogFile->fail())
  {
   Clear();
+  RdkDebuggerMessage(std::string("Failed to write log message"));
   return RDK_E_LOGGER_LOG_FILE_WRITE_ERROR;
  }
 
@@ -115,6 +119,13 @@ int ULogger::Clear(void)
 
  LogEnabledFlag=true;
  return RDK_SUCCESS;
+}
+
+/// Возвращает true если файл записи логов открыт
+bool ULogger::IsLogFileCreated(void) const
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ return (EventsLogFile)?true:false;
 }
 
 

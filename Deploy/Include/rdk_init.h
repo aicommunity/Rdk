@@ -38,6 +38,21 @@ typedef int bool;
 #define RDK_SYS_MESSAGE -1
 #endif
 
+#ifndef RDK_GLOB_MESSAGE
+#define RDK_GLOB_MESSAGE -2
+#endif
+
+#if defined(NDEBUG) || defined(DEBUG)
+#define RDK_ASSERTD_DEBUGGER(FUNCTION_RESULT) (RDK::AssertDebug(FUNCTION_RESULT,__FUNCTION__,__FILE__,__LINE__),FUNCTION_RESULT)
+#define RDK_ASSERTD_LOG(FUNCTION_RESULT) (RDK::AssertLog(FUNCTION_RESULT,__FUNCTION__,__FILE__,__LINE__),FUNCTION_RESULT)
+#else
+#define RDK_ASSERTD_DEBUGGER(FUNCTION_RESULT) FUNCTION_RESULT
+#define RDK_ASSERTD_LOG(FUNCTION_RESULT) FUNCTION_RESULT
+#endif
+
+#define RDK_ASSERT_DEBUGGER(FUNCTION_RESULT) (RDK::AssertDebug(FUNCTION_RESULT,__FUNCTION__,__FILE__,__LINE__),FUNCTION_RESULT)
+#define RDK_ASSERT_LOG(FUNCTION_RESULT) (RDK::AssertLog(FUNCTION_RESULT,__FUNCTION__,__FILE__,__LINE__),FUNCTION_RESULT)
+
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
@@ -419,6 +434,10 @@ RDK_LIB_TYPE int RDK_CALL MEnv_CalculateUnsafe(int channel_index, const char* st
 // Расчет всей модели в реальном времени
 RDK_LIB_TYPE int RDK_CALL Env_RTCalculate(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_RTCalculate(int channel_index);
+
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+RDK_LIB_TYPE int RDK_CALL Env_FastCalculate(double calc_interval);
+RDK_LIB_TYPE int RDK_CALL MEnv_FastCalculate(int channel_index, double calc_interval);
 
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,

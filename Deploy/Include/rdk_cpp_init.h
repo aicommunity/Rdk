@@ -73,6 +73,15 @@ namespace RDK {
 /// иначе возвращает RDK_EXCEPTION_CATCHED
 RDK_LIB_TYPE int RDK_CALL ProcessException(int channel_index, const UException &ex);
 
+
+/// Записывает в отладочную консоль сообщение, если result != RDK_SUCCESS
+/// работает только если включен отладочный режим
+RDK_LIB_TYPE void RDK_CALL AssertDebugger(int result, const char* function, const char* file, int line);
+
+/// Записывает в лог сообщение, если result != RDK_SUCCESS
+/// Также записывает его в отладочную консоль если включен отладочный режим
+RDK_LIB_TYPE void RDK_CALL AssertLog(int result, const char* function, const char* file, int line);
+
 // Возвращает указатель на текущую модель
 template<class T>
 RDK::UELockPtr<T> GetModelLock(void)

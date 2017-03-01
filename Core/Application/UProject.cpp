@@ -15,7 +15,7 @@ TProjectChannelConfig::TProjectChannelConfig(void)
 
  PredefinedStructure=0;
 
- ClassName="Model";
+ ClassName="UModel";
 
  GlobalTimeStep=30;
 
@@ -69,28 +69,28 @@ TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
 
 bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) const
 {
- return (ModelMode != copy.ModelMode) |
- (PredefinedStructure != copy.PredefinedStructure) |
- (ClassName != copy.ClassName) |
- (ModelFileName != copy.ModelFileName) |
- (ParametersFileName != copy.ParametersFileName) |
- (StatesFileName != copy.StatesFileName) |
- (GlobalTimeStep != copy.GlobalTimeStep) |
- (DefaultTimeStep != copy.DefaultTimeStep) |
- (CalculationMode != copy.CalculationMode) |
- (MinInterstepsInterval != copy.MinInterstepsInterval) |
- (InitAfterLoad != copy.InitAfterLoad) |
- (ResetAfterLoad != copy.ResetAfterLoad) |
- (DebugMode != copy.DebugMode) |
- (EventsLogMode != copy.EventsLogMode) |
- (ChannelName != copy.ChannelName) |
- (DebugSysEventsMask != copy.DebugSysEventsMask) |
+ return (ModelMode != copy.ModelMode) ||
+ (PredefinedStructure != copy.PredefinedStructure) ||
+ (ClassName != copy.ClassName) ||
+ (ModelFileName != copy.ModelFileName) ||
+ (ParametersFileName != copy.ParametersFileName) ||
+ (StatesFileName != copy.StatesFileName) ||
+ (GlobalTimeStep != copy.GlobalTimeStep) ||
+ (DefaultTimeStep != copy.DefaultTimeStep) ||
+ (CalculationMode != copy.CalculationMode) ||
+ (MinInterstepsInterval != copy.MinInterstepsInterval) ||
+ (InitAfterLoad != copy.InitAfterLoad) ||
+ (ResetAfterLoad != copy.ResetAfterLoad) ||
+ (DebugMode != copy.DebugMode) ||
+ (EventsLogMode != copy.EventsLogMode) ||
+ (ChannelName != copy.ChannelName) ||
+ (DebugSysEventsMask != copy.DebugSysEventsMask) ||
  (DebuggerMessageFlag != copy.DebuggerMessageFlag);
 }
 
 bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) const
 {
- return ((*this) != copy);
+ return !((*this) != copy);
 }
 
 TProjectConfig::TProjectConfig(void)
@@ -176,29 +176,29 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
 
 bool TProjectConfig::operator != (const TProjectConfig& copy) const
 {
- return (ProjectName != copy.ProjectName) |
- (ProjectDescription != copy.ProjectDescription) |
- (ProjectAutoSaveFlag != copy.ProjectAutoSaveFlag) |
- (ProjectAutoSaveStatesFlag != copy.ProjectAutoSaveStatesFlag) |
- (EventsLogFlag != copy.EventsLogFlag) |
- (ProjectMode != copy.ProjectMode) |
- (ProjectType != copy.ProjectType) |
- (MultiThreadingMode != copy.MultiThreadingMode) |
- (CalcSourceTimeMode != copy.CalcSourceTimeMode) |
- (ShowChannelsStateFlag != copy.ShowChannelsStateFlag) |
- (ReflectionFlag != copy.ReflectionFlag) |
- (DisableStopVideoSources != copy.DisableStopVideoSources) |
- (NumChannels != copy.NumChannels) |
- (ChannelsConfig != copy.ChannelsConfig) |
- (ServerInterfaceAddress != copy.ServerInterfaceAddress) |
- (ServerInterfacePort != copy.ServerInterfacePort) |
- (ProjectShowChannelsStates != copy.ProjectShowChannelsStates) |
- (InterfaceFileName != copy.InterfaceFileName) |
- (DescriptionFileName != copy.DescriptionFileName) |
- (DebugMode != copy.DebugMode) |
- (DebugSysEventsMask != copy.DebugSysEventsMask) |
- (DebuggerMessageFlag != copy.DebuggerMessageFlag) |
- (EventsLogMode != copy.EventsLogMode) |
+ return (ProjectName != copy.ProjectName) ||
+ (ProjectDescription != copy.ProjectDescription) ||
+ (ProjectAutoSaveFlag != copy.ProjectAutoSaveFlag) ||
+ (ProjectAutoSaveStatesFlag != copy.ProjectAutoSaveStatesFlag) ||
+ (EventsLogFlag != copy.EventsLogFlag) ||
+ (ProjectMode != copy.ProjectMode) ||
+ (ProjectType != copy.ProjectType) ||
+ (MultiThreadingMode != copy.MultiThreadingMode) ||
+ (CalcSourceTimeMode != copy.CalcSourceTimeMode) ||
+ (ShowChannelsStateFlag != copy.ShowChannelsStateFlag) ||
+ (ReflectionFlag != copy.ReflectionFlag) ||
+ (DisableStopVideoSources != copy.DisableStopVideoSources) ||
+ (NumChannels != copy.NumChannels) ||
+ (ChannelsConfig != copy.ChannelsConfig) ||
+ (ServerInterfaceAddress != copy.ServerInterfaceAddress) ||
+ (ServerInterfacePort != copy.ServerInterfacePort) ||
+ (ProjectShowChannelsStates != copy.ProjectShowChannelsStates) ||
+ (InterfaceFileName != copy.InterfaceFileName) ||
+ (DescriptionFileName != copy.DescriptionFileName) ||
+ (DebugMode != copy.DebugMode) ||
+ (DebugSysEventsMask != copy.DebugSysEventsMask) ||
+ (DebuggerMessageFlag != copy.DebuggerMessageFlag) ||
+ (EventsLogMode != copy.EventsLogMode) ||
  (OverrideLogParameters != copy.OverrideLogParameters);
 }
 
@@ -206,6 +206,50 @@ bool TProjectConfig::operator == (const TProjectConfig& copy) const
 {
  return !((*this) != copy);
 }
+
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+int TProjectConfig::GetNumChannels(void) const
+{
+ return NumChannels;
+}
+
+bool TProjectConfig::SetNumChannels(int num)
+{
+ NumChannels=num;
+ ChannelsConfig.resize(num);
+ return true;
+}
+
+bool TProjectConfig::InsertChannel(int index)
+{
+ int old_num=NumChannels;
+ int num=old_num+1;
+
+ ChannelsConfig.resize(num);
+
+ for(int i=int(ChannelsConfig.size())-1;i>index;i--)
+ {
+  ChannelsConfig[i]=ChannelsConfig[i-1];
+ }
+
+ return true;
+}
+
+bool TProjectConfig::DeleteChannel(int index)
+{
+ if(index<0 || index >= NumChannels)
+  return false;
+
+ if(NumChannels == 1)
+  return false;
+
+ ChannelsConfig.erase(ChannelsConfig.begin()+index);
+ --NumChannels;
+ return true;
+}
+// --------------------------
 
 
 // --------------------------
@@ -580,6 +624,44 @@ bool UProject::WriteToXml(USerStorageXML &xml)
  return true;
 }
 // --------------------------
+
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+int UProject::GetNumChannels(void) const
+{
+ return Config.NumChannels;
+}
+
+bool UProject::SetNumChannels(int num)
+{
+ if(!Config.SetNumChannels(num))
+  return false;
+
+ ModifiedFlag=true;
+ return true;
+}
+
+bool UProject::InsertChannel(int index)
+{
+ if(!Config.InsertChannel(index))
+  return false;
+
+ ModifiedFlag=true;
+ return true;
+}
+
+bool UProject::DeleteChannel(int index)
+{
+ if(!Config.DeleteChannel(index))
+  return false;
+
+ ModifiedFlag=true;
+ return true;
+
+}
+// --------------------------
+
 
 
 }

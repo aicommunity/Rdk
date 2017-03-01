@@ -31,7 +31,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &dat
 
  for(unsigned i=0;i<Rows;i++)
  {
-  stream<<data.Data1D[i];
+  stream<<data.Data[i][0];
   if(i<Rows-1)
    stream<<" ";
  }
@@ -48,7 +48,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVector<T,Rows> &data)
  std::stringstream stream(storage.GetNodeText().c_str());
 
  for(unsigned i=0;i<Rows;i++)
-  stream>>data.Data1D[i];
+  stream>>data.Data[i][0];
 
  return storage;
 }
@@ -103,7 +103,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MDVector<T> &data)
  storage.SetNodeAttribute("Size",sntoa(size));
  for(int i=0;i<data.GetRows();i++)
  {
-  stream<<data.Data1D[i];
+  stream<<data.Data[i];
   if(i<data.GetRows()-1)
    stream<<" ";
  }
@@ -149,7 +149,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
    std::stringstream stream(storage.GetNodeText().c_str());
 
    for(int i=0;i<data.GetRows();i++)
-	stream>>data.Data1D[i];
+	stream>>data.Data[i];
   }
  }
  return storage;

@@ -282,6 +282,26 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
  return size;
 }
 
+template<typename CharT>
+std::basic_string<CharT> concat_strings(const std::vector<std::basic_string<CharT> > &elements,
+                           const std::basic_string<CharT> &separator)
+{
+ if (!elements.empty())
+ {
+  std::basic_stringstream<CharT> ss;
+  typename std::vector<std::basic_string<CharT> >::const_iterator it = elements.begin();
+  while (true)
+  {
+   ss << *it++;
+   if (it != elements.end())
+    ss << separator;
+   else
+    return ss.str();
+  }
+ }
+ return "";
+}
+
 /// ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
 RDK_LIB_TYPE std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 

@@ -114,15 +114,15 @@ bool UServerControlVcl::ASetNumChannels(int old_num)
   if(Core_GetNumChannels()<=i)
    break;
 
-  if(!MCore_IsChannelInit(i) || !MModel_Check(i))
+  if((!MCore_IsChannelInit(i) || !MModel_Check(i)) && i != 0)
   {
-   UGEngineControlForm->CloneProject(0, i);
-   MEnv_Reset(i,0);
+//   UGEngineControlForm->CloneProject(0, i); // TODO: необходимо починить клонирование
+//   MEnv_Reset(i,0);
   }
  }
 
 #ifdef RDK_VIDEO
- if(RdkApplication.GetProjectConfig().ProjectMode == 1)
+ if(RdkApplication.GetProjectConfig().ProjectMode == 1 && VideoOutputForm)
  {
   if(VideoOutputForm->GetNumSources()<num)
   {

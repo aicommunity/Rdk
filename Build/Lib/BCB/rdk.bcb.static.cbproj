@@ -77,7 +77,7 @@
         <AllPackageLibs>rtl.lib;vcl.lib</AllPackageLibs>
         <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
         <UsePackages>true</UsePackages>
-        <IncludePath>..\..\..\ThirdParty\jpeg\;..\..\..\ThirdParty\xmlParser\;..\..\..\Core\System\Win\;..\..\..\Core\Application\Bcb\;..\..\..\Core\Application\;..\..\..\Core\Engine\;..\..\..\Core\Graphics\;..\..\..\Core\Math\;..\..\..\Core\Serialize\;..\..\..\Core\System\BCB\;..\..\..\Core\System\;..\..\..\Core\Utilities\;..\..\..\ThirdParty\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;..\..\..\Deploy\Include;$(BDS)\include;$(IncludePath)</IncludePath>
+        <IncludePath>..\..\..\ThirdParty\jpeg\;..\..\..\ThirdParty\xmlParser\;..\..\..\Core\System\Win\;..\..\..\Core\Application\Bcb\;..\..\..\Core\Application\;..\..\..\Core\Engine\;..\..\..\Core\Graphics\;..\..\..\Core\Math\;..\..\..\Core\Serialize\;..\..\..\Core\System\BCB\;..\..\..\Core\System\;..\..\..\Core\Utilities\;..\..\..\ThirdParty\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;..\..\..\Deploy\Include;$(BDS)\include;$(CG_BOOST_ROOT);$(IncludePath)</IncludePath>
         <ILINK_LibraryPath>$(BDS)\lib;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <BCC_wpar>false</BCC_wpar>
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
@@ -595,7 +595,6 @@
                 </ProjectProperties>
             </CPlusPlusBuilder.Personality>
             <Platforms>
-                <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
@@ -990,13 +989,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

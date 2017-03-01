@@ -19,11 +19,8 @@ class UEngineControl;
 class RDK_LIB_TYPE UEngineStateThread
 {
 protected: // Параметры
-/// Путь до папки с логами
-//RDK::UELockVar<std::string> LogDir;
-
 /// Флаг разрешения логгирования
-RDK::UELockVar<bool> LogFlag;
+//RDK::UELockVar<bool> LogFlag;
 
 protected: // Данные состояния модулей
 /// Состояние тредов расчета
@@ -60,12 +57,12 @@ ULogger Logger;
 //RDK::UEPtr<std::ofstream> EventsLogFile;
 
 /// Путь до файла логов
-RDK::UELockVar<std::string> EventsLogFilePath;
+//RDK::UELockVar<std::string> EventsLogFilePath;
 
 /// Флаг сохранения в лог данных
-bool EventsLogFlag;
+//bool EventsLogFlag;
 
-std::list<std::string> UnsentLog;
+//std::list<std::string> UnsentLog;
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
@@ -109,8 +106,8 @@ virtual ~UEngineStateThread(void);
 //bool SetLogDir(const std::string& value);
 
 /// Флаг разрешения логгирования
-bool GetLogFlag(void) const;
-bool SetLogFlag(bool value);
+//bool GetLogFlag(void) const;
+//bool SetLogFlag(bool value);
 // --------------------------
 
 // --------------------------
@@ -118,6 +115,9 @@ bool SetLogFlag(bool value);
 // --------------------------
 /// Возвращает вектор состояний тредов
 std::vector<int> ReadCalcThreadStates(void) const;
+
+/// Возвращает состояние одного потока
+int ReadCalcThreadState(int channel_index);
 // --------------------------
 
 // --------------------------
@@ -134,10 +134,10 @@ virtual void Execute(void);
 virtual void AdditionExecute(void);
 
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
-void RecreateEventsLogFile(void);
+//void RecreateEventsLogFile(void);
 
 /// Закрывает текущий лог
-void CloseEventsLogFile(void);
+//void CloseEventsLogFile(void);
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной

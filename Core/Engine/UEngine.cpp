@@ -331,6 +331,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 
  if(!Storage)
   return false;
+ Storage->SetLogger(Logger);
+
 
  RDK_SYS_TRY
  {
@@ -1920,6 +1922,33 @@ int UEngine::Env_RTCalculate(void)
  return res;
 }
 
+
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+int UEngine::Env_FastCalculate(double calc_interval)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Environment->FastCalculate(calc_interval);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
 
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
@@ -3703,7 +3732,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
    XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
    XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-   if(!cont->GetComponentProperties(cont,&XmlStorage, type_mask))
+   if(!cont->GetComponentProperties(&XmlStorage, type_mask))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -3776,7 +3805,7 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
    xml.Create(cont->GetLongName(Environment->GetCurrentComponent(),comp_name));
    xml.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-   if(!cont->GetComponentPropertiesEx(cont,&xml, type_mask))
+   if(!cont->GetComponentPropertiesEx(&xml, type_mask))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -3855,7 +3884,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
    {
 	if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
 	{
-	 int prop_res=cont->SetComponentProperties(cont,&XmlStorage);
+	 int prop_res=cont->SetComponentProperties(&XmlStorage);
 	 if(prop_res != RDK_SUCCESS)
 	  res=RDK_E_MODEL_NOT_ALL_PROPERTIES_SET;
 
@@ -3930,7 +3959,7 @@ int UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const c
    if(classid == ForbiddenId)
 	return RDK_E_STORAGE_CLASS_NOT_FOUND;
 
-   cont->SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+   cont->SetGlobalComponentPropertyValue(classid, paramname, buffer);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -3967,7 +3996,7 @@ int UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, co
    if(classid == ForbiddenId || owner_classid == ForbiddenId)
 	return RDK_E_STORAGE_CLASS_NOT_FOUND;
 
-   cont->SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
+   cont->SetGlobalOwnerComponentPropertyValue(classid, owner_classid, paramname, buffer);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -4601,7 +4630,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 
    XmlStorage.Create("Links");
 
-   if(cont->GetComponentInternalLinks(cont,&XmlStorage,owner))
+   if(cont->GetComponentInternalLinks(&XmlStorage,owner))
 	return TempString.c_str();
 
    XmlStorage.Save(TempString);
@@ -4643,7 +4672,7 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
 
    XmlStorage.Load(buffer,"Links");
 
-   if(!cont->SetComponentInternalLinks(cont,&XmlStorage,owner))
+   if(!cont->SetComponentInternalLinks(&XmlStorage,owner))
 	return RDK_E_MODEL_CREARE_INTERNAL_LINKS_FAIL;
    res=RDK_SUCCESS;
   }
@@ -4691,7 +4720,7 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 
    XmlStorage.Create("Links");
 
-   if(!cont->GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
+   if(!cont->GetComponentInputLinks(&XmlStorage,owner,sublevel))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -4744,7 +4773,7 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 
    XmlStorage.Create("Links");
 
-   if(!cont->GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+   if(!cont->GetComponentOutputLinks(&XmlStorage,owner, sublevel))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -4793,7 +4822,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 
    XmlStorage.Create("Links");
 
-   if(cont->GetComponentPersonalLinks(cont,&XmlStorage,owner))
+   if(cont->GetComponentPersonalLinks(&XmlStorage,owner))
 	return TempString.c_str();
 
    TempString="";
@@ -5096,7 +5125,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
    XmlStorage.Create("Save");
    XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-   if(!cont->SaveComponent(cont,&XmlStorage, true, params_type_mask))
+   if(!cont->SaveComponent(&XmlStorage, true, params_type_mask))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -5157,7 +5186,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
 	}
 
-	if(!cont->LoadComponent(cont,&XmlStorage,true))
+	if(!cont->LoadComponent(&XmlStorage,true))
 	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }
    else
@@ -5170,7 +5199,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 	if(!cont)
 	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-	if(!cont->LoadComponent(cont,&XmlStorage,true))
+	if(!cont->LoadComponent(&XmlStorage,true))
 	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }
    res=RDK_SUCCESS;
@@ -5255,7 +5284,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
    XmlStorage.Create("SaveProperties");
    XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-   if(!cont->SaveComponentProperties(cont,&XmlStorage, type_mask))
+   if(!cont->SaveComponentProperties(&XmlStorage, type_mask))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -5326,7 +5355,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
    XmlStorage.SelectNode(0);
 
-   if(!cont->LoadComponentProperties(cont,&XmlStorage))
+   if(!cont->LoadComponentProperties(&XmlStorage))
     return RDK_E_MODEL_LOAD_COMPONENT_PROPERTIES_FAIL;
    res=RDK_SUCCESS;
   }
@@ -5391,7 +5420,7 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
    xml.Create("Save");
    xml.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-   if(!cont->SaveComponentDrawInfo(cont,&xml))
+   if(!cont->SaveComponentDrawInfo(&xml))
    {
 	DestroyTempString(TempString);
 	return 0;
@@ -6975,7 +7004,9 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	}
    }
 
+   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
    Storage->BuildStorage();
+   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
   }
   catch (RDK::UException &exception)
   {

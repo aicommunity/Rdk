@@ -37,6 +37,7 @@ __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
  ParamReadOnlyFlag=false;
  RegistryModified=false;
  SelectedId=0;
+ CheckModelFlag=false;
 }
 //---------------------------------------------------------------------------
 
@@ -64,14 +65,12 @@ void __fastcall TUComponentsListFrame::UpdatePath(void)
 // Отрисовка фрейма
 void TUComponentsListFrame::AUpdateInterface(void)
 {
- if(ComponentControllers.empty())
+ if(!Model_Check())
  {
-//  ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
-//  ComponentControllers["UCRSample"]=UCRSampleForm;
-//  ComponentControllers["UCRTeacherPerseptronDL"]=UCRTeacherPerseptronDLForm;
-//  ComponentControllers["UCRTeacherPerseptronBP"]=UCRTeacherPerseptronBPForm;
+  StringGrid->RowCount=1;
+  EnchancedSG1->BasicStringGrid->RowCount=1;
+  return;
  }
-
 
  int row=StringGrid->Row;
 

@@ -1020,19 +1020,21 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
 
  if(BmpSequenceNames[index].find(".bmp") != std::string::npos)
  {
-  TempBitmap->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
-  bmp<<TempBitmap;
-//  RDK::LoadBitmapFromFile((PathName+BmpSequenceNames[index]).c_str(),bmp);
+//  TempBitmap->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
+//  bmp<<TempBitmap;
+  RDK::LoadBitmapFromFile((PathName.Get()+BmpSequenceNames[index]).c_str(),bmp);
  }
  else
  if(BmpSequenceNames[index].find(".jpg") != std::string::npos || BmpSequenceNames[index].find(".jpeg") != std::string::npos)
  {
-  TJPEGImage* JpegIm=new TJPEGImage;
+  RDK::LoadJpegFromFile((PathName.Get()+BmpSequenceNames[index]).c_str(), bmp);
+  bmp.ReflectionX();
+/*  TJPEGImage* JpegIm=new TJPEGImage;
   JpegIm->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
   TempBitmap->Assign(JpegIm);
   TempBitmap->PixelFormat=pf24bit;
   bmp<<TempBitmap;
-  delete JpegIm;
+  delete JpegIm;*/
  }
  else
   bmp.Fill(0);

@@ -1,4 +1,4 @@
-п»ї#ifndef UENGINE_CONTROL_THREAD_CPP
+#ifndef UENGINE_CONTROL_THREAD_CPP
 #define UENGINE_CONTROL_THREAD_CPP
 
 #include "UEngineControlThread.h"
@@ -14,7 +14,7 @@
 namespace RDK {
 
 // --------------------------
-// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
+// Конструкторы и деструкторы
 // --------------------------
 UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
 : EngineControl(engine_control), EngineIndex(channel_index), Terminated(false)
@@ -58,9 +58,9 @@ UEngineControlThread::~UEngineControlThread(void)
 // --------------------------
 
 // --------------------------
-// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
+// Управление параметрами
 // --------------------------
-/// Р РµР¶РёРј СЃС‡РµС‚Р°
+/// Режим счета
 int UEngineControlThread::GetCalculateMode(void) const
 {
  return CalculateMode;
@@ -79,7 +79,7 @@ bool UEngineControlThread::SetCalculateMode(int value)
  return true;
 }
 
-/// РњРёРЅРёРјР°Р»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІСЂРµРјРµРЅРё РјРµР¶РґСѓ РёС‚РµСЂР°С†РёСЏРјРё СЂР°СЃС‡РµС‚Р° РІ СЂРµР¶РёРјРµ 0 Рё 2, РјСЃ
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
 int UEngineControlThread::GetMinInterstepsInterval(void) const
 {
  return MinInterstepsInterval;
@@ -97,9 +97,9 @@ bool UEngineControlThread::SetMinInterstepsInterval(RDK::UTime value)
  return true;
 }
 
-/// РСЃС‚РѕС‡РЅРёРє РІСЂРµРјРµРЅРё РґР»СЏ РјРѕРґРµР»Рё
-/// 0 - С‡Р°СЃС‹
-/// 1 - РІСЂРµРјСЏ РІРЅРµС€РЅРµРіРѕ РІРёРґРµРѕРёСЃС‚РѕС‡РЅРёРєР°
+/// Источник времени для модели
+/// 0 - часы
+/// 1 - время внешнего видеоисточника
 int UEngineControlThread::GetCalculationTimeSource(void) const
 {
  return CalculationTimeSource;
@@ -116,16 +116,16 @@ bool UEngineControlThread::SetCalculationTimeSource(int value)
 // --------------------------
 
 // --------------------------
-// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
+// Управление данными
 // --------------------------
-/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ СЂР°СЃС‡РµС‚Р°, РїРµСЂРµРґР°РЅРЅРѕРµ РІ РјРѕРґРµР»СЊ РїРѕСЃР»РµРґРЅРёР№ СЂР°Р·
-/// РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СЂРµР¶РёРјРѕРј CalculationTimeSource
+/// Возвращает время расчета, переданное в модель последний раз
+/// в соответствии с режимом CalculationTimeSource
 double UEngineControlThread::GetCalculationTime(void) const
 {
  return CalculationTime;
 }
 
-/// Р’РЅРµС€РЅРёР№ РёСЃС‚РѕС‡РЅРёРє РІСЂРµРјРµРЅРё
+/// Внешний источник времени
 double UEngineControlThread::GetServerTimeStamp(void) const
 {
  return ServerTimeStamp;
@@ -137,7 +137,7 @@ bool UEngineControlThread::SetServerTimeStamp(double value)
  return true;
 }
 
-/// РњРµС‚РєР° РІРЅРµС€РЅРµРіРѕ РёСЃС‚РѕС‡РЅРёРєР° РІСЂРµРјРµРЅРё РєРѕРіРґР° Р±С‹Р» РїСЂРѕРёР·РІРµРґРµРЅ РїРѕСЃР»РµРґРЅРёР№ СЂР°СЃС‡РµС‚
+/// Метка внешнего источника времени когда был произведен последний расчет
 double UEngineControlThread::GetLastCalculationServerTimeStamp(void) const
 {
  return LastCalculationServerTimeStamp;
@@ -148,13 +148,13 @@ double UEngineControlThread::GetRealLastCalculationTime(void) const
  return RealLastCalculationTime;
 }
 
-/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєР»Р°СЃСЃ-РІР»Р°РґРµР»РµС† РїРѕС‚РѕРєР°
+/// Возвращает класс-владелец потока
 UEngineControl* UEngineControlThread::GetEngineControl(void)
 {
  return EngineControl;
 }
 
-/// Р­РєР·РµРјРїР»СЏСЂ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РґР°РЅРЅС‹С… РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё
+/// Экземпляр обработчика данных производительности
 UChannelProfiler* UEngineControlThread::GetProfiler(void)
 {
  return Profiler;
@@ -162,7 +162,7 @@ UChannelProfiler* UEngineControlThread::GetProfiler(void)
 // --------------------------
 
 // --------------------------
-// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
+// Управление потоком
 // --------------------------
 void UEngineControlThread::BeforeCalculate(void)
 {
@@ -177,6 +177,8 @@ void UEngineControlThread::AfterCalculate(void)
 {
  GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
  AAfterCalculate();
+ if(GetEnvironmentLock(EngineIndex)->IsCalcFinished())
+  GetEngineControl()->PauseChannel(EngineIndex);
 }
 
 void UEngineControlThread::AAfterCalculate(void)
@@ -200,7 +202,13 @@ void UEngineControlThread::Calculate(void)
   double diff=(RDK::GetVariantLocalTime()-RealLastCalculationTime)*86400*1000.0;
   if(diff<MinInterstepsInterval)
   {
-   Sleep(MinInterstepsInterval-diff);
+   Sleep(int(static_cast<int>(MinInterstepsInterval)-diff));
+   return;
+  }
+
+  if(CalculateMode == 3 && MinInterstepsInterval == UTime(0) && diff<1)
+  {
+   Sleep(1);
    return;
   }
 
@@ -233,11 +241,16 @@ void UEngineControlThread::Calculate(void)
    MEnv_RTCalculate(EngineIndex);
   }
   else
+  if(CalculateMode == 3)
+  {
+   MEnv_FastCalculate(EngineIndex, 1.0); // TODO: magic constant
+  }
+  else
   {
    MEnv_Calculate(EngineIndex,0);
   }
   AfterCalculate();
-  LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: Р’РѕР·РјРѕР¶РЅРѕ С‚СѓС‚ current_time?
+  LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: Возможно тут current_time?
   RealLastCalculationTime=GetVariantLocalTime();
 //  ServerLastCalculationTime=current_time;
   if(use_controllers_mode == 1)
@@ -264,9 +277,9 @@ void UEngineControlThread::Execute(void)
  }
 }
 
-/// РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЂР°СЃС‡РµС‚Р° РїРѕ id РєР°РЅР°Р»Р°
-/// 0 - РќРµ СЃС‡РёС‚Р°РµС‚
-/// 1 - РРґРµС‚ СЂР°СЃС‡РµС‚
+/// Проверяет состояние расчета по id канала
+/// 0 - Не считает
+/// 1 - Идет расчет
 int UEngineControlThread::CheckCalcState(void) const
 {
  if(CalcState->wait(0))
@@ -275,7 +288,7 @@ int UEngineControlThread::CheckCalcState(void) const
  return 0;
 }
 
-/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёСЏ Р·Р°РїСѓСЃРєР° С‚СЂРµРґР°
+/// Возвращает состояния запуска треда
 int UEngineControlThread::IsCalcStarted(void) const
 {
  if(CalcStarted->wait(0))
@@ -284,14 +297,14 @@ int UEngineControlThread::IsCalcStarted(void) const
  return 0;
 }
 
-/// Р’Р·РІРѕРґРёС‚ С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ СЂР°СЃС‡РµС‚Р°
+/// Взводит флаг разрешения расчета
 bool UEngineControlThread::EnableCalculation(void)
 {
  CalcEnable->set();
  return true;
 }
 
-/// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РєР°РЅР°Р»Р°
+/// Запускает аналитику канала
 void UEngineControlThread::Start(void)
 {
  if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
@@ -301,7 +314,7 @@ void UEngineControlThread::Start(void)
  CalcState->set();
 }
 
-/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РєР°РЅР°Р»Р°
+/// Останавливает аналитику канала
 void UEngineControlThread::Pause(void)
 {
  if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
@@ -311,7 +324,7 @@ void UEngineControlThread::Pause(void)
  CalcState->reset();
 }
 
-/// РЎР±СЂР°СЃС‹РІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РєР°РЅР°Р»Р°
+/// Сбрасывает аналитику канала
 void UEngineControlThread::Reset(void)
 {
  if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
@@ -323,7 +336,7 @@ void UEngineControlThread::Reset(void)
  ServerTimeStamp=0.0;
 }
 
-/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїСЂРёРѕСЂРёС‚РµС‚ РїРѕС‚РѕРєР°
+/// Устанавливает приоритет потока
 bool UEngineControlThread::SetPriority(int priority_id)
 {
 #ifdef WIN32

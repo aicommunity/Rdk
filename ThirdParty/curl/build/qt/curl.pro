@@ -16,8 +16,6 @@ DEFINES += RDK_QT
 INCLUDEPATH += $$PWD/../../include
 
 unix {
-    target.path = /usr/lib
-    INSTALLS += target
     DESTDIR = $$PWD/../../../../../Bin/Platform/Unix/Lib.Qt
 }
 

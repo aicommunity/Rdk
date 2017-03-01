@@ -202,7 +202,6 @@ virtual bool CloseProject(void);
 
 /// Клонирует проект в новое расположение
 virtual bool CloneProject(const std::string &filename);
-virtual bool CloneProject(int source_id, int cloned_id);
 
 virtual void ReloadParameters(void);
 
@@ -220,6 +219,9 @@ int GetNumChannels(void) const;
 bool SetNumChannels(int num);
 bool InsertChannel(int index);
 bool DeleteChannel(int index);
+
+/// Клонирует канал source_id в cloned_id
+virtual bool CloneChannel(int source_id, int cloned_id);
 // --------------------------
 
 // --------------------------
@@ -239,28 +241,35 @@ virtual void StepChannel(int channel_index);
 
 /// Возвращает true если канал запущен
 virtual bool IsChannelStarted(int channel_index);
+
+/// Проверяет состояние расчета по id канала
+/// 0 - Выключен
+/// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
+virtual int CheckCalcState(int channel_id) const;
 // --------------------------
 
 // --------------------------
 // Методы загрузки сохранения данных в файл
 // --------------------------
-bool LoadModelFromFile(int channel_index, const std::string file_name);
-bool SaveModelToFile(int channel_index, const std::string file_name);
+bool LoadModelFromFile(int channel_index, const std::string &file_name);
+bool SaveModelToFile(int channel_index, const std::string &file_name);
 
-bool LoadParametersFromFile(int channel_index, const std::string file_name);
-bool SaveParametersToFile(int channel_index, const std::string file_name);
+bool LoadParametersFromFile(int channel_index, const std::string &file_name);
+bool SaveParametersToFile(int channel_index, const std::string &file_name);
 
-bool LoadStatesFromFile(int channel_index, const std::string file_name);
-bool SaveStatesToFile(int channel_index, const std::string file_name);
+bool LoadStatesFromFile(int channel_index, const std::string &file_name);
+bool SaveStatesToFile(int channel_index, const std::string &file_name);
 
-bool LoadDescriptionFromFile(int channel_index, const std::string file_name);
-bool SaveDescriptionToFile(int channel_index, const std::string file_name);
+bool LoadDescriptionFromFile(int channel_index, const std::string &file_name);
+bool SaveDescriptionToFile(int channel_index, const std::string &file_name);
 
-bool LoadClassesDescriptionsFromFile(const std::string file_name);
-bool SaveClassesDescriptionsToFile(const std::string file_name);
+bool LoadClassesDescriptionsFromFile(const std::string &file_name);
+bool SaveClassesDescriptionsToFile(const std::string &file_name);
 
-bool LoadCommonClassesDescriptionsFromFile(const std::string file_name);
-bool SaveCommonClassesDescriptionsToFile(const std::string file_name);
+bool LoadCommonClassesDescriptionsFromFile(const std::string &file_name);
+bool SaveCommonClassesDescriptionsToFile(const std::string &file_name);
 
 /// Загружает историю проектов из файла
 void LoadProjectsHistory(void);
@@ -280,10 +289,10 @@ void CalcAppCaption(void);
 void UpdateLoggers(void);
 
 /// Загружает файл в строку
-bool LoadFile(const std::string file_name, std::string &buffer) const;
+bool LoadFile(const std::string &file_name, std::string &buffer) const;
 
 /// Сохраняет файл из строки
-bool SaveFile(const std::string file_name, const std::string &buffer) const;
+bool SaveFile(const std::string &file_name, const std::string &buffer) const;
 // --------------------------
 };
 

@@ -330,7 +330,15 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
 {
  // Ищем указатель на выходные данные
  property=0;
+
  VariableMapCIteratorT I=PropertiesLookupTable.find(item_property_name);
+// // TODO: Сначала проверяем алиасы
+// VariableMapCIteratorT I=PropertiesLookupTable.end();
+// if(CheckAlias(item_property_name))
+//  I=PropertiesLookupTable.find(GetPropertyNameByAlias(item_property_name));
+// else
+//  I=PropertiesLookupTable.find(item_property_name);
+
  if(I == PropertiesLookupTable.end())
   return;
 
@@ -358,9 +366,9 @@ void UItem::Free(void)
 // Защищенные коммуникационные методы
 // ----------------------
 
-bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
- if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index))
+ if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item))
   return false;
 
  // Ищем указатель на выходные данные
@@ -425,7 +433,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 }
 
 // Устанавливает связь с коннектором 'c'.
-bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!c)
   return false;
@@ -433,7 +441,7 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
  if(!Build())
   return false;
 
- if(!c->ConnectToItem(this,item_property_name, connector_property_name, c_index))
+ if(!c->ConnectToItem(this,item_property_name, connector_property_name, c_index, forced_connect_same_item))
   return false;
 
  std::vector<PUAConnector> &vec=RelatedConnectors[item_property_name];

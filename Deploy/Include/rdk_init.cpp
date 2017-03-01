@@ -24,55 +24,26 @@ int RDK_CALL ProcessException(int channel_index, const UException &ex)
  logger->ProcessException(ex);
  return RDK_EXCEPTION_CATCHED;
 }
-/*
-// Очищает коллекцию глобальных шрифтов
-void ClearClobalFonts(void)
+
+/// Записывает в отладочную консоль сообщение, если result != RDK_SUCCESS
+/// работает только если включен отладочный режим
+void AssertDebugger(int result, const char* function, const char* file, int line)
 {
- GlobalFonts.DelAllFonts();
+ if(result != 0)
+  RdkDebuggerMessage(std::string("Assertion in ")+std::string(function)+std::string(" in ")+extract_file_name(file)+std::string(":")+sntoa(line)+std::string(" code=")+sntoa(result));
 }
 
-// Загружает новый глобальный шрифт
-bool AddGlobalFont(const std::string &font_file_name)
+/// Записывает в лог сообщение, если result != RDK_SUCCESS
+void AssertLog(int result, const char* function, const char* file, int line)
 {
- int res=RDK_SUCCESS;
- RDK_SYS_TRY
+ if(result != 0)
  {
-  try
-  {
-   RDK::UBitmapFont font;
-   std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
-   std::string font_name;
-   if(dir_sep_pos != std::string::npos)
-	font_name=font_file_name.substr(dir_sep_pos+1);
-   else
-	font_name=font_file_name;
-   std::size_t _pos=font_name.find_first_of("_");
-   std::size_t _pos2=font_name.find_first_not_of("0123456789",_pos+1);
-   if(_pos != std::string::npos)
-   {
-	std::string font_string_size=font_name.substr(_pos+1,_pos2-_pos-1);
-	int size=RDK::atoi(font_string_size);
-	if(!font.LoadFromFile(font_name.substr(0,_pos),font_file_name,size))
-	 return false;
-	return RDK::GlobalFonts.AddFont(font.GetName(),size,font);
-   }
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperStd(exception));
-  }
+   std::string message(std::string("Assertion in ")+std::string(function)+std::string(" in ")+extract_file_name(file)+std::string(":")+sntoa(line)+std::string(" code=")+sntoa(result));
+   if(MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, message.c_str()) != RDK_SUCCESS)
+    RdkDebuggerMessage(message);
  }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK_SYS_MESSAGE,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return false;
 }
-      */
+
 }
 
 /*****************************************************************************/
@@ -109,7 +80,7 @@ bool RDK_CALL Log_GetEventsLogMode(void)
 
 bool RDK_CALL MLog_GetEventsLogMode(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return false;
 
  return RdkCoreManager.GetLogger(channel_index)->GetEventsLogMode();
@@ -123,7 +94,7 @@ int RDK_CALL Log_SetEventsLogMode(bool value)
 
 int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  return RdkCoreManager.GetLogger(channel_index)->SetEventsLogMode(value);
@@ -137,7 +108,7 @@ bool RDK_CALL Log_GetDebugMode(void)
 
 bool RDK_CALL MLog_GetDebugMode(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return false;
  return RdkCoreManager.GetLogger(channel_index)->GetDebugMode();
 }
@@ -150,7 +121,7 @@ int RDK_CALL Log_SetDebugMode(bool value)
 
 int RDK_CALL MLog_SetDebugMode(int channel_index, bool value)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
  return RdkCoreManager.GetLogger(channel_index)->SetDebugMode(value);
 }
@@ -163,7 +134,7 @@ unsigned int RDK_CALL Log_GetDebugSysEventsMask(void)
 
 unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
  return RdkCoreManager.GetLogger(channel_index)->GetDebugSysEventsMask();
@@ -177,7 +148,7 @@ int RDK_CALL Log_SetDebugSysEventsMask(unsigned int value)
 
 int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  return RdkCoreManager.GetLogger(channel_index)->SetDebugSysEventsMask(value);
@@ -191,7 +162,7 @@ bool RDK_CALL Log_GetDebuggerMessageFlag(void)
 
 bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
  return RdkCoreManager.GetLogger(channel_index)->GetDebuggerMessageFlag();
@@ -205,7 +176,7 @@ bool RDK_CALL Log_SetDebuggerMessageFlag(bool value)
 
 bool RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  return RdkCoreManager.GetLogger(channel_index)->SetDebuggerMessageFlag(value);
@@ -219,7 +190,7 @@ void* RDK_CALL Log_GetExceptionHandler(void)
 
 void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
  return (void*)RdkCoreManager.GetLogger(channel_index)->GetExceptionHandler();
@@ -232,7 +203,7 @@ int RDK_CALL Log_SetExceptionHandler(void* value)
 
 int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
  return RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
@@ -246,7 +217,7 @@ const char* RDK_CALL Log_GetLog(int &error_level)
 
 const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
  return RdkCoreManager.GetLogger(channel_index)->GetLog(error_level);
@@ -261,7 +232,7 @@ int RDK_CALL Log_LogMessage(int log_level, const char *message)
 
 int RDK_CALL MLog_LogMessage(int channel_index, int log_level, const char *message)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
  RdkCoreManager.GetLogger(channel_index)->LogMessage(log_level, message);
@@ -277,7 +248,7 @@ int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_even
 
 int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *message, int error_event_number)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
  RdkCoreManager.GetLogger(channel_index)->LogMessage(log_level, message,error_event_number);
@@ -296,7 +267,7 @@ const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned lo
 
 const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int &number, unsigned long long &time)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
  time_t read_time;
  const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
@@ -314,7 +285,7 @@ const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsig
 
 const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level, int &number, unsigned long long &time)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
  time_t read_time;
  const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
@@ -330,7 +301,7 @@ int RDK_CALL Log_GetNumUnreadLogLines(void)
 
 int RDK_CALL MLog_GetNumUnreadLogLines(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
  return RdkCoreManager.GetLogger(channel_index)->GetNumUnreadLogLines();
 }
@@ -343,7 +314,7 @@ int RDK_CALL Log_GetNumLogLines(void)
 
 int RDK_CALL MLog_GetNumLogLines(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
  return RdkCoreManager.GetLogger(channel_index)->GetNumLogLines();
 }
@@ -358,7 +329,7 @@ int RDK_CALL Log_ClearReadLog(void)
 
 int RDK_CALL MLog_ClearReadLog(int channel_index)
 {
- if(channel_index<RDK_SYS_MESSAGE || channel_index>=Core_GetNumChannels())
+ if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
  RdkCoreManager.GetLogger(channel_index)->ClearReadLog();
  return RDK_SUCCESS;
@@ -639,7 +610,8 @@ int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler)
   {
    if(Core_GetNumChannels()<=RdkCoreManager.GetSelectedChannelIndex())
    {
-	res=SetNumChannels(RdkCoreManager.GetSelectedChannelIndex()+1);
+    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (std::string("Automatic increase channels quantity to ")+RDK::sntoa(RdkCoreManager.GetSelectedChannelIndex()+1)).c_str());
+    res=SetNumChannels(RdkCoreManager.GetSelectedChannelIndex()+1);
 
 	if(res != RDK_SUCCESS)
 	 return res;
@@ -1286,6 +1258,21 @@ int RDK_CALL MEnv_RTCalculate(int channel_index)
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  return RdkCoreManager.GetEngineLock(channel_index)->Env_RTCalculate();
+}
+
+
+/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+int RDK_CALL Env_FastCalculate(double calc_interval)
+{
+ return RdkCoreManager.GetEngineLock()->Env_FastCalculate(calc_interval);
+}
+
+int RDK_CALL MEnv_FastCalculate(int channel_index, double calc_interval)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_FastCalculate(calc_interval);
 }
 
 // Метод сброса счета

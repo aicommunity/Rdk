@@ -23,14 +23,15 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
 {
  ComponentsListFrame=0;
  Graph.SetCanvas(&GraphCanvas);
+
  Graph.SetFont(&Font);
  DrawEngine.SetEngine(&Graph);
- DrawEngine.SetFonts(GetCoreLock()->GetFonts());
  UpdateInterval=-1;
  DragDropFlag=false;
  LongLinkFlag=false;
  MoveFlag=false;
- FontSize=12;
+ FontSize=16;
+ FontType="Tahoma";
  StartX=0;
  StartY=0;
  StopX=0;
@@ -38,6 +39,7 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
  PopupX=0;
  PopupY=0;
  LinksHintVisibility=false;
+ CheckModelFlag=false;
 }
 
 // -----------------------------
@@ -70,6 +72,15 @@ void TUDrawEngineFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TUDrawEngineFrame::AUpdateInterface(void)
 {
+ if(!Model_Check())
+ {
+  Image->Picture->Bitmap->Width=0;
+  Image->Picture->Bitmap->Height=0;
+  Image->Repaint();
+  Image->Update();
+  return;
+ }
+
  if(!NetXml.GetNumNodes())
  {
   const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
@@ -106,10 +117,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
  Image->Width=new_img_width;
  Image->Height=new_img_height;
  Graph.SetCanvas(&GraphCanvas);
- DrawEngine.Draw();
- GraphCanvas.ReflectionX(&ShowCanvas);
- ShowCanvas>>Image->Picture->Bitmap;
- Image->Repaint();
+ DrawEngine.SetFonts(GetCoreLock()->GetFonts());
 
  FontTypeComboBox->Clear();
  std::vector<std::string> buffer;
@@ -137,6 +145,13 @@ void TUDrawEngineFrame::AUpdateInterface(void)
 
  RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
+
+ ApplyFont();
+ DrawEngine.Draw();
+ GraphCanvas.ReflectionX(&ShowCanvas);
+ ShowCanvas>>Image->Picture->Bitmap;
+ Image->Repaint();
+
  UClassesListFrame->UpdateInterface();
 }
 
@@ -251,6 +266,29 @@ void TUDrawEngineFrame::SaveComponentPosition(const std::string &name)
   Model_SetComponentParameterValue(name.c_str(), "Coord", buffer.c_str());
 }
 
+/// Применяет текущий шрифт
+void TUDrawEngineFrame::ApplyFont(void)
+{
+ if(FontTypeComboBox->Text.Length() != 0)
+  FontType=AnsiString(FontTypeComboBox->Text).c_str();
+
+ try
+ {
+  FontSize=StrToInt(FontSizeComboBox->Text);
+ }
+ catch(EConvertError &err)
+ {
+ }
+
+ RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
+ if(font)
+  Font=*font;
+
+ DrawEngine.SetRectWidth(StrToInt(RectWidthLabeledEdit->Text));
+ DrawEngine.SetRectHeight(StrToInt(RectHeightLabeledEdit->Text));
+
+ DrawEngine.UpdateAllElementsSize();
+}
 // -----------------------------
 
 
@@ -466,27 +504,7 @@ void __fastcall TUDrawEngineFrame::Breakinputlink1Click(TObject *Sender)
 
 void __fastcall TUDrawEngineFrame::ApplyButtonClick(TObject *Sender)
 {
- FontType=AnsiString(FontTypeComboBox->Text).c_str();
-
- try
- {
-  FontSize=StrToInt(FontSizeComboBox->Text);
- }
- catch(EConvertError &err)
- {
-  UpdateInterface();
-  return;
- }
-
- RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
- if(font)
-  Font=*font;
-
- DrawEngine.SetRectWidth(StrToInt(RectWidthLabeledEdit->Text));
- DrawEngine.SetRectHeight(StrToInt(RectHeightLabeledEdit->Text));
-
- DrawEngine.UpdateAllElementsSize();
-
+ ApplyFont();
  UpdateInterface(true);
 }
 //---------------------------------------------------------------------------

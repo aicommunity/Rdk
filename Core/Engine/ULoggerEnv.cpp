@@ -35,6 +35,8 @@ ULoggerEnv::ULoggerEnv(void)
 
 ULoggerEnv::~ULoggerEnv(void)
 {
+ UnRegisterEnvironment();
+ UnRegisterGlobalLogger();
 }
 // --------------------------
 
@@ -125,7 +127,10 @@ bool ULoggerEnv::SetChannelIndex(int value)
  if(value >=0)
   SetSuffix(std::string(" Ch")+sntoa(value,2));
  else
+ if(value == -1)
   SetSuffix(std::string(" Sys"));
+ else
+  SetSuffix(std::string(" Glob"));
  Clear();
  return true;
 }
@@ -150,6 +155,22 @@ void ULoggerEnv::UnRegisterEnvironment(void)
  Environment=0;
 }
 
+/// Регистрация глобального логгера
+bool ULoggerEnv::RegisterGlobalLogger(ULoggerEnv* global_logger)
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ if(GlobalLogger == global_logger)
+  return true;
+ GlobalLogger=global_logger;
+ return true;
+}
+
+void ULoggerEnv::UnRegisterGlobalLogger(void)
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ GlobalLogger=0;
+}
+
 // Обрабатывает возникшее исключение
 void ULoggerEnv::ProcessException(const UException &exception) const
 {
@@ -163,8 +184,56 @@ void ULoggerEnv::ProcessException(const UException &exception) const
    processed_exception=&temp_ex;
  }
 
- if(LastErrorLevel>processed_exception->GetType())
+ UException result_message(*processed_exception);
+ std::string ch_prefix;
+ if(ChannelIndex>=0)
+  ch_prefix=sntoa(ChannelIndex);
+ else
+  ch_prefix="S";
+ result_message.SetMessage(ch_prefix+std::string("> ")+processed_exception->what());
+
+ ProcessExceptionRaw(processed_exception->GetType(), result_message);
+ if(GlobalLogger)
+ {
+  GlobalLogger->ProcessExceptionGlobal(processed_exception->GetType(), result_message);
+ }
+/* if(LastErrorLevel>processed_exception->GetType())
   LastErrorLevel=processed_exception->GetType();
+ ++CurrentExceptionsLogSize;
+ if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
+ {
+  int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
+  if(int(LogList.size())>erase_size)
+  {
+   for(int i=0;i<erase_size;i++)
+	LogList.erase(LogList.begin());
+  }
+  else
+   LogList.clear();
+ }
+
+ LogList[LogIndex++]=result_message;
+
+ if(EventsLogMode) // Если включено, то сохраняем события в файл
+ {
+  const_cast<ULoggerEnv* const>(this)->LogMessage(result_message.GetMessage());  // TODO: Проверить на RDK_SUCCESS
+ }*/
+
+ if(DebuggerMessageFlag)
+  RdkDebuggerMessage(result_message.GetMessage());
+
+ if(ExceptionPostprocessor && Environment)
+  ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception); // TODO: Нет проверки возвращаемого значения
+
+ if(ExceptionHandler)
+  ExceptionHandler(ChannelIndex);
+}
+
+/// Обрабатывает возникшее исключение (Внутренний метод)
+void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) const
+{
+ if(LastErrorLevel>type)
+  LastErrorLevel=type;
  ++CurrentExceptionsLogSize;
  if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
@@ -178,29 +247,23 @@ void ULoggerEnv::ProcessException(const UException &exception) const
    LogList.clear();
  }
 
- UException result_message(*processed_exception);
- std::string ch_prefix;
- if(ChannelIndex>=0)
-  ch_prefix=sntoa(ChannelIndex);
- else
-  ch_prefix="S";
- result_message.SetMessage(ch_prefix+std::string("> ")+processed_exception->what());
- LogList[LogIndex++]=result_message;
+ LogList[LogIndex++]=exception;
 
  if(EventsLogMode) // Если включено, то сохраняем события в файл
  {
-  const_cast<ULoggerEnv* const>(this)->LogMessage(result_message.GetMessage());  // TODO: Проверить на RDK_SUCCESS
+  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(exception.GetMessage());  // TODO: Проверить на RDK_SUCCESS
  }
 
- if(DebuggerMessageFlag)
-  RdkDebuggerMessage(result_message.GetMessage());
+}
 
- if(ExceptionPostprocessor && Environment)
-  ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception); // TODO: Нет проверки возвращаемого значения
-
+/// Обрабатывает возникшее исключение в режиме гобального логгера
+void ULoggerEnv::ProcessExceptionGlobal(int type, const UException &exception) const
+{
+ ProcessExceptionRaw(type,exception);
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
 }
+
 
 // Возвращает массив строк лога
 const char* ULoggerEnv::GetLog(int &error_level) const
@@ -412,11 +475,11 @@ void ULoggerEnv::ClearReadLog(void)
  LastErrorLevel=INT_MAX;
 // TempLogString.clear();
 }
-
-int ULoggerEnv::LogMessage(const std::string &str)
+  /*
+void ULoggerEnv::LogMessage(const std::string &str)
 {
  return ULogger::LogMessage(str);
-}
+}   */
 
 // Вызов обработчика исключений среды для простой записи данных в лог
 void ULoggerEnv::LogMessage(int msg_level, const std::string &line, int error_event_number)
@@ -499,6 +562,50 @@ void ULoggerEnv::Reset(void)
   InitLog();
  }
 }
+
+/// Функция обеспечивает закрытие текущего файла логов и создание нового
+void ULoggerEnv::RecreateEventsLogFile(void)
+{
+ Clear();
+// std::string log_dir;
+// if(EngineControl && EngineControl->GetApplication())
+//  log_dir=EngineControl->GetApplication()->CalcCurrentLogDir();
+// else
+//  log_dir="EventsLog/";
+//
+// Logger.SetLogDir(log_dir);
+ if(InitLog() != 0)
+ {
+//  EventsLogFlag=false;
+  return;
+ }
+// else
+// {
+//  EventsLogFilePath=log_dir;
+// }
+
+ /// Сохраняем лог в файл если это необходимо
+// if(!LogFlag)
+//  EventsLogFlag=false;
+// else
+//  EventsLogFlag=true;
+
+// CalculationNotInProgress->set();
+}
+
+/// Закрывает текущий лог
+//void ULoggerEnv::CloseEventsLogFile(void)
+//{
+// if(!CalculationNotInProgress)
+//  return;
+// if(!CalculationNotInProgress->wait(100))
+//  return;
+// CalculationNotInProgress->reset();
+//
+// Logger.Clear();
+// CalculationNotInProgress->set();
+//}
+
 
 }
 

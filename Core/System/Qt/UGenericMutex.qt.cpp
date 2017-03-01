@@ -4,6 +4,11 @@
 
 #include "../UGenericMutex.h"
 #include <QReadWriteLock>
+#include <QMutex>
+#include <QWaitCondition>
+#include <QAtomicInt>
+
+//#define RDK_NATIVE_QT_EVENTS
 
 class RDK_LIB_TYPE UGenericMutexQt: public UGenericMutex
 {
@@ -31,7 +36,17 @@ UGenericMutexQt::UGenericMutexQt() : m_mutex(QReadWriteLock::Recursive)
 
 UGenericMutexQt::~UGenericMutexQt()
 {
-    //mutex.unlock();
+    //m_mutex.unlock();
+    //m_mutex.try
+
+    /*try
+    {
+        m_mutex.unlock();
+    }
+    catch(...)
+    {
+
+    }*/
 }
 
 bool UGenericMutexQt::wait(int timeout)
@@ -45,7 +60,8 @@ bool UGenericMutexQt::wait(int timeout)
 
 bool UGenericMutexQt::shared_lock(void)
 {
-    return m_mutex.tryLockForRead();
+    m_mutex.lockForRead();
+    return true;
 }
 
 bool UGenericMutexQt::shared_unlock(void)
@@ -56,7 +72,8 @@ bool UGenericMutexQt::shared_unlock(void)
 
 bool UGenericMutexQt::exclusive_lock(void)
 {
-    return m_mutex.tryLockForWrite();
+    m_mutex.lockForWrite();
+    return true;
 }
 
 bool UGenericMutexQt::exclusive_unlock(void)
@@ -67,21 +84,26 @@ bool UGenericMutexQt::exclusive_unlock(void)
 
 
 // ---------------------------------------------------------------------------
+#ifdef RDK_NATIVE_QT_EVENTS
 class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
 {
 protected:
+    //QMutex mutex;
+    QWaitCondition condition;
+    QAtomicInt isReseted;
 
 public:
-UGenericEventQt();
-virtual ~UGenericEventQt();
+    UGenericEventQt();
+    virtual ~UGenericEventQt();
 
-virtual bool set(void);
-virtual bool reset(void);
-virtual bool wait(unsigned wait_time);
+    virtual bool set(void);
+    virtual bool reset(void);
+    virtual bool wait(unsigned wait_time);
 };
 
 UGenericEventQt::UGenericEventQt()
 {
+    isReseted = 0;
 }
 
 UGenericEventQt::~UGenericEventQt()
@@ -91,18 +113,162 @@ UGenericEventQt::~UGenericEventQt()
 
 bool UGenericEventQt::set(void)
 {
- return true; // TODO:
+    condition.wakeAll();
+    //isReseted = 0;
+    return true;
 }
 
 bool UGenericEventQt::reset(void)
 {
- return true; // TODO:
+    isReseted = 1;
+    return true;
 }
 
 bool UGenericEventQt::wait(unsigned wait_time)
 {
- return true; // TODO:
+    if(!isReseted) return false;
+    QMutex mutex;
+    mutex.lock();
+    bool b = condition.wait(&mutex, wait_time);
+    if(b)
+    {
+        isReseted = 0;
+    }
+    mutex.unlock();
+    return b;
 }
+#else
+    #if defined(_MSC_VER)
+
+#include <Windows.h>
+
+class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
+{
+protected:
+HANDLE Event;
+
+public:
+UGenericEventQt();
+virtual ~UGenericEventQt();
+
+virtual bool set(void);
+virtual bool reset(void);
+virtual bool wait(unsigned wait_time);
+
+
+private:
+UGenericEventQt(const UGenericEventQt &copy);
+UGenericEventQt& operator = (const UGenericEventQt &copy);
+};
+UGenericEventQt::UGenericEventQt()
+{
+ Event=CreateEvent(0,TRUE,TRUE,0);
+}
+
+UGenericEventQt::~UGenericEventQt()
+{
+ if(Event)
+  CloseHandle(Event);
+}
+
+bool UGenericEventQt::set(void)
+{
+ SetEvent(Event);
+ return true;
+}
+
+bool UGenericEventQt::reset(void)
+{
+ ResetEvent(Event);
+ return true;
+}
+
+bool UGenericEventQt::wait(unsigned wait_time)
+{
+ if(WaitForSingleObject(Event,wait_time) == WAIT_TIMEOUT)
+  return false;
+ return true;
+}
+
+UGenericEventQt::UGenericEventQt(const UGenericEventQt &copy)
+{
+
+}
+
+UGenericEventQt& UGenericEventQt::operator = (const UGenericEventQt &copy)
+{
+ return *this;
+}
+
+    #elif defined(__GNUC__)
+#include "../Gcc/pevents.h" // got from https://github.com/NeoSmart/PEvents
+
+class RDK_LIB_TYPE UGenericEventQt: public UGenericEvent
+{
+protected:
+neosmart::neosmart_event_t Event;
+
+public:
+ UGenericEventQt();
+ virtual ~UGenericEventQt();
+
+ virtual bool set(void);
+ virtual bool reset(void);
+ virtual bool wait(unsigned wait_time);
+
+
+private:
+ UGenericEventQt(const UGenericEventQt &copy);
+ UGenericEventQt& operator = (const UGenericEventQt &copy);
+};
+
+UGenericEventQt::UGenericEventQt()
+{
+ Event=neosmart::CreateEvent(true,true);
+ //Event=CreateEvent(0,FALSE,TRUE,0);
+
+ // Может быть удобно реализовать с помощью
+ // condition variables и pthread_cond_timedwait
+}
+
+UGenericEventQt::~UGenericEventQt()
+{
+ neosmart::DestroyEvent(Event);
+}
+
+bool UGenericEventQt::set(void)
+{
+ neosmart::SetEvent(Event);
+ return true;
+}
+
+bool UGenericEventQt::reset(void)
+{
+ neosmart::ResetEvent(Event);
+ return true;
+}
+
+bool UGenericEventQt::wait(unsigned wait_time)
+{
+ if(neosmart::WaitForEvent(Event,wait_time) == WAIT_TIMEOUT)
+  return false;
+ return true;
+// return false;
+}
+
+UGenericEventQt::UGenericEventQt(const UGenericEventQt &copy)
+{
+
+}
+
+UGenericEventQt& UGenericEventQt::operator = (const UGenericEventQt &copy)
+{
+ return *this;
+}
+
+
+    #endif
+#endif
 
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)

@@ -48,6 +48,9 @@ PExceptionPostprocessor ExceptionPostprocessor;
 /// Указатель на среду выполнения
 UEnvironment* Environment;
 
+/// Указатель на глобальный логгер объединяющий информацию со всех логгеров
+ULoggerEnv* GlobalLogger;
+
 /// Текущее число исключений системы
 mutable int CurrentExceptionsLogSize;
 
@@ -114,8 +117,18 @@ bool SetChannelIndex(int value);
 bool RegisterEnvironment(UEnvironment* env);
 void UnRegisterEnvironment(void);
 
+/// Регистрация глобального логгера
+bool RegisterGlobalLogger(ULoggerEnv* global_logger);
+void UnRegisterGlobalLogger(void);
+
 /// Обрабатывает возникшее исключение
 virtual void ProcessException(const UException &exception) const;
+
+/// Обрабатывает возникшее исключение (Внутренний метод)
+virtual void ProcessExceptionRaw(int type, const UException &exception) const;
+
+/// Обрабатывает возникшее исключение в режиме гобального логгера
+virtual void ProcessExceptionGlobal(int type, const UException &exception) const;
 
 /// Максимальное число хранимых исключений
 /// Если 0, то неограниченно
@@ -164,7 +177,7 @@ void ClearLog(void);
 void ClearReadLog(void);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-int LogMessage(const std::string &str);
+//void LogMessage(const std::string &str);
 void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
 void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 void LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number=0);
@@ -172,6 +185,8 @@ void LogMessageEx(int msg_level, const std::string &object_name, const std::stri
 
 /// Сброс логирования
 virtual void Reset(void);
+
+void RecreateEventsLogFile(void);
 // --------------------------
 
 

@@ -132,7 +132,8 @@ SOURCES += \
     ../../../Core/Application/URpcDispatcherQueues.cpp \
     ../../../Core/Application/UServerControl.cpp \
     ../../../Core/Application/UServerTransport.cpp \
-    ../../../Core/Application/UServerTransportTcp.cpp
+    ../../../Core/Application/UServerTransportTcp.cpp \
+    ../../../Core/System/Gcc/pevents.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
@@ -250,14 +251,16 @@ HEADERS +=\
     ../../../Core/Application/URpcDispatcherQueues.h \
     ../../../Core/Application/UServerControl.h \
     ../../../Core/Application/UServerTransport.h \
-    ../../../Core/Application/UServerTransportTcp.h
+    ../../../Core/Application/UServerTransportTcp.h \
+    ../../../Core/System/Gcc/pevents.h
 
 unix {
-    target.path = /usr/lib
-    INSTALLS += target
-    DESTDIR = $$PWD/../../../../Bin/Platform/Unix/Lib.Qt
+    DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
 }
 
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
+
+    INCLUDEPATH += $$(BOOST_PATH)/include/boost-1_54
 }
+

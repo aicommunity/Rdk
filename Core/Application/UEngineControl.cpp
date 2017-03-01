@@ -16,15 +16,17 @@ namespace RDK {
 // --------------------------
 UEngineControl::UEngineControl(void)
 {
- ThreadCalcCompleteEvent=0;//UCreateEvent(false);
+    ThreadCalcCompleteEvent=0;//UCreateEvent(false);
+    
+    EngineStateThread=0;
+    
+    UseControllersMode=0;
 
- EngineStateThread=0;
-
- UseControllersMode=0;
-
- InitFlag=false;
-
- Name="EngineControl";
+    UpdateInterval = 100;
+    
+    InitFlag=false;
+    
+    Name="EngineControl";
 }
 
 UEngineControl::~UEngineControl(void)
@@ -238,7 +240,8 @@ void UEngineControl::StartChannel(int channel_index)
  if(channel_index>=GetNumChannels())
   return;
 
- EngineStateThread->RecreateEventsLogFile();
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+// EngineStateThread->RecreateEventsLogFile();
  switch(ThreadMode)
  {
  case 0:
@@ -332,7 +335,8 @@ void UEngineControl::PauseChannel(int channel_index)
  break;
  }
 
- EngineStateThread->CloseEventsLogFile();
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
+// EngineStateThread->CloseEventsLogFile();
 }
 
 /// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
@@ -341,7 +345,8 @@ void UEngineControl::ResetChannel(int channel_index)
  if(channel_index>=GetNumChannels())
   return;
 
- EngineStateThread->RecreateEventsLogFile();
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+// EngineStateThread->RecreateEventsLogFile();
  if(channel_index == -1)
  {
   if(!Model_Check())
@@ -463,6 +468,8 @@ void UEngineControl::TimerExecute(void)
 /// Проверяет состояние расчета
 /// 0 - Не считает
 /// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
 int UEngineControl::CheckCalcState(int channel_id) const
 {
  if(channel_id<0 || channel_id>GetNumChannels())
@@ -475,10 +482,36 @@ int UEngineControl::CheckCalcState(int channel_id) const
  break;
 
  case 1:
-  return EngineControlThreads[channel_id]->CheckCalcState();
+ {
+  int state=EngineControlThreads[channel_id]->CheckCalcState();
+  if(state == 0)
+   return 0;
+  else
+  if(state == 1)
+  {
+   if(EngineStateThread)
+   {
+	int thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
+	if(thread_state == 0)
+	 return 1;
+	else
+	if(thread_state == 1)
+	 return 0;
+	else
+	if(thread_state == 2)
+	 return 2;
+	else
+     return 4;
+   }
+   else
+    return 4;
+  }
+  else
+   return 4;
+ }
  break;
  }
- return 0;
+ return 4;
 }
 
 /// Вклчает мониторинг сервера
@@ -623,7 +656,6 @@ bool UEngineControl::SetNumChannels(int num)
 {
  if(num == int(EngineControlThreads.size()))
   return true;
- int old_num=GetNumChannels();
  ::Core_SetNumChannels(num);
 
  int old_size=int(EngineControlThreads.size());
@@ -654,7 +686,6 @@ bool UEngineControl::SetNumChannels(int num)
 
 bool UEngineControl::InsertChannel(int index)
 {
- int old_num=GetNumChannels();
  Core_AddChannel(index);
  int new_num=GetNumChannels();
 
@@ -712,6 +743,17 @@ bool UEngineControl::DeleteChannel(int index)
 
  return true;
 }
+
+int UEngineControl::getUpdateInterval() const
+{
+    return UpdateInterval;
+}
+
+void UEngineControl::setUpdateInterval(const int value)
+{
+    UpdateInterval = value;
+}
+
 // --------------------------
 
 }

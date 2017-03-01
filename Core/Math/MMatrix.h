@@ -29,11 +29,11 @@ public:
 union
 {
  T Data[Rows][Cols];
- T Data1D[1];
+/* T Data[1];
  struct
  {
   T x,y,z,d;
- };
+ };*/
  double *Double;
  int *Int;
  unsigned char *UChar;
@@ -107,6 +107,7 @@ MMatrix<T,Rows,Cols>& operator = (const T* data);
 
 void Assign(const T *data);
 void Assign(T value);
+void Assign(const MDMatrix<T> &copy);
 
 /// Копирует данные в двумерный массив
 void CopyTo(T data[Rows][Cols]);
@@ -266,10 +267,13 @@ MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
  VRows=Rows;
  VCols=Cols;
  if(defvalue == 0)
-  memset(Data1D,0,Rows*Cols*sizeof(T));
+  memset(Data,0,Rows*Cols*sizeof(T));
  else
-  for(unsigned i=0;i<Rows*Cols;i++)
-   Data1D[i]=defvalue;
+ {
+  T *data=&Data[0][0];
+  for(unsigned i=0;i<Rows*Cols;i++,data++)
+   *data=defvalue;
+ }
 }
 
 template<class T, unsigned Rows, unsigned Cols>
@@ -397,7 +401,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Col
 
  VRows=copy.VRows;
  VCols=copy.VCols;
- memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
+ memcpy(Data,copy.Data,sizeof(T)*Cols*Rows);
  return *this;
 };
 
@@ -406,7 +410,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
 {
  if(Rows == copy.GetRows() && Cols == copy.GetCols())
  {
-  memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
+  memcpy(Data,copy.Data,sizeof(T)*Cols*Rows);
   VRows=copy.GetRows();
   VCols=copy.GetCols();
  }
@@ -417,7 +421,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (T value)
 {
- T* pm1=Data1D;
+ T* pm1=&Data[0][0];
 
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = value;
@@ -434,7 +438,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T data[Rows][Cols]
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
 {
- T* pm1=Data1D;
+ T* pm1=&Data[0][0];
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = *data++;
  return *this;
@@ -451,6 +455,13 @@ void MMatrix<T,Rows,Cols>::Assign(T value)
 {
  *this=value;
 }
+
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::Assign(const MDMatrix<T> &copy)
+{
+ *this=copy;
+}
+
 /// Копирует данные в двумерный массив
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::CopyTo(T data[Rows][Cols])
@@ -508,13 +519,13 @@ unsigned MMatrix<T,Rows,Cols>::GetRows(void) const
 template<class T, unsigned Rows, unsigned Cols>
 T& MMatrix<T,Rows,Cols>::operator [] (int i)
 {
- return Data1D[i];
+ return reinterpret_cast<T*>(Data)[i];
 }
 
 template<class T, unsigned Rows, unsigned Cols>
 const T& MMatrix<T,Rows,Cols>::operator [] (int i) const
 {
- return Data1D[i];
+ return *(reinterpret_cast<const T*>(Data)+i);
 }
 
 template<class T, unsigned Rows, unsigned Cols>
@@ -556,8 +567,8 @@ MMatrix<T,Rows,1> MMatrix<T,Rows,Cols>::GetCol(int i) const
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator += (const MMatrix<T,Rows,Cols> &M)
 {
- T* pm1=Data1D;
- const T* pm2=M.Data1D;
+ T* pm1=Data;
+ const T* pm2=M.Data;
 
  for(int i=0;i<Cols*Rows;i++)
   *pm1++ += *pm2++;
@@ -569,8 +580,8 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> operator + (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
  MMatrix<T,Rows,Cols> res=M1;
- T* pm1=res.Data1D;
- const T* pm2=M2.Data1D;
+ T* pm1=&res.Data[0][0];
+ const T* pm2=&M2.Data[0][0];
 
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ += *pm2++;
@@ -581,8 +592,8 @@ MMatrix<T,Rows,Cols> operator + (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator -= (const MMatrix<T,Rows,Cols> &M)
 {
- T* pm1=Data1D;
- const T* pm2=M.Data1D;
+ T* pm1=Data[0];
+ const T* pm2=M.Data[0];
 
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ -= *pm2++;
@@ -594,8 +605,8 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> operator - (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
  MMatrix<T,Rows,Cols> res=M1;
- T* pm1=res.Data1D;
- const T* pm2=M2.Data1D;
+ T* pm1=&res.Data[0][0];
+ const T* pm2=&M2.Data[0][0];
 
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ -= *pm2++;
@@ -632,8 +643,8 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::operator - (void) const
 {
  MMatrix<T,Rows,Cols> res;
 
- const T* pm1=Data1D;
- T* pm2=res.Data1D;
+ const T* pm1=&Data[0][0];
+ T* pm2=&res.Data[0][0];
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm2++ = -*pm1++;
 
@@ -643,7 +654,7 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::operator - (void) const
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator *= (T v)
 {
- T* pm1=Data1D;
+ T* pm1=&Data[0][0];
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ *= v;
 
@@ -667,7 +678,7 @@ MMatrix<T,Rows,Cols> operator * (T v, const MMatrix<T,Rows,Cols> &M)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator /= (T v)
 {
- T* pm1=Data1D;
+ T* pm1=&Data[0][0];
  for(int i=0;i<Cols*Rows;i++)
   *pm1++ /= v;
 
@@ -684,7 +695,7 @@ MMatrix<T,Rows,Cols> operator / (const MMatrix<T,Rows,Cols> &M, T v)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator += (T v)
 {
- T* pm1=Data1D;
+ T* pm1=Data;
  for(int i=0;i<Cols*Rows;i++)
   *pm1++ += v;
 
@@ -708,7 +719,7 @@ MMatrix<T,Rows,Cols> operator + (T v, const MMatrix<T,Rows,Cols> &M)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator -= (T v)
 {
- T* pm1=Data1D;
+ T* pm1=Data;
  for(int i=0;i<Cols*Rows;i++)
   *pm1++ -= v;
 
@@ -737,13 +748,13 @@ MMatrix<T,Rows,Cols> operator - (T v, const MMatrix<T,Rows,Cols> &M)
 template<class T, unsigned Rows, unsigned Cols>
 bool operator == (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
- return (memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T)) == 0)?true:false;
+ return (memcmp(M1.Data,M2.Data,Cols*Rows*sizeof(T)) == 0)?true:false;
 }
 
 template<class T, unsigned Rows, unsigned Cols>
 bool operator != (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
- return (memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T)) != 0)?true:false;
+ return (memcmp(M1.Data,M2.Data,Cols*Rows*sizeof(T)) != 0)?true:false;
 }
 // --------------------------
 
@@ -1042,7 +1053,7 @@ template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::operator !(void) const
 {
  T res=0;
- const T* pm1=Data1D;
+ const T* pm1=&Data[0][0];
  for(unsigned i=0;i<Cols*Rows;i++,pm1++)
   res+=*pm1 * *pm1;
  return sqrt(res);
@@ -1057,7 +1068,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
  if(!norm)
   return *this;
 
- T* pm1=Data1D;
+ T* pm1=Data[0];
  for(int i=0;i<Cols*Rows;i++,pm1++)
   *pm1/=norm;
 
@@ -1111,7 +1122,7 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Zero(void)
 {
  MMatrix<T,Rows,Cols> res;
 
- memset(res.Data1D,0,Rows*Cols*sizeof(T));
+ memset(res.Data,0,Rows*Cols*sizeof(T));
  return res;
 }
 
@@ -1120,7 +1131,7 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
 {
  MMatrix<T,Rows,Cols> res;
- memset(res.Data1D,0,Rows*Cols*sizeof(T));
+ memset(res.Data,0,Rows*Cols*sizeof(T));
 
  unsigned crmin=(Cols<Rows)?Cols:Rows;
 

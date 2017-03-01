@@ -170,6 +170,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  AutoStartProjectFlag=false;
  MinimizeToTray=false;
  StartMinimized=false;
+ CheckModelFlag=false;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -527,6 +528,9 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
  RdkApplication.CreateProject(file_name, project_config);
+ UDrawEngineFrame1->FontTypeComboBox->ItemIndex=1;
+ UDrawEngineFrame1->FontSizeComboBox->ItemIndex=9;
+ UDrawEngineFrame1->ApplyButtonClick(this);
 /*
  CloseProject();
 
@@ -1039,7 +1043,15 @@ catch(...)
 // Загружает проект с индексом source_id, в движок с индексом cloned_id
 void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 {
- RdkApplication.CloneProject(source_id, cloned_id);
+ if(cloned_id>=Core_GetNumChannels())
+ {
+  if(!RdkApplication.SetNumChannels(cloned_id+1))
+   return;
+ }
+
+ RdkApplication.CloneChannel(source_id, cloned_id);
+ RDK::UIVisualControllerStorage::UpdateInterface();
+
 /*
  if(source_id>=Core_GetNumChannels() || cloned_id >= Core_GetNumChannels())
   return;
@@ -2053,25 +2065,25 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
+ CloseProject();
  TProjectConfig clean_project;
  UCreateProjectWizardForm->ProjectConfig=clean_project;
  UCreateProjectWizardForm->ClearWizard();
  UCreateProjectWizardForm->Caption="Create Project Wizard";
  if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
-  CloseProject();
-  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+//  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
 
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=2;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=1;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=1;
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=false;
-
-  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoadFlag;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoadFlag;
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugModeFlag;
+//
+//  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
 
   UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
   UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
@@ -2433,7 +2445,7 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Se
   //Нашли компонент, проверяем, хочет он быть показанным как таб или отдельно:
   if(I->second->ShowTabbedFlag==true)
   {
-	 TTabSheet* tab=AddComponentControlFormPage(class_name);
+	 TTabSheet* tab=AddComponentControlFormPage(c_name);
 	 if(tab)
 	  tab->PageControl->ActivePageIndex=tab->TabIndex;
   }
@@ -2978,4 +2990,13 @@ void __fastcall TUGEngineControlForm::OpenProjectFolder1Click(TObject *Sender)
   ShellExecute(Handle, "explore", RdkApplication.GetProjectPath().c_str(), "", "", SW_SHOWNORMAL);
 }
 //---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
+{
+ int cloned_id=Core_GetNumChannels();
+ CloneProject(Core_GetSelectedChannelIndex(), cloned_id);
+}
+//---------------------------------------------------------------------------
+
 

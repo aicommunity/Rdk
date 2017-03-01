@@ -28,6 +28,10 @@ RDK::UELockVar<int> ThreadMode;
 /// 1 - индивидуально для каждого канала во время каждого расчета канала
 RDK::UELockVar<int> UseControllersMode;
 
+/// Время обновления интерфейсов, в мс.
+/// По умолчанию равно 100, может меняться методами get/set
+RDK::UELockVar<int> UpdateInterval;
+
 protected: // Данные
 /// Указатель на экземпляр приложения
 UEPtr<UApplication> Application;
@@ -139,8 +143,10 @@ virtual void ResetChannel(int channel_index);
 virtual void StepChannel(int channel_index);
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Не считает
+/// 0 - Выключен
 /// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
 virtual int CheckCalcState(int channel_id) const;
 
 /// Вклчает мониторинг сервера
@@ -173,6 +179,12 @@ virtual void SaveParameters(RDK::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 virtual void LoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
+
+///Установка значения инетрвала обновления в мс.
+int getUpdateInterval() const;
+
+///Получение значения инетрвала обновления в мс.
+void setUpdateInterval(int value);
 
 private: // Вспомогательные методы
 // --------------------------

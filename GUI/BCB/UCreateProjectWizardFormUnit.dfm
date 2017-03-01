@@ -61,7 +61,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Top = 0
     Width = 610
     Height = 678
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
@@ -115,7 +115,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object Button1: TButton
         Left = 520
-        Top = 59
+        Top = 60
         Width = 78
         Height = 26
         Anchors = [akTop, akRight]
@@ -192,10 +192,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet2: TTabSheet
       Caption = 'Type'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -214,7 +210,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Align = alTop
         Caption = 'Project type '
         Columns = 2
-        ItemIndex = 1
+        ItemIndex = 0
         Items.Strings = (
           'Universal'
           'Video analysis')
@@ -229,7 +225,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Align = alTop
         Caption = ' Calculation Time Source '
         Columns = 2
-        ItemIndex = 1
+        ItemIndex = 0
         Items.Strings = (
           'System Time'
           'External Data Time')
@@ -378,7 +374,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Width = 41
                 Height = 21
                 TabOrder = 0
-                Text = '30'
+                Text = '2000'
                 OnChange = ProjectTimeStepEditChange
                 OnKeyPress = ProjectTimeStepEditKeyPress
               end
@@ -388,7 +384,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Width = 44
                 Height = 21
                 TabOrder = 1
-                Text = '30'
+                Text = '2000'
                 OnChange = GlobalTimeStepEditChange
                 OnKeyPress = GlobalTimeStepEditKeyPress
               end
@@ -400,12 +396,13 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Height = 43
               Align = alTop
               Caption = ' Calculation Mode '
-              Columns = 3
+              Columns = 4
               ItemIndex = 0
               Items.Strings = (
                 'Simple'
                 'Real-Time'
-                'By Signal')
+                'By Signal'
+                'Fastest')
               TabOrder = 1
               OnClick = CalculationModeRadioGroupClick
             end
@@ -536,6 +533,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               object ModelFromFileTabSheet: TTabSheet
                 Caption = 'From File'
                 ImageIndex = 1
+                TabVisible = False
                 DesignSize = (
                   538
                   353)
@@ -594,10 +592,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                     inherited PageControl: TPageControl
                       Width = 534
                       Height = 336
+                      ActivePage = UClassesListFrame1.LibsTabSheet
                       ExplicitWidth = 534
                       ExplicitHeight = 336
                       inherited NameTabSheet: TTabSheet
-                        ExplicitLeft = 4
                         ExplicitTop = 25
                         ExplicitWidth = 526
                         ExplicitHeight = 307
@@ -610,13 +608,20 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         end
                       end
                       inherited LibsTabSheet: TTabSheet
-                        TabVisible = False
+                        ExplicitLeft = 4
+                        ExplicitTop = 25
+                        ExplicitWidth = 526
+                        ExplicitHeight = 307
+                        inherited TreeView: TTreeView
+                          Width = 526
+                          Height = 307
+                          OnChange = UClassesListFrame1TreeViewChange
+                          ExplicitWidth = 526
+                          ExplicitHeight = 307
+                        end
                       end
                       inherited LibsControlTabSheet: TTabSheet
-                        ExplicitLeft = 4
-                        ExplicitTop = 24
-                        ExplicitWidth = 499
-                        ExplicitHeight = 515
+                        TabVisible = False
                         inherited Splitter1: TSplitter
                           Top = 291
                           ExplicitTop = 188

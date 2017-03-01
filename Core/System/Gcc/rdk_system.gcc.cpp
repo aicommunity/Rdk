@@ -13,8 +13,8 @@
 #include <string.h>
 
 #include "../rdk_system.h"
-#include "USharedMemoryLoader.gcc.cpp"
-#include "UGenericMutex.gcc.cpp"
+//#include "USharedMemoryLoader.gcc.cpp"
+//#include "UGenericMutex.gcc.cpp"
 
 #define RDK_ENABLE_DEBUG_OUTPUT
 

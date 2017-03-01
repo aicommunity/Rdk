@@ -18,6 +18,7 @@ See file license.txt for more information
 #include <istream>
 #include <fstream>
 #include <vector>
+#include <stdlib.h>
 
 namespace RDK {
 
@@ -28,20 +29,20 @@ using namespace std;
 struct RDK_LIB_TYPE UBmpHeader
 {
 // short type;
- int filesize;
- short r1,r2;
- int OffBits;
- int size;
- long width;
- long height;
- short Planes;
- short BitCount;
- int compression;
- int SizeImage;
- long XPelPerMetr;
- long YPelPerMetr;
- int ClrUsed;
- int ClrImportant;
+ int32_t filesize;
+ int16_t r1,r2;
+ int32_t OffBits;
+ int32_t size;
+ int32_t width;
+ int32_t height;
+ int16_t Planes;
+ int16_t BitCount;
+ int32_t compression;
+ int32_t SizeImage;
+ int32_t XPelPerMetr;
+ int32_t YPelPerMetr;
+ int32_t ClrUsed;
+ int32_t ClrImportant;
 };
 
 // -----------------------
@@ -55,7 +56,7 @@ basic_ostream<CharT>& operator << (basic_ostream<CharT> &stream, const UBitmap &
  UBitmap BmpIOBuffer;
 
  UBmpHeader header;
- short type=0x4D42;
+ int16_t type=0x4D42;
 
  switch(bmp.GetColorModel())
  {
@@ -103,7 +104,7 @@ template <typename CharT>
 basic_istream<CharT>& operator >> (basic_istream<CharT> &stream, UBitmap &bmp)
 {
  UBmpHeader header;
- short type=0;
+ int16_t type=0;
 
  stream.read(reinterpret_cast<CharT*>(&type),sizeof(type)/sizeof(CharT));
  stream.read(reinterpret_cast<CharT*>(&header),sizeof(header)/sizeof(CharT));

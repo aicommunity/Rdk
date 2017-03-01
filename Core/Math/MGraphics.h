@@ -287,14 +287,14 @@ void MGraphics<T,Rows>::Repaint(void)
    {
 	const MVector<T,Rows>& vertex=vertices[j];
 	Graphics->SetPenWidth(1);
-	Graphics->Pixel(int(vertex.x),int(vertex.y));
+	Graphics->Pixel(int(vertex(0)),int(vertex(1)));
 	if(Descriptions[i].TargetPoints)
 	{
      Graphics->SetPenWidth(Descriptions[i].PenWidth);
-	 Graphics->Line(int(vertex.x),int(vertex.y)-Descriptions[i].PenWidth*7,int(vertex.x),int(vertex.y)-Descriptions[i].PenWidth*2);
-	 Graphics->Line(int(vertex.x),int(vertex.y)+Descriptions[i].PenWidth*2,int(vertex.x),int(vertex.y)+Descriptions[i].PenWidth*7);
-	 Graphics->Line(int(vertex.x)-Descriptions[i].PenWidth*7,int(vertex.y),int(vertex.x)-Descriptions[i].PenWidth*2,int(vertex.y));
-	 Graphics->Line(int(vertex.x)+Descriptions[i].PenWidth*2,int(vertex.y),int(vertex.x)+Descriptions[i].PenWidth*7,int(vertex.y));
+	 Graphics->Line(int(vertex(0)),int(vertex(1))-Descriptions[i].PenWidth*7,int(vertex(0)),int(vertex(1))-Descriptions[i].PenWidth*2);
+	 Graphics->Line(int(vertex(0)),int(vertex(1))+Descriptions[i].PenWidth*2,int(vertex(0)),int(vertex(1))+Descriptions[i].PenWidth*7);
+	 Graphics->Line(int(vertex(0))-Descriptions[i].PenWidth*7,int(vertex(1)),int(vertex(0))-Descriptions[i].PenWidth*2,int(vertex(1)));
+	 Graphics->Line(int(vertex(0))+Descriptions[i].PenWidth*2,int(vertex(1)),int(vertex(0))+Descriptions[i].PenWidth*7,int(vertex(1)));
  	 Graphics->SetPenWidth(1);
 	}
    }
@@ -308,7 +308,7 @@ void MGraphics<T,Rows>::Repaint(void)
      {
 	  MVector<T,Rows> v1=vertices[geometry.Border(j)[k]];
 	  MVector<T,Rows> v2=vertices[geometry.Border(j)[k+1]];
-      Graphics->Line(int(v1.x),int(v1.y),int(v2.x),int(v2.y));
+      Graphics->Line(int(v1(0)),int(v1(1)),int(v2(0)),int(v2(1)));
      }
    }
   }

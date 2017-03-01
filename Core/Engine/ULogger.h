@@ -46,10 +46,13 @@ public: // Методы записи логов
 int InitLog(void);
 
 /// Сохраняет строку в лог
-int LogMessage(const std::string &str);
+int WriteMessageToFile(const std::string &str);
 
 /// Закрывает файлы с логами и удаляет связанные файловые переменные
 int Clear(void);
+
+/// Возвращает true если файл записи логов открыт
+bool IsLogFileCreated(void) const;
 
 };
 
