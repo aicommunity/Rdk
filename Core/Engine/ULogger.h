@@ -51,6 +51,9 @@ int WriteMessageToFile(const std::string &str);
 /// Закрывает файлы с логами и удаляет связанные файловые переменные
 int Clear(void);
 
+/// Возвращает true если файл записи логов открыт
+bool IsLogFileCreated(void) const;
+
 };
 
 }
