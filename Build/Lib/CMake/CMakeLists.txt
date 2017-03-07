@@ -7,6 +7,9 @@ set(A_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Lib/")
 file(MAKE_DIRECTORY ${A_OUTPUT_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${A_OUTPUT_DIR})
 
+#Build Rdk options
+option(BUILD_APPLICATION "Build Rdk with Application" OFF)
+
 # Compiler options
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
@@ -126,6 +129,30 @@ set(THIRDPARTY_FILES
 	"${THIRDPARTY_SOURCE_DIR}/xmlParser/xmlParser.cpp"
 	"${THIRDPARTY_SOURCE_DIR}/jpeg/JpegIntegration.cpp"
 	"${THIRDPARTY_SOURCE_DIR}/ThirdParty.cpp")
+
+# Rdk/Application
+set(APPLICATION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Application/")
+set(APPLICATION_SOURCE_FILES
+	"${APPLICATION_SOURCE_DIR}/UAppCore.cpp"
+	"${APPLICATION_SOURCE_DIR}/UApplication.cpp"
+	"${APPLICATION_SOURCE_DIR}/UBroadcasterInterface.cpp"
+	"${APPLICATION_SOURCE_DIR}/UChannelProfiler.cpp"
+	"${APPLICATION_SOURCE_DIR}/UEngineControl.cpp"
+	"${APPLICATION_SOURCE_DIR}/UEngineControlThread.cpp"
+	"${APPLICATION_SOURCE_DIR}/UEngineStateThread.cpp"
+	"${APPLICATION_SOURCE_DIR}/UIVisualController.cpp"
+	"${APPLICATION_SOURCE_DIR}/UProject.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcCommand.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcCommandInternal.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcDecoder.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcDecoderCommon.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcDecoderInternal.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcDispatcher.cpp"
+	"${APPLICATION_SOURCE_DIR}/URpcDispatcherQueues.cpp"
+	"${APPLICATION_SOURCE_DIR}/UServerControl.cpp"
+	"${APPLICATION_SOURCE_DIR}/UServerTransport.cpp"
+	"${APPLICATION_SOURCE_DIR}/UServerTransportTcp.cpp"
+	)
 	
 # Put all the files together
 set(SOURCE_FILES
@@ -136,8 +163,11 @@ set(SOURCE_FILES
 	${C_SYSTEM_FILES}
 	${C_UTILITIES_FILES}
 	${DEPLOY_FILES}
-	${THIRDPARTY_FILES})
-	
+	${THIRDPARTY_FILES}
+	)
+if(BUILD_APPLICATION)
+	List(APPEND SOURCE_FILES ${APPLICATION_SOURCE_FILES})
+endif()
 # Headers
 	
 include_directories(
@@ -148,8 +178,11 @@ include_directories(
 	${C_SYSTEM_SOURCE_DIR}
 	${C_UTILITIES_SOURCE_DIR}
 	${DEPLOY_SOURCE_DIR}
-	${THIRDPARTY_SOURCE_DIR})
-
+	${THIRDPARTY_SOURCE_DIR}
+	)
+if(BUILD_APPLICATION)
+	List(APPEND include_directories ${APPLICATION_SOURCE_DIR})
+endif()
 # Create target file
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
