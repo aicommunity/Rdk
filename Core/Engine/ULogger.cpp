@@ -32,6 +32,7 @@ bool ULogger::SetLogDir(const std::string &value)
   return true;
 
  LogDir=value;
+ Clear();
  return true;
 }
 
@@ -118,6 +119,13 @@ int ULogger::Clear(void)
 
  LogEnabledFlag=true;
  return RDK_SUCCESS;
+}
+
+/// Возвращает true если файл записи логов открыт
+bool ULogger::IsLogFileCreated(void) const
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ return (EventsLogFile)?true:false;
 }
 
 

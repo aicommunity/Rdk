@@ -142,7 +142,8 @@ int URdkCoreManager::SetLogDir(const char *dir)
 
  if(LogDir == dir)
   return RDK_SUCCESS;
- SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
+ if(GlobalLogger.IsLogFileCreated())
+  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
  LogDir=dir;
  for(size_t i=0;i<LoggerList.size();i++)
  {
