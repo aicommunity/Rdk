@@ -5,6 +5,8 @@
 #include <QResizeEvent>
 #include <QMouseEvent>
 
+#include "USingleImagePainter.h"
+
 namespace Ui {
 class USingleImageWidget;
 }
@@ -23,8 +25,8 @@ public:
     int getRow() const;
     void setRow(int value);
 
-    QPixmap getImage() const;
-    void setImage(const QPixmap &value);
+    QImage getImage() const;
+    void setImage(const QImage &value);
 
     bool getShowLegend() const;
     int getSizeMode() const;
@@ -66,7 +68,9 @@ private:
     int column;
     int row;
     int calcChannel;
-    QPixmap image;
+    QImage srcImage;
+    QImage transformedImage;
+    USingleImagePainter *painter;
     QString componentName;
     QString componentPropertyName;
     bool showLegend;

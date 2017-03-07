@@ -17,7 +17,7 @@ public:
     explicit UImagesWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UImagesWidget");
     virtual ~UImagesWidget();
     void AUpdateInterface();
-    QPixmap fromUBitmap(RDK::UBitmap *tempBmp);
+    QImage fromUBitmap(RDK::UBitmap *tempBmp);
 
 public slots:
     ///считывание файлов настроек
@@ -49,6 +49,7 @@ protected:
     //buffers
     RDK::UBitmap tempBmp;
     RDK::UBitmapParam bmp_param;
+    QImage imageBuffer;
 
 
 private:

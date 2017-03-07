@@ -15,6 +15,9 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     ui(new Ui::USingleImageWidget)
 {
     ui->setupUi(this);
+    painter = new USingleImagePainter(this);
+    painter->setSizeMode(sizeMode);
+    ui->scrollArea->setWidget(painter);
 
     setShowLegend(showLegend);
     setShowChannels(indChannels);
@@ -47,24 +50,29 @@ void USingleImageWidget::setShowLegend(bool value)
 
 void USingleImageWidget::reDrawWidget()
 {
-    if(!connected || image.isNull())
+    if(!connected || srcImage.isNull())
     {
-        ui->labelImage->setText("no image");
+        //ui->labelImage->setText("no image");
+        painter->setImage(NULL);
         return;
     }
+    //painter->setImage(&srcImage);
     int legendSpace = showLegend?28:8;
     switch (sizeMode)
     {
     case 0:
-        ui->labelImage->setPixmap(image);
+        painter->setImage(&srcImage);
         break;
 
     case 1:
-        ui->labelImage->setPixmap(image.scaled(size().width()-8, size().height()-legendSpace, Qt::KeepAspectRatio));
+        //painter->setImage(&transformedImage);
+        transformedImage = srcImage.scaled(size().width()-8, size().height()-legendSpace, Qt::KeepAspectRatio);
+        painter->setImage(&transformedImage);
         break;
 
     case 2:
-        ui->labelImage->setPixmap(image.scaled(size().width()-8, size().height()-legendSpace, Qt::IgnoreAspectRatio));
+        transformedImage = srcImage.scaled(size().width()-8, size().height()-legendSpace, Qt::IgnoreAspectRatio);
+        painter->setImage(&transformedImage);
         break;
     }
 }
@@ -72,6 +80,7 @@ void USingleImageWidget::reDrawWidget()
 void USingleImageWidget::setSize(int value)
 {
     sizeMode = value;
+    painter->setSizeMode(value);
 }
 
 void USingleImageWidget::resizeEvent(QResizeEvent *event)
@@ -154,15 +163,15 @@ void USingleImageWidget::mouseDoubleClickEvent(QMouseEvent *)
     emit fullScreenSignal(this);
 }
 
-QPixmap USingleImageWidget::getImage() const
+QImage USingleImageWidget::getImage() const
 {
-    return image;
+    return srcImage;
 }
 
-void USingleImageWidget::setImage(const QPixmap &value)
+void USingleImageWidget::setImage(const QImage &value)
 {
-    image = value;
-    ui->labelInfo->setText(QString::number(image.size().width())+"x"+QString::number(image.size().height()));
+    srcImage = value;
+    ui->labelInfo->setText(QString::number(srcImage.size().width())+"x"+QString::number(srcImage.size().height()));
 }
 
 int USingleImageWidget::getRow() const
