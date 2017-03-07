@@ -71,27 +71,61 @@ static void RGB_to_YCC(uint8* pDst, const uint8 *pSrc, int num_pixels)
   }
 }
 
-static void RGB_to_Y(uint8* pDst, const uint8 *pSrc, int num_pixels)
+static void BGR_to_YCC(uint8* pDst, const uint8 *pSrc, int num_pixels)
 {
-  for ( ; num_pixels; pDst++, pSrc += 3, num_pixels--)
-    pDst[0] = static_cast<uint8>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
-}
-
-static void RGBA_to_YCC(uint8* pDst, const uint8 *pSrc, int num_pixels)
-{
-  for ( ; num_pixels; pDst += 3, pSrc += 4, num_pixels--)
+  for ( ; num_pixels; pDst += 3, pSrc += 3, num_pixels--)
   {
-    const int r = pSrc[0], g = pSrc[1], b = pSrc[2];
+    const int r = pSrc[2], g = pSrc[1], b = pSrc[0];
     pDst[0] = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
     pDst[1] = clamp(128 + ((r * CB_R + g * CB_G + b * CB_B + 32768) >> 16));
     pDst[2] = clamp(128 + ((r * CR_R + g * CR_G + b * CR_B + 32768) >> 16));
   }
 }
 
+static void RGB_to_Y(uint8* pDst, const uint8 *pSrc, int num_pixels)
+{
+  for ( ; num_pixels; pDst++, pSrc += 3, num_pixels--)
+    pDst[0] = static_cast<uint8>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
+}
+
+static void BGR_to_Y(uint8* pDst, const uint8 *pSrc, int num_pixels)
+{
+  for ( ; num_pixels; pDst++, pSrc += 3, num_pixels--)
+	pDst[0] = static_cast<uint8>((pSrc[2] * YR + pSrc[1] * YG + pSrc[0] * YB + 32768) >> 16);
+}
+
+static void RGBA_to_YCC(uint8* pDst, const uint8 *pSrc, int num_pixels)
+{
+  for ( ; num_pixels; pDst += 3, pSrc += 4, num_pixels--)
+  {
+	const int r = pSrc[0], g = pSrc[1], b = pSrc[2];
+	pDst[0] = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
+	pDst[1] = clamp(128 + ((r * CB_R + g * CB_G + b * CB_B + 32768) >> 16));
+	pDst[2] = clamp(128 + ((r * CR_R + g * CR_G + b * CR_B + 32768) >> 16));
+  }
+}
+
+static void BGRA_to_YCC(uint8* pDst, const uint8 *pSrc, int num_pixels)
+{
+  for ( ; num_pixels; pDst += 3, pSrc += 4, num_pixels--)
+  {
+	const int r = pSrc[2], g = pSrc[1], b = pSrc[0];
+	pDst[0] = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
+	pDst[1] = clamp(128 + ((r * CB_R + g * CB_G + b * CB_B + 32768) >> 16));
+	pDst[2] = clamp(128 + ((r * CR_R + g * CR_G + b * CR_B + 32768) >> 16));
+  }
+}
+
 static void RGBA_to_Y(uint8* pDst, const uint8 *pSrc, int num_pixels)
 {
   for ( ; num_pixels; pDst++, pSrc += 4, num_pixels--)
-    pDst[0] = static_cast<uint8>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
+	pDst[0] = static_cast<uint8>((pSrc[0] * YR + pSrc[1] * YG + pSrc[2] * YB + 32768) >> 16);
+}
+
+static void BGRA_to_Y(uint8* pDst, const uint8 *pSrc, int num_pixels)
+{
+  for ( ; num_pixels; pDst++, pSrc += 4, num_pixels--)
+	pDst[0] = static_cast<uint8>((pSrc[2] * YR + pSrc[1] * YG + pSrc[0] * YB + 32768) >> 16);
 }
 
 static void Y_to_YCC(uint8* pDst, const uint8* pSrc, int num_pixels)
@@ -809,19 +843,41 @@ void jpeg_encoder::load_mcu(const void *pSrc)
 
   if (m_num_components == 1)
   {
-    if (m_image_bpp == 4)
-      RGBA_to_Y(pDst, Psrc, m_image_x);
-    else if (m_image_bpp == 3)
-      RGB_to_Y(pDst, Psrc, m_image_x);
-    else
-      memcpy(pDst, Psrc, m_image_x);
+	if (m_image_bpp == 4)
+	{
+	 if(Order)
+	  RGBA_to_Y(pDst, Psrc, m_image_x);
+	 else
+	  BGRA_to_Y(pDst, Psrc, m_image_x);
+	}
+	else
+	if (m_image_bpp == 3)
+	{
+	 if(Order)
+	  RGB_to_Y(pDst, Psrc, m_image_x);
+	 else
+	  BGR_to_Y(pDst, Psrc, m_image_x);
+	}
+	else
+	  memcpy(pDst, Psrc, m_image_x);
   }
   else
   {
-    if (m_image_bpp == 4)
-      RGBA_to_YCC(pDst, Psrc, m_image_x);
-    else if (m_image_bpp == 3)
-      RGB_to_YCC(pDst, Psrc, m_image_x);
+	if (m_image_bpp == 4)
+	{
+	 if(Order)
+	  RGBA_to_YCC(pDst, Psrc, m_image_x);
+	 else
+	  BGRA_to_YCC(pDst, Psrc, m_image_x);
+	}
+	else
+	if (m_image_bpp == 3)
+	{
+	 if(Order)
+	  RGB_to_YCC(pDst, Psrc, m_image_x);
+	 else
+	  BGR_to_YCC(pDst, Psrc, m_image_x);
+	}
     else
       Y_to_YCC(pDst, Psrc, m_image_x);
   }
@@ -854,6 +910,7 @@ void jpeg_encoder::clear()
 }
 
 jpeg_encoder::jpeg_encoder()
+ : Order(true)
 {
   clear();
 }
@@ -948,13 +1005,14 @@ public:
 };
 
 // Writes JPEG image to file.
-bool compress_image_to_jpeg_file(const char *pFilename, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params)
+bool compress_image_to_jpeg_file(const char *pFilename, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params, bool order)
 {
   cfile_stream dst_stream;
   if (!dst_stream.open(pFilename))
     return false;
 
   jpge::jpeg_encoder dst_image;
+  dst_image.set_order(order);
   if (!dst_image.init(&dst_stream, width, height, num_channels, comp_params))
     return false;
 
@@ -1004,7 +1062,7 @@ public:
    }
 };
 
-bool compress_image_to_jpeg_file_in_memory(void *pDstBuf, int &buf_size, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params)
+bool compress_image_to_jpeg_file_in_memory(void *pDstBuf, int &buf_size, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params, bool order)
 {
    if ((!pDstBuf) || (!buf_size))
       return false;
@@ -1014,6 +1072,7 @@ bool compress_image_to_jpeg_file_in_memory(void *pDstBuf, int &buf_size, int wid
    buf_size = 0;
 
    jpge::jpeg_encoder dst_image;
+   dst_image.set_order(order);
    if (!dst_image.init(&dst_stream, width, height, num_channels, comp_params))
       return false;
 

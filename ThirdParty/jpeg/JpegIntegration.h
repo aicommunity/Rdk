@@ -10,7 +10,8 @@
 namespace RDK {
 
 /// Преобразовывает UBitmap в jpeg
-RDK_LIB_TYPE int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf);
+/// order определяет порядок следования цветовых каналов: RGB - true, BGR - false
+RDK_LIB_TYPE int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf, bool order);
 
 }
 
