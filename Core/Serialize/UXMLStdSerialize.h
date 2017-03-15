@@ -405,9 +405,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size])
 {
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
-  unsigned int size=0;
-  size=storage.GetNumNodes();
-
   int size=storage.GetNumNodes();
 
   if(size>Size)
@@ -529,7 +526,7 @@ USerStorageXML& operator << (USerStorageXML& storage, int const (&data)[Size])
  for(unsigned i=0;i<Size;i++)
  {
   stream<<data[i];
-  if(i<size-1)
+  if(i<Size-1)
    stream<<" ";
  }
 
