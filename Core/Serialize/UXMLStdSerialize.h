@@ -324,6 +324,9 @@ RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<b
 RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data);
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data);
 
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<int> &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data);
+
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
 {
@@ -368,6 +371,557 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
   if(!storage.SelectNode("elem",i))
    return storage;
   operator >>(storage,*(pdata+i));
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+// C-массивы
+template<int Size>
+USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size])
+{
+ storage.SetNodeAttribute("Type","C-simplearray");
+ storage.SetNodeAttribute("Size",sntoa(Size));
+
+ if(Size <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size;i++)
+ {
+  stream<<int(data[i]);
+  if(i<Size-1)
+   stream<<" ";
+ }
+
+ storage.SetNodeText(stream.str());
+ return storage;
+}
+
+template<int Size>
+USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size])
+{
+ if(storage.GetNodeAttribute("Type") == "C-array")
+ {
+  unsigned int size=0;
+  size=storage.GetNumNodes();
+
+  int size=storage.GetNumNodes();
+
+  if(size>Size)
+   size=Size;
+
+  if(size == 0)
+   return storage;
+
+  for(size_t i=0;i<size;i++)
+  {
+   if(!storage.SelectNode("elem",i))
+	return storage;
+   bool element;
+   operator >>(storage,element);
+   data[i]=element;
+   storage.SelectUp();
+  }
+ }
+ else
+ {
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+
+  if(size>Size)
+   size=Size;
+
+  if(size>0)
+  {
+   std::string rvalue=storage.GetNodeText();
+   std::stringstream stream(storage.GetNodeText().c_str());
+
+   for(unsigned i=0;i<size;i++)
+   {
+	int temp;
+	stream>>temp;
+	data[i]=temp;
+   }
+  }
+ }
+
+ return storage;
+}
+
+template<int Size>
+USerStorageXML& operator << (USerStorageXML& storage, double const (&data)[Size])
+{
+ storage.SetNodeAttribute("Type","C-simplearray");
+ storage.SetNodeAttribute("Size",sntoa(Size));
+
+ if(Size <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size;i++)
+ {
+  stream<<data[i];
+  if(i<Size-1)
+   stream<<" ";
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<int Size>
+USerStorageXML& operator >> (USerStorageXML& storage, double (&data)[Size])
+{
+ if(storage.GetNodeAttribute("Type") == "C-array")
+ {
+  unsigned int size=0;
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+
+  if(size>Size)
+   size=Size;
+
+  if(size == 0)
+   return storage;
+
+  for(size_t i=0;i<size;i++)
+  {
+   if(!storage.SelectNode("elem",i))
+	return storage;
+   double element;
+   operator >>(storage,element);
+   data[i]=element;
+   storage.SelectUp();
+  }
+ }
+ else
+ {
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  if(size>Size)
+   size=Size;
+
+  if(size>0)
+  {
+   std::string rvalue=storage.GetNodeText();
+   std::stringstream stream(storage.GetNodeText().c_str());
+
+   for(unsigned i=0;i<size;i++)
+	stream>>data[i];
+  }
+ }
+ return storage;
+}
+
+template<int Size>
+USerStorageXML& operator << (USerStorageXML& storage, int const (&data)[Size])
+{
+ storage.SetNodeAttribute("Type","simplevector");
+ storage.SetNodeAttribute("Size",sntoa(Size));
+
+ if(Size <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size;i++)
+ {
+  stream<<data[i];
+  if(i<size-1)
+   stream<<" ";
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<int Size>
+USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size])
+{
+ if(storage.GetNodeAttribute("Type") == "C-array")
+ {
+  unsigned int size=0;
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+
+  if(size>Size)
+   size=Size;
+
+  if(size == 0)
+   return storage;
+
+  for(size_t i=0;i<size;i++)
+  {
+   if(!storage.SelectNode("elem",i))
+	return storage;
+   int element;
+   operator >>(storage,element);
+   data[i]=element;
+   storage.SelectUp();
+  }
+ }
+ else
+ {
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  if(size>Size)
+   size=Size;
+
+  if(size>0)
+  {
+   std::string rvalue=storage.GetNodeText();
+   std::stringstream stream(storage.GetNodeText().c_str());
+
+   for(unsigned i=0;i<size;i++)
+	stream>>data[i];
+  }
+ }
+ return storage;
+}
+
+template<int Size,typename T>
+USerStorageXML& operator << (USerStorageXML& storage, T const (&data)[Size])
+{
+ storage.SetNodeAttribute("Type","C-array");
+
+ if(Size< 0)
+  return storage;
+
+ storage.SetNodeAttribute("Size",sntoa(Size));
+
+ for(size_t i=0;i<Size;i++)
+ {
+  storage.AddNode("elem");
+  storage<<data[i];
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+template<int Size, typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, T (&data)[Size])
+{
+ if(storage.GetNodeAttribute("Type") != "C-array")
+  return storage;
+
+ int size=storage.GetNumNodes();
+
+ if(size>Size)
+  size=Size;
+
+ if(size <= 0)
+  return storage;
+
+ T* pdata=&data[0];
+
+ for(size_t i=0;i<size;i++)
+ {
+  if(!storage.SelectNode("elem",i))
+   return storage;
+  operator >>(storage,*(pdata+i));
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+// C-массивы 2D
+template<int Size1, int Size2>
+USerStorageXML& operator << (USerStorageXML& storage, const bool data[Size1][Size2])
+{
+ storage.SetNodeAttribute("Type","C-simplearray");
+ storage.SetNodeAttribute("Size1",sntoa(Size1));
+ storage.SetNodeAttribute("Size2",sntoa(Size2));
+
+ if(Size1 <= 0 || Size2 <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size1;i++)
+ {
+  for(unsigned j=0;j<Size2;j++)
+  {
+   stream<<int(data[i][j]);
+   if(j<Size2-1)
+	stream<<" ";
+  }
+  if(i<Size1-1)
+   stream<<endl;
+ }
+
+ storage.SetNodeText(stream.str());
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator >> (USerStorageXML& storage, bool data[Size1][Size2])
+{
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+
+ if(size1>Size1)
+  size1=Size1;
+
+ if(size2>Size2)
+  size2=Size2;
+
+ if(size1>0 && size2>0)
+ {
+  std::string rvalue=storage.GetNodeText();
+  std::stringstream stream(storage.GetNodeText().c_str());
+
+  for(int i=0;i<size1;i++)
+  {
+   for(int j=0;j<size2;j++)
+   {
+	int temp;
+	stream>>temp;
+    data[i]=temp;
+   }
+  }
+ }
+
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator << (USerStorageXML& storage, double const (&data)[Size1][Size2])
+{
+ storage.SetNodeAttribute("Type","C-simplearray");
+ storage.SetNodeAttribute("Size1",sntoa(Size1));
+ storage.SetNodeAttribute("Size2",sntoa(Size2));
+
+ if(Size1 <= 0 || Size2 <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size1;i++)
+ {
+  for(unsigned j=0;j<Size2;j++)
+  {
+   stream<<int(data[i][j]);
+   if(j<Size2-1)
+	stream<<" ";
+  }
+  if(i<Size1-1)
+   stream<<endl;
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator >> (USerStorageXML& storage, double data[Size1][Size2])
+{
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+
+ if(size1>Size1)
+  size1=Size1;
+
+ if(size2>Size2)
+  size2=Size2;
+
+ if(size1>0 && size2>0)
+ {
+  std::string rvalue=storage.GetNodeText();
+  std::stringstream stream(storage.GetNodeText().c_str());
+
+  for(int i=0;i<size1;i++)
+  {
+   for(int j=0;j<size2;j++)
+   {
+	double temp;
+	stream>>temp;
+    data[i]=temp;
+   }
+  }
+ }
+
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator << (USerStorageXML& storage, const int data[Size1][Size2])
+{
+ storage.SetNodeAttribute("Type","simplevector");
+ storage.SetNodeAttribute("Size1",sntoa(Size1));
+ storage.SetNodeAttribute("Size2",sntoa(Size2));
+
+ if(Size1 <= 0 || Size2 <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size1;i++)
+ {
+  for(unsigned j=0;j<Size2;j++)
+  {
+   stream<<int(data[i][j]);
+   if(j<Size2-1)
+	stream<<" ";
+  }
+  if(i<Size1-1)
+   stream<<endl;
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator >> (USerStorageXML& storage, int data[Size1][Size2])
+{
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+
+ if(size1>Size1)
+  size1=Size1;
+
+ if(size2>Size2)
+  size2=Size2;
+
+ if(size1>0 && size2>0)
+ {
+  std::string rvalue=storage.GetNodeText();
+  std::stringstream stream(storage.GetNodeText().c_str());
+
+  for(int i=0;i<size1;i++)
+  {
+   for(int j=0;j<size2;j++)
+   {
+	int temp;
+	stream>>temp;
+    data[i]=temp;
+   }
+  }
+ }
+
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator << (USerStorageXML& storage, const uint32_t data[Size1][Size2])
+{
+ storage.SetNodeAttribute("Type","simplevector");
+ storage.SetNodeAttribute("Size1",sntoa(Size1));
+ storage.SetNodeAttribute("Size2",sntoa(Size2));
+
+ if(Size1 <= 0 || Size2 <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Size1;i++)
+ {
+  for(unsigned j=0;j<Size2;j++)
+  {
+   stream<<uint32_t(data[i][j]);
+   if(j<Size2-1)
+	stream<<" ";
+  }
+  if(i<Size1-1)
+   stream<<endl;
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<int Size1, int Size2>
+USerStorageXML& operator >> (USerStorageXML& storage, uint32_t data[Size1][Size2])
+{
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+
+ if(size1>Size1)
+  size1=Size1;
+
+ if(size2>Size2)
+  size2=Size2;
+
+ if(size1>0 && size2>0)
+ {
+  std::string rvalue=storage.GetNodeText();
+  std::stringstream stream(storage.GetNodeText().c_str());
+
+  for(int i=0;i<size1;i++)
+  {
+   for(int j=0;j<size2;j++)
+   {
+	uint32_t temp;
+	stream>>temp;
+    data[i]=temp;
+   }
+  }
+ }
+
+ return storage;
+}
+
+template<int Size1, int Size2, typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const T data[Size1][Size2])
+{
+ storage.SetNodeAttribute("Type","C-array");
+
+ storage.SetNodeAttribute("Size1",sntoa(Size1));
+ storage.SetNodeAttribute("Size2",sntoa(Size2));
+
+ if(Size1 <= 0 || Size2 <= 0)
+  return storage;
+
+ for(unsigned i=0;i<Size1;i++)
+ {
+  storage.AddNode("elem");
+  for(unsigned j=0;j<Size2;j++)
+  {
+   storage.AddNode("elem");
+   storage<<data[i][j];
+   storage.SelectUp();
+  }
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+template<int Size1, int Size2, typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, T data[Size1][Size2])
+{
+ if(storage.GetNodeAttribute("Type") != "C-array")
+  return storage;
+
+ int size1=storage.GetNumNodes();
+
+ if(size1>Size1)
+  size1=Size1;
+
+ if(size1 <= 0)
+  return storage;
+
+ for(int i=0;i<size1;i++)
+ {
+  if(!storage.SelectNode("elem",i))
+   return storage;
+  int size2=storage.GetNumNodes();
+  if(size2>Size2)
+   size2=Size2;
+  for(int j=0;j<size2;j++)
+  {
+   if(!storage.SelectNode("elem",j))
+	break;
+   operator >>(storage,data[i][j]);
+   storage.SelectUp();
+  }
+
   storage.SelectUp();
  }
 
