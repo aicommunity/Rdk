@@ -1,24 +1,27 @@
 #include "UImageLoader.h"
 
+#include <QMutexLocker>
+
 UImageLoader::UImageLoader(QObject *parent, int channel, bool showLegend, bool indChannels, int imagesSizeMod) :
   QObject(parent),
   calcChannel(channel),
   sizeMode(imagesSizeMod),
   showLegend(showLegend),
   indChannels(indChannels),
+  mutex(QMutex::Recursive),
   connected(false)
 {
-    mutex = UCreateMutex();
+
 }
 
 UImageLoader::~UImageLoader()
 {
-    UDestroyMutex(mutex);
+
 }
 
 void UImageLoader::loadImage(QSize value)
 {
-    UGenericMutexExclusiveLocker locker(mutex);
+    QMutexLocker locker(&mutex);
     if (!connected)
         return;
     int channel = indChannels?calcChannel:Core_GetSelectedChannelIndex();
@@ -43,7 +46,7 @@ void UImageLoader::loadImage(QSize value)
 
 void UImageLoader::resizeImage(QSize value)
 {
-    UGenericMutexExclusiveLocker locker(mutex);
+    QMutexLocker locker(&mutex);
     if(!connected || srcImage.isNull())
     {
         emit imageLoaded(NULL);
@@ -178,9 +181,9 @@ QImage UImageLoader::fromUBitmap(RDK::UBitmap *tempBmp)
     return QImage();
 }
 
-UGenericMutex *UImageLoader::getMutex() const
+QMutex *UImageLoader::getMutex()
 {
-    return mutex;
+    return &mutex;
 }
 
 bool UImageLoader::getConnected() const

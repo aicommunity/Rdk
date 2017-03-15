@@ -3,8 +3,8 @@
 
 #include <QWidget>
 #include <QPainter>
-
-#include "rdk_application.h"
+#include <QMutex>
+#include <QMutexLocker>
 
 class USingleImagePainter : public QWidget
 {
@@ -17,8 +17,8 @@ public:
     }
 
 private:
-    QImage* dispImage;
-    UGenericMutex *loaderMutex;
+    QImage *dispImage;
+    QMutex *loaderMutex;
 
 protected:
     void paintEvent(QPaintEvent*)
@@ -26,7 +26,7 @@ protected:
         if(!dispImage || !loaderMutex) return;
         QPainter painter(this);
 
-        UGenericMutexSharedLocker locker(loaderMutex);
+        QMutexLocker locker(loaderMutex);
         painter.drawImage(dispImage->rect(), *dispImage, dispImage->rect());
     }
 
@@ -40,7 +40,7 @@ public slots:
         repaint();
     }
 
-    void setLoaderMutex(UGenericMutex *mutex)
+    void setLoaderMutex(QMutex *mutex)
     {
         loaderMutex = mutex;
     }

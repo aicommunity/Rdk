@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QWaitCondition>
 #include <QImage>
+#include <QMutex>
 
 #include <rdk_application.h>
 
@@ -36,7 +37,7 @@ public:
 
     bool getConnected() const;
 
-    UGenericMutex *getMutex() const;
+    QMutex *getMutex();
 
 signals:
     void imageLoaded(QImage *image);
@@ -50,7 +51,7 @@ private:
 
 
     //data
-    UGenericMutex *mutex;
+    QMutex mutex;
 
     QString componentName;
     QString componentPropertyName;
