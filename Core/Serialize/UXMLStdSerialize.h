@@ -996,6 +996,77 @@ USerStorageXML& operator >> (USerStorageXML& storage, UTree<T> &data)
  return storage;
 }
 
+
+template<int Size, typename T>
+bool USerStorageXML::ReadData(const std::string &name, T (&data)[Size])
+{
+ if(!SelectNode(name))
+  return false;
+ operator >> <Size,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size, typename T>
+bool USerStorageXML::WriteData(const std::string &name, T const (&data)[Size])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ operator << <Size,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size, typename T>
+bool USerStorageXML::WriteDataOnce(const std::string &name, T const (&data)[Size])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ operator << <Size,T>(*this,data);
+
+ SelectUp();
+ return true;
+}
+
+template<int Size1, int Size2, typename T>
+bool USerStorageXML::ReadData(const std::string &name, T (&data)[Size1][Size2])
+{
+ if(!SelectNode(name))
+  return false;
+ operator >> <Size1,Size2,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size1, int Size2, typename T>
+bool USerStorageXML::WriteData(const std::string &name, T const (&data)[Size1][Size2])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ operator << <Size1,Size2,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size1, int Size2, typename T>
+bool USerStorageXML::WriteDataOnce(const std::string &name, T const (&data)[Size1][Size2])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ operator << <Size1,Size2,T>(*this,data);
+
+ SelectUp();
+ return true;
+}
+
 }
 #endif
 
