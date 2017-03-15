@@ -169,6 +169,25 @@ bool WriteData(const std::string &name, const T &data);
 template<typename T>
 bool WriteDataOnce(const std::string &name, const T &data);
 
+template<int Size,typename T>
+bool ReadData(const std::string &name, T (&data)[Size]);
+
+template<int Size,typename T>
+bool WriteData(const std::string &name, T const (&data)[Size]);
+
+template<int Size,typename T>
+bool WriteDataOnce(const std::string &name, T const (&data)[Size]);
+
+template<int Size1, int Size2, typename T>
+bool ReadData(const std::string &name, T (&data)[Size1][Size2]);
+
+template<int Size1, int Size2, typename T>
+bool WriteData(const std::string &name, T const (&data)[Size1][Size2]);
+
+template<int Size1, int Size2, typename T>
+bool WriteDataOnce(const std::string &name, T const (&data)[Size1][Size2]);
+
+
 // Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
 // ожидаемый тип - оно инициализируется значением по умолчанию
 const std::string ReadString(const std::string &name, const std::string &default_value);
@@ -248,6 +267,77 @@ bool USerStorageXML::WriteDataOnce(const std::string &name, const T &data)
 
  operator << (*this,data);
  //(*this)<<data;
+ SelectUp();
+ return true;
+}
+
+
+template<int Size, typename T>
+bool USerStorageXML::ReadData(const std::string &name, T (&data)[Size])
+{
+ if(!SelectNode(name))
+  return false;
+ RDK::operator >> <Size,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size, typename T>
+bool USerStorageXML::WriteData(const std::string &name, T const (&data)[Size])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ RDK::operator << <Size,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size, typename T>
+bool USerStorageXML::WriteDataOnce(const std::string &name, T const (&data)[Size])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ RDK::operator << <Size,T>(*this,data);
+
+ SelectUp();
+ return true;
+}
+
+template<int Size1, int Size2, typename T>
+bool USerStorageXML::ReadData(const std::string &name, T (&data)[Size1][Size2])
+{
+ if(!SelectNode(name))
+  return false;
+ RDK::operator >> <Size1,Size2,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size1, int Size2, typename T>
+bool USerStorageXML::WriteData(const std::string &name, T const (&data)[Size1][Size2])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ RDK::operator << <Size1,Size2,T>(*this,data);
+ SelectUp();
+ return true;
+}
+
+template<int Size1, int Size2, typename T>
+bool USerStorageXML::WriteDataOnce(const std::string &name, T const (&data)[Size1][Size2])
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
+
+ RDK::operator << <Size1,Size2,T>(*this,data);
+
  SelectUp();
  return true;
 }

@@ -236,7 +236,27 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
 
  return stream;
 }
+/*
+// C-массивы
+template<typename CharT, typename T, int Size>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const T data[Size])
+{
+ if(Size<=0)
+  return stream;
 
+ for(int i=0;i<Size;i++)
+  stream<<data[i]<<" ";
+
+ return stream;
+}
+
+template<typename CharT, typename T, int Size>
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, T data[Size])
+{
+
+ return stream;
+}
+   */
 }
 #endif
 
