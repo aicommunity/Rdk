@@ -81,7 +81,7 @@ namespace jpge
     
 	const params &get_params() const { return m_params; }
 
-	bool set_order(bool value) { Order=value; };
+	void set_order(bool value) { Order=value; };
     
     // Deinitializes the compressor, freeing any allocated memory. May be called at any time.
     void deinit();
