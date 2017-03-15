@@ -1,23 +1,29 @@
 #ifndef USINGLEIMAGEWIDGET_H
 #define USINGLEIMAGEWIDGET_H
 
+#include "UVisualControllerWidget.h"
+
 #include <QWidget>
 #include <QResizeEvent>
 #include <QMouseEvent>
+#include <QThread>
 
 #include "USingleImagePainter.h"
+#include "UImageLoader.h"
 
 namespace Ui {
 class USingleImageWidget;
 }
 
-class USingleImageWidget : public QWidget
+class USingleImageWidget : public UVisualControllerWidget
 {
     Q_OBJECT
 
 public:
     explicit USingleImageWidget(QWidget *parent = 0, int row = 0, int column = 0, int channel = 0,  bool showLegend = true, bool indChannels = false, int imagesSizeMod = 0);
     virtual ~USingleImageWidget();
+
+    virtual void AUpdateInterface();
 
     int getColumn() const;
     void setColumn(int value);
@@ -26,7 +32,7 @@ public:
     void setRow(int value);
 
     QImage getImage() const;
-    void setImage(const QImage &value);
+    //void setImage(const QImage &value);
 
     bool getShowLegend() const;
     int getSizeMode() const;
@@ -56,8 +62,13 @@ public slots:
     void setShowLegend(bool value);
 
 signals:
+    // signals to UImagesWidget
     void selectionSignal(USingleImageWidget *item);
     void fullScreenSignal(USingleImageWidget *item);
+
+    // signals to UImageLoader
+    void loadImage(QSize value);
+    void resizeImage(QSize value);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
@@ -67,10 +78,7 @@ private:
 
     int column;
     int row;
-    int calcChannel;
-    QImage srcImage;
-    QImage transformedImage;
-    USingleImagePainter *painter;
+    /*int calcChannel;
     QString componentName;
     QString componentPropertyName;
     bool showLegend;
@@ -82,8 +90,23 @@ private:
     /// 1 - раст€нуть, сохран€€ пропорции
     /// 2 - раст€нуть на всю область
     int sizeMode;
-    bool selected;
+
+
     bool connected;
+
+    QImage srcImage;
+    QImage transformedImage;
+    */
+
+    bool selected;
+
+    //buffers
+    RDK::UBitmap tempBmp;
+    RDK::UBitmapParam bmp_param;
+
+    QThread *thread;
+    UImageLoader *imageLoader;
+    USingleImagePainter *painter;
 };
 
 #endif // USINGLEIMAGEWIDGET_H

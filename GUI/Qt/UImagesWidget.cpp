@@ -17,7 +17,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
     imagesSizeMod = 0;*/
     singleImageMode = false;
 
-    UpdateInterval = 30;
+    UpdateInterval = 0;
 
     ui->setupUi(this);
 
@@ -76,7 +76,7 @@ UImagesWidget::~UImagesWidget()
 
 void UImagesWidget::AUpdateInterface()
 {
-    for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
+    /*for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
     {
 
         int calcChannel = indChannels?(*i)->getCalcChannel():Core_GetSelectedChannelIndex();
@@ -100,7 +100,7 @@ void UImagesWidget::AUpdateInterface()
             (*i)->setImage(QImage());
         }
         (*i)->reDrawWidget();
-    }
+    }*/
 }
 
 QImage UImagesWidget::fromUBitmap(RDK::UBitmap *tempBmp)

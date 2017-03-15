@@ -45,18 +45,15 @@ public slots:
     void showFullScreenImage(USingleImageWidget *item);
     void updateImages();
 
-protected:
-    //buffers
-    RDK::UBitmap tempBmp;
-    RDK::UBitmapParam bmp_param;
-    QImage imageBuffer;
-
-
 private:
     Ui::UImagesWidget *ui;
 
     QString settingsFileName;
     QString settingsGroupName;
+
+    //buffers
+    RDK::UBitmap tempBmp;
+    RDK::UBitmapParam bmp_param;
 
     /// добавление элемента
     USingleImageWidget *addSingleItem(int row, int column);
@@ -70,9 +67,17 @@ private:
     /// выбранное окошко
     USingleImageWidget *selectedImage;
 
+    ///Размер отображаемого изображения
+    ///
+    /// 0 - Полноразмерное отображение
+    /// 1 - растянуть, сохраняя пропорции
+    /// 2 - растянуть на всю область
     int imagesSizeMod;
+
     bool showLegend;
     bool indChannels;
+
+    /// Флаг режима отображения только одного окна на всё доступное место
     bool singleImageMode;
     int columnsCounter;
     int rowsCounter;

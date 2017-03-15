@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QPainter>
 
+#include "rdk_application.h"
+
 class USingleImagePainter : public QWidget
 {
     Q_OBJECT
@@ -11,8 +13,26 @@ public:
     explicit USingleImagePainter(QWidget *parent = 0):QWidget(parent)
     {
         dispImage = NULL;
-        sizeMode = 0;
+        loaderMutex = NULL;
     }
+
+private:
+    QImage* dispImage;
+    UGenericMutex *loaderMutex;
+
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        if(!dispImage || !loaderMutex) return;
+        QPainter painter(this);
+
+        UGenericMutexSharedLocker locker(loaderMutex);
+        painter.drawImage(dispImage->rect(), *dispImage, dispImage->rect());
+    }
+
+signals:
+
+public slots:
 
     void setImage(QImage* image)
     {
@@ -20,38 +40,10 @@ public:
         repaint();
     }
 
-    int getSizeMode() const {return sizeMode;}
-    void setSizeMode(int value) {sizeMode = value;}
-
-private:
-    QImage* dispImage;
-    int sizeMode;
-
-protected:
-    void paintEvent(QPaintEvent*)
+    void setLoaderMutex(UGenericMutex *mutex)
     {
-        if(!dispImage) return;
-        QPainter painter(this);
-        /*switch (sizeMode)
-        {
-        case 0:*/
-            //resize(dispImage->size());
-            painter.drawImage(dispImage->rect(), *dispImage, dispImage->rect());
-            /*break;
-
-        case 1:
-            painter.drawImage(rect(), *dispImage, dispImage->rect());
-            break;
-
-        case 2:
-            painter.drawImage(rect(), *dispImage, dispImage->rect());
-            break;
-        }*/
+        loaderMutex = mutex;
     }
-
-signals:
-
-public slots:
 };
 
 #endif // USINGLEIMAGEPAINTER_H
