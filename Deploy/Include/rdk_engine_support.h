@@ -59,6 +59,9 @@ std::string LogDir;
 /// Флаг режима отладки
 bool DebugMode;
 
+/// Флаг включения вывода лога в отладчик
+bool DebuggerMessageFlag;
+
 int BufObjectsMode;
 
 
@@ -109,8 +112,12 @@ const char* GetLogDir(void);
 int SetLogDir(const char *dir);
 
 /// Флаг режима отладки
-bool GetDebugMode(void);
+bool GetDebugMode(void) const;
 int SetDebugMode(bool value);
+
+/// Флаг включения вывода лога в отладчик
+bool GetDebuggerMessageFlag(void) const;
+int SetDebuggerMessageFlag(bool value);
 
 int GetBufObjectsMode(void);
 int SetBufObjectsMode(int value);

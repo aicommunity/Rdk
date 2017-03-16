@@ -169,17 +169,21 @@ bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
 }
 
 /// Устанавливает флаг включения вывода лога в отладчик
-bool RDK_CALL Log_SetDebuggerMessageFlag(bool value)
+int RDK_CALL Log_SetDebuggerMessageFlag(bool value)
 {
- return RdkCoreManager.GetLogger()->SetDebuggerMessageFlag(value);
+ if(!RdkCoreManager.GetLogger()->SetDebuggerMessageFlag(value))
+  return RDK_E_LOGGER_SET_DEBUGGER_FLAG_FAIL;
+ return RDK_SUCCESS;
 }
 
-bool RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
+int RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
 {
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return RdkCoreManager.GetLogger(channel_index)->SetDebuggerMessageFlag(value);
+ if(!RdkCoreManager.GetLogger(channel_index)->SetDebuggerMessageFlag(value))
+  return RDK_E_LOGGER_SET_DEBUGGER_FLAG_FAIL;
+ return RDK_SUCCESS;
 }
 
 // Управление функцией-обработчиком исключений
@@ -206,7 +210,10 @@ int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ if(!RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value)))
+  return RDK_E_LOGGER_SET_EXCEPTION_HANDLER_FAIL;
+
+ return RDK_SUCCESS;
 }
 
 // Возвращает массив строк лога
@@ -383,6 +390,18 @@ bool RDK_CALL Core_GetDebugMode(void)
 int RDK_CALL Core_SetDebugMode(bool value)
 {
  return RdkCoreManager.SetDebugMode(value);
+}
+
+/// Возвращает флаг включения вывода лога в отладчик
+bool RDK_CALL Core_GetDebuggerMessageFlag(void)
+{
+ return RdkCoreManager.GetDebuggerMessageFlag();
+}
+
+/// Устанавливает флаг включения вывода лога в отладчик
+int RDK_CALL Core_SetDebuggerMessageFlag(bool value)
+{
+ return RdkCoreManager.SetDebuggerMessageFlag(value);
 }
 
 // Очищает глобальные шрифты

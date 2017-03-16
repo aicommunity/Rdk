@@ -14,6 +14,7 @@
 #define RDK_EX_APP 5 // Application-defined event (high-level errors, etc)
 #define RDK_EX_DEBUG 6 // Debug messages (can be switched off)
 
+#define RDK_SYS_DEBUG_NONE 0
 #define RDK_SYS_DEBUG_CALC 1
 #define RDK_SYS_DEBUG_RESET 2
 #define RDK_SYS_DEBUG_PROPERTIES 4

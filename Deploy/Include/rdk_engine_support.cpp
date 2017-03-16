@@ -24,12 +24,18 @@ URdkCoreManager::URdkCoreManager(void)
  Environment=0;
  Storage=0;
  BufObjectsMode=0;
+
+ DebuggerMessageFlag=true;
+ DebugMode=false;
+ BufObjectsMode=0;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
  GlobalLogger.SetDebugMode(true);
+ GlobalLogger.SetDebuggerMessageFlag(false);
  GlobalLogger.SetEventsLogMode(true);
  SystemLogger.RegisterGlobalLogger(&GlobalLogger);
  SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
  SystemLogger.SetDebugMode(true);
+ SystemLogger.SetDebuggerMessageFlag(false);
 }
 
 URdkCoreManager::~URdkCoreManager(void)
@@ -157,7 +163,7 @@ int URdkCoreManager::SetLogDir(const char *dir)
 }
 
 /// Флаг режима отладки
-bool URdkCoreManager::GetDebugMode(void)
+bool URdkCoreManager::GetDebugMode(void) const
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return DebugMode;
@@ -175,6 +181,27 @@ int URdkCoreManager::SetDebugMode(bool value)
    LoggerList[i]->SetDebugMode(DebugMode);
  }
  SystemLogger.SetDebugMode(DebugMode);
+ return RDK_SUCCESS;
+}
+
+bool URdkCoreManager::GetDebuggerMessageFlag(void) const
+{
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
+ return DebuggerMessageFlag;
+}
+
+int URdkCoreManager::SetDebuggerMessageFlag(bool value)
+{
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
+ if(DebuggerMessageFlag == value)
+  return RDK_SUCCESS;
+ DebuggerMessageFlag=value;
+ for(size_t i=0;i<LoggerList.size();i++)
+ {
+  if(LoggerList[i])
+   LoggerList[i]->SetDebuggerMessageFlag(DebuggerMessageFlag);
+ }
+ SystemLogger.SetDebuggerMessageFlag(DebuggerMessageFlag);
  return RDK_SUCCESS;
 }
 
@@ -601,6 +628,7 @@ int URdkCoreManager::ChannelCreate(int index)
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
    LoggerList[index]->SetLogDir(LogDir);
    LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
+   LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());
 
    EngineList[index]=FuncCreateNewEngine();
    if(!EngineList[index])
