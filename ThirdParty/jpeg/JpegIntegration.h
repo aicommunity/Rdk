@@ -13,6 +13,10 @@ namespace RDK {
 /// order определ€ет пор€док следовани€ цветовых каналов: RGB - true, BGR - false
 RDK_LIB_TYPE int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf, bool order);
 
+/// ѕреобразовывает jpeg в UBitmap
+/// order определ€ет пор€док следовани€ цветовых каналов: RGB - true, BGR - false
+RDK_LIB_TYPE int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool order);
+
 }
 
 #endif

@@ -39,6 +39,25 @@ int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std:
  return 0;
 }
 
+/// Преобразовывает jpeg в UBitmap
+/// order определяет порядок следования цветовых каналов: RGB - true, BGR - false
+int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool order)
+{
+ if(jpeg_buf.empty())
+  return 1;
+
+ int actual_comps(0);
+ int width(0), height(0);
+ unsigned char * buf=jpgd::decompress_jpeg_image_from_memory(&jpeg_buf[0], int(jpeg_buf.size()), &width, &height, &actual_comps, 3);
+ if(!buf)
+  return 2;
+
+ bmp.AttachBuffer(width,height,buf,ubmRGB24);
+ return 0;
+}
+
+
+
 }
 
 
