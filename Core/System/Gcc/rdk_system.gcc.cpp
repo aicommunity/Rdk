@@ -15,6 +15,7 @@
 #include "../rdk_system.h"
 //#include "USharedMemoryLoader.gcc.cpp"
 //#include "UGenericMutex.gcc.cpp"
+#include "UDllLoader.gcc.cpp"
 
 #define RDK_ENABLE_DEBUG_OUTPUT
 
@@ -206,6 +207,21 @@ void RdkDebuggerMessage(const std::string &message)
 #ifndef NDEBUG
  std::cout<<message<<std::endl;
 #endif
+}
+
+/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+{
+    UDllLoader *loader = new UDllLoaderGcc(dll_name);
+    loader->Load();
+    return loader;
+}
+
+/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
+{
+    if(handle)
+        delete handle;
 }
 
 }
