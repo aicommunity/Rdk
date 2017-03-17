@@ -277,7 +277,7 @@ void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
     //GraphCanvas.ReflectionX(&ShowCanvas);
     QImage pict((const uchar *) GraphCanvas.GetData(), GraphCanvas.GetWidth(),
                   GraphCanvas.GetHeight(), GraphCanvas.GetLineByteLength(), QImage::Format_RGB888);
-    setPixmap(QPixmap::fromImage(pict));
+    setPixmap(QPixmap::fromImage(pict.rgbSwapped()));
 }
 
 void UDrawEngineImageWidget::setComponentName(QString name)

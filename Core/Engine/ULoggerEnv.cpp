@@ -27,7 +27,7 @@ ULoggerEnv::ULoggerEnv(void)
 
  EventsLogMode=false;
 
- DebugSysEventsMask=RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
+ DebugSysEventsMask=RDK_SYS_DEBUG_NONE;//RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
 
  DebuggerMessageFlag=false;
  SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
@@ -499,6 +499,8 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
  case RDK_EX_FATAL:
  {
   EStringFatal exception(line,error_event_number);
+  exception.SetObjectName(object_name);
+  ProcessException(exception);
  }
  break;
 

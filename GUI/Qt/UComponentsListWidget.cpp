@@ -9,6 +9,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QScrollBar>
 
 UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
     UVisualControllerWidget(parent),
@@ -172,6 +173,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
     connect(ui->actionSetGlobalOwnerOutputs, SIGNAL(triggered()), this, SLOT(setGlobalOwnerOutputsClicked()));
     connect(ui->actionDefaultAllOutputs, SIGNAL(triggered()), this, SLOT(defaultAllParametersClicked()));
     connect(ui->actionShowOutputsXML, SIGNAL(triggered()), this, SLOT(showOutputsXMLClicked()));
+
 }
 
 UComponentsListWidget::~UComponentsListWidget()
@@ -383,10 +385,17 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         ui->labelComponentClassName->setText(className);
     Engine_FreeBufString(className);
 
+    //ui->treeWidgetParameters->scr
     ui->treeWidgetParameters->clear();
     ui->treeWidgetState->clear();
     ui->treeWidgetInputs->clear();
     ui->treeWidgetOutputs->clear();
+
+    int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value(),
+        stateScrollPosition = ui->treeWidgetState->verticalScrollBar()->value(),
+        inputsScrollPosition = ui->treeWidgetInputs->verticalScrollBar()->value(),
+        outputsScrollPosition = ui->treeWidgetOutputs->verticalScrollBar()->value();
+
     try
     {
         RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
@@ -450,6 +459,15 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                     ui->treeWidgetOutputs->setCurrentItem(outputItem);
             }
         }
+
+        ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
+        ui->treeWidgetParameters->verticalScrollBar()->setValue(paramScrollPosition);
+        ui->treeWidgetState->verticalScrollBar()->setMaximum(stateScrollPosition);
+        ui->treeWidgetState->verticalScrollBar()->setValue(stateScrollPosition);
+        ui->treeWidgetInputs->verticalScrollBar()->setMaximum(inputsScrollPosition);
+        ui->treeWidgetInputs->verticalScrollBar()->setValue(inputsScrollPosition);
+        ui->treeWidgetOutputs->verticalScrollBar()->setMaximum(outputsScrollPosition);
+        ui->treeWidgetOutputs->verticalScrollBar()->setValue(outputsScrollPosition);
     }
     catch (RDK::UException &exception)
     {
@@ -572,7 +590,7 @@ void UComponentsListWidget::setParametersClicked()
                     item->data(0, Qt::DisplayRole).toString().toLocal8Bit(),
                     ui->plainTextEditParameters->toPlainText().toLocal8Bit());
         reloadPropertys();
-        ui->plainTextEditParameters->clear();
+        //ui->plainTextEditParameters->clear();
     }
 }
 
@@ -587,7 +605,7 @@ void UComponentsListWidget::setGlobalParametersClicked()
                     item->data(0, Qt::DisplayRole).toString().toLocal8Bit(),
                     ui->plainTextEditParameters->toPlainText().toLocal8Bit());
         reloadPropertys();
-        ui->plainTextEditParameters->clear();
+        //ui->plainTextEditParameters->clear();
     }
 }
 
@@ -603,7 +621,7 @@ void UComponentsListWidget::setGlobalOwnerParametersClicked()
                     item->data(0, Qt::DisplayRole).toString().toLocal8Bit(),
                     ui->plainTextEditParameters->toPlainText().toLocal8Bit());
         reloadPropertys();
-        ui->plainTextEditParameters->clear();
+        //ui->plainTextEditParameters->clear();
     }
 }
 
