@@ -2,7 +2,7 @@
 #include "ui_USingleImageWidget.h"
 
 #include <QImage>
-//#include <QFile>
+#include <QMutex>
 
 USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int channel, bool showLegend, bool indChannels, int imagesSizeMod) :
     UVisualControllerWidget(parent),
@@ -40,6 +40,8 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
 USingleImageWidget::~USingleImageWidget()
 {
     thread->quit();
+    thread->wait(3000);
+
     delete imageLoader;
     delete ui;
 }

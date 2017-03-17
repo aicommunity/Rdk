@@ -41,7 +41,7 @@ UDllLoaderGcc::UDllLoaderGcc(std::string dll_name)
 
 UDllLoaderGcc::~UDllLoaderGcc()
 {
-
+    dlclose(handle);
 }
 
 bool UDllLoaderGcc::Load(void)
