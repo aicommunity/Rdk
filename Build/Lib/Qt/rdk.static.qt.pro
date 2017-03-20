@@ -86,6 +86,7 @@ SOURCES += \
     ../../../Core/Serialize/UXMLStdSerialize.cpp \
     ../../../Core/System/UGenericMutex.cpp \
     ../../../Core/System/Qt/rdk_system.qt.cpp \
+    ../../../Core/System/Qt/UDllLoader.qt.cpp \
     ../../../Core/System/Qt/UGenericMutex.qt.cpp \
     ../../../Core/System/Qt/USharedMemoryLoader.qt.cpp \
     ../../../Core/Utilities/UException.cpp \
@@ -211,6 +212,7 @@ HEADERS +=\
     ../../../Core/System/rdk_system.h \
     ../../../Core/System/UGenericMutex.h \
     ../../../Core/System/USharedMemoryLoader.h \
+    ../../../Core/System/UDllLoader.h \
     ../../../Core/Utilities/UException.h \
     ../../../Core/Utilities/UIniFile.h \
     ../../../Core/Utilities/UPtr.h \

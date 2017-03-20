@@ -141,9 +141,10 @@ RDK_LIB_TYPE bool RDK_CALL Log_GetDebuggerMessageFlag(void);
 RDK_LIB_TYPE bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index);
 
 /// Устанавливает флаг включения вывода лога в отладчик
-RDK_LIB_TYPE bool RDK_CALL Log_SetDebuggerMessageFlag(bool value);
-RDK_LIB_TYPE bool RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value);
-// !
+RDK_LIB_TYPE int RDK_CALL Log_SetDebuggerMessageFlag(bool value);
+RDK_LIB_TYPE int RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value);
+
+// !
 
 RDK_LIB_TYPE void* RDK_CALL Log_GetExceptionHandler(void);
 RDK_LIB_TYPE void* RDK_CALL MLog_GetExceptionHandler(int channel_index);
@@ -204,6 +205,12 @@ RDK_LIB_TYPE bool RDK_CALL Core_GetDebugMode(void);
 
 // Устанавливает глобальную настройку включения отладочного режима
 RDK_LIB_TYPE int RDK_CALL Core_SetDebugMode(bool value);
+
+/// Возвращает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE bool RDK_CALL Core_GetDebuggerMessageFlag(void);
+
+/// Устанавливает флаг включения вывода лога в отладчик
+RDK_LIB_TYPE int RDK_CALL Core_SetDebuggerMessageFlag(bool value);
 
 // Очищает глобальные шрифты
 RDK_LIB_TYPE int RDK_CALL Core_ClearFonts(void);

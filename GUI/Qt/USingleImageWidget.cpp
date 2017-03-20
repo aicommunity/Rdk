@@ -2,131 +2,187 @@
 #include "ui_USingleImageWidget.h"
 
 #include <QImage>
-//#include <QFile>
+#include <QMutex>
 
 USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int channel, bool showLegend, bool indChannels, int imagesSizeMod) :
-    QWidget(parent),
+    UVisualControllerWidget(parent),
     column(column),
     row(row),
-    calcChannel(channel),
+    /*calcChannel(channel),
     sizeMode(imagesSizeMod),
     selected(false),
-    connected(false),
+    connected(false),*/
     ui(new Ui::USingleImageWidget)
 {
     ui->setupUi(this);
+    painter = new USingleImagePainter(this);
+    ui->scrollArea->setWidget(painter);
+
+    imageLoader = new UImageLoader(NULL, channel, showLegend, indChannels, imagesSizeMod);
+    painter->setLoaderMutex(imageLoader->getMutex());
+    thread = new QThread(this);
+    imageLoader->moveToThread(thread);
+    //connect(thread, SIGNAL(started()), imageLoader, SLOT(process()));
+    connect(imageLoader, SIGNAL(imageLoaded(QImage*)), painter, SLOT(setImage(QImage*)));
+    connect(this, SIGNAL(loadImage(QSize)), imageLoader, SLOT(loadImage(QSize)));
+    connect(this, SIGNAL(resizeImage(QSize)), imageLoader, SLOT(resizeImage(QSize)));
+
+    thread->start();
+
+    UpdateInterval = 30;
+    setAccessibleName("USingleImageWidget"+QString::number(row)+"x"+QString::number(column));
 
     setShowLegend(showLegend);
     setShowChannels(indChannels);
-    reDrawWidget();
+    //reDrawWidget();
 }
 
 USingleImageWidget::~USingleImageWidget()
 {
+    thread->quit();
+    thread->wait(3000);
+
+    delete imageLoader;
     delete ui;
+}
+
+void USingleImageWidget::AUpdateInterface()
+{
+    /*int channel = showChannels?calcChannel:Core_GetSelectedChannelIndex();
+
+    int copy_res=MModel_CopyComponentBitmapOutputHeader(
+                    channel,
+                    componentName.toLocal8Bit(),
+                    componentPropertyName.toLocal8Bit(), &bmp_param);
+
+    if(copy_res == 0)
+    {
+        tempBmp.SetRes(bmp_param.Width, bmp_param.Height, bmp_param.ColorModel);
+        MModel_CopyComponentBitmapOutput(
+                    channel,
+                    componentName.toLocal8Bit(),
+                    componentPropertyName.toLocal8Bit(), &bmp_param);
+        (*i)->setImage(fromUBitmap(&tempBmp));
+    }
+    */
+    emit loadImage(size());
 }
 
 bool USingleImageWidget::getShowLegend() const
 {
-    return showLegend;
+    return imageLoader->getShowLegend();
 }
 
 int USingleImageWidget::getSizeMode() const
 {
-    return sizeMode;
+    return imageLoader->getSizeMode();
 }
 
 void USingleImageWidget::setShowLegend(bool value)
 {
-    showLegend = value;
-    if(showLegend)
-        ui->frame->show();
+    imageLoader->setShowLegend(value);
+    if(value)
+        ui->legend_frame->show();
     else
-        ui->frame->hide();
+        ui->legend_frame->hide();
 }
 
 void USingleImageWidget::reDrawWidget()
 {
-    if(!connected || image.isNull())
+    /*if(!connected || srcImage.isNull())
     {
-        ui->labelImage->setText("no image");
+        //ui->labelImage->setText("no image");
+        painter->setImage(NULL);
         return;
     }
+
     int legendSpace = showLegend?28:8;
     switch (sizeMode)
     {
     case 0:
-        ui->labelImage->setPixmap(image);
+        painter->setImage(&srcImage);
         break;
 
     case 1:
-        ui->labelImage->setPixmap(image.scaled(size().width()-8, size().height()-legendSpace, Qt::KeepAspectRatio));
+        transformedImage = srcImage.scaled(size().width()-8, size().height()-legendSpace, Qt::KeepAspectRatio);
+        painter->setImage(&transformedImage);
         break;
 
     case 2:
-        ui->labelImage->setPixmap(image.scaled(size().width()-8, size().height()-legendSpace, Qt::IgnoreAspectRatio));
+        transformedImage = srcImage.scaled(size().width()-8, size().height()-legendSpace, Qt::IgnoreAspectRatio);
+        painter->setImage(&transformedImage);
         break;
-    }
+    }*/
+    emit resizeImage(size());
 }
 
 void USingleImageWidget::setSize(int value)
 {
-    sizeMode = value;
+    //sizeMode = value;
+    imageLoader->setSizeMode(value);
 }
 
 void USingleImageWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    reDrawWidget();
+    emit resizeImage(size());
 }
 
 void USingleImageWidget::setShowChannels(bool value)
 {
-    showChannels = value;
-    if(showChannels)
-        ui->labelLegend->setText(QString::number(calcChannel) +" chan. "+componentName+"["+componentPropertyName+"]");
+    //showChannels = value;
+    imageLoader->setShowLegend(value);
+    if(value)
+        ui->labelLegend->setText(QString::number(imageLoader->getCalcChannel()) +" chan. "+imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
     else
-        ui->labelLegend->setText(componentName+"["+componentPropertyName+"]");
+        ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
 }
 
 int USingleImageWidget::getCalcChannel() const
 {
-    return calcChannel;
+    //return calcChannel;
+    return imageLoader->getCalcChannel();
 }
 
 void USingleImageWidget::setCalcChannel(int value)
 {
-    calcChannel = value;
+    //calcChannel = value;
+    imageLoader->setCalcChannel(value);
 }
 
 bool USingleImageWidget::getConnected() const
 {
-    return connected;
+    //return connected;
+    return imageLoader->getConnected();
 }
 
 QString USingleImageWidget::getComponentName() const
 {
-    return componentName;
+    //return componentName;
+    return imageLoader->getComponentName();
 }
 
 void USingleImageWidget::setComponentName(const QString &value)
 {
-    componentName = value;
+    //componentName = value;
+    imageLoader->setComponentName(value);
 }
 
 QString USingleImageWidget::getComponentPropertyName() const
 {
-    return componentPropertyName;
+//    return componentPropertyName;
+    return imageLoader->getComponentPropertyName();
 }
 
 void USingleImageWidget::setComponentPropertyName(const QString &value)
 {
-    componentPropertyName = value;
-    if(showChannels)
-        ui->labelLegend->setText(QString::number(calcChannel) +" chan. "+componentName+"["+componentPropertyName+"]");
+    //componentPropertyName = value;
+    imageLoader->setComponentPropertyName(value);
+    if(imageLoader->getIndChannels())
+        ui->labelLegend->setText(QString::number(imageLoader->getCalcChannel()) +" chan. "+imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
     else
-        ui->labelLegend->setText(componentName+"["+componentPropertyName+"]");
-    connected = true;
+        ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
+    //connected = true;
 }
 
 bool USingleImageWidget::getSelected() const
@@ -154,16 +210,16 @@ void USingleImageWidget::mouseDoubleClickEvent(QMouseEvent *)
     emit fullScreenSignal(this);
 }
 
-QPixmap USingleImageWidget::getImage() const
+QImage USingleImageWidget::getImage() const
 {
-    return image;
+    return imageLoader->getSrcImage();
 }
 
-void USingleImageWidget::setImage(const QPixmap &value)
+/*void USingleImageWidget::setImage(const QImage &value)
 {
-    image = value;
-    ui->labelInfo->setText(QString::number(image.size().width())+"x"+QString::number(image.size().height()));
-}
+    srcImage = value;
+    ui->labelInfo->setText(QString::number(srcImage.size().width())+"x"+QString::number(srcImage.size().height()));
+}*/
 
 int USingleImageWidget::getRow() const
 {
