@@ -4,6 +4,7 @@
 #include <limits>
 #include <iostream>
 #include "MMatrixBase.h"
+#include <string.h>
 
 namespace RDK{
 
