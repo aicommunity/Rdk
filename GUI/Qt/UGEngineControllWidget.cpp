@@ -171,6 +171,7 @@ void UGEngineControllWidget::actionCreateConfig()
 void UGEngineControllWidget::actionSaveConfig()
 {
     application.SaveProject();
+    writeSettings(settingsFileName);
 }
 
 void UGEngineControllWidget::actionReloadParameters()
@@ -235,7 +236,7 @@ void UGEngineControllWidget::actionImages()
     connect(worker, SIGNAL(testFinished()), worker, SLOT(deleteLater()));
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
-}*/
+}
 
 void UGEngineControllWidget::initGraphicalEngine()
 {
@@ -247,7 +248,7 @@ void UGEngineControllWidget::initGraphicalEngine()
     Env_SetDebugMode(true); //неизвестное применение
 //    MLog_SetDebugMode(0, true);
     //    MLog_SetEventsLogMode(0, true);
-}
+}*/
 
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {
@@ -307,6 +308,10 @@ void UGEngineControllWidget::writeSettings(QString file, QString group)
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.endGroup();
+    if(componentsList) componentsList->writeSettings(settingsFileName);
+    if(drawEngine) drawEngine->writeSettings(settingsFileName);
+    if(componentLinks) componentLinks->writeSettings(settingsFileName);
+    if(images) images->writeSettings(settingsFileName);
 }
 
 void UGEngineControllWidget::readSettings(QString file, QString group)

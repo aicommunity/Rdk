@@ -29,7 +29,6 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, QString settingsFi
 
 UComponentLinksWidget::~UComponentLinksWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     delete ui;
 }
 
@@ -202,10 +201,8 @@ void UComponentLinksWidget::breakLink()
 
 void UComponentLinksWidget::readSettings(QString file, QString group)
 {
-    settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+    QSettings settings(file, QSettings::IniFormat);
+    settings.beginGroup(group);
     this->restoreGeometry(settings.value("geometry").toByteArray());
     ui->splitter->restoreState(settings.value("splitterState").toByteArray());
     ui->splitter_2->restoreState(settings.value("splitter_2State").toByteArray());

@@ -27,7 +27,7 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     connect(this, SIGNAL(loadImage(QSize)), imageLoader, SLOT(loadImage(QSize)));
     connect(this, SIGNAL(resizeImage(QSize)), imageLoader, SLOT(resizeImage(QSize)));
 
-    thread->start();
+
 
     UpdateInterval = 30;
     setAccessibleName("USingleImageWidget"+QString::number(row)+"x"+QString::number(column));
@@ -178,6 +178,7 @@ void USingleImageWidget::setComponentPropertyName(const QString &value)
 {
     //componentPropertyName = value;
     imageLoader->setComponentPropertyName(value);
+    thread->start();
     if(imageLoader->getIndChannels())
         ui->labelLegend->setText(QString::number(imageLoader->getCalcChannel()) +" chan. "+imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
     else

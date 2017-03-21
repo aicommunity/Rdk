@@ -69,7 +69,6 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
 
 UImagesWidget::~UImagesWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     delete ui;
     imagesList.clear();
 }
@@ -172,9 +171,9 @@ QImage UImagesWidget::fromUBitmap(RDK::UBitmap *tempBmp)
 void UImagesWidget::readSettings(QString file, QString group)
 {
     settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+
+    QSettings settings(file, QSettings::IniFormat);
+    settings.beginGroup(group);
 
     restoreGeometry(settings.value("geometry").toByteArray());
 
@@ -299,6 +298,7 @@ void UImagesWidget::actionSelectSource()
     dialog.exec();
     selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
     selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedOutputName());
+    dialog.writeSettings(settingsFileName);
 }
 
 void UImagesWidget::actionAddColumn()

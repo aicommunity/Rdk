@@ -29,7 +29,7 @@ public:
 
 public slots:
     void readSettings(QString file, QString group = "UDrawEngineWidget");
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UDrawEngineWidget");
 
     void componentDoubleClick(QString name);
     void componentSingleClick(QString name);
@@ -48,9 +48,6 @@ signals:
 private:
     UDrawEngineImageWidget *modelScheme;
     UClassesListWidget *classesList;
-
-    QString settingsFileName;
-    QString settingsGroupName;
 
     Ui::UDrawEngineWidget *ui;
 };

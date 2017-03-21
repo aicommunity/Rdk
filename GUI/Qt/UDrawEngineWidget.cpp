@@ -30,7 +30,6 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, QString settingsFile, QStr
 
 UDrawEngineWidget::~UDrawEngineWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     delete ui;
 }
 
@@ -41,10 +40,8 @@ void UDrawEngineWidget::AUpdateInterface()
 
 void UDrawEngineWidget::readSettings(QString file, QString group)
 {
-    settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+    QSettings settings(file, QSettings::IniFormat);
+    settings.beginGroup(group);
     ui->splitter->restoreState(settings.value("splitterState").toByteArray());
     modelScheme->resize(settings.value("labelModelScheme_w").toInt(),
                                  settings.value("labelModelScheme_h").toInt());

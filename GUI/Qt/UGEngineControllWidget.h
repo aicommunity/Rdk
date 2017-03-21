@@ -39,7 +39,7 @@ public slots:
 
     //settings
     void readSettings(QString file, QString group = "UGEngineControllWidget");
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UGEngineControllWidget");
 
     //actions:
     void actionComponentsControl();
@@ -104,7 +104,7 @@ private:
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
 
     //methods
-    void initGraphicalEngine();
+    //void initGraphicalEngine();
 
     ///if chanelIndex == -1 запускает все каналы расчета
     void startChannel(int chanelIndex);

@@ -23,7 +23,7 @@ public slots:
     ///считывание файлов настроек
     void readSettings(QString file, QString group = "UImagesWidget");
     ///запись файлов настроек
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UImagesWidget");
 
     void actionSaveToBMP();
     void actionSaveToJPEG();
@@ -49,7 +49,6 @@ private:
     Ui::UImagesWidget *ui;
 
     QString settingsFileName;
-    QString settingsGroupName;
 
     //buffers
     RDK::UBitmap tempBmp;

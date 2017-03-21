@@ -178,7 +178,6 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
 
 UComponentsListWidget::~UComponentsListWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     delete ui;
 }
 
@@ -790,10 +789,8 @@ void UComponentsListWidget::showOutputsXMLClicked()
 
 void UComponentsListWidget::readSettings(QString file, QString group)
 {
-    settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+    QSettings settings(file, QSettings::IniFormat);
+    settings.beginGroup(group);
     ui->splitter->restoreState(settings.value("splitterState").toByteArray());
     ui->splitter_2->restoreState(settings.value("splitterState_2").toByteArray());
     ui->splitter_3->restoreState(settings.value("splitterState_3").toByteArray());

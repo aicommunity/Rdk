@@ -110,7 +110,7 @@ public slots:
     ///считывание файлов настроек
     void readSettings(QString file, QString group = "UComponentsListWidget");
     ///запись файлов настроек
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UComponentsListWidget");
 
     //События контекстного меню
     void componentMoveUp();
@@ -158,8 +158,6 @@ private:
     /// на "[SEE BELOW]"
     std::string& PreparePropertyValueToListView(std::string &value);
 private:
-    QString settingsFileName;
-    QString settingsGroupName;
 
     ///Имя компонента, чьи проперти отображены
     QString currentDrawPropertyComponentName;
