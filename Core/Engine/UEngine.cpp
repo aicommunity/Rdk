@@ -5168,7 +5168,11 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
   try
   {
    AccessCache.clear();
-   XmlStorage.Load(buffer,"Save");
+   if(!XmlStorage.Load(buffer,"Save"))
+   {
+	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to parse model file. Possible xml syntax error."));
+	return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
+   }
    std::string xml_model_name=XmlStorage.GetNodeAttribute("ModelName");
    XmlStorage.SelectNode(0);
 
@@ -5349,7 +5353,12 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
    if(!cont)
 	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-   XmlStorage.Load(buffer,"SaveProperties");
+   if(!XmlStorage.Load(buffer,"SaveProperties"))
+   {
+	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to parse properties (parametes/state) file. Possible xml syntax error."));
+	return RDK_E_MODEL_LOAD_COMPONENT_PROPERTIES_FAIL;
+   }
+
    if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
 	RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
 
