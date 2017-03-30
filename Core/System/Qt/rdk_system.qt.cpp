@@ -22,11 +22,12 @@ namespace RDK {
 // (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
- QTime timedata = QTime::currentTime();
+ /*QDateTime timedata = QDateTime::currentDateTime();
  return timedata.hour()*60*60*1000 +
         timedata.minute()*60*1000 +
         timedata.second()*1000 +
-        timedata.msec();
+        timedata.msec();*/
+ return QDateTime::currentMSecsSinceEpoch();
 }
 
 // «аписывает в seconds и useconds текущие значени€ секунд и микросекунд,

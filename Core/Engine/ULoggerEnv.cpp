@@ -232,6 +232,11 @@ void ULoggerEnv::ProcessException(const UException &exception) const
 /// Обрабатывает возникшее исключение (Внутренний метод)
 void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) const
 {
+ if(EventsLogMode) // Если включено, то сохраняем события в файл
+ {
+  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(exception.GetMessage());  // TODO: Проверить на RDK_SUCCESS
+ }
+
  if(LastErrorLevel>type)
   LastErrorLevel=type;
  ++CurrentExceptionsLogSize;
@@ -248,17 +253,12 @@ void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) cons
  }
 
  LogList[LogIndex++]=exception;
-
- if(EventsLogMode) // Если включено, то сохраняем события в файл
- {
-  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(exception.GetMessage());  // TODO: Проверить на RDK_SUCCESS
- }
-
 }
 
 /// Обрабатывает возникшее исключение в режиме гобального логгера
 void ULoggerEnv::ProcessExceptionGlobal(int type, const UException &exception) const
 {
+ UGenericMutexExclusiveLocker lock(LogMutex);
  ProcessExceptionRaw(type,exception);
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
