@@ -100,7 +100,7 @@ virtual ~URdkCoreManager(void);
 // Методы управления данными
 // --------------------------
 // Возвращает имя каталога бинарных файлов
-std::string GetSystemDir(void);
+const char* GetSystemDir(void);
 
 // Устанавливает имя каталога бинарных файлов
 int SetSystemDir(const char *dir);

@@ -14,7 +14,7 @@ namespace RDK {
 #ifdef __GNUC__
 void RdkDummyFunc(void)
 {
- time_t temp_time_data;
+ time_t temp_time_data(0);
  RDK::get_text_time(temp_time_data);
 
  USerStorageBinary bin_storage;

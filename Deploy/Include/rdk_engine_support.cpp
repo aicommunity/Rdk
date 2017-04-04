@@ -120,10 +120,10 @@ URdkCoreManager::~URdkCoreManager(void)
 // Методы управления данными
 // --------------------------
 // Возвращает имя каталога бинарных файлов
-std::string URdkCoreManager::GetSystemDir(void)
+const char* URdkCoreManager::GetSystemDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
- return SystemDir;
+ return SystemDir.c_str();
 }
 
 // Устанавливает имя каталога бинарных файлов

@@ -349,7 +349,7 @@ int RDK_CALL MLog_ClearReadLog(int channel_index)
 // Возвращает имя каталога бинарных файлов
 const char* RDK_CALL Core_GetSystemDir(void)
 {
- return RdkCoreManager.GetSystemDir().c_str();
+ return RdkCoreManager.GetSystemDir();
 }
 
 const char* RDK_CALL GetSystemDir(void)
