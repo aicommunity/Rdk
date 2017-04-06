@@ -2,7 +2,7 @@
 #define UOUTPUT_PROPERTY_H
 
 #include "ULocalProperty.h"
-#include "UConnector.h"
+#include "UItem.h"
 
 namespace RDK {
 
@@ -10,7 +10,7 @@ namespace RDK {
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputBase: public ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputBase: virtual public ULProperty<T,OwnerT,type>, virtual public UIPropertyOutputBase
 {
 protected:
 
@@ -20,7 +20,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : ULProperty<T,OwnerT,type>(name, owner,setmethod)
+ : ULProperty<T,OwnerT,type>(name, owner, setmethod)
 {
  this->IoType=input_type;
 };
@@ -98,12 +98,6 @@ bool SetPointer(int index, void* value, UIProperty* output)
 // --------------------------
 // Методы управления выходами
 // --------------------------
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const
-{
- return UIPropertyOutput::GetNumConnectors();
-}
-
 /// Возвращает указатель на компонент-приемник
 virtual UConnector* GetConnector(int index)
 {
@@ -119,7 +113,7 @@ virtual std::string GetConnectorInputName(int index) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputData: public UPropertyOutputBase<T,OwnerT,type>
+class UPropertyOutputData: virtual public UPropertyOutputBase<T,OwnerT,type>
 {
 protected:
 
@@ -145,7 +139,7 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int index, typenam
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputCBase: virtual protected UCLProperty<std::vector<T>,OwnerT,type>, virtual public UIPropertyOutputBase
 {
 protected:
 
@@ -223,7 +217,7 @@ const T& operator [] (int i) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCData: public UPropertyOutputCBase<T,OwnerT,type>
+class UPropertyOutputCData: virtual public UPropertyOutputCBase<T,OwnerT,type>
 {
 protected:
 
@@ -253,7 +247,7 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int index, typena
 // Output virtual properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT>
-class UVPropertyOutputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UVPropertyOutputBase: virtual public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */virtual public UIPropertyOutputBase
 {
 protected:
 
@@ -291,7 +285,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyOutputData: public UVPropertyOutputBase<T,OwnerT>
+class UVPropertyOutputData: virtual public UVPropertyOutputBase<T,OwnerT>
 {
 protected:
 

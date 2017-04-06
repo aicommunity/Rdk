@@ -264,7 +264,7 @@ void UNet::BreakLinks(void)
  if(dynamic_cast<UConnector* const>(this))
   ((UConnector* const)this)->DisconnectAllItems();
 }
-
+ /*
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 {
@@ -300,7 +300,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
   }
 
   ad_item->Disconnect(connector,item.Index, connector_index);
-}
+}     */
 
 void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index)
 {

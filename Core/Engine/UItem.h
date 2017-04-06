@@ -18,7 +18,7 @@ See file license.txt for more information
 namespace RDK {
 
 typedef UEPtr<UConnector> PUAConnector;
-
+          /*
 class RDK_LIB_TYPE UAConnectorVector
 {
 protected: // Параметры
@@ -146,14 +146,17 @@ UAConnectorVector* GetData(void);
 // Оператор доступа к размеру
 int GetSize(void) const;
 // --------------------------
-};
+};     */
+
+
+class UIPropertyOutput;
 
 class RDK_LIB_TYPE UItem: public UConnector
 {
 protected: // Основные свойства
 // Список коннекторов подключенных к выходам этого объекта
 //UAConnector2DVector AssociatedConnectors;
-std::map<std::string, std::vector<PUAConnector> > RelatedConnectors;
+//std::map<std::string, std::vector<PUAConnector> > RelatedConnectors;
 
 protected: // Временные переменные. Read Only!
 
@@ -182,7 +185,7 @@ virtual int GetNumActiveOutputs(const NameT &item_property_name) const;
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
-virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
+virtual void FindOutputProperty(const NameT &item_property_name, UIPropertyOutput* &property) const;
 // --------------------------
 
 
@@ -199,6 +202,9 @@ public:
 // ----------------------
 // Коммуникационные методы
 // ----------------------
+/// Возвращает число выходов
+virtual int GetNumOutputs(void) const;
+
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
@@ -248,7 +254,6 @@ bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_na
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
-bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
 
 
 // Возвращает список подключений
@@ -280,6 +285,68 @@ virtual bool Default(void);
 virtual bool Build(void);
 // --------------------------
 
+};
+
+class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
+{
+protected: // Данные
+std::vector<PUAConnector> RelatedConnectors;
+
+/// Указатели на компоненты-приемники данных
+std::vector<UItem*> Connectors;
+
+/// Имя выхода компнента-источника данных
+std::vector<std::string> ConnectorInputNames;
+
+public: // Конструкторы и деструкторы
+UIPropertyOutputBase(void);
+virtual ~UIPropertyOutputBase(void);
+
+public: // Методы доступа к подключенным входам
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const;
+
+/// Возвращает указатель на компонент-приемник
+virtual UConnector* GetConnector(int index);
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const;
+
+// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
+virtual bool Disconnect(const UId &id);
+
+// Разрывает связь выхода этого объекта со всеми
+// подключенными коннекторами.
+virtual void DisconnectAll(void);
+
+public: // Методы управления указателем на входные данные
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+
+/// Сбрасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+// Устанавливает связь с коннектором 'c'
+virtual bool Connect(UEPtr<UConnector> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
+virtual void Disconnect(UEPtr<UConnector> c);
+
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+virtual void Disconnect(UEPtr<UConnector> c, const NameT &connector_property_name, int c_index=-1);
+
+// Возвращает  коннектор из списка подключений.
+virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const;
+
+// Проверяет, существует ли связь с заданным коннектором
+bool CheckLink(const UEPtr<UConnector> &connector, int c_index) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UConnector> &connector, const NameT &connector_property_name, int c_index=-1) const;
 };
 
 

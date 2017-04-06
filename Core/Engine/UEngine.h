@@ -699,11 +699,11 @@ virtual int Model_CreateLink(const char* stringid1, int output_number, const cha
 virtual int Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index=-1);
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
-virtual int Model_ChainLinking(const char* stringid);
+//virtual int Model_ChainLinking(const char* stringid);
 
 // Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
 // Используется для тестирования производительности
-virtual int Model_ParallelLinking(const char* stringid);
+//virtual int Model_ParallelLinking(const char* stringid);
 
 // Разрывает выбранную связь
 virtual int Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
@@ -713,7 +713,7 @@ virtual int Model_BreakLink(const char* stringid1, const char* item_property_nam
 virtual int Model_BreakAllLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-virtual int Model_BreakConnectorLink(const char* connectorname, int connector_index);
+//virtual int Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 virtual int Model_BreakAllComponentLinks(const char* stringid);
@@ -725,7 +725,7 @@ virtual int Model_BreakAllComponentInputLinks(const char* stringid);
 virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Проверяет, существует ли заданна связь
-virtual bool Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//virtual bool Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 virtual bool Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
@@ -768,33 +768,33 @@ virtual const char* Model_GetComponentPersonalLinks(const char* stringid, const 
 virtual int Model_GetComponentNumInputs(const char *stringid);
 
 // Возвращает размер входа компонента в числе элементов
-virtual int Model_GetComponentInputDataSize(const char *stringid, int index);
+//virtual int Model_GetComponentInputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента входа в байтах
-virtual int Model_GetComponentInputElementSize(const char *stringid, int index);
+//virtual int Model_GetComponentInputElementSize(const char *stringid, int index);
 
 // Возвращает размер входа компонента в байтах элементов
-virtual int Model_GetComponentInputByteSize(const char *stringid, int index);
+//virtual int Model_GetComponentInputByteSize(const char *stringid, int index);
 
 // Возвращает указатель на данные входа как на массив байт
 // Только для чтения!
-virtual unsigned char* Model_GetComponentInputData(const char *stringid, int index);
+//virtual unsigned char* Model_GetComponentInputData(const char *stringid, int index);
 
 // Возвращает число выходов у компонента
 virtual int Model_GetComponentNumOutputs(const char *stringid);
 
 // Возвращает размер выхода компонента в числе элементов
-virtual int Model_GetComponentOutputDataSize(const char *stringid, int index);
+//virtual int Model_GetComponentOutputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента выхода в байтах
 //virtual int Model_GetComponentOutputElementSize(const char *stringid, int index);
 
 // Возвращает размер выхода компонента в байтах элементов
-virtual int Model_GetComponentOutputByteSize(const char *stringid, int index);
+//virtual int Model_GetComponentOutputByteSize(const char *stringid, int index);
 
 // Возвращает указатель на данные выхода как на массив байт
 // Только для чтения!
-virtual unsigned char* Model_GetComponentOutputData(const char *stringid, int index);
+//virtual unsigned char* Model_GetComponentOutputData(const char *stringid, int index);
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
@@ -885,37 +885,37 @@ unsigned long long Model_GetInterstepsInterval(const char *stringid) const;
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
 const /* RDK::MDMatrix* */void* Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name);
-const /* RDK::MDMatrix* */void* Model_GetComponentOutputAsMatrix(const char *stringid, int index);
+//const /* RDK::MDMatrix* */void* Model_GetComponentOutputAsMatrix(const char *stringid, int index);
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, const char *property_name);
-virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, int index);
+//virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, int index);
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
-virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, int index);
+//virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, int index);
 
 /// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
 /// в стрктуру bmp_param
 virtual int Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param);
-virtual int Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param);
+//virtual int Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param);
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
 virtual int Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp);
-virtual int Model_CopyComponentBitmapOutput(const char *stringid, int index, RDK::UBitmap* bmp);
+//virtual int Model_CopyComponentBitmapOutput(const char *stringid, int index, RDK::UBitmap* bmp);
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 virtual const RDK::UBitmap* Model_GetComponentBitmapInput(const char *stringid, const char *property_name);
-virtual const RDK::UBitmap* Model_GetComponentBitmapInput(const char *stringid, int index);
+//virtual const RDK::UBitmap* Model_GetComponentBitmapInput(const char *stringid, int index);
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 virtual int Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const RDK::UBitmap* bmp, bool reflect=false);
-virtual int Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* bmp, bool reflect=false);
+//virtual int Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* bmp, bool reflect=false);
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
 virtual int Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const RDK::UBitmap* const bmp, bool reflect=false);
-virtual int Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect=false);
+//virtual int Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect=false);
 
 // --------------------------
 // Методы управления исключениями

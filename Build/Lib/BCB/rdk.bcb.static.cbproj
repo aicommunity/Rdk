@@ -210,9 +210,6 @@
         <CppCompile Include="..\..\..\Core\Engine\Engine.cpp">
             <BuildOrder>60</BuildOrder>
         </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UADItem.cpp">
-            <BuildOrder>61</BuildOrder>
-        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UAModel.cpp">
             <BuildOrder>62</BuildOrder>
         </CppCompile>
@@ -297,13 +294,13 @@
             <BuildOrder>83</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UPropertyInput.cpp">
-            <BuildOrder>84</BuildOrder>
+            <BuildOrder>117</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UPropertyIO.cpp">
-            <BuildOrder>85</BuildOrder>
+            <BuildOrder>118</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UPropertyOutput.cpp">
-            <BuildOrder>86</BuildOrder>
+            <BuildOrder>119</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UShare.cpp">
             <DependentOn>..\..\..\Core\Engine\UShare.h</DependentOn>
@@ -989,13 +986,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

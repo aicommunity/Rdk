@@ -2053,12 +2053,12 @@ int RDK_CALL Model_BreakAllLinks(void)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakAllLinks();
 }
-
+/*
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakConnectorLink(connectorname, connector_index);
-}
+} */
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
@@ -2078,13 +2078,13 @@ int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid)
 
  return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentOutputLinks(stringid);
 }
-
+				 /*
 // Проверяет, существует ли заданна связь
 bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_CheckLink(stringid1, output_number, stringid2, input_number);
-}
+}                              */
 
 bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {

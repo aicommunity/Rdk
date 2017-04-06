@@ -646,6 +646,44 @@ const std::string& UComponent::GetPropertyNameByAlias(const std::string &alias) 
 }
 // --------------------------
 
+// Описание подключаемого элемента "UConnectedITEM"
+//struct UCItem
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UCItem::UCItem(void)
+{
+ // Подключаемый элемент
+ Item=0;
+
+ // Индекс выхода
+ Index=0;
+}
+
+UCItem::UCItem(const UCItem &copy)
+{
+ Item=copy.Item;
+ Index=copy.Index;
+ Name=copy.Name;
+}
+// --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+bool UCItem::operator == (const UCItem &value) const
+{
+ return (Item == value.Item) & (Index == value.Index);
+}
+
+bool UCItem::operator != (const UCItem &value) const
+{
+ return !(*this == value);
+}
+// --------------------------
+
+
+
 
 }
 

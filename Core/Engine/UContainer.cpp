@@ -2961,15 +2961,16 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  std::string line=str_type+variable.Property->GetName();
  result=line;
 
- if(type & ptInput && !variable.Property->IsConnected())
+ UEPtr<UIPropertyInput> prop_input=dynamic_pointer_cast<UIPropertyInput>(variable.Property);
+ if(prop_input && !prop_input->IsConnected())
  {
   result=line+"[<Disconnected>]";
  }
  else
  {
-  if(type & ptInput)
+  if(prop_input)
   {
-   line+=std::string("[")+variable.Property->GetItemFullName()+std::string(":")+variable.Property->GetItemOutputName()+"]";
+   line+=std::string("[")+prop_input->GetItemFullName()+std::string(":")+prop_input->GetItemOutputName()+"]";
 
   }
   line+=" = ";

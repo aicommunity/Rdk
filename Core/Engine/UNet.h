@@ -12,13 +12,14 @@ See file license.txt for more information
 #ifndef UANetH
 #define UANetH
 
-#include "UADItem.h"
+#include "UItem.h"
 #include "UStorage.h"
+#include "ULocalProperty.h"
 
 
 namespace RDK {
 
-class RDK_LIB_TYPE UNet: public UADItem
+class RDK_LIB_TYPE UNet: public UItem
 {
 protected: // Основные свойства
 
@@ -154,7 +155,7 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 virtual void BreakLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+//virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
 virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Проверяет, существует ли заданная связь
@@ -333,13 +334,20 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
 
  if(!pitem)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
+  std::ostringstream stream;
+  stream<<"Item not found when connect "<<item.Id<<":"<<item.Name<<" to "<<connector.Id<<":"<<connector.Name;
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, stream.str());
+//  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
   return false;
  }
 
  if(!pconnector)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
+  std::ostringstream stream;
+  stream<<"Connector not found when connect "<<item.Id<<":"<<item.Name<<" to "<<connector.Id<<":"<<connector.Name;
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, stream.str());
+
+//  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
   return false;
  }
 
@@ -353,14 +361,15 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
  }
  else
  {
-  if(item.Index < 0)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-   return false;
-  }
-
-  if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
-   return false;
+  LogMessageEx(RDK_EX_ERROR, __FUNCTION__, "Create links by index unsupported now!");
+//  if(item.Index < 0)
+//  {
+//   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
+//   return false;
+//  }
+//
+//  if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
+//   return false;
  }
 
  return true;
@@ -433,7 +442,8 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  }
  else
  {
-  pitem->Disconnect(pconnector, item.Index, connector.Index);
+  LogMessageEx(RDK_EX_ERROR, __FUNCTION__, "Break links by index unsupported now!");
+//  pitem->Disconnect(pconnector, item.Index, connector.Index);
  }
 
  return true;
@@ -472,8 +482,9 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   }
   else
   {
-   if(pitem->CheckLink(pconnector,item.Index, connector.Index))
-	return true;
+   LogMessageEx(RDK_EX_ERROR, __FUNCTION__, "Check links by index unsupported now!");
+//   if(pitem->CheckLink(pconnector,item.Index, connector.Index))
+//	return true;
   }
 
  return false;

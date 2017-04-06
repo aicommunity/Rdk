@@ -22,33 +22,7 @@ namespace RDK {
 
 
 class UItem;
-
-// Описание подключаемого элемента "UConnectedITEM"
-struct RDK_LIB_TYPE UCItem
-{
-// Подключаемый элемент
-UItem* Item;
-
-// Индекс выхода
-int Index;
-
-// Имя выхода
-std::string Name;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UCItem(void);
-UCItem(const UCItem &copy);
-// --------------------------
-
-// --------------------------
-// Операторы
-// --------------------------
-bool operator == (const UCItem &value);
-bool operator != (const UCItem &value);
-// --------------------------
-};
+class UIPropertyInput;
 
 // Описание входящей связи с заданным item "UConnectedLINK"
 struct RDK_LIB_TYPE UCLink
@@ -72,7 +46,7 @@ UCLink(void);
 UCLink(const UCLink &copy);
 // --------------------------
 };
-
+	  /*
 // Контейнер - список указателей на подключенные элементы
 class RDK_LIB_TYPE UCItemList
 {
@@ -146,7 +120,7 @@ UCItem* GetData(void);
 // Оператор доступа к размеру
 int GetSize(void) const;
 // --------------------------
-};
+};       */
 
 class RDK_LIB_TYPE UConnector: public UContainer
 {
@@ -154,7 +128,7 @@ friend class UItem;
 protected: // Хранилище связей
 // Список указателей на подключенные элементы сети в формате
 // <имя свойства к которому подключены, список подключенных компонент>
-std::map<std::string, std::vector<UCItem> > ConnectedItemList;
+//std::map<std::string, std::vector<UCItem> > ConnectedItemList;
 
 // Заглушка, возвращаемая в случае, когда корректную ссылку на CItem вернуть невозможно
 UCItem DummyItem;
@@ -168,17 +142,6 @@ virtual ~UConnector(void);
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
-// --------------------------
-public:
-/// Возвращает число свойств в которым что-то подключено
-virtual int GetNumActiveInputs(void) const;
-
-/// Возвращает число реально подключенных элементов к заданному свойству
-virtual int GetNumActiveInputs(const NameT &connector_property_name) const;
-// --------------------------
-
-// --------------------------
 // Системные методы управления объектом
 // --------------------------
 // Осуществляет освобождение этого объекта в его хранилище
@@ -189,15 +152,27 @@ virtual void Free(void);
 // --------------------------
 // Методы доступа к данным
 // --------------------------
-/// Ищет первый свободный вход
-virtual NameT FindFreeInputName(void)=0;
+/// Возвращает список свойств-входов
+virtual void ReadInputPropertiesList(std::vector<UEPtr<UIPropertyInput> > &buffer) const;
 
-// Возвращает подключенный к этому коннектору объект по индексу
-const UCItem& GetCItem(const NameT &connector_property_name, const UEPtr<UItem> &item, int &index) const;
-const UCItem& GetCItem(const NameT &connector_property_name, int index) const;
+/// Возвращает число входов
+virtual int GetNumInputs(void) const;
+
+/// Возвращает число свойств в которым что-то подключено
+//virtual int GetNumActiveInputs(void) const;
+
+/// Возвращает число реально подключенных элементов к заданному свойству
+virtual int GetNumActiveInputs(const NameT &connector_property_name) const;
+
+/// Ищет первый свободный вход
+//virtual NameT FindFreeInputName(void)=0;
+
+/// Возвращает массив данных о подключенных к этому коннектору компонент по имени входа
+//const UCItem& GetCItem(const NameT &connector_property_name, const UEPtr<UItem> &item, int &index) const;
+//const UCItem& GetCItem(const NameT &connector_property_name, int index) const;
 void GetCItem(const NameT &connector_property_name, std::vector<UCItem> &buffer) const;
 
-// Возвращает информацию об индексах связей с этим item или -1, -1
+// Возвращает информацию о данных связей с item или пустой массив
 // если такая связь отсутствует
 virtual void GetCLink(const UEPtr<UItem> &item, std::vector<UCLink> &buffer) const;
 virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) const;
@@ -207,38 +182,16 @@ virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) cons
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
-virtual void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
+virtual void FindInputProperty(const NameT &connector_property_name, UIPropertyInput* &property) const;
 // --------------------------
 
 // ----------------------
 // Коммуникационные методы
 // ----------------------
-protected:
-// Устанавливает связь с элементом сети 'na' со входом по индексу index.
-// Возвращает false если na уже подключен к этому входу.
-// При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
+//virtual void DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index);
 
-// Разрывает все связи с элементом сети 'na'
-virtual void DisconnectFromItem(UEPtr<UItem> na);
-
-/// Разрывает связь с элементом сети 'na', подключенную от i_index
-virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name);
-
-/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
-virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
-
-// Выполняет действия после физически установленой связи
-virtual bool AConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name);
-
-// Выполняет действия после физически разорваной связи
-virtual void ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name);
-
-public:
-// Разрывает связь с элементом сети подключенным ко входу 'index'
-virtual void DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index);
-
-virtual void DisconnectFromIndex(const NameT &connector_property_name);
+//virtual void DisconnectFromIndex(const NameT &connector_property_name);
 
 // Разрывает все текущие связи
 virtual void DisconnectAllItems(void);
@@ -248,7 +201,6 @@ virtual void DisconnectAllItems(void);
 // brklevel - объект, относительно которого связи считаются внутренними
 virtual void DisconnectByObject(UEPtr<UContainer> brklevel);
 
-public:
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
 
@@ -268,6 +220,27 @@ ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, 
 // Возвращает список подключений непосредственно коннектора cont
 template<typename T>
 ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
+
+protected:
+// Устанавливает связь с элементом сети 'na' со входом по индексу index.
+// Возвращает false если na уже подключен к этому входу.
+// При успешном подключении c_index содержит реальный индекс подключенного входа
+virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+
+/// Выполняет действия после физически установленой связи
+virtual bool AConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+
+// Разрывает все связи с элементом сети 'na'
+virtual void DisconnectFromItem(UEPtr<UItem> na);
+
+/// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
+virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name);
+
+/// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
+virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
+
+// Выполняет действия после физически разорваной связи
+virtual void ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
 // ----------------------
 
 // --------------------------
@@ -298,61 +271,81 @@ EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
 
-class RDK_LIB_TYPE UIPropertyInput
+class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
 {
 protected: // Данные
-/// Указатель на компонент-источник данных
-UItem* Item;
-
-/// Имя выхода компнента-источника данных
-std::string ItemOutputName;
+/// Данные подключенных ко входу источников
+std::vector<UCItem> ItemsList;
 
 public:
 /// Конструкторы и деструкторы
-UIPropertyInput(void);
-virtual ~UIPropertyInput(void);
+UIPropertyInputBase(void);
+virtual ~UIPropertyInputBase(void);
 
+/// Возвращает тип свойства ввода-вывода
+virtual int GetIoType(void) const=0;
+
+public: // Методы доступа к источнику данных
 /// Возвращает указатель на компонент-источник
-virtual UItem* GetItem(void);
+virtual const std::vector<UCItem>& GetItemsList(void) const;
+
+/// Возвращает число подключений ко входу
+virtual int GetNumConnections(void) const;
+
+// Возвращает указатель на компонент-источник
+UItem* GetItem(int c_index=-1);
 
 /// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const;
+virtual std::string GetItemName(int c_index=-1) const;
 
 /// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const;
+virtual std::string GetItemFullName(int c_index=-1) const;
 
 /// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const;
+virtual std::string GetItemOutputName(int c_index=-1) const;
 
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name);
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const;
 
-/// Деинициализирует данные
-virtual void UnInit(void);
-};
+/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
+/// Возвращает true, если действия по удалению выполнялись
+virtual bool Disconnect(const NameT &item_property_name, int c_index=-1);
 
-class RDK_LIB_TYPE UIPropertyOutput
-{
-protected: // Данные
-/// Указатели на компоненты-приемники данных
-std::vector<UItem*> Connectors;
+/// Разрывает связь с индексом c_index, или все связи если c_index == -1
+/// Если c_index имеет не корректное значение, то не делает ничего
+virtual void Disconnect(int c_index=-1);
 
-/// Имя выхода компнента-источника данных
-std::vector<std::string> ConnectorInputNames;
+/// Разрывает все связи со свойством
+virtual void DisconnectAll(void);
 
-public:
-/// Конструкторы и деструкторы
-UIPropertyOutput(void);
-virtual ~UIPropertyOutput(void);
+// Проверяет, существует ли связь с заданным коннектором
+bool CheckLink(const UEPtr<UItem> &item) const;
 
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const;
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, int c_index=-1) const;
 
-/// Возвращает указатель на компонент-приемник
-virtual UConnector* GetConnector(int index);
+public: // Методы управления указателем на входные данные
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
 
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const;
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+
+/// Сбрасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+/// Подключает выход
+virtual bool Connect(UItem* item, const std::string &output_name, int c_index=-1, bool forced_connect_same_item=false);
+
+// Разрывает все связи с элементом сети 'na'
+virtual void Disconnect(UEPtr<UItem> na);
+
+/// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
+virtual void Disconnect(UEPtr<UItem> na, const NameT &item_property_name);
+
+/// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
+virtual void Disconnect(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
 };
 
 // Template methods UConnector
@@ -465,5 +458,5 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 
 }
 
-#include "UPropertyIO.h"
+//#include "UPropertyIO.h"
 #endif

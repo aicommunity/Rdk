@@ -23,6 +23,7 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+/*
 UAConnectorVector::UAConnectorVector(void)
 {
  // Размер контейнера
@@ -172,6 +173,7 @@ int UAConnectorVector::GetSize(void) const
  return Size;
 }
 // --------------------------
+*/
 /* *************************************************************************** */
 
 /* *************************************************************************** */
@@ -180,6 +182,7 @@ int UAConnectorVector::GetSize(void) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+/*
 UAConnector2DVector::UAConnector2DVector(void)
 {
  // Размер контейнера
@@ -300,6 +303,7 @@ int UAConnector2DVector::GetSize(void) const
  return Size;
 }
 // --------------------------
+*/
 /* *************************************************************************** */
 
 /* *************************************************************************** */
@@ -326,7 +330,7 @@ UItem::~UItem(void)
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
-void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const
+void UItem::FindOutputProperty(const NameT &item_property_name, UIPropertyOutput* &property) const
 {
  // Ищем указатель на выходные данные
  property=0;
@@ -344,7 +348,7 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
 
  if(I->second.Type & ptOutput)
  {
-  property=I->second.Property.Get();
+  property=dynamic_cast<UIPropertyOutput>(I->second.Property.Get());
  }
 }
 // --------------------------
@@ -365,6 +369,19 @@ void UItem::Free(void)
 // ----------------------
 // Защищенные коммуникационные методы
 // ----------------------
+/// Возвращает число выходов
+int UItem::GetNumOutputs(void) const
+{
+ int res(0);
+ VariableMapCIteratorT I=PropertiesLookupTable.begin();
+
+ for(;I != PropertiesLookupTable.end();++I)
+ {
+  if(I->second.Type & ptOutput)
+   ++res;
+ }
+ return res;
+}
 
 bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
@@ -716,13 +733,13 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
  }
  return false;
 }
-
+/*
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
 {
  std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
  std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
-}
+}             */
 // ----------------------
 
 
@@ -749,6 +766,37 @@ bool UItem::Build(void)
  return UConnector::Build();
 }
 /* *************************************************************************** */
+
+
+//class UIPropertyOutputBase: public UIPropertyIO
+/// Конструкторы и деструкторы
+UIPropertyOutputBase::UIPropertyOutputBase(void)
+{
+}
+
+UIPropertyOutputBase::~UIPropertyOutputBase(void)
+{
+ Connectors.clear();
+ ConnectorInputNames.clear();
+}
+
+// Возвращает число подключенных входов
+size_t UIPropertyOutputBase::GetNumConnectors(void) const
+{
+ return Connectors.size();
+}
+
+// Возвращает указатель на компонент-приемник
+UConnector* UIPropertyOutputBase::GetConnector(int index)
+{
+ return Connectors[index];
+}
+
+// Возвращает имя подключенного входа компонента-приемника
+std::string UIPropertyOutputBase::GetConnectorInputName(int index) const
+{
+ return ConnectorInputNames[index];
+}
 
 
 }

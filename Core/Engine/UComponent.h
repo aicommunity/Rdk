@@ -397,14 +397,8 @@ class UItem;
 // Класс сериализации свойств
 class RDK_LIB_TYPE UIProperty
 {
+friend class UComponent;
 public:
-// Метод устанавливает значение указателя на итератор-хранилище данных об этом
-// свойстве в родительском компоненте
-virtual void SetVariable(UComponent::VariableMapCIteratorT &var)=0;
-
-// Метод возвращает тип свойства
-virtual unsigned int GetType(void) const=0;
-
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const=0;
 
@@ -420,6 +414,15 @@ virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 
+// Метод возвращает тип свойства
+virtual unsigned int GetType(void) const=0;
+
+// Возвращает языковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const=0;
+
+// Метод сравнивает тип этого свойства с другим свойством
+virtual bool CompareLanguageType(const UIProperty &dt) const=0;
+
 // Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void)=0;
 
@@ -428,21 +431,7 @@ virtual const void* GetMemoryArea(void)=0;
 // входной указатель приводится к указателю на необходимый тип данных
 virtual bool ReadFromMemory(const void *buffer)=0;
 
-// Возвращает языковой тип хранимого свойства
-virtual const type_info& GetLanguageType(void) const=0;
-
-// Метод сравнивает тип этого свойства с другим свойством
-virtual bool CompareLanguageType(const UIProperty &dt) const=0;
-
-/// Обновляет указатель PData
-virtual void UpdatePData(void* data)=0;
-
-// --------------------------
-// Методы управления данными
-// --------------------------
-/// Возвращает тип свойства ввода-вывода
-virtual int GetIoType(void) const=0;
-
+public: // Методы управления временем обновления данных свойства
 /// Возвращает время обновления данных свойства (мс)
 virtual ULongTime GetUpdateTime(void) const=0;
 
@@ -452,6 +441,9 @@ virtual void SetUpdateTime(ULongTime value)=0;
 /// Сбрасывает время обновления до нуля
 virtual void ResetUpdateTime(void)=0;
 
+/// Обновляет время изменения данных свойства
+virtual void RenewUpdateTime(void)=0;
+
 /// Возвращает диапазон индексов входа/выхода
 //virtual bool CheckRange(int index)=0;
 
@@ -459,24 +451,12 @@ virtual void ResetUpdateTime(void)=0;
 //virtual int GetMinRange(void)=0;
 
 //virtual int GetMaxRange(void)=0;
-// --------------------------
 
-// --------------------------
-// Методы управления указателем
-// --------------------------
-/// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
-
-/// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
-
-/// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)=0;
-// --------------------------
 
 // --------------------------
 // Методы управления входами
 // --------------------------
+/*
 /// Возвращает имя подключенного компонента
 virtual std::string GetItemName(void) const=0;
 
@@ -497,20 +477,26 @@ virtual void Init(UItem* item, const std::string &output_name)=0;
 
 /// Деинициализирует данные
 virtual void UnInit(void)=0;
+*/
 // --------------------------
 
-// --------------------------
-// Методы управления выходами
-// --------------------------
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const=0;
+//public: // Методы управления выходами
+///// Возвращает число подключенных входов
+//virtual size_t GetNumConnectors(void) const=0;
+//
+///// Возвращает указатель на компонент-приемник
+//virtual UComponent* GetConnector(int index)=0;
+//
+///// Возвращает имя подключенного входа компонента-приемника
+//virtual std::string GetConnectorInputName(int index) const=0;
 
-/// Возвращает указатель на компонент-приемник
-virtual UComponent* GetConnector(int index)=0;
+protected: // Вспомогательные методы
+// Метод устанавливает значение указателя на итератор-хранилище данных об этом
+// свойстве в родительском компоненте
+virtual void SetVariable(UComponent::VariableMapCIteratorT &var)=0;
 
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const=0;
-// --------------------------
+/// Обновляет указатель PData
+virtual void UpdatePData(void* data)=0;
 
 public: // Исключения
 // Обращение к неинициализированным данным свойства
@@ -560,6 +546,161 @@ EPropertySetterFail(const std::string &owner_name, const std::string &property_n
 };
 
 };
+
+class UItem;
+
+// Описание подключаемого элемента "UConnectedITEM"
+struct RDK_LIB_TYPE UCItem
+{
+// Подключаемый элемент
+UItem* Item;
+
+// Индекс выхода
+int Index;
+
+// Имя выхода
+std::string Name;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UCItem(void);
+UCItem(const UCItem &copy);
+// --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+bool operator == (const UCItem &value) const;
+bool operator != (const UCItem &value) const;
+// --------------------------
+};
+
+class UConnector;
+
+class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
+{
+friend class UConnector;
+public:
+/// Возвращает тип свойства ввода-вывода
+virtual int GetIoType(void) const=0;
+
+public: // Методы доступа к источнику данных
+/// Возвращает указатель на компонент-источник
+virtual const std::vector<UCItem>& GetItemsList(void) const=0;
+
+/// Возвращает число подключений ко входу
+virtual int GetNumConnections(void) const=0;
+
+// Возвращает указатель на компонент-источник
+virtual UItem* GetItem(int c_index=-1)=0;
+
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(int c_index=-1) const=0;
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(int c_index=-1) const=0;
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(int c_index=-1) const=0;
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const=0;
+
+/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
+/// Возвращает true, если действия по удалению выполнялись
+virtual bool Disconnect(const NameT &item_property_name, int c_index=-1)=0;
+
+/// Разрывает связь с индексом c_index, или все связи если c_index == -1
+/// Если c_index имеет не корректное значение, то не делает ничего
+virtual void Disconnect(int c_index=-1)=0;
+
+/// Разрывает все связи со свойством
+virtual void DisconnectAll(void)=0;
+
+// Проверяет, существует ли связь с заданным коннектором
+virtual bool CheckLink(const UEPtr<UItem> &item) const=0;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+virtual bool CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, int c_index=-1) const=0;
+
+public: // Методы управления указателем на входные данные
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+
+/// Сбрасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+/// Подключает выход
+virtual bool Connect(UItem* item, const std::string &output_name, int c_index=-1, bool forced_connect_same_item=false)=0;
+
+// Разрывает все связи с элементом сети 'na'
+virtual void Disconnect(UEPtr<UItem> na)=0;
+
+/// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
+virtual void Disconnect(UEPtr<UItem> na, const NameT &item_property_name)=0;
+
+/// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
+virtual void Disconnect(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1)=0;
+};
+
+class UConnector;
+
+class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
+{
+public: // Методы доступа к подключенным входам
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const=0;
+
+/// Возвращает указатель на компонент-приемник
+virtual UConnector* GetConnector(int index)=0;
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const=0;
+
+// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
+virtual bool Disconnect(const UId &id)=0;
+
+// Разрывает связь выхода этого объекта со всеми
+// подключенными коннекторами.
+virtual void DisconnectAll(void)=0;
+
+public: // Методы управления указателем на выходные данные
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+
+/// Сбрасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+// Устанавливает связь с коннектором 'c'
+virtual bool Connect(UEPtr<UConnector> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false)=0;
+
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
+virtual void Disconnect(UEPtr<UConnector> c)=0;
+
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+virtual void Disconnect(UEPtr<UConnector> c, const NameT &connector_property_name, int c_index=-1)=0;
+
+// Возвращает  коннектор из списка подключений.
+virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const=0;
+
+// Проверяет, существует ли связь с заданным коннектором
+virtual bool CheckLink(const UEPtr<UConnector> &connector, int c_index) const=0;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+virtual bool CheckLink(const UEPtr<UConnector> &connector, const NameT &connector_property_name, int c_index=-1) const=0;
+};
+
+
+
 
 // Класс управления общими свойствами
 class RDK_LIB_TYPE UIShare

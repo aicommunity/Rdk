@@ -7,7 +7,7 @@
 namespace RDK {
 
 template<typename T, typename OwnerT>
-class UPropertyInputPreBase: public UVProperty<T,OwnerT>
+class UPropertyInputPreBase: virtual public UVProperty<T,OwnerT>
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -45,7 +45,7 @@ void ApplyOutputUpdateTime(void) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
+class UPropertyInputBase: virtual protected UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInputBase
 {
 protected:
 public: // Методы
@@ -123,7 +123,7 @@ virtual void UnInit(void)
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
+class UVPropertyInputBase: virtual public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInputBase
 {
 protected:
 /// Внешний указатель, передаваемый в виртуальный вход
@@ -166,32 +166,10 @@ virtual void UpdatePData(void* data)
  ExternalPData=reinterpret_cast<T**>(data);
 }
 // --------------------------
-
-// --------------------------
-// Методы управления входами
-// --------------------------
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const
-{
- return UIPropertyInput::GetItemName();
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const
-{
- return UIPropertyInput::GetItemFullName();
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const
-{
- return UIPropertyInput::GetItemOutputName();
-}
-// --------------------------
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInput: public UPropertyInputBase<T*,OwnerT,type>
+class UPropertyInput: virtual public UPropertyInputBase<T*,OwnerT,type>
 {
 protected:
 mutable T LocalValue;
@@ -290,7 +268,7 @@ operator T* (void) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputData: public UPropertyInputBase<T,OwnerT,type>
+class UPropertyInputData: virtual public UPropertyInputBase<T,OwnerT,type>
 {
 protected:
 //mutable T Local;
@@ -390,7 +368,7 @@ virtual bool IsNewData(void) const
 
 
 template<typename T, typename OwnerT>
-class UVPropertyInputData: public UVPropertyInputBase<T,OwnerT>
+class UVPropertyInputData: virtual public UVPropertyInputBase<T,OwnerT>
 {
 protected:
 
@@ -487,7 +465,7 @@ operator T* (void) const
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
+class UPropertyInputCBase: virtual public UCLProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */virtual public UIPropertyInputBase
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -628,7 +606,7 @@ const T* operator [] (int i) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputC: public UPropertyInputCBase<T,OwnerT,type>
+class UPropertyInputC: virtual public UPropertyInputCBase<T,OwnerT,type>
 {
 protected:
 
@@ -669,7 +647,7 @@ virtual void SetData(const std::vector<T*> &value)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCData: public UPropertyInputCBase<T,OwnerT,type>
+class UPropertyInputCData: virtual public UPropertyInputCBase<T,OwnerT,type>
 {
 protected:
 

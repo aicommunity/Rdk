@@ -27,8 +27,8 @@ See file license.txt for more information
 #include "../Engine/UXMLEnvSerialize.h"
 #include "../Math/MUXMLSerialize.h"
 #include "../Math/MUBinarySerialize.h"
-#include "UComponent.h"
 #include "../System/rdk_system.h"
+#include "UComponent.h"
 
 namespace RDK {
 
@@ -40,14 +40,11 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T>
-class UVBaseDataProperty: public UIProperty
+class UVBaseDataProperty: virtual public UIProperty
 {
 protected: // Данные
 // Прямой доступ к данным
 mutable T* PData;
-
-// Тип входа
-int IoType;
 
 protected: // Данные синхронизации
 /// Мьютекс этого свойства
@@ -62,12 +59,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
+ : PData(0), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
+ : PData(pdata), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
@@ -224,12 +221,6 @@ virtual void UpdatePData(void* data)
 // --------------------------
 // Методы управления данными
 // --------------------------
-// Тип
-virtual int GetIoType(void) const
-{
- return IoType;
-}
-
 virtual ULongTime GetUpdateTime(void) const
 {
 // UGenericLocker locker(Mutex);
@@ -246,6 +237,7 @@ virtual void SetUpdateTime(ULongTime value)
 // --------------------------
 // Методы управления указателем
 // --------------------------
+/*
 /// Возвращает указатель на данные
 virtual void const* GetPointer(int index) const
 {
@@ -262,74 +254,7 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)
 virtual bool ResetPointer(int index, void* value)
 {
  return false;
-}
-// --------------------------
-
-protected:
-// --------------------------
-// Методы управления входами
-// --------------------------
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const
-{
- return std::string("");
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const
-{
- return std::string("");
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const
-{
- return std::string("");
-}
-
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name)
-{
-}
-
-/// Деинициализирует данные
-virtual void UnInit(void)
-{
-}
-
-/// Возвращает true, если на подключенном выходе новые данные
-virtual bool IsNewData(void) const
-{
- return true;
-}
-
-/// Возвращает true если вход имеет подключение
-virtual bool IsConnected(void) const
-{
- return false;
-}
-// --------------------------
-
-// --------------------------
-// Методы управления выходами
-// --------------------------
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const
-{
- return 0;
-}
-
-/// Возвращает указатель на компонент-приемник
-virtual UComponent* GetConnector(int index)
-{
- return 0;
-}
-
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const
-{
- return std::string("");
-}
+}                      */
 // --------------------------
 
 protected:

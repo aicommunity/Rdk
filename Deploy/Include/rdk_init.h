@@ -892,7 +892,7 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByName(const char* stringid1, const cha
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-RDK_LIB_TYPE int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index);
+//RDK_LIB_TYPE int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(const char* stringid);
@@ -904,7 +904,7 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Проверяет, существует ли заданна связь
-RDK_LIB_TYPE bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//RDK_LIB_TYPE bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer

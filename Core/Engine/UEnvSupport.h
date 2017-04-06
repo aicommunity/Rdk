@@ -381,6 +381,25 @@ const ULinkT<T>& operator [] (int index) const;
 // --------------------------
 };
 
+
+template<typename CharT>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const UIdVector &data)
+{
+ size_t size=data.GetSize();
+
+ if(size > 0)
+ {
+  for(size_t i=0;i<size;i++)
+  {
+   stream<<data[i];
+   if(i != size-1)
+	stream<<".";
+  }
+ }
+
+ return stream;
+}
+
 typedef ULinksListT<ULongId> ULinksList;
 typedef ULinksListT<std::string> UStringLinksList;
 /* *********************************************************************** */
