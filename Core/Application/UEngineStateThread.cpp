@@ -164,7 +164,7 @@ void UEngineStateThread::Execute(void)
    std::vector<UCalcState> calc_thread_states;
 
    int num_channels=Core_GetNumChannels();
-   calc_thread_states.assign(num_channels,1);
+   calc_thread_states.assign(num_channels,csStopped);
    CalcThreadStateTime.resize(num_channels,0);
    CalcThreadSuccessTime.resize(num_channels,0);
    AvgIterations.resize(num_channels);
