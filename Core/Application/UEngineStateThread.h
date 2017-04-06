@@ -18,16 +18,20 @@ class UEngineControl;
 
 class RDK_LIB_TYPE UEngineStateThread
 {
-protected: // Параметры
-/// Флаг разрешения логгирования
-//RDK::UELockVar<bool> LogFlag;
+public:
+/// Состояние расчета канала
+/// 0 - Выключен
+/// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
+enum UCalcState { csRunning=0, csStopped=1, csHanging=2, csUnknown=4 };
 
 protected: // Данные состояния модулей
 /// Состояние тредов расчета
 /// 0 - запущен
 /// 1 - расчет остановлен
 /// 2 - расчет запущен, но не выполняется
-RDK::UELockVar<std::vector<int> > CalcThreadStates;
+RDK::UELockVar<std::vector<UCalcState> > CalcThreadStates;
 
 protected: // Внутренние данные
 /// Последние моменты времени опроса состояния тредов расчета
@@ -114,10 +118,10 @@ virtual ~UEngineStateThread(void);
 // Методы доступа к данным состояния модулей
 // --------------------------
 /// Возвращает вектор состояний тредов
-std::vector<int> ReadCalcThreadStates(void) const;
+std::vector<UEngineStateThread::UCalcState> ReadCalcThreadStates(void) const;
 
 /// Возвращает состояние одного потока
-int ReadCalcThreadState(int channel_index);
+UEngineStateThread::UCalcState ReadCalcThreadState(int channel_index);
 // --------------------------
 
 // --------------------------

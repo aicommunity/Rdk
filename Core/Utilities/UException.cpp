@@ -9,38 +9,6 @@
 
 namespace RDK {
 
-// Последний порядковый номер исключения
-//long long UException::LastNumber=0;
-
-// Диспетчер исключений
-//ExceptionDispatcher* UException::Dispatcher=0;
-
-/* class UException */
-// --------------------------
-// Методы управления общими данными
-// --------------------------
-// Последний порядковый номер исключения
-/*long long UException::GetLastNumber(void)
-{
- return LastNumber;
-} */
-/*
-// Диспетчер исключений. Осуществляет запись логов и другую деятельность
-ExceptionDispatcher* UException::GetDispatcher(void)
-{
- return Dispatcher;
-}
-
-bool UException::SetDispatcher(ExceptionDispatcher* value)
-{
- if(Dispatcher == value)
-  return true;
-
- Dispatcher = value;
- return true;
-} */
-// --------------------------
-
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

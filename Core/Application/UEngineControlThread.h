@@ -27,6 +27,12 @@ class UChannelProfiler;
 
 class RDK_LIB_TYPE UEngineControlThread
 {
+public:
+/// Состояние расчета канала
+/// 0 - Выключен
+/// 1 - Идет расчет
+enum UCalcState { csStopped=0, csRunning=1 };
+
 protected: // Параметры
 /// Индекс канала в библиотеке аналитики, управляемый тредом
 int EngineIndex;
@@ -146,9 +152,7 @@ virtual void Calculate(void);
 virtual void Execute(void);
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Не считает
-/// 1 - Идет расчет
-virtual int CheckCalcState(void) const;
+virtual UEngineControlThread::UCalcState CheckCalcState(void) const;
 
 /// Возвращает состояния запуска треда
 virtual int IsCalcStarted(void) const;

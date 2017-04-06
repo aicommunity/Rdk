@@ -17,6 +17,15 @@ class UApplication;
 class RDK_LIB_TYPE UEngineControl: public UAppController
 {
 friend class UApplication;
+
+public:
+/// Состояние расчета канала
+/// 0 - Выключен
+/// 1 - Идет расчет
+/// 2 - Завис
+/// 4 - Состояние не определено
+enum UCalcState { csStopped=0, csRunning=1, csHanging=2, csUnknown=4 };
+
 protected: // Параметры
 /// Режим работы
 /// 0 - однопоточный (одноканальный) режим
@@ -143,11 +152,7 @@ virtual void ResetChannel(int channel_index);
 virtual void StepChannel(int channel_index);
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Выключен
-/// 1 - Идет расчет
-/// 2 - Завис
-/// 4 - Состояние не определено
-virtual int CheckCalcState(int channel_id) const;
+virtual UEngineControl::UCalcState CheckCalcState(int channel_id) const;
 
 /// Вклчает мониторинг сервера
 void StartEngineStateThread(void);

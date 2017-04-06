@@ -94,17 +94,17 @@ UEngineStateThread::~UEngineStateThread(void)
 // Методы доступа к данным состояния модулей
 // --------------------------
 /// Возвращает вектор состояний тредов
-std::vector<int> UEngineStateThread::ReadCalcThreadStates(void) const
+std::vector<UEngineStateThread::UCalcState> UEngineStateThread::ReadCalcThreadStates(void) const
 {
  return CalcThreadStates;
 }
 
 /// Возвращает состояние одного потока
-int UEngineStateThread::ReadCalcThreadState(int channel_index)
+UEngineStateThread::UCalcState UEngineStateThread::ReadCalcThreadState(int channel_index)
 {
- std::vector<int> tmp=CalcThreadStates;
+ std::vector<UCalcState> tmp=CalcThreadStates;
  if(channel_index<0 || channel_index>int(tmp.size()))
-  return -1;
+  return csUnknown;
 
  return tmp[channel_index];
 }
@@ -161,7 +161,7 @@ void UEngineStateThread::Execute(void)
   try
   {
    // Определяем состояние тредов расчета
-   std::vector<int> calc_thread_states;
+   std::vector<UCalcState> calc_thread_states;
 
    int num_channels=Core_GetNumChannels();
    calc_thread_states.assign(num_channels,1);
@@ -178,7 +178,7 @@ void UEngineStateThread::Execute(void)
 	{
 	 if(!thread->IsCalcStarted())
 	 {
-	  calc_thread_states[i]=1;
+	  calc_thread_states[i]=csStopped;
 	  continue;
 	 }
 
@@ -191,7 +191,7 @@ void UEngineStateThread::Execute(void)
 	   AvgIterations[i].erase(AvgIterations[i].begin());
 
 	  CalcThreadStateTime[i]=GetVariantLocalTime();
-	  calc_thread_states[i]=0;
+	  calc_thread_states[i]=csRunning;
 	 }
 	 else
 	 {
@@ -204,14 +204,14 @@ void UEngineStateThread::Execute(void)
 	  avg_diff/=1000;
 
 	  if(fabs(avg_diff) < 1e-8 || (GetVariantLocalTime()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
-	   calc_thread_states[i]=2;
+	   calc_thread_states[i]=csHanging;
 	  else
-	   calc_thread_states[i]=0;
+	   calc_thread_states[i]=csRunning;
 	 }
 	}
 	else
 	{
-	 calc_thread_states[i]=1;
+	 calc_thread_states[i]=csStopped;
 	}
    }
 

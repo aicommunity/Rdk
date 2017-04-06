@@ -322,7 +322,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
  {
   ChannelsStringGrid->RowCount=Core_GetNumChannels();
   const TEngineMonitorThread * monitor=UEngineMonitorForm->EngineMonitorFrame->GetEngineMonitorThread();
-  std::vector<int> CalcThreadStates;
+  std::vector<TEngineMonitorThread::UCalcState> CalcThreadStates;
   std::vector<int> VideoCaptureStates;
 
   if(monitor)

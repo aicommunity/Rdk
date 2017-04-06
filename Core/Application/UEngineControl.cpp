@@ -466,52 +466,48 @@ void UEngineControl::TimerExecute(void)
 }
 
 /// Проверяет состояние расчета
-/// 0 - Не считает
-/// 1 - Идет расчет
-/// 2 - Завис
-/// 4 - Состояние не определено
-int UEngineControl::CheckCalcState(int channel_id) const
+UEngineControl::UCalcState UEngineControl::CheckCalcState(int channel_id) const
 {
  if(channel_id<0 || channel_id>GetNumChannels())
-  return 0;
+  return csStopped;
 
  switch(ThreadMode)
  {
  case 0:
-  return 0;
+  return csStopped;
  break;
 
  case 1:
  {
-  int state=EngineControlThreads[channel_id]->CheckCalcState();
-  if(state == 0)
-   return 0;
+  UEngineControlThread::UCalcState state=EngineControlThreads[channel_id]->CheckCalcState();
+  if(state == UEngineControlThread::UCalcState::csStopped)
+   return csStopped;
   else
-  if(state == 1)
+  if(state == UEngineControlThread::UCalcState::csRunning)
   {
    if(EngineStateThread)
    {
-	int thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
-	if(thread_state == 0)
-	 return 1;
+	UEngineStateThread::UCalcState thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
+	if(thread_state == UEngineStateThread::UCalcState::csRunning)
+	 return csRunning;
 	else
-	if(thread_state == 1)
-	 return 0;
+	if(thread_state == UEngineStateThread::UCalcState::csStopped)
+	 return csStopped;
 	else
-	if(thread_state == 2)
-	 return 2;
+	if(thread_state == UEngineStateThread::UCalcState::csHanging)
+	 return csHanging;
 	else
-     return 4;
+	 return csUnknown;
    }
    else
-    return 4;
+	return csUnknown;
   }
   else
-   return 4;
+   return csUnknown;
  }
  break;
  }
- return 4;
+ return csUnknown;
 }
 
 /// Вклчает мониторинг сервера

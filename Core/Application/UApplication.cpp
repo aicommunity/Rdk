@@ -960,18 +960,14 @@ bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
   return false;
- return EngineControl->CheckCalcState(channel_index);
+ return (EngineControl->CheckCalcState(channel_index) == UEngineControl::UCalcState::csRunning);
 }
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Выключен
-/// 1 - Идет расчет
-/// 2 - Завис
-/// 4 - Состояние не определено
-int UApplication::CheckCalcState(int channel_id) const
+UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
-  return 4;
+  return UEngineControl::UCalcState::csUnknown;
  return EngineControl->CheckCalcState(channel_id);
 }
 // --------------------------

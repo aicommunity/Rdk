@@ -278,14 +278,12 @@ void UEngineControlThread::Execute(void)
 }
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Не считает
-/// 1 - Идет расчет
-int UEngineControlThread::CheckCalcState(void) const
+UEngineControlThread::UCalcState UEngineControlThread::CheckCalcState(void) const
 {
  if(CalcState->wait(0))
-  return 1;
+  return csRunning;
 
- return 0;
+ return csStopped;
 }
 
 /// Возвращает состояния запуска треда

@@ -3149,7 +3149,7 @@ int RDK_CALL ExceptionDispatcher(void *exception)
  RDK::UException *exc=reinterpret_cast<RDK::UException*>(exception);
  RdkCoreManager.GetEngineLock()->ProcessException(*exc);
 
- return 0;
+ return RDK_SUCCESS;
 }
 // ----------------------------
 
