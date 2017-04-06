@@ -335,15 +335,14 @@ const UCItem& UConnector::GetCItem(const NameT &connector_property_name, const U
 
  return DummyItem;
 }
-
+				*/
 void UConnector::GetCItem(const NameT &connector_property_name, std::vector<UCItem> &buffer) const
 {
- buffer.clear();
- std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
- if(I != ConnectedItemList.end())
-  buffer=I->second;
+ UIPropertyInput* property(0);
+ FindInputProperty(connector_property_name, property);
+
+ buffer=property->GetItemsList();
 }
-          */
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
@@ -872,13 +871,24 @@ UIPropertyInputBase::~UIPropertyInputBase(void)
 {
 }
 
-/// Возвращает указатель на компонент-источник
-const std::vector<UCItem>& UIPropertyInputBase::GetItemsList(void) const
+
+/// Возвращает тип свойства входа
+
+int UIPropertyInputBase::GetInputType(void) const
+{
+ return InputType;
+}
+
+
+/// Возвращает указатель на компонент-источник
+
+const std::vector<UCItem>& UIPropertyInputBase::GetItemsList(void) const
 {
  return ItemsList;
 }
 
-// Возвращает указатель на компонент-источник
+
+// Возвращает указатель на компонент-источник
 UItem* UIPropertyInputBase::GetItem(int c_index)
 {
  if(ItemsList.empty())
@@ -981,6 +991,7 @@ bool UIPropertyInputBase::Disconnect(const NameT &item_property_name, int c_inde
 	ItemsList.erase(ItemsList.begin()+index);
    }
  }   */
+ return false;
 }
 
 /// Разрывает связь с индексом c_index, или все связи если c_index == -1
@@ -1008,16 +1019,19 @@ void UIPropertyInputBase::DisconnectAll(void)
 // Проверяет, существует ли связь с заданным коннектором
 bool UIPropertyInputBase::CheckLink(const UEPtr<UItem> &item) const
 {
+ return false;
 }
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UIPropertyInputBase::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, int c_index) const
 {
+ return false;
 }
 
 /// Подключает выход
 bool UIPropertyInputBase::Connect(UItem* item, const std::string &output_name, int c_index, bool forced_connect_same_item)
 {
+ return false;
 /*
 
  UIPropertyOutput* i_item_property(0);

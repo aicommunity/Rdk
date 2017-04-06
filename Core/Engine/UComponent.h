@@ -582,8 +582,8 @@ class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
 {
 friend class UConnector;
 public:
-/// Возвращает тип свойства ввода-вывода
-virtual int GetIoType(void) const=0;
+/// Возвращает тип свойства входа
+virtual int GetInputType(void) const=0;
 
 public: // Методы доступа к источнику данных
 /// Возвращает указатель на компонент-источник
@@ -648,10 +648,11 @@ virtual void Disconnect(UEPtr<UItem> na, const NameT &item_property_name)=0;
 virtual void Disconnect(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1)=0;
 };
 
-class UConnector;
+class UItem;
 
 class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
 {
+friend class UItem;
 public: // Методы доступа к подключенным входам
 /// Возвращает число подключенных входов
 virtual size_t GetNumConnectors(void) const=0;
@@ -663,7 +664,7 @@ virtual UConnector* GetConnector(int index)=0;
 virtual std::string GetConnectorInputName(int index) const=0;
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-virtual bool Disconnect(const UId &id)=0;
+//virtual bool Disconnect(const UId &id)=0;
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
@@ -690,13 +691,17 @@ virtual void Disconnect(UEPtr<UConnector> c)=0;
 virtual void Disconnect(UEPtr<UConnector> c, const NameT &connector_property_name, int c_index=-1)=0;
 
 // Возвращает  коннектор из списка подключений.
-virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const=0;
+//virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const=0;
 
 // Проверяет, существует ли связь с заданным коннектором
 virtual bool CheckLink(const UEPtr<UConnector> &connector, int c_index) const=0;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 virtual bool CheckLink(const UEPtr<UConnector> &connector, const NameT &connector_property_name, int c_index=-1) const=0;
+
+// Переустанавливает все связи этого выхода со всеми connectors
+virtual void BuildLinks(void)=0;
+
 };
 
 

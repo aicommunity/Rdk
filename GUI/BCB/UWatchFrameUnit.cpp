@@ -919,7 +919,8 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
 	 if(!ym)
 	 {
-	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
+      y=0; // TODO: убрать этот вариант
+//	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
 	  if(!y)
 	   continue;
 	 }
@@ -935,6 +936,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    else
    if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
    {
+   /*
 	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
 	 vxdata.assign(xdata_size*3+2,0);
 	 vydata.assign(xdata_size*3+2,0);
@@ -964,10 +966,11 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 
 	 y=&vydata[0];
 	 x=&vxdata[0];
-	 wd->XYSize=xdata_size*3+2;
+	 wd->XYSize=xdata_size*3+2;        */
    }
    else
    {
+   /*
 	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
 	int ydata_size=Model_GetComponentOutputDataSize(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
 	int data_size=(xdata_size<ydata_size)?xdata_size:ydata_size;
@@ -985,7 +988,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 
 	 y=&vydata[0];
 	 x=&vxdata[0];
-	 wd->XYSize=data_size;
+	 wd->XYSize=data_size;       */
    }
 
   // Смотрим способ обновления данных наблюдения...

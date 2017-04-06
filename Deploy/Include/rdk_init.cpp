@@ -2023,7 +2023,7 @@ int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_pr
 {
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
 }
-
+/*
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int RDK_CALL Model_ChainLinking(const char* stringid)
 {
@@ -2036,7 +2036,7 @@ int RDK_CALL Model_ParallelLinking(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_ParallelLinking(stringid);
 }
-
+                  */
 // Разрывает выбранную связь
 int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
@@ -2217,7 +2217,7 @@ int RDK_CALL Model_GetComponentNumInputs(const char *stringid)
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentNumInputs(stringid);
 }
-
+/*
 // Возвращает размер входа компонента в числе элементов
 int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, int index)
 {
@@ -2246,14 +2246,14 @@ unsigned char* RDK_CALL Model_GetComponentInputData(const char *stringid, int in
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInputData(stringid, index);
 }
-
+                    */
 // Возвращает число выходов у компонента
 int RDK_CALL Model_GetComponentNumOutputs(const char *stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentNumOutputs(stringid);
 }
-
+					/*
 // Возвращает размер выхода компонента в числе элементов
 int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
@@ -2282,7 +2282,7 @@ unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int i
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputData(stringid, index);
 }
-
+                                    */
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
 const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
@@ -2924,12 +2924,12 @@ const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const 
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, property_name);
 }
-
-const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex(const char *stringid, int  index)
+										 /*
+const void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex(const char *stringid, int  index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, index);
-}
+}                */
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name)
@@ -2937,24 +2937,24 @@ const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *st
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
 }
-
-const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index)
+	  /*
+const void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
-}
+}                    */
 const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutput(int channel_index, const char *stringid, const char *property_name)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
 }
-
-const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutputByIndex(int channel_index,const char *stringid, int index)
+	  /*
+const void* RDK_CALL MModel_GetComponentOutputByIndex(int channel_index,const char *stringid, int index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
-}
+}              */
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
@@ -2962,13 +2962,13 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const cha
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
 }
-
-const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index)
+	  /*
+const void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
 }
-
+             */
 const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int channel_index,const char *stringid, const char *property_name)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
@@ -2976,12 +2976,13 @@ const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int chan
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
 
 }
-const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int channel_index,const char *stringid, int index)
+/*
+const void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int channel_index,const char *stringid, int index)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
-}
+}                    */
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
@@ -2989,12 +2990,12 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, property_name);
 }
-
-const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(const char *stringid, int index)
+	  /*
+const void* RDK_CALL Model_GetComponentBitmapInputByIndex(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, index);
-}
+}      */
 
 /// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
 /// в стрктуру bmp_param
@@ -3010,19 +3011,19 @@ int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int channel_index, const cha
 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
 }
-
-int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
+					/*
+int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, void* bmp_param)
 {
  return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
 }
 
-int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int channel_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
+int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int channel_index, const char *stringid, int index, void* bmp_param)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
-}
+}*/
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
@@ -3038,18 +3039,18 @@ RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int channel_index, co
 
   return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
 }
-
-int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
+/*
+int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index,  void* bmp)
 {
  return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
 }
 
-int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
+int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index,  void* bmp)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
-}
+}                    */
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 int RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3073,21 +3074,21 @@ int RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int channel_index, const char
 
  return RdkCoreManager.GetEngine(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
-
-int RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+/*
+int RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const void* const bmp, bool reflect)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
-int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, const void* const bmp, bool reflect)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
-
+*/
 // Замещает изображение входа с индексом 'index' компонента 'id'
 int RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
@@ -3101,12 +3102,12 @@ int RDK_CALL MModel_SetComponentBitmapInput(int channel_index, const char *strin
 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
-
-int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+/*
+int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const  void* const bmp, bool reflect)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
-}
+} */
 // --------------------------
 
 /* ************************************************************************** */

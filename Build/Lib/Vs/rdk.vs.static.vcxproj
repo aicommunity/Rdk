@@ -99,7 +99,6 @@
     <ClCompile Include="..\..\..\Core\Application\URpcDispatcher.cpp" />
     <ClCompile Include="..\..\..\Core\Application\URpcDispatcherQueues.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\Engine.cpp" />
-    <ClCompile Include="..\..\..\Core\Engine\UADItem.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UAModel.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UBinaryEnvSerialize.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UComponent.cpp" />
@@ -208,7 +207,6 @@
     <ClInclude Include="..\..\..\Core\Application\URpcDispatcher.h" />
     <ClInclude Include="..\..\..\Core\Application\URpcDispatcherQueues.h" />
     <ClInclude Include="..\..\..\Core\Engine\Engine.h" />
-    <ClInclude Include="..\..\..\Core\Engine\UADItem.h" />
     <ClInclude Include="..\..\..\Core\Engine\UAModel.h" />
     <ClInclude Include="..\..\..\Core\Engine\UBinaryEnvSerialize.h" />
     <ClInclude Include="..\..\..\Core\Engine\UComponent.h" />

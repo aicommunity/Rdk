@@ -320,11 +320,11 @@ bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item)
 template<typename T>
 bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item)
 {
- UEPtr<UADItem> pitem;
+ UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -412,11 +412,11 @@ bool UNet::BreakLink(const ULinkT<T> &link)
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UADItem> pitem=0;
+ UEPtr<UItem> pitem=0;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -452,11 +452,11 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 template<typename T>
 bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UADItem> pitem;
+ UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))

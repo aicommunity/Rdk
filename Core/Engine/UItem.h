@@ -202,13 +202,16 @@ public:
 // ----------------------
 // Коммуникационные методы
 // ----------------------
+/// Возвращает список свойств-входов
+virtual void ReadOutputPropertiesList(std::vector<UEPtr<UIPropertyOutput> > &buffer) const;
+
 /// Возвращает число выходов
 virtual int GetNumOutputs(void) const;
 
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+//virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
 
 // Устанавливает связь с коннектором 'c'
 virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
@@ -223,7 +226,7 @@ virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, co
 virtual int GetNumAConnectors(const NameT &item_property_name) const;
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-virtual bool Disconnect(const UId &id);
+//virtual bool Disconnect(const UId &id);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
@@ -241,10 +244,10 @@ virtual void BuildLinks(void);
 
 // Возвращает указатель на коннектор из списка подключений
 // по Id 'id'.
-virtual UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
+//virtual UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
 
 // Возвращает  коннектор из списка подключений.
-virtual UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
+//virtual UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
 
 // Проверяет, существует ли связь с заданным коннектором
 bool CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const;
@@ -313,7 +316,7 @@ virtual UConnector* GetConnector(int index);
 virtual std::string GetConnectorInputName(int index) const;
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-virtual bool Disconnect(const UId &id);
+//virtual bool Disconnect(const UId &id);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
@@ -340,13 +343,16 @@ virtual void Disconnect(UEPtr<UConnector> c);
 virtual void Disconnect(UEPtr<UConnector> c, const NameT &connector_property_name, int c_index=-1);
 
 // Возвращает  коннектор из списка подключений.
-virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const;
+//virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const;
 
 // Проверяет, существует ли связь с заданным коннектором
 bool CheckLink(const UEPtr<UConnector> &connector, int c_index) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &connector_property_name, int c_index=-1) const;
+
+// Переустанавливает все связи этого выхода со всеми connectors
+virtual void BuildLinks(void);
 };
 
 
@@ -367,13 +373,17 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
   return linkslist;
  link.Item=item;
 
- std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
- for(;I != RelatedConnectors.end();++I)
+ std::vector<UEPtr<UIPropertyOutput> > properties;
+ ReadOutputPropertiesList(properties);
+
+// std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
+// for(;I != RelatedConnectors.end();++I)
+ for(size_t j=0;j<properties.size();j++)
  {
   link.Connector.clear();
-  for(size_t i=0;i<I->second.size();i++)
+  for(size_t i=0;i<properties[j]->GetNumConnectors();i++)
   {
-   UConnector* curr_conn=I->second[i];
+   UConnector* curr_conn=properties[j]->GetConnector(i);
    if(exclude_internals)
    {
 	if(curr_conn->CheckOwner(internal_level))
@@ -386,7 +396,7 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
 	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
-	 if(buffer[k].OutputName == I->first)
+	 if(buffer[k].OutputName == properties[j]->GetName())
 	 {
 	  link.Item.Index=buffer[k].Output;
 	  link.Item.Name=buffer[k].OutputName;

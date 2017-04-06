@@ -22,7 +22,6 @@ public: // Методы
 UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : ULProperty<T,OwnerT,type>(name, owner, setmethod)
 {
- this->IoType=input_type;
 };
 // -----------------------------
 
@@ -98,6 +97,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
 // --------------------------
 // Методы управления выходами
 // --------------------------
+/*
 /// Возвращает указатель на компонент-приемник
 virtual UConnector* GetConnector(int index)
 {
@@ -108,7 +108,7 @@ virtual UConnector* GetConnector(int index)
 virtual std::string GetConnectorInputName(int index) const
 {
  return UIPropertyOutput::GetConnectorInputName(index);
-}
+}                        */
 // --------------------------
 };
 
@@ -124,7 +124,8 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputData(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
+ : ULProperty<T,OwnerT,type>(name, owner, setmethod),
+   UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
 {
 
 };

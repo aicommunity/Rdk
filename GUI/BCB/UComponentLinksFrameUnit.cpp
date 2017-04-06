@@ -211,7 +211,7 @@ void __fastcall TUComponentLinksFrame::BreakAll(void)
 // ѕредварительно разрывает все существующие св€зи
 void __fastcall TUComponentLinksFrame::ChainLinking(void)
 {
- Model_ChainLinking(NANetFrameLinks->ViewComponentLongId.c_str());
+// Model_ChainLinking(NANetFrameLinks->ViewComponentLongId.c_str());
 
  UpdateInterface();
 }
@@ -220,7 +220,7 @@ void __fastcall TUComponentLinksFrame::ChainLinking(void)
 // ѕредварительно разрывает все существующие св€зи
 void __fastcall TUComponentLinksFrame::ParallelLinking(void)
 {
- Model_ParallelLinking(NANetFrameLinks->ViewComponentLongId.c_str());
+// Model_ParallelLinking(NANetFrameLinks->ViewComponentLongId.c_str());
 
  UpdateInterface();
 }

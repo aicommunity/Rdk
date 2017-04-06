@@ -454,6 +454,7 @@ void TUImagesFrame::AUpdateInterface(void)
 
 	 if(ComponentIndexes[i][j].empty())
 	 {
+	 /*
 	  RDK::UBitmapParam bmp_param;
 	  int copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &bmp_param);
 	  if(copy_res == 0)
@@ -467,7 +468,7 @@ void TUImagesFrame::AUpdateInterface(void)
 	   StringIds[i][j].clear();
 	   ComponentIndexesOld[i][j]=0;
 	   ComponentIndexes[i][j].clear();
-	  }
+	  }  */
 	 }
 	 else
 	 {
@@ -559,14 +560,18 @@ void TUImagesFrame::AUpdateInterface(void)
   if(eng_index<0 || IndChannelsCheckBox->Checked == false)
    eng_index=Core_GetSelectedChannelIndex();
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-   copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &bmp_param);
+  {
+//   copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &bmp_param);
+  }
   else
    copy_res=MModel_CopyComponentBitmapOutputHeader(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &bmp_param);
   if(copy_res == 0)
   {
    TempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
    if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-	MModel_CopyComponentBitmapOutputByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &TempBmp);
+   {
+//	MModel_CopyComponentBitmapOutputByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &TempBmp);
+   }
    else
 	MModel_CopyComponentBitmapOutput(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &TempBmp);
 //   TempBmp=*bmp;

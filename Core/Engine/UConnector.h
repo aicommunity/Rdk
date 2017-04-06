@@ -277,13 +277,16 @@ protected: // Данные
 /// Данные подключенных ко входу источников
 std::vector<UCItem> ItemsList;
 
+/// Тип входа
+int InputType;
+
 public:
 /// Конструкторы и деструкторы
 UIPropertyInputBase(void);
 virtual ~UIPropertyInputBase(void);
 
 /// Возвращает тип свойства ввода-вывода
-virtual int GetIoType(void) const=0;
+virtual int GetInputType(void) const;
 
 public: // Методы доступа к источнику данных
 /// Возвращает указатель на компонент-источник
@@ -360,44 +363,45 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
  if(connector.Id.size()==0)
   return linkslist;
 
+ std::vector<UEPtr<UIPropertyInput> > properties;
+ ReadInputPropertiesList(properties);
 
- std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
- for(;I != ConnectedItemList.end();++I)
-  for(size_t i=0;i<I->second.size();i++)
+// std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+// for(;I != ConnectedItemList.end();++I)
+ for(size_t j=0;j<properties.size();j++)
+ {
+  const std::vector<UCItem>& items=properties[j]->GetItemsList();
+  for(size_t i=0;i<items.size();i++)
   {
-   if(I->second[i].Item)
+   if(items[i].Item)
    {
 	if(exclude_internals)
 	{
-	 if(reinterpret_cast<UContainer*>(I->second[i].Item)->CheckOwner(internal_level))
+	 if(reinterpret_cast<UContainer*>(items[i].Item)->CheckOwner(internal_level))
 	  continue;
 	}
-   reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
-   UIProperty* property=0;
-   FindInputProperty(I->first, property);
-   if(property)
-	connector.Index=-1;//property->GetMinRange();
-   else
-    connector.Index=-1;//i;
-   connector.Name=I->first;
+	reinterpret_cast<UContainer*>(items[i].Item)->GetLongId(netlevel,item.Id);
+	connector.Index=-1;//i;
+	connector.Name=properties[j]->GetName();
 
-   item.Index=-1;//CItemList[i].Index;
-   item.Name=I->second[i].Name;//CItemList[i].Name;
-   if(connector.Id.size() != 0)
-   {
-	int item_id=linkslist.FindItem(item);
-	if(item_id >= 0)
+	item.Index=-1;//CItemList[i].Index;
+	item.Name=items[i].Name;//CItemList[i].Name;
+	if(connector.Id.size() != 0)
 	{
-	 if(linkslist[item_id].FindConnector(connector) >= 0)
-	  continue;
-	 linkslist[item_id].Connector.push_back(connector);
-	}
-	else
-	{
-	 link.Item=item;
-	 link.Connector.clear();
-	 link.Connector.push_back(connector);
-	 linkslist.Add(link);
+	 int item_id=linkslist.FindItem(item);
+	 if(item_id >= 0)
+	 {
+	  if(linkslist[item_id].FindConnector(connector) >= 0)
+	   continue;
+	  linkslist[item_id].Connector.push_back(connector);
+	 }
+	 else
+	 {
+	  link.Item=item;
+	  link.Connector.clear();
+	  link.Connector.push_back(connector);
+	  linkslist.Add(link);
+	 }
 	}
    }
   }

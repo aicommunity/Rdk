@@ -89,7 +89,7 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
  if(!dynamic_pointer_cast<UNet>(target))
   return false;
 
- if(UADItem::Copy(target,stor,copystate))
+ if(UItem::Copy(target,stor,copystate))
   {
    static_pointer_cast<UNet>(target)->BreakLinks();
 
@@ -104,7 +104,7 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
 // или вызов деструктора, если Storage == 0
 void UNet::Free(void)
 {
- UADItem::Free();
+ UItem::Free();
 }
 // --------------------------
 
