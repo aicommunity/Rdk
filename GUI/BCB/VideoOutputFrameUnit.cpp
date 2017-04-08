@@ -459,7 +459,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
 }          */
 
 // Устанавливает отдельное изображение
-bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
+bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps, bool reflect)
 {
 // BmpSource=bmp;
 // BmpSource.SetColorModel(RDK::ubmRGB24);
@@ -467,7 +467,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
  if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
 	RDK::ULongTime time_stamp=TDateTime::CurrentDateTime().operator double();//GetTickCount();
-	CaptureThread->WriteSourceSafe(bmp,time_stamp,false);
+	CaptureThread->WriteSourceSafe(bmp,time_stamp,reflect);
 //	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
    dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread)->SetFps(fps);
  }

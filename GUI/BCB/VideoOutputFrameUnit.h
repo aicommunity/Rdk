@@ -387,7 +387,7 @@ void InitByAvi(const String &filename);
 void InitByBmp(const String &filename, double fps);
 				 */
 // Устанавливает отдельное изображение
-bool InitByBmp(const RDK::UBitmap &bmp, double fps);
+bool InitByBmp(const RDK::UBitmap &bmp, double fps, bool reflect=false);
 /*
 // Инициализация фрейма камерой
 void InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index);
