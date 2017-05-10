@@ -441,7 +441,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 
  if(!i_conn_property)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector is empty and AutoNumInputs disabled"));
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector ")+connector_property_name+std::string(" not found or empty and AutoNumInputs disabled"));
   return false;
  }
 
