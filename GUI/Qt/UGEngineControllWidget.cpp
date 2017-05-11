@@ -119,7 +119,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
 
 UGEngineControllWidget::~UGEngineControllWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     application.UnInit();
     delete ui;
 }
