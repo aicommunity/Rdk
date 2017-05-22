@@ -437,10 +437,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -912,10 +908,13 @@ object UGEngineControlForm: TUGEngineControlForm
     ButtonWidth = 104
     Caption = 'ToolBar'
     Color = clBtnFace
+    DoubleBuffered = True
     Images = ImageList
     ParentColor = False
+    ParentDoubleBuffered = False
     ShowCaptions = True
     TabOrder = 3
+    ExplicitTop = -3
     object ToolButton17: TToolButton
       Left = 0
       Top = 0
@@ -1316,7 +1315,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03000410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03040410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

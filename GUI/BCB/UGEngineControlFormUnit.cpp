@@ -31,7 +31,7 @@
 #include "TLoaderFormUnit.h"
 #include "TApplicationOptionsFormUnit.h"
 #include "UClassesDescriptionsFormUnit.h"
-
+#include <psapi.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFormUnit"
@@ -42,6 +42,7 @@
 #pragma link "UImagesFrameUnit"
 #pragma link "UWatchFrameUnit"
 #pragma link "UDrawEngineFrameUnit"
+#pragma link "psapi.lib"
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
@@ -147,6 +148,55 @@ String GetBuildInfoAsString(void)
 	IntToStr(v3) + "." + IntToStr(v4);
  }
  return "";
+}
+
+unsigned long long GetMemoryUsedInfo(void)
+{
+/*
+ TMemoryManagerState st;
+ TSmallBlockTypeState sb;
+
+ GetMemoryManagerState(st);
+ unsigned long long	result = st.TotalAllocatedMediumBlockSize + st.TotalAllocatedLargeBlockSize;
+ for(int i=0;i<NumSmallBlockTypes;i++)
+  result+=st.SmallBlockTypeStates[i].UseableBlockSize * st.SmallBlockTypeStates[i].AllocatedBlockCount;
+  */
+ unsigned long long	result(0);
+ PROCESS_MEMORY_COUNTERS mc;
+ int cb;
+
+ if(GetProcessMemoryInfo(GetCurrentProcess(), &mc, cb))
+  result= mc.WorkingSetSize;
+ return result;
+}
+
+
+unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
+{
+ TSystemInfo Si;
+ LongWord P, dwRet;
+ TMemoryBasicInformation Mbi;
+
+ unsigned long long Result = 0;
+ AAddressOfLargest = 0;
+ GetSystemInfo(&Si);
+ P = 0;
+ while (P < LongWord(Si.lpMaximumApplicationAddress))
+ {
+  dwRet = VirtualQuery((void*)(P), &Mbi, sizeof(Mbi));
+  if( (dwRet > 0) && (Mbi.State && MEM_FREE != 0))
+  {
+	  if (Result < Mbi.RegionSize)
+	  {
+		Result = Mbi.RegionSize;
+		AAddressOfLargest = Mbi.BaseAddress;
+	  }
+	  P+=Mbi.RegionSize;
+  }
+  else
+   P+=Si.dwPageSize;
+ }
+ return Result;
 }
 
 //---------------------------------------------------------------------------
@@ -306,6 +356,12 @@ void TUGEngineControlForm::AUpdateInterface(void)
  {
   Caption=Caption+String(" ")+RdkApplication.GetAppCaption().c_str();
  }
+
+ void* AAddressOfLargest(0);
+ String memory_usage=String(" Memory usage: ")+IntToStr(__int64(GetMemoryUsedInfo())/1024)+
+		String(" Kb. Largest Free Block: ")+IntToStr(__int64(GetLargestFreeMemRegion(AAddressOfLargest))/1024)+
+		" Kb";
+ Caption=Caption+memory_usage;
 
  for(int i=0;i<StatusBar->Panels->Count;i++)
  {
