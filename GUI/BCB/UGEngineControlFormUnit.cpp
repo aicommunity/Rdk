@@ -357,12 +357,14 @@ void TUGEngineControlForm::AUpdateInterface(void)
   Caption=Caption+String(" ")+RdkApplication.GetAppCaption().c_str();
  }
 
-#ifdef DEBUG
+#ifdef _DEBUG
  void* AAddressOfLargest(0);
  String memory_usage=String(" Memory usage: ")+IntToStr(__int64(GetMemoryUsedInfo())/1024)+
 		String(" Kb. Largest Free Block: ")+IntToStr(__int64(GetLargestFreeMemRegion(AAddressOfLargest))/1024)+
 		" Kb";
  Caption=Caption+memory_usage;
+
+ MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
 #endif
 
  for(int i=0;i<StatusBar->Panels->Count;i++)
