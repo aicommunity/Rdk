@@ -385,7 +385,8 @@ void UEngineControl::ResetChannel(int channel_index)
 /// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
 void UEngineControl::StepChannel(int channel_index)
 {
- if(channel_index>=GetNumChannels())
+ int num_channels=GetNumChannels();
+ if(channel_index>=num_channels)
   return;
 
  RDK::UIVisualControllerStorage::BeforeCalculate();
@@ -395,7 +396,7 @@ void UEngineControl::StepChannel(int channel_index)
 
  if(channel_index <0)
  {
-  for(int i=0;i<GetNumChannels();i++)
+  for(int i=0;i<num_channels;i++)
   {
    if(MCore_IsChannelInit(i) && MModel_Check(i))
    {
@@ -422,7 +423,7 @@ void UEngineControl::StepChannel(int channel_index)
 
  if(channel_index <0)
  {
-  for(int i=0;i<GetNumChannels();i++)
+  for(int i=0;i<num_channels;i++)
   {
    EngineControlThreads[i]->GetProfiler()->Calculate();
   }
@@ -449,13 +450,14 @@ void UEngineControl::TimerExecute(void)
   if(UseControllersMode == 0)
    RDK::UIControllerStorage::AfterCalculate(-1);
   SendMetadata();
-  RDK::UIVisualControllerStorage::AfterCalculate();
+//  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
-  for(int i=0;i<GetNumChannels();i++)
-   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
+//  for(int i=0;i<GetNumChannels();i++)
+//   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
   RDK::UIVisualControllerStorage::UpdateInterface();
 
-  for(int i=0;i<GetNumChannels();i++)
+  int num_channels=GetNumChannels();
+  for(int i=0;i<num_channels;i++)
   {
    EngineControlThreads[i]->GetProfiler()->CalculateGui();
    EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
