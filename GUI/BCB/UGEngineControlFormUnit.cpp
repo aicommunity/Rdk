@@ -49,17 +49,17 @@ TUGEngineControlForm *UGEngineControlForm;
 using namespace RDK;
 
 /// Ёкзепл€р прототипа декодера команд
-RDK::URpcDecoderInternal RdkRpcDecoder;
+//RDK::URpcDecoderInternal RdkRpcDecoder;
 
 /// Ёкзепл€р класса диспетчера команд
-RDK::URpcDispatcher RdkRpcDispatcher;
+//RDK::URpcDispatcher RdkRpcDispatcher;
 
 /// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
 /// Ёкземпл€р класса контроллера сервера
 UServerControlVcl RdkServerControl;
-URpcDecoderCommonVcl RdkRpcDecoderCommon;
+//URpcDecoderCommonVcl RdkRpcDecoderCommon;
 
 /// Ёкземпл€р класса контроллера расчета
 UEngineControlVcl RdkEngineControl;
@@ -2338,9 +2338,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Hint=ProgramName;
 
- RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
- RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
- RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
+// RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
+// RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
+// RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
