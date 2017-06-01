@@ -350,6 +350,7 @@ bool UApplication::Init(void)
 bool UApplication::UnInit(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
+ RDK::UIVisualControllerStorage::ClearInterface();
  if(EngineControl)
  {
   EngineControl->PauseChannel(-1);
