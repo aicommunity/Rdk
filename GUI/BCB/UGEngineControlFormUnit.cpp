@@ -85,8 +85,12 @@ String Lang_SaveInterface("Saving Interface...");
 String Lang_UpdateInterface("Update Interface...");
 String Lang_Starting("Starting...");
 String Lang_Stopping("Stopping...");
+String Lang_ApplicationRun("Launching application. Please Wait...");
+String Lang_ApplicationClose("Closing application. Please Wait...");
 
 TUVisualControllerForm *RdkMainForm=0;
+
+HWND RdkStatusWindow(0);
 
 bool RdkIsApplicationRunning(void)
 {
@@ -199,6 +203,46 @@ unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
  return Result;
 }
 
+namespace RDK {
+
+
+void CreateStatusWindow(const String &Text)
+{
+  int FormWidth(400);
+  int FormHeight(164);
+
+  if(!RdkStatusWindow)
+  {
+   RdkStatusWindow=CreateWindow("STATIC",
+						 AnsiString(Text).c_str(),
+						 WS_OVERLAPPED | WS_POPUPWINDOW | WS_THICKFRAME | SS_CENTER | SS_CENTERIMAGE,
+						 (Screen->Width - FormWidth) / 2,
+						 (Screen->Height - FormHeight) / 2,
+						 FormWidth,
+						 FormHeight,
+						 Application->MainForm->Handle,
+						 0,
+						 GetModuleHandle(0),
+						 0);
+  }
+
+  if(RdkStatusWindow)
+  {
+   ShowWindow(RdkStatusWindow, SW_SHOWNORMAL);
+   UpdateWindow(RdkStatusWindow);
+  }
+}
+
+void RemoveStatusWindow(void)
+{
+ if(RdkStatusWindow)
+ {
+  DestroyWindow(RdkStatusWindow);
+  RdkStatusWindow=0;
+ }
+}
+
+}
 //---------------------------------------------------------------------------
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
@@ -2409,6 +2453,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  }
  else
  {
+  RDK::CreateStatusWindow(Lang_ApplicationRun);
   RdkMainForm->Show();
   RdkMainForm->UpdateInterface();
  }
@@ -2424,6 +2469,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   AutoStartProjectFlag=false;
   Start1Click(Sender);
  }
+
+ RDK::RemoveStatusWindow();
 }
 //---------------------------------------------------------------------------
 
@@ -2433,6 +2480,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
  if(!RdkMainForm)
   return;
 
+ RDK::CreateStatusWindow(Lang_ApplicationClose);
  if(RdkMainForm == this)
  {
   DisableStopVideoSources=false;
@@ -2442,6 +2490,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
   RdkApplication.UnInit();
   CanClose=true;
  }
+ RDK::RemoveStatusWindow();
 }
 //---------------------------------------------------------------------------
 
@@ -2665,9 +2714,11 @@ void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
+ RDK::CreateStatusWindow(Lang_ApplicationClose);
  DisableStopVideoSources=false;
  RdkApplication.UnInit();
  Application->Terminate();
+ RDK::RemoveStatusWindow();
 }
 //---------------------------------------------------------------------------
 

@@ -42,6 +42,15 @@ extern String Lang_SaveInterface;
 extern String Lang_UpdateInterface;
 extern String Lang_Starting;
 extern String Lang_Starting;
+extern String Lang_ApplicationRun;
+extern String Lang_ApplicationClose;
+
+
+namespace RDK {
+void CreateStatusWindow(const String &Text);
+void RemoveStatusWindow(void);
+}
+
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
