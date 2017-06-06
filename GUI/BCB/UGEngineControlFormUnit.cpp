@@ -390,26 +390,30 @@ void TUGEngineControlForm::AUpdateInterface(void)
  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
 #endif
 
- Caption=ProgramName;
+ String cap;
+ cap=ProgramName;
  if(VersionString.Length()>0)
  {
-  Caption=Caption+" Build ";
-  Caption=Caption+VersionString;
+  cap=cap+" Build ";
+  cap=cap+VersionString;
  }
  if(RdkApplication.GetProjectOpenFlag())
  {
-  Caption=Caption+String(" ")+RdkApplication.GetAppCaption().c_str();
+  cap=cap+String(" ")+RdkApplication.GetAppCaption().c_str();
  }
 
 #ifdef _DEBUG
  void* AAddressOfLargest(0);
- String memory_usage=String(" Memory usage: ")+IntToStr(__int64(GetMemoryUsedInfo())/1024)+
-		String(" Kb. Largest Free Block: ")+IntToStr(__int64(GetLargestFreeMemRegion(AAddressOfLargest))/1024)+
-		" Kb";
- Caption=Caption+memory_usage;
+ __int64 max_memory=GetMemoryUsedInfo();
+ __int64 max_block=GetLargestFreeMemRegion(AAddressOfLargest);
+ String memory_usage=Format(" Memory usage: %d bytes. Largest Free Block: %d bytes",ARRAYOFCONST((max_memory,max_block)));
+// memory_usage.printf(L" Memory usage: %n Bytes. Largest Free Block: %n Bytes",double(GetMemoryUsedInfo()),double(GetLargestFreeMemRegion(AAddressOfLargest)));
+ cap=cap+memory_usage;
 
  MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
 #endif
+
+ Caption=cap;
 
  for(int i=0;i<StatusBar->Panels->Count;i++)
  {

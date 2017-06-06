@@ -39,11 +39,12 @@ void UPerfomanceData::CalcAverage(void)
 {
  AvgDuration=0;
 
- for(size_t i=0;i<CalcDurationHistory.size();i++)
-  AvgDuration+=double(CalcDurationHistory[i])/1000.0;
+ std::list<long long>::iterator I=CalcDurationHistory.begin();
+ for(;I!=CalcDurationHistory.end();I++)
+  AvgDuration+=double(*I);
 
  if(!CalcDurationHistory.empty())
-  AvgDuration/=double(CalcDurationHistory.size());
+  AvgDuration/=double(CalcDurationHistory.size())*1000.0;
 }
 
 /// Расчет процента от общего времений

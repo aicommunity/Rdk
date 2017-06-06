@@ -49,7 +49,7 @@ int NumAvgIterations;
 double AvgThreshold;
 
 /// История последних моментов времени успешного расчета
-std::vector<std::vector<double> > AvgIterations;
+std::vector<std::list<double> > AvgIterations;
 
 /// Владелец потока
 UEngineControl* EngineControl;

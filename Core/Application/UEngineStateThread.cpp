@@ -196,12 +196,20 @@ void UEngineStateThread::Execute(void)
 	 else
 	 {
 	  double avg_diff(0.0);
-	  for(size_t j=1;j<AvgIterations[i].size();j++)
+	  std::list<double>::iterator I=AvgIterations[i].begin();
+	  std::list<double>::iterator J=I;
+
+	  if(I != AvgIterations[i].end())
 	  {
-	   if(AvgIterations[i][j]-AvgIterations[i][j-1]>avg_diff)
-		avg_diff=AvgIterations[i][j]-AvgIterations[i][j-1];
+       ++I;
+	   for(;I!=AvgIterations[i].end();I++,J++)
+	   {
+		double diff=*I-*J;
+		if(diff>avg_diff)
+		 avg_diff=diff;
+	   }
+	   avg_diff/=1000;
 	  }
-	  avg_diff/=1000;
 
 	  if(fabs(avg_diff) < 1e-8 || (GetVariantLocalTime()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
 	   calc_thread_states[i]=csHanging;

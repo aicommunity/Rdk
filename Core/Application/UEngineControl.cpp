@@ -416,21 +416,45 @@ void UEngineControl::StepChannel(int channel_index)
 
  if(use_controllers_mode == 0)
   RDK::UIControllerStorage::AfterCalculate(channel_index);
- SendMetadata();
+
+ try
+ {
+  SendMetadata();
+ }
+ catch(std::exception &ex)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::StepChannel:SendMetadata - ")+ex.what()).c_str());
+  throw;
+ }
+ catch(...)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::StepChannel:SendMetadata - unhandled exception");
+  throw;
+ }
  RDK::UIVisualControllerStorage::AfterCalculate();
  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
  RDK::UIVisualControllerStorage::UpdateInterface();
 
- if(channel_index <0)
+ try
  {
-  for(int i=0;i<num_channels;i++)
+  if(channel_index <0)
   {
-   EngineControlThreads[i]->GetProfiler()->Calculate();
+   for(int i=0;i<num_channels;i++)
+	EngineControlThreads[i]->GetProfiler()->Calculate();
+  }
+  else
+  {
+   EngineControlThreads[channel_index]->GetProfiler()->Calculate();
   }
  }
- else
+ catch(std::exception &ex)
  {
-  EngineControlThreads[channel_index]->GetProfiler()->Calculate();
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:Calculate profiler stats - ")+ex.what()).c_str());
+ }
+ catch(...)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
+  throw;
  }
 }
 
@@ -449,18 +473,44 @@ void UEngineControl::TimerExecute(void)
  {
   if(UseControllersMode == 0)
    RDK::UIControllerStorage::AfterCalculate(-1);
-  SendMetadata();
+
+  try
+  {
+   SendMetadata();
+  }
+  catch(std::exception &ex)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:SendMetadata - ")+ex.what()).c_str());
+   throw;
+  }
+  catch(...)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:SendMetadata - unhandled exception");
+   throw;
+  }
 //  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
 //  for(int i=0;i<GetNumChannels();i++)
 //   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
   RDK::UIVisualControllerStorage::UpdateInterface();
 
-  int num_channels=GetNumChannels();
-  for(int i=0;i<num_channels;i++)
+  try
   {
-   EngineControlThreads[i]->GetProfiler()->CalculateGui();
-   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
+   int num_channels=GetNumChannels();
+   for(int i=0;i<num_channels;i++)
+   {
+	EngineControlThreads[i]->GetProfiler()->CalculateGui();
+	EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
+   }
+  }
+  catch(std::exception &ex)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:Calculate profiler stats - ")+ex.what()).c_str());
+  }
+  catch(...)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
+   throw;
   }
  }
  break;
