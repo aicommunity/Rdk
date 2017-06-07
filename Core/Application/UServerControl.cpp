@@ -269,14 +269,18 @@ void UServerControl::CalculatePerformance(void)
 
  if(ModelPerformanceResults.size() == 0)
   AfterReset();
- ModelPerformanceResults[PerformancePushIndex].assign(Core_GetNumChannels(),0);
- TransportPerformanceResults[PerformancePushIndex].assign(Core_GetNumChannels(),0);
+ int num_channels=Core_GetNumChannels();
+ ModelPerformanceResults[PerformancePushIndex].assign(num_channels,0);
+ TransportPerformanceResults[PerformancePushIndex].assign(num_channels,0);
  for(size_t i=0;i<ModelPerformanceResults[PerformancePushIndex].size();i++)
  {
-  if(!MCore_IsChannelInit(i) || !MModel_Check(i))
+  UELockPtr<UEngine> engine=GetEngineLock(i);
+  if(!engine)
    continue;
-  RDK::ULongTime model_time=MModel_GetFullStepDuration(i,"");
-  RDK::ULongTime ext_gui=MModel_GetInterstepsInterval(i,"");
+  if(!engine->Model_Check())
+   continue;
+  RDK::ULongTime model_time=engine->Model_GetFullStepDuration("");
+  RDK::ULongTime ext_gui=engine->Model_GetInterstepsInterval("");
   ModelPerformanceResults[PerformancePushIndex][i]=model_time;
   TransportPerformanceResults[PerformancePushIndex][i]=ext_gui;
  }
@@ -284,8 +288,8 @@ void UServerControl::CalculatePerformance(void)
  if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
   PerformancePushIndex=0;
 
- ModelAvg.assign(Core_GetNumChannels(),0);
- TransportAvg.assign(Core_GetNumChannels(),0);
+ ModelAvg.assign(num_channels,0);
+ TransportAvg.assign(num_channels,0);
  int sum_number=0;
 
  /// Результаты измерений производительности, мс
@@ -309,7 +313,7 @@ void UServerControl::CalculatePerformance(void)
    ModelAvg[j]/=sum_number;
    TransportAvg[j]/=sum_number;
   }
-
+  /*
  perf_data.resize(ModelAvg.size());
  aver_perf_data.resize(ModelAvg.size());
  for(size_t j=0;j<ModelAvg.size();j++)
@@ -343,7 +347,7 @@ void UServerControl::CalculatePerformance(void)
 	 }
 	 aver_perf_data[k].push_back(current_perf);
  }
- /*
+
  std::ofstream f;
  //Сформировать строку названия
 	if(DebugOutputPath.empty())

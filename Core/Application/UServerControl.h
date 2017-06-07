@@ -52,10 +52,10 @@ int PerformancePushIndex;
 std::vector<RDK::ULongTime> ModelAvg, TransportAvg;
 
 ///Данные производительности по каждому из каналов
-std::vector< std::vector< RDK::ULongTime > > perf_data;
+//std::vector< std::vector< RDK::ULongTime > > perf_data;
 
 ///Усредненная производительность для построения графика
-std::vector< std::vector< RDK::ULongTime > > aver_perf_data;
+//std::vector< std::vector< RDK::ULongTime > > aver_perf_data;
 
 public: // Методы
 // --------------------------

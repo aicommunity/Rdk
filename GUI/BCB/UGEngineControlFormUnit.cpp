@@ -2356,6 +2356,10 @@ void __fastcall TUGEngineControlForm::AppRestore(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
+#ifdef _DEBUG
+ ReportMemoryLeaksOnShutdown=true;
+#endif
+
  FormatSettings.DecimalSeparator = '.';
  Saved8087CW = Default8087CW;
  System::Set8087CW(0x133f);
@@ -2376,7 +2380,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
+ NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
+
  if(LogDir.Length() == 0)
   LogDir = "EventsLog/";
 

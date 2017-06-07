@@ -7101,7 +7101,7 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
  RDK::ULongId longid;
 
  UEPtr<RDK::UContainer> cont;
- if(!stringid)
+ if(!stringid || *stringid == '\0')
   cont=model;
  else
  {
@@ -7116,10 +7116,7 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
   }
   else // ...иначе декодируем как имя
   {
-   if(strlen(stringid) == 0)
-    cont=model;
-   else
-    cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
+   cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
   }
 
  }
