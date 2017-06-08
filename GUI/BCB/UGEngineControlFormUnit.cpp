@@ -67,6 +67,9 @@ UEngineControlVcl RdkEngineControl;
 /// Ёкзепл€р класса проекта
 RDK::UProject RdkProject;
 
+/// Ёкземпл€р класса менеджера тестов
+RDK::UTestManager RdkTestManager;
+
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
 bool ApplicationInitialized=false;
 
@@ -385,9 +388,13 @@ void TUGEngineControlForm::AAfterCalculate(void)
 void TUGEngineControlForm::AUpdateInterface(void)
 {
 #ifdef RDK_VIDEO
- CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
- OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
- OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ if(CaptureVideo1)
+  CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ if(OpenVideo1)
+  OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+
+ if(OpenImage1)
+  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
 #endif
 
  String cap;
@@ -2398,8 +2405,13 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
+ RdkApplication.SetTestManager(&RdkTestManager);
  RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
  RdkApplication.SetDebugMode(LogDebugMode);
+
+ for(int i=0;i<ParamCount();i++)
+  RdkApplication.AddCommandLineArg(AnsiString(ParamStr(i)).c_str());
+
  RdkApplication.Init();
 
  VersionString=GetBuildInfoAsString();
@@ -2463,10 +2475,22 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  }
  else
  {
-  RDK::CreateStatusWindow(Lang_ApplicationRun);
   RdkMainForm->Show();
   RdkMainForm->UpdateInterface();
  }
+
+ bool exit_request(false);
+ int test_result(0);
+ test_result=RdkApplication.Test(exit_request);
+
+ if(exit_request)
+ {
+  exit(test_result);
+  return;
+ }
+
+ if(!StartMinimized)
+  RDK::CreateStatusWindow(Lang_ApplicationRun);
 
  if(FileExists(AutoexecProjectFileName))
  {

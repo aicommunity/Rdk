@@ -207,6 +207,10 @@
             <DependentOn>..\..\..\Core\Application\UServerTransportTcp.h</DependentOn>
             <BuildOrder>114</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UTestManager.cpp">
+            <DependentOn>..\..\..\Core\Application\UTestManager.h</DependentOn>
+            <BuildOrder>120</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\Engine.cpp">
             <BuildOrder>60</BuildOrder>
         </CppCompile>
@@ -989,13 +993,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

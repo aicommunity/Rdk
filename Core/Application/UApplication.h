@@ -17,6 +17,7 @@
 #include "UBroadcasterInterface.h"
 #include "UServerControl.h"
 #include "UChannelProfiler.h"
+#include "UTestManager.h"
 
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"
@@ -36,13 +37,13 @@ std::string ApplicationFileName;
 /// Рабочий каталог
 std::string WorkDirectory;
 
-// Признак наличия открытого проекта
+/// Признак наличия открытого проекта
 bool ProjectOpenFlag;
 
-// Путь до папки проекта
+/// Путь до папки проекта
 std::string ProjectPath;
 
-// Имя файла проекта
+/// Имя файла проекта
 std::string ProjectFileName;
 
 /// Список последних открытых проектов
@@ -51,11 +52,17 @@ std::list<std::string> LastProjectsList;
 /// Размер истории последних открытых проектов
 int LastProjectsListMaxSize;
 
-/// Каталог логов
-//std::string LogDir;
+/// Список аргументов командной строки
+std::vector<std::string> CommandLineArgs;
 
-/// Флаг включения отладочного режима логирования
-//bool DebugMode;
+/// Флаг, выставляется если включен режим тестирования
+bool TestMode;
+
+/// Имя файла с описанием тестов
+std::string TestsDescriptionFileName;
+
+/// Признак требования завершить работу приложения после тестирования
+bool CloseAfterTest;
 
 protected: // Модули приложения
 /// Диспетчер команд
@@ -70,14 +77,17 @@ UEPtr<UEngineControl> EngineControl;
 /// Контроллер серверной части
 UEPtr<UServerControl> ServerControl;
 
+/// Менеджер тестов
+UEPtr<UTestManager> TestManager;
+
 protected: // Временные переменные
 /// Заголовок приложения
 std::string AppCaption;
 
-// Файл настроек проекта
+/// Файл настроек проекта
 RDK::USerStorageXML ProjectXml;
 
-// Файл настроек интефрейса
+/// Файл настроек интефрейса
 RDK::USerStorageXML InterfaceXml;
 
 public:
@@ -119,6 +129,12 @@ bool SetLastProjectsList(const std::list<std::string>& value);
 int GetLastProjectsListMaxSize(void) const;
 bool SetLastProjectsListMaxSize(int value);
 
+/// Список аргументов командной строки
+const std::vector<std::string>& GetCommandLineArgs(void) const;
+void SetCommandLineArgs(const std::vector<std::string> &args);
+void ClearCommandLineArgs(void);
+void AddCommandLineArg(const std::string &arg);
+
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;
 
@@ -138,6 +154,16 @@ bool SetDebugMode(bool value);
 
 /// Текущий каталог логов (с учетом переопределения в проекте)
 std::string CalcCurrentLogDir(void) const;
+
+/// Флаг, выставляется если включен режим тестирования
+bool IsTestMode(void) const;
+
+/// Имя файла с описанием тестов
+const std::string& GetTestsDescriptionFileName(void) const;
+void SetTestsDescriptionFileName(const std::string& value);
+
+/// Признак требования завершить работу приложения после тестирования
+bool IsCloseAfterTest(void) const;
 // --------------------------
 
 // --------------------------
@@ -177,11 +203,23 @@ virtual UEPtr<UServerControl> GetServerControl(void) const;
 /// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
 virtual bool SetServerControl(const UEPtr<UServerControl> &value);
 
+/// Менеджер тестов
+/// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
+UEPtr<UTestManager> GetTestManager(void);
+virtual bool SetTestManager(const UEPtr<UTestManager> &value);
+
 /// Инициализирует приложение
 virtual bool Init(void);
 
 /// Деинициализирует приложение
 virtual bool UnInit(void);
+
+/// Проводит тестирование приложения, если менеджер тестов инициализирован и
+/// тестовый режим включен
+/// Возвращает код ошибки тестирования.
+/// Если exit_request == true,
+/// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
+virtual int Test(bool &exit_request);
 // --------------------------
 
 // --------------------------
@@ -278,6 +316,15 @@ protected:
 // --------------------------
 // Вспомогательные методы управления счетом
 // --------------------------
+/// Включает и выключает тестовый режим
+void ChangeTestModeState(bool state);
+
+/// Инициализация парсера командной строки
+void InitCmdParser(void);
+
+/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+void ProcessCommandLineArgs(void);
+
 /// Вычисляет заголовок приложения
 void CalcAppCaption(void);
 
