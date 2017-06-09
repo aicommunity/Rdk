@@ -455,10 +455,11 @@ bool UApplication::UnInit(void)
 /// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
 int UApplication::Test(bool &exit_request)
 {
- exit_request=CloseAfterTest;
+ exit_request=false;
  int test_result_code(0);
  if(IsTestMode())
  {
+  exit_request=CloseAfterTest;
   if(TestManager)
   {
    if(TestManager->LoadTests(TestsDescriptionFileName) != RDK_SUCCESS)

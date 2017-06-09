@@ -2750,6 +2750,7 @@ void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
  RDK::CreateStatusWindow(Lang_ApplicationClose);
  DisableStopVideoSources=false;
+ Pause1Click(Sender);
  RdkApplication.UnInit();
  Application->Terminate();
  RDK::RemoveStatusWindow();

@@ -145,21 +145,22 @@ void UEngineStateThread::Execute(void)
 {
  while(!Terminated)
  {
-  if(CalcStarted->wait(30) == false)
-  {
-   ProcessLog();
-   continue;
-  }
-
-  if(CalculationNotInProgress->wait(30) == false)
-  {
-   ProcessLog();
-   continue;
-  }
-  CalculationNotInProgress->reset();
-
   try
   {
+   if(CalcStarted->wait(100) == false)
+   {
+	ProcessLog();
+	continue;
+   }
+
+   if(CalculationNotInProgress->wait(100) == false)
+   {
+	ProcessLog();
+	continue;
+   }
+
+   CalculationNotInProgress->reset();
+
    // Определяем состояние тредов расчета
    std::vector<UCalcState> calc_thread_states;
 
