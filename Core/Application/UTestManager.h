@@ -7,6 +7,11 @@ namespace RDK {
 
 class UApplication;
 
+class UTest
+{
+
+};
+
 /// Менеджер тестов
 class UTestManager
 {
@@ -35,6 +40,19 @@ virtual int LoadTests(const std::string &file_name);
 /// Записывает в выходной массив результаты тестов
 /// Возвращает код ошибки тестирования
 virtual int ProcessTests(void);
+// --------------------
+
+
+// --------------------
+// Вспомогательные методы
+// --------------------
+protected:
+/// Декодирует корневой файл описания тестов
+/// Возвращает массив имен файлов с описаниями тестов
+int DecodeMainTestDescriptionFile(std::vector<std::string> &test_file_names);
+
+/// Декодирует тест
+int DecodeTestFile(const std::string &test_file_name, UTest &test);
 // --------------------
 
 
