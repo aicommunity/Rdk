@@ -682,6 +682,28 @@ bool UCItem::operator != (const UCItem &value) const
 }
 // --------------------------
 
+/* *************************************************************************** */
+// Описание входящей связи с заданным item "UConnectedLINK"
+//struct UCLink: public UCItem
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UCLink::UCLink(void)
+{
+ // Индекс входа
+ Input=Output=-1;
+}
+
+UCLink::UCLink(const UCLink &copy)
+{
+ Input=copy.Input;
+ Output=copy.Output;
+ InputName=copy.InputName;
+ OutputName=copy.OutputName;
+}
+// --------------------------
+/* *************************************************************************** */
+
 
 
 

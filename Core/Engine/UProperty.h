@@ -343,6 +343,12 @@ virtual std::string GetOwnerClassName(void) const
 {
  return typeid(Owner).name();
 };
+
+// Владелец свойства
+virtual OwnerT* GetOwner(void)
+{
+ return Owner;
+}
 // -----------------------------
 };
 

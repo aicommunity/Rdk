@@ -69,59 +69,12 @@ virtual const type_info& GetLanguageType(void) const
  return typeid(T);
 }
 // --------------------------
-	   /*
-// Метод возвращает строковое имя свойства
-virtual const std::string& GetName(void) const
-{
- return UPropertyInputPreBase<T,OwnerT>::GetName();
-};
 
-// Метод возвращает строковое имя компонента-владельца свойства
-virtual std::string GetOwnerName(void) const
-{
- return UPropertyInputPreBase<T,OwnerT>::GetOwnerName();
-};
-					   */
 virtual ULongTime GetUpdateTime(void) const
 {
  return UPropertyInputPreBase<T,OwnerT>::GetUpdateTime();
 }
 
-// --------------------------
-// Методы управления входами
-// --------------------------
-/*
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const
-{
- return UIPropertyInput::GetItemName();
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const
-{
- return UIPropertyInput::GetItemFullName();
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const
-{
- return UIPropertyInput::GetItemOutputName();
-}
-                       */
-/// Инициализирует данные
-/*
-virtual void Init(UItem* item, const std::string &output_name)
-{
- UIPropertyInput::Init(item, output_name);
-}
-
-/// Деинициализирует данные
-virtual void UnInit(void)
-{
- UIPropertyInput::UnInit();
-} */
-// --------------------------
 };
 
 template<typename T, typename OwnerT>
@@ -161,6 +114,7 @@ virtual const type_info& GetLanguageType(void) const
  return typeid(T);
 }
 
+protected:
 /// Обновляет указатель PData
 virtual void UpdatePData(void* data)
 {
@@ -302,7 +256,7 @@ UPropertyInputData(const string &name, OwnerT * const owner, int index)
 // Возвращает true если вход имеет подключение
 bool IsConnected(void) const
 {
- return UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag;//(this->PData)?true:false;
+ return UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag;
 }
 
 // Возвращает указатель на данные входа

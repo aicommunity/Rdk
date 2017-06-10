@@ -24,28 +24,6 @@ namespace RDK {
 class UItem;
 class UIPropertyInput;
 
-// Описание входящей связи с заданным item "UConnectedLINK"
-struct RDK_LIB_TYPE UCLink
-{
-// Индекс выхода
-int Output;
-
-// Индекс входа
-int Input;
-
-// Имя выхода
-std::string OutputName;
-
-// Имя входа
-std::string InputName;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UCLink(void);
-UCLink(const UCLink &copy);
-// --------------------------
-};
 	  /*
 // Контейнер - список указателей на подключенные элементы
 class RDK_LIB_TYPE UCItemList
@@ -298,6 +276,11 @@ virtual int GetNumConnections(void) const;
 // Возвращает указатель на компонент-источник
 UItem* GetItem(int c_index=-1);
 
+// Возвращает информацию о данных связей с item или пустой массив
+// если такая связь отсутствует
+virtual void GetCLink(const UEPtr<UItem> &item, std::vector<UCLink> &buffer) const;
+virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) const;
+
 /// Возвращает имя подключенного компонента
 virtual std::string GetItemName(int c_index=-1) const;
 
@@ -339,7 +322,7 @@ virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
 /// Подключает выход
-virtual bool Connect(UItem* item, const std::string &output_name, int c_index=-1, bool forced_connect_same_item=false);
+virtual bool Connect(UItem* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false);
 
 // Разрывает все связи с элементом сети 'na'
 virtual void Disconnect(UEPtr<UItem> na);

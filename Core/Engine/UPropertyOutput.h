@@ -32,52 +32,6 @@ operator T* (void)
 {
  return this->PData;
 }
-/*
-bool operator ! (void) const
-{
- return (&this->GetData())?true:false;
-};
-  */
-/*bool operator ! (void) const
-{
- return (GetPointer(0))?true:false;
-};
-
-T* operator -> (void)
-{
- return &this->v;
-};
-
-T& operator * (void)
-{
- return this->v;
-};
-
-operator T* (void)
-{
- return &this->v;
-}
-
-T& Value(void)
-{
- return this->v;
-}
-
-const T& Value(void) const
-{
- return this->v;
-}
-
-T& operator [] (int i)
-{
- return this->v;
-}
-
-const T& operator [] (int i) const
-{
- return this->v;
-}
-       */
 // --------------------------
 // Методы управления указателем
 // --------------------------
@@ -86,29 +40,12 @@ void const * GetPointer(int index) const
 {
  return &this->v;
 }
-
+/*
 // Устанавливает указатель на данные выхода
 bool SetPointer(int index, void* value, UIProperty* output)
 {
  return true;
-}
-// --------------------------
-
-// --------------------------
-// Методы управления выходами
-// --------------------------
-/*
-/// Возвращает указатель на компонент-приемник
-virtual UConnector* GetConnector(int index)
-{
- return UIPropertyOutput::GetConnector(index);
-}
-
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const
-{
- return UIPropertyOutput::GetConnectorInputName(index);
-}                        */
+} */
 // --------------------------
 };
 
@@ -152,7 +89,7 @@ public: // Методы
 UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UCLProperty<std::vector<T>,OwnerT,type>(name, owner, setmethod)
 {
- this->IoType=input_type;
+// this->IoType=input_type;
 };
 // -----------------------------
 
@@ -260,7 +197,7 @@ public: // Методы
 UVPropertyOutputBase(OwnerT * const owner, T* data, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner,data, setmethod)
 {
- this->IoType=input_type;
+// this->IoType=input_type;
 };
 // -----------------------------
 
@@ -276,12 +213,12 @@ void const * GetPointer(int index) const
 {
  return this->PData;
 }
-
+		   /*
 // Устанавливает указатель на данные выхода
 bool SetPointer(int index, void* value, UIProperty* output)
 {
  return true;
-}
+}            */
 // --------------------------
 };
 

@@ -576,12 +576,39 @@ bool operator != (const UCItem &value) const;
 // --------------------------
 };
 
+// Описание входящей связи с заданным item "UConnectedLINK"
+struct RDK_LIB_TYPE UCLink
+{
+// Индекс выхода
+int Output;
+
+// Индекс входа
+int Input;
+
+// Имя выхода
+std::string OutputName;
+
+// Имя входа
+std::string InputName;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UCLink(void);
+UCLink(const UCLink &copy);
+// --------------------------
+};
+
 class UConnector;
+class UContainer;
 
 class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
 {
 friend class UConnector;
 public:
+/// Возвращает указатель на владелька свойства
+virtual UContainer* GetOwner(void)=0;
+
 /// Возвращает тип свойства входа
 virtual int GetInputType(void) const=0;
 
@@ -594,6 +621,11 @@ virtual int GetNumConnections(void) const=0;
 
 // Возвращает указатель на компонент-источник
 virtual UItem* GetItem(int c_index=-1)=0;
+
+// Возвращает информацию о данных связей с item или пустой массив
+// если такая связь отсутствует
+virtual void GetCLink(const UEPtr<UItem> &item, std::vector<UCLink> &buffer) const=0;
+virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) const=0;
 
 /// Возвращает имя подключенного компонента
 virtual std::string GetItemName(int c_index=-1) const=0;
@@ -636,7 +668,7 @@ virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
 /// Подключает выход
-virtual bool Connect(UItem* item, const std::string &output_name, int c_index=-1, bool forced_connect_same_item=false)=0;
+virtual bool Connect(UItem* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false)=0;
 
 // Разрывает все связи с элементом сети 'na'
 virtual void Disconnect(UEPtr<UItem> na)=0;
@@ -675,10 +707,10 @@ public: // Методы управления указателем на выходные данные
 virtual void const* GetPointer(int index) const=0;
 
 /// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)=0;
+//virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
 // Устанавливает связь с коннектором 'c'
