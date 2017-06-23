@@ -481,6 +481,8 @@ bool SetRepeatVideoFlag(bool value);
 bool SetRepeatSequenceFlag(bool value);
 bool SetProcessAllFramesFlag(bool value);
 
+void SelectVideoSourceModal(void);
+
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
 // -------------------------

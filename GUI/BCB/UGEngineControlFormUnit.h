@@ -285,6 +285,9 @@ String ProgramName;
 String LogDir;
 bool LogDebugMode;
 
+__int64 LastMaxMemory;
+__int64 LastMaxBlock;
+
 // Файл настроек проекта
 //RDK::USerStorageXML ProjectXml;
 

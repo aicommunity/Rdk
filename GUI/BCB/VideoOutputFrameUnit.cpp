@@ -2094,6 +2094,16 @@ void __fastcall TVideoOutputFrame::SourceControl21Click(TObject *Sender)
  }
  VideoCaptureOptionsForm->Show();
 }
+
+void TVideoOutputFrame::SelectVideoSourceModal(void)
+{
+ if(CaptureThread)
+ {
+  CaptureThread->SaveParameters(VideoSourceOptions[CaptureThread->GetSourceMode()]);
+  VideoCaptureOptionsForm->SelectVideoSourcePage(CaptureThread->GetSourceMode());
+ }
+ VideoCaptureOptionsForm->ShowModal();
+}
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::SourceControlModal()
 {
