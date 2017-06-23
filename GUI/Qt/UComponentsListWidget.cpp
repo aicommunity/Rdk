@@ -209,62 +209,55 @@ void UComponentsListWidget::setVerticalOrientation(bool vertical)
 
 QString UComponentsListWidget::getSelectedComponentLongName()
 {
-    if(!componentsTree->currentItem()) return "";
-    else return componentsTree->currentItem()->data(0, Qt::UserRole).toString();
-}
-
-QString UComponentsListWidget::getSelectedParameterName()
-{
-    if(!ui->treeWidgetParameters->currentItem()) return "";
-    else return ui->treeWidgetParameters->currentItem()->data(0, Qt::DisplayRole).toString();
-}
-
-QString UComponentsListWidget::getSelectedStateName()
-{
-    if(!ui->treeWidgetState->currentItem()) return "";
-    else return ui->treeWidgetState->currentItem()->data(0, Qt::DisplayRole).toString();
-}
-
-QString UComponentsListWidget::getSelectedInputName()
-{
-    if(!ui->treeWidgetInputs->currentItem()) return "";
-    else return ui->treeWidgetInputs->currentItem()->data(0, Qt::DisplayRole).toString();
-}
-
-QString UComponentsListWidget::getSelectedOutputName()
-{
-    if(!ui->treeWidgetOutputs->currentItem()) return "";
-    else return ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
-}
-
-/*void UComponentsListWidget::keyPressEvent(QKeyEvent *event)
-{
-    qDebug() << "key pressed";
-    if(1)//QApplication::keyboardModifiers() == Qt::ShiftModifier)
-    {
-        switch(event->key())
-        {
-        case Qt::Key_Up:
-            qDebug() << "up";//componentMoveUp();
-            break;
-
-        case Qt::Key_Down:
-            qDebug() << "down";//componentMoveDown();
-            break;
-
-        default:
-            QWidget::keyPressEvent(event);
-            break;
-        }
-    }
+    if(!componentsTree->currentItem())
+      return "";
     else
-        QWidget::keyPressEvent(event);
-}*/
+      return componentsTree->currentItem()->data(0, Qt::UserRole).toString();
+}
 
 void UComponentsListWidget::openTabN(int n)
 {
-    if(n>0 && n <4)
-        ui->tabWidgetComponentInfo->setCurrentIndex(n);
+    if(n > 0 && n < 4)
+      ui->tabWidgetComponentInfo->setCurrentIndex(n);
+}
+
+QString UComponentsListWidget::getSelectedPropertyName()
+{
+  switch(ui->tabWidgetComponentInfo->currentIndex())
+  {
+    case 0:
+      if(!ui->treeWidgetParameters->currentItem())
+        return "";
+      else
+        return ui->treeWidgetParameters->currentItem()->data(0, Qt::DisplayRole).toString();
+
+    case 1:
+      if(!ui->treeWidgetState->currentItem())
+        return "";
+      else
+        return ui->treeWidgetState->currentItem()->data(0, Qt::DisplayRole).toString();
+
+    case 2:
+      if(!ui->treeWidgetInputs->currentItem())
+        return "";
+      else
+        return ui->treeWidgetInputs->currentItem()->data(0, Qt::DisplayRole).toString();
+
+    case 3:
+      if(!ui->treeWidgetOutputs->currentItem())
+        return "";
+      else
+        return ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
+
+    default:
+      return "";
+  }
+}
+
+void UComponentsListWidget::setEnableTabN(int n, bool enable)
+{
+    if(n > 0 && n < 4)
+      ui->tabWidgetComponentInfo->setTabEnabled(n, enable);
 }
 
 void UComponentsListWidget::componentListItemSelectionChanged()
@@ -384,12 +377,12 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         ui->labelComponentClassName->setText(className);
     Engine_FreeBufString(className);
 
-    //ui->treeWidgetParameters->scr
     ui->treeWidgetParameters->clear();
     ui->treeWidgetState->clear();
     ui->treeWidgetInputs->clear();
     ui->treeWidgetOutputs->clear();
 
+    // чтоб не бегали скролы на treeWidget'ах
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value(),
         stateScrollPosition = ui->treeWidgetState->verticalScrollBar()->value(),
         inputsScrollPosition = ui->treeWidgetInputs->verticalScrollBar()->value(),
@@ -459,6 +452,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             }
         }
 
+        // чтоб не бегали скролы на treeWidget'ах
         ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
         ui->treeWidgetParameters->verticalScrollBar()->setValue(paramScrollPosition);
         ui->treeWidgetState->verticalScrollBar()->setMaximum(stateScrollPosition);

@@ -15,7 +15,7 @@ namespace Ui {
 class UComponentsListWidget;
 }
 
-/// Виджет двигающий компоненты по шифту
+/// Виджет двигающий компоненты в QTreeWidget по шифту
 class UComponentListTreeWidget :public QTreeWidget
 {
     Q_OBJECT
@@ -66,18 +66,17 @@ class UComponentsListWidget : public UVisualControllerWidget
 public:
     explicit UComponentsListWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentsListWidget");
     virtual ~UComponentsListWidget();
-    ///Перерисовывает дерево текущего канала (С интерфейс с RDK)
+
+    /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
     void AUpdateInterface();
 
-    void setVerticalOrientation(bool vertical);
-    QString getSelectedComponentLongName();
-    QString getSelectedParameterName();
-    QString getSelectedStateName();
-    QString getSelectedInputName();
-    QString getSelectedOutputName();
+    // Доступ к данным для других виджетов, продолжается до signals:
 
-    // Moveup && MoveDown from keys
-    //void keyPressEvent(QKeyEvent * event);
+    /// Устанавливает виджет в вертикальное положение
+    void setVerticalOrientation(bool vertical);
+
+    /// Возвращает полное имя выбранного компонента
+    QString getSelectedComponentLongName();
 
     /// открывает определенную вкладку tabWidgetComponentInfo
     ///
@@ -86,6 +85,12 @@ public:
     /// 2 - inputs
     /// 3 - outputs
     void openTabN(int n);
+
+    /// Возвращает имя выбранного Property
+    QString getSelectedPropertyName();
+
+    /// устанавливает доступность вкладок
+    void setEnableTabN(int n, bool enable);
 
 signals:
     void componentSelected(QString name); //single click
@@ -105,11 +110,12 @@ public slots:
     void inputsListSelectionChanged();
     void outputsListSelectionChanged();
 
+    /// Отправляет событие отрисовки выбранного компонента
     void drawSelectedComponent(QModelIndex index);
 
-    ///считывание файлов настроек
+    /// считывание файлов настроек
     void readSettings(QString file, QString group = "UComponentsListWidget");
-    ///запись файлов настроек
+    /// запись файлов настроек
     void writeSettings(QString file, QString group = "UComponentsListWidget");
 
     //События контекстного меню
@@ -159,8 +165,13 @@ private:
     std::string& PreparePropertyValueToListView(std::string &value);
 private:
 
-    ///Имя компонента, чьи проперти отображены
+    /// Имя компонента, чьи проперти отображены
     QString currentDrawPropertyComponentName;
+
+    /// Выделенный компонент. Отличается от currentDrawPropertyComponentName, тем что переписывается
+    /// при componentListItemSelectionChanged, затем сравнивается с currentDrawPropertyComponentName,
+    /// таким образом избегается перерисовка при множественном выделении одного компонента.
+    QString selectedComponentLongName;
 
     // имена выбранных строк Property
     QString selectedParameterName;
@@ -168,18 +179,19 @@ private:
     QString selectedInputName;
     QString selectedOutputName;
 
+    /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
     UComponentListTreeWidget *componentsTree;
 
+    /// Указатель на диалоговое окошко отображения XML
     UPropertyXMLWidget *propertyXML;
 
-    ///Выделенный компонент
-    QString selectedComponentLongName;
 
     ///Компонент владелец отрисованной схемы
     QString currentDrawComponentName;
 
     ///Скрытый рекурсивный метод заполнения списка компонентов
     void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+
     Ui::UComponentsListWidget *ui;
 };
 
