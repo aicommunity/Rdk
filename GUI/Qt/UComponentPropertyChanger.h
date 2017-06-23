@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "UComponentsListWidget.h"
+#include "UPropertyXMLWidget.h"
 
 namespace Ui {
   class UComponentPropertyChanger;

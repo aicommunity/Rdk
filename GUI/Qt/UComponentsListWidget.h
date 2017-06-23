@@ -133,29 +133,6 @@ public slots:
     void componentCalculate();
     void componentGUI();
 
-    //Кнопки контроля для тулбара под окном отображения параметров:
-    //Parameters:
-    void setParametersClicked();
-    void setGlobalParametersClicked();
-    void setGlobalOwnerParametersClicked();
-    void defaultAllParametersClicked();
-    void showParametersXMLClicked();
-    //State:
-    void setStateClicked();
-    void setGlobalStateClicked();
-    void setGlobalOwnerStateClicked();
-    void showStateXMLClicked();
-    //Inputs
-    void setInputsClicked();
-    void setGlobalInputsClicked();
-    void setGlobalOwnerInputsClicked();
-    void showInputsXMLClicked();
-    //Outputs
-    void setOutputsClicked();
-    void setGlobalOutputsClicked();
-    void setGlobalOwnerOutputsClicked();
-    void showOutputsXMLClicked();
-
 private:
     /// Удаляет из переданных данных лидирующие переводы строк
     std::string& EraseLeadEndls(std::string &value);
@@ -184,10 +161,6 @@ private:
 
     /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
     UComponentListTreeWidget *componentsTree;
-
-    /// Указатель на диалоговое окошко отображения XML
-    UPropertyXMLWidget *propertyXML;
-
 
     ///Компонент владелец отрисованной схемы
     QString currentDrawComponentName;

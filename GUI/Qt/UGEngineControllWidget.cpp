@@ -38,21 +38,16 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     settingsFileName = "settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
-    componentsList = NULL;
+    propertyChanger = NULL;
     drawEngine = NULL;
     componentLinks = NULL;
     images = NULL;
     imagesWindow = NULL;
     channels = NULL;
     createConfigurationWizardWidget = NULL;
-    createTestWidget = NULL;
-
-    propertyChanger = NULL;
+    createTestWidget = NULL;  
 
     readSettings(settingsFileName, settingsGroupName);
-
-    //componentsList = new UComponentsListWidget(this, settingsFileName);
-    //ui->dockWidgetComponentsList->setWidget(componentsList);
 
     propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
@@ -62,25 +57,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     drawEngineSbWindow->setWidget(drawEngine);
     drawEngineSbWindow->show();
     drawEngineSbWindow->showMaximized();
-/*
-    // связывание схемы модели и списка отображения компонентов модели
-    //  схема -> список
-    connect(componentsList, SIGNAL(componentDoubleClick(QString)),
-            drawEngine, SLOT(componentDoubleClick(QString)));
-    connect(componentsList, SIGNAL(componentSelected(QString)),
-            drawEngine, SLOT(componentSingleClick(QString)));
-    connect(componentsList, SIGNAL(updateScheme(bool)),
-            drawEngine, SLOT(updateScheme(bool)));
-
-    //  список -> схема
-    connect(drawEngine, SIGNAL(componentSelectedFromScheme(QString)),
-            componentsList, SLOT(componentSelectedFromScheme(QString)));
-    connect(drawEngine, SIGNAL(componentDoubleClickFromScheme(QString)),
-            componentsList, SLOT(componentDoubleClickFromScheme(QString)));
-    connect(drawEngine, SIGNAL(componentStapBackFromScheme()),
-            componentsList, SLOT(componentStapBackFromScheme()));
-    connect(drawEngine, SIGNAL(updateComponentsListFromScheme()),
-            componentsList, SLOT(updateComponentsListFromScheme()));*/
 
     // связывание схемы модели и списка отображения компонентов модели
     //  схема -> список
@@ -383,7 +359,7 @@ void UGEngineControllWidget::writeSettings(QString file, QString group)
 
     settings.endGroup();
 
-    if(componentsList) componentsList->writeSettings(settingsFileName);
+    if(propertyChanger) propertyChanger->writeSettings(settingsFileName);
     if(drawEngine) drawEngine->writeSettings(settingsFileName);
     if(componentLinks) componentLinks->writeSettings(settingsFileName);
     if(images) images->writeSettings(settingsFileName);
@@ -402,7 +378,7 @@ void UGEngineControllWidget::readSettings(QString file, QString group)
 
     settings.endGroup();
 
-    if(componentsList) componentsList->readSettings(settingsFileName);
+    if(propertyChanger) propertyChanger->readSettings(settingsFileName);
     if(drawEngine) drawEngine->readSettings(settingsFileName);
     if(componentLinks) componentLinks->readSettings(settingsFileName);
     if(images) images->readSettings(settingsFileName);

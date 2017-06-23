@@ -15,6 +15,11 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, QString se
   componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
   ui->verticalLayoutComponentsList->addWidget(componentsList);
 
+  /*ui->splitter->setStretchFactor(0, 10);
+  ui->splitter->setStretchFactor(1, 1);*/
+
+  readSettings(settingsFile, settingsGroup);
+
   //кнопки управления для фиксации Property компонента
   //Property tab
   QMenu *setPropertyMenu = new QMenu(this);
@@ -103,6 +108,8 @@ void UComponentPropertyChanger::actionDefaultAll()
 
 void UComponentPropertyChanger::actionShowXML()
 {
+  componentName = componentsList->getSelectedComponentLongName();
+
   if(!propertyXML) propertyXML = new UPropertyXMLWidget(this);
   switch(componentsList->currentTabIndex())
   {

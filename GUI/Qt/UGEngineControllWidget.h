@@ -100,7 +100,7 @@ private:
     RDK::UProject project;
 
     // widgets
-    UComponentsListWidget *componentsList;
+    UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
@@ -109,8 +109,6 @@ private:
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
-
-    UComponentPropertyChanger *propertyChanger;
 
     // methods
 

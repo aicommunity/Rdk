@@ -54,15 +54,21 @@ void UCreateTestWidget::writeSettings(QString file, QString group)
 
 void UCreateTestWidget::addProperty()
 {
-  QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetSelectedProperties);
   QString componentName = componentsList->getSelectedComponentLongName();
   QString propertyName = componentsList->getSelectedPropertyName();
+
+  if(propertyName.isEmpty())
+    return;
+
+  QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetSelectedProperties);
+  const char *componentValue = Model_GetComponentPropertyValue(componentName.toLocal8Bit(), propertyName.toLocal8Bit());
+
   item->setText(0, componentName); // component
   item->setText(1, propertyName); // property
-  const char *componentValue = Model_GetComponentPropertyValue(componentName.toLocal8Bit(), propertyName.toLocal8Bit());
   item->setText(2, QString::fromLocal8Bit(componentValue)); // value
-  Engine_FreeBufString(componentValue);
   item->setText(3, ui->lineEditDelta->text()); // delta
+
+  Engine_FreeBufString(componentValue);
 }
 
 void UCreateTestWidget::createTest()
