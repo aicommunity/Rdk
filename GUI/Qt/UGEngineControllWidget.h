@@ -18,6 +18,8 @@
 #include "UCreateConfigurationWizardWidget.h"
 #include "UCreateTestWidget.h"
 
+#include "UComponentPropertyChanger.h"
+
 namespace Ui {
 class UGEngineControllWidget;
 }
@@ -107,6 +109,8 @@ private:
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
+
+    UComponentPropertyChanger *propertyChanger;
 
     // methods
 

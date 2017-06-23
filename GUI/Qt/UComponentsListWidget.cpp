@@ -221,6 +221,11 @@ void UComponentsListWidget::openTabN(int n)
       ui->tabWidgetComponentInfo->setCurrentIndex(n);
 }
 
+int UComponentsListWidget::currentTabIndex()
+{
+    return ui->tabWidgetComponentInfo->currentIndex();
+}
+
 QString UComponentsListWidget::getSelectedPropertyName()
 {
   switch(ui->tabWidgetComponentInfo->currentIndex())
@@ -483,6 +488,8 @@ void UComponentsListWidget::parametersListSelectionChanged()
     selectedParameterName = changedParameterName;
     ui->plainTextEditParameters->clear();
     ui->plainTextEditParameters->setPlainText(item->data(1, Qt::UserRole).toString());
+
+    emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::stateListSelectionChanged()
@@ -496,6 +503,8 @@ void UComponentsListWidget::stateListSelectionChanged()
     selectedStateName = changedStateName;
     ui->plainTextEditState->clear();
     ui->plainTextEditState->setPlainText(item->data(1, Qt::UserRole).toString());
+
+    emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::inputsListSelectionChanged()
@@ -509,6 +518,8 @@ void UComponentsListWidget::inputsListSelectionChanged()
     selectedInputName = changedInputName;
     ui->plainTextEditInputs->clear();
     ui->plainTextEditInputs->setPlainText(item->data(1, Qt::UserRole).toString());
+
+    emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::outputsListSelectionChanged()
@@ -522,6 +533,8 @@ void UComponentsListWidget::outputsListSelectionChanged()
     selectedOutputName = changedOutputName;
     ui->plainTextEditOutputs->clear();
     ui->plainTextEditOutputs->setPlainText(item->data(1, Qt::UserRole).toString());
+
+    emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidget::componentSelectedFromScheme(QString name)

@@ -47,17 +47,22 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
 
+    propertyChanger = NULL;
+
     readSettings(settingsFileName, settingsGroupName);
 
-    componentsList = new UComponentsListWidget(this, settingsFileName);
-    ui->dockWidgetComponentsList->setWidget(componentsList);
+    //componentsList = new UComponentsListWidget(this, settingsFileName);
+    //ui->dockWidgetComponentsList->setWidget(componentsList);
+
+    propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
+    ui->dockWidgetComponentsList->setWidget(propertyChanger);
 
     drawEngine = new UDrawEngineWidget(this, settingsFileName);
     QMdiSubWindow *drawEngineSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
     drawEngineSbWindow->setWidget(drawEngine);
     drawEngineSbWindow->show();
     drawEngineSbWindow->showMaximized();
-
+/*
     // связывание схемы модели и списка отображения компонентов модели
     //  схема -> список
     connect(componentsList, SIGNAL(componentDoubleClick(QString)),
@@ -75,7 +80,26 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     connect(drawEngine, SIGNAL(componentStapBackFromScheme()),
             componentsList, SLOT(componentStapBackFromScheme()));
     connect(drawEngine, SIGNAL(updateComponentsListFromScheme()),
-            componentsList, SLOT(updateComponentsListFromScheme()));
+            componentsList, SLOT(updateComponentsListFromScheme()));*/
+
+    // связывание схемы модели и списка отображения компонентов модели
+    //  схема -> список
+    connect(propertyChanger->componentsList, SIGNAL(componentDoubleClick(QString)),
+            drawEngine, SLOT(componentDoubleClick(QString)));
+    connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),
+            drawEngine, SLOT(componentSingleClick(QString)));
+    connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
+            drawEngine, SLOT(updateScheme(bool)));
+
+    //  список -> схема
+    connect(drawEngine, SIGNAL(componentSelectedFromScheme(QString)),
+            propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
+    connect(drawEngine, SIGNAL(componentDoubleClickFromScheme(QString)),
+            propertyChanger->componentsList, SLOT(componentDoubleClickFromScheme(QString)));
+    connect(drawEngine, SIGNAL(componentStapBackFromScheme()),
+            propertyChanger->componentsList, SLOT(componentStapBackFromScheme()));
+    connect(drawEngine, SIGNAL(updateComponentsListFromScheme()),
+            propertyChanger->componentsList, SLOT(updateComponentsListFromScheme()));
 
     componentLinks = new UComponentLinksWidget(this, settingsFileName);
     componentLinks->hide();

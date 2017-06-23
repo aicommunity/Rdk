@@ -70,7 +70,7 @@ public:
     /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
     void AUpdateInterface();
 
-    // Доступ к данным для других виджетов, продолжается до signals:
+    // Доступ к данным для других виджетов:
 
     /// Устанавливает виджет в вертикальное положение
     void setVerticalOrientation(bool vertical);
@@ -86,6 +86,8 @@ public:
     /// 3 - outputs
     void openTabN(int n);
 
+    int currentTabIndex();
+
     /// Возвращает имя выбранного Property
     QString getSelectedPropertyName();
 
@@ -96,6 +98,7 @@ signals:
     void componentSelected(QString name); //single click
     void componentDoubleClick(QString name);
     void updateScheme(bool forceUpdate);
+    void selectedPropertyValue(QString value);
 
 public slots:
     void updateComponentsListFromScheme();
