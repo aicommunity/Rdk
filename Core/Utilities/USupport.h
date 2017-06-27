@@ -368,6 +368,9 @@ RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 /// Извлекает расширение файла из имени файла
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
+/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str);
+
 
 }
 #endif

@@ -229,6 +229,21 @@ RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
 }
 
 
+/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str )
+{
+ std::string result(src);
+ string::size_type i = 0;
+
+ while ( ( i = result.find( find_str, i ) ) != result.npos )
+ {
+  result.replace( i, find_str.length(), replace_str);
+  i+=replace_str.length();
+ }
+
+ return result;
+}
+
 }
 #endif
 

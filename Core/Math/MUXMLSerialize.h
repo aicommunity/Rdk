@@ -312,6 +312,22 @@ USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 
 }
 
+
+/// Предупреждение: эта функция предполагает, что в строке содержится матрица
+/// той же размерности, что и принимающая переменная
+template<typename T>
+bool VarFromStrRaw(const std::string &str, MDMatrix<T> &value)
+{
+ USerStorage xml;
+ xml.Create("Value");
+ xml.SetNodeAttribute("Rows",sntoa(value.GetRows()));
+ xml.SetNodeAttribute("Cols",sntoa(value.GetCols()));
+ xml.SetNodeText(str);
+ xml>>value;
+ return true;
+}
+
+
 }
 #endif
 
