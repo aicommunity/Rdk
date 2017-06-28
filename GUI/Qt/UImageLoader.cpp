@@ -146,8 +146,8 @@ QImage UImageLoader::fromUBitmap(RDK::UBitmap *tempBmp)
     switch(tempBmp->GetColorModel())
     {
     case RDK::ubmRGB24:
-    {
-        return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+        {
+            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                           tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
         }
 
@@ -180,6 +180,8 @@ QImage UImageLoader::fromUBitmap(RDK::UBitmap *tempBmp)
 
     return QImage();
 }
+
+
 
 QMutex *UImageLoader::getMutex()
 {

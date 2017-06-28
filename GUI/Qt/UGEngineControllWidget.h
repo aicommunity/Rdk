@@ -16,6 +16,9 @@
 #include "UEngineControlQt.h"
 #include "ULoggerWidget.h"
 #include "UCreateConfigurationWizardWidget.h"
+#include "UCreateTestWidget.h"
+
+#include "UComponentPropertyChanger.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -37,25 +40,31 @@ public slots:
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
 
-    //settings
+    // settings
     void readSettings(QString file, QString group = "UGEngineControllWidget");
     void writeSettings(QString file, QString group = "UGEngineControllWidget");
 
-    //actions:
-    void actionComponentsControl();
-    void actionChannelsControl();
+    // actions:
 
+    // file menu
     void actionLoadConfig();
     void actionCreateConfig();
     void actionSaveConfig();
+    void actionExit();
 
+    // calculate menu
     void actionReloadParameters();
     void actionStart();
     void actionPause();
     void actionReset();
     void actionStep();
 
+    // window menu
     void actionImages();
+    void actionComponentsControl();
+    void actionChannelsControl();
+    void actionLogger();
+    void actionTestCreator();
 
 signals:
     void readSettingsSignal(QString file);
@@ -63,11 +72,8 @@ signals:
 protected:
     void timerEvent(QTimerEvent *);*/
 
-private slots:
-    void on_actionExit_triggered();
-
 private:
-    //data
+    // data
     Ui::UGEngineControllWidget *ui;
 
     QString settingsFileName;
@@ -93,8 +99,8 @@ private:
     /// Ёкзепл€р класса проекта
     RDK::UProject project;
 
-    //widgets
-    UComponentsListWidget *componentsList;
+    // widgets
+    UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
@@ -102,8 +108,10 @@ private:
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
+    UCreateTestWidget *createTestWidget;
 
-    //methods
+    // methods
+
     //void initGraphicalEngine();
 
     ///if chanelIndex == -1 запускает все каналы расчета

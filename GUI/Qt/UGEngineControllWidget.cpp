@@ -14,8 +14,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-int heheheCounter = 0;
-void hehehe(){qDebug("hehehe %d", ++heheheCounter);}
+/*int heheheCounter = 0;
+void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
 
 UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     QMainWindow(parent),
@@ -38,18 +38,19 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     settingsFileName = "settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
-    componentsList = NULL;
+    propertyChanger = NULL;
     drawEngine = NULL;
     componentLinks = NULL;
     images = NULL;
     imagesWindow = NULL;
     channels = NULL;
     createConfigurationWizardWidget = NULL;
+    createTestWidget = NULL;  
 
     readSettings(settingsFileName, settingsGroupName);
 
-    componentsList = new UComponentsListWidget(this, settingsFileName);
-    ui->dockWidgetComponentsList->setWidget(componentsList);
+    propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
+    ui->dockWidgetComponentsList->setWidget(propertyChanger);
 
     drawEngine = new UDrawEngineWidget(this, settingsFileName);
     QMdiSubWindow *drawEngineSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
@@ -59,22 +60,22 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
 
     // связывание схемы модели и списка отображения компонентов модели
     //  схема -> список
-    connect(componentsList, SIGNAL(componentDoubleClick(QString)),
+    connect(propertyChanger->componentsList, SIGNAL(componentDoubleClick(QString)),
             drawEngine, SLOT(componentDoubleClick(QString)));
-    connect(componentsList, SIGNAL(componentSelected(QString)),
+    connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),
             drawEngine, SLOT(componentSingleClick(QString)));
-    connect(componentsList, SIGNAL(updateScheme(bool)),
+    connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
             drawEngine, SLOT(updateScheme(bool)));
 
     //  список -> схема
     connect(drawEngine, SIGNAL(componentSelectedFromScheme(QString)),
-            componentsList, SLOT(componentSelectedFromScheme(QString)));
+            propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
     connect(drawEngine, SIGNAL(componentDoubleClickFromScheme(QString)),
-            componentsList, SLOT(componentDoubleClickFromScheme(QString)));
+            propertyChanger->componentsList, SLOT(componentDoubleClickFromScheme(QString)));
     connect(drawEngine, SIGNAL(componentStapBackFromScheme()),
-            componentsList, SLOT(componentStapBackFromScheme()));
+            propertyChanger->componentsList, SLOT(componentStapBackFromScheme()));
     connect(drawEngine, SIGNAL(updateComponentsListFromScheme()),
-            componentsList, SLOT(updateComponentsListFromScheme()));
+            propertyChanger->componentsList, SLOT(updateComponentsListFromScheme()));
 
     componentLinks = new UComponentLinksWidget(this, settingsFileName);
     componentLinks->hide();
@@ -84,7 +85,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     connect(componentLinks, SIGNAL(updateScheme(bool)), drawEngine, SLOT(updateScheme(bool)));
 
     //  схема -> связи
-    // но слоты находятся в окне главного интерфейса, так как необходимо сначала создать
+    // обнако слоты находятся в окне главного интерфейса, так как необходимо сначала создать
     // диалоговые окна (QDialog) для отображения виджета связей
     connect(drawEngine, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(drawEngine, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
@@ -100,20 +101,33 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this);
 
+    createTestWidget = new UCreateTestWidget(this);
+    createTestWidget->hide();
+
     // GUI actions:
-    connect(ui->actionComponentsControl, SIGNAL(triggered(bool)), this, SLOT(actionComponentsControl()));
-    connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
+
+    // file menu actions:
     connect(ui->actionCreateConfig, SIGNAL(triggered(bool)), this, SLOT(actionCreateConfig()));
     connect(ui->actionLoadConfig, SIGNAL(triggered(bool)), this, SLOT(actionLoadConfig()));
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
+    connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
+
+    // calculate menu actions:
     connect(ui->actionStart, SIGNAL(triggered(bool)), this, SLOT(actionStart()));
     connect(ui->actionPause, SIGNAL(triggered(bool)), this, SLOT(actionPause()));
     connect(ui->actionReset, SIGNAL(triggered(bool)), this, SLOT(actionReset()));
     connect(ui->actionStep, SIGNAL(triggered(bool)), this, SLOT(actionStep()));
+
+    // window menu actions:
     connect(ui->actionImagesFromWindow, SIGNAL(triggered(bool)), this, SLOT(actionImages()));
-    //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action));
+    connect(ui->actionComponentsControl, SIGNAL(triggered(bool)), this, SLOT(actionComponentsControl()));
+    connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
+    connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
+    connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
 
 
+
+    //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
 }
 
@@ -135,29 +149,36 @@ void UGEngineControllWidget::showLinksForTwoComponents(QString firstComponentNam
     execDialogUVisualControllWidget(componentLinks);
 }
 
-void UGEngineControllWidget::actionComponentsControl()
-{
-    ui->dockWidgetComponentsList->show();
-}
-
-void UGEngineControllWidget::actionChannelsControl()
-{
-    ui->dockWidgetChannels->show();
-}
+// file menu actions
 
 void UGEngineControllWidget::actionLoadConfig()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open config file"), QApplication::applicationDirPath()+"/../../../Configs", tr("*.ini"));
-    if (fileName != "")
+
+    if (fileName.isEmpty())
+      return;
+    try
     {
-        application.OpenProject(fileName.toLocal8Bit().constData());
-        configFileName = fileName;
-        this->setWindowTitle("project: " + configFileName);
-        QStringList list = configFileName.split("/");
-        list.pop_back();
-        readSettings(list.join("/") + "/settings.qt");
-        RDK::UIVisualControllerStorage::UpdateInterface(true);
-        drawEngine->updateScheme(true);
+      application.OpenProject(fileName.toLocal8Bit().constData());
+
+      configFileName = fileName;
+      this->setWindowTitle("project: " + configFileName);
+
+      QStringList list = configFileName.split("/");
+      list.pop_back();
+
+      readSettings(list.join("/") + "/settings.qt");
+
+      RDK::UIVisualControllerStorage::UpdateInterface(true);
+      drawEngine->updateScheme(true);
+    }
+    catch(RDK::UException& e)
+    {
+      QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+    }
+    catch(std::exception& e)
+    {
+      QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
     }
 }
 
@@ -172,6 +193,13 @@ void UGEngineControllWidget::actionSaveConfig()
     application.SaveProject();
     writeSettings(settingsFileName);
 }
+
+void UGEngineControllWidget::actionExit()
+{
+  QApplication::quit();
+}
+
+// calculate menu actions
 
 void UGEngineControllWidget::actionReloadParameters()
 {
@@ -204,6 +232,8 @@ void UGEngineControllWidget::actionStep()
     calcOneStepChannel(-1);
 }
 
+// window menu action
+
 void UGEngineControllWidget::actionImages()
 {
     if(!imagesWindow)
@@ -213,9 +243,28 @@ void UGEngineControllWidget::actionImages()
     }
     imagesWindow->resize(images->size());
     images->show();
-    //imagesWindow->show();
     imagesWindow->showNormal();
     imagesWindow->activateWindow();
+}
+
+void UGEngineControllWidget::actionComponentsControl()
+{
+    ui->dockWidgetComponentsList->show();
+}
+
+void UGEngineControllWidget::actionChannelsControl()
+{
+  ui->dockWidgetChannels->show();
+}
+
+void UGEngineControllWidget::actionLogger()
+{
+  ui->dockWidgetLoger->show();
+}
+
+void UGEngineControllWidget::actionTestCreator()
+{
+  execDialogUVisualControllWidget(createTestWidget);
 }
 
 /*void UGEngineControllWidget::timerEvent(QTimerEvent *) // костыль
@@ -304,13 +353,17 @@ void UGEngineControllWidget::writeSettings(QString file, QString group)
 {
     QSettings settings(file, QSettings::IniFormat);
     settings.beginGroup(group);
+
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
+
     settings.endGroup();
-    if(componentsList) componentsList->writeSettings(settingsFileName);
+
+    if(propertyChanger) propertyChanger->writeSettings(settingsFileName);
     if(drawEngine) drawEngine->writeSettings(settingsFileName);
     if(componentLinks) componentLinks->writeSettings(settingsFileName);
     if(images) images->writeSettings(settingsFileName);
+    if(createTestWidget) createTestWidget->writeSettings(settingsFileName);
 }
 
 void UGEngineControllWidget::readSettings(QString file, QString group)
@@ -319,16 +372,15 @@ void UGEngineControllWidget::readSettings(QString file, QString group)
     settingsGroupName = group;
     QSettings settings(settingsFileName, QSettings::IniFormat);
     settings.beginGroup(settingsGroupName);
+
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
+
     settings.endGroup();
-    if(componentsList) componentsList->readSettings(settingsFileName);
+
+    if(propertyChanger) propertyChanger->readSettings(settingsFileName);
     if(drawEngine) drawEngine->readSettings(settingsFileName);
     if(componentLinks) componentLinks->readSettings(settingsFileName);
     if(images) images->readSettings(settingsFileName);
-}
-
-void UGEngineControllWidget::on_actionExit_triggered()
-{
- QApplication::quit();
+    if(createTestWidget) createTestWidget->readSettings(settingsFileName);
 }

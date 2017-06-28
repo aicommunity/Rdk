@@ -496,6 +496,14 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
 {
  switch (msg_level)
  {
+ case RDK_EX_UNKNOWN:
+ {
+  EStringFatal exception(line,error_event_number);
+  exception.SetObjectName(object_name);
+  ProcessException(exception);
+ }
+ break;
+
  case RDK_EX_FATAL:
  {
   EStringFatal exception(line,error_event_number);
