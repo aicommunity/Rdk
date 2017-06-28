@@ -330,12 +330,6 @@ void CalcAppCaption(void);
 
 /// Обновляет состояние средств логгирования
 void UpdateLoggers(void);
-
-/// Загружает файл в строку
-bool LoadFile(const std::string &file_name, std::string &buffer) const;
-
-/// Сохраняет файл из строки
-bool SaveFile(const std::string &file_name, const std::string &buffer) const;
 // --------------------------
 };
 
