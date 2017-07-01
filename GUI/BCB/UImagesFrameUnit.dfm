@@ -193,6 +193,13 @@ inherited UImagesFrame: TUImagesFrame
       Caption = 'Delete Row'
       OnClick = DeleteRowClick
     end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object Update1: TMenuItem
+      Caption = 'Update'
+      OnClick = Update1Click
+    end
   end
   object SavePictureDialog: TSavePictureDialog
     DefaultExt = 'bmp'

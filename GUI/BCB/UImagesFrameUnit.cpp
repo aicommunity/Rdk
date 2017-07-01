@@ -1013,3 +1013,9 @@ void __fastcall TUImagesFrame::SaveToJpegClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUImagesFrame::Update1Click(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
