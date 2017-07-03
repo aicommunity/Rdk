@@ -1436,48 +1436,6 @@ void UApplication::UpdateLoggers(void)
  }
 //  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
 }
-
-/// Загружает файл в строку
-bool UApplication::LoadFile(const std::string &file_name, std::string &buffer) const
-{
- std::ifstream t(file_name.c_str(), ios::in);
-
- if(!t || t.fail() || t.bad())
- {
-  buffer.clear();
-  return false;
- }
-
- t.seekg(0, std::ios::end);
- if(t.fail() || t.bad())
-  return false;
- buffer.reserve(t.tellg());
- t.seekg(0, std::ios::beg);
- if(t.fail() || t.bad())
-  return false;
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- if(t.fail() || t.bad())
-  return false;
- return true;
-}
-
-/// Сохраняет файл из строки
-bool UApplication::SaveFile(const std::string &file_name, const std::string &buffer) const
-{
- std::ofstream t(file_name.c_str(), ios::trunc);
-
- if(!t || t.fail() || t.bad())
- {
-  return false;
- }
-
- t<<buffer;
- if(t.fail() || t.bad())
-  return false;
- return true;
-}
 // --------------------------
 
 }

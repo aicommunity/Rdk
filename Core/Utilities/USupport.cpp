@@ -19,6 +19,7 @@ See file license.txt for more information
 #include <math.h>
 #include <string.h>
 //#include <mem.h>
+#include <fstream>
 
 #include "USupport.h"
 //#include "UPtr.cpp"
@@ -228,6 +229,64 @@ RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
 		 : full_name.substr(pos+1);
 }
 
+
+/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str )
+{
+ std::string result(src);
+ string::size_type i = 0;
+
+ while ( ( i = result.find( find_str, i ) ) != result.npos )
+ {
+  result.replace( i, find_str.length(), replace_str);
+  i+=replace_str.length();
+ }
+
+ return result;
+}
+
+
+/// Загружает файл в строку
+RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer)
+{
+ std::ifstream t(file_name.c_str(), ios::in);
+
+ if(!t || t.fail() || t.bad())
+ {
+  buffer.clear();
+  return false;
+ }
+
+ t.seekg(0, std::ios::end);
+ if(t.fail() || t.bad())
+  return false;
+ buffer.reserve(t.tellg());
+ t.seekg(0, std::ios::beg);
+ if(t.fail() || t.bad())
+  return false;
+
+ buffer.assign((std::istreambuf_iterator<char>(t)),
+			std::istreambuf_iterator<char>());
+ if(t.fail() || t.bad())
+  return false;
+ return true;
+}
+
+/// Сохраняет файл из строки
+RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer)
+{
+ std::ofstream t(file_name.c_str(), ios::trunc);
+
+ if(!t || t.fail() || t.bad())
+ {
+  return false;
+ }
+
+ t<<buffer;
+ if(t.fail() || t.bad())
+  return false;
+ return true;
+}
 
 }
 #endif
