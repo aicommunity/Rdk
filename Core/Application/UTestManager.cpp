@@ -3,6 +3,7 @@
 #pragma hdrstop
 
 #include "UTestManager.h"
+#include "UApplication.h"
 
 namespace RDK {
 

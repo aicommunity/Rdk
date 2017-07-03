@@ -2,6 +2,8 @@
 #include "ui_UCreateTestWidget.h"
 
 #include <QTreeWidgetItem>
+#include <QTreeWidgetItemIterator>
+#include <QFileDialog>
 
 UCreateTestWidget::UCreateTestWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
   UVisualControllerWidget(parent),
@@ -60,18 +62,83 @@ void UCreateTestWidget::addProperty()
   if(propertyName.isEmpty())
     return;
 
-  QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetSelectedProperties);
-  const char *componentValue = Model_GetComponentPropertyValue(componentName.toLocal8Bit(), propertyName.toLocal8Bit());
+  try
+  {
+    RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
 
-  item->setText(0, componentName); // component
-  item->setText(1, propertyName); // property
-  item->setText(2, QString::fromLocal8Bit(componentValue)); // value
-  item->setText(3, ui->lineEditDelta->text()); // delta
+    RDK::UEPtr<RDK::UComponent> component;
+    if (componentName.isEmpty())
+        component = model;
+    else
+        component = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
 
-  Engine_FreeBufString(componentValue);
+    if(!component) return;
+
+    RDK::UEPtr<RDK::UIProperty> property = component->FindProperty(propertyName.toLocal8Bit().constData());
+
+    if(!property) return;
+
+    std::string buffer;
+    QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetSelectedProperties);
+
+    item->setText(0, componentName); // component
+    item->setText(1, propertyName); // property
+    item->setText(2, QString::fromLocal8Bit(property->GetLanguageType().name())); // type
+    item->setText(3, QString::fromStdString(component->GetPropertyValue(propertyName.toLocal8Bit().constData(), buffer))); // value
+    item->setText(4, ui->lineEditDelta->text()); // delta
+  }
+  catch (RDK::UException &exception)
+  {
+    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+  }
+  catch (std::exception &exception)
+  {
+    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+  }
 }
 
 void UCreateTestWidget::createTest()
 {
+  RDK::USerStorageXML storage;
+  storage.Create("TestCase");
 
+  storage.AddNode("Header");
+
+  storage.AddNode("CalculateDuration");
+  if(ui->radioButtonMilliseconds->isChecked())
+    storage.SetNodeAttribute("Milliseconds", ui->lineEditPeriodSize->text().toLocal8Bit().constData());
+  else
+    storage.SetNodeAttribute("Steps", ui->lineEditPeriodSize->text().toLocal8Bit().constData());
+
+  storage.SelectRoot();
+
+  storage.AddNode("TestProperties");
+
+  for(QTreeWidgetItemIterator it(ui->treeWidgetSelectedProperties); *it; ++it)
+  {
+    storage.AddNode("Property");
+    storage.SetNodeAttribute("Component", (*it)->data(0, Qt::DisplayRole).toString().toLocal8Bit().constData());
+    storage.SetNodeAttribute("PropertyName", (*it)->data(1, Qt::DisplayRole).toString().toLocal8Bit().constData());
+    storage.SetNodeAttribute("type", (*it)->data(2, Qt::DisplayRole).toString().toLocal8Bit().constData());
+    storage.SetNodeAttribute("Delta", (*it)->data(4, Qt::DisplayRole).toString().toLocal8Bit().constData());
+    storage.SetNodeText((*it)->data(3, Qt::DisplayRole).toString().toLocal8Bit().constData());
+    storage.SelectUp();
+  }
+
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save test XML"), QApplication::applicationDirPath()+"/../../../Configs");
+
+  storage.SaveToFile(fileName.toLocal8Bit().constData());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
