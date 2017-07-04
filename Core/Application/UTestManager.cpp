@@ -4,6 +4,7 @@
 
 #include "UTestManager.h"
 #include "UApplication.h"
+#include "boost/filesystem.hpp"
 
 namespace RDK {
 
@@ -37,6 +38,15 @@ int UTestManager::LoadTests(const std::string &file_name)
   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "Tests description file name is empty!");
   return 1001;
  }
+
+ /*boost::filesystem::path path(file_name);
+
+ boost::filesystem::path p("/a/b/c/e/f");
+ boost::filesystem::path base("/a/b/n/g");
+ boost::filesystem::path rel = boost::filesystem::relative(p, base);
+ std::string relStr = rel.string();
+
+ MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, relStr.c_str());*/
 
  std::vector<std::string> test_file_names;
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);

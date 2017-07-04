@@ -4,6 +4,7 @@
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
 #include <QFileDialog>
+#include <QDir>
 
 UCreateTestWidget::UCreateTestWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
   UVisualControllerWidget(parent),
@@ -126,6 +127,14 @@ void UCreateTestWidget::createTest()
   }
 
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save test XML"), QApplication::applicationDirPath()+"/../../../Configs");
+
+  storage.SelectRoot();
+  storage.SelectNode("Header");
+  storage.AddNode("ConfigFilePath");
+
+  QString relativeFilePath = QDir::current().relativeFilePath(fileName);
+
+  storage.SetNodeText(relativeFilePath.toLocal8Bit().constData());
 
   storage.SaveToFile(fileName.toLocal8Bit().constData());
 }

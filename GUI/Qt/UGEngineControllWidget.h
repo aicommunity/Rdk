@@ -33,7 +33,7 @@ class UGEngineControllWidget : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit UGEngineControllWidget(QWidget *parent = 0);
+    explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
 
 public slots:
@@ -65,10 +65,10 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-
+/*
 signals:
     void readSettingsSignal(QString file);
-/*
+
 protected:
     void timerEvent(QTimerEvent *);*/
 
@@ -80,25 +80,6 @@ private:
     QString settingsGroupName;
     QString configFileName;
 
-    /// Ёкзепл€р прототипа декодера команд
-    RDK::URpcDecoderInternal rpcDecoder;
-
-    /// Ёкзепл€р класса диспетчера команд
-    RDK::URpcDispatcher rpcDispatcher;
-
-    /// Ёкзепл€р класса приложени€
-    RDK::UApplication application;
-
-    /// Ёкземпл€р класса контроллера сервера
-    RDK::UServerControl serverControl;
-    RDK::URpcDecoderCommon rpcDecoderCommon;
-
-    /// Ёкземпл€р класса контроллера расчета
-    UEngineControlQt engineControl;
-
-    /// Ёкзепл€р класса проекта
-    RDK::UProject project;
-
     // widgets
     UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
@@ -109,6 +90,9 @@ private:
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
+
+    /// Ёкзепл€р класса приложени€
+    RDK::UApplication *application;
 
     // methods
 
