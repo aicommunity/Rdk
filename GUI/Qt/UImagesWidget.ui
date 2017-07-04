@@ -33,12 +33,9 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBoxImages">
+    <widget class="QFrame" name="frameImages">
      <property name="contextMenuPolicy">
       <enum>Qt::ActionsContextMenu</enum>
-     </property>
-     <property name="title">
-      <string/>
      </property>
      <layout class="QGridLayout" name="gridLayoutImages">
       <property name="leftMargin">
@@ -60,15 +57,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QFrame" name="frame">
      <property name="maximumSize">
       <size>
        <width>16777215</width>
        <height>30</height>
       </size>
-     </property>
-     <property name="title">
-      <string/>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">

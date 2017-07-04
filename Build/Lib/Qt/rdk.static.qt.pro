@@ -134,6 +134,7 @@ SOURCES += \
     ../../../Core/Application/UServerControl.cpp \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
+    ../../../Core/Application/UTestManager.cpp \
     ../../../Core/System/Gcc/pevents.cpp
 
 HEADERS +=\
@@ -254,6 +255,7 @@ HEADERS +=\
     ../../../Core/Application/UServerControl.h \
     ../../../Core/Application/UServerTransport.h \
     ../../../Core/Application/UServerTransportTcp.h \
+    ../../../Core/Application/UTestManager.h \
     ../../../Core/System/Gcc/pevents.h
 
 unix {
