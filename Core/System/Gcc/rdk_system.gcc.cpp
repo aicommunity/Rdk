@@ -118,12 +118,12 @@ int CreateNewDirectory(const char* path)
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
  results.clear();
+ DIR *dp;
+ struct dirent *dirp;
+ if((dp  = opendir(path.c_str())) == NULL)
+  return errno;
  if(isfile)
  {
-	DIR *dp;
-	struct dirent *dirp;
-	if((dp  = opendir(path.c_str())) == NULL)
-	 return errno;
 	while ((dirp = readdir(dp)) != NULL)
 	{
 	if((strcmp(dirp->d_name, ".") == 0) || (strcmp(dirp->d_name, "..") == 0))
@@ -131,6 +131,72 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 	 results.push_back(std::string(dirp->d_name));
 	}
 	closedir(dp);
+ }
+ else
+ {
+  std::string mask4cmp_left;
+  std::string mask4cmp_right;
+  std::string* dst_ptr = &mask4cmp_left;
+  std::string::const_iterator mask_it = mask.begin();
+  for(;mask_it != mask.end();mask_it++)
+  {
+    if(*mask_it == '*')
+    {
+     dst_ptr = &mask4cmp_right;
+     continue;
+    }
+    else
+     dst_ptr->push_back(*mask_it);
+  }
+
+  // Размер dirp->d_name = 256
+  if((mask4cmp_left.size() + mask4cmp_right.size())>255)
+   return 1;
+
+#define STRIT std::string::iterator
+  while ((dirp = readdir(dp)) != NULL)
+  {
+   std::string cut_name = dirp->d_name;
+   if((strcmp(cut_name.c_str(), ".") == 0) || (strcmp(cut_name.c_str(), "..") == 0))
+    continue;
+   if(cut_name.size() < (mask4cmp_left.size()+mask4cmp_right.size()))
+    continue;
+   bool break_ctrl = false;
+   if(!mask4cmp_left.empty())
+   {
+    STRIT it_left = mask4cmp_left.begin();
+    STRIT it_name = cut_name.begin();
+    for(; it_left != mask4cmp_left.end(); it_left++, it_name++)
+    {
+     if(*it_left != *it_name)
+     {
+      break_ctrl = true;
+      break;
+     }
+    }
+    if(break_ctrl)
+     continue;
+   }
+   if(!mask4cmp_right.empty())
+   {
+    STRIT it_right = mask4cmp_right.end();
+    STRIT it_name = cut_name.end();
+    while(it_right != mask4cmp_right.begin())
+    {
+     if(*(--it_right) != *(--it_name))
+     {
+      break_ctrl = true;
+      break;
+     }
+    }
+    if(break_ctrl)
+     continue;
+   }
+   results.push_back(std::string(dirp->d_name));
+  }
+#undef STRIT
+  closedir(dp);
+
  }
  return 0;
 }
