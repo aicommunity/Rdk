@@ -149,13 +149,15 @@ void UEngineStateThread::Execute(void)
   {
    if(CalcStarted->wait(100) == false)
    {
-	ProcessLog();
+	if(!Terminated) // TODO: Эта проверка - костыль. не должно возникать такой ситуации. Поток должен остановится раньше, чем разрушится модель
+	 ProcessLog();
 	continue;
    }
 
    if(CalculationNotInProgress->wait(100) == false)
    {
-	ProcessLog();
+	if(!Terminated) // TODO: Эта проверка - костыль. не должно возникать такой ситуации. Поток должен остановится раньше, чем разрушится модель
+ 	 ProcessLog();
 	continue;
    }
 
