@@ -135,22 +135,32 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  else
  {
   std::string mask4cmp_left;
+  std::string mask4cmp_middle;
   std::string mask4cmp_right;
   std::string* dst_ptr = &mask4cmp_left;
   std::string::const_iterator mask_it = mask.begin();
+  short int break_count = 0;
   for(;mask_it != mask.end();mask_it++)
   {
     if(*mask_it == '*')
     {
-     dst_ptr = &mask4cmp_right;
+     break_count++;
+     if(mask4cmp_middle.empty())
+      dst_ptr = &mask4cmp_middle;
+     else
+      dst_ptr = &mask4cmp_right;
      continue;
     }
     else
      dst_ptr->push_back(*mask_it);
   }
-
+  if((break_count == 1) && mask4cmp_right.empty() && (!mask4cmp_middle.empty()))
+  {
+   mask4cmp_right = mask4cmp_middle;
+   mask4cmp_middle.clear();
+  }
   // Размер dirp->d_name = 256
-  if((mask4cmp_left.size() + mask4cmp_right.size())>255)
+  if((mask4cmp_left.size() + mask4cmp_right.size() + mask4cmp_middle.size())>255)
    return 1;
 
 #define STRIT std::string::iterator
@@ -158,6 +168,8 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
   {
    std::string cut_name = dirp->d_name;
    if((strcmp(cut_name.c_str(), ".") == 0) || (strcmp(cut_name.c_str(), "..") == 0))
+    continue;
+   if(dirp->d_type != DT_DIR)
     continue;
    if(cut_name.size() < (mask4cmp_left.size()+mask4cmp_right.size()))
     continue;
@@ -177,7 +189,42 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
     if(break_ctrl)
      continue;
    }
-   if(!mask4cmp_right.empty())
+   if(!mask4cmp_middle.empty())
+   {
+    STRIT it_midle = mask4cmp_middle.begin();
+    STRIT it_name = cut_name.begin() + mask4cmp_left.size();
+    STRIT it_name_end = cut_name.end() - mask4cmp_right.size();
+    while (it_name != it_name_end)
+    {
+     if (*it_midle == *it_name)
+     {
+      bool equale = true;
+      STRIT it2_midle = it_midle;
+      STRIT it2_name = it_name;
+      for (; it2_midle != mask4cmp_middle.end(); it2_midle++, it2_name++)
+      {
+       if (*it2_midle != *it2_name)
+       {
+        equale = false;
+        break_ctrl = true;
+        break;
+       }
+      }
+      if(equale)
+      {
+       break_ctrl = false;
+       break;
+      }
+     }
+     else
+      break_ctrl = true;
+     it_name++;
+    }
+
+    if (break_ctrl)
+     continue;
+   }
+    if(!mask4cmp_right.empty())
    {
     STRIT it_right = mask4cmp_right.end();
     STRIT it_name = cut_name.end();
@@ -196,7 +243,6 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
   }
 #undef STRIT
   closedir(dp);
-
  }
  return 0;
 }
