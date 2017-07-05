@@ -122,128 +122,117 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  struct dirent *dirp;
  if((dp  = opendir(path.c_str())) == NULL)
   return errno;
- if(isfile)
+ std::string mask4cmp_left;
+ std::string mask4cmp_middle;
+ std::string mask4cmp_right;
+ std::string* dst_ptr = &mask4cmp_left;
+ std::string::const_iterator mask_it = mask.begin();
+ short int break_count = 0;
+ for(;mask_it != mask.end();mask_it++)
  {
-	while ((dirp = readdir(dp)) != NULL)
-	{
-	if((strcmp(dirp->d_name, ".") == 0) || (strcmp(dirp->d_name, "..") == 0))
-		continue;
-	 results.push_back(std::string(dirp->d_name));
-	}
-	closedir(dp);
- }
- else
- {
-  std::string mask4cmp_left;
-  std::string mask4cmp_middle;
-  std::string mask4cmp_right;
-  std::string* dst_ptr = &mask4cmp_left;
-  std::string::const_iterator mask_it = mask.begin();
-  short int break_count = 0;
-  for(;mask_it != mask.end();mask_it++)
-  {
-    if(*mask_it == '*')
-    {
-     break_count++;
-     if(mask4cmp_middle.empty())
-      dst_ptr = &mask4cmp_middle;
-     else
-      dst_ptr = &mask4cmp_right;
-     continue;
-    }
+   if(*mask_it == '*')
+   {
+    break_count++;
+    if(mask4cmp_middle.empty())
+     dst_ptr = &mask4cmp_middle;
     else
-     dst_ptr->push_back(*mask_it);
-  }
-  if((break_count == 1) && mask4cmp_right.empty() && (!mask4cmp_middle.empty()))
-  {
-   mask4cmp_right = mask4cmp_middle;
-   mask4cmp_middle.clear();
-  }
-  // Размер dirp->d_name = 256
-  if((mask4cmp_left.size() + mask4cmp_right.size() + mask4cmp_middle.size())>255)
-   return 1;
+     dst_ptr = &mask4cmp_right;
+    continue;
+   }
+   else
+    dst_ptr->push_back(*mask_it);
+ }
+ if((break_count == 1) && mask4cmp_right.empty() && (!mask4cmp_middle.empty()))
+ {
+  mask4cmp_right = mask4cmp_middle;
+  mask4cmp_middle.clear();
+ }
+ // Размер dirp->d_name = 256
+ if((mask4cmp_left.size() + mask4cmp_right.size() + mask4cmp_middle.size())>255)
+  return 1;
 
 #define STRIT std::string::iterator
-  while ((dirp = readdir(dp)) != NULL)
+ while ((dirp = readdir(dp)) != NULL)
+ {
+  std::string cut_name = dirp->d_name;
+  if((strcmp(cut_name.c_str(), ".") == 0) || (strcmp(cut_name.c_str(), "..") == 0))
+   continue;
+  if((dirp->d_type != DT_DIR) && (!isfile))
+   continue;
+  if((dirp->d_type == DT_DIR) && (isfile))
+   continue;
+  if(cut_name.size() < (mask4cmp_left.size()+mask4cmp_right.size()))
+   continue;
+  bool break_ctrl = false;
+  if(!mask4cmp_left.empty())
   {
-   std::string cut_name = dirp->d_name;
-   if((strcmp(cut_name.c_str(), ".") == 0) || (strcmp(cut_name.c_str(), "..") == 0))
-    continue;
-   if(dirp->d_type != DT_DIR)
-    continue;
-   if(cut_name.size() < (mask4cmp_left.size()+mask4cmp_right.size()))
-    continue;
-   bool break_ctrl = false;
-   if(!mask4cmp_left.empty())
+   STRIT it_left = mask4cmp_left.begin();
+   STRIT it_name = cut_name.begin();
+   for(; it_left != mask4cmp_left.end(); it_left++, it_name++)
    {
-    STRIT it_left = mask4cmp_left.begin();
-    STRIT it_name = cut_name.begin();
-    for(; it_left != mask4cmp_left.end(); it_left++, it_name++)
+    if(*it_left != *it_name)
     {
-     if(*it_left != *it_name)
-     {
-      break_ctrl = true;
-      break;
-     }
+     break_ctrl = true;
+     break;
     }
-    if(break_ctrl)
-     continue;
    }
-   if(!mask4cmp_middle.empty())
+   if(break_ctrl)
+    continue;
+  }
+  if(!mask4cmp_middle.empty())
+  {
+   STRIT it_midle = mask4cmp_middle.begin();
+   STRIT it_name = cut_name.begin() + mask4cmp_left.size();
+   STRIT it_name_end = cut_name.end() - mask4cmp_right.size();
+   while (it_name != it_name_end)
    {
-    STRIT it_midle = mask4cmp_middle.begin();
-    STRIT it_name = cut_name.begin() + mask4cmp_left.size();
-    STRIT it_name_end = cut_name.end() - mask4cmp_right.size();
-    while (it_name != it_name_end)
+    if (*it_midle == *it_name)
     {
-     if (*it_midle == *it_name)
+     bool equale = true;
+     STRIT it2_midle = it_midle;
+     STRIT it2_name = it_name;
+     for (; it2_midle != mask4cmp_middle.end(); it2_midle++, it2_name++)
      {
-      bool equale = true;
-      STRIT it2_midle = it_midle;
-      STRIT it2_name = it_name;
-      for (; it2_midle != mask4cmp_middle.end(); it2_midle++, it2_name++)
+      if (*it2_midle != *it2_name)
       {
-       if (*it2_midle != *it2_name)
-       {
-        equale = false;
-        break_ctrl = true;
-        break;
-       }
-      }
-      if(equale)
-      {
-       break_ctrl = false;
+       equale = false;
+       break_ctrl = true;
        break;
       }
      }
-     else
-      break_ctrl = true;
-     it_name++;
-    }
-
-    if (break_ctrl)
-     continue;
-   }
-    if(!mask4cmp_right.empty())
-   {
-    STRIT it_right = mask4cmp_right.end();
-    STRIT it_name = cut_name.end();
-    while(it_right != mask4cmp_right.begin())
-    {
-     if(*(--it_right) != *(--it_name))
+     if(equale)
      {
-      break_ctrl = true;
+      break_ctrl = false;
       break;
      }
     }
-    if(break_ctrl)
-     continue;
+    else
+     break_ctrl = true;
+    it_name++;
    }
-   results.push_back(std::string(dirp->d_name));
+
+   if (break_ctrl)
+    continue;
   }
-#undef STRIT
-  closedir(dp);
+   if(!mask4cmp_right.empty())
+  {
+   STRIT it_right = mask4cmp_right.end();
+   STRIT it_name = cut_name.end();
+   while(it_right != mask4cmp_right.begin())
+   {
+    if(*(--it_right) != *(--it_name))
+    {
+     break_ctrl = true;
+     break;
+    }
+   }
+   if(break_ctrl)
+    continue;
+  }
+  results.push_back(std::string(dirp->d_name));
  }
+#undef STRIT
+ closedir(dp);
  return 0;
 }
 
