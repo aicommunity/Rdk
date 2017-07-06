@@ -30,7 +30,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
       QApplication::exit(-1);
 
 //    initGraphicalEngine();
-    settingsFileName = "settings.qt";
+    settingsFileName = QString::fromStdString(application->GetProjectPath())+"/settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
     propertyChanger = NULL;

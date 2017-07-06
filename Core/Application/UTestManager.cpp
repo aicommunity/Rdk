@@ -10,8 +10,14 @@ namespace RDK {
 /// --------------------
 /// Методы инициализации
 /// --------------------
+
+UTest::UTest(const UEPtr<UApplication> &value)
+{
+  Application=value;
+}
+
 /// Возвращает указатель на тестируемое приложение
-UEPtr<UApplication> UTest::GetApplication()
+  UEPtr<UApplication> UTest::GetApplication()
 {
   return Application;
 }
@@ -28,6 +34,7 @@ void UTest::SetApplication(const UEPtr<UApplication> &value)
 /// Загрузка тестов
 int UTest::LoadTest(string testFile)
 {
+  testsFileName = testFile;
   RDK::USerStorageXML testXML;
   if(testXML.Load(testFile, "TestCase"))
     return 1;
@@ -50,31 +57,58 @@ int UTest::LoadTest(string testFile)
 
   calcDuration = atoi(strDuration);
 
+  testXML.SelectUp();
+  testXML.SelectNode("ConfigFilePath");
+  testProjectFileName = testXML.GetNodeText();
+
   testXML.SelectRoot();
 
   testXML.SelectNode("TestProperties");
-  for(size_t i = 0; i < testXML.GetNumNodes("Property"); ++i)
+  for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
   {
     testXML.SelectNode("Property", i);
     propertyTests.push_back(UPropertyTest{
-                              testXML.GetNodeAttribute("Property"),
+                              testXML.GetNodeAttribute("Component"),
                               testXML.GetNodeAttribute("PropertyName"),
                               testXML.GetNodeAttribute("type"),
                               testXML.GetNodeAttribute("Delta"),
                               testXML.GetNodeText()
                             });
+    testXML.SelectUp();
   }
+  return RDK_SUCCESS;
 }
 
 /// Проводит тестирование
 /// Возвращает код ошибки тестирования
 int UTest::ProcessTest()
 {
-  int returConde = RDK_SUCCESS;
-  for(std::vector<UTest>::iterator i = propertyTests.begin(); i != propertyTests.end(); ++i)
-  {
+  int returnCode = RDK_SUCCESS;
 
+  try
+  {
+    Application->OpenProject(testProjectFileName);
+    if(stepsMode)
+    {
+      for(size_t i = 0; i < calcDuration; ++i)
+        Application->StepChannel(-1);
+    }
+
+    for(std::vector<UPropertyTest>::iterator i = propertyTests.begin(); i != propertyTests.end(); ++i)
+    {
+
+    }
   }
+  catch(RDK::UException& e)
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UTest::ProcessTest - ")+e.what()).c_str());
+  }
+  catch(std::exception& e)
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UTest::ProcessTest - ")+e.what()).c_str());
+  }
+
+  return returnCode;
 }
 
 
@@ -151,7 +185,7 @@ int UTestManager::ProcessTests(void)
 
  for(std::vector<UTest>::iterator i = tests.begin(); i != tests.end(); ++i)
  {
-   if ((*i)->ProcessTest() != RDK_SUCCESS)
+   if ((*i).ProcessTest() != RDK_SUCCESS)
      ++returnCode;
  }
 
