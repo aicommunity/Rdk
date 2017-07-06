@@ -7,9 +7,60 @@ namespace RDK {
 
 class UApplication;
 
-class UTest
+struct UPropertyTest
 {
+  std::string component;
+  std::string property;
+  std::string type;
+  std::string delta;
+  std::string value;
+};
 
+struct UTest
+{
+protected: // Данные
+  /// Тестируемое приложение
+  UEPtr<UApplication> Application;
+
+  /// Длительность расчёта
+  int calcDuration;
+
+  /// Режим проведения тестов
+  /// true - проведение количества итераций = calcDuration
+  /// false - рассчет проводится в течении calcDuration миллисекунд
+  bool stepsMode;
+
+  /// Список загруженных тестов
+  std::vector<UPropertyTest> propertyTests;
+
+  /// Путь к фалу, содержащему тестовую конфигурацию
+  std::string testsFileName;
+
+  /// Путь к файлу конфигурации тестируемого проекта
+  std::string testProjectFileName;
+
+public: // Методы
+  // --------------------
+  // Методы инициализации
+  // --------------------
+
+  UTest(const UEPtr<UApplication> &value);
+
+  /// Возвращает указатель на тестируемое приложение
+  UEPtr<UApplication> GetApplication(void);
+
+  /// Задает тестируемое приложение
+  virtual void SetApplication(const UEPtr<UApplication> &value);
+  // --------------------
+
+  // --------------------
+  // Методы тестирования
+  // --------------------
+  virtual int LoadTest(std::string testFile);
+
+  /// Проводит тестирование
+  /// Возвращает колличество неудачных проперти тестов
+  virtual int ProcessTest(void);
 };
 
 /// Менеджер тестов
@@ -18,6 +69,9 @@ class UTestManager
 protected: // Данные
 /// Тестируемое приложение
 UEPtr<UApplication> Application;
+
+/// Список загруженных тестов
+std::vector<UTest> tests;
 
 public: // Методы
 // --------------------
@@ -38,7 +92,7 @@ virtual int LoadTests(const std::string &file_name);
 
 /// Проводит тестирование
 /// Записывает в выходной массив результаты тестов
-/// Возвращает код ошибки тестирования
+/// Возвращает колличество неудачных тестов
 virtual int ProcessTests(void);
 // --------------------
 

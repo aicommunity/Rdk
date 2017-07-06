@@ -4,9 +4,80 @@
 
 #include "UTestManager.h"
 #include "UApplication.h"
-#include "boost/filesystem.hpp"
 
 namespace RDK {
+
+/// --------------------
+/// Методы инициализации
+/// --------------------
+/// Возвращает указатель на тестируемое приложение
+UEPtr<UApplication> UTest::GetApplication()
+{
+  return Application;
+}
+
+/// Задает тестируемое приложение
+void UTest::SetApplication(const UEPtr<UApplication> &value)
+{
+  if(Application == value)
+   return;
+
+  Application=value;
+}
+
+/// Загрузка тестов
+int UTest::LoadTest(string testFile)
+{
+  RDK::USerStorageXML testXML;
+  if(testXML.Load(testFile, "TestCase"))
+    return 1;
+
+  if(testXML.SelectNode("Header"))
+    return 2;
+
+  testXML.SelectNode("CalculateDuration");
+  std::string strDuration = testXML.GetNodeAttribute("Steps");
+
+  if(strDuration.empty())
+  {
+    stepsMode = false;
+    strDuration = testXML.GetNodeAttribute("Milliseconds");
+  }
+  else
+  {
+    stepsMode = true;
+  }
+
+  calcDuration = atoi(strDuration);
+
+  testXML.SelectRoot();
+
+  testXML.SelectNode("TestProperties");
+  for(size_t i = 0; i < testXML.GetNumNodes("Property"); ++i)
+  {
+    testXML.SelectNode("Property", i);
+    propertyTests.push_back(UPropertyTest{
+                              testXML.GetNodeAttribute("Property"),
+                              testXML.GetNodeAttribute("PropertyName"),
+                              testXML.GetNodeAttribute("type"),
+                              testXML.GetNodeAttribute("Delta"),
+                              testXML.GetNodeText()
+                            });
+  }
+}
+
+/// Проводит тестирование
+/// Возвращает код ошибки тестирования
+int UTest::ProcessTest()
+{
+  int returConde = RDK_SUCCESS;
+  for(std::vector<UTest>::iterator i = propertyTests.begin(); i != propertyTests.end(); ++i)
+  {
+
+  }
+}
+
+
 
 /// --------------------
 /// Методы инициализации
@@ -39,16 +110,15 @@ int UTestManager::LoadTests(const std::string &file_name)
   return 1001;
  }
 
- /*boost::filesystem::path path(file_name);
+ UTest singleTest(Application);
+ int loadRet = singleTest.LoadTest(file_name);
 
- boost::filesystem::path p("/a/b/c/e/f");
- boost::filesystem::path base("/a/b/n/g");
- boost::filesystem::path rel = boost::filesystem::relative(p, base);
- std::string relStr = rel.string();
+ if(loadRet)
+  return 1002;
 
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, relStr.c_str());*/
+ tests.push_back(singleTest);
 
- std::vector<std::string> test_file_names;
+ /*std::vector<std::string> test_file_names;
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);
  if(decode_main_file_res != RDK_SUCCESS)
  {
@@ -65,7 +135,7 @@ int UTestManager::LoadTests(const std::string &file_name)
    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode test file ")+test_file_names[i]+std::string(" FAILED! Error code: ")+sntoa(decode_res)).c_str());
    return 1003;
   }
- }
+ }*/
  return RDK_SUCCESS;
 }
 
@@ -76,7 +146,16 @@ int UTestManager::LoadTests(const std::string &file_name)
 int UTestManager::ProcessTests(void)
 {
  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::ProcessTests called");
- return RDK_SUCCESS;
+
+ int returnCode = RDK_SUCCESS;
+
+ for(std::vector<UTest>::iterator i = tests.begin(); i != tests.end(); ++i)
+ {
+   if ((*i)->ProcessTest() != RDK_SUCCESS)
+     ++returnCode;
+ }
+
+ return returnCode;
 }
 // --------------------
 
@@ -97,6 +176,9 @@ int UTestManager::DecodeTestFile(const std::string &test_file_name, UTest &test)
  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeTestFile called");
  return RDK_SUCCESS;
 }
+
+
+
 // --------------------
 
 }
