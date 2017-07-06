@@ -67,13 +67,14 @@ int UTest::LoadTest(string testFile)
   for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
   {
     testXML.SelectNode("Property", i);
-    propertyTests.push_back(UPropertyTest{
-                              testXML.GetNodeAttribute("Component"),
-                              testXML.GetNodeAttribute("PropertyName"),
-                              testXML.GetNodeAttribute("type"),
-                              testXML.GetNodeAttribute("Delta"),
-                              testXML.GetNodeText()
-                            });
+    UPropertyTest pt = {
+        testXML.GetNodeAttribute("Component"),
+        testXML.GetNodeAttribute("PropertyName"),
+        testXML.GetNodeAttribute("type"),
+        testXML.GetNodeAttribute("Delta"),
+        testXML.GetNodeText()
+      };
+    propertyTests.push_back(pt);
     testXML.SelectUp();
   }
   return RDK_SUCCESS;
