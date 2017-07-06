@@ -36,10 +36,10 @@ int UTest::LoadTest(string testFile)
 {
   testsFileName = testFile;
   RDK::USerStorageXML testXML;
-  if(testXML.Load(testFile, "TestCase"))
+  if(!testXML.LoadFromFile(testFile, "TestCase"))
     return 1;
 
-  if(testXML.SelectNode("Header"))
+  if(!testXML.SelectNode("Header"))
     return 2;
 
   testXML.SelectNode("CalculateDuration");

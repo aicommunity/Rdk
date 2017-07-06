@@ -30,7 +30,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
       QApplication::exit(-1);
 
 //    initGraphicalEngine();
-    settingsFileName = QString::fromStdString(application->GetProjectPath())+"/settings.qt";
+    settingsFileName = QString::fromStdString(application->GetProjectPath())+"settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
     propertyChanger = NULL;
@@ -42,7 +42,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;  
 
-    readSettings(settingsFileName, settingsGroupName);
 
     propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
@@ -96,7 +95,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this);
 
-    createTestWidget = new UCreateTestWidget(this);
+    createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
 
     // GUI actions:
@@ -122,6 +121,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
 
 
+    readSettings(settingsFileName, settingsGroupName);
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
 }

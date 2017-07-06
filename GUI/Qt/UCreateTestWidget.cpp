@@ -6,12 +6,13 @@
 #include <QFileDialog>
 #include <QDir>
 
-UCreateTestWidget::UCreateTestWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
+UCreateTestWidget::UCreateTestWidget(QWidget *parent, RDK::UApplication *app, QString settingsFile, QString settingsGroup) :
   UVisualControllerWidget(parent),
   ui(new Ui::UCreateTestWidget)
 {
   ui->setupUi(this);
   componentsList = NULL;
+  application = app;
 
   readSettings(settingsFile, settingsGroup);
 
@@ -126,15 +127,16 @@ void UCreateTestWidget::createTest()
     storage.SelectUp();
   }
 
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save test XML"), QApplication::applicationDirPath()+"/../../../Configs");
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save test XML"), QApplication::applicationDirPath()+"/../../../Tests");
 
-  storage.SelectRoot();
-  storage.SelectNode("Header");
-  storage.AddNode("ConfigFilePath");
-
-  QString relativeFilePath = QDir::current().relativeFilePath(fileName);
-
-  storage.SetNodeText(relativeFilePath.toLocal8Bit().constData());
+  if(application)
+  {
+    storage.SelectRoot();
+    storage.SelectNode("Header");
+    storage.AddNode("ConfigFilePath");
+    QString relativeFilePath = QDir::current().relativeFilePath(QString::fromStdString(application->GetProjectPath()+application->GetProjectFileName()));
+    storage.SetNodeText(relativeFilePath.toLocal8Bit().constData());
+  }
 
   storage.SaveToFile(fileName.toLocal8Bit().constData());
 }
