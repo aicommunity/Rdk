@@ -20,7 +20,7 @@ See file license.txt for more information
 #include "USerStorageXML.h"
 #include "UIOStream.h"
 
-
+/*
 namespace RDK {
 
 template<typename T>
@@ -64,7 +64,7 @@ bool VarFromStrRaw(const std::string &str, T &value)
 }
 
 }
-
+*/
 #endif
 
 

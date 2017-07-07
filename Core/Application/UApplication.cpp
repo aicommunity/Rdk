@@ -136,28 +136,6 @@ bool UApplication::SetLastProjectsList(const std::list<std::string>& value)
  return true;
 }
 
-/// Список аргументов командной строки
-const std::vector<std::string>& UApplication::GetCommandLineArgs(void) const
-{
- return CommandLineArgs;
-}
-
-void UApplication::SetCommandLineArgs(const std::vector<std::string> &args)
-{
- CommandLineArgs=args;
-}
-
-void UApplication::ClearCommandLineArgs(void)
-{
- CommandLineArgs.clear();
-}
-
-void UApplication::AddCommandLineArg(const std::string &arg)
-{
- CommandLineArgs.push_back(arg);
-}
-
-
 /// Размер истории последних открытых проектов
 int UApplication::GetLastProjectsListMaxSize(void) const
 {
@@ -419,14 +397,14 @@ bool UApplication::Init(void)
  LoadProjectsHistory();
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been finished.");
 
- if(CommandLineArgs.size()<2)
+ /*if(CommandLineArgs.size()<2)
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Command line parameters not found.");
  else
  {
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Parsing command line parameters: ")+concat_strings(CommandLineArgs,std::string(" "))).c_str());
   ProcessCommandLineArgs();
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
- }
+ }*/
 
  return true;
 }
@@ -478,6 +456,62 @@ int UApplication::Test(bool &exit_request)
  ChangeTestModeState(false);
  return test_result_code;
 }
+
+/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineArgs)
+{
+  InitCmdParser();
+  if(commandLineArgs.empty())
+    return;
+
+  std::vector<std::string>::iterator I=find(commandLineArgs.begin(),commandLineArgs.end(),"--test");
+  if(I != commandLineArgs.end())
+  {
+    ++I;
+    std::string configuration_name;
+    if(I != commandLineArgs.end())
+    {
+      configuration_name = *I;
+      SetTestsDescriptionFileName(configuration_name);
+      ChangeTestModeState(true);
+    }
+    else
+      ChangeTestModeState(false);
+  }
+  else
+  {
+    ChangeTestModeState(false);
+  }
+
+  I=find(commandLineArgs.begin(),commandLineArgs.end(),"--run");
+  if(I != commandLineArgs.end())
+    CloseAfterTest=true;
+  else
+    CloseAfterTest=false;
+}
+
+/// Осуществляет парсинг командной строки и записывает результаты в CommandLineArgs
+void UApplication::ProcessCommandLineArgs(int argc, char **argv)
+{
+  InitCmdParser();
+
+  po::store(po::parse_command_line(argc, argv, CmdLineDescription), CmdVariablesMap);
+  po::notify(CmdVariablesMap);
+
+  if(CmdVariablesMap.count("test"))
+  {
+    ChangeTestModeState(true);
+    SetTestsDescriptionFileName(CmdVariablesMap["test"].as<std::string>());
+  }
+  else
+    ChangeTestModeState(false);
+
+  if(CmdVariablesMap.count("run"))
+    CloseAfterTest=false;
+  else
+    CloseAfterTest=true;
+}
+
 // --------------------------
 
 // --------------------------
@@ -1323,74 +1357,6 @@ void UApplication::ChangeTestModeState(bool state)
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is OFF.");
 }
 
-/// Осуществляет парсинг командной строки и соответствующую настройку приложение
-void UApplication::ProcessCommandLineArgs(void)
-{
- if(CommandLineArgs.empty())
-  return;
-
-#ifndef __BORLANDC__
- std::vector<char*> cmd_line(CommandLineArgs.size());
- try
- {
-  for(size_t i=0;i<cmd_line.size();i++)
-  {
-   cmd_line[i]=new char[CommandLineArgs[i].size()];
-   strcpy(cmd_line[i],CommandLineArgs[i].c_str());
-  }
-  po::store(po::parse_command_line(int(cmd_line.size()), &cmd_line[0], CmdLineDescription), CmdVariablesMap);
-  po::notify(CmdVariablesMap);
-
-  if(CmdVariablesMap.count("test"))
-  {
-   ChangeTestModeState(true);
-   std::string configuration_name = CmdVariablesMap["test"].as<std::string>();
-   SetTestsDescriptionFileName(configuration_name);
-  }
-  else
-   ChangeTestModeState(false);
-
-  if(CmdVariablesMap.count("run"))
-   CloseAfterTest=false;
-  else
-   CloseAfterTest=true;
-
-  for(size_t i=0;i<cmd_line.size();i++)
-   delete[] cmd_line[i];
- }
- catch(...)
- {
-  for(size_t i=0;i<cmd_line.size();i++)
-   delete[] cmd_line[i];
-  throw;
- }
-#else
- std::vector<std::string>::iterator I=find(CommandLineArgs.begin(),CommandLineArgs.end(),"test");
- if(I != CommandLineArgs.end())
- {
-  ++I;
-  std::string configuration_name;
-  if(I != CommandLineArgs.end())
-  {
-   configuration_name = *I;
-   SetTestsDescriptionFileName(configuration_name);
-   ChangeTestModeState(true);
-  }
-  else
-   ChangeTestModeState(false);
- }
- else
- {
-  ChangeTestModeState(false);
- }
-
- I=find(CommandLineArgs.begin(),CommandLineArgs.end(),"run");
- if(I != CommandLineArgs.end())
-  CloseAfterTest=true;
- else
-  CloseAfterTest=false;
-#endif
-}
 
 /// Инициализация парсера командной строки
 void UApplication::InitCmdParser(void)

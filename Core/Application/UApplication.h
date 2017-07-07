@@ -52,9 +52,6 @@ std::list<std::string> LastProjectsList;
 /// Размер истории последних открытых проектов
 int LastProjectsListMaxSize;
 
-/// Список аргументов командной строки
-std::vector<std::string> CommandLineArgs;
-
 /// Флаг, выставляется если включен режим тестирования
 bool TestMode;
 
@@ -128,12 +125,6 @@ bool SetLastProjectsList(const std::list<std::string>& value);
 /// Размер истории последних открытых проектов
 int GetLastProjectsListMaxSize(void) const;
 bool SetLastProjectsListMaxSize(int value);
-
-/// Список аргументов командной строки
-const std::vector<std::string>& GetCommandLineArgs(void) const;
-void SetCommandLineArgs(const std::vector<std::string> &args);
-void ClearCommandLineArgs(void);
-void AddCommandLineArg(const std::string &arg);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;
@@ -220,6 +211,13 @@ virtual bool UnInit(void);
 /// Если exit_request == true,
 /// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
 virtual int Test(bool &exit_request);
+
+/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+void ProcessCommandLineArgs(std::vector<std::string> commandLineArgs);
+
+/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+void ProcessCommandLineArgs(int argc, char **argv);
+
 // --------------------------
 
 // --------------------------
@@ -321,9 +319,6 @@ void ChangeTestModeState(bool state);
 
 /// Инициализация парсера командной строки
 void InitCmdParser(void);
-
-/// Осуществляет парсинг командной строки и соответствующую настройку приложение
-void ProcessCommandLineArgs(void);
 
 /// Вычисляет заголовок приложения
 void CalcAppCaption(void);

@@ -7,9 +7,74 @@ namespace RDK {
 
 class UApplication;
 
-class UTest
+struct UPropertyTest
 {
+  std::string component;
+  std::string property;
+  std::string type;
+  std::string delta;
+  std::string value;
+};
 
+struct UTest
+{
+protected: // Данные
+  /// Тестируемое приложение
+  UEPtr<UApplication> Application;
+
+  /// Длительность расчёта
+  int calcDuration;
+
+  /// Режим проведения тестов
+  /// true - проведение количества итераций = calcDuration
+  /// false - рассчет проводится в течении calcDuration миллисекунд
+  bool stepsMode;
+
+  /// Список загруженных тестов
+  std::vector<UPropertyTest> propertyTests;
+
+  /// Путь к фалу, содержащему тестовую конфигурацию
+  std::string testsFileName;
+
+  /// Путь к файлу конфигурации тестируемого проекта
+  std::string testProjectFileName;
+
+public: // Методы
+  // --------------------
+  // Методы инициализации
+  // --------------------
+
+  UTest(const UEPtr<UApplication> &value);
+
+  /// Возвращает указатель на тестируемое приложение
+  UEPtr<UApplication> GetApplication(void);
+
+  /// Задает тестируемое приложение
+  virtual void SetApplication(const UEPtr<UApplication> &value);
+  // --------------------
+
+  // --------------------
+  // Методы тестирования
+  // --------------------
+  virtual int LoadTest(std::string testFile);
+
+  /// Проводит тестирование
+  /// Возвращает колличество неудачных проперти тестов
+  virtual int ProcessTest(void);
+
+  // --------------------
+  // Вспомогательные методы
+  // --------------------
+protected:
+  // Методы сравнения
+  bool compareProperties(bool               value, std::string str, std::string delta);
+  bool compareProperties(int                value, std::string str, std::string delta);
+  bool compareProperties(unsigned int       value, std::string str, std::string delta);
+  bool compareProperties(long long          value, std::string str, std::string delta);
+  bool compareProperties(unsigned long long value, std::string str, std::string delta);
+  bool compareProperties(float              value, std::string str, std::string delta);
+  bool compareProperties(double             value, std::string str, std::string delta);
+  bool compareProperties(std::string        value, std::string str, std::string);
 };
 
 /// Менеджер тестов
@@ -18,6 +83,9 @@ class UTestManager
 protected: // Данные
 /// Тестируемое приложение
 UEPtr<UApplication> Application;
+
+/// Список загруженных тестов
+std::vector<UTest> tests;
 
 public: // Методы
 // --------------------
@@ -38,7 +106,7 @@ virtual int LoadTests(const std::string &file_name);
 
 /// Проводит тестирование
 /// Записывает в выходной массив результаты тестов
-/// Возвращает код ошибки тестирования
+/// Возвращает колличество неудачных тестов
 virtual int ProcessTests(void);
 // --------------------
 

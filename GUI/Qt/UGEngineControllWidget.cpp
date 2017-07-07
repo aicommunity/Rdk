@@ -13,29 +13,24 @@
 #include <QThread>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTimer>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
 
-UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
+UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplication *app) :
     QMainWindow(parent),
     ui(new Ui::UGEngineControllWidget)
 {
     ui->setupUi(this);
 
-    application.SetApplicationFileName(QApplication::applicationFilePath().toLocal8Bit().constData());
-    rpcDispatcher.SetDecoderPrototype(&rpcDecoder);
-    rpcDispatcher.SetCommonDecoder(&rpcDecoderCommon);
-    application.SetRpcDispatcher(&rpcDispatcher);
-    application.SetServerControl(&serverControl);
-    application.SetEngineControl(&engineControl);
-    application.SetProject(&project);
-    application.SetLogDir((QApplication::applicationDirPath()+"/").toLocal8Bit().constData());
-    application.SetDebugMode(true);
-    application.Init();
+    application = app;
+
+    if(application == NULL)
+      QApplication::exit(-1);
 
 //    initGraphicalEngine();
-    settingsFileName = "settings.qt";
+    settingsFileName = QString::fromStdString(application->GetProjectPath())+"settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
     propertyChanger = NULL;
@@ -47,7 +42,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;  
 
-    readSettings(settingsFileName, settingsGroupName);
 
     propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
@@ -93,15 +87,15 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
     images = new UImagesWidget(this, settingsFileName);
     images->hide();
 
-    channels = new UCalculationChannelsWidget(this, &application);
+    channels = new UCalculationChannelsWidget(this, application);
     ui->dockWidgetChannels->setWidget(channels);
 
-    logger = new ULoggerWidget(this, &application);
+    logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this);
 
-    createTestWidget = new UCreateTestWidget(this);
+    createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
 
     // GUI actions:
@@ -127,13 +121,14 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent) :
 
 
 
+    readSettings(settingsFileName, settingsGroupName);
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
 }
 
 UGEngineControllWidget::~UGEngineControllWidget()
 {
-    application.UnInit();
+    application->UnInit();
     delete ui;
 }
 
@@ -159,7 +154,7 @@ void UGEngineControllWidget::actionLoadConfig()
       return;
     try
     {
-      application.OpenProject(fileName.toLocal8Bit().constData());
+      application->OpenProject(fileName.toLocal8Bit().constData());
 
       configFileName = fileName;
       this->setWindowTitle("project: " + configFileName);
@@ -190,7 +185,7 @@ void UGEngineControllWidget::actionCreateConfig()
 
 void UGEngineControllWidget::actionSaveConfig()
 {
-    application.SaveProject();
+    application->SaveProject();
     writeSettings(settingsFileName);
 }
 
@@ -203,7 +198,7 @@ void UGEngineControllWidget::actionExit()
 
 void UGEngineControllWidget::actionReloadParameters()
 {
-    application.ReloadParameters();
+    application->ReloadParameters();
 }
 //int ts; // костыль
 void UGEngineControllWidget::actionStart()
@@ -269,7 +264,7 @@ void UGEngineControllWidget::actionTestCreator()
 
 /*void UGEngineControllWidget::timerEvent(QTimerEvent *) // костыль
 {
-    application.GetEngineControl()->TimerExecute();
+    application->GetEngineControl()->TimerExecute();
     //RDK::UIVisualControllerStorage::UpdateInterface(false);
 }*/
 
@@ -300,34 +295,34 @@ void UGEngineControllWidget::initGraphicalEngine()
 
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {
-    if(!application.GetProjectOpenFlag())
+    if(!application->GetProjectOpenFlag())
         return;
 
-    application.StartChannel(chanelIndex);
+    application->StartChannel(chanelIndex);
 }
 
 void UGEngineControllWidget::pauseChannel(int chanelIndex)
 {
-    if(!application.GetProjectOpenFlag())
+    if(!application->GetProjectOpenFlag())
         return;
 
-    application.PauseChannel(chanelIndex);
+    application->PauseChannel(chanelIndex);
 }
 
 void UGEngineControllWidget::resetChannel(int chanelIndex)
 {
-    if(!application.GetProjectOpenFlag())
+    if(!application->GetProjectOpenFlag())
         return;
 
-    application.ResetChannel(chanelIndex);
+    application->ResetChannel(chanelIndex);
 }
 
 void UGEngineControllWidget::calcOneStepChannel(int chanelIndex)
 {
-    if(!application.GetProjectOpenFlag())
+    if(!application->GetProjectOpenFlag())
         return;
 
-    application.StepChannel(chanelIndex);
+    application->StepChannel(chanelIndex);
 }
 
 void UGEngineControllWidget::execDialogUVisualControllWidget(UVisualControllerWidget *widget)
