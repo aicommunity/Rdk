@@ -61,6 +61,20 @@ public: // Методы
   /// Проводит тестирование
   /// Возвращает колличество неудачных проперти тестов
   virtual int ProcessTest(void);
+
+  // --------------------
+  // Вспомогательные методы
+  // --------------------
+protected:
+  // Методы сравнения
+  bool compareProperties(bool               value, std::string str, std::string delta);
+  bool compareProperties(int                value, std::string str, std::string delta);
+  bool compareProperties(unsigned int       value, std::string str, std::string delta);
+  bool compareProperties(long long          value, std::string str, std::string delta);
+  bool compareProperties(unsigned long long value, std::string str, std::string delta);
+  bool compareProperties(float              value, std::string str, std::string delta);
+  bool compareProperties(double             value, std::string str, std::string delta);
+  bool compareProperties(std::string        value, std::string str, std::string);
 };
 
 /// Менеджер тестов
