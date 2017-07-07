@@ -234,7 +234,8 @@ bool UTest::compareProperties(unsigned int value, std::string str, std::string d
     intDelta = boost::lexical_cast<unsigned int>(delta);
 
   unsigned int intStr = boost::lexical_cast<unsigned int>(str);
-  return static_cast<unsigned int>(abs(value - intStr)) <= intDelta;
+  unsigned int diff = value > intStr ? value - intStr: intStr - value;
+  return diff <= intDelta;
 }
 
 bool UTest::compareProperties(long long value, std::string str, std::string delta)
@@ -254,7 +255,8 @@ bool UTest::compareProperties(unsigned long long value, std::string str, std::st
     intDelta = boost::lexical_cast<unsigned long long>(delta);
 
   unsigned long long intStr = boost::lexical_cast<unsigned long long>(str);
-  return static_cast<unsigned long long>(abs(value - intStr)) <= intDelta;
+  unsigned long long diff = value > intStr ? value - intStr: intStr - value;
+  return diff <= intDelta;
 }
 
 bool UTest::compareProperties(float value, std::string str, std::string delta)
