@@ -327,10 +327,10 @@ public: // Методы управления указателем на входные данные
 virtual void const* GetPointer(int index) const=0;
 
 /// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)=0;
+//virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
 // Устанавливает связь с коннектором 'c'

@@ -10,7 +10,7 @@ namespace RDK {
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputBase: virtual public ULProperty<T,OwnerT,type>, virtual public UIPropertyOutputBase
+class UPropertyOutput: virtual public ULProperty<T,OwnerT,type>, virtual public UIPropertyOutputBase
 {
 protected:
 
@@ -19,7 +19,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+UPropertyOutput(const string &name, OwnerT * const owner, int input_type=ipSingle | ipData, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : ULProperty<T,OwnerT,type>(name, owner, setmethod)
 {
 };
@@ -50,34 +50,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputData: virtual public UPropertyOutputBase<T,OwnerT,type>
-{
-protected:
-
-public: // Методы
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyOutputData(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : ULProperty<T,OwnerT,type>(name, owner, setmethod),
-   UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
-{
-
-};
-
-/// Deprecated
-UPropertyOutputData(const string &name, OwnerT * const owner, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
-{
-
-};
-// -----------------------------
-};
-
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCBase: virtual protected UCLProperty<std::vector<T>,OwnerT,type>, virtual public UIPropertyOutputBase
+class UPropertyOutputC: virtual protected UCLProperty<std::vector<T>,OwnerT,type>, virtual public UIPropertyOutputBase
 {
 protected:
 
@@ -86,7 +59,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+UPropertyOutputC(const string &name, OwnerT * const owner, int input_type=ipRange | ipData, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UCLProperty<std::vector<T>,OwnerT,type>(name, owner, setmethod)
 {
 // this->IoType=input_type;
@@ -153,7 +126,31 @@ const T& operator [] (int i) const
 }
 // --------------------------
 };
+			/*
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
+class UPropertyOutputData: virtual public UPropertyOutputBase<T,OwnerT,type>
+{
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+public: // Методы
+//Конструктор инициализации.
+UPropertyOutputData(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : ULProperty<T,OwnerT,type>(name, owner, setmethod),
+   UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
+{
 
+};
+
+/// Deprecated
+UPropertyOutputData(const string &name, OwnerT * const owner, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
+{
+
+};
+// -----------------------------
+};                 */
+				/*
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 class UPropertyOutputCData: virtual public UPropertyOutputCBase<T,OwnerT,type>
 {
@@ -179,13 +176,13 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int index, typena
 
 };
 // -----------------------------
-};
+};                 */
 
 // -----------------------------------------------------------------------------
 // Output virtual properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT>
-class UVPropertyOutputBase: virtual public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */virtual public UIPropertyOutputBase
+class UVPropertyOutput: virtual public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */virtual public UIPropertyOutputBase
 {
 protected:
 
@@ -194,7 +191,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyOutputBase(OwnerT * const owner, T* data, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+UVPropertyOutput(OwnerT * const owner, T* data, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner,data, setmethod)
 {
 // this->IoType=input_type;
@@ -221,7 +218,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
 }            */
 // --------------------------
 };
-
+				/*
 template<typename T, typename OwnerT>
 class UVPropertyOutputData: virtual public UVPropertyOutputBase<T,OwnerT>
 {
@@ -246,8 +243,12 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int index, typename UVProper
 
 };
 // -----------------------------
-};
+};         */
 
+
+#define UPropertyOutputData UPropertyOutput
+#define UPropertyOutputCData UPropertyOutputC
+#define UVPropertyOutputData UVPropertyOutput
 
 template<typename T, typename OwnerT, unsigned int type>
 std::ostream& operator << (std::ostream &stream, UPropertyOutputData<T,OwnerT,type> &output)
