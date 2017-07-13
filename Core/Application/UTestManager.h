@@ -43,7 +43,7 @@ public: // Методы
   // --------------------
   // Методы инициализации
   // --------------------
-
+  UTest(void);
   UTest(const UEPtr<UApplication> &value);
 
   /// Возвращает указатель на тестируемое приложение
@@ -51,6 +51,8 @@ public: // Методы
 
   /// Задает тестируемое приложение
   virtual void SetApplication(const UEPtr<UApplication> &value);
+
+  UTest& operator = (const UTest &copy);
   // --------------------
 
   // --------------------

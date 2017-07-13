@@ -490,6 +490,7 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
     CloseAfterTest=false;
 }
 
+#ifndef __BORLANDC__
 /// Осуществляет парсинг командной строки и записывает результаты в CommandLineArgs
 void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 {
@@ -500,18 +501,18 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 
   if(CmdVariablesMap.count("test"))
   {
-    ChangeTestModeState(true);
-    SetTestsDescriptionFileName(CmdVariablesMap["test"].as<std::string>());
+	ChangeTestModeState(true);
+	SetTestsDescriptionFileName(CmdVariablesMap["test"].as<std::string>());
   }
   else
-    ChangeTestModeState(false);
+	ChangeTestModeState(false);
 
   if(CmdVariablesMap.count("run"))
-    CloseAfterTest=false;
+	CloseAfterTest=false;
   else
-    CloseAfterTest=true;
+	CloseAfterTest=true;
 }
-
+#endif
 // --------------------------
 
 // --------------------------

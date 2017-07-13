@@ -215,9 +215,10 @@ virtual int Test(bool &exit_request);
 /// Осуществляет парсинг командной строки и соответствующую настройку приложение
 void ProcessCommandLineArgs(std::vector<std::string> commandLineArgs);
 
+#ifndef __BORLANDC__
 /// Осуществляет парсинг командной строки и соответствующую настройку приложение
 void ProcessCommandLineArgs(int argc, char **argv);
-
+#endif
 // --------------------------
 
 // --------------------------

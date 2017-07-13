@@ -2415,9 +2415,11 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
  RdkApplication.SetDebugMode(LogDebugMode);
 
+ std::vector<std::string> args;
  for(int i=0;i<ParamCount();i++)
-  RdkApplication.AddCommandLineArg(AnsiString(ParamStr(i)).c_str());
+  args.push_back(AnsiString(ParamStr(i)).c_str());
 
+ RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
 
  VersionString=GetBuildInfoAsString();

@@ -39,6 +39,11 @@ namespace RDK {
 /// --------------------
 /// Методы инициализации
 /// --------------------
+UTest::UTest(void)
+{
+ // TODO: Инициализировать!
+}
+
 
 UTest::UTest(const UEPtr<UApplication> &value)
 {
@@ -59,6 +64,19 @@ void UTest::SetApplication(const UEPtr<UApplication> &value)
 
   Application=value;
 }
+
+UTest& UTest::operator = (const UTest &copy)
+{
+ Application=copy.Application;
+
+ calcDuration=copy.calcDuration;
+ stepsMode=copy.stepsMode;
+ propertyTests=copy.propertyTests;
+ testsFileName=copy.testsFileName;
+ testProjectFileName=copy.testProjectFileName;
+ return *this;
+}
+
 
 /// Загрузка тестов
 int UTest::LoadTest(string testFile)
