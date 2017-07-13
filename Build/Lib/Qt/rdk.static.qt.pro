@@ -265,6 +265,6 @@ unix {
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
 
-    INCLUDEPATH += $$(BOOST_PATH)/include/boost-1_54
+    INCLUDEPATH += $$(BOOST_PATH)
 }
 

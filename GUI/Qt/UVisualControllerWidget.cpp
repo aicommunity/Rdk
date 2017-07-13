@@ -45,7 +45,7 @@ void UVisualControllerWidget::AfterLoadProject(void)
 
 void UVisualControllerWidget::AAfterLoadProject(void)
 {
-  throw RDK::UException();
+//  throw RDK::UException();
 }
 
 // Ìועמה, גûחûגאולûי ןונוה סבנמסמל למהוכט
