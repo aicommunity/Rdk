@@ -375,10 +375,7 @@ int UTestManager::ProcessTests(void)
  int returnCode = RDK_SUCCESS;
 
  for(std::vector<UTest>::iterator i = tests.begin(); i != tests.end(); ++i)
- {
-   if ((*i).ProcessTest() != RDK_SUCCESS)
-     ++returnCode;
- }
+  returnCode += (*i).ProcessTest();
 
  return returnCode;
 }
