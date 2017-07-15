@@ -12,14 +12,176 @@ See file license.txt for more information
 #ifndef UANetH
 #define UANetH
 
-#include "UItem.h"
+#include "UContainer.h"
 #include "UStorage.h"
 #include "ULocalProperty.h"
 
 
 namespace RDK {
 
-class RDK_LIB_TYPE UNet: public UItem
+class UNet;
+typedef UEPtr<UNet> PUAConnector;
+
+
+class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
+{
+protected: // Данные
+/// Данные подключенных ко входу источников
+std::vector<UCItem> ItemsList;
+
+/// Тип входа
+int InputType;
+
+public:
+/// Конструкторы и деструкторы
+UIPropertyInputBase(void);
+virtual ~UIPropertyInputBase(void);
+
+/// Возвращает тип свойства ввода-вывода
+virtual int GetInputType(void) const;
+
+public: // Методы доступа к источнику данных
+/// Возвращает указатель на компонент-источник
+virtual const std::vector<UCItem>& GetItemsList(void) const;
+
+/// Возвращает число подключений ко входу
+virtual int GetNumConnections(void) const;
+
+// Возвращает указатель на компонент-источник
+UNet* GetItem(int c_index=-1);
+
+// Возвращает информацию о данных связей с item или пустой массив
+// если такая связь отсутствует
+virtual void GetCLink(const UEPtr<UNet> &item, std::vector<UCLink> &buffer) const;
+virtual void GetCLink(const UNet* const item, std::vector<UCLink> &buffer) const;
+
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(int c_index=-1) const;
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(int c_index=-1) const;
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(int c_index=-1) const;
+
+/// Возвращает true если вход имеет подключение
+virtual bool IsConnected(void) const;
+
+/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
+/// Возвращает true, если действия по удалению выполнялись
+virtual bool Disconnect(const NameT &item_property_name, int c_index=-1);
+
+/// Разрывает связь с индексом c_index, или все связи если c_index == -1
+/// Если c_index имеет не корректное значение, то не делает ничего
+virtual void Disconnect(int c_index=-1);
+
+/// Разрывает все связи со свойством
+virtual void DisconnectAll(void);
+
+// Проверяет, существует ли связь с заданным коннектором
+bool IsConnectedTo(const UEPtr<UNet> &item) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index=-1) const;
+
+public: // Методы управления указателем на входные данные
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+
+/// Сбрасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+/// Подключает выход
+virtual bool Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false);
+
+// Разрывает все связи с элементом сети 'na'
+virtual void Disconnect(UEPtr<UNet> na);
+
+/// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
+virtual void Disconnect(UEPtr<UNet> na, const NameT &item_property_name);
+
+/// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
+virtual void Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
+};
+
+class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
+{
+protected: // Данные
+std::vector<PUAConnector> RelatedConnectors;
+
+/// Указатели на компоненты-приемники данных
+std::vector<UNet*> Connectors;
+
+/// Имя выхода компнента-источника данных
+std::vector<std::string> ConnectorInputNames;
+
+public: // Конструкторы и деструкторы
+UIPropertyOutputBase(void);
+virtual ~UIPropertyOutputBase(void);
+
+public: // Методы доступа к подключенным входам
+/// Возвращает число подключенных входов
+virtual size_t GetNumConnectors(void) const;
+
+/// Возвращает указатель на компонент-приемник
+virtual UNet* GetConnector(int index);
+
+/// Возвращает имя подключенного входа компонента-приемника
+virtual std::string GetConnectorInputName(int index) const;
+
+/// Устанавливает связь этого выхода со входом input_property
+virtual bool Connect(UIPropertyInput *input_property);
+
+/// Разрывает связь этого выхода со входом input_property
+virtual bool Disconnect(UIPropertyInput *input_property);
+
+// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
+//virtual bool Disconnect(const UId &id);
+
+// Разрывает связь выхода этого объекта со всеми
+// подключенными коннекторами.
+virtual void DisconnectAll(void);
+
+public: // Методы управления указателем на входные данные
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+
+/// Сбрасывает указатель на данные
+//virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+// Устанавливает связь с коннектором 'c'
+virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
+virtual void Disconnect(UEPtr<UNet> c);
+
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+virtual void Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1);
+
+// Возвращает  коннектор из списка подключений.
+//virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const;
+
+// Проверяет, существует ли связь с заданным коннектором
+bool CheckLink(const UEPtr<UNet> &connector, int c_index) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const;
+
+// Переустанавливает все связи этого выхода со всеми connectors
+virtual void BuildLinks(void);
+};
+
+
+
+class RDK_LIB_TYPE UNet: public UContainer
 {
 protected: // Основные свойства
 
@@ -29,35 +191,6 @@ public: // Методы
 // --------------------------
 UNet(void);
 virtual ~UNet(void);
-// --------------------------
-
-// --------------------------
-// Методы доступа к свойствам
-// --------------------------
-template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
-
-// Возращает все связи между двумя компонентами в виде xml в буфер buffer
-// включая связи этого компонента
-// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
-// второго объекта. Работает симметрично в обе стороны.
-// если 'sublevel' == 0, то возвращает связи только между этими объектами
-template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel=-1);
-// --------------------------
-
-// --------------------------
-// Системные методы управления объектом
-// --------------------------
-// Копирует этот объект в 'target' с сохранением всех компонент
-// и значений параметров
-// Если 'stor' == 0, то создание объектов осуществляется
-// в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
-
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
-virtual void Free(void);
 // --------------------------
 
 // --------------------------
@@ -87,51 +220,49 @@ virtual bool AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 virtual bool ADelComponent(UEPtr<UContainer> comp);
 // --------------------------
 
+// --------------------------
+// Системные методы управления объектом
+// --------------------------
+public:
+// Копирует этот объект в 'target' с сохранением всех компонент
+// и значений параметров
+// Если 'stor' == 0, то создание объектов осуществляется
+// в том же хранилище где располагается этот объект
+virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
+
+// Осуществляет освобождение этого объекта в его хранилище
+// или вызов деструктора, если Storage == 0
+virtual void Free(void);
+// --------------------------
+
 // ----------------------
 // Методы управления связями
 // ----------------------
 public:
 // Устанавливает новую связь 'link'
-template<typename T>
-bool CreateLink(const ULinkT<T> &link, bool forced_connect_same_item=false);
+bool CreateLink(const ULink &link, bool forced_connect_same_item=false);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-template<typename T>
-bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid, bool forced_connect_same_item=false);
-virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+bool CreateLink(const ULinkSide &itemid, const ULinkSide &connectorid, bool forced_connect_same_item=false);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-virtual bool CreateLink(const NameT &item, int item_index,
-						const NameT &connector, int connector_index=-1, bool forced_connect_same_item=false);
 virtual bool CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index=-1, bool forced_connect_same_item=false);
-//virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
-//						const NameT &connector, const NameT &connector_property_name);
 
 // Устанавливает все связи из массива 'linkslist'
-template<typename T>
-bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0);
-
-// Разрывает все связи со входом
-//template<typename T>
-//bool BreakLink(const ULinkSideT<T> &id);
+bool CreateLinks(const ULinksList &linkslist, UEPtr<UNet> owner_level=0);
 
 // Разрывает связь 'link'
-template<typename T>
-bool BreakLink(const ULinkT<T> &link);
+bool BreakLink(const ULink &link);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-template<typename T>
-bool BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
-virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+bool BreakLink(const ULinkSide &item, const ULinkSide &connector);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-virtual bool BreakLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index);
 virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 						const NameT &connector, const NameT &connector_property_name, int connector_c_index=-1);
 
@@ -140,8 +271,13 @@ virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 virtual bool BreakLink(const NameT &itemname, const NameT &connectorname);
 
 // Разрывает все связи между выходом элемента сети и любыми коннекторами
-virtual bool BreakAllOutgoingLinks(const NameT &itemname);
-virtual bool BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_property_name);
+virtual bool BreakOutputLinks(void);
+virtual bool BreakOutputLinks(const NameT &itemname);
+virtual bool BreakOutputLinks(const NameT &itemname, const NameT &item_property_name);
+
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+virtual bool BreakInputLinks(void);
+virtual void BreakInputLinks(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
@@ -154,22 +290,52 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 // Разрывает все внутренние связи сети.
 virtual void BreakLinks(void);
 
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
-//virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
-virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Проверяет, существует ли заданная связь
-template<typename T>
-bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
+bool IsLinkExists(const ULinkSide &item, const ULinkSide &connector);
 
-bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
-bool CheckLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index);
-bool CheckLink(const NameT &itemname, const NameT &item_property_name,
+bool IsLinkExists(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
-bool CheckLink(const NameT &itemname,
-						const NameT &connectorname, int connector_c_index=-1);
+bool IsLinkExists(const NameT &itemname,
+						const NameT &connectorname);
 // ----------------------
+
+
+// --------------------------
+// Методы доступа к свойствам
+// --------------------------
+ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
+
+// Возращает все связи между двумя компонентами в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+ULinksList& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksList &linkslist, UEPtr<UContainer> netlevel, int sublevel=-1);
+// --------------------------
+/*
+/// Разрывает все входящие связи к компонненту
+virtual void DisconnectAllInputs(void);
+
+/// Разрывает все исходящие связи от компоннента
+virtual void DisconnectAllOutputs(void);
+
+/// Разрывает все связи с заданным выходом
+virtual void DisconnectFromOutput(const std::string &property_name);
+
+/// проверяет наличие связи между выходом этого компонента и входом cont
+bool IsLinkExists(UEPtr<UNet> cont, const NameT &itemname,
+						const NameT &connectorname, int connector_c_index);
+                */
+/// Ищет свойство-выход по заданному индексу
+virtual UIPropertyOutput* FindOutputProperty(const NameT &property_name) const;
+virtual UIPropertyInput* FindInputProperty(const NameT &property_name) const;
+
+/// Возвращает число входов
+virtual int GetNumInputs(void) const;
+
+/// Возвращает число входов
+virtual int GetNumOutputs(void) const;
 
 // --------------------------
 // Методы сериализации компонент
@@ -270,226 +436,11 @@ UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_nam
 // Скрытые методы доступа к свойствам
 // --------------------------
 protected:
-template<typename T>
-ULinksListT<T>& GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level=0) const;
+ULinksList& GetLinks(UEPtr<UContainer> cont, ULinksList &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level=0) const;
 
-template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
+ULinksList& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksList &linkslist, UEPtr<UContainer> netlevel) const;
 // --------------------------
 };
-
-// --------------------------
-// Методы доступа к свойствам
-// --------------------------
-template<typename T>
-ULinksListT<T>& UNet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
-{
- GetLinks(const_cast<UNet*>(this), linkslist, netlevel, exclude_internals, internal_level);
-
- return linkslist;
-}
-
-// Возращает все связи между двумя компонентами в виде xml в буфер buffer
-// включая связи этого компонента
-// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
-// второго объекта. Работает симметрично в обе стороны.
-// если 'sublevel' == 0, то возвращает связи только между этими объектами
-template<typename T>
-ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel)
-{
- GetPersonalLinks(const_cast<UNet*>(this), cont, linkslist, netlevel);
-
- return linkslist;
-}
-
-// Устанавливает новую связь 'link'
-template<typename T>
-bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item)
-{
- bool res=true;
- for(size_t i=0;i<link.Connector.size();i++)
- {
-  res &=CreateLink(link.Item, link.Connector[i], forced_connect_same_item);
- }
-
- return res;
-}
-
-// Устанавливает новую связь между выходом элемента сети
-// 'item' и коннектором 'connector'
-template<typename T>
-bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item)
-{
- UEPtr<UItem> pitem;
- if(!CheckLongId(item.Id))
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
-
- UEPtr<UConnector> pconnector=0;
- if(!CheckLongId(connector.Id))
-  pconnector=this;
- else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
-
- if(!pitem)
- {
-  std::ostringstream stream;
-  stream<<"Item not found when connect "<<item.Id<<":"<<item.Name<<" to "<<connector.Id<<":"<<connector.Name;
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, stream.str());
-//  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
-  return false;
- }
-
- if(!pconnector)
- {
-  std::ostringstream stream;
-  stream<<"Connector not found when connect "<<item.Id<<":"<<item.Name<<" to "<<connector.Id<<":"<<connector.Name;
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, stream.str());
-
-//  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
-  return false;
- }
-
-// bool res=(item.Name == "DcOrientation");
-// bool res2=(connector.Name == "InputReliability");
- if(!item.Name.empty() || !connector.Name.empty())
- {
-  int c_index=connector.Index;
-  if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index, forced_connect_same_item)))
-   return false;
- }
- else
- {
-  LogMessageEx(RDK_EX_ERROR, __FUNCTION__, "Create links by index unsupported now!");
-//  if(item.Index < 0)
-//  {
-//   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-//   return false;
-//  }
-//
-//  if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
-//   return false;
- }
-
- return true;
-}
-
-// Устанавливает все связи из массива 'linkslist'.
-template<typename T>
-bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)
-{
- bool res=true;
-
- int i=0;
- for(i=0;i<linkslist.GetSize();i++)
- {
-  if(owner_level)
-   res&=owner_level->CreateLink(linkslist[i]);
-  else
-   res&=CreateLink(linkslist[i]);
- }
-
- if(!res)
-  return false;
-
- return res;
-}
-
-// Разрывает связь 'link'
-template<typename T>
-bool UNet::BreakLink(const ULinkT<T> &link)
-{
- bool res=true;
- for(size_t i=0;i<link.Connector.size();i++)
-  res&=BreakLink(link.Item,link.Connector[i]);
-
- return res;
-}
-
-// Разрывает связь между выходом элемента сети, 'itemid'
-// и коннектором 'connectorid'
-template<typename T>
-bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
-{
- UEPtr<UItem> pitem=0;
- if(!CheckLongId(item.Id))
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
-
- UEPtr<UConnector> pconnector=0;
- if(!CheckLongId(connector.Id))
-  pconnector=this;
- else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
-
- if(!pitem)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
-  return false;
- }
-
- if(!pconnector)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
-  return false;
- }
-
- if(!item.Name.empty() || !connector.Name.empty())
- {
-  pitem->Disconnect(pconnector, item.Name, connector.Name, connector.Index);
- }
- else
- {
-  LogMessageEx(RDK_EX_ERROR, __FUNCTION__, "Break links by index unsupported now!");
-//  pitem->Disconnect(pconnector, item.Index, connector.Index);
- }
-
- return true;
-}
-
-template<typename T>
-bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
-{
- UEPtr<UItem> pitem;
- if(!CheckLongId(item.Id))
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
-
- UEPtr<UConnector> pconnector=0;
- if(!CheckLongId(connector.Id))
-  pconnector=this;
- else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
-
- if(!pitem)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
-  return false;
- }
-
- if(!pconnector)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
-  return false;
- }
-  if(!item.Name.empty() || !connector.Name.empty())
-  {
-   if(pitem->CheckLink(pconnector,item.Name, connector.Name, connector.Index))
-	return true;
-  }
-  else
-  {
-   LogMessageEx(RDK_EX_ERROR, __FUNCTION__, "Check links by index unsupported now!");
-//   if(pitem->CheckLink(pconnector,item.Index, connector.Index))
-//	return true;
-  }
-
- return false;
-}
-// --------------------------
 
 // ----------------------
 // Методы управления компонентами верхнего уровня
@@ -544,45 +495,6 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
 // ----------------------
 
 
-// --------------------------
-// Скрытые методы доступа к свойствам
-// --------------------------
-template<typename T>
-ULinksListT<T>& UNet::GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
-{
- if(dynamic_pointer_cast<UItem>(cont))
- {
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-  static_pointer_cast<UItem>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
- }
- else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-
- for(int i=0;i<cont->GetNumComponents();i++)
-  GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel, exclude_internals,internal_level);
-
- return linkslist;
-}
-
-template<typename T>
-ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
-{
- if(dynamic_pointer_cast<UItem>(cont))
- {
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-  static_pointer_cast<UItem>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
- }
- else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-
- for(int i=0;i<cont->GetNumComponents();i++)
-  GetPersonalLinks(cont->GetComponentByIndex(i), cont2, linkslist, netlevel);
-
- return linkslist;
-}
-// --------------------------
 
 }
 

@@ -174,13 +174,13 @@ protected:		// User declarations
 		std::string SelectedComponentName;
 
 		// Длинный строковой Id выделенного компонента
-		std::string SelectedComponentId;
+//		std::string SelectedComponentId;
 
 		// Длинное имя текущего компонента
 		std::string CurrentComponentName;
 
 		// Длинный строковой id текущего компонента
-		std::string CurrentComponentId;
+//		std::string CurrentComponentId;
 
 		// Имя выделенного параметра выделенного компонента
 		std::string SelectedComponentParameterName;
@@ -216,8 +216,9 @@ public: // Список интерфейсных форм для управления компонентами
 
 		TUDrawEngineFrame *DrawEngineFrame;
 
-protected: // Временные переменные		// Элемент который должен быть найден и выделен после обновления списка
-		int SelectedId;
+protected: // Временные переменные
+		// Элемент который должен быть найден и выделен после обновления списка
+		int SelectedIndex;
 
 		// Старые значения прочитанных параметров
 		AnsiString LastParams;
@@ -250,7 +251,7 @@ public:
 		const std::string& GetSelectedComponentLongName(void) const;
 
 		// Длинный строковой Id выделенного компонента
-		const std::string& GetSelectedComponentLongId(void) const;
+//		const std::string& GetSelectedComponentLongId(void) const;
 
 		// Имя выделенного параметра выделенного компонента
 		const std::string& GetSelectedComponentParameterName(void) const;
@@ -268,7 +269,7 @@ public:
 		void SelectUp(void);
 
 		// Длинный строковой id текущего компонента
-		const std::string& GetCurrentComponentId(void) const;
+//		const std::string& GetCurrentComponentId(void) const;
 
 		// Выбранный выход объекта
 		const std::string& GetSelectedComponentOutput(void) const;

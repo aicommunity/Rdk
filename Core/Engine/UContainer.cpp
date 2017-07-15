@@ -17,8 +17,8 @@ See file license.txt for more information
 #include <cstdio>
 #include "UContainer.h"
 #include "UStorage.h"
-#include "UConnector.h"
-#include "UItem.h"
+//#include "UConnector.h"
+//#include "UItem.h"
 #include "UNet.h"
 #include "../Serialize/Serialize.h"
 #include "../Math/MUBinarySerialize.h"
@@ -125,7 +125,7 @@ bool UContainer::CheckOwner(UEPtr<UContainer> owner) const
 
 // Возвращает полный Id объекта
 // (включая Id всех владельцев).
-ULongId& UContainer::GetFullId(ULongId &buffer) const
+/*ULongId& UContainer::GetFullId(ULongId &buffer) const
 {
  if(Owner == 0)
   {
@@ -196,15 +196,16 @@ bool UContainer::CheckLongId(const ULongId &id) const
 
  return true;
 }
-
+         */
 // Промежуточный вариант одноименного метода, обрабатывающего длинное имя
+/*
 bool UContainer::CheckLongId(const std::string &id) const
 {
  if(id.size() == 0)
   return false;
 
  return true;
-}
+}             */
 
 // Управление средой выполнения этого объекта
 bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
@@ -1090,7 +1091,7 @@ UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) cons
 // объекте по ДЛИННОМУ Id 'id'.
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
+/*UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
 {
  UEPtr<UContainer> comp;
 
@@ -1106,7 +1107,7 @@ UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) con
   }
  return comp;
 }
-
+                  */
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
@@ -1304,6 +1305,7 @@ bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена
+/*
 void UContainer::GetComponentsList(std::vector<UId> &buffer) const
 {
  UEPtr<UContainer> *pcomps=PComponents;
@@ -1311,7 +1313,7 @@ void UContainer::GetComponentsList(std::vector<UId> &buffer) const
  buffer.reserve(NumComponents);
  for(int i=0;i<NumComponents;i++,pcomps++)
   buffer.push_back((*pcomps)->Id);
-}
+}                       */
 
 void UContainer::GetComponentsList(vector<NameT> &buffer) const
 {
@@ -1474,6 +1476,7 @@ bool UContainer::IsMoving(void) const
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
+/*
 ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
 							int sublevel, UEPtr<UContainer> ownerlevel)
 {
@@ -1545,7 +1548,7 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
  }
 
  return buffer;
-}
+}         */
 
 // Возвращает список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -1556,36 +1559,25 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
-ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
+void UContainer::GetComponentsListEx(std::list<std::string> &buffer,
                             int sublevel, UEPtr<UContainer> ownerlevel)
 {
- ULongId id;
-
+ std::string name;
  if(sublevel == -2)
  {
-  id.Resize(0);
-  this->GetLongId((ownerlevel)?ownerlevel:UEPtr<UContainer>(this),id);
-  buffer.Add(id);
+  this->GetLongName((ownerlevel)?ownerlevel:UEPtr<UContainer>(this),name);
+  buffer.push_back(name);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
   UEPtr<UContainer> cont=GetComponentByIndex(i);
-  UEPtr<UNet> temp;
-  temp=dynamic_pointer_cast<UNet>(cont);
-  if(temp)
-//  if(dynamic_cast<UNet*>(cont))
-  {
-   id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:UEPtr<UContainer>(this),id);
-   buffer.Add(id);
-  }
+  cont->GetLongName((ownerlevel)?ownerlevel:UEPtr<UContainer>(this),name);
+  buffer.push_back(name);
 
   if(sublevel != 0)
-   cont->GetNetsList(buffer,(sublevel<0)?-1:sublevel-1,ownerlevel);
+   cont->GetComponentsListEx(buffer,(sublevel<0)?-1:sublevel-1,ownerlevel);
  }
-
- return buffer;
 }
 // ----------------------
 
@@ -2751,7 +2743,7 @@ UContainer::EIContainer::EIContainer(const UContainer *cont)
  Name=cont->GetName();
 
  // Короткий идентификатор компонента в котором сгенерировано исключение
- Id=cont->GetId();
+// Id=cont->GetId();
 
  // Полное имя владельца компонента в котором сгенерировано исключение
  if(cont->GetOwner())
@@ -2759,7 +2751,7 @@ UContainer::EIContainer::EIContainer(const UContainer *cont)
   cont->GetOwner()->GetFullName(OwnerName);
 
   // Полный идентификатор владельца компонента в котором сгенерировано исключение
-  OwnerId=cont->GetOwner()->GetFullId();
+ // OwnerId=cont->GetOwner()->GetFullId();
  }
 
  if(cont->GetMainOwner())
@@ -2768,7 +2760,7 @@ UContainer::EIContainer::EIContainer(const UContainer *cont)
   cont->GetMainOwner()->GetFullName(MainOwnerName);
 
   // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
-  MainOwnerId=cont->GetMainOwner()->GetFullId();
+ // MainOwnerId=cont->GetMainOwner()->GetFullId();
  }
 }
 
@@ -2779,19 +2771,19 @@ UContainer::EIContainer::EIContainer(const EIContainer &copy)
  Name=copy.Name;
 
  // Короткий идентификатор компонента в котором сгенерировано исключение
- Id=copy.Id;
+ //Id=copy.Id;
 
  // Полное имя владельца компонента в котором сгенерировано исключение
  OwnerName=copy.OwnerName;
 
  // Полный идентификатор владельца компонента в котором сгенерировано исключение
- OwnerId=copy.OwnerId;
+ //OwnerId=copy.OwnerId;
 
  // Полное имя главного владельца компонента в котором сгенерировано исключение
  MainOwnerName=copy.MainOwnerName;
 
  // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
- MainOwnerId=copy.MainOwnerId;
+ //MainOwnerId=copy.MainOwnerId;
 }
 
 UContainer::EIContainer::~EIContainer(void)
@@ -2861,14 +2853,14 @@ UContainer::EICalculateContainer::EICalculateContainer(const UContainer *cont, c
  SubName=subcont->GetName();
 
  // Короткий идентификатор компонента в котором сгенерировано исключение
- SubId=subcont->GetId();
+// SubId=subcont->GetId();
 }
 
 UContainer::EICalculateContainer::EICalculateContainer(const EICalculateContainer &copy)
  :EIContainer(copy)
 {
  SubName=copy.Name;
- SubId=copy.SubId;
+ //SubId=copy.SubId;
 }
 
 UContainer::EICalculateContainer::~EICalculateContainer(void)

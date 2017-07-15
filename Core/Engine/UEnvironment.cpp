@@ -83,12 +83,12 @@ bool UEnvironment::SetPredefinedStructure(int value)
 
 
 // Идентификатор компонента модели, который будет обсчитываться
-const ULongId& UEnvironment::GetModelCalculationComponent(void) const
+const std::string& UEnvironment::GetModelCalculationComponent(void) const
 {
  return ModelCalculationComponent;
 }
 
-bool UEnvironment::SetModelCalculationComponent(const ULongId& value)
+bool UEnvironment::SetModelCalculationComponent(const std::string& value)
 {
  if(ModelCalculationComponent == value)
   return true;
@@ -395,19 +395,6 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
   CurrentComponent=Model->GetComponentL(name);
 }
 
-void UEnvironment::SelectCurrentComponent(const ULongId &id)
-{
- if(!IsInit())
- {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
-  return;
- }
-
- if(id.GetSize() == 0 || id[0] == ForbiddenId)
-  CurrentComponent=Model;
- else
-  CurrentComponent=Model->GetComponentL(id);
-}
 
 // Устанавливает указатель на текущий компонент модели на саму модель
 void UEnvironment::ResetCurrentComponent(void)
@@ -450,16 +437,6 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
  CurrentComponent=GetCurrentComponent()->GetComponentL(name);
 }
 
-void UEnvironment::DownCurrentComponent(const ULongId &id)
-{
- if(!IsInit())
- {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
-  return;
- }
-
- CurrentComponent=GetCurrentComponent()->GetComponentL(id);
-}
 
 /// Время среды
 const UTimeControl& UEnvironment::GetTime(void) const
@@ -1135,7 +1112,7 @@ void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, c
 // Инициализация среды
 void UEnvironment::AInit(void)
 {
- ModelCalculationComponent.Resize(0);
+ ModelCalculationComponent.clear();
  if(Model)
   Model->Init();
  return;
@@ -1175,7 +1152,7 @@ bool UEnvironment::ADefault(void)
 // EventsLogMode=false;
 
 // UComponent::SetTime(0);
- if(ModelCalculationComponent.GetSize() == 0)
+ if(ModelCalculationComponent.empty())
  {
   if(!Model->Default())
    return false;
@@ -1205,7 +1182,7 @@ bool UEnvironment::ABuild(void)
  if(!Model)
   return true;
 
- if(ModelCalculationComponent.GetSize() == 0)
+ if(ModelCalculationComponent.empty())
  {
   if(!Model->Build())
    return false;
@@ -1247,7 +1224,7 @@ bool UEnvironment::AReset(void)
  if(!Model)
   return true;
 
- if(ModelCalculationComponent.GetSize() == 0)
+ if(ModelCalculationComponent.empty())
  {
   if(!Model->Reset())
    return false;
@@ -1294,7 +1271,7 @@ bool UEnvironment::ACalculate(void)
   return true;
 
  LastStepStartTime=cur_time;
- if(ModelCalculationComponent.GetSize() == 0)
+ if(ModelCalculationComponent.empty())
  {
   if(!Model->Calculate())
    return false;
@@ -1313,7 +1290,7 @@ bool UEnvironment::ACalculate(void)
 
  // Если мы считаем всю модель, то расчитываем время модели здесь,
  // иначе мы ожидаем, что вызывающий модуль сам расчитает время модели
- if(ModelCalculationComponent.GetSize() == 0)
+ if(ModelCalculationComponent.empty())
   IncreaseModelTimeByStep();
 
  return true;

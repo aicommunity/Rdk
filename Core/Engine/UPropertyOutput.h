@@ -2,7 +2,7 @@
 #define UOUTPUT_PROPERTY_H
 
 #include "ULocalProperty.h"
-#include "UItem.h"
+#include "UNet.h"
 
 namespace RDK {
 

@@ -353,6 +353,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -413,6 +417,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
       end
       object TabSheet1: TTabSheet
         Caption = 'Parameters'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object ParametersHeaderControl: THeaderControl
           Left = 0
           Top = 505
@@ -469,6 +477,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet2: TTabSheet
         Caption = 'State'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object StateHeaderControl: THeaderControl
           Left = 0
           Top = 505

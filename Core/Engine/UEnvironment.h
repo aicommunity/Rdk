@@ -58,7 +58,7 @@ bool StoragePresent;
 bool Structured;
 
 // Идентификатор компонента модели, который будет обсчитываться
-ULongId ModelCalculationComponent;
+std::string ModelCalculationComponent;
 
 protected: // Данные
 // Хранилище
@@ -123,8 +123,8 @@ int GetPredefinedStructure(void) const;
 bool SetPredefinedStructure(int value);
 
 // Идентификатор компонента модели, который будет обсчитываться
-const ULongId& GetModelCalculationComponent(void) const;
-bool SetModelCalculationComponent(const ULongId& value);
+const std::string& GetModelCalculationComponent(void) const;
+bool SetModelCalculationComponent(const std::string& value);
 
 // Имя текущего каталога хранения данных
 const std::string& GetCurrentDataDir(void);
@@ -248,7 +248,6 @@ UEPtr<UContainer> GetCurrentComponent(void);
 // Если имя или id не задано, или Forbidden, то устанавливает
 // указатель на модель
 virtual void SelectCurrentComponent(const NameT &name);
-virtual void SelectCurrentComponent(const ULongId &id);
 
 // Устанавливает указатель на текущий компонент модели на саму модель
 virtual void ResetCurrentComponent(void);
@@ -260,7 +259,6 @@ virtual void UpCurrentComponent(void);
 // Устанавливает указатель на текущий компонент модели на дочерней компонент на
 // любом уровне (переход на уровень вниз).
 virtual void DownCurrentComponent(const NameT &name);
-virtual void DownCurrentComponent(const ULongId &id);
 // --------------------------
 
 // --------------------------

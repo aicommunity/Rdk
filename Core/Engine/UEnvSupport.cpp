@@ -12,6 +12,7 @@ See file license.txt for more information
 #ifndef UENV_SUPPORT_CPP
 #define UENV_SUPPORT_CPP
 
+#include <algorithm>
 #include <string.h>
 #include <stdlib.h>
 #include "UEnvSupport.h"
@@ -23,9 +24,7 @@ const UId ForbiddenId=0;
 const NameT ForbiddenName="";
 
 //ULongId ULongIdemp;
-
-/* *********************************************************************** */
-/* *********************************************************************** */
+/*
 // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -270,11 +269,6 @@ bool UIdVector::operator < (const UIdVector &copy) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-/*UIdVector::EDecodeFail::EDecodeFail(void)
-{
-
-}
-  */
 UIdVector::EDecodeFail::EDecodeFail(const std::string &stringid, int position)
  : StringId(stringid), Position(position)
 {
@@ -301,12 +295,6 @@ std::string UIdVector::EDecodeFail::CreateLogMessage(void) const
 }
 // --------------------------
 
-/* *********************************************************************** */
-/* *********************************************************************** */
-
-
-/* *********************************************************************** */
-/* *********************************************************************** */
 // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -424,7 +412,307 @@ const ULongId& ULongIdVector::operator [] (int index) const
  return Buffer[index];
 }
 // --------------------------
+*/
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ULinkSide::ULinkSide(void)
+ : Index(0)
+{
+}
 
+ULinkSide::ULinkSide(const std::string &comp_name, const std::string &property_name)
+ :ComponentName(comp_name), Index(-1), PropertyName(property_name)
+{
+}
+
+ULinkSide::ULinkSide(const std::string &comp_name, const std::string &property_name, int index)
+ :ComponentName(comp_name), Index(index), PropertyName(property_name)
+{
+}
+
+ULinkSide::ULinkSide(const ULinkSide &link)
+{
+ ComponentName=link.ComponentName;
+ Index=link.Index;
+ PropertyName=link.PropertyName;
+}
+
+ULinkSide::~ULinkSide(void)
+{
+}
+// --------------------------
+
+bool ULinkSide::operator < (const ULinkSide &linkside2) const
+{
+ return (ComponentName<linkside2.ComponentName)
+	|| (ComponentName == linkside2.ComponentName && PropertyName < linkside2.PropertyName) ||
+	   (ComponentName == linkside2.ComponentName && PropertyName == linkside2.PropertyName && Index<linkside2.Index);
+}
+
+bool ULinkSide::operator == (const ULinkSide &linkside2) const
+{
+ return (ComponentName == linkside2.ComponentName) & (PropertyName == linkside2.PropertyName) & (Index == linkside2.Index);
+}
+
+bool ULinkSide::operator != (const ULinkSide &linkside2) const
+{
+ return (!(*this == linkside2));
+}
+// --------------------------
+/* ************************************************************************* */
+/* ************************************************************************* */
+/* ************************************************************************* */
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ULink::ULink(void)
+{
+}
+
+ULink::ULink(const ULinkSide &item, const ULinkSide &conn)
+{
+ Item=item;
+ Connector.push_back(conn);
+}
+
+ULink::ULink(const ULink &link)
+{
+ Item=link.Item;
+ Connector=link.Connector;
+}
+
+ULink::~ULink(void)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+int ULink::FindConnector(const ULinkSide &connector)
+{
+  for(size_t j=0;j<Connector.size();j++)
+   if(Connector[j] == connector)
+	return j;
+
+ return -1;
+}
+// --------------------------
+
+
+
+// --------------------------
+// Операторы
+// --------------------------
+bool operator < (const ULink &link1, const ULink &link2)
+{
+ return (link1.Item<link2.Item) & (link1.Connector<link2.Connector);
+}
+
+bool operator == (const ULink &link1, const ULink &link2)
+{
+ return (link1.Item == link2.Item) & (link1.Connector == link2.Connector);
+}
+
+bool operator != (const ULink &link1, const ULink &link2)
+{
+ return !(link1 == link2);
+}
+// --------------------------
+
+
+/******************************************************************************/
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ULinksList::ULinksList(void)
+{
+ Size=0;
+}
+
+ULinksList::ULinksList(const ULinksList &copy)
+{
+ Size=0;
+
+ *this=copy;
+}
+
+ULinksList::~ULinksList(void)
+{
+ Clear();
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Очищает массив
+void ULinksList::Clear(void)
+{
+ Data.clear();
+ Size=0;
+}
+
+// Изменяет размер массива с сохранением прежних данных
+void ULinksList::Resize(int newsize)
+{
+ Data.resize(newsize);
+ Size=Data.size();
+}
+
+// Добавляет элемент в конец массива
+// Возвращает индекс элемента
+int ULinksList::Add(const ULink &link)
+{
+ Data.push_back(link);
+ ++Size;
+ return Size-1;
+}
+
+// Объединяет элемент уже с существующим
+int ULinksList::Merge(const ULink &link)
+{
+ int id=FindItem(link.Item);
+
+ if(id < 0)
+  return Add(link);
+
+ for(size_t j=0;j<link.Connector.size();j++)
+ {
+  std::vector<ULinkSide >::iterator I=find(Data[id].Connector.begin(),Data[id].Connector.end(),link.Connector[j]);
+  if(I == Data[id].Connector.end())
+  {
+   Data[id].Connector.push_back(link.Connector[j]);
+  }
+ }
+ return id;
+}
+
+// Заменяет элемент (если элемент не существует - он создается)
+int ULinksList::Set(const ULink &link)
+{
+ int id=FindItem(link.Item);
+
+ if(id < 0)
+  return Add(link);
+
+ Data[id]=link;
+ return id;
+}
+
+
+// Удаляет произвольный элемент по индексу
+void ULinksList::Del(int index)
+{
+ if(index<0 || index>=Size)
+  return;
+
+ Data.erase(Data.begin()+index);
+ --Size;
+}
+
+// Ищет заданный элемент и возвращает индекс или отрицательное число, если не
+// найдено
+int ULinksList::Find(const ULink &link)
+{
+ if(!Size)
+  return -1;
+ ULink *pdata=&Data[0];
+ for(int i=0;i<Size;i++,pdata++)
+  if(*pdata == link)
+   return i;
+
+ return -1;
+}
+
+// Ищет заданный элемент с источником item и возвращает индекс или отрицательное число, если не
+// найдено
+int ULinksList::FindItem(const ULinkSide &item)
+{
+ if(!Size)
+  return -1;
+
+ ULink *pdata=&Data[0];
+ for(int i=0;i<Size;i++,pdata++)
+  if(pdata->Item == item)
+   return i;
+
+ return -1;
+}
+
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+int ULinksList::FindConnector(const ULinkSide &connector)
+{
+ if(!Size)
+  return -1;
+
+ ULink *pdata=&Data[0];
+ for(int i=0;i<Size;i++,pdata++)
+ {
+  for(size_t j=0;j<pdata->Connector.size();j++)
+   if(pdata->Connector[j] == connector)
+	return i;
+ }
+
+ return -1;
+}
+// --------------------------
+
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+// Возвращает размер массива
+int ULinksList::GetSize(void) const
+{
+ return Size;
+}
+
+int ULinksList::size(void) const
+{
+ return Size;
+}
+
+
+// Возвращает указатель на начало данных
+ULink* ULinksList::GetData(void)
+{
+ if(!Size)
+  return 0;
+
+ return &Data[0];
+}
+// --------------------------
+
+
+// --------------------------
+// Операторы
+// --------------------------
+// Оператор присваивания
+ULinksList& ULinksList::operator = (const ULinksList &copy)
+{
+ Data=copy.Data;
+ Size=copy.Size;
+
+ return *this;
+}
+
+// Оператор доступа
+ULink& ULinksList::operator [] (int index)
+{
+ return Data[index];
+}
+
+const ULink& ULinksList::operator [] (int index) const
+{
+ return Data[index];
+}
+// --------------------------
+/* *********************************************************************** */
+/* *********************************************************************** */
 
 
 

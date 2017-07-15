@@ -42,7 +42,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
  StringGrid->Cells[2][0]="Вход";
  StringGrid->Cells[3][0]="Имя входа";
 
- RDK::ULongIdVector buffer;
+ std::list<std::string> buffer;
 
  int sublevel=0;
  if(ShowModifier == 1)
@@ -51,7 +51,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
  if(ShowModifier == 2)
   sublevel=-2;
 
- const char *p_buf=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+ const char *p_buf=Model_GetComponentsListEx(ViewComponentLongId.c_str(),sublevel);
  std::string xmlbuffer;
  if(p_buf)
   xmlbuffer=p_buf;
@@ -83,7 +83,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
  StringGrid->Cells[2][0]="Выход";
  StringGrid->Cells[3][0]="Имя выхода";
 
- RDK::ULongIdVector buffer;
+ std::list<std::string> buffer;
 
  int sublevel=0;
  if(ShowModifier == 1)
@@ -92,7 +92,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
  if(ShowModifier == 2)
   sublevel=-2;
 
- const char *p_buf=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+ const char *p_buf=Model_GetComponentsListEx(ViewComponentLongId.c_str(),sublevel);
  std::string xmlbuffer;
  if(p_buf)
   xmlbuffer=p_buf;
@@ -124,7 +124,7 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  StringGrid->Cells[2][0]="Имя";
  StringGrid->Cells[3][0]="#Out";
 
- RDK::ULongIdVector itemsbuffer;
+ std::list<std::string> itemsbuffer;
  std::string stringid;
  std::string name;
 
@@ -135,7 +135,7 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  if(ShowModifier == 2)
   sublevel=-2;
 
- const char *p_buf=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel,ViewComponentOwnerLongId.c_str());
+ const char *p_buf=Model_GetComponentsListEx(ViewComponentLongId.c_str(),sublevel,ViewComponentOwnerLongId.c_str());
  std::string xmlbuffer;
  if(p_buf)
   xmlbuffer=p_buf;
@@ -145,32 +145,32 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  storage.Load(xmlbuffer,"Items");
  RDK::operator >> (storage,itemsbuffer);
 
- for(int i=0;i<itemsbuffer.GetSize();i++)
+ std::list<std::string>::iterator I=itemsbuffer.begin();
+ int i(0);
+ for(;I!=itemsbuffer.end();I++,i++)
  {
-  itemsbuffer[i].EncodeToString(stringid);
-
-  const char *p_buf=Model_GetComponentLongName(stringid.c_str());
+  const char *p_buf=Model_GetComponentLongName(I->c_str());
   if(p_buf)
    name=p_buf;
   else
    name.clear();
   Engine_FreeBufString(p_buf);
 
-  int comp_outputs=Model_GetComponentNumInputs(stringid.c_str());
-  int comp_inputs=Model_GetComponentNumOutputs(stringid.c_str());
+  int comp_outputs=Model_GetComponentNumInputs(I->c_str());
+  int comp_inputs=Model_GetComponentNumOutputs(I->c_str());
   int max_ios=(comp_inputs>comp_outputs)?comp_inputs:comp_outputs;
 
   for(int j=0;j<max_ios;j++)
   {
    StringGrid->RowCount=StringGrid->RowCount+1;
-   StringGrid->Cells[0][StringGrid->RowCount-1]=i;//IntToStr(int(i))+":"+IntToStr(int(j));
+   StringGrid->Cells[0][StringGrid->RowCount-1]=i;
    if(j<comp_inputs)
 	StringGrid->Cells[1][StringGrid->RowCount-1]=IntToStr(j);
    else
 	StringGrid->Cells[1][StringGrid->RowCount-1]="";
 
    if(j<comp_outputs)
-	StringGrid->Cells[2][StringGrid->RowCount-1]=IntToStr(j);//name.c_str();
+	StringGrid->Cells[2][StringGrid->RowCount-1]=IntToStr(j);
    else
 	StringGrid->Cells[2][StringGrid->RowCount-1]="";
 
@@ -204,7 +204,7 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  StringGrid->Cells[5][0]="Вход";
  StringGrid->Cells[6][0]="Имя входа";
 
- RDK::UStringLinksList linkslist;
+ RDK::ULinksList linkslist;
  std::string stringid;
  std::string conn_properties_names,item_properties_names;
  std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
@@ -225,19 +225,19 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  int k=1;
  for(int i=0;i<linkslist.GetSize();i++)
   {
-   itemname=linkslist[i].Item.Id;
+   itemname=linkslist[i].Item.ComponentName;
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
-	 connname=linkslist[i].Connector[j].Id;
+	 connname=linkslist[i].Connector[j].ComponentName;
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
 	 StringGrid->Cells[1][k]=StrToInt(linkslist[i].Item.Index);
 	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
 	 StringGrid->Cells[3][k]=itemname.c_str();
 
-	 StringGrid->Cells[4][k]=linkslist[i].Item.Name.c_str();
+	 StringGrid->Cells[4][k]=linkslist[i].Item.PropertyName.c_str();
 	 StringGrid->Cells[5][k]=connname.c_str();
-     StringGrid->Cells[6][k]=linkslist[i].Connector[j].Name.c_str();
+     StringGrid->Cells[6][k]=linkslist[i].Connector[j].PropertyName.c_str();
 	 ++k;
 	}
   }
@@ -261,7 +261,7 @@ void __fastcall TUComponentIOFrame::ShowInputLinks(void)
  StringGrid->Cells[1][0]="Item";
  StringGrid->Cells[2][0]="Connector";
 
- RDK::UStringLinksList linkslist;
+ RDK::ULinksList linkslist;
  std::string stringid;
  std::string conn_properties_names,item_properties_names;
  std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
@@ -283,11 +283,11 @@ void __fastcall TUComponentIOFrame::ShowInputLinks(void)
  StringGrid->ColWidths[0]=20;
  for(int i=0;i<linkslist.GetSize();i++)
   {
-   itemname=linkslist[i].Item.Id;
+   itemname=linkslist[i].Item.ComponentName;
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
-	 connname=linkslist[i].Connector[j].Id;
+	 connname=linkslist[i].Connector[j].ComponentName;
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
 	 std::string::size_type dot_n=connname.find(".",ViewComponentLongId.size());
 	 std::string::size_type n=connname.find(ViewComponentLongId);
@@ -295,8 +295,8 @@ void __fastcall TUComponentIOFrame::ShowInputLinks(void)
 //	 if(part_name == ViewComponentLongId)
 	 if(n==0 && (dot_n == std::string::npos || dot_n == ViewComponentLongId.size()))
 	 {
-	  StringGrid->Cells[1][k]=(itemname+std::string(":")+linkslist[i].Item.Name).c_str();
-	  StringGrid->Cells[2][k]=(connname+std::string(":")+linkslist[i].Connector[j].Name).c_str();
+	  StringGrid->Cells[1][k]=(itemname+std::string(":")+linkslist[i].Item.PropertyName).c_str();
+	  StringGrid->Cells[2][k]=(connname+std::string(":")+linkslist[i].Connector[j].PropertyName).c_str();
 	  int line_size=StringGrid->Canvas->TextWidth(StringGrid->Cells[1][k]);
 	  if(StringGrid->ColWidths[1]<line_size+10)
 	   StringGrid->ColWidths[1]=line_size+10;
@@ -327,7 +327,7 @@ void __fastcall TUComponentIOFrame::ShowOutputLinks(void)
  StringGrid->Cells[1][0]="Item";
  StringGrid->Cells[2][0]="Connector";
 
- RDK::UStringLinksList linkslist;
+ RDK::ULinksList linkslist;
  std::string stringid;
  std::string conn_properties_names,item_properties_names;
  std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
@@ -349,11 +349,11 @@ void __fastcall TUComponentIOFrame::ShowOutputLinks(void)
  StringGrid->ColWidths[0]=20;
  for(int i=0;i<linkslist.GetSize();i++)
   {
-   itemname=linkslist[i].Item.Id;
+   itemname=linkslist[i].Item.ComponentName;
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
-	 connname=linkslist[i].Connector[j].Id;
+	 connname=linkslist[i].Connector[j].ComponentName;
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
 //	 std::string::size_type n=itemname.find(".");
 //	 std::string part_name=itemname.substr(0,n);
@@ -363,8 +363,8 @@ void __fastcall TUComponentIOFrame::ShowOutputLinks(void)
 	 if(n==0 && (dot_n == std::string::npos || dot_n == ViewComponentLongId.size()))
 	 {
       StringGrid->Cells[0][k]=k;
-	  StringGrid->Cells[1][k]=(itemname+std::string(":")+linkslist[i].Item.Name).c_str();
-	  StringGrid->Cells[2][k]=(connname+std::string(":")+linkslist[i].Connector[j].Name).c_str();
+	  StringGrid->Cells[1][k]=(itemname+std::string(":")+linkslist[i].Item.PropertyName).c_str();
+	  StringGrid->Cells[2][k]=(connname+std::string(":")+linkslist[i].Connector[j].PropertyName).c_str();
 	  int line_size=StringGrid->Canvas->TextWidth(StringGrid->Cells[1][k]);
 	  if(StringGrid->ColWidths[1]<line_size+10)
 	   StringGrid->ColWidths[1]=line_size+10;
@@ -450,16 +450,18 @@ void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::
 // Вспомогательные методы управления
 // -----------------
 // Отображает данные выходов в таблицу
-void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
+void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, std::list<std::string> &linkslist)
 {
  std::string stringid;
 
  std::string properties_names;
- for(int i=0;i<linkslist.GetSize();i++)
+ std::list<std::string>::iterator I=linkslist.begin();
+ int i(0);
+ for(;I != linkslist.end();I++,i++)
  {
   std::map<int, std::string> propertries_names_list;
 
-  const char *p_buf=Model_GetComponentPropertiesLookupList(linkslist[i].EncodeToString(stringid).c_str(),ptPubOutput);
+  const char *p_buf=Model_GetComponentPropertiesLookupList(I->c_str(),ptPubOutput);
   if(p_buf)
    properties_names=p_buf;
   else
@@ -473,7 +475,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    if(j == 0)
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
-	const char *p_buf=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	const char *p_buf=Model_GetComponentLongName(I->c_str(),ViewComponentOwnerLongId.c_str());
 
 	if(p_buf)
 	 string_grid->Cells[2][string_grid->RowCount-1]=p_buf;
@@ -502,15 +504,16 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
 }
 
 // Отображает данные входов в таблицу
-void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
+void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, std::list<std::string> &linkslist)
 {
- std::string stringid;
- for(int i=0;i<linkslist.GetSize();i++)
+ std::list<std::string>::iterator I=linkslist.begin();
+ int i(0);
+ for(;I != linkslist.end();I++,i++)
  {
   std::string properties_names;
   std::map<int, std::string> propertries_names_list;
 
-  const char *p_buf=Model_GetComponentPropertiesLookupList(linkslist[i].EncodeToString(stringid).c_str(),ptPubInput);
+  const char *p_buf=Model_GetComponentPropertiesLookupList(I->c_str(),ptPubInput);
   if(p_buf)
    properties_names=p_buf;
   else
@@ -525,7 +528,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 
-	const char *p_buf2=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	const char *p_buf2=Model_GetComponentLongName(I->c_str(),ViewComponentOwnerLongId.c_str());
 	if(p_buf2)
 	 string_grid->Cells[2][string_grid->RowCount-1]=p_buf2;
 	else

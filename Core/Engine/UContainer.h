@@ -222,22 +222,22 @@ bool CheckOwner(UEPtr<UContainer> owner) const;
 
 // Возвращает полный Id объекта
 // (включая Id всех владельцев)
-ULongId& GetFullId(ULongId &buffer) const;
-ULongId GetFullId(void) const;
+//ULongId& GetFullId(ULongId &buffer) const;
+//ULongId GetFullId(void) const;
 
 // Возвращает  'длинный' Id объекта
 // (исключая имя владельца 'mainowner')
 // Метод возвращает пустой вектор, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
-ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer) const;
-ULongId GetLongId(UEPtr<UContainer> mainowner) const;
+//ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer) const;
+//ULongId GetLongId(UEPtr<UContainer> mainowner) const;
 // Промежуточный вариант одноименного метода, возвращающего длинное имя
-std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
+//std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
 
 // Возвращает true если передаваемый идентификатор объекта корректен, в противном случае возвращает false
-bool CheckLongId(const ULongId &id) const;
+//bool CheckLongId(const ULongId &id) const;
 // Промежуточный вариант одноименного метода, обрабатывающего длинное имя
-bool CheckLongId(const std::string &id) const;
+//bool CheckLongId(const std::string &id) const;
 
 // Управление средой выполнения этого объекта
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
@@ -489,13 +489,13 @@ UEPtr<T> GetComponent(const NameT &name, bool nothrow=false) const
 // объекте по ДЛИННОМУ Id 'id'
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
-
+//UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
+  /*
 template<class T>
 UEPtr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
 {
  return dynamic_pointer_cast<T>(GetComponentL(id,nothrow));
-}
+}   */
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
@@ -556,8 +556,7 @@ virtual bool MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target);
 
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
-// Память должна быть выделена
-void GetComponentsList(vector<UId> &buffer) const;
+//void GetComponentsList(vector<UId> &buffer) const;
 void GetComponentsList(vector<NameT> &buffer) const;
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно
@@ -595,8 +594,8 @@ public:
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
-virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
-						  int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
+//virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
+//						  int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 
 // Возвращает список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -607,8 +606,8 @@ virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
-virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
-							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
+//virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
+//							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 
 // Возвращает список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -619,7 +618,7 @@ virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
-virtual ULongIdVector& GetNetsList(ULongIdVector &buffer,
+virtual void GetComponentsListEx(std::list<std::string> &buffer,
 							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 // ----------------------
 
@@ -849,19 +848,19 @@ public: // Данные исключения
 std::string Name;
 
 // Короткий идентификатор компонента в котором сгенерировано исключение
-ULongId Id;
+//ULongId Id;
 
 // Полное имя владельца компонента в котором сгенерировано исключение
 std::string OwnerName;
 
 // Полный идентификатор владельца компонента в котором сгенерировано исключение
-ULongId OwnerId;
+//ULongId OwnerId;
 
 // Полное имя главного владельца компонента в котором сгенерировано исключение
 std::string MainOwnerName;
 
 // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
-ULongId MainOwnerId;
+//ULongId MainOwnerId;
 
 
 public: // Методы
@@ -957,7 +956,7 @@ class EICalculateContainer: public EIContainer
  std::string SubName;
 
  // Короткий идентификатор дочернего компонента в котором произошла ошибка счета
- ULongId SubId;
+// ULongId SubId;
 
  // --------------------------
  // Конструкторы и деструкторы

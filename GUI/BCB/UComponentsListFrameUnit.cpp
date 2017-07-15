@@ -36,7 +36,6 @@ __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
  TreeReadOnlyFlag=false;
  ParamReadOnlyFlag=false;
  RegistryModified=false;
- SelectedId=0;
  CheckModelFlag=false;
 }
 //---------------------------------------------------------------------------
@@ -74,7 +73,7 @@ void TUComponentsListFrame::AUpdateInterface(void)
 
  int row=StringGrid->Row;
 
- if(SelectedId == 0)
+ if(SelectedIndex <=0)
   row=1;
 
 
@@ -107,16 +106,6 @@ void TUComponentsListFrame::AUpdateInterface(void)
   std::string longid=CurrentComponentName;
   if(longid.size()>0)
    longid+=".";
-
-  const char *psid=Model_GetComponentLongId((longid+ids[i]).c_str(),CurrentComponentName.c_str());
-  std::string sid;
-  if(psid)
-   sid=psid;
-  Engine_FreeBufString(psid);
-  int id=RDK::atoi(sid);
-  StringGrid->Cells[0][i+2]=IntToStr(id);
-  if(id == SelectedId)
-   row=i+2;
  }
 
  StringGrid->ColWidths[0]=30;
@@ -126,7 +115,7 @@ void TUComponentsListFrame::AUpdateInterface(void)
  StringGrid->Cells[1][0]="Component name";
 
  if(row<StringGrid->RowCount)
-  StringGrid->Row=row;
+  StringGrid->Row=SelectedIndex;
 
  StringGrid->FixedRows=1;
  UpdateInterfaceFlag=false;
@@ -153,16 +142,14 @@ void TUComponentsListFrame::AUpdateInterface(void)
 void TUComponentsListFrame::AClearInterface(void)
 {
  SelectedComponentName.clear();
- SelectedComponentId.clear();
  CurrentComponentName.clear();
- CurrentComponentId.clear();
  SelectedComponentParameterName.clear();
  SelectedComponentStateName.clear();
  CurrentPath.clear();
  SelectedComponentOutput.clear();
  SelectedComponentInput.clear();
 
- SelectedId=-1;
+ SelectedIndex=0;
 
  LastParams="";
 
@@ -195,9 +182,7 @@ void TUComponentsListFrame::ASaveParameters(RDK::USerStorageXML &xml)
 void TUComponentsListFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  SelectedComponentName.clear();
- SelectedComponentId.clear();
  CurrentComponentName.clear();
- CurrentComponentId.clear();
  SelectedComponentParameterName.clear();
  SelectedComponentStateName.clear();
  CurrentPath.clear();
@@ -793,24 +778,18 @@ void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
  if(StringGrid->Row<1)
  {
   SelectedComponentName="";
-  SelectedComponentId="";
   return;
  }
  else
  if(StringGrid->Cells[0][StringGrid->Row] == "..")
  {
   SelectedComponentName=CurrentComponentName;
-  SelectedComponentId=CurrentComponentId;
   return;
  }
 
  SelectedComponentName=AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
  if(CurrentComponentName.size()>0)
   SelectedComponentName=CurrentComponentName+std::string(".")+SelectedComponentName;
-
- SelectedComponentId=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
- if(CurrentComponentId.size()>0)
-  SelectedComponentId=CurrentComponentId+std::string(".")+SelectedComponentId;
 
  const char *p_data=Model_GetComponentClassName(SelectedComponentName.c_str());
  if(p_data)
@@ -855,10 +834,10 @@ const std::string& TUComponentsListFrame::GetSelectedComponentLongName(void) con
 }
 
 // Длинный строковой Id выделенного компонента
-const std::string& TUComponentsListFrame::GetSelectedComponentLongId(void) const
+/*const std::string& TUComponentsListFrame::GetSelectedComponentLongId(void) const
 {
  return SelectedComponentId;
-}
+}                         */
 
 // Имя выделенного параметра выделенного компонента
 const std::string& TUComponentsListFrame::GetSelectedComponentParameterName(void) const
@@ -893,10 +872,10 @@ void TUComponentsListFrame::SelectUp(void)
 }
 
 // Длинный строковой id текущего компонента
-const std::string& TUComponentsListFrame::GetCurrentComponentId(void) const
+/*const std::string& TUComponentsListFrame::GetCurrentComponentId(void) const
 {
  return CurrentComponentId;
-}
+}         */
 
 // Выбранный выход объекта
 const std::string& TUComponentsListFrame::GetSelectedComponentOutput(void) const
@@ -999,28 +978,18 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
 
  if(StringGrid->Row == 1 && StringGrid->Cells[0][StringGrid->Row] == "..")
  {
-  std::string::size_type i=0,j=0;
+  std::string::size_type i=0;
   i=CurrentComponentName.find_last_of(".");
-  j=CurrentComponentId.find_last_of(".");
 
   if(i != std::string::npos)
   {
    CurrentComponentName=CurrentComponentName.substr(0,i);
+   SelectedIndex=StringGrid->Row;
   }
   else
+  {
    CurrentComponentName="";
-  if(j != std::string::npos)
-  {
-   SelectedId=StrToInt(CurrentComponentId.substr(j+1).c_str());
-   CurrentComponentId=CurrentComponentId.substr(0,j);
-  }
-  else
-  {
-   if(CurrentComponentId != "")
-	SelectedId=StrToInt(CurrentComponentId.c_str());
-   else
-    SelectedId=0;
-   CurrentComponentId="";
+   SelectedIndex=0;
   }
 
   UpdateInterface(true);
@@ -1036,11 +1005,10 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
  if(CurrentComponentName.size()>0)
  {
   CurrentComponentName+=".";
-  CurrentComponentId+=".";
  }
- SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
+// SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  CurrentComponentName+=AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
- CurrentComponentId+=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
+// CurrentComponentId+=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
  UpdateInterface(true);
 
  if(DrawEngineFrame)
@@ -1084,13 +1052,13 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
 
  if(StringGrid->Row<=1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
  {
-  SelectedId=0;
+  SelectedIndex=0;
  }
  else
- if(SelectedId == StrToInt(StringGrid->Cells[0][StringGrid->Row]))
+ if(SelectedIndex == StringGrid->Row)
   return;
  else
-  SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
+  SelectedIndex=StringGrid->Row;
  UpdateSelectedComponentInfo();
  if(PageControl1->ActivePage == TabSheet1)
   UpdateParameters();
@@ -1445,7 +1413,7 @@ void __fastcall TUComponentsListFrame::Delete1Click(TObject *Sender)
   if(Application->MessageBox(L"Are you sure you want to delete this component?",L"Warning",MB_YESNO) != ID_YES)
    return;
 
- std::string stringid=GetCurrentComponentId();
+ std::string stringid=GetCurrentComponentName();
  Model_DelComponent(stringid.c_str(), stringcompid.c_str());
 
  if(DrawEngineFrame)

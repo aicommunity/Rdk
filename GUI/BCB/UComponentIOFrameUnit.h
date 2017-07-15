@@ -81,10 +81,10 @@ void DecodePropertiesIOList(const std::string &source, std::map<int, std::string
 // -----------------
 protected:
 // Отображает данные выходов в таблицу
-void __fastcall ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist);
+void __fastcall ShowOutputs(TStringGrid *string_grid, std::list<std::string> &linkslist);
 
 // Отображает данные входов в таблицу
-void __fastcall ShowInputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist);
+void __fastcall ShowInputs(TStringGrid *string_grid, std::list<std::string> &linkslist);
 // -----------------
 
 

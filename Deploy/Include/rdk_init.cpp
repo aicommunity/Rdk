@@ -1505,12 +1505,12 @@ const char* RDK_CALL Env_GetCurrentComponentName(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetCurrentComponentName();
 }
-
+/*
 // ¬озвращает длинный строковой id текущего компонента
 const char* RDK_CALL Env_GetCurrentComponentId(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetCurrentComponentId();
-}
+}                             */
 // ***********************************************
 
 /// »нициирует извещение о сбое в работе источника данных
@@ -1655,14 +1655,14 @@ int RDK_CALL Model_GetNumComponents(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetNumComponents(stringid);
 }
-
+			 /*
 // ¬озвращает массив всех id заданного компонента 'stringid'
 // если stringid - пуста€ строка, то возвращает массив всех id модели
 int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentsList(stringid, buffer);
-}
+}               */
 
 // ¬озвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена раздел€ютс€ сипволом ','
@@ -1709,12 +1709,12 @@ int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step)
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // ѕредварительна€ очистка буфера не производитс€.
-const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
+/*const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 						  int sublevel, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetConnectorsList(stringid, sublevel, owner_level_stringid);
-}
+}    */
 
 // ¬озвращает xml-список длинных идентификаторов всех элементов сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
@@ -1725,12 +1725,12 @@ const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // ѕредварительна€ очистка буфера не производитс€.
-const char* RDK_CALL Model_GetItemsList(const char* stringid,
+/*const char* RDK_CALL Model_GetItemsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetItemsList(stringid, sublevel, owner_level_stringid);
-}
+}  */
 
 // ¬озвращает xml-список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
@@ -1741,10 +1741,10 @@ const char* RDK_CALL Model_GetItemsList(const char* stringid,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // ѕредварительна€ очистка буфера не производитс€.
-const char* RDK_CALL Model_GetNetsList(const char* stringid,
+const char* RDK_CALL Model_GetComponentsListEx(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
- return RdkCoreManager.GetEngineLock()->Model_GetNetsList(stringid, sublevel, owner_level_stringid);
+ return RdkCoreManager.GetEngineLock()->Model_GetComponentsListEx(stringid, sublevel, owner_level_stringid);
 }
 
 // ¬озвращает им€ компонента по заданному 'stringid'
@@ -1780,11 +1780,11 @@ const char* RDK_CALL MModel_GetComponentLongName(int channel_index, const char* 
 // ѕам€ть выдел€етс€ и освобождаетс€ внутри dll
 // »м€ формируетс€ до уровн€ компонента owner_level_stringid
 // ≈сли owner_level_stringid не задан, то им€ формируетс€ до уровн€ текущего компонента
-const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
+/*const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentLongId(stringid,owner_level_stringid);
-}
+}       */
 
 // ¬озвращает им€ класса компонента в хранилище по длинному 'stringid'
 // если stringid - пуста€ строка, то возвращает им€ класса модели

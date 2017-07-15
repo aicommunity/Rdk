@@ -2,7 +2,7 @@
 #define UINPUT_PROPERTY_H
 
 #include "ULocalProperty.h"
-#include "UConnector.h"
+#include "UNet.h"
 
 namespace RDK {
 

@@ -74,7 +74,7 @@ void __fastcall TUComponentsListForm::FormShow(TObject *Sender)
 void __fastcall TUComponentsListForm::ComponentsListFrame1StringGridDblClick(TObject *Sender)
 
 {
- int num_components=Model_GetNumComponents(ComponentsListFrame1->GetSelectedComponentLongId().c_str());
+ int num_components=Model_GetNumComponents(ComponentsListFrame1->GetSelectedComponentLongName().c_str());
  if(!num_components && Mode == 0)
  {
   ModalResult=mrOk;

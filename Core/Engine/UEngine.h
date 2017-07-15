@@ -453,7 +453,7 @@ virtual int Env_DownCurrentComponent(const char *stringid);
 virtual const char* Env_GetCurrentComponentName(void) const;
 
 // Возвращает длинный строковой id текущего компонента
-virtual const char* Env_GetCurrentComponentId(void) const;
+//virtual const char* Env_GetCurrentComponentId(void) const;
 
 // Возвращает имя текущего каталога для хранения данных
 virtual const char* Env_GetCurrentDataDir(void) const;
@@ -566,7 +566,7 @@ virtual int Model_GetNumComponents(const char* stringid);
 
 // Возвращает массив всех id заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
-virtual int Model_GetComponentsList(const char* stringid, int *buffer);
+//virtual int Model_GetComponentsList(const char* stringid, int *buffer);
 
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ','
@@ -594,8 +594,8 @@ virtual int Model_ChangeComponentPosition(const char* stringid, int step);
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
-virtual const char* Model_GetConnectorsList(const char* stringid,
-						  int sublevel=-1, const char* owner_level_stringid=0);
+//virtual const char* Model_GetConnectorsList(const char* stringid,
+//						  int sublevel=-1, const char* owner_level_stringid=0);
 
 // Возвращает xml-список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -606,8 +606,8 @@ virtual const char* Model_GetConnectorsList(const char* stringid,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
-virtual const char* Model_GetItemsList(const char* stringid,
-							int sublevel=-1, const char* owner_level_stringid=0);
+//virtual const char* Model_GetItemsList(const char* stringid,
+//							int sublevel=-1, const char* owner_level_stringid=0);
 
 // Возвращает xml-список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -618,7 +618,7 @@ virtual const char* Model_GetItemsList(const char* stringid,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
-virtual const char* Model_GetNetsList(const char* stringid,
+virtual const char* Model_GetComponentsListEx(const char* stringid,
 							int sublevel=-1, const char* owner_level_stringid=0);
 
 // Возвращает имя компонента по заданному 'stringid'
@@ -638,7 +638,7 @@ virtual const char* Model_GetComponentLongName(const char* stringid, const char*
 // Память выделяется и освобождается внутри dll
 // Имя формируется до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
-virtual const char* Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid=0);
+//virtual const char* Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid=0);
 
 // Возвращает имя класса компонента в хранилище по длинному 'stringid'
 // если stringid - пустая строка, то возвращает имя класса модели
@@ -986,7 +986,7 @@ int LoadLibraries(void);
 public:
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-virtual UEPtr<UContainer> FindComponent(const char *stringid) const;
+virtual UEPtr<UNet> FindComponent(const char *stringid) const;
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);

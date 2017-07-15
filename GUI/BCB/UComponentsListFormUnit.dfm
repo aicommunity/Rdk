@@ -53,11 +53,13 @@ object UComponentsListForm: TUComponentsListForm
     Width = 714
     Height = 397
     Align = alClient
+    DoubleBuffered = True
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
     Font.Name = 'Tahoma'
     Font.Style = []
+    ParentDoubleBuffered = False
     ParentFont = False
     TabOrder = 1
     ExplicitWidth = 714
@@ -101,6 +103,12 @@ object UComponentsListForm: TUComponentsListForm
               ExplicitTop = 58
               ExplicitWidth = 168
               ExplicitHeight = 102
+              ColWidths = (
+                64
+                64)
+              RowHeights = (
+                18
+                18)
             end
             inherited txtStringEdit: TEdit
               Left = 34
@@ -230,6 +238,9 @@ object UComponentsListForm: TUComponentsListForm
               ExplicitTop = 58
               ExplicitWidth = 168
               ExplicitHeight = 102
+              ColWidths = (
+                64
+                64)
             end
             inherited txtStringEdit: TEdit
               Left = 34
@@ -323,6 +334,18 @@ object UComponentsListForm: TUComponentsListForm
               ExplicitTop = 16
               ExplicitWidth = 389
               ExplicitHeight = 232
+              ColWidths = (
+                64
+                64
+                64
+                64
+                64)
+              RowHeights = (
+                18
+                18
+                18
+                18
+                18)
             end
           end
           inherited GroupBox2: TGroupBox
@@ -339,6 +362,18 @@ object UComponentsListForm: TUComponentsListForm
               ExplicitTop = 16
               ExplicitWidth = 389
               ExplicitHeight = 287
+              ColWidths = (
+                64
+                64
+                64
+                64
+                64)
+              RowHeights = (
+                18
+                18
+                18
+                18
+                18)
             end
           end
         end
@@ -386,6 +421,18 @@ object UComponentsListForm: TUComponentsListForm
         ExplicitTop = 37
         ExplicitWidth = 376
         ExplicitHeight = 336
+        ColWidths = (
+          64
+          64
+          64
+          64
+          64)
+        RowHeights = (
+          24
+          24
+          24
+          24
+          24)
       end
       inherited HeaderControl: THeaderControl
         Width = 376

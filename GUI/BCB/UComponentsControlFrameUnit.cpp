@@ -287,7 +287,7 @@ void TUComponentsControlFrame::LoadClassesDescriptionFromFile(const String &file
 void __fastcall TUComponentsControlFrame::TakeObjectButtonClick(TObject *Sender)
 {
  std::string classid=AnsiString(ClassesListFrame->GetSelectedName()).c_str();
- std::string stringid=ComponentsListFrame->GetCurrentComponentId();
+ std::string stringid=ComponentsListFrame->GetCurrentComponentName();
  const char* pname=Model_AddComponent(stringid.c_str(), classid.c_str());
  if(pname)
   Engine_FreeBufString(pname);
@@ -301,7 +301,7 @@ void __fastcall TUComponentsControlFrame::ReturnObjectButtonClick(TObject *Sende
  if(stringcompid == "..")
   return;
 // int compid=StrToInt(stringcompid.c_str());
- std::string stringid=ComponentsListFrame->GetCurrentComponentId();
+ std::string stringid=ComponentsListFrame->GetCurrentComponentName();
  Model_DelComponent(stringid.c_str(), stringcompid.c_str());
 
  ComponentsListFrame->UpdateInterface();

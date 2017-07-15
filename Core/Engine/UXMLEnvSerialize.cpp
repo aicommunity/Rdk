@@ -20,7 +20,7 @@ See file license.txt for more information
 namespace RDK {
 
 // UIdVector
-USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
+/*USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
 {
  storage.SetNodeAttribute("Type","UIdVector");
  unsigned int size=data.GetSize();
@@ -43,23 +43,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
  storage.SetNodeText(stream.str());
 
  return storage;
-/*
- storage.SetNodeAttribute("Type","UIdVector");
- unsigned int size=data.GetSize();
- storage.SetNodeAttribute("Size",sntoa(size));
 
- if(size <= 0)
-  return storage;
-
- for(unsigned int i=0;i<size;i++)
- {
-  storage.AddNode("elem");
-  storage<<data[i];
-  storage.SelectUp();
- }
-
- return storage;
- */
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
@@ -87,32 +71,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
  }
 
  return storage;
-/*
- if(storage.GetNodeAttribute("Type") != "UIdVector")
-  return storage;
 
- int size=0;
- size=atoi(storage.GetNodeAttribute("Size"));
-
- if(size <= 0)
- {
-  data.Resize(0);
-  return storage;
- }
- data.Resize(size);
-
- UId* pdata=&data[0];
-
- for(int i=0;i<size;i++)
- {
-  if(!storage.SelectNode("elem",i))
-   return storage;
-  operator >>(storage,*(pdata+i));
-  storage.SelectUp();
- }
-
- return storage;
- */
 }
 
 // ULongIdVector
@@ -165,14 +124,14 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data)
  }
 
  return storage;
-}
-   /*
+}    */
 // ULinkSide
 USerStorageXML& operator << (USerStorageXML& storage, const ULinkSide &data)
 {
- storage<<data.Id;
+ storage<<data.ComponentName;
  storage.SetNodeAttribute("Type","ULinkSide");
  storage.SetNodeAttribute("Index",sntoa(data.Index));
+ storage.SetNodeAttribute("PropertyName",data.PropertyName);
 
  return storage;
 }
@@ -181,8 +140,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinkSide &data)
 {
  if(storage.GetNodeAttribute("Type") != "ULinkSide")
   return storage;
- operator >>(storage,data.Id);
- data.Index=atoi(storage.GetNodeAttribute("Index"));
+ operator >>(storage,data.ComponentName);
+ data.Index=RDK::atoi(storage.GetNodeAttribute("Index"));
+ data.PropertyName=storage.GetNodeAttribute("PropertyName");
 
  return storage;
 }
@@ -230,6 +190,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULink &data)
  return storage;
 }
 
+
 // ULinksList
 USerStorageXML& operator << (USerStorageXML& storage, const ULinksList &data)
 {
@@ -237,7 +198,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULinksList &data)
  unsigned int size=data.GetSize();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  for(unsigned int i=0;i<size;i++)
@@ -256,7 +217,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksList &data)
   return storage;
 
  int size=0;
- size=atoi(storage.GetNodeAttribute("Size"));
+// size=RDK::atoi(storage.GetNodeAttribute("Size"));
+ size=storage.GetNumNodes();
 
  if(size <= 0)
  {
@@ -277,7 +239,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksList &data)
 
  return storage;
 }
-      */
+
 
 }
 #endif
