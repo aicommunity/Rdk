@@ -167,15 +167,7 @@ bool UIPropertyInputBase::Disconnect(UIPropertyOutput *output_property)
   return false;
  }
 
- std::list<UEPtr<UIPropertyOutput> >::iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),output_property);
-
- if(I == ConnectedProperties.end())
- {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found in ConnectedProperties list: ")+output_property->GetName());
-  return false;
- }
-
- return DisconnectFinalAction(I);
+ return output_property->Disconnect(this);
 }
 
 /// Разрывает все связи со свойством
@@ -187,12 +179,35 @@ bool UIPropertyInputBase::DisconnectAll(void)
  while(I != ConnectedProperties.end())
  {
   J=I; ++J;
-  bool local_res=DisconnectFinalAction(I);
-  res &=local_res;
+  res &=(*I)->Disconnect(this);
   I=J;
  }
  return res;
 }
+/// Финальные действия по связыванию входа со свойством output_property
+bool UIPropertyInputBase::ConnectToOutput(UIPropertyOutput *output_property)
+{
+ // TODO: тут код физического подключения данных
+ ConnectedProperties.push_back(output_property);
+ return true;
+}
+
+/// Финальные действия по уничтожению связи со свойством output_property
+bool UIPropertyInputBase::DisconnectFromOutput(UIPropertyOutput *output_property)
+{
+ std::list<UEPtr<UIPropertyOutput> >::iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),output_property);
+
+ if(I == ConnectedProperties.end())
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found in ConnectedProperties list: ")+output_property->GetName());
+  return false;
+ }
+
+ // TODO: тут код физического отключения данных
+ ConnectedProperties.erase(I);
+ return true;
+}
+
 									 /*
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index) const
@@ -209,14 +224,6 @@ bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item, const NameT &it
  return false;
 }
                                    */
-/// Завершающие действия по отключению
-bool UIPropertyInputBase::DisconnectFinalAction(std::list<UEPtr<UIPropertyOutput> >::iterator &it)
-{
- // TODO: тут код физического отключения данных
- ConnectedProperties.erase(it);
- return true;
-}
-
 /* *************************************************************************** */
 //class UIPropertyOutputBase: public UIPropertyIO
 /// Конструкторы и деструкторы
@@ -253,34 +260,62 @@ const std::list<UEPtr<UIPropertyInput> > UIPropertyOutputBase::GetConnectedPrope
 {
  return ConnectedProperties;
 }
-	   /*
-// Возвращает имя подключенного входа компонента-приемника
-std::string UIPropertyOutputBase::GetConnectorInputName(int index) const
+
+/// Устанавливает связь этого выхода со входом input_property
+bool UIPropertyOutputBase::Connect(UIPropertyInput *input_property)
 {
- return ConnectorInputNames[index];
-}             */
-  /*
-// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-bool UIPropertyOutputBase::Disconnect(const UId &id)
+ if(!input_property)
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connected property pointer is null"));
+  return false;
+ }
+
+ // TODO: тут код связывания
+
+ if(!input_property->ConnectToOutput(this))
+ {
+  // откатываем действия
+  return false;
+ }
+ ConnectedProperties.push_back(input_property);
+ return true;
+}
+
+/// Разрывает связь этого выхода со входом input_property
+bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property)
 {
-}   */
+ if(!input_property)
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property pointer is null"));
+  return false;
+ }
+
+ std::list<UEPtr<UIPropertyInput> >::iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),input_property);
+
+ if(I == ConnectedProperties.end())
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found in ConnectedProperties list: ")+input_property->GetName());
+  return false;
+ }
+
+ // TODO: тут код физического отключения данных
+ ConnectedProperties.erase(I);
+ return input_property->DisconnectFromOutput(this);
+}
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
 bool UIPropertyOutputBase::DisconnectAll(void)
 {
- /*
- std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
-
- for(;I!= RelatedConnectors.end();++I)
+ bool res(true);
+ std::list<UEPtr<UIPropertyInput> >::iterator I=ConnectedProperties.begin(),J;
+ while(I != ConnectedProperties.end())
  {
-  int i=int(I->second.size())-1;
-  while(i>=0)
-  {
-   Disconnect(I->second[i]);
-   i=int(I->second.size())-1;
-  }
- }   */
+  J=I; ++J;
+  res &= Disconnect(*I);
+  I=J;
+ }
+ return res;
 }
 
 /// Возвращает true если выход подключен к выбранному входу

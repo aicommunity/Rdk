@@ -77,25 +77,18 @@ virtual bool IsConnected(void) const;
 // Проверяет, существует ли связь с заданным коннектором
 virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const;
 
-// Проверяет, существует ли связь с заданным коннектором
-//bool IsConnectedTo(const UEPtr<UNet> &item) const;
-
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-//bool IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index=-1) const;
-
-/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
-/// Возвращает true, если действия по удалению выполнялись
-//virtual bool Disconnect(const NameT &item_property_name, int c_index=-1);
-
 /// Разрывает связь со свойством output_property
 virtual bool Disconnect(UIPropertyOutput *output_property);
 
-/// Разрывает связь с индексом c_index, или все связи если c_index == -1
-/// Если c_index имеет не корректное значение, то не делает ничего
-//virtual bool Disconnect(int c_index=-1);
-
 /// Разрывает все связи со свойством
 virtual bool DisconnectAll(void);
+
+public:
+/// Финальные действия по связыванию входа со свойством output_property
+virtual bool ConnectToOutput(UIPropertyOutput *output_property);
+
+/// Финальные действия по уничтожению связи со свойством output_property
+virtual bool DisconnectFromOutput(UIPropertyOutput *output_property);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -106,13 +99,6 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
 virtual bool ResetPointer(int index, void* value)=0;
-
-protected:
-/// Завершающие действия по отключению
-virtual bool DisconnectFinalAction(std::list<UEPtr<UIPropertyOutput> >::iterator &it);
-
-/// Завершающие действия по подключению
-
 };
 
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput

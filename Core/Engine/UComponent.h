@@ -672,12 +672,19 @@ virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const=0;
 /// Разрывает связь со свойством output_property
 virtual bool Disconnect(UIPropertyOutput *output_property)=0;
 
+/// Разрывает все связи со свойством
+virtual bool DisconnectAll(void)=0;
+
+public:
+/// Финальные действия по связыванию входа со свойством output_property
+virtual bool ConnectToOutput(UIPropertyOutput *output_property)=0;
+
+/// Финальные действия по уничтожению связи со свойством output_property
+virtual bool DisconnectFromOutput(UIPropertyOutput *output_property)=0;
+
 /// Разрывает связь с индексом c_index, или все связи если c_index == -1
 /// Если c_index имеет не корректное значение, то не делает ничего
 //virtual bool Disconnect(int c_index=-1)=0;
-
-/// Разрывает все связи со свойством
-virtual bool DisconnectAll(void)=0;
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -734,26 +741,6 @@ virtual void const* GetPointer(int index) const=0;
 
 /// Сбрасывает указатель на данные
 //virtual bool ResetPointer(int index, void* value)=0;
-
-protected:
-// Устанавливает связь с коннектором 'c'
-//virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false)=0;
-
-/// Разрывает все связи выхода этого объекта с коннектором 'c'.
-//virtual bool Disconnect(UEPtr<UNet> c)=0;
-
-// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-//virtual bool Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1)=0;
-
-// Проверяет, существует ли связь с заданным коннектором
-//virtual bool CheckLink(const UEPtr<UNet> &connector, int c_index) const=0;
-
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-//virtual bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const=0;
-
-// Переустанавливает все связи этого выхода со всеми connectors
-//virtual void BuildLinks(void)=0;
-
 };
 
 
