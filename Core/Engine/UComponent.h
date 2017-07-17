@@ -636,8 +636,8 @@ virtual int GetNumConnections(void) const=0;
 virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const=0;
 
 // Возвращает указатель на компонент-источник
-virtual const UNet* GetConnectedItem(int c_index=-1) const =0;
-virtual UNet* GetConnectedItem(int c_index=-1)=0;
+//virtual const UNet* GetConnectedItem(int c_index=-1) const =0;
+//virtual UNet* GetConnectedItem(int c_index=-1)=0;
 
 // Возвращает информацию о данных связей с item или пустой массив
 // если такая связь отсутствует
@@ -645,7 +645,7 @@ virtual UNet* GetConnectedItem(int c_index=-1)=0;
 //virtual void GetCLink(const UNet* const item, std::vector<UCLink> &buffer) const=0;
 
 /// Возвращает имя подключенного компонента
-virtual std::string GetItemName(int c_index=-1) const=0;
+//virtual std::string GetItemName(int c_index=-1) const=0;
 
 /// Возвращает полное имя подключенного компонента
 virtual std::string GetItemFullName(int c_index=-1) const=0;
@@ -660,10 +660,10 @@ virtual bool IsConnected(void) const=0;
 virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const=0;
 
 // Проверяет, существует ли связь с заданным коннектором
-virtual bool IsConnectedTo(const UEPtr<UNet> &item) const=0;
+//virtual bool IsConnectedTo(const UEPtr<UNet> &item) const=0;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-virtual bool IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index=-1) const=0;
+//virtual bool IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index=-1) const=0;
 
 /// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
 /// Возвращает true, если действия по удалению выполнялись

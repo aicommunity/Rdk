@@ -55,7 +55,7 @@ const std::vector<UCItem>& UIPropertyInputBase::GetItemsList(void) const
  return ItemsList;
 }         */
 
-
+							/*
 // Возвращает указатель на компонент-источник
 const UNet* UIPropertyInputBase::GetConnectedItem(int c_index) const
 {
@@ -98,15 +98,22 @@ std::string UIPropertyInputBase::GetItemName(int c_index) const
 
  return item->GetName();
 }
-
+				  */
 /// Возвращает полное имя подключенного компонента
 std::string UIPropertyInputBase::GetItemFullName(int c_index) const
 {
- const UNet* item=GetConnectedItem(c_index);
- if(!item)
-  return "";
+ if(ConnectedProperties.empty())
+  return 0;
 
- return item->GetFullName();
+ std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
+ int i=0;
+ for(;I != ConnectedProperties.end();++I,++i)
+ {
+  if(i == c_index)
+   return (*I)->GetOwner()->GetFullName();
+ }
+
+ return "";
 }
 
 // Возвращает имя подключенного выхода
@@ -138,7 +145,7 @@ bool UIPropertyInputBase::IsConnectedTo(const UIPropertyOutput *output_property)
  std::list<UEPtr<UIPropertyOutput> >::const_iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),output_property);
  return I == ConnectedProperties.end();
 }
-
+	   /*
 // Проверяет, существует ли связь с заданным коннектором
 bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item) const
 {
@@ -149,7 +156,7 @@ bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item) const
    return true;
  }
  return false;
-}
+}                */
 
 /// Разрывает связь со свойством output_property
 bool UIPropertyInputBase::Disconnect(UIPropertyOutput *output_property)
@@ -186,7 +193,7 @@ bool UIPropertyInputBase::DisconnectAll(void)
  }
  return res;
 }
-
+									 /*
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index) const
 {
@@ -201,7 +208,7 @@ bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item, const NameT &it
  }
  return false;
 }
-
+                                   */
 /// Завершающие действия по отключению
 bool UIPropertyInputBase::DisconnectFinalAction(std::list<UEPtr<UIPropertyOutput> >::iterator &it)
 {
