@@ -44,26 +44,11 @@ virtual ~UIPropertyInputBase(void);
 virtual int GetInputType(void) const;
 
 public: // Методы доступа к источнику данных
-/// Возвращает указатель на компонент-источник
-//virtual const std::vector<UCItem>& GetItemsList(void) const;
-
 /// Возвращает число подключений ко входу
 virtual int GetNumConnections(void) const;
 
-// Возвращает указатель на компонент-источник
-//const UNet* GetConnectedItem(int c_index=-1) const;
-//UNet* GetConnectedItem(int c_index=-1);
-
 /// Возвращает указатели на свойства-источники данных
 virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const;
-
-// Возвращает информацию о данных связей с item или пустой массив
-// если такая связь отсутствует
-//virtual void GetCLink(const UEPtr<UNet> &item, std::vector<UCLink> &buffer) const;
-//virtual void GetCLink(const UNet* const item, std::vector<UCLink> &buffer) const;
-
-/// Возвращает имя подключенного компонента
-//virtual std::string GetItemName(int c_index=-1) const;
 
 /// Возвращает полное имя подключенного компонента
 virtual std::string GetItemFullName(int c_index=-1) const;
@@ -104,16 +89,8 @@ virtual bool ResetPointer(int index, void* value)=0;
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
 {
 protected: // Данные
-//std::vector<PUAConnector> RelatedConnectors; // deprecated
-
-/// Указатели на компоненты-приемники данных
-//std::vector<UNet*> Connectors; // deprecated
-
 /// указатели на свойства-приемники данных
 std::list<UEPtr<UIPropertyInput> > ConnectedProperties;
-
-/// Имя выхода компнента-источника данных
-//std::vector<std::string> ConnectorInputNames;
 
 public: // Конструкторы и деструкторы
 UIPropertyOutputBase(void);
@@ -123,24 +100,14 @@ public: // Методы доступа к подключенным входам
 /// Возвращает число подключенных входов
 virtual size_t GetNumConnectors(void) const;
 
-/// Возвращает указатель на компонент-приемник
-//virtual const UNet* GetConnector(int index) const;
-//virtual UNet* GetConnector(int index);
-
 /// Возвращает указатели на свойства-приемники данных
 virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const;
-
-/// Возвращает имя подключенного входа компонента-приемника
-//virtual std::string GetConnectorInputName(int index) const;
 
 /// Устанавливает связь этого выхода со входом input_property
 virtual bool Connect(UIPropertyInput *input_property);
 
 /// Разрывает связь этого выхода со входом input_property
 virtual bool Disconnect(UIPropertyInput *input_property);
-
-// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-//virtual bool Disconnect(const UId &id);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
@@ -155,12 +122,6 @@ virtual bool IsConnectedTo(UNet *component);
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
 virtual void const* GetPointer(int index) const=0;
-
-/// Устанавливает указатель на данные
-//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
-
-/// Сбрасывает указатель на данные
-//virtual bool ResetPointer(int index, void* value)=0;
 };
 
 
@@ -302,23 +263,8 @@ ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_i
 // второго объекта. Работает симметрично в обе стороны.
 // если 'sublevel' == 0, то возвращает связи только между этими объектами
 ULinksList& GetPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel=-1);
-
-
 // --------------------------
-/*
-/// Разрывает все входящие связи к компонненту
-virtual void DisconnectAllInputs(void);
 
-/// Разрывает все исходящие связи от компоннента
-virtual void DisconnectAllOutputs(void);
-
-/// Разрывает все связи с заданным выходом
-virtual void DisconnectFromOutput(const std::string &property_name);
-
-/// проверяет наличие связи между выходом этого компонента и входом cont
-bool IsLinkExists(UEPtr<UNet> cont, const NameT &itemname,
-						const NameT &connectorname, int connector_c_index);
-				*/
 public:
 /// Ищет свойство-выход по заданному индексу
 virtual UIPropertyOutput* FindOutputProperty(const NameT &property_name);

@@ -561,91 +561,18 @@ EPropertySetterFail(const std::string &owner_name, const std::string &property_n
 
 };
 
-//class UItem;
-
-// Описание подключаемого элемента "UConnectedITEM"
-/*
-struct RDK_LIB_TYPE UCItem
-{
-// Подключаемый элемент
-UNet* Item;
-
-// Индекс выхода
-int Index;
-
-// Имя выхода
-std::string Name;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UCItem(void);
-UCItem(const UCItem &copy);
-// --------------------------
-
-// --------------------------
-// Операторы
-// --------------------------
-bool operator == (const UCItem &value) const;
-bool operator != (const UCItem &value) const;
-// --------------------------
-};
-
-// Описание входящей связи с заданным item "UConnectedLINK"
-struct RDK_LIB_TYPE UCLink
-{
-// Индекс выхода
-int Output;
-
-// Индекс входа
-int Input;
-
-// Имя выхода
-std::string OutputName;
-
-// Имя входа
-std::string InputName;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UCLink(void);
-UCLink(const UCLink &copy);
-// --------------------------
-}; */
-
-class UIPropertyOutput;
-
 class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
 {
 public:
-/// Возвращает указатель на владелька свойства
-//virtual UNet* GetOwner(void)=0;
-
 /// Возвращает тип свойства входа
 virtual int GetInputType(void) const=0;
 
 public: // Методы доступа к источнику данных
-/// Возвращает указатель на компонент-источник
-//virtual const std::vector<UCItem>& GetItemsList(void) const=0;
-
 /// Возвращает число подключений ко входу
 virtual int GetNumConnections(void) const=0;
 
 /// Возвращает указатели на свойства-приемники данных
 virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const=0;
-
-// Возвращает указатель на компонент-источник
-//virtual const UNet* GetConnectedItem(int c_index=-1) const =0;
-//virtual UNet* GetConnectedItem(int c_index=-1)=0;
-
-// Возвращает информацию о данных связей с item или пустой массив
-// если такая связь отсутствует
-//virtual void GetCLink(const UEPtr<UNet> &item, std::vector<UCLink> &buffer) const=0;
-//virtual void GetCLink(const UNet* const item, std::vector<UCLink> &buffer) const=0;
-
-/// Возвращает имя подключенного компонента
-//virtual std::string GetItemName(int c_index=-1) const=0;
 
 /// Возвращает полное имя подключенного компонента
 virtual std::string GetItemFullName(int c_index=-1) const=0;
@@ -659,16 +586,6 @@ virtual bool IsConnected(void) const=0;
 // Проверяет, существует ли связь с заданным коннектором
 virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const=0;
 
-// Проверяет, существует ли связь с заданным коннектором
-//virtual bool IsConnectedTo(const UEPtr<UNet> &item) const=0;
-
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-//virtual bool IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index=-1) const=0;
-
-/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
-/// Возвращает true, если действия по удалению выполнялись
-//virtual bool Disconnect(const NameT &item_property_name, int c_index=-1)=0;
-
 /// Разрывает связь со свойством output_property
 virtual bool Disconnect(UIPropertyOutput *output_property)=0;
 
@@ -681,10 +598,6 @@ virtual bool ConnectToOutput(UIPropertyOutput *output_property)=0;
 
 /// Финальные действия по уничтожению связи со свойством output_property
 virtual bool DisconnectFromOutput(UIPropertyOutput *output_property)=0;
-
-/// Разрывает связь с индексом c_index, или все связи если c_index == -1
-/// Если c_index имеет не корректное значение, то не делает ничего
-//virtual bool Disconnect(int c_index=-1)=0;
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -703,24 +616,14 @@ public: // Методы доступа к подключенным входам
 /// Возвращает число подключенных входов
 virtual size_t GetNumConnectors(void) const=0;
 
-/// Возвращает указатель на компонент-приемник
-//virtual const UNet* GetConnector(int index) const=0;
-//virtual UNet* GetConnector(int index)=0;
-
 /// Возвращает указатели на свойства-приемники данных
 virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const=0;
-
-/// Возвращает имя подключенного входа компонента-приемника
-//virtual std::string GetConnectorInputName(int index) const=0;
 
 /// Устанавливает связь этого выхода со входом input_property
 virtual bool Connect(UIPropertyInput *input_property)=0;
 
 /// Разрывает связь этого выхода со входом input_property
 virtual bool Disconnect(UIPropertyInput *input_property)=0;
-
-// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-//virtual bool Disconnect(const UId &id)=0;
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
@@ -735,12 +638,6 @@ virtual bool IsConnectedTo(UNet *component)=0;
 public: // Методы управления указателем на выходные данные
 /// Возвращает указатель на данные
 virtual void const* GetPointer(int index) const=0;
-
-/// Устанавливает указатель на данные
-//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
-
-/// Сбрасывает указатель на данные
-//virtual bool ResetPointer(int index, void* value)=0;
 };
 
 

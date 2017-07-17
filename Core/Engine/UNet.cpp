@@ -48,57 +48,6 @@ const std::list<UEPtr<UIPropertyOutput> > UIPropertyInputBase::GetConnectedPrope
  return ConnectedProperties;
 }
 
-/// Возвращает указатель на компонент-источник
-/*
-const std::vector<UCItem>& UIPropertyInputBase::GetItemsList(void) const
-{
- return ItemsList;
-}         */
-
-							/*
-// Возвращает указатель на компонент-источник
-const UNet* UIPropertyInputBase::GetConnectedItem(int c_index) const
-{
- if(ConnectedProperties.empty())
-  return 0;
-
- std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
- int i=0;
- for(;I != ConnectedProperties.end();++I,++i)
- {
-  if(i == c_index)
-   return (*I)->GetOwner();
- }
-
- return 0;
-}
-
-UNet* UIPropertyInputBase::GetConnectedItem(int c_index)
-{
- if(ConnectedProperties.empty())
-  return 0;
-
- std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
- int i=0;
- for(;I != ConnectedProperties.end();++I,++i)
- {
-  if(i == c_index)
-   return (*I)->GetOwner();
- }
-
- return 0;
-}
-
-/// Возвращает имя подключенного компонента
-std::string UIPropertyInputBase::GetItemName(int c_index) const
-{
- const UNet* item=GetConnectedItem(c_index);
- if(!item)
-  return "";
-
- return item->GetName();
-}
-				  */
 /// Возвращает полное имя подключенного компонента
 std::string UIPropertyInputBase::GetItemFullName(int c_index) const
 {
@@ -145,18 +94,6 @@ bool UIPropertyInputBase::IsConnectedTo(const UIPropertyOutput *output_property)
  std::list<UEPtr<UIPropertyOutput> >::const_iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),output_property);
  return I == ConnectedProperties.end();
 }
-	   /*
-// Проверяет, существует ли связь с заданным коннектором
-bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item) const
-{
- std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
- for(;I != ConnectedProperties.end();++I)
- {
-  if((*I)->GetOwner() == item)
-   return true;
- }
- return false;
-}                */
 
 /// Разрывает связь со свойством output_property
 bool UIPropertyInputBase::Disconnect(UIPropertyOutput *output_property)
@@ -208,22 +145,6 @@ bool UIPropertyInputBase::DisconnectFromOutput(UIPropertyOutput *output_property
  return true;
 }
 
-									 /*
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index) const
-{
- std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
- for(;I != ConnectedProperties.end();++I)
- {
-  if((*I)->GetOwner() == item)
-  {
-   if((*I)->GetName() == item_property_name)
-    return true;
-  }
- }
- return false;
-}
-                                   */
 /* *************************************************************************** */
 //class UIPropertyOutputBase: public UIPropertyIO
 /// Конструкторы и деструкторы
@@ -243,17 +164,6 @@ size_t UIPropertyOutputBase::GetNumConnectors(void) const
 {
  return ConnectedProperties.size();
 }
-					/*
-// Возвращает указатель на компонент-приемник
-const UNet* UIPropertyOutputBase::GetConnector(int index) const
-{
- return Connectors[index];
-}
-
-UNet* UIPropertyOutputBase::GetConnector(int index)
-{
- return Connectors[index];
-}                    */
 
 /// Возвращает указатели на свойства-приемники данных
 const std::list<UEPtr<UIPropertyInput> > UIPropertyOutputBase::GetConnectedProperties(void) const
@@ -339,120 +249,7 @@ bool UIPropertyOutputBase::IsConnectedTo(UNet *component)
  return false;
 }
 
-// Устанавливает связь с коннектором 'c'
-/*
-bool UIPropertyOutputBase::Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
-{
 
- std::vector<PUAConnector> &vec=RelatedConnectors[item_property_name];
- for(size_t i=0;i<vec.size();i++)
-  if(vec[i] == c)
-   return true;
-
- vec.push_back(c);
- return true;
-
-
- return false;
-}   */
-
-/// Разрывает все связи выхода этого объекта с коннектором 'c'.
-/*bool UIPropertyOutputBase::Disconnect(UEPtr<UNet> c)
-{
-
- std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
-
- for(;I!= RelatedConnectors.end();++I)
- {
-  int i=0;
-  while(i<int(I->second.size()))
-  {
-   if(I->second[i] == c)
-	I->second.erase(I->second.begin()+i);
-   else
-	++i;
-  }
- }
-
-}
- */
-// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-/*
-bool UIPropertyOutputBase::Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index)
-{
-
- std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.find(item_property_name);
-
- if(I == RelatedConnectors.end())
-  return;
-
- UCItem citem=c->GetCItem(connector_property_name,this,connected_c_index);
- int i=0;
- while(i<int(I->second.size()))
- {
-  if(I->second[i] == c)
-  {
-   if(citem.Name == item_property_name && citem.Item == this)
-   {
-	I->second.erase(I->second.begin()+i);
-	c->DisconnectFromItem(this, item_property_name, connector_property_name, connected_c_index);
-   }
-   else
-	++i;
-  }
-  else
-   ++i;
- }
-}    */
-							 /*
-// Возвращает  коннектор из списка подключений.
-UEPtr<UConnector> UIPropertyOutputBase::GetAConnectorByIndex(int c_index) const
-{
-}
-							   */
-							   /*
-// Проверяет, существует ли связь с заданным коннектором
-bool UIPropertyOutputBase::CheckLink(const UEPtr<UNet> &connector, int c_index) const
-{
-	 return false;
-
-}
-
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UIPropertyOutputBase::CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index) const
-{
-	 return false;
-
-}
-                                 */    /*
-// Переустанавливает все связи этого выхода со всеми connectors
-void UIPropertyOutputBase::BuildLinks(void)
-{
-
-
- std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
-
- for(;I!= RelatedConnectors.end();++I)
-  for(size_t i=0;i<I->second.size();i++)
-  {
-   if(!I->second[i])
-	continue;
-   std::vector<UCLink> buffer;
-   I->second[i]->GetCLink(this,buffer);
-   for(size_t k=0;k<buffer.size();k++)
-   {
-	UCLink &indexes=buffer[k];
-	if(I->first == indexes.OutputName)
-	{
-	 int c_index(-1);
-	 I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
-	}
-   }
-  }
-
-
-}
-     */
 /* *************************************************************************** */
 // --------------------------
 // Конструкторы и деструкторы
