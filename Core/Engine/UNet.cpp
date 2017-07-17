@@ -130,6 +130,12 @@ int UIPropertyInputBase::GetNumConnections(void) const
  return int(ItemsList.size());
 }
 
+/// Возвращает указатели на свойства-источники данных
+const std::list<UEPtr<UIPropertyOutput> > UIPropertyInputBase::GetConnectedProperties(void) const
+{
+ return ConnectedProperties;
+}
+
 /// Возвращает true если вход имеет подключение
 bool UIPropertyInputBase::IsConnected(void) const
 {
@@ -241,22 +247,21 @@ bool UIPropertyInputBase::Disconnect(const NameT &item_property_name, int c_inde
 
 /// Разрывает связь с индексом c_index, или все связи если c_index == -1
 /// Если c_index имеет не корректное значение, то не делает ничего
-void UIPropertyInputBase::Disconnect(int c_index)
+bool UIPropertyInputBase::Disconnect(int c_index)
 {
  if(c_index<0)
  {
-  DisconnectAll();
-  return;
+  return DisconnectAll();
  }
 
  if(c_index>=int(ItemsList.size()))
-  return;
+  return false;
 
 // ItemsList[c_index].Item->Disconnect(this); // TODO: Включить
 }
 
 /// Разрывает все связи со свойством
-void UIPropertyInputBase::DisconnectAll(void)
+bool UIPropertyInputBase::DisconnectAll(void)
 {
  std::vector<UCItem>::iterator I=ItemsList.begin();
  for(;I != ItemsList.end();++I)
@@ -310,6 +315,7 @@ bool UIPropertyInputBase::IsConnectedTo(const UEPtr<UNet> &item, const NameT &it
 }
 
 /// Подключает выход
+/*
 bool UIPropertyInputBase::Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item)
 {
  UIPropertyOutput* i_item_property=item->FindOutputProperty(output_name);
@@ -326,7 +332,7 @@ bool UIPropertyInputBase::Connect(UNet* item, const std::string &output_name, in
   GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Checking fail"));
   return false;
  } */
-
+		 /*
  if(IsConnected())
  {
   if(!(GetInputType() & ipRange))
@@ -440,12 +446,13 @@ bool UIPropertyInputBase::Connect(UNet* item, const std::string &output_name, in
  c_index=int(ConnectedItemList[connector_property_name].size())-1;
 
  return AConnectToItem(na, item_property_name, connector_property_name, c_index, forced_connect_same_item);
- */
+ */ /*
 }
 
 // Разрывает все связи с элементом сети 'na'
-void UIPropertyInputBase::Disconnect(UEPtr<UNet> na)
+bool UIPropertyInputBase::Disconnect(UEPtr<UNet> na)
 {
+ bool res(true);
  std::vector<UCItem>::iterator I=ItemsList.begin();
  for(;I != ItemsList.end();++I)
  {
@@ -453,12 +460,12 @@ void UIPropertyInputBase::Disconnect(UEPtr<UNet> na)
   while(i<int(ItemsList.size()))
   {
    if(ItemsList[i].Item == na)
-	Disconnect(ItemsList[i].Name,i);
+	res&=Disconnect(ItemsList[i].Name,i);
    else
 	++i;
   }
  }
-
+ return res;
 /*
 ВАРИАНТ 2
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
@@ -470,14 +477,15 @@ void UIPropertyInputBase::Disconnect(UEPtr<UNet> na)
    if(I->second[i].Item == na)
 	DisconnectFromIndex(I->first, I->second[i].Name,i);
    else
-    ++i;
+	++i;
   }
  }        */
-}
+/*}
 
 /// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
-void UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_name)
+bool UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_name)
 {
+ bool res(true);
  std::vector<UCItem>::iterator I=ItemsList.begin();
  for(;I != ItemsList.end();++I)
  {
@@ -485,11 +493,12 @@ void UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_
   while(i<int(ItemsList.size()))
   {
    if(ItemsList[i].Item == na && ItemsList[i].Name == item_property_name)
-	Disconnect(ItemsList[i].Name,i); // TODO индекс не определен
+	res&=Disconnect(ItemsList[i].Name,i); // TODO индекс не определен
    else
-    ++i;
+	++i;
   }
  }
+ return res;
 /*
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
  for(;I != ConnectedItemList.end();++I)
@@ -500,18 +509,18 @@ void UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_
    if(I->second[i].Item == na && I->second[i].Name == item_property_name)
 	DisconnectFromIndex(I->first,I->second[i].Name,i); // TODO индекс не определен
    else
-    ++i;
+	++i;
   }
  }  */
-}
+/*}
 
 /// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
-void UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index)
+bool UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index)
 {
  if(c_index<0 || c_index>= int(ItemsList.size()))
-  return;
+  return false;
 
- Disconnect(ItemsList[c_index].Name,c_index); // TODO индекс не определен
+ return Disconnect(ItemsList[c_index].Name,c_index); // TODO индекс не определен
 
 /*
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
@@ -521,7 +530,7 @@ void UIPropertyInputBase::Disconnect(UEPtr<UNet> na, const NameT &item_property_
 
  DisconnectFromIndex(connector_property_name,I->second[connected_c_index].Name,connected_c_index); // TODO индекс не определен
  */
-}
+/*} */
 /* *************************************************************************** */
 //class UIPropertyOutputBase: public UIPropertyIO
 /// Конструкторы и деструкторы
@@ -547,6 +556,12 @@ UNet* UIPropertyOutputBase::GetConnector(int index)
  return Connectors[index];
 }
 
+/// Возвращает указатели на свойства-приемники данных
+const std::list<UEPtr<UIPropertyInput> > UIPropertyOutputBase::GetConnectedProperties(void) const
+{
+ return ConnectedProperties;
+}
+
 // Возвращает имя подключенного входа компонента-приемника
 std::string UIPropertyOutputBase::GetConnectorInputName(int index) const
 {
@@ -560,7 +575,7 @@ bool UIPropertyOutputBase::Disconnect(const UId &id)
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-void UIPropertyOutputBase::DisconnectAll(void)
+bool UIPropertyOutputBase::DisconnectAll(void)
 {
  /*
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
@@ -576,10 +591,32 @@ void UIPropertyOutputBase::DisconnectAll(void)
  }   */
 }
 
+/// Возвращает true если выход подключен к выбранному входу
+bool UIPropertyOutputBase::IsConnectedTo(UIPropertyInput *input_property)
+{
+ std::list<UEPtr<UIPropertyInput> >::iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),input_property);
+ if(I == ConnectedProperties.end())
+  return false;
+
+ return true;
+}
+
+/// Возвращает true если выход подключен к одному из входов выбранного компонента
+bool UIPropertyOutputBase::IsConnectedTo(UNet *component)
+{
+ std::list<UEPtr<UIPropertyInput> >::iterator I=ConnectedProperties.begin();
+ for(;I != ConnectedProperties.end();I++)
+  if((*I)->GetOwner() == component)
+   return true;
+
+ return false;
+}
+
 // Устанавливает связь с коннектором 'c'
+/*
 bool UIPropertyOutputBase::Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
-/*
+
  std::vector<PUAConnector> &vec=RelatedConnectors[item_property_name];
  for(size_t i=0;i<vec.size();i++)
   if(vec[i] == c)
@@ -587,15 +624,15 @@ bool UIPropertyOutputBase::Connect(UEPtr<UNet> c, const NameT &connector_propert
 
  vec.push_back(c);
  return true;
-  */
+
 
  return false;
-}
+}   */
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
-void UIPropertyOutputBase::Disconnect(UEPtr<UNet> c)
+/*bool UIPropertyOutputBase::Disconnect(UEPtr<UNet> c)
 {
-/*
+
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
 
  for(;I!= RelatedConnectors.end();++I)
@@ -609,13 +646,14 @@ void UIPropertyOutputBase::Disconnect(UEPtr<UNet> c)
 	++i;
   }
  }
- */
-}
 
+}
+ */
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-void UIPropertyOutputBase::Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index)
-{
 /*
+bool UIPropertyOutputBase::Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index)
+{
+
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.find(item_property_name);
 
  if(I == RelatedConnectors.end())
@@ -637,14 +675,15 @@ void UIPropertyOutputBase::Disconnect(UEPtr<UNet> c, const NameT &connector_prop
   }
   else
    ++i;
- } */
-}
+ }
+}    */
 							 /*
 // Возвращает  коннектор из списка подключений.
 UEPtr<UConnector> UIPropertyOutputBase::GetAConnectorByIndex(int c_index) const
 {
 }
-                               */
+							   */
+							   /*
 // Проверяет, существует ли связь с заданным коннектором
 bool UIPropertyOutputBase::CheckLink(const UEPtr<UNet> &connector, int c_index) const
 {
@@ -658,12 +697,12 @@ bool UIPropertyOutputBase::CheckLink(const UEPtr<UNet> &connector, const NameT &
 	 return false;
 
 }
-
+                                 */    /*
 // Переустанавливает все связи этого выхода со всеми connectors
 void UIPropertyOutputBase::BuildLinks(void)
 {
 
-/*
+
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
 
  for(;I!= RelatedConnectors.end();++I)
@@ -683,10 +722,10 @@ void UIPropertyOutputBase::BuildLinks(void)
 	}
    }
   }
- */
+
 
 }
-
+     */
 /* *************************************************************************** */
 // --------------------------
 // Конструкторы и деструкторы
@@ -808,13 +847,13 @@ bool UNet::CreateLink(const ULink &link, bool forced_connect_same_item)
 bool UNet::CreateLink(const ULinkSide &item, const ULinkSide &connector, bool forced_connect_same_item)
 {
  UEPtr<UNet> pitem;
- if(!CheckLongId(item.ComponentName))
+ if(item.ComponentName.empty())
   pitem=this;
  else
   pitem=GetComponentL<UNet>(item.ComponentName,true);
 
  UEPtr<UNet> pconnector=0;
- if(!CheckLongId(connector.ComponentName))
+ if(connector.ComponentName.empty())
   pconnector=this;
  else
   pconnector=GetComponentL<UNet>(connector.ComponentName,true);
@@ -836,8 +875,8 @@ bool UNet::CreateLink(const ULinkSide &item, const ULinkSide &connector, bool fo
   return false;
  }
 
- UIPropertyInputBase *input_property=pconnector->FindInputProperty(connector.PropertyName);
- UIPropertyOutputBase *output_property=pconnector->FindOutputProperty(item.PropertyName);
+ UIPropertyInput *input_property=pconnector->FindInputProperty(connector.PropertyName);
+ UIPropertyOutput *output_property=pitem->FindOutputProperty(item.PropertyName);
 
  if(!output_property)
  {
@@ -899,32 +938,32 @@ bool UNet::BreakLink(const ULink &link)
 // и коннектором 'connectorid'
 bool UNet::BreakLink(const ULinkSide &item, const ULinkSide &connector)
 {
- UEPtr<UItem> pitem=0;
- if(!CheckLongId(item.Id))
+ UEPtr<UNet> pitem=0;
+ if(item.ComponentName.empty())
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
+  pitem=GetComponentL<UNet>(item.ComponentName,true);
 
- UEPtr<UConnector> pconnector=0;
- if(!CheckLongId(connector.Id))
+ UEPtr<UNet> pconnector=0;
+ if(connector.ComponentName.empty())
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
+  pconnector=GetComponentL<UNet>(connector.ComponentName,true);
 
  if(!pitem)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.PropertyName);
   return false;
  }
 
  if(!pconnector)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.PropertyName);
   return false;
  }
 
- UIPropertyInputBase *input_property=pconnector->FindInputProperty(connector.PropertyName);
- UIPropertyOutputBase *output_property=pconnector->FindOutputProperty(item.PropertyName);
+ UIPropertyInput *input_property=pconnector->FindInputProperty(connector.PropertyName);
+ UIPropertyOutput *output_property=pitem->FindOutputProperty(item.PropertyName);
 
  if(!output_property)
  {
@@ -956,27 +995,27 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 // и коннектором 'connectorid'
 bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 {
- UEPtr<UItem> pitem=0;
- if(!CheckLongId(item.Id))
+ UEPtr<UNet> pitem=0;
+ if(itemname.empty())
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
+  pitem=GetComponentL<UNet>(itemname,true);
 
- UEPtr<UConnector> pconnector=0;
- if(!CheckLongId(connector.Id))
+ UEPtr<UNet> pconnector=0;
+ if(connectorname.empty())
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
+  pconnector=GetComponentL<UNet>(connectorname,true);
 
  if(!pitem)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+itemname);
   return false;
  }
 
  if(!pconnector)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
   return false;
  }
 
@@ -989,7 +1028,7 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  {
   for(size_t j=0;j<input_properties.size();j++)
   {
-   res&=output_properties[i]->BreakLink(input_properties[j]);
+   res&=output_properties[i]->Disconnect(input_properties[j]);
   }
  }
 
@@ -999,30 +1038,34 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 
 
 // Разрывает все связи между выходом элемента сети и любыми коннекторами
-bool UNet::BreakOutputLinks(const NameT &itemname)
+bool UNet::BreakOutputLinks(void)
 {
- UEPtr<UNet> pitem=0;
- if(!itemname.empty())
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
-
- if(!pitem)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
-  return false;
- }
-
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- pitem->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ FindPropertiesByType<UIPropertyOutput>(output_properties);
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
   res&=output_properties[i]->DisconnectAll();
  }
 
-
  return res;
+}
+
+bool UNet::BreakOutputLinks(const NameT &itemname)
+{
+ UEPtr<UNet> pitem=0;
+ if(!itemname.empty())
+  pitem=this;
+ else
+  pitem=dynamic_pointer_cast<UNet>(GetComponentL(itemname,true));
+
+ if(!pitem)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+itemname);
+  return false;
+ }
+
+ return BreakOutputLinks();
 }
 
 bool UNet::BreakOutputLinks(const NameT &itemname, const NameT &item_property_name)
@@ -1039,7 +1082,7 @@ bool UNet::BreakOutputLinks(const NameT &itemname, const NameT &item_property_na
   return false;
  }
 
- UIPropertyOutputBase *output_property=pconnector->FindOutputProperty(item_property_name);
+ UIPropertyOutput *output_property=pitem->FindOutputProperty(item_property_name);
 
  if(!output_property)
  {
@@ -1053,13 +1096,26 @@ bool UNet::BreakOutputLinks(const NameT &itemname, const NameT &item_property_na
  return output_property->DisconnectAll();
 }
 
-void UNet::BreakInputLinks(const NameT &connectorname, const NameT &connector_property_name, int connector_c_index)
+bool UNet::BreakInputLinks(void)
+{
+ std::vector<UEPtr<UIPropertyInput> > input_properties;
+ FindPropertiesByType<UIPropertyInput>(input_properties);
+ bool res(true);
+ for(size_t i=0;i<input_properties.size();i++)
+ {
+  res&=input_properties[i]->DisconnectAll();
+ }
+
+ return res;
+}
+
+bool UNet::BreakInputLinks(const NameT &connectorname, const NameT &connector_property_name, int connector_c_index)
 {
  UEPtr<UNet> pconnector=0;
  if(!connectorname.empty())
   pconnector=this;
  else
-  pconnector=GetComponentL<UNet>(connectorname,true));
+  pconnector=GetComponentL<UNet>(connectorname,true);
 
  if(!pconnector)
  {
@@ -1067,7 +1123,7 @@ void UNet::BreakInputLinks(const NameT &connectorname, const NameT &connector_pr
   return false;
  }
 
- UIPropertyInputBase *input_property=pconnector->FindInputProperty(connector_property_name);
+ UIPropertyInput *input_property=pconnector->FindInputProperty(connector_property_name);
 
  if(!input_property)
  {
@@ -1084,17 +1140,45 @@ void UNet::BreakInputLinks(const NameT &connectorname, const NameT &connector_pr
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-/*void UNet::BreakLinks(UEPtr<UContainer> brklevel)
+bool UNet::BreakLinks(UEPtr<UContainer> brklevel)
 {
+ bool res(true);
  for(int i=0;i<NumComponents;i++)
   {
-   if(dynamic_pointer_cast<UItem>(PComponents[i]))
-	static_pointer_cast<UItem>(PComponents[i])->DisconnectBy(brklevel);
-   else
-   if(dynamic_pointer_cast<UNet>(PComponents[i]))
-	static_pointer_cast<UNet>(PComponents[i])->BreakLinks(brklevel);
+   res&=GetComponentByIndex<UNet>(i)->DisconnectBy(brklevel);
   }
-} */
+ return res;
+}
+
+// Разрывает все связи объекта
+// исключая его внутренние связи и обратные связи
+// brklevel - объект, относительно которого связи считаются внутренними
+bool UNet::DisconnectBy(UEPtr<UContainer> brklevel)
+{
+ Build();
+
+ std::vector<UEPtr<UIPropertyOutput> > buffer;
+ FindPropertiesByType<UIPropertyOutput>(buffer);
+ for(size_t j=0;j<buffer.size();j++)
+ {
+  size_t i=0;
+  std::list<UEPtr<UIPropertyInput> >::const_iterator I=buffer[j]->GetConnectedProperties().begin(),J;
+
+  while(I != buffer[j]->GetConnectedProperties().end())
+  {
+   UEPtr<UIPropertyInput> input=*I;
+   if(!input->GetOwner()->CheckOwner(brklevel))
+   {
+	J=++I;
+	buffer[j]->Disconnect(input);
+	I=J;
+   }
+   else
+	++I;
+  }
+ }
+
+}
 
 // Разрывает заданные связи сети
 bool UNet::BreakLinks(const ULinksList &linkslist)
@@ -1114,112 +1198,353 @@ void UNet::BreakLinks(void)
   if(dynamic_pointer_cast<UNet>(PComponents[i]))
    static_pointer_cast<UNet>(PComponents[i])->BreakLinks();
 
- DisconnectAllInputs();
- DisconnectAllOutputs();
+ BreakOutputLinks();
+ BreakInputLinks();
 }
-
- /*
-// Разрывает все связи со входом
-template<typename T>
-bool UNet::BreakLink(const ULinkSideT<T> &id)
-{
- UEPtr<UContainer> pointer=GetComponentL(id.Id,true);
-
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(pointer);
- if(connector)
-  {
-   connector->DisconnectAllItems();
-   return true;
-  }
-
- return false;
-}
-   */
-   /*
-   bool UNet::BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
-{
- return BreakLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
-}    */
-
-
-// Разрывает связь между выходом элемента сети, 'itemid'
-// и коннектором 'connectorid'
-/*bool UNet::BreakLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index)
-{
- return BreakLink(ULinkSide(itemname,item_index),ULinkSide(connectorname,connector_index));
-} */
-
-
-
- /*
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
-void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
-{
- UEPtr<UADItem> connector;
- if(connectorname.size() == 0)
-  connector=this;
- else
-  connector=dynamic_pointer_cast<UADItem>(GetComponentL(connectorname,true));
-
- if(!connector)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
-  return;
- }
-
- if(connector->GetNumInputs() <= connector_index)
-  return;
-
- const UCItem &item = connector->GetCItem(connector_index);
-
-  if(!item.Item)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
-   return;
-  }
-
-  UEPtr<UADItem> ad_item=dynamic_cast<UADItem*>(item.Item);
-
-  if(!ad_item)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Dynamic cast failed"));
-   return;
-  }
-
-  ad_item->Disconnect(connector,item.Index, connector_index);
-}     */
 
 // Проверяет, существует ли заданная связь
+bool UNet::IsLinkExists(const ULinkSide &item, const ULinkSide &connector)
+{
+ UEPtr<UNet> pitem=GetComponentL<UNet>(item.ComponentName,true);
+ UEPtr<UNet> pconnector=GetComponentL<UNet>(connector.ComponentName,true);
+ if(!pitem)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.ComponentName);
+  return false;
+ }
+
+ if(!pconnector)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.ComponentName);
+  return false;
+ }
+
+
+ UIPropertyInput *input_property=pconnector->FindInputProperty(connector.PropertyName);
+ UIPropertyOutput *output_property=pitem->FindOutputProperty(item.PropertyName);
+
+ if(!output_property)
+ {
+  std::ostringstream stream;
+  stream<<"Item`s output property not found when link check "<<item.ComponentName<<":"<<item.PropertyName<<" from "<<connector.ComponentName<<":"<<connector.PropertyName;
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, stream.str());
+  return false;
+ }
+
+ if(!input_property)
+ {
+  std::ostringstream stream;
+  stream<<"Connector`s input property not found when link check "<<item.ComponentName<<":"<<item.PropertyName<<" from "<<connector.ComponentName<<":"<<connector.PropertyName;
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, stream.str());
+
+  return false;
+ }
+
+ return output_property->IsConnectedTo(input_property);
+}
+
 bool UNet::IsLinkExists(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index)
 {
  return IsLinkExists(ULinkSide(itemname,item_property_name),ULinkSide(connectorname,connector_property_name, connector_c_index));
 }
-/*
+
 bool UNet::IsLinkExists(const NameT &itemname,const NameT &connectorname)
 {
- UEPtr<UNet> item=GetComponentL<UNet>(itemname,true);
- UEPtr<UNet> connector=GetComponentL<UNet>(connectorname,true);
- if(!item)
+ UEPtr<UNet> pitem=GetComponentL<UNet>(itemname,true);
+ UEPtr<UNet> pconnector=GetComponentL<UNet>(connectorname,true);
+ if(!pitem)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+itemname);
   return false;
  }
 
- if(!connector)
+ if(!pconnector)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
   return false;
  }
 
-
- if(item->CheckLink(connector))
-  return true;
-
+ std::vector<UEPtr<UIPropertyOutput> > output_properties;
+ pitem->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ bool res(true);
+ for(size_t i=0;i<output_properties.size();i++)
+ {
+  if(output_properties[i]->IsConnectedTo(pconnector))
+	return true;
+ }
  return false;
-} */
+}
+// --------------------------
+
+// --------------------------
+// Скрытые методы доступа к свойствам
+// --------------------------
+// Возращает все связи компонента в виде xml в буфер buffer
+ULinksList& UNet::GetLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals, UEPtr<UNet> internal_level) const
+{
+ return GetLinks(const_cast<UNet*>(this), linkslist, netlevel, exclude_internals, internal_level);
+}
+
+// Возращает все связи компонента в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+ULinksList& UNet::GetPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel)
+{
+ return GetPersonalLinks(const_cast<UNet*>(this), cont, linkslist, netlevel);
+}
+
+ULinksList& UNet::GetLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals, UEPtr<UNet> internal_level) const
+{
+ cont->GetOutputLinks(linkslist,netlevel, exclude_internals,internal_level);
+ cont->GetInputLinks(linkslist,netlevel, exclude_internals,internal_level);
+
+ for(int i=0;i<cont->GetNumComponents();i++)
+  GetLinks(cont->GetComponentByIndex<UNet>(i), linkslist, netlevel, exclude_internals,internal_level);
+
+ return linkslist;
+}
+
+ULinksList& UNet::GetPersonalLinks(UEPtr<UNet> cont, UEPtr<UNet> cont2, ULinksList &linkslist, UEPtr<UNet> netlevel) const
+{
+ cont->GetOutputPersonalLinks(cont2,linkslist,netlevel);
+ cont->GetInputPersonalLinks(cont2,linkslist,netlevel);
+
+ for(int i=0;i<cont->GetNumComponents();i++)
+  GetPersonalLinks(cont->GetComponentByIndex<UNet>(i), cont2, linkslist, netlevel);
+
+ return linkslist;
+}
+
+// Возращает все связи компонента в виде xml в буфер buffer
+ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals, UEPtr<UNet> internal_level) const
+{
+ ULink link;
+ ULinkSide item;
+ ULinkSide connector;
+
+ GetLongName(netlevel,item.ComponentName);
+ if(item.ComponentName.empty())
+  return linkslist;
+ link.Item=item;
+
+ std::vector<UEPtr<UIPropertyOutput> > output_properties;
+ this->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ for(size_t i=0;i<output_properties.size();i++)
+ {
+  link.Connector.clear();
+  const std::list<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
+  std::list<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
+  for(;I != connected_properties.end();I++)
+  {
+   const UEPtr<UIPropertyInput> input_property=*I;
+   UNet* curr_conn(input_property->GetOwner());
+   if(exclude_internals)
+   {
+	if(curr_conn->CheckOwner(internal_level))
+	 continue;
+   }
+   curr_conn->GetLongName(netlevel,connector.ComponentName);
+   if(!connector.ComponentName.empty())
+   {
+	  link.Item.Index=-1;
+	  link.Item.PropertyName=output_properties[i]->GetName();
+	  connector.Index=-1;
+	  connector.PropertyName=input_property->GetName();
+
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+   }
+  }
+
+ }
+ return linkslist;
+}
+
+ULinksList& UNet::GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals, UEPtr<UNet> internal_level) const
+{
+ ULink link;
+ ULinkSide connector;
+ ULinkSide item;
+ GetLongName(netlevel,connector.ComponentName);
+ if(connector.ComponentName.empty())
+  return linkslist;
+
+ std::vector<UEPtr<UIPropertyInput> > input_properties;
+ FindPropertiesByType<UIPropertyInput>(input_properties);
+
+ for(size_t j=0;j<input_properties.size();j++)
+ {
+  const std::list<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
+  std::list<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
+  for(;I != connected_properties.end();I++)
+  {
+   const UIPropertyOutput* output_property=*I;
+	if(exclude_internals)
+	{
+	 if(output_property->GetOwner()->CheckOwner(internal_level))
+	  continue;
+	}
+	output_property->GetOwner()->GetLongName(netlevel,item.ComponentName);
+    connector.Index=-1;
+	connector.PropertyName=input_properties[j]->GetName();
+
+	item.Index=-1;
+	item.PropertyName=output_property->GetName();
+	if(!connector.ComponentName.empty())
+	{
+	 int item_id=linkslist.FindItem(item);
+	 if(item_id >= 0)
+	 {
+	  if(linkslist[item_id].FindConnector(connector) >= 0)
+	   continue;
+	  linkslist[item_id].Connector.push_back(connector);
+	 }
+	 else
+	 {
+	  link.Item=item;
+	  link.Connector.clear();
+	  link.Connector.push_back(connector);
+	  linkslist.Add(link);
+	 }
+	}
+  }
+ }
+
+ return linkslist;
+}
+
+// Возращает все связи компонента в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel)
+{
+ ULink link;
+ ULinkSide item;
+ ULinkSide connector;
+
+ GetLongName(netlevel,item.ComponentName);
+ if(item.ComponentName.empty())
+  return linkslist;
+ link.Item=item;
+
+ std::vector<UEPtr<UIPropertyOutput> > output_properties;
+ this->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ bool res(true);
+ for(size_t i=0;i<output_properties.size();i++)
+ {
+  link.Connector.clear();
+  const std::list<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
+  std::list<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
+  for(;I != connected_properties.end();I++)
+  {
+   const UEPtr<UIPropertyInput> input_property=*I;
+   UNet* curr_conn(input_property->GetOwner());
+   if(curr_conn != cont)
+	continue;
+   curr_conn->GetLongName(netlevel,connector.ComponentName);
+   if(!connector.ComponentName.empty())
+   {
+	  link.Item.Index=-1;
+	  link.Item.PropertyName=output_properties[i]->GetName();
+	  connector.Index=-1;
+	  connector.PropertyName=input_property->GetName();
+
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+   }
+  }
+
+ }
+ return linkslist;
+}
+
+ULinksList& UNet::GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel)
+{
+ ULink link;
+ ULinkSide connector;
+ ULinkSide item;
+ GetLongName(netlevel,connector.ComponentName);
+ if(connector.ComponentName.empty())
+  return linkslist;
+
+ std::vector<UEPtr<UIPropertyInput> > input_properties;
+ FindPropertiesByType<UIPropertyInput>(input_properties);
+
+ for(size_t j=0;j<input_properties.size();j++)
+ {
+  const std::list<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
+  std::list<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
+  for(;I != connected_properties.end();I++)
+  {
+   const UIPropertyOutput* output_property=*I;
+   if(output_property->GetOwner() != cont)
+    continue;
+
+	output_property->GetOwner()->GetLongName(netlevel,item.ComponentName);
+    connector.Index=-1;
+	connector.PropertyName=input_properties[j]->GetName();
+
+	item.Index=-1;
+	item.PropertyName=output_property->GetName();
+	if(!connector.ComponentName.empty())
+	{
+	 int item_id=linkslist.FindItem(item);
+	 if(item_id >= 0)
+	 {
+	  if(linkslist[item_id].FindConnector(connector) >= 0)
+	   continue;
+	  linkslist[item_id].Connector.push_back(connector);
+	 }
+	 else
+	 {
+	  link.Item=item;
+	  link.Connector.clear();
+	  link.Connector.push_back(connector);
+	  linkslist.Add(link);
+	 }
+	}
+  }
+ }
+
+ return linkslist;
+}
+// --------------------------
+
+
+/// Ищет свойство-выход по заданному индексу
+UIPropertyOutput* UNet::FindOutputProperty(const NameT &property_name)
+{
+ return FindPropertyByType<UIPropertyOutput>(property_name);
+}
+
+/// Ищет свойство-вход по заданному индексу
+UIPropertyInput* UNet::FindInputProperty(const NameT &property_name)
+{
+ return FindPropertyByType<UIPropertyInput>(property_name);
+}
+
+/// Возвращает число входов
+int UNet::GetNumInputs(void)
+{
+ std::vector<UEPtr<UIPropertyInput> > input_properties;
+ FindPropertiesByType<UIPropertyInput>(input_properties);
+ return int(input_properties.size());
+}
+
+/// Возвращает число входов
+int UNet::GetNumOutputs(void)
+{
+ std::vector<UEPtr<UIPropertyOutput> > output_properties;
+ FindPropertiesByType<UIPropertyOutput>(output_properties);
+ return int(output_properties.size());
+}
 // ----------------------
+
 
 
 // --------------------------
@@ -1359,7 +1684,7 @@ int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 	  serstorage->SaveFromNode(value);
 	}
 
-	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: ")+exception.what());
+	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string(" to ")+value+std::string(". Reason: ")+exception.what());
    }
    catch(std::exception &exception)
    {
@@ -1755,7 +2080,7 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   if(owner_level)
    GetLinks(linkslist, owner_level, true, this);
   else
-   GetLinks(linkslist, GetOwner(), true, this);
+   GetLinks(linkslist, dynamic_pointer_cast<UNet>(GetOwner()), true, this);
 
   *serstorage<<linkslist;
  return 0;
@@ -1813,25 +2138,6 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& UNet::GetLinks(ULinksList &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
-{
- GetLinks(const_cast<UNet*>(this), linkslist, netlevel, exclude_internals, internal_level);
-
- return linkslist;
-}
-
-// Возращает все связи между двумя компонентами в виде xml в буфер buffer
-// включая связи этого компонента
-// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
-// второго объекта. Работает симметрично в обе стороны.
-// если 'sublevel' == 0, то возвращает связи только между этими объектами
-ULinksList& UNet::GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksList &linkslist, UEPtr<UContainer> netlevel, int sublevel)
-{
- GetPersonalLinks(const_cast<UNet*>(this), cont, linkslist, netlevel);
-
- return linkslist;
-}
-
 
 			  /*
 bool UNet::IsLinkExists(const ULinkSide &item, const ULinkSide &connector)
@@ -1875,44 +2181,6 @@ bool UNet::IsLinkExists(const ULinkSide &item, const ULinkSide &connector)
 }               */
 // --------------------------
 
-// --------------------------
-// Скрытые методы доступа к свойствам
-// --------------------------
-/*
-ULinksList& UNet::GetLinks(UEPtr<UContainer> cont, ULinksList &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
-{
- if(dynamic_pointer_cast<UItem>(cont))
- {
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-  static_pointer_cast<UItem>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
- }
- else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-
- for(int i=0;i<cont->GetNumComponents();i++)
-  GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel, exclude_internals,internal_level);
-
- return linkslist;
-}
-
-ULinksList& UNet::GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksList &linkslist, UEPtr<UContainer> netlevel) const
-{
- if(dynamic_pointer_cast<UItem>(cont))
- {
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-  static_pointer_cast<UItem>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
- }
- else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-
- for(int i=0;i<cont->GetNumComponents();i++)
-  GetPersonalLinks(cont->GetComponentByIndex(i), cont2, linkslist, netlevel);
-
- return linkslist;
-} */
-// --------------------------
 
 
 }

@@ -29,6 +29,9 @@ protected: // Данные
 /// Данные подключенных ко входу источников
 std::vector<UCItem> ItemsList;
 
+/// указатели на свойства-приемники данных
+std::list<UEPtr<UIPropertyOutput> > ConnectedProperties;
+
 /// Тип входа
 int InputType;
 
@@ -49,6 +52,9 @@ virtual int GetNumConnections(void) const;
 
 // Возвращает указатель на компонент-источник
 UNet* GetItem(int c_index=-1);
+
+/// Возвращает указатели на свойства-источники данных
+virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const;
 
 // Возвращает информацию о данных связей с item или пустой массив
 // если такая связь отсутствует
@@ -73,10 +79,10 @@ virtual bool Disconnect(const NameT &item_property_name, int c_index=-1);
 
 /// Разрывает связь с индексом c_index, или все связи если c_index == -1
 /// Если c_index имеет не корректное значение, то не делает ничего
-virtual void Disconnect(int c_index=-1);
+virtual bool Disconnect(int c_index=-1);
 
 /// Разрывает все связи со свойством
-virtual void DisconnectAll(void);
+virtual bool DisconnectAll(void);
 
 // Проверяет, существует ли связь с заданным коннектором
 bool IsConnectedTo(const UEPtr<UNet> &item) const;
@@ -96,25 +102,28 @@ virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
 /// Подключает выход
-virtual bool Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false);
+//virtual bool Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false);
 
 // Разрывает все связи с элементом сети 'na'
-virtual void Disconnect(UEPtr<UNet> na);
+//virtual bool Disconnect(UEPtr<UNet> na);
 
 /// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
-virtual void Disconnect(UEPtr<UNet> na, const NameT &item_property_name);
+//virtual bool Disconnect(UEPtr<UNet> na, const NameT &item_property_name);
 
 /// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
-virtual void Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
+//virtual bool Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
 };
 
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
 {
 protected: // Данные
-std::vector<PUAConnector> RelatedConnectors;
+std::vector<PUAConnector> RelatedConnectors; // deprecated
 
 /// Указатели на компоненты-приемники данных
-std::vector<UNet*> Connectors;
+std::vector<UNet*> Connectors; // deprecated
+
+/// указатели на свойства-приемники данных
+std::list<UEPtr<UIPropertyInput> > ConnectedProperties;
 
 /// Имя выхода компнента-источника данных
 std::vector<std::string> ConnectorInputNames;
@@ -130,6 +139,9 @@ virtual size_t GetNumConnectors(void) const;
 /// Возвращает указатель на компонент-приемник
 virtual UNet* GetConnector(int index);
 
+/// Возвращает указатели на свойства-приемники данных
+virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const;
+
 /// Возвращает имя подключенного входа компонента-приемника
 virtual std::string GetConnectorInputName(int index) const;
 
@@ -144,7 +156,13 @@ virtual bool Disconnect(UIPropertyInput *input_property);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-virtual void DisconnectAll(void);
+virtual bool DisconnectAll(void);
+
+/// Возвращает true если выход подключен к выбранному входу
+virtual bool IsConnectedTo(UIPropertyInput *input_property);
+
+/// Возвращает true если выход подключен к одному из входов выбранного компонента
+virtual bool IsConnectedTo(UNet *component);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -158,25 +176,25 @@ virtual void const* GetPointer(int index) const=0;
 
 protected:
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+//virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
-virtual void Disconnect(UEPtr<UNet> c);
+//virtual bool Disconnect(UEPtr<UNet> c);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-virtual void Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1);
+//virtual bool Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1);
 
 // Возвращает  коннектор из списка подключений.
 //virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const;
 
 // Проверяет, существует ли связь с заданным коннектором
-bool CheckLink(const UEPtr<UNet> &connector, int c_index) const;
+//bool CheckLink(const UEPtr<UNet> &connector, int c_index) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const;
+//bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const;
 
 // Переустанавливает все связи этого выхода со всеми connectors
-virtual void BuildLinks(void);
+//virtual void BuildLinks(void);
 };
 
 
@@ -277,12 +295,17 @@ virtual bool BreakOutputLinks(const NameT &itemname, const NameT &item_property_
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 virtual bool BreakInputLinks(void);
-virtual void BreakInputLinks(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
+virtual bool BreakInputLinks(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void BreakLinks(UEPtr<UContainer> brklevel);
+virtual bool BreakLinks(UEPtr<UContainer> brklevel);
+
+// Разрывает все связи объекта
+// исключая его внутренние связи и обратные связи
+// brklevel - объект, относительно которого связи считаются внутренними
+virtual bool DisconnectBy(UEPtr<UContainer> brklevel);
 
 // Разрывает заданные связи сети
 virtual bool BreakLinks(const ULinksList &linkslist);
@@ -304,14 +327,17 @@ bool IsLinkExists(const NameT &itemname,
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
+// Возращает все связи компонента в виде xml в буфер buffer
+ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals=false, UEPtr<UNet> internal_level=0) const;
 
-// Возращает все связи между двумя компонентами в виде xml в буфер buffer
+// Возращает все связи компонента в виде xml в буфер buffer
 // включая связи этого компонента
 // если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
 // второго объекта. Работает симметрично в обе стороны.
 // если 'sublevel' == 0, то возвращает связи только между этими объектами
-ULinksList& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksList &linkslist, UEPtr<UContainer> netlevel, int sublevel=-1);
+ULinksList& GetPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel=-1);
+
+
 // --------------------------
 /*
 /// Разрывает все входящие связи к компонненту
@@ -326,16 +352,19 @@ virtual void DisconnectFromOutput(const std::string &property_name);
 /// проверяет наличие связи между выходом этого компонента и входом cont
 bool IsLinkExists(UEPtr<UNet> cont, const NameT &itemname,
 						const NameT &connectorname, int connector_c_index);
-                */
+				*/
+public:
 /// Ищет свойство-выход по заданному индексу
-virtual UIPropertyOutput* FindOutputProperty(const NameT &property_name) const;
-virtual UIPropertyInput* FindInputProperty(const NameT &property_name) const;
+virtual UIPropertyOutput* FindOutputProperty(const NameT &property_name);
+
+/// Ищет свойство-вход по заданному индексу
+virtual UIPropertyInput* FindInputProperty(const NameT &property_name);
 
 /// Возвращает число входов
-virtual int GetNumInputs(void) const;
+virtual int GetNumInputs(void);
 
 /// Возвращает число входов
-virtual int GetNumOutputs(void) const;
+virtual int GetNumOutputs(void);
 
 // --------------------------
 // Методы сериализации компонент
@@ -436,9 +465,21 @@ UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_nam
 // Скрытые методы доступа к свойствам
 // --------------------------
 protected:
-ULinksList& GetLinks(UEPtr<UContainer> cont, ULinksList &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level=0) const;
+ULinksList& GetLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals, UEPtr<UNet> internal_level=0) const;
 
-ULinksList& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksList &linkslist, UEPtr<UContainer> netlevel) const;
+ULinksList& GetPersonalLinks(UEPtr<UNet> cont, UEPtr<UNet> cont2, ULinksList &linkslist, UEPtr<UNet> netlevel) const;
+
+// Возращает все связи компонента в виде xml в буфер buffer
+virtual ULinksList& GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals=false, UEPtr<UNet> internal_level=0) const;
+virtual ULinksList& GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bool exclude_internals=false, UEPtr<UNet> internal_level=0) const;
+
+// Возращает все связи компонента в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+virtual ULinksList& GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel=-1);
+virtual ULinksList& GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist, UEPtr<UNet> netlevel, int sublevel=-1);
 // --------------------------
 };
 

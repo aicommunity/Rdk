@@ -2009,10 +2009,10 @@ int RDK_CALL MModel_SetComponentParameterValue(int channel_index, const char *st
 }
 
 // Связывает выбранные контейнеры друг с другом
-int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
+/*int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, output_number, stringid2, input_number);
-}
+} */
 
 int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
@@ -2038,10 +2038,10 @@ int RDK_CALL Model_ParallelLinking(const char* stringid)
 }
                   */
 // Разрывает выбранную связь
-int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
+/*int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakLink(stringid1, output_number, stringid2, input_number);
-}
+} */
 
 int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {

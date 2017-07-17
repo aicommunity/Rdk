@@ -695,7 +695,7 @@ int Model_SetComponentPropertyData(const char *stringid, const char *property_na
 int Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data);
 
 // Связывает выбранные контейнеры друг с другом
-virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 virtual int Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index=-1);
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
@@ -706,7 +706,7 @@ virtual int Model_CreateLink(const char* stringid1, const char* item_property_na
 //virtual int Model_ParallelLinking(const char* stringid);
 
 // Разрывает выбранную связь
-virtual int Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//virtual int Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 virtual int Model_BreakLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Разрывает все связи

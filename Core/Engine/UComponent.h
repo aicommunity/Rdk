@@ -255,6 +255,13 @@ public:
 const UEPtr<UIProperty> FindProperty(const NameT &name) const;
 UEPtr<UIProperty> FindProperty(const NameT &name);
 
+// Возвращает указатель на данные свойства
+template<typename T>
+const UEPtr<T> FindPropertyByType(const NameT &name) const;
+
+template<typename T>
+UEPtr<T> FindPropertyByType(const NameT &name);
+
 // Возвращает значение параметра по имени 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;
@@ -277,7 +284,7 @@ unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
 UComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
 
 template<typename T>
-void FindPropertiesByType(std::vector<UEPtr<T> > &properties);
+void FindPropertiesByType(std::vector<UEPtr<T> > &properties) const;
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 // копируются только свойства типа type
@@ -402,6 +409,10 @@ class RDK_LIB_TYPE UIProperty
 {
 friend class UComponent;
 public:
+/// Возвращает указатель на владелька свойства
+virtual const UNet* GetOwner(void) const=0;
+virtual UNet* GetOwner(void)=0;
+
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const=0;
 
@@ -602,11 +613,13 @@ UCLink(const UCLink &copy);
 // --------------------------
 };
 
+class UIPropertyOutput;
+
 class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
 {
 public:
 /// Возвращает указатель на владелька свойства
-virtual UNet* GetOwner(void)=0;
+//virtual UNet* GetOwner(void)=0;
 
 /// Возвращает тип свойства входа
 virtual int GetInputType(void) const=0;
@@ -617,6 +630,9 @@ virtual const std::vector<UCItem>& GetItemsList(void) const=0;
 
 /// Возвращает число подключений ко входу
 virtual int GetNumConnections(void) const=0;
+
+/// Возвращает указатели на свойства-приемники данных
+virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const=0;
 
 // Возвращает указатель на компонент-источник
 virtual UNet* GetItem(int c_index=-1)=0;
@@ -644,10 +660,10 @@ virtual bool Disconnect(const NameT &item_property_name, int c_index=-1)=0;
 
 /// Разрывает связь с индексом c_index, или все связи если c_index == -1
 /// Если c_index имеет не корректное значение, то не делает ничего
-virtual void Disconnect(int c_index=-1)=0;
+virtual bool Disconnect(int c_index=-1)=0;
 
 /// Разрывает все связи со свойством
-virtual void DisconnectAll(void)=0;
+virtual bool DisconnectAll(void)=0;
 
 // Проверяет, существует ли связь с заданным коннектором
 virtual bool IsLinkExists(const UEPtr<UNet> &item) const=0;
@@ -667,16 +683,16 @@ virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
 /// Подключает выход
-virtual bool Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false)=0;
+//virtual bool Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false)=0;
 
 // Разрывает все связи с элементом сети 'na'
-virtual void Disconnect(UEPtr<UNet> na)=0;
+//virtual bool Disconnect(UEPtr<UNet> na)=0;
 
 /// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
-virtual void Disconnect(UEPtr<UNet> na, const NameT &item_property_name)=0;
+//virtual bool Disconnect(UEPtr<UNet> na, const NameT &item_property_name)=0;
 
 /// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
-virtual void Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1)=0;
+//virtual bool Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1)=0;
 };
 
 class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
@@ -687,6 +703,9 @@ virtual size_t GetNumConnectors(void) const=0;
 
 /// Возвращает указатель на компонент-приемник
 virtual UNet* GetConnector(int index)=0;
+
+/// Возвращает указатели на свойства-приемники данных
+virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const=0;
 
 /// Возвращает имя подключенного входа компонента-приемника
 virtual std::string GetConnectorInputName(int index) const=0;
@@ -702,7 +721,13 @@ virtual bool Disconnect(UIPropertyInput *input_property)=0;
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-virtual void DisconnectAll(void)=0;
+virtual bool DisconnectAll(void)=0;
+
+/// Возвращает true если выход подключен к выбранному входу
+virtual bool IsConnectedTo(UIPropertyInput *input_property)=0;
+
+/// Возвращает true если выход подключен к одному из входов выбранного компонента
+virtual bool IsConnectedTo(UNet *component)=0;
 
 public: // Методы управления указателем на выходные данные
 /// Возвращает указатель на данные
@@ -716,22 +741,22 @@ virtual void const* GetPointer(int index) const=0;
 
 protected:
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false)=0;
+//virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false)=0;
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
-virtual void Disconnect(UEPtr<UNet> c)=0;
+//virtual bool Disconnect(UEPtr<UNet> c)=0;
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-virtual void Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1)=0;
+//virtual bool Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1)=0;
 
 // Проверяет, существует ли связь с заданным коннектором
-virtual bool CheckLink(const UEPtr<UNet> &connector, int c_index) const=0;
+//virtual bool CheckLink(const UEPtr<UNet> &connector, int c_index) const=0;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-virtual bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const=0;
+//virtual bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const=0;
 
 // Переустанавливает все связи этого выхода со всеми connectors
-virtual void BuildLinks(void)=0;
+//virtual void BuildLinks(void)=0;
 
 };
 
@@ -751,17 +776,40 @@ public:
 
 
 template<typename T>
-void UComponent::FindPropertiesByType(std::vector<UEPtr<T> > &properties)
+void UComponent::FindPropertiesByType(std::vector<UEPtr<T> > &properties) const
 {
  properties.clear();
- VariableMapTIterator I=PropertiesLookupTable.begin();
+ VariableMapCIteratorT I=PropertiesLookupTable.begin();
  for(;I != PropertiesLookupTable.end(); I++)
  {
-  UEPtr<T> property=dynamic_cast<T*>(I->Property);
+  UEPtr<T> property=dynamic_pointer_cast<T>(I->second.Property);
   if(property)
    properties.push_back(property);
  }
 }
+
+// Возвращает указатель на данные свойства
+template<typename T>
+const UEPtr<T> UComponent::FindPropertyByType(const NameT &name) const
+{
+ VariableMapIteratorT I=PropertiesLookupTable.find(name);
+ if(I != PropertiesLookupTable.end())
+  return dynamic_pointer_cast<T>(I->second.Property);
+
+ return 0;
+}
+
+template<typename T>
+UEPtr<T> UComponent::FindPropertyByType(const NameT &name)
+{
+ VariableMapIteratorT I=PropertiesLookupTable.find(name);
+ if(I != PropertiesLookupTable.end())
+  return dynamic_pointer_cast<T>(I->second.Property);
+
+ return 0;
+}
+
+
 
 
 

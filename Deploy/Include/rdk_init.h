@@ -873,7 +873,7 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentState(int channel_index, const char
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
 
 // Связывает выбранные компоненты друг с другом
-RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index);
 
@@ -885,7 +885,7 @@ RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const 
 //RDK_LIB_TYPE int RDK_CALL Model_ParallelLinking(const char* stringid);
 
 // Разрывает выбранную связь
-RDK_LIB_TYPE int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//RDK_LIB_TYPE int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Разрывает все связи

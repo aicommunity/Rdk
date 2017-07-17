@@ -4553,7 +4553,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
  }
  return false;
 }
-           */
+		   */
 bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4561,21 +4561,11 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
  {
   try
   {
-   UEPtr<RDK::UNet> cont1;
-   UEPtr<RDK::UNet> cont2;
-   try
-   {
-	cont1=FindComponent(stringid1);
-	cont2=FindComponent(stringid2);
-   }
-   catch (UException &exception)// Заглушка!! здесь другое исключение
-   {
-	return false;
-   }
-   if(!cont1 || !cont2)
+   UEPtr<UNet> model=FindComponent("");
+   if(!model)
 	return false;
 
-   return cont1->IsLinkExists(cont2,item_property_name,connector_property_name, -1); // TODO: -1 заменить на параметр
+   return model->IsLinkExists(stringid1,item_property_name,stringid2,connector_property_name);
   }
   catch (RDK::UException &exception)
   {

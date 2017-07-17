@@ -345,9 +345,21 @@ virtual std::string GetOwnerClassName(void) const
 };
 
 // Владелец свойства
+/*
 virtual OwnerT* GetOwner(void)
 {
  return Owner;
+}   */
+
+/// Возвращает указатель на владелька свойства
+virtual const UNet* GetOwner(void) const
+{
+ return dynamic_cast<const UNet*>(Owner);
+}
+
+virtual UNet* GetOwner(void)
+{
+ return dynamic_cast<UNet*>(Owner);
 }
 // -----------------------------
 };
