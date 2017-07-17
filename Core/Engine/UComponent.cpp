@@ -645,7 +645,7 @@ const std::string& UComponent::GetPropertyNameByAlias(const std::string &alias) 
  return I->second;
 }
 // --------------------------
-
+/*
 // Описание подключаемого элемента "UConnectedITEM"
 //struct UCItem
 // --------------------------
@@ -682,7 +682,7 @@ bool UCItem::operator != (const UCItem &value) const
 }
 // --------------------------
 
-/* *************************************************************************** */
+
 // Описание входящей связи с заданным item "UConnectedLINK"
 //struct UCLink: public UCItem
 // --------------------------
@@ -702,6 +702,7 @@ UCLink::UCLink(const UCLink &copy)
  OutputName=copy.OutputName;
 }
 // --------------------------
+*/
 /* *************************************************************************** */
 
 

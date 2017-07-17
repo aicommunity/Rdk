@@ -27,7 +27,7 @@ class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
 {
 protected: // Данные
 /// Данные подключенных ко входу источников
-std::vector<UCItem> ItemsList;
+//std::vector<UCItem> ItemsList;
 
 /// указатели на свойства-приемники данных
 std::list<UEPtr<UIPropertyOutput> > ConnectedProperties;
@@ -45,21 +45,22 @@ virtual int GetInputType(void) const;
 
 public: // Методы доступа к источнику данных
 /// Возвращает указатель на компонент-источник
-virtual const std::vector<UCItem>& GetItemsList(void) const;
+//virtual const std::vector<UCItem>& GetItemsList(void) const;
 
 /// Возвращает число подключений ко входу
 virtual int GetNumConnections(void) const;
 
 // Возвращает указатель на компонент-источник
-UNet* GetItem(int c_index=-1);
+const UNet* GetConnectedItem(int c_index=-1) const;
+UNet* GetConnectedItem(int c_index=-1);
 
 /// Возвращает указатели на свойства-источники данных
 virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const;
 
 // Возвращает информацию о данных связей с item или пустой массив
 // если такая связь отсутствует
-virtual void GetCLink(const UEPtr<UNet> &item, std::vector<UCLink> &buffer) const;
-virtual void GetCLink(const UNet* const item, std::vector<UCLink> &buffer) const;
+//virtual void GetCLink(const UEPtr<UNet> &item, std::vector<UCLink> &buffer) const;
+//virtual void GetCLink(const UNet* const item, std::vector<UCLink> &buffer) const;
 
 /// Возвращает имя подключенного компонента
 virtual std::string GetItemName(int c_index=-1) const;
@@ -73,22 +74,28 @@ virtual std::string GetItemOutputName(int c_index=-1) const;
 /// Возвращает true если вход имеет подключение
 virtual bool IsConnected(void) const;
 
-/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
-/// Возвращает true, если действия по удалению выполнялись
-virtual bool Disconnect(const NameT &item_property_name, int c_index=-1);
-
-/// Разрывает связь с индексом c_index, или все связи если c_index == -1
-/// Если c_index имеет не корректное значение, то не делает ничего
-virtual bool Disconnect(int c_index=-1);
-
-/// Разрывает все связи со свойством
-virtual bool DisconnectAll(void);
+// Проверяет, существует ли связь с заданным коннектором
+virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const;
 
 // Проверяет, существует ли связь с заданным коннектором
 bool IsConnectedTo(const UEPtr<UNet> &item) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool IsConnectedTo(const UEPtr<UNet> &item, const NameT &item_property_name, int c_index=-1) const;
+
+/// Разрывает связь с элементом сети подключенным ко входу 'item_property_name'
+/// Возвращает true, если действия по удалению выполнялись
+//virtual bool Disconnect(const NameT &item_property_name, int c_index=-1);
+
+/// Разрывает связь со свойством output_property
+virtual bool Disconnect(UIPropertyOutput *output_property);
+
+/// Разрывает связь с индексом c_index, или все связи если c_index == -1
+/// Если c_index имеет не корректное значение, то не делает ничего
+//virtual bool Disconnect(int c_index=-1);
+
+/// Разрывает все связи со свойством
+virtual bool DisconnectAll(void);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -101,32 +108,26 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 virtual bool ResetPointer(int index, void* value)=0;
 
 protected:
-/// Подключает выход
-//virtual bool Connect(UNet* item, const std::string &output_name, int &c_index, bool forced_connect_same_item=false);
+/// Завершающие действия по отключению
+virtual bool DisconnectFinalAction(std::list<UEPtr<UIPropertyOutput> >::iterator &it);
 
-// Разрывает все связи с элементом сети 'na'
-//virtual bool Disconnect(UEPtr<UNet> na);
+/// Завершающие действия по подключению
 
-/// Разрывает связь с элементом сети 'na' и выходом 'item_property_name'
-//virtual bool Disconnect(UEPtr<UNet> na, const NameT &item_property_name);
-
-/// Разрывает связь с элементом сети 'na', выходом 'item_property_name' и входом 'connector_property_name'
-//virtual bool Disconnect(UEPtr<UNet> na, const NameT &item_property_name, const NameT &connector_property_name, int c_index=-1);
 };
 
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
 {
 protected: // Данные
-std::vector<PUAConnector> RelatedConnectors; // deprecated
+//std::vector<PUAConnector> RelatedConnectors; // deprecated
 
 /// Указатели на компоненты-приемники данных
-std::vector<UNet*> Connectors; // deprecated
+//std::vector<UNet*> Connectors; // deprecated
 
 /// указатели на свойства-приемники данных
 std::list<UEPtr<UIPropertyInput> > ConnectedProperties;
 
 /// Имя выхода компнента-источника данных
-std::vector<std::string> ConnectorInputNames;
+//std::vector<std::string> ConnectorInputNames;
 
 public: // Конструкторы и деструкторы
 UIPropertyOutputBase(void);
@@ -137,13 +138,14 @@ public: // Методы доступа к подключенным входам
 virtual size_t GetNumConnectors(void) const;
 
 /// Возвращает указатель на компонент-приемник
-virtual UNet* GetConnector(int index);
+//virtual const UNet* GetConnector(int index) const;
+//virtual UNet* GetConnector(int index);
 
 /// Возвращает указатели на свойства-приемники данных
 virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const;
 
 /// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const;
+//virtual std::string GetConnectorInputName(int index) const;
 
 /// Устанавливает связь этого выхода со входом input_property
 virtual bool Connect(UIPropertyInput *input_property);
@@ -173,28 +175,6 @@ virtual void const* GetPointer(int index) const=0;
 
 /// Сбрасывает указатель на данные
 //virtual bool ResetPointer(int index, void* value)=0;
-
-protected:
-// Устанавливает связь с коннектором 'c'
-//virtual bool Connect(UEPtr<UNet> c, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
-
-/// Разрывает все связи выхода этого объекта с коннектором 'c'.
-//virtual bool Disconnect(UEPtr<UNet> c);
-
-// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-//virtual bool Disconnect(UEPtr<UNet> c, const NameT &connector_property_name, int c_index=-1);
-
-// Возвращает  коннектор из списка подключений.
-//virtual UEPtr<UConnector> GetAConnectorByIndex(int c_index=-1) const;
-
-// Проверяет, существует ли связь с заданным коннектором
-//bool CheckLink(const UEPtr<UNet> &connector, int c_index) const;
-
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-//bool CheckLink(const UEPtr<UNet> &connector, const NameT &connector_property_name, int c_index=-1) const;
-
-// Переустанавливает все связи этого выхода со всеми connectors
-//virtual void BuildLinks(void);
 };
 
 
