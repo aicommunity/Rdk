@@ -77,13 +77,13 @@ virtual bool DisconnectFromOutput(UIPropertyOutput *output_property);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
+//virtual void const* GetPointer(int index) const=0;
 
 /// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)=0;
+//virtual bool ResetPointer(int index, void* value)=0;
 };
 
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
@@ -121,7 +121,7 @@ virtual bool IsConnectedTo(UNet *component);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
+//virtual void const* GetPointer(int index) const=0;
 };
 
 

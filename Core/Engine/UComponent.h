@@ -443,6 +443,7 @@ virtual const void* GetMemoryArea(void)=0;
 // Метод копирует значение данных свойства из области памяти
 // штатными средствами копирования реального типа данных
 // входной указатель приводится к указателю на необходимый тип данных
+// TODO: possible unsafe???
 virtual bool ReadFromMemory(const void *buffer)=0;
 
 public: // Методы управления временем обновления данных свойства
@@ -465,44 +466,6 @@ virtual void RenewUpdateTime(void)=0;
 //virtual int GetMinRange(void)=0;
 
 //virtual int GetMaxRange(void)=0;
-
-
-// --------------------------
-// Методы управления входами
-// --------------------------
-/*
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const=0;
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const=0;
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const=0;
-
-/// Возвращает true, если на подключенном выходе новые данные
-virtual bool IsNewData(void) const=0;
-
-/// Возвращает true если вход имеет подключение
-virtual bool IsConnected(void) const=0;
-
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name)=0;
-
-/// Деинициализирует данные
-virtual void UnInit(void)=0;
-*/
-// --------------------------
-
-//public: // Методы управления выходами
-///// Возвращает число подключенных входов
-//virtual size_t GetNumConnectors(void) const=0;
-//
-///// Возвращает указатель на компонент-приемник
-//virtual UComponent* GetConnector(int index)=0;
-//
-///// Возвращает имя подключенного входа компонента-приемника
-//virtual std::string GetConnectorInputName(int index) const=0;
 
 protected: // Вспомогательные методы
 // Метод устанавливает значение указателя на итератор-хранилище данных об этом
@@ -601,13 +564,13 @@ virtual bool DisconnectFromOutput(UIPropertyOutput *output_property)=0;
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
+//virtual void const* GetPointer(int index) const=0;
 
 /// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
+//virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)=0;
+//virtual bool ResetPointer(int index, void* value)=0;
 };
 
 class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
@@ -637,7 +600,7 @@ virtual bool IsConnectedTo(UNet *component)=0;
 
 public: // Методы управления указателем на выходные данные
 /// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
+//virtual void const* GetPointer(int index) const=0;
 };
 
 
