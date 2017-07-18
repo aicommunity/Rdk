@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "../Math/MVector.h"
 #include "UComponent.h"
+#include "UPropertyInterface.h"
 //#include "UProperty.h"
 //#include "ULocalProperty.h"
 //#include "UShare.h"

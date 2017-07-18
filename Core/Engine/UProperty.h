@@ -29,6 +29,7 @@ See file license.txt for more information
 #include "../Math/MUBinarySerialize.h"
 #include "../System/rdk_system.h"
 #include "UComponent.h"
+#include "UPropertyImplementationBase.h"
 
 namespace RDK {
 

@@ -35,8 +35,8 @@ See file license.txt for more information
 #include "UContainerDescription.h"
 #include "UEnvException.h"
 #include "ULogger.h"
-#include "UPropertyIO.h"
-
+#include "UPropertyInput.h"
+#include "UPropertyOutput.h"
 //#include "Libraries/UELibraries.h"
 
 #endif

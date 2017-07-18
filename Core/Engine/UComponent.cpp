@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "UComponentDescription.h"
 #include "UEnvException.h"
+#include "UPropertyInterface.h"
 
 namespace RDK {
 
