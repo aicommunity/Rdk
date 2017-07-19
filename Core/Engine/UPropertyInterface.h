@@ -140,17 +140,25 @@ public:
 virtual int GetInputType(void) const=0;
 
 public: // Методы доступа к источнику данных
+/// Возвращает лимит на число подключений ко входу
+/// если -1, то нет ограничений
+virtual int GetNumConnectionsLimit(void) const=0;
+
 /// Возвращает число подключений ко входу
 virtual int GetNumConnections(void) const=0;
 
 /// Возвращает указатели на свойства-приемники данных
-virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const=0;
+virtual const std::vector<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const=0;
+
+/// Возвращает указатели на свойства-источники данных
+virtual const UEPtr<UIPropertyOutput> GetConnectedProperty(int c_index) const=0;
+virtual UEPtr<UIPropertyOutput> GetConnectedProperty(int c_index)=0;
 
 /// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(int c_index=-1) const=0;
+//virtual std::string GetItemFullName(int c_index=-1) const=0;
 
 /// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(int c_index=-1) const=0;
+//virtual std::string GetItemOutputName(int c_index=-1) const=0;
 
 /// Возвращает true если вход имеет подключение
 virtual bool IsConnected(void) const=0;
@@ -159,7 +167,11 @@ virtual bool IsConnected(void) const=0;
 virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const=0;
 
 /// Разрывает связь со свойством output_property
-virtual bool Disconnect(UIPropertyOutput *output_property)=0;
+/// Если c_index == -1 то отключает все вхождения этого выхода
+virtual bool Disconnect(UIPropertyOutput *output_property, int c_index=-1)=0;
+
+/// Разрывает связь по индексу с_index
+virtual bool Disconnect(int c_index)=0;
 
 /// Разрывает все связи со свойством
 virtual bool DisconnectAll(void)=0;
@@ -169,7 +181,7 @@ public:
 virtual bool ConnectToOutput(UIPropertyOutput *output_property)=0;
 
 /// Финальные действия по уничтожению связи со свойством output_property
-virtual bool DisconnectFromOutput(UIPropertyOutput *output_property)=0;
+virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index)=0;
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -180,6 +192,12 @@ virtual void const* GetPointer(int index) const=0;
 
 /// Сбрасывает указатель на данные
 //virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+/// Задает лимит на число подключений ко входу
+/// если -1, то нет ограничений
+virtual void SetNumConnectionsLimit(int value)=0;
+
 };
 
 class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
@@ -189,13 +207,17 @@ public: // Методы доступа к подключенным входам
 virtual size_t GetNumConnectors(void) const=0;
 
 /// Возвращает указатели на свойства-приемники данных
-virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const=0;
+virtual const std::vector<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const=0;
+
+/// Возвращает указатели на свойства-источники данных
+virtual const UEPtr<UIPropertyInput> GetConnectedProperty(int c_index) const=0;
+virtual UEPtr<UIPropertyInput> GetConnectedProperty(int c_index)=0;
 
 /// Устанавливает связь этого выхода со входом input_property
 virtual bool Connect(UIPropertyInput *input_property)=0;
 
 /// Разрывает связь этого выхода со входом input_property
-virtual bool Disconnect(UIPropertyInput *input_property)=0;
+virtual bool Disconnect(UIPropertyInput *input_property, int c_index=-1)=0;
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.

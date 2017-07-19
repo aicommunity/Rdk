@@ -454,7 +454,7 @@ bool UNet::DisconnectBy(UEPtr<UContainer> brklevel)
  for(size_t j=0;j<buffer.size();j++)
  {
   size_t i=0;
-  std::list<UEPtr<UIPropertyInput> >::const_iterator I=buffer[j]->GetConnectedProperties().begin(),J;
+  std::vector<UEPtr<UIPropertyInput> >::const_iterator I=buffer[j]->GetConnectedProperties().begin(),J;
 
   while(I != buffer[j]->GetConnectedProperties().end())
   {
@@ -627,8 +627,8 @@ ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bo
  for(size_t i=0;i<output_properties.size();i++)
  {
   link.Connector.clear();
-  const std::list<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
-  std::list<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
+  const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
+  std::vector<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
   for(;I != connected_properties.end();I++)
   {
    const UEPtr<UIPropertyInput> input_property=*I;
@@ -669,8 +669,8 @@ ULinksList& UNet::GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, boo
 
  for(size_t j=0;j<input_properties.size();j++)
  {
-  const std::list<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
-  std::list<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
+  const std::vector<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
+  std::vector<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
   for(;I != connected_properties.end();I++)
   {
    const UIPropertyOutput* output_property=*I;
@@ -730,8 +730,8 @@ ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist
  for(size_t i=0;i<output_properties.size();i++)
  {
   link.Connector.clear();
-  const std::list<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
-  std::list<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
+  const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
+  std::vector<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
   for(;I != connected_properties.end();I++)
   {
    const UEPtr<UIPropertyInput> input_property=*I;
@@ -769,8 +769,8 @@ ULinksList& UNet::GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist,
 
  for(size_t j=0;j<input_properties.size();j++)
  {
-  const std::list<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
-  std::list<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
+  const std::vector<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
+  std::vector<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
   for(;I != connected_properties.end();I++)
   {
    const UIPropertyOutput* output_property=*I;

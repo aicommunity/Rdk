@@ -14,11 +14,12 @@ class UNet;
 class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
 {
 protected: // Данные
-/// Данные подключенных ко входу источников
-//std::vector<UCItem> ItemsList;
-
 /// указатели на свойства-приемники данных
-std::list<UEPtr<UIPropertyOutput> > ConnectedProperties;
+std::vector<UEPtr<UIPropertyOutput> > ConnectedProperties;
+
+/// Лимит на число подключений
+/// если -1, то нет ограничений
+int NumConnectionsLimit;
 
 /// Тип входа
 int InputType;
@@ -32,17 +33,25 @@ virtual ~UIPropertyInputBase(void);
 virtual int GetInputType(void) const;
 
 public: // Методы доступа к источнику данных
+/// Возвращает лимит на число подключений ко входу
+/// если -1, то нет ограничений
+virtual int GetNumConnectionsLimit(void) const;
+
 /// Возвращает число подключений ко входу
 virtual int GetNumConnections(void) const;
 
 /// Возвращает указатели на свойства-источники данных
-virtual const std::list<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const;
+virtual const std::vector<UEPtr<UIPropertyOutput> > GetConnectedProperties(void) const;
+
+/// Возвращает указатели на свойства-источники данных
+virtual const UEPtr<UIPropertyOutput> GetConnectedProperty(int c_index) const;
+virtual UEPtr<UIPropertyOutput> GetConnectedProperty(int c_index);
 
 /// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(int c_index=-1) const;
+//virtual std::string GetItemFullName(int c_index) const;
 
 /// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(int c_index=-1) const;
+//virtual std::string GetItemOutputName(int c_index) const;
 
 /// Возвращает true если вход имеет подключение
 virtual bool IsConnected(void) const;
@@ -51,7 +60,11 @@ virtual bool IsConnected(void) const;
 virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const;
 
 /// Разрывает связь со свойством output_property
-virtual bool Disconnect(UIPropertyOutput *output_property);
+/// Если c_index == -1 то отключает все вхождения этого выхода
+virtual bool Disconnect(UIPropertyOutput *output_property, int c_index=-1);
+
+/// Разрывает связь по индексу с_index
+virtual bool Disconnect(int c_index);
 
 /// Разрывает все связи со свойством
 virtual bool DisconnectAll(void);
@@ -61,7 +74,7 @@ public:
 virtual bool ConnectToOutput(UIPropertyOutput *output_property);
 
 /// Финальные действия по уничтожению связи со свойством output_property
-virtual bool DisconnectFromOutput(UIPropertyOutput *output_property);
+virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -72,13 +85,18 @@ public: // Методы управления указателем на входные данные
 
 /// Сбрасывает указатель на данные
 //virtual bool ResetPointer(int index, void* value)=0;
+
+protected:
+/// Задает лимит на число подключений ко входу
+/// если -1, то нет ограничений
+virtual void SetNumConnectionsLimit(int value);
 };
 
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
 {
 protected: // Данные
 /// указатели на свойства-приемники данных
-std::list<UEPtr<UIPropertyInput> > ConnectedProperties;
+std::vector<UEPtr<UIPropertyInput> > ConnectedProperties;
 
 public: // Конструкторы и деструкторы
 UIPropertyOutputBase(void);
@@ -89,13 +107,17 @@ public: // Методы доступа к подключенным входам
 virtual size_t GetNumConnectors(void) const;
 
 /// Возвращает указатели на свойства-приемники данных
-virtual const std::list<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const;
+virtual const std::vector<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const;
+
+/// Возвращает указатели на свойства-источники данных
+virtual const UEPtr<UIPropertyInput> GetConnectedProperty(int c_index) const;
+virtual UEPtr<UIPropertyInput> GetConnectedProperty(int c_index);
 
 /// Устанавливает связь этого выхода со входом input_property
 virtual bool Connect(UIPropertyInput *input_property);
 
 /// Разрывает связь этого выхода со входом input_property
-virtual bool Disconnect(UIPropertyInput *input_property);
+virtual bool Disconnect(UIPropertyInput *input_property, int c_index=-1);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.

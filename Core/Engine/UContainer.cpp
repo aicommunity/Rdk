@@ -2962,7 +2962,17 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  {
   if(prop_input)
   {
-   line+=std::string("[")+prop_input->GetItemFullName()+std::string(":")+prop_input->GetItemOutputName()+"]";
+   stringstream str_stream;
+   str_stream<<"[";
+   int num_connections(prop_input->GetNumConnections());
+   for(int i=0;i<num_connections;i++)
+   {
+	str_stream<<prop_input->GetConnectedProperty(i)->GetOwner()->GetFullName()<<":"<<prop_input->GetConnectedProperty(i)->GetName();
+	if(i < num_connections-1)
+     str_stream<<";";
+   }
+   str_stream<<"]";
+   line+=str_stream.str();
 
   }
   line+=" = ";
