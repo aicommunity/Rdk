@@ -115,13 +115,14 @@ virtual const type_info& GetLanguageType(void) const
 }
 
 protected:
+/*
 /// Обновляет указатель PData
 virtual void UpdatePData(void* data)
 {
  if(data)
   this->PData=*reinterpret_cast<T**>(data);
  ExternalPData=reinterpret_cast<T**>(data);
-}
+}                  */
 // --------------------------
 };
 

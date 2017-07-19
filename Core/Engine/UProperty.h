@@ -213,10 +213,11 @@ bool ReadFromMemory(const void *buffer)
 }
 
 /// Обновляет указатель PData
+/*
 virtual void UpdatePData(void* data)
 {
  PData=(T*)data;
-}
+}                       */
 // -----------------------------
 
 // --------------------------

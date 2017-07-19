@@ -80,7 +80,7 @@ public: // Вспомогательные методы
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)=0;
 
 /// Обновляет указатель PData
-virtual void UpdatePData(void* data)=0;
+//virtual void UpdatePData(void* data)=0;
 
 public: // Исключения
 // Обращение к неинициализированным данным свойства
