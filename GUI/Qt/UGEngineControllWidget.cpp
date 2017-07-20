@@ -14,6 +14,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTimer>
+#include <QInputDialog>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -111,6 +112,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionPause, SIGNAL(triggered(bool)), this, SLOT(actionPause()));
     connect(ui->actionReset, SIGNAL(triggered(bool)), this, SLOT(actionReset()));
     connect(ui->actionStep, SIGNAL(triggered(bool)), this, SLOT(actionStep()));
+    connect(ui->actionRunNSteps, SIGNAL(triggered(bool)), this, SLOT(actionRunNSteps()));
 
     // window menu actions:
     connect(ui->actionImagesFromWindow, SIGNAL(triggered(bool)), this, SLOT(actionImages()));
@@ -203,10 +205,20 @@ void UGEngineControllWidget::actionReloadParameters()
 //int ts; // костыль
 void UGEngineControllWidget::actionStart()
 {
-
+  try
+  {
     startChannel(-1);
     //ts = startTimer(150); // костыль
     ui->statusBar->showMessage("Calculation in progress");
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"UError at start calculation", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at start calculation", QString(e.what()), QMessageBox::Ok);
+  }
 }
 
 void UGEngineControllWidget::actionPause()
@@ -224,7 +236,21 @@ void UGEngineControllWidget::actionReset()
 
 void UGEngineControllWidget::actionStep()
 {
-    calcOneStepChannel(-1);
+  calcOneStepChannel(-1);
+}
+
+void UGEngineControllWidget::actionRunNSteps()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Run several steps"),
+                                       tr("Enter steps number: "), QLineEdit::Normal,
+                                       "", &ok);
+  unsigned int stepsCounter = text.toUInt();
+  if (ok && stepsCounter > 0)
+  {
+    for(unsigned int i = 0; i < stepsCounter; ++i)
+      application->StepChannel(-1);
+  }
 }
 
 // window menu action

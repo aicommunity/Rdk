@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -97,6 +97,7 @@
     <addaction name="actionReset"/>
     <addaction name="separator"/>
     <addaction name="actionStep"/>
+    <addaction name="actionRunNSteps"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -557,6 +558,14 @@
   <action name="actionTestCreator">
    <property name="text">
     <string>Test Creator</string>
+   </property>
+  </action>
+  <action name="actionRunNSteps">
+   <property name="text">
+    <string>Run N steps</string>
+   </property>
+   <property name="toolTip">
+    <string>Run N Steps</string>
    </property>
   </action>
  </widget>

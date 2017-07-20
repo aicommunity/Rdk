@@ -28,6 +28,7 @@ public slots:
   // buttons:
   void addProperty();
   void createTest();
+  void deleteSelectedProperty();
 
 
 private:

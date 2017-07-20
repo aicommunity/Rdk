@@ -25,6 +25,8 @@ UCreateTestWidget::UCreateTestWidget(QWidget *parent, RDK::UApplication *app, QS
   connect(ui->pushButtonAddProperty, SIGNAL(pressed()), this, SLOT(addProperty()));
   connect(ui->pushButtonCreateTest, SIGNAL(pressed()), this, SLOT(createTest()));
   connect(ui->pushButtonCancel, SIGNAL(pressed()), this, SIGNAL(closeWindow()));
+  connect(ui->pushButtonDeleteSelectedProperty, SIGNAL(pressed()), this, SLOT(deleteSelectedProperty()));
+  connect(ui->pushButtonClearTest, SIGNAL(pressed()), ui->treeWidgetSelectedProperties, SLOT(clear()));
 }
 
 UCreateTestWidget::~UCreateTestWidget()
@@ -123,7 +125,20 @@ void UCreateTestWidget::createTest()
     storage.SetNodeAttribute("PropertyName", (*it)->data(1, Qt::DisplayRole).toString().toLocal8Bit().constData());
     storage.SetNodeAttribute("type", (*it)->data(2, Qt::DisplayRole).toString().toLocal8Bit().constData());
     storage.SetNodeAttribute("Delta", (*it)->data(4, Qt::DisplayRole).toString().toLocal8Bit().constData());
-    storage.SetNodeText((*it)->data(3, Qt::DisplayRole).toString().toLocal8Bit().constData());
+    std::string nodeValue = (*it)->data(3, Qt::DisplayRole).toString().toLocal8Bit().constData();
+
+    // костыль
+    if(nodeValue.size() > 0 && nodeValue[0] == '<')
+    {
+      RDK::USerStorageXML nodeData;
+      nodeData.Load(nodeValue, "");
+      storage.LoadToNode(nodeData, false);
+    }
+    else
+    {
+      storage.SetNodeText(nodeValue);
+    }
+
     storage.SelectUp();
   }
 
@@ -140,6 +155,17 @@ void UCreateTestWidget::createTest()
 
   storage.SaveToFile(fileName.toLocal8Bit().constData());
 }
+
+void UCreateTestWidget::deleteSelectedProperty()
+{
+  QTreeWidgetItem *item = ui->treeWidgetSelectedProperties->currentItem();
+
+  if(item)
+  {
+    delete item;
+  }
+}
+
 
 
 

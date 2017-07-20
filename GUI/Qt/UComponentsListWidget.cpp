@@ -23,7 +23,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
 
-    UpdateInterval = 500; //не обновлять виджет по тикам ядра
+    UpdateInterval = 500;
     setAccessibleName("UComponentsListWidget"); // имя класса для сериализации
     readSettings(settingsFile, settingsGroup);
 
@@ -98,6 +98,11 @@ void UComponentsListWidget::AUpdateInterface()
 {
     QString oldRootItem = currentDrawComponentName,
             oldSelectedItem = selectedComponentLongName;
+
+    // чтоб не бегали скролы на treeWidget'ах
+    int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
+    int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
+
     componentsTree->clear();
 
     //Заполнение списка
@@ -105,6 +110,10 @@ void UComponentsListWidget::AUpdateInterface()
     rootItem->setText(0, "Model");
     rootItem->setExpanded(true);
     addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
+
+    // чтоб не бегали скролы на treeWidget'ах
+    componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
+    componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
 }
 
 void UComponentsListWidget::setVerticalOrientation(bool vertical)
@@ -552,7 +561,10 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
                 childItem->setExpanded(true);
             }
             if(oldSelectedItem == father+str)
+            {
                 componentsTree->setCurrentItem(childItem);
+                childItem->setExpanded(true);
+            }
 
             addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
         }

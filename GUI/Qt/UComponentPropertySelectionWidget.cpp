@@ -11,6 +11,7 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
     componentsList = NULL;
     readSettings(settingsFile, settingsGroup);
     componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
+    componentsList->UpdateInterval = 0;
     componentsList->setVerticalOrientation(false);
     componentsList->openTabN(mode);
     ui->horizontalLayoutComponentsList->addWidget(componentsList);

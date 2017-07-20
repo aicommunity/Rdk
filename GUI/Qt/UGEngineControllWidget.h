@@ -58,6 +58,7 @@ public slots:
     void actionPause();
     void actionReset();
     void actionStep();
+    void actionRunNSteps();
 
     // window menu
     void actionImages();

@@ -114,12 +114,25 @@ int UTest::LoadTest(string testFile)
   for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
   {
     testXML.SelectNode("Property", i);
+    std::string sValue;
+
+    // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
+    if(testXML.SelectNode(0))
+    {
+      testXML.SaveFromNode(sValue);
+      testXML.SelectUp();
+    }
+    else
+    {
+      sValue = testXML.GetNodeText();
+    }
+
     UPropertyTest pt = {
         testXML.GetNodeAttribute("Component"),
         testXML.GetNodeAttribute("PropertyName"),
         testXML.GetNodeAttribute("type"),
         testXML.GetNodeAttribute("Delta"),
-        testXML.GetNodeText()
+        sValue
       };
     propertyTests.push_back(pt);
     testXML.SelectUp();
@@ -192,6 +205,7 @@ int UTest::ProcessTest()
       TEST_PROPERTY_WITH_TYPE(float)
       TEST_PROPERTY_WITH_TYPE(double)
       TEST_PROPERTY_WITH_TYPE(std::string)
+      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
 
       /*if(property->GetLanguageType() == typeid(bool))
       {
@@ -300,6 +314,18 @@ bool UTest::compareProperties(double value, std::string str, std::string delta)
 bool UTest::compareProperties(std::string value, std::string str, std::string)
 {
   return value.compare(str) == 0;
+}
+
+bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
+{
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "laba-daba-dab-dab");
+
+  USerStorageXML storage;
+  storage.Load(str, "");
+  storage.SelectNode("Objects");
+  size_t strVectorSize = static_cast<size_t>(atoi(storage.GetNodeAttribute("Size")));
+
+  return value.size() == strVectorSize;
 }
 
 
