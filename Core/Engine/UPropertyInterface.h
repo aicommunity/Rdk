@@ -45,13 +45,13 @@ virtual const type_info& GetLanguageType(void) const=0;
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
 // ћетод возвращает указатель на область пам€ти, содержащую данные свойства
-virtual const void* GetMemoryArea(void)=0;
+virtual const void* GetMemoryArea(int index=0)=0;
 
 // ћетод копирует значение данных свойства из области пам€ти
 // штатными средствами копировани€ реального типа данных
 // входной указатель приводитс€ к указателю на необходимый тип данных
 // TODO: possible unsafe???
-virtual bool ReadFromMemory(const void *buffer)=0;
+virtual bool ReadFromMemory(const void *buffer, int index=0)=0;
 
 public: // ћетоды управлени€ временем обновлени€ данных свойства
 /// ¬озвращает врем€ обновлени€ данных свойства (мс)
@@ -185,7 +185,7 @@ virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index
 
 public: // ћетоды управлени€ указателем на входные данные
 /// ¬озвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
+//virtual void const* GetPointer(int index) const=0;
 
 /// ”станавливает указатель на данные
 //virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
@@ -231,7 +231,7 @@ virtual bool IsConnectedTo(UNet *component)=0;
 
 public: // ћетоды управлени€ указателем на выходные данные
 /// ¬озвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
+//virtual void const* GetPointer(int index) const=0;
 };
 
 //---------------------------------------------------------------------------

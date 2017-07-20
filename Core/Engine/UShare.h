@@ -12,7 +12,7 @@ class UVShare: public UIShare
 protected: // Данные
 // Указатель на расшаренные данные
 //T* Pointer;
-UVProperty<T,MainOwnerT>* VProperty;
+UPropertyVirtual<T,MainOwnerT,ptOutput>* VProperty;
 
 // Локальная копия данных если указатель не доступен
 T& RData;
@@ -159,7 +159,7 @@ class UShare: public UIShare
 protected: // Данные
 // Указатель на расшаренные данные
 //T* Pointer;
-UVProperty<T,MainOwnerT>* VProperty;
+UPropertyVirtual<T,MainOwnerT,ptOutput>* VProperty;
 
 // Локальная копия данных если указатель не доступен
 T Data;

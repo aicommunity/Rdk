@@ -263,9 +263,6 @@
         <CppCompile Include="..\..\..\Core\Engine\ULibrary.cpp">
             <BuildOrder>78</BuildOrder>
         </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\ULocalProperty.cpp">
-            <BuildOrder>79</BuildOrder>
-        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\ULogger.cpp">
             <DependentOn>..\..\..\Core\Engine\ULogger.h</DependentOn>
             <BuildOrder>118</BuildOrder>

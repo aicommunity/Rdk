@@ -15,7 +15,7 @@ See file license.txt for more information
 #include "UContainer.h"
 #include "UStorage.h"
 #include "UPropertyImplementationBase.h"
-#include "ULocalProperty.h"
+#include "UPropertyEndpoints.h"
 
 
 namespace RDK {

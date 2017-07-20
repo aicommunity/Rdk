@@ -13,7 +13,7 @@ class UNet;
 
 class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
 {
-protected: // Данные
+private: // Данные
 /// указатели на свойства-приемники данных
 std::vector<UEPtr<UIPropertyOutput> > ConnectedProperties;
 
@@ -22,7 +22,7 @@ std::vector<UEPtr<UIPropertyOutput> > ConnectedProperties;
 int NumConnectionsLimit;
 
 /// Тип входа
-int InputType;
+//int InputType;
 
 public:
 /// Конструкторы и деструкторы
@@ -30,7 +30,7 @@ UIPropertyInputBase(void);
 virtual ~UIPropertyInputBase(void);
 
 /// Возвращает тип свойства ввода-вывода
-virtual int GetInputType(void) const;
+//virtual int GetInputType(void) const;
 
 public: // Методы доступа к источнику данных
 /// Возвращает лимит на число подключений ко входу
@@ -94,7 +94,7 @@ virtual void SetNumConnectionsLimit(int value);
 
 class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
 {
-protected: // Данные
+private: // Данные
 /// указатели на свойства-приемники данных
 std::vector<UEPtr<UIPropertyInput> > ConnectedProperties;
 

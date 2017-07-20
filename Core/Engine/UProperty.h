@@ -40,12 +40,18 @@ using namespace std;
 #endif
 
 // Класс - база для свойств
-template<typename T>
-class UVBaseDataProperty: virtual public UIProperty
+template<typename T,class OwnerT, unsigned int type>
+class UPropertyBase: virtual public UIPropertyInput, virtual public UIPropertyOutput
 {
 protected: // Данные
+// Владелец свойства
+OwnerT* Owner;
+
+/// Тип свойства
+unsigned int Type;
+
 // Прямой доступ к данным
-mutable T* PData;
+//mutable T* PData;
 
 protected: // Данные синхронизации
 /// Мьютекс этого свойства
@@ -54,22 +60,36 @@ UGenericMutex *Mutex;
 /// Время обновления свойства (мс)
 mutable ULongTime UpdateTime;
 
+// Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
+UComponent::VariableMapCIteratorT Variable;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVBaseDataProperty(void)
- : PData(0), Mutex(UCreateMutex()), UpdateTime(0)
+UPropertyBase(const std::string &name, OwnerT * const owner)
+ : Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
 {
+   if(Owner)
+   {
+	Variable=Owner->FindPropertyVariable(this);
+	reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(name,type,this,false);
+   }
 }
 
-UVBaseDataProperty(T * const pdata)
- : PData(pdata), Mutex(UCreateMutex()), UpdateTime(0)
+UPropertyBase(const std::string &name, OwnerT * const owner, T * const pdata, int index=0)
+ : Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
 {
+ if(Owner)
+ {
+  Variable=Owner->FindPropertyVariable(this);
+  reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(name,type,this,false);
+ }
+ SetData(pdata,0); // TODO: виртуальный метод еще не готов
 }
 
-virtual ~UVBaseDataProperty(void)
+virtual ~UPropertyBase(void)
 {
  UDestroyMutex(Mutex);
  Mutex=0;
@@ -80,19 +100,26 @@ virtual ~UVBaseDataProperty(void)
 // Методы сериализации
 // -----------------------------
 // Возвращает ссылку на данные
-virtual const T& GetData(void) const
-{
+virtual const T& GetData(int index=0) const=0;
+/*{
  if(PData)
   return *PData;
  throw EPropertyZeroPtr(GetOwnerName(),GetName());
-};
+};  */
 
 // Модифицирует данные
-virtual void SetData(const T& data)
-{
+virtual void SetData(const T& data, int index=0)=0;
+/*{
  (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
  RenewUpdateTime();
-};
+}; */
+
+
+// Метод возвращает тип свойства
+virtual unsigned int GetType(void) const
+{
+ return Type;
+}
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -109,14 +136,6 @@ virtual bool CompareLanguageType(const UIProperty &dt) const
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
-/*
- UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
- if(binary)
- {
-  *binary<<GetData();
-  return true;
- }
- */
  UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
  {
@@ -143,14 +162,6 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
  T temp;
-/*
- UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
- if(binary)
- {
-  operator >> (*binary,temp);
-  SetData(temp);
-  return true;
- }*/
 
  UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
@@ -194,30 +205,23 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 };
 
 // Метод возвращает указатель на область памяти, содержащую данные свойства
-virtual const void* GetMemoryArea(void)
+virtual const void* GetMemoryArea(int index=0)
 {
- return &GetData();
+ return &GetData(index);
 }
 
 // Метод копирует значение данных свойства из области памяти
 // штатными средствами копирования реального типа данных
 // входной указатель приводится к указателю на необходимый тип данных
-bool ReadFromMemory(const void *buffer)
+bool ReadFromMemory(const void *buffer, int index=0)
 {
  if(!buffer)
   return false;
 
  const T* temp=(const T*)buffer;
- SetData(*temp);
+ SetData(*temp,index);
  return true;
 }
-
-/// Обновляет указатель PData
-/*
-virtual void UpdatePData(void* data)
-{
- PData=(T*)data;
-}                       */
 // -----------------------------
 
 // --------------------------
@@ -236,28 +240,46 @@ virtual void SetUpdateTime(ULongTime value)
 }
 // --------------------------
 
-// --------------------------
-// Методы управления указателем
-// --------------------------
-/*
-/// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const
+
+// -----------------------------
+// Методы сериализации
+// -----------------------------
+// Метод устанавливает значение указателя на итератор-хранилище данных об этом
+// свойстве в родительском компоненте
+virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 {
- return 0;
+ Variable=var;
 }
 
-/// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)
+// Метод возвращает строковое имя свойства
+virtual const std::string& GetName(void) const
 {
- return false;
+ return Variable->first;
+};
+
+// Метод возвращает строковое имя компонента-владельца свойства
+virtual std::string GetOwnerName(void) const
+{
+ return (Owner)?Owner->GetName():std::string("");
+};
+
+// Метод возвращает строковое имя класса-владельца свойства
+virtual std::string GetOwnerClassName(void) const
+{
+ return typeid(Owner).name();
+};
+
+/// Возвращает указатель на владелька свойства
+virtual const UNet* GetOwner(void) const
+{
+ return dynamic_cast<const UNet*>(Owner);
 }
 
-/// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)
+virtual UNet* GetOwner(void)
 {
- return false;
-}                      */
-// --------------------------
+ return dynamic_cast<UNet*>(Owner);
+}
+// -----------------------------
 
 protected:
 // --------------------------
@@ -277,104 +299,18 @@ void ResetUpdateTime(void)
 // --------------------------
 };
 
-
-// Класс - база для свойств
-template<typename T,class OwnerT>
-class UVBaseProperty: public UVBaseDataProperty<T>
-{
-//friend class OwnerT;
-protected: // Типы методов ввода-вывода
-
-protected: // Данные
-// Владелец свойства
-OwnerT* Owner;
-
-// Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
-UComponent::VariableMapCIteratorT Variable;
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UVBaseProperty(OwnerT * const owner) :
-  Owner(owner)
-{
-   if(Owner)
-	Variable=Owner->FindPropertyVariable(this);
-}
-
-UVBaseProperty(OwnerT * const owner, T * const pdata) :
-  UVBaseDataProperty<T>(pdata), Owner(owner)
-{
-   if(Owner)
-	Variable=Owner->FindPropertyVariable(this);
-}
-// -----------------------------
-
-// -----------------------------
-// Методы сериализации
-// -----------------------------
-// Метод устанавливает значение указателя на итератор-хранилище данных об этом
-// свойстве в родительском компоненте
-virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
-{
- Variable=var;
-}
-
-// Метод возвращает строковое имя свойства
-virtual const std::string& GetName(void) const
-{
- return Variable->first;
-};
-
-// Метод возвращает тип свойства
-virtual unsigned int GetType(void) const
-{
- return Variable->second.Type;
-};
-
-// Метод возвращает строковое имя компонента-владельца свойства
-virtual std::string GetOwnerName(void) const
-{
- return (Owner)?Owner->GetName():std::string("");
-};
-
-// Метод возвращает строковое имя класса-владельца свойства
-virtual std::string GetOwnerClassName(void) const
-{
- return typeid(Owner).name();
-};
-
-// Владелец свойства
-/*
-virtual OwnerT* GetOwner(void)
-{
- return Owner;
-}   */
-
-/// Возвращает указатель на владелька свойства
-virtual const UNet* GetOwner(void) const
-{
- return dynamic_cast<const UNet*>(Owner);
-}
-
-virtual UNet* GetOwner(void)
-{
- return dynamic_cast<UNet*>(Owner);
-}
-// -----------------------------
-};
-
 // Класс - виртуальное свойство
 // Не содержит данного внутри себя
-template<typename T,class OwnerT>
-class UVProperty: public UVBaseProperty<T,OwnerT>
+template<typename T,class OwnerT, unsigned int type>
+class UPropertyVirtual: public UPropertyBase<T,OwnerT,type>
 {
-//friend class OwnerT;
 protected: // Типы методов ввода-вывода
 typedef const T& (OwnerT::*GetterRT)(void) const;
 typedef bool (OwnerT::*SetterRT)(const T&);
+
+protected:
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool CheckEqualsFlag;
 
 protected: // Данные
 // Методы ввода-вывода
@@ -386,14 +322,29 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod)
+UPropertyVirtual(const std::string &name, OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
+  UPropertyBase<T,OwnerT,type>(name, owner), CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod)
 {
 }
 
-UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod)
+UPropertyVirtual(const std::string &name, OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
+  UPropertyBase<T,OwnerT,type>(name,owner,pdata), CheckEqualsFlag(true), GetterR(0), SetterR(setmethod)
 {
+}
+// -----------------------------
+
+// -----------------------------
+// Метод управления параметрами
+// -----------------------------
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool IsCheckEquals(void) const
+{
+ return CheckEqualsFlag;
+}
+
+void SetCheckEquals(bool value)
+{
+ CheckEqualsFlag=value;
 }
 // -----------------------------
 
@@ -401,39 +352,37 @@ UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
 // Методы управления
 // -----------------------------
 // Возврат значения
-virtual const T& GetData(void) const
+virtual const T& GetData(int index=0) const
 {
- if(this->Owner)
+ if(this->Owner && GetterR)
  {
-  if(this->PData)
-   return *this->PData;
-
   if(GetterR)
    return (this->Owner->*GetterR)();
  }
 
- throw UIProperty::EPropertyZeroPtr(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+ throw UIProperty::EPropertyZeroPtr(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
 };
 
 // Установка значения
-virtual void SetData(const T &value)
+virtual void SetData(const T &value, int index=0)
 {
- if(this->PData && !SetterR)
+ if(!GetterR)
+  throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
+ if(CheckEqualsFlag && (this->Owner->*GetterR)() == value)
+  return;
+
+ if(!SetterR)
  {
-  *this->PData=value;
-  this->RenewUpdateTime();
+  throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
  }
 
  if(this->Owner && SetterR)
  {
   if(!(this->Owner->*SetterR)(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+   throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
 
-  if(this->PData)
-  {
-   *this->PData=value;
-   this->RenewUpdateTime();
-  }
+  this->RenewUpdateTime();
  }
 };
 // -----------------------------
@@ -463,15 +412,20 @@ T& operator * (void)
 const T& operator * (void) const
 { return this->GetData(); };
 
+const T& operator [] (int index) const
+{ return this->GetData(index); };
+
+T& operator [] (int index)
+{ return this->GetData(index); };
 
 // Оператор присваивания
-UVProperty<T,OwnerT>& operator = (const T &value)
+UPropertyVirtual<T,OwnerT,type>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
 };
 
-UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
+UPropertyVirtual<T,OwnerT,type>& operator = (const UPropertyVirtual<T,OwnerT,type> &v)
 {
  this->SetData(v.GetData());
  return *this;
@@ -479,7 +433,7 @@ UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
 // -----------------------------
 };
 
-
+								   /*
 /// Класс - виртуальное свойство
 /// Не содержит данного внутри себя
 /// Setter и Getter обеспечивают доступ по значению
@@ -555,18 +509,14 @@ virtual void SetData(const T &value)
  }
 };
 // -----------------------------
-};
+};                       */
 
 /* ************************************************************************* */
-// Класс - свойство с значением внутри
+// Класс - свойство со значением внутри
 /* ************************************************************************* */
-template<typename T,class OwnerT>
-class UProperty: public UVProperty<T,OwnerT>
+template<typename T,class OwnerT, unsigned int type>
+class UProperty: public UPropertyVirtual<T,OwnerT,type>
 {
-protected:
-/// Флаг проверки значения свойства на равенство присваевому значению
-bool CheckEqualsFlag;
-
 public:
 //protected:
 // Данные
@@ -576,35 +526,20 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
-// -----------------------------
-
-// -----------------------------
-// Метод управления параметрами
-// -----------------------------
-/// Флаг проверки значения свойства на равенство присваевому значению
-bool IsCheckEquals(void) const
-{
- return CheckEqualsFlag;
-}
-
-void SetCheckEquals(bool value)
-{
- CheckEqualsFlag=value;
-}
+UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyVirtual<T,OwnerT,type>(name,owner, setmethod, 0), v() { };
 // -----------------------------
 
 // -----------------------------
 // Операторы доступа
 // -----------------------------
 // Возврат значения
-virtual const T& GetData(void) const
+virtual const T& GetData(int index=0) const
 {
  return v;
 };
 
-virtual void SetData(const T &value)
+virtual void SetData(const T &value, int index=0)
 {
  if(CheckEqualsFlag && v == value)
   return;
@@ -612,16 +547,11 @@ virtual void SetData(const T &value)
  if(this->Owner)
  {
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-  v=value;
-  this->RenewUpdateTime();
-  return;
+   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
  }
 
  v=value;
  this->RenewUpdateTime();
- return;
 };
 // -----------------------------
 };
@@ -630,90 +560,55 @@ virtual void SetData(const T &value)
 /* ************************************************************************* */
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
-template<typename T, typename OwnerT>
-class UCProperty: public UVProperty<T,OwnerT>
+template<typename T, typename RangeT, typename OwnerT, unsigned int type>
+class UPropertyRange: public UPropertyVirtual<T,OwnerT,type>
 {
 protected: // Типы методов ввода-вывода
-typedef typename T::value_type TV;
-typedef bool (OwnerT::*VSetterRT)(const TV&);
+typedef bool (OwnerT::*VSetterRT)(const RangeT&);
 
 protected: // Данные
 // Методы ввода-вывода
 VSetterRT VSetterR;
 
-/// Флаг проверки значения свойства на равенство присваевому значению
-bool CheckEqualsFlag;
-
-public:
-// Данные
-T v;
+RangeT v;
 
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), CheckEqualsFlag(true), v() { this->PData=&v; };
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod)
+ : UProperty<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0) { };
 
-UCProperty(OwnerT * const owner, VSetterRT setmethod)
- : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterRT)0,0), CheckEqualsFlag(true), v()
-{ VSetterR=setmethod; this->PData=&v; };
-// -----------------------------
-
-// -----------------------------
-// Метод управления параметрами
-// -----------------------------
-/// Флаг проверки значения свойства на равенство присваевому значению
-bool IsCheckEquals(void) const
-{
- return CheckEqualsFlag;
-}
-
-void SetCheckEquals(bool value)
-{
- CheckEqualsFlag=value;
-}
+UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod)
+ : UProperty<T,OwnerT,type>(name, owner,(typename UPropertyVirtual<T,OwnerT,type>::SetterRT)0,0)
+{ VSetterR=setmethod; };
 // -----------------------------
 
 // -----------------------------
 // Операторы доступа
 // -----------------------------
 // Возврат значения
-virtual const T& GetData(void) const
+virtual const T& GetData(int index=0) const
 {
- return v;
+ return v[index];
 };
 
-virtual void SetData(const T &value)
+virtual void SetData(const T &value, int index=0)
 {
- if(CheckEqualsFlag && v == value)
+ if(CheckEqualsFlag && v[index] == value)
   return;
 
  if(this->Owner)
  {
-  if(VSetterR)
-  {
-   typename T::const_iterator I,J;
-   I=value.begin(); J=value.end();
-   while(I != J)
-   {
-	if(!(this->Owner->*VSetterR)(*I))
-	 throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-	++I;
-   }
-  }
-  else
-  {
-   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-	throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-  }
+  if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
  }
 
- v=value;
+ v[index]=value;
  this->RenewUpdateTime();
 };
 // -----------------------------
+
 };
 #ifdef __BORLANDC__
 #pragma warning( default : 4700)
