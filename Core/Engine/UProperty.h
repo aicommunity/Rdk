@@ -41,9 +41,12 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T,class OwnerT, unsigned int type>
-class UPropertyBase: virtual public UIPropertyInput, virtual public UIPropertyOutput
+class UPropertyBase: virtual public UIPropertyInputBase, virtual public UIPropertyOutputBase
 {
 protected: // Данные
+// Имя свойства
+std::string Name;
+
 // Владелец свойства
 OwnerT* Owner;
 
@@ -69,7 +72,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyBase(const std::string &name, OwnerT * const owner)
- : Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
+ : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
 {
    if(Owner)
    {
@@ -79,14 +82,14 @@ UPropertyBase(const std::string &name, OwnerT * const owner)
 }
 
 UPropertyBase(const std::string &name, OwnerT * const owner, T * const pdata, int index=0)
- : Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
+ : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
 {
  if(Owner)
  {
   Variable=Owner->FindPropertyVariable(this);
   reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(name,type,this,false);
  }
- SetData(pdata,0); // TODO: виртуальный метод еще не готов
+ SetData(*pdata,0); // TODO: виртуальный метод еще не готов
 }
 
 virtual ~UPropertyBase(void)
@@ -415,9 +418,6 @@ const T& operator * (void) const
 const T& operator [] (int index) const
 { return this->GetData(index); };
 
-T& operator [] (int index)
-{ return this->GetData(index); };
-
 // Оператор присваивания
 UPropertyVirtual<T,OwnerT,type>& operator = (const T &value)
 {
@@ -577,7 +577,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod)
- : UProperty<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0) { };
+ : UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0) { };
 
 UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod)
  : UProperty<T,OwnerT,type>(name, owner,(typename UPropertyVirtual<T,OwnerT,type>::SetterRT)0,0)
@@ -592,6 +592,14 @@ virtual const T& GetData(int index=0) const
 {
  return v[index];
 };
+
+virtual T& GetData(int index=0)
+{
+ return v[index];
+};
+
+T& operator [] (int index)
+{ return this->GetData(index); };
 
 virtual void SetData(const T &value, int index=0)
 {

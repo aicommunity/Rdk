@@ -448,28 +448,29 @@ bool UNet::BreakLinks(UEPtr<UContainer> brklevel)
 bool UNet::DisconnectBy(UEPtr<UContainer> brklevel)
 {
  Build();
+ bool res(true);
 
  std::vector<UEPtr<UIPropertyOutput> > buffer;
  FindPropertiesByType<UIPropertyOutput>(buffer);
  for(size_t j=0;j<buffer.size();j++)
  {
   size_t i=0;
-  std::vector<UEPtr<UIPropertyInput> >::const_iterator I=buffer[j]->GetConnectedProperties().begin(),J;
+  std::vector<UEPtr<UIPropertyInput> >::const_iterator I=buffer[j]->GetSubscribedProperties().begin(),J;
 
-  while(I != buffer[j]->GetConnectedProperties().end())
+  while(I != buffer[j]->GetSubscribedProperties().end())
   {
    UEPtr<UIPropertyInput> input=*I;
    if(!input->GetOwner()->CheckOwner(brklevel))
    {
 	J=++I;
-	buffer[j]->Disconnect(input);
+	res&=buffer[j]->Disconnect(input);
 	I=J;
    }
    else
 	++I;
   }
  }
-
+ return res;
 }
 
 // Разрывает заданные связи сети
@@ -532,7 +533,7 @@ bool UNet::IsLinkExists(const ULinkSide &item, const ULinkSide &connector)
   return false;
  }
 
- return output_property->IsConnectedTo(input_property);
+ return output_property->IsConnectedToInput(input_property);
 }
 
 bool UNet::IsLinkExists(const NameT &itemname, const NameT &item_property_name,
@@ -562,7 +563,7 @@ bool UNet::IsLinkExists(const NameT &itemname,const NameT &connectorname)
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
-  if(output_properties[i]->IsConnectedTo(pconnector))
+  if(output_properties[i]->IsConnectedToComponent(pconnector))
 	return true;
  }
  return false;
@@ -627,7 +628,7 @@ ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bo
  for(size_t i=0;i<output_properties.size();i++)
  {
   link.Connector.clear();
-  const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
+  const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetSubscribedProperties();
   std::vector<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
   for(;I != connected_properties.end();I++)
   {
@@ -730,7 +731,7 @@ ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist
  for(size_t i=0;i<output_properties.size();i++)
  {
   link.Connector.clear();
-  const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetConnectedProperties();
+  const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetSubscribedProperties();
   std::vector<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
   for(;I != connected_properties.end();I++)
   {

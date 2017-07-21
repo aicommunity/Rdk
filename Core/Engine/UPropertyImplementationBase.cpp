@@ -21,11 +21,11 @@ UIPropertyInputBase::~UIPropertyInputBase(void)
 
 
 /// Возвращает тип свойства входа
-
+  /*
 int UIPropertyInputBase::GetInputType(void) const
 {
  return InputType;
-}
+}          */
 
 /// Возвращает лимит на число подключений ко входу
 /// если -1, то нет ограничений
@@ -217,30 +217,30 @@ UIPropertyOutputBase::~UIPropertyOutputBase(void)
 {
 // Connectors.clear();
 // ConnectorInputNames.clear();
- ConnectedProperties.clear();
+ SubscribedProperties.clear();
 }
 
 // Возвращает число подключенных входов
-size_t UIPropertyOutputBase::GetNumConnectors(void) const
+size_t UIPropertyOutputBase::GetNumSubscribers(void) const
 {
- return ConnectedProperties.size();
+ return SubscribedProperties.size();
 }
 
 /// Возвращает указатели на свойства-приемники данных
-const std::vector<UEPtr<UIPropertyInput> > UIPropertyOutputBase::GetConnectedProperties(void) const
+const std::vector<UEPtr<UIPropertyInput> > UIPropertyOutputBase::GetSubscribedProperties(void) const
 {
- return ConnectedProperties;
+ return SubscribedProperties;
 }
 
 /// Возвращает указатели на свойства-источники данных
-const UEPtr<UIPropertyInput> UIPropertyOutputBase::GetConnectedProperty(int c_index) const
+const UEPtr<UIPropertyInput> UIPropertyOutputBase::GetSubscribedProperty(int c_index) const
 {
- return ConnectedProperties[c_index];
+ return SubscribedProperties[c_index];
 }
 
-UEPtr<UIPropertyInput> UIPropertyOutputBase::GetConnectedProperty(int c_index)
+UEPtr<UIPropertyInput> UIPropertyOutputBase::GetSubscribedProperty(int c_index)
 {
- return ConnectedProperties[c_index];
+ return SubscribedProperties[c_index];
 }
 
 /// Устанавливает связь этого выхода со входом input_property
@@ -257,7 +257,7 @@ bool UIPropertyOutputBase::Connect(UIPropertyInput *input_property)
   // откатываем действия
   return false;
  }
- ConnectedProperties.push_back(input_property);
+ SubscribedProperties.push_back(input_property);
  return true;
 }
 
@@ -275,9 +275,9 @@ bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_ind
  size_t found_counter(0);
  std::vector<UEPtr<UIPropertyInput> >::iterator I,J;
 
- I=ConnectedProperties.begin();
+ I=SubscribedProperties.begin();
  int i(0);
- while(I != ConnectedProperties.end())
+ while(I != SubscribedProperties.end())
  {
   if(*I == input_property)
   {
@@ -285,7 +285,7 @@ bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_ind
    {
     J=I; ++J;
 	// TODO: тут код физического отключения данных
-	ConnectedProperties.erase(I);
+	SubscribedProperties.erase(I);
 	res&=input_property->DisconnectFromOutput(this,i);
     I=J;
    }
@@ -310,8 +310,8 @@ bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_ind
 bool UIPropertyOutputBase::DisconnectAll(void)
 {
  bool res(true);
- std::vector<UEPtr<UIPropertyInput> >::iterator I=ConnectedProperties.begin(),J;
- while(I != ConnectedProperties.end())
+ std::vector<UEPtr<UIPropertyInput> >::iterator I=SubscribedProperties.begin(),J;
+ while(I != SubscribedProperties.end())
  {
   J=I; ++J;
   res &= Disconnect(*I);
@@ -321,20 +321,20 @@ bool UIPropertyOutputBase::DisconnectAll(void)
 }
 
 /// Возвращает true если выход подключен к выбранному входу
-bool UIPropertyOutputBase::IsConnectedTo(UIPropertyInput *input_property)
+bool UIPropertyOutputBase::IsConnectedToInput(UIPropertyInput *input_property)
 {
- std::vector<UEPtr<UIPropertyInput> >::iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),input_property);
- if(I == ConnectedProperties.end())
+ std::vector<UEPtr<UIPropertyInput> >::iterator I=find(SubscribedProperties.begin(),SubscribedProperties.end(),input_property);
+ if(I == SubscribedProperties.end())
   return false;
 
  return true;
 }
 
 /// Возвращает true если выход подключен к одному из входов выбранного компонента
-bool UIPropertyOutputBase::IsConnectedTo(UNet *component)
+bool UIPropertyOutputBase::IsConnectedToComponent(UNet *component)
 {
- std::vector<UEPtr<UIPropertyInput> >::iterator I=ConnectedProperties.begin();
- for(;I != ConnectedProperties.end();I++)
+ std::vector<UEPtr<UIPropertyInput> >::iterator I=SubscribedProperties.begin();
+ for(;I != SubscribedProperties.end();I++)
   if((*I)->GetOwner() == component)
    return true;
 

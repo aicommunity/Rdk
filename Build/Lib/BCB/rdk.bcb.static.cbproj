@@ -284,18 +284,16 @@
         <CppCompile Include="..\..\..\Core\Engine\UProperty.cpp">
             <BuildOrder>83</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UPropertyEndpoints.cpp">
+            <DependentOn>..\..\..\Core\Engine\UPropertyEndpoints.h</DependentOn>
+            <BuildOrder>117</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UPropertyImplementationBase.cpp">
             <BuildOrder>118</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyInput.cpp">
-            <BuildOrder>117</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UPropertyInterface.cpp">
             <DependentOn>..\..\..\Core\Engine\UPropertyInterface.h</DependentOn>
             <BuildOrder>117</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyOutput.cpp">
-            <BuildOrder>119</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UShare.cpp">
             <DependentOn>..\..\..\Core\Engine\UShare.h</DependentOn>

@@ -22,6 +22,14 @@ ULProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<T
 {
 };
 
+// Оператор присваивания
+ULProperty<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
@@ -35,6 +43,13 @@ public: // Методы
 UPropertyParam(const string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
  : UProperty<T,OwnerT,type>(name, owner,setmethod) //ipSingle | ipData
 {
+};
+
+// Оператор присваивания
+UPropertyParam<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
 };
 
 };
@@ -52,6 +67,13 @@ UPropertyState(const string &name, OwnerT * const owner, typename UPropertyVirtu
 {
 };
 
+// Оператор присваивания
+UPropertyState<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
@@ -65,6 +87,13 @@ public: // Методы
 UPropertyOutputData(const string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
  : UProperty<T,OwnerT,type>(name, owner,setmethod) //ipSingle | ipData
 {
+};
+
+// Оператор присваивания
+UPropertyOutputData<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
 };
 
 };

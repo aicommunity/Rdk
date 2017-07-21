@@ -96,7 +96,7 @@ class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
 {
 private: // Данные
 /// указатели на свойства-приемники данных
-std::vector<UEPtr<UIPropertyInput> > ConnectedProperties;
+std::vector<UEPtr<UIPropertyInput> > SubscribedProperties;
 
 public: // Конструкторы и деструкторы
 UIPropertyOutputBase(void);
@@ -104,14 +104,14 @@ virtual ~UIPropertyOutputBase(void);
 
 public: // Методы доступа к подключенным входам
 /// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const;
+virtual size_t GetNumSubscribers(void) const;
 
 /// Возвращает указатели на свойства-приемники данных
-virtual const std::vector<UEPtr<UIPropertyInput> > GetConnectedProperties(void) const;
+virtual const std::vector<UEPtr<UIPropertyInput> > GetSubscribedProperties(void) const;
 
 /// Возвращает указатели на свойства-источники данных
-virtual const UEPtr<UIPropertyInput> GetConnectedProperty(int c_index) const;
-virtual UEPtr<UIPropertyInput> GetConnectedProperty(int c_index);
+virtual const UEPtr<UIPropertyInput> GetSubscribedProperty(int c_index) const;
+virtual UEPtr<UIPropertyInput> GetSubscribedProperty(int c_index);
 
 /// Устанавливает связь этого выхода со входом input_property
 virtual bool Connect(UIPropertyInput *input_property);
@@ -124,10 +124,10 @@ virtual bool Disconnect(UIPropertyInput *input_property, int c_index=-1);
 virtual bool DisconnectAll(void);
 
 /// Возвращает true если выход подключен к выбранному входу
-virtual bool IsConnectedTo(UIPropertyInput *input_property);
+virtual bool IsConnectedToInput(UIPropertyInput *input_property);
 
 /// Возвращает true если выход подключен к одному из входов выбранного компонента
-virtual bool IsConnectedTo(UNet *component);
+virtual bool IsConnectedToComponent(UNet *component);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные

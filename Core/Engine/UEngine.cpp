@@ -5945,7 +5945,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
 	 output_property->GetLanguageType() == typeid(MDVector<double>))
    {
-	return output_property->GetPointer(0);
+    return output_property->GetMemoryArea(0);
    }
 
    return 0;
@@ -6021,9 +6021,11 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, cons
 
    UEPtr<RDK::UNet> cont=FindComponent(stringid);
    UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-   if(!property)
+   if(!iproperty)
 	return 0;
+   if(iproperty->GetLanguageType() != typeid(UBitmap))
+	return 0;
+
    return (const RDK::UBitmap*)iproperty->GetMemoryArea();
   }
   catch (RDK::UException &exception)
@@ -6288,10 +6290,12 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
 
    UEPtr<RDK::UNet> cont=FindComponent(stringid);
    UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-   if(!property)
+   if(!iproperty)
 	return 0;
-   return (const RDK::UBitmap*)property->GetMemoryArea();
+   if(iproperty->GetLanguageType() != typeid(UBitmap))
+	return 0;
+
+   return (const RDK::UBitmap*)iproperty->GetMemoryArea();
   }
   catch (RDK::UException &exception)
   {
@@ -6359,17 +6363,18 @@ int UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *pr
 	return RDK_E_NULL_POINTER_IN_ARGUMENT;
    UEPtr<RDK::UNet> cont=FindComponent(stringid);
    UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-   if(!property)
+   if(!iproperty)
 	return RDK_E_MODEL_PROPERTY_NOT_FOUND;
+   if(iproperty->GetLanguageType() != typeid(UBitmap))
+	return RDK_E_MODEL_PROPERTY_HAVE_INCOMPATIBLE_TYPE;
 
    if(reflect)
    {
 	const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
-	property->SetData(TempBmp);
+	iproperty->ReadFromMemory(&TempBmp);
    }
    else
-	property->SetData(*bmp);
+	iproperty->ReadFromMemory(bmp);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6446,17 +6451,18 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *pro
 	return RDK_E_NULL_POINTER_IN_ARGUMENT;
    UEPtr<RDK::UNet> cont=FindComponent(stringid);
    UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-   if(!property)
+   if(!iproperty)
 	return RDK_E_MODEL_PROPERTY_NOT_FOUND;
+   if(iproperty->GetLanguageType() != typeid(UBitmap))
+	return RDK_E_MODEL_PROPERTY_HAVE_INCOMPATIBLE_TYPE;
 
    if(reflect)
    {
 	const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
-	property->SetData(TempBmp);
+	iproperty->ReadFromMemory(&TempBmp);
    }
    else
-	property->SetData(*bmp);
+	iproperty->ReadFromMemory(bmp);
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
