@@ -2422,6 +2422,14 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
 
+ if(RdkApplication.IsTestMode())
+ {
+  bool closeAfterTests = false;
+  int returnCode = RdkApplication.Test(closeAfterTests);
+  /*if(closeAfterTests)
+	return returnCode;*/
+ }
+
  VersionString=GetBuildInfoAsString();
 }
 //---------------------------------------------------------------------------

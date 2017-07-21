@@ -149,6 +149,7 @@ int UTest::ProcessTest()
   try
   {
     Application->OpenProject(testProjectFileName);
+
     if(stepsMode)
     {
       for(size_t i = 0; i < static_cast<size_t>(calcDuration); ++i)
@@ -318,12 +319,14 @@ bool UTest::compareProperties(std::string value, std::string str, std::string)
 
 bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
 {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "laba-daba-dab-dab");
-
   USerStorageXML storage;
   storage.Load(str, "");
   storage.SelectNode("Objects");
-  size_t strVectorSize = static_cast<size_t>(atoi(storage.GetNodeAttribute("Size")));
+
+  std::string strS = storage.GetNodeAttribute("Size");
+  size_t strVectorSize = 0;
+  if(!strS.empty())
+    strVectorSize = boost::lexical_cast<size_t>(strS);
 
   return value.size() == strVectorSize;
 }
