@@ -61,14 +61,14 @@ UPVariable::~UPVariable(void)
 UContainer::UContainer(void)
  : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0)
 {
- AddLookupProperty("Id",ptParameter | pgSystem,new UPropertyVirtual<UId,UContainer,ptParameter | pgSystem>("Id",this,&UContainer::SetId,&UContainer::GetId));
- AddLookupProperty("Name",ptParameter | pgSystem,new UPropertyVirtual<NameT,UContainer,ptParameter | pgSystem>("Name",this,&UContainer::SetName,&UContainer::GetName));
- AddLookupProperty("TimeStep",ptParameter | pgSystem,new UPropertyVirtual<UTime,UContainer,ptParameter | pgSystem>("TimeStep",this,&UContainer::SetTimeStep,&UContainer::GetTimeStep));
- AddLookupProperty("Activity",ptParameter | pgPublic,new UPropertyVirtual<bool,UContainer,ptParameter | pgPublic>("Activity",this,&UContainer::SetActivity,&UContainer::GetActivity));
- AddLookupProperty("Coord",ptParameter | pgPublic,new UPropertyVirtual<RDK::MVector<double,3>,UContainer,ptParameter | pgPublic>("Coord",this,&UContainer::SetCoord,&UContainer::GetCoord));
- AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("MaxCalculationDuration",this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
- AddLookupProperty("CalculationDurationThreshold",ptParameter | pgPublic,new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("CalculationDurationThreshold",this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
- AddLookupProperty("DebugSysEventsMask",ptParameter | pgPublic,new UPropertyVirtual<unsigned int,UContainer,ptParameter | pgPublic>("DebugSysEventsMask",this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
+ AddLookupProperty(new UPropertyVirtual<UId,UContainer,ptParameter | pgSystem>("Id",this,&UContainer::SetId,&UContainer::GetId));
+ AddLookupProperty(new UPropertyVirtual<NameT,UContainer,ptParameter | pgSystem>("Name",this,&UContainer::SetName,&UContainer::GetName));
+ AddLookupProperty(new UPropertyVirtual<UTime,UContainer,ptParameter | pgSystem>("TimeStep",this,&UContainer::SetTimeStep,&UContainer::GetTimeStep));
+ AddLookupProperty(new UPropertyVirtual<bool,UContainer,ptParameter | pgPublic>("Activity",this,&UContainer::SetActivity,&UContainer::GetActivity));
+ AddLookupProperty(new UPropertyVirtual<RDK::MVector<double,3>,UContainer,ptParameter | pgPublic>("Coord",this,&UContainer::SetCoord,&UContainer::GetCoord));
+ AddLookupProperty(new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("MaxCalculationDuration",this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
+ AddLookupProperty(new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("CalculationDurationThreshold",this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
+ AddLookupProperty(new UPropertyVirtual<unsigned int,UContainer,ptParameter | pgPublic>("DebugSysEventsMask",this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
 
  InitFlag=false;
 

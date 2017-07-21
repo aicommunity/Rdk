@@ -38,6 +38,9 @@ virtual bool Load(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 // Метод возвращает тип свойства
 virtual unsigned int GetType(void) const=0;
 
+// Метод изменяет тип свойства
+virtual bool ChangeType(unsigned int value)=0;
+
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const=0;
 

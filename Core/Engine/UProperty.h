@@ -76,8 +76,8 @@ UPropertyBase(const std::string &name, OwnerT * const owner)
 {
    if(Owner)
    {
-	Variable=Owner->FindPropertyVariable(this);
-	reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(name,type,this,false);
+	reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this,false);
+//	Variable=Owner->FindPropertyVariable(this);
    }
 }
 
@@ -86,8 +86,8 @@ UPropertyBase(const std::string &name, OwnerT * const owner, T * const pdata, in
 {
  if(Owner)
  {
-  Variable=Owner->FindPropertyVariable(this);
-  reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(name,type,this,false);
+  reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this,false);
+//  Variable=Owner->FindPropertyVariable(this);
  }
  SetData(*pdata,0); // TODO: виртуальный метод еще не готов
 }
@@ -123,6 +123,15 @@ virtual unsigned int GetType(void) const
 {
  return Type;
 }
+
+// Метод изменяет тип свойства
+bool ChangeType(unsigned int value)
+{
+ Type=value;
+ return true;
+}
+
+
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -257,7 +266,7 @@ virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const
 {
- return Variable->first;
+ return Name;
 };
 
 // Метод возвращает строковое имя компонента-владельца свойства
@@ -326,12 +335,12 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyVirtual(const std::string &name, OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UPropertyBase<T,OwnerT,type>(name, owner), CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod)
+  CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), UPropertyBase<T,OwnerT,type>(name, owner)
 {
 }
 
 UPropertyVirtual(const std::string &name, OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  UPropertyBase<T,OwnerT,type>(name,owner,pdata), CheckEqualsFlag(true), GetterR(0), SetterR(setmethod)
+  CheckEqualsFlag(true), GetterR(0), SetterR(setmethod), UPropertyBase<T,OwnerT,type>(name,owner,pdata)
 {
 }
 // -----------------------------

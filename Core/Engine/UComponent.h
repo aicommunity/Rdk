@@ -298,7 +298,7 @@ public:
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-void AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
+void AddLookupProperty(UEPtr<UIProperty> property, bool delenable=true);
 
 // Изменяет тип параметра
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);

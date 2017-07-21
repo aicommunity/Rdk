@@ -511,14 +511,15 @@ unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 // ƒобавл€ет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // ƒолжна вызыватьс€ в конструкторах классов
-void UComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
+void UComponent::AddLookupProperty(UEPtr<UIProperty> property, bool delenable)
 {
+ std::string name=property->GetName();
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
   RDK_RAW_THROW(EPropertyNameAlreadyExist(name));
 
  UVariable P(property);
  P.DelEnable=delenable;
- P.Type=type;
+ P.Type=property->GetType();
 
  pair<VariableMapCIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
  P.Property->SetVariable(res.first);
@@ -532,7 +533,8 @@ bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
  if(I == PropertiesLookupTable.end())
   return false;
 
- I->second.Type=type;
+ I->second.Property->ChangeType(type);
+ I->second.Type=I->second.Property->GetType();;
  return true;
 }
 
