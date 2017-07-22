@@ -3615,7 +3615,7 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
    J=props.end();
    while(I != J)
    {
-	if(I->second.CheckMask(type_mask))
+	if(I->second->CheckMask(type_mask))
 	{
 	 if(TempString.size()>0)
 	  TempString+=",";
@@ -3664,7 +3664,7 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
    J=props.end();
    while(I != J)
    {
-	if(I->second.CheckMask(type_mask))
+	if(I->second->CheckMask(type_mask))
 	{
 	 if(TempString.size()>0)
 	  TempString+=",";
@@ -3711,7 +3711,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
 	return TempString.c_str();
 
    XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+   XmlStorage.AddNode(UComponent::GetPropertyTypeNameByType(type_mask));
 
    if(!cont->GetComponentProperties(&XmlStorage, type_mask))
    {
@@ -3784,7 +3784,7 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
    std::string comp_name;
    USerStorageXML xml;
    xml.Create(cont->GetLongName(Environment->GetCurrentComponent(),comp_name));
-   xml.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+   xml.AddNode(UComponent::GetPropertyTypeNameByType(type_mask));
 
    if(!cont->GetComponentPropertiesEx(&xml, type_mask))
    {
@@ -3863,7 +3863,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
    XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
    for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
    {
-	if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+	if(XmlStorage.SelectNode(UComponent::GetPropertyTypeNameByType(mask)))
 	{
 	 int prop_res=cont->SetComponentProperties(&XmlStorage);
 	 if(prop_res != RDK_SUCCESS)

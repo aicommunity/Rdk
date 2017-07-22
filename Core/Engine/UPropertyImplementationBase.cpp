@@ -273,28 +273,26 @@ bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_ind
 
  bool res(true);
  size_t found_counter(0);
- std::vector<UEPtr<UIPropertyInput> >::iterator I,J;
 
- I=SubscribedProperties.begin();
- int i(0);
- while(I != SubscribedProperties.end())
+ size_t i(0);
+ while(i<SubscribedProperties.size())
  {
-  if(*I == input_property)
+  if(SubscribedProperties[i] == input_property)
   {
    if(c_index == -1 || i == c_index)
    {
-    J=I; ++J;
 	// TODO: тут код физического отключения данных
-	SubscribedProperties.erase(I);
+	SubscribedProperties.erase(SubscribedProperties.begin()+i);
 	res&=input_property->DisconnectFromOutput(this,i);
-    I=J;
+    ++found_counter;
    }
    else
    {
-	++I;
     ++i;
    }
   }
+  else
+   ++i;
  }
 
  if(found_counter == 0)

@@ -58,7 +58,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
  Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
- storage.Load(xmlbuffer,"Items");
+ storage.Load(xmlbuffer,"Nets");
  RDK::operator >> (storage,buffer);
 
  ShowInputs(StringGrid,buffer);
@@ -99,7 +99,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
  Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
- storage.Load(xmlbuffer,"Items");
+ storage.Load(xmlbuffer,"Nets");
  RDK::operator >> (storage,buffer);
 
  ShowOutputs(StringGrid,buffer);
@@ -142,7 +142,7 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
- storage.Load(xmlbuffer,"Items");
+ storage.Load(xmlbuffer,"Nets");
  RDK::operator >> (storage,itemsbuffer);
 
  std::list<std::string>::iterator I=itemsbuffer.begin();

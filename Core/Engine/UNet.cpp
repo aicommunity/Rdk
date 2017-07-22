@@ -313,8 +313,8 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 
  std::vector<UEPtr<UIPropertyInput> > input_properties;
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- pconnector->FindPropertiesByType<UIPropertyInput>(input_properties);
- pitem->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ pconnector->FindPropertiesByType<UIPropertyInput>(input_properties,ptInput);
+ pitem->FindPropertiesByType<UIPropertyOutput>(output_properties,ptOutput);
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
@@ -333,7 +333,7 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 bool UNet::BreakOutputLinks(void)
 {
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- FindPropertiesByType<UIPropertyOutput>(output_properties);
+ FindPropertiesByType<UIPropertyOutput>(output_properties,ptOutput);
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
@@ -391,7 +391,7 @@ bool UNet::BreakOutputLinks(const NameT &itemname, const NameT &item_property_na
 bool UNet::BreakInputLinks(void)
 {
  std::vector<UEPtr<UIPropertyInput> > input_properties;
- FindPropertiesByType<UIPropertyInput>(input_properties);
+ FindPropertiesByType<UIPropertyInput>(input_properties,ptInput);
  bool res(true);
  for(size_t i=0;i<input_properties.size();i++)
  {
@@ -451,7 +451,7 @@ bool UNet::DisconnectBy(UEPtr<UContainer> brklevel)
  bool res(true);
 
  std::vector<UEPtr<UIPropertyOutput> > buffer;
- FindPropertiesByType<UIPropertyOutput>(buffer);
+ FindPropertiesByType<UIPropertyOutput>(buffer,ptOutput);
  for(size_t j=0;j<buffer.size();j++)
  {
   size_t i=0;
@@ -559,7 +559,7 @@ bool UNet::IsLinkExists(const NameT &itemname,const NameT &connectorname)
  }
 
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- pitem->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ pitem->FindPropertiesByType<UIPropertyOutput>(output_properties,ptOutput);
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
@@ -624,7 +624,7 @@ ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bo
  link.Item=item;
 
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- this->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ this->FindPropertiesByType<UIPropertyOutput>(output_properties,ptOutput);
  for(size_t i=0;i<output_properties.size();i++)
  {
   link.Connector.clear();
@@ -666,7 +666,7 @@ ULinksList& UNet::GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, boo
   return linkslist;
 
  std::vector<UEPtr<UIPropertyInput> > input_properties;
- FindPropertiesByType<UIPropertyInput>(input_properties);
+ FindPropertiesByType<UIPropertyInput>(input_properties,ptInput);
 
  for(size_t j=0;j<input_properties.size();j++)
  {
@@ -726,7 +726,7 @@ ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist
  link.Item=item;
 
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- this->FindPropertiesByType<UIPropertyOutput>(output_properties);
+ this->FindPropertiesByType<UIPropertyOutput>(output_properties,ptOutput);
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
@@ -766,7 +766,7 @@ ULinksList& UNet::GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist,
   return linkslist;
 
  std::vector<UEPtr<UIPropertyInput> > input_properties;
- FindPropertiesByType<UIPropertyInput>(input_properties);
+ FindPropertiesByType<UIPropertyInput>(input_properties,ptInput);
 
  for(size_t j=0;j<input_properties.size();j++)
  {
@@ -812,20 +812,20 @@ ULinksList& UNet::GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist,
 /// Ищет свойство-выход по заданному индексу
 UIPropertyOutput* UNet::FindOutputProperty(const NameT &property_name)
 {
- return FindPropertyByType<UIPropertyOutput>(property_name);
+ return FindPropertyByType<UIPropertyOutput>(property_name, ptOutput);
 }
 
 /// Ищет свойство-вход по заданному индексу
 UIPropertyInput* UNet::FindInputProperty(const NameT &property_name)
 {
- return FindPropertyByType<UIPropertyInput>(property_name);
+ return FindPropertyByType<UIPropertyInput>(property_name, ptInput);
 }
 
 /// Возвращает число входов
 int UNet::GetNumInputs(void)
 {
  std::vector<UEPtr<UIPropertyInput> > input_properties;
- FindPropertiesByType<UIPropertyInput>(input_properties);
+ FindPropertiesByType<UIPropertyInput>(input_properties,ptInput);
  return int(input_properties.size());
 }
 
@@ -833,7 +833,7 @@ int UNet::GetNumInputs(void)
 int UNet::GetNumOutputs(void)
 {
  std::vector<UEPtr<UIPropertyOutput> > output_properties;
- FindPropertiesByType<UIPropertyOutput>(output_properties);
+ FindPropertiesByType<UIPropertyOutput>(output_properties,ptOutput);
  return int(output_properties.size());
 }
 // ----------------------
@@ -857,7 +857,7 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
   J=props.end();
   while(I != J)
   {
-   if(I->second.CheckMask(type_mask))
+   if(I->second->CheckMask(type_mask))
    {
 	try
 	{
@@ -871,7 +871,7 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
 	std::string paramname=I->first;//I->second.Property->GetName();
     if(serstorage->SelectNode(paramname))
     {
-     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     serstorage->SetNodeAttribute("PType",sntoa(I->second->GetType()));
      serstorage->SelectUp();
 	}
    }
@@ -908,7 +908,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
   J=props.end();
   while(I != J)
   {
-   if(I->second.CheckMask(type_mask))
+   if(I->second->CheckMask(type_mask))
    {
 	try
 	{
@@ -922,7 +922,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 	std::string paramname=I->first;//I->second.Property->GetName();
 	if(serstorage->SelectNode(paramname))
 	{
-	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+	 serstorage->SetNodeAttribute("PType",sntoa(I->second->GetType()));
 	 if(descr)
 	 {
 	  serstorage->SetNodeAttribute("Header",descr->GetPropertyDescription(paramname).Header);
@@ -1018,7 +1018,7 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
 
   serstorage->AddNode(GetName());
   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
-  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
+  serstorage->AddNode(UComponent::GetPropertyTypeNameByType(ptParameter));
   if(!GetComponentProperties(serstorage,params_type_mask))
    return false;
   serstorage->SelectUp();
@@ -1068,7 +1068,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 
   for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
   {
-   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   if(serstorage->SelectNode(UComponent::GetPropertyTypeNameByType(mask)))
    {
 	try
 	{
@@ -1144,7 +1144,7 @@ bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int
 
   serstorage->AddNode(GetName());
   serstorage->SetNodeAttribute("Class",Storage->FindClassName(GetClass()));
-  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+  serstorage->AddNode(UComponent::GetPropertyTypeNameByType(type_mask));
   if(!GetComponentProperties(serstorage,type_mask))
    return false;
   serstorage->SelectUp();
@@ -1189,7 +1189,7 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
 
   for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
   {
-   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   if(serstorage->SelectNode(UComponent::GetPropertyTypeNameByType(mask)))
    {
 	try
 	{

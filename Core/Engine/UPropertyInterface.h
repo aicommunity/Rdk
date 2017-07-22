@@ -82,6 +82,25 @@ public: // Вспомогательные методы
 // свойстве в родительском компоненте
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)=0;
 
+/// Устанавливает флаг, указывающий, что это динамическое свойство, и должно быть удалено при разрушении компонента-владельца
+virtual void SetDynamicPropertyFlag(void)=0;
+
+/// Возвращает состояние флага, указывающего, что это динамическое свойство
+virtual bool IsDynamicPropertyFlag(void) const=0;
+
+// Возвращает только маску типа свойства
+virtual unsigned int GetPropertyType(void) const=0;
+
+// Возвращает только маску группы свойства
+virtual unsigned int GetPropertyGroup(void) const=0;
+
+// Возвращает строковое имя типа свойства
+virtual std::string GetPropertyTypeName(void) const=0;
+
+// Проверяет соответствие типа и группы свойства маске
+virtual bool CheckMask(unsigned int mask) const=0;
+
+
 /// Обновляет указатель PData
 //virtual void UpdatePData(void* data)=0;
 

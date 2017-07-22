@@ -61,14 +61,16 @@ UPVariable::~UPVariable(void)
 UContainer::UContainer(void)
  : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0)
 {
- AddLookupProperty(new UPropertyVirtual<UId,UContainer,ptParameter | pgSystem>("Id",this,&UContainer::SetId,&UContainer::GetId));
- AddLookupProperty(new UPropertyVirtual<NameT,UContainer,ptParameter | pgSystem>("Name",this,&UContainer::SetName,&UContainer::GetName));
- AddLookupProperty(new UPropertyVirtual<UTime,UContainer,ptParameter | pgSystem>("TimeStep",this,&UContainer::SetTimeStep,&UContainer::GetTimeStep));
- AddLookupProperty(new UPropertyVirtual<bool,UContainer,ptParameter | pgPublic>("Activity",this,&UContainer::SetActivity,&UContainer::GetActivity));
- AddLookupProperty(new UPropertyVirtual<RDK::MVector<double,3>,UContainer,ptParameter | pgPublic>("Coord",this,&UContainer::SetCoord,&UContainer::GetCoord));
- AddLookupProperty(new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("MaxCalculationDuration",this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
- AddLookupProperty(new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("CalculationDurationThreshold",this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
- AddLookupProperty(new UPropertyVirtual<unsigned int,UContainer,ptParameter | pgPublic>("DebugSysEventsMask",this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
+ // bad idea
+ UIProperty* prop=0;
+ prop=new UPropertyVirtual<UId,UContainer,ptParameter | pgSystem>("Id",this,&UContainer::SetId,&UContainer::GetId,true);
+ prop=new UPropertyVirtual<NameT,UContainer,ptParameter | pgSystem>("Name",this,&UContainer::SetName,&UContainer::GetName,true);
+ prop=new UPropertyVirtual<UTime,UContainer,ptParameter | pgSystem>("TimeStep",this,&UContainer::SetTimeStep,&UContainer::GetTimeStep,true);
+ prop=new UPropertyVirtual<bool,UContainer,ptParameter | pgPublic>("Activity",this,&UContainer::SetActivity,&UContainer::GetActivity,true);
+ prop=new UPropertyVirtual<RDK::MVector<double,3>,UContainer,ptParameter | pgPublic>("Coord",this,&UContainer::SetCoord,&UContainer::GetCoord,true);
+ prop=new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("MaxCalculationDuration",this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration,true);
+ prop=new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("CalculationDurationThreshold",this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold,true);
+ prop=new UPropertyVirtual<unsigned int,UContainer,ptParameter | pgPublic>("DebugSysEventsMask",this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask,true);
 
  InitFlag=false;
 
@@ -340,7 +342,7 @@ void UContainer::LogPropertiesBeforeCalc(void)
    VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
    for(; I != J; ++I)
    {
-	if(I->second.GetPropertyType() & ptInput)
+	if(I->second->GetPropertyType() & ptInput)
 	 if(PreparePropertyLogString(I->second, ptInput, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -348,10 +350,10 @@ void UContainer::LogPropertiesBeforeCalc(void)
    I=PropertiesLookupTable.begin();
    for(; I != J; ++I)
    {
-	if(I->second.GetPropertyGroup() != pgPublic)
+	if(I->second->GetPropertyGroup() != pgPublic)
 	 continue;
 
-	if(I->second.GetPropertyType() & ptParameter)
+	if(I->second->GetPropertyType() & ptParameter)
 	 if(PreparePropertyLogString(I->second, ptParameter, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -379,7 +381,7 @@ void UContainer::LogPropertiesAfterCalc(void)
    VariableMapCIteratorT I=PropertiesLookupTable.begin(),J=PropertiesLookupTable.end();
    for(; I != J; ++I)
    {
-	if(I->second.GetPropertyType() & ptOutput)
+	if(I->second->GetPropertyType() & ptOutput)
 	 if(PreparePropertyLogString(I->second, ptOutput, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -387,10 +389,10 @@ void UContainer::LogPropertiesAfterCalc(void)
    I=PropertiesLookupTable.begin();
    for(; I != J; ++I)
    {
-	if(I->second.GetPropertyGroup() != pgPublic)
+	if(I->second->GetPropertyGroup() != pgPublic)
 	 continue;
 
-	if(I->second.GetPropertyType() & ptState && !(I->second.GetPropertyType() & ptOutput)  && !(I->second.GetPropertyType() & ptInput))
+	if(I->second->GetPropertyType() & ptState && !(I->second->GetPropertyType() & ptOutput)  && !(I->second->GetPropertyType() & ptInput))
 	 if(PreparePropertyLogString(I->second, ptState, log_message))
 	  LogMessageEx(RDK_EX_DEBUG, log_message);
    }
@@ -2923,11 +2925,11 @@ std::string UContainer::EComponentSystemException::CreateLogMessage(void) const
 
 
 /// Функция подготавливает строку для логирования
-bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result)
+bool PreparePropertyLogString(const UEPtr<UIProperty>& variable, unsigned int expected_type, std::string &result)
 {
  USerStorageXML xml;
  std::string str_type;
- unsigned int type=variable.GetPropertyType();
+ unsigned int type=variable->GetPropertyType();
 
  if(!(type & expected_type))
   return false;
@@ -2944,16 +2946,16 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  if(type & ptState)
   str_type="State ";
 
- if((type & ptInput) && variable.Property->GetName().find("DataInput") != string::npos)
+ if((type & ptInput) && variable->GetName().find("DataInput") != string::npos)
   return false;
 
- if((type & ptOutput) && variable.Property->GetName().find("DataOutput") != string::npos)
+ if((type & ptOutput) && variable->GetName().find("DataOutput") != string::npos)
   return false;
 
- std::string line=str_type+variable.Property->GetName();
+ std::string line=str_type+variable->GetName();
  result=line;
 
- UEPtr<UIPropertyInput> prop_input=dynamic_pointer_cast<UIPropertyInput>(variable.Property);
+ UEPtr<UIPropertyInput> prop_input=dynamic_pointer_cast<UIPropertyInput>(variable);
  if(prop_input && !prop_input->IsConnected())
  {
   result=line+"[<Disconnected>]";
@@ -2979,7 +2981,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
 
   try
   {
-   variable.Property->Save(&xml,true);
+   variable->Save(&xml,true);
    std::string str_data=xml.GetNodeText();
    if(str_data.empty())
    {

@@ -26,7 +26,7 @@ namespace RDK {
 
 /// «аглушка, возвращаема€ в случае остутстви€ доступа к Environment::Time
 //UELockVar<UTimeControl> UComponent::DummyTime;
-
+				 /*
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
@@ -70,48 +70,6 @@ unsigned int UVariable::GetPropertyGroup(void) const
  return Type & 0xFFFFFF00;
 }
 
-// ¬озвращает строковое им€ типа свойства по заданному типу
-std::string UVariable::GetPropertyTypeNameByType(unsigned int type)
-{
- switch (type & 0x000000FF)
- {
- case ptAny:
-  return std::string("Properties");
- case ptParameter:
-  return std::string("Parameters");
- case ptState:
-  return std::string("State");
- case ptTemp:
-  return std::string("Temp");
- case ptInput:
-  return std::string("Input");
- case ptOutput:
-  return std::string("Output");
-
- default:
-  return std::string("ptUnknown");
- }
-}
-
-// ¬озвращает тип свойства по строковому имени
-unsigned int UVariable::GetPropertyTypeByTypeName(const std::string &name)
-{
- if(name == "Properties")
-  return ptAny;
- if(name == "Parameters")
-  return ptParameter;
- if(name == "State")
-  return ptState;
- if(name == "Temp")
-  return ptTemp;
- if(name == "Input")
-  return ptInput;
- if(name == "Output")
-  return ptOutput;
-
- return 0;
-}
-
 // ¬озвращает строковое им€ типа свойства
 std::string UVariable::GetPropertyTypeName(void) const
 {
@@ -124,7 +82,7 @@ bool UVariable::CheckMask(unsigned int mask) const
  return (GetPropertyType() & mask) && (GetPropertyGroup() & mask);
 }
 // --------------------------
-
+      */
 
 //class UComponent
 // --------------------------
@@ -298,6 +256,49 @@ const NameT UComponent::GetCompClassName(void) const
 {
  return Storage->FindClassName(Class);
 }
+
+
+// ¬озвращает строковое им€ типа свойства по заданному типу
+std::string UComponent::GetPropertyTypeNameByType(unsigned int type)
+{
+ switch (type & 0x000000FF)
+ {
+ case ptAny:
+  return std::string("Properties");
+ case ptParameter:
+  return std::string("Parameters");
+ case ptState:
+  return std::string("State");
+ case ptTemp:
+  return std::string("Temp");
+ case ptInput:
+  return std::string("Input");
+ case ptOutput:
+  return std::string("Output");
+
+ default:
+  return std::string("ptUnknown");
+ }
+}
+
+// ¬озвращает тип свойства по строковому имени
+unsigned int UComponent::GetPropertyTypeByTypeName(const std::string &name)
+{
+ if(name == "Properties")
+  return ptAny;
+ if(name == "Parameters")
+  return ptParameter;
+ if(name == "State")
+  return ptState;
+ if(name == "Temp")
+  return ptTemp;
+ if(name == "Input")
+  return ptInput;
+ if(name == "Output")
+  return ptOutput;
+
+ return 0;
+}
 // --------------------------
 
 
@@ -323,7 +324,7 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  UPropertyDescription dummydescr;
  while(I != PropertiesLookupTable.end())
  {
-  UEPtr<UIProperty> prop(I->second.Property);
+  UEPtr<UIProperty> prop(I->second);
   dummydescr.Type=prop->GetLanguageType().name();
   result->SetPropertyDescription(I->first,dummydescr);
   ++I;
@@ -366,7 +367,7 @@ const UEPtr<UIProperty> UComponent::FindProperty(const NameT &name) const
   I=PropertiesLookupTable.find(name);
 
  if(I != PropertiesLookupTable.end())
-  return I->second.Property;
+  return I->second;
 
  return UEPtr<UIProperty>(0);
 }
@@ -382,7 +383,7 @@ UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
   I=PropertiesLookupTable.find(name);
 
  if(I != PropertiesLookupTable.end())
-  return I->second.Property;
+  return I->second;
 
  return UEPtr<UIProperty>(0);
 }
@@ -459,7 +460,7 @@ void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
                             J=PropertiesLookupTable.end(); I!=J; ++I)
  {
-  if(!(I->second.Type & type))
+  if(!(I->second->GetType() & type))
    continue;
 //  databuffer.clear();
   databuffer.Destroy();
@@ -474,7 +475,7 @@ const NameT& UComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
 						J=PropertiesLookupTable.end(); I!=J; ++I)
   {
-   if(I->second.Property == prop)
+   if(I->second == prop)
 	return I->first;
   }
  return ForbiddenName;
@@ -486,7 +487,7 @@ UComponent::VariableMapCIteratorT UComponent::FindPropertyVariable(UEPtr<const U
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
 						J=PropertiesLookupTable.end(); I!=J; ++I)
   {
-   if(I->second.Property == prop)
+   if(I->second == prop)
 	return I;
   }
  return PropertiesLookupTable.end();
@@ -498,8 +499,8 @@ unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
 						J=PropertiesLookupTable.end(); I!=J; ++I)
   {
-   if(I->second.Property == prop)
-	return I->second.Type;
+   if(I->second == prop)
+	return I->second->GetType();
   }
  return 0;
 }
@@ -511,18 +512,21 @@ unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 // ƒобавл€ет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // ƒолжна вызыватьс€ в конструкторах классов
-void UComponent::AddLookupProperty(UEPtr<UIProperty> property, bool delenable)
+void UComponent::AddLookupProperty(UEPtr<UIProperty> property)
 {
  std::string name=property->GetName();
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
+ {
+  if(property->IsDynamicPropertyFlag())
+  {
+   delete property;
+   property=0;
+  }
   RDK_RAW_THROW(EPropertyNameAlreadyExist(name));
+ }
 
- UVariable P(property);
- P.DelEnable=delenable;
- P.Type=property->GetType();
-
- pair<VariableMapCIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
- P.Property->SetVariable(res.first);
+ pair<VariableMapCIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,property));
+ property->SetVariable(res.first);
 }
 
 // »змен€ет тип параметра
@@ -533,8 +537,7 @@ bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
  if(I == PropertiesLookupTable.end())
   return false;
 
- I->second.Property->ChangeType(type);
- I->second.Type=I->second.Property->GetType();;
+ I->second->ChangeType(type);
  return true;
 }
 
@@ -547,8 +550,8 @@ void UComponent::DelLookupProperty(const NameT &name)
  if(I == PropertiesLookupTable.end())
   RDK_RAW_THROW(EPropertyNameNotExist(name));
 
- UIProperty *prop=I->second.Property;
- bool del_enable=I->second.DelEnable;
+ UIProperty *prop=I->second;
+ bool del_enable=I->second->IsDynamicPropertyFlag();
  PropertiesLookupTable.erase(I);
  if(prop && del_enable)
   delete prop;
@@ -574,8 +577,10 @@ void UComponent::ClearLookupPropertyTable(void)
  while(PropertiesLookupTable.begin() != PropertiesLookupTable.end())
  {
   VariableMapIteratorT I=PropertiesLookupTable.begin();
-  UIProperty* prop=I->second.Property;
-  bool del_enable=I->second.DelEnable;
+  UIProperty* prop=I->second;
+  std::string prop_name=prop->GetName();
+  std::string prop_item=prop->GetOwnerName();
+  bool del_enable=prop->IsDynamicPropertyFlag();
   PropertiesLookupTable.erase(I);
   if(prop && del_enable)
    delete prop;

@@ -66,30 +66,22 @@ mutable ULongTime UpdateTime;
 // Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
 UComponent::VariableMapCIteratorT Variable;
 
+/// Флаг, указывающий, что это динамическое свойтво
+bool DynamicPropertyFlag;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyBase(const std::string &name, OwnerT * const owner)
- : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
+UPropertyBase(const std::string &name, OwnerT * const owner, bool dynamic_prop_flag=false)
+ : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag)
 {
    if(Owner)
    {
-	reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this,false);
+	reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this);
 //	Variable=Owner->FindPropertyVariable(this);
    }
-}
-
-UPropertyBase(const std::string &name, OwnerT * const owner, T * const pdata, int index=0)
- : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0)
-{
- if(Owner)
- {
-  reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this,false);
-//  Variable=Owner->FindPropertyVariable(this);
- }
- SetData(*pdata,0); // TODO: виртуальный метод еще не готов
 }
 
 virtual ~UPropertyBase(void)
@@ -263,6 +255,43 @@ virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
  Variable=var;
 }
 
+/// Устанавливает флаг, указывающий, что это динамическое свойство, и должно быть удалено при разрушении компонента-владельца
+virtual void SetDynamicPropertyFlag(void)
+{
+ DynamicPropertyFlag=true;
+}
+
+/// Возвращает состояние флага, указывающего, что это динамическое свойство
+virtual bool IsDynamicPropertyFlag(void) const
+{
+ return DynamicPropertyFlag;
+}
+
+// Возвращает только маску типа свойства
+unsigned int GetPropertyType(void) const
+{
+ return Type & 0x000000FF;
+}
+
+// Возвращает только маску группы свойства
+unsigned int GetPropertyGroup(void) const
+{
+ return Type & 0xFFFFFF00;
+}
+
+// Возвращает строковое имя типа свойства
+std::string GetPropertyTypeName(void) const
+{
+ return UComponent::GetPropertyTypeNameByType(GetPropertyType());
+}
+
+// Проверяет соответствие типа и группы свойства маске
+bool CheckMask(unsigned int mask) const
+{
+ return (GetPropertyType() & mask) && (GetPropertyGroup() & mask);
+}
+
+
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const
 {
@@ -329,19 +358,26 @@ protected: // Данные
 GetterRT GetterR;
 SetterRT SetterR;
 
+T* RawDataPtr;
+
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyVirtual(const std::string &name, OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), UPropertyBase<T,OwnerT,type>(name, owner)
+UPropertyVirtual(const std::string &name, OwnerT * const owner, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
+  CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), RawDataPtr(0), UPropertyBase<T,OwnerT,type>(name, owner, dynamic_prop_flag)
 {
 }
 
-UPropertyVirtual(const std::string &name, OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  CheckEqualsFlag(true), GetterR(0), SetterR(setmethod), UPropertyBase<T,OwnerT,type>(name,owner,pdata)
+UPropertyVirtual(const std::string &name, OwnerT * const owner, T * const pdata, bool dynamic_prop_flag=false) :
+  CheckEqualsFlag(true), GetterR(0), SetterR(0), RawDataPtr(pdata), UPropertyBase<T,OwnerT,type>(name,owner,dynamic_prop_flag)
 {
+}
+
+virtual ~UPropertyVirtual(void)
+{
+
 }
 // -----------------------------
 
@@ -371,6 +407,9 @@ virtual const T& GetData(int index=0) const
   if(GetterR)
    return (this->Owner->*GetterR)();
  }
+ else
+ if(RawDataPtr)
+  return *RawDataPtr;
 
  throw UIProperty::EPropertyZeroPtr(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
 };
@@ -378,23 +417,32 @@ virtual const T& GetData(int index=0) const
 // Установка значения
 virtual void SetData(const T &value, int index=0)
 {
- if(!GetterR)
-  throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
-
- if(CheckEqualsFlag && (this->Owner->*GetterR)() == value)
-  return;
-
- if(!SetterR)
+ if(RawDataPtr)
  {
-  throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+  if(CheckEqualsFlag && *RawDataPtr == value)
+   return;
+
+  *RawDataPtr=value;
+  this->RenewUpdateTime();
  }
-
- if(this->Owner && SetterR)
+ else
  {
-  if(!(this->Owner->*SetterR)(value))
+  if(!GetterR)
    throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
 
-  this->RenewUpdateTime();
+  if(CheckEqualsFlag && (this->Owner->*GetterR)() == value)
+   return;
+
+  if(!SetterR)
+   throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
+  if(this->Owner && SetterR)
+  {
+   if(!(this->Owner->*SetterR)(value))
+	throw UIProperty::EPropertySetterFail(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
+   this->RenewUpdateTime();
+  }
  }
 };
 // -----------------------------
@@ -586,11 +634,17 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod)
- : UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0) { };
+ : UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0)
+{
+ SetNumConnectionsLimit(-1);
+};
 
 UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod)
  : UProperty<T,OwnerT,type>(name, owner,(typename UPropertyVirtual<T,OwnerT,type>::SetterRT)0,0)
-{ VSetterR=setmethod; };
+{
+ VSetterR=setmethod;
+ SetNumConnectionsLimit(-1);
+};
 // -----------------------------
 
 // -----------------------------

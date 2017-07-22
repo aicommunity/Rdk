@@ -60,7 +60,7 @@ typedef USerStorage UVariableData;
 
 class UIProperty;
 class UIShare;
-
+								 /*
 // Хранилище свойств параметра
 struct RDK_LIB_TYPE UVariable
 {
@@ -107,15 +107,15 @@ std::string GetPropertyTypeName(void) const;
 bool CheckMask(unsigned int mask) const;
 // --------------------------
 };
-
+           */
 
 class RDK_LIB_TYPE UComponent: public UModule
 {
 friend class UStorage;
 public: // Типы данных
-typedef std::map<NameT,UVariable> VariableMapT;
-typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
-typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
+typedef std::map<NameT,UEPtr<UIProperty> > VariableMapT;
+typedef std::map<NameT,UEPtr<UIProperty> >::iterator VariableMapIteratorT;
+typedef std::map<NameT,UEPtr<UIProperty> >::const_iterator VariableMapCIteratorT;
 
 typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
 typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
@@ -226,6 +226,12 @@ bool SetClass(UId value);
 
 // Возвращает имя класса компоненты
 const NameT GetCompClassName(void) const;
+
+// Возвращает строковое имя типа свойства по заданному типу
+static std::string GetPropertyTypeNameByType(unsigned int type);
+
+// Возвращает тип свойства по строковому имени
+static unsigned int GetPropertyTypeByTypeName(const std::string &name);
 // --------------------------
 
 // --------------------------
@@ -257,10 +263,10 @@ UEPtr<UIProperty> FindProperty(const NameT &name);
 
 // Возвращает указатель на данные свойства
 template<typename T>
-const UEPtr<T> FindPropertyByType(const NameT &name) const;
+const UEPtr<T> FindPropertyByType(const NameT &name, unsigned int mask) const;
 
 template<typename T>
-UEPtr<T> FindPropertyByType(const NameT &name);
+UEPtr<T> FindPropertyByType(const NameT &name, unsigned int mask);
 
 // Возвращает значение параметра по имени 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
@@ -284,7 +290,7 @@ unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
 UComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
 
 template<typename T>
-void FindPropertiesByType(std::vector<UEPtr<T> > &properties) const;
+void FindPropertiesByType(std::vector<UEPtr<T> > &properties, unsigned int mask) const;
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 // копируются только свойства типа type
@@ -298,7 +304,7 @@ public:
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-void AddLookupProperty(UEPtr<UIProperty> property, bool delenable=true);
+void AddLookupProperty(UEPtr<UIProperty> property);
 
 // Изменяет тип параметра
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
@@ -418,35 +424,41 @@ public:
 
 
 template<typename T>
-void UComponent::FindPropertiesByType(std::vector<UEPtr<T> > &properties) const
+void UComponent::FindPropertiesByType(std::vector<UEPtr<T> > &properties, unsigned int mask) const
 {
  properties.clear();
  VariableMapCIteratorT I=PropertiesLookupTable.begin();
  for(;I != PropertiesLookupTable.end(); I++)
  {
-  UEPtr<T> property=dynamic_pointer_cast<T>(I->second.Property);
-  if(property)
+  UEPtr<T> property=dynamic_pointer_cast<T>(I->second);
+  if(property && (property->GetPropertyType() & mask))
    properties.push_back(property);
  }
 }
 
 // Возвращает указатель на данные свойства
 template<typename T>
-const UEPtr<T> UComponent::FindPropertyByType(const NameT &name) const
+const UEPtr<T> UComponent::FindPropertyByType(const NameT &name, unsigned int mask) const
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
  if(I != PropertiesLookupTable.end())
-  return dynamic_pointer_cast<T>(I->second.Property);
+ {
+  if(I->second->GetPropertyType() & mask)
+   return dynamic_pointer_cast<T>(I->second);
+ }
 
  return 0;
 }
 
 template<typename T>
-UEPtr<T> UComponent::FindPropertyByType(const NameT &name)
+UEPtr<T> UComponent::FindPropertyByType(const NameT &name, unsigned int mask)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
  if(I != PropertiesLookupTable.end())
-  return dynamic_pointer_cast<T>(I->second.Property);
+ {
+  if(I->second->GetPropertyType() & mask)
+   return dynamic_pointer_cast<T>(I->second);
+ }
 
  return 0;
 }

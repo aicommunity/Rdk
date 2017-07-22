@@ -1024,7 +1024,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 /// Функция подготавливает строку для логирования
-bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result);
+bool PreparePropertyLogString(const UEPtr<UIProperty>& variable, unsigned int expected_type, std::string &result);
 
 
 // Осуществляет поиск всех компонент приводимых к заданному C++ типу
