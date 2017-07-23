@@ -86,6 +86,11 @@ UPropertyBase(const std::string &name, OwnerT * const owner, bool dynamic_prop_f
 
 virtual ~UPropertyBase(void)
 {
+   if(Owner)
+   {
+	reinterpret_cast<UComponent* const>(Owner)->DelLookupProperty(Name);
+//	Variable=Owner->FindPropertyVariable(this);
+   }
  UDestroyMutex(Mutex);
  Mutex=0;
 }

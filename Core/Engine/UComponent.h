@@ -309,11 +309,11 @@ void AddLookupProperty(UEPtr<UIProperty> property);
 // Изменяет тип параметра
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
 
-protected:
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
 void DelLookupProperty(const NameT &name);
 
+protected:
 // Удаляет всю таблицу соответствий
 void ClearLookupPropertyTable(void);
 // --------------------------

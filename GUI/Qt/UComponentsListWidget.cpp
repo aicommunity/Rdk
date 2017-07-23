@@ -230,11 +230,11 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
         if(!cont) return;
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT &varMap = cont->GetPropertiesList();
         std::string buffer;
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(std::map<RDK::NameT,RDK::UEPtr<RDK::UIProperty> >::const_iterator i = varMap.begin(); i != varMap.end(); ++i)
         {
-            if (i->second.CheckMask(ptPubParameter))
+            if (i->second->CheckMask(ptPubParameter))
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
                 QString parameterName = QString::fromStdString(i->first);
@@ -245,7 +245,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 if(parameterName == selectedParameterName)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
             }
-            if (i->second.CheckMask(ptPubState))
+            if (i->second->CheckMask(ptPubState))
             {
                 QTreeWidgetItem* stateItem = new QTreeWidgetItem(ui->treeWidgetState);
                 QString stateName = QString::fromStdString(i->first);
@@ -256,20 +256,20 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
             }
-            if (i->second.CheckMask(ptPubInput))
+            if (i->second->CheckMask(ptPubInput))
             {
                 QTreeWidgetItem* inputItem = new QTreeWidgetItem(ui->treeWidgetInputs);
                 QString inputName = QString::fromStdString(i->first);
                 inputItem->setText(0, inputName);
                 //inputItem->setText(1, QString::fromStdString(cont->GetPropertyValue(i->first, buffer)));
-                inputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
+                inputItem->setText(2, QString(i->second->GetLanguageType().name()));
                 /*if(i->second.Property->GetIoType() & ipRange) inputItem->setText(3, QString("range"));
                 else
                     if(i->second.Property->IsConnected()) inputItem->setText(3, QString("connected"));*/
                 if(inputName == selectedInputName)
                     ui->treeWidgetInputs->setCurrentItem(inputItem);
             }
-            if (i->second.CheckMask(ptPubOutput))
+            if (i->second->CheckMask(ptPubOutput))
             {
                 QTreeWidgetItem* outputItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
                 QString outputName = QString::fromStdString(i->first);
@@ -277,7 +277,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 cont->GetPropertyValue(i->first, buffer);
                 outputItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
                 outputItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
-                outputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
+                outputItem->setText(2, QString(i->second->GetLanguageType().name()));
                 if(outputName == selectedOutputName)
                     ui->treeWidgetOutputs->setCurrentItem(outputItem);
             }

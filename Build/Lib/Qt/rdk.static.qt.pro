@@ -18,12 +18,10 @@ SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
-    ../../../Core/Engine/UADItem.cpp \
     ../../../Core/Engine/UAModel.cpp \
     ../../../Core/Engine/UBinaryEnvSerialize.cpp \
     ../../../Core/Engine/UComponent.cpp \
     ../../../Core/Engine/UComponentDescription.cpp \
-    ../../../Core/Engine/UConnector.cpp \
     ../../../Core/Engine/UContainer.cpp \
     ../../../Core/Engine/UContainerDescription.cpp \
     ../../../Core/Engine/UController.cpp \
@@ -34,18 +32,13 @@ SOURCES += \
     ../../../Core/Engine/UEnvironment.cpp \
     ../../../Core/Engine/UEnvSupport.cpp \
     ../../../Core/Engine/UEPtr.cpp \
-    ../../../Core/Engine/UItem.cpp \
     ../../../Core/Engine/UItemData.cpp \
     ../../../Core/Engine/ULibrary.cpp \
-    ../../../Core/Engine/ULocalProperty.cpp \
     ../../../Core/Engine/ULogger.cpp \
     ../../../Core/Engine/UModule.cpp \
     ../../../Core/Engine/UNet.cpp \
     ../../../Core/Engine/UPointer.cpp \
     ../../../Core/Engine/UProperty.cpp \
-    ../../../Core/Engine/UPropertyInput.cpp \
-    ../../../Core/Engine/UPropertyIO.cpp \
-    ../../../Core/Engine/UPropertyOutput.cpp \
     ../../../Core/Engine/UShare.cpp \
     ../../../Core/Engine/UStorage.cpp \
     ../../../Core/Engine/UTime.cpp \
@@ -135,19 +128,19 @@ SOURCES += \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
     ../../../Core/Application/UTestManager.cpp \
-    ../../../Core/System/Gcc/pevents.cpp
+    ../../../Core/System/Gcc/pevents.cpp \
+    ../../../Core/Engine/UPropertyInterface.cpp \
+    ../../../Core/Engine/UPropertyImplementationBase.cpp \
+    ../../../Core/Engine/UPropertyEndpoints.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
-    ../../../Core/Engine/Engine.h.orig \
-    ../../../Core/Engine/UADItem.h \
     ../../../Core/Engine/UAModel.h \
     ../../../Core/Engine/UBinaryEnvSerialize.h \
     ../../../Core/Engine/UComponent.h \
     ../../../Core/Engine/UComponentDescription.h \
-    ../../../Core/Engine/UConnector.h \
     ../../../Core/Engine/UContainer.h \
     ../../../Core/Engine/UContainerDescription.h \
     ../../../Core/Engine/UController.h \
@@ -161,15 +154,11 @@ HEADERS +=\
     ../../../Core/Engine/UItem.h \
     ../../../Core/Engine/UItemData.h \
     ../../../Core/Engine/ULibrary.h \
-    ../../../Core/Engine/ULocalProperty.h \
     ../../../Core/Engine/ULogger.h \
     ../../../Core/Engine/UModule.h \
     ../../../Core/Engine/UNet.h \
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
-    ../../../Core/Engine/UPropertyInput.h \
-    ../../../Core/Engine/UPropertyIO.h \
-    ../../../Core/Engine/UPropertyOutput.h \
     ../../../Core/Engine/UShare.h \
     ../../../Core/Engine/UStorage.h \
     ../../../Core/Engine/UTime.h \
@@ -256,7 +245,10 @@ HEADERS +=\
     ../../../Core/Application/UServerTransport.h \
     ../../../Core/Application/UServerTransportTcp.h \
     ../../../Core/Application/UTestManager.h \
-    ../../../Core/System/Gcc/pevents.h
+    ../../../Core/System/Gcc/pevents.h \
+    ../../../Core/Engine/UPropertyImplementationBase.h \
+    ../../../Core/Engine/UPropertyInterface.h \
+    ../../../Core/Engine/UPropertyEndpoints.h
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt

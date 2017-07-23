@@ -206,7 +206,7 @@ int UTest::ProcessTest()
       TEST_PROPERTY_WITH_TYPE(float)
       TEST_PROPERTY_WITH_TYPE(double)
       TEST_PROPERTY_WITH_TYPE(std::string)
-      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
+//      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
 
       /*if(property->GetLanguageType() == typeid(bool))
       {
@@ -317,7 +317,7 @@ bool UTest::compareProperties(std::string value, std::string str, std::string)
   return value.compare(str) == 0;
 }
 
-bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
+/*bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
 {
   USerStorageXML storage;
   storage.Load(str, "");
@@ -326,10 +326,10 @@ bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, stri
   std::string strS = storage.GetNodeAttribute("Size");
   size_t strVectorSize = 0;
   if(!strS.empty())
-    strVectorSize = boost::lexical_cast<size_t>(strS);
+	strVectorSize = boost::lexical_cast<size_t>(strS);
 
   return value.size() == strVectorSize;
-}
+} */
 
 
 

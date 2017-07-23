@@ -2,7 +2,7 @@
 #define UTestManagerH
 
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-#include "../../../Libraries/Rtv-BasicLib/Core/RTVSupport.h"
+//#include "../../Libraries/Rtv-BasicLib/Core/RTVSupport.h"
 
 namespace RDK {
 
@@ -79,7 +79,7 @@ protected:
   bool compareProperties(double             value, std::string str, std::string delta);
   bool compareProperties(std::string        value, std::string str, std::string);
 
-  bool compareProperties(std::vector<RTV::TZoneExt> value, std::string str, std::string delta);
+//  bool compareProperties(std::vector<RTV::TZoneExt> value, std::string str, std::string delta);
 };
 
 /// Менеджер тестов

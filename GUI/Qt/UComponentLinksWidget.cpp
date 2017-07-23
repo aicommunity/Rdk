@@ -269,25 +269,30 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
         RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT &varMap = cont->GetPropertiesList();
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(std::map<RDK::NameT,RDK::UEPtr<RDK::UIProperty> >::const_iterator i = varMap.begin(); i != varMap.end(); ++i)
         {
-            if (i->second.CheckMask(firstTypeMask))
+            if (i->second->CheckMask(firstTypeMask))
             {
                 QTreeWidgetItem* firstChildPropertyItem = new QTreeWidgetItem(firstTreeWidgetItemFather);
                 firstChildPropertyItem->setText(0, QString::fromStdString(i->first));
-                firstChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
-                if(i->second.Property->IsConnected()) firstChildPropertyItem->setText(2, QString("connected"));
+                firstChildPropertyItem->setText(1, QString(i->second->GetLanguageType().name()));
+                RDK::UEPtr<RDK::UIPropertyInput> input=RDK::dynamic_pointer_cast<RDK::UIPropertyInput>(i->second);
+                if(input && input->IsConnected()) firstChildPropertyItem->setText(2, QString("connected"));
             }
-            if(secondTreeWidgetItemFather && i->second.CheckMask(secondTypeMask))
+            if(secondTreeWidgetItemFather && i->second->CheckMask(secondTypeMask))
             {
                 QTreeWidgetItem* secondChildPropertyItem = new QTreeWidgetItem(secondTreeWidgetItemFather);
                 secondChildPropertyItem->setText(0, QString::fromStdString(i->first));
-                secondChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
-                if(i->second.Property->GetIoType() & ipRange) secondChildPropertyItem->setText(2, QString("range"));
-                else
-                    if(i->second.Property->IsConnected()) secondChildPropertyItem->setText(2, QString("connected"));
+                secondChildPropertyItem->setText(1, QString(i->second->GetLanguageType().name()));
+                RDK::UEPtr<RDK::UIPropertyInput> input=RDK::dynamic_pointer_cast<RDK::UIPropertyInput>(i->second);
+                if(input)
+                {
+                 if(input->GetNumConnectionsLimit()>1) secondChildPropertyItem->setText(2, QString("range"));
+                 else
+                    if(input->IsConnected()) secondChildPropertyItem->setText(2, QString("connected"));
+                }
             }
         }
     }
@@ -309,19 +314,19 @@ void UComponentLinksWidget::addLinks(QString componentName)
         RDK::UEPtr<RDK::UNet> cont = model->GetComponentL<RDK::UNet>(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
-        RDK::UStringLinksList linksList;
+        RDK::ULinksList linksList;
         cont->GetLinks(linksList, model);
-        RDK::ULinkT<std::string>* linksListIterator = linksList.GetData();
+        RDK::ULink* linksListIterator = linksList.GetData();
         for(int i = 0; i < linksList.size(); i++)
         {
-            for(std::vector<RDK::ULinkSideT<std::string> >::iterator connectorIterator = linksListIterator->Connector.begin();
+            for(std::vector<RDK::ULinkSide>::iterator connectorIterator = linksListIterator->Connector.begin();
                 connectorIterator != linksListIterator->Connector.end(); connectorIterator++)
             {
                 QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetLinks);
-                item->setText(0, QString::fromStdString(linksListIterator->Item.Id));
-                item->setText(1, QString::fromStdString(linksListIterator->Item.Name));
-                item->setText(2, QString::fromStdString((*connectorIterator).Id));
-                item->setText(3, QString::fromStdString((*connectorIterator).Name));
+                item->setText(0, QString::fromStdString(linksListIterator->Item.ComponentName));
+                item->setText(1, QString::fromStdString(linksListIterator->Item.PropertyName));
+                item->setText(2, QString::fromStdString((*connectorIterator).ComponentName));
+                item->setText(3, QString::fromStdString((*connectorIterator).PropertyName));
             }
             ++linksListIterator;
         }
