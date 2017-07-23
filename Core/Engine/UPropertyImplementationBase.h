@@ -8,8 +8,6 @@
 namespace RDK {
 
 class UNet;
-//typedef UEPtr<UNet> PUAConnector;
-
 
 class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
 {
