@@ -17,10 +17,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -239,10 +235,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object NetworkStreamingTabSheet: TTabSheet
       Caption = 'Network Streaming'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline NetworkStreamingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
@@ -273,10 +265,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             Height = 519
             ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               inherited NetworkStreamingControlGroupBox: TGroupBox
                 inherited NetworkStreamingButton: TButton
                   OnClick = NetworkStreamingFrameNetworkStreamingButtonClick
@@ -346,16 +334,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = NetworkStreamingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
         end
@@ -389,10 +367,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object RecordingTabSheet: TTabSheet
       Caption = 'Recording'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline RecordingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
@@ -424,9 +398,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.NetworkStreamingTabSheet
             ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
               ExplicitHeight = 491
               inherited StreamingSettingsGroupBox: TGroupBox
                 Height = 436
@@ -507,16 +478,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
         end
@@ -731,7 +692,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000080110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000100110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

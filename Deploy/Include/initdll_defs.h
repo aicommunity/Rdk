@@ -95,7 +95,7 @@
 		typedef unsigned __int64 uint64_t;
 		*/
     #elif defined(__GNUC__)
-        #include <stdlib.h>
+        #include <stdint.h>
 /*       #if __x86_64__ || __ppc64__
             typedef char int8_t;
             typedef unsigned char uint8_t;

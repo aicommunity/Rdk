@@ -47,12 +47,12 @@ namespace jpge
   
   // Writes JPEG image to a file. 
   // num_channels must be 1 (Y) or 3 (RGB), image pitch must be width*num_channels.
-  bool compress_image_to_jpeg_file(const char *pFilename, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params());
+  bool compress_image_to_jpeg_file(const char *pFilename, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params(), bool order=true);
 
-  // Writes JPEG image to memory buffer. 
-  // On entry, buf_size is the size of the output buffer pointed at by pBuf, which should be at least ~1024 bytes. 
+  // Writes JPEG image to memory buffer.
+  // On entry, buf_size is the size of the output buffer pointed at by pBuf, which should be at least ~1024 bytes.
   // If return value is true, buf_size will be set to the size of the compressed data.
-  bool compress_image_to_jpeg_file_in_memory(void *pBuf, int &buf_size, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params());
+  bool compress_image_to_jpeg_file_in_memory(void *pBuf, int &buf_size, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params(), bool order=true);
     
   // Output stream abstract class - used by the jpeg_encoder class to write to the output stream. 
   // put_buf() is generally called with len==JPGE_OUT_BUF_SIZE bytes, but for headers it'll be called with smaller amounts.
@@ -68,7 +68,7 @@ namespace jpge
   class jpeg_encoder
   {
   public:
-    jpeg_encoder();
+	jpeg_encoder();
     ~jpeg_encoder();
 
     // Initializes the compressor.
@@ -79,7 +79,9 @@ namespace jpge
     // Returns false on out of memory or if a stream write fails.
     bool init(output_stream *pStream, int width, int height, int src_channels, const params &comp_params = params());
     
-    const params &get_params() const { return m_params; }
+	const params &get_params() const { return m_params; }
+
+	void set_order(bool value) { Order=value; };
     
     // Deinitializes the compressor, freeing any allocated memory. May be called at any time.
     void deinit();
@@ -94,7 +96,7 @@ namespace jpge
     bool process_scanline(const void* pScanline);
         
   private:
-    jpeg_encoder(const jpeg_encoder &);
+	jpeg_encoder(const jpeg_encoder &);
     jpeg_encoder &operator =(const jpeg_encoder &);
 
     typedef int32 sample_array_t;
@@ -126,7 +128,8 @@ namespace jpge
     uint32 m_bit_buffer;
     uint m_bits_in;
     uint8 m_pass_num;
-    bool m_all_stream_writes_succeeded;
+	bool m_all_stream_writes_succeeded;
+	bool Order;
         
     void optimize_huffman_table(int table_num, int table_len);
     void emit_byte(uint8 i);
@@ -158,8 +161,10 @@ namespace jpge
     void process_mcu_row();
     bool terminate_pass_one();
     bool terminate_pass_two();
-    bool process_end_of_image();
-    void load_mcu(const void* src);
+	bool process_end_of_image();
+
+	/// order: true - RGB, false - BGR
+	void load_mcu(const void* src);
     void clear();
     void init();
   };

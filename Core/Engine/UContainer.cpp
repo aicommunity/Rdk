@@ -2083,11 +2083,19 @@ bool UContainer::Calculate(void)
 	if(ComponentReCalculation)
 	{
 	 ComponentReCalculation=false;
+	 std::string temp;
+	 LogMessage(RDK_EX_DEBUG, string("Components recaltulation after ")+(*comps)->GetFullName(temp));
 	 i=0; comps=PComponents;
 	}
 	else
 	{
-	 CheckDurationAndSkipComponentCalculation();
+	 unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),StartCalcTime);
+	 if((MaxCalculationDuration >= 0) && (calc_duration > ULongTime(MaxCalculationDuration)))
+	 {
+	  ForceSkipComponentCalculation();
+	  std::string temp;
+	  LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration)+("] after ")+(*comps)->GetFullName(temp));
+     }
 	 ++i,++comps;
 	}
    }
@@ -2096,6 +2104,7 @@ bool UContainer::Calculate(void)
    ComponentReCalculation=false;
 
    LogPropertiesBeforeCalc();
+   unsigned long long acalc_start_time=GetCurrentStartupTime();
    if(!Owner)
    {
 	ACalculate();
@@ -2121,21 +2130,20 @@ bool UContainer::Calculate(void)
 	for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
 	 ACalculate();
    }
+   unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),acalc_start_time);
    LogPropertiesAfterCalc();
 
    UpdateMainOwner();
    InterstepsInterval-=StepDuration;
 
-   unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
 
    if((MaxCalculationDuration >= 0) && (calc_duration > ULongTime(MaxCalculationDuration)))
    {
 	if(Owner)
 	{
 	 GetOwner()->ForceSkipComponentCalculation();
-	 std::string temp;
-	 LogMessage(RDK_EX_WARNING, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
 	}
+    LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration)+"]");
    }
 
    StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
@@ -2327,7 +2335,7 @@ bool UContainer::CheckDurationAndSkipComponentCalculation(void)
 {
  if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),StartCalcTime) > ULongTime(MaxCalculationDuration)))
  {
-  ForceSkipComponentCalculation();
+  GetOwner()->ForceSkipComponentCalculation();
   return true;
  }
  return false;

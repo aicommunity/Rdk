@@ -14,6 +14,7 @@ namespace RDK {
 // --------------------------
 URpcDispatcher::URpcDispatcher(void)
 {
+ ThreadTerminated=false;
  DispatcherThread=boost::thread(boost::bind(&URpcDispatcher::Dispatch, boost::ref(*this)));
 }
 

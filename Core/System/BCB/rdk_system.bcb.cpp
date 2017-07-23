@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "../rdk_system.h"
 #include "../UGenericMutex.h"
+#include "../Win/UDllLoader.win.cpp"
 //#include "../win/USharedMemoryLoader.win.cpp"
 //#include "UGenericMutex.bcb.cpp"
 #include <System.SysUtils.hpp>  
@@ -172,6 +173,21 @@ void RdkDebuggerMessage(const std::string &message)
 #if defined(_DEBUG) && defined(RDK_ENABLE_DEBUG_OUTPUT)
  OutputDebugString(message.c_str());
 #endif
+}
+
+/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+{
+    UDllLoader * loader = new UDllLoaderWin(dll_name);
+    loader->Load();
+	return loader;
+}
+
+/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
+{
+    if (handle)
+      delete handle;
 }
 
 

@@ -385,7 +385,8 @@ void UEngineControl::ResetChannel(int channel_index)
 /// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
 void UEngineControl::StepChannel(int channel_index)
 {
- if(channel_index>=GetNumChannels())
+ int num_channels=GetNumChannels();
+ if(channel_index>=num_channels)
   return;
 
  RDK::UIVisualControllerStorage::BeforeCalculate();
@@ -395,7 +396,7 @@ void UEngineControl::StepChannel(int channel_index)
 
  if(channel_index <0)
  {
-  for(int i=0;i<GetNumChannels();i++)
+  for(int i=0;i<num_channels;i++)
   {
    if(MCore_IsChannelInit(i) && MModel_Check(i))
    {
@@ -415,21 +416,45 @@ void UEngineControl::StepChannel(int channel_index)
 
  if(use_controllers_mode == 0)
   RDK::UIControllerStorage::AfterCalculate(channel_index);
- SendMetadata();
+
+ try
+ {
+  SendMetadata();
+ }
+ catch(std::exception &ex)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::StepChannel:SendMetadata - ")+ex.what()).c_str());
+  throw;
+ }
+ catch(...)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::StepChannel:SendMetadata - unhandled exception");
+  throw;
+ }
  RDK::UIVisualControllerStorage::AfterCalculate();
  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
  RDK::UIVisualControllerStorage::UpdateInterface();
 
- if(channel_index <0)
+ try
  {
-  for(int i=0;i<GetNumChannels();i++)
+  if(channel_index <0)
   {
-   EngineControlThreads[i]->GetProfiler()->Calculate();
+   for(int i=0;i<num_channels;i++)
+	EngineControlThreads[i]->GetProfiler()->Calculate();
+  }
+  else
+  {
+   EngineControlThreads[channel_index]->GetProfiler()->Calculate();
   }
  }
- else
+ catch(std::exception &ex)
  {
-  EngineControlThreads[channel_index]->GetProfiler()->Calculate();
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:Calculate profiler stats - ")+ex.what()).c_str());
+ }
+ catch(...)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
+  throw;
  }
 }
 
@@ -448,17 +473,44 @@ void UEngineControl::TimerExecute(void)
  {
   if(UseControllersMode == 0)
    RDK::UIControllerStorage::AfterCalculate(-1);
-  SendMetadata();
-  RDK::UIVisualControllerStorage::AfterCalculate();
+
+  try
+  {
+   SendMetadata();
+  }
+  catch(std::exception &ex)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:SendMetadata - ")+ex.what()).c_str());
+   throw;
+  }
+  catch(...)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:SendMetadata - unhandled exception");
+   throw;
+  }
+//  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
-  for(int i=0;i<GetNumChannels();i++)
-   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
+//  for(int i=0;i<GetNumChannels();i++)
+//   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
   RDK::UIVisualControllerStorage::UpdateInterface();
 
-  for(int i=0;i<GetNumChannels();i++)
+  try
   {
-   EngineControlThreads[i]->GetProfiler()->CalculateGui();
-   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
+   int num_channels=GetNumChannels();
+   for(int i=0;i<num_channels;i++)
+   {
+	EngineControlThreads[i]->GetProfiler()->CalculateGui();
+	EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
+   }
+  }
+  catch(std::exception &ex)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:Calculate profiler stats - ")+ex.what()).c_str());
+  }
+  catch(...)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
+   throw;
   }
  }
  break;
@@ -466,52 +518,48 @@ void UEngineControl::TimerExecute(void)
 }
 
 /// Проверяет состояние расчета
-/// 0 - Не считает
-/// 1 - Идет расчет
-/// 2 - Завис
-/// 4 - Состояние не определено
-int UEngineControl::CheckCalcState(int channel_id) const
+UEngineControl::UCalcState UEngineControl::CheckCalcState(int channel_id) const
 {
  if(channel_id<0 || channel_id>GetNumChannels())
-  return 0;
+  return csStopped;
 
  switch(ThreadMode)
  {
  case 0:
-  return 0;
+  return csStopped;
  break;
 
  case 1:
  {
-  int state=EngineControlThreads[channel_id]->CheckCalcState();
-  if(state == 0)
-   return 0;
+  UEngineControlThread::UCalcState state=EngineControlThreads[channel_id]->CheckCalcState();
+  if(state == UEngineControlThread::UCalcState::csStopped)
+   return csStopped;
   else
-  if(state == 1)
+  if(state == UEngineControlThread::UCalcState::csRunning)
   {
    if(EngineStateThread)
    {
-	int thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
-	if(thread_state == 0)
-	 return 1;
+	UEngineStateThread::UCalcState thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
+	if(thread_state == UEngineStateThread::UCalcState::csRunning)
+	 return csRunning;
 	else
-	if(thread_state == 1)
-	 return 0;
+	if(thread_state == UEngineStateThread::UCalcState::csStopped)
+	 return csStopped;
 	else
-	if(thread_state == 2)
-	 return 2;
+	if(thread_state == UEngineStateThread::UCalcState::csHanging)
+	 return csHanging;
 	else
-     return 4;
+	 return csUnknown;
    }
    else
-    return 4;
+	return csUnknown;
   }
   else
-   return 4;
+   return csUnknown;
  }
  break;
  }
- return 4;
+ return csUnknown;
 }
 
 /// Вклчает мониторинг сервера

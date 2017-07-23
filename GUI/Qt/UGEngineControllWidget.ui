@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -97,6 +97,7 @@
     <addaction name="actionReset"/>
     <addaction name="separator"/>
     <addaction name="actionStep"/>
+    <addaction name="actionRunNSteps"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -111,13 +112,16 @@
      <addaction name="actionDevLineHttpBroadcaster"/>
     </widget>
     <addaction name="actionImagesFromWindow"/>
+    <addaction name="separator"/>
     <addaction name="actionEngineMonitor"/>
     <addaction name="actionVideoSources"/>
     <addaction name="actionVideoRegistration"/>
     <addaction name="actionComponentsControl"/>
     <addaction name="actionChannelsControl"/>
     <addaction name="actionComponentsLinks"/>
+    <addaction name="actionLogger"/>
     <addaction name="actionPerformance"/>
+    <addaction name="actionTestCreator"/>
     <addaction name="actionFavoriteInformation"/>
     <addaction name="actionDrawEngine"/>
     <addaction name="actionWatchWindow"/>
@@ -544,6 +548,24 @@
    </property>
    <property name="toolTip">
     <string>Close Application</string>
+   </property>
+  </action>
+  <action name="actionLogger">
+   <property name="text">
+    <string>Logger</string>
+   </property>
+  </action>
+  <action name="actionTestCreator">
+   <property name="text">
+    <string>Test Creator</string>
+   </property>
+  </action>
+  <action name="actionRunNSteps">
+   <property name="text">
+    <string>Run N steps</string>
+   </property>
+   <property name="toolTip">
+    <string>Run N Steps</string>
    </property>
   </action>
  </widget>

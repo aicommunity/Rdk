@@ -94,17 +94,17 @@ UEngineStateThread::~UEngineStateThread(void)
 // Методы доступа к данным состояния модулей
 // --------------------------
 /// Возвращает вектор состояний тредов
-std::vector<int> UEngineStateThread::ReadCalcThreadStates(void) const
+std::vector<UEngineStateThread::UCalcState> UEngineStateThread::ReadCalcThreadStates(void) const
 {
  return CalcThreadStates;
 }
 
 /// Возвращает состояние одного потока
-int UEngineStateThread::ReadCalcThreadState(int channel_index)
+UEngineStateThread::UCalcState UEngineStateThread::ReadCalcThreadState(int channel_index)
 {
- std::vector<int> tmp=CalcThreadStates;
+ std::vector<UCalcState> tmp=CalcThreadStates;
  if(channel_index<0 || channel_index>int(tmp.size()))
-  return -1;
+  return csUnknown;
 
  return tmp[channel_index];
 }
@@ -145,26 +145,29 @@ void UEngineStateThread::Execute(void)
 {
  while(!Terminated)
  {
-  if(CalcStarted->wait(30) == false)
-  {
-   ProcessLog();
-   continue;
-  }
-
-  if(CalculationNotInProgress->wait(30) == false)
-  {
-   ProcessLog();
-   continue;
-  }
-  CalculationNotInProgress->reset();
-
   try
   {
+   if(CalcStarted->wait(100) == false)
+   {
+	if(!Terminated) // TODO: Эта проверка - костыль. не должно возникать такой ситуации. Поток должен остановится раньше, чем разрушится модель
+	 ProcessLog();
+	continue;
+   }
+
+   if(CalculationNotInProgress->wait(100) == false)
+   {
+	if(!Terminated) // TODO: Эта проверка - костыль. не должно возникать такой ситуации. Поток должен остановится раньше, чем разрушится модель
+ 	 ProcessLog();
+	continue;
+   }
+
+   CalculationNotInProgress->reset();
+
    // Определяем состояние тредов расчета
-   std::vector<int> calc_thread_states;
+   std::vector<UCalcState> calc_thread_states;
 
    int num_channels=Core_GetNumChannels();
-   calc_thread_states.assign(num_channels,1);
+   calc_thread_states.assign(num_channels,csStopped);
    CalcThreadStateTime.resize(num_channels,0);
    CalcThreadSuccessTime.resize(num_channels,0);
    AvgIterations.resize(num_channels);
@@ -178,7 +181,7 @@ void UEngineStateThread::Execute(void)
 	{
 	 if(!thread->IsCalcStarted())
 	 {
-	  calc_thread_states[i]=1;
+	  calc_thread_states[i]=csStopped;
 	  continue;
 	 }
 
@@ -191,27 +194,35 @@ void UEngineStateThread::Execute(void)
 	   AvgIterations[i].erase(AvgIterations[i].begin());
 
 	  CalcThreadStateTime[i]=GetVariantLocalTime();
-	  calc_thread_states[i]=0;
+	  calc_thread_states[i]=csRunning;
 	 }
 	 else
 	 {
 	  double avg_diff(0.0);
-	  for(size_t j=1;j<AvgIterations[i].size();j++)
+	  std::list<double>::iterator I=AvgIterations[i].begin();
+	  std::list<double>::iterator J=I;
+
+	  if(I != AvgIterations[i].end())
 	  {
-	   if(AvgIterations[i][j]-AvgIterations[i][j-1]>avg_diff)
-		avg_diff=AvgIterations[i][j]-AvgIterations[i][j-1];
+       ++I;
+	   for(;I!=AvgIterations[i].end();I++,J++)
+	   {
+		double diff=*I-*J;
+		if(diff>avg_diff)
+		 avg_diff=diff;
+	   }
+	   avg_diff/=1000;
 	  }
-	  avg_diff/=1000;
 
 	  if(fabs(avg_diff) < 1e-8 || (GetVariantLocalTime()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
-	   calc_thread_states[i]=2;
+	   calc_thread_states[i]=csHanging;
 	  else
-	   calc_thread_states[i]=0;
+	   calc_thread_states[i]=csRunning;
 	 }
 	}
 	else
 	{
-	 calc_thread_states[i]=1;
+	 calc_thread_states[i]=csStopped;
 	}
    }
 
@@ -314,14 +325,14 @@ std::list<std::string> UEngineStateThread::ReadGuiUnsentLog(void)
 /// Прерывает исполнение потока
 void UEngineStateThread::Terminate(void)
 {
+ Terminated=true;
+ Thread.join();
  CalcStarted->reset();
 
  if(!CalculationNotInProgress->wait(0) || !CalculationNotInProgress->wait(10000))
   return;
  CalculationNotInProgress->reset();
  CalcState->reset();
- Terminated=true;
- Thread.join();
 }
 
 // Общедоступные данные логгирования

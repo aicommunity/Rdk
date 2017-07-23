@@ -181,18 +181,29 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   throw;
  }
 	  */
- std::list<std::string> log=RdkApplication.GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
+ try
+ {
+  std::list<std::string> log=RdkApplication.GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
 
- for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)
- {
-  EngineMonitorFrame->RichEdit->Lines->Add(I->c_str());
- }
- if(!log.empty())
- {
+  for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)
+  {
+   EngineMonitorFrame->RichEdit->Lines->Add(I->c_str());
+  }
+  if(!log.empty())
+  {
    EngineMonitorFrame->RichEdit->SelStart =
 	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, (NativeInt)0);
    EngineMonitorFrame->RichEdit->Update();
    EngineMonitorFrame->RichEdit->Repaint();
+  }
+ }
+ catch(std::exception &ex)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorForm::LogTimerTimer - ")+ex.what()).c_str());
+ }
+ catch(...)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "TUEngineMonitorForm::LogTimerTimer - unhandled exception");
  }
 }
 //---------------------------------------------------------------------------

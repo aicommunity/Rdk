@@ -191,8 +191,8 @@ void UEngineControlThread::Calculate(void)
   {
    if(CalcEnable->wait(30) == false)
 	return;
+   CalcEnable->reset();
   }
-  CalcEnable->reset();
 
   if(CalculationNotInProgress->wait(30) == false)
   {
@@ -213,11 +213,6 @@ void UEngineControlThread::Calculate(void)
   }
 
   CalculationNotInProgress->reset();
-  if(EngineIndex>=Core_GetNumChannels())
-  {
-   CalculationNotInProgress->set();
-   return;
-  }
 
   int use_controllers_mode=EngineControl->GetUseControllersMode();
   if(use_controllers_mode == 1)
@@ -256,36 +251,45 @@ void UEngineControlThread::Calculate(void)
   if(use_controllers_mode == 1)
    RDK::UIControllerStorage::AfterCalculate(EngineIndex);
   CalculationNotInProgress->set();
-  try
-  {
-   Profiler->CalculateCore();
-  }
-  catch(...)
-  {
-
-  }
+  Profiler->CalculateCore();
 }
 
 void UEngineControlThread::Execute(void)
 {
  while(!Terminated)
  {
-  if(CalcStarted->wait(30) == false)
-   continue;
+  try
+  {
+   if(CalcStarted->wait(30) == false)
+	continue;
 
-  Calculate();
+   Calculate();
+  }
+  catch(RDK::UException &ex)
+  {
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_FATAL, (std::string("UEngineControlThread::Execute rased exception: ")+ex.what()).c_str());
+   Terminated=true;
+  }
+  catch(std::exception &ex)
+  {
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_FATAL, (std::string("UEngineControlThread::Execute rased exception: ")+ex.what()).c_str());
+   Terminated=true;
+  }
+  catch(...)
+  {
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_FATAL, "UEngineControlThread::Execute rased unhandled exception");
+   Terminated=true;
+  }
  }
 }
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Не считает
-/// 1 - Идет расчет
-int UEngineControlThread::CheckCalcState(void) const
+UEngineControlThread::UCalcState UEngineControlThread::CheckCalcState(void) const
 {
  if(CalcState->wait(0))
-  return 1;
+  return csRunning;
 
- return 0;
+ return csStopped;
 }
 
 /// Возвращает состояния запуска треда

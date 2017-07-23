@@ -53,6 +53,8 @@ __published:    // IDE-managed Components
 	TCheckBox *IndChannelsCheckBox;
 	TRadioButton *ProportionalSizeRadioButton;
 	TCheckBox *CenterImageCheckBox;
+	TMenuItem *N4;
+	TMenuItem *Update1;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);
@@ -76,6 +78,7 @@ __published:    // IDE-managed Components
 	void __fastcall ShowInfoCheckBoxClick(TObject *Sender);
 	void __fastcall ProportionalSizeRadioButtonClick(TObject *Sender);
 	void __fastcall SaveToJpegClick(TObject *Sender);
+	void __fastcall Update1Click(TObject *Sender);
 
 
 

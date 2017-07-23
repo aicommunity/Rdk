@@ -4,15 +4,14 @@
 #include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
-//#include "UAppCore.cpp"
-//#include "UProject.cpp"
-//#include "UIVisualController.cpp"
-//#include "URpcDispatcherQueues.cpp"
-//#include "URpcDispatcher.cpp"
-//#include "URpcDecoder.cpp"
-//#include "URpcDecoderInternal.cpp"
-//#include "URpcCommand.cpp"
-//#include "URpcCommandInternal.cpp"
+#ifndef __BORLANDC__
+#include <boost/program_options/cmdline.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#endif
+
+using namespace std;
 
 
 #ifdef __BORLANDC__
@@ -23,6 +22,13 @@ extern void ExceptionHandler(int channel_index); // TODO: Потом ее куда то убрат
 
 namespace RDK {
 
+#ifndef __BORLANDC__
+namespace po = boost::program_options;
+
+po::options_description CmdLineDescription("Allowed options");
+po::variables_map CmdVariablesMap;
+#endif
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -31,6 +37,8 @@ UApplication::UApplication(void)
  Name="Application";
  LastProjectsListMaxSize=10;
  ProjectOpenFlag=false;
+ TestMode=false;
+ CloseAfterTest=true;
 // DebugMode=false;
 }
 
@@ -215,6 +223,31 @@ std::string UApplication::CalcCurrentLogDir(void) const
  }
  return log_dir;
 }
+
+/// Флаг, выставляется если включен режим тестирования
+bool UApplication::IsTestMode(void) const
+{
+ return TestMode;
+}
+
+/// Имя файла с описанием тестов
+const std::string& UApplication::GetTestsDescriptionFileName(void) const
+{
+ return TestsDescriptionFileName;
+}
+
+void UApplication::SetTestsDescriptionFileName(const std::string& value)
+{
+ if(TestsDescriptionFileName == value)
+  return;
+ TestsDescriptionFileName=value;
+}
+
+/// Признак требования завершить работу приложения после тестирования
+bool UApplication::IsCloseAfterTest(void) const
+{
+ return CloseAfterTest;
+}
 // --------------------------
 
 // --------------------------
@@ -322,6 +355,26 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
  return true;
 }
 
+/// Менеджер тестов
+/// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
+UEPtr<UTestManager> UApplication::GetTestManager(void)
+{
+ return TestManager;
+}
+
+bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
+{
+ if(TestManager == value)
+  return true;
+
+ if(TestManager)
+  TestManager->SetApplication(0);
+
+ TestManager=value;
+ TestManager->SetApplication(this);
+ return true;
+}
+
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
@@ -343,6 +396,16 @@ bool UApplication::Init(void)
 
  LoadProjectsHistory();
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been finished.");
+
+ /*if(CommandLineArgs.size()<2)
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Command line parameters not found.");
+ else
+ {
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Parsing command line parameters: ")+concat_strings(CommandLineArgs,std::string(" "))).c_str());
+  ProcessCommandLineArgs();
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
+ }*/
+
  return true;
 }
 
@@ -350,6 +413,7 @@ bool UApplication::Init(void)
 bool UApplication::UnInit(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
+ RDK::UIVisualControllerStorage::ClearInterface();
  if(EngineControl)
  {
   EngineControl->PauseChannel(-1);
@@ -360,6 +424,95 @@ bool UApplication::UnInit(void)
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
  return true;
 }
+
+
+/// Проводит тестирование приложения, если менеджер тестов инициализирован и
+/// тестовый режим включен
+/// Возвращает код ошибки тестирования.
+/// Если exit_request == true,
+/// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
+int UApplication::Test(bool &exit_request)
+{
+ exit_request=false;
+ int test_result_code(0);
+ if(IsTestMode())
+ {
+  exit_request=CloseAfterTest;
+  if(TestManager)
+  {
+   if(TestManager->LoadTests(TestsDescriptionFileName) != RDK_SUCCESS)
+   {
+	MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Failed to load tests!");
+	test_result_code=1000;
+	ChangeTestModeState(false);
+	return test_result_code;
+   }
+
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Testing started");
+   test_result_code=TestManager->ProcessTests();
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Testing finished with code: ")+sntoa(test_result_code)).c_str());
+  }
+ }
+ ChangeTestModeState(false);
+ return test_result_code;
+}
+
+/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineArgs)
+{
+  InitCmdParser();
+  if(commandLineArgs.empty())
+    return;
+
+  std::vector<std::string>::iterator I=find(commandLineArgs.begin(),commandLineArgs.end(),"--test");
+  if(I != commandLineArgs.end())
+  {
+    ++I;
+    std::string configuration_name;
+    if(I != commandLineArgs.end())
+    {
+      configuration_name = *I;
+      SetTestsDescriptionFileName(configuration_name);
+      ChangeTestModeState(true);
+    }
+    else
+      ChangeTestModeState(false);
+  }
+  else
+  {
+    ChangeTestModeState(false);
+  }
+
+  I=find(commandLineArgs.begin(),commandLineArgs.end(),"--run");
+  if(I != commandLineArgs.end())
+    CloseAfterTest=true;
+  else
+    CloseAfterTest=false;
+}
+
+#ifndef __BORLANDC__
+/// Осуществляет парсинг командной строки и записывает результаты в CommandLineArgs
+void UApplication::ProcessCommandLineArgs(int argc, char **argv)
+{
+  InitCmdParser();
+
+  po::store(po::parse_command_line(argc, argv, CmdLineDescription), CmdVariablesMap);
+  po::notify(CmdVariablesMap);
+
+  if(CmdVariablesMap.count("test"))
+  {
+	ChangeTestModeState(true);
+	SetTestsDescriptionFileName(CmdVariablesMap["test"].as<std::string>());
+  }
+  else
+	ChangeTestModeState(false);
+
+  if(CmdVariablesMap.count("run"))
+	CloseAfterTest=false;
+  else
+	CloseAfterTest=true;
+}
+#endif
 // --------------------------
 
 // --------------------------
@@ -960,18 +1113,14 @@ bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
   return false;
- return EngineControl->CheckCalcState(channel_index);
+ return (EngineControl->CheckCalcState(channel_index) == UEngineControl::UCalcState::csRunning);
 }
 
 /// Проверяет состояние расчета по id канала
-/// 0 - Выключен
-/// 1 - Идет расчет
-/// 2 - Завис
-/// 4 - Состояние не определено
-int UApplication::CheckCalcState(int channel_id) const
+UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
-  return 4;
+  return UEngineControl::UCalcState::csUnknown;
  return EngineControl->CheckCalcState(channel_id);
 }
 // --------------------------
@@ -1196,6 +1345,48 @@ void UApplication::SaveProjectsHistory(void)
 // --------------------------
 // Вспомогательные методы управления счетом
 // --------------------------
+/// Включает и выключает тестовый режим
+void UApplication::ChangeTestModeState(bool state)
+{
+ if(TestMode == state)
+  return;
+
+ TestMode=state;
+ if(TestMode == true)
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is ON.");
+ else
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is OFF.");
+}
+
+
+/// Инициализация парсера командной строки
+void UApplication::InitCmdParser(void)
+{
+#ifndef __BORLANDC__
+ CmdLineDescription.add_options()
+	("help", "produce help message")
+	("test", po::value<string>(), "Test file name")
+	("run", "Run application after test");
+#endif
+}
+/*
+int UApplication::ParseArgs(const std::vector<std::string> &args, std::map<std::string,std::string> &parsed_args)
+{
+ if(args.empty())
+  return RDK_SUCCESS;
+
+ parsed_args["Application"]=args[0];
+ size_t index=1;
+ for(size_t i=1;i<args.size()-1;i++)
+ {
+  parsed_args[args[i]]=args[i+1];
+  index+=2;
+ }
+
+ return RDK_SUCCESS;
+} */
+
+
 /// Вычисляет заголовок приложения
 void UApplication::CalcAppCaption(void)
 {
@@ -1211,48 +1402,6 @@ void UApplication::UpdateLoggers(void)
   GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
  }
 //  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
-}
-
-/// Загружает файл в строку
-bool UApplication::LoadFile(const std::string &file_name, std::string &buffer) const
-{
- std::ifstream t(file_name.c_str(), ios::in);
-
- if(!t || t.fail() || t.bad())
- {
-  buffer.clear();
-  return false;
- }
-
- t.seekg(0, std::ios::end);
- if(t.fail() || t.bad())
-  return false;
- buffer.reserve(t.tellg());
- t.seekg(0, std::ios::beg);
- if(t.fail() || t.bad())
-  return false;
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- if(t.fail() || t.bad())
-  return false;
- return true;
-}
-
-/// Сохраняет файл из строки
-bool UApplication::SaveFile(const std::string &file_name, const std::string &buffer) const
-{
- std::ofstream t(file_name.c_str(), ios::trunc);
-
- if(!t || t.fail() || t.bad())
- {
-  return false;
- }
-
- t<<buffer;
- if(t.fail() || t.bad())
-  return false;
- return true;
 }
 // --------------------------
 

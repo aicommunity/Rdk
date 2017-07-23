@@ -31,7 +31,7 @@
 #include "TLoaderFormUnit.h"
 #include "TApplicationOptionsFormUnit.h"
 #include "UClassesDescriptionsFormUnit.h"
-
+#include <psapi.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFormUnit"
@@ -42,29 +42,33 @@
 #pragma link "UImagesFrameUnit"
 #pragma link "UWatchFrameUnit"
 #pragma link "UDrawEngineFrameUnit"
+#pragma link "psapi.lib"
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
 using namespace RDK;
 
 /// Ёкзепл€р прототипа декодера команд
-RDK::URpcDecoderInternal RdkRpcDecoder;
+//RDK::URpcDecoderInternal RdkRpcDecoder;
 
 /// Ёкзепл€р класса диспетчера команд
-RDK::URpcDispatcher RdkRpcDispatcher;
+//RDK::URpcDispatcher RdkRpcDispatcher;
 
 /// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
 /// Ёкземпл€р класса контроллера сервера
 UServerControlVcl RdkServerControl;
-URpcDecoderCommonVcl RdkRpcDecoderCommon;
+//URpcDecoderCommonVcl RdkRpcDecoderCommon;
 
 /// Ёкземпл€р класса контроллера расчета
 UEngineControlVcl RdkEngineControl;
 
 /// Ёкзепл€р класса проекта
 RDK::UProject RdkProject;
+
+/// Ёкземпл€р класса менеджера тестов
+RDK::UTestManager RdkTestManager;
 
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
 bool ApplicationInitialized=false;
@@ -84,8 +88,12 @@ String Lang_SaveInterface("Saving Interface...");
 String Lang_UpdateInterface("Update Interface...");
 String Lang_Starting("Starting...");
 String Lang_Stopping("Stopping...");
+String Lang_ApplicationRun("Launching application. Please Wait...");
+String Lang_ApplicationClose("Closing application. Please Wait...");
 
 TUVisualControllerForm *RdkMainForm=0;
+
+HWND RdkStatusWindow(0);
 
 bool RdkIsApplicationRunning(void)
 {
@@ -149,6 +157,95 @@ String GetBuildInfoAsString(void)
  return "";
 }
 
+unsigned long long GetMemoryUsedInfo(void)
+{
+/*
+ TMemoryManagerState st;
+ TSmallBlockTypeState sb;
+
+ GetMemoryManagerState(st);
+ unsigned long long	result = st.TotalAllocatedMediumBlockSize + st.TotalAllocatedLargeBlockSize;
+ for(int i=0;i<NumSmallBlockTypes;i++)
+  result+=st.SmallBlockTypeStates[i].UseableBlockSize * st.SmallBlockTypeStates[i].AllocatedBlockCount;
+  */
+ unsigned long long	result(0);
+ PROCESS_MEMORY_COUNTERS mc;
+ int cb;
+
+ if(GetProcessMemoryInfo(GetCurrentProcess(), &mc, cb))
+  result= mc.WorkingSetSize;
+ return result;
+}
+
+
+unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
+{
+ TSystemInfo Si;
+ LongWord P, dwRet;
+ TMemoryBasicInformation Mbi;
+
+ unsigned long long Result = 0;
+ AAddressOfLargest = 0;
+ GetSystemInfo(&Si);
+ P = 0;
+ while (P < LongWord(Si.lpMaximumApplicationAddress))
+ {
+  dwRet = VirtualQuery((void*)(P), &Mbi, sizeof(Mbi));
+  if( (dwRet > 0) && (Mbi.State && MEM_FREE != 0))
+  {
+	  if (Result < Mbi.RegionSize)
+	  {
+		Result = Mbi.RegionSize;
+		AAddressOfLargest = Mbi.BaseAddress;
+	  }
+	  P+=Mbi.RegionSize;
+  }
+  else
+   P+=Si.dwPageSize;
+ }
+ return Result;
+}
+
+namespace RDK {
+
+
+void CreateStatusWindow(const String &Text)
+{
+  int FormWidth(400);
+  int FormHeight(164);
+
+  if(!RdkStatusWindow)
+  {
+   RdkStatusWindow=CreateWindow("STATIC",
+						 AnsiString(Text).c_str(),
+						 WS_OVERLAPPED | WS_POPUPWINDOW | WS_THICKFRAME | SS_CENTER | SS_CENTERIMAGE,
+						 (Screen->Width - FormWidth) / 2,
+						 (Screen->Height - FormHeight) / 2,
+						 FormWidth,
+						 FormHeight,
+						 Application->MainForm->Handle,
+						 0,
+						 GetModuleHandle(0),
+						 0);
+  }
+
+  if(RdkStatusWindow)
+  {
+   ShowWindow(RdkStatusWindow, SW_SHOWNORMAL);
+   UpdateWindow(RdkStatusWindow);
+  }
+}
+
+void RemoveStatusWindow(void)
+{
+ if(RdkStatusWindow)
+ {
+  DestroyWindow(RdkStatusWindow);
+  RdkStatusWindow=0;
+ }
+}
+
+}
 //---------------------------------------------------------------------------
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
@@ -291,21 +388,45 @@ void TUGEngineControlForm::AAfterCalculate(void)
 void TUGEngineControlForm::AUpdateInterface(void)
 {
 #ifdef RDK_VIDEO
- CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
- OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
- OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ if(CaptureVideo1)
+  CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ if(OpenVideo1)
+  OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+
+ if(OpenImage1)
+  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
 #endif
 
- Caption=ProgramName;
+ String cap;
+ cap=ProgramName;
  if(VersionString.Length()>0)
  {
-  Caption=Caption+" Build ";
-  Caption=Caption+VersionString;
+  cap=cap+" Build ";
+  cap=cap+VersionString;
  }
  if(RdkApplication.GetProjectOpenFlag())
  {
-  Caption=Caption+String(" ")+RdkApplication.GetAppCaption().c_str();
+  cap=cap+String(" ")+RdkApplication.GetAppCaption().c_str();
  }
+
+#ifdef _DEBUG
+ void* AAddressOfLargest(0);
+ __int64 max_memory=GetMemoryUsedInfo();
+ __int64 max_block=GetLargestFreeMemRegion(AAddressOfLargest);
+
+ String memory_usage=Format(" Memory usage: %d bytes. Largest Free Block: %d bytes",ARRAYOFCONST((max_memory,max_block)));
+// memory_usage.printf(L" Memory usage: %n Bytes. Largest Free Block: %n Bytes",double(GetMemoryUsedInfo()),double(GetLargestFreeMemRegion(AAddressOfLargest)));
+ cap=cap+memory_usage;
+
+ if(LastMaxMemory > max_memory || LastMaxBlock > max_block)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
+  LastMaxMemory=max_memory;
+  LastMaxBlock=max_block;
+ }
+#endif
+
+ Caption=cap;
 
  for(int i=0;i<StatusBar->Panels->Count;i++)
  {
@@ -322,7 +443,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
  {
   ChannelsStringGrid->RowCount=Core_GetNumChannels();
   const TEngineMonitorThread * monitor=UEngineMonitorForm->EngineMonitorFrame->GetEngineMonitorThread();
-  std::vector<int> CalcThreadStates;
+  std::vector<TEngineMonitorThread::UCalcState> CalcThreadStates;
   std::vector<int> VideoCaptureStates;
 
   if(monitor)
@@ -2248,6 +2369,10 @@ void __fastcall TUGEngineControlForm::AppRestore(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
+#ifdef _DEBUG
+ ReportMemoryLeaksOnShutdown=true;
+#endif
+
  FormatSettings.DecimalSeparator = '.';
  Saved8087CW = Default8087CW;
  System::Set8087CW(0x133f);
@@ -2268,7 +2393,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
+ NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
+
  if(LogDir.Length() == 0)
   LogDir = "EventsLog/";
 
@@ -2278,15 +2405,30 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Hint=ProgramName;
 
- RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
- RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
- RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
+// RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
+// RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
+// RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
+ RdkApplication.SetTestManager(&RdkTestManager);
  RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
  RdkApplication.SetDebugMode(LogDebugMode);
+
+ std::vector<std::string> args;
+ for(int i=0;i<ParamCount();i++)
+  args.push_back(AnsiString(ParamStr(i)).c_str());
+
+ RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
+
+ if(RdkApplication.IsTestMode())
+ {
+  bool closeAfterTests = false;
+  int returnCode = RdkApplication.Test(closeAfterTests);
+  /*if(closeAfterTests)
+	return returnCode;*/
+ }
 
  VersionString=GetBuildInfoAsString();
 }
@@ -2353,6 +2495,19 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   RdkMainForm->UpdateInterface();
  }
 
+ bool exit_request(false);
+ int test_result(0);
+ test_result=RdkApplication.Test(exit_request);
+
+ if(exit_request)
+ {
+  exit(test_result);
+  return;
+ }
+
+ if(!StartMinimized)
+  RDK::CreateStatusWindow(Lang_ApplicationRun);
+
  if(FileExists(AutoexecProjectFileName))
  {
   OpenProject(AutoexecProjectFileName);
@@ -2364,6 +2519,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   AutoStartProjectFlag=false;
   Start1Click(Sender);
  }
+
+ RDK::RemoveStatusWindow();
 }
 //---------------------------------------------------------------------------
 
@@ -2373,6 +2530,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
  if(!RdkMainForm)
   return;
 
+ RDK::CreateStatusWindow(Lang_ApplicationClose);
  if(RdkMainForm == this)
  {
   DisableStopVideoSources=false;
@@ -2382,6 +2540,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
   RdkApplication.UnInit();
   CanClose=true;
  }
+ RDK::RemoveStatusWindow();
 }
 //---------------------------------------------------------------------------
 
@@ -2605,9 +2764,12 @@ void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
+ RDK::CreateStatusWindow(Lang_ApplicationClose);
  DisableStopVideoSources=false;
+ Pause1Click(Sender);
  RdkApplication.UnInit();
  Application->Terminate();
+ RDK::RemoveStatusWindow();
 }
 //---------------------------------------------------------------------------
 

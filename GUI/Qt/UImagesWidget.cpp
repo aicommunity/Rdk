@@ -17,7 +17,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
     imagesSizeMod = 0;*/
     singleImageMode = false;
 
-    UpdateInterval = 30;
+    UpdateInterval = 0;
 
     ui->setupUi(this);
 
@@ -30,18 +30,18 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
     actionSeparator2->setSeparator(true);
     QAction *actionSeparator3 = new QAction(this);
     actionSeparator3->setSeparator(true);
-    ui->groupBoxImages->addAction(ui->actionSaveToBMP);
-    ui->groupBoxImages->addAction(ui->actionSaveToJPEG);
-    ui->groupBoxImages->addAction(actionSeparator1);
-    ui->groupBoxImages->addAction(ui->actionSaveAllToBMP);
-    ui->groupBoxImages->addAction(ui->actionSaveAllToJPEG);
-    ui->groupBoxImages->addAction(actionSeparator2);
-    ui->groupBoxImages->addAction(ui->actionSelectSource);
-    ui->groupBoxImages->addAction(actionSeparator3);
-    ui->groupBoxImages->addAction(ui->actionAddColumn);
-    ui->groupBoxImages->addAction(ui->actionAddRow);
-    ui->groupBoxImages->addAction(ui->actionDeleteColumn);
-    ui->groupBoxImages->addAction(ui->actionDeleteRow);
+    ui->frameImages->addAction(ui->actionSaveToBMP);
+    ui->frameImages->addAction(ui->actionSaveToJPEG);
+    ui->frameImages->addAction(actionSeparator1);
+    ui->frameImages->addAction(ui->actionSaveAllToBMP);
+    ui->frameImages->addAction(ui->actionSaveAllToJPEG);
+    ui->frameImages->addAction(actionSeparator2);
+    ui->frameImages->addAction(ui->actionSelectSource);
+    ui->frameImages->addAction(actionSeparator3);
+    ui->frameImages->addAction(ui->actionAddColumn);
+    ui->frameImages->addAction(ui->actionAddRow);
+    ui->frameImages->addAction(ui->actionDeleteColumn);
+    ui->frameImages->addAction(ui->actionDeleteRow);
 
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action()));
     connect(ui->actionSaveToBMP, SIGNAL(triggered(bool)), this, SLOT(actionSaveToBMP()));
@@ -69,18 +69,14 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
 
 UImagesWidget::~UImagesWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     delete ui;
     imagesList.clear();
 }
 
 void UImagesWidget::AUpdateInterface()
 {
-    RDK::UBitmap tempBmp;
-
-    for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
+    /*for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
     {
-        RDK::UBitmapParam bmp_param;
 
         int calcChannel = indChannels?(*i)->getCalcChannel():Core_GetSelectedChannelIndex();
 
@@ -100,64 +96,84 @@ void UImagesWidget::AUpdateInterface()
         }
         else
         {
-            (*i)->setImage(QPixmap());
+            (*i)->setImage(QImage());
         }
         (*i)->reDrawWidget();
-    }
+    }*/
 }
 
-QPixmap UImagesWidget::fromUBitmap(RDK::UBitmap *tempBmp)
+QImage UImagesWidget::fromUBitmap(RDK::UBitmap *tempBmp)
 {
     switch(tempBmp->GetColorModel())
     {
     case RDK::ubmRGB24:
         {
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888);
-            return QPixmap::fromImage(image);
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            /*QPixmap tempPixmap;
+            tempPixmap.convertFromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                               tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped(),
+                                        Qt::OrderedDither);*/
+            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
         }
 
     case RDK::ubmRGB32:
         {
-        QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+        /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                  tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32);
-        return QPixmap::fromImage(image);
+        return QPixmap::fromImage(image.rgbSwapped());*/
+        return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                         tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
         }
 
     case RDK::ubmRGB96:
         {
             //RDK::UBitmap otherTypeBmp
             tempBmp->SetColorModel(RDK::ubmRGB24, true);
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32);
-            return QPixmap::fromImage(image);
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
         }
 
     case RDK::ubmY8:
         {
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8);
-            return QPixmap::fromImage(image);
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).rgbSwapped();
         }
 
     case RDK::ubmY32:
         {
             tempBmp->SetColorModel(RDK::ubmY8, true);
-            QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+
+            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
                      tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8);
-            return QPixmap::fromImage(image);
+            return QPixmap::fromImage(image.rgbSwapped());*/
+
+            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
+                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).rgbSwapped();
         }
     }
 
-    return QPixmap();
+    return QImage();
 }
 
 void UImagesWidget::readSettings(QString file, QString group)
 {
     settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+
+    QSettings settings(file, QSettings::IniFormat);
+    settings.beginGroup(group);
 
     restoreGeometry(settings.value("geometry").toByteArray());
 
@@ -281,7 +297,8 @@ void UImagesWidget::actionSelectSource()
     UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
     dialog.exec();
     selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
-    selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedOutputName());
+    selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
+    dialog.writeSettings(settingsFileName);
 }
 
 void UImagesWidget::actionAddColumn()

@@ -10,7 +10,8 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
     ui->setupUi(this);
     componentsList = NULL;
     readSettings(settingsFile, settingsGroup);
-    componentsList = new UComponentsListWidget(this, settingsFileName, settingsGroupName+"_componentsList");
+    componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
+    componentsList->UpdateInterval = 0;
     componentsList->setVerticalOrientation(false);
     componentsList->openTabN(mode);
     ui->horizontalLayoutComponentsList->addWidget(componentsList);
@@ -18,19 +19,17 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
 
 UComponentPropertySelectionWidget::~UComponentPropertySelectionWidget()
 {
-    writeSettings(settingsFileName, settingsGroupName);
     delete ui;
 }
 
 void UComponentPropertySelectionWidget::readSettings(QString file, QString group)
 {
-    settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+    QSettings settings(file, QSettings::IniFormat);
+    settings.beginGroup(group);
     restoreGeometry(settings.value("geometry").toByteArray());
     settings.endGroup();
-    if(componentsList) componentsList->readSettings(settingsFileName, settingsGroupName+"_componentsList");
+
+    if(componentsList) componentsList->readSettings(file, group+"_componentsList");
 }
 
 void UComponentPropertySelectionWidget::writeSettings(QString file, QString group)
@@ -39,4 +38,6 @@ void UComponentPropertySelectionWidget::writeSettings(QString file, QString grou
     settings.beginGroup(group);
     settings.setValue("geometry", saveGeometry());
     settings.endGroup();
+
+    if(componentsList) componentsList->writeSettings(file, group+"_componentsList");
 }

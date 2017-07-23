@@ -3,8 +3,10 @@
 
 #include <ctime>
 #include "../rdk_system.h"     
-#include "USharedMemoryLoader.qt.cpp"
-#include "UGenericMutex.qt.cpp"
+//#include "USharedMemoryLoader.qt.cpp"
+//#include "UGenericMutex.qt.cpp"
+#include "UDllLoader.qt.cpp"
+//#include "../UDllLoader.h"
 #include <QtCore/QWaitCondition>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
@@ -20,11 +22,12 @@ namespace RDK {
 // (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
- QTime timedata = QTime::currentTime();
+ /*QDateTime timedata = QDateTime::currentDateTime();
  return timedata.hour()*60*60*1000 +
         timedata.minute()*60*1000 +
         timedata.second()*1000 +
-        timedata.msec();
+        timedata.msec();*/
+ return QDateTime::currentMSecsSinceEpoch();
 }
 
 // Записывает в seconds и useconds текущие значения секунд и микросекунд,
@@ -143,6 +146,21 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
 void RdkDebuggerMessage(const std::string &message)
 {
     qDebug() << QString::fromStdString(message);
+}
+
+/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+{
+    UDllLoader *loader = new UDllLoaderQt(dll_name);
+    loader->Load();
+    return loader;
+}
+
+/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
+{
+    if(handle)
+        delete handle;
 }
 
 }

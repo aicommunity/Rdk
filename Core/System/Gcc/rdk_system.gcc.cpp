@@ -15,6 +15,7 @@
 #include "../rdk_system.h"
 //#include "USharedMemoryLoader.gcc.cpp"
 //#include "UGenericMutex.gcc.cpp"
+#include "UDllLoader.gcc.cpp"
 
 #define RDK_ENABLE_DEBUG_OUTPUT
 
@@ -117,20 +118,121 @@ int CreateNewDirectory(const char* path)
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
  results.clear();
- if(isfile)
+ DIR *dp;
+ struct dirent *dirp;
+ if((dp  = opendir(path.c_str())) == NULL)
+  return errno;
+ std::string mask4cmp_left;
+ std::string mask4cmp_middle;
+ std::string mask4cmp_right;
+ std::string* dst_ptr = &mask4cmp_left;
+ std::string::const_iterator mask_it = mask.begin();
+ short int break_count = 0;
+ for(;mask_it != mask.end();mask_it++)
  {
-	DIR *dp;
-	struct dirent *dirp;
-	if((dp  = opendir(path.c_str())) == NULL)
-	 return errno;
-	while ((dirp = readdir(dp)) != NULL)
-	{
-	if((strcmp(dirp->d_name, ".") == 0) || (strcmp(dirp->d_name, "..") == 0))
-		continue;
-	 results.push_back(std::string(dirp->d_name));
-	}
-	closedir(dp);
+   if(*mask_it == '*')
+   {
+    break_count++;
+    if(mask4cmp_middle.empty())
+     dst_ptr = &mask4cmp_middle;
+    else
+     dst_ptr = &mask4cmp_right;
+    continue;
+   }
+   else
+    dst_ptr->push_back(*mask_it);
  }
+ if((break_count == 1) && mask4cmp_right.empty() && (!mask4cmp_middle.empty()))
+ {
+  mask4cmp_right = mask4cmp_middle;
+  mask4cmp_middle.clear();
+ }
+ // Размер dirp->d_name = 256
+ if((mask4cmp_left.size() + mask4cmp_right.size() + mask4cmp_middle.size())>255)
+  return 1;
+
+#define STRIT std::string::iterator
+ while ((dirp = readdir(dp)) != NULL)
+ {
+  std::string cut_name = dirp->d_name;
+  if((strcmp(cut_name.c_str(), ".") == 0) || (strcmp(cut_name.c_str(), "..") == 0))
+   continue;
+  if((dirp->d_type != DT_DIR) && (!isfile))
+   continue;
+  if((dirp->d_type == DT_DIR) && (isfile))
+   continue;
+  if(cut_name.size() < (mask4cmp_left.size()+mask4cmp_right.size()))
+   continue;
+  bool break_ctrl = false;
+  if(!mask4cmp_left.empty())
+  {
+   STRIT it_left = mask4cmp_left.begin();
+   STRIT it_name = cut_name.begin();
+   for(; it_left != mask4cmp_left.end(); it_left++, it_name++)
+   {
+    if(*it_left != *it_name)
+    {
+     break_ctrl = true;
+     break;
+    }
+   }
+   if(break_ctrl)
+    continue;
+  }
+  if(!mask4cmp_middle.empty())
+  {
+   STRIT it_midle = mask4cmp_middle.begin();
+   STRIT it_name = cut_name.begin() + mask4cmp_left.size();
+   STRIT it_name_end = cut_name.end() - mask4cmp_right.size();
+   while (it_name != it_name_end)
+   {
+    if (*it_midle == *it_name)
+    {
+     bool equale = true;
+     STRIT it2_midle = it_midle;
+     STRIT it2_name = it_name;
+     for (; it2_midle != mask4cmp_middle.end(); it2_midle++, it2_name++)
+     {
+      if (*it2_midle != *it2_name)
+      {
+       equale = false;
+       break_ctrl = true;
+       break;
+      }
+     }
+     if(equale)
+     {
+      break_ctrl = false;
+      break;
+     }
+    }
+    else
+     break_ctrl = true;
+    it_name++;
+   }
+
+   if (break_ctrl)
+    continue;
+  }
+   if(!mask4cmp_right.empty())
+  {
+   STRIT it_right = mask4cmp_right.end();
+   STRIT it_name = cut_name.end();
+   while(it_right != mask4cmp_right.begin())
+   {
+    if(*(--it_right) != *(--it_name))
+    {
+     break_ctrl = true;
+     break;
+    }
+   }
+   if(break_ctrl)
+    continue;
+  }
+  results.push_back(std::string(dirp->d_name));
+ }
+#undef STRIT
+ closedir(dp);
  return 0;
 }
 
@@ -206,6 +308,21 @@ void RdkDebuggerMessage(const std::string &message)
 #ifndef NDEBUG
  std::cout<<message<<std::endl;
 #endif
+}
+
+/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+{
+    UDllLoader *loader = new UDllLoaderGcc(dll_name);
+    loader->Load();
+    return loader;
+}
+
+/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
+{
+    if(handle)
+        delete handle;
 }
 
 }

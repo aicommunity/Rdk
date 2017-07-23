@@ -16,6 +16,9 @@
 #include "UEngineControlQt.h"
 #include "ULoggerWidget.h"
 #include "UCreateConfigurationWizardWidget.h"
+#include "UCreateTestWidget.h"
+
+#include "UComponentPropertyChanger.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -30,71 +33,56 @@ class UGEngineControllWidget : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit UGEngineControllWidget(QWidget *parent = 0);
+    explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
 
 public slots:
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
 
-    //settings
+    // settings
     void readSettings(QString file, QString group = "UGEngineControllWidget");
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UGEngineControllWidget");
 
-    //actions:
-    void actionComponentsControl();
-    void actionChannelsControl();
+    // actions:
 
+    // file menu
     void actionLoadConfig();
     void actionCreateConfig();
     void actionSaveConfig();
+    void actionExit();
 
+    // calculate menu
     void actionReloadParameters();
     void actionStart();
     void actionPause();
     void actionReset();
     void actionStep();
+    void actionRunNSteps();
 
+    // window menu
     void actionImages();
-
+    void actionComponentsControl();
+    void actionChannelsControl();
+    void actionLogger();
+    void actionTestCreator();
+/*
 signals:
     void readSettingsSignal(QString file);
-/*
+
 protected:
     void timerEvent(QTimerEvent *);*/
 
-private slots:
-    void on_actionExit_triggered();
-
 private:
-    //data
+    // data
     Ui::UGEngineControllWidget *ui;
 
     QString settingsFileName;
     QString settingsGroupName;
     QString configFileName;
 
-    /// Ёкзепл€р прототипа декодера команд
-    RDK::URpcDecoderInternal rpcDecoder;
-
-    /// Ёкзепл€р класса диспетчера команд
-    RDK::URpcDispatcher rpcDispatcher;
-
-    /// Ёкзепл€р класса приложени€
-    RDK::UApplication application;
-
-    /// Ёкземпл€р класса контроллера сервера
-    RDK::UServerControl serverControl;
-    RDK::URpcDecoderCommon rpcDecoderCommon;
-
-    /// Ёкземпл€р класса контроллера расчета
-    UEngineControlQt engineControl;
-
-    /// Ёкзепл€р класса проекта
-    RDK::UProject project;
-
-    //widgets
-    UComponentsListWidget *componentsList;
+    // widgets
+    UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
@@ -102,9 +90,14 @@ private:
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
+    UCreateTestWidget *createTestWidget;
 
-    //methods
-    void initGraphicalEngine();
+    /// Ёкзепл€р класса приложени€
+    RDK::UApplication *application;
+
+    // methods
+
+    //void initGraphicalEngine();
 
     ///if chanelIndex == -1 запускает все каналы расчета
     void startChannel(int chanelIndex);

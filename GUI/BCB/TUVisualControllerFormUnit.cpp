@@ -55,15 +55,15 @@ void TUVisualControllerForm::AfterLoadProject(void)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -83,15 +83,15 @@ void TUVisualControllerForm::BeforeReset(void)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -112,15 +112,15 @@ void TUVisualControllerForm::AfterReset(void)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-AfterReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-AfterReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -138,15 +138,15 @@ void TUVisualControllerForm::BeforeCalculate(void)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeCalculate Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-BeforeCalculate Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -163,15 +163,15 @@ void TUVisualControllerForm::AfterCalculate(void)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -249,22 +249,23 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
  catch (RDK::UException &exception)
  {
   UpdateInterfaceFlag=false;
-  Log_LogMessage(exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
   UpdateInterfaceFlag=false;
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
   UpdateInterfaceFlag=false;
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
  catch(...)
  {
   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
   UpdateInterfaceFlag=false;
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-UpdateInterface Unhandled Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(")").c_str()).c_str());
   throw;
  }
  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
@@ -287,15 +288,15 @@ void TUVisualControllerForm::ClearInterface(void)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -359,15 +360,15 @@ void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 
 }
@@ -400,15 +401,15 @@ void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
  }
  catch (RDK::UException &exception)
  {
-  Log_LogMessage(exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
-  Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 

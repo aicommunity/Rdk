@@ -107,7 +107,8 @@ bool UServerControlVcl::ASetNumChannels(int old_num)
  if(num<=0)
   return false;
 
- RdkApplication.GetRpcDispatcher()->UpdateDecoders();
+ if(RdkApplication.GetRpcDispatcher())
+  RdkApplication.GetRpcDispatcher()->UpdateDecoders();
 
  for(int i=old_num;i<num;i++)
  {
@@ -949,6 +950,9 @@ void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
 {
 try
 {
+ if(!RdkApplication.GetRpcDispatcher())
+  return;
+
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
   RDK::UParamT response;

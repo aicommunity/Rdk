@@ -22,13 +22,10 @@ public slots:
     ///считывание файлов настроек
     void readSettings(QString file, QString group = "UComponentPropertySelectionWidget");
     ///запись файлов настроек
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UComponentPropertySelectionWidget");
 
 private:
     Ui::UComponentPropertySelectionWidget *ui;
-
-    QString settingsFileName;
-    QString settingsGroupName;
 };
 
 #endif // UCOMPONENTPROPERTYSELECTIONWIDGET_H

@@ -48,7 +48,7 @@ UPerfomanceResults(void);
 struct RDK_LIB_TYPE UPerfomanceData: public UPerfomanceResults
 {
 /// Данные производительности, мс
-std::vector<long long> CalcDurationHistory;
+std::list<long long> CalcDurationHistory;
 
 /// Добавляет данные в историю
 void AddHistory(long long value, int max_values);

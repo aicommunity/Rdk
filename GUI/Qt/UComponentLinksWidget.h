@@ -47,7 +47,7 @@ public slots:
     ///считывание файлов настроек
     void readSettings(QString file, QString group = "UComponentLinksWidget");
     ///запись файлов настроек
-    void writeSettings(QString file, QString group);
+    void writeSettings(QString file, QString group = "UComponentLinksWidget");
 
 signals:
     void updateScheme(bool forceUpdate);
