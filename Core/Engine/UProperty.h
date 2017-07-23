@@ -41,7 +41,7 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T,class OwnerT, unsigned int type>
-class UPropertyBase: virtual public UIPropertyInputBase, virtual public UIPropertyOutputBase
+class UPropertyBase: public UIPropertyOutputBase
 {
 protected: // Данные
 // Имя свойства
@@ -343,7 +343,7 @@ void ResetUpdateTime(void)
 // Класс - виртуальное свойство
 // Не содержит данного внутри себя
 template<typename T,class OwnerT, unsigned int type>
-class UPropertyVirtual: virtual public UPropertyBase<T,OwnerT,type>
+class UPropertyVirtual: public UPropertyBase<T,OwnerT,type>
 {
 protected: // Типы методов ввода-вывода
 typedef const T& (OwnerT::*GetterRT)(void) const;
@@ -572,7 +572,7 @@ virtual void SetData(const T &value)
 // Класс - свойство со значением внутри
 /* ************************************************************************* */
 template<typename T,class OwnerT, unsigned int type>
-class UProperty: virtual public UPropertyVirtual<T,OwnerT,type>
+class UProperty: public UPropertyVirtual<T,OwnerT,type>
 {
 public:
 //protected:
@@ -584,7 +584,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
- : UPropertyBase<T,OwnerT,type>(name, owner), UPropertyVirtual<T,OwnerT,type>(name,owner, setmethod, 0), v() { };
+ : UPropertyVirtual<T,OwnerT,type>(name,owner, setmethod, 0), v() { };
 // -----------------------------
 
 // -----------------------------
@@ -618,7 +618,7 @@ virtual void SetData(const T &value, int index=0)
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
 template<typename T, typename RangeT, typename OwnerT, unsigned int type>
-class UPropertyRange: virtual public UPropertyVirtual<T,OwnerT,type>
+class UPropertyRange: public UPropertyVirtual<T,OwnerT,type>
 {
 protected: // Типы методов ввода-вывода
 typedef bool (OwnerT::*VSetterRT)(const RangeT&);
@@ -634,7 +634,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod)
- : UPropertyBase<T,OwnerT,type>(name, owner), UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0)
+ : UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0)
 {
  SetNumConnectionsLimit(-1);
 };

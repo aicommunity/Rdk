@@ -16,8 +16,6 @@ class UNet;
 class RDK_LIB_TYPE UIProperty
 {
 public:
-virtual ~UIProperty(void)=0;
-
 /// Возвращает указатель на владелька свойства
 virtual const UNet* GetOwner(void) const=0;
 virtual UNet* GetOwner(void)=0;
@@ -157,10 +155,9 @@ EPropertySetterFail(const std::string &owner_name, const std::string &property_n
 
 class UIPropertyOutput;
 
-class RDK_LIB_TYPE UIPropertyInput: virtual public UIProperty
+class RDK_LIB_TYPE UIPropertyInput: public UIProperty
 {
 public:
-virtual ~UIPropertyInput(void)=0;
 /// Возвращает тип свойства входа
 //virtual int GetInputType(void) const=0;
 
@@ -225,10 +222,9 @@ virtual void SetNumConnectionsLimit(int value)=0;
 
 };
 
-class RDK_LIB_TYPE UIPropertyOutput: virtual public UIProperty
+class RDK_LIB_TYPE UIPropertyOutput: public UIPropertyInput
 {
 public: // Методы доступа к подключенным входам
-virtual ~UIPropertyOutput(void)=0;
 /// Возвращает число подключенных входов
 virtual size_t GetNumSubscribers(void) const=0;
 

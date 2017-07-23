@@ -10,7 +10,7 @@ namespace RDK {
 
 /// deprecated
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class ULProperty: virtual public UProperty<T,OwnerT,type>
+class ULProperty: public UProperty<T,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -18,7 +18,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
- : UPropertyBase<T,OwnerT,type>(name, owner), UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod,0), UProperty<T,OwnerT,type>(name, owner, setmethod) //ipSingle | ipData
+ : UProperty<T,OwnerT,type>(name, owner, setmethod) //ipSingle | ipData
 {
 };
 
@@ -33,7 +33,7 @@ ULProperty<T,OwnerT,type>& operator = (const T &value)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UPropertyParam: virtual public UProperty<T,OwnerT,type>
+class UPropertyParam: public UProperty<T,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -55,7 +55,7 @@ UPropertyParam<T,OwnerT,type>& operator = (const T &value)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubState>
-class UPropertyState: virtual public UProperty<T,OwnerT,type>
+class UPropertyState: public UProperty<T,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -77,7 +77,7 @@ UPropertyState<T,OwnerT,type>& operator = (const T &value)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputData: virtual public UProperty<T,OwnerT,type>
+class UPropertyOutputData: public UProperty<T,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -85,7 +85,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputData(const string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
- : UPropertyBase<T,OwnerT,type>(name, owner), UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod,0), UProperty<T,OwnerT,type>(name, owner,setmethod) //ipSingle | ipData
+ : UProperty<T,OwnerT,type>(name, owner,setmethod) //ipSingle | ipData
 {
 };
 
@@ -99,7 +99,7 @@ UPropertyOutputData<T,OwnerT,type>& operator = (const T &value)
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInput: virtual public UProperty<T,OwnerT,type>
+class UPropertyInput: public UProperty<T,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -114,7 +114,7 @@ UPropertyInput(const string &name, OwnerT * const owner, typename UPropertyVirtu
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputData: virtual public UProperty<T,OwnerT,type>
+class UPropertyInputData: public UProperty<T,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -122,14 +122,14 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputData(const string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
- : UPropertyBase<T,OwnerT,type>(name, owner), UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod,0), UProperty<T,OwnerT,type>(name, owner, setmethod) // ipSingle | ipDatas
+ : UProperty<T,OwnerT,type>(name, owner, setmethod) // ipSingle | ipDatas
 {
 };
 
 };
 
 template<typename T, typename RangeT, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputDataRange: virtual public UPropertyRange<T,RangeT,OwnerT,type>
+class UPropertyInputDataRange: public UPropertyRange<T,RangeT,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -137,7 +137,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputDataRange(const string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
- : UPropertyBase<T,OwnerT,type>(name, owner), UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod,0), UPropertyRange<T,RangeT,OwnerT,type>(name, owner, setmethod) // ipRange | ipData
+ : UPropertyRange<T,RangeT,OwnerT,type>(name, owner, setmethod) // ipRange | ipData
 {
 };
 
@@ -145,7 +145,7 @@ UPropertyInputDataRange(const string &name, OwnerT * const owner, typename UProp
 
 /// deprecated
 template<typename T, typename RangeT, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputDataC: virtual public UPropertyRange<T,RangeT,OwnerT,type>
+class UPropertyInputDataC: public UPropertyRange<T,RangeT,OwnerT,type>
 {
 public: // Методы
 // --------------------------

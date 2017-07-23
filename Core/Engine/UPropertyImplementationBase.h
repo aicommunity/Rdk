@@ -9,7 +9,7 @@ namespace RDK {
 
 class UNet;
 
-class RDK_LIB_TYPE UIPropertyInputBase: virtual public UIPropertyInput
+class RDK_LIB_TYPE UIPropertyInputBase: public UIPropertyOutput
 {
 private: // ƒанные
 /// указатели на свойства-приемники данных
@@ -90,7 +90,7 @@ protected:
 virtual void SetNumConnectionsLimit(int value);
 };
 
-class RDK_LIB_TYPE UIPropertyOutputBase: virtual public UIPropertyOutput
+class RDK_LIB_TYPE UIPropertyOutputBase: public UIPropertyInputBase
 {
 private: // ƒанные
 /// указатели на свойства-приемники данных
