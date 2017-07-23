@@ -41,7 +41,7 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T,class OwnerT, unsigned int type>
-class UPropertyBase: public UIPropertyOutputBase
+class UPropertyBase: virtual public UIPropertyInputBase, virtual public UIPropertyOutputBase
 {
 protected: // Данные
 // Имя свойства
@@ -88,7 +88,7 @@ virtual ~UPropertyBase(void)
 {
    if(Owner)
    {
-	reinterpret_cast<UComponent* const>(Owner)->DelLookupProperty(Name);
+	reinterpret_cast<UComponent* const>(Owner)->DelLookupProperty(Name,true);
 //	Variable=Owner->FindPropertyVariable(this);
    }
  UDestroyMutex(Mutex);

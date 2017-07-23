@@ -311,7 +311,7 @@ bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
 
 // ”дал€ет параметр с именем 'name' из таблицы соотвествий
 // параметров
-void DelLookupProperty(const NameT &name);
+void DelLookupProperty(const NameT &name, bool force_no_delete);
 
 protected:
 // ”дал€ет всю таблицу соответствий

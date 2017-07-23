@@ -543,7 +543,7 @@ bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
 
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
-void UComponent::DelLookupProperty(const NameT &name)
+void UComponent::DelLookupProperty(const NameT &name, bool force_no_delete)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
 
@@ -553,7 +553,7 @@ void UComponent::DelLookupProperty(const NameT &name)
  UIProperty *prop=I->second;
  bool del_enable=I->second->IsDynamicPropertyFlag();
  PropertiesLookupTable.erase(I);
- if(prop && del_enable)
+ if(!force_no_delete && prop && del_enable)
   delete prop;
 
  std::map<std::string, std::string>::iterator J=Aliases.begin(),K;
@@ -578,10 +578,7 @@ void UComponent::ClearLookupPropertyTable(void)
  {
   VariableMapIteratorT I=PropertiesLookupTable.begin();
   UIProperty* prop=I->second;
-  std::string prop_name=prop->GetName();
-  std::string prop_item=prop->GetOwnerName();
   bool del_enable=prop->IsDynamicPropertyFlag();
-  PropertiesLookupTable.erase(I);
   if(prop && del_enable)
    delete prop;
  }
