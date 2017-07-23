@@ -630,6 +630,7 @@ ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bo
   link.Connector.clear();
   const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetSubscribedProperties();
   std::vector<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
+  std::map<UIPropertyInput*,int> connected_counters;
   for(;I != connected_properties.end();I++)
   {
    const UEPtr<UIPropertyInput> input_property=*I;
@@ -642,9 +643,18 @@ ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bo
    curr_conn->GetLongName(netlevel,connector.ComponentName);
    if(!connector.ComponentName.empty())
    {
-	  link.Item.Index=-1;
+	  link.Item.Index=0;
 	  link.Item.PropertyName=output_properties[i]->GetName();
-	  connector.Index=-1;
+
+	  //  »щем позицию этого выхода в списке подключенных входов
+	  int position(-1);
+	  if(connected_counters.find(input_property) == connected_counters.end())
+	   connected_counters[input_property]=1;
+	  else
+	   ++connected_counters[input_property];
+	  position=connected_counters[input_property]-1;
+
+	  connector.Index=position;
 	  connector.PropertyName=input_property->GetName();
 
 	  link.Connector.push_back(connector);
@@ -672,6 +682,7 @@ ULinksList& UNet::GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, boo
  {
   const std::vector<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
   std::vector<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
+  int k(0);
   for(;I != connected_properties.end();I++)
   {
    const UIPropertyOutput* output_property=*I;
@@ -681,10 +692,10 @@ ULinksList& UNet::GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, boo
 	  continue;
 	}
 	output_property->GetOwner()->GetLongName(netlevel,item.ComponentName);
-    connector.Index=-1;
+    connector.Index=k++;
 	connector.PropertyName=input_properties[j]->GetName();
 
-	item.Index=-1;
+	item.Index=0;
 	item.PropertyName=output_property->GetName();
 	if(!connector.ComponentName.empty())
 	{
@@ -733,6 +744,7 @@ ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist
   link.Connector.clear();
   const std::vector<UEPtr<UIPropertyInput> >& connected_properties=output_properties[i]->GetSubscribedProperties();
   std::vector<UEPtr<UIPropertyInput> >::const_iterator I=connected_properties.begin();
+  std::map<UIPropertyInput*,int> connected_counters;
   for(;I != connected_properties.end();I++)
   {
    const UEPtr<UIPropertyInput> input_property=*I;
@@ -742,9 +754,18 @@ ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist
    curr_conn->GetLongName(netlevel,connector.ComponentName);
    if(!connector.ComponentName.empty())
    {
-	  link.Item.Index=-1;
+	  link.Item.Index=0;
 	  link.Item.PropertyName=output_properties[i]->GetName();
-	  connector.Index=-1;
+
+	  //  »щем позицию этого выхода в списке подключенных входов
+	  int position(-1);
+	  if(connected_counters.find(input_property) == connected_counters.end())
+	   connected_counters[input_property]=1;
+	  else
+	   ++connected_counters[input_property];
+	  position=connected_counters[input_property]-1;
+
+	  connector.Index=position;
 	  connector.PropertyName=input_property->GetName();
 
 	  link.Connector.push_back(connector);
@@ -772,17 +793,18 @@ ULinksList& UNet::GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist,
  {
   const std::vector<UEPtr<UIPropertyOutput> >& connected_properties=input_properties[j]->GetConnectedProperties();
   std::vector<UEPtr<UIPropertyOutput> >::const_iterator I=connected_properties.begin();
+  int k(0);
   for(;I != connected_properties.end();I++)
   {
    const UIPropertyOutput* output_property=*I;
    if(output_property->GetOwner() != cont)
-    continue;
+	continue;
 
 	output_property->GetOwner()->GetLongName(netlevel,item.ComponentName);
-    connector.Index=-1;
+    connector.Index=k++;
 	connector.PropertyName=input_properties[j]->GetName();
 
-	item.Index=-1;
+	item.Index=0;
 	item.PropertyName=output_property->GetName();
 	if(!connector.ComponentName.empty())
 	{
