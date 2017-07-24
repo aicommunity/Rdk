@@ -60,54 +60,6 @@ typedef USerStorage UVariableData;
 
 class UIProperty;
 class UIShare;
-								 /*
-// Хранилище свойств параметра
-struct RDK_LIB_TYPE UVariable
-{
-// Указатель на свойство
-UEPtr<UIProperty> Property;
-
-// Флаг разрешения удаления данных на которых указывает Property
-bool DelEnable;
-
-// Тип свойства (битовая маска)
-// Младшие 8 бит на собственно тип:
-// Старшие 24 на принадлежность группе
-// (показан их отсчет от 0):
-unsigned int Type;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UVariable(void);
-UVariable(UEPtr<UIProperty> prop, unsigned int type=0);
-UVariable(const UVariable &copy);
-virtual ~UVariable(void);
-// --------------------------
-
-// --------------------------
-// Методы доступа к данным
-// --------------------------
-// Возвращает только маску типа свойства
-unsigned int GetPropertyType(void) const;
-
-// Возвращает только маску группы свойства
-unsigned int GetPropertyGroup(void) const;
-
-// Возвращает строковое имя типа свойства по заданному типу
-static std::string GetPropertyTypeNameByType(unsigned int type);
-
-// Возвращает тип свойства по строковому имени
-static unsigned int GetPropertyTypeByTypeName(const std::string &name);
-
-// Возвращает строковое имя типа свойства
-std::string GetPropertyTypeName(void) const;
-
-// Проверяет соответствие типа и группы свойства маске
-bool CheckMask(unsigned int mask) const;
-// --------------------------
-};
-           */
 
 class RDK_LIB_TYPE UComponent: public UModule
 {

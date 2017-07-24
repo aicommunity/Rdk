@@ -56,40 +56,6 @@ UEPtr<UIPropertyOutput> UIPropertyInputBase::GetConnectedProperty(int c_index)
 {
  return ConnectedProperties[c_index];
 }
-/*
-/// Возвращает полное имя подключенного компонента
-std::string UIPropertyInputBase::GetItemFullName(int c_index) const
-{
- if(ConnectedProperties.empty())
-  return "";
-
- std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
- int i=0;
- for(;I != ConnectedProperties.end();++I,++i)
- {
-  if(i == c_index)
-   return (*I)->GetOwner()->GetFullName();
- }
-
- return "";
-}
-
-// Возвращает имя подключенного выхода
-std::string UIPropertyInputBase::GetItemOutputName(int c_index) const
-{
- if(ConnectedProperties.empty())
-  return "";
-
- std::list<UEPtr<UIPropertyOutput> >::const_iterator I=ConnectedProperties.begin();
- int i=0;
- for(;I != ConnectedProperties.end();++I,++i)
- {
-  if(i == c_index)
-   return (*I)->GetName();
- }
-
- return "";
-} */
 
 /// Возвращает true если вход имеет подключение
 bool UIPropertyInputBase::IsConnected(void) const
@@ -105,7 +71,7 @@ bool UIPropertyInputBase::IsConnectedTo(const UIPropertyOutput *output_property)
 }
 
 /// Разрывает связь со свойством output_property
-bool UIPropertyInputBase::Disconnect(UIPropertyOutput *output_property, int c_index)
+bool UIPropertyInputBase::DisconnectFromOutput(UIPropertyOutput *output_property, int c_index)
 {
  if(!output_property)
  {
@@ -113,23 +79,23 @@ bool UIPropertyInputBase::Disconnect(UIPropertyOutput *output_property, int c_in
   return false;
  }
 
- return output_property->Disconnect(this,c_index);
+ return output_property->DisconnectFromInput(this,c_index);
 }
 
 /// Разрывает связь по индексу с_index
-bool UIPropertyInputBase::Disconnect(int c_index)
+bool UIPropertyInputBase::DisconnectFromOutput(int c_index)
 {
  if(c_index<0 || c_index >=ConnectedProperties.size())
  {
   GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property index not found: ")+sntoa(c_index));
   return false;
  }
- return ConnectedProperties[c_index]->Disconnect(this,c_index);
+ return ConnectedProperties[c_index]->DisconnectFromInput(this,c_index);
 }
 
 
 /// Разрывает все связи со свойством
-bool UIPropertyInputBase::DisconnectAll(void)
+bool UIPropertyInputBase::DisconnectAllOutputs(void)
 {
  bool res(true);
  std::vector<UEPtr<UIPropertyOutput> >::iterator I=ConnectedProperties.begin(),J;
@@ -137,13 +103,13 @@ bool UIPropertyInputBase::DisconnectAll(void)
  while(I != ConnectedProperties.end())
  {
   J=I; ++J;
-  res &=(*I)->Disconnect(this);
+  res &=(*I)->DisconnectFromInput(this);
   I=J;
  }
  return res;
 }
 /// Финальные действия по связыванию входа со свойством output_property
-bool UIPropertyInputBase::ConnectToOutput(UIPropertyOutput *output_property)
+bool UIPropertyInputBase::FinalizeConnectToOutput(UIPropertyOutput *output_property)
 {
 
  // TODO: тут проверка, не занят ли вход
@@ -172,7 +138,7 @@ bool UIPropertyInputBase::ConnectToOutput(UIPropertyOutput *output_property)
 }
 
 /// Финальные действия по уничтожению связи со свойством output_property
-bool UIPropertyInputBase::DisconnectFromOutput(UIPropertyOutput *output_property, int c_index)
+bool UIPropertyInputBase::FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index)
 {
  if(c_index<0 || c_index>=int(ConnectedProperties.size()))
  {
@@ -244,7 +210,7 @@ UEPtr<UIPropertyInput> UIPropertyOutputBase::GetSubscribedProperty(int c_index)
 }
 
 /// Устанавливает связь этого выхода со входом input_property
-bool UIPropertyOutputBase::Connect(UIPropertyInput *input_property)
+bool UIPropertyOutputBase::ConnectToInput(UIPropertyInput *input_property)
 {
  if(!input_property)
  {
@@ -252,7 +218,7 @@ bool UIPropertyOutputBase::Connect(UIPropertyInput *input_property)
   return false;
  }
 
- if(!input_property->ConnectToOutput(this))
+ if(!input_property->FinalizeConnectToOutput(this))
  {
   // откатываем действия
   return false;
@@ -263,7 +229,7 @@ bool UIPropertyOutputBase::Connect(UIPropertyInput *input_property)
 
 /// Разрывает связь этого выхода со входом input_property
 /// Если c_index == -1 то отключает все вхождения этого выхода
-bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_index)
+bool UIPropertyOutputBase::DisconnectFromInput(UIPropertyInput *input_property, int c_index)
 {
  if(!input_property)
  {
@@ -283,7 +249,7 @@ bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_ind
    {
 	// TODO: тут код физического отключения данных
 	SubscribedProperties.erase(SubscribedProperties.begin()+i);
-	res&=input_property->DisconnectFromOutput(this,i);
+	res&=input_property->FinalizeDisconnectFromOutput(this,i);
     ++found_counter;
    }
    else
@@ -305,14 +271,14 @@ bool UIPropertyOutputBase::Disconnect(UIPropertyInput *input_property, int c_ind
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-bool UIPropertyOutputBase::DisconnectAll(void)
+bool UIPropertyOutputBase::DisconnectAllInputs(void)
 {
  bool res(true);
  std::vector<UEPtr<UIPropertyInput> >::iterator I=SubscribedProperties.begin(),J;
  while(I != SubscribedProperties.end())
  {
   J=I; ++J;
-  res &= Disconnect(*I);
+  res &= DisconnectFromInput(*I);
   I=J;
  }
  return res;

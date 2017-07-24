@@ -153,6 +153,14 @@ EPropertySetterFail(const std::string &owner_name, const std::string &property_n
 : EPropertyError(owner_name, property_name) {};
 };
 
+// Вызов Setter завершен неудачно
+struct EPropertyWrongIndex: public EPropertyError
+{
+public:
+EPropertyWrongIndex(const std::string &owner_name, const std::string &property_name)
+: EPropertyError(owner_name, property_name) {};
+};
+
 };
 
 class UIPropertyOutput;
@@ -193,20 +201,20 @@ virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const=0;
 
 /// Разрывает связь со свойством output_property
 /// Если c_index == -1 то отключает все вхождения этого выхода
-virtual bool Disconnect(UIPropertyOutput *output_property, int c_index=-1)=0;
+virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index=-1)=0;
 
 /// Разрывает связь по индексу с_index
-virtual bool Disconnect(int c_index)=0;
+virtual bool DisconnectFromOutput(int c_index)=0;
 
 /// Разрывает все связи со свойством
-virtual bool DisconnectAll(void)=0;
+virtual bool DisconnectAllOutputs(void)=0;
 
 public:
 /// Финальные действия по связыванию входа со свойством output_property
-virtual bool ConnectToOutput(UIPropertyOutput *output_property)=0;
+virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)=0;
 
 /// Финальные действия по уничтожению связи со свойством output_property
-virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index)=0;
+virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index)=0;
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -240,14 +248,14 @@ virtual const UEPtr<UIPropertyInput> GetSubscribedProperty(int c_index) const=0;
 virtual UEPtr<UIPropertyInput> GetSubscribedProperty(int c_index)=0;
 
 /// Устанавливает связь этого выхода со входом input_property
-virtual bool Connect(UIPropertyInput *input_property)=0;
+virtual bool ConnectToInput(UIPropertyInput *input_property)=0;
 
 /// Разрывает связь этого выхода со входом input_property
-virtual bool Disconnect(UIPropertyInput *input_property, int c_index=-1)=0;
+virtual bool DisconnectFromInput(UIPropertyInput *input_property, int c_index=-1)=0;
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-virtual bool DisconnectAll(void)=0;
+virtual bool DisconnectAllInputs(void)=0;
 
 /// Возвращает true если выход подключен к выбранному входу
 virtual bool IsConnectedToInput(UIPropertyInput *input_property)=0;

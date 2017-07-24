@@ -24,66 +24,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-/// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
-//UELockVar<UTimeControl> UComponent::DummyTime;
-				 /*
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UVariable::UVariable(void)
-{
- Property=0;
- DelEnable=true;
- Type=ptParameter & pgPublic;
-}
-
-UVariable::UVariable(UEPtr<UIProperty> prop, unsigned int type)
- : Property(prop), DelEnable(true), Type(type)
-{
-}
-
-UVariable::UVariable(const UVariable &copy)
-{
- Property=copy.Property;
- DelEnable=copy.DelEnable;
- Type=copy.Type;
-}
-
-
-UVariable::~UVariable(void)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы доступа к данным
-// --------------------------
-// Возвращает только маску типа свойства
-unsigned int UVariable::GetPropertyType(void) const
-{
- return Type & 0x000000FF;
-}
-
-// Возвращает только маску группы свойства
-unsigned int UVariable::GetPropertyGroup(void) const
-{
- return Type & 0xFFFFFF00;
-}
-
-// Возвращает строковое имя типа свойства
-std::string UVariable::GetPropertyTypeName(void) const
-{
- return GetPropertyTypeNameByType(GetPropertyType());
-}
-
-// Проверяет соответствие типа и группы свойства маске
-bool UVariable::CheckMask(unsigned int mask) const
-{
- return (GetPropertyType() & mask) && (GetPropertyGroup() & mask);
-}
-// --------------------------
-      */
-
 //class UComponent
 // --------------------------
 // Конструкторы и деструкторы

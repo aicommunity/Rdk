@@ -2,8 +2,6 @@
 #define UPropertyImplementationBase_H
 
 #include "UPropertyInterface.h"
-//#include "UPropertyOutput.h"
-//#include "UPropertyInput.h"
 
 namespace RDK {
 
@@ -27,9 +25,6 @@ public:
 UIPropertyInputBase(void);
 virtual ~UIPropertyInputBase(void);
 
-/// Возвращает тип свойства ввода-вывода
-//virtual int GetInputType(void) const;
-
 public: // Методы доступа к источнику данных
 /// Возвращает лимит на число подключений ко входу
 /// если -1, то нет ограничений
@@ -45,12 +40,6 @@ virtual const std::vector<UEPtr<UIPropertyOutput> > GetConnectedProperties(void)
 virtual const UEPtr<UIPropertyOutput> GetConnectedProperty(int c_index) const;
 virtual UEPtr<UIPropertyOutput> GetConnectedProperty(int c_index);
 
-/// Возвращает полное имя подключенного компонента
-//virtual std::string GetItemFullName(int c_index) const;
-
-/// Возвращает имя подключенного выхода
-//virtual std::string GetItemOutputName(int c_index) const;
-
 /// Возвращает true если вход имеет подключение
 virtual bool IsConnected(void) const;
 
@@ -59,20 +48,20 @@ virtual bool IsConnectedTo(const UIPropertyOutput *output_property) const;
 
 /// Разрывает связь со свойством output_property
 /// Если c_index == -1 то отключает все вхождения этого выхода
-virtual bool Disconnect(UIPropertyOutput *output_property, int c_index=-1);
+virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index=-1);
 
 /// Разрывает связь по индексу с_index
-virtual bool Disconnect(int c_index);
+virtual bool DisconnectFromOutput(int c_index);
 
 /// Разрывает все связи со свойством
-virtual bool DisconnectAll(void);
+virtual bool DisconnectAllOutputs(void);
 
 public:
 /// Финальные действия по связыванию входа со свойством output_property
-virtual bool ConnectToOutput(UIPropertyOutput *output_property);
+virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property);
 
 /// Финальные действия по уничтожению связи со свойством output_property
-virtual bool DisconnectFromOutput(UIPropertyOutput *output_property, int c_index);
+virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index);
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные
@@ -112,14 +101,14 @@ virtual const UEPtr<UIPropertyInput> GetSubscribedProperty(int c_index) const;
 virtual UEPtr<UIPropertyInput> GetSubscribedProperty(int c_index);
 
 /// Устанавливает связь этого выхода со входом input_property
-virtual bool Connect(UIPropertyInput *input_property);
+virtual bool ConnectToInput(UIPropertyInput *input_property);
 
 /// Разрывает связь этого выхода со входом input_property
-virtual bool Disconnect(UIPropertyInput *input_property, int c_index=-1);
+virtual bool DisconnectFromInput(UIPropertyInput *input_property, int c_index=-1);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-virtual bool DisconnectAll(void);
+virtual bool DisconnectAllInputs(void);
 
 /// Возвращает true если выход подключен к выбранному входу
 virtual bool IsConnectedToInput(UIPropertyInput *input_property);

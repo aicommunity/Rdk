@@ -187,7 +187,7 @@ bool UNet::CreateLink(const ULinkSide &item, const ULinkSide &connector, bool fo
   return false;
  }
 
- return output_property->Connect(input_property);
+ return output_property->ConnectToInput(input_property);
 }
 
 bool UNet::CreateLink(const NameT &item, const NameT &item_index,
@@ -274,7 +274,7 @@ bool UNet::BreakLink(const ULinkSide &item, const ULinkSide &connector)
   return false;
  }
 
- return output_property->Disconnect(input_property);
+ return output_property->DisconnectFromInput(input_property);
 }
 
 bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
@@ -320,7 +320,7 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  {
   for(size_t j=0;j<input_properties.size();j++)
   {
-   res&=output_properties[i]->Disconnect(input_properties[j]);
+   res&=output_properties[i]->DisconnectFromInput(input_properties[j]);
   }
  }
 
@@ -337,7 +337,7 @@ bool UNet::BreakOutputLinks(void)
  bool res(true);
  for(size_t i=0;i<output_properties.size();i++)
  {
-  res&=output_properties[i]->DisconnectAll();
+  res&=output_properties[i]->DisconnectAllInputs();
  }
 
  return res;
@@ -385,7 +385,7 @@ bool UNet::BreakOutputLinks(const NameT &itemname, const NameT &item_property_na
  }
 
 
- return output_property->DisconnectAll();
+ return output_property->DisconnectAllInputs();
 }
 
 bool UNet::BreakInputLinks(void)
@@ -395,7 +395,7 @@ bool UNet::BreakInputLinks(void)
  bool res(true);
  for(size_t i=0;i<input_properties.size();i++)
  {
-  res&=input_properties[i]->DisconnectAll();
+  res&=input_properties[i]->DisconnectAllOutputs();
  }
 
  return res;
@@ -425,7 +425,7 @@ bool UNet::BreakInputLinks(const NameT &connectorname, const NameT &connector_pr
 
   return false;
  }
- return input_property->DisconnectAll();
+ return input_property->DisconnectAllOutputs();
 }
 
 
@@ -463,7 +463,7 @@ bool UNet::DisconnectBy(UEPtr<UContainer> brklevel)
    if(!input->GetOwner()->CheckOwner(brklevel))
    {
 	J=++I;
-	res&=buffer[j]->Disconnect(input);
+	res&=buffer[j]->DisconnectFromInput(input);
 	I=J;
    }
    else

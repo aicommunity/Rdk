@@ -99,22 +99,17 @@ virtual ~UPropertyBase(void)
 // -----------------------------
 // Методы сериализации
 // -----------------------------
+protected:
 // Возвращает ссылку на данные
 virtual const T& GetData(int index=0) const=0;
-/*{
- if(PData)
-  return *PData;
- throw EPropertyZeroPtr(GetOwnerName(),GetName());
-};  */
+
+// Возвращает ссылку на данные
+//virtual T& GetData(int index=0)=0;
 
 // Модифицирует данные
 virtual void SetData(const T& data, int index=0)=0;
-/*{
- (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
- RenewUpdateTime();
-}; */
 
-
+public:
 // Метод возвращает тип свойства
 virtual unsigned int GetType(void) const
 {
@@ -124,7 +119,20 @@ virtual unsigned int GetType(void) const
 // Метод изменяет тип свойства
 bool ChangeType(unsigned int value)
 {
- Type=value;
+ bool res(true);
+ // Если свойство перестает быть входом то отключаем всех кто к нему подключен
+ if((Type & ptInput) && !(value & ptInput))
+  res&=DisconnectAllOutputs();
+
+ // Если свойство перестает быть выходом то отключаем всех к кому оно подключено
+ if((Type & ptOutput) && !(value & ptOutput))
+  res&=DisconnectAllInputs();
+
+ if(res)
+  Type=value;
+ else
+  return false;
+
  return true;
 }
 
@@ -404,9 +412,13 @@ void SetCheckEquals(bool value)
 // -----------------------------
 // Методы управления
 // -----------------------------
+protected:
 // Возврат значения
 virtual const T& GetData(int index=0) const
 {
+ if(index != 0)
+  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
  if(this->Owner && GetterR)
  {
   if(GetterR)
@@ -419,9 +431,25 @@ virtual const T& GetData(int index=0) const
  throw UIProperty::EPropertyZeroPtr(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
 };
 
+				  /*
+// Возвращает ссылку на данные
+virtual T& GetData(int index=0)
+{
+ if(index != 0)
+  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
+ if(RawDataPtr)
+  return *RawDataPtr;
+
+ throw UIProperty::EPropertyZeroPtr(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+}                                     */
+
 // Установка значения
 virtual void SetData(const T &value, int index=0)
 {
+ if(index != 0)
+  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
  if(RawDataPtr)
  {
   if(CheckEqualsFlag && *RawDataPtr == value)
@@ -455,6 +483,7 @@ virtual void SetData(const T &value, int index=0)
 // -----------------------------
 // Методы управления
 // -----------------------------
+public:
 operator T (void) const
 {
  return this->GetData();
@@ -495,91 +524,13 @@ UPropertyVirtual<T,OwnerT,type>& operator = (const UPropertyVirtual<T,OwnerT,typ
 // -----------------------------
 };
 
-								   /*
-/// Класс - виртуальное свойство
-/// Не содержит данного внутри себя
-/// Setter и Getter обеспечивают доступ по значению
-/// Вовзрат значения осуществляется через внутреннюю копию
-template<typename T,class OwnerT>
-class UVSProperty: public UVBaseProperty<T,OwnerT>
-{
-protected: // Типы методов ввода-вывода
-typedef T (OwnerT::*GetterT)(void) const;
-typedef bool (OwnerT::*SetterT)(T);
-
-protected: // Данные
-// Методы ввода-вывода
-GetterT Getter;
-SetterT Setter;
-
-private:
-mutable T Temp;
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UVSProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), Getter(getmethod), Setter(setmethod)
-{
-}
-
-UVSProperty(OwnerT * const owner, T * const pdata, SetterT setmethod=0) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), Getter(0), Setter(setmethod)
-{
-}
-// -----------------------------
-
-// -----------------------------
-// Методы управления
-// -----------------------------
-// Возврат значения
-virtual const T& GetData(void) const
-{
- if(this->Owner)
- {
-  if(this->PData)
-   return *this->PData;
-
-  if(Getter)
-   return Temp=(this->Owner->*Getter)();
- }
-
- throw UIProperty::EPropertyZeroPtr(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-};
-
-// Установка значения
-virtual void SetData(const T &value)
-{
- if(this->PData && !Setter)
- {
-  *this->PData=value;
-  this->RenewUpdateTime();
- }
-
- if(this->Owner && Setter)
- {
-  if(!(this->Owner->*Setter)(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-  if(this->PData)
-  {
-   *this->PData=value;
-   this->RenewUpdateTime();
-  }
- }
-};
-// -----------------------------
-};                       */
-
 /* ************************************************************************* */
 // Класс - свойство со значением внутри
 /* ************************************************************************* */
 template<typename T,class OwnerT, unsigned int type>
 class UProperty: public UPropertyVirtual<T,OwnerT,type>
 {
-public:
+protected:
 //protected:
 // Данные
 mutable T v;
@@ -595,14 +546,24 @@ UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtu
 // -----------------------------
 // Операторы доступа
 // -----------------------------
+protected:
 // Возврат значения
 virtual const T& GetData(int index=0) const
 {
  return v;
 };
+					  /*
+virtual T& GetData(int index=0)
+{
+ return v;
+};
+                           */
 
 virtual void SetData(const T &value, int index=0)
 {
+ if(index != 0)
+  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
+
  if(CheckEqualsFlag && v == value)
   return;
 
@@ -615,6 +576,13 @@ virtual void SetData(const T &value, int index=0)
  v=value;
  this->RenewUpdateTime();
 };
+
+public:
+const T& operator [] (int index) const
+{ return v[index]; };
+
+T& operator [] (int index)
+{ return v[index]; };
 // -----------------------------
 };
 /* ************************************************************************* */
