@@ -103,9 +103,6 @@ protected:
 // Возвращает ссылку на данные
 virtual const T& GetData(int index=0) const=0;
 
-// Возвращает ссылку на данные
-//virtual T& GetData(int index=0)=0;
-
 // Модифицирует данные
 virtual void SetData(const T& data, int index=0)=0;
 
@@ -430,19 +427,6 @@ virtual const T& GetData(int index=0) const
 
  throw UIProperty::EPropertyZeroPtr(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
 };
-
-				  /*
-// Возвращает ссылку на данные
-virtual T& GetData(int index=0)
-{
- if(index != 0)
-  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
-
- if(RawDataPtr)
-  return *RawDataPtr;
-
- throw UIProperty::EPropertyZeroPtr(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
-}                                     */
 
 // Установка значения
 virtual void SetData(const T &value, int index=0)
