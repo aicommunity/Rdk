@@ -69,13 +69,15 @@ UComponent::VariableMapCIteratorT Variable;
 /// Флаг, указывающий, что это динамическое свойтво
 bool DynamicPropertyFlag;
 
+mutable int CurrentInputIndex;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
 UPropertyBase(const std::string &name, OwnerT * const owner, bool dynamic_prop_flag=false)
- : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag)
+ : Name(name), Owner(owner), Type(type), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag), CurrentInputIndex(0)
 {
    if(Owner)
    {
@@ -101,10 +103,36 @@ virtual ~UPropertyBase(void)
 // -----------------------------
 protected:
 // Возвращает ссылку на данные
-virtual const T& GetData(int index=0) const=0;
+virtual const T& GetData(void) const
+{
+ if(IsConnected())
+ {
+  return dynamic_pointer_cast<UPropertyBase<T,OwnerT, type> >(GetConnectedProperty(CurrentInputIndex))->GetData();
+ }
+ else
+ {
+  return GetDataLocal();
+ }
+}
 
 // Модифицирует данные
-virtual void SetData(const T& data, int index=0)=0;
+virtual void SetData(const T& data)
+{
+ if(IsConnected())
+ {
+  dynamic_pointer_cast<UPropertyBase<T,OwnerT, type> >(GetConnectedProperty(CurrentInputIndex))->SetData(data);
+ }
+ else
+ {
+  SetDataLocal(data);
+ }
+}
+
+// Возвращает ссылку на данные
+virtual const T& GetDataLocal(void) const=0;
+
+// Модифицирует данные
+virtual void SetDataLocal(const T& data)=0;
 
 public:
 // Метод возвращает тип свойства
@@ -219,21 +247,21 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 };
 
 // Метод возвращает указатель на область памяти, содержащую данные свойства
-virtual const void* GetMemoryArea(int index=0)
+virtual const void* GetMemoryArea(void) const
 {
- return &GetData(index);
+ return &GetData();
 }
 
 // Метод копирует значение данных свойства из области памяти
 // штатными средствами копирования реального типа данных
 // входной указатель приводится к указателю на необходимый тип данных
-bool ReadFromMemory(const void *buffer, int index=0)
+bool ReadFromMemory(const void *buffer)
 {
  if(!buffer)
   return false;
 
  const T* temp=(const T*)buffer;
- SetData(*temp,index);
+ SetData(*temp);
  return true;
 }
 // -----------------------------
@@ -411,11 +439,8 @@ void SetCheckEquals(bool value)
 // -----------------------------
 protected:
 // Возврат значения
-virtual const T& GetData(int index=0) const
+virtual const T& GetDataLocal(void) const
 {
- if(index != 0)
-  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
-
  if(this->Owner && GetterR)
  {
   if(GetterR)
@@ -429,11 +454,8 @@ virtual const T& GetData(int index=0) const
 };
 
 // Установка значения
-virtual void SetData(const T &value, int index=0)
+virtual void SetDataLocal(const T &value)
 {
- if(index != 0)
-  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
-
  if(RawDataPtr)
  {
   if(CheckEqualsFlag && *RawDataPtr == value)
@@ -477,16 +499,16 @@ const T& operator () (void) const
 {
  return this->GetData();
 };
-
+				   /*
 T* operator -> (void)
 { return const_cast<T*>(&this->GetData()); };
-
+                     */
 const T* operator -> (void) const
 { return &this->GetData(); };
 
-T& operator * (void)
+/*T& operator * (void)
 { return const_cast<T&>(this->GetData()); };
-
+  */
 const T& operator * (void) const
 { return this->GetData(); };
 
@@ -532,22 +554,19 @@ UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtu
 // -----------------------------
 protected:
 // Возврат значения
-virtual const T& GetData(int index=0) const
+virtual const T& GetDataLocal(void) const
 {
  return v;
 };
-					  /*
-virtual T& GetData(int index=0)
+	 /*
+virtual T& GetData(void)
 {
  return v;
-};
-                           */
+};            */
 
-virtual void SetData(const T &value, int index=0)
+
+virtual void SetDataLocal(const T &value)
 {
- if(index != 0)
-  throw EPropertyWrongIndex(UPropertyBase<T,OwnerT,type>::GetOwnerName(),UPropertyBase<T,OwnerT,type>::GetName());
-
  if(CheckEqualsFlag && v == value)
   return;
 
@@ -563,10 +582,10 @@ virtual void SetData(const T &value, int index=0)
 
 public:
 const T& operator [] (int index) const
-{ return v[index]; };
-
+{ return GetData()[index]; };
+				 /*
 T& operator [] (int index)
-{ return v[index]; };
+{ return GetData()[index]; };   */
 // -----------------------------
 };
 /* ************************************************************************* */
@@ -607,23 +626,21 @@ UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmetho
 // -----------------------------
 // Операторы доступа
 // -----------------------------
+protected:
 // Возврат значения
-virtual const T& GetData(int index=0) const
+virtual const T& GetDataLocal(void) const
+{
+ return v[CurrentInputIndex];
+};
+/*
+virtual T& GetData(void)
 {
  return v[index];
-};
+};        */
 
-virtual T& GetData(int index=0)
+virtual void SetDataLocal(const T &value)
 {
- return v[index];
-};
-
-T& operator [] (int index)
-{ return this->GetData(index); };
-
-virtual void SetData(const T &value, int index=0)
-{
- if(CheckEqualsFlag && v[index] == value)
+ if(CheckEqualsFlag && v[CurrentInputIndex] == value)
   return;
 
  if(this->Owner)
@@ -632,9 +649,35 @@ virtual void SetData(const T &value, int index=0)
    throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
  }
 
- v[index]=value;
+ v[CurrentInputIndex]=value;
  this->RenewUpdateTime();
 };
+
+public:
+const T& operator [] (int index) const
+{ return GetData()[(CurrentInputIndex=index)]; };
+/*
+T& operator [] (int index)
+{ return v[index]; };
+								  */
+public:
+/// Финальные действия по связыванию входа со свойством output_property
+virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
+{
+ if(!UIPropertyOutputBase::FinalizeConnectToOutput(output_property))
+  return false;
+ v.resize(GetNumConnections());
+ return true;
+}
+
+/// Финальные действия по уничтожению связи со свойством output_property
+virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index)
+{
+ if(!UIPropertyOutputBase::FinalizeDisconnectFromOutput(output_property,c_index))
+  return false;
+ v.erase(v.begin()+c_index);
+ return true;
+}
 // -----------------------------
 
 };

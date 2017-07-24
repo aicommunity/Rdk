@@ -50,13 +50,13 @@ virtual const type_info& GetLanguageType(void) const=0;
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
 // ћетод возвращает указатель на область пам€ти, содержащую данные свойства
-virtual const void* GetMemoryArea(int index=0)=0;
+virtual const void* GetMemoryArea(void) const=0;
 
 // ћетод копирует значение данных свойства из области пам€ти
 // штатными средствами копировани€ реального типа данных
 // входной указатель приводитс€ к указателю на необходимый тип данных
 // TODO: possible unsafe???
-virtual bool ReadFromMemory(const void *buffer, int index=0)=0;
+virtual bool ReadFromMemory(const void *buffer)=0;
 
 public: // ћетоды управлени€ временем обновлени€ данных свойства
 /// ¬озвращает врем€ обновлени€ данных свойства (мс)

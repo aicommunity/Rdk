@@ -5945,7 +5945,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
 	 output_property->GetLanguageType() == typeid(MDVector<double>))
    {
-    return output_property->GetMemoryArea(0);
+    return output_property->GetMemoryArea();
    }
 
    return 0;
