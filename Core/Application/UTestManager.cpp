@@ -6,9 +6,12 @@
 #include "UApplication.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace RDK {
 
+/// Макрос для сокращение монотонного кода, не может использоваться в других местах программы
+/// ВНИМАНИЕ! содержит обращение к переменным, созданным вне макроса
 #define TEST_PROPERTY_WITH_TYPE(type) \
   if(property->GetLanguageType() == typeid(type)) \
   { \
@@ -155,6 +158,12 @@ int UTest::ProcessTest()
       for(size_t i = 0; i < static_cast<size_t>(calcDuration); ++i)
         Application->StepChannel(-1);
     }
+    else
+    {
+      Application->StartChannel(-1);
+      Sleep(calcDuration);
+      Application->PauseChannel(-1);
+    }
 
     UELockPtr<UContainer> model = GetModelLock<UContainer>(Core_GetSelectedChannelIndex());
 
@@ -206,7 +215,10 @@ int UTest::ProcessTest()
       TEST_PROPERTY_WITH_TYPE(float)
       TEST_PROPERTY_WITH_TYPE(double)
       TEST_PROPERTY_WITH_TYPE(std::string)
-      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
+      TEST_PROPERTY_WITH_TYPE(MDMatrix<double>)
+
+
+//      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
 
       /*if(property->GetLanguageType() == typeid(bool))
       {
@@ -224,7 +236,7 @@ int UTest::ProcessTest()
         }
       }*/
 
-
+      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
 
     }
   }
@@ -317,7 +329,15 @@ bool UTest::compareProperties(std::string value, std::string str, std::string)
   return value.compare(str) == 0;
 }
 
-bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
+bool UTest::compareProperties(MDMatrix<double> value, string str, string delta)
+{
+  std::vector<std::string> strs;
+  boost::split(strs, str, boost::is_any_of("\t"));
+
+  return static_cast<size_t>(value.GetSize()) == strs.size();
+}
+
+/*bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
 {
   USerStorageXML storage;
   storage.Load(str, "");
@@ -329,7 +349,7 @@ bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, stri
     strVectorSize = boost::lexical_cast<size_t>(strS);
 
   return value.size() == strVectorSize;
-}
+}*/
 
 
 
@@ -364,6 +384,9 @@ int UTestManager::LoadTests(const std::string &file_name)
   return 1001;
  }
 
+ // TODO: чтение xml c набором тестов
+
+ // Внимание костыль - UtTestManager ест только 1 UTest
  UTest singleTest(Application);
  int loadRet = singleTest.LoadTest(file_name);
 
