@@ -655,7 +655,10 @@ virtual void SetDataLocal(const T &value)
 
 public:
 const T& operator [] (int index) const
-{ return GetData()[(CurrentInputIndex=index)]; };
+{
+ CurrentInputIndex=index;
+ return GetData();
+};
 /*
 T& operator [] (int index)
 { return v[index]; };
@@ -664,7 +667,7 @@ public:
 /// Финальные действия по связыванию входа со свойством output_property
 virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
 {
- if(!UIPropertyOutputBase::FinalizeConnectToOutput(output_property))
+ if(!UIPropertyInputBase::FinalizeConnectToOutput(output_property))
   return false;
  v.resize(GetNumConnections());
  return true;
@@ -673,7 +676,7 @@ virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
 /// Финальные действия по уничтожению связи со свойством output_property
 virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index)
 {
- if(!UIPropertyOutputBase::FinalizeDisconnectFromOutput(output_property,c_index))
+ if(!UIPropertyInputBase::FinalizeDisconnectFromOutput(output_property,c_index))
   return false;
  v.erase(v.begin()+c_index);
  return true;
