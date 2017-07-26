@@ -1113,14 +1113,14 @@ bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
   return false;
- return (EngineControl->CheckCalcState(channel_index) == UEngineControl::UCalcState::csRunning);
+ return (EngineControl->CheckCalcState(channel_index) == UEngineControl::csRunning);
 }
 
 /// ѕровер€ет состо€ние расчета по id канала
 UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
-  return UEngineControl::UCalcState::csUnknown;
+  return UEngineControl::csUnknown;
  return EngineControl->CheckCalcState(channel_id);
 }
 // --------------------------

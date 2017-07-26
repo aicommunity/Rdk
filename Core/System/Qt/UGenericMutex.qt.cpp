@@ -138,7 +138,7 @@ bool UGenericEventQt::wait(unsigned wait_time)
     return b;
 }
 #else
-    #if defined(_MSC_VER)
+    #if defined(_WIN32)
 
 #include <Windows.h>
 

@@ -1118,7 +1118,7 @@ int UEngine::Model_SetComponentPropertyData(const char *stringid, const char *pr
  {
   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UPropertyVirtual<T> > property=dynamic_pointer_cast<UPropertyVirtual<T> >(iproperty);
+  UEPtr<UPropertyBase<T> > property=dynamic_pointer_cast<UPropertyBase<T> >(iproperty);
   property.SetData(data);
  }
  catch (UException &exception)
