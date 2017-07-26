@@ -374,51 +374,6 @@ public:
  virtual bool UnInit(void)=0;
 };
 
-
-template<typename T>
-void UComponent::FindPropertiesByType(std::vector<UEPtr<T> > &properties, unsigned int mask) const
-{
- properties.clear();
- VariableMapCIteratorT I=PropertiesLookupTable.begin();
- for(;I != PropertiesLookupTable.end(); I++)
- {
-  UEPtr<T> property=dynamic_pointer_cast<T>(I->second);
-  if(property && (property->GetPropertyType() & mask))
-   properties.push_back(property);
- }
-}
-
-// ¬озвращает указатель на данные свойства
-template<typename T>
-const UEPtr<T> UComponent::FindPropertyByType(const NameT &name, unsigned int mask) const
-{
- VariableMapIteratorT I=PropertiesLookupTable.find(name);
- if(I != PropertiesLookupTable.end())
- {
-  if(I->second->GetPropertyType() & mask)
-   return dynamic_pointer_cast<T>(I->second);
- }
-
- return 0;
-}
-
-template<typename T>
-UEPtr<T> UComponent::FindPropertyByType(const NameT &name, unsigned int mask)
-{
- VariableMapIteratorT I=PropertiesLookupTable.find(name);
- if(I != PropertiesLookupTable.end())
- {
-  if(I->second->GetPropertyType() & mask)
-   return dynamic_pointer_cast<T>(I->second);
- }
-
- return 0;
-}
-
-
-
-
-
 }
 
 #endif

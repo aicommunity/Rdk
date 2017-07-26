@@ -50,13 +50,7 @@ virtual bool Init(UEPtr<UComponent> main_owner)
 
  UComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
  if(I != main_owner_cast->GetPropertiesList().end())
- {
-  UVProperty<T,MainOwnerT> *prop=dynamic_pointer_cast<UVProperty<T,MainOwnerT> >(I->second.Property);
-  if(prop)
-   VProperty=prop;
-  else
-   VProperty=0;
- }
+  VProperty=I->second;
  else
   VProperty=0;
 
@@ -200,13 +194,7 @@ virtual bool Init(UEPtr<UComponent> main_owner)
 
  UComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
  if(I != main_owner_cast->GetPropertiesList().end())
- {
-  UVProperty<T,MainOwnerT> *prop=dynamic_pointer_cast<UVProperty<T,MainOwnerT> >(I->second.Property);
-  if(prop)
-   VProperty=prop;
-  else
-   VProperty=0;
- }
+  VProperty=I->second;
  else
   VProperty=0;
 

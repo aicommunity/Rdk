@@ -567,7 +567,7 @@ virtual T& GetData(void)
 
 virtual void SetDataLocal(const T &value)
 {
- if(CheckEqualsFlag && v == value)
+ if(this->CheckEqualsFlag && v == value)
   return;
 
  if(this->Owner)
@@ -582,7 +582,7 @@ virtual void SetDataLocal(const T &value)
 
 public:
 const T& operator [] (int index) const
-{ return GetData()[index]; };
+{ return this->GetData()[index]; };
 				 /*
 T& operator [] (int index)
 { return GetData()[index]; };   */
@@ -612,14 +612,14 @@ public:
 UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod)
  : UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0)
 {
- SetNumConnectionsLimit(-1);
+ this->SetNumConnectionsLimit(-1);
 };
 
 UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod)
  : UProperty<T,OwnerT,type>(name, owner,(typename UPropertyVirtual<T,OwnerT,type>::SetterRT)0,0)
 {
  VSetterR=setmethod;
- SetNumConnectionsLimit(-1);
+ this->SetNumConnectionsLimit(-1);
 };
 // -----------------------------
 
@@ -630,7 +630,7 @@ protected:
 // Возврат значения
 virtual const T& GetDataLocal(void) const
 {
- return v[CurrentInputIndex];
+ return v[this->CurrentInputIndex];
 };
 /*
 virtual T& GetData(void)
@@ -640,7 +640,7 @@ virtual T& GetData(void)
 
 virtual void SetDataLocal(const T &value)
 {
- if(CheckEqualsFlag && v[CurrentInputIndex] == value)
+ if(this->CheckEqualsFlag && v[this->CurrentInputIndex] == value)
   return;
 
  if(this->Owner)
@@ -649,15 +649,15 @@ virtual void SetDataLocal(const T &value)
    throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
  }
 
- v[CurrentInputIndex]=value;
+ v[this->CurrentInputIndex]=value;
  this->RenewUpdateTime();
 };
 
 public:
 const T& operator [] (int index) const
 {
- CurrentInputIndex=index;
- return GetData();
+ this->CurrentInputIndex=index;
+ return this->GetData();
 };
 /*
 T& operator [] (int index)
@@ -669,7 +669,7 @@ virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
 {
  if(!UIPropertyInputBase::FinalizeConnectToOutput(output_property))
   return false;
- v.resize(GetNumConnections());
+ v.resize(this->GetNumConnections());
  return true;
 }
 
