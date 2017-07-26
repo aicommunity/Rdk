@@ -23,6 +23,7 @@ See file license.txt for more information
 //#include "UItem.h"
 #include "UAModel.h"
 #include "UNet.h"
+#include "UDynamicNet.h"
 #include "UComponent.h"
 #include "UController.h"
 #include "UStorage.h"

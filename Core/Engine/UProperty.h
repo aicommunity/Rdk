@@ -495,10 +495,7 @@ const T& operator () (void) const
 {
  return this->GetData();
 };
-				   /*
-T* operator -> (void)
-{ return const_cast<T*>(&this->GetData()); };
-                     */
+
 const T* operator -> (void) const
 { return &this->GetData(); };
 

@@ -237,6 +237,10 @@
             <DependentOn>..\..\..\Core\Engine\UController.h</DependentOn>
             <BuildOrder>69</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UDynamicNet.cpp">
+            <DependentOn>..\..\..\Core\Engine\UDynamicNet.h</DependentOn>
+            <BuildOrder>117</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UELockPtr.cpp">
             <DependentOn>..\..\..\Core\Engine\UELockPtr.h</DependentOn>
             <BuildOrder>70</BuildOrder>
