@@ -37,6 +37,7 @@ SOURCES += \
     ../../../Core/Engine/ULogger.cpp \
     ../../../Core/Engine/UModule.cpp \
     ../../../Core/Engine/UNet.cpp \
+    ../../../Core/Engine/UDynamicNet.cpp \
     ../../../Core/Engine/UPointer.cpp \
     ../../../Core/Engine/UProperty.cpp \
     ../../../Core/Engine/UShare.cpp \
@@ -157,6 +158,7 @@ HEADERS +=\
     ../../../Core/Engine/ULogger.h \
     ../../../Core/Engine/UModule.h \
     ../../../Core/Engine/UNet.h \
+    ../../../Core/Engine/UDynamicNet.h \
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
     ../../../Core/Engine/UShare.h \

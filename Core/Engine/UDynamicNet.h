@@ -114,11 +114,33 @@ bool UDynamicNet<T>::Default(void)
 template<class T>
 bool UDynamicNet<T>::Build(void)
 {
-/// Pointers to dynamic IO
-//std::vector<UEPtr<UProperty<T,UDynamicNet<T>, ptPubInput> > > InputData;
+ while(InputData.size() < NumInputs)
+ {
+  UEPtr<UProperty<T,UDynamicNet<T>,ptPubInput> > prop;
+  prop=new UProperty<T,UDynamicNet<T>,ptPubInput>(std::string("DataInput")+sntoa(InputData.size()),this,0,0,true);
+  InputData.push_back(prop);
+ }
 
-/// Pointers to dynamic IO
-//std::vector<UEPtr<UProperty<T,UDynamicNet<T>, ptPubOutput> > > OutputData;
+ while(InputData.size() > NumInputs)
+ {
+  UEPtr<UProperty<T,UDynamicNet<T>,ptPubInput> > prop=InputData.back();
+  delete prop;
+  InputData.resize(InputData.size()-1);
+ }
+
+ while(OutputData.size() < NumOutputs)
+ {
+  UEPtr<UProperty<T,UDynamicNet<T>,ptPubOutput> > prop;
+  prop=new UProperty<T,UDynamicNet<T>,ptPubInput>(std::string("DataOutput")+sntoa(OutputData.size()),this,0,0,true);
+  OutputData.push_back(prop);
+ }
+
+ while(OutputData.size() > NumOutputs)
+ {
+  UEPtr<UProperty<T,UDynamicNet<T>,ptPubOutput> > prop=OutputData.back();
+  delete prop;
+  OutputData.resize(OutputData.size()-1);
+ }
 
  return UNet::Build();
 }
