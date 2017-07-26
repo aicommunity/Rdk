@@ -285,7 +285,7 @@ void ResetUpdateTime(void)
 
 // Класс - виртуальное свойство
 // Не содержит данного внутри себя
-template<typename T,class OwnerT, unsigned int type>
+template<typename T,class OwnerT>
 class UPropertyVirtual: public UPropertyBase<T>
 {
 protected: // Типы методов ввода-вывода
@@ -314,7 +314,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyVirtual(const std::string &name, OwnerT * const owner, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
+UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
   Owner(owner), Type(type), CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), RawDataPtr(0), UPropertyBase<T>(name, dynamic_prop_flag)
 {
     if(Owner)
@@ -323,7 +323,7 @@ UPropertyVirtual(const std::string &name, OwnerT * const owner, SetterRT setmeth
     }
 }
 
-UPropertyVirtual(const std::string &name, OwnerT * const owner, T * const pdata, bool dynamic_prop_flag=false) :
+UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, T * const pdata, bool dynamic_prop_flag=false) :
   Owner(owner), Type(type), CheckEqualsFlag(true), GetterR(0), SetterR(0), RawDataPtr(pdata), UPropertyBase<T>(name,dynamic_prop_flag)
 {
     if(Owner)
@@ -446,7 +446,7 @@ virtual const T& GetDataLocal(void) const
  if(RawDataPtr)
   return *RawDataPtr;
 
- throw UIProperty::EPropertyZeroPtr(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
+ throw UIProperty::EPropertyZeroPtr(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
 };
 
 // Установка значения
@@ -463,18 +463,18 @@ virtual void SetDataLocal(const T &value)
  else
  {
   if(!GetterR)
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
+   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
 
   if(CheckEqualsFlag && (this->Owner->*GetterR)() == value)
    return;
 
   if(!SetterR)
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
+   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
 
   if(this->Owner && SetterR)
   {
    if(!(this->Owner->*SetterR)(value))
-    throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
+	throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
 
    this->RenewUpdateTime();
   }
@@ -512,13 +512,13 @@ const T& operator [] (int index) const
 { return this->GetData(index); };
 
 // Оператор присваивания
-UPropertyVirtual<T,OwnerT,type>& operator = (const T &value)
+UPropertyVirtual<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
 };
 
-UPropertyVirtual<T,OwnerT,type>& operator = (const UPropertyVirtual<T,OwnerT,type> &v)
+UPropertyVirtual<T,OwnerT>& operator = (const UPropertyVirtual<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;
@@ -530,7 +530,7 @@ UPropertyVirtual<T,OwnerT,type>& operator = (const UPropertyVirtual<T,OwnerT,typ
 // Класс - свойство со значением внутри
 /* ************************************************************************* */
 template<typename T,class OwnerT, unsigned int type>
-class UProperty: public UPropertyVirtual<T,OwnerT,type>
+class UProperty: public UPropertyVirtual<T,OwnerT>
 {
 protected:
 //protected:
@@ -541,8 +541,8 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod=0)
- : UPropertyVirtual<T,OwnerT,type>(name,owner, setmethod, 0), v() { };
+UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0)
+ : UPropertyVirtual<T,OwnerT>(name,owner, type, setmethod, 0), v() { };
 // -----------------------------
 
 // -----------------------------
@@ -569,7 +569,7 @@ virtual void SetDataLocal(const T &value)
  if(this->Owner)
  {
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
+   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
  }
 
  v=value;
@@ -590,7 +590,7 @@ T& operator [] (int index)
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
 template<typename T, typename RangeT, typename OwnerT, unsigned int type>
-class UPropertyRange: public UPropertyVirtual<T,OwnerT,type>
+class UPropertyRange: public UPropertyVirtual<T,OwnerT>
 {
 protected: // Типы методов ввода-вывода
 typedef bool (OwnerT::*VSetterRT)(const RangeT&);
@@ -605,14 +605,14 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT,type>::SetterRT setmethod)
- : UPropertyVirtual<T,OwnerT,type>(name, owner, setmethod, 0), VSetterR(0)
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod)
+ : UPropertyVirtual<T,OwnerT>(name, owner, type, setmethod, 0), VSetterR(0)
 {
  this->SetNumConnectionsLimit(-1);
 };
 
 UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod)
- : UProperty<T,OwnerT,type>(name, owner,(typename UPropertyVirtual<T,OwnerT,type>::SetterRT)0,0)
+ : UPropertyVirtual<T,OwnerT>(name, owner, type, (typename UPropertyVirtual<T,OwnerT>::SetterRT)0,0)
 {
  VSetterR=setmethod;
  this->SetNumConnectionsLimit(-1);
@@ -642,7 +642,7 @@ virtual void SetDataLocal(const T &value)
  if(this->Owner)
  {
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT,type>::GetOwnerName(),UPropertyVirtual<T,OwnerT,type>::GetName());
+   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
  }
 
  v[this->CurrentInputIndex]=value;

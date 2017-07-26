@@ -63,14 +63,14 @@ UContainer::UContainer(void)
 {
  // bad idea
  UIProperty* prop=0;
- prop=new UPropertyVirtual<UId,UContainer,ptParameter | pgSystem>("Id",this,&UContainer::SetId,&UContainer::GetId,true);
- prop=new UPropertyVirtual<NameT,UContainer,ptParameter | pgSystem>("Name",this,&UContainer::SetName,&UContainer::GetName,true);
- prop=new UPropertyVirtual<UTime,UContainer,ptParameter | pgSystem>("TimeStep",this,&UContainer::SetTimeStep,&UContainer::GetTimeStep,true);
- prop=new UPropertyVirtual<bool,UContainer,ptParameter | pgPublic>("Activity",this,&UContainer::SetActivity,&UContainer::GetActivity,true);
- prop=new UPropertyVirtual<RDK::MVector<double,3>,UContainer,ptParameter | pgPublic>("Coord",this,&UContainer::SetCoord,&UContainer::GetCoord,true);
- prop=new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("MaxCalculationDuration",this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration,true);
- prop=new UPropertyVirtual<long long,UContainer,ptParameter | pgPublic>("CalculationDurationThreshold",this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold,true);
- prop=new UPropertyVirtual<unsigned int,UContainer,ptParameter | pgPublic>("DebugSysEventsMask",this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask,true);
+ prop=new UPropertyVirtual<UId,UContainer>("Id",this,ptParameter | pgSystem,&UContainer::SetId,&UContainer::GetId,true);
+ prop=new UPropertyVirtual<NameT,UContainer>("Name",this,ptParameter | pgSystem,&UContainer::SetName,&UContainer::GetName,true);
+ prop=new UPropertyVirtual<UTime,UContainer>("TimeStep",this,ptParameter | pgSystem,&UContainer::SetTimeStep,&UContainer::GetTimeStep,true);
+ prop=new UPropertyVirtual<bool,UContainer>("Activity",this,ptParameter | pgPublic,&UContainer::SetActivity,&UContainer::GetActivity,true);
+ prop=new UPropertyVirtual<RDK::MVector<double,3>,UContainer>("Coord",this,ptParameter | pgPublic,&UContainer::SetCoord,&UContainer::GetCoord,true);
+ prop=new UPropertyVirtual<long long,UContainer>("MaxCalculationDuration",this,ptParameter | pgPublic,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration,true);
+ prop=new UPropertyVirtual<long long,UContainer>("CalculationDurationThreshold",this,ptParameter | pgPublic,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold,true);
+ prop=new UPropertyVirtual<unsigned int,UContainer>("DebugSysEventsMask",this,ptParameter | pgPublic,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask,true);
 
  InitFlag=false;
 
