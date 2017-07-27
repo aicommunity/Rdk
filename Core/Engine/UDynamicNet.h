@@ -64,6 +64,8 @@ virtual bool Reset(void);
 // ------------------
 template<class T>
 UDynamicNet<T>::UDynamicNet(void)
+ : NumInputs("NumInputs",this,&UDynamicNet<T>::SetNumInputs),
+   NumOutputs("NumOutputs",this,&UDynamicNet<T>::SetNumOutputs)
 {
 
 }

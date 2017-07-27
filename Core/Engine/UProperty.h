@@ -579,6 +579,19 @@ const T& operator [] (int index) const
 				 /*
 T& operator [] (int index)
 { return GetData()[index]; };   */
+
+// Оператор присваивания
+UProperty<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+UProperty<T,OwnerT,type>& operator = (const UProperty<T,OwnerT,type> &v)
+{
+ this->SetData(v.GetData());
+ return *this;
+};
 // -----------------------------
 };
 /* ************************************************************************* */
