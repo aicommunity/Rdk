@@ -48,7 +48,7 @@ int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool
 
  int actual_comps(0);
  int width(0), height(0);
- unsigned char * buf=jpgd::decompress_jpeg_image_from_memory(&jpeg_buf[0], int(jpeg_buf.size()), &width, &height, &actual_comps, 3);
+ unsigned char * buf=jpgd::decompress_jpeg_image_from_memory(&jpeg_buf[0], int(jpeg_buf.size()), &width, &height, &actual_comps, 3, order);
  if(!buf)
   return 2;
 

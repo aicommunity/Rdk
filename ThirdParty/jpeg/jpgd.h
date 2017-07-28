@@ -28,7 +28,7 @@ namespace jpgd
   // On return, width/height will be set to the image's dimensions, and actual_comps will be set to the either 1 (grayscale) or 3 (RGB).
   // Notes: For more control over where and how the source data is read, see the decompress_jpeg_image_from_stream() function below, or call the jpeg_decoder class directly.
   // Requesting a 8 or 32bpp image is currently a little faster than 24bpp because the jpeg_decoder class itself currently always unpacks to either 8 or 32bpp.
-  unsigned char *decompress_jpeg_image_from_memory(const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps);
+  unsigned char *decompress_jpeg_image_from_memory(const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps, bool order=true);
   unsigned char *decompress_jpeg_image_from_file(const char *pSrc_filename, int *width, int *height, int *actual_comps, int req_comps);
   unsigned char *new_decompress(unsigned char *out_img, const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps);
   unsigned char *param_image(const unsigned char *pSrc_data, int src_data_size, int *width, int *height);
@@ -105,7 +105,7 @@ namespace jpgd
   };
 
   // Loads JPEG file from a jpeg_decoder_stream.
-  unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps);
+  unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps, bool order=true);
   unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps);
   unsigned char *image_param_stream(jpeg_decoder_stream *pStream, int *width, int *height);
   enum
@@ -143,14 +143,15 @@ namespace jpgd
     inline int get_width() const { return m_image_x_size; }
     inline int get_height() const { return m_image_y_size; }
 
-    inline int get_num_components() const { return m_comps_in_frame; }
+	inline int get_num_components() const { return m_comps_in_frame; }
 
-    inline int get_bytes_per_pixel() const { return m_dest_bytes_per_pixel; }
-    inline int get_bytes_per_scan_line() const { return m_image_x_size * get_bytes_per_pixel(); }
+	inline int get_bytes_per_pixel() const { return m_dest_bytes_per_pixel; }
+	inline int get_bytes_per_scan_line() const { return m_image_x_size * get_bytes_per_pixel(); }
 
-    // Returns the total number of bytes actually consumed by the decoder (which should equal the actual size of the JPEG file).
-    inline int get_total_bytes_read() const { return m_total_bytes_read; }
-    
+	// Returns the total number of bytes actually consumed by the decoder (which should equal the actual size of the JPEG file).
+	inline int get_total_bytes_read() const { return m_total_bytes_read; }
+	void set_order(bool value) { Order=value; };
+
   private:
     jpeg_decoder(const jpeg_decoder &);
     jpeg_decoder &operator =(const jpeg_decoder &);
@@ -187,7 +188,7 @@ namespace jpgd
     int m_image_x_size;
     int m_image_y_size;
     jpeg_decoder_stream *m_pStream;
-    int m_progressive_flag;
+	int m_progressive_flag;
     uint8 m_huff_ac[JPGD_MAX_HUFF_TABLES];
     uint8* m_huff_num[JPGD_MAX_HUFF_TABLES];      // pointer to number of Huffman codes per bit size
     uint8* m_huff_val[JPGD_MAX_HUFF_TABLES];      // pointer to Huffman codes per bit size
@@ -231,7 +232,7 @@ namespace jpgd
     uint8 m_in_buf_pad_start[128];
     uint8 m_in_buf[JPGD_IN_BUF_SIZE + 128];
     uint8 m_in_buf_pad_end[128];
-    int m_bits_left;
+	int m_bits_left;
     uint m_bit_buf;
     int m_restart_interval;
     int m_restarts_left;
@@ -256,8 +257,9 @@ namespace jpgd
     jpgd_status m_error_code;
     bool m_ready_flag;
     int m_total_bytes_read;
+	bool Order;
 
-    void free_all_blocks();
+	void free_all_blocks();
     JPGD_NORETURN void stop_decoding(jpgd_status status);
     void *alloc(size_t n, bool zero = false);
     void word_clear(void *p, uint16 c, uint n);
@@ -274,7 +276,7 @@ namespace jpgd
     void locate_sof_marker();
     int locate_sos_marker();
     void init(jpeg_decoder_stream * pStream);
-    void create_look_ups();
+	void create_look_ups();
     void fix_in_buffer();
     void transform_mcu(int mcu_row);
     void transform_mcu_expand(int mcu_row);
@@ -301,7 +303,7 @@ namespace jpgd
     void gray_convert();
     void expanded_convert();
     void find_eoi();
-    inline uint get_char();
+	inline uint get_char();
     inline uint get_char(bool *pPadding_flag);
     inline void stuff_char(uint8 q);
     inline uint8 get_octet();

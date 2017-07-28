@@ -2929,8 +2929,9 @@ void jpeg_decoder::decode_init(jpeg_decoder_stream *pStream)
 
 jpeg_decoder::jpeg_decoder(jpeg_decoder_stream *pStream)
 {
+ Order=true;
   if (setjmp(m_jmp_state))
-    return;
+	return;
   decode_init(pStream);
 }
 
@@ -3172,7 +3173,7 @@ unsigned char *image_param_stream(jpeg_decoder_stream *pStream, int *width, int 
   return 0;
 }
 
-unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps)
+unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps, bool order)
 {
   if (!actual_comps)
 	return NULL;
@@ -3187,6 +3188,7 @@ unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, i
   jpeg_decoder decoder(pStream);
   if (decoder.get_error_code() != JPGD_SUCCESS)
 	return NULL;
+  decoder.set_order(order);
 
   const int image_width = decoder.get_width(), image_height = decoder.get_height();
   *width = image_width;
@@ -3259,9 +3261,18 @@ unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, i
 	  {
 		for (int x = 0; x < image_width; x++)
 		{
+		 if(order)
+		 {
 		  pDst[0] = pScan_line[x*4+0];
 		  pDst[1] = pScan_line[x*4+1];
 		  pDst[2] = pScan_line[x*4+2];
+		 }
+		 else
+		 {
+		  pDst[0] = pScan_line[x*4+2];
+		  pDst[1] = pScan_line[x*4+1];
+		  pDst[2] = pScan_line[x*4+0];
+		 }
 		  pDst += 3;
 		}
 	  }
@@ -3280,10 +3291,10 @@ unsigned char *new_decompress(unsigned char *out_img, const unsigned char *pSrc_
   jpgd::jpeg_decoder_mem_stream mem_stream(pSrc_data, src_data_size);
   return new_decompress_stream(out_img,&mem_stream, width, height, actual_comps, req_comps);
 }
-unsigned char *decompress_jpeg_image_from_memory(const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps)
+unsigned char *decompress_jpeg_image_from_memory(const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps, bool order)
 {
   jpgd::jpeg_decoder_mem_stream mem_stream(pSrc_data, src_data_size);
-  return decompress_jpeg_image_from_stream(&mem_stream, width, height, actual_comps, req_comps);
+  return decompress_jpeg_image_from_stream(&mem_stream, width, height, actual_comps, req_comps, order);
 }
 
 unsigned char *decompress_jpeg_image_from_file(const char *pSrc_filename, int *width, int *height, int *actual_comps, int req_comps)
