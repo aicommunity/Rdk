@@ -24,6 +24,7 @@ See file license.txt for more information
 #include "UAModel.h"
 #include "UNet.h"
 #include "UDynamicNet.h"
+#include "UDynamicMatNet.h"
 #include "UComponent.h"
 #include "UController.h"
 #include "UStorage.h"

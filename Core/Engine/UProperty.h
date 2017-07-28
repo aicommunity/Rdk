@@ -527,7 +527,7 @@ UPropertyVirtual<T,OwnerT>& operator = (const UPropertyVirtual<T,OwnerT> &v)
 // Класс - свойство со значением внутри
 /* ************************************************************************* */
 template<typename T,class OwnerT, unsigned int type>
-class UProperty: public UPropertyVirtual<T,OwnerT>
+class UPropertyLocal: public UPropertyVirtual<T,OwnerT>
 {
 protected:
 //protected:
@@ -538,8 +538,8 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0)
- : UPropertyVirtual<T,OwnerT>(name,owner, type, setmethod, 0), v() { };
+UPropertyLocal(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyVirtual<T,OwnerT>(name,owner, type, setmethod, 0, dynamic_prop_flag), v() { };
 // -----------------------------
 
 // -----------------------------
@@ -581,6 +581,32 @@ T& operator [] (int index)
 { return GetData()[index]; };   */
 
 // Оператор присваивания
+UPropertyLocal<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+UPropertyLocal<T,OwnerT,type>& operator = (const UPropertyLocal<T,OwnerT,type> &v)
+{
+ this->SetData(v.GetData());
+ return *this;
+};
+// -----------------------------
+};
+
+template<typename T,class OwnerT, unsigned int type>
+class UProperty: public UPropertyLocal<T,OwnerT,type>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UProperty(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyLocal<T,OwnerT,type>(name,owner, setmethod, dynamic_prop_flag) { };
+// -----------------------------
+
+// Оператор присваивания
 UProperty<T,OwnerT,type>& operator = (const T &value)
 {
  this->SetData(value);
@@ -594,11 +620,9 @@ UProperty<T,OwnerT,type>& operator = (const UProperty<T,OwnerT,type> &v)
 };
 // -----------------------------
 };
-/* ************************************************************************* */
 
-/* ************************************************************************* */
+
 // Класс - свойство-контейнер со значением внутри
-/* ************************************************************************* */
 template<typename T, typename RangeT, typename OwnerT, unsigned int type>
 class UPropertyRange: public UPropertyVirtual<T,OwnerT>
 {
@@ -615,14 +639,14 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod)
- : UPropertyVirtual<T,OwnerT>(name, owner, type, setmethod, 0), VSetterR(0)
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod, bool dynamic_prop_flag=false)
+ : UPropertyVirtual<T,OwnerT>(name, owner, type, setmethod, 0, dynamic_prop_flag), VSetterR(0)
 {
  this->SetNumConnectionsLimit(-1);
 };
 
-UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod)
- : UPropertyVirtual<T,OwnerT>(name, owner, type, (typename UPropertyVirtual<T,OwnerT>::SetterRT)0,0)
+UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod, bool dynamic_prop_flag=false)
+ : UPropertyVirtual<T,OwnerT>(name, owner, type, (typename UPropertyVirtual<T,OwnerT>::SetterRT)0,0, dynamic_prop_flag)
 {
  VSetterR=setmethod;
  this->SetNumConnectionsLimit(-1);

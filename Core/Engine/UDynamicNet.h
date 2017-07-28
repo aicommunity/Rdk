@@ -42,6 +42,21 @@ bool SetNumOutputs(const int &value);
 // ------------------
 
 // --------------------------
+// Методы доступа к данным
+// --------------------------
+// Возвращает вектор выходных данных
+inline const T& GetOutputData(int index) const;
+
+// Возвращает указатель на вектор входов InputData по указателю на item
+// Возвращает 0 если citem == 0 или не найден в списке подключений
+const T& GetInputData(const UEPtr<UDynamicNet<T> > &citem) const;
+
+// Возвращает указатель на вектор входов InputData по индексу
+// Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
+const T& GetInputData(size_t index) const;
+// --------------------------
+
+// --------------------------
 // Методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
@@ -98,6 +113,45 @@ bool UDynamicNet<T>::SetNumOutputs(const int &value)
 // ------------------
 
 // --------------------------
+// Методы доступа к свойствам
+// --------------------------
+// Возвращает вектор выходных данных
+template<class T>
+const T& UDynamicNet<T>::GetOutputData(int index) const
+{
+ return **OutputData[index];
+};
+
+// Возвращает указатель на вектор входов InputData по указателю на item
+// Возвращает 0 если citem == 0 или не найден в списке подключений
+template<class T>
+const T& UDynamicNet<T>::GetInputData(const UEPtr<UDynamicNet<T> > &citem) const
+{
+ if(!citem)
+  RDK_RAW_THROW(EInputIndexNotExist(-1));
+
+ for(size_t i=0;i<InputData.size();i++)
+ {
+  if(!InputData[i]->IsConnected())
+   continue;
+
+  for(j=0;j<InputData[i]->GetNumConnections();j++)
+   if(InputData[i]->GetConnectedProperty(j)->GetOwner() == citem)
+	return *InputData[i];
+ }
+ RDK_RAW_THROW(EInputIndexNotExist(-1));
+}
+
+// Возвращает указатель на вектор входов InputData по индексу
+// Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
+template<class T>
+const T& UDynamicNet<T>::GetInputData(size_t index) const
+{
+ return **InputData[index];
+}
+// ----------------------
+
+// --------------------------
 // Методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
@@ -119,7 +173,7 @@ bool UDynamicNet<T>::Build(void)
  while(InputData.size() < NumInputs)
  {
   UEPtr<UProperty<T,UDynamicNet<T>,ptPubInput> > prop;
-  prop=new UProperty<T,UDynamicNet<T>,ptPubInput>(std::string("DataInput")+sntoa(InputData.size()),this,0,0,true);
+  prop=new UProperty<T,UDynamicNet<T>,ptPubInput>(std::string("DataInput")+sntoa(InputData.size()),this,0,true);
   InputData.push_back(prop);
  }
 
@@ -133,7 +187,7 @@ bool UDynamicNet<T>::Build(void)
  while(OutputData.size() < NumOutputs)
  {
   UEPtr<UProperty<T,UDynamicNet<T>,ptPubOutput> > prop;
-  prop=new UProperty<T,UDynamicNet<T>,ptPubInput>(std::string("DataOutput")+sntoa(OutputData.size()),this,0,0,true);
+  prop=new UProperty<T,UDynamicNet<T>,ptPubOutput>(std::string("DataOutput")+sntoa(OutputData.size()),this,0,true);
   OutputData.push_back(prop);
  }
 
