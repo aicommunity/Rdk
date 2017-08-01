@@ -57,10 +57,29 @@ void Assign(int rows, int cols, const T *data);
 void Assign(int rows, int cols, T value);
 void Assign(int rows, int cols, const void *data);
 
+/// Вставляет строки в матрицу в позицию index
 void InsertRows(int index, int num_rows=1);
+
+/// Вставляет столбцы в матрицу в позицию index
 void InsertCols(int index, int num_cols=1);
+
+/// Удаляет num_rows строк начиная со строки index
 void DeleteRows(int index, int num_rows=1);
+
+/// Удаляет num_cols столбцов начиная со строки index
 void DeleteCols(int index, int num_cols=1);
+
+/// Добавляет строки в конец матрицы
+void AddRows(int num_rows);
+void AddRows(int num_rows, T def_value);
+void AddRow(void);
+void AddRow(T def_value);
+
+/// Добавляет столбцы в конец матрицы
+void AddCols(int num_cols);
+void AddCols(int num_cols, T def_value);
+void AddCol(void);
+void AddCol(T def_value);
 // --------------------------
 
 // -----------------------------------
@@ -362,9 +381,14 @@ void MDMatrix<T>::InsertRows(int index, int num_rows)
 {
  if(num_rows<=0)
   return;
+ int old_rows=Rows;
  Resize(Rows+num_rows,Cols);
- memmove(Data+Cols*index,Data+Cols*(index+num_rows),num_rows*Cols*sizeof(T));
- memset(Data+Cols*index,0,Cols*sizeof(T));
+
+ if(index>=0 && index<old_rows)
+ {
+  memmove(Data+Cols*index,Data+Cols*(index+num_rows),num_rows*Cols*sizeof(T));
+  memset(Data+Cols*index,0,Cols*sizeof(T));
+ }
 }
 
 template<class T>
@@ -373,15 +397,20 @@ void MDMatrix<T>::InsertCols(int index, int num_cols)
  if(num_cols<=0)
   return;
 
+ int old_cols;
  Resize(Rows,Cols+num_cols);
- for(int i=0;i<Rows;i++)
+
+ if(index>=0 && index<old_cols)
  {
-  for(int j=Cols-1;j>index;j--)
+  for(int i=0;i<Rows;i++)
   {
-   Data[i*Cols+j]=Data[i*Cols+j-num_cols];
+   for(int j=Cols-1;j>index;j--)
+   {
+	Data[i*Cols+j]=Data[i*Cols+j-num_cols];
+   }
+   for(int j=index;j<index+num_cols;j++)
+	Data[i*Cols+j]=0;
   }
-  for(int j=index;j<index+num_cols;j++)
-   Data[i*Cols+j]=0;
  }
 }
 
@@ -419,6 +448,56 @@ void MDMatrix<T>::DeleteCols(int index, int num_cols)
   }
  }
  Resize(Rows,Cols-num_cols);
+}
+
+/// Добавляет строки в конец матрицы
+template<class T>
+void MDMatrix<T>::AddRows(int num_rows)
+{
+ Resize(Rows+num_rows,Cols);
+}
+
+template<class T>
+void MDMatrix<T>::AddRows(int num_rows, T def_value)
+{
+ Resize(Rows+num_rows,Cols,def_value);
+}
+
+template<class T>
+void MDMatrix<T>::AddRow(void)
+{
+ Resize(Rows+1,Cols);
+}
+
+template<class T>
+void MDMatrix<T>::AddRow(T def_value)
+{
+ Resize(Rows+1,Cols,def_value);
+}
+
+/// Добавляет столбцы в конец матрицы
+template<class T>
+void MDMatrix<T>::AddCols(int num_cols)
+{
+ Resize(Rows,Cols+num_cols);
+}
+
+template<class T>
+void MDMatrix<T>::AddCols(int num_cols, T def_value)
+{
+ Resize(Rows,Cols+num_cols,def_value);
+}
+
+template<class T>
+void MDMatrix<T>::AddCol(void)
+{
+ Resize(Rows,Cols+1);
+}
+
+template<class T>
+void MDMatrix<T>::AddCol(T def_value)
+{
+ Resize(Rows,Cols+1,def_value);
 }
 // --------------------------
 
