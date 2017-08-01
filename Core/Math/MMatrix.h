@@ -239,6 +239,12 @@ static MMatrix<T,Rows,Cols> Zero(void);
 
 // ≈динична€ матрица
 static MMatrix<T,Rows,Cols> Eye(void);
+
+// —брасывает текущую матрицу в 0
+void ToZero(void);
+
+// —брасывает текущую матрицу в единичную
+void ToEye(void);
 // --------------------------
 
 // --------------------------
@@ -1140,6 +1146,24 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
   res.Data[i][i]=1;
 
  return res;
+}
+
+// —брасывает текущую матрицу в 0
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::ToZero(void)
+{
+ memset(Data,0,Rows*Cols*sizeof(T));
+}
+
+// —брасывает текущую матрицу в единичную
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::ToEye(void)
+{
+ ToZero();
+ int crmin=(Cols<Rows)?Cols:Rows;
+
+ for(int i=0;i<crmin;i++)
+  Data(i,i)=1;
 }
 // --------------------------
 

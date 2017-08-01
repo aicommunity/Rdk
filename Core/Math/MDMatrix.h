@@ -235,13 +235,16 @@ T FindMaxValue(void) const;
 // Определения матриц
 // --------------------------
 // Нулевая матрица
-MDMatrix<T> Zero(void);
+MDMatrix<T> Zero(void) const;
 
 // Сбрасывает текущую матрицу в 0
 void ToZero(void);
 
 // Единичная матрица
-MDMatrix<T> Eye(void);
+MDMatrix<T> Eye(void) const;
+
+// Сбрасывает текущую матрицу в единичную
+void ToEye(void);
 // --------------------------
 
 // --------------------------
@@ -1319,11 +1322,9 @@ T MDMatrix<T>::FindMaxValue(void) const
 // --------------------------
 // Нулевая матрица
 template<class T>
-MDMatrix<T> MDMatrix<T>::Zero(void)
+MDMatrix<T> MDMatrix<T>::Zero(void) const
 {
- MDMatrix<T> res(Rows,Cols);
-
- res=T(0);
+ MDMatrix<T> res(Rows,Cols,T(0));
 
  return res;
 }
@@ -1339,10 +1340,9 @@ void MDMatrix<T>::ToZero(void)
 
 // Единичная матрица
 template<class T>
-MDMatrix<T> MDMatrix<T>::Eye(void)
+MDMatrix<T> MDMatrix<T>::Eye(void) const
 {
- MDMatrix<T> res(Rows,Cols);
- res=T(0);
+ MDMatrix<T> res(Rows,Cols, T(0));
 
  int crmin=(Cols<Rows)?Cols:Rows;
 
@@ -1350,6 +1350,18 @@ MDMatrix<T> MDMatrix<T>::Eye(void)
   res(i,i)=1;
 
  return res;
+}
+
+
+// Сбрасывает текущую матрицу в единичную
+template<class T>
+void MDMatrix<T>::ToEye(void)
+{
+ ToZero();
+ int crmin=(Cols<Rows)?Cols:Rows;
+
+ for(int i=0;i<crmin;i++)
+  (*this)(i,i)=1;
 }
 // --------------------------
 
