@@ -904,12 +904,13 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Inverse(MMatrix<T,Cols,Rows> &res) c
   {
    // get the co-factor (matrix) of A(j,i)
    GetMinor(Minor,j,i);
-   res.Data[i][j] = det*Minor.Det();
+   res.Data[j][i] = det*Minor.Det();
    if( (i+j)%2 == 1)
-	res.Data[i][j] = -res.Data[i][j];
+	res.Data[j][i] = -res.Data[j][i];
    }
   }
 
+ res=res.Transpose();
  return res;
 }
 

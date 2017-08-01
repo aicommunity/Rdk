@@ -966,12 +966,13 @@ MDMatrix<T>& MDMatrix<T>::Inverse(MDMatrix<T> &res) const
   {
    // get the co-factor (matrix) of A(j,i)
    GetMinor(Minor,j,i);
-   res(i,j) = det*Minor.Det();
+   res(j,i) = det*Minor.Det();
    if( (i+j)%2 == 1)
-	res(i,j) = -res(i,j);
+	res(j,i) = -res(j,i);
    }
   }
 
+ res=res.Transpose();
  return res;
 }
 
