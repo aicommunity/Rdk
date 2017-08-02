@@ -326,7 +326,7 @@ long TUVisualControllerForm::GetUpdateInterval(void)
 // Задает интервал обновления интерфейса
 bool TUVisualControllerForm::SetUpdateInterval(long value)
 {
- if(value<0)
+ if(value<-1)
   return false;
 
  UpdateInterval=value;

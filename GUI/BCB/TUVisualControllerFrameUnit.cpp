@@ -308,7 +308,7 @@ long TUVisualControllerFrame::GetUpdateInterval(void)
 // Задает интервал обновления интерфейса
 bool TUVisualControllerFrame::SetUpdateInterval(long value)
 {
- if(value<0)
+ if(value<-1)
   return false;
 
  UpdateInterval=value;
