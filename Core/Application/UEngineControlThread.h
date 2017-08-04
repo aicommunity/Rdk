@@ -51,6 +51,9 @@ UELockVar<UTime> MinInterstepsInterval;
 /// 1 - время внешнего видеоисточника
 UELockVar<int> CalculationTimeSource;
 
+/// Таймаут ожидания изменения состояния потока
+UELockVar<int> ThreadTimeout;
+
 protected: // Данные
 /// Временная метка сервера, устанавливаемая перед очередной итерацией расчета
 UELockVar<double> ServerTimeStamp;
@@ -153,6 +156,10 @@ virtual void Execute(void);
 
 /// Проверяет состояние расчета по id канала
 virtual UEngineControlThread::UCalcState CheckCalcState(void) const;
+
+/// Возвращает true когда завершится текущая итерация расчета за заданный timeout
+/// Если timeout == -1 То ждет с таймаутом по умолчанию
+virtual bool WaitForCalculationComplete(int timeout=-1) const;
 
 /// Возвращает состояния запуска треда
 virtual int IsCalcStarted(void) const;

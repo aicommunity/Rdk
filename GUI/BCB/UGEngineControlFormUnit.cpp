@@ -418,7 +418,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
 // memory_usage.printf(L" Memory usage: %n Bytes. Largest Free Block: %n Bytes",double(GetMemoryUsedInfo()),double(GetLargestFreeMemRegion(AAddressOfLargest)));
  cap=cap+memory_usage;
 
- if(LastMaxMemory > max_memory || LastMaxBlock > max_block)
+ if(LastMaxMemory>0 && (LastMaxMemory > max_memory || LastMaxBlock > max_block))
  {
   MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
   LastMaxMemory=max_memory;
@@ -1934,17 +1934,17 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- if(AppWinState)
-  UShowProgressBarForm->Show();
+// if(AppWinState)
+//  UShowProgressBarForm->Show();
 
  RdkApplication.StartChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 #ifdef RDK_VIDEO
  VideoOutputForm->Start(channel_index);
 #endif
- UShowProgressBarForm->IncBarStatus(2);
+// UShowProgressBarForm->IncBarStatus(2);
 
- UShowProgressBarForm->Hide();
+// UShowProgressBarForm->Hide();
 }
 
 /// ќстанов отдельного канала
@@ -1959,17 +1959,17 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- if(AppWinState)
-  UShowProgressBarForm->Show();
+// if(AppWinState)
+//  UShowProgressBarForm->Show();
 
  RdkApplication.PauseChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
- UShowProgressBarForm->IncBarStatus(2);
+// UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
  if(!DisableStopVideoSources)
   VideoOutputForm->StopOffline(channel_index);
 #endif
- UShowProgressBarForm->Hide();
+// UShowProgressBarForm->Hide();
 }
 
 /// —брос отдельного канала
