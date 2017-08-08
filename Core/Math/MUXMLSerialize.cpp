@@ -16,37 +16,20 @@ See file license.txt for more information
 #include "MUXMLSerialize.h"
 
 namespace RDK {
-				  /*
-// MBorder
-USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data)
-{
- storage.SetNodeAttribute("Type","MBorder");
- storage.AddNode("VertexIndex");
- storage<<data.GetVertexIndex();
- storage.SelectUp();
 
+USerStorageXML& operator << (USerStorageXML& storage, const MMatrixSize &data)
+{
+ storage<<data.GetDims();
  return storage;
 }
 
-USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data)
+USerStorageXML& operator >> (USerStorageXML& storage, MMatrixSize &data)
 {
- //Временные переменные
- std::vector<int> varVertexIndex;
-
- if(storage.GetNodeAttribute("Type") != "MBorder")
-  return storage;
-
- if(!storage.SelectNode("VertexIndex"))
-  return storage;
-
- storage>>varVertexIndex;
- data.SetVertexIndex(varVertexIndex);
- storage.SelectUp();
-
+ std::vector<int> temp;
+ storage>>temp;
+ data=temp;
  return storage;
-
 }
-                 */
 
 }
 #endif

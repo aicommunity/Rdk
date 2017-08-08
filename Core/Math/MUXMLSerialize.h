@@ -24,6 +24,10 @@ See file license.txt for more information
 
 namespace RDK {
 
+USerStorageXML& operator << (USerStorageXML& storage, const MMatrixSize &data);
+
+USerStorageXML& operator >> (USerStorageXML& storage, MMatrixSize &data);
+
 template<typename T, unsigned Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &data)
 {
