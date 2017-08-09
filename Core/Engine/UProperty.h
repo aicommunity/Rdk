@@ -61,11 +61,12 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
+/*
 UVBaseDataProperty(void)
  : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
-
+  */
 UVBaseDataProperty(T * const pdata)
  : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
@@ -371,7 +372,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseProperty(OwnerT * const owner) :
-  Owner(owner)
+  UVBaseDataProperty<T>(0), Owner(owner)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);
