@@ -7,7 +7,7 @@
 namespace RDK {
 
 template<typename T>
-class UELockPtr: public UEPtr<T>
+class UELockPtr: protected UEPtr<T>
 {
 /// Мьютекс для блокировки
 UGenericMutex* Mutex;
@@ -16,20 +16,46 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+private:
 UELockPtr(void);
+UELockPtr(const UEPtr<T> &p);
+UELockPtr(const T* p);
+UELockPtr(UEPtr<T> &p);
+UELockPtr(T* p);
+public:
 UELockPtr(UGenericMutex* mutex);
 UELockPtr(UGenericMutex* mutex, T* pdata);
 UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
-UELockPtr(UELockPtr<T> &p);
-UELockPtr(UELockPtr<T> const &p);
+explicit UELockPtr(const UELockPtr<T> &p);
+//UELockPtr(UELockPtr<T> const &p);
 virtual ~UELockPtr(void);
 // --------------------------
 
 // --------------------------
 // Операторы
 // --------------------------
-public:
-UELockPtr<T>& operator = (UELockPtr<T> const &p);
+bool operator ! (void) const;
+
+T* operator -> (void) const;
+
+T& operator * (void);
+
+T* Get(void) const;
+
+bool operator == (const T *p) const
+{ return PData == p; };
+
+bool operator != (const T *p) const
+{ return PData != p; };
+
+private:
+UELockPtr<T>& operator = (const UELockPtr<T> &p);
+UEPtr<T>& operator = (const UEPtr<T> &p);
+UEPtr<T>& operator = (const T *p);
+UEPtr<T>& operator = (UEPtr<T> &p);
+UEPtr<T>& operator = (T *p);
+
+//operator T* (void) const;
 // --------------------------
 
 // --------------------------
@@ -43,12 +69,13 @@ void ForceForget(void);
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+/*
 template<typename T>
 UELockPtr<T>::UELockPtr(void)
  : Mutex(0)
 {
 
-}
+} */
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex)
@@ -72,11 +99,10 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
 }
 
 template<typename T>
-UELockPtr<T>::UELockPtr(UELockPtr<T> &p)
+UELockPtr<T>::UELockPtr(const UELockPtr<T> &p)
  : UEPtr<T>(p), Mutex(p.Mutex)
 {
- p.PData=0;
- p.Mutex=0;
+ const_cast<UELockPtr<T>&>(p).ForceForget();
 }
 
 template<typename T>
@@ -92,6 +118,34 @@ UELockPtr<T>::~UELockPtr(void)
 // Операторы
 // --------------------------
 template<typename T>
+T* UELockPtr<T>::Get(void) const
+{
+ return PData;
+}
+
+template<typename T>
+bool UELockPtr<T>::operator ! (void) const
+{ return (PData)?false:true; };
+
+template<typename T>
+T* UELockPtr<T>::operator -> (void) const
+{
+ if(!PData)
+  throw EUsingZeroPtr();
+
+ return PData;
+};
+
+template<typename T>
+T& UELockPtr<T>::operator * (void)
+{
+ if(!PData)
+  throw EUsingZeroPtr();
+
+ return *PData;
+};
+
+template<typename T>
 UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
 {
  this->PData=p;
@@ -99,13 +153,13 @@ UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
  p.ForceForget();
  return *this;
 };
-
+				  /*
 template<typename T>
 UELockPtr<T>::UELockPtr(UELockPtr<T> const &p)
  : UEPtr<T>(p), Mutex(p.Mutex)
 {
  const_cast<UELockPtr<T>&>(p).ForceForget();
-}
+}                   */
 // --------------------------
 
 // --------------------------

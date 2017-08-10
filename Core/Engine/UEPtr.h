@@ -106,7 +106,7 @@ UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
 template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){};
-~UEPtr(void);
+virtual ~UEPtr(void);
 // --------------------------
 
 // --------------------------
@@ -118,7 +118,7 @@ T* Get(void) const;
 // --------------------------
 // Операторы
 // --------------------------
-UEPtr<T>& operator = (UEPtr<T> &p);
+UEPtr<T>& operator = (const UEPtr<T> &p);
 
 UEPtr<T>& operator = (T *p);
 
@@ -178,7 +178,7 @@ T* UEPtr<T>::Get(void) const
 // Операторы
 // --------------------------
 template<typename T>
-UEPtr<T>& UEPtr<T>::operator = (UEPtr<T> &p)
+UEPtr<T>& UEPtr<T>::operator = (const UEPtr<T> &p)
 {
  PData=p.PData;
  return *this;
