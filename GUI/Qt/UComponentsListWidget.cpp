@@ -225,7 +225,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
         RDK::UEPtr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
-            cont = model;
+            cont = model.Get();
         else
             cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
