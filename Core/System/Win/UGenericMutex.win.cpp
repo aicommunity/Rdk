@@ -13,9 +13,6 @@ class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
 private:
 void* m_UnlockEvent;
 
-/// —четчик блокировок
-unsigned Counter;
-
 DWORD Pid;
 
 public:
@@ -54,7 +51,7 @@ UGenericEventWin& operator = (const UGenericEventWin &copy);
 };
 
 UGenericMutexWin::UGenericMutexWin()
- : Counter(0), Pid(0)
+ : Pid(0)
 {
  m_UnlockEvent = CreateMutex(0, FALSE, 0);
 }
@@ -95,7 +92,6 @@ using namespace std;
    }
   }
   #endif
-  ++Counter;
   return true;
  }
  else
@@ -128,9 +124,6 @@ using namespace std;
  if(!m_UnlockEvent)
   return true;
 
- if(!Counter)
-  return true;
-
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
   if(DebugId>=0)
   {
@@ -146,19 +139,7 @@ using namespace std;
    }
   }
  #endif
- BOOL res=TRUE;
- if(WaitForSingleObject(m_UnlockEvent, 0) == WAIT_OBJECT_0)
- {
-  --Counter;
-  res=ReleaseMutex(m_UnlockEvent);
- }
- else
-  return false;
-
- if(!Counter)
- {
-  res=ReleaseMutex(m_UnlockEvent);
- }
+ BOOL res=ReleaseMutex(m_UnlockEvent);
 
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  DWORD error=GetLastError();
@@ -189,13 +170,9 @@ using namespace std;
   #endif
   return false;
  }
-
- if(!Counter)
- {
-  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-  Pid=0;
-  #endif
- }
+ #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ Pid=0;
+ #endif
 
  return true;
 }
