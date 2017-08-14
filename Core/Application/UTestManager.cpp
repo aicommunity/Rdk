@@ -179,7 +179,7 @@ int UTest::ProcessTest()
       UPropertyTest testProperty = (*i);
       RDK::UEPtr<RDK::UComponent> component;
       if (testProperty.component.empty())
-          component = model;
+          component = model.Get();
       else
           component = model->GetComponentL(testProperty.component, true);
 

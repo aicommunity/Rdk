@@ -87,8 +87,8 @@ template<class T>
 RDK::UELockPtr<T> GetModelLock(void)
 {
  RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel());
- if(!p)
-  return RDK::UELockPtr<T>();
+// if(!p)
+//  return RDK::UELockPtr<T>();
  return RDK::UELockPtr<T>((UGenericMutex*)Engine_GetMutex(),p);
 }
 
@@ -96,8 +96,8 @@ template<class T>
 RDK::UELockPtr<T> GetModelLock(int channel_index)
 {
  RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel(channel_index));
- if(!p)
-  return RDK::UELockPtr<T>();
+// if(!p)
+//  return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(channel_index),);
  return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(channel_index),p);
 }
 

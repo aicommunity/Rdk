@@ -418,7 +418,14 @@ void TUGEngineControlForm::AUpdateInterface(void)
 // memory_usage.printf(L" Memory usage: %n Bytes. Largest Free Block: %n Bytes",double(GetMemoryUsedInfo()),double(GetLargestFreeMemRegion(AAddressOfLargest)));
  cap=cap+memory_usage;
 
- if(LastMaxMemory>0 && (LastMaxMemory > max_memory || LastMaxBlock > max_block))
+ if(LastMaxMemory == 0)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
+  LastMaxMemory=max_memory;
+  LastMaxBlock=max_block;
+ }
+ else
+ if(LastMaxMemory > max_memory || LastMaxBlock > max_block)
  {
   MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
   LastMaxMemory=max_memory;

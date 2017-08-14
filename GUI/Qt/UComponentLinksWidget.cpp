@@ -310,7 +310,7 @@ void UComponentLinksWidget::addLinks(QString componentName)
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
         RDK::UStringLinksList linksList;
-        cont->GetLinks(linksList, model);
+        cont->GetLinks(linksList, model.Get());
         RDK::ULinkT<std::string>* linksListIterator = linksList.GetData();
         for(int i = 0; i < linksList.size(); i++)
         {

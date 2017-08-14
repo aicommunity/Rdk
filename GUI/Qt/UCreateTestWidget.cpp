@@ -72,7 +72,7 @@ void UCreateTestWidget::addProperty()
 
     RDK::UEPtr<RDK::UComponent> component;
     if (componentName.isEmpty())
-        component = model;
+        component = model.Get();
     else
         component = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
 

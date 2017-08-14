@@ -163,11 +163,11 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
    bmp->Canvas->Pen->Color=clBlack;
    bmp->Canvas->Pen->Style=psSolid;
    bmp->Canvas->Pen->Width=1;
-   float divisor=Hist.GetMax().Number.Int;
-   if(Hist.GetMax().Number.Int>0)
+   float divisor=Hist.GetMax().Int;
+   if(Hist.GetMax().Int>0)
    for(int i=0;i<Hist.GetSize();i++)
    {
-	int item=(float(Hist[i].Number.Int)/divisor)*100.0;
+	int item=(float(Hist[i].Int)/divisor)*100.0;
 	bmp->Canvas->MoveTo(i+1,y);
 	bmp->Canvas->LineTo(i+1,y-item);
    }
@@ -187,29 +187,29 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
    bmp->Canvas->Pen->Width=1;
    for(int i=0;i<HistR.GetSize();i++)
    {
-	float divisor=HistR.GetMax().Number.Int;
-	if(HistR.GetMax().Number.Int>0)
+	float divisor=HistR.GetMax().Int;
+	if(HistR.GetMax().Int>0)
 	{
 	 bmp->Canvas->Pen->Color=clRed;
-	 int item=(float(HistR[i].Number.Int)/divisor)*33.0;
+	 int item=(float(HistR[i].Int)/divisor)*33.0;
 	 bmp->Canvas->MoveTo(i+1,y);
 	 bmp->Canvas->LineTo(i+1,y-item);
 	}
 
-	divisor=HistG.GetMax().Number.Int;
-	if(HistG.GetMax().Number.Int>0)
+	divisor=HistG.GetMax().Int;
+	if(HistG.GetMax().Int>0)
 	{
 	 bmp->Canvas->Pen->Color=clGreen;
-	 int item=(float(HistG[i].Number.Int)/divisor)*33.0;
+	 int item=(float(HistG[i].Int)/divisor)*33.0;
 	 bmp->Canvas->MoveTo(i+1,y-33);
 	 bmp->Canvas->LineTo(i+1,y-item-33);
 	}
 
-	divisor=HistB.GetMax().Number.Int;
-	if(HistB.GetMax().Number.Int>0)
+	divisor=HistB.GetMax().Int;
+	if(HistB.GetMax().Int>0)
 	{
 	 bmp->Canvas->Pen->Color=clBlue;
-	 int item=(float(HistB[i].Number.Int)/divisor)*33.0;
+	 int item=(float(HistB[i].Int)/divisor)*33.0;
 	 bmp->Canvas->MoveTo(i+1,y-66);
 	 bmp->Canvas->LineTo(i+1,y-item-66);
 	}
