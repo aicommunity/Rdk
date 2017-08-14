@@ -207,7 +207,10 @@ inline int GetChannelOffset(UBMColorChannel channel) const
 void SetColorModel(UBMColorModel cmodel, bool isupdate=true);
 
 // Создает внутренний буфер
-void SetRes(int width, int height, UBMColorModel cmodel=ubmUnknown);
+void SetRes(int width, int height);
+
+// Создает внутренний буфер
+void SetRes(int width, int height, UBMColorModel cmodel);
 
 // Копирует новое изображение из буфера data
 // с прежними размерами
@@ -875,13 +878,16 @@ struct RDK_LIB_TYPE UBHistogramElement
 // Цвет изображения
 UColorT Color;
 
-union {
-// Число элементов изображения заданного цвета
 unsigned Int;
 float Float;
-} Number;
+
+/// Если true то используем Float вариант, иначе Int
+bool IsNormalized;
+
+
 
 // Методы
+UBHistogramElement(void);
 // ---------------------
 // Операторы
 // ---------------------
