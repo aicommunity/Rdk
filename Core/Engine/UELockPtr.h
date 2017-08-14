@@ -95,7 +95,8 @@ template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
  : UEPtr<T>(pdata.Get()), Mutex(mutex)
 {
- Mutex->exclusive_lock();
+ if(Mutex)
+  Mutex->exclusive_lock();
 }
 
 template<typename T>
