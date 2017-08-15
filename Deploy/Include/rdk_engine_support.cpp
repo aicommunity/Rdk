@@ -626,6 +626,7 @@ int URdkCoreManager::ChannelCreate(int index)
    // TODO: здесь инициализация параметров логгера и его запуск
    LoggerList[index]=new RDK::ULoggerEnv;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
+   LoggerList[index]->SetMaxExceptionsLogSize(0);
    LoggerList[index]->SetLogDir(LogDir);
    LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
    LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());

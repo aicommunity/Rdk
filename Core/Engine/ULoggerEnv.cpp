@@ -239,20 +239,23 @@ void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) cons
 
  if(LastErrorLevel>type)
   LastErrorLevel=type;
- ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
+ if(MaxExceptionsLogSize>0)
  {
-  int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
-  if(int(LogList.size())>erase_size)
+  ++CurrentExceptionsLogSize;
+  if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
   {
-   for(int i=0;i<erase_size;i++)
-    LogList.erase(LogList.begin());
+   int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
+   if(int(LogList.size())>erase_size)
+   {
+	for(int i=0;i<erase_size;i++)
+	 LogList.erase(LogList.begin());
+   }
+   else
+	LogList.clear();
   }
-  else
-   LogList.clear();
- }
 
  LogList[LogIndex++]=exception;
+ }
 }
 
 /// Обрабатывает возникшее исключение в режиме гобального логгера
