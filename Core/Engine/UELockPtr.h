@@ -36,6 +36,8 @@ virtual ~UELockPtr(void);
 // --------------------------
 bool operator ! (void) const;
 
+operator bool (void) const;
+
 T* operator -> (void) const;
 
 T& operator * (void);
@@ -127,6 +129,11 @@ T* UELockPtr<T>::Get(void) const
 template<typename T>
 bool UELockPtr<T>::operator ! (void) const
 { return (PData)?false:true; };
+
+template<typename T>
+UELockPtr<T>::operator bool (void) const
+{ return (PData)?true:false; };
+
 
 template<typename T>
 T* UELockPtr<T>::operator -> (void) const
