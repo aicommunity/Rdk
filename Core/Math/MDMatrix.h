@@ -35,6 +35,9 @@ protected:
 int Rows;
 int Cols;
 
+/// –еальный размер выделенной области пам€ти
+int Capacity;
+
 public:
 // --------------------------
 //  онструкторы и деструкторы
@@ -264,20 +267,20 @@ void Print(std::ostream &stream);
 // --------------------------
 template<class T>
 MDMatrix<T>::MDMatrix(void)
-: Data(0),Rows(0),Cols(0)
+: Data(0),Rows(0),Cols(0),Capacity(0)
 {
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols)
-: Data(0),Rows(0),Cols(0)
+: Data(0),Rows(0),Cols(0),Capacity(0)
 {
 	Resize(rows, cols);
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols, T defvalue)
-: Data(0),Rows(0),Cols(0)
+: Data(0),Rows(0),Cols(0),Capacity(0)
 {
  Resize(rows, cols);
  for(int i=0;i<Rows*Cols;i++)
@@ -286,21 +289,21 @@ MDMatrix<T>::MDMatrix(int rows, int cols, T defvalue)
 
 template<class T>
 MDMatrix<T>::MDMatrix(const MDMatrix<T> &copy)
-: Data(0),Rows(0),Cols(0)
+: Data(0),Rows(0),Cols(0),Capacity(0)
 {
  *this=copy;
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
-: Data(0),Rows(0),Cols(0)
+: Data(0),Rows(0),Cols(0),Capacity(0)
 {
  Assign(rows,cols,data);
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(const int rows, const  int cols, const void* data)
-: Data(0),Rows(0),Cols(0)
+: Data(0),Rows(0),Cols(0),Capacity(0)
 {
  Assign(rows,cols,data);
 };
@@ -309,7 +312,10 @@ template<class T>
 MDMatrix<T>::~MDMatrix()
 {
  if(Data)
+ {
   delete[] Data;
+  Rows=Cols=Capacity=0;
+ }
 };
 // --------------------------
 
@@ -324,11 +330,19 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
  if(rows<0 || cols<0)
   return;
 
- T* new_data=0;
- if(rows && cols)
+ if(rows == 0 || cols == 0)
+ {
+  Rows=rows;
+  Cols=cols;
+  return;
+ }
+
+ T* new_data(0);
+
+ if(rows && cols && rows*cols>Capacity)
  {
   new_data = new T[rows*cols];
-  if(!Data)
+  if(!Data) // исходных данных в матрице не было
   {
    if(!defvalue)
 	memset(new_data,0,rows*cols*sizeof(T));
@@ -340,6 +354,7 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
    }
   }
   else
+  if(new_data) // выделена нова€ пам€ть переносим данные
   {
    int c_rows=(Rows<rows)?Rows:rows;
    int c_cols=(Cols<cols)?Cols:cols;
@@ -351,9 +366,26 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
 	for(int j=c_cols;j<cols; j++)
 	 new_data[i*cols+j]=defvalue;
   }
+  else // матрица уменьшилась, переносим данные в старой пам€ти
+  {
+   T* old_pos=Data+1*Cols;
+   T* new_pos=Data+cols;
+   int diff=Cols-cols;
+   for(int i=1;i<rows;i++)
+   {
+	memmove(new_pos,old_pos,cols*sizeof(T));
+	new_pos+=cols;
+	old_pos+=Cols;
+   }
+  }
  }
- delete []Data;
- Data=new_data;
+
+ if(new_data)
+ {
+  delete []Data;
+  Data=new_data;
+  Capacity=rows*cols;
+ }
  Rows=rows;
  Cols=cols;
 };
