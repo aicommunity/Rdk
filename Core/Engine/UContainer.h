@@ -140,7 +140,12 @@ long long MaxCalculationDuration;
 /// Если значение параметра <0, то нет ограничений
 long long CalculationDurationThreshold;
 
-public: // Физические свойства
+public: //
+/// Флаг включения мониторинга утечки памяти
+ULProperty<bool, UContainer> MemoryMonitor;
+
+
+protected: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double,3> Coord;
 
@@ -370,6 +375,8 @@ bool SetCalculationDurationThreshold(const long long& value);
 /// Флаги переопределения настроек вывода детальной отладочной информации
 const unsigned int& GetDebugSysEventsMask(void) const;
 bool SetDebugSysEventsMask(const unsigned int &value);
+
+bool SetMemoryMonitor(const bool &value);
 // --------------------------
 
 // --------------------------

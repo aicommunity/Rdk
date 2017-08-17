@@ -59,7 +59,8 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
- : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0)
+ : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0),
+   MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor)
 {
  AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UContainer>(this,&UContainer::SetId,&UContainer::GetId));
  AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UContainer>(this,&UContainer::SetName,&UContainer::GetName));
@@ -956,6 +957,13 @@ bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
  DebugSysEventsMask=value;
  return true;
 }
+
+bool UContainer::SetMemoryMonitor(const bool &value)
+{
+ if(value == true && Logger)
+  Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, GetFullName()+": Memory monitor enabled. Performance warning.");
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -1803,6 +1811,7 @@ bool UContainer::Default(void)
   try
   {
    BeforeDefault();
+   MemoryMonitor=false;
    Ready=false;
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->Default();
@@ -2110,6 +2119,12 @@ bool UContainer::Calculate(void)
    ComponentReCalculation=false;
 
    LogPropertiesBeforeCalc();
+
+   unsigned long long total_used_memory_before(0);
+   unsigned long long largest_free_block_before(0);
+   if(MemoryMonitor)
+    ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+
    unsigned long long acalc_start_time=GetCurrentStartupTime();
    if(!Owner)
    {
@@ -2137,6 +2152,16 @@ bool UContainer::Calculate(void)
 	 ACalculate();
    }
    unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),acalc_start_time);
+
+   unsigned long long total_used_memory_after(0);
+   unsigned long long largest_free_block_after(0);
+   if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+   {
+	long long total_used_memory_diff(total_used_memory_before-total_used_memory_after);
+	long long largest_free_block_diff(largest_free_block_before-largest_free_block_after);
+	if(largest_free_block_diff > 0)
+ 	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(total_used_memory_diff)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_diff)+" bytes");
+   }
    LogPropertiesAfterCalc();
 
    UpdateMainOwner();

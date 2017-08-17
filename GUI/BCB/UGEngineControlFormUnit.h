@@ -504,6 +504,9 @@ virtual void PauseChannel(int channel_index);
 /// если channel_index == -1 то сбрасывает все каналы
 virtual void ResetChannel(int channel_index);
 
+/// Формирование строки с отладочной информацией об объеме используемой памяти
+String DebugGenerateMemoryUsageString(void);
+
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

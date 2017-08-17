@@ -325,6 +325,14 @@ RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
         delete handle;
 }
 
+/// Возвращает объем используемой приложением памяти
+/// Если не удалось определить то возвращает false
+bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block)
+{
+ return false;
+}
+
+
 }
 #endif
 

@@ -55,6 +55,10 @@ RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name);
 /// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
 RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle);
 
+/// Возвращает объем используемой приложением памяти
+/// Если не удалось определить то возвращает false
+RDK_LIB_TYPE bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block);
+
 }
 
 }
