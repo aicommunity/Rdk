@@ -23,11 +23,10 @@ URdkCoreManager::URdkCoreManager(void)
  Engine=0;
  Environment=0;
  Storage=0;
- BufObjectsMode=0;
 
  DebuggerMessageFlag=true;
  DebugMode=false;
- BufObjectsMode=0;
+ BufObjectsMode=1;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
  GlobalLogger.SetDebugMode(true);
  GlobalLogger.SetDebuggerMessageFlag(false);
