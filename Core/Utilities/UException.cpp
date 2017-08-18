@@ -155,7 +155,8 @@ std::string UException::GenerateLogPrefix(void) const
  std::string result;
 
  std::time_t ex_time=GetTime();
- tm* time_struct=localtime(&ex_time);
+ tm time_result;
+ tm* time_struct=localtime_s(&ex_time,&time_result);
 
  if(!time_struct)
   return result;
