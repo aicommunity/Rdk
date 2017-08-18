@@ -197,6 +197,16 @@ unsigned long long LastCalcTime;
 /// Флаг, выставляемый на время перемещения компонента
 bool MovingFlag;
 
+/// Объем потребленной памяти за шаг расчета.
+/// Может быть отрицательрным если память освобождалась.
+/// Актуально если включен флаг MemoryMonitor
+long long MemoryUsageDiff;
+
+/// Изменение максимально длинного куска доступной памяти после шага расчета
+/// Может быть отрицательрным если кусок увеличился.
+/// Актуально если включен флаг MemoryMonitor
+long long MaxMemoryBlockDiff;
+
 protected:
 /// Список свойств, выводимых в детальный лог
 std::vector<std::string> PropertiesForDetailedLog;
@@ -377,6 +387,16 @@ const unsigned int& GetDebugSysEventsMask(void) const;
 bool SetDebugSysEventsMask(const unsigned int &value);
 
 bool SetMemoryMonitor(const bool &value);
+
+/// Объем потребленной памяти за шаг расчета.
+/// Может быть отрицательрным если память освобождалась.
+/// Актуально если включен флаг MemoryMonitor
+long long GetMemoryUsageDiff(void) const;
+
+/// Изменение максимально длинного куска доступной памяти после шага расчета
+/// Может быть отрицательрным если кусок увеличился.
+/// Актуально если включен флаг MemoryMonitor
+long long GetMaxMemoryBlockDiff(void) const;
 // --------------------------
 
 // --------------------------

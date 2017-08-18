@@ -962,7 +962,29 @@ bool UContainer::SetMemoryMonitor(const bool &value)
 {
  if(value == true && Logger)
   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, GetFullName()+": Memory monitor enabled. Performance warning.");
+ else
+ {
+  MemoryUsageDiff=0;
+  MaxMemoryBlockDiff=0;
+ }
  return true;
+}
+
+
+/// Объем потребленной памяти за шаг расчета.
+/// Может быть отрицательрным если память освобождалась.
+/// Актуально если включен флаг MemoryMonitor
+long long UContainer::GetMemoryUsageDiff(void) const
+{
+ return MemoryUsageDiff;
+}
+
+/// Изменение максимально длинного куска доступной памяти после шага расчета
+/// Может быть отрицательрным если кусок увеличился.
+/// Актуально если включен флаг MemoryMonitor
+long long UContainer::GetMaxMemoryBlockDiff(void) const
+{
+ return MaxMemoryBlockDiff;
 }
 // --------------------------
 
@@ -2012,6 +2034,10 @@ bool UContainer::Reset(void)
 
    AReset();
 
+
+   MemoryUsageDiff=0;
+   MaxMemoryBlockDiff=0;
+
    CalcCounter=0;
    SkipComponentCalculation=false;
    ComponentReCalculation=false;
@@ -2193,16 +2219,16 @@ bool UContainer::Calculate(void)
    unsigned long long largest_free_block_after(0);
    if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
    {
-	long long total_used_memory_diff(total_used_memory_before-total_used_memory_after);
-	long long largest_free_block_diff(largest_free_block_before-largest_free_block_after);
-	if(total_used_memory_diff > 0 && largest_free_block_diff > 0)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(total_used_memory_diff)+std::string(" bytes of RAM. Largest RAM block has been decreased to ")+sntoa(largest_free_block_diff)+" bytes");
+	MemoryUsageDiff=total_used_memory_before-total_used_memory_after;
+	MaxMemoryBlockDiff=largest_free_block_before-largest_free_block_after;
+	if(MemoryUsageDiff > 0 && MaxMemoryBlockDiff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(MemoryUsageDiff)+std::string(" bytes of RAM. Largest RAM block has been decreased to ")+sntoa(MaxMemoryBlockDiff)+" bytes");
 	else
-	if(total_used_memory_diff > 0)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(total_used_memory_diff)+std::string(" bytes of RAM."));
+	if(MemoryUsageDiff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(MemoryUsageDiff)+std::string(" bytes of RAM."));
 	else
-	if(largest_free_block_diff > 0)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" Largest RAM block has been decreased to ")+sntoa(largest_free_block_diff)+" bytes");
+	if(MaxMemoryBlockDiff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" Largest RAM block has been decreased to ")+sntoa(MaxMemoryBlockDiff)+" bytes");
    }
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
