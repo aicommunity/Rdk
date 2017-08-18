@@ -2084,6 +2084,12 @@ bool UContainer::Calculate(void)
    LastCalcTime=tempstepduration;
 
    Build();
+
+   unsigned long long total_used_memory_before(0);
+   unsigned long long largest_free_block_before(0);
+   if(MemoryMonitor)
+	ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+
    BeforeCalculate();
 
    UEPtr<UContainer> *comps=PComponents;
@@ -2120,11 +2126,6 @@ bool UContainer::Calculate(void)
 
    LogPropertiesBeforeCalc();
 
-   unsigned long long total_used_memory_before(0);
-   unsigned long long largest_free_block_before(0);
-   if(MemoryMonitor)
-    ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
-
    unsigned long long acalc_start_time=GetCurrentStartupTime();
    if(!Owner)
    {
@@ -2153,15 +2154,6 @@ bool UContainer::Calculate(void)
    }
    unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),acalc_start_time);
 
-   unsigned long long total_used_memory_after(0);
-   unsigned long long largest_free_block_after(0);
-   if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
-   {
-	long long total_used_memory_diff(total_used_memory_before-total_used_memory_after);
-	long long largest_free_block_diff(largest_free_block_before-largest_free_block_after);
-	if(largest_free_block_diff > 0)
- 	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(total_used_memory_diff)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_diff)+" bytes");
-   }
    LogPropertiesAfterCalc();
 
    UpdateMainOwner();
@@ -2197,6 +2189,21 @@ bool UContainer::Calculate(void)
 	}
    }
    AfterCalculate();
+   unsigned long long total_used_memory_after(0);
+   unsigned long long largest_free_block_after(0);
+   if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+   {
+	long long total_used_memory_diff(total_used_memory_before-total_used_memory_after);
+	long long largest_free_block_diff(largest_free_block_before-largest_free_block_after);
+	if(total_used_memory_diff > 0 && largest_free_block_diff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(total_used_memory_diff)+std::string(" bytes of RAM. Largest RAM block has been decreased to ")+sntoa(largest_free_block_diff)+" bytes");
+	else
+	if(total_used_memory_diff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(total_used_memory_diff)+std::string(" bytes of RAM."));
+	else
+	if(largest_free_block_diff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" Largest RAM block has been decreased to ")+sntoa(largest_free_block_diff)+" bytes");
+   }
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
   catch(UException &exception)
