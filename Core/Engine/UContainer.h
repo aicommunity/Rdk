@@ -575,6 +575,10 @@ void DelAllComponents(void);
 /// и имя 'name'
 virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
 
+/// Возвращает указатель на static компонент
+/// с классом 'classname' и именем 'name'
+virtual UEPtr<UContainer> FindStaticComponent(const NameT &classname, const NameT &name) const;
+
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент

@@ -1286,6 +1286,7 @@ void UContainer::DelAllComponents(void)
 {
  while(NumComponents)
   DelComponent(PComponents[NumComponents-1],true);
+ UpdateInternalData();
 }
 
 /// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
@@ -1295,6 +1296,20 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
  comp->SetStaticFlag(true);
  comp->SetName(name);
  StaticComponents[comp]=classname;
+}
+
+/// Возвращает указатель на static компонент
+/// с классом 'classname' и именем 'name'
+UEPtr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
+{
+ std::map<UEPtr<UContainer>, NameT>::const_iterator I=StaticComponents.begin();
+ for(;I!=StaticComponents.end();++I)
+ {
+  if(I->second == classname && I->first->GetName() == name)
+   return I->first;
+ }
+
+ return 0;
 }
 
 /// Перемещает компоненту в другой компонент

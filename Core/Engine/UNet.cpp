@@ -640,13 +640,19 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
 	 continue;
-	if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
-	 continue;
+	if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+	{
+	 if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+	 {
+	  storage->ReturnObject(newcont);
+	  continue;
+	 }
+	}
 
 	if(!newcont->LoadComponent(serstorage,false))
 	{
-	 std::string name;
-	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(name));
+	 std::string tempname;
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(tempname));
 //	 return false;
     }
    }
