@@ -12,7 +12,7 @@ protected:
 std::string LogMessage;
 
 public:
-UExceptionWrapperStd(const std::exception &exception);
+explicit UExceptionWrapperStd(const std::exception &exception);
 virtual ~UExceptionWrapperStd(void) throw();
 
 // --------------------------
@@ -29,7 +29,7 @@ protected:
 std::string LogMessage;
 
 public:
-UExceptionWrapperSEH(const std::string &seh_info);
+explicit UExceptionWrapperSEH(const std::string &seh_info);
 virtual ~UExceptionWrapperSEH(void) throw();
 
 // --------------------------
@@ -46,7 +46,7 @@ protected:
 std::string LogMessage;
 
 public:
-UExceptionWrapperBcb(const std::string &seh_info);
+explicit UExceptionWrapperBcb(const std::string &seh_info);
 virtual ~UExceptionWrapperBcb(void) throw();
 
 // --------------------------
@@ -63,7 +63,7 @@ protected:
 std::string LogMessage;
 
 public:
-UExceptionWrapperBoost(const std::string &seh_info);
+explicit UExceptionWrapperBoost(const std::string &seh_info);
 virtual ~UExceptionWrapperBoost(void) throw();
 
 // --------------------------
@@ -80,7 +80,7 @@ protected:
 std::string LogMessage;
 
 public:
-UExceptionWrapperOpenCv(const std::string &seh_info);
+explicit UExceptionWrapperOpenCv(const std::string &seh_info);
 virtual ~UExceptionWrapperOpenCv(void) throw();
 
 // --------------------------

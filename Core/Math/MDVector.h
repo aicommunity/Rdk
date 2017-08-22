@@ -28,7 +28,7 @@ MDVector(int size, T defvalue=0);
 MDVector(T xv, T yv, T zv=0);
 MDVector(T xv, T yv, T zv, T dv);
 MDVector(const MDVector<T> &copy);
-MDVector(const MDMatrix<T> &copy);
+explicit MDVector(const MDMatrix<T> &copy);
 //MDVector(int size, const T* data);
 virtual ~MDVector(void);
 // --------------------------

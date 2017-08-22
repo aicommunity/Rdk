@@ -453,7 +453,7 @@ virtual UContainer* New(void)=0;
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual UEPtr<UContainer> Alloc(UEPtr<UStorage> stor=0, bool copystate=false);
+virtual UEPtr<UContainer> Alloc(UEPtr<UStorage> stor, bool copystate=false);
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
@@ -896,7 +896,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 EIContainer(void);
-EIContainer(const UContainer *cont);
+explicit EIContainer(const UContainer *cont);
 EIContainer(const EIContainer &copy);
 virtual ~EIContainer(void);
 // --------------------------
@@ -912,68 +912,68 @@ virtual std::string CreateLogMessage(void) const;
 // Id компонента не найден
 struct EComponentIdNotExist: public EIdNotExist
 {
-EComponentIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EComponentIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
 // Id компонента уже существует
 struct EComponentIdAlreadyExist: public EIdAlreadyExist
 {
-EComponentIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+explicit EComponentIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
 // Имя компонента не найдено
 struct EComponentNameNotExist: public ENameNotExist
 {
-EComponentNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EComponentNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
 // Имя компонента уже существует
 struct EComponentNameAlreadyExist: public ENameAlreadyExist
 {
-EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Имя компонента недопустимо
 struct EComponentNameInvalid: public ENameError
 {
-EComponentNameInvalid(const std::string &name) : ENameError(name) {};
+explicit EComponentNameInvalid(const std::string &name) : ENameError(name) {};
 };
 
 // Id указателя не найден
 struct EPointerIdNotExist: public EIdNotExist
 {
-EPointerIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EPointerIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
 // Id указателя уже существует
 struct EPointerIdAlreadyExist: public EIdAlreadyExist
 {
-EPointerIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+explicit EPointerIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
 // Имя указателя не найдено
 struct EPointerNameNotExist: public ENameNotExist
 {
-EPointerNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EPointerNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
 // Имя указателя уже существует
 struct EPointerNameAlreadyExist: public ENameAlreadyExist
 {
-EPointerNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EPointerNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Ошибки добавления/удаления компонент
 // Id указателя уже существует
 struct EAddComponentAlreadyHaveOwner: public EIdError
 {
-EAddComponentAlreadyHaveOwner(UId id) : EIdError(id) {};
+explicit EAddComponentAlreadyHaveOwner(UId id) : EIdError(id) {};
 };
 
 // Недопустимый тип дочернего компонента
 struct EAddComponentHaveInvalidType: public EIdError
 {
-EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
+explicit EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
 };
 
 // Интерфейсный класс для обработки ошибок счета компонент

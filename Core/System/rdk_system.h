@@ -50,7 +50,7 @@ RDK_LIB_TYPE int CopyDir(const std::string &source_dir, const std::string &dest_
 RDK_LIB_TYPE void RdkDebuggerMessage(const std::string &message);
 
 /// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
-RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name);
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name);
 
 /// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
 RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle);

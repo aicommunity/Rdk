@@ -163,7 +163,7 @@ void RdkDebuggerMessage(const std::string &message)
 }
 
 /// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
-RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name)
 {
     UDllLoader * loader = new UDllLoaderWin(dll_name);
     loader->Load();

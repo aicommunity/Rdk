@@ -58,7 +58,7 @@ UQueue(void)
 };
 
 // Создает очередь с резервированым максимальным размером
-UQueue(size_t size)
+explicit UQueue(size_t size)
 {
  MaxSize = size;
  Size = 0;
@@ -68,7 +68,7 @@ UQueue(size_t size)
 };
 
 // Создает очередь заполненную данными из вектора vec
-UQueue(const std::vector<Ty>& vec)
+explicit UQueue(const std::vector<Ty>& vec)
 {
  Size = MaxSize = vec.size();
  m_pData=vec;

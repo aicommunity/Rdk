@@ -4204,7 +4204,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
    if(minsize>item->GetNumInputs())
 	minsize=item->GetNumInputs();
    for(int j=0;j<minsize;j++)
-	cont->CreateLink(ForbiddenId,j,id1,j);
+	cont->CreateLink(UIdVector(ForbiddenId),j,id1,j);
 
    for(int i=1;i<cont->GetNumComponents();i++)
    {

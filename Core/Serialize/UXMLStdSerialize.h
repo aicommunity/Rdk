@@ -433,7 +433,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size])
   if(size>0)
   {
    std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(storage.GetNodeText().c_str());
+   std::stringstream stream(rvalue.c_str());
 
    for(unsigned i=0;i<size;i++)
    {
@@ -503,7 +503,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, double const (&data)[Size]
   if(size>0)
   {
    std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(storage.GetNodeText().c_str());
+   std::stringstream stream(rvalue.c_str());
 
    for(unsigned i=0;i<size;i++)
 	stream>>data[i];
@@ -568,7 +568,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size])
   if(size>0)
   {
    std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(storage.GetNodeText().c_str());
+   std::stringstream stream(rvalue.c_str());
 
    for(unsigned i=0;i<size;i++)
 	stream>>data[i];
@@ -633,7 +633,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint32_t (&data)[Size])
   if(size>0)
   {
    std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(storage.GetNodeText().c_str());
+   std::stringstream stream(rvalue.c_str());
 
    for(unsigned i=0;i<size;i++)
 	stream>>data[i];
@@ -698,7 +698,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint8_t (&data)[Size])
   if(size>0)
   {
    std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(storage.GetNodeText().c_str());
+   std::stringstream stream(rvalue.c_str());
 
    for(unsigned i=0;i<size;i++)
 	stream>>data[i];
@@ -801,7 +801,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size1][Size2]
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(storage.GetNodeText().c_str());
+  std::stringstream stream(rvalue.c_str());
 
   for(int i=0;i<size1;i++)
   {
@@ -862,7 +862,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, double (&data)[Size1][Size
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(storage.GetNodeText().c_str());
+  std::stringstream stream(rvalue.c_str());
 
   for(int i=0;i<size1;i++)
   {
@@ -923,7 +923,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size1][Size2])
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(storage.GetNodeText().c_str());
+  std::stringstream stream(rvalue.c_str());
 
   for(int i=0;i<size1;i++)
   {
@@ -984,7 +984,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint32_t (&data)[Size1][Si
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(storage.GetNodeText().c_str());
+  std::stringstream stream(rvalue.c_str());
 
   for(int i=0;i<size1;i++)
   {
@@ -1045,7 +1045,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint8_t (&data)[Size1][Siz
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(storage.GetNodeText().c_str());
+  std::stringstream stream(rvalue.c_str());
 
   for(int i=0;i<size1;i++)
   {
