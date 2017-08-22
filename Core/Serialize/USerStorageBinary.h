@@ -47,7 +47,7 @@ public: // Методы
 USerStorageBinary(void);
 
 // Создает очередь с резервированым максимальным размером
-USerStorageBinary(int size);
+explicit USerStorageBinary(int size);
 
 // Создает очередь заполненную данными из вектора vec
 USerStorageBinary(const unsigned char* vec, int nsize);

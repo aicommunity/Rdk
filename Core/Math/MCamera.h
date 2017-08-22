@@ -169,6 +169,8 @@ T FuncTheta(T thetaD, T Xthet) const;
 // Метод хорд для нахождения численного решения уравнения относительно theta
 T ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const;
 
+
+MCameraStandard& operator = (const MCameraStandard& copy);
 };
 
 // -----------------------------------------------------------------------------
@@ -519,9 +521,9 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcDistortPixelPosition(const MVector<T,3> &undistort_pixel)
 {
- MVector<T,3> normal_point=InvIcc*undistort_pixel;
- MVector<T,3> dist_point=CalcPixelPositionFromNormalPosition(normal_point);
- MVector<T,3> result=Icc*dist_point;
+ MVector<T,3> normal_point(InvIcc*undistort_pixel);
+ MVector<T,3> dist_point(CalcPixelPositionFromNormalPosition(normal_point));
+ MVector<T,3> result(Icc*dist_point);
 
  return result;
 }
@@ -860,6 +862,18 @@ T MCameraStandard<T>::ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const
 	T Cx3 = Cx1-(Cx2-Cx1)*Cy1/(Cy2-Cy1);
 
 	return ChordMethod(Cx2, Cx3, epsilon, thetaD);
+}
+
+template<class T>
+MCameraStandard<T>& MCameraStandard<T>::operator = (const MCameraStandard<T>& copy)
+{
+ static_cast<MCamera<T> >(*this)=copy;
+ DistortionMode=copy.DistortionMode;
+ CameraMode=copy.CameraMode; 
+ DistortionCoeff=copy.DistortionCoeff;
+ SetIcc(copy.GetIcc());
+	
+ return *this;
 }
 
 }

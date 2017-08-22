@@ -288,13 +288,13 @@ public: // Классы описания исключений
 // Некорректный индекс входа
 struct EInvalidInputIndex: public EInvalidIndex
 {
-EInvalidInputIndex(int index) : EInvalidIndex(index) {};
+explicit EInvalidInputIndex(int index) : EInvalidIndex(index) {};
 };
 
 // Такой вход не существует
 struct EInputIndexNotExist: public EInvalidIndex
 {
-EInputIndexNotExist(int index) : EInvalidIndex(index) {};
+explicit EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
 

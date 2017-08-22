@@ -370,7 +370,6 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
   {
    T* old_pos=Data+1*Cols;
    T* new_pos=Data+cols;
-   int diff=Cols-cols;
    for(int i=1;i<rows;i++)
    {
 	memmove(new_pos,old_pos,cols*sizeof(T));
@@ -432,7 +431,7 @@ void MDMatrix<T>::InsertCols(int index, int num_cols)
  if(num_cols<=0)
   return;
 
- int old_cols;
+ int old_cols(Cols);
  Resize(Rows,Cols+num_cols);
 
  if(index>=0 && index<old_cols)

@@ -48,7 +48,7 @@ MMatrixSize(void);
 //MMatrixSize(int rows);
 MMatrixSize(int rows, int cols);
 MMatrixSize(const MMatrixSize &copy);
-MMatrixSize(const std::vector<int> &dims);
+explicit MMatrixSize(const std::vector<int> &dims);
 // --------------------------
 
 // --------------------------

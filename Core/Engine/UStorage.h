@@ -381,43 +381,43 @@ class IException: public UException {};
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
 struct EClassIdNotExist: public EIdNotExist
 {
-EClassIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EClassIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
 // Класс с заданным именем уже существует
 struct EClassIdAlreadyExist: public EIdAlreadyExist
 {
-EClassIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+explicit EClassIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
 // Попытка работы с классом по имени, отсутствующему в хранилище
 struct EClassNameNotExist: public ENameNotExist
 {
-EClassNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EClassNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
 // Класс с заданным именем уже существует
 struct EClassNameAlreadyExist: public ENameAlreadyExist
 {
-EClassNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EClassNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Некорректное имя класса
 struct EInvalidClassName: public ENameError
 {
-EInvalidClassName(const std::string &name) : ENameError(name) {};
+explicit EInvalidClassName(const std::string &name) : ENameError(name) {};
 };
 
 // Попытка работы с классом по идентификатору, отсутствующему в хранилище
 struct EObjectIdNotExist: public EIdNotExist
 {
-EObjectIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EObjectIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
 // Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
 struct EObjectStorageNotEmpty: public EIdError
 {
-EObjectStorageNotEmpty(UId id) : EIdError(id) {};
+explicit EObjectStorageNotEmpty(UId id) : EIdError(id) {};
 };
 // --------------------------
 

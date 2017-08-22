@@ -62,6 +62,12 @@ object UDrawEngineForm: TUDrawEngineForm
             ExplicitHeight = 318
           end
         end
+        inherited LibsTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
+        end
       end
     end
   end

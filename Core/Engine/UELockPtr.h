@@ -23,7 +23,7 @@ UELockPtr(const T* p);
 UELockPtr(UEPtr<T> &p);
 UELockPtr(T* p);
 public:
-UELockPtr(UGenericMutex* mutex);
+explicit UELockPtr(UGenericMutex* mutex);
 UELockPtr(UGenericMutex* mutex, T* pdata);
 UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
 UELockPtr(const UELockPtr<T> &p);

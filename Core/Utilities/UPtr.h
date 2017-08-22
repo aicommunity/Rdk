@@ -24,7 +24,7 @@ UPtr(void)
 {
 };
 
-UPtr(T* pdata)
+explicit UPtr(T* pdata)
 : PData(pdata)
 {
 // PData=pdata;
@@ -120,7 +120,7 @@ USharedPtr(void)
 {
 };
 
-USharedPtr(T* pdata)
+explicit USharedPtr(T* pdata)
 : UPtr<T>(pdata),
   Counter(new long(1))
 {

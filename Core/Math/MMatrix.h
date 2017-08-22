@@ -52,11 +52,11 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 MMatrix(void);
-MMatrix(T defvalue);
-MMatrix(const MDMatrix<T> &copy);
+explicit MMatrix(T defvalue);
+explicit MMatrix(const MDMatrix<T> &copy);
 MMatrix(const MMatrix<T,Rows,Cols> &copy);
-MMatrix(const T data[Rows][Cols]);
-MMatrix(const T* data);
+explicit MMatrix(const T data[Rows][Cols]);
+explicit MMatrix(const T* data);
 virtual ~MMatrix(void);
 // --------------------------
 
