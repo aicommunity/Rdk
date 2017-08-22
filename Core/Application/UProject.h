@@ -68,6 +68,8 @@ TProjectChannelConfig(const TProjectChannelConfig& copy);
 
 bool operator != (const TProjectChannelConfig& copy) const;
 bool operator == (const TProjectChannelConfig& copy) const;
+
+TProjectChannelConfig& operator = (const TProjectChannelConfig& copy);
 };
 
 

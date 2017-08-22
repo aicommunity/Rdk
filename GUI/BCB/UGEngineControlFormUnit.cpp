@@ -489,7 +489,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
  ShowDebugMessagesCheckBox->Checked=MEnv_GetDebugMode(0);
 
- RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ const RDK::TProjectConfig &config=RdkApplication.GetProjectConfig();
  AutosaveProjectCheckBox->Checked=config.ProjectAutoSaveFlag;
  AutosaveStatesCheckBox->Checked=config.ProjectAutoSaveStatesFlag;
  switch(config.MultiThreadingMode)
