@@ -200,10 +200,9 @@ void UBitmap::SetColorModel(UBMColorModel cmodel, bool isupdate)
   return;
  }
 
- UBColor* target=new UBColor[CalcByteLength(Width, Height, cmodel)];
-
  if(isupdate)
   {
+   UBColor* target=new UBColor[CalcByteLength(Width, Height, cmodel)];
    ColorConvert(Data, ColorModel, target, cmodel);
    // Устанавливаем новый буфер
    AttachBuffer(Width, Height, target, cmodel);
