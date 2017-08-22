@@ -867,7 +867,7 @@ T MCameraStandard<T>::ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const
 template<class T>
 MCameraStandard<T>& MCameraStandard<T>::operator = (const MCameraStandard<T>& copy)
 {
- static_cast<MCamera<T> >(*this)=copy;
+ *static_cast<MCamera<T>*>(this)=copy;
  DistortionMode=copy.DistortionMode;
  CameraMode=copy.CameraMode; 
  DistortionCoeff=copy.DistortionCoeff;
