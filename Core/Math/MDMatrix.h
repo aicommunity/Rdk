@@ -14,6 +14,15 @@ class MDMatrix: public MMatrixBase
 public:
 typedef T value_type;
 
+/// Линейная константа на которую необходимо увеличить число строк матрицы при ее увеличении
+/// (анализируются только строки, т.к. это типичное использование матрицы. При увеличении числа колонок
+/// не учитывается).
+static const int ResizeRowLinearConstant;
+
+/// Константа амортизации, на которую умножается необходимый размер (в элементах матрицы) при ее увеличении
+/// в случае, если меняется число колонок, или число строк увеличивается на величину больше чем ResizeLinearConstant
+static const float ResizeAmortizedConstant;
+
 union
 {
  T* Data;
@@ -262,6 +271,18 @@ void Print(std::ostream &stream);
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
 
+/// Линейная константа на которую необходимо увеличить число строк матрицы при ее увеличении
+/// (анализируются только строки, т.к. это типичное использование матрицы. При увеличении числа колонок
+/// не учитывается).
+template<class T>
+const int MDMatrix<T>::ResizeRowLinearConstant=30;
+
+/// Константа амортизации, на которую умножается необходимый размер (в элементах матрицы) при ее увеличении
+/// в случае, если меняется число колонок, или число строк увеличивается на величину больше чем ResizeLinearConstant
+template<class T>
+const float MDMatrix<T>::ResizeAmortizedConstant=1.5;
+
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -338,10 +359,17 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
  }
 
  T* new_data(0);
+ int new_capacity(0);
 
  if(rows && cols && rows*cols>Capacity)
  {
-  new_data = new T[rows*cols];
+  if(cols>Cols || rows>Rows+ResizeRowLinearConstant)
+   new_capacity=int(rows*cols*ResizeAmortizedConstant);
+  else
+   new_capacity=(rows+ResizeRowLinearConstant)*cols;
+
+
+  new_data = new T[new_capacity];
   if(!Data) // исходных данных в матрице не было
   {
    if(!defvalue)
@@ -354,7 +382,7 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
    }
   }
   else
-  if(new_data) // выделена новая память переносим данные
+  if(new_data) // матрица увеличилась, выделена новая память переносим данные
   {
    int c_rows=(Rows<rows)?Rows:rows;
    int c_cols=(Cols<cols)?Cols:cols;
@@ -366,24 +394,44 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
 	for(int j=c_cols;j<cols; j++)
 	 new_data[i*cols+j]=defvalue;
   }
-  else // матрица уменьшилась, переносим данные в старой памяти
-  {
-   T* old_pos=Data+1*Cols;
-   T* new_pos=Data+cols;
-   for(int i=1;i<rows;i++)
-   {
-	memmove(new_pos,old_pos,cols*sizeof(T));
-	new_pos+=cols;
-	old_pos+=Cols;
-   }
-  }
  }
+ else
+ if(cols<Cols) // матрица уменьшилась по числу колонок, переносим данные в старой памяти
+ {
+  T* old_pos=Data+1*Cols;
+  T* new_pos=Data+cols;
+  for(int i=1;i<rows;i++)
+  {
+   memmove(new_pos,old_pos,cols*sizeof(T));
+   new_pos+=cols;
+   old_pos+=Cols;
+  }
+  for(int i=Rows;i<rows;i++)
+   for(int j=0;j<cols;j++)
+    Data[i*cols+j]=defvalue;
+ }
+ else // Матрица увеличилась без реалокации, переносим данные в старой памяти
+ {
+  int c_rows=(Rows<rows)?Rows:rows;
+  T* old_pos=Data+(c_rows-1)*Cols;
+  T* new_pos=Data+(c_rows-1)*cols;
+  for(int i=c_rows;i>0;i--)
+  {
+   memmove(new_pos,old_pos,Cols*sizeof(T));
+   new_pos-=cols;
+   old_pos-=Cols;
+  }
+  for(int i=Rows;i<rows;i++)
+   for(int j=0;j<cols;j++)
+    Data[i*cols+j]=defvalue;
+ }
+
 
  if(new_data)
  {
   delete []Data;
   Data=new_data;
-  Capacity=rows*cols;
+  Capacity=new_capacity;
  }
  Rows=rows;
  Cols=cols;
