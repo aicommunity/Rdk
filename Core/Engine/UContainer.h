@@ -570,10 +570,19 @@ void DelComponent(const NameT &name, bool canfree=true);
 
 // Принудительно удаляет все дочерние компоненты
 void DelAllComponents(void);
+protected:
+void DelAllComponentsRaw(void);
 
+public:
 /// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
 /// и имя 'name'
 virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
+
+/// Удаляет компонент как статическую переменную
+virtual void DelStaticComponent(UEPtr<UContainer> comp);
+
+/// Удаляет компонент как статическую переменную
+virtual void DelAllStaticComponents(void);
 
 /// Возвращает указатель на static компонент
 /// с классом 'classname' и именем 'name'

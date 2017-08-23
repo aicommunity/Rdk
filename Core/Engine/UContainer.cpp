@@ -80,7 +80,12 @@ UContainer::UContainer(void)
 
 UContainer::~UContainer(void)
 {
- DelAllComponents();
+ if(GetStaticFlag() && Owner)
+  GetOwner()->DelStaticComponent(this);
+ DelAllComponentsRaw();
+ DelAllStaticComponents();
+
+
  UnLinkAllControllers();
 
  BreakOwner();
@@ -1037,7 +1042,8 @@ void UContainer::Free(void)
  if(Storage)
  {
   BreakOwner();
-  GetStorage()->ReturnObject(this);
+  if(!StaticFlag)
+   GetStorage()->ReturnObject(this);
  }
  else
   UComponent::Free();
@@ -1284,9 +1290,14 @@ void UContainer::DelComponent(const NameT &name, bool canfree)
 // Принудительно удаляет все дочерние компоненты
 void UContainer::DelAllComponents(void)
 {
+ DelAllComponentsRaw();
+ UpdateInternalData();
+}
+
+void UContainer::DelAllComponentsRaw(void)
+{
  while(NumComponents)
   DelComponent(PComponents[NumComponents-1],true);
- UpdateInternalData();
 }
 
 /// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
@@ -1296,6 +1307,20 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
  comp->SetStaticFlag(true);
  comp->SetName(name);
  StaticComponents[comp]=classname;
+}
+
+/// Удаляет компонент как статическую переменную
+void UContainer::DelStaticComponent(UEPtr<UContainer> comp)
+{
+ std::map<UEPtr<UContainer>, NameT>::iterator I=StaticComponents.find(comp);
+ if(I != StaticComponents.end())
+  StaticComponents.erase(I);
+}
+
+/// Удаляет компонент как статическую переменную
+void UContainer::DelAllStaticComponents(void)
+{
+ StaticComponents.clear();
 }
 
 /// Возвращает указатель на static компонент
@@ -1374,6 +1399,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
 
  // Удаляем лишние компоненты из 'comp'
  comp->DelAllComponents();
+
 
  UEPtr<UContainer> * pcomponents=0;
  PointerMapCIteratorT I;
@@ -3042,7 +3068,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  std::string line=str_type+variable.Property->GetName();
  result=line;
 
- if(type & ptInput && !variable.Property->IsConnected())
+ if(type & ptInput && !variable.Property->IsConnected())
  {
   result=line+"[<Disconnected>]";
  }
