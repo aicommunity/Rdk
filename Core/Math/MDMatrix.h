@@ -6,6 +6,15 @@
 #include <string.h>
 #include "MMatrixBase.h"
 
+/// Линейная константа на которую необходимо увеличить число строк матрицы при ее увеличении
+/// (анализируются только строки, т.к. это типичное использование матрицы. При увеличении числа колонок
+/// не учитывается).
+#define RDK_MMATRIX_RESIZE_ROW_LINEAR_CONSTANT 30
+
+/// Константа амортизации, на которую умножается необходимый размер (в элементах матрицы) при ее увеличении
+/// в случае, если меняется число колонок, или число строк увеличивается на величину больше чем ResizeLinearConstant
+#define RDK_MMATRIX_RESIZE_AMORTIZED_CONSTANT 1.5
+
 namespace RDK{
 
 template<class T>
@@ -13,7 +22,7 @@ class MDMatrix: public MMatrixBase
 {
 public:
 typedef T value_type;
-
+ /*
 /// Линейная константа на которую необходимо увеличить число строк матрицы при ее увеличении
 /// (анализируются только строки, т.к. это типичное использование матрицы. При увеличении числа колонок
 /// не учитывается).
@@ -22,15 +31,10 @@ static const int ResizeRowLinearConstant;
 /// Константа амортизации, на которую умножается необходимый размер (в элементах матрицы) при ее увеличении
 /// в случае, если меняется число колонок, или число строк увеличивается на величину больше чем ResizeLinearConstant
 static const float ResizeAmortizedConstant;
-
+   */
 union
 {
  T* Data;
-/* T* Data1D;
- struct
- {
-  T x,y,z,d;
- };*/
  double *Double;
  int *Int;
  unsigned char *UChar;
@@ -270,7 +274,7 @@ void Print(std::ostream &stream);
 };
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
-
+/*
 /// Линейная константа на которую необходимо увеличить число строк матрицы при ее увеличении
 /// (анализируются только строки, т.к. это типичное использование матрицы. При увеличении числа колонок
 /// не учитывается).
@@ -281,7 +285,7 @@ const int MDMatrix<T>::ResizeRowLinearConstant=30;
 /// в случае, если меняется число колонок, или число строк увеличивается на величину больше чем ResizeLinearConstant
 template<class T>
 const float MDMatrix<T>::ResizeAmortizedConstant=1.5;
-
+*/
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -363,10 +367,10 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
 
  if(rows && cols && rows*cols>Capacity)
  {
-  if(cols>Cols || rows>Rows+ResizeRowLinearConstant)
-   new_capacity=int(rows*cols*ResizeAmortizedConstant);
+  if(cols>Cols || rows>Rows+RDK_MMATRIX_RESIZE_ROW_LINEAR_CONSTANT)
+   new_capacity=int(rows*cols*RDK_MMATRIX_RESIZE_AMORTIZED_CONSTANT);
   else
-   new_capacity=(rows+ResizeRowLinearConstant)*cols;
+   new_capacity=(rows+RDK_MMATRIX_RESIZE_ROW_LINEAR_CONSTANT)*cols;
 
 
   new_data = new T[new_capacity];
