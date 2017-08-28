@@ -385,7 +385,7 @@ bool UBitmapFont::SetScale(float value)
   ScaledTable.clear();
  else
  {
-  std::map<wchar_t,UBitmapFontSymbol>::iterator I,J;
+  std::map<int,UBitmapFontSymbol>::iterator I,J;
 
   I=Table.begin();
   J=Table.end();
@@ -413,7 +413,8 @@ int UBitmapFont::CalcWidth(wchar_t ch)
 
 int UBitmapFont::CalcWidth(char ch)
 {
- return static_cast<int>(Table[ch].Data.GetWidth()*Scale);
+ int temp_ch=(unsigned char)(ch);
+ return static_cast<int>(Table[temp_ch].Data.GetWidth()*Scale);
 }
 // --------------------------
 
@@ -535,7 +536,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
    separatestring(ini("HGEFONT",value,"",k++),params,',');
    if(!params.empty())
    {
-    int ch=0;
+    int ch(0);
     //Поправка для qt
     if(params[0].size()<2)
     {
@@ -578,6 +579,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
 UBitmapFont& UBitmapFont::operator = (const UBitmapFont &font)
 {
  static_cast<UAFont * const>(this)->operator = (font);
+
  Table=font.Table;
  ScaledTable=font.ScaledTable;
  return *this;
@@ -598,19 +600,21 @@ void UBitmapFont::DrawSymbol(wchar_t ch, UAGraphics *graphics)
 
 void UBitmapFont::DrawSymbol(char ch, UAGraphics *graphics)
 {
+ int ch_temp=(unsigned char)(ch);
  if(Scale == 1)
-  graphics->Bitmap(graphics->GetPenX(), graphics->GetPenY(), Table[ch].Data,2);
+  graphics->Bitmap(graphics->GetPenX(), graphics->GetPenY(), Table[ch_temp].Data,2);
  else
-  graphics->Bitmap(graphics->GetPenX(), graphics->GetPenY(), ScaledTable[ch].Data,2);
+  graphics->Bitmap(graphics->GetPenX(), graphics->GetPenY(), ScaledTable[ch_temp].Data,2);
 }
 // --------------------------
 
 
 
 // Добавляет шрифт
-bool UBitmapFontCollection::AddFont(const string &name, int size, UBitmapFont &font)
+bool UBitmapFontCollection::AddFont(const string &name, int size, const UBitmapFont &font)
 {
- Fonts[name][size]=font;
+ UBitmapFont &temp=Fonts[name][size];
+ temp=font;
  return true;
 }
 
