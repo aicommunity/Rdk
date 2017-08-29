@@ -3,6 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <psapi.h>
 #include <OleAuto.h>
 #include "../rdk_system.h"
 //#include "USharedMemoryLoader.win.cpp"
@@ -162,7 +163,7 @@ void RdkDebuggerMessage(const std::string &message)
 }
 
 /// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
-RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string dll_name)
+RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name)
 {
     UDllLoader * loader = new UDllLoaderWin(dll_name);
     loader->Load();
@@ -174,6 +175,57 @@ RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
 {
     if (handle)
       delete handle;
+}
+
+
+unsigned long long GetMemoryUsedInfo(void)
+{
+ unsigned long long	result(0);
+ PROCESS_MEMORY_COUNTERS mc;
+ int cb=sizeof(PROCESS_MEMORY_COUNTERS);
+
+ if(GetProcessMemoryInfo(GetCurrentProcess(), &mc, cb))
+  result= mc.WorkingSetSize;
+ return result;
+}
+
+
+unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
+{
+ TSystemInfo Si;
+ LongWord P, dwRet;
+ TMemoryBasicInformation Mbi;
+
+ unsigned long long Result = 0;
+ AAddressOfLargest = 0;
+ GetSystemInfo(&Si);
+ P = 0;
+ while (P < LongWord(Si.lpMaximumApplicationAddress))
+ {
+  dwRet = VirtualQuery((void*)(P), &Mbi, sizeof(Mbi));
+  if( (dwRet > 0) && (Mbi.State && MEM_FREE != 0))
+  {
+	  if (Result < Mbi.RegionSize)
+	  {
+		Result = Mbi.RegionSize;
+		AAddressOfLargest = Mbi.BaseAddress;
+	  }
+	  P+=Mbi.RegionSize;
+  }
+  else
+   P+=Si.dwPageSize;
+ }
+ return Result;
+}
+
+/// Возвращает объем используемой приложением памяти
+/// Если не удалось определить то возвращает false
+bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block)
+{
+ total_used_memory=GetMemoryUsedInfo();
+ void* AAddressOfLargest(0);
+ largest_free_block=GetLargestFreeMemRegion(AAddressOfLargest);
+ return true;
 }
 
 

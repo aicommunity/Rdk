@@ -40,31 +40,7 @@ TProjectChannelConfig::TProjectChannelConfig(void)
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
 {
- ModelMode=copy.ModelMode;
- PredefinedStructure=copy.PredefinedStructure;
- ClassName=copy.ClassName;
- ModelFileName=copy.ModelFileName;
- ParametersFileName=copy.ParametersFileName;
- StatesFileName=copy.StatesFileName;
-
- GlobalTimeStep=copy.GlobalTimeStep;
-
- DefaultTimeStep=copy.DefaultTimeStep;
-
- CalculationMode=copy.CalculationMode;
-
- MinInterstepsInterval=copy.MinInterstepsInterval;
-
- InitAfterLoad=copy.InitAfterLoad;
-
- ResetAfterLoad=copy.ResetAfterLoad;
-
- DebugMode=copy.DebugMode;
- DebugSysEventsMask=copy.DebugSysEventsMask;
- EventsLogMode=copy.EventsLogMode;
- DebuggerMessageFlag=copy.DebuggerMessageFlag;
-
- ChannelName=copy.ChannelName;
+ (*this)=copy;
 }
 
 bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) const
@@ -92,6 +68,37 @@ bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) cons
 {
  return !((*this) != copy);
 }
+
+TProjectChannelConfig& TProjectChannelConfig::operator = (const TProjectChannelConfig& copy)
+{
+ ModelMode=copy.ModelMode;
+ PredefinedStructure=copy.PredefinedStructure;
+ ClassName=copy.ClassName;
+ ModelFileName=copy.ModelFileName;
+ ParametersFileName=copy.ParametersFileName;
+ StatesFileName=copy.StatesFileName;
+
+ GlobalTimeStep=copy.GlobalTimeStep;
+
+ DefaultTimeStep=copy.DefaultTimeStep;
+
+ CalculationMode=copy.CalculationMode;
+
+ MinInterstepsInterval=copy.MinInterstepsInterval;
+
+ InitAfterLoad=copy.InitAfterLoad;
+
+ ResetAfterLoad=copy.ResetAfterLoad;
+
+ DebugMode=copy.DebugMode;
+ DebugSysEventsMask=copy.DebugSysEventsMask;
+ EventsLogMode=copy.EventsLogMode;
+ DebuggerMessageFlag=copy.DebuggerMessageFlag;
+
+ ChannelName=copy.ChannelName;
+ return *this;
+}
+
 
 TProjectConfig::TProjectConfig(void)
 {

@@ -1,7 +1,7 @@
 #include "UVisualControllerWidget.h"
 
 // Флаг, сообщающий что идет расчет
-RDK::UELockVar<bool> UVisualControllerWidget::CalculationModeFlag=false;
+RDK::UELockVar<bool> UVisualControllerWidget::CalculationModeFlag(false);
 
 UVisualControllerWidget::UVisualControllerWidget(QWidget *parent):QWidget(parent)
 {

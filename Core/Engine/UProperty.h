@@ -67,7 +67,7 @@ UVBaseDataProperty(void)
 {
 }
   */
-UVBaseDataProperty(T * const pdata)
+explicit UVBaseDataProperty(T * const pdata)
  : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
@@ -371,7 +371,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVBaseProperty(OwnerT * const owner) :
+explicit UVBaseProperty(OwnerT * const owner) :
   UVBaseDataProperty<T>(0), Owner(owner)
 {
    if(Owner)
@@ -526,12 +526,12 @@ UVProperty<T,OwnerT>& operator = (const T &value)
  this->SetData(value);
  return *this;
 };
-
+/*
 UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;
-};
+};*/
 // -----------------------------
 };
 

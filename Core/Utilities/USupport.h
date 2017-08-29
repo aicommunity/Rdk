@@ -229,8 +229,8 @@ int atoi(const std::basic_string<CharT> &str)
 }
 
 // Функция, преобразующая шестнадцатиричную строку в целое число
-template<typename CharT>
-int hextoi(const std::basic_string<CharT> &str)
+template<typename CharT, typename T>
+T hextoi(const std::basic_string<CharT> &str)
 {
  basic_stringstream<CharT> stream(str);
  int res(0);

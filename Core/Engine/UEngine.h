@@ -104,8 +104,8 @@ std::list<UContainer*> ClassesList;
 
 //RDK::USerStorageXML XmlStorage;
 
-// Временное хранилище строк
-mutable std::list<UEPtr<string> > TempStrings;
+// Временное хранилище строк <указатель на строку, флаг использования>
+mutable std::map<UEPtr<string>,bool > TempStrings;
 mutable string DummyTempString;
 
 // Временное хранилище буфера для лога
@@ -167,6 +167,7 @@ std::string& CreateTempString(void) const;
 
 /// Возвращает временную строку
 /// по указателю на ее данные
+/// не находит свободные строки!
 std::string& FindTempString(const char *str_data) const;
 
 /// Удаляет временную строку

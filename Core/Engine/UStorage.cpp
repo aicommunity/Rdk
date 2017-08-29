@@ -863,7 +863,16 @@ bool UStorage::BuildStorage(void)
   if(lib)
   {
    Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
+   unsigned long long total_used_memory_before(0);
+   unsigned long long largest_free_block_before(0);
+   ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+
    CollectionList[i]->Upload(this);
+   unsigned long long total_used_memory_after(0);
+   unsigned long long largest_free_block_after(0);
+   if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+	Logger->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+
    Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
    if(!lib->GetIncomplete().empty())
     Logger->LogMessage(RDK_EX_DEBUG, std::string("Failed to add [")+sntoa(lib->GetIncomplete().size())+std::string("]: ")+concat_strings(lib->GetIncomplete(),std::string(",")));

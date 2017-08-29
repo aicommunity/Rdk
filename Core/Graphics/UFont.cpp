@@ -535,7 +535,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
    separatestring(ini("HGEFONT",value,"",k++),params,',');
    if(!params.empty())
    {
-    int ch=0;
+    wchar_t ch(0);
     //Поправка для qt
     if(params[0].size()<2)
     {
@@ -548,7 +548,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
 	}
 	else
 	{
-     ch=hextoi(params[0]);
+	 ch=hextoi<char,char>(params[0]);
 	}
 	UBitmap &char_bmp=Table[ch].Data;
 	int x,y,w,h;
@@ -560,7 +560,17 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
 	char_bmp.SetRes(w,h, bmp.GetColorModel());
 	bmp.GetRect(x, y,char_bmp);
    }
+  }
+ }
 
+ if(Table.find(wchar_t(' ')) == Table.end()) // Костыль чтобы добавить в старые шрифты пробел
+ {
+  UBitmap &char_bmp=Table[wchar_t(' ')].Data;
+  std::map<wchar_t,UBitmapFontSymbol>::iterator I=Table.find(wchar_t('0'));
+  if(I != Table.end())
+  {
+   char_bmp.SetRes(I->second.Data.GetWidth(),I->second.Data.GetHeight(),I->second.Data.GetColorModel());
+   char_bmp.Fill(UColorT(255,255,255,0));
   }
  }
 

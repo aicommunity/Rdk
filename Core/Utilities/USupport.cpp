@@ -46,7 +46,15 @@ int fraction(double d, int digs)
 std::string get_text_time(time_t time_data, char date_sep, char time_sep)
 {
  std::string result;
- tm* time_stuct=localtime(&time_data);
+ tm time_result;
+ tm* time_stuct(0);
+#ifdef _MSC_VER
+ localtime_s(&time_result,&time_data);
+ time_stuct=&time_result;
+#else
+ time_stuct=localtime_s(&time_data,&time_result);
+#endif
+
 
  result+=sntoa(time_stuct->tm_year+1900,4);
  result+=date_sep;

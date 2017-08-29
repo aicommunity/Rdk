@@ -107,7 +107,7 @@ UBMColorModel ColorModel;
 // --------------------------
 UBitmapParam(void);
 UBitmapParam(const UBitmapParam &bitmap);
-UBitmapParam(UBMColorModel cmodel);
+explicit UBitmapParam(UBMColorModel cmodel);
 ~UBitmapParam(void);
 // --------------------------
 };
@@ -157,7 +157,7 @@ public: // Ìועמהû
 // --------------------------
 UBitmap(void);
 UBitmap(const UBitmap &bitmap);
-UBitmap(UBMColorModel cmodel);
+explicit UBitmap(UBMColorModel cmodel);
 UBitmap(int width, int height, UColorT color=0, UBMColorModel cmodel=ubmRGB24);
 UBitmap(int width, int height, const UBColor* data, UBMColorModel cmodel);
 ~UBitmap(void);

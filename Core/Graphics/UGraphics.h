@@ -34,7 +34,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 UGraphics(void);
-UGraphics(UBitmap *canvas);
+explicit UGraphics(UBitmap *canvas);
 virtual ~UGraphics(void);
 // --------------------------
 

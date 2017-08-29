@@ -318,7 +318,8 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  StatusBar->Panels->Items[3]->Width=width;
 
  StatusBar->Panels->Items[4]->Text=
-				String("Logs: [")+IntToStr(Log_GetNumUnreadLogLines())+String(":")+IntToStr(Log_GetNumLogLines())+String("]");
+				String("Logs: [")+IntToStr(MLog_GetNumUnreadLogLines(RDK_GLOB_MESSAGE))+String(":")+IntToStr(MLog_GetNumLogLines(RDK_GLOB_MESSAGE))+String("]");
+//				String("Logs: [")+IntToStr(Log_GetNumUnreadLogLines())+String(":")+IntToStr(Log_GetNumLogLines())+String("]");
  width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[4]->Text)+25;
  StatusBar->Panels->Items[4]->Width=width;
  StatusBar->Repaint();

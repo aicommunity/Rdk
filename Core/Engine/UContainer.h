@@ -140,7 +140,12 @@ long long MaxCalculationDuration;
 /// Если значение параметра <0, то нет ограничений
 long long CalculationDurationThreshold;
 
-public: // Физические свойства
+public: //
+/// Флаг включения мониторинга утечки памяти
+ULProperty<bool, UContainer> MemoryMonitor;
+
+
+protected: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double,3> Coord;
 
@@ -191,6 +196,16 @@ unsigned long long LastCalcTime;
 
 /// Флаг, выставляемый на время перемещения компонента
 bool MovingFlag;
+
+/// Объем потребленной памяти за шаг расчета.
+/// Может быть отрицательрным если память освобождалась.
+/// Актуально если включен флаг MemoryMonitor
+long long MemoryUsageDiff;
+
+/// Изменение максимально длинного куска доступной памяти после шага расчета
+/// Может быть отрицательрным если кусок увеличился.
+/// Актуально если включен флаг MemoryMonitor
+long long MaxMemoryBlockDiff;
 
 protected:
 /// Список свойств, выводимых в детальный лог
@@ -370,6 +385,18 @@ bool SetCalculationDurationThreshold(const long long& value);
 /// Флаги переопределения настроек вывода детальной отладочной информации
 const unsigned int& GetDebugSysEventsMask(void) const;
 bool SetDebugSysEventsMask(const unsigned int &value);
+
+bool SetMemoryMonitor(const bool &value);
+
+/// Объем потребленной памяти за шаг расчета.
+/// Может быть отрицательрным если память освобождалась.
+/// Актуально если включен флаг MemoryMonitor
+long long GetMemoryUsageDiff(void) const;
+
+/// Изменение максимально длинного куска доступной памяти после шага расчета
+/// Может быть отрицательрным если кусок увеличился.
+/// Актуально если включен флаг MemoryMonitor
+long long GetMaxMemoryBlockDiff(void) const;
 // --------------------------
 
 // --------------------------
@@ -426,7 +453,7 @@ virtual UContainer* New(void)=0;
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual UEPtr<UContainer> Alloc(UEPtr<UStorage> stor=0, bool copystate=false);
+virtual UEPtr<UContainer> Alloc(UEPtr<UStorage> stor, bool copystate=false);
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
@@ -543,10 +570,23 @@ void DelComponent(const NameT &name, bool canfree=true);
 
 // Принудительно удаляет все дочерние компоненты
 void DelAllComponents(void);
+protected:
+void DelAllComponentsRaw(void);
 
+public:
 /// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
 /// и имя 'name'
 virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
+
+/// Удаляет компонент как статическую переменную
+virtual void DelStaticComponent(UEPtr<UContainer> comp);
+
+/// Удаляет компонент как статическую переменную
+virtual void DelAllStaticComponents(void);
+
+/// Возвращает указатель на static компонент
+/// с классом 'classname' и именем 'name'
+virtual UEPtr<UContainer> FindStaticComponent(const NameT &classname, const NameT &name) const;
 
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
@@ -869,7 +909,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 EIContainer(void);
-EIContainer(const UContainer *cont);
+explicit EIContainer(const UContainer *cont);
 EIContainer(const EIContainer &copy);
 virtual ~EIContainer(void);
 // --------------------------
@@ -885,68 +925,68 @@ virtual std::string CreateLogMessage(void) const;
 // Id компонента не найден
 struct EComponentIdNotExist: public EIdNotExist
 {
-EComponentIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EComponentIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
 // Id компонента уже существует
 struct EComponentIdAlreadyExist: public EIdAlreadyExist
 {
-EComponentIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+explicit EComponentIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
 // Имя компонента не найдено
 struct EComponentNameNotExist: public ENameNotExist
 {
-EComponentNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EComponentNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
 // Имя компонента уже существует
 struct EComponentNameAlreadyExist: public ENameAlreadyExist
 {
-EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Имя компонента недопустимо
 struct EComponentNameInvalid: public ENameError
 {
-EComponentNameInvalid(const std::string &name) : ENameError(name) {};
+explicit EComponentNameInvalid(const std::string &name) : ENameError(name) {};
 };
 
 // Id указателя не найден
 struct EPointerIdNotExist: public EIdNotExist
 {
-EPointerIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EPointerIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
 // Id указателя уже существует
 struct EPointerIdAlreadyExist: public EIdAlreadyExist
 {
-EPointerIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+explicit EPointerIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
 // Имя указателя не найдено
 struct EPointerNameNotExist: public ENameNotExist
 {
-EPointerNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EPointerNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
 // Имя указателя уже существует
 struct EPointerNameAlreadyExist: public ENameAlreadyExist
 {
-EPointerNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EPointerNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Ошибки добавления/удаления компонент
 // Id указателя уже существует
 struct EAddComponentAlreadyHaveOwner: public EIdError
 {
-EAddComponentAlreadyHaveOwner(UId id) : EIdError(id) {};
+explicit EAddComponentAlreadyHaveOwner(UId id) : EIdError(id) {};
 };
 
 // Недопустимый тип дочернего компонента
 struct EAddComponentHaveInvalidType: public EIdError
 {
-EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
+explicit EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
 };
 
 // Интерфейсный класс для обработки ошибок счета компонент

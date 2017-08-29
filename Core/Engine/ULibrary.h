@@ -125,6 +125,12 @@ const vector<string>& GetIncomplete(void) const;
 // --------------------------
 // ћетоды управлени€
 // --------------------------
+/// —оздает образец типа T с именем класса в хранилище class_name и именем
+/// компонента по умолчанию component_name
+/// ¬озвращает указатель на созданный образец
+template<class T>
+T* UploadClass(const std::string &class_name, const std::string &component_name, bool memory_measure=false);
+
 // «аполн€ет заданное хранилище набором образцов классов.
 // ≈сли класс с заданным именем уже существует, то он пропускаетс€.
 // ¬озвращает число реально загруженных классов.
@@ -197,6 +203,29 @@ virtual void CreateClassSamples(UStorage *storage);
 // --------------------------
 
 };
+
+/// —оздает образец типа T с именем класса в хранилище class_name и именем
+/// компонента по умолчанию component_name
+/// ¬озвращает указатель на созданный образец
+template<class T>
+T* ULibrary::UploadClass(const std::string &class_name, const std::string &component_name, bool memory_measure)
+{
+ unsigned long long total_used_memory_before(0);
+ unsigned long long largest_free_block_before(0);
+ if(memory_measure)
+  ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+
+ T* cont=new T;
+ cont->SetName(component_name);
+ cont->Default();
+ UploadClass(class_name, cont);
+ unsigned long long total_used_memory_after(0);
+ unsigned long long largest_free_block_after(0);
+ if(memory_measure && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+  Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, class_name+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+ return cont;
+}
+
 
 
 typedef ULibrary* PUALibrary;

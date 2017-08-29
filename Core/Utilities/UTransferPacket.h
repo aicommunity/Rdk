@@ -45,7 +45,7 @@ class RDK_LIB_TYPE UTransferPacket
         // -------------------------
         UTransferPacket(void);
         UTransferPacket(const UTransferPacket &packet);
-        UTransferPacket(const UParamT &buffer);
+		explicit UTransferPacket(const UParamT &buffer);
         virtual ~UTransferPacket(void);
         // -------------------------
 

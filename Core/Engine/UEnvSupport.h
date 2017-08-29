@@ -46,7 +46,7 @@ public: // Методы
 // --------------------------
 UIdVector(void);
 UIdVector(const UIdVector &copy);
-UIdVector(UId id1);
+explicit UIdVector(UId id1);
 UIdVector(UId id1, UId id2, ...);
 virtual ~UIdVector(void);
 // --------------------------
@@ -85,6 +85,7 @@ std::string& EncodeToString(std::string &str) const;
 // --------------------------
 // Оператор присваивания
 UIdVector& operator = (const UIdVector &copy);
+UIdVector& operator = (const UId &copy);
 
 // Оператор доступа
 UId& operator [] (int index);
@@ -485,8 +486,8 @@ ULinkT<T>::ULinkT(void)
 
 template<typename T>
 ULinkT<T>::ULinkT(const ULinkSideT<T> &item, const ULinkSideT<T> &conn)
+ : Item(item)
 {
- Item=item;
  Connector.push_back(conn);
 }
 

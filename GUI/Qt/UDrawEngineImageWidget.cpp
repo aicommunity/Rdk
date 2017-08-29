@@ -455,7 +455,7 @@ void UDrawEngineImageWidget::saveComponentPosition(std::string name)
         RDK::USerStorageXML xml;
         xml.Create("Coord");
         std::string buffer;
-        RDK::MVector<double,3> pos=(descr.Position-DrawEngine.GetOrigin())/DrawEngine.GetZoomCoeff();
+        RDK::MVector<double,3> pos((descr.Position-DrawEngine.GetOrigin())/DrawEngine.GetZoomCoeff());
         RDK::operator << (xml,pos);
         xml.Save(buffer);
 

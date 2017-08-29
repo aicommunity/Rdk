@@ -23,11 +23,10 @@ URdkCoreManager::URdkCoreManager(void)
  Engine=0;
  Environment=0;
  Storage=0;
- BufObjectsMode=0;
 
  DebuggerMessageFlag=true;
  DebugMode=false;
- BufObjectsMode=0;
+ BufObjectsMode=1;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
  GlobalLogger.SetDebugMode(true);
  GlobalLogger.SetDebuggerMessageFlag(false);
@@ -626,6 +625,7 @@ int URdkCoreManager::ChannelCreate(int index)
    // TODO: здесь инициализация параметров логгера и его запуск
    LoggerList[index]=new RDK::ULoggerEnv;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
+   LoggerList[index]->SetMaxExceptionsLogSize(0);
    LoggerList[index]->SetLogDir(LogDir);
    LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
    LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());

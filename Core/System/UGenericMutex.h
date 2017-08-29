@@ -66,7 +66,7 @@ private:
 UGenericMutex *m_mutex;
 
 public:
-UGenericMutexExclusiveLocker(UGenericMutex *m);
+explicit UGenericMutexExclusiveLocker(UGenericMutex *m);
 ~UGenericMutexExclusiveLocker();
 
 private:
@@ -81,7 +81,7 @@ private:
 UGenericMutex *m_mutex;
 
 public:
-UGenericMutexSharedLocker(UGenericMutex *m);
+explicit UGenericMutexSharedLocker(UGenericMutex *m);
 ~UGenericMutexSharedLocker();
 
 private:
