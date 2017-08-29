@@ -160,10 +160,10 @@ protected: // Параметры
 
 protected: // Данные
 // Таблица описаний символов
-std::map<int,UBitmapFontSymbol> Table;
+std::map<wchar_t,UBitmapFontSymbol> Table;
 
 // Таблица масштабированных описаний символов
-std::map<int,UBitmapFontSymbol> ScaledTable;
+std::map<wchar_t,UBitmapFontSymbol> ScaledTable;
 
 public: // Методы
 // --------------------------
@@ -317,7 +317,7 @@ public:
 // Методы доступа к данным
 // --------------------------
 // Добавляет шрифт
-bool AddFont(const string &name, int size, const UBitmapFont &font);
+bool AddFont(const string &name, int size, UBitmapFont &font);
 
 // Удаляет шрифт
 bool DelFont(const string &name);
