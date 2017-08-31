@@ -57,6 +57,8 @@ explicit MMatrix(const MDMatrix<T> &copy);
 MMatrix(const MMatrix<T,Rows,Cols> &copy);
 explicit MMatrix(const T data[Rows][Cols]);
 explicit MMatrix(const T* data);
+MMatrix(T v1, T v2, T v3);
+MMatrix(T v1, T v2, T v3, T v4);
 virtual ~MMatrix(void);
 // --------------------------
 
@@ -91,6 +93,9 @@ virtual int GetElementByteSize(void) const;
 virtual const void* GetVoid(void) const;
 virtual void* GetVoid(void);
 
+/// Методы доступа к данным
+virtual const T* GetData(void) const;
+virtual T* GetData(void);
 // Возвращает языковой тип элемента матрицы
 //virtual const type_info& GetLanguageType(void) const;
 // -----------------------------------
@@ -305,9 +310,42 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
 { *this=data; };
 
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>::MMatrix(T v1, T v2, T v3)
+{
+ double* PData=&Data[0][0];
+
+ if(Rows*Cols>0)
+  PData[0]=v1;
+
+ if(Rows*Cols>1)
+  PData[1]=v2;
+
+ if(Rows*Cols>2)
+  PData[2]=v3;
+}
 
 template<class T, unsigned Rows, unsigned Cols>
-MMatrix<T,Rows,Cols>::~MMatrix(void) {};
+MMatrix<T,Rows,Cols>::MMatrix(T v1, T v2, T v3, T v4)
+{
+ double* PData=&Data[0][0];
+
+ if(Rows*Cols>0)
+  PData[0]=v1;
+
+ if(Rows*Cols>1)
+  PData[1]=v2;
+
+ if(Rows*Cols>2)
+  PData[2]=v3;
+
+ if(Rows*Cols>3)
+  PData[3]=v4;
+}
+
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>::~MMatrix(void){};
 // --------------------------
 
 
@@ -393,6 +431,20 @@ void* MMatrix<T,Rows,Cols>::GetVoid(void)
 {
  return Void;
 }
+
+/// Методы доступа к данным
+template<class T, unsigned Rows, unsigned Cols>
+const T* MMatrix<T,Rows,Cols>::GetData(void) const
+{
+ return &Data[0][0];
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+T* MMatrix<T,Rows,Cols>::GetData(void)
+{
+ return &Data[0][0];
+}
+
 // -----------------------------------
 
 // --------------------------
