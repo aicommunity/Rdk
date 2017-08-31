@@ -732,25 +732,46 @@ USerStorageXML& operator << (USerStorageXML& storage, const T (&data)[Size])
 template<int Size, typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, T (&data)[Size])
 {
- if(storage.GetNodeAttribute("Type") != "C-array")
-  return storage;
-
- int size=storage.GetNumNodes();
-
- if(size>Size)
-  size=Size;
-
- if(size <= 0)
-  return storage;
-
- T* pdata=&data[0];
-
- for(int i=0;i<size;i++)
+ if(storage.GetNodeAttribute("Type") == "C-array")
  {
-  if(!storage.SelectNode("elem",i))
+  int size=storage.GetNumNodes();
+
+  if(size>Size)
+   size=Size;
+
+  if(size <= 0)
    return storage;
-  operator >>(storage,*(pdata+i));
-  storage.SelectUp();
+
+  T* pdata=&data[0];
+
+  for(int i=0;i<size;i++)
+  {
+   if(!storage.SelectNode("elem",i))
+	return storage;
+   operator >>(storage,*(pdata+i));
+   storage.SelectUp();
+  }
+ }
+ else
+ if(storage.GetNodeAttribute("Type") == "C-simplearray")
+ {
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+
+  if(size>Size)
+   size=Size;
+
+  if(size>0)
+  {
+   std::string rvalue=storage.GetNodeText();
+   std::stringstream stream(rvalue.c_str());
+
+   for(unsigned i=0;i<size;i++)
+   {
+	T temp;
+	stream>>temp;
+	data[i]=temp;
+   }
+  }
  }
 
  return storage;
