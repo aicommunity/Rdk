@@ -548,7 +548,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
 	}
 	else
 	{
-	 ch=hextoi<char,char>(params[0]);
+	 ch=hextoi<char, char>(params[0]);
 	}
 	UBitmap &char_bmp=Table[ch].Data;
 	int x,y,w,h;
