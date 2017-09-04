@@ -39,18 +39,21 @@ namespace RDK {
   } \
 
 
-/// --------------------
-/// Методы инициализации
-/// --------------------
+// --------------------
+// Методы инициализации
+// --------------------
 UTest::UTest(void)
 {
- // TODO: Инициализировать!
+  calcDuration = 0;
+  stepsMode = true;
 }
 
 
 UTest::UTest(const UEPtr<UApplication> &value)
 {
   Application=value;
+  calcDuration = 0;
+  stepsMode = true;
 }
 
 /// Возвращает указатель на тестируемое приложение
@@ -80,6 +83,9 @@ UTest& UTest::operator = (const UTest &copy)
  return *this;
 }
 
+// --------------------
+// Методы тестирования
+// --------------------
 
 /// Загрузка тестов
 int UTest::LoadTest(string testFile)
@@ -87,10 +93,16 @@ int UTest::LoadTest(string testFile)
   testsFileName = testFile;
   RDK::USerStorageXML testXML;
   if(!testXML.LoadFromFile(testFile, "TestCase"))
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestCase> in Xml file").c_str());
     return 1;
+  }
 
   if(!testXML.SelectNode("Header"))
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <Header> in Xml file").c_str());
     return 2;
+  }
 
   testXML.SelectNode("CalculateDuration");
   std::string strDuration = testXML.GetNodeAttribute("Steps");
@@ -105,46 +117,66 @@ int UTest::LoadTest(string testFile)
     stepsMode = true;
   }
 
-  calcDuration = atoi(strDuration);
+  try
+  {
+    calcDuration = boost::lexical_cast<int>(strDuration);
+  }
+  catch(boost::bad_lexical_cast &e)
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " calcDuration empty, boost::lexical_cast error, message :" + e.what()).c_str());
+    calcDuration = 0;
+  }
 
   testXML.SelectUp();
-  testXML.SelectNode("ConfigFilePath");
-  testProjectFileName = testXML.GetNodeText();
+  if(testXML.SelectNode("ConfigFilePath"))
+  {
+    testProjectFileName = testXML.GetNodeText();
+  }
+  else
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <ConfigFilePath> in Xml file").c_str());
+    return 3;
+  }
 
   testXML.SelectRoot();
-
-  testXML.SelectNode("TestProperties");
-  for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
+  if(testXML.SelectNode("TestProperties"))
   {
-    testXML.SelectNode("Property", i);
-    std::string sValue;
-
-    // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
-    if(testXML.SelectNode(0))
+    for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
     {
-      testXML.SaveFromNode(sValue);
-      testXML.SelectUp();
-    }
-    else
-    {
-      sValue = testXML.GetNodeText();
-    }
+      testXML.SelectNode("Property", i);
+      std::string sValue;
 
-    UPropertyTest pt = {
+      // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
+      if(testXML.SelectNode(0))
+      {
+        testXML.SaveFromNode(sValue);
+        testXML.SelectUp();
+      }
+      else
+      {
+        sValue = testXML.GetNodeText();
+      }
+
+      UPropertyTest pt = {
         testXML.GetNodeAttribute("Component"),
         testXML.GetNodeAttribute("PropertyName"),
         testXML.GetNodeAttribute("type"),
         testXML.GetNodeAttribute("Delta"),
         sValue
       };
-    propertyTests.push_back(pt);
-    testXML.SelectUp();
+      propertyTests.push_back(pt);
+      testXML.SelectUp();
+    }
+  }
+  else
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestProperties> in Xml file").c_str());
   }
   return RDK_SUCCESS;
 }
 
 /// Проводит тестирование
-/// Возвращает код ошибки тестирования
+/// Возвращает колличество неудачных проперти тестов
 int UTest::ProcessTest()
 {
   int returnCode = RDK_SUCCESS;
@@ -200,6 +232,7 @@ int UTest::ProcessTest()
       }
 
       void* data = const_cast<void*>(property->GetMemoryArea());
+
       if(!data)
       {
         MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", is NULL!").c_str());
@@ -217,24 +250,7 @@ int UTest::ProcessTest()
       TEST_PROPERTY_WITH_TYPE(std::string)
       TEST_PROPERTY_WITH_TYPE(MDMatrix<double>)
 
-
 //      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
-
-      /*if(property->GetLanguageType() == typeid(bool))
-      {
-        if(compareProperties(*(reinterpret_cast<bool*>(data)),
-                             testProperty.value, testProperty.delta))
-        {
-          MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("SUCCESS - porperty: "+ testProperty.component + "." + testProperty.property).c_str());
-          continue;
-        }
-        else
-        {
-          MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! + expected value is: "+ testProperty.value).c_str());
-          ++returnCode;
-          continue;
-        }
-      }*/
 
       MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
 
@@ -253,6 +269,10 @@ int UTest::ProcessTest()
 
   return returnCode;
 }
+
+// --------------------
+// Вспомогательные методы
+// --------------------
 
 bool UTest::compareProperties(bool value, std::string str, std::string delta)
 {
@@ -353,9 +373,9 @@ bool UTest::compareProperties(MDMatrix<double> value, string str, string delta)
 
 
 
-/// --------------------
-/// Методы инициализации
-/// --------------------
+// --------------------
+// Методы инициализации
+// --------------------
 /// Возвращает указатель на тестируемое приложение
 UEPtr<UApplication> UTestManager::GetApplication(void)
 {
