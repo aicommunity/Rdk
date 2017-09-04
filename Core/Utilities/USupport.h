@@ -229,8 +229,8 @@ int atoi(const std::basic_string<CharT> &str)
 }
 
 // Функция, преобразующая шестнадцатиричную строку в целое число
-template<typename CharT>
-int hextoi(const std::basic_string<CharT> &str)
+template<typename CharT, typename T>
+T hextoi(const std::basic_string<CharT> &str)
 {
  basic_stringstream<CharT> stream(str);
  int res(0);
@@ -368,6 +368,14 @@ RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 /// Извлекает расширение файла из имени файла
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
+/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str);
+
+/// Загружает файл в строку
+RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer);
+
+/// Сохраняет файл из строки
+RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer);
 
 }
 #endif
