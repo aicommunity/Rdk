@@ -25,14 +25,14 @@ namespace RDK {
       } \
       else \
       { \
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! + expected value is: "+ testProperty.value).c_str()); \
+        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! expected value is: "+ testProperty.value).c_str()); \
         ++returnCode; \
         continue; \
       } \
     } \
     catch(boost::bad_lexical_cast &e) \
     { \
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error message :" + e.what()).c_str()); \
+      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error, application can't parse value, message :" + e.what()).c_str()); \
       ++returnCode; \
       continue; \
     } \
@@ -183,7 +183,37 @@ int UTest::ProcessTest()
 
   try
   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
+
     Application->OpenProject(testProjectFileName);
+    std::vector<string> strs;
+    boost::split(strs, testsFileName, boost::is_any_of("/"));
+    strs.pop_back();
+    strs.push_back("EventsLog");
+
+    std::string oldLogDir = Application->GetLogDir();
+
+    std::string testLogPath = boost::join(strs, "/") + "/";
+
+    Application->SetLogDir(testLogPath);
+
+    std::string newLogDir = Application->GetLogDir();
+
+    /*std::string appPath = Application->GetApplicationFileName();
+    boost::split(strs, appPath, boost::is_any_of("/"));
+    strs.pop_back();
+    std::string testLogPath = boost::join(strs, "/");
+
+    strs.clear();
+    boost::split(strs, testsFileName, boost::is_any_of("/"));
+    strs.pop_back();
+    strs.push_back("log");
+
+    testLogPath += "/" + boost::join(strs, "/");
+    Application->SetLogDir(testLogPath);
+
+    std::string oldLogDir = Application->GetLogDir();
+    testLogPath += oldLogDir;*/
 
     if(stepsMode)
     {
@@ -205,7 +235,6 @@ int UTest::ProcessTest()
       return -1;
     }
 
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
     for(std::vector<UPropertyTest>::iterator i = propertyTests.begin(); i != propertyTests.end(); ++i)
     {
       UPropertyTest testProperty = (*i);
@@ -404,16 +433,26 @@ int UTestManager::LoadTests(const std::string &file_name)
   return 1001;
  }
 
- // TODO: чтение xml c набором тестов
+ RDK::USerStorageXML testsXML;
+ if(!testsXML.LoadFromFile(file_name, "UTestCases"))
+ {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (file_name + " UTestManager::LoadTest: can't find <UTestCases> in Xml file").c_str());
+   return 1002;
+ }
 
- // Внимание костыль - UtTestManager ест только 1 UTest
- UTest singleTest(Application);
- int loadRet = singleTest.LoadTest(file_name);
+ int loadRet = 0;
+ size_t testsCount = static_cast<size_t>(testsXML.GetNumNodes("UTest"));
+ for(size_t i = 0; i < testsCount; ++i)
+ {
+   if(!testsXML.SelectNode("UTest", i))
+     continue;
 
+   tests.push_back(UTest(Application));
+   loadRet += tests[i].LoadTest(testsXML.GetNodeText());
+   testsXML.SelectUp();
+ }
  if(loadRet)
   return 1002;
-
- tests.push_back(singleTest);
 
  /*std::vector<std::string> test_file_names;
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);
