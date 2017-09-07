@@ -186,34 +186,16 @@ int UTest::ProcessTest()
     MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
 
     Application->OpenProject(testProjectFileName);
-    std::vector<string> strs;
+    /*std::vector<string> strs;
     boost::split(strs, testsFileName, boost::is_any_of("/"));
     strs.pop_back();
-    strs.push_back("EventsLog");
+    strs.push_back("TestLog");
 
-    std::string oldLogDir = Application->GetLogDir();
+//    std::string oldLogDir = Application->GetLogDir();
 
-    std::string testLogPath = boost::join(strs, "/") + "/";
+    Application->SetLogDir(boost::join(strs, "/") + "/");
 
-    Application->SetLogDir(testLogPath);
-
-    std::string newLogDir = Application->GetLogDir();
-
-    /*std::string appPath = Application->GetApplicationFileName();
-    boost::split(strs, appPath, boost::is_any_of("/"));
-    strs.pop_back();
-    std::string testLogPath = boost::join(strs, "/");
-
-    strs.clear();
-    boost::split(strs, testsFileName, boost::is_any_of("/"));
-    strs.pop_back();
-    strs.push_back("log");
-
-    testLogPath += "/" + boost::join(strs, "/");
-    Application->SetLogDir(testLogPath);
-
-    std::string oldLogDir = Application->GetLogDir();
-    testLogPath += oldLogDir;*/
+//    std::string newLogDir = Application->GetLogDir();*/
 
     if(stepsMode)
     {
@@ -452,7 +434,7 @@ int UTestManager::LoadTests(const std::string &file_name)
    testsXML.SelectUp();
  }
  if(loadRet)
-  return 1002;
+  return 1003;
 
  /*std::vector<std::string> test_file_names;
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);
