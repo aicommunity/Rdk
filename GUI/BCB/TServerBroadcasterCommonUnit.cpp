@@ -24,7 +24,7 @@ __fastcall TResultBroadcasterThread::TResultBroadcasterThread(bool CreateSuspend
  SendEnableFlag=false;
  Priority=(TThreadPriority)RDK_DEFAULT_THREAD_PRIORITY;
  SendEnable=CreateEvent(0,TRUE,0,0);
- MetaUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ MetaUnlockEvent=CreateMutex(0,FALSE,0);
  SendNotInProgressEvent=CreateEvent(0,TRUE,TRUE,0);
 }
 
@@ -45,9 +45,8 @@ __fastcall TResultBroadcasterThread::~TResultBroadcasterThread(void)
 // --------------------------
 bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
 {
- if(WaitForSingleObject(MetaUnlockEvent,30) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(MetaUnlockEvent,30) != WAIT_OBJECT_0)
   return false;
- ResetEvent(MetaUnlockEvent);
 
  SendString.clear();
 
@@ -74,7 +73,7 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
  SendString+="</Meta>";
  MetaList.clear();
 
- SetEvent(MetaUnlockEvent);
+ ReleaseMutex(MetaUnlockEvent);
  return true;
 }
 
@@ -113,14 +112,12 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   {
    continue;
   }
-  ResetEvent(MetaUnlockEvent);  //TODO
   ResetEvent(SendNotInProgressEvent); //TODO
   if(!MetaList.empty())
   {
-   SetEvent(MetaUnlockEvent);
+   ReleaseMutex(MetaUnlockEvent);
    if(!GenerateSendString())
    {
-//	SetEvent(MetaUnlockEvent);
 	Sleep(30);
    }
    else
@@ -129,21 +126,18 @@ void __fastcall TResultBroadcasterThread::Execute(void)
 	{
 	 Send();
 	 Sleep(5);
-//	 SetEvent(MetaUnlockEvent);
 	}
 	else
 	{
-//	 SetEvent(MetaUnlockEvent);
 	 Sleep(30);
 	}
    }
   }
   else
   {
-   SetEvent(MetaUnlockEvent);
+   ReleaseMutex(MetaUnlockEvent);
    Sleep(30);
   }
-//  SetEvent(MetaUnlockEvent);
   SetEvent(SendNotInProgressEvent);
  }
 }
@@ -182,13 +176,12 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, dou
  MEngine_FreeBufString(channel_index,xml_data);
 
 
- if(WaitForSingleObject(MetaUnlockEvent,30) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(MetaUnlockEvent,30) != WAIT_OBJECT_0)
   return false;
- ResetEvent(MetaUnlockEvent);
 
  MetaList.push_back(meta);
 
- SetEvent(MetaUnlockEvent);
+ ReleaseMutex(MetaUnlockEvent);
  return true;
 }
 

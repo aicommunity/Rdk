@@ -86,3 +86,4 @@ ipch
 CMakeFiles
 CMakeCache.txt
 Makefile
+Doxygen
