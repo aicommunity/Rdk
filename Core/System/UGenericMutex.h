@@ -7,6 +7,8 @@
 #include <map>
 #include <string>
 
+#define RDK_MUTEX_TIMEOUT 0xFFFFFFFF
+
 #ifdef RDK_MUTEX_DEADLOCK_DEBUG
 struct RDK_LIB_TYPE TUThreadInfo
 {
@@ -32,10 +34,10 @@ public:
 UGenericMutex();
 virtual ~UGenericMutex();
 
-virtual bool shared_lock(void)=0;
+virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT)=0;
 virtual bool shared_unlock(void)=0;
 
-virtual bool exclusive_lock(void)=0;
+virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT)=0;
 virtual bool exclusive_unlock(void)=0;
 };
 

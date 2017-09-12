@@ -213,6 +213,8 @@ UGenericMutex* GetEngineMutex(int index);
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(void);
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(int channel_index);
+RDK::UELockPtr<RDK::UEngine> GetEngineLockTimeout(unsigned timeout);
+RDK::UELockPtr<RDK::UEngine> GetEngineLockTimeout(int channel_index, unsigned timeout);
 
 // Возвращает ссылку на указатель среды выполнения
 RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(void);
@@ -225,6 +227,20 @@ RDK::UELockPtr<RDK::UStorage> GetStorageLock(int channel_index);
 // Возвращает указатель на текущую модель
 RDK::UELockPtr<RDK::UContainer> GetModelLock(void);
 RDK::UELockPtr<RDK::UContainer> GetModelLock(int channel_index);
+RDK::UELockPtr<RDK::UContainer> GetModelLockTimeout(unsigned timeout);
+RDK::UELockPtr<RDK::UContainer> GetModelLockTimeout(int channel_index, unsigned timeout);
+
+template<class T>
+RDK::UELockPtr<T> GetEngineLock(int channel_index);
+
+template<class T>
+RDK::UELockPtr<T> GetEngineLockTimeout(int channel_index, unsigned timeout);
+
+template<class T>
+RDK::UELockPtr<T> GetModelLock(int channel_index);
+
+template<class T>
+RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout);
 // --------------------------
 
 // --------------------------
@@ -251,10 +267,48 @@ protected:
 /// Меняет текущий выбраный канал
 bool SetSelectedChannelIndex(int channel_index);
 // --------------------------
-
-
-
 };
+
+template<class T>
+RDK::UELockPtr<T> URdkCoreManager::GetEngineLock(int channel_index)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<T>(0,GetEngine(channel_index));
+#else
+ return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetEngine(channel_index)));
+#endif
+}
+
+template<class T>
+RDK::UELockPtr<T> URdkCoreManager::GetEngineLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<T>(0,GetEngine(channel_index));
+#else
+ return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetEngine(channel_index)), timeout);
+#endif
+}
+
+template<class T>
+RDK::UELockPtr<T> URdkCoreManager::GetModelLock(int channel_index)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<T>(0,GetModel(channel_index));
+#else
+ return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)));
+#endif
+}
+
+template<class T>
+RDK::UELockPtr<T> URdkCoreManager::GetModelLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<T>(0,GetModel(channel_index));
+#else
+ return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)), timeout);
+#endif
+}
+
 
 //extern RDK::UEPtr<RDK::UEngine> PEngine;
 //extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;

@@ -937,6 +937,25 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(int channel_index)
 #endif
 }
 
+RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UEngine>(0,GetEngine());
+#else
+// UGenericMutexSharedLocker lock(GlobalMutex);
+ return RDK::UELockPtr<RDK::UEngine>(MutexList[SelectedChannelIndex],GetEngine(),timeout);
+#endif
+}
+
+RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UEngine>(0,GetEngine(channel_index));
+#else
+ return RDK::UELockPtr<RDK::UEngine>(MutexList[channel_index],GetEngine(channel_index),timeout);
+#endif
+}
+
 // ¬озвращает ссылку на указатель среды выполнени€
 RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(void)
 {
@@ -994,6 +1013,24 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(int channel_index)
  return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
 #else
  return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index));
+#endif
+}
+
+RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UContainer>(0,GetModel(SelectedChannelIndex));
+#else
+ return RDK::UELockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel(),timeout);
+#endif
+}
+
+RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
+#else
+ return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
 #endif
 }
 // --------------------------

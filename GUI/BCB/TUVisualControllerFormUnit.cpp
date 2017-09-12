@@ -231,15 +231,13 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
    Caption=PureFormCaption.c_str();
  }
 
- if(!Core_IsChannelInit())
+ if(!Core_IsChannelInit()) // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
 
- if(CheckModelFlag && !Model_Check())
+ if(CheckModelFlag && !RDK::GetModel()) // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
   UpdateInterfaceFlag=true;

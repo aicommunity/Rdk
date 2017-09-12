@@ -49,8 +49,8 @@ void TUImagesFrame::SetCellRes(int width, int height)
 void TUImagesFrame::SetNumCells(int width, int height)
 {
  if(DrawGrid->ColCount == width && DrawGrid->RowCount == height &&
-	NumCols==width && NumRows==height && ComponentIndexes.size() == width &&
-    (ComponentIndexes.size()>0 && ComponentIndexes[0].size() == height))
+	NumCols==width && NumRows==height && int(ComponentIndexes.size()) == width &&
+    (ComponentIndexes.size()>0 && int(ComponentIndexes[0].size()) == height))
   return;
  DrawGrid->ColCount=NumCols=width;
  DrawGrid->RowCount=NumRows=height;
@@ -452,9 +452,10 @@ void TUImagesFrame::AUpdateInterface(void)
 	 if(eng_index<0 || IndChannelsCheckBox->Checked == false)
 	  eng_index=Core_GetSelectedChannelIndex();
 
-	 RDK::UELockPtr<RDK::UEngine> engine=GetEngineLock(eng_index);
+	 RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLockTimeout(eng_index,5);
 	 if(!engine)
 	  continue;
+
 	 const RDK::UBitmap* temp_bmp(0);
 
 	 if(ComponentIndexes[i][j].empty())

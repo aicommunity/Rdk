@@ -117,11 +117,11 @@ void TUDrawEngineFrame::AUpdateInterface(void)
  Image->Width=new_img_width;
  Image->Height=new_img_height;
  Graph.SetCanvas(&GraphCanvas);
- DrawEngine.SetFonts(GetCoreLock()->GetFonts());
+ DrawEngine.SetFonts(RDK::GetCoreLock()->GetFonts());
 
  FontTypeComboBox->Clear();
  std::vector<std::string> buffer;
- GetCoreLock()->GetFonts().GetFontNames(buffer);
+ RDK::GetCoreLock()->GetFonts().GetFontNames(buffer);
  for(size_t i=0;i<buffer.size();i++)
  {
   FontTypeComboBox->Items->Add(buffer[i].c_str());
@@ -131,7 +131,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
 
  FontSizeComboBox->Clear();
  std::vector<int> size_buffer;
- GetCoreLock()->GetFonts().GetFontSizes(FontType, size_buffer);
+ RDK::GetCoreLock()->GetFonts().GetFontSizes(FontType, size_buffer);
  for(size_t i=0;i<size_buffer.size();i++)
  {
   FontSizeComboBox->Items->Add(IntToStr(size_buffer[i]));
@@ -198,7 +198,7 @@ void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
  DrawEngine.SetRectWidth(xml.ReadInteger("RectWidth",100));
  DrawEngine.SetRectHeight(xml.ReadInteger("RectHeight",25));
 
- RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
+ RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
  if(font)
   Font=*font;
  GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
@@ -280,7 +280,7 @@ void TUDrawEngineFrame::ApplyFont(void)
  {
  }
 
- RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
+ RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
  if(font)
   Font=*font;
 

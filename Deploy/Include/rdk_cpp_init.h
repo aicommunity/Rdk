@@ -6,7 +6,7 @@
 #include "rdk_rpc.h"
 #include "rdk_engine_support.h"
 
-extern "C++"  {
+namespace RDK {
 
 // --------------------------
 // Методы доступа к ядру без блокировки
@@ -44,6 +44,8 @@ RDK_LIB_TYPE RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void);
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(unsigned timeout);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(int channel_index, unsigned timeout);
 
 // Возвращает ссылку на указатель среды выполнения
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void);
@@ -56,6 +58,8 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_i
 // Возвращает указатель на текущую модель
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(unsigned timeout);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int channel_index, unsigned timeout);
 // --------------------------
 
 // --------------------------
@@ -65,9 +69,6 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_i
 /// (не потокобезопасно!)
 RDK::UBitmapFontCollection& GetFonts(void);
 // --------------------------
-}
-
-namespace RDK {
 
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
 /// иначе возвращает RDK_EXCEPTION_CATCHED
@@ -82,35 +83,47 @@ RDK_LIB_TYPE void RDK_CALL AssertDebugger(int result, const char* function, cons
 /// Также записывает его в отладочную консоль если включен отладочный режим
 RDK_LIB_TYPE void RDK_CALL AssertLog(int result, const char* function, const char* file, int line);
 
+template<class T>
+RDK::UELockPtr<T> GetEngineLock(int channel_index)
+{
+ return RdkCoreManager.GetEngineLock<T>(channel_index);
+}
+
+template<class T>
+RDK::UELockPtr<T> GetEngineLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetEngineLockTimeout<T>(channel_index,timeout);
+}
+
 // Возвращает указатель на текущую модель
 template<class T>
 RDK::UELockPtr<T> GetModelLock(void)
 {
- RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel());
-// if(!p)
-//  return RDK::UELockPtr<T>();
- return RDK::UELockPtr<T>((UGenericMutex*)Engine_GetMutex(),p);
+ return RdkCoreManager.GetModelLock<T>();
 }
 
 template<class T>
 RDK::UELockPtr<T> GetModelLock(int channel_index)
 {
- RDK::UEPtr<T> p=dynamic_pointer_cast<T>(::GetModel(channel_index));
-// if(!p)
-//  return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(channel_index),);
- return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(channel_index),p);
+ return RdkCoreManager.GetModelLock<T>(channel_index);
+}
+
+template<class T>
+RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetModelLockTimeout<T>(channel_index,timeout);
 }
 
 template<class T>
 RDK::UEPtr<T> GetModel(void)
 {
- return dynamic_pointer_cast<T>(::GetModel());
+ return dynamic_pointer_cast<T>(GetModel());
 }
 
 template<class T>
 RDK::UEPtr<T> GetModel(int channel_index)
 {
- return dynamic_pointer_cast<T>(::GetModel(channel_index));
+ return dynamic_pointer_cast<T>(GetModel(channel_index));
 }
 
 // Исключения

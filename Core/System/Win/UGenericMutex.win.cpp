@@ -19,10 +19,10 @@ public:
 UGenericMutexWin();
 virtual ~UGenericMutexWin();
 
-virtual bool shared_lock(void);
+virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
 virtual bool shared_unlock(void);
 
-virtual bool exclusive_lock(void);
+virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
 virtual bool exclusive_unlock(void);
 
 private:
@@ -63,7 +63,7 @@ UGenericMutexWin::~UGenericMutexWin()
 //  throw 1; // TODO: !!!
 }
 
-bool UGenericMutexWin::shared_lock(void)
+bool UGenericMutexWin::shared_lock(unsigned timeout)
 {
 using namespace std;
  if(!m_UnlockEvent)
@@ -72,7 +72,7 @@ using namespace std;
 #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  DWORD res=WaitForSingleObject(m_UnlockEvent, 60000);
 #else
- DWORD res=WaitForSingleObject(m_UnlockEvent, INFINITE);
+ DWORD res=WaitForSingleObject(m_UnlockEvent, (timeout==RDK_MUTEX_TIMEOUT)?INFINITE:timeout);
 #endif
  if (res == WAIT_OBJECT_0)
  {
@@ -177,12 +177,12 @@ using namespace std;
  return true;
 }
 
-bool UGenericMutexWin::exclusive_lock(void)
+bool UGenericMutexWin::exclusive_lock(unsigned timeout)
 {
- return shared_lock();
+ return shared_lock(timeout);
 }
 
-bool UGenericMutexWin::exclusive_unlock(void)
+bool UGenericMutexWin::exclusive_unlock()
 {
  return shared_unlock();
 }

@@ -16,10 +16,10 @@ public:
  UGenericMutexGcc();
  virtual ~UGenericMutexGcc();
 
- virtual bool shared_lock(void);
+ virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
  virtual bool shared_unlock(void);
 
- virtual bool exclusive_lock(void);
+ virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
  virtual bool exclusive_unlock(void);
 };
 
@@ -74,9 +74,9 @@ UGenericMutexGcc::~UGenericMutexGcc()
 // }
 }
 
-bool UGenericMutexGcc::shared_lock(void)
+bool UGenericMutexGcc::shared_lock(unsigned timeout)
 {
- return exclusive_lock();
+ return exclusive_lock(timeout);
 }
 
 bool UGenericMutexGcc::shared_unlock(void)
@@ -84,13 +84,23 @@ bool UGenericMutexGcc::shared_unlock(void)
  return exclusive_unlock();
 }
 
-bool UGenericMutexGcc::exclusive_lock(void)
+bool UGenericMutexGcc::exclusive_lock(unsigned timeout)
 {
- int res = pthread_mutex_lock(&mutex);
- if (res == 0)
+ int res(1);
+
+ if(timeout == RDK_MUTEX_TIMEOUT)
+  res = pthread_mutex_lock(&mutex);
+ else
  {
-  return true;
+  struct timespec abs_time;
+  clock_gettime(CLOCK_REALTIME , &abs_time);
+  abs_time.tv_sec += timeout/1000;
+  abs_time.tv_nsec += (timeout % 1000)*1000;
+  res=pthread_mutex_timedlock (&MainMutex, &abs_time);
  }
+
+ if (res == 0)
+  return true;
  else
  {
 //  switch (res)

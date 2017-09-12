@@ -192,13 +192,11 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
    {
-//	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
 	return;
    }
 
    if(GetCalculationStepUpdatedFlag() == true)
    {
-//	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
 	return;
    }
    else
@@ -208,15 +206,13 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
   }
  }
 
- if(!Core_IsChannelInit())
+ if(!Core_IsChannelInit()) // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
 
- if(CheckModelFlag && !Model_Check())
+ if(CheckModelFlag && !RDK::GetModel())  // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
   UpdateInterfaceFlag=true;

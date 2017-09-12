@@ -26,6 +26,8 @@ public:
 explicit UELockPtr(UGenericMutex* mutex);
 UELockPtr(UGenericMutex* mutex, T* pdata);
 UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
+UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout);
+UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned timeout);
 UELockPtr(const UELockPtr<T> &p);
 //UELockPtr(UELockPtr<T> const &p);
 virtual ~UELockPtr(void);
@@ -83,14 +85,16 @@ template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex)
  : Mutex(mutex)
 {
- Mutex->exclusive_lock();
+ if(Mutex)
+  Mutex->exclusive_lock();
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata)
  : UEPtr<T>(pdata), Mutex(mutex)
 {
- Mutex->exclusive_lock();
+ if(Mutex)
+  Mutex->exclusive_lock();
 }
 
 template<typename T>
@@ -99,6 +103,28 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
 {
  if(Mutex)
   Mutex->exclusive_lock();
+}
+
+template<typename T>
+UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout)
+ : UEPtr<T>(pdata.Get()), Mutex(mutex)
+{
+ if(Mutex)
+ {
+  if(!Mutex->exclusive_lock(timeout))
+   PData=0;
+ }
+}
+
+template<typename T>
+UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned timeout)
+ : UEPtr<T>(pdata.Get()), Mutex(mutex)
+{
+ if(Mutex)
+ {
+  if(!Mutex->exclusive_lock(timeout))
+   PData=0;
+ }
 }
 
 template<typename T>

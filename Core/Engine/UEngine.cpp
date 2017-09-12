@@ -2910,12 +2910,7 @@ bool UEngine::Model_Check(void)
  {
   try
   {
-   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
-
-   if(!model)
-	return false;
-
-   return true;
+   return (Environment->GetModel())?true:false;
   }
   catch (RDK::UException &exception)
   {
