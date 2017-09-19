@@ -275,7 +275,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetEngineLock(int channel_index)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<T>(0,GetEngine(channel_index));
 #else
- return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetEngine(channel_index)));
+ return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetEngine(channel_index))):RDK::UELockPtr<T>(0,0);
 #endif
 }
 
@@ -285,7 +285,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetEngineLockTimeout(int channel_index, unsig
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<T>(0,GetEngine(channel_index));
 #else
- return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetEngine(channel_index)), timeout);
+ return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetEngine(channel_index)), timeout):RDK::UELockPtr<T>(0,0);
 #endif
 }
 
@@ -295,7 +295,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetModelLock(int channel_index)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<T>(0,GetModel(channel_index));
 #else
- return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)));
+ return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index))):RDK::UELockPtr<T>(0,0);
 #endif
 }
 
@@ -305,7 +305,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetModelLockTimeout(int channel_index, unsign
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<T>(0,GetModel(channel_index));
 #else
- return RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)), timeout);
+ return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)), timeout):RDK::UELockPtr<T>(0,0);
 #endif
 }
 
