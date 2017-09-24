@@ -39,10 +39,14 @@ using namespace std;
 #pragma warning( disable : 4700)
 #endif
 
-// Класс - база для свойств
+/// Класс - база для свойств с сериализацией
 template<typename T>
 class UPropertyBase: virtual public UIPropertyInputBase, virtual public UIPropertyOutputBase
 {
+public:
+/// Тип метода, обеспечивающего прямой доступ к данным свойства
+typedef const T& (UPropertyBase<T>::*PGetDataValue)(void) const;
+typedef bool (UPropertyBase<T>::*PSetDataValue)(const T &value);
 protected: // Данные
 // Имя свойства
 std::string Name;
@@ -62,13 +66,17 @@ bool DynamicPropertyFlag;
 
 mutable int CurrentInputIndex;
 
+/// Указатель на метод, обеспечивающий прямой доступ к данным свойства
+PGetDataValue GetDataValuePtr;
+PSetDataValue SetDataValuePtr;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
 UPropertyBase(const std::string &name, bool dynamic_prop_flag=false)
- : Name(name), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag), CurrentInputIndex(0)
+ : GetDataValuePtr(0), SetDataValuePtr(0), Name(name), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag), CurrentInputIndex(0)
 {
 }
 
@@ -79,41 +87,65 @@ virtual ~UPropertyBase(void)
 }
 // -----------------------------
 
-// -----------------------------
-// Методы сериализации
-// -----------------------------
 protected:
+virtual bool AFinalizeConnectToOutput(UIPropertyOutput *output_property)
+{
+ GetDataValuePtr=static_cast<PGetDataValue>(&UPropertyBase<T>::GetDataValueInput);
+ SetDataValuePtr=static_cast<PSetDataValue>(&UPropertyBase<T>::SetDataValueInput);
+ return true;
+}
+
+virtual bool AFinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index)
+{
+ if(!IsConnected())
+ {
+  GetDataValuePtr=static_cast<PGetDataValue>(&UPropertyBase<T>::GetDataValueLocal);
+  SetDataValuePtr=static_cast<PSetDataValue>(&UPropertyBase<T>::SetDataValueLocal);
+ }
+ return true;
+}
+
 // Возвращает ссылку на данные
 virtual const T& GetData(void) const
 {
- if(IsConnected())
- {
-  return dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex))->GetData();
- }
- else
- {
-  return GetDataLocal();
- }
+ return (this->*GetDataValuePtr)();
 }
 
 // Модифицирует данные
-virtual void SetData(const T& data)
+virtual bool SetData(const T& data)
 {
- if(IsConnected())
- {
-  dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex))->SetData(data);
- }
- else
- {
-  SetDataLocal(data);
- }
+ return (this->*SetDataValuePtr)(data);
 }
 
 // Возвращает ссылку на данные
-virtual const T& GetDataLocal(void) const=0;
+virtual const T& GetDataValueLocal(void) const=0;
 
 // Модифицирует данные
-virtual void SetDataLocal(const T& data)=0;
+virtual bool SetDataValueLocal(const T& data)=0;
+
+// Возвращает ссылку на данные
+virtual const T& GetDataValueInput(void) const
+{
+ return dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex))->GetData();
+}
+
+// Модифицирует данные
+virtual bool SetDataValueInput(const T& data)
+{
+ return dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex))->SetData(data);
+}
+
+/// Обновляет время изменения данных свойства
+void RenewUpdateTime(void)
+{
+ UpdateTime=GetCurrentStartupTime();
+}
+
+/// Сбрасывает время обновления до нуля
+void ResetUpdateTime(void)
+{
+ UpdateTime=0;
+}
 
 public:
 // Возвращает языковой тип хранимого свойства
@@ -127,77 +159,6 @@ virtual bool CompareLanguageType(const UIProperty &dt) const
 {
  return GetLanguageType() == dt.GetLanguageType();
 }
-
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
-{
- UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->Create(GetName());
-   operator << (*xml,GetData());
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   xml->AddNode(GetName());
-   operator << (*xml,GetData());
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
-};
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
-{
- T temp;
-
- UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->SelectRoot();
-   if(xml->GetNodeName() != GetName())
-	return false;
-   operator >> (*xml,temp);
-   try
-   {
-	SetData(temp);
-	xml->SelectUp();
-   }
-   catch(...)
-   {
-	xml->SelectUp();
-   }
-   return true;
-  }
-  else
-  {
-   if(!xml->SelectNode(GetName()))
-	return false;
-   operator >> (*xml,temp);
-   try
-   {
-	SetData(temp);
-	xml->SelectUp();
-   }
-   catch(...)
-   {
-	xml->SelectUp();
-   }
-   return true;
-  }
- }
-
- return false;
-};
 
 // Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void) const
@@ -217,11 +178,7 @@ bool ReadFromMemory(const void *buffer)
  SetData(*temp);
  return true;
 }
-// -----------------------------
 
-// --------------------------
-// Методы управления данными
-// --------------------------
 virtual ULongTime GetUpdateTime(void) const
 {
 // UGenericLocker locker(Mutex);
@@ -233,12 +190,7 @@ virtual void SetUpdateTime(ULongTime value)
 // UGenericLocker locker(Mutex);
  UpdateTime=value;
 }
-// --------------------------
 
-
-// -----------------------------
-// Методы сериализации
-// -----------------------------
 // Метод устанавливает значение указателя на итератор-хранилище данных об этом
 // свойстве в родительском компоненте
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
@@ -263,35 +215,12 @@ virtual const std::string& GetName(void) const
 {
  return Name;
 };
-// -----------------------------
-
-protected:
-// --------------------------
-// Скрытые методы управления данными
-// --------------------------
-/// Обновляет время изменения данных свойства
-void RenewUpdateTime(void)
-{
- UpdateTime=GetCurrentStartupTime();
-}
-
-/// Сбрасывает время обновления до нуля
-void ResetUpdateTime(void)
-{
- UpdateTime=0;
-}
-// --------------------------
 };
 
-// Класс - виртуальное свойство
-// Не содержит данного внутри себя
+// Класс - базовое свойство с владельцем
 template<typename T,class OwnerT>
-class UPropertyVirtual: public UPropertyBase<T>
+class UPropertyBaseOwner: public UPropertyBase<T>
 {
-protected: // Типы методов ввода-вывода
-typedef const T& (OwnerT::*GetterRT)(void) const;
-typedef bool (OwnerT::*SetterRT)(const T&);
-
 protected:
 // Владелец свойства
 OwnerT* Owner;
@@ -299,61 +228,44 @@ OwnerT* Owner;
 /// Тип свойства
 unsigned int Type;
 
-/// Флаг проверки значения свойства на равенство присваевому значению
-bool CheckEqualsFlag;
-
 protected: // Данные
-// Методы ввода-вывода
-GetterRT GetterR;
-SetterRT SetterR;
 
-T* RawDataPtr;
-
+//T* RawDataPtr;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
-  Owner(owner), Type(type), CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), RawDataPtr(0), UPropertyBase<T>(name, dynamic_prop_flag)
+UPropertyBaseOwner(const std::string &name, OwnerT * const owner, unsigned int type, bool dynamic_prop_flag=false) :
+  Owner(owner), Type(type), /*RawDataPtr(0),*/ UPropertyBase<T>(name, dynamic_prop_flag)
 {
-    if(Owner)
-    {
-     reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this);
-    }
+	if(Owner)
+	{
+	 reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this);
+	}
 }
-
-UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, T * const pdata, bool dynamic_prop_flag=false) :
-  Owner(owner), Type(type), CheckEqualsFlag(true), GetterR(0), SetterR(0), RawDataPtr(pdata), UPropertyBase<T>(name,dynamic_prop_flag)
+			/*
+UPropertyBaseOwner(const std::string &name, OwnerT * const owner, unsigned int type, T * const pdata, bool dynamic_prop_flag=false) :
+  Owner(owner), Type(type), RawDataPtr(pdata), UPropertyBase<T>(name,dynamic_prop_flag)
 {
     if(Owner)
     {
-     reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this);
+	 reinterpret_cast<UComponent* const>(Owner)->AddLookupProperty(this);
     }
-}
+}                   */
 
-virtual ~UPropertyVirtual(void)
+virtual ~UPropertyBaseOwner(void)
 {
     if(Owner)
     {
-     reinterpret_cast<UComponent* const>(Owner)->DelLookupProperty(this->Name,true);
-    }
+	 reinterpret_cast<UComponent* const>(Owner)->DelLookupProperty(this->Name,true);
+	}
 }
 // -----------------------------
 
 // -----------------------------
 // Метод управления параметрами
 // -----------------------------
-/// Флаг проверки значения свойства на равенство присваевому значению
-bool IsCheckEquals(void) const
-{
- return CheckEqualsFlag;
-}
-
-void SetCheckEquals(bool value)
-{
- CheckEqualsFlag=value;
-}
 // Метод возвращает строковое имя компонента-владельца свойства
 virtual std::string GetOwnerName(void) const
 {
@@ -426,8 +338,132 @@ bool CheckMask(unsigned int mask) const
 {
  return (GetPropertyType() & mask) && (GetPropertyGroup() & mask);
 }
+// -----------------------------
+};
+
+// Класс - виртуальное свойство
+// Не содержит данного внутри себя
+template<typename T,class OwnerT>
+class UPropertyVirtual: public UPropertyBaseOwner<T,OwnerT>
+{
+protected: // Типы методов ввода-вывода
+typedef const T& (OwnerT::*GetterRT)(void) const;
+typedef bool (OwnerT::*SetterRT)(const T&);
+
+protected:
+
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool CheckEqualsFlag;
+
+protected: // Данные
+// Методы ввода-вывода
+GetterRT GetterR;
+SetterRT SetterR;
 
 
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
+  CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), UPropertyBaseOwner<T,OwnerT>(name, owner, dynamic_prop_flag)
+{
+}
+						   /*
+UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, T * const pdata, bool dynamic_prop_flag=false) :
+  CheckEqualsFlag(true), GetterR(0), SetterR(0), UPropertyBaseOwner<T,OwnerT>(name,owner,dynamic_prop_flag)
+{
+}
+                                      */
+virtual ~UPropertyVirtual(void)
+{
+}
+// -----------------------------
+
+// -----------------------------
+// Метод управления параметрами
+// -----------------------------
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
+ if(xml)
+ {
+  if(simplemode)
+  {
+   xml->Create(GetName());
+   operator << (*xml,GetData());
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   xml->AddNode(GetName());
+   operator << (*xml,GetData());
+   xml->SelectUp();
+   return true;
+  }
+ }
+
+ return false;
+};
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ T temp;
+
+ UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
+ if(xml)
+ {
+  if(simplemode)
+  {
+   xml->SelectRoot();
+   if(xml->GetNodeName() != GetName())
+	return false;
+   operator >> (*xml,temp);
+   try
+   {
+	SetData(temp);
+	xml->SelectUp();
+   }
+   catch(...)
+   {
+	xml->SelectUp();
+   }
+   return true;
+  }
+  else
+  {
+   if(!xml->SelectNode(GetName()))
+	return false;
+   operator >> (*xml,temp);
+   try
+   {
+	SetData(temp);
+	xml->SelectUp();
+   }
+   catch(...)
+   {
+	xml->SelectUp();
+   }
+   return true;
+  }
+ }
+
+ return false;
+};
+
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool IsCheckEquals(void) const
+{
+ return CheckEqualsFlag;
+}
+
+void SetCheckEquals(bool value)
+{
+ CheckEqualsFlag=value;
+}
 // -----------------------------
 
 // -----------------------------
@@ -435,23 +471,25 @@ bool CheckMask(unsigned int mask) const
 // -----------------------------
 protected:
 // Возврат значения
-virtual const T& GetDataLocal(void) const
+virtual const T& GetDataValueLocal(void) const
 {
+ return (this->Owner->*GetterR)();
+ /*
  if(this->Owner && GetterR)
  {
   if(GetterR)
    return (this->Owner->*GetterR)();
  }
- else
- if(RawDataPtr)
-  return *RawDataPtr;
 
  throw UIProperty::EPropertyZeroPtr(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
+ */
 };
 
 // Установка значения
-virtual void SetDataLocal(const T &value)
+virtual bool SetDataValueLocal(const T &value)
 {
+ return (this->Owner->*SetterR)(value);
+					   /*
  if(RawDataPtr)
  {
   if(CheckEqualsFlag && *RawDataPtr == value)
@@ -478,35 +516,57 @@ virtual void SetDataLocal(const T &value)
 
    this->RenewUpdateTime();
   }
- }
+ }             */
 };
+
+// Модифицирует данные
+virtual bool SetData(const T& data)
+{
+ if(CheckEqualsFlag && GetData() == data)
+  return true;
+
+ if(!(this->*SetDataValuePtr)(data))
+  throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
+
+ this->RenewUpdateTime();
+ return true;
+}
 // -----------------------------
 
 // -----------------------------
 // Методы управления
 // -----------------------------
 public:
-operator T (void) const
+const T& v(void) const
 {
  return this->GetData();
 };
 
+void v(const T &value)
+{
+ SetData(value);
+};
+/*
 const T& operator () (void) const
 {
  return this->GetData();
 };
 
+T& operator () (void)
+{
+ return const_cast<T&>(this->GetData());
+};*/
+/// deprecated
 const T* operator -> (void) const
 { return &this->GetData(); };
 
-/*T& operator * (void)
-{ return const_cast<T&>(this->GetData()); };
-  */
+/// deprecated
 const T& operator * (void) const
 { return this->GetData(); };
-
+  /*
 const T& operator [] (int index) const
 { return this->GetData(index); };
+	*/
 
 // Оператор присваивания
 UPropertyVirtual<T,OwnerT>& operator = (const T &value)
@@ -523,6 +583,31 @@ UPropertyVirtual<T,OwnerT>& operator = (const UPropertyVirtual<T,OwnerT> &v)
 // -----------------------------
 };
 
+
+template<typename T,class OwnerT>
+bool operator != (const UPropertyVirtual<T,OwnerT> &prop, const T &v)
+{ return prop.v() != v; };
+
+template<typename T,class OwnerT>
+bool operator != (const T &v, const UPropertyVirtual<T,OwnerT> &prop)
+{ return prop.v() != v; };
+
+template<typename T,class OwnerT>
+bool operator == (const UPropertyVirtual<T,OwnerT> &prop, const T &v)
+{ return prop.v() == v; };
+
+template<typename T,class OwnerT>
+bool operator == (const T &v, const UPropertyVirtual<T,OwnerT> &prop)
+{ return prop.v() == v; };
+
+template<typename T,class OwnerT>
+bool operator < (const UPropertyVirtual<T,OwnerT> &prop, const T &v)
+{ return prop.v() < v; };
+
+template<typename T,class OwnerT>
+bool operator < (const T &v, const UPropertyVirtual<T,OwnerT> &prop)
+{ return prop.v() < v; };
+
 /* ************************************************************************* */
 // Класс - свойство со значением внутри
 /* ************************************************************************* */
@@ -532,14 +617,14 @@ class UPropertyLocal: public UPropertyVirtual<T,OwnerT>
 protected:
 //protected:
 // Данные
-mutable T v;
+mutable T Value;
 
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyLocal(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
- : UPropertyVirtual<T,OwnerT>(name,owner, type, setmethod, 0, dynamic_prop_flag), v() { };
+ : UPropertyVirtual<T,OwnerT>(name,owner, type, setmethod, 0, dynamic_prop_flag), Value() { };
 // -----------------------------
 
 // -----------------------------
@@ -547,9 +632,9 @@ UPropertyLocal(const std::string &name, OwnerT * const owner, typename UProperty
 // -----------------------------
 protected:
 // Возврат значения
-virtual const T& GetDataLocal(void) const
+virtual const T& GetDataValueLocal(void) const
 {
- return v;
+ return Value;
 };
 	 /*
 virtual T& GetData(void)
@@ -558,22 +643,31 @@ virtual T& GetData(void)
 };            */
 
 
-virtual void SetDataLocal(const T &value)
+virtual bool SetDataValueLocal(const T &value)
 {
- if(this->CheckEqualsFlag && v == value)
-  return;
-
- if(this->Owner)
- {
-  if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
- }
-
- v=value;
- this->RenewUpdateTime();
+ Value=value;
+ return true;
 };
 
+// Модифицирует данные
+virtual bool SetData(const T& data)
+{
+ if(this->CheckEqualsFlag && Value == data)
+  return true;
+
+ if(!(this->Owner->*SetterR)(data))
+  throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
+ (this->*SetDataValuePtr)(data);
+ this->RenewUpdateTime();
+ return true;
+}
+
 public:
+T& v(void)
+{
+ return this->Value;
+};
+
 const T& operator [] (int index) const
 { return this->GetData()[index]; };
 				 /*
@@ -633,13 +727,13 @@ protected: // Данные
 // Методы ввода-вывода
 VSetterRT VSetterR;
 
-RangeT v;
+RangeT Value;
 
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod, bool dynamic_prop_flag=false)
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
  : UPropertyVirtual<T,OwnerT>(name, owner, type, setmethod, 0, dynamic_prop_flag), VSetterR(0)
 {
  this->SetNumConnectionsLimit(-1);
@@ -660,7 +754,7 @@ protected:
 // Возврат значения
 virtual const T& GetDataLocal(void) const
 {
- return v[this->CurrentInputIndex];
+ return Value[this->CurrentInputIndex];
 };
 /*
 virtual T& GetData(void)
@@ -670,7 +764,7 @@ virtual T& GetData(void)
 
 virtual void SetDataLocal(const T &value)
 {
- if(this->CheckEqualsFlag && v[this->CurrentInputIndex] == value)
+ if(this->CheckEqualsFlag && Value[this->CurrentInputIndex] == value)
   return;
 
  if(this->Owner)
@@ -679,7 +773,7 @@ virtual void SetDataLocal(const T &value)
    throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
  }
 
- v[this->CurrentInputIndex]=value;
+ Value[this->CurrentInputIndex]=value;
  this->RenewUpdateTime();
 };
 
@@ -699,7 +793,7 @@ virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
 {
  if(!UIPropertyInputBase::FinalizeConnectToOutput(output_property))
   return false;
- v.resize(this->GetNumConnections());
+ Value.resize(this->GetNumConnections());
  return true;
 }
 
@@ -708,12 +802,132 @@ virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int
 {
  if(!UIPropertyInputBase::FinalizeDisconnectFromOutput(output_property,c_index))
   return false;
- v.erase(v.begin()+c_index);
+ Value.erase(Value.begin()+c_index);
  return true;
 }
 // -----------------------------
 
 };
+
+template<typename T,class OwnerT>
+class UPropertyInput: public UPropertyBaseOwner<T,OwnerT>
+{
+protected:
+// Данные
+mutable T Value;
+
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPropertyInput(const std::string &name, OwnerT * const owner, bool dynamic_prop_flag=false)
+ : UPropertyBaseOwner<T,OwnerT>(name,owner, ptPubInput, dynamic_prop_flag), Value() { };
+// -----------------------------
+
+// -----------------------------
+// Операторы доступа
+// -----------------------------
+protected:
+// Возврат значения
+virtual const T& GetDataValueLocal(void) const
+{
+ return Value;
+};
+
+virtual bool SetDataValueLocal(const T &value)
+{
+ return false;
+};
+
+public:
+// Возвращает ссылку на данные
+virtual const T& GetData(void) const
+{
+ if(IsConnected())
+ {
+  UEPtr<UPropertyBase<T> > prop=dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex));
+  UEPtr<UNet> owner=prop->GetOwner();
+  return *dynamic_pointer_cast<T>(owner);
+ }
+ else
+ {
+  return GetDataValueLocal();
+ }
+}
+
+// Модифицирует данные
+virtual bool SetData(const T& data)
+{
+ return false;
+}
+
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ return true;
+};
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ return true;
+};
+
+// Метод сравнивает тип этого свойства с другим свойством
+virtual bool CompareLanguageType(const UIProperty &dt) const
+{
+ const UIPropertyOutput* out=dynamic_cast<const UIPropertyOutput*>(&dt);
+ if(!out)
+  return false;
+ return (dynamic_cast<const T*>(out->GetOwner()))?true:false;
+}
+
+// Метод изменяет тип свойства
+bool ChangeType(unsigned int value)
+{
+ return false;
+}
+
+const T* operator -> (void) const
+{ return &this->GetData(); };
+
+T* operator -> (void)
+{ return const_cast<T*>(&this->GetData()); };
+
+const T& operator * (void) const
+{ return this->GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(this->GetData()); };
+											   /*
+public:
+/// Финальные действия по связыванию входа со свойством output_property
+virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
+{
+ if(GetNumConnectionsLimit() == 0)
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. NumConnectionLimit set to zero."));
+  return false;
+ }
+
+ if(GetNumConnectionsLimit()>0 && ConnectedProperties.size() == GetNumConnectionsLimit())
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Connector already in use."));
+  return false;
+ }
+
+ if(!dynamic_cast<T*>(output_property->GetOwner()))
+ {
+  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Language types are incompatible. ")+output_property->GetLanguageType().name()+std::string(" != ")+GetLanguageType().name());
+  return false;
+ }
+
+ ConnectedProperties.push_back(output_property);
+ return true;
+}                                                */
+
+};
+
 #ifdef __BORLANDC__
 #pragma warning( default : 4700)
 #endif

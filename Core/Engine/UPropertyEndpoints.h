@@ -8,6 +8,7 @@
 
 namespace RDK {
 
+/// Специализация: свойства - вектора
 template<typename V, typename OwnerT, unsigned int type>
 class UProperty<std::vector<V>,OwnerT,type>: public UPropertyLocal<std::vector<V>,OwnerT,type>
 {
@@ -22,44 +23,54 @@ UProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<st
 };
 
 /// Оператор доступа по индексу
-V& operator [] (size_t index)
+typename std::vector<V>::reference operator [] (size_t index)
 {
- return v[index];
+ return this->Value[index];
 }
 
-const V& operator [] (size_t index) const
+const typename std::vector<V>::const_reference operator [] (size_t index) const
 {
- return v[index];
+ return this->Value[index];
+}
+
+void resize(size_t size, const V &val)
+{
+ Value.resize(size,val);
 }
 
 void resize(size_t size)
 {
- v.resize(size);
+ Value.resize(size);
 }
 
 void assign(size_t size, const V &val)
 {
- v.assign(size,val);
+ Value.assign(size,val);
 }
 
-std::vector<V>::const_iterator begin(void) const
+typename std::vector<V>::const_iterator begin(void) const
 {
- return v.begin();
+ return Value.begin();
 }
 
-std::vector<V>::iterator begin(void)
+typename std::vector<V>::iterator begin(void)
 {
- return v.begin();
+ return Value.begin();
 }
 
-std::vector<V>::const_iterator end(void) const
+typename std::vector<V>::const_iterator end(void) const
 {
- return v.end();
+ return Value.end();
 }
 
-std::vector<V>::iterator end(void)
+typename std::vector<V>::iterator end(void)
 {
- return v.end();
+ return Value.end();
+}
+
+size_t size(void) const
+{
+ return Value.size();
 }
 
 /// Оператор присваивания
@@ -71,6 +82,7 @@ UProperty<std::vector<V>,OwnerT,type>& operator = (const std::vector<V> &value)
 
 };
 
+/// Специализация: свойства - MDMatrix
 template<typename V, typename OwnerT, unsigned int type>
 class UProperty<MDMatrix<V>,OwnerT,type>: public UPropertyLocal<MDMatrix<V>,OwnerT,type>
 {
@@ -87,51 +99,228 @@ UProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<MD
 /// Оператор доступа по индексу
 V& operator [] (size_t index)
 {
- return v[index];
+ return Value[index];
 }
 
 const V& operator [] (size_t index) const
 {
- return v[index];
+ return Value[index];
 }
 
 V& operator () (int row, int col)
 {
- return v(row,col);
+ return Value(row,col);
 }
 
 const V& operator () (int row, int col) const
 {
- return v(row,col);
+ return Value(row,col);
 }
 
 void Resize(int rows, int cols)
 {
- v.Resize(rows,cols);
+ Value.Resize(rows,cols);
 }
 
 void Assign(int rows, int cols, const V &val)
 {
- v.Assign(rows,cols,val);
+ Value.Assign(rows,cols,val);
 }
 
 int GetRows(void) const
 {
- return v.GetRows();
+ return Value.GetRows();
 }
 
 int GetCols(void) const
 {
- return v.GetCols();
+ return Value.GetCols();
 }
 
 void ToZero(void) const
 {
- v.ToZero();
+ Value.ToZero();
 }
 
 /// Оператор присваивания
 UProperty<MDMatrix<V>,OwnerT,type>& operator = (const MDMatrix<V> &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+};
+
+
+/// Специализация: свойства - double
+template<typename OwnerT, unsigned int type>
+class UProperty<double,OwnerT,type>: public UPropertyLocal<double,OwnerT,type>
+{
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<double,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyLocal<double,OwnerT,type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+
+operator double (void) const
+{ return Value; }
+
+UProperty<double,OwnerT,type>& operator = (const double &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+};
+
+/// Специализация: свойства - int
+template<typename OwnerT, unsigned int type>
+class UProperty<int,OwnerT,type>: public UPropertyLocal<int,OwnerT,type>
+{
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<int,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyLocal<int,OwnerT,type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+
+operator int (void) const
+{ return Value; }
+
+UProperty<int,OwnerT,type>& operator = (const int &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+int operator ++ (void)
+{
+ if(SetterR)
+  SetData(Value+1);
+ else
+  ++Value;
+ return Value;
+}
+
+int operator ++ (int)
+{
+ int temp=Value;
+ if(SetterR)
+  SetData(Value+1);
+ else
+  Value++;
+ return temp;
+}
+
+int operator -- (void)
+{
+ if(SetterR)
+  SetData(Value-1);
+ else
+  ++Value;
+ return Value;
+}
+
+int operator -- (int)
+{
+ int temp=Value;
+ if(SetterR)
+  SetData(Value-1);
+ else
+  Value--;
+ return temp;
+}
+
+};
+
+/// Специализация: свойства - int
+template<typename OwnerT, unsigned int type>
+class UProperty<unsigned int,OwnerT,type>: public UPropertyLocal<unsigned int,OwnerT,type>
+{
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<unsigned int,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyLocal<unsigned int,OwnerT,type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+
+operator unsigned int (void) const
+{ return Value; }
+
+UProperty<unsigned int,OwnerT,type>& operator = (const unsigned int &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+unsigned int operator ++ (void)
+{
+ if(SetterR)
+  SetData(Value+1);
+ else
+  ++Value;
+ return Value;
+}
+
+unsigned int operator ++ (int)
+{
+ int temp=Value;
+ if(SetterR)
+  SetData(Value+1);
+ else
+  Value++;
+ return temp;
+}
+
+unsigned int operator -- (void)
+{
+ if(SetterR)
+  SetData(Value-1);
+ else
+  ++Value;
+ return Value;
+}
+
+unsigned int operator -- (int)
+{
+ unsigned int temp=Value;
+ if(SetterR)
+  SetData(Value-1);
+ else
+  Value--;
+ return temp;
+}
+
+};
+
+/// Специализация: свойства - bool
+template<typename OwnerT, unsigned int type>
+class UProperty<bool,OwnerT,type>: public UPropertyLocal<bool,OwnerT,type>
+{
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UProperty(const string &name, OwnerT * const owner, typename UPropertyVirtual<bool,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyLocal<bool,OwnerT,type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+
+operator bool (void) const
+{ return Value; }
+
+UProperty<bool,OwnerT,type>& operator = (const bool &value)
 {
  this->SetData(value);
  return *this;
@@ -228,7 +417,7 @@ UPropertyOutputData<T,OwnerT,type>& operator = (const T &value)
 };
 
 };
-
+/*
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInput: public UProperty<T,OwnerT,type>
 {
@@ -242,7 +431,7 @@ UPropertyInput(const string &name, OwnerT * const owner, typename UPropertyVirtu
 {
 };
 
-};
+};*/
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputData: public UProperty<T,OwnerT,type>

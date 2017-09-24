@@ -170,28 +170,28 @@ bool UDynamicNet<T>::Default(void)
 template<class T>
 bool UDynamicNet<T>::Build(void)
 {
- while(InputData.size() < NumInputs)
+ while(int(InputData.size()) < NumInputs)
  {
   UEPtr<UProperty<T,UDynamicNet<T>,ptPubInput> > prop;
   prop=new UProperty<T,UDynamicNet<T>,ptPubInput>(std::string("DataInput")+sntoa(InputData.size()),this,0,true);
   InputData.push_back(prop);
  }
 
- while(InputData.size() > NumInputs)
+ while(int(InputData.size()) > NumInputs)
  {
   UEPtr<UProperty<T,UDynamicNet<T>,ptPubInput> > prop=InputData.back();
   delete prop;
   InputData.resize(InputData.size()-1);
  }
 
- while(OutputData.size() < NumOutputs)
+ while(int(OutputData.size()) < NumOutputs)
  {
   UEPtr<UProperty<T,UDynamicNet<T>,ptPubOutput> > prop;
   prop=new UProperty<T,UDynamicNet<T>,ptPubOutput>(std::string("DataOutput")+sntoa(OutputData.size()),this,0,true);
   OutputData.push_back(prop);
  }
 
- while(OutputData.size() > NumOutputs)
+ while(int(OutputData.size()) > NumOutputs)
  {
   UEPtr<UProperty<T,UDynamicNet<T>,ptPubOutput> > prop=OutputData.back();
   delete prop;

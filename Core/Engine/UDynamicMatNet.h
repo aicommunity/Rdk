@@ -3,7 +3,7 @@
 #ifndef UDynamicMatNetH
 #define UDynamicMatNetH
 
-#include "UDynamicMatNet.h"
+#include "UDynamicNet.h"
 //---------------------------------------------------------------------------
 
 namespace RDK {

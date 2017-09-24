@@ -59,9 +59,11 @@ virtual bool DisconnectAllOutputs(void);
 public:
 /// Финальные действия по связыванию входа со свойством output_property
 virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property);
+virtual bool AFinalizeConnectToOutput(UIPropertyOutput *output_property)=0;
 
 /// Финальные действия по уничтожению связи со свойством output_property
 virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index);
+virtual bool AFinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int c_index)=0;
 
 public: // Методы управления указателем на входные данные
 /// Возвращает указатель на данные

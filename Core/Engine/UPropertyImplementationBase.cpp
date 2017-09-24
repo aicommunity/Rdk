@@ -111,8 +111,6 @@ bool UIPropertyInputBase::DisconnectAllOutputs(void)
 /// Финальные действия по связыванию входа со свойством output_property
 bool UIPropertyInputBase::FinalizeConnectToOutput(UIPropertyOutput *output_property)
 {
-
- // TODO: тут проверка, не занят ли вход
  if(NumConnectionsLimit == 0)
  {
   GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. NumConnectionLimit set to zero."));
@@ -131,10 +129,8 @@ bool UIPropertyInputBase::FinalizeConnectToOutput(UIPropertyOutput *output_prope
   return false;
  }
 
- // TODO: тут код связывания
- // TODO: тут код физического подключения данных
  ConnectedProperties.push_back(output_property);
- return true;
+ return AFinalizeConnectToOutput(output_property);
 }
 
 /// Финальные действия по уничтожению связи со свойством output_property
@@ -151,18 +147,9 @@ bool UIPropertyInputBase::FinalizeDisconnectFromOutput(UIPropertyOutput *output_
   GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found by expected connected index: ")+output_property->GetName()+std::string(" c_index=")+sntoa(c_index));
   return false;
  }
- /*
- std::vector<UEPtr<UIPropertyOutput> >::iterator I=find(ConnectedProperties.begin(),ConnectedProperties.end(),output_property);
 
- if(I == ConnectedProperties.end())
- {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found in ConnectedProperties list: ")+output_property->GetName());
-  return false;
- }   */
-
- // TODO: тут код физического отключения данных
  ConnectedProperties.erase(ConnectedProperties.begin()+c_index);
- return true;
+ return AFinalizeDisconnectToOutput(output_property,c_index);
 }
 
 /// Задает лимит на число подключений ко входу
@@ -220,7 +207,6 @@ bool UIPropertyOutputBase::ConnectToInput(UIPropertyInput *input_property)
 
  if(!input_property->FinalizeConnectToOutput(this))
  {
-  // откатываем действия
   return false;
  }
  SubscribedProperties.push_back(input_property);
