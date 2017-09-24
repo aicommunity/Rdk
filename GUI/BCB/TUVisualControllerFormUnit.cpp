@@ -14,7 +14,7 @@ TUVisualControllerForm *UVisualControllerForm;
 // Конструкторы и деструкторы
 // --------------------------
 // Флаг, сообщающий что идет расчет
-RDK::UELockVar<bool> TUVisualControllerForm::CalculationModeFlag=false;
+RDK::UELockVar<bool> TUVisualControllerForm::CalculationModeFlag(false);
 
 extern TUVisualControllerForm *RdkMainForm;
 
@@ -231,15 +231,13 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
    Caption=PureFormCaption.c_str();
  }
 
- if(!Core_IsChannelInit())
+ if(!Core_IsChannelInit()) // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
 
- if(CheckModelFlag && !Model_Check())
+ if(CheckModelFlag && !RDK::GetModel()) // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
   UpdateInterfaceFlag=true;
@@ -326,7 +324,7 @@ long TUVisualControllerForm::GetUpdateInterval(void)
 // Задает интервал обновления интерфейса
 bool TUVisualControllerForm::SetUpdateInterval(long value)
 {
- if(value<0)
+ if(value<-1)
   return false;
 
  UpdateInterval=value;

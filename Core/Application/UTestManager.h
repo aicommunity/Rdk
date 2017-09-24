@@ -2,12 +2,13 @@
 #define UTestManagerH
 
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-//#include "../../Libraries/Rtv-BasicLib/Core/RTVSupport.h"
+//#include "../../../Libraries/Rtv-BasicLib/Core/RTVSupport.h"
 
 namespace RDK {
 
 class UApplication;
 
+/// Структура одного теста для property
 struct UPropertyTest
 {
   std::string component;
@@ -17,6 +18,8 @@ struct UPropertyTest
   std::string value;
 };
 
+/// Единичный тест, загружает своё состояние из XML
+/// Загружает тестируемые проект и заппускает расчёт, содержит  логику сравнения properties
 struct UTest
 {
 protected: // Данные
@@ -64,6 +67,7 @@ public: // Методы
   /// Проводит тестирование
   /// Возвращает колличество неудачных проперти тестов
   virtual int ProcessTest(void);
+  // --------------------
 
   // --------------------
   // Вспомогательные методы
@@ -80,9 +84,11 @@ protected:
   bool compareProperties(std::string        value, std::string str, std::string);
 
 //  bool compareProperties(std::vector<RTV::TZoneExt> value, std::string str, std::string delta);
+  bool compareProperties(MDMatrix<double>   value, std::string str, std::string delta);
+  // --------------------
 };
 
-/// Менеджер тестов
+/// Менеджер тестов, содержит множество единичных тестов
 class UTestManager
 {
 protected: // Данные
@@ -114,7 +120,6 @@ virtual int LoadTests(const std::string &file_name);
 /// Возвращает колличество неудачных тестов
 virtual int ProcessTests(void);
 // --------------------
-
 
 // --------------------
 // Вспомогательные методы

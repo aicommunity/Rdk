@@ -52,11 +52,13 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 MMatrix(void);
-MMatrix(T defvalue);
-MMatrix(const MDMatrix<T> &copy);
+explicit MMatrix(T defvalue);
+explicit MMatrix(const MDMatrix<T> &copy);
 MMatrix(const MMatrix<T,Rows,Cols> &copy);
-MMatrix(const T data[Rows][Cols]);
-MMatrix(const T* data);
+explicit MMatrix(const T data[Rows][Cols]);
+explicit MMatrix(const T* data);
+MMatrix(T v1, T v2, T v3);
+MMatrix(T v1, T v2, T v3, T v4);
 virtual ~MMatrix(void);
 // --------------------------
 
@@ -91,6 +93,9 @@ virtual int GetElementByteSize(void) const;
 virtual const void* GetVoid(void) const;
 virtual void* GetVoid(void);
 
+/// Методы доступа к данным
+virtual const T* GetData(void) const;
+virtual T* GetData(void);
 // Возвращает языковой тип элемента матрицы
 //virtual const type_info& GetLanguageType(void) const;
 // -----------------------------------
@@ -239,6 +244,12 @@ static MMatrix<T,Rows,Cols> Zero(void);
 
 // Единичная матрица
 static MMatrix<T,Rows,Cols> Eye(void);
+
+// Сбрасывает текущую матрицу в 0
+void ToZero(void);
+
+// Сбрасывает текущую матрицу в единичную
+void ToEye(void);
 // --------------------------
 
 // --------------------------
@@ -299,9 +310,42 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
 { *this=data; };
 
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>::MMatrix(T v1, T v2, T v3)
+{
+ double* PData=&Data[0][0];
+
+ if(Rows*Cols>0)
+  PData[0]=v1;
+
+ if(Rows*Cols>1)
+  PData[1]=v2;
+
+ if(Rows*Cols>2)
+  PData[2]=v3;
+}
 
 template<class T, unsigned Rows, unsigned Cols>
-MMatrix<T,Rows,Cols>::~MMatrix(void) {};
+MMatrix<T,Rows,Cols>::MMatrix(T v1, T v2, T v3, T v4)
+{
+ double* PData=&Data[0][0];
+
+ if(Rows*Cols>0)
+  PData[0]=v1;
+
+ if(Rows*Cols>1)
+  PData[1]=v2;
+
+ if(Rows*Cols>2)
+  PData[2]=v3;
+
+ if(Rows*Cols>3)
+  PData[3]=v4;
+}
+
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>::~MMatrix(void){};
 // --------------------------
 
 
@@ -387,6 +431,20 @@ void* MMatrix<T,Rows,Cols>::GetVoid(void)
 {
  return Void;
 }
+
+/// Методы доступа к данным
+template<class T, unsigned Rows, unsigned Cols>
+const T* MMatrix<T,Rows,Cols>::GetData(void) const
+{
+ return &Data[0][0];
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+T* MMatrix<T,Rows,Cols>::GetData(void)
+{
+ return &Data[0][0];
+}
+
 // -----------------------------------
 
 // --------------------------
@@ -904,12 +962,13 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Inverse(MMatrix<T,Cols,Rows> &res) c
   {
    // get the co-factor (matrix) of A(j,i)
    GetMinor(Minor,j,i);
-   res.Data[i][j] = det*Minor.Det();
+   res.Data[j][i] = det*Minor.Det();
    if( (i+j)%2 == 1)
-	res.Data[i][j] = -res.Data[i][j];
+	res.Data[j][i] = -res.Data[j][i];
    }
   }
 
+ res=res.Transpose();
  return res;
 }
 
@@ -1139,6 +1198,24 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
   res.Data[i][i]=1;
 
  return res;
+}
+
+// Сбрасывает текущую матрицу в 0
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::ToZero(void)
+{
+ memset(Data,0,Rows*Cols*sizeof(T));
+}
+
+// Сбрасывает текущую матрицу в единичную
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::ToEye(void)
+{
+ ToZero();
+ int crmin=(Cols<Rows)?Cols:Rows;
+
+ for(int i=0;i<crmin;i++)
+  Data(i,i)=1;
 }
 // --------------------------
 

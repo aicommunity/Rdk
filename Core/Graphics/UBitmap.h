@@ -107,7 +107,7 @@ UBMColorModel ColorModel;
 // --------------------------
 UBitmapParam(void);
 UBitmapParam(const UBitmapParam &bitmap);
-UBitmapParam(UBMColorModel cmodel);
+explicit UBitmapParam(UBMColorModel cmodel);
 ~UBitmapParam(void);
 // --------------------------
 };
@@ -157,7 +157,7 @@ public: // Методы
 // --------------------------
 UBitmap(void);
 UBitmap(const UBitmap &bitmap);
-UBitmap(UBMColorModel cmodel);
+explicit UBitmap(UBMColorModel cmodel);
 UBitmap(int width, int height, UColorT color=0, UBMColorModel cmodel=ubmRGB24);
 UBitmap(int width, int height, const UBColor* data, UBMColorModel cmodel);
 ~UBitmap(void);
@@ -207,7 +207,10 @@ inline int GetChannelOffset(UBMColorChannel channel) const
 void SetColorModel(UBMColorModel cmodel, bool isupdate=true);
 
 // Создает внутренний буфер
-void SetRes(int width, int height, UBMColorModel cmodel=ubmUnknown);
+void SetRes(int width, int height);
+
+// Создает внутренний буфер
+void SetRes(int width, int height, UBMColorModel cmodel);
 
 // Копирует новое изображение из буфера data
 // с прежними размерами
@@ -875,13 +878,16 @@ struct RDK_LIB_TYPE UBHistogramElement
 // Цвет изображения
 UColorT Color;
 
-union {
-// Число элементов изображения заданного цвета
 unsigned Int;
 float Float;
-} Number;
+
+/// Если true то используем Float вариант, иначе Int
+bool IsNormalized;
+
+
 
 // Методы
+UBHistogramElement(void);
 // ---------------------
 // Операторы
 // ---------------------

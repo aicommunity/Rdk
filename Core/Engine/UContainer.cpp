@@ -59,7 +59,8 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
- : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0)
+ : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0),
+   MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor)
 {
  // bad idea
  UIProperty* prop=0;
@@ -81,7 +82,12 @@ UContainer::UContainer(void)
 
 UContainer::~UContainer(void)
 {
- DelAllComponents();
+ if(GetStaticFlag() && Owner)
+  GetOwner()->DelStaticComponent(this);
+ DelAllComponentsRaw();
+ DelAllStaticComponents();
+
+
  UnLinkAllControllers();
 
  BreakOwner();
@@ -959,6 +965,35 @@ bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
  DebugSysEventsMask=value;
  return true;
 }
+
+bool UContainer::SetMemoryMonitor(const bool &value)
+{
+ if(value == true && Logger)
+  Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, GetFullName()+": Memory monitor enabled. Performance warning.");
+ else
+ {
+  MemoryUsageDiff=0;
+  MaxMemoryBlockDiff=0;
+ }
+ return true;
+}
+
+
+/// Объем потребленной памяти за шаг расчета.
+/// Может быть отрицательрным если память освобождалась.
+/// Актуально если включен флаг MemoryMonitor
+long long UContainer::GetMemoryUsageDiff(void) const
+{
+ return MemoryUsageDiff;
+}
+
+/// Изменение максимально длинного куска доступной памяти после шага расчета
+/// Может быть отрицательрным если кусок увеличился.
+/// Актуально если включен флаг MemoryMonitor
+long long UContainer::GetMaxMemoryBlockDiff(void) const
+{
+ return MaxMemoryBlockDiff;
+}
 // --------------------------
 
 // --------------------------
@@ -1010,7 +1045,8 @@ void UContainer::Free(void)
  if(Storage)
  {
   BreakOwner();
-  GetStorage()->ReturnObject(this);
+  if(!StaticFlag)
+   GetStorage()->ReturnObject(this);
  }
  else
   UComponent::Free();
@@ -1257,6 +1293,12 @@ void UContainer::DelComponent(const NameT &name, bool canfree)
 // Принудительно удаляет все дочерние компоненты
 void UContainer::DelAllComponents(void)
 {
+ DelAllComponentsRaw();
+ UpdateInternalData();
+}
+
+void UContainer::DelAllComponentsRaw(void)
+{
  while(NumComponents)
   DelComponent(PComponents[NumComponents-1],true);
 }
@@ -1268,6 +1310,34 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
  comp->SetStaticFlag(true);
  comp->SetName(name);
  StaticComponents[comp]=classname;
+}
+
+/// Удаляет компонент как статическую переменную
+void UContainer::DelStaticComponent(UEPtr<UContainer> comp)
+{
+ std::map<UEPtr<UContainer>, NameT>::iterator I=StaticComponents.find(comp);
+ if(I != StaticComponents.end())
+  StaticComponents.erase(I);
+}
+
+/// Удаляет компонент как статическую переменную
+void UContainer::DelAllStaticComponents(void)
+{
+ StaticComponents.clear();
+}
+
+/// Возвращает указатель на static компонент
+/// с классом 'classname' и именем 'name'
+UEPtr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
+{
+ std::map<UEPtr<UContainer>, NameT>::const_iterator I=StaticComponents.begin();
+ for(;I!=StaticComponents.end();++I)
+ {
+  if(I->second == classname && I->first->GetName() == name)
+   return I->first;
+ }
+
+ return 0;
 }
 
 /// Перемещает компоненту в другой компонент
@@ -1333,6 +1403,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
 
  // Удаляем лишние компоненты из 'comp'
  comp->DelAllComponents();
+
 
  UEPtr<UContainer> * pcomponents=0;
  PointerMapCIteratorT I;
@@ -1797,6 +1868,7 @@ bool UContainer::Default(void)
   try
   {
    BeforeDefault();
+   MemoryMonitor=false;
    Ready=false;
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->Default();
@@ -1997,6 +2069,10 @@ bool UContainer::Reset(void)
 
    AReset();
 
+
+   MemoryUsageDiff=0;
+   MaxMemoryBlockDiff=0;
+
    CalcCounter=0;
    SkipComponentCalculation=false;
    ComponentReCalculation=false;
@@ -2069,6 +2145,12 @@ bool UContainer::Calculate(void)
    LastCalcTime=tempstepduration;
 
    Build();
+
+   unsigned long long total_used_memory_before(0);
+   unsigned long long largest_free_block_before(0);
+   if(MemoryMonitor)
+	ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+
    BeforeCalculate();
 
    UEPtr<UContainer> *comps=PComponents;
@@ -2104,6 +2186,7 @@ bool UContainer::Calculate(void)
    ComponentReCalculation=false;
 
    LogPropertiesBeforeCalc();
+
    unsigned long long acalc_start_time=GetCurrentStartupTime();
    if(!Owner)
    {
@@ -2131,6 +2214,7 @@ bool UContainer::Calculate(void)
 	 ACalculate();
    }
    unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),acalc_start_time);
+
    LogPropertiesAfterCalc();
 
    UpdateMainOwner();
@@ -2166,6 +2250,21 @@ bool UContainer::Calculate(void)
 	}
    }
    AfterCalculate();
+   unsigned long long total_used_memory_after(0);
+   unsigned long long largest_free_block_after(0);
+   if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+   {
+	MemoryUsageDiff=total_used_memory_before-total_used_memory_after;
+	MaxMemoryBlockDiff=largest_free_block_before-largest_free_block_after;
+	if(MemoryUsageDiff > 0 && MaxMemoryBlockDiff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(MemoryUsageDiff)+std::string(" bytes of RAM. Largest RAM block has been decreased to ")+sntoa(MaxMemoryBlockDiff)+" bytes");
+	else
+	if(MemoryUsageDiff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(MemoryUsageDiff)+std::string(" bytes of RAM."));
+	else
+	if(MaxMemoryBlockDiff > 0)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" Largest RAM block has been decreased to ")+sntoa(MaxMemoryBlockDiff)+" bytes");
+   }
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
   catch(UException &exception)
@@ -2963,7 +3062,7 @@ bool PreparePropertyLogString(const UEPtr<UIProperty>& variable, unsigned int ex
  std::string line=str_type+variable->GetName();
  result=line;
 
- UEPtr<UIPropertyInput> prop_input=dynamic_pointer_cast<UIPropertyInput>(variable);
+ if(type & ptInput && !variable.Property->IsConnected())
  if(prop_input && !prop_input->IsConnected())
  {
   result=line+"[<Disconnected>]";

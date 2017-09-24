@@ -61,6 +61,9 @@ std::string TestsDescriptionFileName;
 /// Признак требования завершить работу приложения после тестирования
 bool CloseAfterTest;
 
+/// Флаг инцициализации
+bool AppIsInit;
+
 protected: // Модули приложения
 /// Диспетчер команд
 UEPtr<URpcDispatcher> RpcDispatcher;
@@ -155,6 +158,9 @@ void SetTestsDescriptionFileName(const std::string& value);
 
 /// Признак требования завершить работу приложения после тестирования
 bool IsCloseAfterTest(void) const;
+
+/// Приложение инициализированно
+bool IsInit(void) const;
 // --------------------------
 
 // --------------------------

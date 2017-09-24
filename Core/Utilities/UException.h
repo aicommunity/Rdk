@@ -206,7 +206,7 @@ std::string Str; // Строка
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EStrToNumber(const std::string &str);
+explicit EStrToNumber(const std::string &str);
 virtual ~EStrToNumber(void) throw();
 // --------------------------
 
@@ -227,7 +227,7 @@ int Id;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EIdError(int id);
+explicit EIdError(int id);
 virtual ~EIdError(void) throw();
 // --------------------------
 
@@ -248,7 +248,7 @@ std::string Name;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ENameError(const std::string &name);
+explicit ENameError(const std::string &name);
 virtual ~ENameError(void) throw();
 // --------------------------
 
@@ -264,37 +264,37 @@ virtual std::string CreateLogMessage(void) const;
 // Id не найден
 struct RDK_LIB_TYPE EIdNotExist: public EIdError
 {
-EIdNotExist(int id) : EIdError(id) {};
+explicit EIdNotExist(int id) : EIdError(id) {};
 };
 
 // Имя не найдено
 struct RDK_LIB_TYPE ENameNotExist: public ENameError
 {
-ENameNotExist(const std::string &name) : ENameError(name) {};
+explicit ENameNotExist(const std::string &name) : ENameError(name) {};
 };
 
 // Id уже существует
 struct RDK_LIB_TYPE EIdAlreadyExist: public EIdError
 {
-EIdAlreadyExist(int id) : EIdError(id) {};
+explicit EIdAlreadyExist(int id) : EIdError(id) {};
 };
 
 // Имя уже существует
 struct RDK_LIB_TYPE ENameAlreadyExist: public ENameError
 {
-ENameAlreadyExist(const std::string &name) : ENameError(name) {};
+explicit ENameAlreadyExist(const std::string &name) : ENameError(name) {};
 };
 
 // Id не определен (forbidden id)
 struct RDK_LIB_TYPE EForbiddenId: public EIdError
 {
-EForbiddenId(int id) : EIdError(id) {};
+explicit EForbiddenId(int id) : EIdError(id) {};
 };
 
 // Id не корректен
 struct RDK_LIB_TYPE EInvalidId: public EIdError
 {
-EInvalidId(int id) : EIdError(id) {};
+explicit EInvalidId(int id) : EIdError(id) {};
 };
 
 // Исключения, связанные с индексами
@@ -306,7 +306,7 @@ int Index;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EIndexError(int index);
+explicit EIndexError(int index);
 // --------------------------
 
 // --------------------------
@@ -320,7 +320,7 @@ virtual std::string CreateLogMessage(void) const;
 // Id не корректен
 struct RDK_LIB_TYPE EInvalidIndex: public EIndexError
 {
-EInvalidIndex(int index) : EIndexError(index) {};
+explicit EInvalidIndex(int index) : EIndexError(index) {};
 };
 
 
@@ -333,7 +333,7 @@ std::string Info;
 // Конструкторы и деструкторы
 // --------------------------
 ESystemException(void);
-ESystemException(const std::string &info);
+explicit ESystemException(const std::string &info);
 ESystemException(const ESystemException &copy);
 virtual ~ESystemException(void) throw();
 // --------------------------

@@ -156,21 +156,12 @@ String GetBuildInfoAsString(void)
  }
  return "";
 }
-
+ /*
 unsigned long long GetMemoryUsedInfo(void)
 {
-/*
- TMemoryManagerState st;
- TSmallBlockTypeState sb;
-
- GetMemoryManagerState(st);
- unsigned long long	result = st.TotalAllocatedMediumBlockSize + st.TotalAllocatedLargeBlockSize;
- for(int i=0;i<NumSmallBlockTypes;i++)
-  result+=st.SmallBlockTypeStates[i].UseableBlockSize * st.SmallBlockTypeStates[i].AllocatedBlockCount;
-  */
  unsigned long long	result(0);
  PROCESS_MEMORY_COUNTERS mc;
- int cb;
+ int cb=sizeof(PROCESS_MEMORY_COUNTERS);
 
  if(GetProcessMemoryInfo(GetCurrentProcess(), &mc, cb))
   result= mc.WorkingSetSize;
@@ -204,7 +195,7 @@ unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
    P+=Si.dwPageSize;
  }
  return Result;
-}
+}    */
 
 namespace RDK {
 
@@ -410,14 +401,21 @@ void TUGEngineControlForm::AUpdateInterface(void)
  }
 
 #ifdef _DEBUG
- void* AAddressOfLargest(0);
- __int64 max_memory=GetMemoryUsedInfo();
- __int64 max_block=GetLargestFreeMemRegion(AAddressOfLargest);
+ unsigned long long  max_memory(0);
+ unsigned long long  max_block(0);
+ ReadUsedMemoryInfo(max_memory, max_block);
 
  String memory_usage=Format(" Memory usage: %d bytes. Largest Free Block: %d bytes",ARRAYOFCONST((max_memory,max_block)));
 // memory_usage.printf(L" Memory usage: %n Bytes. Largest Free Block: %n Bytes",double(GetMemoryUsedInfo()),double(GetLargestFreeMemRegion(AAddressOfLargest)));
  cap=cap+memory_usage;
 
+ if(LastMaxMemory == 0)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
+  LastMaxMemory=max_memory;
+  LastMaxBlock=max_block;
+ }
+ else
  if(LastMaxMemory > max_memory || LastMaxBlock > max_block)
  {
   MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
@@ -491,7 +489,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
  ShowDebugMessagesCheckBox->Checked=MEnv_GetDebugMode(0);
 
- RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ const RDK::TProjectConfig &config=RdkApplication.GetProjectConfig();
  AutosaveProjectCheckBox->Checked=config.ProjectAutoSaveFlag;
  AutosaveStatesCheckBox->Checked=config.ProjectAutoSaveStatesFlag;
  switch(config.MultiThreadingMode)
@@ -1934,17 +1932,17 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- if(AppWinState)
-  UShowProgressBarForm->Show();
+// if(AppWinState)
+//  UShowProgressBarForm->Show();
 
  RdkApplication.StartChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 #ifdef RDK_VIDEO
  VideoOutputForm->Start(channel_index);
 #endif
- UShowProgressBarForm->IncBarStatus(2);
+// UShowProgressBarForm->IncBarStatus(2);
 
- UShowProgressBarForm->Hide();
+// UShowProgressBarForm->Hide();
 }
 
 /// Останов отдельного канала
@@ -1959,17 +1957,17 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- if(AppWinState)
-  UShowProgressBarForm->Show();
+// if(AppWinState)
+//  UShowProgressBarForm->Show();
 
  RdkApplication.PauseChannel(channel_index);
 // UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
- UShowProgressBarForm->IncBarStatus(2);
+// UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
  if(!DisableStopVideoSources)
   VideoOutputForm->StopOffline(channel_index);
 #endif
- UShowProgressBarForm->Hide();
+// UShowProgressBarForm->Hide();
 }
 
 /// Сброс отдельного канала
@@ -2027,6 +2025,17 @@ int TUGEngineControlForm::DelChannel(int index)
  return 0;
 }
 
+/// ФОрмирование строки с отладочной информацией об объеме используемой памяти
+String TUGEngineControlForm::DebugGenerateMemoryUsageString(void)
+{
+ void* AAddressOfLargest(0);
+ unsigned long long max_memory(0);
+ unsigned long long max_block(0);
+ ReadUsedMemoryInfo(max_memory,max_block);
+
+ String memory_usage=Format(" Memory usage: %d bytes. Largest Free Block: %d bytes",ARRAYOFCONST((max_memory,max_block)));
+ return memory_usage;
+}
 /// --------------------------
 
 
@@ -2421,6 +2430,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
+ MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
 
  if(RdkApplication.IsTestMode())
  {
@@ -2510,7 +2520,9 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
  if(FileExists(AutoexecProjectFileName))
  {
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
   OpenProject(AutoexecProjectFileName);
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
   AutoexecProjectFileName="";
  }
 

@@ -170,10 +170,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBHistogramElement &
  operator << (storage,data.Color);
  storage.SelectUp();
  storage.AddNode("Int");
- operator << (storage,data.Number.Int);
+ operator << (storage,data.Int);
  storage.SelectUp();
  storage.AddNode("Float");
- operator << (storage,data.Number.Float);
+ operator << (storage,data.Float);
  storage.SelectUp();
 
  return storage;
@@ -187,11 +187,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBHistogramElement &data)
  storage.SelectUp();
  if(!storage.SelectNode("Int"))
   return storage;
- operator >> (storage,data.Number.Int);
+ operator >> (storage,data.Int);
  storage.SelectUp();
  if(!storage.SelectNode("Float"))
   return storage;
- operator >> (storage,data.Number.Float);
+ operator >> (storage,data.Float);
  storage.SelectUp();
 
  return storage;

@@ -46,6 +46,12 @@ MMatrixSize& MMatrixSize::operator = (const MMatrixSize &copy)
  return *this;
 }
 
+MMatrixSize& MMatrixSize::operator = (const std::vector<int> &copy)
+{
+ Dims=copy;
+ return *this;
+}
+
 int MMatrixSize::operator [] (int i) const
 {
  return Dims[i];
@@ -142,6 +148,12 @@ bool MMatrixSize::operator <= (const MMatrixSize &copy) const
 int MMatrixSize::GetDimensions(void) const
 {
  return int(Dims.size());
+}
+
+/// ¬озвращает сырые данные размерности
+const std::vector<int> MMatrixSize::GetDims(void) const
+{
+ return Dims;
 }
 // --------------------------
 

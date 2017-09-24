@@ -305,6 +305,10 @@ void UEngineControl::PauseChannel(int channel_index)
 	if(EngineControlThreads[i])
 	{
 	 EngineControlThreads[i]->Pause();
+	 if(!EngineControlThreads[i]->WaitForCalculationComplete())
+	 {
+	  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_WARNING, (std::string("UEngineControl::PauseChannel - Calculation complete waiting timed out. Channel: ")+sntoa(i)).c_str());
+	 }
 	}
    }
   }
@@ -313,6 +317,11 @@ void UEngineControl::PauseChannel(int channel_index)
 	if(EngineControlThreads[channel_index])
 	{
 	 EngineControlThreads[channel_index]->Pause();
+	}
+
+	if(!EngineControlThreads[channel_index]->WaitForCalculationComplete())
+	{
+	 MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_WARNING, (std::string("UEngineControl::PauseChannel - Calculation complete waiting timed out. Channel: ")+sntoa(channel_index)).c_str());
 	}
 
    bool all_stopped=true;
@@ -709,6 +718,7 @@ bool UEngineControl::SetNumChannels(int num)
  int old_size=int(EngineControlThreads.size());
  for(int i=num;i<old_size;i++)
  {
+  PauseChannel(i);
   delete EngineControlThreads[i];
  }
 

@@ -44,7 +44,7 @@ public: // Методы
 // --------------------------
 UIdVector(void);
 UIdVector(const UIdVector &copy);
-UIdVector(UId id1);
+explicit UIdVector(UId id1);
 UIdVector(UId id1, UId id2, ...);
 virtual ~UIdVector(void);
 // --------------------------
@@ -83,6 +83,7 @@ std::string& EncodeToString(std::string &str) const;
 // --------------------------
 // Оператор присваивания
 UIdVector& operator = (const UIdVector &copy);
+UIdVector& operator = (const UId &copy);
 
 // Оператор доступа
 UId& operator [] (int index);
@@ -348,6 +349,7 @@ const ULink& operator [] (int index) const;
 /*
 template<typename CharT>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const UIdVector &data)
+ : Item(item)
 {
  size_t size=data.GetSize();
 

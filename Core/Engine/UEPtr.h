@@ -26,7 +26,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 UESharedPtr(void);
-UESharedPtr(T* pdata);
+explicit UESharedPtr(T* pdata);
 UESharedPtr(const UESharedPtr<T> &p);
 template<typename Y> UESharedPtr(UESharedPtr<Y> &p)
 : PData(dynamic_cast<T*>(p.Get())),
@@ -106,7 +106,7 @@ UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
 template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){};
-~UEPtr(void);
+virtual ~UEPtr(void);
 // --------------------------
 
 // --------------------------

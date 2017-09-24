@@ -4,6 +4,8 @@
 #include "rdk_cpp_init.h"
 #include "rdk_init.cpp"
 
+namespace RDK {
+
 // --------------------------
 // Методы доступа к ядру без блокировки
 // --------------------------
@@ -86,7 +88,7 @@ RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void)
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
 {
- return RdkCoreManager.GetEngineLock(0);
+ return RdkCoreManager.GetEngineLock();
 }
 
 RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index)
@@ -94,10 +96,20 @@ RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index);
 }
 
+RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(unsigned timeout)
+{
+ return RdkCoreManager.GetEngineLockTimeout(timeout);
+}
+
+RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetEngineLockTimeout(channel_index, timeout);
+}
+
 // Возвращает ссылку на указатель среды выполнения
 RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void)
 {
- return RdkCoreManager.GetEnvironmentLock(0);
+ return RdkCoreManager.GetEnvironmentLock();
 }
 
 RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index)
@@ -108,7 +120,7 @@ RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index)
 // Возвращает ссылку на указатель хранилища
 RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void)
 {
- return RdkCoreManager.GetStorageLock(0);
+ return RdkCoreManager.GetStorageLock();
 }
 
 RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index)
@@ -119,12 +131,17 @@ RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index)
 // Возвращает указатель на текущую модель
 RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void)
 {
- return RdkCoreManager.GetModelLock(0);
+ return RdkCoreManager.GetModelLock();
 }
 
 RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index)
 {
  return RdkCoreManager.GetModelLock(channel_index);
+}
+
+RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetModelLockTimeout(channel_index,timeout);
 }
 // --------------------------
 
@@ -139,8 +156,6 @@ RDK::UBitmapFontCollection& GetFonts(void)
  return RdkCoreManager.GetFonts();
 }
 // --------------------------
-
-namespace RDK {
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -196,3 +211,4 @@ std::string EEnginePropertyDecodeLoadFail::CreateLogMessage(void) const
 
 
 #endif
+

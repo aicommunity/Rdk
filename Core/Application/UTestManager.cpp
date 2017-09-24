@@ -6,9 +6,12 @@
 #include "UApplication.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace RDK {
 
+/// Макрос для сокращение монотонного кода, не может использоваться в других местах программы
+/// ВНИМАНИЕ! содержит обращение к переменным, созданным вне макроса
 #define TEST_PROPERTY_WITH_TYPE(type) \
   if(property->GetLanguageType() == typeid(type)) \
   { \
@@ -22,32 +25,35 @@ namespace RDK {
       } \
       else \
       { \
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! + expected value is: "+ testProperty.value).c_str()); \
+        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! expected value is: "+ testProperty.value).c_str()); \
         ++returnCode; \
         continue; \
       } \
     } \
     catch(boost::bad_lexical_cast &e) \
     { \
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error message :" + e.what()).c_str()); \
+      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error, application can't parse value, message :" + e.what()).c_str()); \
       ++returnCode; \
       continue; \
     } \
   } \
 
 
-/// --------------------
-/// Методы инициализации
-/// --------------------
+// --------------------
+// Методы инициализации
+// --------------------
 UTest::UTest(void)
 {
- // TODO: Инициализировать!
+  calcDuration = 0;
+  stepsMode = true;
 }
 
 
 UTest::UTest(const UEPtr<UApplication> &value)
 {
   Application=value;
+  calcDuration = 0;
+  stepsMode = true;
 }
 
 /// Возвращает указатель на тестируемое приложение
@@ -77,6 +83,9 @@ UTest& UTest::operator = (const UTest &copy)
  return *this;
 }
 
+// --------------------
+// Методы тестирования
+// --------------------
 
 /// Загрузка тестов
 int UTest::LoadTest(string testFile)
@@ -84,10 +93,16 @@ int UTest::LoadTest(string testFile)
   testsFileName = testFile;
   RDK::USerStorageXML testXML;
   if(!testXML.LoadFromFile(testFile, "TestCase"))
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestCase> in Xml file").c_str());
     return 1;
+  }
 
   if(!testXML.SelectNode("Header"))
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <Header> in Xml file").c_str());
     return 2;
+  }
 
   testXML.SelectNode("CalculateDuration");
   std::string strDuration = testXML.GetNodeAttribute("Steps");
@@ -102,58 +117,96 @@ int UTest::LoadTest(string testFile)
     stepsMode = true;
   }
 
-  calcDuration = atoi(strDuration);
+  try
+  {
+    calcDuration = boost::lexical_cast<int>(strDuration);
+  }
+  catch(boost::bad_lexical_cast &e)
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " calcDuration empty, boost::lexical_cast error, message :" + e.what()).c_str());
+    calcDuration = 0;
+  }
 
   testXML.SelectUp();
-  testXML.SelectNode("ConfigFilePath");
-  testProjectFileName = testXML.GetNodeText();
+  if(testXML.SelectNode("ConfigFilePath"))
+  {
+    testProjectFileName = testXML.GetNodeText();
+  }
+  else
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <ConfigFilePath> in Xml file").c_str());
+    return 3;
+  }
 
   testXML.SelectRoot();
-
-  testXML.SelectNode("TestProperties");
-  for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
+  if(testXML.SelectNode("TestProperties"))
   {
-    testXML.SelectNode("Property", i);
-    std::string sValue;
-
-    // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
-    if(testXML.SelectNode(0))
+    for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
     {
-      testXML.SaveFromNode(sValue);
-      testXML.SelectUp();
-    }
-    else
-    {
-      sValue = testXML.GetNodeText();
-    }
+      testXML.SelectNode("Property", i);
+      std::string sValue;
 
-    UPropertyTest pt = {
+      // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
+      if(testXML.SelectNode(0))
+      {
+        testXML.SaveFromNode(sValue);
+        testXML.SelectUp();
+      }
+      else
+      {
+        sValue = testXML.GetNodeText();
+      }
+
+      UPropertyTest pt = {
         testXML.GetNodeAttribute("Component"),
         testXML.GetNodeAttribute("PropertyName"),
         testXML.GetNodeAttribute("type"),
         testXML.GetNodeAttribute("Delta"),
         sValue
       };
-    propertyTests.push_back(pt);
-    testXML.SelectUp();
+      propertyTests.push_back(pt);
+      testXML.SelectUp();
+    }
+  }
+  else
+  {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestProperties> in Xml file").c_str());
   }
   return RDK_SUCCESS;
 }
 
 /// Проводит тестирование
-/// Возвращает код ошибки тестирования
+/// Возвращает колличество неудачных проперти тестов
 int UTest::ProcessTest()
 {
   int returnCode = RDK_SUCCESS;
 
   try
   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
+
     Application->OpenProject(testProjectFileName);
+    /*std::vector<string> strs;
+    boost::split(strs, testsFileName, boost::is_any_of("/"));
+    strs.pop_back();
+    strs.push_back("TestLog");
+
+//    std::string oldLogDir = Application->GetLogDir();
+
+    Application->SetLogDir(boost::join(strs, "/") + "/");
+
+//    std::string newLogDir = Application->GetLogDir();*/
 
     if(stepsMode)
     {
       for(size_t i = 0; i < static_cast<size_t>(calcDuration); ++i)
         Application->StepChannel(-1);
+    }
+    else
+    {
+      Application->StartChannel(-1);
+      Sleep(calcDuration);
+      Application->PauseChannel(-1);
     }
 
     UELockPtr<UContainer> model = GetModelLock<UContainer>(Core_GetSelectedChannelIndex());
@@ -164,13 +217,12 @@ int UTest::ProcessTest()
       return -1;
     }
 
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
     for(std::vector<UPropertyTest>::iterator i = propertyTests.begin(); i != propertyTests.end(); ++i)
     {
       UPropertyTest testProperty = (*i);
       RDK::UEPtr<RDK::UComponent> component;
       if (testProperty.component.empty())
-          component = model;
+          component = model.Get();
       else
           component = model->GetComponentL(testProperty.component, true);
 
@@ -191,6 +243,7 @@ int UTest::ProcessTest()
       }
 
       void* data = const_cast<void*>(property->GetMemoryArea());
+
       if(!data)
       {
         MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", is NULL!").c_str());
@@ -206,25 +259,11 @@ int UTest::ProcessTest()
       TEST_PROPERTY_WITH_TYPE(float)
       TEST_PROPERTY_WITH_TYPE(double)
       TEST_PROPERTY_WITH_TYPE(std::string)
+      TEST_PROPERTY_WITH_TYPE(MDMatrix<double>)
+
 //      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
 
-      /*if(property->GetLanguageType() == typeid(bool))
-      {
-        if(compareProperties(*(reinterpret_cast<bool*>(data)),
-                             testProperty.value, testProperty.delta))
-        {
-          MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("SUCCESS - porperty: "+ testProperty.component + "." + testProperty.property).c_str());
-          continue;
-        }
-        else
-        {
-          MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! + expected value is: "+ testProperty.value).c_str());
-          ++returnCode;
-          continue;
-        }
-      }*/
-
-
+      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
 
     }
   }
@@ -241,6 +280,10 @@ int UTest::ProcessTest()
 
   return returnCode;
 }
+
+// --------------------
+// Вспомогательные методы
+// --------------------
 
 bool UTest::compareProperties(bool value, std::string str, std::string delta)
 {
@@ -317,6 +360,14 @@ bool UTest::compareProperties(std::string value, std::string str, std::string)
   return value.compare(str) == 0;
 }
 
+bool UTest::compareProperties(MDMatrix<double> value, string str, string delta)
+{
+  std::vector<std::string> strs;
+  boost::split(strs, str, boost::is_any_of("\t"));
+
+  return static_cast<size_t>(value.GetSize()) == strs.size();
+}
+
 /*bool UTest::compareProperties(std::vector<RTV::TZoneExt> value, string str, string delta)
 {
   USerStorageXML storage;
@@ -329,13 +380,13 @@ bool UTest::compareProperties(std::string value, std::string str, std::string)
 	strVectorSize = boost::lexical_cast<size_t>(strS);
 
   return value.size() == strVectorSize;
-} */
+}*/
 
 
 
-/// --------------------
-/// Методы инициализации
-/// --------------------
+// --------------------
+// Методы инициализации
+// --------------------
 /// Возвращает указатель на тестируемое приложение
 UEPtr<UApplication> UTestManager::GetApplication(void)
 {
@@ -364,13 +415,26 @@ int UTestManager::LoadTests(const std::string &file_name)
   return 1001;
  }
 
- UTest singleTest(Application);
- int loadRet = singleTest.LoadTest(file_name);
+ RDK::USerStorageXML testsXML;
+ if(!testsXML.LoadFromFile(file_name, "UTestCases"))
+ {
+   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (file_name + " UTestManager::LoadTest: can't find <UTestCases> in Xml file").c_str());
+   return 1002;
+ }
 
+ int loadRet = 0;
+ size_t testsCount = static_cast<size_t>(testsXML.GetNumNodes("UTest"));
+ for(size_t i = 0; i < testsCount; ++i)
+ {
+   if(!testsXML.SelectNode("UTest", i))
+     continue;
+
+   tests.push_back(UTest(Application));
+   loadRet += tests[i].LoadTest(testsXML.GetNodeText());
+   testsXML.SelectUp();
+ }
  if(loadRet)
-  return 1002;
-
- tests.push_back(singleTest);
+  return 1003;
 
  /*std::vector<std::string> test_file_names;
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);

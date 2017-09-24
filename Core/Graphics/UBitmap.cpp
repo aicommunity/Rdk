@@ -200,10 +200,9 @@ void UBitmap::SetColorModel(UBMColorModel cmodel, bool isupdate)
   return;
  }
 
- UBColor* target=new UBColor[CalcByteLength(Width, Height, cmodel)];
-
  if(isupdate)
   {
+   UBColor* target=new UBColor[CalcByteLength(Width, Height, cmodel)];
    ColorConvert(Data, ColorModel, target, cmodel);
    // Устанавливаем новый буфер
    AttachBuffer(Width, Height, target, cmodel);
@@ -215,6 +214,12 @@ void UBitmap::SetColorModel(UBMColorModel cmodel, bool isupdate)
     CreateData(Width,Height,cmodel);
    }
   }
+}
+
+// Создает внутренний буфер
+void UBitmap::SetRes(int width, int height)
+{
+ SetRes(width,height,ColorModel);
 }
 
 // Создает внутренний буфер
@@ -5251,17 +5256,26 @@ bool UBRect::operator != (const UBRect &value) const
 // ---------------------
 
 // Методы UBHistogramElement
+
+UBHistogramElement::UBHistogramElement(void)
+{
+ IsNormalized=false;
+ Int=0;
+ Float=0.0;
+ Color.c=0;
+}
+
 // ---------------------
 // Операторы
 // ---------------------
 bool UBHistogramElement::operator < (const UBHistogramElement &value) const
 {
- return Number.Int<value.Number.Int;
+ return (IsNormalized)?(Float<value.Float):(Int<value.Int);
 }
 
 bool UBHistogramElement::operator > (const UBHistogramElement &value) const
 {
- return Number.Int>value.Number.Int;
+ return (IsNormalized)?(Float>value.Float):(Int>value.Int);
 }
 
 extern "C" {
@@ -5296,8 +5310,6 @@ UBHistogram::UBHistogram(void)
  NumPixels=1;
 
  NormalizeFlag=false;
- Min.Number.Int=0;
- Max.Number.Int=0;
 }
 
 UBHistogram::UBHistogram(const UBHistogram &copy)
@@ -5425,7 +5437,8 @@ bool UBHistogram::Prepare(UBMColorModel model)
   for(int i=0;i<Size;i++,pdata++)
   {
    pdata->Color.ycrcb.y=i;
-   pdata->Number.Int=0;
+   pdata->Int=0;
+   pdata->Float=0.0;
   }
   return true;
  }
@@ -5444,7 +5457,7 @@ void UBHistogram::Fill(unsigned value)
  {
   UBHistogramElement* pdata=Data;
   for(int i=0;i<Size;i++,pdata++)
-   pdata->Number.Int=value;
+   pdata->Int=value;
  }
 }
 
@@ -5454,7 +5467,7 @@ void UBHistogram::Fill(float value)
  {
   UBHistogramElement* pdata=Data;
   for(int i=0;i<Size;i++,pdata++)
-   pdata->Number.Float=value;
+   pdata->Float=value;
  }
 }
 
@@ -5530,7 +5543,7 @@ void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, 
    for(int i=x,l=0;i<=x2;i++,l++)
    {
 	if(*p<Size)
-	 ++Data[*p].Number.Int;
+	 ++Data[*p].Int;
     p+=bmp.GetPixelByteLength();
    }
    p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
@@ -5603,7 +5616,7 @@ void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int x, int y, in
    for(int i=x,l=0;i<=x2;i++,l++)
    {
 	if(*p<Size && *mp)
-	 ++Data[*p].Number.Int;
+	 ++Data[*p].Int;
 	 if(i<x2)
 	 {
 	  p+=bmp.GetPixelByteLength();
@@ -5650,36 +5663,36 @@ void UBHistogram::CalcCumulativeDistribution(UBHistogram &output)
  if(NormalizeFlag)
  {
   float res;
-  output.Min.Number.Float=10e7;
-  output.Max.Number.Float=0;
+  output.Min.Float=10e7;
+  output.Max.Float=0;
   for(int j=0;j<Size;j++,pout++)
   {
    res=0;
    pin=Data;
    for(int i=0;i<=j;i++,pin++)
-    res+=pin->Number.Float;
-   pout->Number.Float=res;
-   if(output.Min.Number.Float>res)
+	res+=pin->Float;
+   pout->Float=res;
+   if(output.Min.Float>res)
     output.Min=*pout;
-   if(output.Max.Number.Float<res)
+   if(output.Max.Float<res)
     output.Max=*pout;
   }
  }
  else
  {
   unsigned res;
-  output.Min.Number.Int=0xFFFFFFFF;
-  output.Max.Number.Int=0;
+  output.Min.Int=0xFFFFFFFF;
+  output.Max.Int=0;
   for(int j=0;j<Size;j++,pout++)
   {
    res=0;
    pin=Data;
    for(int i=0;i<=j;i++,pin++)
-    res+=pin->Number.Int;
-   pout->Number.Int=res;
-   if(output.Min.Number.Int>res)
-    output.Min=*pout;
-   if(output.Max.Number.Int<res)
+	res+=pin->Int;
+   pout->Int=res;
+   if(output.Min.Int>res)
+	output.Min=*pout;
+   if(output.Max.Int<res)
     output.Max=*pout;
   }
  }
@@ -5698,7 +5711,7 @@ bool UBHistogram::Normalize(bool value, bool process)
  {
   UBHistogramElement* pdata=Data;
   for(int i=0;i<Size;i++,pdata++)
-   pdata->Number.Float=float(pdata->Number.Int)/float(NumPixels);
+   pdata->Float=float(pdata->Int)/float(NumPixels);
   CalcHistogramRange();
  }
  return true;
@@ -5715,43 +5728,43 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
  int left=min, right=min;
  int left_value,right_value;
  int i=min,j;
- left_value=presult->Number.Int;
+ left_value=presult->Int;
 
  result=*this;
  for(i=min;i<max;i++)
  {
-  if(Data[i].Number.Int == 0)
+  if(Data[i].Int == 0)
   {
    for(j=i;j>=min;j--)
-    if(Data[j].Number.Int != 0)
+	if(Data[j].Int != 0)
     {
      left=j;
-     left_value=Data[j].Number.Int;
+	 left_value=Data[j].Int;
      break;
     }
 
    if(j <= min)
    {
     left=min;
-    left_value=Data[min].Number.Int;
+	left_value=Data[min].Int;
    }
 
    for(j=i;j<=max;j++)
-    if(Data[j].Number.Int != 0)
+	if(Data[j].Int != 0)
     {
      right=j;
-     right_value=Data[j].Number.Int;
+	 right_value=Data[j].Int;
      break;
     }
 
    if(j >= max)
    {
     right=max;
-    right_value=Data[max].Number.Int;
+    right_value=Data[max].Int;
    }
    // Нашли левую и правую ненулевые границы дырки
    for(j=left+1;j<=right-1;j++)
-	result[j].Number.Int=abs(right_value-left_value)/2;
+	result[j].Int=abs(right_value-left_value)/2;
 
    min=right;
   }
@@ -5762,11 +5775,11 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
  unsigned numpixels=0;
  presult=result.Data;
  for(i=0;i<Size;i++)
-  numpixels+=(presult++)->Number.Int;
+  numpixels+=(presult++)->Int;
 
  int diff=(numpixels-NumPixels)/Size;
  for(i=0;i<Size;i++,presult++)
-  presult->Number.Int-=diff;
+  presult->Int-=diff;
 }
 
 // Вычисление диапазона значений гистограммы
@@ -5780,25 +5793,25 @@ void UBHistogram::CalcHistogramRange(void)
 
  if(NormalizeFlag)
  {
-  Min.Number.Float=10e7;
-  Max.Number.Float=0;
+  Min.Float=10e7;
+  Max.Float=0;
   for(int j=0;j<Size;j++,pout++)
   {
-   if(Min.Number.Float>pout->Number.Float)
+   if(Min.Float>pout->Float)
     Min=*pout;
-   if(Max.Number.Float<pout->Number.Float)
+   if(Max.Float<pout->Float)
     Max=*pout;
   }
  }
  else
  {
-  Min.Number.Int=0xFFFFFFFF;
-  Max.Number.Int=0;
+  Min.Int=0xFFFFFFFF;
+  Max.Int=0;
   for(int j=0;j<Size;j++,pout++)
   {
-   if(Min.Number.Int>pout->Number.Int)
+   if(Min.Int>pout->Int)
     Min=*pout;
-   if(Max.Number.Int<pout->Number.Int)
+   if(Max.Int<pout->Int)
     Max=*pout;
   }
  }
@@ -5862,31 +5875,31 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
  {
   if(res.IsNormalized())
   {
-   res.Data[i].Number.Float=fabs(value1.Data[i].Number.Float-value2.Data[i].Number.Float);
-   if(res.Data[i].Number.Float<h_min)
-	h_min=res.Data[i].Number.Float;
-   if(res.Data[i].Number.Float>h_max)
-	h_max=res.Data[i].Number.Float;
+   res.Data[i].Float=fabs(value1.Data[i].Float-value2.Data[i].Float);
+   if(res.Data[i].Float<h_min)
+	h_min=res.Data[i].Float;
+   if(res.Data[i].Float>h_max)
+	h_max=res.Data[i].Float;
   }
   else
   {
-   res.Data[i].Number.Int=abs(int(value1.Data[i].Number.Int-value2.Data[i].Number.Int));
-   if(res.Data[i].Number.Int<h_min)
-	h_min=res.Data[i].Number.Int;
-   if(res.Data[i].Number.Int>h_max)
-	h_max=res.Data[i].Number.Int;
+   res.Data[i].Int=abs(int(value1.Data[i].Int-value2.Data[i].Int));
+   if(res.Data[i].Int<h_min)
+	h_min=res.Data[i].Int;
+   if(res.Data[i].Int>h_max)
+	h_max=res.Data[i].Int;
   }
  }
 
  if(res.IsNormalized())
  {
-  res.Min.Number.Float=h_min;
-  res.Max.Number.Float=h_max;
+  res.Min.Float=h_min;
+  res.Max.Float=h_max;
  }
  else
  {
-  res.Min.Number.Int=h_min;
-  res.Max.Number.Int=h_max;
+  res.Min.Int=h_min;
+  res.Max.Int=h_max;
  }
 
  return res;

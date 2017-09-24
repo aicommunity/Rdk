@@ -833,6 +833,7 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
+return; // TODO: запуск отключен.
  ServerRestartTimer->Enabled=true;
  try
  {

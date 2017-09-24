@@ -39,6 +39,7 @@ UApplication::UApplication(void)
  ProjectOpenFlag=false;
  TestMode=false;
  CloseAfterTest=true;
+ AppIsInit = false;
 // DebugMode=false;
 }
 
@@ -248,6 +249,12 @@ bool UApplication::IsCloseAfterTest(void) const
 {
  return CloseAfterTest;
 }
+
+/// Приложение инициализированно
+bool UApplication::IsInit(void) const
+{
+ return AppIsInit;
+}
 // --------------------------
 
 // --------------------------
@@ -405,7 +412,7 @@ bool UApplication::Init(void)
   ProcessCommandLineArgs();
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
  }*/
-
+ AppIsInit = true;
  return true;
 }
 
@@ -421,7 +428,9 @@ bool UApplication::UnInit(void)
  }
  Sleep(10);
  CloseProject();
+ EngineControl->UnInit();
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
+ AppIsInit = false;
  return true;
 }
 

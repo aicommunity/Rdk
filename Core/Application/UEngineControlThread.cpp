@@ -19,6 +19,7 @@ namespace RDK {
 UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
 : EngineControl(engine_control), EngineIndex(channel_index), Terminated(false)
 {
+ ThreadTimeout=1000;
  CalcState=UCreateEvent(false);
 
  CalcEnable=UCreateEvent(false);
@@ -41,6 +42,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
 
 UEngineControlThread::~UEngineControlThread(void)
 {
+ Pause();
  Terminated=true;
  Thread.join();
 
@@ -198,21 +200,23 @@ void UEngineControlThread::Calculate(void)
   {
    return;
   }
+  CalculationNotInProgress->reset();
+
 
   double diff=(RDK::GetVariantLocalTime()-RealLastCalculationTime)*86400*1000.0;
   if(diff<MinInterstepsInterval)
   {
+   CalculationNotInProgress->set();
    Sleep(int(static_cast<int>(MinInterstepsInterval)-diff));
    return;
   }
 
   if(CalculateMode == 3 && MinInterstepsInterval == UTime(0) && diff<1)
   {
+   CalculationNotInProgress->set();
    Sleep(1);
    return;
   }
-
-  CalculationNotInProgress->reset();
 
   int use_controllers_mode=EngineControl->GetUseControllersMode();
   if(use_controllers_mode == 1)
@@ -290,6 +294,15 @@ UEngineControlThread::UCalcState UEngineControlThread::CheckCalcState(void) cons
   return csRunning;
 
  return csStopped;
+}
+
+/// Возвращает true когда завершится текущая итерация расчета за заданный timeout
+/// Если timeout == -1 То ждет с таймаутом по умолчанию
+bool UEngineControlThread::WaitForCalculationComplete(int timeout) const
+{
+ if(timeout >= 0)
+  return CalculationNotInProgress->wait(timeout);
+ return CalculationNotInProgress->wait(ThreadTimeout);
 }
 
 /// Возвращает состояния запуска треда

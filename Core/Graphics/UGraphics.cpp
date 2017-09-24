@@ -26,6 +26,114 @@ See file license.txt for more information
 
 namespace RDK {
 
+enum UEgdeCode {None=0, Left = 1, Right = 2, Bottom = 4, Top = 8};
+
+int round(double number)
+{
+ return (number < 0.0) ? ceil(number - 0.5) : floor(number + 0.5);
+}
+
+// Процедура вычисления кодов для точки(конца/начала отрезка)
+UEgdeCode CompOutCode(const UBPoint &point, const UBRect &rect)
+{
+ UEgdeCode code=None;
+ if(point.Y > rect.Y2())
+  code=Top;
+ else
+ if(point.Y < rect.Y1())
+  code=Bottom;
+ if(point.X > rect.X2())
+  code=code + Right;
+ else
+ if(point.X < rect.X1())
+  code = code + Left;
+ return code;
+}
+
+// Процедура отсечения отрезка
+// взято отсюда: http://grafika.me/node/694
+void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, UBPoint &out_point1, UBPoint &out_point2)
+{
+ UEgdeCode outcodeOut=None;
+ bool accept = false;
+ bool done = false;
+ int x0(point1.X), y0(point1.Y), x1(point2.X), y1(point2.Y);
+ double x,y;
+ int counter=100000;
+
+ out_point1=point1;
+ out_point2=point2;
+
+ UEgdeCode outcode0=CompOutCode (point1,rect);
+ UEgdeCode outcode1=CompOutCode (point2,rect);
+ do
+ {
+  if((outcode0==None) && (outcode1==None))
+  {
+   // Отрезок целиком лежит внутри окна
+   accept = true; done=true;
+  }
+  else
+  if( (outcode0*outcode1) != None)
+   //Отрезок лежит за пределами окна и не будет отрисован
+   done = true;
+  else // Часть отрезка лежит внутри прямоугольника
+  {
+   if(outcode0 != None) // Если начальная точка лежит вне прямоугольника
+	outcodeOut = outcode0;
+   else
+    outcodeOut = outcode1;
+
+   // Найдём точку пересечения отрезка с границей прямоугольника
+   if(Top & outcodeOut)
+   {
+	x = x0 + (x1 - x0) * (rect.Y2() - y0) / (y1 - y0);
+	y = rect.Y1();
+   }
+
+   if(Bottom & outcodeOut)
+   {
+	x = x0 + (x1 - x0) * (rect.Y1() - y0) / (y1 - y0);
+	y = rect.Y2();
+   }
+   else
+   if(Right & outcodeOut)
+   {
+	y = y0 + (y1 - y0) * (rect.X2() - x0) / (x1 - x0);
+	x = rect.X2();
+   }
+   else
+   if(Left & outcodeOut)
+   {
+	y = y0 + (y1 - y0) * (rect.X1() - x0) / (x1 - x0);
+	x = rect.X1();
+   }
+
+   // Переместили внешнюю точку в точку пересечения
+   if (outcodeOut == outcode0)
+   {
+	x0 = round(x); y0 = round(y);
+	outcode0=CompOutCode(UBPoint(x0,y0),rect);
+   }
+   else
+   {
+	x1 = round(x);
+	y1 = round(y);
+	outcode1=CompOutCode(UBPoint(x1,y1),rect);
+   }
+  }
+  --counter;
+ } while(!done || counter == 0);
+
+ if(accept)  // Рисуем видимую часть отрезка
+ {
+  out_point1.X=x0;
+  out_point1.Y=y0;
+  out_point2.X=x1;
+  out_point2.Y=y1;
+ }
+}
+
 using namespace std;
 
 /* ***************************************************************************
@@ -140,16 +248,22 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
    return;
   }
 
- x1=(x1<0)?0:x1;
- x1=(x1>=CWidth)?CWidth-1:x1;
+ UBPoint p1,p2;
+ ClipLine(UBPoint(x1,y1), UBPoint(x2,y2),UBRect(0,0,CWidth,CHeight),p1,p2);
+ x1=p1.X; y1=p1.Y;
+ x2=p2.X; y2=p2.Y;
 
- x2=(x2<0)?0:x2;
- x2=(x2>=CWidth)?CWidth-1:x2;
- y1=(y1<0)?0:y1;
- y1=(y1>=CHeight)?CHeight-1:y1;
+// x1=(x1<0)?0:x1;
+// x1=(x1>=CWidth)?CWidth-1:x1;
+//
+// x2=(x2<0)?0:x2;
+// x2=(x2>=CWidth)?CWidth-1:x2;
+// y1=(y1<0)?0:y1;
+// y1=(y1>=CHeight)?CHeight-1:y1;
+//
+// y2=(y2<0)?0:y2;
+// y2=(y2>=CHeight)?CHeight-1:y2;
 
- y2=(y2<0)?0:y2;
- y2=(y2>=CHeight)?CHeight-1:y2;
 
  if(!dx)
   {

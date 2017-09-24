@@ -26,11 +26,11 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 MVector(void);
-MVector(T defvalue);
+explicit MVector(T defvalue);
 MVector(T xv, T yv, T zv=0);
 MVector(T xv, T yv, T zv, T dv);
 MVector(const MVector<T,Rows> &copy);
-MVector(const MMatrix<T,Rows,1> &copy);
+explicit MVector(const MMatrix<T,Rows,1> &copy);
 //MVector(const T* data);
 virtual ~MVector(void);
 // --------------------------

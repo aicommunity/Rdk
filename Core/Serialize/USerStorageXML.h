@@ -172,8 +172,38 @@ bool WriteDataOnce(const std::string &name, const T &data);
 template<int Size,typename T>
 bool ReadData(const std::string &name, T (&data)[Size]);
 
+template<int Size>
+bool ReadData(const std::string &name, bool (&data)[Size]);
+
+template<int Size>
+bool ReadData(const std::string &name, double (&data)[Size]);
+
+template<int Size>
+bool ReadData(const std::string &name, int (&data)[Size]);
+
+template<int Size>
+bool ReadData(const std::string &name, uint8_t (&data)[Size]);
+
+template<int Size>
+bool ReadData(const std::string &name, uint32_t (&data)[Size]);
+
 template<int Size,typename T>
 bool WriteData(const std::string &name, T const (&data)[Size]);
+
+template<int Size>
+bool WriteData(const std::string &name, bool const (&data)[Size]);
+
+template<int Size>
+bool WriteData(const std::string &name, double const (&data)[Size]);
+
+template<int Size>
+bool WriteData(const std::string &name, int const (&data)[Size]);
+
+template<int Size>
+bool WriteData(const std::string &name, uint8_t const (&data)[Size]);
+
+template<int Size>
+bool WriteData(const std::string &name, uint32_t const (&data)[Size]);
 
 template<int Size,typename T>
 bool WriteDataOnce(const std::string &name, T const (&data)[Size]);
@@ -181,8 +211,38 @@ bool WriteDataOnce(const std::string &name, T const (&data)[Size]);
 template<int Size1, int Size2, typename T>
 bool ReadData(const std::string &name, T (&data)[Size1][Size2]);
 
+template<int Size1, int Size2>
+bool ReadData(const std::string &name, bool (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool ReadData(const std::string &name, double (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool ReadData(const std::string &name, int (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool ReadData(const std::string &name, uint32_t (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool ReadData(const std::string &name, uint8_t (&data)[Size1][Size2]);
+
 template<int Size1, int Size2, typename T>
 bool WriteData(const std::string &name, T const (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool WriteData(const std::string &name, bool const (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool WriteData(const std::string &name, double const (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool WriteData(const std::string &name, int const (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool WriteData(const std::string &name, uint32_t const (&data)[Size1][Size2]);
+
+template<int Size1, int Size2>
+bool WriteData(const std::string &name, uint8_t const (&data)[Size1][Size2]);
 
 template<int Size1, int Size2, typename T>
 bool WriteDataOnce(const std::string &name, T const (&data)[Size1][Size2]);

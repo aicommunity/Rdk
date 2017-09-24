@@ -56,7 +56,7 @@ UEngine::UEngine(void)
 {
 // Runned=-1;
  ChannelIndex=0;
- BufObjectsMode=0;
+ BufObjectsMode=1;
 // CurrentExceptionsLogSize=0;
 // ExceptionHandler=0;
 
@@ -66,6 +66,7 @@ UEngine::UEngine(void)
 
 UEngine::~UEngine(void)
 {
+ ClearAllTempStrings();
 // Stop();
 }
 // --------------------------
@@ -121,17 +122,29 @@ std::string& UEngine::CreateTempString(void) const
   if(TempStrings.empty())
   {
    UEPtr<string> pstr=new std::string;
-   TempStrings.push_back(pstr);
+   TempStrings.insert(std::pair<UEPtr<string>,bool>(pstr,true));
   }
-  return *TempStrings.front();
+  return *TempStrings.begin()->first;
  }
  break;
 
  case 1:
  {
+  std::map<UEPtr<std::string>,bool>::iterator I,J;
+  I=TempStrings.begin();
+  J=TempStrings.end();
+  for(;I!=J;++I)
+  {
+   if(!I->second)
+   {
+    I->first->clear();
+	return *I->first;
+   }
+  }
+
   UEPtr<string> pstr=new std::string;
-  TempStrings.push_back(pstr);
-  return *TempStrings.back();
+  TempStrings.insert(std::pair<UEPtr<string>,bool>(pstr,true));
+  return *pstr;
  }
  break;
  }
@@ -140,15 +153,16 @@ std::string& UEngine::CreateTempString(void) const
 
 /// Возвращает временную строку
 /// по указателю на ее данные
+/// не находит свободные строки!
 std::string& UEngine::FindTempString(const char *str_data) const
 {
- std::list<UEPtr<std::string> >::iterator I,J;
+ std::map<UEPtr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if((*I)->c_str() == str_data)
-   return **I;
+  if(I->first->c_str() == str_data && I->second)
+   return *I->first;
 
  }
  return DummyTempString;
@@ -164,15 +178,14 @@ void UEngine::DestroyTempString(const char *str_data) const
  if(BufObjectsMode == 0)
   return;
 
- std::list<UEPtr<std::string> >::iterator I,J;
+ std::map<UEPtr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if(*I && (*I)->c_str() == str_data)
+  if(I->first && I->first->c_str() == str_data)
   {
-   delete *I;
-   TempStrings.erase(I);
+   I->second=false;
    break;
   }
  }
@@ -185,15 +198,14 @@ void UEngine::DestroyTempString(const std::string &ref) const
  if(BufObjectsMode == 0)
   return;
 
- std::list<UEPtr<std::string> >::iterator I,J;
+ std::map<UEPtr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if(**I == ref)
+  if(*I->first == ref)
   {
-   delete *I;
-   TempStrings.erase(I);
+   I->second=false;
    break;
   }
  }
@@ -202,15 +214,12 @@ void UEngine::DestroyTempString(const std::string &ref) const
 /// Удаляет все временные строк
 void UEngine::ClearAllTempStrings(void) const
 {
- if(BufObjectsMode == 0)
-  return;
-
- std::list<UEPtr<std::string> >::iterator I,J;
+ std::map<UEPtr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  delete *I;
+  delete I->first;
  }
  TempStrings.clear();
 }
@@ -2880,12 +2889,7 @@ bool UEngine::Model_Check(void)
  {
   try
   {
-   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
-
-   if(!model)
-	return false;
-
-   return true;
+   return (Environment->GetModel())?true:false;
   }
   catch (RDK::UException &exception)
   {
@@ -4177,7 +4181,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
    if(minsize>item->GetNumInputs())
 	minsize=item->GetNumInputs();
    for(int j=0;j<minsize;j++)
-	cont->CreateLink(ForbiddenId,j,id1,j);
+	cont->CreateLink(UIdVector(ForbiddenId),j,id1,j);
 
    for(int i=1;i<cont->GetNumComponents();i++)
    {

@@ -87,7 +87,7 @@ int ULogger::WriteMessageToFile(const std::string &str)
   file_name=RDK::get_text_time(time_data, '.', '_');
   EventsLogFile=new std::ofstream((LogDir.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
 
-  if(!EventsLogFile->is_open())
+  if(!EventsLogFile->is_open() || EventsLogFile->fail() || EventsLogFile->bad())
   {
    Clear();
    RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");

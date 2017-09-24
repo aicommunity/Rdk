@@ -19,7 +19,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UELockVar(void);
-UELockVar(const T pdata);
+explicit UELockVar(const T pdata);
 UELockVar(const UELockVar<T> &pdata);
 virtual ~UELockVar(void);
 // --------------------------

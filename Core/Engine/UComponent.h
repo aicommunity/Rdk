@@ -319,19 +319,19 @@ EPropertyIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 // Имя свойства не найдено
 struct EPropertyNameNotExist: public ENameNotExist
 {
-EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
 // Имя свойства уже существует
 struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
-EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Имя алиаса не найдено
 struct EAliasNameNotExist: public ENameNotExist
 {
-EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 /*
 // Id переменной состояния не найден

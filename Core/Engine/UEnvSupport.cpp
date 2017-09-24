@@ -226,6 +226,13 @@ UIdVector& UIdVector::operator = (const UIdVector &copy)
  return *this;
 }
 
+UIdVector& UIdVector::operator = (const UId &copy)
+{
+ Clear();
+ Add(copy);
+ return *this;
+}
+
 // Оператор доступа
 UId& UIdVector::operator [] (int index)
 {

@@ -75,8 +75,9 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyBase(const std::string &name, bool dynamic_prop_flag=false)
  : GetDataValuePtr(0), SetDataValuePtr(0), Name(name), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag), CurrentInputIndex(0)
+
+UVBaseDataProperty(T * const pdata)
 {
 }
 
@@ -366,7 +367,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
-  CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), UPropertyBaseOwner<T,OwnerT>(name, owner, dynamic_prop_flag)
+UVBaseProperty(OwnerT * const owner) :
+  Owner(owner)
 {
 }
 						   /*
@@ -574,12 +576,12 @@ UPropertyVirtual<T,OwnerT>& operator = (const T &value)
  this->SetData(value);
  return *this;
 };
-
+/*
 UPropertyVirtual<T,OwnerT>& operator = (const UPropertyVirtual<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;
-};
+};*/
 // -----------------------------
 };
 

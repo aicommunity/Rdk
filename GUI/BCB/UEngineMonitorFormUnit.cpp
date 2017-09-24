@@ -183,6 +183,9 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 	  */
  try
  {
+  if(!RdkApplication.IsInit())
+   return;
+
   std::list<std::string> log=RdkApplication.GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
 
   for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)

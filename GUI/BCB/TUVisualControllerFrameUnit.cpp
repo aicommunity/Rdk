@@ -12,7 +12,7 @@ TUVisualControllerFrame *UVisualControllerFrame;
 // Конструкторы и деструкторы
 // --------------------------
 // Флаг, сообщающий что идет расчет
-RDK::UELockVar<bool> TUVisualControllerFrame::CalculationModeFlag=false;
+RDK::UELockVar<bool> TUVisualControllerFrame::CalculationModeFlag(false);
 
 __fastcall TUVisualControllerFrame::TUVisualControllerFrame(TComponent* Owner)
  : TFrame(Owner)
@@ -192,13 +192,11 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
    {
-//	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
 	return;
    }
 
    if(GetCalculationStepUpdatedFlag() == true)
    {
-//	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
 	return;
    }
    else
@@ -208,15 +206,13 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
   }
  }
 
- if(!Core_IsChannelInit())
+ if(!Core_IsChannelInit()) // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
 
- if(CheckModelFlag && !Model_Check())
+ if(CheckModelFlag && !RDK::GetModel())  // TODO: PossibleUnsafe!
  {
-//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
   UpdateInterfaceFlag=true;
@@ -308,7 +304,7 @@ long TUVisualControllerFrame::GetUpdateInterval(void)
 // Задает интервал обновления интерфейса
 bool TUVisualControllerFrame::SetUpdateInterval(long value)
 {
- if(value<0)
+ if(value<-1)
   return false;
 
  UpdateInterval=value;

@@ -48,13 +48,14 @@ MMatrixSize(void);
 //MMatrixSize(int rows);
 MMatrixSize(int rows, int cols);
 MMatrixSize(const MMatrixSize &copy);
-MMatrixSize(const std::vector<int> &dims);
+explicit MMatrixSize(const std::vector<int> &dims);
 // --------------------------
 
 // --------------------------
 // Операторы
 // --------------------------
 MMatrixSize& operator = (const MMatrixSize &copy);
+MMatrixSize& operator = (const std::vector<int> &copy);
 
 int operator [] (int i) const;
 int& operator [] (int i);
@@ -68,6 +69,9 @@ bool operator <= (const MMatrixSize &copy) const;
 
 // Возвращает размерность
 int GetDimensions(void) const;
+
+/// Возвращает сырые данные размерности
+const std::vector<int> GetDims(void) const;
 // --------------------------
 };
 

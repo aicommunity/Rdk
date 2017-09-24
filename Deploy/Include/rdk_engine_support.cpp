@@ -23,11 +23,10 @@ URdkCoreManager::URdkCoreManager(void)
  Engine=0;
  Environment=0;
  Storage=0;
- BufObjectsMode=0;
 
  DebuggerMessageFlag=true;
  DebugMode=false;
- BufObjectsMode=0;
+ BufObjectsMode=1;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
  GlobalLogger.SetDebugMode(true);
  GlobalLogger.SetDebuggerMessageFlag(false);
@@ -626,6 +625,7 @@ int URdkCoreManager::ChannelCreate(int index)
    // TODO: здесь инициализаци€ параметров логгера и его запуск
    LoggerList[index]=new RDK::ULoggerEnv;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
+   LoggerList[index]->SetMaxExceptionsLogSize(0);
    LoggerList[index]->SetLogDir(LogDir);
    LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
    LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());
@@ -937,6 +937,25 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(int channel_index)
 #endif
 }
 
+RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UEngine>(0,GetEngine());
+#else
+// UGenericMutexSharedLocker lock(GlobalMutex);
+ return RDK::UELockPtr<RDK::UEngine>(MutexList[SelectedChannelIndex],GetEngine(),timeout);
+#endif
+}
+
+RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UEngine>(0,GetEngine(channel_index));
+#else
+ return RDK::UELockPtr<RDK::UEngine>(MutexList[channel_index],GetEngine(channel_index),timeout);
+#endif
+}
+
 // ¬озвращает ссылку на указатель среды выполнени€
 RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(void)
 {
@@ -994,6 +1013,24 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(int channel_index)
  return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
 #else
  return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index));
+#endif
+}
+
+RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UContainer>(0,GetModel(SelectedChannelIndex));
+#else
+ return RDK::UELockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel(),timeout);
+#endif
+}
+
+RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
+#else
+ return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
 #endif
 }
 // --------------------------

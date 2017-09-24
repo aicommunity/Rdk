@@ -934,7 +934,7 @@ MPlane(void)
 { };
 MPlane(const MPlane &copy)
 { *this=copy; };
-MPlane(MVector<T,Rows> n, T dist)
+MPlane(const MVector<T,Rows> &n, T dist)
  : Normal(n), Distance(dist)
 { };
 virtual ~MPlane(void){};
@@ -968,7 +968,7 @@ inline bool operator != (const MPlane &v) const
 // --------------------------
 // ¬ычисл€ет точку пересечени€ луча с плоскостью
 // ¬озвращает true если пересечение существует
-bool CalcIntersection(MRay<T,Rows> ray, MVector<T,Rows> &p)
+bool CalcIntersection(const MRay<T,Rows> &ray, MVector<T,Rows> &p)
 {
  T alfa,beta,t;
 

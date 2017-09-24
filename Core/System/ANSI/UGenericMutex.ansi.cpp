@@ -31,10 +31,10 @@ public:
 UGenericMutexAnsi();
 virtual ~UGenericMutexAnsi();
 
-virtual bool shared_lock(void);
+virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
 virtual bool shared_unlock(void);
 
-virtual bool exclusive_lock(void);
+virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
 virtual bool exclusive_unlock(void);
 
 };
@@ -60,11 +60,11 @@ UGenericMutexAnsi::~UGenericMutexAnsi()
  }  */
 }
 
-bool UGenericMutexAnsi::shared_lock(void)
+bool UGenericMutexAnsi::shared_lock(unsigned timeout)
 {
 // Mutex.lock_shared();
  boost::system_time pt(boost::get_system_time());
- if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(60000)))
+ if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(timeout)))
  {
   return false;
  }
@@ -77,7 +77,7 @@ bool UGenericMutexAnsi::shared_unlock(void)
  return true;
 }
 
-bool UGenericMutexAnsi::exclusive_lock(void)
+bool UGenericMutexAnsi::exclusive_lock(unsigned timeout)
 {
 // boost::thread::id self = boost::this_thread::get_id();
  if(Mutex.try_lock())
@@ -91,7 +91,7 @@ bool UGenericMutexAnsi::exclusive_lock(void)
 
 // Mutex.lock();
  boost::system_time pt(boost::get_system_time());
- if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(60000)))
+ if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(timeout)))
  {
   return false;
  }

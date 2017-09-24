@@ -21,10 +21,10 @@ virtual ~UGenericMutexQt();
 
 virtual bool wait(int timeout);
 
-virtual bool shared_lock(void);
+virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
 virtual bool shared_unlock(void);
 
-virtual bool exclusive_lock(void);
+virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
 virtual bool exclusive_unlock(void);
 };
 
@@ -58,9 +58,15 @@ bool UGenericMutexQt::wait(int timeout)
  return m_mutex.tryLockForWrite(timeout);
 }
 
-bool UGenericMutexQt::shared_lock(void)
+bool UGenericMutexQt::shared_lock(unsigned timeout)
 {
-    m_mutex.lockForRead();
+ if(timeout == RDK_MUTEX_TIMEOUT)
+  m_mutex.lockForRead();
+ else
+ {
+  return m_mutex.tryLockForRead(timeout);
+ }
+
     return true;
 }
 
@@ -70,10 +76,16 @@ bool UGenericMutexQt::shared_unlock(void)
     return true;
 }
 
-bool UGenericMutexQt::exclusive_lock(void)
+bool UGenericMutexQt::exclusive_lock(unsigned timeout)
 {
-    m_mutex.lockForWrite();
-    return true;
+ if(timeout == RDK_MUTEX_TIMEOUT)
+  m_mutex.lockForWrite();
+ else
+ {
+  return m_mutex.tryLockForWrite(timeout);
+ }
+
+ return true;
 }
 
 bool UGenericMutexQt::exclusive_unlock(void)
