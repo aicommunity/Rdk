@@ -60,7 +60,7 @@
     <PropertyGroup Condition="'$(Base)'!=''">
         <TLIB_PageSize>8192</TLIB_PageSize>
         <_TCHARMapping>char</_TCHARMapping>
-        <SanitizedProjectName>rdk_bcb_static</SanitizedProjectName>
+        <SanitizedProjectName>rdk_bcb_static_10_2</SanitizedProjectName>
         <DynamicRTL>true</DynamicRTL>
         <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
         <VerInfo_Build>34</VerInfo_Build>
@@ -237,14 +237,6 @@
             <DependentOn>..\..\..\Core\Engine\UController.h</DependentOn>
             <BuildOrder>69</BuildOrder>
         </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UDynamicMatNet.cpp">
-            <DependentOn>..\..\..\Core\Engine\UDynamicMatNet.h</DependentOn>
-            <BuildOrder>118</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UDynamicNet.cpp">
-            <DependentOn>..\..\..\Core\Engine\UDynamicNet.h</DependentOn>
-            <BuildOrder>117</BuildOrder>
-        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UELockPtr.cpp">
             <DependentOn>..\..\..\Core\Engine\UELockPtr.h</DependentOn>
             <BuildOrder>70</BuildOrder>
@@ -294,18 +286,16 @@
             <BuildOrder>82</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UProperty.cpp">
-            <BuildOrder>83</BuildOrder>
+            <BuildOrder>115</BuildOrder>
         </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyEndpoints.cpp">
-            <DependentOn>..\..\..\Core\Engine\UPropertyEndpoints.h</DependentOn>
+        <CppCompile Include="..\..\..\Core\Engine\UPropertyInput.cpp">
+            <BuildOrder>116</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UPropertyIO.cpp">
             <BuildOrder>117</BuildOrder>
         </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyImplementationBase.cpp">
+        <CppCompile Include="..\..\..\Core\Engine\UPropertyOutput.cpp">
             <BuildOrder>118</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyInterface.cpp">
-            <DependentOn>..\..\..\Core\Engine\UPropertyInterface.h</DependentOn>
-            <BuildOrder>117</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UShare.cpp">
             <DependentOn>..\..\..\Core\Engine\UShare.h</DependentOn>
@@ -650,37 +640,31 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="$(BDS)\Redist\iossim32\libcgunwind.1.0.dylib" Class="DependencyModule"/>
-                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.lib" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>rdk_bcb_static.lib</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="$(BDS)\Redist\osx32\libcgsqlite3.dylib" Class="DependencyModule">
                     <Platform Name="OSX32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64220.dll" Class="DependencyModule"/>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32250mt.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64220.dll" Class="DependencyModule"/>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64250mt.dll" Class="DependencyModule">
                     <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32220.dll" Class="DependencyModule"/>
                 <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
                     <Platform Name="OSX32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32220.dll" Class="DependencyModule"/>
-                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.tds" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.10.2.tds" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win32">
-                        <RemoteName>rdk_bcb_static.tds</RemoteName>
+                        <RemoteName>rdk_bcb_static_10_2.tds</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -691,6 +675,12 @@
                 </DeployFile>
                 <DeployFile LocalName="$(BDS)\Redist\iossimulator\libPCRE.dylib" Class="DependencyModule">
                     <Platform Name="iOSSimulator">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.10.2.lib" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>rdk_bcb_static_10_2.lib</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

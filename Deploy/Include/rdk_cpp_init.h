@@ -99,7 +99,7 @@ RDK::UELockPtr<T> GetEngineLockTimeout(int channel_index, unsigned timeout)
 template<class T>
 RDK::UELockPtr<T> GetModelLock(void)
 {
- return RdkCoreManager.GetModelLock<T>();
+ return RdkCoreManager.GetModelLock<T>(RdkCoreManager.GetSelectedChannelIndex());
 }
 
 template<class T>
