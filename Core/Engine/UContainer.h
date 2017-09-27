@@ -15,7 +15,7 @@ See file license.txt for more information
 #include "../Math/MVector.h"
 #include "UComponent.h"
 #include "UPropertyInterface.h"
-//#include "UProperty.h"
+#include "UProperty.h"
 //#include "ULocalProperty.h"
 //#include "UShare.h"
 #include "UTime.h"
@@ -143,7 +143,7 @@ long long CalculationDurationThreshold;
 
 public: //
 /// Флаг включения мониторинга утечки памяти
-ULProperty<bool, UContainer> MemoryMonitor;
+UProperty<bool, UContainer, ptPubParameter> MemoryMonitor;
 
 
 protected: // Физические свойства

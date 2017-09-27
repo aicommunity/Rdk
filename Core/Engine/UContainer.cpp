@@ -2148,7 +2148,7 @@ bool UContainer::Calculate(void)
 
    unsigned long long total_used_memory_before(0);
    unsigned long long largest_free_block_before(0);
-   if(MemoryMonitor)
+   if(MemoryMonitor == true)
 	ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
 
    BeforeCalculate();
@@ -2252,7 +2252,7 @@ bool UContainer::Calculate(void)
    AfterCalculate();
    unsigned long long total_used_memory_after(0);
    unsigned long long largest_free_block_after(0);
-   if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+   if(MemoryMonitor == true && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
    {
 	MemoryUsageDiff=total_used_memory_before-total_used_memory_after;
 	MaxMemoryBlockDiff=largest_free_block_before-largest_free_block_after;
@@ -3062,8 +3062,7 @@ bool PreparePropertyLogString(const UEPtr<UIProperty>& variable, unsigned int ex
  std::string line=str_type+variable->GetName();
  result=line;
 
- if(type & ptInput && !variable.Property->IsConnected())
- if(prop_input && !prop_input->IsConnected())
+ UEPtr<UIPropertyInput> prop_input=dynamic_pointer_cast<UIPropertyInput>(variable); if(prop_input && !prop_input->IsConnected())
  {
   result=line+"[<Disconnected>]";
  }
@@ -3076,7 +3075,7 @@ bool PreparePropertyLogString(const UEPtr<UIProperty>& variable, unsigned int ex
    int num_connections(prop_input->GetNumConnections());
    for(int i=0;i<num_connections;i++)
    {
-	str_stream<<prop_input->GetConnectedProperty(i)->GetOwner()->GetFullName()<<":"<<prop_input->GetConnectedProperty(i)->GetName();
+	str_stream<<dynamic_cast<UContainer*>(prop_input->GetConnectedProperty(i)->GetOwner())->GetFullName()<<":"<<prop_input->GetConnectedProperty(i)->GetName();
 	if(i < num_connections-1)
      str_stream<<";";
    }

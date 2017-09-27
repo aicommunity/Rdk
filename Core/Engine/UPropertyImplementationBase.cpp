@@ -75,7 +75,7 @@ bool UIPropertyInputBase::DisconnectFromOutput(UIPropertyOutput *output_property
 {
  if(!output_property)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property pointer is null"));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property pointer is null"));
   return false;
  }
 
@@ -87,7 +87,7 @@ bool UIPropertyInputBase::DisconnectFromOutput(int c_index)
 {
  if(c_index<0 || c_index >=ConnectedProperties.size())
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property index not found: ")+sntoa(c_index));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property index not found: ")+sntoa(c_index));
   return false;
  }
  return ConnectedProperties[c_index]->DisconnectFromInput(this,c_index);
@@ -113,19 +113,19 @@ bool UIPropertyInputBase::FinalizeConnectToOutput(UIPropertyOutput *output_prope
 {
  if(NumConnectionsLimit == 0)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. NumConnectionLimit set to zero."));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. NumConnectionLimit set to zero."));
   return false;
  }
 
  if(NumConnectionsLimit>0 && ConnectedProperties.size() == NumConnectionsLimit)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Connector already in use."));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Connector already in use."));
   return false;
  }
 
  if(!CompareLanguageType(*output_property))
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Language types are incompatible. ")+output_property->GetLanguageType().name()+std::string(" != ")+GetLanguageType().name());
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Language types are incompatible. ")+output_property->GetLanguageType().name()+std::string(" != ")+GetLanguageType().name());
   return false;
  }
 
@@ -138,18 +138,18 @@ bool UIPropertyInputBase::FinalizeDisconnectFromOutput(UIPropertyOutput *output_
 {
  if(c_index<0 || c_index>=int(ConnectedProperties.size()))
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property index not found: ")+sntoa(c_index));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property index not found: ")+sntoa(c_index));
   return false;
  }
 
  if(ConnectedProperties[c_index] != output_property)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found by expected connected index: ")+output_property->GetName()+std::string(" c_index=")+sntoa(c_index));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found by expected connected index: ")+output_property->GetName()+std::string(" c_index=")+sntoa(c_index));
   return false;
  }
 
  ConnectedProperties.erase(ConnectedProperties.begin()+c_index);
- return AFinalizeDisconnectToOutput(output_property,c_index);
+ return AFinalizeDisconnectFromOutput(output_property,c_index);
 }
 
 /// Задает лимит на число подключений ко входу
@@ -201,7 +201,7 @@ bool UIPropertyOutputBase::ConnectToInput(UIPropertyInput *input_property)
 {
  if(!input_property)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Connected property pointer is null"));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Connected property pointer is null"));
   return false;
  }
 
@@ -219,7 +219,7 @@ bool UIPropertyOutputBase::DisconnectFromInput(UIPropertyInput *input_property, 
 {
  if(!input_property)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property pointer is null"));
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property pointer is null"));
   return false;
  }
 
@@ -236,11 +236,11 @@ bool UIPropertyOutputBase::DisconnectFromInput(UIPropertyInput *input_property, 
 	// TODO: тут код физического отключения данных
 	SubscribedProperties.erase(SubscribedProperties.begin()+i);
 	res&=input_property->FinalizeDisconnectFromOutput(this,i);
-    ++found_counter;
+	++found_counter;
    }
    else
    {
-    ++i;
+	++i;
    }
   }
   else
@@ -249,7 +249,7 @@ bool UIPropertyOutputBase::DisconnectFromInput(UIPropertyInput *input_property, 
 
  if(found_counter == 0)
  {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found in ConnectedProperties list: ")+input_property->GetName());
+  dynamic_cast<UContainer*>(GetOwner())->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found in ConnectedProperties list: ")+input_property->GetName());
   return false;
  }
  return res;

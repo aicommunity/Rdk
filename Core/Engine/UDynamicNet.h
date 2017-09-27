@@ -14,7 +14,7 @@ public: // Parameters
 UProperty<int,UDynamicNet<T>, ptPubParameter> NumInputs;
 
 /// Number of dynamic outputs
-UProperty<int,UDynamicNet<T>, ptPubParameter> NumOutputs;
+//UProperty<int,UDynamicNet<T>, ptPubParameter> NumOutputs;
 
 protected:
 /// Pointers to dynamic IO

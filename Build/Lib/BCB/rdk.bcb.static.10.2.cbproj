@@ -60,7 +60,7 @@
     <PropertyGroup Condition="'$(Base)'!=''">
         <TLIB_PageSize>8192</TLIB_PageSize>
         <_TCHARMapping>char</_TCHARMapping>
-        <SanitizedProjectName>rdk_bcb_static</SanitizedProjectName>
+        <SanitizedProjectName>rdk_bcb_static_10_2</SanitizedProjectName>
         <DynamicRTL>true</DynamicRTL>
         <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
         <VerInfo_Build>34</VerInfo_Build>

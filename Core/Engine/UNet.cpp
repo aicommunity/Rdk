@@ -460,7 +460,7 @@ bool UNet::DisconnectBy(UEPtr<UContainer> brklevel)
   while(I != buffer[j]->GetSubscribedProperties().end())
   {
    UEPtr<UIPropertyInput> input=*I;
-   if(!input->GetOwner()->CheckOwner(brklevel))
+   if(!dynamic_cast<UContainer*>(input->GetOwner())->CheckOwner(brklevel))
    {
 	J=++I;
 	res&=buffer[j]->DisconnectFromInput(input);
@@ -634,7 +634,7 @@ ULinksList& UNet::GetOutputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, bo
   for(;I != connected_properties.end();I++)
   {
    const UEPtr<UIPropertyInput> input_property=*I;
-   UNet* curr_conn(input_property->GetOwner());
+   UNet* curr_conn(dynamic_cast<UNet*>(input_property->GetOwner()));
    if(exclude_internals)
    {
 	if(curr_conn->CheckOwner(internal_level))
@@ -688,10 +688,10 @@ ULinksList& UNet::GetInputLinks(ULinksList &linkslist, UEPtr<UNet> netlevel, boo
    const UIPropertyOutput* output_property=*I;
 	if(exclude_internals)
 	{
-	 if(output_property->GetOwner()->CheckOwner(internal_level))
+	 if(dynamic_cast<const UContainer*>(output_property->GetOwner())->CheckOwner(internal_level))
 	  continue;
 	}
-	output_property->GetOwner()->GetLongName(netlevel,item.ComponentName);
+	dynamic_cast<const UContainer*>(output_property->GetOwner())->GetLongName(netlevel,item.ComponentName);
     connector.Index=k++;
 	connector.PropertyName=input_properties[j]->GetName();
 
@@ -748,7 +748,7 @@ ULinksList& UNet::GetOutputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist
   for(;I != connected_properties.end();I++)
   {
    const UEPtr<UIPropertyInput> input_property=*I;
-   UNet* curr_conn(input_property->GetOwner());
+   UNet* curr_conn(dynamic_cast<UNet*>(input_property->GetOwner()));
    if(curr_conn != cont)
 	continue;
    curr_conn->GetLongName(netlevel,connector.ComponentName);
@@ -800,7 +800,7 @@ ULinksList& UNet::GetInputPersonalLinks(UEPtr<UNet> cont, ULinksList &linkslist,
    if(output_property->GetOwner() != cont)
 	continue;
 
-	output_property->GetOwner()->GetLongName(netlevel,item.ComponentName);
+	dynamic_cast<const UContainer*>(output_property->GetOwner())->GetLongName(netlevel,item.ComponentName);
     connector.Index=k++;
 	connector.PropertyName=input_properties[j]->GetName();
 

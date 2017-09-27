@@ -21,7 +21,7 @@ MMatrixSize UDynamicMatNet::GetInputDataSize(size_t index) const
  if(!InputData[index])
   return MMatrixSize(0,0);
 
- return InputData[index]->GetMatrixSize();
+ return (*InputData[index])->GetMatrixSize();
 }
 
 // Возвращает суммарный размер всех векторов входов
@@ -41,13 +41,13 @@ bool UDynamicMatNet::SetOutputDataSize(int index, const MMatrixSize &size, bool 
 
  if(OutputData.size() > size_t(index))
  {
-  if(OutputData[index]->GetMatrixSize() == size)
+  if((*OutputData[index])->GetMatrixSize() == size)
    return true;
  }
  else
   OutputData.resize(index+1);
 
- OutputData[index]->Resize(size);
+ (*OutputData[index])->Resize(size);
 
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
  for(;I != RelatedConnectors.end();++I)

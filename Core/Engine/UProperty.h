@@ -75,9 +75,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
+UPropertyBase(const std::string &name, bool dynamic_prop_flag=false)
  : GetDataValuePtr(0), SetDataValuePtr(0), Name(name), Mutex(UCreateMutex()), UpdateTime(0), DynamicPropertyFlag(dynamic_prop_flag), CurrentInputIndex(0)
-
-UVBaseDataProperty(T * const pdata)
 {
 }
 
@@ -280,14 +279,14 @@ virtual std::string GetOwnerClassName(void) const
 };
 
 /// Возвращает указатель на владелька свойства
-virtual const UNet* GetOwner(void) const
+virtual const UComponent* GetOwner(void) const
 {
- return dynamic_cast<const UNet*>(Owner);
+ return dynamic_cast<const UComponent*>(Owner);
 }
 
-virtual UNet* GetOwner(void)
+virtual UComponent* GetOwner(void)
 {
- return dynamic_cast<UNet*>(Owner);
+ return dynamic_cast<UComponent*>(Owner);
 }
 
 // Метод возвращает тип свойства
@@ -367,8 +366,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod , GetterRT getmethod, bool dynamic_prop_flag=false) :
-UVBaseProperty(OwnerT * const owner) :
-  Owner(owner)
+  CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), UPropertyBaseOwner<T,OwnerT>(name, owner, dynamic_prop_flag)
 {
 }
 						   /*
@@ -576,12 +574,12 @@ UPropertyVirtual<T,OwnerT>& operator = (const T &value)
  this->SetData(value);
  return *this;
 };
-/*
+
 UPropertyVirtual<T,OwnerT>& operator = (const UPropertyVirtual<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;
-};*/
+};
 // -----------------------------
 };
 

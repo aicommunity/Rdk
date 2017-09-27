@@ -19,8 +19,8 @@ public:
 virtual ~UIProperty(void);
 
 /// ¬озвращает указатель на владелька свойства
-virtual const UNet* GetOwner(void) const=0;
-virtual UNet* GetOwner(void)=0;
+virtual const UComponent* GetOwner(void) const=0;
+virtual UComponent* GetOwner(void)=0;
 
 // ћетод возвращает строковое им€ свойства
 virtual const std::string& GetName(void) const=0;
