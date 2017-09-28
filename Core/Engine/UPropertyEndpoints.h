@@ -122,7 +122,17 @@ void Resize(int rows, int cols)
  Value.Resize(rows,cols);
 }
 
+void Resize(const MMatrixSize &size)
+{
+ Value.Resize(size);
+}
+
 void Assign(int rows, int cols, const V &val)
+{
+ Value.Assign(rows,cols,val);
+}
+
+void Assign(int rows, int cols, const V *val)
 {
  Value.Assign(rows,cols,val);
 }

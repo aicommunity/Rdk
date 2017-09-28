@@ -28,7 +28,7 @@ size_t GetFullInputDataSize(void) const;
 // –азмер вектора выходных данных
 inline MMatrixSize GetOutputDataSize(int index) const
 { return GetOutputData(index).GetMatrixSize(); };
-virtual bool SetOutputDataSize(int index, const MMatrixSize &size, bool nobuild=false);
+virtual bool SetOutputDataSize(int index, const MMatrixSize &size);
 
 // ¬озвращает размер вектора выходных данных в байтах
 inline size_t GetByteOutputDataSize(int index) const

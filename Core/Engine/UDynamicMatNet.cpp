@@ -27,14 +27,14 @@ MMatrixSize UDynamicMatNet::GetInputDataSize(size_t index) const
 // Возвращает суммарный размер всех векторов входов
 size_t UDynamicMatNet::GetFullInputDataSize(void) const
 {
- return FullInputDataSize;
+ throw 1; // todo: //return FullInputDataSize;
 }
 // --------------------------
 
 // ----------------------
 // Методы управления выходными данными
 // ----------------------
-bool UDynamicMatNet::SetOutputDataSize(int index, const MMatrixSize &size, bool nobuild)
+bool UDynamicMatNet::SetOutputDataSize(int index, const MMatrixSize &size)
 {
  if(index < 0)
   return false;
@@ -45,10 +45,13 @@ bool UDynamicMatNet::SetOutputDataSize(int index, const MMatrixSize &size, bool 
    return true;
  }
  else
-  OutputData.resize(index+1);
+ {
+  SetNumOutputs(index+1);
+  Build();
+ }
 
- (*OutputData[index])->Resize(size);
-
+ OutputData[index]->Resize(size);
+/*
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
  for(;I != RelatedConnectors.end();++I)
   for(size_t i=0;i<I->second.size();i++)
@@ -56,9 +59,7 @@ bool UDynamicMatNet::SetOutputDataSize(int index, const MMatrixSize &size, bool 
    static_pointer_cast<UADItem>(I->second[i])->UpdatePointers();
    static_pointer_cast<UADItem>(I->second[i])->CalcMinMaxInputDataSize();
   }
-
- if(!nobuild)
-  Ready=false;
+  */
  return true;
 }
 
@@ -71,12 +72,10 @@ void UDynamicMatNet::FillOutputData(int index, const void *data)
  if(index < 0 || index >= int(OutputData.size()))
   return;
 
- UItemData &dest=OutputData[index];
-
  if(!data)
-  dest.ToZero();
+  OutputData[index]->ToZero();
  else
-  dest.Assign(1, dest.GetSize(),(const double*)data);
+  OutputData[index]->Assign(1, (*OutputData[index])->GetSize(),(const double*)data);
 }
 
 // Заполняет все выходные вектора заданными данными
@@ -89,15 +88,14 @@ void UDynamicMatNet::FillOutputData(const void *data)
  if(!size)
   return;
 
- UItemData* dest=&OutputData[0];
- for(size_t i=0;i<size;++i,++dest)
+ for(size_t i=0;i<size;++i)
   if(!data)
   {
-   if(dest->GetByteSize() && dest->Void)
-	dest->ToZero();
+   if((*OutputData[i])->GetByteSize() && (*OutputData[i])->Void)
+	OutputData[i]->ToZero();
   }
   else
-   dest->Assign(1, dest->GetSize(),(const double*)data);
+   OutputData[i]->Assign(1, (*OutputData[i])->GetSize(),(const double*)data);
 }
 // ----------------------
 
