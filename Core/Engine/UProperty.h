@@ -663,6 +663,7 @@ virtual bool SetData(const T& data)
 }
 
 public:
+// TODO: прямой доступ
 T& v(void)
 {
  return this->Value;
@@ -670,9 +671,9 @@ T& v(void)
 
 const T& operator [] (int index) const
 { return this->GetData()[index]; };
-				 /*
+
 T& operator [] (int index)
-{ return GetData()[index]; };   */
+{ return GetData()[index]; }; // TODO: Временно разрешено для переезда на новый обмен
 
 // Оператор присваивания
 UPropertyLocal<T,OwnerT,type>& operator = (const T &value)
@@ -783,10 +784,39 @@ const T& operator [] (int index) const
  this->CurrentInputIndex=index;
  return this->GetData();
 };
-/*
-T& operator [] (int index)
-{ return v[index]; };
-								  */
+
+T& operator [] (int index) // TODO: Временно разрешено для переезда на новый обмен
+{ return Value[index]; };
+
+const RangeT& GetRangeData(void) const
+{ return Value; };
+
+// Оператор присваивания
+/*UPropertyRange<T,RangeT, OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};*/
+
+UPropertyRange<T,RangeT, OwnerT,type>& operator = (const RangeT &value)
+{
+ typename RangeT::const_iterator I=value.begin();
+ this->CurrentInputIndex=0;
+ for(;I != value.end(); ++I)
+ {
+//  this->CurrentInputIndex
+  this->SetData(*I);
+  ++this->CurrentInputIndex;  // TODO: нет контроля выхода за границу
+ }
+ return *this;
+};
+
+UPropertyRange<T,RangeT, OwnerT,type>& operator = (const UPropertyRange<T,RangeT, OwnerT,type> &v)
+{
+ *this=v.Value;
+ return *this;
+};
+
 public:
 /// Финальные действия по связыванию входа со свойством output_property
 virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
