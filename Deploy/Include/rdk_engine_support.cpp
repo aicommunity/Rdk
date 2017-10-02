@@ -844,6 +844,9 @@ RDK::UEPtr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
 
 RDK::UEPtr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
 {
+ if(channel_index<0 || channel_index>=int(EngineList.size()))
+  return 0;
+
  return EngineList[channel_index];
 }
 
@@ -855,6 +858,9 @@ RDK::UEPtr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
 
 RDK::UEPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
 {
+ if(channel_index<0 || channel_index>=int(EnvironmentList.size()))
+  return 0;
+
  return EnvironmentList[channel_index];
 }
 
@@ -866,6 +872,9 @@ RDK::UEPtr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
 
 RDK::UEPtr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
 {
+ if(channel_index<0 || channel_index>=int(StorageList.size()))
+  return 0;
+
  return StorageList[channel_index];
 }
 
