@@ -57,6 +57,8 @@ public:
 // --------------------------
 MDMatrix(void);
 MDMatrix(int rows, int cols);
+MDMatrix(const MMatrixSize &size);
+MDMatrix(const MMatrixSize &size, T defvalue);
 MDMatrix(int rows, int cols, T defvalue);
 MDMatrix(const MDMatrix<T> &copy);
 MDMatrix(int rows, int cols, const T* data);
@@ -72,6 +74,11 @@ void Resize(int rows, int cols, T defvalue=0);
 void Assign(int rows, int cols, const T *data);
 void Assign(int rows, int cols, T value);
 void Assign(int rows, int cols, const void *data);
+
+bool Assign(const MMatrixSize &size, const T *data);
+bool Assign(const MMatrixSize &size, T value);
+bool Assign(const MMatrixSize &size, const void *data);
+
 
 /// Вставляет строки в матрицу в позицию index
 void InsertRows(int index, int num_rows=1);
@@ -297,6 +304,20 @@ MDMatrix<T>::MDMatrix(void)
 };
 
 template<class T>
+MDMatrix<T>::MDMatrix(const MMatrixSize &size)
+: Data(0),Rows(0),Cols(0),Capacity(0)
+{
+ Resize(size);
+}
+
+template<class T>
+MDMatrix<T>::MDMatrix(const MMatrixSize &size, T defvalue)
+: Data(0),Rows(0),Cols(0),Capacity(0)
+{
+ Resize(size,T);
+}
+
+template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols)
 : Data(0),Rows(0),Cols(0),Capacity(0)
 {
@@ -465,6 +486,34 @@ void MDMatrix<T>::Assign(int rows, int cols, const void *data)
  Resize(rows,cols);
  *this=data;
 }
+
+template<class T>
+bool MDMatrix<T>::Assign(const MMatrixSize &size, const T *data)
+{
+ if(!Resize(size))
+  return false;
+ *this=data;
+ return true;
+}
+
+template<class T>
+bool MDMatrix<T>::Assign(const MMatrixSize &size, T value)
+{
+ if(!Resize(size))
+  return false;
+ *this=value;
+ return true;
+}
+
+template<class T>
+bool MDMatrix<T>::Assign(const MMatrixSize &size, const void *data)
+{
+ if(!Resize(size))
+  return false;
+ *this=data;
+ return true;
+}
+
 
 template<class T>
 void MDMatrix<T>::InsertRows(int index, int num_rows)
