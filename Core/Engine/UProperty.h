@@ -655,9 +655,9 @@ virtual bool SetData(const T& data)
  if(this->CheckEqualsFlag && Value == data)
   return true;
 
- if(!(this->Owner->*SetterR)(data))
+ if(this->SetterR && !(this->Owner->*SetterR)(data))
   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
- (this->*SetDataValuePtr)(data);
+ SetDataValueLocal(data);
  this->RenewUpdateTime();
  return true;
 }
@@ -708,6 +708,13 @@ UProperty<T,OwnerT,type>& operator = (const T &value)
  return *this;
 };
 
+template<typename T, typename V, class OwnerT, unsigned int type>
+UProperty<T,OwnerT,type>& operator = (const V &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
 UProperty<T,OwnerT,type>& operator = (const UProperty<T,OwnerT,type> &v)
 {
  this->SetData(v.GetData());
@@ -716,10 +723,9 @@ UProperty<T,OwnerT,type>& operator = (const UProperty<T,OwnerT,type> &v)
 // -----------------------------
 };
 
-
 // Класс - свойство-контейнер со значением внутри
 template<typename T, typename RangeT, typename OwnerT, unsigned int type>
-class UPropertyRange: public UPropertyVirtual<T,OwnerT>
+class UPropertyRangeLocal: public UPropertyVirtual<T,OwnerT>
 {
 protected: // Типы методов ввода-вывода
 typedef bool (OwnerT::*VSetterRT)(const RangeT&);
@@ -734,13 +740,13 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+UPropertyRangeLocal(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
  : UPropertyVirtual<T,OwnerT>(name, owner, type, setmethod, 0, dynamic_prop_flag), VSetterR(0)
 {
  this->SetNumConnectionsLimit(-1);
 };
 
-UPropertyRange(const std::string &name, OwnerT * const owner, VSetterRT setmethod, bool dynamic_prop_flag=false)
+UPropertyRangeLocal(const std::string &name, OwnerT * const owner, VSetterRT setmethod, bool dynamic_prop_flag=false)
  : UPropertyVirtual<T,OwnerT>(name, owner, type, (typename UPropertyVirtual<T,OwnerT>::SetterRT)0,0, dynamic_prop_flag)
 {
  VSetterR=setmethod;
@@ -755,17 +761,17 @@ protected:
 // Возврат значения
 virtual const T& GetDataLocal(void) const
 {
- return Value[this->CurrentInputIndex];
+ RangeT::const_iterator I=Value.begin();
+ std::advance(I,this->CurrentInputIndex);
+ return *I;
 };
-/*
-virtual T& GetData(void)
-{
- return v[index];
-};        */
 
 virtual void SetDataLocal(const T &value)
 {
- if(this->CheckEqualsFlag && Value[this->CurrentInputIndex] == value)
+ RangeT::iterator I=Value.begin();
+ std::advance(I,this->CurrentInputIndex);
+
+ if(this->CheckEqualsFlag && *I == value)
   return;
 
  if(this->Owner)
@@ -774,7 +780,7 @@ virtual void SetDataLocal(const T &value)
    throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
  }
 
- Value[this->CurrentInputIndex]=value;
+ *I=value;
  this->RenewUpdateTime();
 };
 
@@ -791,14 +797,7 @@ T& operator [] (int index) // TODO: Временно разрешено для переезда на новый обм
 const RangeT& GetRangeData(void) const
 { return Value; };
 
-// Оператор присваивания
-/*UPropertyRange<T,RangeT, OwnerT,type>& operator = (const T &value)
-{
- this->SetData(value);
- return *this;
-};*/
-
-UPropertyRange<T,RangeT, OwnerT,type>& operator = (const RangeT &value)
+UPropertyRangeLocal<T,RangeT, OwnerT,type>& operator = (const RangeT &value)
 {
  typename RangeT::const_iterator I=value.begin();
  this->CurrentInputIndex=0;
@@ -811,7 +810,7 @@ UPropertyRange<T,RangeT, OwnerT,type>& operator = (const RangeT &value)
  return *this;
 };
 
-UPropertyRange<T,RangeT, OwnerT,type>& operator = (const UPropertyRange<T,RangeT, OwnerT,type> &v)
+UPropertyRangeLocal<T,RangeT, OwnerT,type>& operator = (const UPropertyRangeLocal<T,RangeT, OwnerT,type> &v)
 {
  *this=v.Value;
  return *this;
@@ -832,11 +831,51 @@ virtual bool FinalizeDisconnectFromOutput(UIPropertyOutput *output_property, int
 {
  if(!UIPropertyInputBase::FinalizeDisconnectFromOutput(output_property,c_index))
   return false;
- Value.erase(Value.begin()+c_index);
+
+ typename RangeT::iterator I=Value.begin();
+ std::advance(I,c_index);
+ Value.erase(I);
  return true;
 }
 // -----------------------------
 
+};
+
+
+// Класс - свойство-контейнер со значением внутри
+template<typename T, typename RangeT, typename OwnerT, unsigned int type>
+class UPropertyRange: public UPropertyRangeLocal<T,RangeT,OwnerT,type>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<T,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyRangeLocal<T,RangeT, OwnerT, type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyRangeLocal<T, RangeT, OwnerT, type>::VSetterRT setmethod, bool dynamic_prop_flag=false)
+ : UPropertyRangeLocal<T,RangeT, OwnerT, type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+// -----------------------------
+
+// -----------------------------
+// Операторы доступа
+// -----------------------------
+UPropertyRange<T,RangeT, OwnerT,type>& operator = (const RangeT &value)
+{
+ static_cast<UPropertyRangeLocal<T,RangeT, OwnerT,type>& >(*this)=value;
+ return *this;
+};
+
+UPropertyRange<T,RangeT, OwnerT,type>& operator = (const UPropertyRange<T,RangeT, OwnerT,type> &v)
+{
+ static_cast<UPropertyRangeLocal<T,RangeT, OwnerT,type>& >(*this)=v.Value;
+ return *this;
+};
+// -----------------------------
 };
 
 template<typename T,class OwnerT>
@@ -929,33 +968,6 @@ const T& operator * (void) const
 
 T& operator * (void)
 { return const_cast<T&>(this->GetData()); };
-											   /*
-public:
-/// Финальные действия по связыванию входа со свойством output_property
-virtual bool FinalizeConnectToOutput(UIPropertyOutput *output_property)
-{
- if(GetNumConnectionsLimit() == 0)
- {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. NumConnectionLimit set to zero."));
-  return false;
- }
-
- if(GetNumConnectionsLimit()>0 && ConnectedProperties.size() == GetNumConnectionsLimit())
- {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Connector already in use."));
-  return false;
- }
-
- if(!dynamic_cast<T*>(output_property->GetOwner()))
- {
-  GetOwner()->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connection failed. Language types are incompatible. ")+output_property->GetLanguageType().name()+std::string(" != ")+GetLanguageType().name());
-  return false;
- }
-
- ConnectedProperties.push_back(output_property);
- return true;
-}                                                */
-
 };
 
 #ifdef __BORLANDC__
