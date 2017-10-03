@@ -73,6 +73,26 @@ typename std::vector<V>::iterator end(void)
  return Value.end();
 }
 
+V& back(void)
+{
+ return Value.back();
+}
+
+V& front(void)
+{
+ return Value.front();
+}
+
+const V& back(void) const
+{
+ return Value.back();
+}
+
+const V& front(void) const
+{
+ return Value.front();
+}
+
 size_t size(void) const
 {
  return Value.size();
@@ -135,6 +155,26 @@ typename std::list<V>::const_iterator end(void) const
 typename std::list<V>::iterator end(void)
 {
  return Value.end();
+}
+
+V& back(void)
+{
+ return Value.back();
+}
+
+V& front(void)
+{
+ return Value.front();
+}
+
+const V& back(void) const
+{
+ return Value.back();
+}
+
+const V& front(void) const
+{
+ return Value.front();
 }
 
 void push_back(const V &value)
@@ -597,7 +637,7 @@ UPropertyRange<V,std::list<V>, OwnerT,type>& operator = (const std::list<V> &val
 
 UPropertyRange<V,std::list<V>, OwnerT,type>& operator = (const UPropertyRange<V,std::list<V>, OwnerT,type> &v)
 {
- static_cast<UPropertyRangeLocal<T,std::list<T>, OwnerT,type>& >(*this)=v.Value;
+ static_cast<UPropertyRangeLocal<V,std::list<V>, OwnerT,type>& >(*this)=v.Value;
  return *this;
 };
 // -----------------------------
