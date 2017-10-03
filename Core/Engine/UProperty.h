@@ -369,12 +369,7 @@ UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int typ
   CheckEqualsFlag(true), GetterR(getmethod), SetterR(setmethod), UPropertyBaseOwner<T,OwnerT>(name, owner, dynamic_prop_flag)
 {
 }
-						   /*
-UPropertyVirtual(const std::string &name, OwnerT * const owner, unsigned int type, T * const pdata, bool dynamic_prop_flag=false) :
-  CheckEqualsFlag(true), GetterR(0), SetterR(0), UPropertyBaseOwner<T,OwnerT>(name,owner,dynamic_prop_flag)
-{
-}
-                                      */
+
 virtual ~UPropertyVirtual(void)
 {
 }
@@ -474,49 +469,12 @@ protected:
 virtual const T& GetDataValueLocal(void) const
 {
  return (this->Owner->*GetterR)();
- /*
- if(this->Owner && GetterR)
- {
-  if(GetterR)
-   return (this->Owner->*GetterR)();
- }
-
- throw UIProperty::EPropertyZeroPtr(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
- */
 };
 
 // Установка значения
 virtual bool SetDataValueLocal(const T &value)
 {
  return (this->Owner->*SetterR)(value);
-					   /*
- if(RawDataPtr)
- {
-  if(CheckEqualsFlag && *RawDataPtr == value)
-   return;
-
-  *RawDataPtr=value;
-  this->RenewUpdateTime();
- }
- else
- {
-  if(!GetterR)
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
-
-  if(CheckEqualsFlag && (this->Owner->*GetterR)() == value)
-   return;
-
-  if(!SetterR)
-   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
-
-  if(this->Owner && SetterR)
-  {
-   if(!(this->Owner->*SetterR)(value))
-	throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
-
-   this->RenewUpdateTime();
-  }
- }             */
 };
 
 // Модифицирует данные
@@ -544,18 +502,9 @@ const T& v(void) const
 
 void v(const T &value)
 {
- SetData(value);
-};
-/*
-const T& operator () (void) const
-{
- return this->GetData();
+ this->SetData(value);
 };
 
-T& operator () (void)
-{
- return const_cast<T&>(this->GetData());
-};*/
 /// deprecated
 const T* operator -> (void) const
 { return &this->GetData(); };
@@ -563,10 +512,6 @@ const T* operator -> (void) const
 /// deprecated
 const T& operator * (void) const
 { return this->GetData(); };
-  /*
-const T& operator [] (int index) const
-{ return this->GetData(index); };
-	*/
 
 // Оператор присваивания
 UPropertyVirtual<T,OwnerT>& operator = (const T &value)
@@ -636,12 +581,6 @@ virtual const T& GetDataValueLocal(void) const
 {
  return Value;
 };
-	 /*
-virtual T& GetData(void)
-{
- return v;
-};            */
-
 
 virtual bool SetDataValueLocal(const T &value)
 {
@@ -803,7 +742,6 @@ UPropertyRangeLocal<T,RangeT, OwnerT,type>& operator = (const RangeT &value)
  this->CurrentInputIndex=0;
  for(;I != value.end(); ++I)
  {
-//  this->CurrentInputIndex
   this->SetData(*I);
   ++this->CurrentInputIndex;  // TODO: нет контроля выхода за границу
  }
@@ -879,18 +817,18 @@ UPropertyRange<T,RangeT, OwnerT,type>& operator = (const UPropertyRange<T,RangeT
 };
 
 template<typename T,class OwnerT>
-class UPropertyInput: public UPropertyBaseOwner<T,OwnerT>
+class UPropertyInput: public UProperty<T,OwnerT, ptPubInput>
 {
 protected:
 // Данные
-mutable T Value;
+//mutable T Value;
 
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyInput(const std::string &name, OwnerT * const owner, bool dynamic_prop_flag=false)
- : UPropertyBaseOwner<T,OwnerT>(name,owner, ptPubInput, dynamic_prop_flag), Value() { };
+ : UProperty<T,OwnerT,ptPubInput>(name,owner, dynamic_prop_flag) { };
 // -----------------------------
 
 // -----------------------------
@@ -917,6 +855,99 @@ virtual const T& GetData(void) const
   UEPtr<UPropertyBase<T> > prop=dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex));
   UEPtr<UNet> owner=prop->GetOwner();
   return *dynamic_pointer_cast<T>(owner);
+ }
+ else
+ {
+  return GetDataValueLocal();
+ }
+}
+
+// Модифицирует данные
+virtual bool SetData(const T& data)
+{
+ return false;
+}
+
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ return true;
+};
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ return true;
+};
+
+// Метод сравнивает тип этого свойства с другим свойством
+virtual bool CompareLanguageType(const UIProperty &dt) const
+{
+ const UIPropertyOutput* out=dynamic_cast<const UIPropertyOutput*>(&dt);
+ if(!out)
+  return false;
+ return (dynamic_cast<const T*>(out->GetOwner()))?true:false;
+}
+
+// Метод изменяет тип свойства
+bool ChangeType(unsigned int value)
+{
+ return false;
+}
+
+const T* operator -> (void) const
+{ return &this->GetData(); };
+
+T* operator -> (void)
+{ return const_cast<T*>(&this->GetData()); };
+
+const T& operator * (void) const
+{ return this->GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(this->GetData()); };
+};
+
+template<typename T, class OwnerT>
+class UPropertyRangeInput: public UPropertyRange<T*, std::vector<T*>, OwnerT, ptPubInput>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPropertyRangeInput(const std::string &name, OwnerT * const owner, bool dynamic_prop_flag=false)
+ : UPropertyRange<T*,std::vector<T*>,OwnerT,ptPubInput>(name,owner, dynamic_prop_flag) { };
+// -----------------------------
+
+// -----------------------------
+// Операторы доступа
+// -----------------------------
+protected:
+
+// Возврат значения
+virtual const T*& GetDataValueLocal(void) const
+{
+ return Value[this->CurrentInputIndex];
+};
+
+virtual bool SetDataValueLocal(const T &value)
+{
+ return false;
+};
+
+virtual void SetDataLocal(const T &value)
+{
+}
+
+public:
+// Возвращает ссылку на данные
+virtual const T*& GetData(void) const
+{
+ if(IsConnected())
+ {
+  UEPtr<UPropertyBase<T*> > prop=dynamic_pointer_cast<UPropertyBase<T*> >(GetConnectedProperty(CurrentInputIndex));
+  UEPtr<UComponent> owner=prop->GetOwner();
+  return *dynamic_pointer_cast<T*>(owner);
  }
  else
  {
