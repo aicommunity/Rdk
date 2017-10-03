@@ -8,7 +8,7 @@
 
 namespace RDK {
 
-class UDynamicMatNet: public UDynamicNet<MDMatrix<double> >
+class RDK_LIB_TYPE UDynamicMatNet: public UDynamicNet<MDMatrix<double> >
 {
 public:
 // --------------------------

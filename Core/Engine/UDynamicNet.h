@@ -7,7 +7,7 @@
 namespace RDK {
 
 template<class T>
-class UDynamicNet: public UNet
+class RDK_LIB_TYPE UDynamicNet: public UNet
 {
 public: // Parameters
 /// Number of dynamic inputs
