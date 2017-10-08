@@ -643,6 +643,96 @@ UPropertyRange<V,std::list<V>, OwnerT,type>& operator = (const UPropertyRange<V,
 // -----------------------------
 };
 
+// Класс - свойство-контейнер со значением внутри
+template<typename V, typename OwnerT, unsigned int type>
+class UPropertyRange<V, std::vector<V>,OwnerT, type>: public UPropertyRangeLocal<V,std::vector<V>,OwnerT,type>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyVirtual<V,OwnerT>::SetterRT setmethod=0, bool dynamic_prop_flag=false)
+ : UPropertyRangeLocal<V,std::vector<V>,OwnerT, type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+
+UPropertyRange(const std::string &name, OwnerT * const owner, typename UPropertyRangeLocal<V, std::list<V>, OwnerT, type>::VSetterRT setmethod, bool dynamic_prop_flag=false)
+ : UPropertyRangeLocal<V,std::vector<V>,OwnerT, type>(name, owner, setmethod, dynamic_prop_flag)
+{
+};
+// -----------------------------
+
+// -----------------------------
+// Методы доступа
+// -----------------------------
+void clear(void)
+{
+ this->Value.clear();
+}
+
+void erase(typename std::vector<V>::iterator it)
+{
+ this->Value.erase(it);
+}
+
+size_t size(void) const
+{
+ return this->Value.size();
+}
+
+void resize(size_t size)
+{
+ this->Value.resize(size);
+}
+
+void resize(size_t size, const V &value)
+{
+ this->Value.resize(size,value);
+}
+
+void assign(size_t size, const V &value)
+{
+ this->Value.assign(size,value);
+}
+
+typename std::vector<V>::const_iterator begin(void) const
+{
+ return Value.begin();
+}
+
+typename std::vector<V>::iterator begin(void)
+{
+ return Value.begin();
+}
+
+typename std::vector<V>::const_iterator end(void) const
+{
+ return Value.end();
+}
+
+typename std::vector<V>::iterator end(void)
+{
+ return Value.end();
+}
+
+void push_back(const V &value)
+{
+ Value.push_back(value);
+}
+
+UPropertyRange<V,std::vector<V>, OwnerT,type>& operator = (const std::vector<V> &value)
+{
+ static_cast<UPropertyRangeLocal<V,std::vector<V>, OwnerT,type>& >(*this)=value;
+ return *this;
+};
+
+UPropertyRange<V,std::vector<V>, OwnerT,type>& operator = (const UPropertyRange<V,std::vector<V>, OwnerT,type> &v)
+{
+ static_cast<UPropertyRangeLocal<V,std::vector<V>, OwnerT,type>& >(*this)=v.Value;
+ return *this;
+};
+// -----------------------------
+};
 
 	   /*
 /// deprecated
