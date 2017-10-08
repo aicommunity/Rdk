@@ -33,6 +33,31 @@ See file license.txt for more information
 
 namespace RDK {
 
+/// From https://stackoverflow.com/questions/6534041/how-to-check-whether-operator-exists
+namespace CHECK
+{
+  class No { bool b[2]; };
+  template<typename T, typename Arg> No operator == (const T&, const Arg&);
+
+  bool Check (...);
+  No& Check (const No&);
+
+  template <typename T, typename Arg = T>
+  struct EqualExists
+  {
+	enum { value = (sizeof(Check(*(T*)(0) == *(Arg*)(0))) != sizeof(No)) };
+  };
+
+  template <typename T, bool V>
+  struct EqualsExistsT {};
+
+  template <typename T>
+  struct EqualsExistsYes: public EqualsExistsT<T,true> {};
+
+  template <typename T>
+  struct EqualsExistsNo: public EqualsExistsT<T,false> {};
+}
+
 using namespace std;
 
 #ifdef __BORLANDC__
@@ -477,10 +502,23 @@ virtual bool SetDataValueLocal(const T &value)
  return (this->Owner->*SetterR)(value);
 };
 
+bool CheckEquals(const T& data, CHECK::EqualsExistsT<T,false> check)
+{
+ return false;
+}
+
+bool CheckEquals(const T& data, CHECK::EqualsExistsT<T,true> check)
+{
+ if(CheckEqualsFlag && GetData() == data)
+  return true;
+ return false;
+}
+
 // Модифицирует данные
 virtual bool SetData(const T& data)
 {
- if(CheckEqualsFlag && GetData() == data)
+// CHECK::EqualsExistsT<T,CHECK::EqualExists<T>::value> check;
+ if(CheckEquals(data,CHECK::EqualsExistsT<T,CHECK::EqualExists<T>::value>()))
   return true;
 
  if(!(this->*SetDataValuePtr)(data))
@@ -591,12 +629,12 @@ virtual bool SetDataValueLocal(const T &value)
 // Модифицирует данные
 virtual bool SetData(const T& data)
 {
- if(this->CheckEqualsFlag && Value == data)
+ if(this->CheckEqualsFlag && CHECK::EqualExists<T>::value && Value == data)
   return true;
 
  if(this->SetterR && !(this->Owner->*SetterR)(data))
   throw UIProperty::EPropertySetterFail(UPropertyVirtual<T,OwnerT>::GetOwnerName(),UPropertyVirtual<T,OwnerT>::GetName());
- SetDataValueLocal(data);
+ this->SetDataValueLocal(data);
  this->RenewUpdateTime();
  return true;
 }
@@ -710,8 +748,11 @@ virtual void SetDataLocal(const T &value)
  RangeT::iterator I=Value.begin();
  std::advance(I,this->CurrentInputIndex);
 
- if(this->CheckEqualsFlag && *I == value)
+ CHECK::EqualsExistsT<T,CHECK::EqualExists<T>::value> check;
+ if(CheckEquals(value,check))
   return;
+ //if(this->CheckEqualsFlag && CHECK::EqualExists<T>::value && *I == value)
+ // return;
 
  if(this->Owner)
  {
@@ -838,7 +879,7 @@ protected:
 // Возврат значения
 virtual const T& GetDataValueLocal(void) const
 {
- return Value;
+ return this->Value;
 };
 
 virtual bool SetDataValueLocal(const T &value)
@@ -909,23 +950,22 @@ T& operator * (void)
 };
 
 template<typename T, class OwnerT>
-class UPropertyRangeInput: public UPropertyRange<T*, std::vector<T*>, OwnerT, ptPubInput>
+class UPropertyRangeInput: public UPropertyRangeLocal<T, std::vector<T>, OwnerT, ptPubInput>
 {
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UPropertyRangeInput(const std::string &name, OwnerT * const owner, bool dynamic_prop_flag=false)
- : UPropertyRange<T*,std::vector<T*>,OwnerT,ptPubInput>(name,owner, dynamic_prop_flag) { };
+ : UPropertyRangeLocal<T,std::vector<T>,OwnerT,ptPubInput>(name,owner, dynamic_prop_flag) { };
 // -----------------------------
 
 // -----------------------------
 // Операторы доступа
 // -----------------------------
 protected:
-
 // Возврат значения
-virtual const T*& GetDataValueLocal(void) const
+virtual const T& GetDataValueLocal(void) const
 {
  return Value[this->CurrentInputIndex];
 };
@@ -941,13 +981,13 @@ virtual void SetDataLocal(const T &value)
 
 public:
 // Возвращает ссылку на данные
-virtual const T*& GetData(void) const
+virtual const T& GetData(void) const
 {
  if(IsConnected())
  {
-  UEPtr<UPropertyBase<T*> > prop=dynamic_pointer_cast<UPropertyBase<T*> >(GetConnectedProperty(CurrentInputIndex));
+  UEPtr<UPropertyBase<T> > prop=dynamic_pointer_cast<UPropertyBase<T> >(GetConnectedProperty(CurrentInputIndex));
   UEPtr<UComponent> owner=prop->GetOwner();
-  return *dynamic_pointer_cast<T*>(owner);
+  return *dynamic_pointer_cast<T>(owner);
  }
  else
  {
@@ -961,6 +1001,7 @@ virtual bool SetData(const T& data)
  return false;
 }
 
+public:
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
