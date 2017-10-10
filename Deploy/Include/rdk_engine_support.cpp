@@ -932,7 +932,6 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(void)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEngine>(0,GetEngine());
 #else
-// UGenericMutexSharedLocker lock(GlobalMutex);
  return RDK::UELockPtr<RDK::UEngine>(MutexList[SelectedChannelIndex],GetEngine());
 #endif
 }
@@ -942,6 +941,8 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(int channel_index)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEngine>(0,GetEngine(channel_index));
 #else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UELockPtr<RDK::UEngine>(0,0);
  return RDK::UELockPtr<RDK::UEngine>(MutexList[channel_index],GetEngine(channel_index));
 #endif
 }
@@ -961,6 +962,8 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(int channel_i
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEngine>(0,GetEngine(channel_index));
 #else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UELockPtr<RDK::UEngine>(0,0);
  return RDK::UELockPtr<RDK::UEngine>(MutexList[channel_index],GetEngine(channel_index),timeout);
 #endif
 }
@@ -981,6 +984,8 @@ RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(int channe
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UEnvironment>(0,GetEnvironment(channel_index));
 #else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UELockPtr<RDK::UEnvironment>(0,0);
  return RDK::UELockPtr<RDK::UEnvironment>(MutexList[channel_index],GetEnvironment(channel_index));
 #endif
 }
@@ -1001,6 +1006,8 @@ RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(int channel_index)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UStorage>(0,GetStorage(channel_index));
 #else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UELockPtr<RDK::UStorage>(0,0);
  return RDK::UELockPtr<RDK::UStorage>(MutexList[channel_index],GetStorage(channel_index));
 #endif
 }
@@ -1021,6 +1028,8 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(int channel_index)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
 #else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UELockPtr<RDK::UContainer>(0,0);
  return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index));
 #endif
 }
@@ -1039,6 +1048,8 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<RDK::UContainer>(0,GetModel(channel_index));
 #else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UELockPtr<RDK::UContainer>(0,0);
  return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
 #endif
 }
