@@ -37,10 +37,10 @@ int round(double number)
 UEgdeCode CompOutCode(const UBPoint &point, const UBRect &rect)
 {
  UEgdeCode code=None;
- if(point.Y > rect.Y2())
+ if(point.Y < rect.Y2())
   code=Top;
  else
- if(point.Y < rect.Y1())
+ if(point.Y > rect.Y1())
   code=Bottom;
  if(point.X > rect.X2())
   code=code + Right;
@@ -233,37 +233,25 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
  dx=x2-x1;
  dy=y2-y1;
 
- if(x1>x2 && y1>y2)
-  {
-   tmp=x1; x1=x2; x2=tmp;
-   tmp=y1; y1=y2; y2=tmp;
-  }
-
-// if(x1 >= CWidth || y1 >= CHeight)
-//  return;
-
  if(!dx && !dy)
   {
    DrawPixel(x1,y1);
    return;
   }
+  /*
+ if(x1>x2 && y1>y2)
+  {
+   tmp=x1; x1=x2; x2=tmp;
+   tmp=y1; y1=y2; y2=tmp;
+  }     */
 
  UBPoint p1,p2;
  ClipLine(UBPoint(x1,y1), UBPoint(x2,y2),UBRect(0,0,CWidth,CHeight),p1,p2);
  x1=p1.X; y1=p1.Y;
  x2=p2.X; y2=p2.Y;
 
-// x1=(x1<0)?0:x1;
-// x1=(x1>=CWidth)?CWidth-1:x1;
-//
-// x2=(x2<0)?0:x2;
-// x2=(x2>=CWidth)?CWidth-1:x2;
-// y1=(y1<0)?0:y1;
-// y1=(y1>=CHeight)?CHeight-1:y1;
-//
-// y2=(y2<0)?0:y2;
-// y2=(y2>=CHeight)?CHeight-1:y2;
-
+ dx=x2-x1;
+ dy=y2-y1;
 
  if(!dx)
   {
