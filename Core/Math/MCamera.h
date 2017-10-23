@@ -44,8 +44,9 @@ virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixe
 
 // Вычисляет положение точки на кадре по положению точки в пространстве
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point)=0;
-
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
+virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point)=0;
+virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
 
 // Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance)=0;
@@ -136,6 +137,8 @@ virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixe
 // Вычисляет положение точки на кадре по положению точки в пространстве
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point);
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
+virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point);
+virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
 
 // Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance);
@@ -593,6 +596,52 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &spac
  screenpoint=Icc*distpoint;
  res=true;
 
+ return screenpoint;
+}
+
+template<class T>
+MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point)
+{
+ MVector<T,3> normalpoint, distpoint, screenpoint;
+ MVector<T,4> temp4;
+ MVector<T,3> cameraspacepoint;
+ MMatrix<T,3,4> E=MMatrix<T,3,4>::Eye();
+
+ cameraspacepoint=E*(MCamera<T>::GetEcc()*space_point);
+ if(fabs(cameraspacepoint(2))>10e-7)
+ {
+  normalpoint(0)=cameraspacepoint(0)/cameraspacepoint(2);
+  normalpoint(1)=cameraspacepoint(1)/cameraspacepoint(2);
+  normalpoint(2)=1;
+ }
+ else
+  return screenpoint;
+
+ screenpoint=Icc*normalpoint;
+
+ return screenpoint;
+}
+
+template<class T>
+MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)
+{
+ res=false;
+ MVector<T,3> normalpoint, distpoint, screenpoint;
+ MVector<T,4> temp4;
+ MVector<T,3> cameraspacepoint;
+ MMatrix<T,3,4> E=MMatrix<T,3,4>::Eye();
+
+ cameraspacepoint=E*(MCamera<T>::GetEcc()*space_point);
+ if(fabs(cameraspacepoint(2))>10e-7)
+ {
+  normalpoint(0)=cameraspacepoint(0)/cameraspacepoint(2);
+  normalpoint(1)=cameraspacepoint(1)/cameraspacepoint(2);
+  normalpoint(2)=1;
+ }
+ else
+  return screenpoint;
+
+ screenpoint=Icc*normalpoint;
  return screenpoint;
 }
 
