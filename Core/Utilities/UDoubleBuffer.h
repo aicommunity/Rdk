@@ -83,7 +83,8 @@ void Clear()
     B.Clear();
 }
 ///----------------------------------------------------------------------
-private:
+/// Not memory safe methods
+///----------------------------------------------------------------------
 TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
@@ -184,6 +185,19 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForRead()
 		}
 		return 0;
 	}
+}
+///----------------------------------------------------------------------
+void UDoubleBuffer<T>::MakeWrited(TimedBuffer<T>* buff)
+{
+	boost::lock_guard<boost::mutex> guard(mtx);
+	buff->Empty = false;
+	buff->Busy = false;
+} ///----------------------------------------------------------------------
+void UDoubleBuffer<T>::MakeReaded(TimedBuffer<T>* buff)
+{
+	boost::lock_guard<boost::mutex> guard(mtx);
+	buff->Empty = true;
+	buff->Busy = false;
 }
 ///----------------------------------------------------------------------
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
