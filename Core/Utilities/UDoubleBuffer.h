@@ -13,20 +13,23 @@
 #include <vector>
 
 using namespace std;
+using namespace boost::posix_time;
+
+ptime const Epoch(boost::gregorian::date(1970,1,1));
 
 template <class T>
 struct TimedBuffer
 {
   T Data;
-  boost::posix_time::ptime TimeStamp;
   bool Busy;
   bool Empty;
-  TimedBuffer():Busy(false),Empty(true), TimeStamp(boost::posix_time::not_a_date_time){}
+  uint64_t TimeStamp;
+  TimedBuffer():Busy(false),Empty(true),TimeStamp(0){}
   void Clear()
   {
 	Busy = false;
 	Empty = true;
-	TimeStamp = boost::posix_time::not_a_date_time;
+	TimeStamp = 0;
   }
 };
 
@@ -93,7 +96,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 		if(A.Empty)
 		{
 			A.Busy=true;
-			A.TimeStamp=boost::posix_time::microsec_clock::local_time();
+			A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 			return &A;
 		}
 		else
@@ -103,7 +106,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 				if(B.Empty)
 				{
 					B.Busy=true;
-					B.TimeStamp=boost::posix_time::microsec_clock::local_time();
+					B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 					return &B;
 				}
 				else
@@ -111,13 +114,13 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 					if(A.TimeStamp>B.TimeStamp)
 					{
                         B.Busy=true;
-						B.TimeStamp=boost::posix_time::microsec_clock::local_time();
+						B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 						return &B;
 					}
 					else
 					{
 						A.Busy=true;
-						A.TimeStamp=boost::posix_time::microsec_clock::local_time();
+						A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 						return &A;
 					}
 				}
@@ -125,7 +128,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 			else
 			{
 				A.Busy=true;
-				A.TimeStamp=boost::posix_time::microsec_clock::local_time();
+				A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 				return &A;
 			}
 		}
@@ -135,7 +138,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 		if(!B.Busy)
 		{
             B.Busy=true;
-			B.TimeStamp=boost::posix_time::microsec_clock::local_time();
+			B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 			return &B;
 		}
 	}
