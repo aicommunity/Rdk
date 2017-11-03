@@ -11,23 +11,29 @@
 #include <boost/thread.hpp>
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 #include <vector>
-#include <exception>
-#include <algorithm>
 
 using namespace std;
+using namespace boost::posix_time;
 
-template <typename T>
+ptime const Epoch(boost::gregorian::date(1970,1,1));
+
+template <class T>
 struct TimedBuffer
 {
-  vector<T> Data;
-  size_t Size;
-  boost::posix_time::ptime TimeStamp;
+  T Data;
   bool Busy;
   bool Empty;
-  TimedBuffer():Size(0),Busy(false),Empty(true){}
+  uint64_t TimeStamp;
+  TimedBuffer():Busy(false),Empty(true),TimeStamp(0){}
+  void Clear()
+  {
+	Busy = false;
+	Empty = true;
+	TimeStamp = 0;
+  }
 };
 
-template <typename T>
+template <class T>
 class UDoubleBuffer
 {
 private:
@@ -49,44 +55,39 @@ UDoubleBuffer<T>::~UDoubleBuffer()
 
 }
 ///----------------------------------------------------------------------
-bool UDoubleBuffer<T>::Write(T* src, const size_t& size)
+bool UDoubleBuffer<T>::Write(const T& src)
 {
-	if(!src)
-		throw invalid_argument("Src is empty");
 	TimedBuffer<T>* buff = GetPtrForWrite();
 	if(!buff)
 		return false;
-	if(buff->Data.size() < size)
-	   buff->Data.resize(size);
-	buff->Size = size;
-	copy(src, src+size*sizeof(T)-1, buff->Data.begin());
+	buff->Data = src;
 	boost::lock_guard<boost::mutex> guard(mtx);
 	buff->Empty = false;
 	buff->Busy = false;
 	return true;
 }
 ///----------------------------------------------------------------------
-bool UDoubleBuffer<T>::Read(T* dst, size_t& size)
+bool UDoubleBuffer<T>::Read(T& dst)
 {
-	if(!dst)
-		throw invalid_argument("Dst not exist");
 	TimedBuffer<T>* buff = GetPtrForRead();
 	if(!buff)
 		return false;
-	copy(buff->Data.begin(), buff->Data.begin()+ buff->Size*sizeof(T)-1, dst);
-	size = buff->Size;
+	dst = buff->Data;
 	boost::lock_guard<boost::mutex> guard(mtx);
 	buff->Empty = true;
 	buff->Busy = false;
 	return true;
 }
-size_t UDoubleBuffer<T>::GetMaxSize()
+///----------------------------------------------------------------------
+void Clear()
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
-    return A.Data.size()>B.Data.size()?A.Data.size():B.Data.size();
+	A.Clear();
+    B.Clear();
 }
 ///----------------------------------------------------------------------
-private:
+/// Not memory safe methods
+///----------------------------------------------------------------------
 TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
@@ -95,7 +96,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 		if(A.Empty)
 		{
 			A.Busy=true;
-			A.TimeStamp=boost::posix_time::microsec_clock::local_time();
+			A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 			return &A;
 		}
 		else
@@ -105,7 +106,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 				if(B.Empty)
 				{
 					B.Busy=true;
-					B.TimeStamp=boost::posix_time::microsec_clock::local_time();
+					B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 					return &B;
 				}
 				else
@@ -113,13 +114,13 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 					if(A.TimeStamp>B.TimeStamp)
 					{
                         B.Busy=true;
-						B.TimeStamp=boost::posix_time::microsec_clock::local_time();
+						B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 						return &B;
 					}
 					else
 					{
 						A.Busy=true;
-						A.TimeStamp=boost::posix_time::microsec_clock::local_time();
+						A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 						return &A;
 					}
 				}
@@ -127,7 +128,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 			else
 			{
 				A.Busy=true;
-				A.TimeStamp=boost::posix_time::microsec_clock::local_time();
+				A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 				return &A;
 			}
 		}
@@ -137,7 +138,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
 		if(!B.Busy)
 		{
             B.Busy=true;
-			B.TimeStamp=boost::posix_time::microsec_clock::local_time();
+			B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
 			return &B;
 		}
 	}
@@ -187,6 +188,19 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForRead()
 		}
 		return 0;
 	}
+}
+///----------------------------------------------------------------------
+void UDoubleBuffer<T>::MakeWrited(TimedBuffer<T>* buff)
+{
+	boost::lock_guard<boost::mutex> guard(mtx);
+	buff->Empty = false;
+	buff->Busy = false;
+} ///----------------------------------------------------------------------
+void UDoubleBuffer<T>::MakeReaded(TimedBuffer<T>* buff)
+{
+	boost::lock_guard<boost::mutex> guard(mtx);
+	buff->Empty = true;
+	buff->Busy = false;
 }
 ///----------------------------------------------------------------------
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

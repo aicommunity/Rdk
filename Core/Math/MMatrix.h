@@ -1215,7 +1215,7 @@ void MMatrix<T,Rows,Cols>::ToEye(void)
  int crmin=(Cols<Rows)?Cols:Rows;
 
  for(int i=0;i<crmin;i++)
-  Data(i,i)=1;
+  Data[i][i]=1;
 }
 // --------------------------
 
