@@ -79,32 +79,40 @@ int ULogger::InitLog(void)
 int ULogger::WriteMessageToFile(const std::string &str)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
- if(!EventsLogFile)
+ try
  {
-  std::string file_name;
-  time_t time_data;
-  time(&time_data);
-  file_name=RDK::get_text_time(time_data, '.', '_');
-  EventsLogFile=new std::ofstream((LogDir.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
+  if(!EventsLogFile)
+  {
+   std::string file_name;
+   time_t time_data;
+   time(&time_data);
+   file_name=RDK::get_text_time(time_data, '.', '_');
+   EventsLogFile=new std::ofstream((LogDir.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
 
-  if(!EventsLogFile->is_open() || EventsLogFile->fail() || EventsLogFile->bad())
+   if(!EventsLogFile->is_open() || EventsLogFile->fail() || EventsLogFile->bad())
+   {
+	Clear();
+	RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");
+	return RDK_E_LOGGER_CANT_CREATE_LOG_FILE;
+   }
+  }
+
+  *EventsLogFile<<str<<std::endl;
+  EventsLogFile->flush();
+  if(EventsLogFile->fail())
   {
    Clear();
-   RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");
-   return RDK_E_LOGGER_CANT_CREATE_LOG_FILE;
+   RdkDebuggerMessage(std::string("Failed to write log message"));
+   return RDK_E_LOGGER_LOG_FILE_WRITE_ERROR;
   }
+  return RDK_SUCCESS;
  }
-
- *EventsLogFile<<str<<std::endl;
- EventsLogFile->flush();
- if(EventsLogFile->fail())
+ catch(...)
  {
-  Clear();
-  RdkDebuggerMessage(std::string("Failed to write log message"));
-  return RDK_E_LOGGER_LOG_FILE_WRITE_ERROR;
+  fstream crush_file("CoreLogCrush.txt",ios::out | ios::app);
+  crush_file<<"ULogger::WriteMessageToFile unexcepted catch! "<<"Message="<<str<<endl;
  }
-
- return RDK_SUCCESS;
+ return RDK_UNHANDLED_EXCEPTION;
 }
 
 /// Закрывает файлы с логами и удаляет связанные файловые переменные
