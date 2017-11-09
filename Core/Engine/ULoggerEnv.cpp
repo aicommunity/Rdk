@@ -197,27 +197,6 @@ void ULoggerEnv::ProcessException(const UException &exception) const
  {
   GlobalLogger->ProcessExceptionGlobal(processed_exception->GetType(), result_message);
  }
-/* if(LastErrorLevel>processed_exception->GetType())
-  LastErrorLevel=processed_exception->GetType();
- ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
- {
-  int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
-  if(int(LogList.size())>erase_size)
-  {
-   for(int i=0;i<erase_size;i++)
-	LogList.erase(LogList.begin());
-  }
-  else
-   LogList.clear();
- }
-
- LogList[LogIndex++]=result_message;
-
- if(EventsLogMode) // Если включено, то сохраняем события в файл
- {
-  const_cast<ULoggerEnv* const>(this)->LogMessage(result_message.GetMessage());  // TODO: Проверить на RDK_SUCCESS
- }*/
 
  if(DebuggerMessageFlag)
   RdkDebuggerMessage(result_message.GetMessage());
@@ -476,13 +455,7 @@ void ULoggerEnv::ClearReadLog(void)
   LastReadExceptionLogIndex=0;
  CurrentExceptionsLogSize=LogList.size();
  LastErrorLevel=INT_MAX;
-// TempLogString.clear();
 }
-  /*
-void ULoggerEnv::LogMessage(const std::string &str)
-{
- return ULogger::LogMessage(str);
-}   */
 
 // Вызов обработчика исключений среды для простой записи данных в лог
 void ULoggerEnv::LogMessage(int msg_level, const std::string &line, int error_event_number)
@@ -497,66 +470,76 @@ void ULoggerEnv::LogMessage(int msg_level, const std::string &method_name, const
 
 void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number)
 {
- switch (msg_level)
+ try
  {
- case RDK_EX_UNKNOWN:
- {
-  EStringFatal exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_FATAL:
- {
-  EStringFatal exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_ERROR:
- {
-  EStringError exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_WARNING:
- {
-  EStringWarning exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_INFO:
- {
-  EStringInfo exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_DEBUG:
- {
-  if(DebugMode)
+  switch (msg_level)
   {
-   EStringDebug exception(line,error_event_number);
+  case RDK_EX_UNKNOWN:
+  {
+   EStringFatal exception(line,error_event_number);
    exception.SetObjectName(object_name);
    ProcessException(exception);
   }
- }
- break;
+  break;
 
- case RDK_EX_APP:
- {
-  EStringApp exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
+  case RDK_EX_FATAL:
+  {
+   EStringFatal exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_ERROR:
+  {
+   EStringError exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_WARNING:
+  {
+   EStringWarning exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_INFO:
+  {
+   EStringInfo exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+
+  case RDK_EX_DEBUG:
+  {
+   if(DebugMode)
+   {
+	EStringDebug exception(line,error_event_number);
+	exception.SetObjectName(object_name);
+	ProcessException(exception);
+   }
+  }
+  break;
+
+  case RDK_EX_APP:
+  {
+   EStringApp exception(line,error_event_number);
+   exception.SetObjectName(object_name);
+   ProcessException(exception);
+  }
+  break;
+  }
  }
- break;
+ catch(...)
+ {
+  fstream crush_file("CoreLogCrush.txt",ios::out | ios::app);
+  crush_file<<"ULoggerEnv::LogMessageEx unexcepted catch! "
+	<<"msg_level="<<msg_level<<"object_name="<<object_name<<"line="
+    <<line<<"error_event_number="<<error_event_number<<endl;
  }
 }
 

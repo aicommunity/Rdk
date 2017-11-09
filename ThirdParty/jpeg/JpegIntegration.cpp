@@ -10,7 +10,7 @@
 namespace RDK {
 
 /// Преобразовывает UBitmap в jpeg
-int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf, bool order)
+int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf, bool order, int quality)
 {
    if(bmp.GetColorModel() != ubmRGB24)
    {
@@ -27,7 +27,7 @@ int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std:
    }
 
    jpge::params comp_params;
-   comp_params.m_quality=100;
+   comp_params.m_quality=quality;
    temp_buf.resize(bmp.GetByteLength());
    int buf_size(bmp.GetByteLength());
    if(jpge::compress_image_to_jpeg_file_in_memory(&temp_buf[0], buf_size, bmp.GetWidth(), bmp.GetHeight(), 3, bmp.GetData(), comp_params,order))
