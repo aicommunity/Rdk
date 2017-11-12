@@ -165,7 +165,11 @@ template<typename T>
 T* UELockPtr<T>::operator -> (void) const
 {
  if(!this->PData)
+#if defined(__GNUC__) && __cplusplus < 201103L
+  throw typename UELockPtr<T>::EUsingZeroPtr();
+#else
   throw UELockPtr<T>::EUsingZeroPtr();
+#endif
 
  return this->PData;
 };
@@ -174,7 +178,11 @@ template<typename T>
 T& UELockPtr<T>::operator * (void)
 {
  if(!this->PData)
+#if defined(__GNUC__) && __cplusplus < 201103L
+  throw typename UELockPtr<T>::EUsingZeroPtr();
+#else
   throw UELockPtr<T>::EUsingZeroPtr();
+#endif
 
  return *this->PData;
 };
