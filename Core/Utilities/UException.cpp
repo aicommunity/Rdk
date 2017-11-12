@@ -160,7 +160,7 @@ std::string UException::GenerateLogPrefix(void) const
  tm time_result;
  tm* time_struct(0);
 
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER)
  localtime_s(&time_result,&ex_time);
  time_struct=&time_result;
 #elif __cplusplus >= 201103L

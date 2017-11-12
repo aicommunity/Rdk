@@ -48,7 +48,7 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  std::string result;
  tm time_result;
  tm* time_struct(0);
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER)
  localtime_s(&time_result,&time_data);
  time_stuct=&time_result;
 #elif __cplusplus >= 201103L

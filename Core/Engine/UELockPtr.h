@@ -165,7 +165,7 @@ template<typename T>
 T* UELockPtr<T>::operator -> (void) const
 {
  if(!this->PData)
-  throw typename UEPtr<T>::EUsingZeroPtr();
+  throw UELockPtr<T>::EUsingZeroPtr();
 
  return this->PData;
 };
@@ -174,7 +174,7 @@ template<typename T>
 T& UELockPtr<T>::operator * (void)
 {
  if(!this->PData)
-  throw typename UEPtr<T>::EUsingZeroPtr();
+  throw UELockPtr<T>::EUsingZeroPtr();
 
  return *this->PData;
 };
