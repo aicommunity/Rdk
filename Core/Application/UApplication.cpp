@@ -74,7 +74,10 @@ const std::string& UApplication::GetWorkDirectory(void) const
 
 bool UApplication::SetWorkDirectory(const std::string& value)
 {
+ if(WorkDirectory == value)
+  return true;
  WorkDirectory=value;
+ UpdateLoggers();
  return true;
 }
 
@@ -210,7 +213,7 @@ bool UApplication::SetDebugMode(bool value)
 std::string UApplication::CalcCurrentLogDir(void) const
 {
  std::string log_dir;
- if(Project && Project->GetConfig().OverrideLogParameters)
+ if(Project && Project->GetConfig().OverrideLogParameters && !ProjectPath.empty())
  {
   log_dir=ProjectPath+"EventsLog/";
  }
@@ -386,17 +389,16 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
 bool UApplication::Init(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
-
  Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
  Core_SetSystemDir(font_path.c_str());
+ SetWorkDirectory(font_path);
 // SetLogDir(font_path);
  MLog_SetExceptionHandler(RDK_GLOB_MESSAGE,(void*)ExceptionHandler);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
  Core_LoadFonts();
 
- SetWorkDirectory(font_path);
  EngineControl->Init();
  UApplication::SetNumChannels(1);
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
@@ -806,6 +808,9 @@ bool UApplication::SaveProjectAs(const std::string &filename)
 /// Закрывает проект
 bool UApplication::CloseProject(void)
 {
+ if(!ProjectOpenFlag)
+  return true;
+
  PauseChannel(-1);
 
  RDK::TProjectConfig config=GetProjectConfig();
@@ -1122,14 +1127,14 @@ bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
   return false;
- return (EngineControl->CheckCalcState(channel_index) == UEngineControl::UCalcState::csRunning);
+ return (EngineControl->CheckCalcState(channel_index) == UEngineControl::csRunning);
 }
 
 /// Проверяет состояние расчета по id канала
 UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
-  return UEngineControl::UCalcState::csUnknown;
+  return UEngineControl::csUnknown;
  return EngineControl->CheckCalcState(channel_id);
 }
 // --------------------------
