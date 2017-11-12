@@ -17,15 +17,15 @@ namespace RDK {
 UEngineControl::UEngineControl(void)
 {
     ThreadCalcCompleteEvent=0;//UCreateEvent(false);
-    
+
     EngineStateThread=0;
-    
+
     UseControllersMode=0;
 
     UpdateInterval = 100;
-    
+
     InitFlag=false;
-    
+
     Name="EngineControl";
 }
 
@@ -541,21 +541,21 @@ UEngineControl::UCalcState UEngineControl::CheckCalcState(int channel_id) const
  case 1:
  {
   UEngineControlThread::UCalcState state=EngineControlThreads[channel_id]->CheckCalcState();
-  if(state == UEngineControlThread::UCalcState::csStopped)
+  if(state == UEngineControlThread::csStopped)
    return csStopped;
   else
-  if(state == UEngineControlThread::UCalcState::csRunning)
+  if(state == UEngineControlThread::csRunning)
   {
    if(EngineStateThread)
    {
 	UEngineStateThread::UCalcState thread_state=EngineStateThread->ReadCalcThreadState(channel_id);
-	if(thread_state == UEngineStateThread::UCalcState::csRunning)
+	if(thread_state == UEngineStateThread::csRunning)
 	 return csRunning;
 	else
-	if(thread_state == UEngineStateThread::UCalcState::csStopped)
+	if(thread_state == UEngineStateThread::csStopped)
 	 return csStopped;
 	else
-	if(thread_state == UEngineStateThread::UCalcState::csHanging)
+	if(thread_state == UEngineStateThread::csHanging)
 	 return csHanging;
 	else
 	 return csUnknown;

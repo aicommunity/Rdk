@@ -47,10 +47,10 @@ T& operator * (void);
 T* Get(void) const;
 
 bool operator == (const T *p) const
-{ return PData == p; };
+{ return this->PData == p; };
 
 bool operator != (const T *p) const
-{ return PData != p; };
+{ return this->PData != p; };
 
 private:
 UELockPtr<T>& operator = (const UELockPtr<T> &p);
@@ -112,7 +112,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout)
  if(Mutex)
  {
   if(!Mutex->exclusive_lock(timeout))
-   PData=0;
+   this->PData=0;
  }
 }
 
@@ -123,7 +123,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned ti
  if(Mutex)
  {
   if(!Mutex->exclusive_lock(timeout))
-   PData=0;
+   this->PData=0;
  }
 }
 
@@ -149,34 +149,34 @@ UELockPtr<T>::~UELockPtr(void)
 template<typename T>
 T* UELockPtr<T>::Get(void) const
 {
- return PData;
+ return this->PData;
 }
 
 template<typename T>
 bool UELockPtr<T>::operator ! (void) const
-{ return (PData)?false:true; };
+{ return (this->PData)?false:true; };
 
 template<typename T>
 UELockPtr<T>::operator bool (void) const
-{ return (PData)?true:false; };
+{ return (this->PData)?true:false; };
 
 
 template<typename T>
 T* UELockPtr<T>::operator -> (void) const
 {
- if(!PData)
-  throw EUsingZeroPtr();
+ if(!this->PData)
+  throw typename UEPtr<T>::EUsingZeroPtr();
 
- return PData;
+ return this->PData;
 };
 
 template<typename T>
 T& UELockPtr<T>::operator * (void)
 {
- if(!PData)
-  throw EUsingZeroPtr();
+ if(!this->PData)
+  throw typename UEPtr<T>::EUsingZeroPtr();
 
- return *PData;
+ return *this->PData;
 };
 
 template<typename T>

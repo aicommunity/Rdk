@@ -96,7 +96,7 @@ bool UGenericMutexGcc::exclusive_lock(unsigned timeout)
   clock_gettime(CLOCK_REALTIME , &abs_time);
   abs_time.tv_sec += timeout/1000;
   abs_time.tv_nsec += (timeout % 1000)*1000;
-  res=pthread_mutex_timedlock (&MainMutex, &abs_time);
+  res=pthread_mutex_timedlock (&mutex, &abs_time);
  }
 
  if (res == 0)

@@ -24,7 +24,7 @@ public:
 /// 1 - Идет расчет
 /// 2 - Завис
 /// 4 - Состояние не определено
-enum UCalcState { csStopped=0, csRunning=1, csHanging=2, csUnknown=4 };
+typedef enum { csStopped=0, csRunning=1, csHanging=2, csUnknown=4 } UCalcState;
 
 protected: // Параметры
 /// Режим работы
