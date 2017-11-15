@@ -82,6 +82,8 @@ UGenericEvent* CalcStarted;
 
 UGenericEvent* CalculationNotInProgress;
 
+UGenericMutex* CalculationInProgress;
+
 //UGenericMutex* ProcessLogMutex;
 
 protected: // Потоки
