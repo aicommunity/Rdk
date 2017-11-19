@@ -27,7 +27,6 @@ struct TimedBuffer
   TimedBuffer():Busy(false),Empty(true),TimeStamp(0){}
   void Clear()
   {
-	Busy = false;
 	Empty = true;
 	TimeStamp = 0;
   }
