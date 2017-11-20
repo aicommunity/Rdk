@@ -43,6 +43,8 @@ UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 
  CalculationNotInProgress=UCreateEvent(true);
 
+ CalculationInProgress=UCreateMutex();
+
  Terminated=false;
  Thread=boost::thread(boost::bind(&UEngineStateThread::Execute, boost::ref(*this)));
 
@@ -60,6 +62,7 @@ UEngineStateThread::~UEngineStateThread(void)
  UDestroyEvent(CalcEnable);
  UDestroyEvent(CalcStarted);
  UDestroyEvent(CalculationNotInProgress);
+ UDestroyMutex(CalculationInProgress);
 
  if(GetRdkExceptionHandlerMutex())
  {
@@ -310,15 +313,20 @@ void UEngineStateThread::AdditionExecute(void)
 /// Очищается каждый раз при запросе этой переменной
 std::list<std::string> UEngineStateThread::ReadGuiUnsentLog(void)
 {
- if(!CalculationNotInProgress)
+ if(!CalculationInProgress->exclusive_lock(100))
   return std::list<std::string>();
- if(!CalculationNotInProgress->wait(100))
-  return std::list<std::string>();
- CalculationNotInProgress->reset();
+
+// if(!CalculationNotInProgress)
+//  return std::list<std::string>();
+// if(!CalculationNotInProgress->wait(100))
+//  return std::list<std::string>();
+// CalculationNotInProgress->reset();
 
  std::list<std::string> buffer=GuiUnsentLog;
+
  GuiUnsentLog.clear();
- CalculationNotInProgress->set();
+ CalculationInProgress->exclusive_unlock();
+// CalculationNotInProgress->set();
  return buffer;
 }
 
@@ -387,8 +395,11 @@ void UEngineStateThread::ProcessLog(void)
 	std::string new_log_data=data;
 	if(!new_log_data.empty())
 	{
-//	 UnsentLog.push_back(new_log_data);
-     GuiUnsentLog.push_back(new_log_data);
+	 if(CalculationInProgress->exclusive_lock(10000))
+	 {
+	  GuiUnsentLog.push_back(new_log_data);
+      CalculationInProgress->exclusive_unlock();
+	 }
 	}
    }
    MLog_ClearReadLog(RDK_GLOB_MESSAGE);
