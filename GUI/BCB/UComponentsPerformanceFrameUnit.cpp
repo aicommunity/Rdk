@@ -102,7 +102,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   for(size_t i=0;i<interfaces.size();i++,++gI)
   {
    InterfacesStringGrid->Cells[0][i+1]=IntToStr(int(i));
-   InterfacesStringGrid->Cells[1][i+1]=interfaces[i]->GetName().c_str();
+   InterfacesStringGrid->Cells[1][i+1]=interfaces[i]->CalcFullName().c_str();
    InterfacesStringGrid->Cells[2][i+1]=interfaces[i]->GetClassName().c_str();
    InterfacesStringGrid->Cells[3][i+1]=IntToStr(int(interfaces[i]->GetUpdateInterval()));
    InterfacesStringGrid->Cells[4][i+1]=IntToStr(int(gI->second.AvgDuration*1000));//IntToStr(int(interfaces[i]->GetUpdateTime()));

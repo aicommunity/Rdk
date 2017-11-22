@@ -580,6 +580,12 @@ std::string UAppController::GetName(void)
  return Name;
 }
 
+// Возвращает полное уникальное имя интерфейса
+std::string UAppController::CalcFullName(void)
+{
+ return Name; // TODO: не вычислить полное имя
+}
+
 // Возвращает имя класса интерфейса
 std::string UAppController::GetClassName(void)
 {
