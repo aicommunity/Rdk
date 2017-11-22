@@ -221,7 +221,7 @@ void UEngineControlVcl::StartChannel(int channel_index)
  case 1:
   TUVisualControllerFrame::CalculationModeFlag=true;
   TUVisualControllerForm::CalculationModeFlag=true;
-  UEngineMonitorForm->EngineMonitorFrame->Timer->Interval=30;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Interval=GetApplication()->GetProjectConfig().MTUpdateInterfaceInterval;
   UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled=true;
  break;
  }
