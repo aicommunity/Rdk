@@ -72,8 +72,12 @@ UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owne
 UVLProperty(const string &name, OwnerT * const owner, T * const pdata, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, pdata,setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+
+protected:
+UVLProperty(UVLProperty<T,OwnerT> &v) {};
 // -----------------------------
 
+public:
 // Оператор присваивания
 UVLProperty<T,OwnerT>& operator = (const T &value)
 {
@@ -103,11 +107,15 @@ public:
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+
+protected:
+ULProperty(const ULProperty<T,OwnerT> &v) {};
 // -----------------------------
 
 // -----------------------------
 // Операторы
 // -----------------------------
+public:
 // Оператор присваивания
 ULProperty<T,OwnerT, type>& operator = (const T &value)
 {
@@ -120,6 +128,17 @@ ULProperty<T,OwnerT, type>& operator = (const ULProperty<T,OwnerT> &v)
  this->SetData(v.GetData());
  return *this;
 };
+
+operator T (void) const
+{
+ return this->GetData();
+};
+
+const T& operator () (void) const
+{
+ return this->GetData();
+};
+
 // -----------------------------
 
 };
@@ -144,6 +163,9 @@ UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owne
 UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
  : UCProperty<T,OwnerT>(owner,setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+
+protected:
+UCLProperty(const UCProperty<T,OwnerT> &v) {};
 // -----------------------------
 
 public: // Исключения
