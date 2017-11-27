@@ -983,6 +983,52 @@ int UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
  }
  return res;
 }
+
+// Возвращает свойства компонента по идентификатору
+// Память для buffer должна быть выделена!
+const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned int type_mask)
+{
+ RDK::USerStorageXML XmlStorage;
+ std::string& TempString=CreateTempString();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(Storage->GetClass(stringid));
+
+   if(!cont)
+	return TempString.c_str();
+
+   XmlStorage.Create(cont->GetName());
+   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+
+   if(!cont->GetComponentProperties(&XmlStorage, type_mask))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   XmlStorage.SelectUp();
+   XmlStorage.Save(TempString);
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ DestroyTempString(TempString);
+ return 0;
+}
 // ----------------------------
 
 // ----------------------------
