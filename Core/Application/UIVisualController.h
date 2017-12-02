@@ -47,6 +47,9 @@ virtual void AfterCalculate(void)=0;
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void)=0;
 
+// Возвращает полное уникальное имя интерфейса
+virtual std::string CalcFullName(void)=0;
+
 // Возвращает имя класса интерфейса
 virtual std::string GetClassName(void)=0;
 
@@ -211,6 +214,9 @@ virtual void AfterCalculate(void);
 
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void);
+
+// Возвращает полное уникальное имя интерфейса
+virtual std::string CalcFullName(void);
 
 // Возвращает имя класса интерфейса
 virtual std::string GetClassName(void);

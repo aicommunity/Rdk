@@ -27,7 +27,6 @@ struct TimedBuffer
   TimedBuffer():Busy(false),Empty(true),TimeStamp(0){}
   void Clear()
   {
-	Busy = false;
 	Empty = true;
 	TimeStamp = 0;
   }
@@ -45,17 +44,17 @@ private:
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ///----------------------------------------------------------------------
 public:
-UDoubleBuffer<T>::UDoubleBuffer()
+UDoubleBuffer()
 {
 
 }
 ///----------------------------------------------------------------------
-UDoubleBuffer<T>::~UDoubleBuffer()
+~UDoubleBuffer()
 {
 
 }
 ///----------------------------------------------------------------------
-bool UDoubleBuffer<T>::Write(const T& src)
+bool Write(const T& src )
 {
 	TimedBuffer<T>* buff = GetPtrForWrite();
 	if(!buff)
@@ -67,7 +66,7 @@ bool UDoubleBuffer<T>::Write(const T& src)
 	return true;
 }
 ///----------------------------------------------------------------------
-bool UDoubleBuffer<T>::Read(T& dst)
+bool Read(T& dst)
 {
 	TimedBuffer<T>* buff = GetPtrForRead();
 	if(!buff)
@@ -88,7 +87,7 @@ void Clear()
 ///----------------------------------------------------------------------
 /// Not memory safe methods
 ///----------------------------------------------------------------------
-TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
+TimedBuffer<T>* GetPtrForWrite()
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
 	if(!A.Busy)
@@ -145,7 +144,7 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForWrite()
     return 0;
 }
 ///----------------------------------------------------------------------
-TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForRead()
+TimedBuffer<T>* GetPtrForRead()
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
     if(A.TimeStamp>B.TimeStamp)
@@ -190,13 +189,13 @@ TimedBuffer<T>* UDoubleBuffer<T>::GetPtrForRead()
 	}
 }
 ///----------------------------------------------------------------------
-void UDoubleBuffer<T>::MakeWrited(TimedBuffer<T>* buff)
+void MakeWrited(TimedBuffer<T>* buff)
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
 	buff->Empty = false;
 	buff->Busy = false;
 } ///----------------------------------------------------------------------
-void UDoubleBuffer<T>::MakeReaded(TimedBuffer<T>* buff)
+void MakeReaded(TimedBuffer<T>* buff)
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
 	buff->Empty = true;

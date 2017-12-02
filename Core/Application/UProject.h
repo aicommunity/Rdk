@@ -113,6 +113,9 @@ int MultiThreadingMode;
 /// 1 - привязка времени модели ко времени источника данных
 int CalcSourceTimeMode;
 
+/// Интервал обновления интерфейса в многопоточном режиме
+int MTUpdateInterfaceInterval;
+
 /// Флаг отображения состояния расчета каналов
 int ShowChannelsStateFlag;
 

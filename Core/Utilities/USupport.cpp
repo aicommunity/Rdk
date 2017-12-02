@@ -47,27 +47,30 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
 {
  std::string result;
  tm time_result;
- tm* time_stuct(0);
-#ifdef _MSC_VER
+ tm* time_struct(0);
+#if defined(_MSC_VER)
  localtime_s(&time_result,&time_data);
  time_stuct=&time_result;
-#else
+#elif __cplusplus >= 201103L
  time_stuct=localtime_s(&time_data,&time_result);
+#else
+ time_struct=localtime(&time_data); // TODO: Possible unsafe!!
+ memcpy(&time_result,time_struct,sizeof(time_result));
 #endif
 
 
- result+=sntoa(time_stuct->tm_year+1900,4);
+ result+=sntoa(time_struct->tm_year+1900,4);
  result+=date_sep;
- result+=sntoa(time_stuct->tm_mon+1,2);
+ result+=sntoa(time_struct->tm_mon+1,2);
  result+=date_sep;
- result+=sntoa(time_stuct->tm_mday,2);
+ result+=sntoa(time_struct->tm_mday,2);
  result+=" ";
 
- result+=sntoa(time_stuct->tm_hour,2);
+ result+=sntoa(time_struct->tm_hour,2);
  result+=time_sep;
- result+=sntoa(time_stuct->tm_min,2);
+ result+=sntoa(time_struct->tm_min,2);
  result+=time_sep;
- result+=sntoa(time_stuct->tm_sec,2);
+ result+=sntoa(time_struct->tm_sec,2);
  return result;
 }
 

@@ -83,6 +83,9 @@ virtual void AClearInterface(void);
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void);
 
+// Возвращает полное уникальное имя интерфейса
+virtual std::string CalcFullName(void);
+
 // Возвращает имя класса интерфейса
 virtual std::string GetClassName(void);
 

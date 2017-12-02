@@ -133,6 +133,9 @@ TProjectConfig::TProjectConfig(void)
  EventsLogMode=false;
 
  OverrideLogParameters=true;
+
+ MTUpdateInterfaceInterval=30;
+
  NumChannels=1;
  ChannelsConfig.resize(1);
 }
@@ -179,6 +182,7 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  DebuggerMessageFlag=copy.DebuggerMessageFlag;
  EventsLogMode=copy.EventsLogMode;
  OverrideLogParameters=copy.OverrideLogParameters;
+ MTUpdateInterfaceInterval=copy.MTUpdateInterfaceInterval;
 }
 
 bool TProjectConfig::operator != (const TProjectConfig& copy) const
@@ -205,6 +209,7 @@ bool TProjectConfig::operator != (const TProjectConfig& copy) const
  (DebugMode != copy.DebugMode) ||
  (DebugSysEventsMask != copy.DebugSysEventsMask) ||
  (DebuggerMessageFlag != copy.DebuggerMessageFlag) ||
+ (MTUpdateInterfaceInterval != copy.MTUpdateInterfaceInterval) ||
  (EventsLogMode != copy.EventsLogMode) ||
  (OverrideLogParameters != copy.OverrideLogParameters);
 }
@@ -361,6 +366,8 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 
  Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
 
+ Config.MTUpdateInterfaceInterval=xml.ReadInteger("MTUpdateInterfaceInterval",30);
+
  int num_engines=xml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
@@ -486,6 +493,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
+ xml.WriteInteger("MTUpdateInterfaceInterval",Config.MTUpdateInterfaceInterval);
 
  for(int i=0;i<Config.NumChannels;i++)
  {

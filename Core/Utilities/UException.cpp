@@ -2,6 +2,8 @@
 #define UEXCEPTION_CPP
 
 #include <typeinfo>
+#include <time.h>
+#include <memory.h>
 #include "UException.h"
 #include "USupport.h"
 #include "../System/rdk_system.h"
@@ -158,11 +160,14 @@ std::string UException::GenerateLogPrefix(void) const
  tm time_result;
  tm* time_struct(0);
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
  localtime_s(&time_result,&ex_time);
  time_struct=&time_result;
-#else
+#elif __cplusplus >= 201103L
  time_struct=localtime_s(&ex_time,&time_result);
+#else
+ time_struct=localtime(&ex_time); // TODO: Possible unsafe!!
+ memcpy(&time_result,time_struct,sizeof(time_result));
 #endif
 
  if(!time_struct)

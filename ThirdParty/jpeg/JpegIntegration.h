@@ -17,6 +17,9 @@ RDK_LIB_TYPE int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &j
 /// order определ€ет пор€док следовани€ цветовых каналов: RGB - true, BGR - false
 RDK_LIB_TYPE int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool order);
 
+/// ¬озвращает разрешение изображени€
+RDK_LIB_TYPE int ReadJpegSize(const std::vector<uint8_t> &jpeg_buf, int &width, int &height);
+
 }
 
 #endif

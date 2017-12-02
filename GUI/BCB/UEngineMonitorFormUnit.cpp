@@ -57,130 +57,6 @@ TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
 
 void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 {
-/*
- if(!RdkExceptionHandlerMutex)
-  return;
-
- if(WaitForSingleObject(RdkExceptionHandlerMutex,10) != WAIT_OBJECT_0)
-// if(WaitForSingleObject(RdkExceptionHandlerMutex,10) == WAIT_TIMEOUT)
-  return;
-// ResetEvent(RdkExceptionHandlerMutex);
-
- std::list<int> ch_indexes=UnsentLogChannelIndexes;
- UnsentLogChannelIndexes.clear();
- ReleaseMutex(RdkExceptionHandlerMutex);
-// SetEvent(RdkExceptionHandlerMutex);
-
- int global_error_level=-1;
- try
- {
-  std::list<int>::iterator I=ch_indexes.begin();
-  for(;I!=ch_indexes.end();++I)
-  {
-   if(!MIsEngineInit(*I))
-    continue;
-   int error_level=-1;
-   int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
-   for(int k=0;k<num_log_lines;k++)
-   {
-	const char * data=MEngine_GetUnreadLog(*I, error_level);
-	if(!data)
-	 continue;
-	if(global_error_level>error_level)
-	 global_error_level=error_level;
-
-	std::string new_log_data=data;
-	MEngine_FreeBufString(*I,data);
-	if(!new_log_data.empty())
-	 UnsentLog.push_back(new_log_data);
-   }
-   MEngine_ClearReadLog(*I);
-  }
- }
- catch(...)
- {
-  throw;
- }
-
- try
- {
-  if(global_error_level>=0 && global_error_level<3)
-  {
-   RdkApplication.PauseEngine(-1);
-   TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
-   if(tab)
-   {
-	tab->PageControl->ActivePage=tab;
-   }
-   else
-   {
-	Show();
-	WindowState=wsNormal;
-   }
-  }
-
-  /// Сохраняем лог в файл если это необходимо
-  RDK::TProjectConfig config=RdkApplication.GetProject()->GetConfig();
-
-  if(EventsLogFlag)
-   EventsLogFlag=config.EventsLogFlag;
-
-  if(!UnsentLog.empty() && EventsLogFlag && !RdkApplication.GetProjectPath().empty())
-  {
-   try
-   {
-	ForceDirectories((RdkApplication.GetProjectPath()+"EventsLog").c_str());
-   }
-   catch(EInOutError &exception)
-   {
-	EventsLogFlag=false;
-//	UGEngineControlForm->EventsLogEnabled=false;
-   }
-
-   EventsLogFilePath=RdkApplication.GetProjectPath()+"EventsLog/";
-  }
-
-  bool is_logged=false;
-  while(!UnsentLog.empty())
-  {
-   is_logged=true;
-   if(EventsLogFlag)
-   {
-	if(!EventsLogFile)
-	{
-	 std::string file_name;
-	 time_t time_data;
-	 time(&time_data);
-	 file_name=RDK::get_text_time(time_data, '.', '_');
-	 EventsLogFile= new std::ofstream((EventsLogFilePath+file_name+".txt").c_str(),std::ios_base::out | std::ios_base::app);
-	}
-
-	if(*EventsLogFile)
-	{
-	 *EventsLogFile<<UnsentLog.front()<<std::endl;
-	}
-   }
-
-   EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
-   UnsentLog.pop_front();
-  }
-
-  if(is_logged)
-  {
-   if(EventsLogFlag && EventsLogFile && *EventsLogFile)
-	EventsLogFile->flush();
-
-   EngineMonitorFrame->RichEdit->SelStart =
-	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
-   EngineMonitorFrame->RichEdit->Update();
-   EngineMonitorFrame->RichEdit->Repaint();
-  }
- }
- catch(...)
- {
-  throw;
- }
-	  */
  try
  {
   if(!RdkApplication.IsInit())
@@ -191,6 +67,10 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)
   {
    EngineMonitorFrame->RichEdit->Lines->Add(I->c_str());
+  }
+  while(EngineMonitorFrame->RichEdit->Lines->Count>1000)
+  {
+   EngineMonitorFrame->RichEdit->Lines->Delete(0);
   }
   if(!log.empty())
   {
@@ -230,4 +110,5 @@ void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
  LogTimer->Enabled=true;
 }
 //---------------------------------------------------------------------------
+
 

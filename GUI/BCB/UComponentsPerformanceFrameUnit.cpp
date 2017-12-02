@@ -83,7 +83,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   std::list<std::pair<std::string, RDK::UPerfomanceResults> >::iterator gI=gui_perfomance.begin(),gJ=gui_perfomance.end();
 
   std::vector<RDK::UIVisualController*> &interfaces=RDK::UIVisualControllerStorage::InterfaceUpdaters;
-  InterfacesStringGrid->RowCount=int(gui_perfomance.size())+1;
+  InterfacesStringGrid->RowCount=int(interfaces.size())+1;
   InterfacesStringGrid->ColCount=6;
   InterfacesStringGrid->Cells[0][0]="#";
   InterfacesStringGrid->Cells[1][0]="GUI Name";
@@ -102,7 +102,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   for(size_t i=0;i<interfaces.size();i++,++gI)
   {
    InterfacesStringGrid->Cells[0][i+1]=IntToStr(int(i));
-   InterfacesStringGrid->Cells[1][i+1]=interfaces[i]->GetName().c_str();
+   InterfacesStringGrid->Cells[1][i+1]=interfaces[i]->CalcFullName().c_str();
    InterfacesStringGrid->Cells[2][i+1]=interfaces[i]->GetClassName().c_str();
    InterfacesStringGrid->Cells[3][i+1]=IntToStr(int(interfaces[i]->GetUpdateInterval()));
    InterfacesStringGrid->Cells[4][i+1]=IntToStr(int(gI->second.AvgDuration*1000));//IntToStr(int(interfaces[i]->GetUpdateTime()));

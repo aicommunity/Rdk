@@ -56,6 +56,17 @@ int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool
  return 0;
 }
 
+/// Возвращает разрешение изображения
+int ReadJpegSize(const std::vector<uint8_t> &jpeg_buf, int &width, int &height)
+{
+ if(jpeg_buf.empty())
+  return 1;
+
+ width=height=0;
+ jpgd::param_image(&jpeg_buf[0], int(jpeg_buf.size()), &width, &height);
+ return 0;
+}
+
 
 
 }

@@ -3157,20 +3157,19 @@ unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream
   return pImage_data;
 }
 
-unsigned char *image_param_stream(jpeg_decoder_stream *pStream, int *width, int *height)
+void image_param_stream(jpeg_decoder_stream *pStream, int *width, int *height)
 {
 
   if ((!pStream) || (!width) || (!height))
-	return NULL;
+	return;
 
   jpeg_decoder decoder(pStream);
   if (decoder.get_error_code() != JPGD_SUCCESS)
-	return NULL;
+	return;
 
   const int image_width = decoder.get_width(), image_height = decoder.get_height();
   *width = image_width;
   *height = image_height;
-  return 0;
 }
 
 unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps, bool order)
@@ -3281,10 +3280,12 @@ unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, i
 
   return pImage_data;
 }
-unsigned char *param_image(const unsigned char *pSrc_data, int src_data_size, int *width, int *height)
+void param_image(const unsigned char *pSrc_data, int src_data_size, int *width, int *height)
 {
  jpgd::jpeg_decoder_mem_stream mem_stream(pSrc_data, src_data_size);
- return image_param_stream(&mem_stream, width, height);
+ *width=0;
+ *height=0;
+ image_param_stream(&mem_stream, width, height);
 }
 unsigned char *new_decompress(unsigned char *out_img, const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps)
 {

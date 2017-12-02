@@ -24,9 +24,13 @@ See file license.txt for more information
 #define M_PI 3.1416
 #endif
 
-namespace RDK {
+#define UG_EDGE_CODE_NONE 0
+#define UG_EDGE_CODE_LEFT 1
+#define UG_EDGE_CODE_RIGHT 2
+#define UG_EDGE_CODE_BOTTOM 4
+#define UG_EDGE_CODE_TOP 8
 
-enum UEgdeCode {None=0, Left = 1, Right = 2, Bottom = 4, Top = 8};
+namespace RDK {
 
 int round(double number)
 {
@@ -34,19 +38,19 @@ int round(double number)
 }
 
 // Процедура вычисления кодов для точки(конца/начала отрезка)
-UEgdeCode CompOutCode(const UBPoint &point, const UBRect &rect)
+int CompOutCode(const UBPoint &point, const UBRect &rect)
 {
- UEgdeCode code=None;
+ int code=UG_EDGE_CODE_NONE;
  if(point.Y < rect.Y2())
-  code=Top;
+  code=UG_EDGE_CODE_TOP;
  else
  if(point.Y > rect.Y1())
-  code=Bottom;
+  code=UG_EDGE_CODE_BOTTOM;
  if(point.X > rect.X2())
-  code=code + Right;
+  code=code + UG_EDGE_CODE_RIGHT;
  else
  if(point.X < rect.X1())
-  code = code + Left;
+  code = code + UG_EDGE_CODE_LEFT;
  return code;
 }
 
@@ -54,7 +58,7 @@ UEgdeCode CompOutCode(const UBPoint &point, const UBRect &rect)
 // взято отсюда: http://grafika.me/node/694
 void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, UBPoint &out_point1, UBPoint &out_point2)
 {
- UEgdeCode outcodeOut=None;
+ int outcodeOut=UG_EDGE_CODE_NONE;
  bool accept = false;
  bool done = false;
  int x0(point1.X), y0(point1.Y), x1(point2.X), y1(point2.Y);
@@ -64,46 +68,46 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
  out_point1=point1;
  out_point2=point2;
 
- UEgdeCode outcode0=CompOutCode (point1,rect);
- UEgdeCode outcode1=CompOutCode (point2,rect);
+ int outcode0=CompOutCode (point1,rect);
+ int outcode1=CompOutCode (point2,rect);
  do
  {
-  if((outcode0==None) && (outcode1==None))
+  if((outcode0==UG_EDGE_CODE_NONE) && (outcode1==UG_EDGE_CODE_NONE))
   {
    // Отрезок целиком лежит внутри окна
    accept = true; done=true;
   }
   else
-  if( (outcode0*outcode1) != None)
+  if( (outcode0*outcode1) != UG_EDGE_CODE_NONE)
    //Отрезок лежит за пределами окна и не будет отрисован
    done = true;
   else // Часть отрезка лежит внутри прямоугольника
   {
-   if(outcode0 != None) // Если начальная точка лежит вне прямоугольника
+   if(outcode0 != UG_EDGE_CODE_NONE) // Если начальная точка лежит вне прямоугольника
 	outcodeOut = outcode0;
    else
     outcodeOut = outcode1;
 
    // Найдём точку пересечения отрезка с границей прямоугольника
-   if(Top & outcodeOut)
+   if(UG_EDGE_CODE_TOP & outcodeOut)
    {
 	x = x0 + (x1 - x0) * (rect.Y2() - y0) / (y1 - y0);
 	y = rect.Y1();
    }
 
-   if(Bottom & outcodeOut)
+   if(UG_EDGE_CODE_BOTTOM & outcodeOut)
    {
 	x = x0 + (x1 - x0) * (rect.Y1() - y0) / (y1 - y0);
 	y = rect.Y2();
    }
    else
-   if(Right & outcodeOut)
+   if(UG_EDGE_CODE_RIGHT & outcodeOut)
    {
 	y = y0 + (y1 - y0) * (rect.X2() - x0) / (x1 - x0);
 	x = rect.X2();
    }
    else
-   if(Left & outcodeOut)
+   if(UG_EDGE_CODE_LEFT & outcodeOut)
    {
 	y = y0 + (y1 - y0) * (rect.X1() - x0) / (x1 - x0);
 	x = rect.X1();

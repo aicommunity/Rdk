@@ -309,6 +309,19 @@ std::string TUVisualControllerForm::GetName(void)
  return AnsiString(Name).c_str();
 }
 
+
+// Возвращает полное уникальное имя интерфейса
+std::string TUVisualControllerForm::CalcFullName(void)
+{
+ std::string full_name;
+
+ if(Parent)
+  full_name=AnsiString(Parent->Name+String(".")+Name).c_str();
+ else
+  full_name=AnsiString(Name).c_str();
+ return full_name;
+}
+
 // Возвращает имя класса интерфейса
 std::string TUVisualControllerForm::GetClassName(void)
 {
