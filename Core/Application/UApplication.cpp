@@ -818,6 +818,7 @@ bool UApplication::CloseProject(void)
  if(config.ProjectAutoSaveFlag)
   SaveProject();
 
+ RDK::UIVisualControllerStorage::ClearInterface();
 // if(UServerControlForm)
 //  UServerControlForm->ServerRestartTimer->Enabled=false;
 
@@ -836,7 +837,6 @@ bool UApplication::CloseProject(void)
    Model_Destroy();
   }
  }
- RDK::UIVisualControllerStorage::ClearInterface();
  EngineControl->StopEngineStateThread();
  return true;
 }
