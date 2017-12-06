@@ -2440,6 +2440,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
+ VersionString=GetBuildInfoAsString();
+ MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(String("Application Version: ")+VersionString).c_str());
  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
 
  if(RdkApplication.IsTestMode())
@@ -2450,7 +2452,6 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 	return returnCode;*/
  }
 
- VersionString=GetBuildInfoAsString();
 }
 //---------------------------------------------------------------------------
 

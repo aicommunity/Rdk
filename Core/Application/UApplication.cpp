@@ -431,6 +431,8 @@ bool UApplication::UnInit(void)
  Sleep(10);
  CloseProject();
  EngineControl->UnInit();
+ GetCore()->Destroy();
+
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
  AppIsInit = false;
  return true;
