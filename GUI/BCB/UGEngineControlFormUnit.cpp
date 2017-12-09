@@ -90,6 +90,8 @@ String Lang_Starting("Starting...");
 String Lang_Stopping("Stopping...");
 String Lang_ApplicationRun("Launching application. Please Wait...");
 String Lang_ApplicationClose("Closing application. Please Wait...");
+String Lang_StartupDelay("Application launch delayed to");
+String Lang_StartupDelaySuffix("seconds");
 
 TUVisualControllerForm *RdkMainForm=0;
 
@@ -214,7 +216,7 @@ void CreateStatusWindow(const String &Text)
 						 (Screen->Height - FormHeight) / 2,
 						 FormWidth,
 						 FormHeight,
-						 Application->MainForm->Handle,
+						 0,//Application->MainForm->Handle,
 						 0,
 						 GetModuleHandle(0),
 						 0);
@@ -2404,6 +2406,14 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
  NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
+ StartupDelay=app_ini->ReadInteger("General","StartupDelay",0);
+
+ if(StartupDelay>0)
+ {
+  RDK::CreateStatusWindow(Lang_StartupDelay+String(" ")+IntToStr(StartupDelay/1000)+String(" ")+Lang_StartupDelaySuffix);
+  Sleep(StartupDelay);
+  RDK::RemoveStatusWindow();
+ }
 
  if(LogDir.Length() == 0)
   LogDir = "EventsLog/";
@@ -2430,6 +2440,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
+ VersionString=GetBuildInfoAsString();
+ MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(String("Application Version: ")+VersionString).c_str());
  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
 
  if(RdkApplication.IsTestMode())
@@ -2440,7 +2452,6 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 	return returnCode;*/
  }
 
- VersionString=GetBuildInfoAsString();
 }
 //---------------------------------------------------------------------------
 

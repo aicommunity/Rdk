@@ -39,78 +39,11 @@ URdkCoreManager::URdkCoreManager(void)
 
 URdkCoreManager::~URdkCoreManager(void)
 {
- for(int i=0;i<NumChannels;i++)
+ Destroy();
+ if(GlobalMutex)
  {
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
-  MCore_ChannelUnInit(i);
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
- }
-
- RDK_SYS_TRY
- {
-  try
-  {
-   for(size_t i=0;i<EnvironmentList.size();i++)
-	if(EnvironmentList[i])
-    {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
-     delete EnvironmentList[i];
-    }
-
-   EnvironmentList.resize(0);
-
-   for(size_t i=0;i<StorageList.size();i++)
-	if(StorageList[i])
-    {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
-     delete StorageList[i];
-    }
-
-   StorageList.resize(0);
-
-   for(size_t i=0;i<EngineList.size();i++)
-	if(EngineList[i])
-    {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
-     delete EngineList[i];
-    }
-
-   EngineList.resize(0);
-
-   for(size_t i=0;i<LoggerList.size();i++)
-	if(LoggerList[i])
-    {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted channel logger ")+RDK::sntoa(i));
-     delete LoggerList[i];
-    }
-   LoggerList.resize(0);
-
-   for(size_t i=0;i<MutexList.size();i++)
-	if(MutexList[i])
-	 UDestroyMutex(MutexList[i]);
-
-   MutexList.resize(0);
-
-   LockerList.resize(0);
-
-   if(GlobalMutex)
-   {
-	UDestroyMutex(GlobalMutex);
-	GlobalMutex=0;
-   }
-  }
-  catch (RDK::UException &exception)
-  {
-   SystemLogger.ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  UDestroyMutex(GlobalMutex);
+  GlobalMutex=0;
  }
 }
 // --------------------------
@@ -830,6 +763,78 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
 
 
  return res;
+}
+
+/// ”ничтожает все
+void URdkCoreManager::Destroy(void)
+{
+ for(int i=0;i<NumChannels;i++)
+ {
+  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
+  MCore_ChannelUnInit(i);
+  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
+ }
+
+ RDK_SYS_TRY
+ {
+  try
+  {
+   for(size_t i=0;i<EnvironmentList.size();i++)
+	if(EnvironmentList[i])
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
+     delete EnvironmentList[i];
+    }
+
+   EnvironmentList.resize(0);
+
+   for(size_t i=0;i<StorageList.size();i++)
+	if(StorageList[i])
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
+     delete StorageList[i];
+    }
+
+   StorageList.resize(0);
+
+   for(size_t i=0;i<EngineList.size();i++)
+	if(EngineList[i])
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
+     delete EngineList[i];
+    }
+
+   EngineList.resize(0);
+
+   for(size_t i=0;i<LoggerList.size();i++)
+	if(LoggerList[i])
+    {
+     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted channel logger ")+RDK::sntoa(i));
+     delete LoggerList[i];
+    }
+   LoggerList.resize(0);
+
+   for(size_t i=0;i<MutexList.size();i++)
+	if(MutexList[i])
+	 UDestroyMutex(MutexList[i]);
+
+   MutexList.resize(0);
+
+   LockerList.resize(0);
+  }
+  catch (RDK::UException &exception)
+  {
+   SystemLogger.ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
 }
 // --------------------------
 
