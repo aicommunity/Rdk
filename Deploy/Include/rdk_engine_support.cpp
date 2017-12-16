@@ -113,6 +113,7 @@ int URdkCoreManager::SetDebugMode(bool value)
    LoggerList[i]->SetDebugMode(DebugMode);
  }
  SystemLogger.SetDebugMode(DebugMode);
+ GlobalLogger.SetDebugMode(DebugMode);
  return RDK_SUCCESS;
 }
 
