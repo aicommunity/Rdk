@@ -106,6 +106,36 @@ bool UEngine::SetOptionsFileName(const string& value)
  OptionsFileName=value;
  return true;
 }
+
+// Имя файла описаний параметров классов
+const string& UEngine::GetClassesDescriptionFileName(void) const
+{
+ return ClassesDescriptionFileName;
+}
+
+bool UEngine::SetClassesDescriptionFileName(const string& value)
+{
+ if(ClassesDescriptionFileName == value)
+  return true;
+
+ ClassesDescriptionFileName=value;
+ return true;
+}
+
+// Имя файла описаний общих параметров классов
+const string& UEngine::GetCommonClassesDescriptionFileName(void) const
+{
+ return CommonClassesDescriptionFileName;
+}
+
+bool UEngine::SetCommonClassesDescriptionFileName(const string& value)
+{
+ if(CommonClassesDescriptionFileName == value)
+  return true;
+
+ CommonClassesDescriptionFileName=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -375,6 +405,30 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
   return false;
+ }
+
+ if(!CommonClassesDescriptionFileName.empty())
+ {
+  std::string common_classes_description_xml;
+  if(LoadFile(CommonClassesDescriptionFileName,common_classes_description_xml))
+  {
+   if(Storage_LoadCommonClassesDescription(common_classes_description_xml.c_str()) != RDK_SUCCESS)
+	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to apply common classes descriptions from file ")+CommonClassesDescriptionFileName);
+  }
+  else
+   GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to load common classes description file ")+CommonClassesDescriptionFileName);
+ }
+
+ if(!ClassesDescriptionFileName.empty())
+ {
+  std::string classes_description_xml;
+  if(LoadFile(ClassesDescriptionFileName,classes_description_xml))
+  {
+   if(Storage_LoadClassesDescription(classes_description_xml.c_str()) != RDK_SUCCESS)
+	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to apply classes descriptions from file ")+ClassesDescriptionFileName);
+  }
+  else
+   GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to load classes description file ")+ClassesDescriptionFileName);
  }
 
  return true;
@@ -7182,30 +7236,10 @@ bool UEngine::ADefault(void)
  // Имя файла инициализации
  OptionsFileName="options.ini";
 
- // Имя файла описаний параметров классов
- ClassesDescriptionFileName="ClassesDescription.xml";
-
- // Имя секции выбора основной библиотеки
-// MainLibrarySectionName="MainDLL";
-
- // Имя переменной основной библиотеки
-// MainLibraryName="MainLibraryName";
-// Options(MainLibrarySectionName,MainLibraryName,string("nmsdk.dll"));
-
  // Имя секции выбора библиотек компонент
  ComponentLibrariesSectionName="ComponentLibraries";
 
  ComponentClassesSectionName="ComponentClasses";
-
- // Индекс используемого хранилища в библиотеке
- // Если < 0, то новое хранилище будет создано
-// StorageIndex=-1;
-// Options("General","StorageIndex",sntoa(StorageIndex));
-
- // Индекс используемой среды в библиотеке
- // Если < 0, то новая среда будет создана
-// EnvironmentIndex=-1;
-// Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
 
  return true;
 }

@@ -285,6 +285,37 @@ RDK::UBitmapFontCollection& URdkCoreManager::GetFonts(void)
 {
  return Fonts;
 }
+
+
+// Имя файла описаний параметров классов
+const std::string& URdkCoreManager::GetClassesDescriptionFileName(void) const
+{
+ return ClassesDescriptionFileName;
+}
+
+bool URdkCoreManager::SetClassesDescriptionFileName(const std::string& value)
+{
+ if(ClassesDescriptionFileName == value)
+  return true;
+
+ ClassesDescriptionFileName=value;
+ return true;
+}
+
+// Имя файла описаний общих параметров классов
+const std::string& URdkCoreManager::GetCommonClassesDescriptionFileName(void) const
+{
+ return CommonClassesDescriptionFileName;
+}
+
+bool URdkCoreManager::SetCommonClassesDescriptionFileName(const std::string& value)
+{
+ if(CommonClassesDescriptionFileName == value)
+  return true;
+
+ CommonClassesDescriptionFileName=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -591,6 +622,8 @@ int URdkCoreManager::ChannelCreate(int index)
    EngineList[index]->Default();
 
    EnvironmentList[index]->SetSystemDir(SystemDir);
+   EngineList[index]->SetCommonClassesDescriptionFileName(CommonClassesDescriptionFileName);
+   EngineList[index]->SetClassesDescriptionFileName(ClassesDescriptionFileName);
    if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
    {
     ChannelDestroy(index);
