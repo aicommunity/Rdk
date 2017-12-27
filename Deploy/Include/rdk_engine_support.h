@@ -64,6 +64,12 @@ bool DebuggerMessageFlag;
 
 int BufObjectsMode;
 
+// Имя файла описаний параметров классов
+std::string ClassesDescriptionFileName;
+
+// Имя файла описаний общих параметров классов
+std::string CommonClassesDescriptionFileName;
+
 
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
@@ -133,6 +139,14 @@ bool AddFont(const std::string &font_file_name);
 
 // Возвращает ссылку на коллекцию шрифтов
 RDK::UBitmapFontCollection& GetFonts(void);
+
+// Имя файла описаний параметров классов
+const std::string& GetClassesDescriptionFileName(void) const;
+bool SetClassesDescriptionFileName(const std::string& value);
+
+// Имя файла описаний общих параметров классов
+const std::string& GetCommonClassesDescriptionFileName(void) const;
+bool SetCommonClassesDescriptionFileName(const std::string& value);
 // --------------------------
 
 // --------------------------
@@ -177,6 +191,10 @@ int ChannelCreate(int index);
 /// Уничтожает требуемый канал
 /// (если канал уже уничтожен, то не делает ничего
 int ChannelDestroy(int index);
+
+public:
+/// Уничтожает все
+void Destroy(void);
 // --------------------------
 
 // --------------------------
