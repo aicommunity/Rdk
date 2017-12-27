@@ -24,7 +24,7 @@ URdkCoreManager::URdkCoreManager(void)
  Environment=0;
  Storage=0;
 
- DebuggerMessageFlag=true;
+ DebuggerMessageFlag=false;
  DebugMode=false;
  BufObjectsMode=1;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
