@@ -31,6 +31,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MMatrixSize &data);
 template<typename T, unsigned Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &data)
 {
+ storage.SetNodeAttribute("Type",std::string("MVector<")+typeid(T).name()+">");
+ storage.SetNodeAttribute("Size",sntoa(Rows));
  std::stringstream stream;
 
  for(unsigned i=0;i<Rows;i++)
@@ -62,6 +64,9 @@ template<typename T, unsigned Rows, unsigned Cols>
 USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols> &data)
 {
  std::stringstream stream;
+ storage.SetNodeAttribute("Type",std::string("MMatrix<")+typeid(T).name()+">");
+ storage.SetNodeAttribute("Rows",sntoa(Rows));
+ storage.SetNodeAttribute("Cols",sntoa(Cols));
 
  stream<<endl;
  for(unsigned i=0;i<Rows;i++)
@@ -103,6 +108,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MDVector<T> &data)
 {
  std::stringstream stream;
 
+ storage.SetNodeAttribute("Type",std::string("MDVector<")+typeid(T).name()+">");
  int size=data.GetSize();
  storage.SetNodeAttribute("Size",sntoa(size));
  for(int i=0;i<data.GetRows();i++)
@@ -163,6 +169,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const MDMatrix<T> &data)
 {
+ storage.SetNodeAttribute("Type",std::string("MDMatrix<")+typeid(T).name()+">");
  int rows=data.GetRows();
  int cols=data.GetCols();
  storage.SetNodeAttribute("Rows",sntoa(rows));
