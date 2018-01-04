@@ -221,7 +221,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
     try
     {
-        RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
 
         RDK::UEPtr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
