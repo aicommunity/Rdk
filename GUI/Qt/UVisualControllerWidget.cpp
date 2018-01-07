@@ -286,6 +286,12 @@ std::string UVisualControllerWidget::GetClassName(void)
     return typeid(this).name();
 }
 
+std::string UVisualControllerWidget::CalcFullName(void)
+{
+ return GetName(); // TODO: тут надо сгенерить имя со всеми владельцами
+}
+
+
 // Возвращает интервал обновления интерфейса
 long UVisualControllerWidget::GetUpdateInterval(void)
 {
