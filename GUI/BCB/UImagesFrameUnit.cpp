@@ -1020,3 +1020,5 @@ void __fastcall TUImagesFrame::Update1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+
