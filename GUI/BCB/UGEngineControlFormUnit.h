@@ -45,6 +45,8 @@ extern String Lang_Starting;
 extern String Lang_Starting;
 extern String Lang_ApplicationRun;
 extern String Lang_ApplicationClose;
+extern String Lang_StartupDelay;
+extern String Lang_StartupDelaySuffix;
 
 
 namespace RDK {
@@ -288,6 +290,7 @@ bool StartMinimized;
 String ProgramName;
 String LogDir;
 bool LogDebugMode;
+int StartupDelay;
 
 __int64 LastMaxMemory;
 __int64 LastMaxBlock;

@@ -100,6 +100,8 @@ public:
     /// Возвращает имя класса интерфейса
     virtual std::string GetClassName(void);
 
+    virtual std::string CalcFullName(void);
+
     /// Возвращает интервал обновления интерфейса
     virtual long GetUpdateInterval(void);
 

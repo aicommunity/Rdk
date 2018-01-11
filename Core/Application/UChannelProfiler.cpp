@@ -351,6 +351,12 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
 void UChannelProfiler::LoadGuiPerfomanceData(void)
 {
  std::vector<RDK::UIVisualController*> &interfaces=RDK::UIVisualControllerStorage::InterfaceUpdaters;
+
+ if(interfaces.size() != GuiNames.size())
+ {
+  AddAllGui();
+ }
+
  for(size_t i=0;i<GuiPerfomance.size();i++)
  {
   AddGuiPerfomanceData(i, interfaces[i]->GetUpdateTime());

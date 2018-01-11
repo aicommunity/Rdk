@@ -114,12 +114,12 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     Graph.SetCanvas(&GraphCanvas);
     FontType = "Tahoma";
     FontSize = 15;
-    RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
+    RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GetCoreLock()->GetFonts().GetFont(FontType,FontSize));
     if(font)
      Font=*font;
     Graph.SetFont(&Font);
     DrawEngine.SetEngine(&Graph);
-    DrawEngine.SetFonts(GetCoreLock()->GetFonts());
+    DrawEngine.SetFonts(RDK::GetCoreLock()->GetFonts());
     //</код из билдера>
     reDrawScheme(true);
     setAcceptDrops(true);

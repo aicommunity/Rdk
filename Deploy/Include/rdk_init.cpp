@@ -966,6 +966,11 @@ int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
 {
  return RdkCoreManager.GetEngineLock()->Storage_LoadAllClassesDescription(xmltext);
 }
+
+const char* RDK_CALL Storage_GetClassProperties(const char *stringid, unsigned int type_mask)
+{
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassProperties(stringid,type_mask);
+}
 // ----------------------------
 
 // ----------------------------

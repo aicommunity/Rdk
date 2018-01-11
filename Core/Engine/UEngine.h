@@ -37,6 +37,9 @@ string OptionsFileName;
 // Имя файла описаний параметров классов
 string ClassesDescriptionFileName;
 
+// Имя файла описаний общих параметров классов
+string CommonClassesDescriptionFileName;
+
 // Имя секции выбора библиотек компонент
 string ComponentLibrariesSectionName;
 
@@ -146,16 +149,17 @@ virtual ~UEngine(void);
 int GetBufObjectsMode(void) const;
 bool SetBufObjectsMode(int mode);
 
-// Указатели на функции создания экземпляров хранилища и среды
-/*UEngine::PCreateNewStorage GetFuncCreateNewStorage(void) const;
-bool SetFuncCreateNewStorage(UEngine::PCreateNewStorage value);
-
-UEngine::PCreateNewEnvironment GetFuncCreateNewEnvironment(void) const;
-bool SetFuncCreateNewEnvironment(UEngine::PCreateNewEnvironment value);
-  */
 // Имя файла инициализации
 const string& GetOptionsFileName(void) const;
 bool SetOptionsFileName(const string& value);
+
+// Имя файла описаний параметров классов
+const string& GetClassesDescriptionFileName(void) const;
+bool SetClassesDescriptionFileName(const string& value);
+
+// Имя файла описаний общих параметров классов
+const string& GetCommonClassesDescriptionFileName(void) const;
+bool SetCommonClassesDescriptionFileName(const string& value);
 // --------------------------
 
 // --------------------------
@@ -188,9 +192,6 @@ int GetNumTempStrings(void) const;
 // --------------------------
 // Методы доступа к переменным состояния
 // --------------------------
-// Флаг работы системы
-//int IsRunned(void);
-
 /// Индекс текущего канала в многоканальной библиотеке
 int GetChannelIndex(void) const;
 bool SetChannelIndex(int value);
@@ -221,15 +222,6 @@ virtual bool Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env);
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
 virtual void UnInit(void);
-/*
-// Запускает систему
-virtual bool Start(void);
-
-// Приостанавливает систему
-virtual bool Pause(void);
-
-// Останавливает систему
-virtual bool Stop(void);    */
 // --------------------------
 
 // --------------------------
@@ -291,6 +283,10 @@ virtual const char* Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 virtual int Storage_LoadAllClassesDescription(const char* xmltext);
+
+// Возвращает свойства компонента по идентификатору
+// Память для buffer должна быть выделена!
+virtual const char* Storage_GetClassProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 // ----------------------------
 
 // ----------------------------

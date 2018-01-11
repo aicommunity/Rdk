@@ -126,14 +126,26 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(GetName());
-   operator << (*xml,GetData());
+   try
+   {
+    operator << (*xml,GetData());
+   }
+   catch(UIProperty::EPropertyZeroPtr &ex)
+   {
+   }
    xml->SelectUp();
    return true;
   }
   else
   {
    xml->AddNode(GetName());
-   operator << (*xml,GetData());
+   try
+   {
+    operator << (*xml,GetData());
+   }
+   catch(UIProperty::EPropertyZeroPtr &ex)
+   {
+   }
    xml->SelectUp();
    return true;
   }

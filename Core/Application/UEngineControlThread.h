@@ -31,7 +31,7 @@ public:
 /// Состояние расчета канала
 /// 0 - Выключен
 /// 1 - Идет расчет
-enum UCalcState { csStopped=0, csRunning=1 };
+typedef enum { csStopped=0, csRunning=1 } UCalcState;
 
 protected: // Параметры
 /// Индекс канала в библиотеке аналитики, управляемый тредом

@@ -503,20 +503,29 @@ void UStorage::FreeObjectsStorage(void)
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
  {
-  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J;)
+  std::string object_class_name=FindClassName(instances->first);
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
    if(!I->UseFlag)
    {
-	J=I; ++J;
+    list<UInstancesStorageElement>::iterator K;
+	std::string object_name=I->Object->GetName();
+	if(Logger)
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+	K=I; ++K;
 	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
 	delete object;
-	I=J;
+	I=K;
    }
    else
     ++I;
   }
   instances->second.clear();
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has finished");
  }
 }
 
@@ -526,8 +535,19 @@ void UStorage::ClearObjectsStorage(void)
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 												instances != iend; ++instances)
  {
+  std::string object_class_name=FindClassName(instances->first);
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
+  {
+   std::string object_name=I->Object->GetName();
+   if(Logger)
+	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects by name ")+object_name);
    I->Object->Free();
+  }
+
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
  }
 
  FreeObjectsStorage();

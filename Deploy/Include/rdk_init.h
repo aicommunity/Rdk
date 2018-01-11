@@ -367,6 +367,10 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 RDK_LIB_TYPE int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
+
+// Возвращает свойства компонента по идентификатору
+// Память для buffer должна быть выделена!
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 // --------------------------
 
 // ----------------------------

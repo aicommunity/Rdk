@@ -76,6 +76,21 @@ UBitmapParam::~UBitmapParam(void)
 {
 
 }
+
+// --------------------------
+// Операторы
+// --------------------------
+bool UBitmapParam::operator == (const UBitmapParam &bitmap) const
+{
+ return !((*this) != bitmap);
+}
+
+bool UBitmapParam::operator != (const UBitmapParam &bitmap) const
+{
+ return (Width != bitmap.Width) || (Height != bitmap.Height) || (ColorModel != bitmap.ColorModel);
+}
+// --------------------------
+
 // --------------------------
 
 

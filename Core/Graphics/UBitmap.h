@@ -110,6 +110,13 @@ UBitmapParam(const UBitmapParam &bitmap);
 explicit UBitmapParam(UBMColorModel cmodel);
 ~UBitmapParam(void);
 // --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+bool operator == (const UBitmapParam &bitmap) const;
+bool operator != (const UBitmapParam &bitmap) const;
+// --------------------------
 };
 
 // Класс, описывающий изображение

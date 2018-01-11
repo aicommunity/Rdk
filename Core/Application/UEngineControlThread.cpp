@@ -37,7 +37,6 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
  Profiler=new UChannelProfiler;
  Profiler->SetChannelIndex(channel_index);
- Profiler->AddAllGui();
 }
 
 UEngineControlThread::~UEngineControlThread(void)

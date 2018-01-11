@@ -266,7 +266,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
 {
     try
     {
-        RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
@@ -305,7 +305,7 @@ void UComponentLinksWidget::addLinks(QString componentName)
 {
     try
     {
-        RDK::UELockPtr<RDK::UContainer> model = GetModelLock(Core_GetSelectedChannelIndex());
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
         RDK::UEPtr<RDK::UNet> cont = model->GetComponentL<RDK::UNet>(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
