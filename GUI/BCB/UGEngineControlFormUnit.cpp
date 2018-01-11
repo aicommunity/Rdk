@@ -31,6 +31,8 @@
 #include "TLoaderFormUnit.h"
 #include "TApplicationOptionsFormUnit.h"
 #include "UClassesDescriptionsFormUnit.h"
+//#include "TVariantChannelControlForm.h" //TR
+//#include "TVariantChannelControlFrame.h"     //TR
 #include <psapi.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -374,6 +376,23 @@ void TUGEngineControlForm::ABeforeCalculate(void)
 // Метод, вызываемый после шага расчета
 void TUGEngineControlForm::AAfterCalculate(void)
 {
+}
+
+//метод, вызывающий форму отображения нескольких видео
+void RegisterVideoCaptureControlForm(void)
+{
+   /*	if (FormOpenSignal ==1)
+	{
+     VariantChannelControlForm ->Show();
+	}
+
+	else
+	MessageBox (NULL, "Sorry, the form was not created", "Notification",MB-OK); */
+}
+//метод, вызывающий разрушение формы отображения нескольких видео
+void UnRegisterVideoCaptureControlForm(void)
+{
+
 }
 
 void TUGEngineControlForm::AUpdateInterface(void)
@@ -1076,7 +1095,7 @@ try{
   {
    Model_SetGlobalTimeStep("",GlobalTimeStep[i]);
    if(InitAfterLoadFlag[i])
-    MEnv_Init(i);
+	MEnv_Init(i);
    if(ResetAfterLoadFlag[i])
 	MEnv_Reset(i,0);
   }
@@ -3172,5 +3191,27 @@ void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
  CloneProject(Core_GetSelectedChannelIndex(), cloned_id);
 }
 //---------------------------------------------------------------------------
+
+/*void __fastcall TUGEngineControlForm::UComponentsListFrame1StringGridClick(TObject *Sender)
+
+{
+  UComponentsListFrame1->StringGridClick;
+ }     */
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TUGEngineControlForm::VideoSources21Click(TObject *Sender)
+{
+//TR форма отображения нескольких каналов
+/*
+ FormOpenSignal==1)
+ RegisterVideoCaptureControlForm (this);
+
+   */
+}
+//---------------------------------------------------------------------------
+
 
 
