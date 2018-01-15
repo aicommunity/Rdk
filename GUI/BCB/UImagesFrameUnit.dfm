@@ -1,13 +1,13 @@
 inherited UImagesFrame: TUImagesFrame
   Width = 730
-  Height = 505
+  Height = 509
   ExplicitWidth = 730
-  ExplicitHeight = 505
+  ExplicitHeight = 509
   object DrawGrid: TDrawGrid
     Left = 0
     Top = 0
     Width = 730
-    Height = 488
+    Height = 492
     Align = alClient
     ColCount = 2
     DefaultColWidth = 360
@@ -28,7 +28,7 @@ inherited UImagesFrame: TUImagesFrame
     Left = 0
     Top = 0
     Width = 730
-    Height = 488
+    Height = 492
     Align = alClient
     DoubleBuffered = True
     Color = clBtnFace
@@ -51,18 +51,48 @@ inherited UImagesFrame: TUImagesFrame
   end
   object Panel1: TPanel
     Left = 0
-    Top = 488
+    Top = 492
     Width = 730
     Height = 17
     Align = alBottom
     TabOrder = 2
-    object ShowLegendCheckBox: TCheckBox
+    object Labelshow: TLabel
       Left = 1
       Top = 1
-      Width = 88
+      Width = 38
       Height = 15
       Align = alLeft
-      Caption = 'Show legend'
+      Caption = 'show   '
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ExplicitHeight = 13
+    end
+    object Labelsize: TLabel
+      Left = 520
+      Top = 1
+      Width = 31
+      Height = 15
+      Align = alRight
+      Caption = 'size   '
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ExplicitHeight = 13
+    end
+    object ShowLegendCheckBox: TCheckBox
+      Left = 39
+      Top = 1
+      Width = 58
+      Height = 15
+      Align = alLeft
+      Caption = 'legend'
       Checked = True
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -71,55 +101,55 @@ inherited UImagesFrame: TUImagesFrame
       OnClick = ShowLegendCheckBoxClick
     end
     object ShowHistogramCheckBox: TCheckBox
-      Left = 89
+      Left = 97
       Top = 1
-      Width = 104
+      Width = 70
       Height = 15
       Align = alLeft
-      Caption = 'Show histogram'
+      Caption = 'histogram'
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 1
       OnClick = ShowHistogramCheckBoxClick
     end
     object TiledSizeRadioButton: TRadioButton
-      Left = 582
+      Left = 609
       Top = 1
-      Width = 72
+      Width = 45
       Height = 15
       Align = alRight
-      Caption = 'Tiled size'
+      Caption = 'Tiled'
       Checked = True
       TabOrder = 2
       TabStop = True
       OnClick = TiledSizeRadioButtonClick
     end
     object OriginalSizeRadioButton: TRadioButton
-      Left = 494
+      Left = 551
       Top = 1
-      Width = 88
+      Width = 58
       Height = 15
       Align = alRight
-      Caption = 'Original size'
+      Caption = 'Original '
       TabOrder = 3
       OnClick = OriginalSizeRadioButtonClick
     end
     object ShowInfoCheckBox: TCheckBox
-      Left = 193
+      Left = 167
       Top = 1
-      Width = 80
+      Width = 48
       Height = 15
       Align = alLeft
-      Caption = 'Show info'
+      Caption = 'info'
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 4
       OnClick = ShowInfoCheckBoxClick
     end
     object IndChannelsCheckBox: TCheckBox
-      Left = 273
+      Left = 215
       Top = 1
-      Width = 97
+      Width = 91
       Height = 15
       Align = alLeft
       Caption = 'Ind. channels'
@@ -131,16 +161,16 @@ inherited UImagesFrame: TUImagesFrame
       Width = 75
       Height = 15
       Align = alRight
-      Caption = 'Prop. size'
+      Caption = 'Proportional'
       TabOrder = 6
       OnClick = ProportionalSizeRadioButtonClick
     end
     object CenterImageCheckBox: TCheckBox
-      Left = 435
+      Left = 306
       Top = 1
       Width = 59
       Height = 15
-      Align = alRight
+      Align = alLeft
       Caption = 'Center'
       TabOrder = 7
     end
