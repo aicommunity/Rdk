@@ -1,6 +1,8 @@
 #ifndef UEXCEPTION_CPP
 #define UEXCEPTION_CPP
 
+#define __STDC_WANT_LIB_EXT1__ 1
+
 #include <typeinfo>
 #include <time.h>
 #include <memory.h>
@@ -163,7 +165,7 @@ std::string UException::GenerateLogPrefix(void) const
 #if defined(_MSC_VER)
  localtime_s(&time_result,&ex_time);
  time_struct=&time_result;
-#elif __cplusplus >= 201103L
+#elif defined(__STDC_LIB_EXT1__)
  time_struct=localtime_s(&ex_time,&time_result);
 #else
  time_struct=localtime(&ex_time); // TODO: Possible unsafe!!

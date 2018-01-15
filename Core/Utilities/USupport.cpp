@@ -51,7 +51,7 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
 #if defined(_MSC_VER)
  localtime_s(&time_result,&time_data);
  time_struct=&time_result;
-#elif __cplusplus >= 201103L
+#elif defined(__STDC_LIB_EXT1__)
  time_stuct=localtime_s(&time_data,&time_result);
 #else
  time_struct=localtime(&time_data); // TODO: Possible unsafe!!
