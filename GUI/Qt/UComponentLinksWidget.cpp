@@ -156,8 +156,8 @@ void UComponentLinksWidget::createLink()
         return;
     }
 
-    outputComponent = outputItem->parent()->text(0);
-    inputComponent = inputItem->parent()->text(0);
+    outputComponent = outputItem->parent()->data(0, Qt::UserRole).toString();
+    inputComponent = inputItem->parent()->data(0, Qt::UserRole).toString();
 
     if(inputItem->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
