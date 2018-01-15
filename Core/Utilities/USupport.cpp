@@ -52,7 +52,7 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  localtime_s(&time_result,&time_data);
  time_struct=&time_result;
 #elif defined(__STDC_LIB_EXT1__)
- time_stuct=localtime_s(&time_data,&time_result);
+ time_struct=localtime_s(&time_data,&time_result);
 #else
  time_struct=localtime(&time_data); // TODO: Possible unsafe!!
  memcpy(&time_result,time_struct,sizeof(time_result));
