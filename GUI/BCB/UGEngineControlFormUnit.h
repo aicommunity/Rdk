@@ -400,6 +400,8 @@ Word Saved8087CW;
 
 bool AppWinState;
 
+TForm* CaptureControlForm;
+
 void __fastcall AppMinimize(TObject *Sender);
 void __fastcall AppRestore(TObject *Sender);
 
@@ -442,9 +444,9 @@ void SaveProject(void);
 /// --------------------------
 //открывает форму многоканального отображения
 
-void RegisterVideoCaptureControlForm (void);
+void RegisterVideoCaptureControlForm (TForm *form);
 
-void UnRegisterVideoCaptureControlForm (void);
+void UnRegisterVideoCaptureControlForm (TForm *form);
 
 /// Методы управления каналами
 /// --------------------------

@@ -31,8 +31,6 @@
 #include "TLoaderFormUnit.h"
 #include "TApplicationOptionsFormUnit.h"
 #include "UClassesDescriptionsFormUnit.h"
-//#include "TVariantChannelControlForm.h" //TR
-//#include "TVariantChannelControlFrame.h"     //TR
 #include <psapi.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -263,6 +261,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  MinimizeToTray=false;
  StartMinimized=false;
  CheckModelFlag=false;
+ CaptureControlForm=0;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -381,20 +380,20 @@ void TUGEngineControlForm::AAfterCalculate(void)
 }
 
 //метод, вызывающий форму отображения нескольких видео
-void RegisterVideoCaptureControlForm(void)
+void  TUGEngineControlForm::RegisterVideoCaptureControlForm(TForm *form)
 {
-   /*	if (FormOpenSignal ==1)
-	{
-     VariantChannelControlForm ->Show();
-	}
-
-	else
-	MessageBox (NULL, "Sorry, the form was not created", "Notification",MB-OK); */
+ CaptureControlForm=form;
 }
-//метод, вызывающий разрушение формы отображения нескольких видео
-void UnRegisterVideoCaptureControlForm(void)
-{
 
+//метод, вызывающий разрушение формы отображения нескольких видео
+void  TUGEngineControlForm::UnRegisterVideoCaptureControlForm(TForm *form)
+{
+ if(CaptureControlForm != form)
+ {
+  // написать в лог о том, что разрегистрироваться не удалось
+
+ }
+ CaptureControlForm=0;
 }
 
 void TUGEngineControlForm::AUpdateInterface(void)
@@ -3216,11 +3215,9 @@ void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::VideoSources21Click(TObject *Sender)
 {
 //TR форма отображения нескольких каналов
-/*
- FormOpenSignal==1)
- RegisterVideoCaptureControlForm (this);
 
-   */
+ CaptureControlForm->Show();
+
 }
 //---------------------------------------------------------------------------
 
