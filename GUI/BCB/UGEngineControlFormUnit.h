@@ -28,6 +28,7 @@
 #include "UDrawEngineFrameUnit.h"
 #include <Vcl.AppEvnts.hpp>
 // #include <Web.Win.Sockets.hpp>
+
 #include <System.ImageList.hpp>
 
 #define WM_SERVER_PING (WM_USER + 261)
@@ -178,6 +179,7 @@ __published:	// IDE-managed Components
 	TCheckBox *DetailedDebugLogCheckBox;
 	TMenuItem *OpenProjectFolder1;
 	TMenuItem *ClonetoNewChannel1;
+	TMenuItem *VideoSources21;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -263,6 +265,8 @@ __published:	// IDE-managed Components
 	void __fastcall DetailedDebugLogCheckBoxClick(TObject *Sender);
 	void __fastcall OpenProjectFolder1Click(TObject *Sender);
 	void __fastcall ClonetoNewChannel1Click(TObject *Sender);
+	void __fastcall VideoSources21Click(TObject *Sender);
+	//void __fastcall UComponentsListFrame1StringGridClick(TObject *Sender);
 
 
 
@@ -396,6 +400,8 @@ Word Saved8087CW;
 
 bool AppWinState;
 
+TForm* CaptureControlForm;
+
 void __fastcall AppMinimize(TObject *Sender);
 void __fastcall AppRestore(TObject *Sender);
 
@@ -436,6 +442,12 @@ void CloneProject(int source_id, int cloned_id);
 void SaveProject(void);
 
 /// --------------------------
+//открывает форму многоканального отображени€
+
+void RegisterVideoCaptureControlForm (TForm *form);
+
+void UnRegisterVideoCaptureControlForm (TForm *form);
+
 /// ћетоды управлени€ каналами
 /// --------------------------
 /// ¬озвращает число каналов

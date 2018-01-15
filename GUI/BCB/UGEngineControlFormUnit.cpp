@@ -261,6 +261,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  MinimizeToTray=false;
  StartMinimized=false;
  CheckModelFlag=false;
+ CaptureControlForm=0;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -376,6 +377,23 @@ void TUGEngineControlForm::ABeforeCalculate(void)
 // Метод, вызываемый после шага расчета
 void TUGEngineControlForm::AAfterCalculate(void)
 {
+}
+
+//метод, вызывающий форму отображения нескольких видео
+void  TUGEngineControlForm::RegisterVideoCaptureControlForm(TForm *form)
+{
+ CaptureControlForm=form;
+}
+
+//метод, вызывающий разрушение формы отображения нескольких видео
+void  TUGEngineControlForm::UnRegisterVideoCaptureControlForm(TForm *form)
+{
+ if(CaptureControlForm != form)
+ {
+  // написать в лог о том, что разрегистрироваться не удалось
+
+ }
+ CaptureControlForm=0;
 }
 
 void TUGEngineControlForm::AUpdateInterface(void)
@@ -1078,7 +1096,7 @@ try{
   {
    Model_SetGlobalTimeStep("",GlobalTimeStep[i]);
    if(InitAfterLoadFlag[i])
-    MEnv_Init(i);
+	MEnv_Init(i);
    if(ResetAfterLoadFlag[i])
 	MEnv_Reset(i,0);
   }
@@ -3183,5 +3201,25 @@ void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
  CloneProject(Core_GetSelectedChannelIndex(), cloned_id);
 }
 //---------------------------------------------------------------------------
+
+/*void __fastcall TUGEngineControlForm::UComponentsListFrame1StringGridClick(TObject *Sender)
+
+{
+  UComponentsListFrame1->StringGridClick;
+ }     */
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TUGEngineControlForm::VideoSources21Click(TObject *Sender)
+{
+//TR форма отображения нескольких каналов
+
+ CaptureControlForm->Show();
+
+}
+//---------------------------------------------------------------------------
+
 
 
