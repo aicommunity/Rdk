@@ -423,14 +423,14 @@ struct EObjectStorageNotEmpty: public EIdError
 explicit EObjectStorageNotEmpty(UId id) : EIdError(id) {};
 };
 
-struct EInvalidClassType: public IException
+struct EInvalidClassType: public UException
 {
  std::string ClassName;
  std::string ExpectedTypeName;
 
 explicit EInvalidClassType(const std::string &expected_type_name, const std::string &class_name) :
  ClassName(class_name), ExpectedTypeName(expected_type_name) {};
-virtual ~EInvalidClassType(void) {};
+virtual ~EInvalidClassType(void) throw() {};
 
 // Формирует строку лога об исключении
 std::string CreateLogMessage(void) const
