@@ -3202,12 +3202,6 @@ void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-/*void __fastcall TUGEngineControlForm::UComponentsListFrame1StringGridClick(TObject *Sender)
-
-{
-  UComponentsListFrame1->StringGridClick;
- }     */
-//---------------------------------------------------------------------------
 
 
 
@@ -3222,4 +3216,5 @@ void __fastcall TUGEngineControlForm::VideoSources21Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
 
