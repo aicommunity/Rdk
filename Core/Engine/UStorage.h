@@ -205,6 +205,9 @@ virtual void ClearClassesStorage(void);
 virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
 virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
 
+template<class T>
+UEPtr<T> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
+
 // Возвращает Id класса, отвечающий объекту 'object'
 virtual UId FindClass(UEPtr<UComponent> object) const;
 
@@ -419,10 +422,41 @@ struct EObjectStorageNotEmpty: public EIdError
 {
 explicit EObjectStorageNotEmpty(UId id) : EIdError(id) {};
 };
+
+struct EInvalidClassType: public IException
+{
+ std::string ClassName;
+ std::string ExpectedTypeName;
+
+explicit EInvalidClassType(const std::string &expected_type_name, const std::string &class_name) :
+ ClassName(class_name), ExpectedTypeName(expected_type_name) {};
+
+// Формирует строку лога об исключении
+std::string CreateLogMessage(void) const
+{
+ return UException::CreateLogMessage()+std::string(" ClassName=")+ClassName+
+  std::string(" ExpectedTypeName=")+ExpectedTypeName;
+};
+};
 // --------------------------
 
 // --------------------------
 };
+
+template<class T>
+UEPtr<T> UStorage::TakeObject(const string &classname, const UEPtr<UComponent> &prototype)
+{
+ UEPtr<T> p;
+ UEPtr<UComponent> got_class=TakeObject(classname,prototype);
+ p=dynamic_pointer_cast<T>(got_class);
+ if(!p)
+ {
+  ReturnObject(got_class);
+  throw EInvalidClassType(classname, typeid(T).name());
+ }
+ return p;
+}
+
 	 /*
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
 class UStorage::EClassIdNotExist: public EError
