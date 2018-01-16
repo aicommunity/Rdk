@@ -430,7 +430,7 @@ struct EInvalidClassType: public IException
 
 explicit EInvalidClassType(const std::string &expected_type_name, const std::string &class_name) :
  ClassName(class_name), ExpectedTypeName(expected_type_name) {};
-virtual EInvalidClassType(void) {};
+virtual ~EInvalidClassType(void) {};
 
 // Формирует строку лога об исключении
 std::string CreateLogMessage(void) const
