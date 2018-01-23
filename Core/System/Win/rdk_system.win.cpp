@@ -180,6 +180,7 @@ RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
 
 unsigned long long GetMemoryUsedInfo(void)
 {
+#ifdef __BORLANDC__
  unsigned long long	result(0);
  PROCESS_MEMORY_COUNTERS mc;
  int cb=sizeof(PROCESS_MEMORY_COUNTERS);
@@ -187,11 +188,15 @@ unsigned long long GetMemoryUsedInfo(void)
  if(GetProcessMemoryInfo(GetCurrentProcess(), &mc, cb))
   result= mc.WorkingSetSize;
  return result;
+#else
+ return 0;
+#endif
 }
 
 
 unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
 {
+#ifdef __BORLANDC__
  TSystemInfo Si;
  LongWord P, dwRet;
  TMemoryBasicInformation Mbi;
@@ -216,16 +221,25 @@ unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
    P+=Si.dwPageSize;
  }
  return Result;
+#else
+ return 0;
+#endif
 }
 
 /// Возвращает объем используемой приложением памяти
 /// Если не удалось определить то возвращает false
 bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block)
 {
+#ifdef __BORLANDC__
  total_used_memory=GetMemoryUsedInfo();
  void* AAddressOfLargest(0);
  largest_free_block=GetLargestFreeMemRegion(AAddressOfLargest);
  return true;
+#else
+ total_used_memory=0;
+ largest_free_block=0;
+ return true;
+#endif
 }
 
 
