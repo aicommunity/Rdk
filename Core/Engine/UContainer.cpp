@@ -2060,6 +2060,8 @@ bool UContainer::Reset(void)
   {
    LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_ENTER);
    Build();
+   SharesInit(); // TODO: Костыль. Без него в некоторых компонентах (не ясно каких)
+   // шары остаются не инициализированных. возможно причина в статических дочерних компонентах в них
 
    // Init(); // Заглушка
    BeforeReset();

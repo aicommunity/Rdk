@@ -60,7 +60,7 @@ inherited UImagesFrame: TUImagesFrame
       Left = 1
       Top = 1
       Width = 38
-      Height = 15
+      Height = 13
       Align = alLeft
       Caption = 'show   '
       Font.Charset = DEFAULT_CHARSET
@@ -69,13 +69,12 @@ inherited UImagesFrame: TUImagesFrame
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
-      ExplicitHeight = 13
     end
     object Labelsize: TLabel
       Left = 520
       Top = 1
       Width = 31
-      Height = 15
+      Height = 13
       Align = alRight
       Caption = 'size   '
       Font.Charset = DEFAULT_CHARSET
@@ -84,7 +83,6 @@ inherited UImagesFrame: TUImagesFrame
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
-      ExplicitHeight = 13
     end
     object ShowLegendCheckBox: TCheckBox
       Left = 39

@@ -830,6 +830,7 @@ bool UApplication::CloseProject(void)
   SetProjectPath("");
  }
  SetProjectOpenFlag(false);
+ EngineControl->StopEngineStateThread();
  for(int i=GetNumChannels()-1;i>=0;i--)
  {
   Core_SelectChannel(i);
@@ -838,8 +839,9 @@ bool UApplication::CloseProject(void)
    Env_UnInit();
    Model_Destroy();
   }
+  Storage_ClearObjectsStorage();
  }
- EngineControl->StopEngineStateThread();
+
  return true;
 }
 
