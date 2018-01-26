@@ -133,6 +133,9 @@ public slots:
     void componentCalculate();
     void componentGUI();
 
+    /// ¬нешн€€ установка UpdateInterval, дл€ уменьшени€ нагрузки на €дро
+    void setUpdateInterval(long value);
+
 private:
     /// ”дал€ет из переданных данных лидирующие переводы строк
     std::string& EraseLeadEndls(std::string &value);

@@ -41,8 +41,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     imagesWindow = NULL;
     channels = NULL;
     createConfigurationWizardWidget = NULL;
-    createTestWidget = NULL;  
-
+    createTestWidget = NULL;
+    statusPanel = NULL;
 
     propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
@@ -99,6 +99,12 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
 
+    statusPanel = new UStatusPanel(this, application);
+    ui->statusBar->addWidget(statusPanel, 1);
+    connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
+    connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
+            propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
+
     // GUI actions:
 
     // file menu actions:
@@ -120,12 +126,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
-
-
-
-    readSettings(settingsFileName, settingsGroupName);
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
+    readSettings(settingsFileName, settingsGroupName);
 }
 
 UGEngineControllWidget::~UGEngineControllWidget()
@@ -209,7 +212,7 @@ void UGEngineControllWidget::actionStart()
   {
     startChannel(-1);
     //ts = startTimer(150); // костыль
-    ui->statusBar->showMessage("Calculation in progress");
+//    ui->statusBar->showMessage("Calculation in progress");
   }
   catch(RDK::UException& e)
   {
@@ -225,13 +228,13 @@ void UGEngineControllWidget::actionPause()
 {
     pauseChannel(-1);
     //killTimer(ts); // костыль
-    ui->statusBar->showMessage("Calculation at pause");
+//    ui->statusBar->showMessage("Calculation at pause");
 }
 
 void UGEngineControllWidget::actionReset()
 {
     resetChannel(-1);
-    ui->statusBar->showMessage("Calculation reseted", 5000);
+//    ui->statusBar->showMessage("Calculation reseted", 5000);
 }
 
 void UGEngineControllWidget::actionStep()

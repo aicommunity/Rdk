@@ -14,7 +14,7 @@
    <string>UGEngineControllWidget</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayoutCentralWidget">
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -169,7 +169,11 @@
    <addaction name="separator"/>
    <addaction name="actionUpdateFromOtherthread"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="sizeGripEnabled">
+    <bool>false</bool>
+   </property>
+  </widget>
   <widget class="QDockWidget" name="dockWidgetComponentsList">
    <property name="windowTitle">
     <string>Components list</string>

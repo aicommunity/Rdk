@@ -27,5 +27,5 @@ void ULoggerWidget::AUpdateInterface()
     if(!application) return;
     std::list<std::string> log = application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
     for(std::list<std::string>::iterator i = log.begin(); i != log.end(); ++i)
-        textEdit->appendPlainText(QString::fromStdString(*i));
+        textEdit->appendPlainText(QString::fromLocal8Bit(i->c_str()));
 }

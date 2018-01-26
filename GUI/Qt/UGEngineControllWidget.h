@@ -17,6 +17,7 @@
 #include "ULoggerWidget.h"
 #include "UCreateConfigurationWizardWidget.h"
 #include "UCreateTestWidget.h"
+#include "UStatusPanel.h"
 
 #include "UComponentPropertyChanger.h"
 
@@ -91,6 +92,7 @@ private:
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
+    UStatusPanel *statusPanel;
 
     /// Ёкзепл€р класса приложени€
     RDK::UApplication *application;

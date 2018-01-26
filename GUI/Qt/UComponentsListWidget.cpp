@@ -23,7 +23,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
 
-    UpdateInterval = 500;
+    UpdateInterval = -1;
     setAccessibleName("UComponentsListWidget"); // имя класса для сериализации
     readSettings(settingsFile, settingsGroup);
 
@@ -537,7 +537,12 @@ void UComponentsListWidget::componentCalculate()
 
 void UComponentsListWidget::componentGUI()
 {
-    qDebug() << "component GUI";
+  qDebug() << "component GUI";
+}
+
+void UComponentsListWidget::setUpdateInterval(long value)
+{
+  UpdateInterval = value;
 }
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
