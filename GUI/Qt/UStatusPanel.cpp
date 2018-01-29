@@ -69,7 +69,8 @@ void UStatusPanel::AAfterLoadProject()
   ui->checkBoxAutosaveStates->setChecked(config.ProjectAutoSaveStatesFlag);
   ui->checkBoxAutosaveProject->setChecked(config.ProjectAutoSaveFlag);
 
-  if(config.MultiThreadingMode)
+  if(config.MultiThreadingMode
+     && config.MultiThreadingMode != ui->radioButtonMultiThreaded->isChecked())
     ui->radioButtonMultiThreaded->setChecked(true);
   else
     ui->radioButtonSingleThreaded->setChecked(true);
