@@ -197,6 +197,7 @@ bool LoadBitmapFromFile(const CharT *filename, UBitmap &bmp)
 };
 
 RDK_LIB_TYPE bool LoadJpegFromFile(const char* filename, UBitmap &bmp);
+RDK_LIB_TYPE bool LoadJpegFromMemory(const std::vector<uint8_t> &buffer, UBitmap &bmp);
 // -----------------------
 
 }

@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include "UGraphicsIO.h"
 #include "../../ThirdParty/ThirdParty.h"
+#include "../Utilities/USupport.h"
 
 #include <string.h>
 
@@ -51,13 +52,40 @@ bool LoadJpegFromFile(const char* filename, UBitmap &bmp)
  }
  else
  {
-  delete bytes;
+  delete[] bytes;
   return false;
  }
 
- delete bytes;
+ delete[] bytes;
  return true;
 }
+
+RDK_LIB_TYPE bool LoadJpegFromMemory(const std::vector<uint8_t> &buffer, UBitmap &bmp)
+{
+ if(buffer.empty())
+  return false;
+
+ int width(0),height(0), actual_comps(0);
+ unsigned char * bytes=jpgd::decompress_jpeg_image_from_memory((const unsigned char*)&buffer[0], buffer.size(), &width, &height, &actual_comps, 3, false);
+ if(!bytes)
+  return false;
+
+ if(actual_comps == 1)
+ {
+  bmp.AttachBuffer(width, height, bytes, ubmY8);
+ }
+ else
+ if(actual_comps == 3)
+ {
+  bmp.AttachBuffer(width, height, bytes, ubmRGB24);
+  bmp.SetRes(width,height,ubmRGB24);
+ }
+ else
+  delete []bytes;
+ return true;
+}
+
+
 
 }
 #endif
