@@ -193,10 +193,9 @@ unsigned long long GetMemoryUsedInfo(void)
 #endif
 }
 
-
+#ifdef __BORLANDC__
 unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
 {
-#ifdef __BORLANDC__
  TSystemInfo Si;
  LongWord P, dwRet;
  TMemoryBasicInformation Mbi;
@@ -221,25 +220,53 @@ unsigned long long GetLargestFreeMemRegion(void* &AAddressOfLargest)
    P+=Si.dwPageSize;
  }
  return Result;
-#else
- return 0;
-#endif
 }
+#else
+unsigned long long GetLargestFreeMemRegion(LPVOID *lpBaseAddr)
+{
+    SYSTEM_INFO systemInfo;
+    GetSystemInfo(&systemInfo);
+    LPVOID p = 0;
+    MEMORY_BASIC_INFORMATION mbi;
+    SIZE_T largestSize = 0;
+    while(p < systemInfo.lpMaximumApplicationAddress)
+    {
+        SIZE_T dwRet = VirtualQuery(p, &mbi, sizeof(mbi));
+        if (dwRet > 0)
+        {
+            if (mbi.State && MEM_FREE)
+            {
+                if (largestSize < mbi.RegionSize)
+                {
+                    largestSize = mbi.RegionSize;
+                    if (lpBaseAddr  != NULL)
+                        *lpBaseAddr  = mbi.BaseAddress;
+                }
+            }
+            p += mbi.RegionSize;
+        }
+        else
+        {
+            p += systemInfo.dwPageSize;
+        }
+    }
+    return static_cast<unsigned long long>(largestSize);
+}
+#endif
 
 /// Возвращает объем используемой приложением памяти
 /// Если не удалось определить то возвращает false
 bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block)
 {
-#ifdef __BORLANDC__
  total_used_memory=GetMemoryUsedInfo();
+#ifdef __BORLANDC__
  void* AAddressOfLargest(0);
+#else
+ LPVOID* AAddressOfLargest(0);
+#endif
  largest_free_block=GetLargestFreeMemRegion(AAddressOfLargest);
  return true;
-#else
- total_used_memory=0;
- largest_free_block=0;
- return true;
-#endif
+
 }
 
 

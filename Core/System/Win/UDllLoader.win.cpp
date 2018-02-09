@@ -68,7 +68,7 @@ bool UDllLoaderWin::UnLoad(void)
 
 void *UDllLoaderWin::Resolve(std::string symbol)
 {
-    return GetProcAddress(library, symbol.c_str());
+    return (void *)GetProcAddress(library, symbol.c_str());
 }
 
 std::string UDllLoaderWin::GetErrorString()
