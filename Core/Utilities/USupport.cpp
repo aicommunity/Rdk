@@ -283,6 +283,32 @@ RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer)
  return true;
 }
 
+bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer)
+{
+ std::ifstream t(file_name.c_str(), ios::in | ios::binary);
+
+ if(!t || t.fail() || t.bad())
+ {
+  buffer.clear();
+  return false;
+ }
+
+ t.seekg(0, std::ios::end);
+ if(t.fail() || t.bad())
+  return false;
+ buffer.reserve(t.tellg());
+ t.seekg(0, std::ios::beg);
+ if(t.fail() || t.bad())
+  return false;
+
+ buffer.assign((std::istreambuf_iterator<char>(t)),
+			std::istreambuf_iterator<char>());
+ if(t.fail() || t.bad())
+  return false;
+ return true;
+}
+
+
 /// Сохраняет файл из строки
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer)
 {
@@ -298,6 +324,23 @@ RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buff
   return false;
  return true;
 }
+
+bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffer)
+{
+ std::ofstream t(file_name.c_str(), ios::trunc | ios::binary);
+
+ if(!t || t.fail() || t.bad())
+ {
+  return false;
+ }
+
+ if(!buffer.empty())
+  t.write(&buffer[0],buffer.size());
+ if(t.fail() || t.bad())
+  return false;
+ return true;
+}
+
 
 }
 #endif

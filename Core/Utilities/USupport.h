@@ -373,9 +373,11 @@ RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str,
 
 /// Загружает файл в строку
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer);
+RDK_LIB_TYPE bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer);
 
 /// Сохраняет файл из строки
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer);
+RDK_LIB_TYPE bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffer);
 
 }
 #endif
