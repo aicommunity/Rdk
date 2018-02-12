@@ -538,8 +538,8 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
  {
   fstream crush_file("CoreLogCrush.txt",ios::out | ios::app);
   crush_file<<"ULoggerEnv::LogMessageEx unexcepted catch! "
-	<<"msg_level="<<msg_level<<"object_name="<<object_name<<"line="
-    <<line<<"error_event_number="<<error_event_number<<endl;
+	<<"msg_level="<<msg_level<<" object_name="<<object_name<<" line="
+    <<line<<" error_event_number="<<error_event_number<<endl;
  }
 }
 
