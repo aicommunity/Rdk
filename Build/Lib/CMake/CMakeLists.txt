@@ -90,12 +90,22 @@ set(C_SERIALIZE_FILES
 	"${C_SERIALIZE_SOURCE_DIR}/USerStorage.cpp"
 	"${C_SERIALIZE_SOURCE_DIR}/USerStorageXML.cpp")
 set(C_SYSTEM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/System/")
-set(C_SYSTEM_FILES
-	"${C_SYSTEM_SOURCE_DIR}/Gcc/pevents.cpp"
-	"${C_SYSTEM_SOURCE_DIR}/Gcc/UGenericMutex.gcc.cpp"
-	"${C_SYSTEM_SOURCE_DIR}/Gcc/USharedMemoryLoader.gcc.cpp"
-	"${C_SYSTEM_SOURCE_DIR}/Gcc/rdk_system.gcc.cpp"
-	"${C_SYSTEM_SOURCE_DIR}/UGenericMutex.cpp")
+if(UNIX)
+	set(C_SYSTEM_FILES
+		"${C_SYSTEM_SOURCE_DIR}/Gcc/pevents.cpp"
+		"${C_SYSTEM_SOURCE_DIR}/Gcc/UGenericMutex.gcc.cpp"
+		"${C_SYSTEM_SOURCE_DIR}/Gcc/USharedMemoryLoader.gcc.cpp"
+		"${C_SYSTEM_SOURCE_DIR}/Gcc/rdk_system.gcc.cpp"
+		"${C_SYSTEM_SOURCE_DIR}/UGenericMutex.cpp")
+endif(UNIX)
+if(WIN32)
+	set(C_SYSTEM_FILES
+			"${C_SYSTEM_SOURCE_DIR}/Win/UDLLLoader.win.cpp"
+			"${C_SYSTEM_SOURCE_DIR}/Win/UGenericMutex.win.cpp"
+			"${C_SYSTEM_SOURCE_DIR}/Win/USharedMemoryLoader.win.cpp"
+			"${C_SYSTEM_SOURCE_DIR}/Win/rdk_system.win.cpp"
+			"${C_SYSTEM_SOURCE_DIR}/UGenericMutex.cpp")
+endif(WIN32)
 set(C_UTILITIES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Utilities/")
 set(C_UTILITIES_FILES
 	"${C_UTILITIES_SOURCE_DIR}/UIniFile.cpp"
