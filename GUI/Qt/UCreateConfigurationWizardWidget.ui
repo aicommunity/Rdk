@@ -203,6 +203,9 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="currentRow">
+            <number>0</number>
+           </property>
            <item>
             <property name="text">
              <string>0</string>
@@ -600,7 +603,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit"/>
+               <widget class="QLineEdit" name="lineEditMaxCalculationModelTime"/>
               </item>
               <item>
                <spacer name="horizontalSpacer_9">
@@ -724,6 +727,9 @@
          <property name="text">
           <string>Simple</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -757,6 +763,9 @@
          <property name="text">
           <string>Multi threads</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -775,6 +784,9 @@
         <widget class="QRadioButton" name="radioButtonSystemTime">
          <property name="text">
           <string>System time</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

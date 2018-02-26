@@ -94,7 +94,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
 
-    createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this);
+    createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
 
     createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();

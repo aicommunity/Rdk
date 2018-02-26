@@ -28,6 +28,8 @@ public:
     explicit UClassesListWidget(QWidget *parent = 0);
     virtual ~UClassesListWidget();
 
+    QString selctedClass() const;
+
 public slots:
     void dragEvent(QModelIndex index);
 

@@ -56,7 +56,21 @@ UClassesListWidget::UClassesListWidget(QWidget *parent) :
 
 UClassesListWidget::~UClassesListWidget()
 {
-    delete ui;
+  delete ui;
+}
+
+QString UClassesListWidget::selctedClass() const
+{
+  switch(ui->tabWidget->currentIndex())
+  {
+    case 0:
+      return ui->listWidgetStorageByName->currentItem()->text();
+    case 1:
+      if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
+        return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    default:
+      return QString();
+  }
 }
 
 

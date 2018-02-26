@@ -56,12 +56,15 @@ unsigned int DebugSysEventsMask;
 
 /// Флаг включения вывода лога в отладчик
 bool DebuggerMessageFlag;
-
+
 /// Включить запись событий в отдельный лог-файл канала
 bool EventsLogMode;
 
 /// Имя канала
 std::string ChannelName;
+
+/// Максмально допустимое время расчета модели
+double MaxCalculationModelTime;
 
 TProjectChannelConfig(void);
 TProjectChannelConfig(const TProjectChannelConfig& copy);
@@ -135,7 +138,7 @@ unsigned int DebugSysEventsMask;
 
 /// Флаг включения вывода лога в отладчик
 bool DebuggerMessageFlag;
-
+
 /// Включить запись событий в отдельный лог-файл канала
 bool EventsLogMode;
 

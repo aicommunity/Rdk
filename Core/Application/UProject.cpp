@@ -36,6 +36,8 @@ TProjectChannelConfig::TProjectChannelConfig(void)
  DebugSysEventsMask=0;
 
  DebuggerMessageFlag=false;
+
+ MaxCalculationModelTime=0;
 }
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
@@ -61,7 +63,8 @@ bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) cons
  (EventsLogMode != copy.EventsLogMode) ||
  (ChannelName != copy.ChannelName) ||
  (DebugSysEventsMask != copy.DebugSysEventsMask) ||
- (DebuggerMessageFlag != copy.DebuggerMessageFlag);
+ (DebuggerMessageFlag != copy.DebuggerMessageFlag) ||
+ (MaxCalculationModelTime != copy.MaxCalculationModelTime);
 }
 
 bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) const
@@ -96,6 +99,8 @@ TProjectChannelConfig& TProjectChannelConfig::operator = (const TProjectChannelC
  DebuggerMessageFlag=copy.DebuggerMessageFlag;
 
  ChannelName=copy.ChannelName;
+
+ MaxCalculationModelTime=copy.MaxCalculationModelTime;
  return *this;
 }
 
@@ -429,6 +434,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.ChannelsConfig[0].EventsLogMode=xml.ReadBool("EventsLogMode",false);
  Config.ChannelsConfig[0].DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",Config.ChannelsConfig[0].DebugSysEventsMask);
  Config.ChannelsConfig[0].DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
+ Config.ChannelsConfig[0].MaxCalculationModelTime=xml.ReadFloat("MaxCalculationModelTime", 0.0);
 
 
  for(int i=1;i<num_engines;i++)
@@ -451,6 +457,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 
   Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned(std::string("DebugSysEventsMask_")+RDK::sntoa(i),Config.ChannelsConfig[i].DebugSysEventsMask);
   Config.ChannelsConfig[i].DebuggerMessageFlag=xml.ReadBool(std::string("DebuggerMessageFlag_")+RDK::sntoa(i),false);
+  Config.ChannelsConfig[i].MaxCalculationModelTime=xml.ReadFloat("MaxCalculationModelTime"+RDK::sntoa(i), 0.0);
  }
 
  // TODO: Реализовать загрузку описания
@@ -581,6 +588,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool("EventsLogMode",channel_config.EventsLogMode);
    xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
    xml.WriteBool("DebuggerMessageFlag",Config.ChannelsConfig[0].DebuggerMessageFlag);
+   xml.WriteFloat("MaxCalculationModelTime",Config.ChannelsConfig[0].MaxCalculationModelTime);
   }
   else
   {
@@ -601,6 +609,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool(std::string("EventsLogMode_")+suffix,channel_config.EventsLogMode);
    xml.WriteUnsigned(std::string("DebugSysEventsMask_")+suffix,channel_config.DebugSysEventsMask);
    xml.WriteBool(std::string("DebuggerMessageFlag_")+suffix,Config.ChannelsConfig[i].DebuggerMessageFlag);
+   xml.WriteFloat("MaxCalculationModelTime_"+suffix,Config.ChannelsConfig[0].MaxCalculationModelTime);
   }
  }
 
