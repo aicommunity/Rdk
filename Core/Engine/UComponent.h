@@ -259,6 +259,13 @@ UEPtr<UIProperty> FindProperty(const NameT &name);
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;
 
+// ¬озвращает значение параметра по имени 'name'
+template<typename T>
+const T* AccessPropertyData(const NameT &name) const;
+
+template<typename T>
+T* AccessPropertyData(const NameT &name);
+
 // ”станавливает значение параметра по имени 'name'
 void SetProperty(const NameT &name, UEPtr<UVariableData> values);
 void SetPropertyValue(const NameT &name, const std::string &values);
@@ -391,6 +398,34 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
     */
 };
+
+// ¬озвращает значение параметра по имени 'name'
+template<typename T>
+const T* UComponent::AccessPropertyData(const NameT &name) const
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(!property)
+  return 0;
+
+ if(property->GetLanguageType() != typeid(T))
+  return 0;
+
+ return reinterpret_cast<T*>(property->GetMemoryArea());
+}
+
+template<typename T>
+T* UComponent::AccessPropertyData(const NameT &name)
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(!property)
+  return 0;
+
+ if(property->GetLanguageType() != typeid(T))
+  return 0;
+
+ return (T*)(property->GetMemoryArea());
+}
+
 
 class UItem;
 
