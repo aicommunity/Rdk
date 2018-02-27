@@ -23,7 +23,8 @@ UStatusPanel::UStatusPanel(QWidget *parent, RDK::UApplication *app) :
   connect(ui->checkBoxAutosaveProject      , SIGNAL(toggled(bool)), this, SLOT(setAutosaveProject(bool)));
 
   // radioButtons
-  connect(ui->radioButtonMultiThreaded, SIGNAL(toggled(bool)), this, SLOT(setThreadMode(bool)));
+  connect(ui->radioButtonMultiThreaded, SIGNAL(clicked(bool)), this, SLOT(setThreadMode()));
+  connect(ui->radioButtonSingleThreaded, SIGNAL(clicked(bool)), this, SLOT(setThreadMode()));
 }
 
 UStatusPanel::~UStatusPanel()
@@ -169,12 +170,12 @@ void UStatusPanel::setAutosaveProject(bool checked)
   application->SaveProjectConfig();
 }
 
-void UStatusPanel::setThreadMode(bool checked)
+void UStatusPanel::setThreadMode()
 {
   if(!application) return;
 
   RDK::TProjectConfig config = application->GetProjectConfig();
-  config.MultiThreadingMode = static_cast<int>(checked);
+  config.MultiThreadingMode = static_cast<int>(ui->radioButtonMultiThreaded->isChecked());
 
   application->SetProjectConfig(config);
   emit saveConfig();

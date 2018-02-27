@@ -52,6 +52,11 @@ UClassesListWidget::UClassesListWidget(QWidget *parent) :
     //связь нажатия на компонент для события перетаскивания
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
+
+    //связи на внешний сигнал изменения выделения компонента
+    connect(ui->treeWidgetStorageByLibs, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SIGNAL(classSelectionChanged()));
+    connect(ui->listWidgetStorageByName, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SIGNAL(classSelectionChanged()));
+
 }
 
 UClassesListWidget::~UClassesListWidget()

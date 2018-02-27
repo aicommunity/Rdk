@@ -565,7 +565,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
    if(LoadFile(channel.ModelFileName, modelXml))
    {
      MModel_LoadComponent(i, "", modelXml.c_str());
-     channel.ModelFileName = extract_file_name(channel.ModelFileName);
+     channel.ModelFileName = i == 0 ? "model.xml" : "model_"+std::to_string(i)+".xml";
    }
   }
  }

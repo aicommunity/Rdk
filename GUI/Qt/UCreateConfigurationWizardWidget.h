@@ -25,6 +25,7 @@ public slots:
   void onMSLoadModelFromFile (bool checked);
   void onMSModelFromComponent(bool checked);
   void modelFromFileNameChanged(QString value);
+  void modelFromComponentChanged();
 
   // channels number stuff
   void setApplySettingToAllChannels(bool checked);

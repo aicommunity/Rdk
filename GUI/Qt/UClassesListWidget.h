@@ -33,6 +33,9 @@ public:
 public slots:
     void dragEvent(QModelIndex index);
 
+signals:
+    void classSelectionChanged();
+
 private:
     Ui::UClassesListWidget *ui;
 };

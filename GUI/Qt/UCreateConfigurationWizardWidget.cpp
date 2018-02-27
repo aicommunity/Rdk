@@ -35,6 +35,7 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   connect(ui->spinBoxChannelsNumber, SIGNAL(valueChanged(int)), this, SLOT(setCalculationChannelsNumber(int)));
   connect(ui->listWidgetChannels, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
           this, SLOT(channelSelectionChanged(QListWidgetItem*,QListWidgetItem*)));
+  connect(classesList, SIGNAL(classSelectionChanged()), this, SLOT(modelFromComponentChanged()));
 
   // Browse buttons
   connect(ui->pushButtonBrowseProjectDirectory, SIGNAL(pressed()), this, SLOT(browseNewProjectDirectory()));
@@ -85,15 +86,20 @@ void UCreateConfigurationWizardWidget::onMSPredefinedModel(bool checked)
     ui->frameFromFile->hide();
     ui->framePredefinedModel->show();
 
-    ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure =
-        ui->spinBoxPredefinedmModelID->value();
-    ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = "";
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, ui->spinBoxPredefinedmModelID->value());
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName      , "");
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName          , "");
   }
 }
 
 void UCreateConfigurationWizardWidget::modelFromFileNameChanged(QString value)
 {
-  ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = value.toLocal8Bit().constData();
+  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName, value.toLocal8Bit().constData());
+}
+
+void UCreateConfigurationWizardWidget::modelFromComponentChanged()
+{
+  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName, classesList->selctedClass().toStdString());
 }
 
 void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
@@ -104,9 +110,12 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
     ui->framePredefinedModel->hide();
     ui->frameFromFile->show();
 
-    ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = ui->lineEditModelFromFile->text().toLocal8Bit().constData();
-    ProjectConfig.ChannelsConfig[channelNumber].ClassName = "Model";
-    ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;
+    /*ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = ui->lineEditModelFromFile->text().toLocal8Bit().constData();
+    ProjectConfig.ChannelsConfig[channelNumber].ClassName = "";
+    ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;*/
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, 0);
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName      , ui->lineEditModelFromFile->text().toLocal8Bit().constData());
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName          , "");
   }
 }
 
@@ -118,10 +127,13 @@ void UCreateConfigurationWizardWidget::onMSModelFromComponent(bool checked)
     ui->framePredefinedModel->hide();
     ui->frameFromComponent->show();
 
-    ProjectConfig.ChannelsConfig[channelNumber].ClassName =
+    /*ProjectConfig.ChannelsConfig[channelNumber].ClassName =
         classesList->selctedClass().toStdString();
     ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = "";
-    ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;
+    ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;*/
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, 0);
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName      , "");
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName          , classesList->selctedClass().toStdString());
   }
 }
 
@@ -193,6 +205,16 @@ void UCreateConfigurationWizardWidget::setCalculationChannelsNumber(int value)
 void UCreateConfigurationWizardWidget::channelSelectionChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
   channelNumber = current->text().toInt();
+
+  if(!ProjectConfig.ChannelsConfig[channelNumber].ClassName.empty())
+  {
+    ui->radioButtonMSFromComponent->setChecked(true);
+  }
+
+    /*ProjectConfig.ChannelsConfig[channelNumber].ClassName =
+            classesList->selctedClass().toStdString();
+        ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = "";
+        ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;*/
 
   ui->lineEditTimeStepDurationDefault->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].DefaultTimeStep));
   ui->lineEditTimeStepDurationGlobal->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].GlobalTimeStep));
@@ -368,8 +390,8 @@ void UCreateConfigurationWizardWidget::accept()
   if(application)
   {
     application->CreateProject(
-          (ui->lineEditProjectDirectory->text()+'/'
-           +ui->lineEditProjectName->text()).toLocal8Bit().constData(), ProjectConfig);
+          (ui->lineEditProjectDirectory->text()
+           + "/project.ini").toLocal8Bit().constData(), ProjectConfig);
   }
 
   QWizard::accept();

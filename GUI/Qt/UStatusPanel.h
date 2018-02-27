@@ -32,7 +32,7 @@ public slots:
   void setAutosaveProject(bool checked);
 
   /// Single/Multipe threaded - испускает сигнал saveConfig()
-  void setThreadMode(bool checked);
+  void setThreadMode();
 
 signals:
   void saveConfig();
