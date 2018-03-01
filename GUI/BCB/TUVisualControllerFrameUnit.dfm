@@ -1,8 +1,8 @@
 object UVisualControllerFrame: TUVisualControllerFrame
   Left = 0
   Top = 0
-  Width = 320
-  Height = 240
+  Width = 213
+  Height = 161
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

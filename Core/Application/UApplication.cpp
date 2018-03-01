@@ -621,7 +621,11 @@ try{
    if(!Core_IsChannelInit())
 	Core_ChannelInit(channel_config.PredefinedStructure,(void*)ExceptionHandler);
    else
+   {
 	Env_SetPredefinedStructure(channel_config.PredefinedStructure);
+	RDK_ASSERT_LOG(MEnv_CreateStructure(i));
+	RDK_ASSERT_LOG(MEnv_Init(i));
+   }
 
    // TODO: Реалиовать загрузку описаний классов
    // Загрузка описаний классов
@@ -836,6 +840,7 @@ bool UApplication::CloseProject(void)
   Core_SelectChannel(i);
   if(GetEngine())
   {
+   Env_DestroyStructure();
    Env_UnInit();
    Model_Destroy();
   }

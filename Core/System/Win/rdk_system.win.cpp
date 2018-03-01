@@ -243,11 +243,11 @@ unsigned long long GetLargestFreeMemRegion(LPVOID *lpBaseAddr)
                         *lpBaseAddr  = mbi.BaseAddress;
                 }
             }
-            p += mbi.RegionSize;
+            p = (void*)((char*)(p) + mbi.RegionSize);
         }
         else
         {
-            p += systemInfo.dwPageSize;
+			p = (void*)((char*)(p)+systemInfo.dwPageSize);
         }
     }
     return static_cast<unsigned long long>(largestSize);
