@@ -565,7 +565,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
    if(LoadFile(channel.ModelFileName, modelXml))
    {
      MModel_LoadComponent(i, "", modelXml.c_str());
-     channel.ModelFileName = i == 0 ? "model.xml" : "model_"+std::to_string(i)+".xml";
+     channel.ModelFileName = (i == 0) ? std::string("model.xml") : std::string("model_")+RDK::sntoa(i)+".xml";
    }
   }
  }
@@ -632,7 +632,11 @@ try{
    if(!Core_IsChannelInit())
 	Core_ChannelInit(channel_config.PredefinedStructure,(void*)ExceptionHandler);
    else
+   {
 	Env_SetPredefinedStructure(channel_config.PredefinedStructure);
+	RDK_ASSERT_LOG(MEnv_CreateStructure(i));
+	RDK_ASSERT_LOG(MEnv_Init(i));
+   }
 
    // TODO: Реалиовать загрузку описаний классов
    // Загрузка описаний классов
@@ -849,6 +853,7 @@ bool UApplication::CloseProject(void)
   Core_SelectChannel(i);
   if(GetEngine())
   {
+   Env_DestroyStructure();
    Env_UnInit();
    Model_Destroy();
   }
