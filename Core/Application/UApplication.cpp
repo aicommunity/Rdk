@@ -557,6 +557,17 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
   {
    MModel_Create(i,channel.ClassName.c_str());
   }
+
+  if(channel.PredefinedStructure == 0 && channel.ClassName.empty()
+     && !channel.ModelFileName.empty())
+  {
+   std::string modelXml;
+   if(LoadFile(channel.ModelFileName, modelXml))
+   {
+     MModel_LoadComponent(i, "", modelXml.c_str());
+     channel.ModelFileName = i == 0 ? "model.xml" : "model_"+std::to_string(i)+".xml";
+   }
+  }
  }
 
  if(SaveProject())
@@ -677,6 +688,7 @@ try{
    }
 
    EngineControl->SetCalculateMode(i, channel_config.CalculationMode);
+   GetEnvironmentLock()->SetMaxCalcTime(channel_config.MaxCalculationModelTime);
   }
   catch(RDK::UException &exception)
   {
@@ -789,6 +801,7 @@ try
    else
 	SaveStatesToFile(i, channel_config.StatesFileName);
   }
+
 
   Sleep(0);
  }

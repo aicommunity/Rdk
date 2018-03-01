@@ -52,11 +52,30 @@ UClassesListWidget::UClassesListWidget(QWidget *parent) :
     //связь нажатия на компонент для события перетаскивания
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
+
+    //связи на внешний сигнал изменения выделения компонента
+    connect(ui->treeWidgetStorageByLibs, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SIGNAL(classSelectionChanged()));
+    connect(ui->listWidgetStorageByName, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SIGNAL(classSelectionChanged()));
+
 }
 
 UClassesListWidget::~UClassesListWidget()
 {
-    delete ui;
+  delete ui;
+}
+
+QString UClassesListWidget::selctedClass() const
+{
+  switch(ui->tabWidget->currentIndex())
+  {
+    case 0:
+      return ui->listWidgetStorageByName->currentItem()->text();
+    case 1:
+      if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
+        return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    default:
+      return QString();
+  }
 }
 
 
