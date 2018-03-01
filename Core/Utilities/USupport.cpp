@@ -335,7 +335,7 @@ bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffe
  }
 
  if(!buffer.empty())
-  t.write(&buffer[0],buffer.size());
+  t.write(reinterpret_cast<const char *>(&buffer[0]),buffer.size());
  if(t.fail() || t.bad())
   return false;
  return true;
