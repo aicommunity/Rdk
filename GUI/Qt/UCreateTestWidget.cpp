@@ -88,7 +88,7 @@ void UCreateTestWidget::addProperty()
     item->setText(0, componentName); // component
     item->setText(1, propertyName); // property
     item->setText(2, QString::fromLocal8Bit(property->GetLanguageType().name())); // type
-    item->setText(3, QString::fromStdString(component->GetPropertyValue(propertyName.toLocal8Bit().constData(), buffer))); // value
+    item->setText(3, QString::fromLocal8Bit(component->GetPropertyValue(propertyName.toLocal8Bit().constData(), buffer).c_str())); // value
     item->setText(4, ui->lineEditDelta->text()); // delta
   }
   catch (RDK::UException &exception)
@@ -149,7 +149,7 @@ void UCreateTestWidget::createTest()
     storage.SelectRoot();
     storage.SelectNode("Header");
     storage.AddNode("ConfigFilePath");
-    QString relativeFilePath = QDir::current().relativeFilePath(QString::fromStdString(application->GetProjectPath()+application->GetProjectFileName()));
+    QString relativeFilePath = QDir::current().relativeFilePath(QString::fromLocal8Bit((application->GetProjectPath()+application->GetProjectFileName()).c_str()));
     storage.SetNodeText(relativeFilePath.toLocal8Bit().constData());
   }
 

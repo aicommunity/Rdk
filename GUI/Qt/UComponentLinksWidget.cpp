@@ -276,14 +276,14 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
             if (i->second.CheckMask(firstTypeMask))
             {
                 QTreeWidgetItem* firstChildPropertyItem = new QTreeWidgetItem(firstTreeWidgetItemFather);
-                firstChildPropertyItem->setText(0, QString::fromStdString(i->first));
+                firstChildPropertyItem->setText(0, QString::fromLocal8Bit(i->first.c_str()));
                 firstChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
                 if(i->second.Property->IsConnected()) firstChildPropertyItem->setText(2, QString("connected"));
             }
             if(secondTreeWidgetItemFather && i->second.CheckMask(secondTypeMask))
             {
                 QTreeWidgetItem* secondChildPropertyItem = new QTreeWidgetItem(secondTreeWidgetItemFather);
-                secondChildPropertyItem->setText(0, QString::fromStdString(i->first));
+                secondChildPropertyItem->setText(0, QString::fromLocal8Bit(i->first.c_str()));
                 secondChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
                 if(i->second.Property->GetIoType() & ipRange) secondChildPropertyItem->setText(2, QString("range"));
                 else
@@ -318,10 +318,10 @@ void UComponentLinksWidget::addLinks(QString componentName)
                 connectorIterator != linksListIterator->Connector.end(); connectorIterator++)
             {
                 QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetLinks);
-                item->setText(0, QString::fromStdString(linksListIterator->Item.Id));
-                item->setText(1, QString::fromStdString(linksListIterator->Item.Name));
-                item->setText(2, QString::fromStdString((*connectorIterator).Id));
-                item->setText(3, QString::fromStdString((*connectorIterator).Name));
+                item->setText(0, QString::fromLocal8Bit(linksListIterator->Item.Id.c_str()));
+                item->setText(1, QString::fromLocal8Bit(linksListIterator->Item.Name.c_str()));
+                item->setText(2, QString::fromLocal8Bit((*connectorIterator).Id.c_str()));
+                item->setText(3, QString::fromLocal8Bit((*connectorIterator).Name.c_str()));
             }
             ++linksListIterator;
         }

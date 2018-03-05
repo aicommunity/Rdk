@@ -99,7 +99,7 @@ void UCreateConfigurationWizardWidget::modelFromFileNameChanged(QString value)
 
 void UCreateConfigurationWizardWidget::modelFromComponentChanged()
 {
-  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName, classesList->selctedClass().toStdString());
+  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName, classesList->selctedClass().toLocal8Bit().constData());
 }
 
 void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
@@ -133,7 +133,7 @@ void UCreateConfigurationWizardWidget::onMSModelFromComponent(bool checked)
     ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;*/
     SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, 0);
     SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName      , "");
-    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName          , classesList->selctedClass().toStdString());
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ClassName          , classesList->selctedClass().toLocal8Bit().constData());
   }
 }
 

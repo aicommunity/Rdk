@@ -237,31 +237,31 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             if (i->second.CheckMask(ptPubParameter))
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
-                QString parameterName = QString::fromStdString(i->first);
+                QString parameterName = QString::fromLocal8Bit(i->first.c_str());
                 parametersItem->setText(0, parameterName);
                 cont->GetPropertyValue(i->first, buffer);
-                parametersItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
-                parametersItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
+                parametersItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+                parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 if(parameterName == selectedParameterName)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
             }
             if (i->second.CheckMask(ptPubState))
             {
                 QTreeWidgetItem* stateItem = new QTreeWidgetItem(ui->treeWidgetState);
-                QString stateName = QString::fromStdString(i->first);
+                QString stateName = QString::fromLocal8Bit(i->first.c_str());
                 stateItem->setText(0, stateName);
                 cont->GetPropertyValue(i->first, buffer);
-                stateItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
-                stateItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
+                stateItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+                stateItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
             }
             if (i->second.CheckMask(ptPubInput))
             {
                 QTreeWidgetItem* inputItem = new QTreeWidgetItem(ui->treeWidgetInputs);
-                QString inputName = QString::fromStdString(i->first);
+                QString inputName = QString::fromLocal8Bit(i->first.c_str());
                 inputItem->setText(0, inputName);
-                //inputItem->setText(1, QString::fromStdString(cont->GetPropertyValue(i->first, buffer)));
+                //inputItem->setText(1, QString::fromLocal8Bit(cont->GetPropertyValue(i->first, buffer).c_str()));
                 inputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
                 /*if(i->second.Property->GetIoType() & ipRange) inputItem->setText(3, QString("range"));
                 else
@@ -272,11 +272,11 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             if (i->second.CheckMask(ptPubOutput))
             {
                 QTreeWidgetItem* outputItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
-                QString outputName = QString::fromStdString(i->first);
+                QString outputName = QString::fromLocal8Bit(i->first.c_str());
                 outputItem->setText(0, outputName);
                 cont->GetPropertyValue(i->first, buffer);
-                outputItem->setData(1, Qt::UserRole, QString::fromStdString(buffer));
-                outputItem->setText(1, QString::fromStdString(PreparePropertyValueToListView(buffer)));
+                outputItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+                outputItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 outputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
                 if(outputName == selectedOutputName)
                     ui->treeWidgetOutputs->setCurrentItem(outputItem);

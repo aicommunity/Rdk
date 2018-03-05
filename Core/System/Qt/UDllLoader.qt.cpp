@@ -34,7 +34,7 @@ UDllLoaderQt::UDllLoaderQt()
 
 UDllLoaderQt::UDllLoaderQt(std::string dll_name)
 {
-    library.setFileName(QString::fromStdString(dll_name));
+    library.setFileName(QString::fromLocal8Bit(dll_name.c_str()));
 }
 
 UDllLoaderQt::~UDllLoaderQt()
@@ -49,7 +49,7 @@ bool UDllLoaderQt::Load(void)
 
 bool UDllLoaderQt::Load(std::string dll_name)
 {
-    library.setFileName(QString::fromStdString(dll_name));
+    library.setFileName(QString::fromLocal8Bit(dll_name.c_str()));
     return library.load();
 }
 

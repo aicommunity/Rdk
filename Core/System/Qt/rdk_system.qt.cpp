@@ -111,11 +111,11 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
   if(list[i].isDir()&&!isfile)
   {
    if(list[i].baseName()!="")
-    results.push_back(list[i].baseName().toStdString());
+    results.push_back(list[i].baseName().toLocal8Bit().constData());
   }
   else if(list[i].isFile()&&isfile)
   {
-   results.push_back(list[i].fileName().toStdString());
+   results.push_back(list[i].fileName().toLocal8Bit().constData());
   }
  }
  return 0;
@@ -123,7 +123,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 
 int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
 {
-    QFile::copy(QString::fromStdString(source_file), QString::fromStdString(dest_file));
+    QFile::copy(QString::fromLocal8Bit(source_file.c_str()), QString::fromLocal8Bit(dest_file.c_str()));
  return 1;
 }
 
@@ -145,7 +145,7 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
 /// Функция осуществляет вывод в отладочный лог, если сборка в отладке
 void RdkDebuggerMessage(const std::string &message)
 {
-    qDebug() << QString::fromStdString(message);
+    qDebug() << QString::fromLocal8Bit(message.c_str());
 }
 
 /// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)

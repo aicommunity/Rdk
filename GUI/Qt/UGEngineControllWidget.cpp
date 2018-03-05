@@ -31,7 +31,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
       QApplication::exit(-1);
 
 //    initGraphicalEngine();
-    settingsFileName = QString::fromStdString(application->GetProjectPath())+"settings.qt";
+    settingsFileName = QString::fromLocal8Bit(application->GetProjectPath().c_str())+"settings.qt";
     settingsGroupName = "UGEngineControllWidget";
 
     propertyChanger = NULL;
