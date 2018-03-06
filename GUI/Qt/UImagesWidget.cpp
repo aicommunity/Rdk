@@ -295,9 +295,11 @@ void UImagesWidget::actionSaveAllToJPEG()
 void UImagesWidget::actionSelectSource()
 {
     UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
-    dialog.exec();
-    selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
-    selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
+    if (dialog.exec())
+    {
+        selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
+        selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
+    }
     dialog.writeSettings(settingsFileName);
 }
 

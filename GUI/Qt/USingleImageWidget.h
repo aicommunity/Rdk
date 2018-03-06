@@ -61,6 +61,8 @@ public slots:
     void setSize(int value);
     void setShowLegend(bool value);
 
+    void setImageSizeInfo(QSize size);
+
 signals:
     // signals to UImagesWidget
     void selectionSignal(USingleImageWidget *item);

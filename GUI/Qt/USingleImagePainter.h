@@ -16,6 +16,11 @@ public:
         loaderMutex = NULL;
     }
 
+    void setLoaderMutex(QMutex *mutex)
+    {
+        loaderMutex = mutex;
+    }
+
 private:
     QImage *dispImage;
     QMutex *loaderMutex;
@@ -31,18 +36,17 @@ protected:
     }
 
 signals:
+    void setedImageSize(QSize);
 
 public slots:
 
     void setImage(QImage* image)
     {
-        dispImage = image;
-        repaint();
-    }
+        if(!image) return;
 
-    void setLoaderMutex(QMutex *mutex)
-    {
-        loaderMutex = mutex;
+        dispImage = image;
+        emit setedImageSize(image->size());
+        repaint();
     }
 };
 

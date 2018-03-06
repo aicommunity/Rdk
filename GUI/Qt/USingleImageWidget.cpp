@@ -23,11 +23,10 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     thread = new QThread(this);
     imageLoader->moveToThread(thread);
     //connect(thread, SIGNAL(started()), imageLoader, SLOT(process()));
-    connect(imageLoader, SIGNAL(imageLoaded(QImage*)), painter, SLOT(setImage(QImage*)));
-    connect(this, SIGNAL(loadImage(QSize)), imageLoader, SLOT(loadImage(QSize)));
-    connect(this, SIGNAL(resizeImage(QSize)), imageLoader, SLOT(resizeImage(QSize)));
-
-
+    connect(imageLoader, SIGNAL(imageLoaded(QImage*)) , painter    , SLOT(setImage(QImage*)));
+    connect(this       , SIGNAL(loadImage(QSize))     , imageLoader, SLOT(loadImage(QSize)));
+    connect(this       , SIGNAL(resizeImage(QSize))   , imageLoader, SLOT(resizeImage(QSize)));
+    connect(painter    , SIGNAL(setedImageSize(QSize)), this       , SLOT(setImageSizeInfo(QSize)));
 
     UpdateInterval = 30;
     setAccessibleName("USingleImageWidget"+QString::number(row)+"x"+QString::number(column));
@@ -84,7 +83,12 @@ void USingleImageWidget::setShowLegend(bool value)
     if(value)
         ui->legend_frame->show();
     else
-        ui->legend_frame->hide();
+      ui->legend_frame->hide();
+}
+
+void USingleImageWidget::setImageSizeInfo(QSize size)
+{
+  ui->labelInfo->setText(QString::number(size.width())+"x"+QString::number(size.height()));
 }
 
 void USingleImageWidget::reDrawWidget()
