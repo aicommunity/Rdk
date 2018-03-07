@@ -5,49 +5,52 @@
 #include <QPainter>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QMouseEvent>
+#include <QList>
+#include <QPolygon>
 
+/// Виджет рисования изображения от UImageLoader, также позволяет рисовать геометрические объекты
 class USingleImagePainter : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit USingleImagePainter(QWidget *parent = 0):QWidget(parent)
-    {
-        dispImage = NULL;
-        loaderMutex = NULL;
-    }
+  explicit USingleImagePainter(QWidget *parent = 0);
 
-    void setLoaderMutex(QMutex *mutex)
-    {
-        loaderMutex = mutex;
-    }
+  void setLoaderMutex(QMutex *mutex);
+
+  bool getDrawMode() const;
+  void setDrawable(bool value);
+
+  bool isDrawable() const;
 
 private:
-    QImage *dispImage;
-    QMutex *loaderMutex;
+  /// Указатель на изображение к отрисовке, поступает от UImageLoader через слот void setImage(QImage* image)
+  QImage *dispImage;
+  /// Мьютекс копирования изображения, разделен с UImageLoader
+  QMutex *loaderMutex;
+
+  /// Список полигонов к отображению
+  QList<QPolygonF> figures;
+
+  /// Флаг включения режима рисования последнего полигона в списке figures
+  bool drawMode;
+
+  /// Флаг позволяющий рисовать на текущем виджете
+  bool drawable;
 
 protected:
-    void paintEvent(QPaintEvent*)
-    {
-        if(!dispImage || !loaderMutex) return;
-        QPainter painter(this);
+  virtual void paintEvent(QPaintEvent*) override;
 
-        QMutexLocker locker(loaderMutex);
-        painter.drawImage(dispImage->rect(), *dispImage, dispImage->rect());
-    }
+  /// Рисование на изображении, в случае возведения флага drawable
+  virtual void mousePressEvent(QMouseEvent * event) override;
 
 signals:
-    void setedImageSize(QSize);
+  void setedImageSize(QSize);
 
 public slots:
 
-    void setImage(QImage* image)
-    {
-        if(!image) return;
-
-        dispImage = image;
-        emit setedImageSize(image->size());
-        repaint();
-    }
+  /// Отрисовывает изображение в текущем виджете
+  void setImage(QImage* image);
 };
 
 #endif // USINGLEIMAGEPAINTER_H

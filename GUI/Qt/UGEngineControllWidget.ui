@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -125,7 +125,7 @@
     <addaction name="actionFavoriteInformation"/>
     <addaction name="actionDrawEngine"/>
     <addaction name="actionWatchWindow"/>
-    <addaction name="actionGrassyEditor"/>
+    <addaction name="actionVASimpleSettings"/>
     <addaction name="separator"/>
     <addaction name="menuBroadcasters"/>
     <addaction name="actionServerControl"/>
@@ -466,12 +466,12 @@
     <string>Watch Window</string>
    </property>
   </action>
-  <action name="actionGrassyEditor">
+  <action name="actionVASimpleSettings">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>GrassyEditor</string>
+    <string>Video Analytics settings</string>
    </property>
   </action>
   <action name="actionServerControl">

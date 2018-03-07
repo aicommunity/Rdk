@@ -18,6 +18,7 @@
 #include "UCreateConfigurationWizardWidget.h"
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
+#include "UAnalyticsSimpleSettingsWidget.h"
 
 #include "UComponentPropertyChanger.h"
 
@@ -67,6 +68,7 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
+    void actionVideoAnalyticsSettings();
 /*
 signals:
     void readSettingsSignal(QString file);
@@ -93,6 +95,7 @@ private:
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
+    UAnalyticsSimpleSettingsWidget *vaSettings;
 
     /// Ёкзепл€р класса приложени€
     RDK::UApplication *application;
