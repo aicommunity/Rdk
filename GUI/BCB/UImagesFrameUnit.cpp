@@ -852,6 +852,8 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
 {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
+  if(Images.size()<=DrawGrid->Col || Images[DrawGrid->Col].size()<= DrawGrid->Row)
+   return;
   Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
 
   if(bmp && (bmp->Width == 0 || bmp->Height == 0))
