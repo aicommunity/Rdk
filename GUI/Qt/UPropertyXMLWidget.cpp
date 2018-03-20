@@ -64,7 +64,7 @@ void UPropertyXMLWidget::reloadProperty()
 
     const char *stringBuff = Model_GetComponentProperties(componentName.toLocal8Bit(), propertyMask);
     ui->plainTextEditPropertyXml->clear();
-    ui->plainTextEditPropertyXml->insertPlainText(stringBuff);
+    ui->plainTextEditPropertyXml->insertPlainText(QString::fromLocal8Bit(stringBuff));
     Engine_FreeBufString(stringBuff);
 }
 

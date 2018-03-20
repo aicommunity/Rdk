@@ -3,7 +3,6 @@
 
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
-#include "UPropertyXMLWidget.h"
 
 #include <QTreeWidgetItem>
 #include <QMouseEvent>

@@ -23,10 +23,12 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     thread = new QThread(this);
     imageLoader->moveToThread(thread);
     //connect(thread, SIGNAL(started()), imageLoader, SLOT(process()));
-    connect(imageLoader, SIGNAL(imageLoaded(QImage*)) , painter    , SLOT(setImage(QImage*)));
-    connect(this       , SIGNAL(loadImage(QSize))     , imageLoader, SLOT(loadImage(QSize)));
-    connect(this       , SIGNAL(resizeImage(QSize))   , imageLoader, SLOT(resizeImage(QSize)));
-    connect(painter    , SIGNAL(setedImageSize(QSize)), this       , SLOT(setImageSizeInfo(QSize)));
+    connect(imageLoader, SIGNAL(imageLoaded(QImage*))          , painter    , SLOT(setImage(QImage*)));
+    connect(this       , SIGNAL(loadImage(QSize))              , imageLoader, SLOT(loadImage(QSize)));
+    connect(this       , SIGNAL(resizeImage(QSize))            , imageLoader, SLOT(resizeImage(QSize)));
+    connect(painter    , SIGNAL(setedImageSize(QSize))         , this       , SLOT(setImageSizeInfo(QSize)));
+    connect(painter    , SIGNAL(zoneFinished(QPolygonF, QSize)), this       , SIGNAL(zoneFinished(QPolygonF, QSize)));
+
 
     UpdateInterval = 30;
     setAccessibleName("USingleImageWidget"+QString::number(row)+"x"+QString::number(column));
@@ -135,11 +137,26 @@ void USingleImageWidget::resizeEvent(QResizeEvent *event)
 void USingleImageWidget::setShowChannels(bool value)
 {
     //showChannels = value;
-    imageLoader->setShowLegend(value);
+    imageLoader->setIndChannels(value);
     if(value)
         ui->labelLegend->setText(QString::number(imageLoader->getCalcChannel()) +" chan. "+imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
     else
-        ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
+      ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
+}
+
+void USingleImageWidget::setZones(QList<QPair<QPolygonF, QPen> > polygons)
+{
+  painter->setZones(polygons);
+}
+
+void USingleImageWidget::setPainterPen(const QPen &value)
+{
+  painter->setPen(value);
+}
+
+void USingleImageWidget::setDrawable(bool value)
+{
+  painter->setDrawable(value);
 }
 
 int USingleImageWidget::getCalcChannel() const
@@ -152,6 +169,10 @@ void USingleImageWidget::setCalcChannel(int value)
 {
     //calcChannel = value;
     imageLoader->setCalcChannel(value);
+    if(imageLoader->getIndChannels())
+        ui->labelLegend->setText(QString::number(imageLoader->getCalcChannel()) +" chan. "+imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
+    else
+      ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
 }
 
 bool USingleImageWidget::getConnected() const
