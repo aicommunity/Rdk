@@ -51,9 +51,17 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
   QPainter painter(this);
 
   loaderMutex->lock();
-  painter.drawImage(dispImage->rect(), *dispImage, dispImage->rect());
+  QSize widgetSize = size();
   QSize imgSize = dispImage->size();
+  int dx = (widgetSize.width() > imgSize.width()) ?
+        widgetSize.width()/2 - imgSize.width()/2 : 0;
+  int dy = (widgetSize.height() > imgSize.height()) ?
+        widgetSize.height()/2 - imgSize.height()/2 : 0;
+  QRect imgRect = dispImage->rect();
+  imgRect.moveTo(dx, dy);
+  painter.drawImage(imgRect, *dispImage);
   loaderMutex->unlock();
+
 
   for(QList<QPair<QPolygonF, QPen>>::iterator i = figures.begin(); i != figures.end(); ++i)
   {
@@ -62,8 +70,8 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
     for(QPolygonF::iterator pointIterator = pairPolygonPen.first.begin();
         pointIterator != pairPolygonPen.first.end(); ++pointIterator)
     {
-      pointIterator->setX(pointIterator->x() * imgSize.width());
-      pointIterator->setY(pointIterator->y() * imgSize.height());
+      pointIterator->setX(pointIterator->x() * imgSize.width() + static_cast<double>(dx));
+      pointIterator->setY(pointIterator->y() * imgSize.height() + static_cast<double>(dy));
     }
     painter.drawPolygon(pairPolygonPen.first);
   }
