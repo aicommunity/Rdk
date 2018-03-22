@@ -291,11 +291,13 @@ void UImagesWidget::actionSaveAllToJPEG()
 void UImagesWidget::actionSelectSource()
 {
     UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
+    dialog.componentsList->setChannelsListVisible(indChannels);
+
     if (dialog.exec() && selectedImage)
     {
         selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
         selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
-        selectedImage->setCalcChannel(Core_GetSelectedChannelIndex());
+        selectedImage->setCalcChannel(dialog.componentsList->getSelectedChannelIndex());
     }
     dialog.writeSettings(settingsFileName);
 }
