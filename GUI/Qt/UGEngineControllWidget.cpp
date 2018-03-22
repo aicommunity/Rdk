@@ -43,7 +43,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
     statusPanel = NULL;
-    vaSettings = NULL;
 
     propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
@@ -106,9 +105,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
             propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
 
-    vaSettings = new UAnalyticsSimpleSettingsWidget(this, settingsFileName);
-    vaSettings->hide();
-
     // GUI actions:
 
     // file menu actions:
@@ -130,7 +126,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
-    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SLOT(actionVideoAnalyticsSettings()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings(settingsFileName, settingsGroupName);
@@ -294,11 +289,6 @@ void UGEngineControllWidget::actionLogger()
 void UGEngineControllWidget::actionTestCreator()
 {
   execDialogUVisualControllWidget(createTestWidget);
-}
-
-void UGEngineControllWidget::actionVideoAnalyticsSettings()
-{
-  execDialogUVisualControllWidget(vaSettings);
 }
 
 /*void UGEngineControllWidget::timerEvent(QTimerEvent *) // костыль

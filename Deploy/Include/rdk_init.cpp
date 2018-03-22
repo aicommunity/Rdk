@@ -1724,6 +1724,14 @@ int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step)
  return RdkCoreManager.GetEngineLock()->Model_ChangeComponentPosition(stringid, step);
 }
 
+int RDK_CALL MModel_ChangeComponentPosition(int channel_index, const char* stringid, int step)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_ChangeComponentPosition(stringid, step);
+}
+
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.

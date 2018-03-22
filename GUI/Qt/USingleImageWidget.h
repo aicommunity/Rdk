@@ -56,6 +56,15 @@ public:
 
     void setShowChannels(bool value);
 
+    // ----- Проброс в UImagePainter -----
+    /// Устанавливает набор полигонов на изображение
+    void setZones(QList<QPair<QPolygonF, QPen> > polygons);
+
+    /// Устанавливает QPen в painter
+    void setPainterPen(const QPen &value);
+
+    void setDrawable(bool value);
+
 public slots:
     void reDrawWidget();
     void setSize(int value);
@@ -71,6 +80,7 @@ signals:
     // signals to UImageLoader
     void loadImage(QSize value);
     void resizeImage(QSize value);
+    void zoneFinished(QPolygonF, QSize);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);

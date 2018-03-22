@@ -19,6 +19,8 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
 
     UpdateInterval = 0;
 
+    selectedImage = NULL;
+
     ui->setupUi(this);
 
     readSettings(settingsFile, settingsGroup);
@@ -102,70 +104,70 @@ void UImagesWidget::AUpdateInterface()
     }*/
 }
 
-QImage UImagesWidget::fromUBitmap(RDK::UBitmap *tempBmp)
+void UImagesWidget::setZones(QList<QPair<QPolygonF, QPen> > polygons)
 {
-    switch(tempBmp->GetColorModel())
+  if(selectedImage) selectedImage->setZones(polygons);
+}
+
+void UImagesWidget::setImagePen(const QPen &value)
+{
+  if(selectedImage) selectedImage->setPainterPen(value);
+}
+
+void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName)
+{
+  clearImagesWidget();
+
+  columnsCounter = static_cast<int>(sqrt(static_cast<double>(numChannels)));
+  if(columnsCounter * columnsCounter == numChannels)
+  {
+    rowsCounter = columnsCounter;
+  }
+  else
+  {
+    if(columnsCounter * (columnsCounter + 1) > numChannels)
     {
-    case RDK::ubmRGB24:
-        {
-            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                     tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888);
-            return QPixmap::fromImage(image.rgbSwapped());*/
+      rowsCounter = columnsCounter + 1;
+    }
+    else
+    {
+      ++columnsCounter;
+      rowsCounter = columnsCounter;
+    }
+  }
 
-            /*QPixmap tempPixmap;
-            tempPixmap.convertFromImage(QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                                               tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped(),
-                                        Qt::OrderedDither);*/
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
-        }
-
-    case RDK::ubmRGB32:
-        {
-        /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                 tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32);
-        return QPixmap::fromImage(image.rgbSwapped());*/
-        return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                                         tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
-        }
-
-    case RDK::ubmRGB96:
-        {
-            //RDK::UBitmap otherTypeBmp
-            tempBmp->SetColorModel(RDK::ubmRGB24, true);
-
-            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                     tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32);
-            return QPixmap::fromImage(image.rgbSwapped());*/
-
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
-        }
-
-    case RDK::ubmY8:
-        {
-            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                     tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8);
-            return QPixmap::fromImage(image.rgbSwapped());*/
-
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).rgbSwapped();
-        }
-
-    case RDK::ubmY32:
-        {
-            tempBmp->SetColorModel(RDK::ubmY8, true);
-
-            /*QImage image((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                     tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8);
-            return QPixmap::fromImage(image.rgbSwapped());*/
-
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                                             tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).rgbSwapped();
-        }
+  for(int i = 0, counter = 0; i < rowsCounter; ++i)
+    for(int j = 0; j < columnsCounter; ++j, ++counter)
+    {
+      USingleImageWidget *item = addSingleItem(i, j);
+      if(counter < numChannels)
+      {
+        item->setCalcChannel(counter);
+        item->setComponentName(componentLongName);
+        item->setComponentPropertyName(propertyName);
+      }
     }
 
-    return QImage();
+  ui->checkBoxIndChannels->setChecked(true);
+}
+
+void UImagesWidget::selectImage(int id)
+{
+  selectImage(dynamic_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(id)->widget()));
+}
+
+void UImagesWidget::setDrawable(bool value)
+{
+  selectedImage->setDrawable(value);
+
+  if(value)
+  {
+    ui->frameImages->setContextMenuPolicy(Qt::NoContextMenu);
+  }
+  else
+  {
+    ui->frameImages->setContextMenuPolicy(Qt::ActionsContextMenu);
+  }
 }
 
 void UImagesWidget::readSettings(QString file, QString group)
@@ -197,22 +199,16 @@ void UImagesWidget::readSettings(QString file, QString group)
         break;
     }
 
+    //окошки images
+    //зачистка
+    clearImagesWidget();
+
     columnsCounter = settings.value("columnsCounter").toInt();
     rowsCounter = settings.value("rowsCounter").toInt();
     if(rowsCounter == 0 || columnsCounter == 0)
     {
         rowsCounter = 1;
         columnsCounter = 1;
-    }
-
-    //окошки images
-    //зачистка
-    QList<USingleImageWidget*>::iterator deleteIterator = imagesList.begin();
-    while(deleteIterator!=imagesList.end())
-    {
-        USingleImageWidget *forDelete = *deleteIterator;
-        deleteIterator = imagesList.erase(deleteIterator);
-        delete forDelete;
     }
 
     //заполнение
@@ -261,14 +257,14 @@ void UImagesWidget::writeSettings(QString file, QString group)
 void UImagesWidget::actionSaveToBMP()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save BMP file"), QApplication::applicationDirPath()+"/../../../Configs", tr("image (*.bmp)"));
-    if (!fileName.isEmpty())
+    if (!fileName.isEmpty() && selectedImage)
         selectedImage->getImage().save(fileName, "BMP");
 }
 
 void UImagesWidget::actionSaveToJPEG()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save JPEG file"), QApplication::applicationDirPath()+"/../../../Configs", tr("image (*.jpeg *.jpg)"));
-    if (!fileName.isEmpty())
+    if (!fileName.isEmpty() && selectedImage)
         selectedImage->getImage().save(fileName, "JPEG");
 }
 
@@ -295,10 +291,13 @@ void UImagesWidget::actionSaveAllToJPEG()
 void UImagesWidget::actionSelectSource()
 {
     UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
-    if (dialog.exec())
+    dialog.componentsList->setChannelsListVisible(indChannels);
+
+    if (dialog.exec() && selectedImage)
     {
         selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
         selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
+        selectedImage->setCalcChannel(dialog.componentsList->getSelectedChannelIndex());
     }
     dialog.writeSettings(settingsFileName);
 }
@@ -403,10 +402,15 @@ void UImagesWidget::setPropSize()
 
 void UImagesWidget::selectImage(USingleImageWidget *item)
 {
+  if(item && item != selectedImage)
+  {
     selectedImage = item;
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-        (*i)->setSelected(false);
+      (*i)->setSelected(false);
     item->setSelected(true);
+
+    emit selectedImageChannel(selectedImage->getCalcChannel());
+  }
 }
 
 void UImagesWidget::showFullScreenImage(USingleImageWidget *item)
@@ -437,8 +441,15 @@ void UImagesWidget::showFullScreenImage(USingleImageWidget *item)
 void UImagesWidget::updateImages()
 {
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-        (*i)->reDrawWidget();
+      (*i)->reDrawWidget();
 }
+
+/*void UImagesWidget::drawFinished(QPolygonF poly, QSize imgSize)
+{
+  //ui->frameImages->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+  emit zoneFinished(poly, imgSize);
+}*/
 
 USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
 {
@@ -447,5 +458,21 @@ USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
     imagesList.push_back(item);
     connect(item, SIGNAL(selectionSignal(USingleImageWidget*)), this, SLOT(selectImage(USingleImageWidget*)));
     connect(item, SIGNAL(fullScreenSignal(USingleImageWidget*)), this, SLOT(showFullScreenImage(USingleImageWidget*)));
+    connect(item, SIGNAL(zoneFinished(QPolygonF, QSize)), this, SIGNAL(zoneFinished(QPolygonF, QSize)));
+    selectImage(item);
     return item;
+}
+
+void UImagesWidget::clearImagesWidget()
+{
+  QList<USingleImageWidget*>::iterator deleteIterator = imagesList.begin();
+  while(deleteIterator!=imagesList.end())
+  {
+      USingleImageWidget *forDelete = *deleteIterator;
+      deleteIterator = imagesList.erase(deleteIterator);
+      delete forDelete;
+  }
+
+  columnsCounter = 0;
+  rowsCounter = 0;
 }

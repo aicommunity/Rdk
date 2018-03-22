@@ -17,7 +17,21 @@ public:
     explicit UImagesWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UImagesWidget");
     virtual ~UImagesWidget();
     void AUpdateInterface();
-    QImage fromUBitmap(RDK::UBitmap *tempBmp);
+
+    /// Устанавливает набор полигонов на выбранное изображение
+    void setZones(QList<QPair<QPolygonF, QPen> > polygons);
+
+    /// Устанавливает QPen в выделенное изображение (selectedImage)
+    void setImagePen(const QPen &value);
+
+    /// Создает @param numChannels окошек и ставит для них источником компонент @param componentLongName
+    void setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName);
+
+    /// Выбирает изображение номер @param id
+    void selectImage(int id);
+
+    /// Устанавливает режим рисования для текущего изображения
+    void setDrawable(bool value);
 
 public slots:
     ///считывание файлов настроек
@@ -25,6 +39,13 @@ public slots:
     ///запись файлов настроек
     void writeSettings(QString file, QString group = "UImagesWidget");
 
+signals:
+    /// Сигнал отправляет канал текущего выбранного изображения, при смене selectedImage
+    void selectedImageChannel(int channel);
+
+    void zoneFinished(QPolygonF, QSize);
+
+private slots:
     void actionSaveToBMP();
     void actionSaveToJPEG();
     void actionSaveAllToBMP();
@@ -45,6 +66,9 @@ public slots:
     void showFullScreenImage(USingleImageWidget *item);
     void updateImages();
 
+    /// Слот принимающий от USingleImageWidget сигнал о том что полигон нарисован
+    //void drawFinished(QPolygonF poly, QSize imgSize);
+
 private:
     Ui::UImagesWidget *ui;
 
@@ -56,6 +80,9 @@ private:
 
     /// добавление элемента
     USingleImageWidget *addSingleItem(int row, int column);
+
+    /// Удаляет все текущие виджеты
+    void clearImagesWidget();
 
     /// контекстное меню
     QMenu *contextMenu;

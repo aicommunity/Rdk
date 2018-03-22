@@ -39,8 +39,28 @@
        <property name="spacing">
         <number>2</number>
        </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayoutTreeWidget"/>
+        <layout class="QHBoxLayout" name="horizontalLayoutTreeWidget">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QListWidget" name="listWidgetChannelSelection">
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="labelComponentClassName">

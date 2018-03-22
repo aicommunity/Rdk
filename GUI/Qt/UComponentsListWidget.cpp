@@ -18,10 +18,14 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
     ui->setupUi(this);
 
     componentsTree = new UComponentListTreeWidget(this);
-    ui->verticalLayoutTreeWidget->setMargin(0);
-    ui->verticalLayoutTreeWidget->addWidget(componentsTree);
+    //ui->verticalLayoutTreeWidget->setMargin(0);
+    ui->horizontalLayoutTreeWidget->addWidget(componentsTree);
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
+
+    currentChannel = Core_GetSelectedChannelIndex();
+    ui->listWidgetChannelSelection->hide();
+    channelsSelectionVisible = false;
 
     UpdateInterval = -1;
     setAccessibleName("UComponentsListWidget"); // имя класса для сериализации
@@ -46,6 +50,9 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
             this, SLOT(inputsListSelectionChanged()));
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()),
             this, SLOT(outputsListSelectionChanged()));
+
+    //выделение канала
+    connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
 
     //контекстное меню для дерева компонентов
     QAction *actionSeparator1 = new QAction(this);
@@ -114,6 +121,11 @@ void UComponentsListWidget::AUpdateInterface()
     // чтоб не бегали скролы на treeWidget'ах
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
+
+    if(channelsSelectionVisible)
+    {
+      redrawChannelsList();
+    }
 }
 
 void UComponentsListWidget::setVerticalOrientation(bool vertical)
@@ -176,10 +188,22 @@ QString UComponentsListWidget::getSelectedPropertyName()
   }
 }
 
+int UComponentsListWidget::getSelectedChannelIndex()
+{
+    return currentChannel;
+}
+
 void UComponentsListWidget::setEnableTabN(int n, bool enable)
 {
-    if(n > 0 && n < 4)
+    if(n >= 0 && n < 4)
       ui->tabWidgetComponentInfo->setTabEnabled(n, enable);
+}
+
+void UComponentsListWidget::setChannelsListVisible(bool value)
+{
+    ui->listWidgetChannelSelection->setVisible(value);
+    channelsSelectionVisible = value;
+    redrawChannelsList();
 }
 
 void UComponentsListWidget::componentListItemSelectionChanged()
@@ -203,7 +227,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     currentDrawPropertyComponentName = selectedComponentLongName;
 
     //Class
-    const char *className=Model_GetComponentClassName(currentDrawPropertyComponentName.toLocal8Bit());
+    const char *className=MModel_GetComponentClassName(currentChannel, currentDrawPropertyComponentName.toLocal8Bit());
     if(className)
         ui->labelComponentClassName->setText(className);
     Engine_FreeBufString(className);
@@ -221,7 +245,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
     try
     {
-        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(currentChannel);
 
         RDK::UEPtr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
@@ -402,6 +426,14 @@ void UComponentsListWidget::componentStapBackFromScheme()
     componentSelectedFromScheme(leaveComponent);
 }
 
+void UComponentsListWidget::channelsListSelectionChanged()
+{
+  if(ui->listWidgetChannelSelection->currentItem())
+  {
+    currentChannel = ui->listWidgetChannelSelection->currentItem()->data(Qt::UserRole).toInt();
+  }
+}
+
 void UComponentsListWidget::drawSelectedComponent(QModelIndex index)
 {
     currentDrawComponentName = index.data(Qt::UserRole).toString();
@@ -438,7 +470,7 @@ void UComponentsListWidget::componentMoveUp()
 {
     if(componentsTree->currentItem())
     {
-        Model_ChangeComponentPosition(selectedComponentLongName.toLocal8Bit(),-1);
+        MModel_ChangeComponentPosition(currentChannel, selectedComponentLongName.toLocal8Bit(),-1);
         UpdateInterface(true);
     }
 }
@@ -447,7 +479,7 @@ void UComponentsListWidget::componentMoveDown()
 {
     if(componentsTree->currentItem())
     {
-        Model_ChangeComponentPosition(selectedComponentLongName.toLocal8Bit(), 1);
+        MModel_ChangeComponentPosition(currentChannel, selectedComponentLongName.toLocal8Bit(), 1);
         UpdateInterface(true);
     }
 }
@@ -464,7 +496,7 @@ void UComponentsListWidget::componentRename()
         if (ok && !text.isEmpty())
         {
             std::string new_name(text.toLocal8Bit());
-            Model_SetComponentPropertyData(selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
+            MModel_SetComponentPropertyData(currentChannel, selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
 
             QStringList nameSeparator = selectedComponentLongName.split(".");
             nameSeparator.pop_back();
@@ -486,7 +518,7 @@ void UComponentsListWidget::componentDelete()
             if (reply == QMessageBox::Cancel) return;
         }
 
-        Model_DelComponent("", selectedComponentLongName.toLocal8Bit());
+        MModel_DelComponent(currentChannel, "", selectedComponentLongName.toLocal8Bit());
         UpdateInterface(true);
         emit updateScheme(true);
     }
@@ -508,7 +540,7 @@ void UComponentsListWidget::componentCopyLongNameToClipboard()
 
 void UComponentsListWidget::componentCopyClassNameToClipboard()
 {
-    const char *className=Model_GetComponentClassName(selectedComponentLongName.toLocal8Bit());
+    const char *className=MModel_GetComponentClassName(currentChannel, selectedComponentLongName.toLocal8Bit());
     if(className)
     {
         QClipboard *clipboard = QApplication::clipboard();
@@ -547,13 +579,14 @@ void UComponentsListWidget::setUpdateInterval(long value)
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
 {
-    const char * stringBuff = Model_GetComponentsNameList(componentName.toLocal8Bit());
+    const char * stringBuff = MModel_GetComponentsNameList(currentChannel, componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
     QString str;
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
+        if(treeWidgetFather) treeWidgetFather->setExpanded(true);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
@@ -574,6 +607,20 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
             addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
         }
     }
+}
+
+void UComponentsListWidget::redrawChannelsList()
+{
+  ui->listWidgetChannelSelection->clear();
+  int channelsCounter = Core_GetNumChannels();
+  for(int i = 0; i < channelsCounter; i++)
+  {
+    QListWidgetItem *item = new QListWidgetItem(ui->listWidgetChannelSelection);
+    item->setText(QString::number(i) + " ch.");
+    item->setData(Qt::UserRole, i);
+    if(i == currentChannel)
+      ui->listWidgetChannelSelection->setCurrentItem(item);
+  }
 }
 
 /// Удаляет из переданных данных лидирующие переводы строк

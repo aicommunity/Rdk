@@ -726,6 +726,7 @@ RDK_LIB_TYPE const char* RDK_CALL Model_FindComponentsByClassName(const char* st
 // Если значение 'step' выводит за границы массива, то компонент устанавливается
 // на эту границу
 RDK_LIB_TYPE int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step);
+RDK_LIB_TYPE int RDK_CALL MModel_ChangeComponentPosition(int channel_index, const char* stringid, int step);
 
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых

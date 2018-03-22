@@ -147,34 +147,34 @@ QImage UImageLoader::fromUBitmap(RDK::UBitmap *tempBmp)
     {
     case RDK::ubmRGB24:
         {
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                          tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
+            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
+                          tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
         }
 
     case RDK::ubmRGB32:
         {
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                         tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
+            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
+                          tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
         }
 
     case RDK::ubmRGB96:
         {
             tempBmp->SetColorModel(RDK::ubmRGB24, true);
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                          tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
+            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
+                          tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
         }
 
     case RDK::ubmY8:
         {
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                          tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
+            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
+                          tempBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
         }
 
     case RDK::ubmY32:
         {
             tempBmp->SetColorModel(RDK::ubmY8, true);
-            return QImage((const uchar *) tempBmp->GetData(), tempBmp->GetWidth(),
-                          tempBmp->GetHeight(), tempBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
+            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
+                          tempBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
         }
     }
 

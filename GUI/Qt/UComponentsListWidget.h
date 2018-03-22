@@ -3,7 +3,6 @@
 
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
-#include "UPropertyXMLWidget.h"
 
 #include <QTreeWidgetItem>
 #include <QMouseEvent>
@@ -86,13 +85,20 @@ public:
     /// 3 - outputs
     void openTabN(int n);
 
+    /// Возвращает индекс текущего окна
     int currentTabIndex();
 
     /// Возвращает имя выбранного Property
     QString getSelectedPropertyName();
 
+    /// Возвращает номер выбранного канала
+    int getSelectedChannelIndex();
+
     /// устанавливает доступность вкладок
     void setEnableTabN(int n, bool enable);
+
+    /// Устанавливает режим видимости для виджета выбора канала расчёта
+    void setChannelsListVisible(bool value);
 
 signals:
     void componentSelected(QString name); //single click
@@ -106,8 +112,10 @@ public slots:
     void componentDoubleClickFromScheme(QString name);
     void componentStapBackFromScheme();
 
+    void channelsListSelectionChanged();
     void componentListItemSelectionChanged();
     void reloadPropertys(bool forceReload = true);
+
     void parametersListSelectionChanged();
     void stateListSelectionChanged();
     void inputsListSelectionChanged();
@@ -162,14 +170,23 @@ private:
     QString selectedInputName;
     QString selectedOutputName;
 
+    /// Текущий канал для виджета
+    int currentChannel;
+
+    /// Флаг видимости компонента выбора канала
+    bool channelsSelectionVisible;
+
     /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
     UComponentListTreeWidget *componentsTree;
 
-    ///Компонент владелец отрисованной схемы
+    /// Компонент владелец отрисованной схемы
     QString currentDrawComponentName;
 
-    ///Скрытый рекурсивный метод заполнения списка компонентов
+    /// Скрытый рекурсивный метод заполнения списка компонентов
     void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+
+    /// Перерисовка виджета со списком каналов
+    void redrawChannelsList();
 
     Ui::UComponentsListWidget *ui;
 };

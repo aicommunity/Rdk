@@ -23,14 +23,22 @@ public:
 
   bool isDrawable() const;
 
+  /// Устанавливает набор полигонов на изображение
+  void setZones(QList<QPair<QPolygonF, QPen> > polygons);
+
+  QPen getPen() const;
+  void setPen(const QPen &value);
+
 private:
   /// Указатель на изображение к отрисовке, поступает от UImageLoader через слот void setImage(QImage* image)
   QImage *dispImage;
   /// Мьютекс копирования изображения, разделен с UImageLoader
   QMutex *loaderMutex;
 
+  QPen pen;
+
   /// Список полигонов к отображению
-  QList<QPolygonF> figures;
+  QList<QPair<QPolygonF, QPen> > figures;
 
   /// Флаг включения режима рисования последнего полигона в списке figures
   bool drawMode;
@@ -46,6 +54,7 @@ protected:
 
 signals:
   void setedImageSize(QSize);
+  void zoneFinished(QPolygonF, QSize);
 
 public slots:
 
