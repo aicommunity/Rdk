@@ -554,6 +554,7 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
+        if(treeWidgetFather) treeWidgetFather->setExpanded(true);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {

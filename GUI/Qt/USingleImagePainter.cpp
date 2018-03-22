@@ -51,6 +51,7 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
   QPainter painter(this);
 
   loaderMutex->lock();
+  // image position calculating
   QSize widgetSize = size();
   QSize imgSize = dispImage->size();
   int dx = (widgetSize.width() > imgSize.width()) ?
@@ -59,10 +60,13 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
         widgetSize.height()/2 - imgSize.height()/2 : 0;
   QRect imgRect = dispImage->rect();
   imgRect.moveTo(dx, dy);
+
+  // draw image
   painter.drawImage(imgRect, *dispImage);
   loaderMutex->unlock();
 
 
+  // draw all rects
   for(QList<QPair<QPolygonF, QPen>>::iterator i = figures.begin(); i != figures.end(); ++i)
   {
     QPair<QPolygonF, QPen> pairPolygonPen = *i;

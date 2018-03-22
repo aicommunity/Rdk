@@ -855,6 +855,7 @@ void URdkCoreManager::Destroy(void)
    MutexList.resize(0);
 
    LockerList.resize(0);
+   NumChannels = 0;
   }
   catch (RDK::UException &exception)
   {
