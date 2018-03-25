@@ -142,7 +142,7 @@ long long CalculationDurationThreshold;
 
 public: //
 /// Флаг включения мониторинга утечки памяти
-ULProperty<bool, UContainer> MemoryMonitor;
+ULProperty<bool, UContainer, ptPubParameter | pgSystem> MemoryMonitor;
 
 
 protected: // Физические свойства
