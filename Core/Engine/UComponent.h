@@ -399,33 +399,6 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
     */
 };
 
-// Возвращает значение параметра по имени 'name'
-template<typename T>
-const T* UComponent::AccessPropertyData(const NameT &name) const
-{
- UEPtr<UIProperty> property=FindProperty(name);
- if(!property)
-  return 0;
-
- if(property->GetLanguageType() != typeid(T))
-  return 0;
-
- return reinterpret_cast<T*>(property->GetMemoryArea());
-}
-
-template<typename T>
-T* UComponent::AccessPropertyData(const NameT &name)
-{
- UEPtr<UIProperty> property=FindProperty(name);
- if(!property)
-  return 0;
-
- if(property->GetLanguageType() != typeid(T))
-  return 0;
-
- return (T*)(property->GetMemoryArea());
-}
-
 
 class UItem;
 
@@ -612,6 +585,33 @@ public:
  // Метод деинициализации общего свойства
  virtual bool UnInit(void)=0;
 };
+
+// Возвращает значение параметра по имени 'name'
+template<typename T>
+const T* UComponent::AccessPropertyData(const NameT &name) const
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(!property)
+  return 0;
+
+ if(property->GetLanguageType() != typeid(T))
+  return 0;
+
+ return reinterpret_cast<T*>(property->GetMemoryArea());
+}
+
+template<typename T>
+T* UComponent::AccessPropertyData(const NameT &name)
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(!property)
+  return 0;
+
+ if(property->GetLanguageType() != typeid(T))
+  return 0;
+
+ return (T*)(property->GetMemoryArea());
+}
 
 }
 
