@@ -7,6 +7,9 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   loaderMutex = NULL;
   drawMode = false;
   drawable = false;
+  selectedZone = -1;
+  pointCaptured = false;
+  movingPoint = NULL;
 }
 
 void USingleImagePainter::setLoaderMutex(QMutex *mutex)
@@ -23,6 +26,7 @@ void USingleImagePainter::setDrawable(bool value)
 {
   drawable = value;
   drawMode = false;
+  if(value) selectedZone = -1;
 }
 
 bool USingleImagePainter::isDrawable() const
@@ -30,9 +34,14 @@ bool USingleImagePainter::isDrawable() const
   return drawable;
 }
 
-void USingleImagePainter::setZones(QList<QPair<QPolygonF, QPen> > polygons)
+void USingleImagePainter::setZones(QList<UDrawablePolygon> polygons)
 {
   figures = polygons;
+}
+
+void USingleImagePainter::selectZone(int id)
+{
+  selectedZone = id;
 }
 
 QPen USingleImagePainter::getPen() const
@@ -67,17 +76,36 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
 
 
   // draw all rects
-  for(QList<QPair<QPolygonF, QPen>>::iterator i = figures.begin(); i != figures.end(); ++i)
+  for(QList<UDrawablePolygon>::iterator i = figures.begin(); i != figures.end(); ++i)
   {
-    QPair<QPolygonF, QPen> pairPolygonPen = *i;
-    painter.setPen(pairPolygonPen.second);
-    for(QPolygonF::iterator pointIterator = pairPolygonPen.first.begin();
-        pointIterator != pairPolygonPen.first.end(); ++pointIterator)
+    UDrawablePolygon drawablePolygon = *i;
+
+    for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
+        pointIterator != drawablePolygon.polygon.end(); ++pointIterator)
     {
       pointIterator->setX(pointIterator->x() * imgSize.width() + static_cast<double>(dx));
       pointIterator->setY(pointIterator->y() * imgSize.height() + static_cast<double>(dy));
     }
-    painter.drawPolygon(pairPolygonPen.first);
+
+    if( selectedZone == drawablePolygon.id)
+    {
+      painter.setPen(QPen(Qt::yellow, 5));
+      if(drawablePolygon.polygon.size() < 1) return;
+
+      for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
+          pointIterator != drawablePolygon.polygon.end(); ++pointIterator)
+      {
+        painter.drawEllipse(*pointIterator, 3, 3);
+      }
+
+      zoneSelected = true;
+    }
+    else
+    {
+      painter.setPen(drawablePolygon.pen);
+    }
+
+    painter.drawPolygon(drawablePolygon.polygon);
   }
 }
 
@@ -88,17 +116,26 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     if(event->button() == Qt::LeftButton)
     {
       QSize imgSize = dispImage->size();
+      QSize widgetSize = size();
       QPointF point = event->localPos();
-      point.setX(point.x()/imgSize.width());
-      point.setY(point.y()/imgSize.height());
+
+      if(widgetSize.width() > imgSize.width())
+        point.setX((point.x() - (widgetSize.width() - imgSize.width()) / 2) / imgSize.width());
+      else
+        point.setX(point.x() / imgSize.width());
+
+      if(widgetSize.height() > imgSize.height())
+        point.setY((point.y() - (widgetSize.height() - imgSize.height()) / 2) / imgSize.height());
+      else
+        point.setY(point.y() / imgSize.height());
 
       if(drawMode)
       {
-        figures.last().first << point;
+        figures.last().polygon << point;
       }
       else
       {
-        figures.push_back(QPair<QPolygonF, QPen>(QPolygonF() << point, pen));
+        figures.push_back(UDrawablePolygon(-1, QPolygonF() << point, pen));
         drawMode = true;
       }
     }
@@ -109,14 +146,76 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
         if(drawMode)
         {
           drawMode = false;
-          emit zoneFinished(figures.last().first, dispImage->size());
+          emit zoneFinished(figures.last().polygon, dispImage->size());
           return;
         }
       }
     }
   }
 
+  if(zoneSelected)
+  {
+
+  }
+
   QWidget::mousePressEvent(event);
+}
+
+void USingleImagePainter::mouseReleaseEvent(QMouseEvent *event)
+{
+  if(pointCaptured && movingPoint)
+  {
+    pointCaptured = false;
+    movingPoint = NULL;
+  }
+
+  QWidget::mouseReleaseEvent(event);
+}
+
+void USingleImagePainter::mouseMoveEvent(QMouseEvent *event)
+{
+  if(dispImage)
+  {
+    QSize widgetSize = size();
+    QSize imgSize = dispImage->size();
+    int dx = (widgetSize.width() > imgSize.width()) ?
+          widgetSize.width()/2 - imgSize.width()/2 : 0;
+    int dy = (widgetSize.height() > imgSize.height()) ?
+          widgetSize.height()/2 - imgSize.height()/2 : 0;
+
+    if(zoneSelected && !pointCaptured)
+    {
+      for(QList<UDrawablePolygon>::iterator i = figures.begin(); i != figures.end(); ++i)
+      {
+        if( selectedZone == i->id)
+        {
+          for(QPolygonF::iterator pointIterator = i->polygon.begin();
+              pointIterator != i->polygon.end(); ++pointIterator)
+          {
+            QPointF currentPoint(*pointIterator);
+            currentPoint.setX(pointIterator->x() * imgSize.width() + static_cast<double>(dx) - 5);
+            currentPoint.setY(pointIterator->y() * imgSize.height() + static_cast<double>(dy) - 5);
+            QRectF pointRect(currentPoint, QSizeF(10.0, 10.0));
+            if(pointRect.contains(QPointF(event->pos())))
+            {
+              pointCaptured = true;
+              movingPoint = &(*pointIterator);
+              break;
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    if(pointCaptured && movingPoint)
+    {
+      movingPoint->setX(static_cast<double>(event->x() - dx)/imgSize.width());
+      movingPoint->setY(static_cast<double>(event->y() - dy)/imgSize.height());
+    }
+  }
+
+  QWidget::mouseMoveEvent(event);
 }
 
 void USingleImagePainter::setImage(QImage *image)

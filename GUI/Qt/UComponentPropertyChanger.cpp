@@ -15,8 +15,8 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, QString se
   componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
   ui->verticalLayoutComponentsList->addWidget(componentsList);
 
-  /*ui->splitter->setStretchFactor(0, 10);
-  ui->splitter->setStretchFactor(1, 1);*/
+  ui->splitter->setStretchFactor(0, 10);
+  ui->splitter->setStretchFactor(1, 1);
 
   readSettings(settingsFile, settingsGroup);
 

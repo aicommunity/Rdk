@@ -58,12 +58,16 @@ public:
 
     // ----- ѕроброс в UImagePainter -----
     /// ”станавливает набор полигонов на изображение
-    void setZones(QList<QPair<QPolygonF, QPen> > polygons);
+    void setZones(QList<UDrawablePolygon> polygons);
 
     /// ”станавливает QPen в painter
     void setPainterPen(const QPen &value);
 
+    /// ”станавливает режим рисовани€ на текущий Painter
     void setDrawable(bool value);
+
+    /// устанавливает зону как выбранную
+    void selectZone(int id);
 
 public slots:
     void reDrawWidget();

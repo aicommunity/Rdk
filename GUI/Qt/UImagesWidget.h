@@ -18,20 +18,27 @@ public:
     virtual ~UImagesWidget();
     void AUpdateInterface();
 
-    /// Устанавливает набор полигонов на выбранное изображение
-    void setZones(QList<QPair<QPolygonF, QPen> > polygons);
-
-    /// Устанавливает QPen в выделенное изображение (selectedImage)
-    void setImagePen(const QPen &value);
-
     /// Создает @param numChannels окошек и ставит для них источником компонент @param componentLongName
     void setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName);
 
     /// Выбирает изображение номер @param id
     void selectImage(int id);
 
-    /// Устанавливает режим рисования для текущего изображения
+    /// Запрещает/разрешает изменения виджета, такие как добавление/удаление столбцов и переключение IndChannels
+    void setEnableChanges(bool value);
+
+    // ----- Проброс в UImagePainter -----
+    /// Устанавливает набор полигонов на выбранное изображение (selectedImage)
+    void setZones(QList<UDrawablePolygon> polygons);
+
+    /// Устанавливает QPen в выделенное изображение (selectedImage)
+    void setImagePen(const QPen &value);
+
+    /// Устанавливает режим рисования для текущего изображения (selectedImage)
     void setDrawable(bool value);
+
+    /// устанавливает зону как выбранную в выделеноне изображение (selectedImage)
+    void selectZone(int id);
 
 public slots:
     ///считывание файлов настроек
@@ -56,8 +63,11 @@ private slots:
     void actionDeleteColumn();
     void actionDeleteRow();
 
+    /// Отображение легенды для всех виджетов
     void setShowLegend(bool b);
+    /// Отображать изображение для всех виджетов, используя его индивидуальный канал
     void setIndChannels(bool b);
+
     void setOriginalSize();
     void setTiledSize();
     void setPropSize();
@@ -100,12 +110,15 @@ private:
     /// 2 - растянуть на всю область
     int imagesSizeMod;
 
-    bool showLegend;
-    bool indChannels;
+    /// флаг, разрешающий изменения сетки изображений
+    bool enableChanges;
 
     /// Флаг режима отображения только одного окна на всё доступное место
     bool singleImageMode;
+
+    /// Счётчик столбцов
     int columnsCounter;
+    /// Счетчик строк
     int rowsCounter;
 };
 

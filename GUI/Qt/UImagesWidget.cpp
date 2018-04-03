@@ -104,16 +104,6 @@ void UImagesWidget::AUpdateInterface()
     }*/
 }
 
-void UImagesWidget::setZones(QList<QPair<QPolygonF, QPen> > polygons)
-{
-  if(selectedImage) selectedImage->setZones(polygons);
-}
-
-void UImagesWidget::setImagePen(const QPen &value)
-{
-  if(selectedImage) selectedImage->setPainterPen(value);
-}
-
 void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName)
 {
   clearImagesWidget();
@@ -156,18 +146,35 @@ void UImagesWidget::selectImage(int id)
   selectImage(dynamic_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(id)->widget()));
 }
 
+void UImagesWidget::setEnableChanges(bool value)
+{
+  enableChanges = value;
+  ui->actionAddColumn    ->setEnabled(value);
+  ui->actionAddRow       ->setEnabled(value);
+  ui->actionDeleteColumn ->setEnabled(value);
+  ui->actionDeleteRow    ->setEnabled(value);
+  ui->actionSelectSource ->setEnabled(value);
+  ui->checkBoxIndChannels->setEnabled(value);
+}
+
+void UImagesWidget::setZones(QList<UDrawablePolygon> polygons)
+{
+  if(selectedImage) selectedImage->setZones(polygons);
+}
+
+void UImagesWidget::setImagePen(const QPen &value)
+{
+  if(selectedImage) selectedImage->setPainterPen(value);
+}
+
 void UImagesWidget::setDrawable(bool value)
 {
   selectedImage->setDrawable(value);
+}
 
-  if(value)
-  {
-    ui->frameImages->setContextMenuPolicy(Qt::NoContextMenu);
-  }
-  else
-  {
-    ui->frameImages->setContextMenuPolicy(Qt::ActionsContextMenu);
-  }
+void UImagesWidget::selectZone(int id)
+{
+  selectedImage->selectZone(id);
 }
 
 void UImagesWidget::readSettings(QString file, QString group)
@@ -179,11 +186,8 @@ void UImagesWidget::readSettings(QString file, QString group)
 
     restoreGeometry(settings.value("geometry").toByteArray());
 
-    showLegend = settings.value("showLegend").toBool();
-    ui->checkBoxShowLegend->setChecked(showLegend);
-
-    indChannels = settings.value("IndChannels").toBool();
-    ui->checkBoxIndChannels->setChecked(indChannels);
+    ui->checkBoxShowLegend->setChecked(settings.value("showLegend").toBool());
+    ui->checkBoxIndChannels->setChecked(settings.value("IndChannels").toBool());
 
     imagesSizeMod = settings.value("imagesSizeMod").toInt();
     switch(imagesSizeMod)
@@ -237,8 +241,8 @@ void UImagesWidget::writeSettings(QString file, QString group)
     QSettings settings(file, QSettings::IniFormat);
     settings.beginGroup(group);
     settings.setValue("geometry", saveGeometry());
-    settings.setValue("showLegend", showLegend);
-    settings.setValue("IndChannels", indChannels);
+    settings.setValue("showLegend", ui->checkBoxShowLegend->isChecked());
+    settings.setValue("IndChannels", ui->checkBoxIndChannels->isChecked());
     settings.setValue("imagesSizeMod", imagesSizeMod);
     settings.setValue("columnsCounter", columnsCounter);
     settings.setValue("rowsCounter", rowsCounter);
@@ -291,7 +295,7 @@ void UImagesWidget::actionSaveAllToJPEG()
 void UImagesWidget::actionSelectSource()
 {
     UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
-    dialog.componentsList->setChannelsListVisible(indChannels);
+    dialog.componentsList->setChannelsListVisible(ui->checkBoxIndChannels->isChecked());
 
     if (dialog.exec() && selectedImage)
     {
@@ -358,16 +362,14 @@ void UImagesWidget::actionDeleteRow()
 
 void UImagesWidget::setShowLegend(bool b)
 {
-    showLegend = b;
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
         (*i)->setShowLegend(b);
 }
 
 void UImagesWidget::setIndChannels(bool b)
 {
-    indChannels = b;
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-        (*i)->setShowChannels(indChannels);
+        (*i)->setShowChannels(b);
 }
 
 void UImagesWidget::setOriginalSize()
@@ -420,10 +422,13 @@ void UImagesWidget::showFullScreenImage(USingleImageWidget *item)
         for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
             (*i)->show();
         singleImageMode = false;
-        ui->actionAddColumn->setEnabled(true);
-        ui->actionAddRow->setEnabled(true);
-        ui->actionDeleteColumn->setEnabled(true);
-        ui->actionDeleteRow->setEnabled(true);
+        if(enableChanges)
+        {
+            ui->actionAddColumn   ->setEnabled(true);
+            ui->actionAddRow      ->setEnabled(true);
+            ui->actionDeleteColumn->setEnabled(true);
+            ui->actionDeleteRow   ->setEnabled(true);
+        }
     }
     else
     {
@@ -431,10 +436,13 @@ void UImagesWidget::showFullScreenImage(USingleImageWidget *item)
             (*i)->hide();
         item->show();
         singleImageMode = true;
-        ui->actionAddColumn->setEnabled(false);
-        ui->actionAddRow->setEnabled(false);
-        ui->actionDeleteColumn->setEnabled(false);
-        ui->actionDeleteRow->setEnabled(false);
+        if(enableChanges)
+        {
+            ui->actionAddColumn   ->setEnabled(false);
+            ui->actionAddRow      ->setEnabled(false);
+            ui->actionDeleteColumn->setEnabled(false);
+            ui->actionDeleteRow   ->setEnabled(false);
+        }
     }
 }
 
@@ -453,7 +461,7 @@ void UImagesWidget::updateImages()
 
 USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
 {
-    USingleImageWidget *item = new USingleImageWidget(this, row, column, Core_GetSelectedChannelIndex(), showLegend, indChannels , imagesSizeMod);
+    USingleImageWidget *item = new USingleImageWidget(this, row, column, Core_GetSelectedChannelIndex(), ui->checkBoxShowLegend->isChecked(), ui->checkBoxIndChannels->isChecked() , imagesSizeMod);
     ui->gridLayoutImages->addWidget(item, row, column);
     imagesList.push_back(item);
     connect(item, SIGNAL(selectionSignal(USingleImageWidget*)), this, SLOT(selectImage(USingleImageWidget*)));

@@ -144,7 +144,7 @@ void USingleImageWidget::setShowChannels(bool value)
       ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
 }
 
-void USingleImageWidget::setZones(QList<QPair<QPolygonF, QPen> > polygons)
+void USingleImageWidget::setZones(QList<UDrawablePolygon> polygons)
 {
   painter->setZones(polygons);
 }
@@ -157,6 +157,11 @@ void USingleImageWidget::setPainterPen(const QPen &value)
 void USingleImageWidget::setDrawable(bool value)
 {
   painter->setDrawable(value);
+}
+
+void USingleImageWidget::selectZone(int id)
+{
+  painter->selectZone(id);
 }
 
 int USingleImageWidget::getCalcChannel() const
@@ -223,7 +228,10 @@ void USingleImageWidget::setSelected(bool value)
     if(selected)
         ui->frameSelectionBorder->setFrameShadow(QFrame::Plain);
     else
+    {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Raised);
+        painter->selectZone(-1);
+    }
 }
 
 void USingleImageWidget::mousePressEvent(QMouseEvent *)
