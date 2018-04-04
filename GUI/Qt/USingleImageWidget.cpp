@@ -23,11 +23,13 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     thread = new QThread(this);
     imageLoader->moveToThread(thread);
     //connect(thread, SIGNAL(started()), imageLoader, SLOT(process()));
-    connect(imageLoader, SIGNAL(imageLoaded(QImage*))          , painter    , SLOT(setImage(QImage*)));
-    connect(this       , SIGNAL(loadImage(QSize))              , imageLoader, SLOT(loadImage(QSize)));
-    connect(this       , SIGNAL(resizeImage(QSize))            , imageLoader, SLOT(resizeImage(QSize)));
-    connect(painter    , SIGNAL(setedImageSize(QSize))         , this       , SLOT(setImageSizeInfo(QSize)));
-    connect(painter    , SIGNAL(zoneFinished(QPolygonF, QSize)), this       , SIGNAL(zoneFinished(QPolygonF, QSize)));
+    connect(imageLoader, SIGNAL(imageLoaded(QImage*))                 , painter    , SLOT(setImage(QImage*)));
+    connect(this       , SIGNAL(loadImage(QSize))                     , imageLoader, SLOT(loadImage(QSize)));
+    connect(this       , SIGNAL(resizeImage(QSize))                   , imageLoader, SLOT(resizeImage(QSize)));
+    connect(painter    , SIGNAL(setedImageSize(QSize))                , this       , SLOT(setImageSizeInfo(QSize)));
+    connect(painter    , SIGNAL(zoneFinished(QPolygonF, QSize))       , this       , SIGNAL(zoneFinished(QPolygonF, QSize)));
+    connect(painter    , SIGNAL(zoneModified(UDrawablePolygon, QSize)), this       , SIGNAL(zoneModified(UDrawablePolygon, QSize)));
+    connect(painter    , SIGNAL(zoneSelected(int))                    , this       , SIGNAL(zoneSelected(int)));
 
 
     UpdateInterval = 30;
@@ -144,7 +146,7 @@ void USingleImageWidget::setShowChannels(bool value)
       ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
 }
 
-void USingleImageWidget::setZones(QList<UDrawablePolygon> polygons)
+void USingleImageWidget::setZones(const QList<UDrawablePolygon> &polygons)
 {
   painter->setZones(polygons);
 }

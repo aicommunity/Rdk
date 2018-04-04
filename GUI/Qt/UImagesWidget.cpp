@@ -157,7 +157,7 @@ void UImagesWidget::setEnableChanges(bool value)
   ui->checkBoxIndChannels->setEnabled(value);
 }
 
-void UImagesWidget::setZones(QList<UDrawablePolygon> polygons)
+void UImagesWidget::setZones(const QList<UDrawablePolygon> &polygons)
 {
   if(selectedImage) selectedImage->setZones(polygons);
 }
@@ -467,6 +467,8 @@ USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
     connect(item, SIGNAL(selectionSignal(USingleImageWidget*)), this, SLOT(selectImage(USingleImageWidget*)));
     connect(item, SIGNAL(fullScreenSignal(USingleImageWidget*)), this, SLOT(showFullScreenImage(USingleImageWidget*)));
     connect(item, SIGNAL(zoneFinished(QPolygonF, QSize)), this, SIGNAL(zoneFinished(QPolygonF, QSize)));
+    connect(item, SIGNAL(zoneModified(UDrawablePolygon, QSize)), this, SIGNAL(zoneModified(UDrawablePolygon, QSize)));
+    connect(item, SIGNAL(zoneSelected(int)), this, SIGNAL(zoneSelected(int)));
     selectImage(item);
     return item;
 }

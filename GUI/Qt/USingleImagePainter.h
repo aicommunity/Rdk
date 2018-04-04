@@ -35,7 +35,7 @@ public:
   bool isDrawable() const;
 
   /// Устанавливает набор полигонов на изображение
-  void setZones(QList<UDrawablePolygon> polygons);
+  void setZones(const QList<UDrawablePolygon> &polygons);
 
   /// устанавливает зону как выбранную в выделеноне изображение (selectedImage)
   void selectZone(int id);
@@ -55,7 +55,7 @@ private:
   QList<UDrawablePolygon> figures;
 
   /// Выбранная зона
-  int selectedZone;
+  int selectedZoneId;
 
   /// Флаг включения режима рисования последнего полигона в списке figures
   bool drawMode;
@@ -64,30 +64,38 @@ private:
   bool drawable;
 
   /// Флаг, означающий что на текущем виджете есть выбранная зона
-  bool zoneSelected;
+  UDrawablePolygon *selectedZone;
 
-  bool pointCaptured;
+  /// Указатель на передвигаемую точку по museMoveEvent, также служит флагом
+  QPointF *movingPoint;
 
-  QPointF* movingPoint;
+  bool isZoneModified;
+
+  /// Рассчитывает смещение dx dy, необходимое чтобы изображение находилось в центре виджета
+  QPair<int, int> calcImgShift(const QSize &widgetSize, const QSize &imageSize) const;
+
+  void commitZoneChangeIfModified();
 
 protected:
   virtual void paintEvent(QPaintEvent*) override;
 
   /// Рисование на изображении, в случае возведения флага drawable
-  virtual void mousePressEvent(QMouseEvent * event) override;
+  virtual void mousePressEvent(QMouseEvent *event) override;
 
-  virtual void mouseReleaseEvent(QMouseEvent * event) override;
+  virtual void mouseReleaseEvent(QMouseEvent *event) override;
 
-  virtual void mouseMoveEvent(QMouseEvent * event) override;
+  virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 signals:
   void setedImageSize(QSize);
   void zoneFinished(QPolygonF, QSize);
+  void zoneModified(UDrawablePolygon, QSize);
+  void zoneSelected(int);
 
 public slots:
 
   /// Отрисовывает изображение в текущем виджете
-  void setImage(QImage* image);
+  void setImage(QImage *image);
 };
 
 #endif // USINGLEIMAGEPAINTER_H

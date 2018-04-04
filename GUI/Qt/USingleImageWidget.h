@@ -58,7 +58,7 @@ public:
 
     // ----- Проброс в UImagePainter -----
     /// Устанавливает набор полигонов на изображение
-    void setZones(QList<UDrawablePolygon> polygons);
+    void setZones(const QList<UDrawablePolygon> &polygons);
 
     /// Устанавливает QPen в painter
     void setPainterPen(const QPen &value);
@@ -84,7 +84,11 @@ signals:
     // signals to UImageLoader
     void loadImage(QSize value);
     void resizeImage(QSize value);
+
+    // signals from USingleImagePainter
     void zoneFinished(QPolygonF, QSize);
+    void zoneModified(UDrawablePolygon, QSize);
+    void zoneSelected(int);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);

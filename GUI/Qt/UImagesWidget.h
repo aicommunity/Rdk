@@ -29,7 +29,7 @@ public:
 
     // ----- Проброс в UImagePainter -----
     /// Устанавливает набор полигонов на выбранное изображение (selectedImage)
-    void setZones(QList<UDrawablePolygon> polygons);
+    void setZones(const QList<UDrawablePolygon> &polygons);
 
     /// Устанавливает QPen в выделенное изображение (selectedImage)
     void setImagePen(const QPen &value);
@@ -50,7 +50,10 @@ signals:
     /// Сигнал отправляет канал текущего выбранного изображения, при смене selectedImage
     void selectedImageChannel(int channel);
 
+    // signals from USingleImagePainter
     void zoneFinished(QPolygonF, QSize);
+    void zoneModified(UDrawablePolygon, QSize);
+    void zoneSelected(int);
 
 private slots:
     void actionSaveToBMP();

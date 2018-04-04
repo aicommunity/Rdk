@@ -7,9 +7,10 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   loaderMutex = NULL;
   drawMode = false;
   drawable = false;
-  selectedZone = -1;
-  pointCaptured = false;
+  selectedZoneId = -1;
+  selectedZone = NULL;
   movingPoint = NULL;
+  isZoneModified = false;
 }
 
 void USingleImagePainter::setLoaderMutex(QMutex *mutex)
@@ -26,7 +27,7 @@ void USingleImagePainter::setDrawable(bool value)
 {
   drawable = value;
   drawMode = false;
-  if(value) selectedZone = -1;
+  if(value) selectedZoneId = -1;
 }
 
 bool USingleImagePainter::isDrawable() const
@@ -34,14 +35,18 @@ bool USingleImagePainter::isDrawable() const
   return drawable;
 }
 
-void USingleImagePainter::setZones(QList<UDrawablePolygon> polygons)
+void USingleImagePainter::setZones(const QList<UDrawablePolygon> &polygons)
 {
+  commitZoneChangeIfModified();
+
   figures = polygons;
 }
 
 void USingleImagePainter::selectZone(int id)
 {
-  selectedZone = id;
+  commitZoneChangeIfModified();
+
+  selectedZoneId = id;
 }
 
 QPen USingleImagePainter::getPen() const
@@ -54,51 +59,72 @@ void USingleImagePainter::setPen(const QPen &value)
   pen = value;
 }
 
+QPair<int, int> USingleImagePainter::calcImgShift(const QSize &widgetSize, const QSize &imageSize) const
+{
+  return qMakePair(
+        (widgetSize.width() > imageSize.width()) ?
+          widgetSize.width()/2 - imageSize.width()/2 : 0,
+        (widgetSize.height() > imageSize.height()) ?
+          widgetSize.height()/2 - imageSize.height()/2 : 0
+          );
+}
+
+void USingleImagePainter::commitZoneChangeIfModified()
+{
+  if(isZoneModified)
+  {
+    isZoneModified = false;
+    if(selectedZone && dispImage)
+      emit zoneModified(*selectedZone, dispImage->size());
+  }
+}
+
 void USingleImagePainter::paintEvent(QPaintEvent *)
 {
   if(!dispImage || !loaderMutex) return;
   QPainter painter(this);
 
+  // защищённая зона - отрисовка изображения
   loaderMutex->lock();
-  // image position calculating
-  QSize widgetSize = size();
-  QSize imgSize = dispImage->size();
-  int dx = (widgetSize.width() > imgSize.width()) ?
-        widgetSize.width()/2 - imgSize.width()/2 : 0;
-  int dy = (widgetSize.height() > imgSize.height()) ?
-        widgetSize.height()/2 - imgSize.height()/2 : 0;
+  const QSize imgSize = dispImage->size();
+  QPair<int, int> dxdy = calcImgShift(size(), imgSize);
   QRect imgRect = dispImage->rect();
-  imgRect.moveTo(dx, dy);
+  imgRect.moveTo(dxdy.first, dxdy.second);
 
-  // draw image
   painter.drawImage(imgRect, *dispImage);
   loaderMutex->unlock();
 
-
-  // draw all rects
+  // отрисовка всех полигонов
+  selectedZone = NULL;
   for(QList<UDrawablePolygon>::iterator i = figures.begin(); i != figures.end(); ++i)
   {
+    // перевод полигона из относительных координат в экранные
     UDrawablePolygon drawablePolygon = *i;
 
     for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
         pointIterator != drawablePolygon.polygon.end(); ++pointIterator)
     {
-      pointIterator->setX(pointIterator->x() * imgSize.width() + static_cast<double>(dx));
-      pointIterator->setY(pointIterator->y() * imgSize.height() + static_cast<double>(dy));
+      pointIterator->setX(pointIterator->x() * imgSize.width() + static_cast<double>(dxdy.first));
+      pointIterator->setY(pointIterator->y() * imgSize.height() + static_cast<double>(dxdy.second));
     }
 
-    if( selectedZone == drawablePolygon.id)
+    // проверка зоны, если она выбранная selectedZone то устанавливаем желтую кисть,
+    //отдельно отрисовываем каждую вершинку и запоминаем указатель на выбранную зону
+    //
+    // если зона рисуется drawMode, просто отрисовываем точки зоны
+    if( selectedZoneId == drawablePolygon.id || selectedZoneId == -2)
     {
-      painter.setPen(QPen(Qt::yellow, 5));
-      if(drawablePolygon.polygon.size() < 1) return;
+      if(selectedZoneId == drawablePolygon.id)
+      {
+        painter.setPen(QPen(Qt::yellow, 5));
+        selectedZone = &(*i);
+      }
 
       for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
           pointIterator != drawablePolygon.polygon.end(); ++pointIterator)
       {
         painter.drawEllipse(*pointIterator, 3, 3);
       }
-
-      zoneSelected = true;
     }
     else
     {
@@ -111,38 +137,77 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
 
 void USingleImagePainter::mousePressEvent(QMouseEvent *event)
 {
-  if(drawable && dispImage)
+  if(dispImage /*&& (drawable || selectedZone)*/)
   {
     if(event->button() == Qt::LeftButton)
     {
-      QSize imgSize = dispImage->size();
-      QSize widgetSize = size();
-      QPointF point = event->localPos();
+      const QSize imgSize = dispImage->size();
+      QPair<int, int> dxdy = calcImgShift(size(), imgSize);
 
-      if(widgetSize.width() > imgSize.width())
-        point.setX((point.x() - (widgetSize.width() - imgSize.width()) / 2) / imgSize.width());
-      else
-        point.setX(point.x() / imgSize.width());
+      // текущая точка в относительных координатах
+      QPointF point(
+            static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
+            static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
 
-      if(widgetSize.height() > imgSize.height())
-        point.setY((point.y() - (widgetSize.height() - imgSize.height()) / 2) / imgSize.height());
-      else
-        point.setY(point.y() / imgSize.height());
 
-      if(drawMode)
+      // если активен режим рисования, добавляем точку фигуре
+      if(drawable)
       {
-        figures.last().polygon << point;
+        if(drawMode)
+        {
+          figures.last().polygon << point;
+        }
+        else
+        {
+          figures.push_back(UDrawablePolygon(-2, QPolygonF() << point, pen));
+          drawMode = true;
+        }
       }
       else
       {
-        figures.push_back(UDrawablePolygon(-1, QPolygonF() << point, pen));
-        drawMode = true;
+        // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
+        if(selectedZone)
+        {
+          for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
+              pointIterator != selectedZone->polygon.end(); ++pointIterator)
+          {
+            QPointF currentPoint(*pointIterator);
+            currentPoint.setX(pointIterator->x() * imgSize.width() + dxdy.first - 5);
+            currentPoint.setY(pointIterator->y() * imgSize.height() + dxdy.second - 5);
+            QRectF pointRect(currentPoint, QSizeF(10.0, 10.0));
+            if(pointRect.contains(event->localPos()))
+            {
+              // если нашли точку, берем на неё укзатель
+              movingPoint = &(*pointIterator);
+              break;
+            }
+          }
+        }
+
+
+        // выделение зоны
+        for(QList<UDrawablePolygon>::iterator polygonsIterator = figures.begin();
+            polygonsIterator != figures.end(); ++polygonsIterator)
+        {
+          if(polygonsIterator->polygon.containsPoint(point, Qt::OddEvenFill))
+          {
+            if(polygonsIterator->id == selectedZoneId)
+              break;
+
+            commitZoneChangeIfModified();
+
+            selectedZoneId = polygonsIterator->id;
+            emit zoneSelected(selectedZoneId);
+            break;
+          }
+        }
       }
     }
     else
     {
       if(event->button() == Qt::RightButton)
       {
+        // завершение рисования зоны
         if(drawMode)
         {
           drawMode = false;
@@ -153,19 +218,13 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     }
   }
 
-  if(zoneSelected)
-  {
-
-  }
-
   QWidget::mousePressEvent(event);
 }
 
 void USingleImagePainter::mouseReleaseEvent(QMouseEvent *event)
 {
-  if(pointCaptured && movingPoint)
+  if(movingPoint)
   {
-    pointCaptured = false;
     movingPoint = NULL;
   }
 
@@ -174,45 +233,14 @@ void USingleImagePainter::mouseReleaseEvent(QMouseEvent *event)
 
 void USingleImagePainter::mouseMoveEvent(QMouseEvent *event)
 {
-  if(dispImage)
+  // если захвачена точка зоны, двигаем точку
+  if(dispImage && movingPoint)
   {
-    QSize widgetSize = size();
-    QSize imgSize = dispImage->size();
-    int dx = (widgetSize.width() > imgSize.width()) ?
-          widgetSize.width()/2 - imgSize.width()/2 : 0;
-    int dy = (widgetSize.height() > imgSize.height()) ?
-          widgetSize.height()/2 - imgSize.height()/2 : 0;
-
-    if(zoneSelected && !pointCaptured)
-    {
-      for(QList<UDrawablePolygon>::iterator i = figures.begin(); i != figures.end(); ++i)
-      {
-        if( selectedZone == i->id)
-        {
-          for(QPolygonF::iterator pointIterator = i->polygon.begin();
-              pointIterator != i->polygon.end(); ++pointIterator)
-          {
-            QPointF currentPoint(*pointIterator);
-            currentPoint.setX(pointIterator->x() * imgSize.width() + static_cast<double>(dx) - 5);
-            currentPoint.setY(pointIterator->y() * imgSize.height() + static_cast<double>(dy) - 5);
-            QRectF pointRect(currentPoint, QSizeF(10.0, 10.0));
-            if(pointRect.contains(QPointF(event->pos())))
-            {
-              pointCaptured = true;
-              movingPoint = &(*pointIterator);
-              break;
-            }
-          }
-          break;
-        }
-      }
-    }
-
-    if(pointCaptured && movingPoint)
-    {
-      movingPoint->setX(static_cast<double>(event->x() - dx)/imgSize.width());
-      movingPoint->setY(static_cast<double>(event->y() - dy)/imgSize.height());
-    }
+    const QSize imgSize = dispImage->size();
+    QPair<int, int> dxdy = calcImgShift(size(), imgSize);
+    movingPoint->setX(static_cast<double>(event->x() - dxdy.first)/imgSize.width());
+    movingPoint->setY(static_cast<double>(event->y() - dxdy.second)/imgSize.height());
+    isZoneModified = true;
   }
 
   QWidget::mouseMoveEvent(event);
