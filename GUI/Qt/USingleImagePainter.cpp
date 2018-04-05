@@ -11,6 +11,12 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   selectedZone = NULL;
   movingPoint = NULL;
   isZoneModified = false;
+
+  lineMenu = new QMenu();
+  QAction *actionAddPoint = new QAction(lineMenu);
+  actionAddPoint->setText("add Point");
+  connect(actionAddPoint, SIGNAL(triggered()), this, SLOT(addPoint()));
+  lineMenu->addAction(actionAddPoint);
 }
 
 void USingleImagePainter::setLoaderMutex(QMutex *mutex)
@@ -79,6 +85,16 @@ void USingleImagePainter::commitZoneChangeIfModified()
   }
 }
 
+void USingleImagePainter::addPoint()
+{
+
+}
+
+void USingleImagePainter::deletePoint()
+{
+
+}
+
 void USingleImagePainter::paintEvent(QPaintEvent *)
 {
   if(!dispImage || !loaderMutex) return;
@@ -104,8 +120,8 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
     for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
         pointIterator != drawablePolygon.polygon.end(); ++pointIterator)
     {
-      pointIterator->setX(pointIterator->x() * imgSize.width() + static_cast<double>(dxdy.first));
-      pointIterator->setY(pointIterator->y() * imgSize.height() + static_cast<double>(dxdy.second));
+      pointIterator->setX(pointIterator->x() * imgSize.width() + dxdy.first);
+      pointIterator->setY(pointIterator->y() * imgSize.height() + dxdy.second);
     }
 
     // проверка зоны, если она выбранная selectedZone то устанавливаем желтую кисть,
@@ -139,11 +155,11 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
 {
   if(dispImage /*&& (drawable || selectedZone)*/)
   {
+    const QSize imgSize = dispImage->size();
+    const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
+
     if(event->button() == Qt::LeftButton)
     {
-      const QSize imgSize = dispImage->size();
-      QPair<int, int> dxdy = calcImgShift(size(), imgSize);
-
       // текущая точка в относительных координатах
       QPointF point(
             static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
@@ -213,6 +229,38 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
           drawMode = false;
           emit zoneFinished(figures.last().polygon, dispImage->size());
           return;
+        }
+
+        if(selectedZone && selectedZone->polygon.size() > 1 && dispImage)
+        {
+          const QPointF point(event->localPos());
+          const QLineF pointHLine(
+                  (point.x() - 5 - dxdy.first)/imgSize.width(), (point.y() - dxdy.second) / imgSize.height(),
+                  (point.x() + 5 - dxdy.first)/imgSize.width(), (point.y() - dxdy.second) / imgSize.height());
+
+          const QLineF pointVLine(
+                  (point.x()- dxdy.first)/imgSize.width(), (point.y() - 5 - dxdy.second) / imgSize.height(),
+                  (point.x()- dxdy.first)/imgSize.width(), (point.y() + 5 - dxdy.second) / imgSize.height());
+
+          QPolygonF::iterator secondPI = selectedZone->polygon.begin();
+          ++secondPI;
+          for(QPolygonF::iterator firstPI = selectedZone->polygon.begin();
+              firstPI != selectedZone->polygon.end(); ++firstPI)
+          {
+            const QLineF polyLine(*firstPI, *secondPI);
+
+            if(QLineF::BoundedIntersection == polyLine.intersect(pointHLine, NULL)
+               || QLineF::BoundedIntersection == polyLine.intersect(pointVLine, NULL))
+            {
+              lineMenu->exec(event->globalPos());
+              break;
+            }
+
+            ++secondPI;
+            if(secondPI == selectedZone->polygon.end())
+              secondPI = selectedZone->polygon.begin();
+          }
+
         }
       }
     }

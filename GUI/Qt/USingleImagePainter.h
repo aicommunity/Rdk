@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QList>
 #include <QPolygon>
+#include <QMenu>
 
 struct UDrawablePolygon
 {
@@ -69,12 +70,20 @@ private:
   /// Указатель на передвигаемую точку по museMoveEvent, также служит флагом
   QPointF *movingPoint;
 
+  /// Флаг, возводится при перемещении точки выделенной зоны
   bool isZoneModified;
+
+  QMenu *lineMenu;
+  QMenu *pointMenu;
 
   /// Рассчитывает смещение dx dy, необходимое чтобы изображение находилось в центре виджета
   QPair<int, int> calcImgShift(const QSize &widgetSize, const QSize &imageSize) const;
 
   void commitZoneChangeIfModified();
+
+private slots:
+  void addPoint();
+  void deletePoint();
 
 protected:
   virtual void paintEvent(QPaintEvent*) override;
