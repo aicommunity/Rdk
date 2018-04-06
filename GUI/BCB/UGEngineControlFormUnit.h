@@ -282,6 +282,7 @@ MESSAGE_HANDLER(WM_SERVER_PING, TMessage, WMServerPing)
 END_MESSAGE_MAP(TForm)
 
 String MainFormName;
+String ConfigsMainPath;
 bool HideAdminFormFlag;
 String AutoexecProjectFileName;
 bool AutoStartProjectFlag;
@@ -292,8 +293,17 @@ String LogDir;
 bool LogDebugMode;
 int StartupDelay;
 
+/// Флаг принудительного сохранения конфигураций в старом формате
+bool UseNewXmlFormatProjectFile;
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool UseNewProjectFilesStructure;
+
 __int64 LastMaxMemory;
 __int64 LastMaxBlock;
+
+
 
 // Файл настроек проекта
 //RDK::USerStorageXML ProjectXml;

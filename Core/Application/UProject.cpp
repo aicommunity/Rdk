@@ -275,6 +275,9 @@ bool TProjectConfig::DeleteChannel(int index)
 UProject::UProject(void)
 {
  ModifiedFlag=false;
+ ForceOldXmlFormat=false;
+ ForceNewConfigFilesStructure=false;
+ ConfigVersion="1.0";
 }
 
 UProject::~UProject(void)
@@ -326,6 +329,51 @@ bool UProject::ResetModified(void)
  return true;
 }
 
+/// Флаг принудительного сохранения данных конфигурации в старом формате файла
+bool UProject::GetForceOldXmlFormat(void) const
+{
+ return ForceOldXmlFormat;
+}
+
+bool UProject::SetForceOldXmlFormat(bool value)
+{
+ if(ForceOldXmlFormat == value)
+  return true;
+
+ ForceOldXmlFormat=value;
+/* if(ForceOldXmlFormat == true)
+  ConfigVersion="1.0";
+ else
+ if(ForceNewConfigFilesStructure == true)
+  ConfigVersion="2.1";
+ else
+  ConfigVersion="2.0";
+  */
+ return true;
+}
+
+/// Флаг включения нового представления файловой структуры конфигурации
+bool UProject::GetForceNewConfigFilesStructure(void) const
+{
+ return ForceNewConfigFilesStructure;
+}
+
+bool UProject::SetForceNewConfigFilesStructure(bool value)
+{
+ if(ForceNewConfigFilesStructure == value)
+  return true;
+ ForceNewConfigFilesStructure=value;
+/* if(ForceOldXmlFormat == true)
+  ConfigVersion="1.0";
+ else
+ if(ForceNewConfigFilesStructure == true)
+  ConfigVersion="2.1";
+ else
+  ConfigVersion="2.0";
+  */
+ return true;
+}
+
 /// Сбрасывает конфигурацию проекта в состояние по умолчанию
 /// Метод также сбрасывает ModifiedFlag
 void UProject::ResetToDefault(void)
@@ -354,7 +402,36 @@ bool UProject::SetProjectPath(const std::string& value)
 bool UProject::ReadFromXml(USerStorageXML &xml)
 {
  ModifiedFlag=false;
+ xml.SelectRoot();
+ std::string version=xml.GetNodeAttribute("Version");
+ if(version == "2.0")
+ {
+  ConfigVersion="2.0";
+  return ReadFromXmlNew(xml);
+ }
+ else
+ if(version == "2.1")
+ {
+  SetForceNewConfigFilesStructure(true);
+  ConfigVersion="2.1";
+  return ReadFromXmlNew(xml);
+ }
+ ConfigVersion="1.0";
+ return ReadFromXmlOld(xml);
+}
 
+
+/// Сохраняет конфигурацию проекта в xml
+bool UProject::WriteToXml(USerStorageXML &xml)
+{
+ if(ForceOldXmlFormat)
+  return WriteToXmlOld(xml);
+
+ return WriteToXmlNew(xml);
+}
+
+bool UProject::ReadFromXmlOld(USerStorageXML &xml)
+{
  xml.SelectNodeRoot("Project/MultiGeneral");
  Config.DebugMode=xml.ReadBool("DebugModeFlag",false);
  Config.DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",0);
@@ -457,7 +534,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 
   Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned(std::string("DebugSysEventsMask_")+RDK::sntoa(i),Config.ChannelsConfig[i].DebugSysEventsMask);
   Config.ChannelsConfig[i].DebuggerMessageFlag=xml.ReadBool(std::string("DebuggerMessageFlag_")+RDK::sntoa(i),false);
-  Config.ChannelsConfig[i].MaxCalculationModelTime=xml.ReadFloat("MaxCalculationModelTime"+RDK::sntoa(i), 0.0);
+  Config.ChannelsConfig[i].MaxCalculationModelTime=xml.ReadFloat(std::string("MaxCalculationModelTime_")+RDK::sntoa(i), 0.0);
  }
 
  // TODO: Реализовать загрузку описания
@@ -477,10 +554,110 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  return true;
 }
 
-
-/// Сохраняет конфигурацию проекта в xml
-bool UProject::WriteToXml(USerStorageXML &xml)
+bool UProject::ReadFromXmlNew(USerStorageXML &xml)
 {
+ xml.SelectNodeRoot("Project/MultiGeneral");
+ Config.DebugMode=xml.ReadBool("DebugModeFlag",false);
+ Config.DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",0);
+ Config.DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
+ Config.EventsLogMode=xml.ReadBool("EventsLogMode",false);
+ Config.OverrideLogParameters=xml.ReadBool("OverrideLogParameters",true);
+
+ Config.MultiThreadingMode=xml.ReadInteger("EnginesMode",0);
+
+ Config.EventsLogFlag=xml.ReadBool("EventsLogEnabled",true);
+ Config.ProjectShowChannelsStates=xml.ReadBool("ProjectShowChannelsStates",true);
+
+ int calc_time_mode=xml.ReadInteger("CalculationTimeSourceMode",0);
+
+ Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
+
+ Config.MTUpdateInterfaceInterval=xml.ReadInteger("MTUpdateInterfaceInterval",30);
+
+ int num_engines=xml.ReadInteger("NumEngines",1);
+ if(num_engines<=0)
+  num_engines=1;
+
+ Config.DisableStopVideoSources=xml.ReadBool("DisableStopVideoSources",false);
+
+ Config.NumChannels=num_engines;
+ Config.ChannelsConfig.resize(num_engines);
+
+// int selected_channel_index=xml.ReadInteger("SelectedEngineIndex",0);
+
+ xml.SelectNodeRoot("Project/General");
+
+ Config.ProjectName=xml.ReadString("ProjectName","NoName").c_str();
+
+ // Флаг автоматического сохранения проекта
+ Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
+
+ // Флаг автоматического сохранения проекта
+ Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
+
+ std::string descriptionfilename=xml.ReadString("ProjectDescriptionFileName","");
+ Config.DescriptionFileName=descriptionfilename;
+
+ Config.InterfaceFileName=xml.ReadString("InterfaceFileName","");
+
+ Config.CalcSourceTimeMode=calc_time_mode;
+
+ xml.SelectNodeRoot("Project/Channels");
+ int num_ch_nodes=xml.GetNumNodes();
+
+ num_ch_nodes=(num_ch_nodes<num_engines)?num_ch_nodes:num_engines;
+ if(num_ch_nodes == 0)
+ {
+  Config.ChannelsConfig[0].PredefinedStructure=0;
+  Config.ChannelsConfig[0].DefaultTimeStep=30;
+  Config.ChannelsConfig[0].GlobalTimeStep=30;
+  Config.ChannelsConfig[0].CalculationMode=2;
+  Config.ChannelsConfig[0].InitAfterLoad=1;
+  Config.ChannelsConfig[0].ResetAfterLoad=true;
+  Config.ChannelsConfig[0].DebugMode=false;
+  Config.ChannelsConfig[0].MinInterstepsInterval=20;
+
+  Config.ChannelsConfig[0].ModelFileName="";
+  Config.ChannelsConfig[0].ParametersFileName="";
+  Config.ChannelsConfig[0].StatesFileName="";
+  Config.ChannelsConfig[0].EventsLogMode=false;
+  Config.ChannelsConfig[0].DebugSysEventsMask=Config.ChannelsConfig[0].DebugSysEventsMask;
+  Config.ChannelsConfig[0].DebuggerMessageFlag=false;
+  Config.ChannelsConfig[0].MaxCalculationModelTime=0.0;
+ }
+ else
+ for(int i=0;i<num_engines;i++)
+ {
+  if(!xml.SelectNode(sntoa(i,2)))
+   continue;
+  Config.ChannelsConfig[i].PredefinedStructure=xml.ReadInteger("PredefinedStructure",0);
+  Config.ChannelsConfig[i].DefaultTimeStep=xml.ReadInteger("DefaultTimeStep",30);
+  Config.ChannelsConfig[i].GlobalTimeStep=xml.ReadInteger("GlobalTimeStep",30);
+  Config.ChannelsConfig[i].CalculationMode=xml.ReadInteger("CalculationMode",2);
+  Config.ChannelsConfig[i].InitAfterLoad=xml.ReadBool("InitAfterLoadFlag",1);
+  Config.ChannelsConfig[i].ResetAfterLoad=xml.ReadBool("ResetAfterLoadFlag",true);
+  Config.ChannelsConfig[i].DebugMode=xml.ReadBool("DebugModeFlag",false);
+  Config.ChannelsConfig[i].EventsLogMode=xml.ReadBool("EventsLogMode",false);
+
+  Config.ChannelsConfig[i].MinInterstepsInterval=xml.ReadInteger("MinInterstepsInterval",20);
+
+  Config.ChannelsConfig[i].ModelFileName=xml.ReadString("ModelFileName","");
+  Config.ChannelsConfig[i].ParametersFileName=xml.ReadString("ParametersFileName","");
+  Config.ChannelsConfig[i].StatesFileName=xml.ReadString("StatesFileName","");
+
+  Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",Config.ChannelsConfig[i].DebugSysEventsMask);
+  Config.ChannelsConfig[i].DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
+  Config.ChannelsConfig[i].MaxCalculationModelTime=xml.ReadFloat("MaxCalculationModelTime", 0.0);
+  xml.SelectUp();
+ }
+ return true;
+}
+
+bool UProject::WriteToXmlOld(USerStorageXML &xml)
+{
+ xml.SelectRoot();
+ xml.SetNodeAttribute("Version","1.0");
+
  xml.SelectNodeRoot("Project/MultiGeneral");
  xml.WriteBool("DebugModeFlag",Config.DebugMode);
  xml.WriteUnsigned("DebugSysEventsMask",Config.DebugSysEventsMask);
@@ -587,8 +764,8 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool("DebugModeFlag",channel_config.DebugMode);
    xml.WriteBool("EventsLogMode",channel_config.EventsLogMode);
    xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
-   xml.WriteBool("DebuggerMessageFlag",Config.ChannelsConfig[0].DebuggerMessageFlag);
-   xml.WriteFloat("MaxCalculationModelTime",Config.ChannelsConfig[0].MaxCalculationModelTime);
+   xml.WriteBool("DebuggerMessageFlag",channel_config.DebuggerMessageFlag);
+   xml.WriteFloat("MaxCalculationModelTime",channel_config.MaxCalculationModelTime);
   }
   else
   {
@@ -608,8 +785,8 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool(std::string("DebugModeFlag_")+suffix,channel_config.DebugMode);
    xml.WriteBool(std::string("EventsLogMode_")+suffix,channel_config.EventsLogMode);
    xml.WriteUnsigned(std::string("DebugSysEventsMask_")+suffix,channel_config.DebugSysEventsMask);
-   xml.WriteBool(std::string("DebuggerMessageFlag_")+suffix,Config.ChannelsConfig[i].DebuggerMessageFlag);
-   xml.WriteFloat("MaxCalculationModelTime_"+suffix,Config.ChannelsConfig[0].MaxCalculationModelTime);
+   xml.WriteBool(std::string("DebuggerMessageFlag_")+suffix,channel_config.DebuggerMessageFlag);
+   xml.WriteFloat("MaxCalculationModelTime_"+suffix,channel_config.MaxCalculationModelTime);
   }
  }
 
@@ -643,7 +820,115 @@ bool UProject::WriteToXml(USerStorageXML &xml)
  xml.WriteBool("ProjectShowChannelsStates",Config.ProjectShowChannelsStates);
 
  xml.WriteBool("DisableStopVideoSources",Config.DisableStopVideoSources);
+ return true;
+}
 
+bool UProject::WriteToXmlNew(USerStorageXML &xml)
+{
+ xml.SelectRoot();
+ if(ForceNewConfigFilesStructure)
+  xml.SetNodeAttribute("Version","2.1");
+ else
+  xml.SetNodeAttribute("Version","2.0");
+ xml.SelectNodeRoot("Project/MultiGeneral");
+ xml.WriteBool("DebugModeFlag",Config.DebugMode);
+ xml.WriteUnsigned("DebugSysEventsMask",Config.DebugSysEventsMask);
+ xml.WriteBool("DebuggerMessageFlag",Config.DebuggerMessageFlag);
+ xml.WriteBool("EventsLogMode",Config.EventsLogMode);
+ xml.WriteBool("OverrideLogParameters",Config.OverrideLogParameters);
+
+ xml.SelectNodeRoot("Project/General");
+ xml.DelNodeInternalContent();
+
+ if(Config.InterfaceFileName.empty())
+  Config.InterfaceFileName="Interface.xml";
+ xml.WriteString("InterfaceFileName",Config.InterfaceFileName);
+
+ if(Config.DescriptionFileName.empty())
+  Config.DescriptionFileName="Description.rtf";
+ xml.WriteString("ProjectDescriptionFileName",Config.DescriptionFileName);
+
+ xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
+ xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
+ xml.WriteInteger("MTUpdateInterfaceInterval",Config.MTUpdateInterfaceInterval);
+
+ xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
+
+ // Флаг автоматического сохранения проекта
+ xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
+
+ xml.WriteInteger("ProjectMode",Config.ProjectMode);
+
+ xml.WriteString("ProjectName",Config.ProjectName);
+
+ xml.SelectNodeRoot("Project/MultiGeneral");
+ xml.WriteInteger("EnginesMode",Config.MultiThreadingMode);
+ xml.WriteInteger("CalculationTimeSourceMode",Config.CalcSourceTimeMode);
+
+ xml.WriteInteger("NumEngines",Config.NumChannels);
+// xml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
+
+ xml.WriteBool("ProjectShowChannelsStates",Config.ProjectShowChannelsStates);
+
+ xml.WriteBool("DisableStopVideoSources",Config.DisableStopVideoSources);
+
+ xml.SelectNodeRoot("Project/Channels");
+ for(int i=0;i<Config.NumChannels;i++)
+ {
+  TProjectChannelConfig &channel_config=Config.ChannelsConfig[i];
+  if(!xml.SelectNodeForce(sntoa(i,2)))
+   continue;
+
+  if(channel_config.ModelFileName.empty())
+  {
+   if(ForceNewConfigFilesStructure)
+	channel_config.ModelFileName=std::string("Model_")+RDK::sntoa(i,2)+".xml";
+   else
+	channel_config.ModelFileName=(i==0)?std::string("model.xml"):std::string("model_")+RDK::sntoa(i)+".xml";
+  }
+  xml.WriteString("ModelFileName",channel_config.ModelFileName);
+
+  if(channel_config.ParametersFileName.empty())
+  {
+   if(ForceNewConfigFilesStructure)
+	channel_config.ParametersFileName=std::string("Parameters_")+RDK::sntoa(i,2)+".xml";
+   else
+	channel_config.ParametersFileName=(i==0)?std::string("Parameters.xml"):std::string("Parameters_")+RDK::sntoa(i)+".xml";
+  }
+  xml.WriteString("ParametersFileName",channel_config.ParametersFileName);
+
+  if(Config.ProjectAutoSaveStatesFlag)
+  {
+   if(channel_config.StatesFileName.empty())
+   {
+	if(ForceNewConfigFilesStructure)
+	 channel_config.StatesFileName=std::string("States_")+RDK::sntoa(i,2)+".xml";
+	else
+	 channel_config.StatesFileName=(i==0)?std::string("States.xml"):std::string("States_")+RDK::sntoa(i)+".xml";
+   }
+   xml.WriteString("StatesFileName",channel_config.StatesFileName);
+  }
+
+  xml.WriteInteger("PredefinedStructure",channel_config.PredefinedStructure);
+
+  // Шаг счета по умолчанию
+  xml.WriteInteger("DefaultTimeStep",channel_config.DefaultTimeStep);
+
+  // Глобальный шаг счета модели
+  xml.WriteInteger("GlobalTimeStep",channel_config.GlobalTimeStep);
+
+  xml.WriteInteger("CalculationMode",channel_config.CalculationMode);
+  xml.WriteInteger("MinInterstepsInterval",channel_config.MinInterstepsInterval);
+  xml.WriteBool("InitAfterLoadFlag",channel_config.InitAfterLoad);
+  xml.WriteBool("ResetAfterLoadFlag",channel_config.ResetAfterLoad);
+  xml.WriteBool("DebugModeFlag",channel_config.DebugMode);
+  xml.WriteBool("EventsLogMode",channel_config.EventsLogMode);
+  xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
+  xml.WriteBool("DebuggerMessageFlag",channel_config.DebuggerMessageFlag);
+  xml.WriteFloat("MaxCalculationModelTime",channel_config.MaxCalculationModelTime);
+
+  xml.SelectUp();
+ }
 
  return true;
 }

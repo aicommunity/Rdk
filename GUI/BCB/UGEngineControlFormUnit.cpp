@@ -2238,7 +2238,11 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
   UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
 
-  std::string project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\project.ini").c_str();
+  std::string project_file_name;
+  if(RdkApplication.IsUseNewProjectFilesStructure())
+   project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\Project.prj").c_str();
+  else
+   project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\project.ini").c_str();
 
   CreateProject(project_file_name, UCreateProjectWizardForm->ProjectConfig);
 
@@ -2422,9 +2426,13 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
+ ConfigsMainPath=app_ini->ReadString("General", "ConfigsMainPath", "../../Configs/");
  NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
  StartupDelay=app_ini->ReadInteger("General","StartupDelay",0);
+
+ UseNewXmlFormatProjectFile=app_ini->ReadBool("General","UseNewXmlFormatProjectFile",false);
+ UseNewProjectFilesStructure=app_ini->ReadBool("General","UseNewProjectFilesStructure",false);
 
  if(StartupDelay>0)
  {
@@ -2450,6 +2458,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetProject(&RdkProject);
  RdkApplication.SetTestManager(&RdkTestManager);
  RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
+ RdkApplication.SetConfigsMainPath(AnsiString(ConfigsMainPath).c_str());
+ RdkApplication.ChangeUseNewXmlFormatProjectFile(UseNewXmlFormatProjectFile);
+ RdkApplication.ChangeUseNewProjectFilesStructure(UseNewProjectFilesStructure);
  RdkApplication.SetDebugMode(LogDebugMode);
 
  std::vector<std::string> args;

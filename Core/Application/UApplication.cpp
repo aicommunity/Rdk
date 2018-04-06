@@ -40,7 +40,11 @@ UApplication::UApplication(void)
  TestMode=false;
  CloseAfterTest=true;
  AppIsInit = false;
-// DebugMode=false;
+ ConfigsMainPath="../../Configs/";
+ ChangeUseNewXmlFormatProjectFile(false);
+ ChangeUseNewProjectFilesStructure(false);
+
+ // DebugMode=false;
 }
 
 UApplication::~UApplication(void)
@@ -78,6 +82,20 @@ bool UApplication::SetWorkDirectory(const std::string& value)
   return true;
  WorkDirectory=value;
  UpdateLoggers();
+ return true;
+}
+
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& UApplication::GetConfigsMainPath(void) const
+{
+ return ConfigsMainPath;
+}
+
+bool UApplication::SetConfigsMainPath(const std::string &value)
+{
+ if(ConfigsMainPath == value)
+  return true;
+ ConfigsMainPath=value;
  return true;
 }
 
@@ -564,8 +582,11 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
    std::string modelXml;
    if(LoadFile(channel.ModelFileName, modelXml))
    {
-     MModel_LoadComponent(i, "", modelXml.c_str());
-     channel.ModelFileName = (i == 0) ? std::string("model.xml") : std::string("model_")+RDK::sntoa(i)+".xml";
+	 MModel_LoadComponent(i, "", modelXml.c_str());
+	 if(Project->GetForceNewConfigFilesStructure())
+	  channel.ModelFileName = std::string("Model_")+RDK::sntoa(i,2)+".xml";
+	 else
+	  channel.ModelFileName = (i == 0) ? std::string("model.xml") : std::string("model_")+RDK::sntoa(i)+".xml";
    }
   }
  }
@@ -1344,7 +1365,7 @@ void UApplication::LoadProjectsHistory(void)
  opt_name=opt_name.substr(0,opt_name.size()-4);
  opt_name=opt_name+".projecthist";
  RDK::UIniFile<char> history_ini;
- history_ini.LoadFromFile(opt_name.c_str());
+ history_ini.LoadFromFile((WorkDirectory+opt_name).c_str());
  std::vector<std::string> history;
  history_ini.GetVariableList("General",history);
  sort(history.begin(),history.end());
@@ -1374,7 +1395,42 @@ void UApplication::SaveProjectsHistory(void)
  if(opt_name.size()>4)
  opt_name=opt_name.substr(0,opt_name.size()-4);
  opt_name=opt_name+".projecthist";
- history_ini.SaveToFile(opt_name);
+ history_ini.SaveToFile(WorkDirectory+opt_name);
+}
+
+/// Флаг принудительного сохранения конфигураций в старом формате
+bool UApplication::IsUseNewXmlFormatProjectFile(void) const
+{
+ return UseNewXmlFormatProjectFile;
+}
+
+bool UApplication::ChangeUseNewXmlFormatProjectFile(bool value)
+{
+ if(UseNewXmlFormatProjectFile == value)
+  return true;
+
+ UseNewXmlFormatProjectFile=value;
+ if(Project)
+  Project->SetForceOldXmlFormat(!value);
+ return true;
+}
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool UApplication::IsUseNewProjectFilesStructure(void) const
+{
+ return UseNewProjectFilesStructure;
+}
+
+bool UApplication::ChangeUseNewProjectFilesStructure(bool value)
+{
+ if(UseNewProjectFilesStructure == value)
+  return true;
+
+ UseNewProjectFilesStructure=value;
+ if(Project)
+  Project->SetForceNewConfigFilesStructure(value);
+ return true;
 }
 // --------------------------
 
