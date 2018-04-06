@@ -73,22 +73,34 @@ private:
   /// Флаг, возводится при перемещении точки выделенной зоны
   bool isZoneModified;
 
+  /// Меню с событием для добавления точки на зону, вызывается с ПКМ на линии выбранной зоны
   QMenu *lineMenu;
+
+  /// Меню с событием удаления точки из зоны
   QMenu *pointMenu;
+
+  /// Итератор и точка для добавления после события контекстного меню линии
+  QPair<QPolygonF::iterator, QPointF> additionPoint;
+
+  /// Итератор на точку для удаления
+  QPolygonF::iterator deletePointIterator;
 
   /// Рассчитывает смещение dx dy, необходимое чтобы изображение находилось в центре виджета
   QPair<int, int> calcImgShift(const QSize &widgetSize, const QSize &imageSize) const;
 
+  /// Если выбранная зона изменяласьь, то испускает сигнал zoneModified
   void commitZoneChangeIfModified();
 
 private slots:
+  /// Слот добавления точки в выбранную зону зону
   void addPoint();
+
+  /// Слот удаления выбранной точки
   void deletePoint();
 
 protected:
   virtual void paintEvent(QPaintEvent*) override;
 
-  /// Рисование на изображении, в случае возведения флага drawable
   virtual void mousePressEvent(QMouseEvent *event) override;
 
   virtual void mouseReleaseEvent(QMouseEvent *event) override;

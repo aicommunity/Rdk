@@ -12,11 +12,17 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   movingPoint = NULL;
   isZoneModified = false;
 
-  lineMenu = new QMenu();
+  lineMenu = new QMenu(this);
   QAction *actionAddPoint = new QAction(lineMenu);
   actionAddPoint->setText("add Point");
   connect(actionAddPoint, SIGNAL(triggered()), this, SLOT(addPoint()));
   lineMenu->addAction(actionAddPoint);
+
+  pointMenu = new QMenu(this);
+  QAction *actionDelPoint = new QAction(pointMenu);
+  actionDelPoint->setText("delete Point");
+  connect(actionDelPoint, SIGNAL(triggered()), this, SLOT(deletePoint()));
+  pointMenu->addAction(actionDelPoint);
 }
 
 void USingleImagePainter::setLoaderMutex(QMutex *mutex)
@@ -53,6 +59,7 @@ void USingleImagePainter::selectZone(int id)
   commitZoneChangeIfModified();
 
   selectedZoneId = id;
+  selectedZone = NULL;
 }
 
 QPen USingleImagePainter::getPen() const
@@ -87,12 +94,25 @@ void USingleImagePainter::commitZoneChangeIfModified()
 
 void USingleImagePainter::addPoint()
 {
+  if(selectedZone)
+  {
+    if(additionPoint.first != selectedZone->polygon.begin()
+       && additionPoint.first != selectedZone->polygon.end())
+      selectedZone->polygon.insert(additionPoint.first, additionPoint.second);
+    else
+      selectedZone->polygon.push_back(additionPoint.second);
 
+    isZoneModified = true;
+  }
 }
 
 void USingleImagePainter::deletePoint()
 {
-
+  if(selectedZone)
+  {
+    selectedZone->polygon.erase(deletePointIterator);
+    isZoneModified = true;
+  }
 }
 
 void USingleImagePainter::paintEvent(QPaintEvent *)
@@ -153,18 +173,17 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
 
 void USingleImagePainter::mousePressEvent(QMouseEvent *event)
 {
-  if(dispImage /*&& (drawable || selectedZone)*/)
+  if(dispImage)
   {
     const QSize imgSize = dispImage->size();
     const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
+    // текущая точка в относительных координатах
+    const QPointF point(
+          static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
+          static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
 
     if(event->button() == Qt::LeftButton)
     {
-      // текущая точка в относительных координатах
-      QPointF point(
-            static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
-            static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
-
 
       // если активен режим рисования, добавляем точку фигуре
       if(drawable)
@@ -181,17 +200,17 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
       else
       {
+
         // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
         if(selectedZone)
         {
+          QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
+                             point.y() - 5.0 / imgSize.height(),
+                             10.0 / imgSize.width(), 10.0/ imgSize.height());
           for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
               pointIterator != selectedZone->polygon.end(); ++pointIterator)
           {
-            QPointF currentPoint(*pointIterator);
-            currentPoint.setX(pointIterator->x() * imgSize.width() + dxdy.first - 5);
-            currentPoint.setY(pointIterator->y() * imgSize.height() + dxdy.second - 5);
-            QRectF pointRect(currentPoint, QSizeF(10.0, 10.0));
-            if(pointRect.contains(event->localPos()))
+            if(arroundPoint.contains(*pointIterator))
             {
               // если нашли точку, берем на неё укзатель
               movingPoint = &(*pointIterator);
@@ -210,9 +229,10 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
             if(polygonsIterator->id == selectedZoneId)
               break;
 
+            selectedZoneId = polygonsIterator->id;
+
             commitZoneChangeIfModified();
 
-            selectedZoneId = polygonsIterator->id;
             emit zoneSelected(selectedZoneId);
             break;
           }
@@ -223,6 +243,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     {
       if(event->button() == Qt::RightButton)
       {
+
         // завершение рисования зоны
         if(drawMode)
         {
@@ -231,16 +252,39 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
           return;
         }
 
+
+        // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
+        if(selectedZone)
+        {
+          QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
+                             point.y() - 5.0 / imgSize.height(),
+                             10.0 / imgSize.width(), 10.0/ imgSize.height());
+          for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
+              pointIterator != selectedZone->polygon.end(); ++pointIterator)
+          {
+            if(arroundPoint.contains(*pointIterator))
+            {
+              // если нашли точку, берем на неё укзатель
+              deletePointIterator = pointIterator;
+              pointMenu->exec(event->globalPos());
+
+              QWidget::mousePressEvent(event);
+              return;
+            }
+          }
+        }
+
+
+        // добавление точки на линию
         if(selectedZone && selectedZone->polygon.size() > 1 && dispImage)
         {
-          const QPointF point(event->localPos());
           const QLineF pointHLine(
-                  (point.x() - 5 - dxdy.first)/imgSize.width(), (point.y() - dxdy.second) / imgSize.height(),
-                  (point.x() + 5 - dxdy.first)/imgSize.width(), (point.y() - dxdy.second) / imgSize.height());
+                  point.x() - 5.0 / imgSize.width(), point.y(),
+                  point.x() + 5.0 / imgSize.width(), point.y());
 
           const QLineF pointVLine(
-                  (point.x()- dxdy.first)/imgSize.width(), (point.y() - 5 - dxdy.second) / imgSize.height(),
-                  (point.x()- dxdy.first)/imgSize.width(), (point.y() + 5 - dxdy.second) / imgSize.height());
+                  point.x(), point.y() - 5.0 / imgSize.height(),
+                  point.x(), point.y() + 5.0 / imgSize.height());
 
           QPolygonF::iterator secondPI = selectedZone->polygon.begin();
           ++secondPI;
@@ -252,16 +296,21 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
             if(QLineF::BoundedIntersection == polyLine.intersect(pointHLine, NULL)
                || QLineF::BoundedIntersection == polyLine.intersect(pointVLine, NULL))
             {
+              additionPoint.first = secondPI;
+              additionPoint.second = point;
+
               lineMenu->exec(event->globalPos());
               break;
             }
 
             ++secondPI;
             if(secondPI == selectedZone->polygon.end())
+            {
               secondPI = selectedZone->polygon.begin();
+            }
           }
-
         }
+
       }
     }
   }
