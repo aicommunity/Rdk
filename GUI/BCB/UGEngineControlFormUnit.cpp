@@ -2426,7 +2426,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
- ConfigsMainPath=app_ini->ReadString("General", "ConfigsMainPath", "../../Configs/");
+ ConfigsMainPath=app_ini->ReadString("General", "ConfigsMainPath", "../../../Configs/");
  NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
  StartupDelay=app_ini->ReadInteger("General","StartupDelay",0);
