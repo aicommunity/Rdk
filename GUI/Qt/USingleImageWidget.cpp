@@ -228,7 +228,10 @@ void USingleImageWidget::setSelected(bool value)
     if(value == selected) return;
     selected = value;
     if(selected)
+    {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Plain);
+        painter->emitSelectedZone();
+    }
     else
     {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Raised);
@@ -236,13 +239,15 @@ void USingleImageWidget::setSelected(bool value)
     }
 }
 
-void USingleImageWidget::mousePressEvent(QMouseEvent *)
+void USingleImageWidget::mousePressEvent(QMouseEvent *event)
 {
+    QWidget::mousePressEvent(event);
     emit selectionSignal(this);
 }
 
-void USingleImageWidget::mouseDoubleClickEvent(QMouseEvent *)
+void USingleImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    QWidget::mouseDoubleClickEvent(event);
     emit fullScreenSignal(this);
 }
 

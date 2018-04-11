@@ -40,8 +40,8 @@ public:
     bool getSelected() const;
     void setSelected(bool value);
 
-    void mousePressEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
     QString getComponentPropertyName() const;
     void setComponentPropertyName(const QString &value);

@@ -44,6 +44,9 @@ public:
   QPen getPen() const;
   void setPen(const QPen &value);
 
+  /// ≈сли есть выбранна€ зона, отправл€ет сигнал zoneSelected(int)
+  void emitSelectedZone();
+
 private:
   /// ”казатель на изображение к отрисовке, поступает от UImageLoader через слот void setImage(QImage* image)
   QImage *dispImage;
@@ -64,7 +67,7 @@ private:
   /// ‘лаг позвол€ющий рисовать на текущем виджете
   bool drawable;
 
-  /// ‘лаг, означающий что на текущем виджете есть выбранна€ зона
+  /// ”казатель на выбранную зону, также служит флагом
   UDrawablePolygon *selectedZone;
 
   /// ”казатель на передвигаемую точку по museMoveEvent, также служит флагом

@@ -2,11 +2,10 @@
 #include "ui_UCalculationChannelsWidget.h"
 
 UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UApplication *app) :
-    UVisualControllerWidget(parent),
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UCalculationChannelsWidget)
 {
   ui->setupUi(this);
-  application = app;
   UpdateInterval = 0;
   currentChannel = 0;
   setAccessibleName("UCalculationChannelsWidget");

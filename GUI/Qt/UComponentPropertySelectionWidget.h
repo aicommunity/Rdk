@@ -13,7 +13,7 @@ class UComponentPropertySelectionWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit UComponentPropertySelectionWidget(QWidget *parent = 0, int mode = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentPropertySelectionWidget");
+    explicit UComponentPropertySelectionWidget(QWidget *parent = 0, int mode = 0, RDK::UApplication *app = NULL);
     virtual ~UComponentPropertySelectionWidget();
 
     UComponentsListWidget *componentsList;
@@ -26,6 +26,9 @@ public slots:
 
 private:
     Ui::UComponentPropertySelectionWidget *ui;
+
+    /// Ёкзепл€р класса приложени€
+    RDK::UApplication *application;
 };
 
 #endif // UCOMPONENTPROPERTYSELECTIONWIDGET_H

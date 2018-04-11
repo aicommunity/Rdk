@@ -4,21 +4,22 @@
 #include <QMenu>
 #include <QToolButton>
 
-UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, QString settingsFile, QString settingsGroup) :
-  QWidget(parent),
+UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UApplication *app) :
+  UVisualControllerWidget(parent, app),
   ui(new Ui::UComponentPropertyChanger)
 {
   ui->setupUi(this);
 
+  UpdateInterval = 0;
+  setAccessibleName("UComponentPropertyChanger");
   propertyXML = NULL;
 
-  componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
+  componentsList = new UComponentsListWidget(this, application);
+  componentsList->setAccessibleName(accessibleName() + "_componentsList");
   ui->verticalLayoutComponentsList->addWidget(componentsList);
 
   ui->splitter->setStretchFactor(0, 10);
   ui->splitter->setStretchFactor(1, 1);
-
-  readSettings(settingsFile, settingsGroup);
 
   //кнопки управления для фиксации Property компонента
   //Property tab
@@ -46,6 +47,30 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, QString se
 UComponentPropertyChanger::~UComponentPropertyChanger()
 {
   delete ui;
+}
+
+void UComponentPropertyChanger::ASaveParameters()
+{
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  settings.setValue("splitterState", ui->splitter->saveState());
+  settings.endGroup();
+}
+
+void UComponentPropertyChanger::ALoadParameters()
+{
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
+  settings.endGroup();
 }
 
 void UComponentPropertyChanger::actionSet()
@@ -141,26 +166,6 @@ void UComponentPropertyChanger::updateCurrentPropertyValue(QString value)
 {
 //  ui->plainTextEditValue->clear();
   ui->plainTextEditValue->setPlainText(value);
-}
-
-void UComponentPropertyChanger::readSettings(QString file, QString group)
-{
-  QSettings settings(file, QSettings::IniFormat);
-  settings.beginGroup(group);
-  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-  settings.endGroup();
-
-  if(componentsList) componentsList->readSettings(file, group+"_componentsList");
-}
-
-void UComponentPropertyChanger::writeSettings(QString file, QString group)
-{
-  QSettings settings(file, QSettings::IniFormat);
-  settings.beginGroup(group);
-  settings.setValue("splitterState", ui->splitter->saveState());
-  settings.endGroup();
-
-  if(componentsList) componentsList->writeSettings(file, group+"_componentsList");
 }
 
 bool UComponentPropertyChanger::emptySeletion()

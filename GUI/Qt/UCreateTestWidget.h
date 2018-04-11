@@ -15,15 +15,15 @@ class UCreateTestWidget : public UVisualControllerWidget
   Q_OBJECT
 
 public:
-  explicit UCreateTestWidget(QWidget *parent = 0, RDK::UApplication *app = NULL, QString settingsFile = "settings.qt", QString settingsGroup = "UCreateTestWidget");
+  explicit UCreateTestWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UCreateTestWidget();
 
-public slots:
+  /// запись файла настроек
+  virtual void ASaveParameters();
+  /// считывание файла настроек
+  virtual void ALoadParameters();
 
-  /// считывание файлов настроек
-  void readSettings(QString file, QString group = "UCreateTestWidget");
-  /// запись файлов настроек
-  void writeSettings(QString file, QString group = "UCreateTestWidget");
+public slots:
 
   // buttons:
   void addProperty();
@@ -34,7 +34,6 @@ public slots:
 private:
   Ui::UCreateTestWidget *ui;
 
-  RDK::UApplication *application;
   UComponentsListWidget *componentsList;
 };
 

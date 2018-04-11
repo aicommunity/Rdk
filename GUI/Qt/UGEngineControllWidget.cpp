@@ -24,16 +24,16 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     ui(new Ui::UGEngineControllWidget)
 {
     ui->setupUi(this);
+    setAccessibleName("UGEngineControllWidget");
 
     application = app;
 
     if(application == NULL)
       QApplication::exit(-1);
 
-//    initGraphicalEngine();
-    settingsFileName = QString::fromLocal8Bit(application->GetProjectPath().c_str())+"settings.qt";
-    settingsGroupName = "UGEngineControllWidget";
+    QString settingsFileName = QString::fromLocal8Bit(application->GetProjectPath().c_str())+"settings.qt";
 
+    settings = NULL;
     propertyChanger = NULL;
     drawEngine = NULL;
     componentLinks = NULL;
@@ -44,10 +44,13 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createTestWidget = NULL;
     statusPanel = NULL;
 
-    propertyChanger = new UComponentPropertyChanger(this, settingsFileName);
+    settings = new USettingsReaderWidget<UGEngineControllWidget>
+        (this, this, &UGEngineControllWidget::readSettings, &UGEngineControllWidget::writeSettings);
+
+    propertyChanger = new UComponentPropertyChanger(this, application);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
 
-    drawEngine = new UDrawEngineWidget(this, settingsFileName);
+    drawEngine = new UDrawEngineWidget(this, application);
     QMdiSubWindow *drawEngineSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
     drawEngineSbWindow->setWidget(drawEngine);
     drawEngineSbWindow->show();
@@ -72,7 +75,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(drawEngine, SIGNAL(updateComponentsListFromScheme()),
             propertyChanger->componentsList, SLOT(updateComponentsListFromScheme()));
 
-    componentLinks = new UComponentLinksWidget(this, settingsFileName);
+    componentLinks = new UComponentLinksWidget(this, application);
     componentLinks->hide();
 
     // связывание схемы модели и окна отображения связей
@@ -85,7 +88,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(drawEngine, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(drawEngine, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
 
-    images = new UImagesWidget(this, settingsFileName);
+    images = new UImagesWidget(this, application);
     images->hide();
 
     channels = new UCalculationChannelsWidget(this, application);
@@ -128,7 +131,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
-    readSettings(settingsFileName, settingsGroupName);
+    readSettings();
 }
 
 UGEngineControllWidget::~UGEngineControllWidget()
@@ -161,16 +164,13 @@ void UGEngineControllWidget::actionLoadConfig()
     {
       application->OpenProject(fileName.toLocal8Bit().constData());
 
-      configFileName = fileName;
-      this->setWindowTitle("project: " + configFileName);
+      this->setWindowTitle("project: " + fileName);
 
-      QStringList list = configFileName.split("/");
-      list.pop_back();
+      /*QStringList list = configFileName.split("/");
+      list.pop_back();*/
 
-      readSettings(list.join("/") + "/settings.qt");
-
-      RDK::UIVisualControllerStorage::UpdateInterface(true);
-      drawEngine->updateScheme(true);
+      //RDK::UIVisualControllerStorage::UpdateInterface(true);
+      //drawEngine->updateScheme(true);
     }
     catch(RDK::UException& e)
     {
@@ -191,7 +191,6 @@ void UGEngineControllWidget::actionCreateConfig()
 void UGEngineControllWidget::actionSaveConfig()
 {
     application->SaveProject();
-    writeSettings(settingsFileName);
 }
 
 void UGEngineControllWidget::actionExit()
@@ -291,37 +290,6 @@ void UGEngineControllWidget::actionTestCreator()
   execDialogUVisualControllWidget(createTestWidget);
 }
 
-/*void UGEngineControllWidget::timerEvent(QTimerEvent *) // костыль
-{
-    application->GetEngineControl()->TimerExecute();
-    //RDK::UIVisualControllerStorage::UpdateInterface(false);
-}*/
-
-/*void UGEngineControllWidget::testUpdate()
-{
-    //Interface update test
-    ThreadGo *worker = new ThreadGo(drawEngine);
-    QThread *thread = new QThread(this);
-    worker->moveToThread(thread);
-    connect(thread, SIGNAL(started()), worker, SLOT(startThread()));
-    connect(worker, SIGNAL(testFinished()), thread, SLOT(quit()));
-    connect(worker, SIGNAL(testFinished()), worker, SLOT(deleteLater()));
-    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-    thread->start();
-}
-
-void UGEngineControllWidget::initGraphicalEngine()
-{
-    Core_ChannelInit(0, (void*)hehehe);
-    //std::string font_path=Extract;
-    QString font_path = QCoreApplication::applicationDirPath()+"/";
-    Core_SetSystemDir(font_path.toLocal8Bit().constData());
-    Core_LoadFonts();
-    Env_SetDebugMode(true); //неизвестное применение
-//    MLog_SetDebugMode(0, true);
-    //    MLog_SetEventsLogMode(0, true);
-}*/
-
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {
     if(!application->GetProjectOpenFlag())
@@ -373,38 +341,49 @@ void UGEngineControllWidget::execDialogUVisualControllWidget(UVisualControllerWi
     widget->setParent(widgetOldParent);
 }
 
-void UGEngineControllWidget::writeSettings(QString file, QString group)
+void UGEngineControllWidget::writeSettings()
 {
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
+    if(!application) return;
+
+    QSettings settings(QString::fromLocal8Bit(
+                         application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup(accessibleName());
 
     settings.setValue("geometry", saveGeometry());
-    settings.setValue("state", saveState());
+    settings.setValue("state",    saveState());
+
+    if(imagesWindow)
+    {
+      settings.setValue("ImagesGeometry", imagesWindow->saveGeometry());
+      settings.setValue("ImagesState",    imagesWindow->saveState());
+    }
 
     settings.endGroup();
-
-    if(propertyChanger) propertyChanger->writeSettings(settingsFileName);
-    if(drawEngine) drawEngine->writeSettings(settingsFileName);
-    if(componentLinks) componentLinks->writeSettings(settingsFileName);
-    if(images) images->writeSettings(settingsFileName);
-    if(createTestWidget) createTestWidget->writeSettings(settingsFileName);
 }
 
-void UGEngineControllWidget::readSettings(QString file, QString group)
+void UGEngineControllWidget::readSettings()
 {
-    settingsFileName = file;
-    settingsGroupName = group;
-    QSettings settings(settingsFileName, QSettings::IniFormat);
-    settings.beginGroup(settingsGroupName);
+    if(!application) return;
+
+    QSettings settings(QString::fromLocal8Bit(
+                         application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup(accessibleName());
 
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
 
+    if(!imagesWindow)
+    {
+        imagesWindow = new QMainWindow(this);
+        imagesWindow->setCentralWidget(images);
+    }
+    imagesWindow->resize(images->size());
+    imagesWindow->restoreGeometry(settings.value("ImagesGeometry").toByteArray());
+    imagesWindow->restoreState(settings.value("ImagesState").toByteArray());
+
     settings.endGroup();
 
-    if(propertyChanger) propertyChanger->readSettings(settingsFileName);
-    if(drawEngine) drawEngine->readSettings(settingsFileName);
-    if(componentLinks) componentLinks->readSettings(settingsFileName);
-    if(images) images->readSettings(settingsFileName);
-    if(createTestWidget) createTestWidget->readSettings(settingsFileName);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
 }

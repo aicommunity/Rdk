@@ -39,7 +39,11 @@ void USingleImagePainter::setDrawable(bool value)
 {
   drawable = value;
   drawMode = false;
-  if(value) selectedZoneId = -1;
+  if(value)
+  {
+    selectedZoneId = -1;
+    commitZoneChangeIfModified();
+  }
 }
 
 bool USingleImagePainter::isDrawable() const
@@ -49,9 +53,17 @@ bool USingleImagePainter::isDrawable() const
 
 void USingleImagePainter::setZones(const QList<UDrawablePolygon> &polygons)
 {
-  commitZoneChangeIfModified();
-
-  figures = polygons;
+  //commitZoneChangeIfModified();
+  if(isZoneModified)
+  {
+    isZoneModified = false;
+    if(selectedZone && dispImage)
+      emit zoneModified(*selectedZone, dispImage->size());
+  }
+  else
+  {
+    figures = polygons;
+  }
 }
 
 void USingleImagePainter::selectZone(int id)
@@ -72,14 +84,22 @@ void USingleImagePainter::setPen(const QPen &value)
   pen = value;
 }
 
+void USingleImagePainter::emitSelectedZone()
+{
+  if(selectedZoneId >= 0)
+  {
+    //commitZoneChangeIfModified();
+    emit zoneSelected(selectedZoneId);
+  }
+}
+
 QPair<int, int> USingleImagePainter::calcImgShift(const QSize &widgetSize, const QSize &imageSize) const
 {
   return qMakePair(
         (widgetSize.width() > imageSize.width()) ?
           widgetSize.width()/2 - imageSize.width()/2 : 0,
         (widgetSize.height() > imageSize.height()) ?
-          widgetSize.height()/2 - imageSize.height()/2 : 0
-          );
+          widgetSize.height()/2 - imageSize.height()/2 : 0);
 }
 
 void USingleImagePainter::commitZoneChangeIfModified()
@@ -112,6 +132,8 @@ void USingleImagePainter::deletePoint()
   {
     selectedZone->polygon.erase(deletePointIterator);
     isZoneModified = true;
+    if(selectedZone->polygon.size() < 2)
+      commitZoneChangeIfModified();
   }
 }
 
@@ -123,7 +145,7 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
   // защищённая зона - отрисовка изображения
   loaderMutex->lock();
   const QSize imgSize = dispImage->size();
-  QPair<int, int> dxdy = calcImgShift(size(), imgSize);
+  const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
   QRect imgRect = dispImage->rect();
   imgRect.moveTo(dxdy.first, dxdy.second);
 
@@ -145,21 +167,25 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
     }
 
     // проверка зоны, если она выбранная selectedZone то устанавливаем желтую кисть,
-    //отдельно отрисовываем каждую вершинку и запоминаем указатель на выбранную зону
+    // отдельно отрисовываем каждую вершинку и запоминаем указатель на выбранную зону
     //
     // если зона рисуется drawMode, просто отрисовываем точки зоны
-    if( selectedZoneId == drawablePolygon.id || selectedZoneId == -2)
+    if( selectedZoneId == drawablePolygon.id || drawablePolygon.id == -2)
     {
       if(selectedZoneId == drawablePolygon.id)
       {
-        painter.setPen(QPen(Qt::yellow, 5));
+        painter.setPen(QPen(Qt::yellow, 4));
         selectedZone = &(*i);
+      }
+      else
+      {
+        painter.setPen(QPen(drawablePolygon.pen.color(), 4));
       }
 
       for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
           pointIterator != drawablePolygon.polygon.end(); ++pointIterator)
       {
-        painter.drawEllipse(*pointIterator, 3, 3);
+        painter.drawEllipse(*pointIterator, 2, 2);
       }
     }
     else
@@ -173,149 +199,147 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
 
 void USingleImagePainter::mousePressEvent(QMouseEvent *event)
 {
-  if(dispImage)
+  QWidget::mousePressEvent(event);
+
+  if(!dispImage) return;
+
+  const QSize imgSize = dispImage->size();
+  const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
+  // текущая точка в относительных координатах
+  const QPointF point(
+        static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
+        static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
+
+  if(event->button() == Qt::LeftButton)
   {
-    const QSize imgSize = dispImage->size();
-    const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
-    // текущая точка в относительных координатах
-    const QPointF point(
-          static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
-          static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
 
-    if(event->button() == Qt::LeftButton)
+    // если активен режим рисования, добавляем точку фигуре
+    if(drawable)
     {
-
-      // если активен режим рисования, добавляем точку фигуре
-      if(drawable)
+      if(drawMode)
       {
-        if(drawMode)
-        {
-          figures.last().polygon << point;
-        }
-        else
-        {
-          figures.push_back(UDrawablePolygon(-2, QPolygonF() << point, pen));
-          drawMode = true;
-        }
+        figures.last().polygon << point;
       }
       else
       {
-
-        // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
-        if(selectedZone)
-        {
-          QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
-                             point.y() - 5.0 / imgSize.height(),
-                             10.0 / imgSize.width(), 10.0/ imgSize.height());
-          for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
-              pointIterator != selectedZone->polygon.end(); ++pointIterator)
-          {
-            if(arroundPoint.contains(*pointIterator))
-            {
-              // если нашли точку, берем на неё укзатель
-              movingPoint = &(*pointIterator);
-              break;
-            }
-          }
-        }
-
-
-        // выделение зоны
-        for(QList<UDrawablePolygon>::iterator polygonsIterator = figures.begin();
-            polygonsIterator != figures.end(); ++polygonsIterator)
-        {
-          if(polygonsIterator->polygon.containsPoint(point, Qt::OddEvenFill))
-          {
-            if(polygonsIterator->id == selectedZoneId)
-              break;
-
-            selectedZoneId = polygonsIterator->id;
-
-            commitZoneChangeIfModified();
-
-            emit zoneSelected(selectedZoneId);
-            break;
-          }
-        }
+        figures.push_back(UDrawablePolygon(-2, QPolygonF() << point, pen));
+        drawMode = true;
       }
     }
     else
     {
-      if(event->button() == Qt::RightButton)
-      {
 
-        // завершение рисования зоны
-        if(drawMode)
+      // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
+      if(selectedZone)
+      {
+        QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
+                           point.y() - 5.0 / imgSize.height(),
+                           10.0 / imgSize.width(), 10.0/ imgSize.height());
+        for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
+            pointIterator != selectedZone->polygon.end(); ++pointIterator)
         {
-          drawMode = false;
-          emit zoneFinished(figures.last().polygon, dispImage->size());
+          if(arroundPoint.contains(*pointIterator))
+          {
+            // если нашли точку, берем на неё укзатель
+            movingPoint = &(*pointIterator);
+            return;
+          }
+        }
+      }
+
+
+      // выделение зоны
+      for(QList<UDrawablePolygon>::iterator polygonsIterator = figures.begin();
+          polygonsIterator != figures.end(); ++polygonsIterator)
+      {
+        if(polygonsIterator->polygon.containsPoint(point, Qt::OddEvenFill))
+        {
+          if(polygonsIterator->id == selectedZoneId)
+            break;
+
+          selectedZoneId = polygonsIterator->id;
+
+          commitZoneChangeIfModified();
+
+          emit zoneSelected(selectedZoneId);
           return;
         }
-
-
-        // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
-        if(selectedZone)
-        {
-          QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
-                             point.y() - 5.0 / imgSize.height(),
-                             10.0 / imgSize.width(), 10.0/ imgSize.height());
-          for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
-              pointIterator != selectedZone->polygon.end(); ++pointIterator)
-          {
-            if(arroundPoint.contains(*pointIterator))
-            {
-              // если нашли точку, берем на неё укзатель
-              deletePointIterator = pointIterator;
-              pointMenu->exec(event->globalPos());
-
-              QWidget::mousePressEvent(event);
-              return;
-            }
-          }
-        }
-
-
-        // добавление точки на линию
-        if(selectedZone && selectedZone->polygon.size() > 1 && dispImage)
-        {
-          const QLineF pointHLine(
-                  point.x() - 5.0 / imgSize.width(), point.y(),
-                  point.x() + 5.0 / imgSize.width(), point.y());
-
-          const QLineF pointVLine(
-                  point.x(), point.y() - 5.0 / imgSize.height(),
-                  point.x(), point.y() + 5.0 / imgSize.height());
-
-          QPolygonF::iterator secondPI = selectedZone->polygon.begin();
-          ++secondPI;
-          for(QPolygonF::iterator firstPI = selectedZone->polygon.begin();
-              firstPI != selectedZone->polygon.end(); ++firstPI)
-          {
-            const QLineF polyLine(*firstPI, *secondPI);
-
-            if(QLineF::BoundedIntersection == polyLine.intersect(pointHLine, NULL)
-               || QLineF::BoundedIntersection == polyLine.intersect(pointVLine, NULL))
-            {
-              additionPoint.first = secondPI;
-              additionPoint.second = point;
-
-              lineMenu->exec(event->globalPos());
-              break;
-            }
-
-            ++secondPI;
-            if(secondPI == selectedZone->polygon.end())
-            {
-              secondPI = selectedZone->polygon.begin();
-            }
-          }
-        }
-
       }
     }
   }
+  else
+  {
+    if(event->button() == Qt::RightButton)
+    {
 
-  QWidget::mousePressEvent(event);
+      // завершение рисования зоны
+      if(drawMode)
+      {
+        drawMode = false;
+        emit zoneFinished(figures.last().polygon, dispImage->size());
+        return;
+      }
+
+
+      // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
+      if(selectedZone)
+      {
+        QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
+                           point.y() - 5.0 / imgSize.height(),
+                           10.0 / imgSize.width(), 10.0/ imgSize.height());
+        for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
+            pointIterator != selectedZone->polygon.end(); ++pointIterator)
+        {
+          if(arroundPoint.contains(*pointIterator))
+          {
+            // если нашли точку, берем на неё укзатель
+            deletePointIterator = pointIterator;
+            pointMenu->exec(event->globalPos());
+
+            return;
+          }
+        }
+      }
+
+
+      // добавление точки на линию
+      if(selectedZone && selectedZone->polygon.size() > 1)
+      {
+        const QLineF pointHLine(
+                point.x() - 5.0 / imgSize.width(), point.y(),
+                point.x() + 5.0 / imgSize.width(), point.y());
+
+        const QLineF pointVLine(
+                point.x(), point.y() - 5.0 / imgSize.height(),
+                point.x(), point.y() + 5.0 / imgSize.height());
+
+        QPolygonF::iterator secondPI = selectedZone->polygon.begin();
+        ++secondPI;
+        for(QPolygonF::iterator firstPI = selectedZone->polygon.begin();
+            firstPI != selectedZone->polygon.end(); ++firstPI)
+        {
+          const QLineF polyLine(*firstPI, *secondPI);
+
+          if(QLineF::BoundedIntersection == polyLine.intersect(pointHLine, NULL)
+             || QLineF::BoundedIntersection == polyLine.intersect(pointVLine, NULL))
+          {
+            additionPoint.first = secondPI;
+            additionPoint.second = point;
+
+            lineMenu->exec(event->globalPos());
+            break;
+          }
+
+          ++secondPI;
+          if(secondPI == selectedZone->polygon.end())
+          {
+            secondPI = selectedZone->polygon.begin();
+          }
+        }
+      }
+
+    }
+  }
 }
 
 void USingleImagePainter::mouseReleaseEvent(QMouseEvent *event)

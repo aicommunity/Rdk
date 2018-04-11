@@ -6,15 +6,15 @@
 #include "UComponentPropertySelectionWidget.h"
 #include <QFileDialog>
 
-UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
-    UVisualControllerWidget(parent),
+UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app, QString settingsFile, QString settingsGroup) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UImagesWidget)
 {
-    setAccessibleName("UImagesWidget");
+    setAccessibleName(settingsGroup);
     /*rowsCounter = 1;
     columnsCounter = 1;
-    showLegend = true;
-    imagesSizeMod = 0;*/
+    showLegend = true;*/
+    imagesSizeMod = 0;
     singleImageMode = false;
 
     UpdateInterval = 0;
@@ -23,7 +23,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
 
     ui->setupUi(this);
 
-    readSettings(settingsFile, settingsGroup);
+    //readSettings(settingsFile, settingsGroup);
 
     //главное контекстное меню
     QAction *actionSeparator1 = new QAction(this);
@@ -77,31 +77,7 @@ UImagesWidget::~UImagesWidget()
 
 void UImagesWidget::AUpdateInterface()
 {
-    /*for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-    {
 
-        int calcChannel = indChannels?(*i)->getCalcChannel():Core_GetSelectedChannelIndex();
-
-        int copy_res=MModel_CopyComponentBitmapOutputHeader(
-                        calcChannel,
-                        (*i)->getComponentName().toLocal8Bit(),
-                        (*i)->getComponentPropertyName().toLocal8Bit(), &bmp_param);
-
-        if(copy_res == 0)
-        {
-            tempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
-            MModel_CopyComponentBitmapOutput(
-                        calcChannel,
-                        (*i)->getComponentName().toLocal8Bit(),
-                        (*i)->getComponentPropertyName().toLocal8Bit(), &tempBmp);
-            (*i)->setImage(fromUBitmap(&tempBmp));
-        }
-        else
-        {
-            (*i)->setImage(QImage());
-        }
-        (*i)->reDrawWidget();
-    }*/
 }
 
 void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName)
@@ -177,85 +153,90 @@ void UImagesWidget::selectZone(int id)
   selectedImage->selectZone(id);
 }
 
-void UImagesWidget::readSettings(QString file, QString group)
+void UImagesWidget::ASaveParameters()
 {
-    settingsFileName = file;
+  if(!application) return;
 
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt", QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  settings.setValue("geometry", saveGeometry());
+  settings.setValue("showLegend", ui->checkBoxShowLegend->isChecked());
+  settings.setValue("IndChannels", ui->checkBoxIndChannels->isChecked());
+  settings.setValue("imagesSizeMod", imagesSizeMod);
+  settings.setValue("columnsCounter", columnsCounter);
+  settings.setValue("rowsCounter", rowsCounter);
 
-    restoreGeometry(settings.value("geometry").toByteArray());
+  for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
+  {
+      if((*i)->getConnected())
+      settings.setValue(
+                  QString::number((*i)->getRow())+"x"+QString::number((*i)->getColumn()),
+                  QString::number((*i)->getCalcChannel())+"*"+(*i)->getComponentName()+"*"+(*i)->getComponentPropertyName());
+  }
 
-    ui->checkBoxShowLegend->setChecked(settings.value("showLegend").toBool());
-    ui->checkBoxIndChannels->setChecked(settings.value("IndChannels").toBool());
-
-    imagesSizeMod = settings.value("imagesSizeMod").toInt();
-    switch(imagesSizeMod)
-    {
-    case 0:
-        ui->radioButtonOriginalSize->setChecked(true);
-        break;
-    case 1:
-        ui->radioButtonPropSize->setChecked(true);
-        break;
-    case 2:
-        ui->radioButtonTiledSize->setChecked(true);
-        break;
-    }
-
-    //окошки images
-    //зачистка
-    clearImagesWidget();
-
-    columnsCounter = settings.value("columnsCounter").toInt();
-    rowsCounter = settings.value("rowsCounter").toInt();
-    if(rowsCounter == 0 || columnsCounter == 0)
-    {
-        rowsCounter = 1;
-        columnsCounter = 1;
-    }
-
-    //заполнение
-    for(int i = 0; i < rowsCounter; i++)
-        for(int j = 0; j < columnsCounter; j++)
-        {
-            USingleImageWidget *item = addSingleItem(i, j);
-            QString source = settings.value(QString::number(i)+"x"+QString::number(j)).toString();
-            if(!source.isEmpty())
-            {
-                QStringList list = source.split("*");
-                if (list.size() == 3)
-                {
-                    item->setCalcChannel(list.at(0).toInt());
-                    item->setComponentName(list.at(1));
-                    item->setComponentPropertyName(list.at(2));
-                }
-            }
-        }
-
-    settings.endGroup();
+  settings.endGroup();
 }
 
-void UImagesWidget::writeSettings(QString file, QString group)
+void UImagesWidget::ALoadParameters()
 {
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("showLegend", ui->checkBoxShowLegend->isChecked());
-    settings.setValue("IndChannels", ui->checkBoxIndChannels->isChecked());
-    settings.setValue("imagesSizeMod", imagesSizeMod);
-    settings.setValue("columnsCounter", columnsCounter);
-    settings.setValue("rowsCounter", rowsCounter);
+  if(!application) return;
 
-    for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-    {
-        if((*i)->getConnected())
-        settings.setValue(
-                    QString::number((*i)->getRow())+"x"+QString::number((*i)->getColumn()),
-                    QString::number((*i)->getCalcChannel())+"*"+(*i)->getComponentName()+"*"+(*i)->getComponentPropertyName());
-    }
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
 
-    settings.endGroup();
+  restoreGeometry(settings.value("geometry").toByteArray());
+
+  ui->checkBoxShowLegend->setChecked(settings.value("showLegend").toBool());
+  ui->checkBoxIndChannels->setChecked(settings.value("IndChannels").toBool());
+
+  imagesSizeMod = settings.value("imagesSizeMod").toInt();
+  switch(imagesSizeMod)
+  {
+  case 0:
+      ui->radioButtonOriginalSize->setChecked(true);
+      break;
+  case 1:
+      ui->radioButtonPropSize->setChecked(true);
+      break;
+  case 2:
+      ui->radioButtonTiledSize->setChecked(true);
+      break;
+  }
+
+  //окошки images
+  //зачистка
+  clearImagesWidget();
+
+  columnsCounter = settings.value("columnsCounter").toInt();
+  rowsCounter = settings.value("rowsCounter").toInt();
+  if(rowsCounter == 0 || columnsCounter == 0)
+  {
+      rowsCounter = 1;
+      columnsCounter = 1;
+  }
+
+  //заполнение
+  for(int i = 0; i < rowsCounter; i++)
+      for(int j = 0; j < columnsCounter; j++)
+      {
+          USingleImageWidget *item = addSingleItem(i, j);
+          QString source = settings.value(QString::number(i)+"x"+QString::number(j)).toString();
+          if(!source.isEmpty())
+          {
+              QStringList list = source.split("*");
+              if (list.size() == 3)
+              {
+                  item->setCalcChannel(list.at(0).toInt());
+                  item->setComponentName(list.at(1));
+                  item->setComponentPropertyName(list.at(2));
+              }
+          }
+      }
+
+  settings.endGroup();
 }
 
 void UImagesWidget::actionSaveToBMP()
@@ -294,7 +275,7 @@ void UImagesWidget::actionSaveAllToJPEG()
 
 void UImagesWidget::actionSelectSource()
 {
-    UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
+    UComponentPropertySelectionWidget dialog(this, 3, application);
     dialog.componentsList->setChannelsListVisible(ui->checkBoxIndChannels->isChecked());
 
     if (dialog.exec() && selectedImage)
@@ -303,7 +284,8 @@ void UImagesWidget::actionSelectSource()
         selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
         selectedImage->setCalcChannel(dialog.componentsList->getSelectedChannelIndex());
     }
-    dialog.writeSettings(settingsFileName);
+    dialog.writeSettings(QString::fromLocal8Bit(
+                           application->GetProjectPath().c_str())+"settings.qt");
 }
 
 void UImagesWidget::actionAddColumn()
@@ -407,11 +389,11 @@ void UImagesWidget::selectImage(USingleImageWidget *item)
   if(item && item != selectedImage)
   {
     selectedImage = item;
+    emit selectedImageChannel(selectedImage->getCalcChannel());
+
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
       (*i)->setSelected(false);
     item->setSelected(true);
-
-    emit selectedImageChannel(selectedImage->getCalcChannel());
   }
 }
 

@@ -23,9 +23,14 @@ class UComponentLinksWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UComponentLinksWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentLinksWidget");
+    explicit UComponentLinksWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UComponentLinksWidget();
     void AUpdateInterface();    
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 
 public slots:
     ///Инициализация окна для просмотра входов/выходов/связей одного компонента
@@ -44,19 +49,11 @@ public slots:
     ///разрушение выделенной связи
     void breakLink();
 
-    ///считывание файлов настроек
-    void readSettings(QString file, QString group = "UComponentLinksWidget");
-    ///запись файлов настроек
-    void writeSettings(QString file, QString group = "UComponentLinksWidget");
-
 signals:
     void updateScheme(bool forceUpdate);
 
 private:
     Ui::UComponentLinksWidget *ui;
-
-    QString settingsFileName;
-    QString settingsGroupName;
 
     ///Имя компонента источника
     QString firstComponentName;

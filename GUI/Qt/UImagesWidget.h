@@ -14,7 +14,7 @@ class UImagesWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UImagesWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UImagesWidget");
+    explicit UImagesWidget(QWidget *parent = 0, RDK::UApplication *app = NULL, QString settingsFile = "settings.qt", QString settingsGroup = "UImagesWidget");
     virtual ~UImagesWidget();
     void AUpdateInterface();
 
@@ -40,12 +40,10 @@ public:
     /// устанавливает зону как выбранную в выделеноне изображение (selectedImage)
     void selectZone(int id);
 
-public slots:
-    ///считывание файлов настроек
-    void readSettings(QString file, QString group = "UImagesWidget");
-    ///запись файлов настроек
-    void writeSettings(QString file, QString group = "UImagesWidget");
-
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 signals:
     /// —игнал отправл€ет канал текущего выбранного изображени€, при смене selectedImage
     void selectedImageChannel(int channel);
@@ -71,6 +69,7 @@ private slots:
     /// ќтображать изображение дл€ всех виджетов, использу€ его индивидуальный канал
     void setIndChannels(bool b);
 
+    // images size policy
     void setOriginalSize();
     void setTiledSize();
     void setPropSize();
@@ -84,8 +83,6 @@ private slots:
 
 private:
     Ui::UImagesWidget *ui;
-
-    QString settingsFileName;
 
     //buffers
     RDK::UBitmap tempBmp;
