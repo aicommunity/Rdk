@@ -29,7 +29,7 @@ public:
 
     // ----- Проброс в UImagePainter -----
     /// Устанавливает набор полигонов на выбранное изображение (selectedImage)
-    void setZones(const QList<UDrawablePolygon> &polygons);
+    void setZones(const QList<UDrawablePolygon> &polygons, int imageNum = -1);
 
     /// Устанавливает QPen в выделенное изображение (selectedImage)
     void setImagePen(const QPen &value);

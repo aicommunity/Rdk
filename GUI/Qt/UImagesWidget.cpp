@@ -133,9 +133,19 @@ void UImagesWidget::setEnableChanges(bool value)
   ui->checkBoxIndChannels->setEnabled(value);
 }
 
-void UImagesWidget::setZones(const QList<UDrawablePolygon> &polygons)
+void UImagesWidget::setZones(const QList<UDrawablePolygon> &polygons, int imageNum)
 {
-  if(selectedImage) selectedImage->setZones(polygons);
+  if(imageNum == -1 && selectedImage)
+  {
+    selectedImage->setZones(polygons);
+    return;
+  }
+
+  USingleImageWidget *item = dynamic_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+  if (item)
+  {
+   item->setZones(polygons);
+  }
 }
 
 void UImagesWidget::setImagePen(const QPen &value)

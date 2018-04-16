@@ -169,7 +169,7 @@ void UGEngineControllWidget::actionLoadConfig()
       /*QStringList list = configFileName.split("/");
       list.pop_back();*/
 
-      //RDK::UIVisualControllerStorage::UpdateInterface(true);
+      RDK::UIVisualControllerStorage::UpdateInterface(true);
       //drawEngine->updateScheme(true);
     }
     catch(RDK::UException& e)
@@ -384,6 +384,4 @@ void UGEngineControllWidget::readSettings()
     imagesWindow->restoreState(settings.value("ImagesState").toByteArray());
 
     settings.endGroup();
-
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
 }

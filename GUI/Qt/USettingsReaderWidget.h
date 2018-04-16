@@ -3,11 +3,18 @@
 
 #include "UVisualControllerWidget.h"
 
+/// Предоставляет возможность произволным класссам получать события load/save Parameters из RDK
+///
+/// Получает на вход объект и две функции, при событиях:
+/// RDK::UIVisualControllerStorage::LoadParameters
+/// RDK::UIVisualControllerStorage::SaveParameters
+/// вызывает переданные ему в конструктор функции
 template<class T>
 class USettingsReaderWidget : public UVisualControllerWidget
 {
 public:
-  explicit USettingsReaderWidget(QWidget *parent = nullptr, T* obj = NULL, void (T::*load)() = NULL, void (T::*save)() = NULL)
+  explicit USettingsReaderWidget(QWidget *parent = nullptr, T* obj = NULL,
+                                 void (T::*load)() = NULL, void (T::*save)() = NULL)
   {
     object = obj;
     loadFunc = load;
