@@ -240,6 +240,12 @@ RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
 		 : full_name.substr(pos+1);
 }
 
+/// Модифицирует имя файла так, чтобы оно стало относительным относительно заданного пути
+RDK_LIB_TYPE string relative_file_path(const string &path, const string &relative_path_base)
+{
+	return replace_substring(path, relative_path_base, ".\\");
+}
+
 
 /// Заменяет все вхождения подстроки find_str на подстроку replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str )

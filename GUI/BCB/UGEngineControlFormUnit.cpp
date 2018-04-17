@@ -2412,7 +2412,10 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Icon->Assign(Application->Icon);
 
- RdkApplication.SetApplicationFileName(AnsiString(Application->ExeName).c_str());
+ //Исправляем проблему с тем, что путь указан как n:\p\...\р\р\р\..\..\..\р\р\e.exe
+ String ExeName = ExpandFileName(Application->ExeName);
+
+ RdkApplication.SetApplicationFileName(AnsiString(ExeName).c_str());
  // Грузим настройки приложения
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
