@@ -293,6 +293,9 @@ String LogDir;
 bool LogDebugMode;
 int StartupDelay;
 
+///Путь к папке, откуда открывался проект последний раз
+String LastProjectPath;
+
 /// Флаг принудительного сохранения конфигураций в старом формате
 bool UseNewXmlFormatProjectFile;
 

@@ -249,6 +249,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 // ProjectOpenFlag=false;
 //
  AppWinState=true;
+ LastProjectPath="";
 //
 // ProjectAutoSaveStateFlag=false;
 // EventsLogEnabled=true;
@@ -546,6 +547,8 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
+ std::string p = AnsiString(LastProjectPath).c_str();
+ xml.WriteString("LastProjectPath", p);
  xml.SelectNodeForce("Pages");
  xml.DelNodeInternalContent();
  int count=0;
@@ -661,6 +664,9 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
  AutoupdatePropertiesCheckBox->Checked=xml.ReadBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
  AutoupdatePropertiesCheckBoxClick(this);
+ std::string p = xml.ReadString("LastProjectPath", "");
+ LastProjectPath = String(p.c_str());
+
 }
 
 // Создает новый проект
@@ -2197,12 +2203,20 @@ void __fastcall TUGEngineControlForm::Performance1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
 {
- if(!RdkApplication.GetLastProjectsList().empty())
-  OpenDialog->InitialDir=ExtractFilePath(RdkApplication.GetLastProjectsList().front().c_str());
+ if(LastProjectPath=="")
+ {
+	 if(!RdkApplication.GetLastProjectsList().empty())
+	  OpenDialog->InitialDir=ExtractFilePath(RdkApplication.GetLastProjectsList().front().c_str());
+ }
+ else
+ {
+	 OpenDialog->InitialDir=LastProjectPath;
+ }
 
  if(!OpenDialog->Execute())
   return;
 
+ LastProjectPath = ExtractFilePath(OpenDialog->FileName);
  OpenProject(OpenDialog->FileName);
 }
 //---------------------------------------------------------------------------
