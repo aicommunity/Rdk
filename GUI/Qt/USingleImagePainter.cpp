@@ -7,10 +7,10 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   loaderMutex = NULL;
   drawMode = false;
   drawable = false;
-  selectedZoneId = -1;
-  selectedZone = NULL;
+  selectedPolygonId = -1;
+  selectedPolygon = NULL;
   movingPoint = NULL;
-  isZoneModified = false;
+  isPolygonModified = false;
 
   lineMenu = new QMenu(this);
   QAction *actionAddPoint = new QAction(lineMenu);
@@ -41,8 +41,8 @@ void USingleImagePainter::setDrawable(bool value)
   drawMode = false;
   if(value)
   {
-    selectedZoneId = -1;
-    commitZoneChangeIfModified();
+    selectedPolygonId = -1;
+    commitPolygonChangeIfModified();
   }
 }
 
@@ -51,27 +51,26 @@ bool USingleImagePainter::isDrawable() const
   return drawable;
 }
 
-void USingleImagePainter::setZones(const QList<UDrawablePolygon> &polygons)
+void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygons)
 {
-  //commitZoneChangeIfModified();
-  if(isZoneModified)
+  if(isPolygonModified)
   {
-    isZoneModified = false;
-    if(selectedZone && dispImage)
-      emit zoneModified(*selectedZone, dispImage->size());
+    isPolygonModified = false;
+    if(selectedPolygon && dispImage)
+      emit polygonModified(*selectedPolygon, dispImage->size());
   }
   else
   {
-    figures = polygons;
+    this->polygons = polygons;
   }
 }
 
-void USingleImagePainter::selectZone(int id)
+void USingleImagePainter::selectPolygon(int id)
 {
-  commitZoneChangeIfModified();
+  commitPolygonChangeIfModified();
 
-  selectedZoneId = id;
-  selectedZone = NULL;
+  selectedPolygonId = id;
+  selectedPolygon = NULL;
 }
 
 QPen USingleImagePainter::getPen() const
@@ -84,13 +83,19 @@ void USingleImagePainter::setPen(const QPen &value)
   pen = value;
 }
 
-void USingleImagePainter::emitSelectedZone()
+int USingleImagePainter::getSelectedPolygonID()
 {
-  if(selectedZoneId >= 0)
-  {
-    //commitZoneChangeIfModified();
-    emit zoneSelected(selectedZoneId);
-  }
+  return selectedPolygonId;
+}
+
+void USingleImagePainter::setDrawRects(bool value)
+{
+  drawableRect = value;
+}
+
+void USingleImagePainter::setRectangles(const QPair<QRectF, QRectF> &rects)
+{
+  rectangles = rects;
 }
 
 QPair<int, int> USingleImagePainter::calcImgShift(const QSize &widgetSize, const QSize &imageSize) const
@@ -102,38 +107,38 @@ QPair<int, int> USingleImagePainter::calcImgShift(const QSize &widgetSize, const
           widgetSize.height()/2 - imageSize.height()/2 : 0);
 }
 
-void USingleImagePainter::commitZoneChangeIfModified()
+void USingleImagePainter::commitPolygonChangeIfModified()
 {
-  if(isZoneModified)
+  if(isPolygonModified)
   {
-    isZoneModified = false;
-    if(selectedZone && dispImage)
-      emit zoneModified(*selectedZone, dispImage->size());
+    isPolygonModified = false;
+    if(selectedPolygon && dispImage)
+      emit polygonModified(*selectedPolygon, dispImage->size());
   }
 }
 
 void USingleImagePainter::addPoint()
 {
-  if(selectedZone)
+  if(selectedPolygon)
   {
-    if(additionPoint.first != selectedZone->polygon.begin()
-       && additionPoint.first != selectedZone->polygon.end())
-      selectedZone->polygon.insert(additionPoint.first, additionPoint.second);
+    if(additionPoint.first != selectedPolygon->polygon.begin()
+       && additionPoint.first != selectedPolygon->polygon.end())
+      selectedPolygon->polygon.insert(additionPoint.first, additionPoint.second);
     else
-      selectedZone->polygon.push_back(additionPoint.second);
+      selectedPolygon->polygon.push_back(additionPoint.second);
 
-    isZoneModified = true;
+    isPolygonModified = true;
   }
 }
 
 void USingleImagePainter::deletePoint()
 {
-  if(selectedZone)
+  if(selectedPolygon)
   {
-    selectedZone->polygon.erase(deletePointIterator);
-    isZoneModified = true;
-    if(selectedZone->polygon.size() < 2)
-      commitZoneChangeIfModified();
+    selectedPolygon->polygon.erase(deletePointIterator);
+    isPolygonModified = true;
+    if(selectedPolygon->polygon.size() < 2)
+      commitPolygonChangeIfModified();
   }
 }
 
@@ -153,8 +158,8 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
   loaderMutex->unlock();
 
   // отрисовка всех полигонов
-  selectedZone = NULL;
-  for(QList<UDrawablePolygon>::iterator i = figures.begin(); i != figures.end(); ++i)
+  selectedPolygon = NULL;
+  for(QList<UDrawablePolygon>::iterator i = polygons.begin(); i != polygons.end(); ++i)
   {
     // перевод полигона из относительных координат в экранные
     UDrawablePolygon drawablePolygon = *i;
@@ -166,16 +171,16 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
       pointIterator->setY(pointIterator->y() * imgSize.height() + dxdy.second);
     }
 
-    // проверка зоны, если она выбранная selectedZone то устанавливаем желтую кисть,
-    // отдельно отрисовываем каждую вершинку и запоминаем указатель на выбранную зону
+    // проверка полигона, если он выбран selectedPolygon то устанавливаем желтую кисть,
+    // отдельно отрисовываем каждую вершинку и запоминаем указатель на выбранный ролигон
     //
-    // если зона рисуется drawMode, просто отрисовываем точки зоны
-    if( selectedZoneId == drawablePolygon.id || drawablePolygon.id == -2)
+    // если полиг рисуется drawMode, просто отрисовываем вершины полигона
+    if( selectedPolygonId == drawablePolygon.id || drawablePolygon.id == -2)
     {
-      if(selectedZoneId == drawablePolygon.id)
+      if(selectedPolygonId == drawablePolygon.id)
       {
         painter.setPen(QPen(Qt::yellow, 4));
-        selectedZone = &(*i);
+        selectedPolygon = &(*i);
       }
       else
       {
@@ -195,6 +200,21 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
 
     painter.drawPolygon(drawablePolygon.polygon);
   }
+
+  // отрисовка прямоугольников
+  painter.setPen(QPen(Qt::green, 3));
+  QRectF rect(rectangles.first.x() * imgSize.width() + dxdy.first,
+              rectangles.first.y() * imgSize.height() + dxdy.second,
+              rectangles.first.width() * imgSize.width(),
+              rectangles.first.height() * imgSize.height());
+  painter.drawRect(rect);
+
+  painter.setPen(QPen(Qt::cyan, 3));
+  rect.setRect(rectangles.second.x() * imgSize.width() + dxdy.first,
+               rectangles.second.y() * imgSize.height() + dxdy.second,
+               rectangles.second.width() * imgSize.width(),
+               rectangles.second.height() * imgSize.height());
+  painter.drawRect(rect);
 }
 
 void USingleImagePainter::mousePressEvent(QMouseEvent *event)
@@ -218,25 +238,25 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     {
       if(drawMode)
       {
-        figures.last().polygon << point;
+        polygons.last().polygon << point;
       }
       else
       {
-        figures.push_back(UDrawablePolygon(-2, QPolygonF() << point, pen));
+        polygons.push_back(UDrawablePolygon(-2, QPolygonF() << point, pen));
         drawMode = true;
       }
     }
     else
     {
 
-      // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
-      if(selectedZone)
+      // если есть выбранный полигон, проверяем не попали ли мы в вершину полигона
+      if(selectedPolygon)
       {
         QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
                            point.y() - 5.0 / imgSize.height(),
                            10.0 / imgSize.width(), 10.0/ imgSize.height());
-        for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
-            pointIterator != selectedZone->polygon.end(); ++pointIterator)
+        for(QPolygonF::iterator pointIterator = selectedPolygon->polygon.begin();
+            pointIterator != selectedPolygon->polygon.end(); ++pointIterator)
         {
           if(arroundPoint.contains(*pointIterator))
           {
@@ -248,22 +268,30 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
 
 
-      // выделение зоны
-      for(QList<UDrawablePolygon>::iterator polygonsIterator = figures.begin();
-          polygonsIterator != figures.end(); ++polygonsIterator)
+      // выделение полигона
+      for(QList<UDrawablePolygon>::iterator polygonsIterator = polygons.begin();
+          polygonsIterator != polygons.end(); ++polygonsIterator)
       {
         if(polygonsIterator->polygon.containsPoint(point, Qt::OddEvenFill))
         {
-          if(polygonsIterator->id == selectedZoneId)
+          if(polygonsIterator->id == selectedPolygonId)
             break;
 
-          selectedZoneId = polygonsIterator->id;
+          selectedPolygonId = polygonsIterator->id;
 
-          commitZoneChangeIfModified();
+          commitPolygonChangeIfModified();
 
-          emit zoneSelected(selectedZoneId);
+          emit polygonSelected(selectedPolygonId);
           return;
         }
+      }
+
+
+      // рисование прямоугольников
+      if(drawableRect)
+      {
+        drawRectMode = LMBRect;
+        rectangles.first.setCoords(point.x(), point.y(), 0, 0);
       }
     }
   }
@@ -272,23 +300,23 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     if(event->button() == Qt::RightButton)
     {
 
-      // завершение рисования зоны
+      // завершение рисования нового полигона
       if(drawMode)
       {
         drawMode = false;
-        emit zoneFinished(figures.last().polygon, dispImage->size());
+        emit polygonFinished(polygons.last().polygon, dispImage->size());
         return;
       }
 
 
-      // если есть выбранная зона, проверяем не попали ли мы в вершину зоны
-      if(selectedZone)
+      // если есть выбранный полигон, проверяем не попали ли мы в вершину полигона
+      if(selectedPolygon)
       {
         QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
                            point.y() - 5.0 / imgSize.height(),
                            10.0 / imgSize.width(), 10.0/ imgSize.height());
-        for(QPolygonF::iterator pointIterator = selectedZone->polygon.begin();
-            pointIterator != selectedZone->polygon.end(); ++pointIterator)
+        for(QPolygonF::iterator pointIterator = selectedPolygon->polygon.begin();
+            pointIterator != selectedPolygon->polygon.end(); ++pointIterator)
         {
           if(arroundPoint.contains(*pointIterator))
           {
@@ -303,7 +331,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
 
 
       // добавление точки на линию
-      if(selectedZone && selectedZone->polygon.size() > 1)
+      if(selectedPolygon && selectedPolygon->polygon.size() > 1)
       {
         const QLineF pointHLine(
                 point.x() - 5.0 / imgSize.width(), point.y(),
@@ -313,10 +341,10 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
                 point.x(), point.y() - 5.0 / imgSize.height(),
                 point.x(), point.y() + 5.0 / imgSize.height());
 
-        QPolygonF::iterator secondPI = selectedZone->polygon.begin();
+        QPolygonF::iterator secondPI = selectedPolygon->polygon.begin();
         ++secondPI;
-        for(QPolygonF::iterator firstPI = selectedZone->polygon.begin();
-            firstPI != selectedZone->polygon.end(); ++firstPI)
+        for(QPolygonF::iterator firstPI = selectedPolygon->polygon.begin();
+            firstPI != selectedPolygon->polygon.end(); ++firstPI)
         {
           const QLineF polyLine(*firstPI, *secondPI);
 
@@ -331,13 +359,20 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
           }
 
           ++secondPI;
-          if(secondPI == selectedZone->polygon.end())
+          if(secondPI == selectedPolygon->polygon.end())
           {
-            secondPI = selectedZone->polygon.begin();
+            secondPI = selectedPolygon->polygon.begin();
           }
         }
       }
 
+
+      // рисование прямоугольников
+      if(drawableRect)
+      {
+        drawRectMode = RMBRect;
+        rectangles.first.setCoords(point.x(), point.y(), 0, 0);
+      }
     }
   }
 }
@@ -349,22 +384,66 @@ void USingleImagePainter::mouseReleaseEvent(QMouseEvent *event)
     movingPoint = NULL;
   }
 
+  if(drawableRect)
+  {
+    drawRectMode = NoRect;
+    emit rectanglesChanged(rectangles);
+  }
+
   QWidget::mouseReleaseEvent(event);
 }
 
 void USingleImagePainter::mouseMoveEvent(QMouseEvent *event)
 {
-  // если захвачена точка зоны, двигаем точку
-  if(dispImage && movingPoint)
+  QWidget::mouseMoveEvent(event);
+
+  // если захвачена вершина полигона, двигаем точку
+  if(dispImage && (movingPoint || drawableRect))
   {
     const QSize imgSize = dispImage->size();
     QPair<int, int> dxdy = calcImgShift(size(), imgSize);
-    movingPoint->setX(static_cast<double>(event->x() - dxdy.first)/imgSize.width());
-    movingPoint->setY(static_cast<double>(event->y() - dxdy.second)/imgSize.height());
-    isZoneModified = true;
+    const QPointF point(
+          static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
+          static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
+
+    if(movingPoint)
+    {
+//      movingPoint->setX(static_cast<double>(event->x() - dxdy.first)/imgSize.width());
+//      movingPoint->setY(static_cast<double>(event->y() - dxdy.second)/imgSize.height());
+      *movingPoint = point;
+      isPolygonModified = true;
+      return;
+    }
+
+    if(drawableRect)
+    {
+      if(drawRectMode == NoRect)
+        return;
+
+      QRectF rect;
+      qreal x1 = drawRectMode == LMBRect ? rectangles.first.x() : rectangles.second.x(),
+            y1 = drawRectMode == LMBRect ? rectangles.first.y() : rectangles.second.y(),
+            x2 = point.x(),
+            y2 = point.y();
+
+      if(x1 > x2)
+      {
+        if(y1 > y2) rect.setCoords(x2, y2, x1, y1);
+        else rect.setCoords(x2, y1, x1, y2);
+      }
+      else
+      {
+        if(y1 > y2) rect.setCoords(x1, y2, x2, y1);
+        else rect.setCoords(x1, y1, x2, y2);
+      }
+
+      if(drawRectMode == LMBRect)
+        rectangles.first = rect;
+      else
+        rectangles.second = rect;
+    }
   }
 
-  QWidget::mouseMoveEvent(event);
 }
 
 void USingleImagePainter::setImage(QImage *image)

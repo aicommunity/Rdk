@@ -6,11 +6,11 @@
 #include "UComponentPropertySelectionWidget.h"
 #include <QFileDialog>
 
-UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app, QString settingsFile, QString settingsGroup) :
+UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UImagesWidget)
 {
-    setAccessibleName(settingsGroup);
+    setAccessibleName("UImagesWidget");
     /*rowsCounter = 1;
     columnsCounter = 1;
     showLegend = true;*/
@@ -119,7 +119,7 @@ void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLong
 
 void UImagesWidget::selectImage(int id)
 {
-  selectImage(dynamic_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(id)->widget()));
+  selectImage(qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(id)->widget()));
 }
 
 void UImagesWidget::setEnableChanges(bool value)
@@ -133,18 +133,18 @@ void UImagesWidget::setEnableChanges(bool value)
   ui->checkBoxIndChannels->setEnabled(value);
 }
 
-void UImagesWidget::setZones(const QList<UDrawablePolygon> &polygons, int imageNum)
+void UImagesWidget::setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum)
 {
   if(imageNum == -1 && selectedImage)
   {
-    selectedImage->setZones(polygons);
+    selectedImage->setPolygons(polygons);
     return;
   }
 
-  USingleImageWidget *item = dynamic_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+  USingleImageWidget *item = qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
   if (item)
   {
-   item->setZones(polygons);
+   item->setPolygons(polygons);
   }
 }
 
@@ -158,9 +158,9 @@ void UImagesWidget::setDrawable(bool value)
   selectedImage->setDrawable(value);
 }
 
-void UImagesWidget::selectZone(int id)
+void UImagesWidget::selectPolygon(int id)
 {
-  selectedImage->selectZone(id);
+  selectedImage->selectPolygon(id);
 }
 
 void UImagesWidget::ASaveParameters()
@@ -458,9 +458,9 @@ USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
     imagesList.push_back(item);
     connect(item, SIGNAL(selectionSignal(USingleImageWidget*)), this, SLOT(selectImage(USingleImageWidget*)));
     connect(item, SIGNAL(fullScreenSignal(USingleImageWidget*)), this, SLOT(showFullScreenImage(USingleImageWidget*)));
-    connect(item, SIGNAL(zoneFinished(QPolygonF, QSize)), this, SIGNAL(zoneFinished(QPolygonF, QSize)));
-    connect(item, SIGNAL(zoneModified(UDrawablePolygon, QSize)), this, SIGNAL(zoneModified(UDrawablePolygon, QSize)));
-    connect(item, SIGNAL(zoneSelected(int)), this, SIGNAL(zoneSelected(int)));
+    connect(item, SIGNAL(polygonFinished(QPolygonF, QSize)), this, SIGNAL(polygonFinished(QPolygonF, QSize)));
+    connect(item, SIGNAL(polygonModified(UDrawablePolygon, QSize)), this, SIGNAL(polygonModified(UDrawablePolygon, QSize)));
+    connect(item, SIGNAL(polygonSelected(int)), this, SIGNAL(polygonSelected(int)));
     selectImage(item);
     return item;
 }

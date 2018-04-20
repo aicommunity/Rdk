@@ -27,9 +27,9 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     connect(this       , SIGNAL(loadImage(QSize))                     , imageLoader, SLOT(loadImage(QSize)));
     connect(this       , SIGNAL(resizeImage(QSize))                   , imageLoader, SLOT(resizeImage(QSize)));
     connect(painter    , SIGNAL(setedImageSize(QSize))                , this       , SLOT(setImageSizeInfo(QSize)));
-    connect(painter    , SIGNAL(zoneFinished(QPolygonF, QSize))       , this       , SIGNAL(zoneFinished(QPolygonF, QSize)));
-    connect(painter    , SIGNAL(zoneModified(UDrawablePolygon, QSize)), this       , SIGNAL(zoneModified(UDrawablePolygon, QSize)));
-    connect(painter    , SIGNAL(zoneSelected(int))                    , this       , SIGNAL(zoneSelected(int)));
+    connect(painter    , SIGNAL(polygonFinished(QPolygonF, QSize))       , this       , SIGNAL(polygonFinished(QPolygonF, QSize)));
+    connect(painter    , SIGNAL(polygonModified(UDrawablePolygon, QSize)), this       , SIGNAL(polygonModified(UDrawablePolygon, QSize)));
+    connect(painter    , SIGNAL(polygonSelected(int))                    , this       , SIGNAL(polygonSelected(int)));
 
 
     UpdateInterval = 30;
@@ -146,9 +146,9 @@ void USingleImageWidget::setShowChannels(bool value)
       ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
 }
 
-void USingleImageWidget::setZones(const QList<UDrawablePolygon> &polygons)
+void USingleImageWidget::setPolygons(const QList<UDrawablePolygon> &polygons)
 {
-  painter->setZones(polygons);
+  painter->setPolygons(polygons);
 }
 
 void USingleImageWidget::setPainterPen(const QPen &value)
@@ -161,9 +161,9 @@ void USingleImageWidget::setDrawable(bool value)
   painter->setDrawable(value);
 }
 
-void USingleImageWidget::selectZone(int id)
+void USingleImageWidget::selectPolygon(int id)
 {
-  painter->selectZone(id);
+  painter->selectPolygon(id);
 }
 
 int USingleImageWidget::getCalcChannel() const
@@ -230,12 +230,15 @@ void USingleImageWidget::setSelected(bool value)
     if(selected)
     {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Plain);
-        painter->emitSelectedZone();
+
+        int selectedPolygonID = painter->getSelectedPolygonID();
+        if(selectedPolygonID >= 0)
+          emit polygonSelected(selectedPolygonID);
     }
     else
     {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Raised);
-        painter->selectZone(-1);
+        painter->selectPolygon(-1);
     }
 }
 

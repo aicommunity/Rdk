@@ -14,7 +14,7 @@ class UImagesWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UImagesWidget(QWidget *parent = 0, RDK::UApplication *app = NULL, QString settingsFile = "settings.qt", QString settingsGroup = "UImagesWidget");
+    explicit UImagesWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UImagesWidget();
     void AUpdateInterface();
 
@@ -29,7 +29,7 @@ public:
 
     // ----- Проброс в UImagePainter -----
     /// Устанавливает набор полигонов на выбранное изображение (selectedImage)
-    void setZones(const QList<UDrawablePolygon> &polygons, int imageNum = -1);
+    void setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum = -1);
 
     /// Устанавливает QPen в выделенное изображение (selectedImage)
     void setImagePen(const QPen &value);
@@ -38,7 +38,7 @@ public:
     void setDrawable(bool value);
 
     /// устанавливает зону как выбранную в выделеноне изображение (selectedImage)
-    void selectZone(int id);
+    void selectPolygon(int id);
 
     /// запись файла настроек
     virtual void ASaveParameters();
@@ -49,9 +49,9 @@ signals:
     void selectedImageChannel(int channel);
 
     // signals from USingleImagePainter
-    void zoneFinished(QPolygonF, QSize);
-    void zoneModified(UDrawablePolygon, QSize);
-    void zoneSelected(int);
+    void polygonFinished(QPolygonF, QSize);
+    void polygonModified(UDrawablePolygon, QSize);
+    void polygonSelected(int);
 
 private slots:
     void actionSaveToBMP();

@@ -58,7 +58,7 @@ public:
 
     // ----- ѕроброс в UImagePainter -----
     /// ”станавливает набор полигонов на изображение
-    void setZones(const QList<UDrawablePolygon> &polygons);
+    void setPolygons(const QList<UDrawablePolygon> &polygons);
 
     /// ”станавливает QPen в painter
     void setPainterPen(const QPen &value);
@@ -67,7 +67,7 @@ public:
     void setDrawable(bool value);
 
     /// устанавливает зону как выбранную
-    void selectZone(int id);
+    void selectPolygon(int id);
 
 public slots:
     void reDrawWidget();
@@ -86,9 +86,9 @@ signals:
     void resizeImage(QSize value);
 
     // signals from USingleImagePainter
-    void zoneFinished(QPolygonF, QSize);
-    void zoneModified(UDrawablePolygon, QSize);
-    void zoneSelected(int);
+    void polygonFinished(QPolygonF, QSize);
+    void polygonModified(UDrawablePolygon, QSize);
+    void polygonSelected(int);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
@@ -98,25 +98,6 @@ private:
 
     int column;
     int row;
-    /*int calcChannel;
-    QString componentName;
-    QString componentPropertyName;
-    bool showLegend;
-    bool showChannels;
-
-    ///–азмер отображаемого изображени€
-    ///
-    /// 0 - ѕолноразмерное отображение
-    /// 1 - раст€нуть, сохран€€ пропорции
-    /// 2 - раст€нуть на всю область
-    int sizeMode;
-
-
-    bool connected;
-
-    QImage srcImage;
-    QImage transformedImage;
-    */
 
     bool selected;
 

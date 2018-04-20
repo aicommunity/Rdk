@@ -19,7 +19,6 @@
 #include "UCreateConfigurationWizardWidget.h"
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
-#include "UAnalyticsSimpleSettingsWidget.h"
 #include "USettingsReaderWidget.h"
 
 namespace Ui {
