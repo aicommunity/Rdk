@@ -12,6 +12,9 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   movingPoint = NULL;
   isPolygonModified = false;
 
+  drawableRect = false;
+  drawRectMode = NoRect;
+
   lineMenu = new QMenu(this);
   QAction *actionAddPoint = new QAction(lineMenu);
   actionAddPoint->setText("add Point");
