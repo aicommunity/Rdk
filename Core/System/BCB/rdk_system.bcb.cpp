@@ -127,7 +127,8 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 //   PathStripPath(finddata.cFileName);
 //   samplefilename=finddata.cFileName;
 
-   if(samplefilename != "." && samplefilename != ".." && ((!isfile && (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || isfile)))
+   if(samplefilename != "." && samplefilename != ".." && ((!isfile && (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ||
+   														   (isfile && !(finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)))))
    {
     results.push_back(samplefilename);
    }
@@ -142,7 +143,7 @@ int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
 {
  DWORD error=0;
  if(!CopyFileEx(source_file.c_str(), dest_file.c_str(),0,0,
-  false, COPY_FILE_OPEN_SOURCE_FOR_WRITE))
+  false, COPY_FILE_ALLOW_DECRYPTED_DESTINATION | COPY_FILE_OPEN_SOURCE_FOR_WRITE))
  {
   error=GetLastError();
   return error;
@@ -156,16 +157,17 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
  std::vector<std::string> results;
 
  int res=FindFilesList(source_dir, mask, true, results);
+ DWORD error=0;
  if(!res)
  {
   for(size_t i=0;i<results.size();i++)
   {
-   DWORD error=RdkCopyFile(source_dir+results[i],dest_dir+results[i]);
-   if(error != 0)
-	return error;
+   DWORD err=RdkCopyFile(source_dir+results[i],dest_dir+results[i]);
+   if(err != 0)
+	error=err;
   }
  }
- return 0;
+ return error;
 }
 
 /// Функция осуществляет вывод в отладочный лог, если сборка в отладке
