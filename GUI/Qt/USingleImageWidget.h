@@ -69,6 +69,14 @@ public:
     /// устанавливает зону как выбранную
     void selectPolygon(int id);
 
+    /// Устанавливает режим рисования двух прямоугольников левой и правой кнопками мыши на текущий Painter
+    void setDrawRects(bool value);
+
+    /// Устанавливает два прямоугольника в текущий Painter
+    void setRectangles(const QPair<QRectF, QRectF> &rects);
+
+    // ------------------------------
+
 public slots:
     void reDrawWidget();
     void setSize(int value);

@@ -14,6 +14,7 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
 
   drawableRect = false;
   drawRectMode = NoRect;
+  rectangles = qMakePair(QRectF(0.0, 0.0, 0.0, 0.0), QRectF(0.0, 0.0, 0.0, 0.0));
 
   lineMenu = new QMenu(this);
   QAction *actionAddPoint = new QAction(lineMenu);

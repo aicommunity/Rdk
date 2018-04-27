@@ -166,6 +166,16 @@ void USingleImageWidget::selectPolygon(int id)
   painter->selectPolygon(id);
 }
 
+void USingleImageWidget::setDrawRects(bool value)
+{
+  painter->setDrawRects(value);
+}
+
+void USingleImageWidget::setRectangles(const QPair<QRectF, QRectF> &rects)
+{
+  painter->setRectangles(rects);
+}
+
 int USingleImageWidget::getCalcChannel() const
 {
     //return calcChannel;

@@ -32,13 +32,21 @@ public:
     void setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum = -1);
 
     /// Устанавливает QPen в выделенное изображение (selectedImage)
-    void setImagePen(const QPen &value);
+    void setImagePen(const QPen &value, int imageNum = -1);
 
     /// Устанавливает режим рисования для текущего изображения (selectedImage)
-    void setDrawable(bool value);
+    void setDrawable(bool value, int imageNum = -1);
 
-    /// устанавливает зону как выбранную в выделеноне изображение (selectedImage)
-    void selectPolygon(int id);
+    /// устанавливает зону как выбранную в выделеное изображение (selectedImage)
+    void selectPolygon(int id, int imageNum = -1);
+
+    /// Устанавливает режим рисования двух прямоугольников левой и правой кнопками мыши
+    void setDrawRects(bool value, int imageNum = -1);
+
+    /// Устанавливает два прямоугольника в текущий rectangles
+    void setRectangles(const QPair<QRectF, QRectF> &rects, int imageNum = -1);
+
+    // ------------------------------
 
     /// запись файла настроек
     virtual void ASaveParameters();

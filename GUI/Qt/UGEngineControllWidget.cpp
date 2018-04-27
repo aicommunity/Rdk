@@ -31,8 +31,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     if(application == NULL)
       QApplication::exit(-1);
 
-    QString settingsFileName = QString::fromLocal8Bit(application->GetProjectPath().c_str())+"settings.qt";
-
     settings = NULL;
     propertyChanger = NULL;
     drawEngine = NULL;
@@ -44,8 +42,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createTestWidget = NULL;
     statusPanel = NULL;
 
-    settings = new USettingsReaderWidget<UGEngineControllWidget>
-        (this, this, &UGEngineControllWidget::readSettings, &UGEngineControllWidget::writeSettings);
+    settings = new USettingsReaderWidget(this);
+    connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
+    connect(settings, SIGNAL(writeSettings()), this, SLOT(writeSettings()));
 
     propertyChanger = new UComponentPropertyChanger(this, application);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
@@ -137,7 +136,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 UGEngineControllWidget::~UGEngineControllWidget()
 {
     application->UnInit();
-    settings->clear();
     delete ui;
 }
 

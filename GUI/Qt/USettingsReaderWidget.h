@@ -3,51 +3,39 @@
 
 #include "UVisualControllerWidget.h"
 
-/// Предоставляет возможность произволным класссам получать события load/save Parameters из RDK
+/// Предоставляет возможность произволным класссам от QObject получать события load/save Parameters из RDK
 ///
 /// Получает на вход объект и две функции, при событиях:
 /// RDK::UIVisualControllerStorage::LoadParameters
 /// RDK::UIVisualControllerStorage::SaveParameters
 /// вызывает переданные ему в конструктор функции
-template<class T>
+
 class USettingsReaderWidget : public UVisualControllerWidget
 {
-public:
-  explicit USettingsReaderWidget(QWidget *parent = nullptr, T* obj = NULL,
-                                 void (T::*load)() = NULL, void (T::*save)() = NULL)
-  {
-    object = obj;
-    loadFunc = load;
-    saveFunc = save;
-  }
+  Q_OBJECT
 
-  virtual ~USettingsReaderWidget() { clear(); }
+public:
+  explicit USettingsReaderWidget(QWidget *parent = nullptr) :
+    UVisualControllerWidget(parent)
+  {
+
+  }
 
   /// запись файла настроек
   virtual void ASaveParameters()
   {
-    if(object && saveFunc)
-      (object->*saveFunc)();
+    emit writeSetting();
   }
 
   /// считывание файла настроек
   virtual void ALoadParameters()
   {
-    if(object && loadFunc)
-      (object->*loadFunc)();
+    emit readSetting();
   }
 
-  void clear()
-  {
-    object   = NULL;
-    loadFunc = NULL;
-    saveFunc = NULL;
-  }
-
-private:
-  T* object;
-  void (T::*loadFunc)();
-  void (T::*saveFunc)();
+signals:
+  void readSetting();
+  void writeSetting();
 };
 
 #endif // USETTINGSREADERWIDGET_H

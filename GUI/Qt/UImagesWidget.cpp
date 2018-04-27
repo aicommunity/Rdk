@@ -6,6 +6,23 @@
 #include "UComponentPropertySelectionWidget.h"
 #include <QFileDialog>
 
+#define FORWARD_TO_USINGLEIMAGE(gridLayout, selectedImage, imageNum, methodCall) \
+  if (imageNum == -1 && selectedImage) \
+  { \
+    selectedImage->methodCall; \
+  } \
+  else \
+  { \
+    if (!(imageNum < 0) && imageNum < gridLayout->count()) \
+    { \
+      USingleImageWidget *item = qobject_cast<USingleImageWidget*>(gridLayout->itemAt(imageNum)->widget()); \
+      if (item) \
+      { \
+        item->methodCall; \
+      } \
+    } \
+  }
+
 UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UImagesWidget)
@@ -135,7 +152,8 @@ void UImagesWidget::setEnableChanges(bool value)
 
 void UImagesWidget::setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum)
 {
-  if(imageNum == -1 && selectedImage)
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setPolygons(polygons))
+  /*if(imageNum == -1 && selectedImage)
   {
     selectedImage->setPolygons(polygons);
     return;
@@ -145,22 +163,35 @@ void UImagesWidget::setPolygons(const QList<UDrawablePolygon> &polygons, int ima
   if (item)
   {
    item->setPolygons(polygons);
-  }
+  }*/
 }
 
-void UImagesWidget::setImagePen(const QPen &value)
+void UImagesWidget::setImagePen(const QPen &value, int imageNum)
 {
-  if(selectedImage) selectedImage->setPainterPen(value);
+  //if(selectedImage) selectedImage->setPainterPen(value);
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setPainterPen(value))
 }
 
-void UImagesWidget::setDrawable(bool value)
+void UImagesWidget::setDrawable(bool value, int imageNum)
 {
-  selectedImage->setDrawable(value);
+  //selectedImage->setDrawable(value);
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setDrawable(value))
 }
 
-void UImagesWidget::selectPolygon(int id)
+void UImagesWidget::selectPolygon(int id, int imageNum)
 {
-  selectedImage->selectPolygon(id);
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, selectPolygon(id))
+  //selectedImage->selectPolygon(id);
+}
+
+void UImagesWidget::setRectangles(const QPair<QRectF, QRectF> &rects, int imageNum)
+{
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setRectangles(rects))
+}
+
+void UImagesWidget::setDrawRects(bool value, int imageNum)
+{
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setDrawRects(value))
 }
 
 void UImagesWidget::ASaveParameters()

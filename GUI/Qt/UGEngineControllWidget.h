@@ -37,11 +37,11 @@ public:
     explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
 
+public slots:
     // settings
     void readSettings();
     void writeSettings();
 
-public slots:
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
 
@@ -74,7 +74,7 @@ private:
     Ui::UGEngineControllWidget *ui;
 
     // widgets
-    USettingsReaderWidget<UGEngineControllWidget> *settings;
+    USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;

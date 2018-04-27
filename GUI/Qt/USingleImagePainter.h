@@ -52,7 +52,10 @@ public:
 
   // ---------- RECTANGLES --------
 
+  /// Устанавливает режим рисования двух прямоугольников левой и правой кнопками мыши
   void setDrawRects(bool value);
+
+  /// Устанавливает два прямоугольника в текущий rectangles
   void setRectangles(const QPair<QRectF, QRectF> &rects);
 
   // ------------------------------
