@@ -137,6 +137,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 UGEngineControllWidget::~UGEngineControllWidget()
 {
     application->UnInit();
+    settings->clear();
     delete ui;
 }
 

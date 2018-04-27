@@ -21,6 +21,8 @@ public:
     saveFunc = save;
   }
 
+  virtual ~USettingsReaderWidget() { clear(); }
+
   /// запись файла настроек
   virtual void ASaveParameters()
   {
@@ -33,6 +35,13 @@ public:
   {
     if(object && loadFunc)
       (object->*loadFunc)();
+  }
+
+  void clear()
+  {
+    object   = NULL;
+    loadFunc = NULL;
+    saveFunc = NULL;
   }
 
 private:
