@@ -168,6 +168,11 @@ bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
 bool CheckLink(const NameT &itemname,
 						const NameT &connectorname, int connector_c_index=-1);
+
+/// Переключает исходящие связи от 'output_name1' выхода компонента 'item1' на выход 'output_name2' компонента 'item2'
+bool SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide &item2);
+bool SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
+						const NameT &itemname2, const NameT &output_name2);
 // ----------------------
 
 // --------------------------

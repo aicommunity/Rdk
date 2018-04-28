@@ -797,3 +797,87 @@ void __fastcall TUDrawEngineFrame::CopyclasstoClipboard1Click(TObject *Sender)
 
 
 
+void __fastcall TUDrawEngineFrame::SwitchLink1Click(TObject *Sender)
+{
+ StartMoving1->Enabled=false;
+ LongLinkFlag=true;
+ Image->Cursor=crCross;
+ SwitchLink1->Enabled=false;
+ FinishSwitching1->Enabled=true;
+ CancelSwitching1->Enabled=true;
+
+ Createlonglink1->Enabled=false;
+ Breakinputlink1->Enabled=false;
+
+ if(ComponentName.empty())
+ {
+  StartName=DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ else
+ {
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StartName=ComponentName+std::string(".")+found;
+  else
+   StartName=ComponentName;
+ }
+
+ PopupX=-1;
+ PopupY=-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::FinishSwitching1Click(TObject *Sender)
+{
+ if(ComponentName.empty())
+ {
+  StopName=DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ else
+ {
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StopName=ComponentName+std::string(".")+found;
+  else
+   StopName=ComponentName;
+ }
+ PopupX=-1;
+ PopupY=-1;
+
+// if(StartName.empty() || StopName.empty())
+//  return;
+
+ UComponentLinksForm->UComponentLinksFrame->Init(3, StartName,"",StopName);
+ if(UComponentLinksForm->Visible)
+  UComponentLinksForm->Hide();
+ if(UComponentLinksForm->ShowModal() == mrOk)
+ {
+  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
+  ReloadNet();
+  UpdateInterface();
+ }
+
+ Cancellonglink1Click(Sender);
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::CancelSwitching1Click(TObject *Sender)
+{
+ StartX=StartY=StopX=StopY=-1;
+ StartName.clear();
+ StopName.clear();
+
+ SwitchLink1->Enabled=true;
+ FinishSwitching1->Enabled=false;
+ CancelSwitching1->Enabled=false;
+
+ StartMoving1->Enabled=true;
+ Createlonglink1->Enabled=true;
+ Breakinputlink1->Enabled=true;
+
+ Image->Cursor=crDefault;
+ LongLinkFlag=false;//
+}
+//---------------------------------------------------------------------------
+

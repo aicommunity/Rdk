@@ -4711,6 +4711,48 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
  return false;
 }
 
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+int UEngine::Model_SwitchOutputLinks(const char* item_name1, const char* item_property_name1, const char* item_name2, const char* item_property_name2)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!item_name1)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   if(!item_name2)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
+
+   bool temp_res=model->SwitchOutputLinks(item_name1,item_property_name1,item_name2,item_property_name2);
+   if(!temp_res)
+    return RDK_E_MODEL_SWITCH_LINK_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента

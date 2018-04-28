@@ -371,6 +371,87 @@ bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int conne
 
  return false;
 }
+
+bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide &item2)
+{
+ UEPtr<UADItem> pitem1,pitem2;
+ if(!CheckLongId(item1.Id))
+  pitem1=this;
+ else
+  pitem1=dynamic_pointer_cast<UADItem>(GetComponentL(item1.Id,true));
+
+ if(!CheckLongId(item2.Id))
+  pitem2=this;
+ else
+  pitem2=dynamic_pointer_cast<UADItem>(GetComponentL(item2.Id,true));
+
+ if(!pitem1)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item 1 not found: ")+item1.Name);
+  return false;
+ }
+
+ if(!pitem2)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item 2 not found: ")+item2.Name);
+  return false;
+ }
+	  /*
+ UIProperty* property1(0);
+ UIProperty* property2(0);
+ pitem1->FindOutputProperty(item1.Name, property1);
+ pitem2->FindOutputProperty(item2.Name, property2);
+
+ UIPropertyOutput* output_property1(dynamic_cast<UIPropertyOutput*>(property1));
+ UIPropertyOutput* output_property2(dynamic_cast<UIPropertyOutput*>(property2));
+
+ if(!output_property1)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Property 1 not found: ")+item1.Name);
+  return false;
+ }
+
+ if(!output_property2)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Property 2 not found: ")+item2.Name);
+  return false;
+ }
+		 */
+ int num_connectors1=pitem1->GetNumAConnectors(item1.Name);
+ std::vector<UConnector*> conns;
+ std::vector<std::string> conn_names;
+ conn_names.reserve(num_connectors1);
+ conns.reserve(num_connectors1);
+ for(int i=0;i<num_connectors1;i++)
+ {
+  conns.push_back(pitem1->GetAConnectorByIndex(item1.Name, i));
+  std::vector<UCLink> buffer;
+  conns[i]->GetCLink(pitem1, buffer);
+  for(size_t j=0;j<buffer.size();j++)
+   if(buffer[j].OutputName == item1.Name)
+   {
+	conn_names.push_back(buffer[j].InputName);
+    break;
+   }
+ }
+
+ pitem1->DisconnectAll(item1.Name);
+
+ bool res(true);
+ for(size_t i=0;i<conn_names.size();i++)
+ {
+  int c_index(-1);
+  res &=pitem2->Connect(conns[i], item2.Name, conn_names[i], c_index);
+ }
+
+ return res;
+}
+
+bool UNet::SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
+						const NameT &itemname2, const NameT &output_name2)
+{
+ return SwitchOutputLinks(UStringLinkSide(itemname1,output_name1), UStringLinkSide(itemname2,output_name2));
+}
 // ----------------------
 
 

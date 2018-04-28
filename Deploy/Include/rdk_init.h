@@ -919,6 +919,10 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringi
 RDK_LIB_TYPE bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+RDK_LIB_TYPE int RDK_CALL Model_SwitchOutputLinks(const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2);
+RDK_LIB_TYPE int RDK_CALL MModel_SwitchOutputLinks(int channel_index, const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2);
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента

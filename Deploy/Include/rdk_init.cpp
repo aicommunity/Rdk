@@ -2123,6 +2123,20 @@ bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_prop
  return RdkCoreManager.GetEngineLock()->Model_CheckLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+int RDK_CALL Model_SwitchOutputLinks(const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2)
+{
+ return RdkCoreManager.GetEngineLock()->Model_SwitchOutputLinks(item_name_1, item_property_name1, item_name_2, item_property_name2);
+}
+
+int RDK_CALL MModel_SwitchOutputLinks(int channel_index, const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SwitchOutputLinks(item_name_1, item_property_name1, item_name_2, item_property_name2);
+}
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента

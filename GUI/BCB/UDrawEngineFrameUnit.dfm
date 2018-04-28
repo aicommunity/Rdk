@@ -46,6 +46,10 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited StringGrid: TStringGrid
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
@@ -62,6 +66,8 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsControlTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited Splitter1: TSplitter
@@ -264,6 +270,23 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Caption = 'Cancel link'
       Enabled = False
       OnClick = Cancellonglink1Click
+    end
+    object N7: TMenuItem
+      Caption = '-'
+    end
+    object SwitchLink1: TMenuItem
+      Caption = 'Switch Link'
+      OnClick = SwitchLink1Click
+    end
+    object FinishSwitching1: TMenuItem
+      Caption = 'Finish Switching'
+      Enabled = False
+      OnClick = FinishSwitching1Click
+    end
+    object CancelSwitching1: TMenuItem
+      Caption = 'Cancel Switching'
+      Enabled = False
+      OnClick = CancelSwitching1Click
     end
     object N1: TMenuItem
       Caption = '-'

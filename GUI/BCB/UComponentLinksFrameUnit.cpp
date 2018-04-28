@@ -82,6 +82,16 @@ void TUComponentLinksFrame::SetMode(int mode)
   GroupBox2->Align=alClient;
   GroupBox3->Visible=true;
   Splitter1->Visible=true;
+
+  NANetFrameInputs->ShowModifier=2;
+  NANetFrameInputs->Mode=1;
+  NANetFrameOutputs->ShowModifier=2;
+  NANetFrameOutputs->Mode=2;
+  NANetFrameLinks->ShowModifier=2;
+  NANetFrameLinks->Mode=4;
+
+  GroupBox1->Caption=" Inputs ";
+  GroupBox2->Caption=" Outputs ";
  break;
 
  case 1:
@@ -96,6 +106,16 @@ void TUComponentLinksFrame::SetMode(int mode)
   GroupBox2->Align=alClient;
   GroupBox3->Visible=true;
   Splitter1->Visible=true;
+
+  NANetFrameInputs->ShowModifier=2;
+  NANetFrameInputs->Mode=1;
+  NANetFrameOutputs->ShowModifier=2;
+  NANetFrameOutputs->Mode=2;
+  NANetFrameLinks->ShowModifier=2;
+  NANetFrameLinks->Mode=4;
+
+  GroupBox1->Caption=" Inputs ";
+  GroupBox2->Caption=" Outputs ";
  break;
 
  case 2:
@@ -107,6 +127,40 @@ void TUComponentLinksFrame::SetMode(int mode)
   GroupBox3->Align=alClient;
   GroupBox3->Visible=true;
   Splitter1->Visible=false;
+
+  NANetFrameInputs->ShowModifier=2;
+  NANetFrameInputs->Mode=1;
+  NANetFrameOutputs->ShowModifier=2;
+  NANetFrameOutputs->Mode=2;
+  NANetFrameLinks->ShowModifier=2;
+  NANetFrameLinks->Mode=4;
+
+  GroupBox1->Caption=" Inputs ";
+  GroupBox2->Caption=" Outputs ";
+ break;
+
+ case 3:
+  ButtonPanel->Visible=true;
+  Panel1->Visible=false;
+  OkButton->Caption="Switch";
+  GroupBox1->Visible=true;
+  GroupBox2->Visible=true;
+  GroupBox3->Align=alBottom;
+  GroupBox3->Height=ClientHeight/2;
+  GroupBox1->Align=alRight;
+  GroupBox2->Align=alClient;
+  GroupBox3->Visible=false;
+  Splitter1->Visible=false;
+
+  NANetFrameInputs->ShowModifier=2;
+  NANetFrameInputs->Mode=2;
+  NANetFrameOutputs->ShowModifier=2;
+  NANetFrameOutputs->Mode=2;
+  NANetFrameLinks->ShowModifier=2;
+  NANetFrameLinks->Mode=4;
+
+  GroupBox1->Caption=" Outputs 2 ";
+  GroupBox2->Caption=" Outputs 1 ";
  break;
  }
 }
@@ -207,6 +261,58 @@ void __fastcall TUComponentLinksFrame::BreakAll(void)
  NANetFrameLinks->UpdateInterface();
 }
 
+// Перемещает все связи с выхода первого компонента на выход второго
+void __fastcall TUComponentLinksFrame::SwitchLink(void)
+{
+ if(NANetFrameOutputs->StringGrid->Row <= 0 || NANetFrameInputs->StringGrid->Row <= 0)
+  return;
+
+ std::string itemname1=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][NANetFrameOutputs->StringGrid->Row]).c_str();
+ std::string itemname2=AnsiString(NANetFrameInputs->StringGrid->Cells[2][NANetFrameInputs->StringGrid->Row]).c_str();
+
+ if(itemname1.empty())
+ {
+  for(int i=NANetFrameOutputs->StringGrid->Row-1;i>=1;i--)
+  {
+   itemname1=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][i]).c_str();
+   if(!itemname1.empty())
+	break;
+  }
+ }
+
+ if(itemname2.empty())
+ {
+  for(int i=NANetFrameInputs->StringGrid->Row-1;i>=1;i--)
+  {
+   itemname2=AnsiString(NANetFrameInputs->StringGrid->Cells[2][i]).c_str();
+   if(!itemname2.empty())
+	break;
+  }
+ }
+
+ if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
+ {
+  itemname1.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
+  itemname2.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
+ }
+
+ std::string item_property_name1=AnsiString(NANetFrameOutputs->StringGrid->Cells[3][NANetFrameOutputs->StringGrid->Row]).c_str();
+ std::string item_property_name2=AnsiString(NANetFrameInputs->StringGrid->Cells[3][NANetFrameInputs->StringGrid->Row]).c_str();
+
+ if(item_property_name1.find("DataOutput")!=std::string::npos || item_property_name2.find("DataOutput")!=std::string::npos)
+ {
+  Application->MessageBox(L"Old I/O properties not supported", L"Error!", MB_OK);
+  return;
+ }
+ else
+ {
+  Model_SwitchOutputLinks(itemname1.c_str(), item_property_name1.c_str(), itemname2.c_str(), item_property_name2.c_str());
+ }
+ NANetFrameLinks->UpdateInterface();
+ NANetFrameInputs->UpdateInterface();
+}
+
+
 // Связывает все объекты по цепочке в порядке возрастания id
 // Предварительно разрывает все существующие связи
 void __fastcall TUComponentLinksFrame::ChainLinking(void)
@@ -277,7 +383,12 @@ void __fastcall TUComponentLinksFrame::OkButtonClick(TObject *Sender)
  case 2:
   BreakLink();
  break;
+
+ case 3:
+  SwitchLink();
+ break;
  }
 }
 //---------------------------------------------------------------------------
+
 

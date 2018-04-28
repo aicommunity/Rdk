@@ -725,6 +725,9 @@ virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 virtual bool Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 virtual bool Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+virtual int Model_SwitchOutputLinks(const char* item_name1, const char* item_property_name1, const char* item_name2, const char* item_property_name2);
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
