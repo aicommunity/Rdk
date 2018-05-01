@@ -23,11 +23,13 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     thread = new QThread(this);
     imageLoader->moveToThread(thread);
     //connect(thread, SIGNAL(started()), imageLoader, SLOT(process()));
-    connect(imageLoader, SIGNAL(imageLoaded(QImage*))          , painter    , SLOT(setImage(QImage*)));
-    connect(this       , SIGNAL(loadImage(QSize))              , imageLoader, SLOT(loadImage(QSize)));
-    connect(this       , SIGNAL(resizeImage(QSize))            , imageLoader, SLOT(resizeImage(QSize)));
-    connect(painter    , SIGNAL(setedImageSize(QSize))         , this       , SLOT(setImageSizeInfo(QSize)));
-    connect(painter    , SIGNAL(zoneFinished(QPolygonF, QSize)), this       , SIGNAL(zoneFinished(QPolygonF, QSize)));
+    connect(imageLoader, SIGNAL(imageLoaded(QImage*))                 , painter    , SLOT(setImage(QImage*)));
+    connect(this       , SIGNAL(loadImage(QSize))                     , imageLoader, SLOT(loadImage(QSize)));
+    connect(this       , SIGNAL(resizeImage(QSize))                   , imageLoader, SLOT(resizeImage(QSize)));
+    connect(painter    , SIGNAL(setedImageSize(QSize))                , this       , SLOT(setImageSizeInfo(QSize)));
+    connect(painter    , SIGNAL(polygonFinished(QPolygonF, QSize))       , this       , SIGNAL(polygonFinished(QPolygonF, QSize)));
+    connect(painter    , SIGNAL(polygonModified(UDrawablePolygon, QSize)), this       , SIGNAL(polygonModified(UDrawablePolygon, QSize)));
+    connect(painter    , SIGNAL(polygonSelected(int))                    , this       , SIGNAL(polygonSelected(int)));
 
 
     UpdateInterval = 30;
@@ -144,9 +146,9 @@ void USingleImageWidget::setShowChannels(bool value)
       ui->labelLegend->setText(imageLoader->getComponentName()+"["+imageLoader->getComponentPropertyName()+"]");
 }
 
-void USingleImageWidget::setZones(QList<QPair<QPolygonF, QPen> > polygons)
+void USingleImageWidget::setPolygons(const QList<UDrawablePolygon> &polygons)
 {
-  painter->setZones(polygons);
+  painter->setPolygons(polygons);
 }
 
 void USingleImageWidget::setPainterPen(const QPen &value)
@@ -157,6 +159,21 @@ void USingleImageWidget::setPainterPen(const QPen &value)
 void USingleImageWidget::setDrawable(bool value)
 {
   painter->setDrawable(value);
+}
+
+void USingleImageWidget::selectPolygon(int id)
+{
+  painter->selectPolygon(id);
+}
+
+void USingleImageWidget::setDrawRects(bool value)
+{
+  painter->setDrawRects(value);
+}
+
+void USingleImageWidget::setRectangles(const QPair<QRectF, QRectF> &rects)
+{
+  painter->setRectangles(rects);
 }
 
 int USingleImageWidget::getCalcChannel() const
@@ -221,18 +238,29 @@ void USingleImageWidget::setSelected(bool value)
     if(value == selected) return;
     selected = value;
     if(selected)
+    {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Plain);
+
+        int selectedPolygonID = painter->getSelectedPolygonID();
+        if(selectedPolygonID >= 0)
+          emit polygonSelected(selectedPolygonID);
+    }
     else
+    {
         ui->frameSelectionBorder->setFrameShadow(QFrame::Raised);
+        painter->selectPolygon(-1);
+    }
 }
 
-void USingleImageWidget::mousePressEvent(QMouseEvent *)
+void USingleImageWidget::mousePressEvent(QMouseEvent *event)
 {
+    QWidget::mousePressEvent(event);
     emit selectionSignal(this);
 }
 
-void USingleImageWidget::mouseDoubleClickEvent(QMouseEvent *)
+void USingleImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    QWidget::mouseDoubleClickEvent(event);
     emit fullScreenSignal(this);
 }
 

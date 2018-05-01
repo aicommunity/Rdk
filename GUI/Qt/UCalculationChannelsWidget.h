@@ -35,7 +35,6 @@ signals:
 
 private:
     Ui::UCalculationChannelsWidget *ui;
-    RDK::UApplication *application;
 
     int channelsCounter;
     int currentChannel;

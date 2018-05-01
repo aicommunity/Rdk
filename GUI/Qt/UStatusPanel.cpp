@@ -4,12 +4,11 @@
 #include <QMessageBox>
 
 UStatusPanel::UStatusPanel(QWidget *parent, RDK::UApplication *app) :
-  UVisualControllerWidget(parent),
+  UVisualControllerWidget(parent, app),
   ui(new Ui::UStatusPanel)
 {
   setAccessibleName("UStatusPanel");
   UpdateInterval = 200;
-  application = app;
 
   ui->setupUi(this);
 

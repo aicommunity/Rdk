@@ -554,12 +554,6 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
 {
  CloseProject();
 
- ProjectOpenFlag=true;
- ProjectPath=extract_file_path(file_name);
- Project->SetConfig(project_config);
- Project->SetProjectPath(ProjectPath);
- ProjectFileName=extract_file_name(file_name);
-
  UApplication::SetNumChannels(project_config.NumChannels);
 
  for(int i=0;i<project_config.NumChannels;i++)
@@ -590,6 +584,12 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
    }
   }
  }
+
+ ProjectOpenFlag=true;
+ ProjectPath=extract_file_path(file_name);
+ Project->SetConfig(project_config);
+ Project->SetProjectPath(ProjectPath);
+ ProjectFileName=extract_file_name(file_name);
 
  if(SaveProject())
  {

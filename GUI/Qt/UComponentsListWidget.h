@@ -63,11 +63,16 @@ class UComponentsListWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UComponentsListWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentsListWidget");
+    explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL);
     virtual ~UComponentsListWidget();
 
     /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
     void AUpdateInterface();
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 
     // Доступ к данным для других виджетов:
 
@@ -123,11 +128,6 @@ public slots:
 
     /// Отправляет событие отрисовки выбранного компонента
     void drawSelectedComponent(QModelIndex index);
-
-    /// считывание файлов настроек
-    void readSettings(QString file, QString group = "UComponentsListWidget");
-    /// запись файлов настроек
-    void writeSettings(QString file, QString group = "UComponentsListWidget");
 
     //События контекстного меню
     void componentMoveUp();

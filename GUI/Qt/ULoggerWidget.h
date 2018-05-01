@@ -17,7 +17,6 @@ public:
 private:
     QVBoxLayout *layout;
     QPlainTextEdit *textEdit;
-    RDK::UApplication *application;
 };
 
 #endif // ULOGGERWIDGET_H

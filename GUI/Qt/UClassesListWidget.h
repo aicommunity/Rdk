@@ -25,7 +25,7 @@ class UClassesListWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UClassesListWidget(QWidget *parent = 0);
+    explicit UClassesListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL);
     virtual ~UClassesListWidget();
 
     QString selctedClass() const;

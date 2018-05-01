@@ -3,8 +3,8 @@
 #include <QDebug>
 #include <QThread>
 
-UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
-    UVisualControllerWidget(parent),
+UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UDrawEngineWidget)
 {
     ui->setupUi(this);
@@ -21,9 +21,9 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, QString settingsFile, QStr
     connect(modelScheme, SIGNAL(createLinks(QString,QString)), this, SIGNAL(createLinksFromScheme(QString,QString)));
     ui->horizontalLayoutForModelScheme->addWidget(modelScheme);
 
-    UpdateInterval = 0; // don't update by kore ticks
+    UpdateInterval = 0; // don't update by core ticks
     setAccessibleName("UDrawEngineWidget"); // имя класса для сериализации
-    readSettings(settingsFile, settingsGroup);
+    ALoadParameters();
 
     UpdateInterface(true);
 }
@@ -35,27 +35,35 @@ UDrawEngineWidget::~UDrawEngineWidget()
 
 void UDrawEngineWidget::AUpdateInterface()
 {
-    modelScheme->reDrawScheme(true);
+  modelScheme->reDrawScheme(true);
 }
 
-void UDrawEngineWidget::readSettings(QString file, QString group)
+void UDrawEngineWidget::ASaveParameters()
 {
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-    modelScheme->resize(settings.value("labelModelScheme_w").toInt(),
-                                 settings.value("labelModelScheme_h").toInt());
-    settings.endGroup();
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  settings.setValue("splitterState", ui->splitter->saveState());
+  settings.setValue("labelModelScheme_w", QVariant(modelScheme->width()));
+  settings.setValue("labelModelScheme_h", QVariant(modelScheme->height()));
+  settings.endGroup();
 }
 
-void UDrawEngineWidget::writeSettings(QString file, QString group)
+void UDrawEngineWidget::ALoadParameters()
 {
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    settings.setValue("splitterState", ui->splitter->saveState());
-    settings.setValue("labelModelScheme_w", QVariant(modelScheme->width()));
-    settings.setValue("labelModelScheme_h", QVariant(modelScheme->height()));
-    settings.endGroup();
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
+  modelScheme->resize(settings.value("labelModelScheme_w").toInt(),
+                               settings.value("labelModelScheme_h").toInt());
+  settings.endGroup();
 }
 
 void UDrawEngineWidget::componentDoubleClick(QString name)

@@ -15,12 +15,11 @@
 #include "UCalculationChannelsWidget.h"
 #include "UEngineControlQt.h"
 #include "ULoggerWidget.h"
+#include "UComponentPropertyChanger.h"
 #include "UCreateConfigurationWizardWidget.h"
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
-#include "UAnalyticsSimpleSettingsWidget.h"
-
-#include "UComponentPropertyChanger.h"
+#include "USettingsReaderWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -39,12 +38,13 @@ public:
     virtual ~UGEngineControllWidget();
 
 public slots:
+    // settings
+    void readSettings();
+    void writeSettings();
+
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
 
-    // settings
-    void readSettings(QString file, QString group = "UGEngineControllWidget");
-    void writeSettings(QString file, QString group = "UGEngineControllWidget");
 
     // actions:
 
@@ -68,22 +68,13 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-/*
-signals:
-    void readSettingsSignal(QString file);
-
-protected:
-    void timerEvent(QTimerEvent *);*/
 
 private:
     // data
     Ui::UGEngineControllWidget *ui;
 
-    QString settingsFileName;
-    QString settingsGroupName;
-    QString configFileName;
-
     // widgets
+    USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;
@@ -99,8 +90,6 @@ private:
     RDK::UApplication *application;
 
     // methods
-
-    //void initGraphicalEngine();
 
     ///if chanelIndex == -1 запускает все каналы расчета
     void startChannel(int chanelIndex);
@@ -125,33 +114,6 @@ public:
     explicit SubWindowCloseIgnore(QWidget *parent = 0, Qt::WindowFlags flags = 0):QMdiSubWindow(parent, flags){}
 protected:
     void closeEvent(QCloseEvent *event){event->ignore();}
-};
-
-/// тестовый класс для проверки обновления окошек из других потоков
-class ThreadGo: public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit ThreadGo(UVisualControllerWidget *obj = NULL, QObject *parent = NULL) : QObject(parent)
-    {
-        ob = obj;
-    }
-        ~ThreadGo(){ob = NULL;}
-public slots:
-    void startThread()
-    {
-        if(ob)
-        ob->UpdateInterface(true);
-        emit testFinished();
-
-    }
-signals:
-    void testFinished();
-
-
-private:
-    UVisualControllerWidget *ob;
 };
 
 #endif // UGENGINECONTROLLWIDGET_H

@@ -11,8 +11,8 @@
 #include <QClipboard>
 #include <QScrollBar>
 
-UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
-    UVisualControllerWidget(parent),
+UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UComponentsListWidget)
 {
     ui->setupUi(this);
@@ -29,7 +29,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
 
     UpdateInterval = -1;
     setAccessibleName("UComponentsListWidget"); // имя класса для сериализации
-    readSettings(settingsFile, settingsGroup);
+    //readSettings(app, settingsGroup);
 
     UpdateInterface(true);
 
@@ -126,6 +126,38 @@ void UComponentsListWidget::AUpdateInterface()
     {
       redrawChannelsList();
     }
+}
+
+void UComponentsListWidget::ASaveParameters()
+{
+    if(!application) return;
+
+    QSettings settings(QString::fromLocal8Bit(
+                         application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup(accessibleName());
+    settings.setValue("splitterState", ui->splitter->saveState());
+    settings.setValue("treeWidgetInputsHeader", ui->treeWidgetInputs->header()->saveState());
+    settings.setValue("treeWidgetOutputsHeader", ui->treeWidgetOutputs->header()->saveState());
+    settings.setValue("treeWidgetParameters", ui->treeWidgetParameters->header()->saveState());
+    settings.setValue("treeWidgetState", ui->treeWidgetState->header()->saveState());
+    settings.endGroup();
+}
+
+void UComponentsListWidget::ALoadParameters()
+{
+    if(!application) return;
+
+    QSettings settings(QString::fromLocal8Bit(
+                         application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup(accessibleName());
+    ui->splitter->restoreState(settings.value("splitterState").toByteArray());
+    ui->treeWidgetInputs->header()->restoreState(settings.value("treeWidgetInputsHeader").toByteArray());
+    ui->treeWidgetOutputs->header()->restoreState(settings.value("treeWidgetOutputsHeader").toByteArray());
+    ui->treeWidgetParameters->header()->restoreState(settings.value("treeWidgetParameters").toByteArray());
+    ui->treeWidgetState->header()->restoreState(settings.value("treeWidgetState").toByteArray());
+    settings.endGroup();
 }
 
 void UComponentsListWidget::setVerticalOrientation(bool vertical)
@@ -442,29 +474,6 @@ void UComponentsListWidget::drawSelectedComponent(QModelIndex index)
         componentsTree->currentItem()->setExpanded(true);
 }
 
-void UComponentsListWidget::readSettings(QString file, QString group)
-{
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-    ui->treeWidgetInputs->header()->restoreState(settings.value("treeWidgetInputsHeader").toByteArray());
-    ui->treeWidgetOutputs->header()->restoreState(settings.value("treeWidgetOutputsHeader").toByteArray());
-    ui->treeWidgetParameters->header()->restoreState(settings.value("treeWidgetParameters").toByteArray());
-    ui->treeWidgetState->header()->restoreState(settings.value("treeWidgetState").toByteArray());
-    settings.endGroup();
-}
-
-void UComponentsListWidget::writeSettings(QString file, QString group)
-{
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    settings.setValue("splitterState", ui->splitter->saveState());
-    settings.setValue("treeWidgetInputsHeader", ui->treeWidgetInputs->header()->saveState());
-    settings.setValue("treeWidgetOutputsHeader", ui->treeWidgetOutputs->header()->saveState());
-    settings.setValue("treeWidgetParameters", ui->treeWidgetParameters->header()->saveState());
-    settings.setValue("treeWidgetState", ui->treeWidgetState->header()->saveState());
-    settings.endGroup();
-}
 
 void UComponentsListWidget::componentMoveUp()
 {

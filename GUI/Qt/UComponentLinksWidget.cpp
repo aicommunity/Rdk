@@ -6,8 +6,8 @@
 #include <QDebug>
 #include <QMessageBox>
 
-UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
-    UVisualControllerWidget(parent),
+UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication *app) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UComponentLinksWidget)
 {
     ui->setupUi(this);
@@ -15,7 +15,6 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, QString settingsFi
     setAccessibleName("UComponentLinksWidget"); // имя класса для сериализации
     ui->treeWidgetInputs->header()->setVisible(true);
     ui->treeWidgetOutputs->header()->setVisible(true);
-    readSettings(settingsFile, settingsGroup);
 
     //сигнал закрытия
     connect(ui->pushButtonCancel, SIGNAL(pressed()), this, SIGNAL(closeWindow()));
@@ -93,6 +92,40 @@ void UComponentLinksWidget::AUpdateInterface()
     default:
         return;
     }
+}
+
+void UComponentLinksWidget::ASaveParameters()
+{
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  settings.setValue("geometry", this->saveGeometry());
+  settings.setValue("splitterState", ui->splitter->saveState());
+  settings.setValue("splitter_2State", ui->splitter_2->saveState());
+  settings.setValue("treeWidgetInputsHeader", ui->treeWidgetInputs->header()->saveState());
+  settings.setValue("treeWidgetOutputsHeader", ui->treeWidgetOutputs->header()->saveState());
+  settings.setValue("treeWidgetLinksHeader", ui->treeWidgetLinks->header()->saveState());
+  settings.endGroup();
+}
+
+void UComponentLinksWidget::ALoadParameters()
+{
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  this->restoreGeometry(settings.value("geometry").toByteArray());
+  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
+  ui->splitter_2->restoreState(settings.value("splitter_2State").toByteArray());
+  ui->treeWidgetInputs->header()->restoreState(settings.value("treeWidgetInputsHeader").toByteArray());
+  ui->treeWidgetOutputs->header()->restoreState(settings.value("treeWidgetOutputsHeader").toByteArray());
+  ui->treeWidgetLinks->header()->restoreState(settings.value("treeWidgetLinksHeader").toByteArray());
+  settings.endGroup();
 }
 
 void UComponentLinksWidget::initWidget(QString singleComponentName)
@@ -197,32 +230,6 @@ void UComponentLinksWidget::breakLink()
     Model_BreakLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
     UpdateInterface(true);
     emit updateScheme(true);
-}
-
-void UComponentLinksWidget::readSettings(QString file, QString group)
-{
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    this->restoreGeometry(settings.value("geometry").toByteArray());
-    ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-    ui->splitter_2->restoreState(settings.value("splitter_2State").toByteArray());
-    ui->treeWidgetInputs->header()->restoreState(settings.value("treeWidgetInputsHeader").toByteArray());
-    ui->treeWidgetOutputs->header()->restoreState(settings.value("treeWidgetOutputsHeader").toByteArray());
-    ui->treeWidgetLinks->header()->restoreState(settings.value("treeWidgetLinksHeader").toByteArray());
-    settings.endGroup();
-}
-
-void UComponentLinksWidget::writeSettings(QString file, QString group)
-{
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    settings.setValue("geometry", this->saveGeometry());
-    settings.setValue("splitterState", ui->splitter->saveState());
-    settings.setValue("splitter_2State", ui->splitter_2->saveState());
-    settings.setValue("treeWidgetInputsHeader", ui->treeWidgetInputs->header()->saveState());
-    settings.setValue("treeWidgetOutputsHeader", ui->treeWidgetOutputs->header()->saveState());
-    settings.setValue("treeWidgetLinksHeader", ui->treeWidgetLinks->header()->saveState());
-    settings.endGroup();
 }
 
 void UComponentLinksWidget::addComponentSons(QString componentName, QTreeWidgetItem *firstTreeWidgetItemFather, unsigned int firstTypeMask,

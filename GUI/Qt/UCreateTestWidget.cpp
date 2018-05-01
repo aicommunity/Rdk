@@ -6,20 +6,22 @@
 #include <QFileDialog>
 #include <QDir>
 
-UCreateTestWidget::UCreateTestWidget(QWidget *parent, RDK::UApplication *app, QString settingsFile, QString settingsGroup) :
-  UVisualControllerWidget(parent),
+UCreateTestWidget::UCreateTestWidget(QWidget *parent, RDK::UApplication *app) :
+  UVisualControllerWidget(parent, app),
   ui(new Ui::UCreateTestWidget)
 {
   ui->setupUi(this);
   componentsList = NULL;
-  application = app;
+  setAccessibleName("UCreateTestWidget");
 
-  readSettings(settingsFile, settingsGroup);
+  //readSettings(settingsFile, settingsGroup);
 
-  componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
+  componentsList = new UComponentsListWidget(this, application);
+  componentsList->setAccessibleName(accessibleName()+"_componentsList");
   componentsList->setVerticalOrientation(false);
   componentsList->openTabN(1);
   componentsList->setEnableTabN(2, false);
+  componentsList->setAccessibleName(accessibleName() + "_componentsList");
   ui->verticalLayoutComponentsList->addWidget(componentsList);
 
   connect(ui->pushButtonAddProperty, SIGNAL(pressed()), this, SLOT(addProperty()));
@@ -34,28 +36,32 @@ UCreateTestWidget::~UCreateTestWidget()
   delete ui;
 }
 
-void UCreateTestWidget::readSettings(QString file, QString group)
+void UCreateTestWidget::ASaveParameters()
 {
-  QSettings settings(file, QSettings::IniFormat);
-  settings.beginGroup(group);
-  restoreGeometry(settings.value("geometry").toByteArray());
-  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-  ui->treeWidgetSelectedProperties->header()->restoreState(settings.value("treeWidgetSelectedProperties").toByteArray());
-  settings.endGroup();
+  if(!application) return;
 
-  if(componentsList) componentsList->readSettings(file, group+"_componentsList");
-}
-
-void UCreateTestWidget::writeSettings(QString file, QString group)
-{
-  QSettings settings(file, QSettings::IniFormat);
-  settings.beginGroup(group);
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
   settings.setValue("geometry", saveGeometry());
   settings.setValue("splitterState", ui->splitter->saveState());
   settings.setValue("treeWidgetSelectedProperties", ui->treeWidgetSelectedProperties->header()->saveState());
   settings.endGroup();
+}
 
-  if(componentsList) componentsList->writeSettings(file, group+"_componentsList");
+void UCreateTestWidget::ALoadParameters()
+{
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  restoreGeometry(settings.value("geometry").toByteArray());
+  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
+  ui->treeWidgetSelectedProperties->header()->restoreState(settings.value("treeWidgetSelectedProperties").toByteArray());
+  settings.endGroup();
 }
 
 void UCreateTestWidget::addProperty()

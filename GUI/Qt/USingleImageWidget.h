@@ -40,8 +40,8 @@ public:
     bool getSelected() const;
     void setSelected(bool value);
 
-    void mousePressEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
     QString getComponentPropertyName() const;
     void setComponentPropertyName(const QString &value);
@@ -58,12 +58,24 @@ public:
 
     // ----- Проброс в UImagePainter -----
     /// Устанавливает набор полигонов на изображение
-    void setZones(QList<QPair<QPolygonF, QPen> > polygons);
+    void setPolygons(const QList<UDrawablePolygon> &polygons);
 
     /// Устанавливает QPen в painter
     void setPainterPen(const QPen &value);
 
+    /// Устанавливает режим рисования на текущий Painter
     void setDrawable(bool value);
+
+    /// устанавливает зону как выбранную
+    void selectPolygon(int id);
+
+    /// Устанавливает режим рисования двух прямоугольников левой и правой кнопками мыши на текущий Painter
+    void setDrawRects(bool value);
+
+    /// Устанавливает два прямоугольника в текущий Painter
+    void setRectangles(const QPair<QRectF, QRectF> &rects);
+
+    // ------------------------------
 
 public slots:
     void reDrawWidget();
@@ -80,7 +92,11 @@ signals:
     // signals to UImageLoader
     void loadImage(QSize value);
     void resizeImage(QSize value);
-    void zoneFinished(QPolygonF, QSize);
+
+    // signals from USingleImagePainter
+    void polygonFinished(QPolygonF, QSize);
+    void polygonModified(UDrawablePolygon, QSize);
+    void polygonSelected(int);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
@@ -90,25 +106,6 @@ private:
 
     int column;
     int row;
-    /*int calcChannel;
-    QString componentName;
-    QString componentPropertyName;
-    bool showLegend;
-    bool showChannels;
-
-    ///Размер отображаемого изображения
-    ///
-    /// 0 - Полноразмерное отображение
-    /// 1 - растянуть, сохраняя пропорции
-    /// 2 - растянуть на всю область
-    int sizeMode;
-
-
-    bool connected;
-
-    QImage srcImage;
-    QImage transformedImage;
-    */
 
     bool selected;
 

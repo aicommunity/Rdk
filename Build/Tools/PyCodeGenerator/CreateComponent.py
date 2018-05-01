@@ -7,7 +7,6 @@ import xml.etree.ElementTree as ET
 import os.path
 import os
 import shutil
-import commands
 
 def createMapFile(old_data, new_data, file_name, map_file):
     with open(file_name) as file:
@@ -21,11 +20,11 @@ tree = ET.parse('CodeGeneratorIni.xml')
 root = tree.getroot()
 libs=root.find('Libraries')
 lib_path=libs.find('Path')
-print 'Library path: '+lib_path.text
+print ('Library path: '+lib_path.text)
 
 num_args=len(sys.argv)
 
-print 'Library creting script started'
+print ('Library creting script started')
 
 if num_args <3:
     exit(0)
@@ -44,17 +43,17 @@ else:
    inheritance_name='RDK::UNet'
 
 
-print 'Creating component: '+component_name
+print ('Creating component: '+component_name)
 
 new_path=lib_path.text+lib_name+'/Core/'
-print new_path
+print (new_path)
 
 if not os.path.exists(new_path) or os.path.isfile(new_path):
-    print 'Error access directory!'
+    print ('Error access directory!')
     exit(0)
 
 if os.path.exists(new_path+component_name+'.cpp') or os.path.exists(new_path+component_name+'.h'):
-    print 'Files already exists!'
+    print ('Files already exists!')
     exit(0)
 
 
