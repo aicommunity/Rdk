@@ -426,7 +426,7 @@ bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide
  {
   conns.push_back(pitem1->GetAConnectorByIndex(item1.Name, i));
   std::vector<UCLink> buffer;
-  conns[i]->GetCLink(pitem1, buffer);
+  conns[i]->GetCLink(dynamic_pointer_cast<UItem>(pitem1), buffer);
   for(size_t j=0;j<buffer.size();j++)
    if(buffer[j].OutputName == item1.Name)
    {
