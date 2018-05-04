@@ -796,7 +796,7 @@ USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size1][
   for(unsigned j=0;j<Size2;j++)
   {
    stream<<int(data[i][j]);
-   if(j<Size2-1)
+//   if(j<Size2-1)
 	stream<<"\t";
   }
   if(i<Size1-1)
@@ -856,7 +856,7 @@ USerStorageXML& operator << (USerStorageXML& storage, double const (&data)[Size1
   for(unsigned j=0;j<Size2;j++)
   {
    stream<<data[i][j];
-   if(j<Size2-1)
+//   if(j<Size2-1)
 	stream<<"\t";
   }
   if(i<Size1-1)
@@ -917,7 +917,7 @@ USerStorageXML& operator << (USerStorageXML& storage, int const (&data)[Size1][S
   for(unsigned j=0;j<Size2;j++)
   {
    stream<<data[i][j];
-   if(j<Size2-1)
+//   if(j<Size2-1)
 	stream<<"\t";
   }
   if(i<Size1-1)
@@ -978,7 +978,7 @@ USerStorageXML& operator << (USerStorageXML& storage, uint32_t const (&data)[Siz
   for(unsigned j=0;j<Size2;j++)
   {
    stream<<data[i][j];
-   if(j<Size2-1)
+//   if(j<Size2-1)
 	stream<<"\t";
   }
   if(i<Size1-1)
@@ -1039,7 +1039,7 @@ USerStorageXML& operator << (USerStorageXML& storage, uint8_t const (&data)[Size
   for(unsigned j=0;j<Size2;j++)
   {
    stream<<uint32_t(data[i][j]);
-   if(j<Size2-1)
+//   if(j<Size2-1)
 	stream<<"\t";
   }
   if(i<Size1-1)
