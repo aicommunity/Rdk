@@ -15,7 +15,7 @@ class USettingsReaderWidget : public UVisualControllerWidget
   Q_OBJECT
 
 public:
-  explicit USettingsReaderWidget(QWidget *parent = nullptr) :
+  explicit USettingsReaderWidget(QWidget *parent = 0) :
     UVisualControllerWidget(parent)
   {
 
