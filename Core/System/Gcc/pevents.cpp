@@ -5,7 +5,11 @@
  * This code is released under the terms of the MIT License
 */
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__MINGW32__)
+
+#if defined(__GNUC__) && defined(_WIN32)
+#include <windows.h>
+#endif
 
 #include "pevents.h"
 #include <assert.h>
