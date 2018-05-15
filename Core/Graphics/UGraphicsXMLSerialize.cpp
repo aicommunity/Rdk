@@ -23,7 +23,7 @@ namespace RDK {
 // UBMColorModel
 USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data)
 {
- storage.SetNodeAttribute("Type",typeid(UBMColorModel).name());
+ storage.SetNodeAttribute("Type","UBMColorModel");
 
  std::stringstream stream;
  stream<<int(data);
@@ -49,7 +49,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data)
 // UColorT
 USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data)
 {
- storage.SetNodeAttribute("Type",typeid(UColorT).name());
+ storage.SetNodeAttribute("Type","UColorT");
 
  std::stringstream stream;
 // stream.setf(ios::hex);
@@ -75,6 +75,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UColorT &data)
 //struct UBPoint;
 USerStorageXML& operator << (USerStorageXML& storage, const UBPoint &data)
 {
+ storage.SetNodeAttribute("Type","UBPoint");
   storage.AddNode("X");
   storage<<data.X;
   storage.SelectUp();
@@ -107,7 +108,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPoint &data)
 //struct UBColorPoint;
 USerStorageXML& operator << (USerStorageXML& storage, const UBColorPoint &data)
 {
-// storage.SetNodeAttribute("Type",typeid(UBColorPoint).name());
+ storage.SetNodeAttribute("Type","UBColorPoint");
 
  operator << (storage,static_cast<const UBPoint&>(data));
  storage.AddNode("Color");
@@ -134,6 +135,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBColorPoint &data)
 USerStorageXML& operator << (USerStorageXML& storage, const UBRect &data)
 {
  operator << (storage,static_cast<const UBPoint&>(data));
+ storage.SetNodeAttribute("Type","UBRect");
 
   storage.AddNode("Width");
   storage<<data.Width;
@@ -166,6 +168,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBRect &data)
 //struct UBHistogramElement;
 USerStorageXML& operator << (USerStorageXML& storage, const UBHistogramElement &data)
 {
+ storage.SetNodeAttribute("Type","UBHistogramElement");
  storage.AddNode("Color");
  operator << (storage,data.Color);
  storage.SelectUp();
@@ -200,6 +203,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBHistogramElement &data)
 //class UBHistogram;
 USerStorageXML& operator << (USerStorageXML& storage, const UBHistogram &data)
 {
+ storage.SetNodeAttribute("Type","UBHistogram");
  storage.SetNodeAttribute("Size",sntoa(data.GetSize()));
  storage.SetNodeAttribute("NormalizeFlag",sntoa(data.IsNormalized()));
  storage.SetNodeAttribute("NumPixels",sntoa(data.GetNumPixels()));
@@ -255,6 +259,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBHistogram &data)
 //class UBitmapParam
 USerStorageXML& operator << (USerStorageXML& storage, const UBitmapParam &data)
 {
+ storage.SetNodeAttribute("Type","UBitmapParam");
  storage.AddNode("Width");
  operator << (storage,data.Width);
  storage.SelectUp();
@@ -293,6 +298,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmapParam &data)
 //class UBitmap
 USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data)
 {
+ storage.SetNodeAttribute("Type","UBitmap");
  storage.AddNode("Width");
  operator << (storage,data.GetWidth());
  storage.SelectUp();
@@ -358,6 +364,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data)
 //class UBitmapVector
 USerStorageXML& operator << (USerStorageXML& storage, const UBitmapVector &data)
 {
+ storage.SetNodeAttribute("Type","UBitmapVector");
  storage.SetNodeAttribute("Size",sntoa(data.GetSize()));
 
  for(int i=0;i<data.GetSize();i++)

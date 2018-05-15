@@ -271,7 +271,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
 template<typename T, int Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T, Rows> &data)
 {
- storage.SetNodeAttribute("Type","MGeometry");
+ storage.SetNodeAttribute("Type",std::string("MGeometry<")+typeid(T).name()+">");
  storage.AddNode("Vertices");
  storage<<data.GetVertices();
  storage.SelectUp();
