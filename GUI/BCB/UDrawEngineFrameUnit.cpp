@@ -857,7 +857,7 @@ void __fastcall TUDrawEngineFrame::FinishSwitching1Click(TObject *Sender)
   UpdateInterface();
  }
 
- Cancellonglink1Click(Sender);
+ CancelSwitching1Click(Sender);
 
 }
 //---------------------------------------------------------------------------
