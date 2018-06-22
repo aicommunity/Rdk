@@ -64,6 +64,7 @@ public slots:
     void componentReset();
     void componentCalculate();
     void componentGUI();
+    void componentCopyXMLDescription();
 
 signals:
     void componentSelected(QString name); //single click

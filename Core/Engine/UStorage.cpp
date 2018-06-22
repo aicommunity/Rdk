@@ -173,6 +173,7 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
  if(!classtemplate->Build())
   return ForbiddenId;
 
+ classtemplate->SetStorage(this);
  ClassesStorage[id]=classtemplate;
  classtemplate->SetClass(id);
  LastClassId=id;

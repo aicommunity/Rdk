@@ -51,6 +51,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionCancelMoving = new QAction(contextMenu);
     actionCancelMoving->setText("Cancel moving");
     actionCancelMoving->setEnabled(false);
+
     QAction *actionRenameComponent = new QAction(contextMenu);
     actionRenameComponent->setText("Rename");    
     QAction *actionDeleteComponent = new QAction(contextMenu);
@@ -68,6 +69,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionGUI = new QAction(contextMenu);
     actionGUI->setText("GUI (not implemented)");
     actionGUI->setEnabled(false);
+    QAction *actionCopyComponentXMLDescription= new QAction(contextMenu);
+    actionCopyComponentXMLDescription->setText("Copy component XML description");;
 
     //добавление в меню
     contextMenu->addAction(actionViewOrBreakLink);
@@ -91,6 +94,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionCalculateComponent);
     contextMenu->addAction(actionSeparator6);
     contextMenu->addAction(actionGUI);
+    contextMenu->addAction(actionCopyComponentXMLDescription);
 
     //связи
     connect(actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
@@ -108,6 +112,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionResetComponent, SIGNAL(triggered(bool)), this, SLOT(componentReset()));
     connect(actionCalculateComponent, SIGNAL(triggered(bool)), this, SLOT(componentCalculate()));
     connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
+    connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     //</контекстное меню>
 
     //<код из билдера>
@@ -444,7 +449,18 @@ void UDrawEngineImageWidget::componentCalculate()
 
 void UDrawEngineImageWidget::componentGUI()
 {
-    qDebug() << "component GUI";
+ qDebug() << "component GUI";
+}
+
+void UDrawEngineImageWidget::componentCopyXMLDescription()
+{
+    const char *xmlDescription = Model_SaveComponent(myLongName().toLocal8Bit());
+    if(xmlDescription)
+    {
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(QString(xmlDescription));
+    }
+    Engine_FreeBufString(xmlDescription);
 }
 
 void UDrawEngineImageWidget::saveComponentPosition(std::string name)
