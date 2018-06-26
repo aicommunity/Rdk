@@ -6,7 +6,9 @@ namespace RDK
 
  UVirtualMethodFactory::UVirtualMethodFactory(UEPtr<UComponent> comp)
  {
-  Component = dynamic_pointer_cast<UContainer>comp;
+  Component = dynamic_pointer_cast<UContainer>(comp);
+  if(Component)
+   Component->SetClass(ClassId);
  }
 
  UVirtualMethodFactory::~UVirtualMethodFactory()
@@ -18,14 +20,24 @@ namespace RDK
  {
   UEPtr<UContainer> obj = Component->New();
   Component->Copy(obj, Component->GetStorage());
-  return dynamic_pointer_cast<UComponent>(obj);
+  return static_pointer_cast<UComponent>(obj);
  }
 
- UEPtr<UComponent> UVirtualMethodFactory::Prototype(const UEPtr<UComponent> &prototype, UEPtr<UStorage> storage)
+ UEPtr<UComponent> UVirtualMethodFactory::Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage)
  {
   UEPtr<UContainer> obj = Component->New();
-  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, storage);
-  return dynamic_pointer_cast<UComponent>(obj);
+  dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, storage);
+  return static_pointer_cast<UComponent>(obj);
+ }
+
+ void UVirtualMethodFactory::ResetComponent(UEPtr<UComponent> component) const
+ {
+  Component->Copy(dynamic_pointer_cast<UContainer>(component), Component->GetStorage());
+ }
+
+ UEPtr<UContainer> UVirtualMethodFactory::GetComponent()
+ {
+  return Component;
  }
 
  UComponentFactoryMethod::UComponentFactoryMethod(UEPtr<UComponent> (*funcPointer)())
@@ -40,18 +52,24 @@ namespace RDK
 
  UEPtr<UComponent> UComponentFactoryMethod::New()
  {
-  return Method();
+  UEPtr<UComponent> obj = Method();
+  obj->Default();
+  return obj;
  }
 
- UEPtr<UComponent> UComponentFactoryMethod::Prototype(const UEPtr<UComponent> &prototype, UEPtr<UStorage> storage)
+ UEPtr<UComponent> UComponentFactoryMethod::Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage)
  {
-  UEPtr<UContainer> obj = Method();
+  UEPtr<UContainer> obj = dynamic_pointer_cast<UContainer>(Method());
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, storage);
-  return dynamic_pointer_cast<UComponent>(obj);
+  return static_pointer_cast<UComponent>(obj);
  }
 
- UXMLDescriptionFactory::UXMLDescriptionFactory(std::string xml_description, UEPtr<UComponent> comp, bool create_structure_immediately) :
-   UComponentFactoryMethod(comp),
+ void UComponentFactoryMethod::ResetComponent(UEPtr<UComponent> component) const
+ {
+  component->Default();
+ }
+
+ /*UXMLDescriptionFactory::UXMLDescriptionFactory(std::string xml_description, UEPtr<UComponent> comp, bool create_structure_immediately) :
    CreateStandartAfterInit(create_structure_immediately)
  {
   if(CreateStandartAfterInit)
@@ -63,7 +81,40 @@ namespace RDK
 
  UEPtr<UComponent> UXMLDescriptionFactory::New()
  {
+  //UEPtr<UComponent> obj = static_pointer_cast<UComponent>(UEPtr<UNet>(new UNet()));
+  return UEPtr();
+ }
 
+ UEPtr<UComponent> UXMLDescriptionFactory::Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage)
+ {
+  //UEPtr<UComponent> obj = static_pointer_cast<UComponent>(UEPtr<UNet>(new UNet()));
+  return UEPtr();
+ }
+
+ void UXMLDescriptionFactory::ResetComponent(UEPtr<UComponent> component) const
+ {
+
+ }*/
+
+ UComponentAbstractFactory::UComponentAbstractFactory()
+  : ClassId(ForbiddenId)
+ {
+
+ }
+
+ UComponentAbstractFactory::~UComponentAbstractFactory()
+ {
+
+ }
+
+ void UComponentAbstractFactory::SetClassId(const UId id)
+ {
+  ClassId = id;
+ }
+
+ UId UComponentAbstractFactory::GetClassId() const
+ {
+  return ClassId;
  }
 
 

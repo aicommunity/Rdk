@@ -19,13 +19,15 @@ See file license.txt for more information
 #include "../Serialize/USerStorageXML.h"
 #include "UContainerDescription.h"
 
+#include "UComponentFactory.h"
+
 namespace RDK {
 
 /* *********************************************************************** */
 class ULibrary;
 class URuntimeLibrary;
 
-typedef UEPtr<UComponent> UClassStorageElement;
+typedef UEPtr<UComponentAbstractFactory> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
@@ -159,8 +161,8 @@ const NameT FindClassName(const UId &id) const;
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
 // Если classid == ForbiddenId, то id назначается автоматически
-virtual UId AddClass(UEPtr<UComponent> classtemplate, const UId &classid=ForbiddenId);
-virtual UId AddClass(UEPtr<UComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
 // Если 'force' == true то принудительно удаляет из хранилища
@@ -172,8 +174,8 @@ virtual bool CheckClass(const UId &classid) const;
 virtual bool CheckClass(const string &classname) const;
 
 // Возвращает образец класса
-virtual UEPtr<UComponent> GetClass(const UId &classid) const;
-virtual UEPtr<UComponent> GetClass(const std::string &class_name) const;
+virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const UId &classid) const;
+virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const std::string &class_name) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;

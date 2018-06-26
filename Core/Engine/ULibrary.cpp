@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include "ULibrary.h"
 #include "UNet.h"
+#include "UComponentFactory.h"
 
 namespace RDK {
 
@@ -261,7 +262,12 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return true;
 
  std::vector<std::string>::iterator I;
- if(!Storage->AddClass(cont,name))
+ cont->SetLogger(Storage->GetLogger());
+ cont->SetStorage(Storage);
+ cont->Build();
+ UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
+
+ if(!Storage->AddClass(factory,name))
  {
   if(find(Incomplete.begin(),Incomplete.end(),name) == Incomplete.end())
    Incomplete.push_back(name);
@@ -272,7 +278,7 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   if(I != Complete.end())
    Complete.erase(I);
 
-  delete cont;
+  delete factory;
   return false;
  }
 

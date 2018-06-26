@@ -47,6 +47,7 @@ SOURCES += \
     ../../../Core/Engine/UPropertyIO.cpp \
     ../../../Core/Engine/UPropertyOutput.cpp \
     ../../../Core/Engine/UShare.cpp \
+    ../../../Core/Engine/UComponentFactory.cpp \
     ../../../Core/Engine/UStorage.cpp \
     ../../../Core/Engine/UTime.cpp \
     ../../../Core/Engine/UXMLEnvSerialize.cpp \
@@ -135,8 +136,7 @@ SOURCES += \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
     ../../../Core/Application/UTestManager.cpp \
-    ../../../Core/System/Gcc/pevents.cpp \
-    ../../../Core/Engine/UComponentFactory.cpp
+    ../../../Core/System/Gcc/pevents.cpp
 
 HEADERS +=\
         rdk.qt_global.h \

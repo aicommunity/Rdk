@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
 #include "../../Deploy/Include/rdk_error_codes.h"
+#include "UComponentFactory.h"
 
 // --------------------------------------
 // ќбъ€влени€ дополнительных функций
@@ -1049,10 +1050,16 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
  {
   try
   {
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(Storage->GetClass(stringid));
+   UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(Storage->GetComponentFactory(stringid));
+
+
+			if(!factory)
+	return TempString.c_str();
+
+			UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(factory->GetComponent());
 
    if(!cont)
-	return TempString.c_str();
+    return TempString.c_str();
 
    XmlStorage.Create(cont->GetName());
    XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
@@ -7142,7 +7149,12 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	J=external_classes->end();
 	while(I != J)
 	{
-	 Storage->AddClass(*I);
+		UEPtr<UComponent> cont = *I;
+		cont->SetLogger(Storage->GetLogger());
+		cont->SetStorage(Storage);
+		cont->Build();
+		UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
+		Storage->AddClass(factory);
 	 ++I;
 	}
    }

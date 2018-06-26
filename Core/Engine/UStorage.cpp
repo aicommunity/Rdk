@@ -156,11 +156,11 @@ const NameT UStorage::FindClassName(const UId &id) const
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
-UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
+UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid)
 {
- UEPtr<UStorage> storage=classtemplate->GetStorage();
- if(storage)
-  storage->PopObject(classtemplate);
+// UEPtr<UStorage> storage=classtemplate->GetStorage();
+// if(storage)
+//  storage->PopObject(classtemplate);
 
  UId id=classid;
  if(id == ForbiddenId)
@@ -169,13 +169,8 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
  if(ClassesStorage.find(id) != ClassesStorage.end())
   throw EClassIdAlreadyExist(id);
 
- classtemplate->SetLogger(Logger);
- if(!classtemplate->Build())
-  return ForbiddenId;
-
- classtemplate->SetStorage(this);
- ClassesStorage[id]=classtemplate;
- classtemplate->SetClass(id);
+ ClassesStorage[id]=factory;
+ factory->SetClassId(id);
  LastClassId=id;
 
  // Заглушка!!! Это некоррректно, имени-то нет.
@@ -185,15 +180,17 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
 }
 
 // Добавляет образец класса объекта в хранилище
-UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const string &classname, const UId &classid)
+UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
   throw EClassNameAlreadyExist(classname);
 
- UId id=AddClass(classtemplate,classid);
+ UId id=AddClass(factory,classid);
  ClassesLookupTable[classname]=id;
- ClassesDescription[classname]=classtemplate->NewDescription();
- ClassesDescription[classname]->SetClassNameValue(classname);
+
+ // теперь ClassDescription не сохраняется
+// ClassesDescription[classname]=factory->NewDescription();
+// ClassesDescription[classname]->SetClassNameValue(classname);
  return id;
 }
 
@@ -271,7 +268,7 @@ bool UStorage::CheckClass(const string &classname) const
 }
 
 // Возвращает образец класса
-UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
+UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
@@ -281,10 +278,10 @@ UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
  return I->second;
 }
 
-UEPtr<UComponent> UStorage::GetClass(const std::string &class_name) const
+UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string &class_name) const
 {
  UId id=FindClassId(class_name);
- return GetClass(id);
+ return GetComponentFactory(id);
 }
 
 // Возвращает число классов
@@ -333,7 +330,6 @@ void UStorage::FreeClassesStorage(void)
   if(temp != ObjectsStorage.end() && temp->second.size() == 0)
   {
    DelClass(I->first);
-   break;
   }
  }
 }
@@ -382,19 +378,18 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
   throw EClassIdNotExist(classid);
 
  UClassStorageElement tmpl=tmplI->second;
- UEPtr<UContainer> classtemplate=dynamic_pointer_cast<UContainer>(tmpl);
 
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
  if(instances != ObjectsStorage.end())
  {
   UInstancesStorageElement* element=0;// Заглушка!! instances->FindFree();
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
-											   J=instances->second.end(); I!=J; ++I)
+              J=instances->second.end(); I!=J; ++I)
   {
    if(I->UseFlag == false)
    {
-	element=&(*I);
-	break;
+   element=&(*I);
+   break;
    }
   }
 
@@ -404,11 +399,10 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
    if(obj)
    {
-    obj->Default();
     if(!prototype)
-	 classtemplate->Copy(obj,this);
-	else
-	 dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
+     tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
+    else
+     dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
     obj->SetActivity(true);
     element->UseFlag=true;
@@ -419,19 +413,12 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
 
  // Если свободного объекта не нашли
- UEPtr<UContainer> obj=classtemplate->New();
+ UEPtr<UContainer> obj =
+   dynamic_pointer_cast<UContainer>(
+    prototype ? tmpl->Prototype(prototype, this) : tmpl->New());
+
  PushObject(classid,obj);
  obj->SetLogger(Logger);
- obj->Default();
-
- // В случае, если объект создается непосредственно как копия из хранилища...
- if(!prototype)
-  classtemplate->Copy(obj,this);
- else
-  // В случае, если объект создается из хранилища как часть более сложного
-  // объекта
-  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
-
  obj->SetActivity(true);
 
  return static_pointer_cast<UComponent>(obj);
@@ -945,7 +932,11 @@ UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 /// Метод не очищает переданный список библиотек, а только пополняет его
 void UStorage::FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
 {
- UEPtr<UContainer> class_data=dynamic_pointer_cast<UContainer>(GetClass(class_name));
+ UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(GetComponentFactory(class_name));
+ if(!factory)
+  return;
+
+ UEPtr<UContainer> class_data=factory->GetComponent();
  if(!class_data)
   return;
 
@@ -969,8 +960,6 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 // Если объект уже принадлежит иному хранилищу то возвращает false
 void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
- UEPtr<UComponent> classtemplate=ClassesStorage.find(classid)->second;
-
  UInstancesStorage &instances=ObjectsStorage[classid];
 
  UInstancesStorageElement element(object,true);

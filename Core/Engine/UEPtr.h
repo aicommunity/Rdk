@@ -105,7 +105,7 @@ public: // Ìועמהû
 UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
-template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){};
+template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){}
 virtual ~UEPtr(void);
 // --------------------------
 

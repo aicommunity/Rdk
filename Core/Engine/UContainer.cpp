@@ -1881,9 +1881,9 @@ bool UContainer::Default(void)
 
    // Если существует прообраз в хранилище, то берем настройки параметров
    // из прообраза
-   UEPtr<UContainer> original;
+   /*UEPtr<UContainer> original; // отмена фичи - рефакторин ядра на абстрактную фаьбрику
    if(Storage)
-	original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));
+ original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));*/
 
    SetTimeStep(2000);
    SetMaxCalculationDuration(-1);
@@ -1891,14 +1891,14 @@ bool UContainer::Default(void)
    SetDebugSysEventsMask(0xFFFFFFFF);
 
 
-   if(original && original != this)
+   /*if(original && original != this)
    {
 	NameT name=Name;
 	bool activity=Activity;
 	original->CopyProperties(this,ptParameter);
 	SetName(name);
 	SetActivity(activity);
-   }
+			}*/
 
    if(!ADefault())
 	return false;

@@ -6,14 +6,30 @@
 
 namespace RDK {
 
+ extern const UId ForbiddenId;
+
  /// Абстрактная фабрика
  class UComponentAbstractFactory
  {
+ protected:
+  UId ClassId;
+
  public:
+  UComponentAbstractFactory();
+  virtual ~UComponentAbstractFactory();
+
+  /// Создание компонента
   virtual UEPtr<UComponent> New() = 0;
 
+  /// Создание компонента с копированием в него компонента @param prototype
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage) = 0;
 
-  virtual UEPtr<UComponent> Prototype(const UEPtr<UComponent> &prototype, UEPtr<UStorage> storage) = 0;
+  /// Сбрасывает объект к исходному состоянию, которое зависит от порождающей фабрики
+  virtual void ResetComponent(UEPtr<UComponent> component) const = 0;
+
+  // ClassId set/get
+  void SetClassId(const UId id);
+  UId GetClassId() const;
  };
 
  /// Фабрика, основанная на виртуальном методе (старый механизм работы)
@@ -28,7 +44,11 @@ namespace RDK {
 
   virtual UEPtr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(const UEPtr<UComponent> &prototype, UEPtr<UStorage> storage);
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage);
+
+  virtual void ResetComponent(UEPtr<UComponent> component) const;
+
+  UEPtr<UContainer> GetComponent();
  };
 
  /// Фабрика, основанная на статическом фабричном методе
@@ -43,10 +63,12 @@ namespace RDK {
 
   virtual UEPtr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(const UEPtr<UComponent> &prototype, UEPtr<UStorage> storage);
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage);
+
+  virtual void ResetComponent(UEPtr<UComponent> component) const;
  };
 
- class UXMLDescriptionFactory: public UComponentFactoryMethod
+ /*class UXMLDescriptionFactory: public UComponentAbstractFactory
  {
  protected:
   bool CreateStandartAfterInit;
@@ -57,7 +79,11 @@ namespace RDK {
   virtual ~UXMLDescriptionFactory();
 
   virtual UEPtr<UComponent> New();
- };
+
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage);
+
+  virtual void ResetComponent(UEPtr<UComponent> component) const;
+ };*/
 
 }
 
