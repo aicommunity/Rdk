@@ -44,7 +44,7 @@ namespace RDK {
 
   virtual UEPtr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage);
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage);
 
   virtual void ResetComponent(UEPtr<UComponent> component) const;
 
@@ -63,7 +63,7 @@ namespace RDK {
 
   virtual UEPtr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage);
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage);
 
   virtual void ResetComponent(UEPtr<UComponent> component) const;
  };
