@@ -977,7 +977,7 @@ UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
-  throw EClassIdNotExist(object->GetClass());
+  return ForbiddenId;
 
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
 						J=instances->second.end(); I!=J; ++I)

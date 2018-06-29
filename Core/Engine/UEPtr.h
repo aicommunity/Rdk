@@ -105,6 +105,7 @@ public: // Методы
 UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
+// не константная ссылка придет сюда
 template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){}
 virtual ~UEPtr(void);
 // --------------------------
