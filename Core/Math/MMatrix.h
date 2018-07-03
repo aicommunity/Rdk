@@ -395,7 +395,7 @@ bool MMatrix<T,Rows,Cols>::Resize(const MMatrixSize &size)
  if(size.GetDimensions() != 2)
   return false;
 
- return (size[0] == Rows) && (size[1] == Cols);
+ return (unsigned(size[0]) == Rows) && (unsigned(size[1]) == Cols);
 }
 
 /// Возвращает суммарный размер данных матрицы в байтах
