@@ -196,12 +196,12 @@ void UComponentLinksWidget::createLink()
     {
         if(outputItem->text(1) != inputItem->text(1))
         {
-            QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1), QMessageBox::Ok);
+            QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
             return;
         }
         if(!inputItem->text(2).isEmpty())
         {
-            QMessageBox::critical(this,"The input busy", "The input is already connected!", QMessageBox::Ok);
+            QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
             return;
         }
     }
