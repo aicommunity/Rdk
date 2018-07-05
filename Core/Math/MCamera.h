@@ -452,7 +452,6 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 	T r2=point(0)*point(0)+point(1)*point(1);
 	T r4=r2*r2;
 	T r6=r4*r2;
-	T r8=r4*r4;
 	T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
 	T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
 	T m1=dividend/divider;

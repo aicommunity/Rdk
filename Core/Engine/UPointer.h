@@ -152,7 +152,7 @@ virtual int Find(UEPtr<const UContainer> cont) const
  T** sources=Sources;
  for(size_t i=0;i<Size;i++,sources++)
   if(*sources == cont)
-   return i;
+   return int(i);
 
  return -1;
 };

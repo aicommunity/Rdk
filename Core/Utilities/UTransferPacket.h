@@ -62,7 +62,7 @@ class RDK_LIB_TYPE UTransferPacket
 
         // Возвращает размер буфера параметра
         inline int GetParamSize(int i) const
-         { return Params[i].size(); };
+         { return int(Params[i].size()); };
 
         // Возвращает контрольную сумму
         inline unsigned int GetChecksum(void) const

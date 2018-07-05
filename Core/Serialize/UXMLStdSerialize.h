@@ -232,7 +232,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
 // if(storage.GetNodeAttribute("Type") != "std::map")
 //  return storage;
 
- size_t size=0;
+ int size=0;
 // size=atoi(storage.GetNodeAttribute("Size"));
  size=storage.GetNumNodes();
  data.clear();
@@ -241,7 +241,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
   return storage;
 
  std::pair<T1,T2> p;
- for(size_t i=0;i<size;i++)
+ for(int i=0;i<size;i++)
  {
   if(!storage.SelectNode("elem",i))
   {
@@ -331,7 +331,7 @@ template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
 {
  storage.SetNodeAttribute("Type","std::vector");
- unsigned int size=data.size();
+ size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
  if(size == 0)
@@ -353,7 +353,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 // if(storage.GetNodeAttribute("Type") != "std::vector")
 //  return storage;
 
- unsigned int size=0;
+ int size=0;
 // size=RDK::atoi(storage.GetNodeAttribute("Size"));
  size=storage.GetNumNodes();
 
@@ -366,7 +366,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 
  T* pdata=&data[0];
 
- for(size_t i=0;i<size;i++)
+ for(int i=0;i<size;i++)
  {
   if(!storage.SelectNode("elem",i))
    return storage;
