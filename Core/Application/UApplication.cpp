@@ -1192,7 +1192,10 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
 
  std::string data;
  if(!LoadFile(file_name,data))
+ {
+  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load model file: ")+file_name).c_str());
   return false;
+ }
 
  if(!data.empty())
  {
@@ -1225,7 +1228,10 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string &
 
  std::string data;
  if(!LoadFile(file_name,data))
+ {
+  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load parameters file: ")+file_name).c_str());
   return false;
+ }
 
  if(!data.empty())
  {
