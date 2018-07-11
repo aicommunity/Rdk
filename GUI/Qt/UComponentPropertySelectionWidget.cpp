@@ -15,9 +15,12 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
     componentsList->setVerticalOrientation(false);
     componentsList->openTabN(mode);
     ui->horizontalLayoutComponentsList->addWidget(componentsList);
-    readSettings(QString::fromLocal8Bit(
+    if(application)
+    {
+     readSettings(QString::fromLocal8Bit(
                    application->GetProjectPath().c_str())+"settings.qt");
-    componentsList->ALoadParameters();
+     componentsList->ALoadParameters();
+    }
 }
 
 UComponentPropertySelectionWidget::~UComponentPropertySelectionWidget()
