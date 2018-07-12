@@ -2,134 +2,96 @@
 #include "ui_UGraphWidget.h"
 #include <iostream>
 
-GraphWindow::GraphWindow(QWidget *parent, RDK::UApplication *app) :
+UGraphWidget::UGraphWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent,app),
-    ui(new Ui::GraphWindow)
+    ui(new Ui::UGraphWidget)
 {
     setAccessibleName("GraphWindow");
     UpdateInterval = 30;
 
     ui->setupUi(this);
-    graphPainter = new OtherWindow(this);
+
+    graphPainter = new UGraphWindow(this);
     ui->verticalLayoutGraph->addWidget(graphPainter);
 
-    connect(ui->drawOneGraph, SIGNAL(pressed()), this, SIGNAL(drawSmth()));
-    connect(ui->delAllButton, SIGNAL(pressed()), this, SIGNAL(delSignal()));
+    // Если нажали на кнопку - появляется сигнал
+    //connect(ui->drawOneGraph, SIGNAL(pressed()), this, SIGNAL(drawSmth()));
+    connect(ui->delAllButton, SIGNAL(pressed()), this, SIGNAL(delAllButtonSignal()));
     connect(ui->changeColor, SIGNAL(pressed()), this, SIGNAL(changeColorSignal()));
     connect(ui->changeCurrentItem, SIGNAL(pressed()), this, SIGNAL(changeCurrentItemSignal()));
 
-    double leftLimit = -1; //Начало интервала, где рисуем график по оси Ox
-    double rightLimit =  12; //Конец интервала, где рисуем график по оси Ox
-    graphPainter->mainSettings (leftLimit,rightLimit,"Xxx","Yyy");
-
-
-
-    connect(this, SIGNAL(transferDataSignal(int,QVector<double>,QVector<double>)), graphPainter, SLOT(dataFromMainWin(int,QVector<double>,QVector<double>)));
-    connect(this, SIGNAL(drawSmth()), graphPainter, SLOT(pressEvent()));
-    connect(this, SIGNAL(delSignal()), graphPainter, SLOT(delAllGraph()));
+    // Сигнал связывается со слотом
+    connect(this, SIGNAL(transferDataSignal(int,QVector<double>,QVector<double>)),
+            graphPainter, SLOT(setData(int,QVector<double>,QVector<double>)));
+    //connect(this, SIGNAL(drawSmth()), graphPainter, SLOT(pressEvent()));
+    connect(this, SIGNAL(delAllButtonSignal()), graphPainter, SLOT(delAllGraph()));
     connect(this, SIGNAL(changeColorSignal()), graphPainter, SLOT(changeColor()));
     connect(this, SIGNAL(changeCurrentItemSignal()), graphPainter, SLOT(changeCurrentItem()));
 
-    //UpdateInterface(true);
+    //Изначально не нужно изменять правую границу графика
+    //Пока флаг не изменится
+    flagUpdateBorders=-1;
+
+    double leftLimit = -1; //Начало интервала, где рисуем график по оси Ox
+    double rightLimit =  12; //Конец интервала, где рисуем график по оси Ox
+    double lowerLimit = -2; //Начало интервала, где рисуем график по оси Ox
+    double upperLimit =  2; //Конец интервала, где рисуем график по оси Ox
+    graphPainter->mainStartGraphSettings (leftLimit,rightLimit, lowerLimit, upperLimit,
+                                          "time","Selected Output");
+
+
 }
 
-GraphWindow::~GraphWindow()
+UGraphWidget::~UGraphWidget()
 {
     delete ui;
 }
 
 
-/*void GraphWindow::addMainData(int id, std::vector<double> X1, std::vector<double> Y1, const int N)
+void UGraphWidget::addDataToGraph(int id, std::vector<double>  X1, std::vector<double> Y1)
 {
-    masX.resize(id);
-    masY.resize(id);
-    masX[id-1].resize(N);
-    masY[id-1].resize(N);
-
-    for (int j=0; j<N; j++)
-    {
-        masX[id-1][j]=X1[j];
-        masY[id-1][j]=Y1[j];
-    }
-    //std::cout<<X1[0]<<X1[1]<<X1[2]<<X1[3]<<std::endl;
-    emit transferDataSignal(id, masX[id-1], masY[id-1]);
-}
-*/
-/*void GraphWindow::addMainData(int id, std::vector<double> X1, std::vector<double> Y1)
-{
-    int N=X1.size();
-    masX.resize(id);
-    masY.resize(id);
-    masX[id-1].resize(N);
-    masY[id-1].resize(N);
-
-    for (int j=0; j<N; j++)
-    {
-        masX[id-1][j]=X1[j];
-        masY[id-1][j]=Y1[j];
-    }
-    //std::cout<<X1[0]<<X1[1]<<X1[2]<<X1[3]<<std::endl;
-    emit transferDataSignal(id, masX[id-1], masY[id-1]);
-}*/
-
-void GraphWindow::addMainData(int id, std::vector<double>  X1, std::vector<double> Y1)
-{
-    id++;
     //проверить есть ли массив с нужным id, если нет, то добавить
     size_t startSizeMas=masX.size();
-    if (startSizeMas<id)
+    if (startSizeMas<id+1)
     {
-        masX.resize(id);
-        masY.resize(id);
+        masX.resize(id+1);
+        masY.resize(id+1);
     }
 
     //Изменить размер на нужный
-    size_t startSizeElem = masX[id-1].size();
+    size_t startSizeElem = masX[id].size();
     size_t addSizeElem = X1.size();
-    masX[id-1].resize(startSizeElem+addSizeElem);
-    masY[id-1].resize(startSizeElem+addSizeElem);
+    masX[id].resize(startSizeElem+addSizeElem);
+    masY[id].resize(startSizeElem+addSizeElem);
 
    //Заполнить появившеся место
     for (size_t j=startSizeElem; j<startSizeElem+addSizeElem-1; j++)
     {
-        masX[id-1][j]=X1[j-startSizeElem];
-        masY[id-1][j]=Y1[j-startSizeElem];
+        masX[id][j]=X1[j-startSizeElem];
+        masY[id][j]=Y1[j-startSizeElem];
     }
-    emit transferDataSignal(id, masX[id-1], masY[id-1]);
+    emit transferDataSignal(id, masX[id], masY[id]);
 }
 
-void GraphWindow::addMainData(int id, double X1, double Y1)
+void UGraphWidget::addDataToGraph(int id, double X1, double Y1)
 {
-    id++;
     //проверить есть ли массив с нужным id, если нет, то добавить
     size_t startSizeMas=masX.size();
-    if (startSizeMas<id)
+    if (startSizeMas<id+1)
     {
-        masX.resize(id);
-        masY.resize(id);
+        masX.resize(id+1);
+        masY.resize(id+1);
     }
 
     //Положить элементы в конец каждого массива
-    masX[id-1].push_back(X1);
-    masY[id-1].push_back(Y1);
+    masX[id].push_back(X1);
+    masY[id].push_back(Y1);
 
-    emit transferDataSignal(id, masX[id-1], masY[id-1]);
+    emit transferDataSignal(id, masX[id], masY[id]);
 }
-/*void  GraphWindow::addData (int id, std::vector<double> X, std::vector<double> Y)
-{
-    size_t i=X.size();
-    size_t n=i+masX[id-1].size();
-    masX[id-1].resize(n);
-    masY[id-1].resize(n);
-    for (size_t j=i; j<n; j++)
-    {
-        masX[id-1][j]=X[j-i];
-        masY[id-1][j]=Y[j-i];
-    }
-    emit transferDataSignal(id, masX[id-1], masY[id-1]);
-}*/
-//--------------------------------------------------------------------------------
-void GraphWindow::AUpdateInterface()
+
+
+void UGraphWidget::AUpdateInterface()
 {
     int n=graphPainter->getSize();
     for(int i=0; i<n; i++)
@@ -156,34 +118,20 @@ void GraphWindow::AUpdateInterface()
         double x=Model_GetDoubleRealTime();
 
         // ее данные положим на этот график
-        addMainData(i,x,y);
+        addDataToGraph(i,x,y);
+        if (flagUpdateBorders>0)
+            graphPainter->changeRightBorder(x+0.1*x);
     }
     graphPainter->redrawGraph();
 }
-//--------------------------------------------------------------------------------
 
-OtherWindow *GraphWindow::getGraphPainter() const
+
+UGraphWindow *UGraphWidget::getGraphPainter() const
 {
     return graphPainter;
 }
 
-void GraphWindow::on_delAllButton_clicked()
-{
-}
-
-void GraphWindow::on_changeCurrentItem_clicked()
-{
-}
-
-void GraphWindow::on_changeColor_clicked()
-{
-}
-
-void GraphWindow::on_drawOneGraph_clicked()
-{
-}
-
-void GraphWindow::on_selectDir_clicked()
+void UGraphWidget::on_selectDir_clicked()
 {
     std::cout<<"selectDir_clicked"<<std::endl;
     /*/// Экзепляр класса приложения
@@ -199,7 +147,7 @@ void GraphWindow::on_selectDir_clicked()
     if (dialog.exec())
     {
         //Заполнение одного элемента вектора - структуры
-        int graph_index=graphPainter->addGraph("first",Qt::green);
+        int graph_index=graphPainter->addGraphVisualParameters("first",Qt::green);
         graphPainter->setGraphDataSource(graph_index,dialog.componentsList->getSelectedChannelIndex(),dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data(),dialog.componentsList->getSelectedPropertyName().toLocal8Bit().data(),"type",0,0);
 
         /*selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
@@ -209,4 +157,9 @@ void GraphWindow::on_selectDir_clicked()
     dialog.writeSettings(QString::fromLocal8Bit(
                            application->GetProjectPath().c_str())+"settings.qt");
 
+}
+
+void UGraphWidget::on_updateBordersButton_clicked()
+{
+    flagUpdateBorders*=-1;
 }

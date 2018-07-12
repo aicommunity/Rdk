@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GraphWindow</class>
- <widget class="QWidget" name="GraphWindow">
+ <class>UGraphWidget</class>
+ <widget class="QWidget" name="UGraphWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -31,37 +31,37 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="delAllButton">
+        <widget class="QPushButton" name="selectDir">
          <property name="text">
-          <string>delAllButton</string>
+          <string>Select Output</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="changeCurrentItem">
          <property name="text">
-          <string>changeCurrentItem</string>
+          <string>Change сurrent item</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="changeColor">
          <property name="text">
-          <string>changeColor</string>
+          <string>Change Color</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="drawOneGraph">
+        <widget class="QPushButton" name="updateBordersButton">
          <property name="text">
-          <string>drawOneGraph</string>
+          <string>Update Borders</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="selectDir">
+        <widget class="QPushButton" name="delAllButton">
          <property name="text">
-          <string>selectDir</string>
+          <string>Delete All</string>
          </property>
         </widget>
        </item>

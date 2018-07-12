@@ -16,7 +16,7 @@ struct TSingleGraph
     //координаты элемента матрицы
     int Jx;
     int Jy;
-}
+};
 
 #endif // TSINGLEGRAPH_H
 

@@ -96,7 +96,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
 
-    graphWindowWidget = new GraphWindow(this, application);
+    graphWindowWidget = new UGraphWidget(this, application);
     ui->dockWidgetGraph->setWidget(graphWindowWidget);
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);

@@ -87,7 +87,7 @@ private:
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
-    GraphWindow *graphWindowWidget;
+    UGraphWidget *graphWindowWidget;
 
     /// Ёкзепл€р класса приложени€
     RDK::UApplication *application;

@@ -1,6 +1,5 @@
-#ifndef GRAPHWINDOW_H
-#define GRAPHWINDOW_H
-
+#ifndef U_GRAPH_WIDGET_H
+#define U_GRAPH_WIDGET_H
 
 #include "UVisualControllerWidget.h"
 #include "UStructSingleGraph.h"
@@ -10,31 +9,44 @@
 
 
 namespace Ui {
-class GraphWindow;
+class UGraphWidget;
 }
 
-class GraphWindow : public UVisualControllerWidget
+class UGraphWidget : public UVisualControllerWidget
 {
         Q_OBJECT
 
     public:
-        ///Вектора, в которых хранятся массивы точек, по которым строятся графики
+        /// Вектор X, в которых хранятся массивы точек, по которым строятся графики
         std::vector<QVector<double>> masX;
+
+        /// Вектор Y, в которых хранятся массивы точек, по которым строятся графики
         std::vector<QVector<double>> masY;
 
+        /// Флаг обновления правой границы графика
+        /// Если он -1, то не обновляется
+        /// если 1 - обновляется
+        int flagUpdateBorders;
+
     public:
-        ///Конструктор-деструктор
-        explicit GraphWindow(QWidget *parent = 0, RDK::UApplication* app = NULL);
-        ~GraphWindow();
-        ///Передача значений, по которым строить
-        void addMainData(int id, std::vector<double> X1, std::vector<double> Y1);
-        void addMainData(int id, double X1, double Y1);
-        /*///Передача дополнительных параметров
-        ///Например тех данных, которые появились по ходу работы
-        void addData (int id, std::vector<double> X, std::vector<double> Y);*/
+        /// Конструктор
+        /// Задает врем обновления графика
+        /// Создает в себе Виджет графика
+        /// Связывает кнопки с действиями Виджета графика
+        /// Определяет начальные параметры: размеры СК, подписи осей
+        explicit UGraphWidget(QWidget *parent = 0, RDK::UApplication* app = NULL);
+
+        /// Деструктор
+        ~UGraphWidget();
+
+        /// Передача значений, по которым строить график
+        /// Параметры номер графика, координаты X, координаты Y
+        void addDataToGraph(int id, std::vector<double> X1, std::vector<double> Y1);
+        void addDataToGraph(int id, double X1, double Y1);
+
 
         ///Возвращает указатель на private OtherWindow
-        OtherWindow *getGraphPainter() const;
+        UGraphWindow *getGraphPainter() const;
 
         ///Обновляет график
         ///Обращаемся к ядру, берем матрицу
@@ -42,29 +54,36 @@ class GraphWindow : public UVisualControllerWidget
         virtual void AUpdateInterface();
 
     signals:
-        ///Сигнал от кнопки drawOneGraph
-        void drawSmth();
+        /*///Сигнал от кнопки drawOneGraph
+        void drawSmth();*/
+
         ///Сигнал от кнопки delAllButton
-        void delSignal();
+        void delAllButtonSignal();
+
         ///Сигнал рисовалке, что нужно нарисовать
         ///В графике id по точкам X и Y продолжение графика
         void transferDataSignal(int id, QVector<double> X, QVector<double> Y);
+
         ///Сигнал от кнопки changeColor
         void changeColorSignal();
+
         ///Сигнал от кнопки сhangeCurrentItem
         void changeCurrentItemSignal();
 
 
 private slots:
-        void on_delAllButton_clicked();
-        void on_changeCurrentItem_clicked();
-        void on_changeColor_clicked();
-        void on_drawOneGraph_clicked();
+        //void on_drawOneGraph_clicked();
+
+        /// При нажатии на кнопку Select Output вызывается меню
+        /// В котором нужно выбрать какой из входов будет отображаться на графике
         void on_selectDir_clicked();
 
+        /// Ставит/снимает флаг, влияющий на обновление границ графика
+        void on_updateBordersButton_clicked();
+
 private:
-        Ui::GraphWindow *ui;
-        OtherWindow* graphPainter;
+        Ui::UGraphWidget *ui;
+        UGraphWindow* graphPainter;
 };
 
-#endif // GRAPHWINDOW_H
+#endif // U_GRAPH_WIDGET_H
