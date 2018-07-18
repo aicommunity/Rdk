@@ -39,6 +39,7 @@ class UGraphWindow : public QWidget
         /// Указывает параметры структуры, характеризующие вид графика (цвет, имя)
         /// Возвращает индекс
         int addGraphVisualParameters(const std::string &graphName, QColor myColor);
+        int addGraphVisualParameters(const std::string &graphName, int myColor);
         int addGraphVisualParameters(const std::string &graphName);
 
         /// По индексу добавляет источник данных для конкретного графика
@@ -55,8 +56,53 @@ class UGraphWindow : public QWidget
         /// Обновляет график
         void redrawGraph(void);
 
-        /// Изменяет значение Правой границы графика
-        void changeRightBorder(double newRightLim);
+        //------------------------------------------------------------
+
+        /// По номеру элемента выдает значения структуры вектора структур
+        /// Все значения кроме индекса канала передаются в виде указателей
+        int  getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameCompоnent,
+                               std::string* nameProperty, std::string* typeProperty, int* Jx, int* Jy);
+
+        ///Передает значение currentItem
+        int getCurrentItem(void);
+
+        ///Передает значение Границы поля СК Начало Х
+        double getLeftLimitGraph(void);
+
+        ///Передает Границы поля СК Конец Х
+        double getRightLimitGraph(void);
+
+        ///Передает Границы поля СК Начало Y
+        double getUpperLimitGraph(void);
+
+        ///Передает Границы поля СК Конец Y
+        double getLowerLimitGraph(void);
+
+        //-------------------------------------------------------------
+
+        ///Выставляет нужное значение currentItem
+        void setCurrentItem(int myCurrentItem);
+
+        ///Выставляет нужные Границы поля СК Начало Х
+        void setLeftLimitGraph(double myLimitGraph);
+
+        /// Выставляет нужные Границы поля СК Конец Х
+        void setRightLimitGraph(double myLimitGraph);
+
+        /// Выставляет нужные Границы поля СК Начало Y
+        void setUpperLimitGraph(double myLimitGraph);
+
+        /// Выставляет нужные Границы поля СК Конец Y
+        void setLowerLimitGraph(double myLimitGraph);
+
+        void setColorCurrentItem(int color);
+
+        void setLables(QString lableX,QString  lableY);
+
+        //----------------------------------------------------------------
+
+        int delCurrentItemGraph(void);
+
 
 
     public slots:
@@ -73,6 +119,7 @@ class UGraphWindow : public QWidget
 
         /// Изменяет цвет текущего графика на следующий
         void changeColor(void);
+
 
     private:
         Ui::UGraphWindow *ui;

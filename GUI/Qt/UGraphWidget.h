@@ -26,7 +26,18 @@ class UGraphWidget : public UVisualControllerWidget
         /// Флаг обновления правой границы графика
         /// Если он -1, то не обновляется
         /// если 1 - обновляется
-        int flagUpdateBorders;
+        int flagUpdateBordersX;
+        int flagUpdateBordersY;
+
+        /// Флаг говорит о том, что должны указываться последние
+        /// Н-элементов по оси Х
+        /// Если число -1, то график должен
+        double lastNElements;
+
+        ///Подпись оси х
+        QString lableX;
+        ///Подпись оси х
+        QString lableY;
 
     public:
         /// Конструктор
@@ -53,6 +64,11 @@ class UGraphWidget : public UVisualControllerWidget
         ///Ее данные положим на этот график
         virtual void AUpdateInterface();
 
+        /// Запись файла настроек
+        virtual void ASaveParameters();
+        /// Считывание файла настроек
+        virtual void ALoadParameters();
+
     signals:
         /*///Сигнал от кнопки drawOneGraph
         void drawSmth();*/
@@ -70,16 +86,22 @@ class UGraphWidget : public UVisualControllerWidget
         ///Сигнал от кнопки сhangeCurrentItem
         void changeCurrentItemSignal();
 
+public slots:
+        void slotActionSelectOutput();
+        void slotActionDeleteCurrentItem();
+        void slotActionSettings();
 
 private slots:
         //void on_drawOneGraph_clicked();
 
-        /// При нажатии на кнопку Select Output вызывается меню
+        /*/// При нажатии на кнопку Select Output вызывается меню
         /// В котором нужно выбрать какой из входов будет отображаться на графике
-        void on_selectDir_clicked();
+        void on_selectDir_clicked();*/
 
-        /// Ставит/снимает флаг, влияющий на обновление границ графика
-        void on_updateBordersButton_clicked();
+        /*/// Ставит/снимает флаг, влияющий на обновление границ графика
+        //void on_updateBordersButton_clicked();*/
+
+        /*void on_callDialog_clicked();*/
 
 private:
         Ui::UGraphWidget *ui;
