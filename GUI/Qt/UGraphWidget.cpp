@@ -16,7 +16,7 @@ UGraphWidget::UGraphWidget(QWidget *parent, RDK::UApplication *app) :
 
     ui->setupUi(this);
 
-    graphPainter = new UGraphWindow(this);
+    graphPainter = new UGraphPaintWidget(this);
     ui->verticalLayoutGraph->addWidget(graphPainter);
 
     //Добавление действий по правой кнопке
@@ -51,7 +51,9 @@ UGraphWidget::UGraphWidget(QWidget *parent, RDK::UApplication *app) :
     //Изначально не нужно изменять правую границу графика
     //Пока флаг не изменится
     flagUpdateBordersX=1;
-    flagUpdateBordersY=1;
+
+    flagUpdateBordersMaxY=1;
+    flagUpdateBordersMinY=1;
     // Задаем интервал слежения
     lastNElements = 0;
 
@@ -111,6 +113,35 @@ void UGraphWidget::addDataToGraph(int id, double X1, double Y1)
     emit transferDataSignal(id, masX[id], masY[id]);
 }
 
+void UGraphWidget::mainGraphSettings(double leftLimit, double rightLimit, double lowerLimit, double upperLimit, const QString &nameX, const QString &nameY)
+{
+    graphPainter->mainStartGraphSettings(leftLimit,rightLimit,lowerLimit,upperLimit,nameX,nameY);
+}
+
+int UGraphWidget::addGraphParameters(const std::string &graphName, int myColor)
+{
+    int a = graphPainter->addGraphVisualParameters(graphName, myColor);
+    return a;
+}
+
+int UGraphWidget::addGraphParameters(const std::string &graphName)
+{
+    int a = graphPainter->addGraphVisualParameters(graphName);
+    return a;
+}
+
+void UGraphWidget::setGraphDataSource(int graph_index, int channel_index,
+                                      const std::string &componentName, const std::string &propertyName,
+                                      const std::string &type, int jx, int jy)
+{
+    graphPainter->setGraphDataSource(graph_index, channel_index, componentName, propertyName, type, jx, jy);
+}
+
+void UGraphWidget::setCurrentItem(int myCurrentItem)
+{
+    graphPainter->setCurrentItem(myCurrentItem);
+}
+
 void UGraphWidget::AUpdateInterface()
 {
     int n=graphPainter->getSize();
@@ -151,14 +182,16 @@ void UGraphWidget::AUpdateInterface()
                 graphPainter->setRightLimitGraph(x+0.1*x);
         }
         //Проверяем нужно ли изменять границы по оси Y
-        if (flagUpdateBordersY>0)
+        if (flagUpdateBordersMaxY>0)
         {
+            //максимальная граница
             if ((1.1*y)>graphPainter->getUpperLimitGraph())
                 graphPainter->setUpperLimitGraph(y+0.1*y);
             //std::cout<<graphPainter->getUpperLimitGraph()<<"   "<<y<<std::endl;
         }
-        if (flagUpdateBordersY>0)
+        if (flagUpdateBordersMinY>0)
         {
+            //минимальная граница
             if ((1.1*y)<graphPainter->getLowerLimitGraph())
                 graphPainter->setLowerLimitGraph(y+0.1*y);
         }
@@ -167,42 +200,10 @@ void UGraphWidget::AUpdateInterface()
     graphPainter->redrawGraph();
 }
 
-UGraphWindow *UGraphWidget::getGraphPainter() const
+UGraphPaintWidget *UGraphWidget::getGraphPainter() const
 {
     return graphPainter;
 }
-
-
-
-
-/*void UGraphWidget::on_selectDir_clicked()
-{
-    std::cout<<"selectDir_clicked"<<std::endl;
-
-    if(!application)
-        return;
-    UComponentPropertySelectionWidget dialog(this, 3, application);
-    //dialog.componentsList->setChannelsListVisible(ui->checkBoxIndChannels->isChecked());
-    //if (dialog.exec() && selectedImage)
-    if (dialog.exec())
-    {
-        //Заполнение одного элемента вектора - структуры
-        int graph_index=graphPainter->addGraphVisualParameters("first",Qt::green);
-        graphPainter->setGraphDataSource(graph_index,dialog.componentsList->getSelectedChannelIndex(),dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data(),dialog.componentsList->getSelectedPropertyName().toLocal8Bit().data(),"type",0,0);
-
-    }
-    dialog.writeSettings(QString::fromLocal8Bit(
-                           application->GetProjectPath().c_str())+"settings.qt");
-
-}*/
-
-/*void UGraphWidget::on_updateBordersButton_clicked()
-{
-    flagUpdateBordersX*=-1;
-    //std::cout<<"updateX"<<flagUpdateBordersX<<std::endl;
-}*/
-
-
 
 
 void UGraphWidget::ASaveParameters()
@@ -390,7 +391,8 @@ void UGraphWidget::slotActionSettings()
     //UGraphControlDialog settingsDialog(this, flagUpdateBordersX, 1);
     UGraphControlDialog settingsDialog(this);
     settingsDialog.setAxisXChangeData(flagUpdateBordersX);
-    settingsDialog.setAxisYChangeData(flagUpdateBordersY);
+    settingsDialog.setAxisMaxYChangeData(flagUpdateBordersMaxY);
+    settingsDialog.setAxisMinYChangeData(flagUpdateBordersMinY);
     settingsDialog.setDecimalPlaces(1);
     settingsDialog.setDisplayInterval(lastNElements);
     settingsDialog.setLableX(lableX);
@@ -399,7 +401,8 @@ void UGraphWidget::slotActionSettings()
     {
         lastNElements = settingsDialog.getDoubleSpinBoxData();
         flagUpdateBordersX = settingsDialog.getAxisXChangeData();
-        flagUpdateBordersY = settingsDialog.getAxisYChangeData();
+        flagUpdateBordersMaxY = settingsDialog.getAxisMaxYChangeData();
+        flagUpdateBordersMinY = settingsDialog.getAxisMinYChangeData();
         lableX = settingsDialog.getLableX();
         lableY = settingsDialog.getLableY();
         graphPainter->setLables(lableX, lableY);
@@ -421,44 +424,3 @@ void UGraphWidget::slotActionSettings()
 
 }
 
-
-
-
-/*void UGraphWidget::on_callDialog_clicked()
-{
-    std::cout<<"call dialod cliced"<<std::endl;
-    if(!application)
-        return;
-
-    //UGraphControlDialog settingsDialog(this, flagUpdateBordersX, 1);
-    UGraphControlDialog settingsDialog(this);
-    settingsDialog.setAxisXChangeData(flagUpdateBordersX);
-    settingsDialog.setAxisYChangeData(flagUpdateBordersY);
-    settingsDialog.setDecimalPlaces(1);
-    settingsDialog.setDisplayInterval(lastNElements);
-    settingsDialog.setLableX(lableX);
-    settingsDialog.setLableY(lableY);
-    if (settingsDialog.exec())
-    {
-        lastNElements = settingsDialog.getDoubleSpinBoxData();
-        flagUpdateBordersX = settingsDialog.getAxisXChangeData();
-        flagUpdateBordersY = settingsDialog.getAxisYChangeData();
-        lableX = settingsDialog.getLableX();
-        lableY = settingsDialog.getLableY();
-        graphPainter->setLables(lableX, lableY);
-        int color = settingsDialog.getColor();
-        graphPainter->setColorCurrentItem(color);
-
-        if(settingsDialog.getDelInf())
-        {
-            int a = graphPainter->delCurrentItemGraph();
-            if(a>=0)
-            {
-                masX.erase(masX.begin()+a);
-                masY.erase(masY.begin()+a);
-                graphPainter->redrawGraph();
-
-            }
-        }
-    }
-}*/

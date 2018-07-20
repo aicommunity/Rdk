@@ -4,7 +4,7 @@
 #include "UVisualControllerWidget.h"
 #include "UStructSingleGraph.h"
 #include "qcustomplot.h"
-#include "UGraphWindow.h"
+#include "UGraphPaintWidget.h"
 #include "UComponentPropertySelectionWidget.h"
 
 
@@ -16,7 +16,6 @@ class UGraphWidget : public UVisualControllerWidget
 {
         Q_OBJECT
 
-    public:
         /// Вектор X, в которых хранятся массивы точек, по которым строятся графики
         std::vector<QVector<double>> masX;
 
@@ -27,7 +26,8 @@ class UGraphWidget : public UVisualControllerWidget
         /// Если он -1, то не обновляется
         /// если 1 - обновляется
         int flagUpdateBordersX;
-        int flagUpdateBordersY;
+        int flagUpdateBordersMaxY;
+        int flagUpdateBordersMinY;
 
         /// Флаг говорит о том, что должны указываться последние
         /// Н-элементов по оси Х
@@ -55,9 +55,25 @@ class UGraphWidget : public UVisualControllerWidget
         void addDataToGraph(int id, std::vector<double> X1, std::vector<double> Y1);
         void addDataToGraph(int id, double X1, double Y1);
 
+        /// Добавляет на СК основные начальные параметры пааметры
+        /// Границы СК, подписи осей
+        void mainGraphSettings (double leftLimit, double rightLimit,double lowerLimit, double upperLimit,
+                                     const QString& nameX, const QString& nameY);
+
+        /// Указывает параметры структуры, характеризующие вид графика (цвет, имя)
+        /// Возвращает индекс
+        int addGraphParameters(const std::string &graphName, int myColor);
+        int addGraphParameters(const std::string &graphName);
+
+        /// По индексу добавляет источник данных для конкретного графика
+        void setGraphDataSource(int graph_index, int channel_index, const std::string &componentName,
+                                const std::string &propertyName, const std::string &type, int jx, int jy);
+
+        ///Выставляет нужное значение currentItem
+        void setCurrentItem(int myCurrentItem);
 
         ///Возвращает указатель на private OtherWindow
-        UGraphWindow *getGraphPainter() const;
+        UGraphPaintWidget *getGraphPainter() const;
 
         ///Обновляет график
         ///Обращаемся к ядру, берем матрицу
@@ -69,9 +85,7 @@ class UGraphWidget : public UVisualControllerWidget
         /// Считывание файла настроек
         virtual void ALoadParameters();
 
-    signals:
-        /*///Сигнал от кнопки drawOneGraph
-        void drawSmth();*/
+signals:
 
         ///Сигнал от кнопки delAllButton
         void delAllButtonSignal();
@@ -91,21 +105,10 @@ public slots:
         void slotActionDeleteCurrentItem();
         void slotActionSettings();
 
-private slots:
-        //void on_drawOneGraph_clicked();
-
-        /*/// При нажатии на кнопку Select Output вызывается меню
-        /// В котором нужно выбрать какой из входов будет отображаться на графике
-        void on_selectDir_clicked();*/
-
-        /*/// Ставит/снимает флаг, влияющий на обновление границ графика
-        //void on_updateBordersButton_clicked();*/
-
-        /*void on_callDialog_clicked();*/
 
 private:
-        Ui::UGraphWidget *ui;
-        UGraphWindow* graphPainter;
+        Ui::UGraphWidget* ui;
+        UGraphPaintWidget* graphPainter;
 };
 
 #endif // U_GRAPH_WIDGET_H
