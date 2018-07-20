@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UGraphWidget</class>
+ <widget class="QWidget" name="UGraphWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>733</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::ActionsContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>GraphWindow</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,5">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout"/>
+     </item>
+     <item>
+      <widget class="QFrame" name="verticalFrame">
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutGraph"/>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+  <action name="actionSelectOutput">
+   <property name="text">
+    <string>Select output</string>
+   </property>
+  </action>
+  <action name="actionChangeCurrenItem">
+   <property name="text">
+    <string>Change current item</string>
+   </property>
+  </action>
+  <action name="actionDeleteAll">
+   <property name="text">
+    <string>Delete all</string>
+   </property>
+  </action>
+  <action name="actionDeleteCurrentItem">
+   <property name="text">
+    <string>Delete current item</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
