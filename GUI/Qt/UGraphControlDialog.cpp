@@ -3,23 +3,13 @@
 #include <iostream>
 #include <QDoubleValidator>
 
-UGraphControlDialog::UGraphControlDialog(QWidget *parent, int axisX, int axisY) :
-//UGraphControlDialog::UGraphControlDialog(QWidget *parent) :
+UGraphControlDialog::UGraphControlDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::UGraphControlDialog)
 {
     ui->setupUi(this);
     color = -1;
     click = false;
-    /*if (axisX==-1)
-        ui->checkBoxAxisY->setChecked(true);
-    else
-        ui->checkBoxAxisY->setChecked(false);
-    if (axisY==-1)
-        ui->checkBoxAxisY->setChecked(true);
-    else
-        ui->checkBoxAxisY->setChecked(false);*/
-
     connect(ui->checkBoxAxisX, SIGNAL(toggled(bool)), this, SLOT(isActiveDoubleSpinBox(bool)));
 
 }
@@ -41,9 +31,16 @@ int UGraphControlDialog::getAxisXChangeData() const
     return 1;
 }
 
-int UGraphControlDialog::getAxisYChangeData() const
+int UGraphControlDialog::getAxisMaxYChangeData() const
 {
-    if (ui->checkBoxAxisY->isChecked()==false)
+    if (ui->checkBoxAxisMaxY->isChecked()==false)
+        return -1;
+    return 1;
+}
+
+int UGraphControlDialog::getAxisMinYChangeData() const
+{
+    if (ui->checkBoxAxisMinY->isChecked()==false)
         return -1;
     return 1;
 }
@@ -80,12 +77,19 @@ void UGraphControlDialog::setAxisXChangeData(int axisX) const
         ui->checkBoxAxisX->setChecked(false);
 }
 
-void UGraphControlDialog::setAxisYChangeData(int axisY) const
+void UGraphControlDialog::setAxisMaxYChangeData(int axisY) const
 {
     if (axisY!=-1)
-        ui->checkBoxAxisY->setChecked(true);
+        ui->checkBoxAxisMaxY->setChecked(true);
     else
-        ui->checkBoxAxisY->setChecked(false);
+        ui->checkBoxAxisMaxY->setChecked(false);
+}
+void UGraphControlDialog::setAxisMinYChangeData(int axisY) const
+{
+    if (axisY!=-1)
+        ui->checkBoxAxisMinY->setChecked(true);
+    else
+        ui->checkBoxAxisMinY->setChecked(false);
 }
 
 void UGraphControlDialog::setDecimalPlaces(int i) const
@@ -123,7 +127,6 @@ void UGraphControlDialog::isActiveDoubleSpinBox(bool b)
 void UGraphControlDialog::on_colorListWidget_currentRowChanged(int currentRow)
 {
     color = currentRow;
-    std::cout<<color<<std::endl;
 }
 
 void UGraphControlDialog::on_pushButton_clicked()

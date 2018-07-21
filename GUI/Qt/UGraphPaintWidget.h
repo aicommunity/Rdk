@@ -1,13 +1,13 @@
-#ifndef U_GRAPH_WINDOW_H
-#define U_GRAPH_WINDOW_H
+#ifndef U_GRAPH_PAINT_WIDGET_H
+#define U_GRAPH_PAINT_WIDGET_H
 #include "UStructSingleGraph.h"
 #include <QWidget>
 
 namespace Ui {
-class UGraphWindow;
+class UGraphPaintWidget;
 }
 
-class UGraphWindow : public QWidget
+class UGraphPaintWidget : public QWidget
 {
         Q_OBJECT
     /// Вектор структур, содержащих описание параметров графика
@@ -27,8 +27,8 @@ class UGraphWindow : public QWidget
 
 
     public:
-        explicit UGraphWindow(QWidget *parent = 0);
-        ~UGraphWindow();
+        explicit UGraphPaintWidget(QWidget *parent = 0);
+        ~UGraphPaintWidget();
 
     public:
         /// Добавляет на СК основные начальные параметры пааметры
@@ -48,7 +48,7 @@ class UGraphWindow : public QWidget
 
         /// Возвращает количество элементов в векторе структур
         /// т.е.количество уже описанных внешне графиков
-        int getSize(void);
+        int getSize(void) const;
 
         /// По индексу возвращает структуру с параметрами графика
         const TSingleGraph &getGraph(int id) const;
@@ -64,19 +64,19 @@ class UGraphWindow : public QWidget
                                std::string* nameProperty, std::string* typeProperty, int* Jx, int* Jy);
 
         ///Передает значение currentItem
-        int getCurrentItem(void);
+        int getCurrentItem(void) const;
 
         ///Передает значение Границы поля СК Начало Х
-        double getLeftLimitGraph(void);
+        double getLeftLimitGraph(void) const;
 
         ///Передает Границы поля СК Конец Х
-        double getRightLimitGraph(void);
+        double getRightLimitGraph(void) const;
 
         ///Передает Границы поля СК Начало Y
-        double getUpperLimitGraph(void);
+        double getUpperLimitGraph(void)  const;
 
         ///Передает Границы поля СК Конец Y
-        double getLowerLimitGraph(void);
+        double getLowerLimitGraph(void)  const;
 
         //-------------------------------------------------------------
 
@@ -95,12 +95,15 @@ class UGraphWindow : public QWidget
         /// Выставляет нужные Границы поля СК Конец Y
         void setLowerLimitGraph(double myLimitGraph);
 
+        ///Устанавливает цвет текущего графика
         void setColorCurrentItem(int color);
 
+        ///Устанавливает подписи по осям Х и У
         void setLables(QString lableX,QString  lableY);
 
         //----------------------------------------------------------------
 
+        ///Удаляет текущий график
         int delCurrentItemGraph(void);
 
 
@@ -122,7 +125,7 @@ class UGraphWindow : public QWidget
 
 
     private:
-        Ui::UGraphWindow *ui;
+        Ui::UGraphPaintWidget *ui;
 };
 
-#endif // OU_GRAPH_WINDOW_H
+#endif // OU_GRAPH_PAINT_WIDGET_H

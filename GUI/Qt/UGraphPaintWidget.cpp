@@ -1,23 +1,23 @@
-#include "UGraphWindow.h"
+#include "UGraphPaintWidget.h"
 #include "ui_UGraphWidget.h"
-#include "ui_UGraphWindow.h"
+#include "ui_UGraphPaintWidget.h"
 #include <iostream>
 
-UGraphWindow::UGraphWindow(QWidget *parent) :
+UGraphPaintWidget::UGraphPaintWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::UGraphWindow)
+    ui(new Ui::UGraphPaintWidget)
 {
     ui->setupUi(this);
 }
 
-UGraphWindow::~UGraphWindow()
+UGraphPaintWidget::~UGraphPaintWidget()
 {
     delete ui;
 }
 
 // Определяет границы графика по оси абсцисс
 // Подписывает наименование осей
-void UGraphWindow::mainStartGraphSettings (double leftLimit, double rightLimit,
+void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLimit,
                                            double lowerLimit, double upperLimit,
                                            const QString& nameX, const QString& nameY)
 {
@@ -45,7 +45,7 @@ void UGraphWindow::mainStartGraphSettings (double leftLimit, double rightLimit,
 // Изменяет параметры цвета и имени одного и графиков
 // Если график новый - добавляет его в вектор следующим элементом
 // Изменяет номер "активного" графика на изменяемый
-int UGraphWindow::addGraphVisualParameters(const std::string &graphName, QColor myColor)
+int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QColor myColor)
 {
     int myID=vectorGraph.size();
     TSingleGraph newTSingleGraph;
@@ -58,7 +58,7 @@ int UGraphWindow::addGraphVisualParameters(const std::string &graphName, QColor 
     return myID;
 }
 
-int UGraphWindow::addGraphVisualParameters(const std::string &graphName, int myColor)
+int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, int myColor)
 {
     static QColor masColor[]={
             Qt::color1,
@@ -92,7 +92,7 @@ int UGraphWindow::addGraphVisualParameters(const std::string &graphName, int myC
     return myID;
 }
 
-int UGraphWindow::addGraphVisualParameters(const std::string &graphName)
+int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
 {
     int myID=vectorGraph.size();
     TSingleGraph newTSingleGraph;
@@ -105,7 +105,7 @@ int UGraphWindow::addGraphVisualParameters(const std::string &graphName)
     return myID;
 }
 
-void UGraphWindow::setGraphDataSource(int graph_index, int channel_index, const std::string &componentName,
+void UGraphPaintWidget::setGraphDataSource(int graph_index, int channel_index, const std::string &componentName,
                                       const std::string &propertyName,
                                       const std::string &type, int jx, int jy)
 {
@@ -141,7 +141,7 @@ void UGraphWindow::pressEvent()
 }*/
 
 
-void UGraphWindow::delAllGraph(void)
+void UGraphPaintWidget::delAllGraph(void)
 {
     vectorGraph.clear();
     ui->widget->clearGraphs();
@@ -150,13 +150,13 @@ void UGraphWindow::delAllGraph(void)
 }
 
 //Определяет форму графика (передает массивы)
-void UGraphWindow::setData(int id, QVector<double> X, QVector<double> Y)
+void UGraphPaintWidget::setData(int id, QVector<double> X, QVector<double> Y)
 {
     ui->widget->graph(id)->setData(X,Y);
     //currentItem=id;
 }
 
-void UGraphWindow::changeCurrentItem(void)
+void UGraphPaintWidget::changeCurrentItem(void)
 {
     //std::cout<<"start "<<currentItem<<std::endl;
     if (currentItem==-2)
@@ -183,7 +183,7 @@ void UGraphWindow::changeCurrentItem(void)
     //std::cout<<"finish "<<currentItem<<std::endl;
 }
 
-void UGraphWindow::changeColor(void)
+void UGraphPaintWidget::changeColor(void)
 {
     static QColor masColor[]={
             Qt::color1,
@@ -224,17 +224,17 @@ void UGraphWindow::changeColor(void)
     }
 }
 
-int UGraphWindow::getSize(void)
+int UGraphPaintWidget::getSize(void) const
 {
     return vectorGraph.size();
 }
 
-const TSingleGraph& UGraphWindow::getGraph(int id) const
+const TSingleGraph& UGraphPaintWidget::getGraph(int id) const
 {
     return vectorGraph[id];
 }
 
-void UGraphWindow::redrawGraph(void)
+void UGraphPaintWidget::redrawGraph(void)
 {
     ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
     ui->widget->yAxis->setRange(lowerLimitGraph, upperLimitGraph);
@@ -246,7 +246,7 @@ void UGraphWindow::redrawGraph(void)
 //---------------------------------------------------Выдача параметров
 
 
-int  UGraphWindow::getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameCompоnent,
+int  UGraphPaintWidget::getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameCompоnent,
                       std::string* nameProperty, std::string* typeProperty, int* Jx, int* Jy)
 {
     static QColor masColor[]={
@@ -285,27 +285,27 @@ int  UGraphWindow::getStructContent(int i, int* graphColor, std::string* graphNa
     return vectorGraph[i].indexChannel;
 }
 
-int UGraphWindow::getCurrentItem(void)
+int UGraphPaintWidget::getCurrentItem(void) const
 {
     return currentItem;
 }
 
-double UGraphWindow::getLeftLimitGraph(void)
+double UGraphPaintWidget::getLeftLimitGraph(void) const
 {
     return leftLimitGraph;
 }
 
-double UGraphWindow::getRightLimitGraph(void)
+double UGraphPaintWidget::getRightLimitGraph(void) const
 {
     return rightLimitGraph;
 }
 
-double UGraphWindow::getUpperLimitGraph(void)
+double UGraphPaintWidget::getUpperLimitGraph(void) const
 {
     return upperLimitGraph;
 }
 
-double UGraphWindow::getLowerLimitGraph(void)
+double UGraphPaintWidget::getLowerLimitGraph(void) const
 {
     return lowerLimitGraph;
     //std::cout<<lowerLimitGraph<<std::endl;
@@ -313,33 +313,33 @@ double UGraphWindow::getLowerLimitGraph(void)
 
 //---------------------------------------------------Занесение параметров
 
-void UGraphWindow::setCurrentItem(int myCurrentItem)
+void UGraphPaintWidget::setCurrentItem(int myCurrentItem)
 {
     currentItem=myCurrentItem;
 
 }
 
-void UGraphWindow::setLeftLimitGraph(double myLimitGraph)
+void UGraphPaintWidget::setLeftLimitGraph(double myLimitGraph)
 {
     leftLimitGraph=myLimitGraph;
 }
 
-void UGraphWindow::setRightLimitGraph(double myLimitGraph)
+void UGraphPaintWidget::setRightLimitGraph(double myLimitGraph)
 {
     rightLimitGraph=myLimitGraph;
 }
 
-void UGraphWindow::setUpperLimitGraph(double myLimitGraph)
+void UGraphPaintWidget::setUpperLimitGraph(double myLimitGraph)
 {
     upperLimitGraph=myLimitGraph;
 }
 
-void UGraphWindow::setLowerLimitGraph(double myLimitGraph)
+void UGraphPaintWidget::setLowerLimitGraph(double myLimitGraph)
 {
     lowerLimitGraph=myLimitGraph;
 }
 
-void UGraphWindow::setColorCurrentItem(int color)
+void UGraphPaintWidget::setColorCurrentItem(int color)
 {
     static QColor masColor[]={
             Qt::black, //0
@@ -368,14 +368,14 @@ void UGraphWindow::setColorCurrentItem(int color)
     }
 }
 
-void UGraphWindow::setLables(QString lableX, QString lableY)
+void UGraphPaintWidget::setLables(QString lableX, QString lableY)
 {
     ui->widget->xAxis->setLabel(lableX);
     ui->widget->yAxis->setLabel(lableY);
     ui->widget->replot();
 }
 //--------------------------------------------------
-int UGraphWindow::delCurrentItemGraph()
+int UGraphPaintWidget::delCurrentItemGraph()
 {
 
     int a = currentItem;
