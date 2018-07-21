@@ -206,6 +206,9 @@ virtual bool SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned i
 // Загружает все свойства компонента и его дочерних компонент из xml
 virtual bool LoadComponentProperties(RDK::USerStorageXML *serstorage);
 
+/// Сохраняет полную структуру компонента
+virtual bool SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask);
+
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
 virtual void SetGlobalComponentPropertyValue(UId classid, const char *paramname, const char *buffer);
