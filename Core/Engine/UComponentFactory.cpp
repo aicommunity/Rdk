@@ -13,11 +13,15 @@ namespace RDK
 
  UVirtualMethodFactory::~UVirtualMethodFactory()
  {
-  delete Component;
+  if(Component)
+   delete Component;
  }
 
  UEPtr<UComponent> UVirtualMethodFactory::New()
  {
+  if(!Component)
+   return 0;
+
   UEPtr<UContainer> obj = Component->New();
   Component->Copy(obj, Component->GetStorage());
   return static_pointer_cast<UComponent>(obj);
@@ -25,6 +29,9 @@ namespace RDK
 
  UEPtr<UComponent> UVirtualMethodFactory::Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage)
  {
+  if(!Component)
+   return 0;
+
   UEPtr<UContainer> obj = Component->New();
   dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, storage);
   return static_pointer_cast<UComponent>(obj);
@@ -32,7 +39,8 @@ namespace RDK
 
  void UVirtualMethodFactory::ResetComponent(UEPtr<UComponent> component) const
  {
-  Component->Copy(dynamic_pointer_cast<UContainer>(component), Component->GetStorage());
+  if(Component)
+   Component->Copy(dynamic_pointer_cast<UContainer>(component), Component->GetStorage());
  }
 
  UEPtr<UContainer> UVirtualMethodFactory::GetComponent()
@@ -40,9 +48,16 @@ namespace RDK
   return Component;
  }
 
- UComponentFactoryMethod::UComponentFactoryMethod(UEPtr<UComponent> (*funcPointer)())
+void UVirtualMethodFactory::FreeComponent()
+{
+ Component=0;
+}
+
+
+ UComponentFactoryMethod::UComponentFactoryMethod(UComponent* (*funcPointer)(), const std::string &default_component_name)
  {
   Method = funcPointer;
+  DefaultComponentName=default_component_name;
  }
 
  UComponentFactoryMethod::~UComponentFactoryMethod()
@@ -53,13 +68,15 @@ namespace RDK
  UEPtr<UComponent> UComponentFactoryMethod::New()
  {
   UEPtr<UComponent> obj = Method();
+  dynamic_pointer_cast<UContainer>(obj)->SetName(DefaultComponentName);
   obj->Default();
   return obj;
  }
 
  UEPtr<UComponent> UComponentFactoryMethod::Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage)
  {
-  UEPtr<UContainer> obj = dynamic_pointer_cast<UContainer>(Method());
+  UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
+  obj->SetName(DefaultComponentName);
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, storage);
   return static_pointer_cast<UComponent>(obj);
  }

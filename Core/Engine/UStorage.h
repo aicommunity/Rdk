@@ -216,6 +216,9 @@ virtual UId FindClass(UEPtr<UComponent> object) const;
 // Проверяет существует ли объект 'object' в хранилище
 virtual bool CheckObject(UEPtr<UContainer> object) const;
 
+// Ищет фабрику, непосредственно хранящую заданный компонент
+virtual UVirtualMethodFactory* FindVirualMethodFactory(UEPtr<UContainer> object);
+
 // Вычисляет суммарное число объектов в хранилище
 virtual int CalcNumObjects(void) const;
 virtual int CalcNumObjects(const UId &classid) const;

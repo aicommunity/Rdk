@@ -230,6 +230,9 @@
         <CppCompile Include="..\..\..\Core\Engine\UComponentDescription.cpp">
             <BuildOrder>65</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UComponentFactory.cpp">
+            <BuildOrder>121</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UConnector.cpp">
             <BuildOrder>66</BuildOrder>
         </CppCompile>
@@ -993,13 +996,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

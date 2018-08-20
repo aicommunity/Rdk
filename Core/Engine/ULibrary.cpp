@@ -293,6 +293,50 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
  return true;
 }
 
+bool ULibrary::UploadClass(const std::string &class_name, const std::string &component_name, UComponent* (*funcPointer)(void))
+{
+ if(!funcPointer)
+  return false;
+
+ if(class_name.size() == 0)
+ {
+  return false;
+ }
+
+ if(Storage->CheckClass(class_name))
+  return true;
+
+ std::vector<std::string>::iterator I;
+ UEPtr<UComponentFactoryMethod> factory = new UComponentFactoryMethod(funcPointer,component_name);
+
+ if(!Storage->AddClass(factory,class_name))
+ {
+  if(find(Incomplete.begin(),Incomplete.end(),class_name) == Incomplete.end())
+   Incomplete.push_back(class_name);
+  I=find(ClassesList.begin(),ClassesList.end(),class_name);
+  if(I != ClassesList.end())
+   ClassesList.erase(I);
+  I=find(Complete.begin(),Complete.end(),class_name);
+  if(I != Complete.end())
+   Complete.erase(I);
+
+  delete factory;
+  return false;
+ }
+
+ if(find(ClassesList.begin(),ClassesList.end(),class_name) == ClassesList.end())
+  ClassesList.push_back(class_name);
+ if(find(Complete.begin(),Complete.end(),class_name) == Complete.end())
+  Complete.push_back(class_name);
+ I=find(Incomplete.begin(),Incomplete.end(),class_name);
+ if(I != Incomplete.end())
+  Incomplete.erase(I);
+
+ return true;
+}
+
+
+
 /// ”даление заданного класса из списка успешно загруженных
 ///  ласс переноситс€ в незагруженные (Incomplete)
 void ULibrary::RemoveClassFromCompletedList(const string &name)

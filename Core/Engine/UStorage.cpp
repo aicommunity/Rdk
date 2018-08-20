@@ -16,6 +16,8 @@ See file license.txt for more information
 #include <string.h>
 #include "UStorage.h"
 #include "ULibrary.h"
+#include "rdk_exceptions.h"
+#include "UEnvException.h"
 
 namespace RDK {
 
@@ -347,8 +349,24 @@ void UStorage::ClearClassesStorage(void)
 
  for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
  {
-  if(I->second)
-   delete I->second.Get();
+  RDK_SYS_TRY
+  {
+   try
+   {
+	if(I->second)
+	 delete I->second.Get();
+   }
+   catch(...)
+   {
+	if(Logger)
+	 Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
+   }
+  }
+  RDK_SYS_CATCH
+  {
+   if(Logger)
+    Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  }
  }
  ClassesStorage.clear();
 
@@ -458,6 +476,25 @@ bool UStorage::CheckObject(UEPtr<UContainer> object) const
  return false;
 }
 
+// Ищет фабрику, непосредственно хранящую заданный компонент
+UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> object)
+{
+ if(!object)
+  return 0;
+
+ UClassesStorageCIterator instances=ClassesStorage.begin();
+ for(;instances != ClassesStorage.end();++instances)
+ {
+  UEPtr<UVirtualMethodFactory> virtual_factory=dynamic_pointer_cast<UVirtualMethodFactory>(instances->second);
+  if(virtual_factory)
+  {
+   if(virtual_factory->GetComponent() == object)
+	return virtual_factory;
+  }
+ }
+ return 0;
+}
+
 // Вычисляет суммарное число объектов в хранилище
 int UStorage::CalcNumObjects(void) const
 {
@@ -505,13 +542,26 @@ void UStorage::FreeObjectsStorage(void)
 	K=I; ++K;
 	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
+	UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
+	if(virtual_factory)
+	{
+     virtual_factory->FreeComponent();
+    }
 	delete object;
 	I=K;
    }
    else
     ++I;
   }
-  instances->second.clear();
+
+  size_t end_size=instances->second.size();
+
+  if(end_size>0)
+  {
+   if(Logger)
+	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
+  }
+//  instances->second.clear();
   if(Logger)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has finished");
  }

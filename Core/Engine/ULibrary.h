@@ -131,6 +131,9 @@ const vector<string>& GetIncomplete(void) const;
 template<class T>
 T* UploadClass(const std::string &class_name, const std::string &component_name, bool memory_measure=false);
 
+template<class T>
+void UploadClass(const std::string &class_name);
+
 // «аполн€ет заданное хранилище набором образцов классов.
 // ≈сли класс с заданным именем уже существует, то он пропускаетс€.
 // ¬озвращает число реально загруженных классов.
@@ -148,6 +151,7 @@ bool CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &de
 /// ƒобавл€ет в хранилище очередной класс
 virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
 virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
+virtual bool UploadClass(const std::string &class_name, const std::string &component_name, UComponent* (*funcPointer)(void));
 
 /// ”даление заданного класса из списка успешно загруженных
 ///  ласс переноситс€ в незагруженные (Incomplete)
@@ -225,11 +229,17 @@ T* ULibrary::UploadClass(const std::string &class_name, const std::string &compo
   Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, class_name+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
  return cont;
 }
-
+			   /*
+template<class T>
+void ULibrary::UploadClass(const std::string &class_name)
+{
+ UploadClass(class_name, T::NewStatic
+}                */
 
 
 typedef ULibrary* PUALibrary;
 
 }
+
 
 #endif

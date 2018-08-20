@@ -49,16 +49,19 @@ namespace RDK {
   virtual void ResetComponent(UEPtr<UComponent> component) const;
 
   UEPtr<UContainer> GetComponent();
+
+  void FreeComponent();
  };
 
  /// Фабрика, основанная на статическом фабричном методе
  class UComponentFactoryMethod : public UComponentAbstractFactory
  {
  protected:
-  UEPtr<UComponent> (*Method)(void);
+  UComponent* (*Method)(void);
+  std::string DefaultComponentName;
 
  public:
-  UComponentFactoryMethod(UEPtr<UComponent> (*funcPointer)(void));
+  UComponentFactoryMethod(UComponent* (*funcPointer)(void), const std::string &default_component_name);
   virtual ~UComponentFactoryMethod();
 
   virtual UEPtr<UComponent> New();
