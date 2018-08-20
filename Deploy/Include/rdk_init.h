@@ -369,8 +369,13 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
 RDK_LIB_TYPE int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
 
 // Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
 RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE const char* RDK_CALL MStorage_GetClassProperties(int channel_index, const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+
+
+// Возвращает полную структуру компонента по идентификатору
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassStructure(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE const char* RDK_CALL MStorage_GetClassStructure(int channel_index, const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 // --------------------------
 
 // ----------------------------

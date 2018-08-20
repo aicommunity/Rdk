@@ -285,8 +285,10 @@ virtual const char* Storage_SaveAllClassesDescription(void);
 virtual int Storage_LoadAllClassesDescription(const char* xmltext);
 
 // Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
 virtual const char* Storage_GetClassProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+
+// Возвращает полную структуру компонента по идентификатору
+virtual const char* Storage_GetClassStructure(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 // ----------------------------
 
 // ----------------------------

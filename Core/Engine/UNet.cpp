@@ -632,17 +632,25 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
    return false;
 
   serstorage->AddNode(GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+  if(Storage)
+   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
   if(!GetComponentProperties(serstorage,params_type_mask))
+  {
+   serstorage->SelectUp();
    return false;
+  }
   serstorage->SelectUp();
 
   if(links)
   {
    serstorage->AddNode("Links");
    if(GetComponentInternalLinks(serstorage,0))
+   {
+    serstorage->SelectUp();
     return false;
+   }
+
    serstorage->SelectUp();
   }
 
@@ -659,6 +667,52 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
   serstorage->SelectUp();
 
   serstorage->SelectUp();
+
+ return true;
+}
+
+/// Сохраняет полную структуру компонента
+bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask)
+{
+  if(!serstorage)
+   return false;
+
+  if(Storage)
+   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask)); // ptParameter
+  if(!GetComponentProperties(serstorage,type_mask))
+  {
+   serstorage->SelectUp();
+   return false;
+  }
+  serstorage->SelectUp();
+
+  if(links)
+  {
+   serstorage->AddNode("Links");
+   if(GetComponentInternalLinks(serstorage,0))
+   {
+    serstorage->SelectUp();
+    return false;
+   }
+   serstorage->SelectUp();
+  }
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<GetNumComponents();i++)
+  {
+//   if(!serstorage->AddNode(GetComponentByIndex(i)->GetName()))
+//    continue;
+   if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponent(serstorage,false,type_mask))
+   {
+	std::string name;
+	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Sub component not found: ")+GetFullName(name));
+//	return false;
+   }
+//   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
+
 
  return true;
 }

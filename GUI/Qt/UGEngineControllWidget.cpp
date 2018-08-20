@@ -96,6 +96,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
 
+    graphWindowWidget = new UGraphWidget(this, application);
+    ui->dockWidgetGraph->setWidget(graphWindowWidget);
+
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
 
     createTestWidget = new UCreateTestWidget(this, application);
@@ -128,6 +131,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
+    connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -287,6 +291,12 @@ void UGEngineControllWidget::actionLogger()
 void UGEngineControllWidget::actionTestCreator()
 {
   execDialogUVisualControllWidget(createTestWidget);
+}
+
+void UGEngineControllWidget::actionWatchWindow()
+{
+    //отобразить *graphWindowWidget
+    ui->dockWidgetGraph->show();
 }
 
 void UGEngineControllWidget::startChannel(int chanelIndex)

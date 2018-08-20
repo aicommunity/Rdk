@@ -277,7 +277,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
    break;
  }
 
- if(lastpos) *lastpos=i;
+ if(lastpos) *lastpos=int(i);
 
  return size;
 }

@@ -20,6 +20,7 @@
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
 #include "USettingsReaderWidget.h"
+#include "UGraphWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -68,6 +69,7 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
+    void actionWatchWindow();
 
 private:
     // data
@@ -85,6 +87,7 @@ private:
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
+    UGraphWidget *graphWindowWidget;
 
     /// Ёкзепл€р класса приложени€
     RDK::UApplication *application;

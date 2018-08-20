@@ -365,7 +365,7 @@ void KalmanCalculate(int i)
 
   test=Pk1;
  }
- catch(EMatrixZeroDet &exception)
+ catch(EMatrixZeroDet &)
  {
    throw EKalmanGainOverflow();
  }

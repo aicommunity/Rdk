@@ -971,6 +971,27 @@ const char* RDK_CALL Storage_GetClassProperties(const char *stringid, unsigned i
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassProperties(stringid,type_mask);
 }
+
+const char* RDK_CALL MStorage_GetClassProperties(int channel_index, const char *stringid, unsigned int type_mask)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return 0;
+
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassProperties(stringid,type_mask);
+}
+
+const char* RDK_CALL Storage_GetClassStructure(const char *stringid, unsigned int type_mask)
+{
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassStructure(stringid,type_mask);
+}
+
+const char* RDK_CALL MStorage_GetClassStructure(int channel_index, const char *stringid, unsigned int type_mask)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return 0;
+
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassStructure(stringid,type_mask);
+}
 // ----------------------------
 
 // ----------------------------

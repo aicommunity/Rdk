@@ -130,7 +130,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
    {
     operator << (*xml,GetData());
    }
-   catch(UIProperty::EPropertyZeroPtr &ex)
+   catch(UIProperty::EPropertyZeroPtr &)
    {
    }
    xml->SelectUp();
@@ -143,7 +143,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
    {
     operator << (*xml,GetData());
    }
-   catch(UIProperty::EPropertyZeroPtr &ex)
+   catch(UIProperty::EPropertyZeroPtr &)
    {
    }
    xml->SelectUp();

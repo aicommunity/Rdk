@@ -136,13 +136,13 @@ SOURCES += \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
     ../../../Core/Application/UTestManager.cpp \
-    ../../../Core/System/Gcc/pevents.cpp
+    ../../../Core/System/Gcc/pevents.cpp \
+    ../../../Core/Engine/UComponentFactory.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
-    ../../../Core/Engine/Engine.h.orig \
     ../../../Core/Engine/UADItem.h \
     ../../../Core/Engine/UAModel.h \
     ../../../Core/Engine/UBinaryEnvSerialize.h \
@@ -258,7 +258,8 @@ HEADERS +=\
     ../../../Core/Application/UServerTransport.h \
     ../../../Core/Application/UServerTransportTcp.h \
     ../../../Core/Application/UTestManager.h \
-    ../../../Core/System/Gcc/pevents.h
+    ../../../Core/System/Gcc/pevents.h \
+    ../../../Core/Engine/UComponentFactory.h
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
