@@ -669,6 +669,8 @@ int URdkCoreManager::ChannelDestroy(int index)
  if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
+ UGenericMutexExclusiveLocker lock(MutexList[index]);
+
  if(EngineList[index])
  {
   if(EngineList[index] == Engine)
@@ -802,10 +804,12 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
 /// ”ничтожает все
 void URdkCoreManager::Destroy(void)
 {
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
+
  for(int i=0;i<NumChannels;i++)
  {
   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
-  MCore_ChannelUnInit(i);
+  ChannelUnInit(i);
   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
  }
 
