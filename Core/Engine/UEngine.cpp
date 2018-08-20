@@ -1098,11 +1098,13 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
  int res=RDK_UNHANDLED_EXCEPTION;
+ UEPtr<RDK::UNet> cont;
  RDK_SYS_TRY
  {
   try
   {
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(Storage->GetClass(stringid));
+   UEPtr<UComponentAbstractFactory> factory=Storage->GetComponentFactory(stringid);
+   cont=dynamic_pointer_cast<RDK::UNet>(factory->New());
 
    if(!cont)
 	return TempString.c_str();
@@ -1112,23 +1114,28 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
    if(!cont->SaveComponentStructure(&XmlStorage, true, type_mask))
    {
 	DestroyTempString(TempString);
+    delete cont;
 	return 0;
    }
 
    XmlStorage.Save(TempString);
+   delete cont;
    return TempString.c_str();
   }
   catch (RDK::UException &exception)
   {
+   delete cont;
    res=ProcessException(exception);
   }
   catch (std::exception &exception)
   {
+   delete cont;
    res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
+  delete cont;
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
