@@ -878,7 +878,7 @@ bool UApplication::CloseProject(void)
    Env_UnInit();
    Model_Destroy();
   }
-  Storage_ClearObjectsStorage();
+  Storage_FreeObjectsStorage();
  }
 
  return true;
