@@ -157,7 +157,7 @@ int URdkCoreManager::SetBufObjectsMode(int value)
 
    for(size_t i=0;i<EngineList.size();i++)
    {
-	GetEngineLock(i)->SetBufObjectsMode(value);
+    GetEngineLock(int(i))->SetBufObjectsMode(value);
    }
    BufObjectsMode=value;
    res=RDK_SUCCESS;
@@ -358,7 +358,7 @@ int URdkCoreManager::SetNumChannels(int num)
      UDestroyMutex(MutexList[i]);
     }
 
-    int old_num=EngineList.size();
+    int old_num=int(EngineList.size());
 
     EngineList.resize(num,0);
     StorageList.resize(num,0);

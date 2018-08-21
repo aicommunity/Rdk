@@ -524,7 +524,7 @@ int ULinkT<T>::FindConnector(const ULinkSideT<T> &connector)
 {
   for(size_t j=0;j<Connector.size();j++)
    if(Connector[j] == connector)
-	return j;
+    return int(j);
 
  return -1;
 }
@@ -596,7 +596,7 @@ template<typename T>
 void ULinksListT<T>::Resize(int newsize)
 {
  Data.resize(newsize);
- Size=Data.size();
+ Size=int(Data.size());
 }
 
 // Добавляет элемент в конец массива

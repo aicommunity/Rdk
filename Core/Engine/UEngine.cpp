@@ -745,7 +745,7 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
  {
   try
   {
-   return Storage->CalcNumObjects(classname);
+   return int(Storage->CalcNumObjects(classname));
   }
   catch (RDK::UException &exception)
   {
@@ -1677,7 +1677,6 @@ int UEngine::Storage_BuildStorage(void)
 // Индекс предарительно заданной модели обработки
 int UEngine::Env_GetPredefinedStructure(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1736,7 +1735,6 @@ int UEngine::Env_SetPredefinedStructure(int value)
 // false - хранилище не готово
 bool UEngine::Env_IsStoragePresent(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1762,7 +1760,6 @@ bool UEngine::Env_IsStoragePresent(void) const
 // Возвращает состояние инициализации
 bool UEngine::Env_IsInit(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1788,7 +1785,6 @@ bool UEngine::Env_IsInit(void) const
 // Признак наличия сформированной структуры
 bool UEngine::Env_IsStructured(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1814,7 +1810,6 @@ bool UEngine::Env_IsStructured(void) const
 // Возвращает состояние внутренего логгирования
 bool UEngine::Env_GetEventsLogMode(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3098,7 +3093,7 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
    if(destcont)
 	return true;
   }
-  catch (UContainer::EComponentNameNotExist &exception)
+  catch (UContainer::EComponentNameNotExist &)
   {
    return false;
   }
@@ -4705,7 +4700,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
 	cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
-   catch (UException &exception)// Заглушка!! здесь другое исключение
+   catch (UException &)// Заглушка!! здесь другое исключение
    {
 	return false;
    }
@@ -4744,7 +4739,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
 	cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
-   catch (UException &exception)// Заглушка!! здесь другое исключение
+   catch (UException &)// Заглушка!! здесь другое исключение
    {
 	return false;
    }

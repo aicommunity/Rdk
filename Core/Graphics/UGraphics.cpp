@@ -34,7 +34,7 @@ namespace RDK {
 
 int round(double number)
 {
- return (number < 0.0) ? ceil(number - 0.5) : floor(number + 0.5);
+ return int((number < 0.0) ? ceil(number - 0.5) : floor(number + 0.5));
 }
 
 // Процедура вычисления кодов для точки(конца/начала отрезка)
@@ -227,7 +227,6 @@ void UGraphics::Pixel(int x, int y, bool ispos)
 // Отображает линию по координатам концов
 void UGraphics::Line(int x1, int y1, int x2, int y2)
 {
- int tmp;
  int dx,dy,y,x;
  int old_x1=x1, old_y1=y1;
 

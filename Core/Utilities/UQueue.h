@@ -198,7 +198,7 @@ void reserve(size_t size_)
 {
  if(size() < size_)
  {
-  MaxSize = size_;
+  MaxSize = (unsigned int)size_;
   m_pData.resize(MaxSize);
  }
 };

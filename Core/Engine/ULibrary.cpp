@@ -452,7 +452,7 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
    UEPtr<UContainer> cont=CreateClassSample(storage, ClassesStructure);
    UploadClass(std::string("T")+cont->GetName(),cont);
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    ClassesStructure.SelectUp();
   }

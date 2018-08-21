@@ -288,7 +288,7 @@ bool IsCalcFinished(void) const;
 virtual void RTCalculate(void);
 
 /// –асчет модели порци€ми длительностью calc_intervsal секунд с максимально возможной скоростью
-virtual void FastCalculate(UTime calc_interval);
+virtual void FastCalculate(double calc_interval);
 
 // --------------------------
 

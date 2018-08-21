@@ -551,7 +551,7 @@ bool UEnvironment::CallSourceController(void)
   if(!iproperty->ReadFromMemory(&value))
    return false;
  }
- catch(UContainer::EComponentNameNotExist &exception)
+ catch(UContainer::EComponentNameNotExist &)
  {
   return false;
  }
@@ -719,7 +719,7 @@ void UEnvironment::RTCalculate(void)
 }
 
 /// –асчет модели порци€ми длительностью calc_intervsal секунд с максимально возможной скоростью
-void UEnvironment::FastCalculate(UTime calc_interval)
+void UEnvironment::FastCalculate(double calc_interval)
 {
  if(!IsInit())
  {

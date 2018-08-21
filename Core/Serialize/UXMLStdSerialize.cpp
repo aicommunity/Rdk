@@ -161,7 +161,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, long double &data)
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data)
 {
  storage.SetNodeAttribute("Type","simplevector");
- unsigned int size=data.size();
+ size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
  if(size <= 0)
@@ -184,7 +184,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
 {
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
-  unsigned int size=0;
+  int size=0;
 //  size=RDK::atoi(storage.GetNodeAttribute("Size"));
   size=storage.GetNumNodes();
 
@@ -195,7 +195,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
   }
   data.resize(size);
 
-  for(size_t i=0;i<size;i++)
+  for(int i=0;i<size;i++)
   {
    if(!storage.SelectNode("elem",i))
 	return storage;
@@ -207,7 +207,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
   data.resize(size);
 
   if(size>0)
@@ -215,7 +215,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
    std::string rvalue=storage.GetNodeText();
    std::stringstream stream(storage.GetNodeText().c_str());
 
-   for(unsigned i=0;i<size;i++)
+   for(int i=0;i<size;i++)
    {
 	int temp;
 	stream>>temp;
@@ -230,7 +230,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data)
 {
  storage.SetNodeAttribute("Type","simplevector");
- unsigned int size=data.size();
+ size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
  if(size <= 0)
@@ -238,7 +238,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> 
 
  std::stringstream stream;
 
- for(unsigned i=0;i<size;i++)
+ for(size_t i=0;i<size;i++)
  {
   stream<<data[i];
   if(i<size-1)
@@ -254,7 +254,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
 {
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
-  unsigned int size=0;
+  int size=0;
   size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
 
   if(size <= 0)
@@ -264,7 +264,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
   }
   data.resize(size);
 
-  for(size_t i=0;i<size;i++)
+  for(int i=0;i<size;i++)
   {
    if(!storage.SelectNode("elem",i))
 	return storage;
@@ -276,7 +276,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
   data.resize(size);
 
   if(size>0)
@@ -284,7 +284,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
    std::string rvalue=storage.GetNodeText();
    std::stringstream stream(storage.GetNodeText().c_str());
 
-   for(unsigned i=0;i<size;i++)
+   for(int i=0;i<size;i++)
 	stream>>data[i];
   }
  }
@@ -295,7 +295,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<int> &data)
 {
  storage.SetNodeAttribute("Type","simplevector");
- unsigned int size=data.size();
+ int size=int(data.size());
  storage.SetNodeAttribute("Size",sntoa(size));
 
  if(size <= 0)
@@ -303,7 +303,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<int> &da
 
  std::stringstream stream;
 
- for(unsigned i=0;i<size;i++)
+ for(int i=0;i<size;i++)
  {
   stream<<data[i];
   if(i<size-1)
@@ -319,7 +319,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
 {
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
-  unsigned int size=0;
+  int size=0;
   size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
 
   if(size <= 0)
@@ -329,7 +329,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
   }
   data.resize(size);
 
-  for(size_t i=0;i<size;i++)
+  for(int i=0;i<size;i++)
   {
    if(!storage.SelectNode("elem",i))
 	return storage;
@@ -341,7 +341,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
   data.resize(size);
 
   if(size>0)
@@ -349,7 +349,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
    std::string rvalue=storage.GetNodeText();
    std::stringstream stream(storage.GetNodeText().c_str());
 
-   for(unsigned i=0;i<size;i++)
+   for(int i=0;i<size;i++)
 	stream>>data[i];
   }
  }

@@ -72,7 +72,7 @@ int UController::FindComponent(UContainer* component) const
  vector<UContainer*>::const_iterator I=find(Components.begin(),Components.end(),component);
 
  if(I != Components.end())
-  return I-Components.begin();
+  return int(I-Components.begin());
 
  return -1;
 }
@@ -129,7 +129,7 @@ bool UController::UnLinkAll(bool forchilds)
  bool res=true;
  while(Components.begin() != Components.end())
  {
-  res &= UnLink(Components.size()-1,forchilds);
+  res &= UnLink(int(Components.size())-1,forchilds);
  }
 
  return res;

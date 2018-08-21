@@ -274,7 +274,7 @@ void UServerControl::CalculatePerformance(void)
  TransportPerformanceResults[PerformancePushIndex].assign(num_channels,0);
  for(size_t i=0;i<ModelPerformanceResults[PerformancePushIndex].size();i++)
  {
-  UELockPtr<UEngine> engine=GetEngineLock(i);
+  UELockPtr<UEngine> engine=GetEngineLock(int(i));
   if(!engine)
    continue;
   if(!engine->Model_Check())

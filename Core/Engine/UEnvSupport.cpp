@@ -192,7 +192,7 @@ UIdVector& UIdVector::DecodeFromString(const std::string &str)
   catch (EStrToNumber *strtonumber)
   {
    delete strtonumber;
-   throw EDecodeFail(str,stop);
+   throw EDecodeFail(str,int(stop));
   }
  }
 

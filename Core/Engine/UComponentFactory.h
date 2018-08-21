@@ -22,7 +22,7 @@ namespace RDK {
   virtual UEPtr<UComponent> New() = 0;
 
   /// Создание компонента с копированием в него компонента @param prototype
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage) = 0;
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage) = 0;
 
   /// Сбрасывает объект к исходному состоянию, которое зависит от порождающей фабрики
   virtual void ResetComponent(UEPtr<UComponent> component) const = 0;

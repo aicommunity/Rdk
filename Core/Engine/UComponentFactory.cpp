@@ -36,6 +36,7 @@ namespace RDK
    return 0;
 
   UEPtr<UContainer> obj = Component->New();
+  obj->Default();
   dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, storage);
   return static_pointer_cast<UComponent>(obj);
  }
@@ -79,6 +80,7 @@ void UVirtualMethodFactory::FreeComponent()
  UEPtr<UComponent> UComponentFactoryMethod::Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage)
  {
   UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
+  obj->Default();
   obj->SetName(DefaultComponentName);
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, storage);
   return static_pointer_cast<UComponent>(obj);

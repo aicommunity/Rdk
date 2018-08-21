@@ -264,7 +264,7 @@ template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
 {
  storage.SetNodeAttribute("Type","std::list");
- unsigned int size=data.size();
+ size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
  if(size == 0)
@@ -290,7 +290,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 // if(storage.GetNodeAttribute("Type") != "std::list")
 //  return storage;
 
- unsigned int size=0;
+ int size=0;
 // size=RDK::atoi(storage.GetNodeAttribute("Size"));
  size=storage.GetNumNodes();
  data.clear();
@@ -299,7 +299,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
   return storage;
 
  T p;
- for(size_t i=0;i<size;i++)
+ for(int i=0;i<size;i++)
  {
   if(!storage.SelectNode("elem",i))
   {

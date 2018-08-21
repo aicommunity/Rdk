@@ -145,7 +145,7 @@ bool UChannelProfiler::AddAllComponents(const std::string &name)
 
  const char* components_name_list=MModel_GetComponentsNameList(ChannelIndex,name.c_str());
  std::vector<std::string> names;
- int numcomponents=RDK::separatestring<char>(components_name_list,names,',');
+ RDK::separatestring<char>(components_name_list,names,',');
  MEngine_FreeBufString(ChannelIndex, components_name_list);
 
  for(size_t i=0;i<names.size();i++)
@@ -318,7 +318,7 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
    {
 	UEPtr<UNet> component=model->GetComponentL<UNet>(ComponentsName[i],true);
 	if(component)
-	 AddComponentPerfomanceData(i, component->GetFullStepDuration());
+     AddComponentPerfomanceData(int(i), component->GetFullStepDuration());
    }
    long long full_step=model->GetFullStepDuration();
    long long interstep_interval=model->GetInterstepsInterval();
@@ -359,7 +359,7 @@ void UChannelProfiler::LoadGuiPerfomanceData(void)
 
  for(size_t i=0;i<GuiPerfomance.size();i++)
  {
-  AddGuiPerfomanceData(i, interfaces[i]->GetUpdateTime());
+  AddGuiPerfomanceData(int(i), interfaces[i]->GetUpdateTime());
  }
  UGenericMutexExclusiveLocker locker(Mutex);
  SummaryGuiPerfomance.AddHistory(RDK::UIVisualControllerStorage::GetUpdateTime(),AverageIterations);

@@ -47,6 +47,17 @@ public: // Ìועמהû
 MMatrixSize(void);
 //MMatrixSize(int rows);
 MMatrixSize(int rows, int cols);
+//MMatrixSize(size_t rows, size_t cols);
+//MMatrixSize(unsigned rows, unsigned cols);
+
+template<class T1, class T2>
+MMatrixSize(T1 rows, T2 cols)
+{
+ Dims.resize(2);
+ Dims[0]=static_cast<int>(rows);
+ Dims[1]=static_cast<int>(cols);
+};
+
 MMatrixSize(const MMatrixSize &copy);
 explicit MMatrixSize(const std::vector<int> &dims);
 // --------------------------
@@ -59,6 +70,8 @@ MMatrixSize& operator = (const std::vector<int> &copy);
 
 int operator [] (int i) const;
 int& operator [] (int i);
+int operator [] (size_t i) const;
+int& operator [] (size_t i);
 
 bool operator == (const MMatrixSize &copy) const;
 bool operator != (const MMatrixSize &copy) const;
@@ -137,6 +150,7 @@ const U& As(int i) const
 };
 // -----------------------------------
 };
+
 
 }
 #endif

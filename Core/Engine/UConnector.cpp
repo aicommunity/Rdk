@@ -333,7 +333,7 @@ const UCItem& UConnector::GetCItem(const NameT &connector_property_name, const U
  for(size_t i=0;i<I->second.size();i++)
   if(I->second[i].Item == item)
   {
-   index = i;
+   index = int(i);
    return I->second[i];
   }
 
@@ -461,7 +461,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 	if(I->second[i].Name == item_property_name)
 	{
 	 if(c_index == -1)
-	  c_index=i;
+      c_index=int(i);
 	 if(!forced_connect_same_item)
 	  return true;
 	}

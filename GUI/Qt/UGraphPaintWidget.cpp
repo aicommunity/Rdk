@@ -47,7 +47,7 @@ void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLi
 // Изменяет номер "активного" графика на изменяемый
 int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QColor myColor)
 {
-    int myID=vectorGraph.size();
+    size_t myID=vectorGraph.size();
     TSingleGraph newTSingleGraph;
     newTSingleGraph.t_graphColor=myColor;
     newTSingleGraph.t_graphName=graphName;
@@ -81,7 +81,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, in
             Qt::darkYellow,
             Qt::transparent
                               };
-    int myID=vectorGraph.size();
+    size_t myID=vectorGraph.size();
     TSingleGraph newTSingleGraph;
     newTSingleGraph.t_graphColor=masColor[myColor];
     newTSingleGraph.t_graphName=graphName;
@@ -94,7 +94,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, in
 
 int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
 {
-    int myID=vectorGraph.size();
+    size_t myID=vectorGraph.size();
     TSingleGraph newTSingleGraph;
     newTSingleGraph.t_graphColor=Qt::green;
     newTSingleGraph.t_graphName=graphName;
@@ -226,7 +226,7 @@ void UGraphPaintWidget::changeColor(void)
 
 int UGraphPaintWidget::getSize(void) const
 {
-    return vectorGraph.size();
+    return int(vectorGraph.size());
 }
 
 const TSingleGraph& UGraphPaintWidget::getGraph(int id) const

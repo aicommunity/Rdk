@@ -16,7 +16,7 @@ See file license.txt for more information
 #include <string.h>
 #include "UStorage.h"
 #include "ULibrary.h"
-#include "rdk_exceptions.h"
+#include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
 
 namespace RDK {
@@ -289,7 +289,7 @@ UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string
 // Возвращает число классов
 int UStorage::GetNumClasses(void) const
 {
- return ClassesStorage.size();
+ return int(ClassesStorage.size());
 }
 
 // Возвращает список идентификаторов всех классов хранилища
@@ -517,7 +517,7 @@ int UStorage::CalcNumObjects(void) const
  int result=0;
 
  for(UObjectsStorageCIterator I=ObjectsStorage.begin(),J=ObjectsStorage.end(); I!=J; ++I)
-  result+=I->second.size();
+  result+=int(I->second.size());
 
  return result;
 }
@@ -529,7 +529,7 @@ int UStorage::CalcNumObjects(const UId &classid) const
  if(instances == ObjectsStorage.end())
   throw EClassIdNotExist(classid);
 
- return instances->second.size();
+ return int(instances->second.size());
 }
 
 size_t UStorage::CalcNumObjects(const string &classname) const
@@ -918,7 +918,7 @@ bool UStorage::DelCollection(const string &name)
  {
   UEPtr<ULibrary> lib=CollectionList[i];
   if(lib && lib->GetName() == name)
-   return DelCollection(i);
+   return DelCollection(int(i));
  }
 
  return true;
