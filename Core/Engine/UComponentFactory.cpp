@@ -8,7 +8,10 @@ namespace RDK
  {
   Component = dynamic_pointer_cast<UContainer>(comp);
   if(Component)
+  {
+//   Component->Default();
    Component->SetClass(ClassId);
+  }
  }
 
  UVirtualMethodFactory::~UVirtualMethodFactory()

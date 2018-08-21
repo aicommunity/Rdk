@@ -435,13 +435,13 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 
  if(!i_item_property && !(i_conn_property && (i_conn_property->GetIoType() & ipComp)))
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item_property_name);
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Output not found: ")+item_property_name);
   return false;
  }
 
  if(!i_conn_property)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector ")+connector_property_name+std::string(" not found or empty and AutoNumInputs disabled"));
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Input ")+connector_property_name+std::string(" not found or empty and AutoNumInputs disabled"));
   return false;
  }
 

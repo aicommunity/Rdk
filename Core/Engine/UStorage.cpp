@@ -417,7 +417,8 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
    if(obj)
    {
-    if(!prototype)
+	obj->Default();
+	if(!prototype)
      tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
     else
      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
@@ -431,9 +432,24 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
 
  // Если свободного объекта не нашли
- UEPtr<UContainer> obj =
-   dynamic_pointer_cast<UContainer>(
-    prototype ? tmpl->Prototype(prototype, this) : tmpl->New());
+ UEPtr<UContainer> obj;
+ if(prototype)
+ {
+  obj=dynamic_pointer_cast<UContainer>(tmpl->Prototype(prototype, this));
+ }
+ else
+ {
+  obj=dynamic_pointer_cast<UContainer>(tmpl->New());
+  if(obj)
+   obj->Default();
+ }
+
+ if(!obj)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class factory doesn't return object: ")+FindClassName(classid));
+  return 0;
+ }
 
  PushObject(classid,obj);
  obj->SetLogger(Logger);
@@ -529,6 +545,12 @@ void UStorage::FreeObjectsStorage(void)
 				 								instances != iend; ++instances)
  {
   std::string object_class_name=FindClassName(instances->first);
+  if(instances->second.empty())
+   continue;
+
+  size_t size=instances->second.size();
+  size_t count=0;
+
   if(Logger)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
@@ -549,21 +571,21 @@ void UStorage::FreeObjectsStorage(void)
     }
 	delete object;
 	I=K;
+    ++count;
    }
    else
     ++I;
   }
 
-  size_t end_size=instances->second.size();
-
-  if(end_size>0)
-  {
-   if(Logger)
-	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
-  }
+//  size_t end_size=instances->second.size();
+//  if(end_size>0)
+//  {
+//   if(Logger)
+//	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
+//  }
 //  instances->second.clear();
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has finished");
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
  }
 }
 
