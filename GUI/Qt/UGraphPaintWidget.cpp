@@ -55,7 +55,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QC
     std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
-    return myID;
+    return int(myID);
 }
 
 int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, int myColor)
@@ -89,7 +89,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, in
     std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
-    return myID;
+    return int(myID);
 }
 
 int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
@@ -102,7 +102,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
     std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
-    return myID;
+    return int(myID);
 }
 
 void UGraphPaintWidget::setGraphDataSource(int graph_index, int channel_index, const std::string &componentName,
