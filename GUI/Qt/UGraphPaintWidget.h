@@ -60,7 +60,7 @@ class UGraphPaintWidget : public QWidget
 
         /// По номеру элемента выдает значения структуры вектора структур
         /// Все значения кроме индекса канала передаются в виде указателей
-        int  getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameCompоnent,
+        int getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameComponent,
                                std::string* nameProperty, std::string* typeProperty, int* Jx, int* Jy);
 
         ///Передает значение currentItem

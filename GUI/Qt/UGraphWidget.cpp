@@ -153,7 +153,7 @@ void UGraphWidget::AUpdateInterface()
         RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
         //RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock();
 
-        RDK::UEPtr<RDK::UContainer> component=model->GetComponentL(current_graph.nameCompоnent,true);
+        RDK::UEPtr<RDK::UContainer> component=model->GetComponentL(current_graph.nameComponent,true);
         if(!component)
             continue;
 
@@ -244,19 +244,19 @@ void UGraphWidget::ASaveParameters()
         static int graphColor;       //Цвет графика
         static  std::string graphName;   //Имя графика
         static  int indexChannel;          //Индекс канала
-        static  std::string nameCompоnent; //Имя компонента
+        static  std::string nameComponent; //Имя компонента
         static std::string nameProperty;  //Имя свойства
         static std::string typeProperty;  //Тип компонента
         //координаты элемента матрицы
         static int Jx;
         static int Jy;
 
-        indexChannel=graphPainter->getStructContent(j,&graphColor,&graphName,&nameCompоnent,
+        indexChannel=graphPainter->getStructContent(j,&graphColor,&graphName,&nameComponent,
                                &nameProperty,&typeProperty, &Jx, &Jy);
 
         settings.setValue(
                     "vectorStruct"+QString::number(j),
-                    QString::number(indexChannel)+"*"+QString::fromStdString(nameCompоnent)
+                    QString::number(indexChannel)+"*"+QString::fromStdString(nameComponent)
                     +"*"+QString::fromStdString(nameProperty)+"*"+QString::fromStdString(typeProperty)
                     +"*"+QString::number(Jx)+"*"+QString::number(Jy)+"*"+QString::fromStdString(graphName)
                     +"*"+QString::number(graphColor));
@@ -305,7 +305,7 @@ void UGraphWidget::ALoadParameters()
             static int graphColor;       //Цвет графика
             static  std::string graphName;   //Имя графика
             static  int indexChannel;          //Индекс канала
-            static  std::string nameCompоnent; //Имя компонента
+            static  std::string nameComponent; //Имя компонента
             static std::string nameProperty;  //Имя свойства
             static std::string typeProperty;  //Тип компонента
             //координаты элемента матрицы
@@ -320,7 +320,7 @@ void UGraphWidget::ALoadParameters()
                 if (list.size() == 8)
                 {
                     indexChannel = list.at(0).toInt();
-                    nameCompоnent = list.at(1).toLocal8Bit().constData();
+                    nameComponent = list.at(1).toLocal8Bit().constData();
                     nameProperty = list.at(2).toLocal8Bit().constData();
                     typeProperty = list.at(3).toLocal8Bit().constData();
                     Jx =list.at(4).toInt();
@@ -332,7 +332,7 @@ void UGraphWidget::ALoadParameters()
                     //Заполнение одного элемента вектора - структуры
                     int graph_index=graphPainter->addGraphVisualParameters(graphName,graphColor);
                     graphPainter->setGraphDataSource(graph_index,indexChannel,
-                                                     nameCompоnent,
+                                                     nameComponent,
                                                      nameProperty,typeProperty ,Jx,Jy);
                 }
             }
