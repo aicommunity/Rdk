@@ -40,7 +40,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
 
     ui->setupUi(this);
 
-    //readSettings(settingsFile, settingsGroup);
+    ALoadParameters();
 
     //главное контекстное меню
     QAction *actionSeparator1 = new QAction(this);
