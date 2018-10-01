@@ -166,6 +166,15 @@ void UImagesWidget::setPolygons(const QList<UDrawablePolygon> &polygons, int ima
   }*/
 }
 
+void UImagesWidget::PreventContextMenu()
+{
+    this->setContextMenuPolicy(Qt::PreventContextMenu);
+    foreach(USingleImageWidget * w, imagesList)
+    {
+        w->setContextMenuPolicy(Qt::PreventContextMenu);
+    }
+}
+
 void UImagesWidget::setImagePen(const QPen &value, int imageNum)
 {
   //if(selectedImage) selectedImage->setPainterPen(value);
@@ -192,6 +201,45 @@ void UImagesWidget::setRectangles(const QPair<QRectF, QRectF> &rects, int imageN
 void UImagesWidget::setDrawRects(bool value, int imageNum)
 {
   FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setDrawRects(value))
+}
+
+///Извлекает настоящую ширину изображения
+int UImagesWidget::GetImageWidth(int imageNum)
+{
+    if (imageNum == -1 && selectedImage)
+    {
+      return selectedImage->getImageWidth();
+    }
+    else
+    {
+      if (!(imageNum < 0) && imageNum < ui->gridLayoutImages->count())
+      {
+        USingleImageWidget *item = qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+        if (item)
+        {
+          return item->getImageWidth();
+        }
+      }
+    }
+}
+///Извлекает настоящую высоту изображения
+int UImagesWidget::GetImageHeight(int imageNum)
+{
+    if (imageNum == -1 && selectedImage)
+    {
+      return selectedImage->getImageHeight();
+    }
+    else
+    {
+      if (!(imageNum < 0) && imageNum < ui->gridLayoutImages->count())
+      {
+        USingleImageWidget *item = qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+        if (item)
+        {
+          return item->getImageHeight();
+        }
+      }
+    }
 }
 
 void UImagesWidget::ASaveParameters()
@@ -492,6 +540,8 @@ USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
     connect(item, SIGNAL(polygonFinished(QPolygonF, QSize)), this, SIGNAL(polygonFinished(QPolygonF, QSize)));
     connect(item, SIGNAL(polygonModified(UDrawablePolygon, QSize)), this, SIGNAL(polygonModified(UDrawablePolygon, QSize)));
     connect(item, SIGNAL(polygonSelected(int)), this, SIGNAL(polygonSelected(int)));
+
+    connect(item, SIGNAL(rectanglesChanged(QPair<QRectF, QRectF>)), this, SIGNAL(rectanglesChanged(QPair<QRectF, QRectF>)));
     selectImage(item);
     return item;
 }

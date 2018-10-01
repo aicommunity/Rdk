@@ -213,7 +213,8 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
               rectangles.first.height() * imgSize.height());
   painter.drawRect(rect);
 
-  painter.setPen(QPen(Qt::cyan, 3));
+  //Как дельфевый SkyBlye, взято отсюда http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Colors_in_the_VCL
+  painter.setPen(QPen(QColor::fromRgb(166, 202, 240), 3));
   rect.setRect(rectangles.second.x() * imgSize.width() + dxdy.first,
                rectangles.second.y() * imgSize.height() + dxdy.second,
                rectangles.second.width() * imgSize.width(),
@@ -295,7 +296,8 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       if(drawableRect)
       {
         drawRectMode = LMBRect;
-        rectangles.first.setCoords(point.x(), point.y(), 0, 0);
+        //rectangles.first.setCoords(point.x(), point.y(), point.x(), point.y());
+        rectangleStart = point;
       }
     }
   }
@@ -375,7 +377,8 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       if(drawableRect)
       {
         drawRectMode = RMBRect;
-        rectangles.first.setCoords(point.x(), point.y(), 0, 0);
+        //rectangles.second.setCoords(point.x(), point.y(), point.x(), point.y());
+        rectangleStart = point;
       }
     }
   }
@@ -425,10 +428,11 @@ void USingleImagePainter::mouseMoveEvent(QMouseEvent *event)
         return;
 
       QRectF rect;
-      qreal x1 = drawRectMode == LMBRect ? rectangles.first.x() : rectangles.second.x(),
-            y1 = drawRectMode == LMBRect ? rectangles.first.y() : rectangles.second.y(),
+      qreal x1 = rectangleStart.x(),
+            y1 = rectangleStart.y(),
             x2 = point.x(),
             y2 = point.y();
+
 
       if(x1 > x2)
       {
@@ -445,6 +449,8 @@ void USingleImagePainter::mouseMoveEvent(QMouseEvent *event)
         rectangles.first = rect;
       else
         rectangles.second = rect;
+
+      //emit rectanglesChanged(rectangles);
     }
   }
 

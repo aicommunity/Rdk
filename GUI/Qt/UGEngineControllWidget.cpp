@@ -41,6 +41,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
     statusPanel = NULL;
+    videoAnalyticsSimpleWidget=NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -132,6 +133,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
+    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SLOT(actionVASimpleSettings()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -141,6 +143,14 @@ UGEngineControllWidget::~UGEngineControllWidget()
 {
     application->UnInit();
     delete ui;
+}
+
+void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
+{
+    if(externalWidget!=NULL)
+    {
+        videoAnalyticsSimpleWidget = externalWidget;
+    }
 }
 
 void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
@@ -297,6 +307,14 @@ void UGEngineControllWidget::actionWatchWindow()
 {
     //отобразить *graphWindowWidget
     ui->dockWidgetGraph->show();
+}
+
+void UGEngineControllWidget::actionVASimpleSettings()
+{
+    if(videoAnalyticsSimpleWidget)
+    {
+        videoAnalyticsSimpleWidget->show();
+    }
 }
 
 void UGEngineControllWidget::startChannel(int chanelIndex)

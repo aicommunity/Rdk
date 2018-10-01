@@ -40,6 +40,9 @@ public:
     bool getSelected() const;
     void setSelected(bool value);
 
+    int getImageWidth();
+    int getImageHeight();
+
     void mousePressEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
 
@@ -97,6 +100,7 @@ signals:
     void polygonFinished(QPolygonF, QSize);
     void polygonModified(UDrawablePolygon, QSize);
     void polygonSelected(int);
+    void rectanglesChanged(QPair<QRectF, QRectF>);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);

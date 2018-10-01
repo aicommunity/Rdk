@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>559</width>
+    <width>660</width>
     <height>385</height>
    </rect>
   </property>
@@ -71,7 +71,7 @@
            <bool>true</bool>
           </property>
           <property name="headerHidden">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="expandsOnDoubleClick">
            <bool>false</bool>
@@ -129,7 +129,7 @@
         <item>
          <widget class="QTreeWidget" name="treeWidgetInputs">
           <property name="headerHidden">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="expandsOnDoubleClick">
            <bool>false</bool>

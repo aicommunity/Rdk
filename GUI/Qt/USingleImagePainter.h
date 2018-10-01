@@ -121,6 +121,9 @@ private:
   /// Прямоугольники рисуются, только если активен режим drawableRect
   QPair<QRectF, QRectF> rectangles;
 
+  ///Начальная точка
+  QPointF rectangleStart;
+
   // ------------------------------
 
   // methods

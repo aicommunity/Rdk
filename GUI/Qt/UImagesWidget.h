@@ -46,6 +46,15 @@ public:
     /// Устанавливает два прямоугольника в текущий rectangles
     void setRectangles(const QPair<QRectF, QRectF> &rects, int imageNum = -1);
 
+    ///Отключает функционал контекстного меню для самого виджета (с сохранением приема всех нажатий клавиш мыши)
+    /// а также отключает контекстное меню для внутренних классов
+    void PreventContextMenu();
+
+    ///Извлекает настоящую ширину изображения
+    int GetImageWidth(int imageNum=-1);
+    ///Извлекает настоящую высоту изображения
+    int GetImageHeight(int imageNum=-1);
+
     // ------------------------------
 
     /// запись файла настроек
@@ -60,6 +69,7 @@ signals:
     void polygonFinished(QPolygonF, QSize);
     void polygonModified(UDrawablePolygon, QSize);
     void polygonSelected(int);
+    void rectanglesChanged(QPair<QRectF, QRectF>);
 
 private slots:
     void actionSaveToBMP();
