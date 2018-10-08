@@ -110,7 +110,7 @@ void UGraphPaintWidget::setGraphDataSource(int graph_index, int channel_index, c
                                       const std::string &type, int jx, int jy)
 {
     vectorGraph[graph_index].indexChannel=channel_index;
-    vectorGraph[graph_index].nameCompînent=componentName;
+    vectorGraph[graph_index].nameComponent=componentName;
     vectorGraph[graph_index].nameProperty=propertyName;
     vectorGraph[graph_index].typeProperty=type;
     vectorGraph[graph_index].Jx=jx;
@@ -246,7 +246,7 @@ void UGraphPaintWidget::redrawGraph(void)
 //---------------------------------------------------Âûäà÷à ïàðàìåòðîâ
 
 
-int  UGraphPaintWidget::getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameCompînent,
+int  UGraphPaintWidget::getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameComponent,
                       std::string* nameProperty, std::string* typeProperty, int* Jx, int* Jy)
 {
     static QColor masColor[]={
@@ -276,7 +276,7 @@ int  UGraphPaintWidget::getStructContent(int i, int* graphColor, std::string* gr
             *graphColor = j;
         }
     *graphName = vectorGraph[i].t_graphName;
-    *nameCompînent = vectorGraph[i].nameCompînent;
+    *nameComponent = vectorGraph[i].nameComponent;
     *nameProperty = vectorGraph[i].nameProperty;
     *typeProperty = vectorGraph[i].typeProperty;
     *Jx = vectorGraph[i].Jx;
