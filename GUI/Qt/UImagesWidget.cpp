@@ -97,6 +97,34 @@ void UImagesWidget::AUpdateInterface()
 
 }
 
+///«адает размещение окошек в окне @param layoutW на @param layoutH
+void UImagesWidget::SetImageLayout(int layoutW, int layoutH)
+{
+    clearImagesWidget();
+    for(int i=0; i<layoutW; i++)
+    {
+        for(int j=0; j<layoutH; j++)
+        {
+            addSingleItem(i,j);
+        }
+    }
+}
+
+/// «адать параметры захвата дл€ текущего окна - номер канала, им€ компонента, свойство
+void UImagesWidget::selectCapture(const int channelNum, QString componentLongName, QString propertyName)
+{
+    USingleImageWidget *item = selectedImage;
+
+    item->setCalcChannel(channelNum);
+    item->setComponentName(componentLongName);
+    item->setComponentPropertyName(propertyName);
+}
+
+/*QMenu* UImagesWidget::getContextMenu()
+{
+    return contextMenu;
+}*/
+
 void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName)
 {
   clearImagesWidget();
@@ -169,9 +197,20 @@ void UImagesWidget::setPolygons(const QList<UDrawablePolygon> &polygons, int ima
 void UImagesWidget::PreventContextMenu()
 {
     this->setContextMenuPolicy(Qt::PreventContextMenu);
+    ui->frameImages->setContextMenuPolicy(Qt::PreventContextMenu);
     foreach(USingleImageWidget * w, imagesList)
     {
         w->setContextMenuPolicy(Qt::PreventContextMenu);
+    }
+}
+
+void UImagesWidget::BlockContextMenu()
+{
+    this->setContextMenuPolicy(Qt::NoContextMenu);
+    ui->frameImages->setContextMenuPolicy(Qt::NoContextMenu);
+    foreach(USingleImageWidget * w, imagesList)
+    {
+        w->setContextMenuPolicy(Qt::NoContextMenu);
     }
 }
 
