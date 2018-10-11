@@ -44,7 +44,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
-    connect(settings, SIGNAL(writeSettings()), this, SLOT(writeSettings()));
+    connect(settings, SIGNAL(writeSetting()), this, SLOT(writeSettings()));
 
     propertyChanger = new UComponentPropertyChanger(this, application);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
