@@ -51,8 +51,11 @@
 #  include <QPrintEngine>
 #else
 #  include <QtNumeric>
-#  include <QtPrintSupport/qprinter.h>
-#  include <QtPrintSupport/qprintengine.h>
+#if QT_VERSION < QT_VERSION_CHECK(5, 9, 0)
+#include <QtPrintSupport>
+#else
+#  include <QtPrintSupport/QtPrintSupport>
+#endif
 #endif
 
 class QCPPainter;
