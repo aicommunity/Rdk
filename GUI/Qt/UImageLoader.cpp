@@ -117,6 +117,19 @@ void UImageLoader::setCalcChannel(int value)
     calcChannel = value;
 }
 
+int UImageLoader::getImageWidth()
+{
+    QMutexLocker locker(&mutex);
+    return srcImage.width();
+
+}
+
+int UImageLoader::getImageHeight()
+{
+    QMutexLocker locker(&mutex);
+    return srcImage.height();
+}
+
 QString UImageLoader::getComponentPropertyName() const
 {
     return componentPropertyName;

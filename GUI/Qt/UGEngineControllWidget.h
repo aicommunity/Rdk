@@ -21,6 +21,8 @@
 #include "UStatusPanel.h"
 #include "USettingsReaderWidget.h"
 #include "UGraphWidget.h"
+//////////////////////////
+#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -37,6 +39,8 @@ class UGEngineControllWidget : public QMainWindow
 public:
     explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
+
+    void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
 public slots:
     // settings
@@ -70,6 +74,7 @@ public slots:
     void actionLogger();
     void actionTestCreator();
     void actionWatchWindow();
+    void actionVASimpleSettings();
 
 private:
     // data
@@ -88,6 +93,7 @@ private:
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
     UGraphWidget *graphWindowWidget;
+    UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 
     /// Ёкзепл€р класса приложени€
     RDK::UApplication *application;

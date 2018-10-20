@@ -27,6 +27,9 @@ public:
     /// Запрещает/разрешает изменения виджета, такие как добавление/удаление столбцов и переключение IndChannels
     void setEnableChanges(bool value);
 
+    /// Задать параметры захвата для текущего окна - номер канала, имя компонента, свойство
+    void selectCapture(const int channelNum, QString componentLongName, QString propertyName);
+
     // ----- Проброс в UImagePainter -----
     /// Устанавливает набор полигонов на выбранное изображение (selectedImage)
     void setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum = -1);
@@ -46,6 +49,24 @@ public:
     /// Устанавливает два прямоугольника в текущий rectangles
     void setRectangles(const QPair<QRectF, QRectF> &rects, int imageNum = -1);
 
+    ///Отключает функционал контекстного меню для самого виджета (с сохранением приема всех нажатий клавиш мыши)
+    /// а также отключает контекстное меню для внутренних классов
+    void PreventContextMenu();
+
+    ///Отключает контекстное меню у
+    void BlockContextMenu();
+
+    ///Извлекает настоящую ширину изображения
+    int GetImageWidth(int imageNum=-1);
+    ///Извлекает настоящую высоту изображения
+    int GetImageHeight(int imageNum=-1);
+
+    ///Задает размещение окошек в окне @param layoutW на @param layoutH
+    void SetImageLayout(int layoutW, int layoutH);
+
+    ///Возвращает ссылку на контекстное меню
+    //QMenu *getContextMenu();
+
     // ------------------------------
 
     /// запись файла настроек
@@ -60,6 +81,7 @@ signals:
     void polygonFinished(QPolygonF, QSize);
     void polygonModified(UDrawablePolygon, QSize);
     void polygonSelected(int);
+    void rectanglesChanged(QPair<QRectF, QRectF>);
 
 private slots:
     void actionSaveToBMP();

@@ -51,7 +51,8 @@
 #  include <QPrintEngine>
 #else
 #  include <QtNumeric>
-#  include <QtPrintSupport>
+#  include <QtPrintSupport/qprinter.h>
+#  include <QtPrintSupport/qprintengine.h>
 #endif
 
 class QCPPainter;
@@ -342,7 +343,7 @@ public:
   bool begin(QPaintDevice *device);
   void setPen(const QPen &pen);
   void setPen(const QColor &color);
-  void setPen(Qt::PenStyle penStyle);
+  void setPen(Qt::PenStyle penStylecpp);
   void drawLine(const QLineF &line);
   void drawLine(const QPointF &p1, const QPointF &p2) {drawLine(QLineF(p1, p2));}
   void save();

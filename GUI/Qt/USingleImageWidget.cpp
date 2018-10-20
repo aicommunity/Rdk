@@ -22,7 +22,7 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     painter->setLoaderMutex(imageLoader->getMutex());
     thread = new QThread(this);
     imageLoader->moveToThread(thread);
-    //connect(thread, SIGNAL(started()), imageLoader, SLOT(process()));
+    //connect(thread, SIGNAL(started()sFst), imageLoader, SLOT(process()));
     connect(imageLoader, SIGNAL(imageLoaded(QImage*))                 , painter    , SLOT(setImage(QImage*)));
     connect(this       , SIGNAL(loadImage(QSize))                     , imageLoader, SLOT(loadImage(QSize)));
     connect(this       , SIGNAL(resizeImage(QSize))                   , imageLoader, SLOT(resizeImage(QSize)));
@@ -30,6 +30,7 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     connect(painter    , SIGNAL(polygonFinished(QPolygonF, QSize))       , this       , SIGNAL(polygonFinished(QPolygonF, QSize)));
     connect(painter    , SIGNAL(polygonModified(UDrawablePolygon, QSize)), this       , SIGNAL(polygonModified(UDrawablePolygon, QSize)));
     connect(painter    , SIGNAL(polygonSelected(int))                    , this       , SIGNAL(polygonSelected(int)));
+    connect(painter    , SIGNAL(rectanglesChanged(QPair<QRectF, QRectF>)), this       , SIGNAL(rectanglesChanged(QPair<QRectF, QRectF>)));
 
 
     UpdateInterval = 30;
@@ -47,6 +48,15 @@ USingleImageWidget::~USingleImageWidget()
 
     delete imageLoader;
     delete ui;
+}
+
+int USingleImageWidget::getImageWidth()
+{
+    return imageLoader->getImageWidth();
+}
+int USingleImageWidget::getImageHeight()
+{
+    return imageLoader->getImageHeight();
 }
 
 void USingleImageWidget::AUpdateInterface()
