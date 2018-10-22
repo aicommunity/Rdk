@@ -243,11 +243,11 @@ void MCamera<T>::Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeome
  geometry_2d.SetNumBorders(geometry_3d.GetNumBorders());
  for(size_t i=0;i<geometry_2d.GetNumVertices();i++)
  {
-  MVector<T,4> v=geometry_3d.Vertex(i);
-  geometry_2d.Vertex(i)=CalcScreenBySpacePoint(v);
+  MVector<T,4> v=geometry_3d.Vertex(int(i));
+  geometry_2d.Vertex(int(i))=CalcScreenBySpacePoint(v);
  }
  for(size_t i=0;i<geometry_2d.GetNumBorders();i++)
-  geometry_2d.Border(i)=geometry_3d.Border(i);
+  geometry_2d.Border(int(i))=geometry_3d.Border(int(i));
 }
 
 
