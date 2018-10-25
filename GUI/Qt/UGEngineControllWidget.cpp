@@ -42,6 +42,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createTestWidget = NULL;
     statusPanel = NULL;
     videoAnalyticsSimpleWidget=NULL;
+    graphWindowWidget=NULL;
+    graphWindow=NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -99,6 +101,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     graphWindowWidget = new UGraphWidget(this, application);
     ui->dockWidgetGraph->setWidget(graphWindowWidget);
+    graphWindowWidget->setWindowTitle("Graph");
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
 
@@ -128,11 +131,13 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     // window menu actions:
     connect(ui->actionImagesFromWindow, SIGNAL(triggered(bool)), this, SLOT(actionImages()));
+    connect(ui->actionImagesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewImages()));
     connect(ui->actionComponentsControl, SIGNAL(triggered(bool)), this, SLOT(actionComponentsControl()));
     connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
+    connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SLOT(actionVASimpleSettings()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
@@ -283,6 +288,11 @@ void UGEngineControllWidget::actionImages()
     imagesWindow->activateWindow();
 }
 
+void UGEngineControllWidget::actionNewImages()
+{
+ addImagesWidged();
+}
+
 void UGEngineControllWidget::actionComponentsControl()
 {
     ui->dockWidgetComponentsList->show();
@@ -305,9 +315,26 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
+    if(!graphWindow)
+    {
+        graphWindow = new QMainWindow(this);
+        graphWindow->setCentralWidget(graphWindowWidget);
+    }
+    graphWindow->resize(graphWindowWidget->size());
+    graphWindow->setWindowTitle("");
+    graphWindow->show();
+    graphWindow->showNormal();
+    graphWindow->activateWindow();
+
     //отобразить *graphWindowWidget
-    ui->dockWidgetGraph->show();
+//    ui->dockWidgetGraph->show();
 }
+
+void UGEngineControllWidget::actionNewWatches()
+{
+    addWatchesWidged();
+}
+
 
 void UGEngineControllWidget::actionVASimpleSettings()
 {
@@ -348,6 +375,64 @@ void UGEngineControllWidget::calcOneStepChannel(int chanelIndex)
 
     application->StepChannel(chanelIndex);
 }
+
+/// Добавляет новый виджет в imagesVector
+void UGEngineControllWidget::addImagesWidged()
+{
+ USubTabDescriptionImages descr;
+ UImagesWidget *new_images = new UImagesWidget(this, application);
+ descr.Name=QString("Images ")+RDK::sntoa(int(imagesVector.size()+1)).c_str();
+ descr.Images=new_images;
+
+ new_images->setWindowTitle(descr.Name);
+
+ QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
+ imagesSbWindow->setWidget(new_images);
+ imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
+ imagesSbWindow->show();
+ imagesSbWindow->showMaximized();
+ descr.SubWindow=imagesSbWindow;
+
+ imagesVector.push_back(descr);
+}
+
+/// Удаляет виджет из imagesVector по имени
+void UGEngineControllWidget::delImagesWidged(size_t index)
+{
+ if(index>=imagesVector.size())
+  return;
+ imagesVector.erase(imagesVector.begin()+index);
+}
+
+
+/// Добавляет новый виджет отображения графиков
+void UGEngineControllWidget::addWatchesWidged()
+{
+    USubTabDescriptionWatches descr;
+    UGraphWidget *new_watches = new UGraphWidget(this, application);
+    descr.Name=QString("Watches ")+RDK::sntoa(int(imagesVector.size()+1)).c_str();
+    descr.Watches=new_watches;
+
+    new_watches->setWindowTitle(descr.Name);
+
+    QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
+    imagesSbWindow->setWidget(new_watches);
+    imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
+    imagesSbWindow->show();
+    imagesSbWindow->showMaximized();
+    descr.SubWindow=imagesSbWindow;
+
+    watchesVector.push_back(descr);
+}
+
+/// Удаляет виджет отображения графиков
+void UGEngineControllWidget::delWatchesWidged(size_t index)
+{
+    if(index>=watchesVector.size())
+     return;
+    watchesVector.erase(watchesVector.begin()+index);
+}
+
 
 void UGEngineControllWidget::execDialogUVisualControllWidget(UVisualControllerWidget *widget)
 {
@@ -411,4 +496,16 @@ void UGEngineControllWidget::readSettings()
     imagesWindow->restoreState(settings.value("ImagesState").toByteArray());
 
     settings.endGroup();
+}
+
+void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
+{
+ for(size_t i=0;i<imagesVector.size();i++)
+ {
+  if(imagesVector[i].SubWindow == arg1)
+  {
+   delImagesWidged(i);
+   break;
+  }
+ }
 }

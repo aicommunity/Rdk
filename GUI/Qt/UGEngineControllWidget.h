@@ -28,6 +28,37 @@ namespace Ui {
 class UGEngineControllWidget;
 }
 
+struct USubTabDescription
+{
+/// Имя вкладки
+QString Name;
+
+QMdiSubWindow *SubWindow;
+
+USubTabDescription(void)
+    : SubWindow(NULL)
+{}
+
+};
+
+struct USubTabDescriptionImages: public USubTabDescription
+{
+UImagesWidget* Images;
+
+USubTabDescriptionImages(void)
+    : USubTabDescription(),Images(NULL)
+{};
+};
+
+struct USubTabDescriptionWatches: public USubTabDescription
+{
+UGraphWidget* Watches;
+
+USubTabDescriptionWatches(void)
+    : USubTabDescription(),Watches(NULL)
+{};
+};
+
 /// UGEngineControllWidget class - главное окно интерфейса
 ///
 /// Содержит указатели на все другие окна и связывает их с помощью сигналов и слотов.
@@ -69,12 +100,17 @@ public slots:
 
     // window menu
     void actionImages();
+    void actionNewImages();
     void actionComponentsControl();
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
     void actionWatchWindow();
+    void actionNewWatches();
     void actionVASimpleSettings();
+
+private slots:
+    void on_mdiArea_destroyed(QObject *arg1);
 
 private:
     // data
@@ -87,6 +123,7 @@ private:
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;
+    QMainWindow *graphWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
@@ -94,6 +131,13 @@ private:
     UStatusPanel *statusPanel;
     UGraphWidget *graphWindowWidget;
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+
+    /// Массив виджетов отображения картинок
+    std::vector<USubTabDescriptionImages> imagesVector;
+
+    /// Массив виджетов отображения графиков
+    std::vector<USubTabDescriptionWatches> watchesVector;
+
 
     /// Экзепляр класса приложения
     RDK::UApplication *application;
@@ -114,6 +158,18 @@ private:
 
     ///Создает и вызывает диалоговое окно для наследника UVisualControllerWidget
     void execDialogUVisualControllWidget(UVisualControllerWidget* widget);
+
+    /// Добавляет новый виджет отображения картинок
+    void addImagesWidged();
+
+    /// Удаляет виджет отображения картинок
+    void delImagesWidged(size_t index);
+
+    /// Добавляет новый виджет отображения графиков
+    void addWatchesWidged();
+
+    /// Удаляет виджет отображения графиков
+    void delWatchesWidged(size_t index);
 };
 
 /// Не закрывающийся QMdiSubwindow для отображения схемы модели
@@ -124,5 +180,23 @@ public:
 protected:
     void closeEvent(QCloseEvent *event){event->ignore();}
 };
+
+/*
+/// Не закрывающийся QMdiSubwindow для отображения схемы модели
+class SubWindowCloseExt: public QMdiSubWindow
+{
+public:
+    explicit SubWindowCloseIgnore(UGEngineControllWidget* owner, QWidget *parent = 0, Qt::WindowFlags flags = 0):QMdiSubWindow(parent, flags), Owner(owner){}
+protected:
+    void closeEvent(QCloseEvent *event)
+    {
+     if(Owner)
+      Owner->
+    }
+
+private:
+UGEngineControllWidget* Owner;
+};*/
+
 
 #endif // UGENGINECONTROLLWIDGET_H
