@@ -85,7 +85,7 @@ const T& operator [] (int i) const
 // ¬озвращает указатель на данные выхода
 void const * GetPointer(int index) const
 {
- return &this->v;
+ return &this->GetData();
 }
 
 // ”станавливает указатель на данные выхода
