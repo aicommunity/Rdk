@@ -1162,14 +1162,14 @@ UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name)
 template<typename T>
 bool UContainer::AttachPropertyData(const NameT& destination_property, const NameT& source_component, const NameT &source_property)
 {
- UEPtr<UVBaseDataProperty<T> > dest_prop=FindPropertyEx(destination_property);
+ UEPtr<UVBaseDataProperty<T> > dest_prop=FindPropertyEx<T>(destination_property);
  if(!dest_prop)
   return false;
  UEPtr<UContainer> source_cont=GetComponentL(source_component,true);
  if(!source_cont)
   return false;
 
- UEPtr<UVBaseDataProperty<T> > source_prop=source_cont->FindPropertyEx(source_property);
+ UEPtr<UVBaseDataProperty<T> > source_prop=source_cont->FindPropertyEx<T>(source_property);
  if(!source_prop)
   return false;
 
@@ -1180,7 +1180,7 @@ bool UContainer::AttachPropertyData(const NameT& destination_property, const Nam
 template<typename T>
 void UContainer::DetachPropertyData(const NameT& destination_property)
 {
- UEPtr<UIProperty> dest=FindProperty(destination_property);
+ UEPtr<UVBaseDataProperty<T> > dest=FindPropertyEx<T>(destination_property);
  if(dest)
   dest->DetachFrom();
 }
