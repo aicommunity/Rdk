@@ -278,6 +278,19 @@ virtual bool ResetPointer(int index, void* value)
 }
 // --------------------------
 
+// -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+virtual bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ return false;
+}
+
+virtual void DetachFrom(void)
+{
+}
+// -----------------------------
+
 protected:
 // --------------------------
 // Методы управления входами
@@ -640,12 +653,17 @@ public:
 // Данные
 mutable T v;
 
+protected:
+/// Ссылка на внешнее свойство-источник данных
+UVBaseDataProperty<T>* ExternalDataSource;
+
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
+ : ExternalDataSource(0), UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
 // -----------------------------
 
 // -----------------------------
@@ -664,17 +682,34 @@ void SetCheckEquals(bool value)
 // -----------------------------
 
 // -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ if(!prop)
+  return false;
+ ExternalDataSource=prop;
+ return true;
+}
+
+void DetachFrom(void)
+{
+ ExternalDataSource=0;
+}
+// -----------------------------
+
+// -----------------------------
 // Операторы доступа
 // -----------------------------
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return v;
+ return (ExternalDataSource)?ExternalDataSource->GetData():v;
 };
 
 virtual void SetData(const T &value)
 {
- if(CheckEqualsFlag && v == value)
+ if(CheckEqualsFlag && value == ((ExternalDataSource)?ExternalDataSource->GetData():v))
   return;
 
  if(this->Owner)
@@ -682,12 +717,12 @@ virtual void SetData(const T &value)
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
-  v=value;
+  (ExternalDataSource)?ExternalDataSource->GetData():v=value;
   this->RenewUpdateTime();
   return;
  }
 
- v=value;
+ (ExternalDataSource)?ExternalDataSource->GetData():v=value;
  this->RenewUpdateTime();
  return;
 };
