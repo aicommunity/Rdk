@@ -33,59 +33,14 @@ operator T* (void)
 {
  return this->PData;
 }
-/*
-bool operator ! (void) const
-{
- return (&this->GetData())?true:false;
-};
-  */
-/*bool operator ! (void) const
-{
- return (GetPointer(0))?true:false;
-};
 
-T* operator -> (void)
-{
- return &this->v;
-};
-
-T& operator * (void)
-{
- return this->v;
-};
-
-operator T* (void)
-{
- return &this->v;
-}
-
-T& Value(void)
-{
- return this->v;
-}
-
-const T& Value(void) const
-{
- return this->v;
-}
-
-T& operator [] (int i)
-{
- return this->v;
-}
-
-const T& operator [] (int i) const
-{
- return this->v;
-}
-       */
 // --------------------------
 // ћетоды управлени€ указателем
 // --------------------------
 // ¬озвращает указатель на данные выхода
 void const * GetPointer(int index) const
 {
- return &this->v;
+ return &this->GetData();
 }
 
 // ”станавливает указатель на данные выхода
