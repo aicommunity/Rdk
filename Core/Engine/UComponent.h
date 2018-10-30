@@ -480,6 +480,9 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// —брасывает указатель на данные
 virtual bool ResetPointer(int index, void* value)=0;
+
+/// ќбновить указатели свойств-входов
+virtual void UpdateConnectedPointers(void)=0;
 // --------------------------
 
 // --------------------------

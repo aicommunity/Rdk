@@ -48,6 +48,20 @@ bool SetPointer(int index, void* value, UIProperty* output)
 {
  return true;
 }
+
+/// Обновить указатели свойств-входов
+void UpdateConnectedPointers(void)
+{
+ size_t num_inputs=GetNumConnectors();
+ for(size_t i=0;i<num_inputs;i++)
+ {
+  UIProperty *property=GetConnectorProperty(i);
+  if(!property)
+   continue;
+
+  property->SetPointer(i, const_cast<void*>(GetPointer(0)), this);
+ }
+}
 // --------------------------
 
 // --------------------------
