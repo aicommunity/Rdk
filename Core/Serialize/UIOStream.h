@@ -47,7 +47,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
 
  stream>>data.first;
  std::string LineBuffer;
- stream.getline(&LineBuffer[0],LineBuffer.size()-1,',');
+ getline(LineBuffer,',');
  stream>>data.second;
  ch=stream.get(); // —читали завершающий '}'
 
