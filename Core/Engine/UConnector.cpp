@@ -847,6 +847,21 @@ std::string UIPropertyOutput::GetConnectorInputName(int index) const
 }
 
 
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+UIProperty* UIPropertyOutput::GetConnectorProperty(int index)
+{
+ if(index<0 || index>=int(Connectors.size()))
+  return 0;
+ UConnector *cont=Connectors[index];
+ if(!cont)
+     return 0;
+ UIProperty *property(0);
+ cont->FindInputProperty(ConnectorInputNames[index],property);
+ return property;
+}
+
+
+
 
 
 }

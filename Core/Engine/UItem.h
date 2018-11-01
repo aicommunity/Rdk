@@ -183,6 +183,9 @@ virtual int GetNumActiveOutputs(const NameT &item_property_name) const;
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
 virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const;
 // --------------------------
 
 

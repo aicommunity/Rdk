@@ -276,6 +276,11 @@ virtual bool ResetPointer(int index, void* value)
 {
  return false;
 }
+
+/// Обновить указатели свойств-входов
+virtual void UpdateConnectedPointers(void)
+{
+}
 // --------------------------
 
 // -----------------------------
@@ -689,12 +694,14 @@ bool AttachTo(UVBaseDataProperty<T>* prop)
  if(!prop)
   return false;
  ExternalDataSource=prop;
+ this->UpdateConnectedPointers();
  return true;
 }
 
 void DetachFrom(void)
 {
  ExternalDataSource=0;
+ this->UpdateConnectedPointers();
 }
 // -----------------------------
 
