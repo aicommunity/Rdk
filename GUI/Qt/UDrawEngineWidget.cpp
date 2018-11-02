@@ -19,6 +19,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     connect(modelScheme, SIGNAL(updateComponentsList()), this, SIGNAL(updateComponentsListFromScheme()));
     connect(modelScheme, SIGNAL(viewLinks(QString)), this, SIGNAL(viewLinksFromScheme(QString)));
     connect(modelScheme, SIGNAL(createLinks(QString,QString)), this, SIGNAL(createLinksFromScheme(QString,QString)));
+    connect(modelScheme, SIGNAL(switchLinks(QString,QString)), this, SIGNAL(switchLinksFromScheme(QString,QString)));
     ui->horizontalLayoutForModelScheme->addWidget(modelScheme);
 
     UpdateInterval = 0; // don't update by core ticks

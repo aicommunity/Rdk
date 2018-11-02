@@ -56,6 +56,9 @@ public slots:
     void componentStartMoving();
     void componentFinishMoving();
     void componentCancelMoving();
+    void componentStartSwitching();
+    void componentFinishSwitching();
+    void componentCancelSwitching();
     void componentRename();
     void componentDelete();
     void componentCopyNameToClipboard();
@@ -64,6 +67,7 @@ public slots:
     void componentReset();
     void componentCalculate();
     void componentGUI();
+    void componentCopyXMLDescription();
 
 signals:
     void componentSelected(QString name); //single click
@@ -73,6 +77,7 @@ signals:
 
     void viewLinks(QString componentName);
     void createLinks(QString firstComponentName, QString secondComponentName);
+    void switchLinks(QString firstComponentName, QString secondComponentName);
 
 private:
     //некоторые события контекстного меню
@@ -83,6 +88,10 @@ private:
     QAction *actionStartMoving;
     QAction *actionFinishMoving;
     QAction *actionCancelMoving;
+    QAction *actionSwitchLink;
+    QAction *actionFinishSwitching;
+    QAction *actionCancelSwitching;
+
 
     ///имя компонента для создания связй/перемещения
     QString firstComponentToConnection;
@@ -96,6 +105,10 @@ private:
     ///Перемещение
     QString startMoveComponent;
     QString endMoveComponent;
+
+    ///Переключение
+    QString startSwitchComponent;
+    QString endSwitchComponent;
 
     ///Popup Menu
     QMenu *contextMenu;

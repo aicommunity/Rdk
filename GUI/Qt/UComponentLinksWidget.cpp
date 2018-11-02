@@ -23,7 +23,15 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
     //разрушение связи
     connect(ui->pushButtonBreakLink, SIGNAL(pressed()), this, SLOT(breakLink()));
 
+    connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()), this, SLOT(output1ItemSelectionChanged()));
+
     mode = 0;
+}
+
+void UComponentLinksWidget::output1ItemSelectionChanged()
+{
+    QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
+    int k = 0;
 }
 
 UComponentLinksWidget::~UComponentLinksWidget()
@@ -36,14 +44,23 @@ void UComponentLinksWidget::AUpdateInterface()
     switch(mode)
     {
     case 0:
-        //qDebug("Zero mode update");
+        //qDebug("Zero update");
         break;
 
     case 1:
         {
+            ui->groupBox->setTitle("Outputs");
+            ui->groupBox_2->setTitle("Inputs");
+            ui->groupBox_3->setVisible(true);
+
+            ui->pushButtonBreakLink->setVisible(true);
+            ui->pushButtonCreateLink->setText("Create Link");
+
             ui->treeWidgetInputs->clear();
             ui->treeWidgetOutputs->clear();
             ui->treeWidgetLinks->clear();
+
+            //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
 
             QTreeWidgetItem *firstRootItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
             QStringList splitFirstComponentName = QString(firstComponentName).split(".");
@@ -64,9 +81,18 @@ void UComponentLinksWidget::AUpdateInterface()
 
     case 2:
         {
+            ui->groupBox->setTitle("Outputs");
+            ui->groupBox_2->setTitle("Inputs");
+            ui->groupBox_3->setVisible(true);
+
             ui->treeWidgetInputs->clear();
             ui->treeWidgetOutputs->clear();
             ui->treeWidgetLinks->clear();
+
+            ui->pushButtonBreakLink->setVisible(true);
+            ui->pushButtonCreateLink->setText("Create Link");
+
+
 
             QTreeWidgetItem *firstRootItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
             QStringList splitFirstComponentName = QString(firstComponentName).split(".");
@@ -86,6 +112,39 @@ void UComponentLinksWidget::AUpdateInterface()
             addParameters(secondComponentName, secondRootItem, ptPubInput);
             addComponentSons(secondComponentName, secondRootItem, ptPubInput);
             addLinks(firstComponentName);
+        }
+        break;
+    case 3:
+        {
+            ui->groupBox->setTitle("Outputs 1");
+            ui->groupBox_2->setTitle("Outputs 2");
+
+            ui->groupBox_3->setVisible(false);
+            ui->treeWidgetInputs->clear();
+            ui->treeWidgetOutputs->clear();
+            ui->treeWidgetLinks->clear();
+
+            ui->pushButtonBreakLink->setVisible(false);
+            ui->pushButtonCreateLink->setText("Switch");
+
+            QTreeWidgetItem *firstRootItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
+            QStringList splitFirstComponentName = QString(firstComponentName).split(".");
+            firstRootItem->setText(0, splitFirstComponentName.last());
+            firstRootItem->setData(0, Qt::UserRole, firstComponentName);
+            firstRootItem->setExpanded(true);
+
+            QTreeWidgetItem *secondRootItem = new QTreeWidgetItem(ui->treeWidgetInputs);
+            QStringList splitSecondComponentName = QString(secondComponentName).split(".");
+            secondRootItem->setText(0, splitSecondComponentName.last());
+            secondRootItem->setData(0, Qt::UserRole, secondComponentName);
+            secondRootItem->setExpanded(true);
+
+            addParameters(firstComponentName, firstRootItem, ptPubOutput);
+            addComponentSons(firstComponentName, firstRootItem, ptPubOutput);
+
+            addParameters(secondComponentName, secondRootItem, ptPubOutput);
+            addComponentSons(secondComponentName, secondRootItem, ptPubOutput);
+            //AddLinks(firstComponentName);
         }
         break;
 
@@ -133,6 +192,7 @@ void UComponentLinksWidget::initWidget(QString singleComponentName)
     firstComponentName = singleComponentName;
     ui->labelOutputsComponentName->setText(singleComponentName);
     ui->labelInputsComponentName->setText(singleComponentName);
+    //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
     mode = 1;
     UpdateInterface(true);
 }
@@ -143,7 +203,19 @@ void UComponentLinksWidget::initWidget(QString firstComponentName, QString secon
     this->secondComponentName = secondComponentName;
     ui->labelOutputsComponentName->setText(firstComponentName);
     ui->labelInputsComponentName->setText(secondComponentName);
+    //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
     mode = 2;
+    UpdateInterface(true);
+}
+
+void UComponentLinksWidget::initWidget(QString firstComponentName, QString secondComponentName, int dlg_mode)
+{
+    this->firstComponentName = firstComponentName;
+    this->secondComponentName = secondComponentName;
+    ui->labelOutputsComponentName->setText(firstComponentName);
+    ui->labelInputsComponentName->setText(secondComponentName);
+    //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(switchLink()));
+    mode = dlg_mode;
     UpdateInterface(true);
 }
 
@@ -158,55 +230,168 @@ void UComponentLinksWidget::unInit()
     ui->treeWidgetLinks->clear();
 }
 
-void UComponentLinksWidget::createLink()
+///переключение выделенной связи
+void UComponentLinksWidget::switchLink()
 {
-    QString outputComponent, outputName, inputComponent, inputName;
-    QTreeWidgetItem *outputItem = ui->treeWidgetOutputs->currentItem();
-    QTreeWidgetItem *inputItem = ui->treeWidgetInputs->currentItem();
+    QString output1Component, outputName1, output2Component, outputName2;
+    QModelIndex id = ui->treeWidgetOutputs->currentIndex();
+    QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
+    QTreeWidgetItem *outputItem2 = ui->treeWidgetInputs->currentItem();
 
-    if(!outputItem)
+    if(!outputItem1)
     {
-        QMessageBox::critical(this,"Output selection error", "Output doesn't selected, please select output and try again.", QMessageBox::Ok);
+        QMessageBox::critical(this,"Output 1 selection error", "Output 1 doesn't selected, please select output 1 and try again.", QMessageBox::Ok);
         return;
     }
-    if(!inputItem)
+    if(!outputItem2)
     {
-        QMessageBox::critical(this,"Input selection error", "Input doesn't selected, please select Input and try again.", QMessageBox::Ok);
+        QMessageBox::critical(this,"Output 2 selection error", "Output 2 doesn't selected, please select output 2 and try again.", QMessageBox::Ok);
         return;
     }
 
-    outputName = outputItem->text(0);
-    inputName = inputItem->text(0);
 
-    if(outputItem->text(1).isEmpty())
+    outputName1 = outputItem1->text(0);
+    outputName2 = outputItem2->text(0);
+
+    if(outputItem1->text(1).isEmpty())
     {
-        QMessageBox::critical(this,"Output selection error", "Selected output haven't type_info, \nmay be you are trying to select component as output.", QMessageBox::Ok);
+        QMessageBox::critical(this,"Output 1 selection error", "Selected output 1 haven't type_info, \nmay be you are trying to select component as output.", QMessageBox::Ok);
         return;
     }
-    if(inputItem->text(1).isEmpty())
+    if(outputItem2->text(1).isEmpty())
     {
         QMessageBox::critical(this,"Input selection error", "Selected input haven't type_info, \nmay be you are trying to select component as input.", QMessageBox::Ok);
         return;
     }
 
-    outputComponent = outputItem->parent()->data(0, Qt::UserRole).toString();
-    inputComponent = inputItem->parent()->data(0, Qt::UserRole).toString();
+    output1Component = outputItem1->parent()->data(0, Qt::UserRole).toString();
+    output2Component = outputItem2->parent()->data(0, Qt::UserRole).toString();
 
-    if(inputItem->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
+    if(outputItem1->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
-        if(outputItem->text(1) != inputItem->text(1))
+        if(outputItem1->text(1) != outputItem2->text(1))
         {
-            QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+            QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
             return;
         }
-        if(!inputItem->text(2).isEmpty())
+        if(!outputItem2->text(2).isEmpty())
         {
             QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
             return;
         }
     }
 
-    Model_CreateLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
+    Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+    UpdateInterface(true);
+    emit updateScheme(true);
+    emit closeWindow();
+}
+
+void UComponentLinksWidget::createLink()
+{
+    if((mode==1)||(mode==2))
+    {
+        QString outputComponent, outputName, inputComponent, inputName;
+        QTreeWidgetItem *outputItem = ui->treeWidgetOutputs->currentItem();
+        QTreeWidgetItem *inputItem = ui->treeWidgetInputs->currentItem();
+
+        if(!outputItem)
+        {
+            QMessageBox::critical(this,"Output selection error", "Output doesn't selected, please select output and try again.", QMessageBox::Ok);
+            return;
+        }
+        if(!inputItem)
+        {
+            QMessageBox::critical(this,"Input selection error", "Input doesn't selected, please select Input and try again.", QMessageBox::Ok);
+            return;
+        }
+
+        outputName = outputItem->text(0);
+        inputName = inputItem->text(0);
+
+        if(outputItem->text(1).isEmpty())
+        {
+            QMessageBox::critical(this,"Output selection error", "Selected output haven't type_info, \nmay be you are trying to select component as output.", QMessageBox::Ok);
+            return;
+        }
+        if(inputItem->text(1).isEmpty())
+        {
+            QMessageBox::critical(this,"Input selection error", "Selected input haven't type_info, \nmay be you are trying to select component as input.", QMessageBox::Ok);
+            return;
+        }
+
+        outputComponent = outputItem->parent()->data(0, Qt::UserRole).toString();
+        inputComponent = inputItem->parent()->data(0, Qt::UserRole).toString();
+
+        if(inputItem->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
+        {
+            if(outputItem->text(1) != inputItem->text(1))
+            {
+                QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+                return;
+            }
+            if(!inputItem->text(2).isEmpty())
+            {
+                QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+                return;
+            }
+        }
+
+        Model_CreateLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
+    }
+    else if(mode==3)
+    {
+        QString output1Component, outputName1, output2Component, outputName2;
+        QModelIndex id = ui->treeWidgetOutputs->currentIndex();
+        QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
+        QTreeWidgetItem *outputItem2 = ui->treeWidgetInputs->currentItem();
+
+        if(!outputItem1)
+        {
+            QMessageBox::critical(this,"Output 1 selection error", "Output 1 doesn't selected, please select output 1 and try again.", QMessageBox::Ok);
+            return;
+        }
+        if(!outputItem2)
+        {
+            QMessageBox::critical(this,"Output 2 selection error", "Output 2 doesn't selected, please select output 2 and try again.", QMessageBox::Ok);
+            return;
+        }
+
+
+        outputName1 = outputItem1->text(0);
+        outputName2 = outputItem2->text(0);
+
+        if(outputItem1->text(1).isEmpty())
+        {
+            QMessageBox::critical(this,"Output 1 selection error", "Selected output 1 haven't type_info, \nmay be you are trying to select component as output.", QMessageBox::Ok);
+            return;
+        }
+        if(outputItem2->text(1).isEmpty())
+        {
+            QMessageBox::critical(this,"Input selection error", "Selected input haven't type_info, \nmay be you are trying to select component as input.", QMessageBox::Ok);
+            return;
+        }
+
+        output1Component = outputItem1->parent()->data(0, Qt::UserRole).toString();
+        output2Component = outputItem2->parent()->data(0, Qt::UserRole).toString();
+
+        if(outputItem1->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
+        {
+            if(outputItem1->text(1) != outputItem2->text(1))
+            {
+                QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+                return;
+            }
+            if(!outputItem2->text(2).isEmpty())
+            {
+                QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+                return;
+            }
+        }
+
+        Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+    }
+
     UpdateInterface(true);
     emit updateScheme(true);
     emit closeWindow();
