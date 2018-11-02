@@ -41,7 +41,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
     statusPanel = NULL;
-    videoAnalyticsSimpleWidget=NULL;
+    //videoAnalyticsSimpleWidget=NULL;
     graphWindowWidget=NULL;
     graphWindow=NULL;
 
@@ -151,13 +151,13 @@ UGEngineControllWidget::~UGEngineControllWidget()
     delete ui;
 }
 
-void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
+/*void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
 {
     if(externalWidget!=NULL)
     {
         videoAnalyticsSimpleWidget = externalWidget;
     }
-}
+}*/
 
 void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
 {
@@ -343,13 +343,13 @@ void UGEngineControllWidget::actionNewWatches()
 }
 
 
-void UGEngineControllWidget::actionVASimpleSettings()
+/*void UGEngineControllWidget::actionVASimpleSettings()
 {
     if(videoAnalyticsSimpleWidget)
     {
         videoAnalyticsSimpleWidget->show();
     }
-}
+}*/
 
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {

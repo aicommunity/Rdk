@@ -22,7 +22,7 @@
 #include "USettingsReaderWidget.h"
 #include "UGraphWidget.h"
 //////////////////////////
-#include "UVideoAnalyticsSimpleSettingsWidget.h"
+//#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -71,7 +71,7 @@ public:
     explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
 
-    void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
+    //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
 public slots:
     // settings
@@ -108,7 +108,7 @@ public slots:
     void actionTestCreator();
     void actionWatchWindow();
     void actionNewWatches();
-    void actionVASimpleSettings();
+    //void actionVASimpleSettings();
 
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
@@ -131,7 +131,7 @@ private:
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
     UGraphWidget *graphWindowWidget;
-    UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+    //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 
     /// Массив виджетов отображения картинок
     std::vector<USubTabDescriptionImages> imagesVector;
