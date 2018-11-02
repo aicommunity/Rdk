@@ -176,6 +176,9 @@ virtual int GetNumActiveInputs(void) const;
 
 /// Возвращает число реально подключенных элементов к заданному свойству
 virtual int GetNumActiveInputs(const NameT &connector_property_name) const;
+
+/// Возвращает число коннекторов к которым подключено заданное свойство
+virtual int GetNumActiveOutputs(const NameT &item_property_name) const=0;
 // --------------------------
 
 // --------------------------
@@ -208,6 +211,9 @@ virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) cons
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
 virtual void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const=0;
 // --------------------------
 
 // ----------------------
