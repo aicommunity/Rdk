@@ -337,7 +337,7 @@ protected: // Данные
 /// Указатели на компоненты-приемники данных
 std::vector<UItem*> Connectors;
 
-/// Имя выхода компнента-источника данных
+/// Имена входов компнентов-приемников данных
 std::vector<std::string> ConnectorInputNames;
 
 public:
@@ -353,6 +353,9 @@ virtual UConnector* GetConnector(int index);
 
 /// Возвращает имя подключенного входа компонента-приемника
 virtual std::string GetConnectorInputName(int index) const;
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+virtual UIProperty* GetConnectorProperty(int index);
 };
 
 // Template methods UConnector

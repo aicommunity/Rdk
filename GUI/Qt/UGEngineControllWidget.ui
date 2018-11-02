@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -135,7 +135,7 @@
      <string>New Window</string>
     </property>
     <addaction name="actionImagesFromNewWindow"/>
-    <addaction name="actionWatches"/>
+    <addaction name="actionWatchesFromNewWindow"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuChannels"/>
@@ -525,15 +525,15 @@
   </action>
   <action name="actionImagesFromNewWindow">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Images</string>
    </property>
   </action>
-  <action name="actionWatches">
+  <action name="actionWatchesFromNewWindow">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Watches</string>

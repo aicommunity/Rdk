@@ -347,6 +347,42 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
   property=I->second.Property.Get();
  }
 }
+
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const
+{
+ property=0;
+ NameT connector_property_name;
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.find(item_property_name);
+
+ if(I == RelatedConnectors.end())
+  return;
+
+ const std::vector<PUAConnector> &vec=I->second;
+
+ if(index<0 || index>=int(vec.size()))
+  return;
+
+ if(!vec[index])
+  return;
+
+ std::vector<UCLink> buffer;
+ vec[index]->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
+ {
+  UCLink &link=buffer[k];
+  if(!link.InputName.empty())
+  {
+   if(link.OutputName == item_property_name)
+   {
+    property=vec[index]->FindProperty(link.InputName);
+    return;
+   }
+  }
+ }
+
+}
 // --------------------------
 
 
