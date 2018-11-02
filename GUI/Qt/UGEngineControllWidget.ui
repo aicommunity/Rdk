@@ -135,7 +135,7 @@
      <string>New Window</string>
     </property>
     <addaction name="actionImagesFromNewWindow"/>
-    <addaction name="actionWatches"/>
+    <addaction name="actionWatchesFromNewWindow"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuChannels"/>
@@ -200,6 +200,9 @@
    <widget class="QWidget" name="dockWidgetContents"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetGraph">
+   <property name="windowTitle">
+    <string>Graph</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
@@ -474,7 +477,7 @@
   </action>
   <action name="actionVASimpleSettings">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Video Analytics settings</string>
@@ -522,15 +525,15 @@
   </action>
   <action name="actionImagesFromNewWindow">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Images</string>
    </property>
   </action>
-  <action name="actionWatches">
+  <action name="actionWatchesFromNewWindow">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Watches</string>
