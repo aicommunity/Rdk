@@ -49,6 +49,7 @@ public slots:
 
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
+    void switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
 
 
     // actions:

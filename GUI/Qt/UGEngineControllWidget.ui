@@ -200,6 +200,9 @@
    <widget class="QWidget" name="dockWidgetContents"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetGraph">
+   <property name="windowTitle">
+    <string>Graph</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>

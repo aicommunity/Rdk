@@ -46,6 +46,7 @@ signals:
 
     void viewLinksFromScheme(QString componentName);
     void createLinksFromScheme(QString firstComponentName, QString secondComponentName);
+    void switchLinksFromScheme(QString firstComponentName, QString secondComponentName);
 
 private:
 

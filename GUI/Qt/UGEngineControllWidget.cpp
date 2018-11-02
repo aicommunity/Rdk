@@ -87,6 +87,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     // диалоговые окна (QDialog) дл€ отображени€ виджета св€зей
     connect(drawEngine, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(drawEngine, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
+    connect(drawEngine, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
 
     images = new UImagesWidget(this, application);
     images->hide();
@@ -162,6 +163,12 @@ void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
 void UGEngineControllWidget::showLinksForTwoComponents(QString firstComponentName, QString secondComponentName)
 {
     componentLinks->initWidget(firstComponentName, secondComponentName);
+    execDialogUVisualControllWidget(componentLinks);
+}
+
+void UGEngineControllWidget::switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName)
+{
+    componentLinks->initWidget(firstComponentName, secondComponentName, 3);
     execDialogUVisualControllWidget(componentLinks);
 }
 
