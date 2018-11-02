@@ -52,7 +52,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
 /// Обновить указатели свойств-входов
 void UpdateConnectedPointers(void)
 {
- UEPtr<UItem> item=dynamic_cast<UItem*>(this->Owner);
+ UEPtr<UConnector> item=dynamic_cast<UConnector*>(this->Owner);
  UIProperty* property(0);
  size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
  for(size_t i=0;i<num_inputs;i++)
