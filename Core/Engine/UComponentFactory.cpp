@@ -26,6 +26,7 @@ namespace RDK
    return 0;
 
   UEPtr<UContainer> obj = Component->New();
+  obj->Default();
   Component->Copy(obj, Component->GetStorage());
   return static_pointer_cast<UComponent>(obj);
  }
