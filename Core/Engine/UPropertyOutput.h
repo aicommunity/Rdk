@@ -53,16 +53,15 @@ bool SetPointer(int index, void* value, UIProperty* output)
 void UpdateConnectedPointers(void)
 {
  UEPtr<UConnector> item=dynamic_cast<UConnector*>(this->Owner);
- UIProperty* property(0);
  size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
  for(size_t i=0;i<num_inputs;i++)
  {
   UIProperty* property(0);
-  item->FindConnectedProperty(this->GetName(), i, property);
+  item->FindConnectedProperty(this->GetName(), int(i), property);
   if(!property)
    continue;
 
-  property->SetPointer(i, const_cast<void*>(GetPointer(0)), this);
+  property->SetPointer(int(i), const_cast<void*>(GetPointer(0)), this);
  }
 }
 // --------------------------
