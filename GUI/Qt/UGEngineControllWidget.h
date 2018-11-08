@@ -73,6 +73,9 @@ public:
 
     //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
+signals:
+    void showSimpleSettings();
+
 public slots:
     // settings
     void readSettings();
@@ -112,6 +115,8 @@ public slots:
 
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
+
+
 
 private:
     // data
