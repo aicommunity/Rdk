@@ -1263,6 +1263,33 @@ int RDK_CALL MEnv_Destroy(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_Destroy();
 }
 
+
+// Инициализирует модель
+int RDK_CALL Env_ModelInit(void)
+{
+    return RdkCoreManager.GetEngineLock()->Env_ModelInit();
+}
+
+int RDK_CALL MEnv_ModelInit(int channel_index)
+{
+    if(channel_index<0 || channel_index>=Core_GetNumChannels())
+     return RDK_E_CORE_CHANNEL_NOT_FOUND;
+    return RdkCoreManager.GetEngineLock(channel_index)->Env_ModelInit();
+}
+
+// Деинициализирует модель
+int RDK_CALL Env_ModelUnInit(void)
+{
+    return RdkCoreManager.GetEngineLock()->Env_ModelUnInit();
+}
+
+int RDK_CALL MEnv_ModelUnInit(int channel_index)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_ModelUnInit();
+}
+
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели

@@ -388,6 +388,13 @@ virtual int Env_DestroyStructure(void);
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 virtual int Env_Destroy(void);
 
+// Инициализирует модель
+virtual int Env_ModelInit(void);
+
+// Деинициализирует модель
+virtual int Env_ModelUnInit(void);
+
+
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели

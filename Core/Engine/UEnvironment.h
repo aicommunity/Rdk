@@ -213,6 +213,12 @@ virtual bool CreateModel(const UId& classid);
 // Уничтожает текущую модель
 virtual bool DestroyModel(void);
 
+/// Инициализирует модель
+virtual void ModelInit(void);
+
+/// Деинициализирует модель
+virtual void ModelUnInit(void);
+
 /// Время среды
 const UTimeControl& GetTime(void) const;
 UTimeControl& GetTime(void);

@@ -610,6 +610,14 @@ RDK_LIB_TYPE int RDK_CALL MEnv_DestroyStructure(int channel_index);
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 RDK_LIB_TYPE int RDK_CALL Env_Destroy(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_Destroy(int channel_index);
+
+// Инициализирует модель
+RDK_LIB_TYPE int RDK_CALL Env_ModelInit(void);
+RDK_LIB_TYPE int RDK_CALL MEnv_ModelInit(int channel_index);
+
+// Деинициализирует модель
+RDK_LIB_TYPE int RDK_CALL Env_ModelUnInit(void);
+RDK_LIB_TYPE int RDK_CALL MEnv_ModelUnInit(int channel_index);
 // ***********************************************
 // ----------------------------
 

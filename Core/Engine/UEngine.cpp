@@ -2012,6 +2012,62 @@ int UEngine::Env_Destroy(void)
  return res;
 }
 
+
+// Инициализирует модель
+int UEngine::Env_ModelInit(void)
+{
+    int res=RDK_UNHANDLED_EXCEPTION;
+    RDK_SYS_TRY
+    {
+     try
+     {
+      Environment->ModelInit();
+      res=RDK_SUCCESS;
+     }
+     catch (RDK::UException &exception)
+     {
+      res=ProcessException(exception);
+     }
+     catch (std::exception &exception)
+     {
+      res=ProcessException(RDK::UExceptionWrapperStd(exception));
+     }
+    }
+    RDK_SYS_CATCH
+    {
+     res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+    }
+    return res;
+}
+
+// Деинициализирует модель
+int UEngine::Env_ModelUnInit(void)
+{
+    int res=RDK_UNHANDLED_EXCEPTION;
+    RDK_SYS_TRY
+    {
+     try
+     {
+      Environment->ModelUnInit();
+      res=RDK_SUCCESS;
+     }
+     catch (RDK::UException &exception)
+     {
+      res=ProcessException(exception);
+     }
+     catch (std::exception &exception)
+     {
+      res=ProcessException(RDK::UExceptionWrapperStd(exception));
+     }
+    }
+    RDK_SYS_CATCH
+    {
+     res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+    }
+    return res;
+}
+
+
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели

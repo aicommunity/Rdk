@@ -364,6 +364,26 @@ bool UEnvironment::DestroyModel(void)
 
  return true;
 }
+
+/// Инициализирует модель
+void UEnvironment::ModelInit(void)
+{
+    if(!Model)
+     return;
+
+    Model->Init();
+}
+
+/// Деинициализирует модель
+void UEnvironment::ModelUnInit(void)
+{
+    if(!Model)
+     return;
+
+    Model->UnInit();
+}
+
+
 // --------------------------
 
 // --------------------------
@@ -644,7 +664,7 @@ void UEnvironment::RTCalculate(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't ialized.");
   return;
  }
 
@@ -1136,16 +1156,14 @@ void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, c
 void UEnvironment::AInit(void)
 {
  ModelCalculationComponent.Resize(0);
- if(Model)
-  Model->Init();
+ ModelInit();
  return;
 }
 
 // Деинициализация среды
 void UEnvironment::AUnInit(void)
 {
- if(Model)
-  Model->UnInit();
+ ModelUnInit();
 
  return;
 }
