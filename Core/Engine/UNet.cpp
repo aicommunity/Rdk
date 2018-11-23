@@ -517,7 +517,8 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass())));
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass()),true));
+
 
   I=props.begin();
   J=props.end();

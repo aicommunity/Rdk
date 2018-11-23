@@ -238,7 +238,7 @@ virtual void ClearObjectsStorageByClass(const UId &classid);
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname) const;
+const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать

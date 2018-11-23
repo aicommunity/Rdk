@@ -631,12 +631,17 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname) const
+const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
  if(I == ClassesDescription.end())
-  throw EClassNameNotExist(classname);
+ {
+  if(nothrow)
+   return 0;
+  else
+   throw EClassNameNotExist(classname);
+ }
 
  return I->second;
 }
