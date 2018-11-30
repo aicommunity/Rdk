@@ -17,10 +17,10 @@ class UGraphWidget : public UVisualControllerWidget
         Q_OBJECT
 
         /// Вектор X, в которых хранятся массивы точек, по которым строятся графики
-        std::vector<QVector<double>> masX;
+        std::vector<QVector<double> > masX;
 
         /// Вектор Y, в которых хранятся массивы точек, по которым строятся графики
-        std::vector<QVector<double>> masY;
+        std::vector<QVector<double> > masY;
 
         /// Флаг обновления правой границы графика
         /// Если он -1, то не обновляется
