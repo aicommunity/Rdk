@@ -2770,8 +2770,8 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
 
  comp->SetEnvironment(0);
 
- if(comp->GetMainOwner() == MainOwner)
-  comp->SetMainOwner(0);
+ //if(comp->GetMainOwner() == MainOwner)
+ comp->SetMainOwner(0);
 
  // Удаление из базы компонент
  // Удаляем компонент из таблицы соответствий владельца
