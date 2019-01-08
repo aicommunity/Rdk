@@ -32,6 +32,8 @@
 namespace RDK {
 
 /* Базовый класс исключений */
+#pragma warning( push )
+#pragma warning( disable : 4275)
 class RDK_LIB_TYPE UException: public std::exception
 {
 protected: // Данные исключения
@@ -121,7 +123,7 @@ virtual std::string CreateLogMessage(void) const;
 virtual std::string GenerateLogPrefix(void) const;
 // --------------------------
 };
-
+#pragma warning( pop )
 
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
 struct RDK_LIB_TYPE EFatal: public UException
