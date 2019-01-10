@@ -71,6 +71,8 @@ UContainer::UContainer(void)
  AddLookupProperty("CalculationDurationThreshold",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
  AddLookupProperty("DebugSysEventsMask",ptParameter | pgPublic | pgSystem,new UVProperty<unsigned int,UContainer>(this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
 
+ AddLookupProperty("StepDuration",ptState | pgPublic | pgSystem,new UVProperty<unsigned long long,UContainer>(this,&StepDuration));
+
  InitFlag=false;
 
  CalculationDurationThreshold= -1;
