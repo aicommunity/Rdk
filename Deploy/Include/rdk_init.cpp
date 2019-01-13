@@ -2,8 +2,10 @@
 #define RDK_INIT_CPP
 
 #include <exception>
+#include <sstream>
 #include "rdk_init.h"
 #include "rdk.h"
+#include "rdk_version.h"
 //#include "rdk_rpc.cpp"
 #include "rdk_engine_support.h"
 #include "rdk_exceptions.h"
@@ -66,6 +68,147 @@ extern RDK::UEngine* CreateNewEngine(void);
 const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int &channel_index)
 {
  return RDK::RemoteCallInternal(request, return_value, channel_index);
+}
+// ----------------------------
+
+// ----------------------------
+// Функции определения версий
+// ----------------------------
+/// Возвращает мажорную версию ядра
+int RDK_CALL Ver_CoreMajor(void)
+{
+ return RDK_MAJOR_VERSION;
+}
+
+/// Возвращает минорную версию ядра
+int RDK_CALL Ver_CoreMinor(void)
+{
+ return RDK_MINOR_VERSION;
+}
+
+/// Возвращает версию патча ядра
+int RDK_CALL Ver_CorePatch(void)
+{
+ return RDK_PATCH_VERSION;
+}
+
+/// Возвращает полную вер сию ядра в виде строки
+const char* RDK_CALL Ver_Core(void)
+{
+ static char version[100];
+ std::stringstream tempstr;
+ tempstr<<Ver_CoreMajor()<<"."<<Ver_CoreMinor()<<"."<<Ver_CorePatch();
+ strcpy(version,tempstr.str().c_str());
+ return version;
+}
+
+/// Сравнивает версию ядра с переданной
+/// возвращает >0 если версия ядра больше,
+/// возвращает <0 если версия ядра меньше,
+/// возвращает 0 в случае совпадения.
+int RDK_CALL Ver_CoreCompare(int major, int minor, int patch)
+{
+ if(Ver_CoreMajor() < major)
+  return -1;
+ if(Ver_CoreMajor() > major)
+  return 1;
+ if(Ver_CoreMajor() == major)
+ {
+  if(Ver_CoreMinor() < minor)
+   return -1;
+  if(Ver_CoreMinor() > minor)
+   return 1;
+  if(Ver_CoreMinor() == minor)
+  {
+   if(Ver_CorePatch() < patch)
+    return -1;
+   if(Ver_CorePatch() > patch)
+    return 1;
+  }
+ }
+ return 0;
+}
+
+/// Возвращает имя компилятора ядра
+const char* RDK_CALL Ver_CompilerName(void)
+{
+#if defined(__clang__)
+ return "CLANG";
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+ return "Intel ICC/ICPC";
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+ return "GNU GCC/G++";
+
+#elif defined(__HP_cc) || defined(__HP_aCC)
+ return "HP C/aCC";
+
+#elif defined(__IBMC__) || defined(__IBMCPP__)
+ return "IBM XL C/C++";
+
+#elif defined(_MSC_VER)
+  return "MSVC";
+
+#elif defined(__PGI)
+  return "Portland Group PGCC/PGCPP";
+
+#elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+  return "Oracle Solaris Studio";
+
+#elif defined(__BORLANDC__)
+  return "Borland C++ Builder";
+
+#endif
+}
+
+/// Возвращает версию компилятора ядра
+const char* RDK_CALL Ver_CompilerVersion(void)
+{
+#if defined(__clang__)
+ return __clang_version__;
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+ return __VERSION__;
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+ return __VERSION__;
+
+#elif defined(__HP_cc) || defined(__HP_aCC)
+ return __HP_aCC;
+
+#elif defined(__IBMC__) || defined(__IBMCPP__)
+ return __xlc__;
+
+#elif defined(_MSC_VER)
+    static char version[100];
+    std::stringstream tempstr;
+    tempstr<<_MSC_FULL_VER;
+    strcpy(version,tempstr.str().c_str());
+    return version;
+
+#elif defined(__PGI)
+  return __PGIC__; // Only major build. __PGIC_MINOR, and __PGIC_PATCHLEVEL__  don't supported here
+
+#elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+  return __SUNPRO_CC;
+
+#elif defined(__BORLANDC__)
+    static char version[100];
+    std::stringstream tempstr;
+    tempstr<<__BORLANDC__;
+    strcpy(version,tempstr.str().c_str());
+    return version;
+
+#endif
+}
+
+/// Возвращает версию opencv (если используется)
+const char* RDK_CALL Ver_OpenCvVersion(void)
+{
+#ifdef CV_VERSION
+ return CV_VERSION;
+#else
+ return "";
+#endif
 }
 // ----------------------------
 

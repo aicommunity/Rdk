@@ -110,6 +110,40 @@ RDK_LIB_TYPE const char* RDK_CALL Core_RemoteCall(const char *request, int &retu
 // ----------------------------
 
 // ----------------------------
+// Функции определения версий
+// ----------------------------
+/// Возвращает мажорную версию ядра
+RDK_LIB_TYPE int RDK_CALL Ver_CoreMajor(void);
+
+/// Возвращает минорную версию ядра
+RDK_LIB_TYPE int RDK_CALL Ver_CoreMinor(void);
+
+/// Возвращает версию патча ядра
+RDK_LIB_TYPE int RDK_CALL Ver_CorePatch(void);
+
+/// Возвращает полную версию ядра в виде строки
+RDK_LIB_TYPE const char* RDK_CALL Ver_Core(void);
+
+/// Сравнивает версию ядра с переданной
+/// возвращает >0 если версия ядра больше,
+/// возвращает <0 если версия ядра меньше,
+/// возвращает 0 в случае совпадения.
+RDK_LIB_TYPE int RDK_CALL Ver_CoreCompare(int major, int minor, int patch);
+
+/// Возвращает имя компилятора ядра
+RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerName(void);
+
+/// Возвращает версию компилятора ядра
+RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerVersion(void);
+
+/// Возвращает версию boost
+RDK_LIB_TYPE const char* RDK_CALL Ver_BoostVersion(void);
+
+/// Возвращает версию opencv (если используется)
+RDK_LIB_TYPE const char* RDK_CALL Ver_OpenCvVersion(void);
+// ----------------------------
+
+// ----------------------------
 // Функции логирования
 // ----------------------------
 // Возвращает состояние внутренего логгирования

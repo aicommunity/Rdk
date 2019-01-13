@@ -11,6 +11,21 @@
 #include <windows.h>
 #endif
 
+/// Возвращает версию boost
+const char* RDK_CALL Ver_BoostVersion(void)
+{
+#ifdef BOOST_VERSION
+    static char version[100];
+    std::stringstream tempstr;
+    tempstr<<BOOST_VERSION;
+    strcpy(version,tempstr.str().c_str());
+    return version;
+#else
+ return "";
+#endif
+}
+
+
 namespace RDK {
 
 // --------------------------

@@ -14,6 +14,9 @@ DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 
+VERSION = $$system(hg parents --template '{rev}')
+DEFINES += VERSION=&&VERSION
+
 SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
@@ -259,7 +262,8 @@ HEADERS +=\
     ../../../Core/Application/UServerTransportTcp.h \
     ../../../Core/Application/UTestManager.h \
     ../../../Core/System/Gcc/pevents.h \
-    ../../../Core/Engine/UComponentFactory.h
+    ../../../Core/Engine/UComponentFactory.h \
+    ../../../Deploy/Include/rdk_version.h
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
