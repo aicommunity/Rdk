@@ -15,7 +15,7 @@ DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 
 VERSION = $$system(hg parents --template '{rev}')
-DEFINES += VERSION=&&VERSION
+DEFINES += VERSION=$$VERSION
 
 SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
