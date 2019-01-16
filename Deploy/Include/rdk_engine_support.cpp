@@ -316,6 +316,12 @@ bool URdkCoreManager::SetCommonClassesDescriptionFileName(const std::string& val
  CommonClassesDescriptionFileName=value;
  return true;
 }
+
+/// Возвращет версию ядра
+const RDK::UVersion& URdkCoreManager::GetVersion(void) const
+{
+ return RDK::GetGlobalVersion();
+}
 // --------------------------
 
 // --------------------------

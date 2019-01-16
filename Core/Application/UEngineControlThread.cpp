@@ -11,22 +11,22 @@
 #include <windows.h>
 #endif
 
+namespace RDK {
+
 /// Возвращает версию boost
-const char* RDK_CALL Ver_BoostVersion(void)
+const char* BoostVersion(void)
 {
 #ifdef BOOST_VERSION
     static char version[100];
     std::stringstream tempstr;
     tempstr<<BOOST_VERSION;
-    strcpy(version,tempstr.str().c_str());
+    strcpy_s(version,tempstr.str().c_str());
     return version;
 #else
  return "";
 #endif
 }
 
-
-namespace RDK {
 
 // --------------------------
 // Конструкторы и деструкторы

@@ -14,6 +14,7 @@ See file license.txt for more information
 #define UASTORAGE_CPP
 
 #include <string.h>
+#include "../../Deploy/Include/rdk_version.h"
 #include "UStorage.h"
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
@@ -947,6 +948,19 @@ bool UStorage::BuildStorage(void)
   UEPtr<ULibrary> lib=CollectionList[i];
   if(lib)
   {
+   GetLogger()->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(": collection version is ")+lib->GetVersion()+std::string(" (")+sntoa(lib->GetRevision())+")");
+
+   if(lib->GetCoreVersion())
+   {
+    if(!lib->GetCoreVersion()->IsEqualFull(GetGlobalVersion()))
+    {
+     Logger->LogMessage(RDK_EX_FATAL, lib->GetName()+std::string(" collection SKIPPED: application core version ")+GetGlobalVersion().ToStringFull()+std::string(" is incompatible lib core version ")+lib->GetCoreVersion()->ToStringFull());
+     continue;
+    }
+   }
+   else
+    Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
+
    Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
    unsigned long long total_used_memory_before(0);
    unsigned long long largest_free_block_before(0);

@@ -407,10 +407,7 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
 bool UApplication::Init(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Core version: ")+Ver_Core()).c_str());
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Boost version: ")+Ver_BoostVersion()).c_str());
- if(strlen(Ver_OpenCvVersion())>0)
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("OpenCv version: ")+Ver_OpenCvVersion()).c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
  Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);

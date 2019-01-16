@@ -15,7 +15,7 @@ DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 
 VERSION = $$system(hg parents --template '{rev}')
-DEFINES += VERSION=$$VERSION
+DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
@@ -140,7 +140,8 @@ SOURCES += \
     ../../../Core/Application/UServerTransportTcp.cpp \
     ../../../Core/Application/UTestManager.cpp \
     ../../../Core/System/Gcc/pevents.cpp \
-    ../../../Core/Engine/UComponentFactory.cpp
+    ../../../Core/Engine/UComponentFactory.cpp \
+    ../../../Deploy/Include/rdk_version.cpp
 
 HEADERS +=\
         rdk.qt_global.h \

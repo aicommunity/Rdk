@@ -26,25 +26,24 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULibrary::ULibrary(const string &name, const string &version, int type)
-: Name(name), Version(version), Type(type), Storage(0)
+ULibrary::ULibrary(const string &name, const string &version, int type, int revision)
+: Name(name), Version(version), Revision(revision), Type(type), Storage(0)
 {
-// if(!LibraryList)
-//  LibraryList=new std::list<ULibrary*>;
+}
 
-
-// AddUniqueLibrary(this);
+ULibrary::ULibrary(const string &name, const string &version, const RDK::UVersion &core_version, int type, int revision)
+: Name(name), Version(version), Revision(revision), Type(type), Storage(0)
+{
+ CoreVersion=new RDK::UVersion(core_version);
 }
 
 ULibrary::~ULibrary(void)
 {
-// RemoveLibrary(this);
-
-/* if(LibraryList && LibraryList->empty())
+ if(CoreVersion)
  {
-  delete LibraryList.Get();
-  LibraryList=0;
- }*/
+  delete CoreVersion;
+  CoreVersion=0;
+ }
 }
 // --------------------------
 
@@ -122,6 +121,19 @@ const string& ULibrary::GetVersion(void) const
  return Version;
 }
 
+/// Возвращает ревизию системы контроля версий
+int ULibrary::GetRevision(void) const
+{
+ return Revision;
+}
+
+/// Возвращает версию ядра, использованного при сборке библиотеки
+const UEPtr<RDK::UVersion> ULibrary::GetCoreVersion(void) const
+{
+ return CoreVersion;
+}
+
+
 /// Тип библиотеки
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
 /// 1 - Внешняя библиотека (загружена из внешней dll)
@@ -189,11 +201,6 @@ int ULibrary::Upload(UStorage *storage)
  if(!Storage)
   return 0;
 
-// if(!Complete.empty())
-//  return int(Complete.size());
-
- // ClassSamples.clear();
-// Complete.clear();
  Incomplete.clear();
  CreateClassSamples(Storage);
  count=int(Complete.size());
@@ -334,8 +341,6 @@ bool ULibrary::UploadClass(const std::string &class_name, const std::string &com
 
  return true;
 }
-
-
 
 /// Удаление заданного класса из списка успешно загруженных
 /// Класс переносится в незагруженные (Incomplete)

@@ -119,7 +119,7 @@ RDK_LIB_TYPE int RDK_CALL Ver_CoreMajor(void);
 RDK_LIB_TYPE int RDK_CALL Ver_CoreMinor(void);
 
 /// ¬озвращает версию патча €дра
-RDK_LIB_TYPE int RDK_CALL Ver_CorePatch(void);
+RDK_LIB_TYPE int RDK_CALL Ver_CoreRevision(void);
 
 /// ¬озвращает полную версию €дра в виде строки
 RDK_LIB_TYPE const char* RDK_CALL Ver_Core(void);
@@ -128,7 +128,7 @@ RDK_LIB_TYPE const char* RDK_CALL Ver_Core(void);
 /// возвращает >0 если верси€ €дра больше,
 /// возвращает <0 если верси€ €дра меньше,
 /// возвращает 0 в случае совпадени€.
-RDK_LIB_TYPE int RDK_CALL Ver_CoreCompare(int major, int minor, int patch);
+RDK_LIB_TYPE int RDK_CALL Ver_CoreCompare(int major, int minor, int revision);
 
 /// ¬озвращает им€ компил€тора €дра
 RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerName(void);
@@ -137,10 +137,10 @@ RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerName(void);
 RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerVersion(void);
 
 /// ¬озвращает версию boost
-RDK_LIB_TYPE const char* RDK_CALL Ver_BoostVersion(void);
+//RDK_LIB_TYPE const char* RDK_CALL Ver_BoostVersion(void);
 
 /// ¬озвращает версию opencv (если используетс€)
-RDK_LIB_TYPE const char* RDK_CALL Ver_OpenCvVersion(void);
+//RDK_LIB_TYPE const char* RDK_CALL Ver_OpenCvVersion(void);
 // ----------------------------
 
 // ----------------------------
