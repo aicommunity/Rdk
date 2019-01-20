@@ -75,6 +75,8 @@ void UVirtualMethodFactory::FreeComponent()
   UEPtr<UComponent> obj = Method();
   dynamic_pointer_cast<UContainer>(obj)->SetName(DefaultComponentName);
   obj->Default();
+  obj->Build();
+
   return obj;
  }
 

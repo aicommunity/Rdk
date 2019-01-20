@@ -399,6 +399,11 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
     */
 };
 
+template<typename T>
+static UComponent* NewStaticFunc()
+{
+ return new T;
+}
 
 class UItem;
 
