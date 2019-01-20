@@ -3,8 +3,6 @@
 
 namespace RDK {
 
-RDK::UVersion GlobalVersion;
-
 /// --------------------------
 /// Конструкторы и деструкторы
 /// --------------------------
@@ -163,6 +161,7 @@ bool UVersion::IsEqualFull(int major, int minor, int revision, const std::string
 /// Доступ к глобальной переменной версии
 const RDK::UVersion& GetGlobalVersion(void)
 {
+ static RDK::UVersion GlobalVersion;
  return GlobalVersion;
 }
 
@@ -190,7 +189,11 @@ const char* CoreVer(void)
  static char version[100];
  std::stringstream tempstr;
  tempstr<<CoreMajorVer()<<"."<<CoreMinorVer()<<" ("<<CoreRevisionVer()<<")";
+#ifdef __BORLANDC__
+ strcpy_s(version,99,tempstr.str().c_str());
+#else
  strcpy_s(version,tempstr.str().c_str());
+#endif
  return version;
 }
 
