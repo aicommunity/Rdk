@@ -19,8 +19,12 @@ const char* BoostVersion(void)
 #ifdef BOOST_VERSION
     static char version[100];
     std::stringstream tempstr;
-    tempstr<<BOOST_VERSION;
-    strcpy_s(version,tempstr.str().c_str());
+	tempstr<<BOOST_VERSION;
+	#ifdef __BORLANDC__
+		strcpy_s(version,99,tempstr.str().c_str());
+	#else
+		strcpy_s(version,tempstr.str().c_str());
+    #endif
     return version;
 #else
  return "";
