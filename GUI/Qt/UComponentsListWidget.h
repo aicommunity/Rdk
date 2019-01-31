@@ -63,7 +63,7 @@ class UComponentsListWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL);
+    explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=1);
     virtual ~UComponentsListWidget();
 
     /// ѕерерисовывает дерево текущего канала (— интерфейс с RDK)
@@ -98,6 +98,15 @@ public:
 
     /// ¬озвращает номер выбранного канала
     int getSelectedChannelIndex();
+
+    /// –ежим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    void setChannelMode(int mode);
+
+    /// ¬озвращает номер рабочего канала
+    /// используемый при отображении информации
+    int getWorkChannelIndex();
 
     /// устанавливает доступность вкладок
     void setEnableTabN(int n, bool enable);
@@ -172,6 +181,11 @@ private:
 
     /// “екущий канал дл€ виджета
     int currentChannel;
+
+    /// –ежим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    int channelMode;
 
     /// ‘лаг видимости компонента выбора канала
     bool channelsSelectionVisible;

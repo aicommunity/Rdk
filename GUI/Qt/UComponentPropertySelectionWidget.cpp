@@ -10,7 +10,7 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
     ui->setupUi(this);
     componentsList = NULL;
     application = app;
-    componentsList = new UComponentsListWidget(this, application);
+    componentsList = new UComponentsListWidget(this, application, 0);
     //componentsList->UpdateInterval = 0;
     componentsList->setVerticalOrientation(false);
     componentsList->openTabN(mode);

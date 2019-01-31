@@ -7,6 +7,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UDrawEngineWidget)
 {
+    CheckModelFlag=false;
     ui->setupUi(this);
 
     classesList = new UClassesListWidget(this);

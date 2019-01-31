@@ -11,10 +11,12 @@
 #include <QClipboard>
 #include <QScrollBar>
 
-UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app) :
+UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UComponentsListWidget)
 {
+    channelMode=channel_mode;
+    CheckModelFlag=false;
     ui->setupUi(this);
 
     componentsTree = new UComponentListTreeWidget(this);
@@ -225,6 +227,22 @@ int UComponentsListWidget::getSelectedChannelIndex()
     return currentChannel;
 }
 
+/// Режим выбора канала
+/// 0 - всегда работа с текущим каналом
+/// 1 - работа с изначально заданным каналом
+void UComponentsListWidget::setChannelMode(int mode)
+{
+ channelMode=mode;
+}
+
+/// Возвращает номер рабочего канала
+/// используемый при отображении информации
+int UComponentsListWidget::getWorkChannelIndex()
+{
+ return (channelMode == 0)?Core_GetSelectedChannelIndex():currentChannel;
+}
+
+
 void UComponentsListWidget::setEnableTabN(int n, bool enable)
 {
     if(n >= 0 && n < 4)
@@ -259,7 +277,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     currentDrawPropertyComponentName = selectedComponentLongName;
 
     //Class
-    const char *className=MModel_GetComponentClassName(currentChannel, currentDrawPropertyComponentName.toLocal8Bit());
+    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
     if(className)
         ui->labelComponentClassName->setText(className);
     Engine_FreeBufString(className);
@@ -277,7 +295,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
     try
     {
-        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(currentChannel);
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
 
         RDK::UEPtr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
@@ -479,7 +497,7 @@ void UComponentsListWidget::componentMoveUp()
 {
     if(componentsTree->currentItem())
     {
-        MModel_ChangeComponentPosition(currentChannel, selectedComponentLongName.toLocal8Bit(),-1);
+        MModel_ChangeComponentPosition(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit(),-1);
         UpdateInterface(true);
     }
 }
@@ -488,7 +506,7 @@ void UComponentsListWidget::componentMoveDown()
 {
     if(componentsTree->currentItem())
     {
-        MModel_ChangeComponentPosition(currentChannel, selectedComponentLongName.toLocal8Bit(), 1);
+        MModel_ChangeComponentPosition(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit(), 1);
         UpdateInterface(true);
     }
 }
@@ -505,7 +523,7 @@ void UComponentsListWidget::componentRename()
         if (ok && !text.isEmpty())
         {
             std::string new_name(text.toLocal8Bit());
-            MModel_SetComponentPropertyData(currentChannel, selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
+            MModel_SetComponentPropertyData(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
 
             QStringList nameSeparator = selectedComponentLongName.split(".");
             nameSeparator.pop_back();
@@ -527,7 +545,7 @@ void UComponentsListWidget::componentDelete()
             if (reply == QMessageBox::Cancel) return;
         }
 
-        MModel_DelComponent(currentChannel, "", selectedComponentLongName.toLocal8Bit());
+        MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
         UpdateInterface(true);
         emit updateScheme(true);
     }
@@ -549,7 +567,7 @@ void UComponentsListWidget::componentCopyLongNameToClipboard()
 
 void UComponentsListWidget::componentCopyClassNameToClipboard()
 {
-    const char *className=MModel_GetComponentClassName(currentChannel, selectedComponentLongName.toLocal8Bit());
+    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit());
     if(className)
     {
         QClipboard *clipboard = QApplication::clipboard();
@@ -588,7 +606,7 @@ void UComponentsListWidget::setUpdateInterval(long value)
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
 {
-    const char * stringBuff = MModel_GetComponentsNameList(currentChannel, componentName.toLocal8Bit());
+    const char * stringBuff = MModel_GetComponentsNameList(getWorkChannelIndex(), componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
     QString str;
