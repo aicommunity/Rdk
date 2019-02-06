@@ -617,12 +617,7 @@ int RDK_CALL MCore_LockChannel(int index)
  {
   try
   {
-   if(RdkCoreManager.LockerList[index])
-	return RDK_SUCCESS;
-
-   if(!RdkCoreManager.LockerList[index])
-	RdkCoreManager.LockerList[index]=new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
-   res=RDK_SUCCESS;
+   return RdkCoreManager.LockChannel(index);
   }
   catch (RDK::UException &exception)
   {
@@ -657,12 +652,7 @@ int RDK_CALL MCore_UnLockChannel(int index)
  {
   try
   {
-   if(!RdkCoreManager.LockerList[index])
-	return RDK_SUCCESS;
-
-   delete RdkCoreManager.LockerList[index];
-   RdkCoreManager.LockerList[index]=0;
-   res=RDK_SUCCESS;
+   return RdkCoreManager.UnLockChannel(index);
   }
   catch (RDK::UException &exception)
   {

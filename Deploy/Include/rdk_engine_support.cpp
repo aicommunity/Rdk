@@ -1103,6 +1103,32 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel
  return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
 #endif
 }
+
+/// Метод прямой блокировки канала
+int URdkCoreManager::LockChannel(int index)
+{
+ if(RdkCoreManager.LockerList[index])
+  return RDK_E_CORE_LOCK_FAIL;
+
+ if(!RdkCoreManager.LockerList[index])
+  RdkCoreManager.LockerList[index]=new RDK::UELockPtr<RDK::UEngine>(RDK::GetEngineLock(index));//new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
+
+ return RDK_SUCCESS;
+}
+
+/// Метод снятия прямой блокировки канала
+int URdkCoreManager::UnLockChannel(int index)
+{
+ if(!RdkCoreManager.LockerList[index])
+  return RDK_E_CORE_UNLOCK_FAIL;
+
+ if(RdkCoreManager.LockerList[index])
+ {
+  delete RdkCoreManager.LockerList[index];//new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
+  RdkCoreManager.LockerList[index]=0;
+ }
+ return RDK_SUCCESS;
+}
 // --------------------------
 
 // --------------------------

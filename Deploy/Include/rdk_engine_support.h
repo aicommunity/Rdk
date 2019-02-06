@@ -26,7 +26,7 @@ std::vector<RDK::UEngine*> EngineList;
 std::vector<UGenericMutex*> MutexList;
 
 /// Массив локеров
-std::vector<UGenericMutexExclusiveLocker*> LockerList;
+std::vector<RDK::UELockPtr<RDK::UEngine>*> LockerList;
 
 /// Массив логгеров
 std::vector<RDK::ULoggerEnv*> LoggerList;
@@ -262,6 +262,12 @@ RDK::UELockPtr<T> GetModelLock(int channel_index);
 
 template<class T>
 RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout);
+
+/// Метод прямой блокировки канала
+int LockChannel(int index);
+
+/// Метод снятия прямой блокировки канала
+int UnLockChannel(int index);
 // --------------------------
 
 // --------------------------
