@@ -135,6 +135,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     //</контекстное меню>
 
+    setScaledContents(true);
+
     //<код из билдера>
     Graph.SetCanvas(&GraphCanvas);
     FontType = "Tahoma";
@@ -282,10 +284,10 @@ void UDrawEngineImageWidget::dragMoveEvent(QDragMoveEvent *event)
 
 void UDrawEngineImageWidget::resizeEvent(QResizeEvent *)
 {
-    reDrawScheme(false);
+    reDrawScheme(false,true);
 }
 
-void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
+void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml, bool no_resize_canvas)
 {
     if(shouldReloadXml)//(!NetXml.GetNumNodes())
     {
@@ -296,6 +298,9 @@ void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
         DrawEngine.SetNetXml(NetXml);
         shouldReloadXml = false;
     }
+
+    if(!no_resize_canvas)
+     ResizeCanvas();
     GraphCanvas.SetRes(width(), height(),RDK::ubmRGB24);
     Graph.SetCanvas(&GraphCanvas);
     DrawEngine.Draw();
@@ -303,6 +308,7 @@ void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
     QImage pict((const uchar *) GraphCanvas.GetData(), GraphCanvas.GetWidth(),
                   GraphCanvas.GetHeight(), GraphCanvas.GetLineByteLength(), QImage::Format_RGB888);
     setPixmap(QPixmap::fromImage(pict.rgbSwapped()));
+
 }
 
 void UDrawEngineImageWidget::setComponentName(QString name)
@@ -324,6 +330,14 @@ void UDrawEngineImageWidget::selectComponent(QString name)
         DrawEngine.SelectSingleComponent(nameStd);
         reDrawScheme(false);
     }
+}
+
+/// Меняет размер канвы
+void UDrawEngineImageWidget::ResizeCanvas(void)
+{
+ int rec_width(width()), rec_height(height());
+ DrawEngine.CalcRecommendSize(rec_width,rec_height);
+ setFixedSize(rec_width,rec_height);
 }
 
 void UDrawEngineImageWidget::componentViewOrBreakLink()

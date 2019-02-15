@@ -32,6 +32,9 @@ public:
     /// считывание файла настроек
     virtual void ALoadParameters();
 
+    //расширение схемы при ресайзе
+    void resizeEvent(QResizeEvent*);
+
 public slots:
     void componentDoubleClick(QString name);
     void componentSingleClick(QString name);

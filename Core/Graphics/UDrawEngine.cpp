@@ -315,6 +315,28 @@ void UDrawEngine::UpdateAllElementsSize(void)
  }
 }
 
+
+/// Возвращает рекомендуемый размер канвы
+void UDrawEngine::CalcRecommendSize(int &width, int &height)
+{
+ if(Descriptions.empty())
+  return;
+
+ DescriptionsTableIteratorT I, J;
+ I = Descriptions.begin();
+ J = Descriptions.end();
+
+ for(;I != J;++I)
+ {
+  int temp_width=I->second.Position(0)+I->second.Width;
+  if(width<temp_width)
+   width=temp_width;
+  int temp_height=I->second.Position(1)+I->second.Height;
+  if(height<temp_height)
+   height=temp_height;
+ }
+}
+
 /// Шрифты
 RDK::UBitmapFontCollection& UDrawEngine::GetFonts(void)
 {

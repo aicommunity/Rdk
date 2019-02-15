@@ -37,15 +37,20 @@ public:
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
 
-    //расширени схемы при ресайзе
+    //расширение схемы при ресайзе
     void resizeEvent(QResizeEvent*);
 
-    ///перерисовка схему с флагом принудительной перезагрузки схемы текущего отображения
-    void reDrawScheme(bool shouldReloadXml);
-    ///Задание имени отрисовываемого компонента и перерисовка схема
+    /// перерисовка схему с флагом принудительной перезагрузки схемы текущего отображения
+    void reDrawScheme(bool shouldReloadXml, bool no_resize_canvas=false);
+
+    /// Задание имени отрисовываемого компонента и перерисовка схема
     void setComponentName(QString name);
-    ///Выбор компонента на схеме
+
+    /// Выбор компонента на схеме
     void selectComponent(QString name);
+
+    /// Меняет размер канвы
+    void ResizeCanvas(void);
 
 public slots:
     //Контекстное меню

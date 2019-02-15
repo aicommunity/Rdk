@@ -249,6 +249,9 @@ void MoveComponent(const string &name, int x, int y);
 // Обновляет размеры всех элементов в соответствии с размерами по умолчанию
 void UpdateAllElementsSize(void);
 
+/// Возвращает рекомендуемый размер канвы
+void CalcRecommendSize(int &width, int &height);
+
 /// Шрифты
 RDK::UBitmapFontCollection& GetFonts(void);
 void SetFonts(RDK::UBitmapFontCollection& value);
