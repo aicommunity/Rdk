@@ -566,33 +566,6 @@ void UDrawEngineImageWidget::componentCloneComponent()
   return;
 
  int res=engine->Model_CloneComponent(myLongName().toLocal8Bit().constData(),"");
-/*
- RDK::UEPtr<RDK::UNet> component=model->GetComponentL<RDK::UNet>(myLongName().toLocal8Bit().constData(),true);
- if(!component)
-  return;
-
- RDK::UEPtr<RDK::UNet> owner=RDK::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
- if(!owner)
-  return;
-
- RDK::UEPtr<RDK::UNet> new_component=RDK::dynamic_pointer_cast<RDK::UNet>(model->GetStorage()->TakeObject(component->GetClass()));
- if(!new_component)
-  return;
-
- new_component->SetName(component->GetName());
-
- if(!owner->AddComponent(new_component))
- {
-  model->GetStorage()->ReturnObject(new_component);
-  return;
- }
-
- component->Copy(new_component);
- RDK::MVector<double,3> coord=new_component->GetCoord();
- coord(0)+=1;
- coord(1)+=1;
- new_component->SetCoord(coord);
-*/
  if(res == RDK_SUCCESS)
  {
   reDrawScheme(true);

@@ -69,9 +69,11 @@ void UStatusPanel::AAfterLoadProject()
   ui->checkBoxAutosaveStates->setChecked(config.ProjectAutoSaveStatesFlag);
   ui->checkBoxAutosaveProject->setChecked(config.ProjectAutoSaveFlag);
 
-  if(config.MultiThreadingMode
-     && config.MultiThreadingMode != ui->radioButtonMultiThreaded->isChecked())
+  if(config.MultiThreadingMode)
+  {
+   if(config.MultiThreadingMode != ui->radioButtonMultiThreaded->isChecked())
     ui->radioButtonMultiThreaded->setChecked(true);
+  }
   else
     ui->radioButtonSingleThreaded->setChecked(true);
 }
@@ -179,9 +181,12 @@ void UStatusPanel::setThreadMode()
   application->SetProjectConfig(config);
   emit saveConfig();
 
-  if(QMessageBox::question(this, "Warning", "The project has been saved. You need to restart the application. Close now?",
+  if(QMessageBox::question(this, "Warning", "The configuration has been updated and saved. You need to reopen it. Reopen now?",
                            QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
   {
-    QApplication::quit();
+   std::string project_file_name=application->GetProjectPath()+application->GetProjectFileName();
+   application->CloseProject();
+   application->OpenProject(project_file_name);
+    //QApplication::quit();
   }
 }

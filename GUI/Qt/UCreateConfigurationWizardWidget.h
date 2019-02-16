@@ -3,6 +3,7 @@
 
 #include <QWizard>
 #include <QListWidgetItem>
+#include <QStringListModel>
 
 #include <rdk_application.h>
 #include "UClassesListWidget.h"
@@ -59,8 +60,15 @@ public slots:
   void setResetAfterLoad(bool checked);
   void setDebugMode     (bool checked);
 
+  void selectPredefinedStructure(QListWidgetItem* item);
+
 protected:
   virtual void accept() override;
+
+private slots:
+  void on_listViewPredefinedStructures_activated(const QModelIndex &index);
+
+  void on_listViewPredefinedStructures_clicked(const QModelIndex &index);
 
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
@@ -73,6 +81,10 @@ private:
 
   /// Мапа моделей, которые необходимо загрузить из файла
   QMap<int, QString> modelsFromFile;
+
+  // Данные для списка predefined structures
+  QStringList PredefinedStructuresData;
+  QStringListModel stringListModelPredefinedStructures;
 
   UClassesListWidget *classesList;
 

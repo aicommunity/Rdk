@@ -526,6 +526,48 @@ bool UEnvironment::SetFonts(const RDK::UBitmapFontCollection& value)
  Fonts=value;
  return true;
 }
+
+/// Возвращает набор вариантов predefined structures
+const std::map<int, UEnvPredefinedStructDescription>& UEnvironment::GetPredefinedStructures(void) const
+{
+ return PredefinedStructures;
+}
+
+/// Возвращает вариантов predefined structure по id
+UEnvPredefinedStructDescription UEnvironment::GetPredefinedStructureDescription(int id) const
+{
+ std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(id);
+ if(I != PredefinedStructures.end())
+  return I->second;
+
+ return UEnvPredefinedStructDescription();
+}
+
+/// Добавляет вариант predefined structure
+bool UEnvironment::AddPredefinedStructure(const UEnvPredefinedStructDescription &descr)
+{
+ std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(descr.Id);
+ if(I != PredefinedStructures.end())
+  return false;
+ PredefinedStructures[descr.Id]=descr;
+ return true;
+}
+
+/// Добавляет удаляет predefined structure по id
+void UEnvironment::DelPredefinedStructure(int id)
+{
+ std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(id);
+ if(I == PredefinedStructures.end())
+  return;
+
+ PredefinedStructures.erase(I);
+}
+
+/// Удаляет все predefined structures
+void UEnvironment::ClearPredefinedStructures(void)
+{
+ PredefinedStructures.clear();
+}
 // --------------------------
 
 
