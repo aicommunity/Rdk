@@ -589,6 +589,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
  ProjectOpenFlag=true;
  ProjectPath=extract_file_path(file_name);
  Project->SetConfig(project_config);
+ Project->SetForceNewConfigFilesStructure(true);
  Project->SetProjectPath(ProjectPath);
  ProjectFileName=extract_file_name(file_name);
 
@@ -774,8 +775,8 @@ bool UApplication::SaveProject(void)
 
  int selected_channel_index=Core_GetSelectedChannelIndex();
 
+ ProjectXml.Create("Project");
  Project->WriteToXml(ProjectXml);
-
 try
 {
 

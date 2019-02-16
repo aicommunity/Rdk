@@ -407,7 +407,7 @@ void UCreateConfigurationWizardWidget::accept()
   if(ui->radioButtonSingleThread->isChecked())
     ProjectConfig.MultiThreadingMode = 0;
   else
-    ProjectConfig.MultiThreadingMode = 0;
+    ProjectConfig.MultiThreadingMode = 1;
 
   if(ui->radioButtonSystemTime->isChecked())
     ProjectConfig.CalcSourceTimeMode = 0;
@@ -440,4 +440,5 @@ void UCreateConfigurationWizardWidget::on_listViewPredefinedStructures_clicked(c
  int pos=str.indexOf(':');
  int value=str.mid(0,pos).toInt();
  ui->spinBoxPredefinedmModelID->setValue(value);
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, ui->spinBoxPredefinedmModelID->value());
 }
