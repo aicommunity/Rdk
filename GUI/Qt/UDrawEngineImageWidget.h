@@ -73,6 +73,7 @@ public slots:
     void componentCalculate();
     void componentGUI();
     void componentCopyXMLDescription();
+    void componentCloneComponent();
 
 signals:
     void componentSelected(QString name); //single click
@@ -96,7 +97,7 @@ private:
     QAction *actionSwitchLink;
     QAction *actionFinishSwitching;
     QAction *actionCancelSwitching;
-
+    QAction *actionCloneComponent;
 
     ///имя компонента для создания связй/перемещения
     QString firstComponentToConnection;

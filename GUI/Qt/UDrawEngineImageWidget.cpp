@@ -34,6 +34,9 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionSeparator7 = new QAction(this);
     actionSeparator7->setSeparator(true);
 
+    QAction *actionSeparator8 = new QAction(this);
+    actionSeparator8->setSeparator(true);
+
     //события контекстного меню
     actionViewOrBreakLink = new QAction(contextMenu);
     actionViewOrBreakLink->setText("View/Break link");
@@ -64,6 +67,9 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionCancelSwitching->setText("Cancel switching");
     actionCancelSwitching->setEnabled(false);
 
+    actionCloneComponent = new QAction(contextMenu);
+    actionCloneComponent->setText("Clone");
+    actionCloneComponent->setEnabled(true);
 
     QAction *actionRenameComponent = new QAction(contextMenu);
     actionRenameComponent->setText("Rename");    
@@ -112,6 +118,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionSeparator6);
     contextMenu->addAction(actionGUI);
     contextMenu->addAction(actionCopyComponentXMLDescription);
+    contextMenu->addAction(actionSeparator8);
+    contextMenu->addAction(actionCloneComponent);
 
     //связи
     connect(actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
@@ -133,6 +141,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionCalculateComponent, SIGNAL(triggered(bool)), this, SLOT(componentCalculate()));
     connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
+    connect(actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
     //</контекстное меню>
 
     setScaledContents(true);
@@ -547,6 +556,48 @@ void UDrawEngineImageWidget::componentCopyXMLDescription()
         clipboard->setText(QString(xmlDescription));
     }
     Engine_FreeBufString(xmlDescription);
+}
+
+void UDrawEngineImageWidget::componentCloneComponent()
+{
+ RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
+
+ if(!engine)
+  return;
+
+ int res=engine->Model_CloneComponent(myLongName().toLocal8Bit().constData(),"");
+/*
+ RDK::UEPtr<RDK::UNet> component=model->GetComponentL<RDK::UNet>(myLongName().toLocal8Bit().constData(),true);
+ if(!component)
+  return;
+
+ RDK::UEPtr<RDK::UNet> owner=RDK::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
+ if(!owner)
+  return;
+
+ RDK::UEPtr<RDK::UNet> new_component=RDK::dynamic_pointer_cast<RDK::UNet>(model->GetStorage()->TakeObject(component->GetClass()));
+ if(!new_component)
+  return;
+
+ new_component->SetName(component->GetName());
+
+ if(!owner->AddComponent(new_component))
+ {
+  model->GetStorage()->ReturnObject(new_component);
+  return;
+ }
+
+ component->Copy(new_component);
+ RDK::MVector<double,3> coord=new_component->GetCoord();
+ coord(0)+=1;
+ coord(1)+=1;
+ new_component->SetCoord(coord);
+*/
+ if(res == RDK_SUCCESS)
+ {
+  reDrawScheme(true);
+  emit updateComponentsList();
+ }
 }
 
 void UDrawEngineImageWidget::saveComponentPosition(std::string name)

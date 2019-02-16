@@ -3306,6 +3306,64 @@ int UEngine::Model_MoveComponent(const char* component, const char* target)
 }
 
 
+/// Клонирует компонент со всеми содержимым и внутренними связями
+/// Если new_name - пустая строка, то имя назначается автоматически
+int UEngine::Model_CloneComponent(const char* component_name, const char* new_name)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   RDK::UEPtr<RDK::UNet> component=dynamic_pointer_cast<RDK::UNet>(FindComponent(component_name));
+
+   if(!component)
+    return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   RDK::UEPtr<RDK::UNet> owner=RDK::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
+   if(!owner)
+    return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+
+   RDK::UEPtr<RDK::UNet> new_component=RDK::dynamic_pointer_cast<RDK::UNet>(Storage->TakeObject(component->GetClass()));
+   if(!new_component)
+    return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
+
+   if(!new_name || strlen(new_name) == 0)
+    new_component->SetName(component->GetName());
+   else
+    new_component->SetName(new_name);
+
+   if(!owner->AddComponent(new_component))
+   {
+    Storage->ReturnObject(new_component);
+    return RDK_E_MODEL_ADD_COMPONENT_FAIL;
+   }
+
+   component->Copy(new_component);
+   RDK::MVector<double,3> coord=new_component->GetCoord();
+   coord(0)+=1;
+   coord(1)+=1;
+   new_component->SetCoord(coord);
+
+   AccessCache.clear();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int UEngine::Model_GetNumComponents(const char* stringid)

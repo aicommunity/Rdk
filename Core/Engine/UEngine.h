@@ -566,6 +566,10 @@ virtual int Model_DelComponent(const char* stringid, const char *name);
 /// то возвращает false и не делает ничего
 virtual int Model_MoveComponent(const char* component, const char* target);
 
+///  лонирует компонент со всеми содержимым и внутренними св€з€ми
+/// ≈сли new_name - пуста€ строка, то им€ назначаетс€ автоматически
+virtual int Model_CloneComponent(const char* component_name, const char* new_name);
+
 // ¬озвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пуста€ строка, то возвращает число всех компонент модели
 virtual int Model_GetNumComponents(const char* stringid);
