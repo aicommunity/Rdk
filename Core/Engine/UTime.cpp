@@ -53,7 +53,7 @@ UTimeControl::~UTimeControl(void)
 // --------------------------
 // ћетоды управлени€ глобальными свойствами
 // --------------------------
-/// ¬рем€ начала расчета в дн€х
+/// ¬рем€ начала расчета в дн€х (по времени источника данных)
 double UTimeControl::GetSourceStartGlobalTime(void) const
 {
  return SourceStartGlobalTime;
@@ -65,7 +65,7 @@ bool UTimeControl::SetSourceStartGlobalTime(double value)
  return true;
 }
 
-/// ¬рем€ начала расчета в дн€х
+/// “екущее врем€ источника данных в дн€х
 double UTimeControl::GetSourceCurrentGlobalTime(void) const
 {
  return SourceCurrentGlobalTime;

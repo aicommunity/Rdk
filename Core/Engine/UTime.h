@@ -76,23 +76,23 @@ virtual ~UTimeControl(void);
 // --------------------------
 // ћетоды управлени€ глобальными свойствами
 // --------------------------
-/// ¬рем€ начала расчета в дн€х
+/// ¬рем€ начала расчета в дн€х от начала времен (по времени источника данных)
 double GetSourceStartGlobalTime(void) const;
 bool SetSourceStartGlobalTime(double value);
 
-/// ¬рем€ начала расчета в дн€х
+/// “екущее врем€ источника данных в дн€х от начала времен
 double GetSourceCurrentGlobalTime(void) const;
 bool SetSourceCurrentGlobalTime(double value);
 
-/// “екущее врем€ в дн€х
+/// ¬рем€ начала расчета в дн€х от произвольной точки (по времени источника данных)
 double GetSourceStartLocalTime(void) const;
 bool SetSourceStartLocalTime(double value);
 
-/// “екущее врем€ в секундах
+/// “екущее врем€ источника в секундах от произвольной точки (по времени источника данных)
 double GetSourceCurrentLocalTime(void) const;
 bool SetSourceCurrentLocalTime(double value);
 
-/// “екущее врем€ в миллисекундах
+/// “екущее врем€ в миллисекундах от произвольной точки (по времени источника данных)
 ULongTime GetSourceCurrentLocalTimeMs(void) const;
 // --------------------------
 
