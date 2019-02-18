@@ -171,9 +171,17 @@ int BackgroundLineStep;
 // Цвет выделяемого элемента
 UColorT SelectedColor;
 
-// Цвет выделяемого элемента
+// Цвет неактивного элемента
 UColorT InactiveSelectedColor;
 
+// Цвет входящих линий
+UColorT InputLinksColor;
+
+// Цвет исходящих линий
+UColorT OutputLinksColor;
+
+// Цвет линий по умолчанию
+UColorT DefaultLinksColor;
 
 // Коэффициент зуммирования
 // Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y

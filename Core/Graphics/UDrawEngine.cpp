@@ -125,7 +125,16 @@ UDrawEngine::UDrawEngine(void)
  // ÷вет выдел€емого элемента
  SelectedColor = UColorT(128, 128, 128, 0);
 
- InactiveSelectedColor=UColorT(128, 128, 128, 0);;
+ InactiveSelectedColor=UColorT(128, 128, 128, 0);
+
+ // ÷вет вход€щих линий
+ InputLinksColor=UColorT(255, 0, 0, 0);
+
+ // ÷вет исход€щих линий
+ OutputLinksColor=UColorT(0, 0, 255, 0);
+
+ // ÷вет линий по умолчанию
+ DefaultLinksColor=UColorT(180, 180, 180, 0);
 
  BackgroundLineStep=10;
 
@@ -775,7 +784,25 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
 
  if (links)
  {
-  GEngine->SetPenColor(out.LinkColor);
+  if(out.Highlight)
+  {
+   GEngine->SetPenColor(OutputLinksColor);
+  }
+  else
+  if(in.Highlight)
+  {
+   GEngine->SetPenColor(InputLinksColor);
+  }
+  else
+  {
+   GEngine->SetPenColor(DefaultLinksColor);
+  }
+
+
+
+  if(!out.Highlight && !in.Highlight)
+   GEngine->SetPenColor(DefaultLinksColor);
+
   GEngine->SetPenWidth(out.LinkWidth);
   RDK::MVector<double,3> &c_out=out.Position;
   RDK::MVector<double,3> &c_in=in.Position;
