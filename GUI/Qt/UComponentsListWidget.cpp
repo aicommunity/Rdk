@@ -318,6 +318,16 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 if(parameterName == selectedParameterName)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
+                if(i->second.Property->GetLanguageType() == typeid(bool))
+                {
+                 parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+
+                 const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
+                 if(*val)
+                  parametersItem->setCheckState(1,Qt::Checked);
+                 else
+                  parametersItem->setCheckState(1,Qt::Unchecked);
+                }
             }
             if (i->second.CheckMask(ptPubState))
             {
