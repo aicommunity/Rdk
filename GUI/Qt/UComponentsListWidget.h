@@ -119,6 +119,7 @@ signals:
     void componentDoubleClick(QString name);
     void updateScheme(bool forceUpdate);
     void selectedPropertyValue(QString value);
+    void itemChanged(QTreeWidgetItem *item, int column);
 
 public slots:
     void updateComponentsListFromScheme();
@@ -134,6 +135,9 @@ public slots:
     void stateListSelectionChanged();
     void inputsListSelectionChanged();
     void outputsListSelectionChanged();
+
+    void parametersListItemChanged(QTreeWidgetItem *item, int column);
+
 
     /// Отправляет событие отрисовки выбранного компонента
     void drawSelectedComponent(QModelIndex index);

@@ -53,6 +53,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()),
             this, SLOT(outputsListSelectionChanged()));
 
+    connect(ui->treeWidgetParameters, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
+            this, SLOT(parametersListItemChanged(QTreeWidgetItem *, int )));
     //выделение канала
     connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
 
@@ -295,6 +297,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
     try
     {
+     UpdateInterfaceFlag=true;
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
 
         RDK::UEPtr<RDK::UContainer> cont;
@@ -303,7 +306,11 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         else
             cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
-        if(!cont) return;
+        if(!cont)
+        {
+         UpdateInterfaceFlag=false;
+         return;
+        }
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
         std::string buffer;
         for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
@@ -376,13 +383,16 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         ui->treeWidgetInputs->verticalScrollBar()->setValue(inputsScrollPosition);
         ui->treeWidgetOutputs->verticalScrollBar()->setMaximum(outputsScrollPosition);
         ui->treeWidgetOutputs->verticalScrollBar()->setValue(outputsScrollPosition);
+        UpdateInterfaceFlag=false;
     }
     catch (RDK::UException &exception)
     {
+     UpdateInterfaceFlag=false;
         Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
+     UpdateInterfaceFlag=false;
         Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
@@ -400,6 +410,59 @@ void UComponentsListWidget::parametersListSelectionChanged()
     selectedParameterName = changedParameterName;
 
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
+}
+
+void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int column)
+{
+ try
+ {
+  if(UpdateInterfaceFlag)
+   return;
+  RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+
+  RDK::UEPtr<RDK::UContainer> cont;
+  if (currentDrawPropertyComponentName.isEmpty())
+   cont = model.Get();
+  else
+   cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+
+  if(!cont)
+   return;
+
+  std::string buffer;
+  QString parameterName=item->text(0);
+  RDK::UEPtr<RDK::UIProperty> property;
+
+  property=cont->FindProperty(parameterName.toLocal8Bit().constData());
+
+  if(!property)
+   return;
+
+//  parametersItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+//  parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
+//  if(parameterName == selectedParameterName)
+//   ui->treeWidgetParameters->setCurrentItem(parametersItem);
+  if(property->GetLanguageType() == typeid(bool))
+  {
+//   parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+
+//   const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
+   bool value(false);
+   if(item->checkState(1) == Qt::Checked)
+    value=true;
+   else
+    value=false;
+   property->ReadFromMemory(&value);
+  }
+ }
+catch (RDK::UException &exception)
+{
+    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+}
+catch (std::exception &exception)
+{
+    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+}
 }
 
 void UComponentsListWidget::stateListSelectionChanged()
