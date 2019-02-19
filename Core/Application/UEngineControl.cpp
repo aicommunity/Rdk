@@ -616,11 +616,22 @@ void UEngineControl::UnRegisterMetadataBroadcaster(UBroadcasterInterface *broadc
 bool UEngineControl::AddMetadata(int channel_index, double time_stamp)
 {
  bool res=true;
+ std::ofstream ofs2;
+ std::string s;
+ //s = std::string("D:/debug_alarms_")+RDK::sntoa(channel_index)+std::string(".txt");
+ //ofs2.open(s.c_str(), std::ios_base::app);
+ //ofs2<<channel_index<<": UEngineControl::AddMetadata\n";
+ //MLog_LogMessage(channel_index, RDK_EX_DEBUG, "UEngineControl::AddMetadata");
  for(size_t i=0;i<BroadcastersList.size();i++)
  {
   if(BroadcastersList[i])
+  {
+   //ofs2<<channel_index<<": UEngineControl::AddMetadata (for cycle "<<i<<")\n";
+   //MLog_LogMessage(channel_index, RDK_EX_DEBUG, "UEngineControl::AddMetadata (in for cycle)");
    res&=BroadcastersList[i]->AddMetadata(channel_index,time_stamp);
+  }
  }
+ //ofs2.close();
  return res;
 }
 
