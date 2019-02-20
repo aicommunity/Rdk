@@ -48,7 +48,9 @@ set(C_ENGINE_FILES
 	"${C_ENGINE_SOURCE_DIR}/UComponentDescription.cpp"
 	"${C_ENGINE_SOURCE_DIR}/UShare.cpp"
 	"${C_ENGINE_SOURCE_DIR}/UItemData.cpp"
-	"${C_ENGINE_SOURCE_DIR}/ULoggerEnv.cpp")
+	"${C_ENGINE_SOURCE_DIR}/ULoggerEnv.cpp"
+	"${C_ENGINE_SOURCE_DIR}/UComponentFactory.cpp"
+		)
 set(C_GRAPHICS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Graphics/")
 set(C_GRAPHICS_FILES
 	"${C_GRAPHICS_SOURCE_DIR}/UBitmapVector.cpp"
@@ -128,7 +130,8 @@ set(DEPLOY_FILES
 	"${DEPLOY_SOURCE_DIR}/rdk_new.cpp"
 	"${DEPLOY_SOURCE_DIR}/rdk_rpc.cpp"
 	"${DEPLOY_SOURCE_DIR}/rdk.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk.gcc.cpp")
+	"${DEPLOY_SOURCE_DIR}/rdk.gcc.cpp"
+	"${DEPLOY_SOURCE_DIR}/rdk_version.cpp")
 # Rdk/ThirdParty directory
 set(THIRDPARTY_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../ThirdParty/")
 set(THIRDPARTY_FILES
