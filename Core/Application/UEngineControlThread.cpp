@@ -22,8 +22,11 @@ const char* BoostVersion(void)
 	tempstr<<BOOST_VERSION;
 	#ifdef __BORLANDC__
 		strcpy_s(version,99,tempstr.str().c_str());
-	#else
-		strcpy_s(version,tempstr.str().c_str());
+    #elif __GNUC__
+        strncpy(version,tempstr.str().c_str(),99);
+        version[99]='\0';
+    #else
+        strcpy_s(version,tempstr.str().c_str());
     #endif
     return version;
 #else
