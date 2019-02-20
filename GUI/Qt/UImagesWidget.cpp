@@ -33,6 +33,9 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     showLegend = true;*/
     imagesSizeMod = 0;
     singleImageMode = false;
+    enableChanges=true;
+    columnsCounter=0;
+    rowsCounter=0;
 
     UpdateInterval = 0;
 
@@ -260,6 +263,7 @@ int UImagesWidget::GetImageWidth(int imageNum)
         }
       }
     }
+ return 0;
 }
 ///Извлекает настоящую высоту изображения
 int UImagesWidget::GetImageHeight(int imageNum)
@@ -279,6 +283,7 @@ int UImagesWidget::GetImageHeight(int imageNum)
         }
       }
     }
+ return 0;
 }
 
 void UImagesWidget::ASaveParameters()
@@ -542,6 +547,8 @@ void UImagesWidget::showFullScreenImage(USingleImageWidget *item)
     }
     else
     {
+     if(columnsCounter == 0 || rowsCounter == 0)
+      return;
         for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
             (*i)->hide();
         item->show();
