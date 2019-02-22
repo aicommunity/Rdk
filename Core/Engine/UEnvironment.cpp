@@ -556,7 +556,7 @@ bool UEnvironment::AddPredefinedStructure(const UEnvPredefinedStructDescription 
 /// Добавляет удаляет predefined structure по id
 void UEnvironment::DelPredefinedStructure(int id)
 {
- std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(id);
+ std::map<int, UEnvPredefinedStructDescription>::iterator I=PredefinedStructures.find(id);
  if(I == PredefinedStructures.end())
   return;
 
