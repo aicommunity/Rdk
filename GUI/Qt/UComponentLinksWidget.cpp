@@ -463,6 +463,63 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
         if(!cont) return;
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
 
+        bool is_new_outputs(false);
+        bool is_new_inputs(false);
+
+        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        {
+            if (i->second.CheckMask(ptPubInput))
+            {
+             std::string::size_type k=i->first.find("DataInput");
+             if(k != 0 || k == std::string::npos)
+              is_new_inputs=true;
+            }
+
+            if (i->second.CheckMask(ptPubOutput))
+            {
+             std::string::size_type k=i->first.find("DataOutput");
+             if(k != 0 || k == std::string::npos)
+              is_new_outputs=true;
+            }
+
+            if(is_new_inputs && is_new_outputs)
+             break;
+        }
+
+        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end();)
+        {
+            if (i->second.CheckMask(ptPubInput) && is_new_inputs)
+            {
+             std::string::size_type k=i->first.find("DataInput");
+             if(k == 0)
+             {
+              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
+              varMap.erase(i);
+              i=j;
+             }
+             else
+              ++i;
+            }
+            else
+            if (i->second.CheckMask(ptPubOutput) && is_new_outputs)
+            {
+             std::string::size_type k=i->first.find("DataOutput");
+             if(k == 0)
+             {
+              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
+              varMap.erase(i);
+              i=j;
+             }
+             else
+              ++i;
+            }
+            else
+            {
+             ++i;
+            }
+        }
+
+
         for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
         {
             if (i->second.CheckMask(firstTypeMask))
