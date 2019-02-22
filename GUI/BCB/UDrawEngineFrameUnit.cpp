@@ -113,7 +113,11 @@ void TUDrawEngineFrame::AUpdateInterface(void)
   new_bmp_height=new_img_height=ScrollBox->ClientHeight-horz_sb_size;
  }
 
- GraphCanvas.SetRes(new_bmp_width,new_bmp_height,RDK::ubmRGB24);
+
+ int rec_width(0),rec_height(0);
+ DrawEngine.CalcRecommendSize(rec_width,rec_height);
+ //GraphCanvas.SetRes(new_bmp_width,new_bmp_height,RDK::ubmRGB24);
+ GraphCanvas.SetRes((rec_width>new_bmp_width)?rec_width:new_bmp_width,(rec_height>new_bmp_height)?rec_height:new_bmp_height,RDK::ubmRGB24);
  Image->Width=new_img_width;
  Image->Height=new_img_height;
  Graph.SetCanvas(&GraphCanvas);
