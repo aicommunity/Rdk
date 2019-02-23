@@ -1260,7 +1260,7 @@ bool MGeometry<T,Rows>::operator == (const MGeometry<T,Rows> &v) const
 template<class T, int Rows>
 bool MGeometry<T,Rows>::operator != (const MGeometry<T,Rows> &v) const
 {
- return (Vertex != v.Vertex) | (Borders != v.Borders) | (VerticesNames != v.VerticesNames);
+ return !((this) == v);
 }
 // --------------------------
 

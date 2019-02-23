@@ -107,7 +107,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout)
- : UEPtr<T>(pdata.Get()), Mutex(mutex)
+ : UEPtr<T>(pdata), Mutex(mutex)
 {
  if(Mutex)
  {
