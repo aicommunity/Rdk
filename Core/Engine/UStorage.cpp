@@ -1055,7 +1055,7 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 
  UInstancesStorageElement element(object,true);
  list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
- object->ObjectIterator=&(*instI);
+ //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
 
  object->SetStorage(this);
@@ -1092,10 +1092,23 @@ void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
- if(obj->ObjectIterator)
-  obj->ObjectIterator->UseFlag=false;
- obj->Activity=false;
+
+ obj->SetActivity(false);
  obj->BreakOwner();
+
+ UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
+ if(instances != ObjectsStorage.end())
+  return;
+
+ for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
+						J=instances->second.end(); I!=J; ++I)
+ {
+  if(I->Object == object)
+  {
+   I->UseFlag=false;
+   break;
+  }
+ }
 }
 
 // В случае ошибки возвращает ForbiddenId
@@ -1106,7 +1119,7 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
  instance_iterator->second.erase(object_iterator);
 
  UId classid=object->GetClass();
- object->ObjectIterator=0;
+ //object->SetObjectIterator(0);
  object->SetStorage(0);
  object->SetClass(ForbiddenId);
  return classid;

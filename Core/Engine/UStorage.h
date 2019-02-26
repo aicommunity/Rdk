@@ -88,7 +88,7 @@ typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 
 class RDK_LIB_TYPE UStorage
 {
-friend class UContainer;
+//friend class UContainer;
 protected: // Системные свойства
 // Таблица соответствий имен и Id образцов классов
 std::map<std::string,UId> ClassesLookupTable;
@@ -348,11 +348,13 @@ protected:
 // Если объект уже принадлежит иному хранилищу то возвращает false
 virtual void PushObject(const UId &classid, UEPtr<UContainer> object);
 
+public:
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // В случае ошибки возвращает ForbiddenId
 virtual UId PopObject(UEPtr<UContainer> object);
 
+protected:
 // Перемещает объект в другое хранилище
 virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
 
