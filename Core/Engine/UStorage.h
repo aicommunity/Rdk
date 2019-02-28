@@ -189,10 +189,14 @@ virtual void GetClassIdList(std::vector<UId> &buffer) const;
 virtual void GetClassNameList(std::vector<std::string> &buffer) const;
 
 // Удаляет все не используемые образцы классов из хранилища
-virtual void FreeClassesStorage(void);
+/// Если force == true то удаляет даже если хранилище объектов не пустое
+/// и подавляет соответствующее исключение
+virtual void FreeClassesStorage(bool force=false);
 
-// Удаляет все образцы классов из хранилища
-virtual void ClearClassesStorage(void);
+/// Удаляет все образцы классов из хранилища
+/// Если force == true то удаляет даже если хранилище объектов не пустое
+/// и подавляет соответствующее исключение
+virtual void ClearClassesStorage(bool force=false);
 // --------------------------
 
 // --------------------------
@@ -225,10 +229,12 @@ virtual int CalcNumObjects(const UId &classid) const;
 virtual size_t CalcNumObjects(const string &classname) const;
 
 // Удалаяет все свободные объекты из хранилища
-virtual void FreeObjectsStorage(void);
+/// Если force == true то удаляет даже если объекты используются
+virtual void FreeObjectsStorage(bool force=false);
 
 // Удаляет все объекты из хранилища
-virtual void ClearObjectsStorage(void);
+/// Если force == true то удаляет даже если объекты используются
+virtual void ClearObjectsStorage(bool force=false);
 
 // Удалаяет все объекты заданного класса из хранилища
 virtual void ClearObjectsStorageByClass(const UId &classid);
