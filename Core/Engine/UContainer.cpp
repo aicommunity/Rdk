@@ -1051,6 +1051,20 @@ void UContainer::Free(void)
   UComponent::Free();
 }
 
+	  /*
+// Указатель на этот объект в хранилище
+UEPtr<UInstancesStorageElement> UContainer::GetObjectIterator(void)
+{
+ return ObjectIterator;
+}
+
+void UContainer::SetObjectIterator(UEPtr<UInstancesStorageElement> value)
+{
+ if(ObjectIterator == value)
+  return;
+ ObjectIterator=value;
+}       */
+
 /// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
 void UContainer::AUpdateInternalData(void)
 {

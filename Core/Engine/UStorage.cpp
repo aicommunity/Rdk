@@ -113,8 +113,31 @@ UStorage::UStorage(void)
 
 UStorage::~UStorage(void)
 {
- ClearObjectsStorage();
- ClearClassesStorage();
+ try
+ {
+  ClearObjectsStorage(true);
+  ClearClassesStorage(true);
+ }
+ catch(EObjectStorageNotEmpty &ex)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+ }
+ catch(UException &ex)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+ }
+ catch(std::exception &ex)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+ }
+ catch(...)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Unknown excception");
+ }
 }
 // --------------------------
 
@@ -324,7 +347,7 @@ void UStorage::GetClassNameList(vector<NameT> &buffer) const
 
 
 // Удаляет все не используемые образцы классов из хранилища
-void UStorage::FreeClassesStorage(void)
+void UStorage::FreeClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
  							  J=ClassesStorage.end(); I!=J; ++I)
@@ -338,14 +361,20 @@ void UStorage::FreeClassesStorage(void)
 }
 
 // Удаляет все образцы классов из хранилища
-void UStorage::ClearClassesStorage(void)
+void UStorage::ClearClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
  							  J=ClassesStorage.end(); I!=J; ++I)
  {
   UObjectsStorageIterator temp=ObjectsStorage.find(I->first);
   if(temp != ObjectsStorage.end() && temp->second.size() != 0)
-   throw EObjectStorageNotEmpty(I->first);
+  {
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
+   if(!force)
+	throw EObjectStorageNotEmpty(I->first);
+   else
+    break;
+  }
  }
 
  for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
@@ -540,7 +569,7 @@ size_t UStorage::CalcNumObjects(const string &classname) const
 
 
 // Удалаяет все свободные объекты из хранилища
-void UStorage::FreeObjectsStorage(void)
+void UStorage::FreeObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
@@ -556,26 +585,55 @@ void UStorage::FreeObjectsStorage(void)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
-   if(!I->UseFlag)
+   std::string object_name=I->Object->GetName();
+   if(I->UseFlag && force)
    {
-    list<UInstancesStorageElement>::iterator K;
-	std::string object_name=I->Object->GetName();
+	if(Logger)
+	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("FORCED destroy objects by name ")+object_name+": object in use!");
+   }
+
+   if(!I->UseFlag || force)
+   {
+	list<UInstancesStorageElement>::iterator K;
 	if(Logger)
 	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
 	K=I; ++K;
 	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
-	UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
-	if(virtual_factory)
+	RDK_SYS_TRY
 	{
-     virtual_factory->FreeComponent();
-    }
-	delete object;
-	I=K;
-    ++count;
+	 try
+	 {
+	  UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
+	  if(virtual_factory)
+	  {
+	   virtual_factory->FreeComponent();
+	  }
+	  delete object;
+	  ++count;
+	 }
+	 catch(...)
+	 {
+	  if(Logger)
+	   Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
+	 }
+	}
+	RDK_SYS_CATCH
+	{
+	 if(Logger)
+	  Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+	}
+    I=K;
    }
    else
-    ++I;
+   {
+	++I;
+	if(!force)
+	{
+	 if(Logger)
+	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+	}
+   }
   }
 
 //  size_t end_size=instances->second.size();
@@ -591,7 +649,7 @@ void UStorage::FreeObjectsStorage(void)
 }
 
 // Удаляет все объекты из хранилища
-void UStorage::ClearObjectsStorage(void)
+void UStorage::ClearObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 												instances != iend; ++instances)
@@ -611,7 +669,7 @@ void UStorage::ClearObjectsStorage(void)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
  }
 
- FreeObjectsStorage();
+ FreeObjectsStorage(force);
 }
 
 // Удалаяет все объекты заданного класса из хранилища
@@ -1055,7 +1113,7 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 
  UInstancesStorageElement element(object,true);
  list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
- object->ObjectIterator=&(*instI);
+ //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
 
  object->SetStorage(this);
@@ -1092,10 +1150,23 @@ void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
- if(obj->ObjectIterator)
-  obj->ObjectIterator->UseFlag=false;
- obj->Activity=false;
+
+ obj->SetActivity(false);
  obj->BreakOwner();
+
+ UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
+ if(instances != ObjectsStorage.end())
+  return;
+
+ for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
+						J=instances->second.end(); I!=J; ++I)
+ {
+  if(I->Object == object)
+  {
+   I->UseFlag=false;
+   break;
+  }
+ }
 }
 
 // В случае ошибки возвращает ForbiddenId
@@ -1106,7 +1177,7 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
  instance_iterator->second.erase(object_iterator);
 
  UId classid=object->GetClass();
- object->ObjectIterator=0;
+ //object->SetObjectIterator(0);
  object->SetStorage(0);
  object->SetClass(ForbiddenId);
  return classid;

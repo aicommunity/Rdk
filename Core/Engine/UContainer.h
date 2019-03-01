@@ -90,7 +90,7 @@ typedef std::map<NameT,UPVariable> PointerMapT;
 typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
 typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
-friend class UStorage;
+//friend class UStorage;
 friend class UController;
 
 private: // Системные свойства
@@ -177,7 +177,7 @@ UEPtr<UContainer>* PComponents;
 int NumComponents;
 
 // Указатель на этот объект в хранилище
-UEPtr<UInstancesStorageElement> ObjectIterator;
+//UEPtr<UInstancesStorageElement> ObjectIterator;
 
 // Последний использованный Id компонент
 UId LastId;
@@ -480,6 +480,10 @@ virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copysta
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
 virtual void Free(void);
+
+// Указатель на этот объект в хранилище
+//UEPtr<UInstancesStorageElement> GetObjectIterator(void);
+//void SetObjectIterator(UEPtr<UInstancesStorageElement> value);
 
 protected:
 /// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
