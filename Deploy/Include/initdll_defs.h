@@ -17,6 +17,16 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #endif
 
+#ifndef CDECL
+ #if defined(_WIN32) || defined(_WIN64)
+  #define CDECL __cdecl
+ #elif defined(__GNUC__) && defined(_LP64)
+  #define CDECL
+ #else
+  #define CDECL __attribute__ ((CDECL__))
+ #endif
+#endif
+
 #if defined(__BORLANDC__)
 	#if defined(LIBRDK_LIBRARY_EXPORT)
 		#define RDK_LIB_TYPE __declspec(dllexport)
