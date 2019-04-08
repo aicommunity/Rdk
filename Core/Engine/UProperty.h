@@ -668,7 +668,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : ExternalDataSource(0), UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v(), ExternalDataSource(0) { this->PData=&v; };
 // -----------------------------
 
 // -----------------------------
