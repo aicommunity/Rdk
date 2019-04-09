@@ -268,8 +268,9 @@ HEADERS +=\
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
-    INCLUDEPATH += /usr/local/boost_1_68_0
-    INCLUDEPATH += /home/ivan/opencv-3.4.4/build/include
+#    INCLUDEPATH += /usr/local/boost_1_68_0
+    INCLUDEPATH += $$(BOOST_PATH)
+    INCLUDEPATH += $$(OPENCV3_PATH)/include
 }
 
 windows {

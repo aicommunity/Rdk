@@ -88,14 +88,14 @@ virtual const T& GetData(void) const
  if(PData)
   return *PData;
  throw EPropertyZeroPtr(GetOwnerName(),GetName());
-};
+}
 
 // Модифицирует данные
 virtual void SetData(const T& data)
 {
  (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
  RenewUpdateTime();
-};
+}
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -152,7 +152,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
  }
 
  return false;
-};
+}
 
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
@@ -206,7 +206,7 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
  }
 
  return false;
-};
+}
 
 // Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void)
@@ -712,7 +712,7 @@ void DetachFrom(void)
 virtual const T& GetData(void) const
 {
  return (ExternalDataSource)?ExternalDataSource->GetData():v;
-};
+}
 
 virtual void SetData(const T &value)
 {
@@ -732,7 +732,7 @@ virtual void SetData(const T &value)
  (ExternalDataSource)?ExternalDataSource->GetData():v=value;
  this->RenewUpdateTime();
  return;
-};
+}
 // -----------------------------
 };
 /* ************************************************************************* */
