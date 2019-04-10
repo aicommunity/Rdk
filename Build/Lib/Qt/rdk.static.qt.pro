@@ -269,7 +269,7 @@ HEADERS +=\
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
 #    INCLUDEPATH += /usr/local/boost_1_68_0
-    INCLUDEPATH += $$(BOOST_PATH)
+    INCLUDEPATH += $$(BOOST_PATH)/include
     INCLUDEPATH += $$(OPENCV3_PATH)/include
 }
 
