@@ -30,11 +30,18 @@ unix {
         INCLUDEPATH += /usr/local/cuda-9.0/include
 }
 
-    contains(DEFINES,RDK_USE_PYTHON) {
-        INCLUDEPATH += $$(ANACONDA_PATH)/include/python3.5m/
-        INCLUDEPATH += $$(ANACONDA_PATH)/lib/python3.5/site-packages/numpy/core/include/numpy/
-}
 
+    contains(DEFINES,RDK_USE_PYTHON) {
+        ANACONDA_PATH=$$(ANACONDA_PATH)
+        isEmpty(ANACONDA_PATH) {
+            INCLUDEPATH += /usr/include/python3.5
+            INCLUDEPATH += $$(HOME)/.local/lib/python3.5/site-packages/numpy/core/include/numpy/
+            INCLUDEPATH += /home/user/.local/lib/python3.5/site-packages/numpy/core/include/numpy
+        } else{
+            INCLUDEPATH += $$(ANACONDA_PATH)/include/python3.5m/
+            INCLUDEPATH += $$(ANACONDA_PATH)/lib/python3.5/site-packages/numpy/core/include/numpy/
+        }
+    }
 }
 
 windows {
