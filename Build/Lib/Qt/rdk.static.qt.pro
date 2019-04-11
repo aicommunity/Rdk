@@ -10,9 +10,11 @@ TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
 
-DEFINES += LIBRDK_LIBRARY_EXPORT
-DEFINES += RDK_UNICODE_RUN
-DEFINES += RDK_QT
+include(RdkDefines.pri)
+
+#DEFINES += LIBRDK_LIBRARY_EXPORT
+#DEFINES += RDK_UNICODE_RUN
+#DEFINES += RDK_QT
 
 VERSION = $$system(hg parents --template '{rev}')
 DEFINES += RDK_CORE_VERSION=$$VERSION

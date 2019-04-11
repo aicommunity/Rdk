@@ -1,8 +1,8 @@
 #DEFINES += RDK_USE_CUDA
-DEFINES += RDK_USE_PYTHON
+#DEFINES += RDK_USE_PYTHON
 
 unix {
-    DEFINES += RDK_USE_DARKNET
+#    DEFINES += RDK_USE_DARKNET
 }
 
 DEFINES += LIBRDK_LIBRARY_EXPORT
@@ -11,3 +11,7 @@ DEFINES += RDK_QT
 DEFINES += BOOST_PYTHON_STATIC_LIB
 DEFINES += BOOST_NUMPY_STATIC_LIB
 DEFINES += QT_NO_VERSION_TAGGING
+
+exists($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri) {
+    include($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri)
+}
