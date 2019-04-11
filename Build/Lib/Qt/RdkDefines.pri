@@ -15,3 +15,40 @@ DEFINES += QT_NO_VERSION_TAGGING
 exists($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri) {
     include($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri)
 }
+
+
+contains(DEFINES,RDK_USE_CUDA) {
+        DEFINES += GPU
+}
+
+
+unix {
+    INCLUDEPATH += $$(BOOST_PATH)/include
+    INCLUDEPATH += $$(OPENCV3_PATH)/include
+
+    contains(DEFINES, GPU) {
+        INCLUDEPATH += /usr/local/cuda-9.0/include
+}
+
+    contains(DEFINES,RDK_USE_PYTHON) {
+        INCLUDEPATH += $$(ANACONDA_PATH)/include/python3.5m/
+        INCLUDEPATH += $$(ANACONDA_PATH)/lib/python3.5/site-packages/numpy/core/include/numpy/
+}
+
+}
+
+windows {
+    INCLUDEPATH += $$(BOOST_PATH)
+
+    contains(DEFINES,RDK_USE_PYTHON) {
+        INCLUDEPATH += $$(ANACONDA_PATH)/include/
+        INCLUDEPATH += $$(ANACONDA_PATH)/Lib/site-packages/numpy/core/include/numpy
+}
+    INCLUDEPATH += $$(BOOST_PATH)
+    INCLUDEPATH += $$(OPENCV3_PATH)/build/include
+
+    contains(DEFINES, GPU) {
+        INCLUDEPATH += $$(CUDA_PATH)/include
+}
+}
+
