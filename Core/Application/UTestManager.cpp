@@ -141,7 +141,7 @@ int UTest::LoadTest(string testFile)
   testXML.SelectRoot();
   if(testXML.SelectNode("TestProperties"))
   {
-    for(size_t i = 0; i < static_cast<size_t>(testXML.GetNumNodes("Property")); ++i)
+    for(int i = 0; i < testXML.GetNumNodes("Property"); ++i)
     {
       testXML.SelectNode("Property", i);
       std::string sValue;
@@ -423,8 +423,8 @@ int UTestManager::LoadTests(const std::string &file_name)
  }
 
  int loadRet = 0;
- size_t testsCount = static_cast<size_t>(testsXML.GetNumNodes("UTest"));
- for(size_t i = 0; i < testsCount; ++i)
+ int testsCount = testsXML.GetNumNodes("UTest");
+ for(int i = 0; i < testsCount; ++i)
  {
    if(!testsXML.SelectNode("UTest", i))
      continue;

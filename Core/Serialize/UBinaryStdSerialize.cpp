@@ -161,7 +161,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, long double &data)
 // Вектора
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bool> &data)
 {
- unsigned int size=data.size();
+ size_t size=data.size();
  operator <<(storage,size);
 
  if(size <= 0)
@@ -175,7 +175,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bo
 
 USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &data)
 {
- unsigned int size=data.size();
+ size_t size=data.size();
  operator >>(storage,size);
  data.resize(size);
 

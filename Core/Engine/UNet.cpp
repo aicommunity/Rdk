@@ -371,6 +371,87 @@ bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int conne
 
  return false;
 }
+
+bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide &item2)
+{
+ UEPtr<UADItem> pitem1,pitem2;
+ if(!CheckLongId(item1.Id))
+  pitem1=this;
+ else
+  pitem1=dynamic_pointer_cast<UADItem>(GetComponentL(item1.Id,true));
+
+ if(!CheckLongId(item2.Id))
+  pitem2=this;
+ else
+  pitem2=dynamic_pointer_cast<UADItem>(GetComponentL(item2.Id,true));
+
+ if(!pitem1)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item 1 not found: ")+item1.Name);
+  return false;
+ }
+
+ if(!pitem2)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item 2 not found: ")+item2.Name);
+  return false;
+ }
+	  /*
+ UIProperty* property1(0);
+ UIProperty* property2(0);
+ pitem1->FindOutputProperty(item1.Name, property1);
+ pitem2->FindOutputProperty(item2.Name, property2);
+
+ UIPropertyOutput* output_property1(dynamic_cast<UIPropertyOutput*>(property1));
+ UIPropertyOutput* output_property2(dynamic_cast<UIPropertyOutput*>(property2));
+
+ if(!output_property1)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Property 1 not found: ")+item1.Name);
+  return false;
+ }
+
+ if(!output_property2)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Property 2 not found: ")+item2.Name);
+  return false;
+ }
+		 */
+ int num_connectors1=pitem1->GetNumAConnectors(item1.Name);
+ std::vector<UConnector*> conns;
+ std::vector<std::string> conn_names;
+ conn_names.reserve(num_connectors1);
+ conns.reserve(num_connectors1);
+ for(int i=0;i<num_connectors1;i++)
+ {
+  conns.push_back(pitem1->GetAConnectorByIndex(item1.Name, i));
+  std::vector<UCLink> buffer;
+  conns[i]->GetCLink(dynamic_pointer_cast<UItem>(pitem1), buffer);
+  for(size_t j=0;j<buffer.size();j++)
+   if(buffer[j].OutputName == item1.Name)
+   {
+	conn_names.push_back(buffer[j].InputName);
+    break;
+   }
+ }
+
+ pitem1->DisconnectAll(item1.Name);
+
+ bool res(true);
+ for(size_t i=0;i<conn_names.size();i++)
+ {
+  int c_index(-1);
+  res &=pitem2->Connect(conns[i], item2.Name, conn_names[i], c_index);
+ }
+
+ return res;
+}
+
+bool UNet::SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
+						const NameT &itemname2, const NameT &output_name2)
+{
+ return SwitchOutputLinks(UStringLinkSide(itemname1,output_name1), UStringLinkSide(itemname2,output_name2));
+}
 // ----------------------
 
 
@@ -436,7 +517,8 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass())));
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass()),true));
+
 
   I=props.begin();
   J=props.end();
@@ -551,17 +633,25 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
    return false;
 
   serstorage->AddNode(GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+  if(Storage)
+   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
   if(!GetComponentProperties(serstorage,params_type_mask))
+  {
+   serstorage->SelectUp();
    return false;
+  }
   serstorage->SelectUp();
 
   if(links)
   {
    serstorage->AddNode("Links");
    if(GetComponentInternalLinks(serstorage,0))
+   {
+    serstorage->SelectUp();
     return false;
+   }
+
    serstorage->SelectUp();
   }
 
@@ -578,6 +668,52 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
   serstorage->SelectUp();
 
   serstorage->SelectUp();
+
+ return true;
+}
+
+/// Сохраняет полную структуру компонента
+bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask)
+{
+  if(!serstorage)
+   return false;
+
+  if(Storage)
+   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask)); // ptParameter
+  if(!GetComponentProperties(serstorage,type_mask))
+  {
+   serstorage->SelectUp();
+   return false;
+  }
+  serstorage->SelectUp();
+
+  if(links)
+  {
+   serstorage->AddNode("Links");
+   if(GetComponentInternalLinks(serstorage,0))
+   {
+    serstorage->SelectUp();
+    return false;
+   }
+   serstorage->SelectUp();
+  }
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<GetNumComponents();i++)
+  {
+//   if(!serstorage->AddNode(GetComponentByIndex(i)->GetName()))
+//    continue;
+   if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponent(serstorage,false,type_mask))
+   {
+	std::string name;
+	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Sub component not found: ")+GetFullName(name));
+//	return false;
+   }
+//   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
+
 
  return true;
 }

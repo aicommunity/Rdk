@@ -1,7 +1,7 @@
 #ifndef UCOMPONENTPROPERTYCHANGER_H
 #define UCOMPONENTPROPERTYCHANGER_H
 
-#include <QWidget>
+#include "UVisualControllerWidget.h"
 #include "UComponentsListWidget.h"
 #include "UPropertyXMLWidget.h"
 
@@ -9,13 +9,18 @@ namespace Ui {
   class UComponentPropertyChanger;
 }
 
-class UComponentPropertyChanger : public QWidget
+class UComponentPropertyChanger : public UVisualControllerWidget
 {
   Q_OBJECT
 
 public:
-  explicit UComponentPropertyChanger(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentPropertyChanger");
+  explicit UComponentPropertyChanger(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UComponentPropertyChanger();
+
+  /// запись файла настроек
+  virtual void ASaveParameters();
+  /// считывание файла настроек
+  virtual void ALoadParameters();
 
 public slots:
   void actionSet();
@@ -25,11 +30,6 @@ public slots:
   void actionShowXML();
 
   void updateCurrentPropertyValue(QString value);
-
-  /// считывание файлов настроек
-  void readSettings(QString file, QString group = "UComponentPropertyChanger");
-  /// запись файлов настроек
-  void writeSettings(QString file, QString group = "UComponentPropertyChanger");
 
 public:
   UComponentsListWidget *componentsList;

@@ -399,6 +399,11 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
     */
 };
 
+template<typename T>
+static UComponent* NewStaticFunc()
+{
+ return new T;
+}
 
 class UItem;
 
@@ -480,6 +485,9 @@ virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
 
 /// —брасывает указатель на данные
 virtual bool ResetPointer(int index, void* value)=0;
+
+/// ќбновить указатели свойств-входов
+virtual void UpdateConnectedPointers(void)=0;
 // --------------------------
 
 // --------------------------

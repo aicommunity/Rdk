@@ -21,7 +21,7 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Width = 305
     Height = 175
     Align = alRight
-    Caption = ' '#1042#1093#1086#1076#1099' '
+    Caption = ' Inputs '
     TabOrder = 0
     inline NANetFrameInputs: TUComponentIOFrame
       Left = 2
@@ -54,7 +54,7 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Width = 315
     Height = 175
     Align = alClient
-    Caption = ' '#1042#1099#1093#1086#1076#1099' '
+    Caption = ' Outputs '
     TabOrder = 1
     inline NANetFrameOutputs: TUComponentIOFrame
       Left = 2
@@ -87,7 +87,7 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Width = 620
     Height = 168
     Align = alBottom
-    Caption = ' '#1057#1074#1103#1079#1080' '
+    Caption = ' Links '
     TabOrder = 2
     inline NANetFrameLinks: TUComponentIOFrame
       Left = 2

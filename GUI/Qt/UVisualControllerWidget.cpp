@@ -3,8 +3,9 @@
 // Флаг, сообщающий что идет расчет
 RDK::UELockVar<bool> UVisualControllerWidget::CalculationModeFlag(false);
 
-UVisualControllerWidget::UVisualControllerWidget(QWidget *parent):QWidget(parent)
+UVisualControllerWidget::UVisualControllerWidget(QWidget *parent, RDK::UApplication *app):QWidget(parent)
 {
+    application = app;
     UpdateInterfaceFlag=false;
     AlwaysUpdateFlag=false;
     UpdateInterval=1000; // по умолчанию, интервал обновления виджета 1с.
@@ -316,7 +317,7 @@ bool UVisualControllerWidget::GetAlwaysUpdateFlag(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
+void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &)
 {
     try
     {
@@ -324,7 +325,7 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
             return;
         xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
         xml.SelectNodeForce(GetName());*/
-        ASaveParameters(xml);
+        ASaveParameters();
         /*xml.WriteInteger("UpdateInterval",UpdateInterval);
         //xml.WriteString("ComponentControlName",ComponentControlName);
         xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
@@ -346,13 +347,13 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
     }*/
 }
 
-void UVisualControllerWidget::ASaveParameters(RDK::USerStorageXML &xml)
+void UVisualControllerWidget::ASaveParameters()
 {
 
 }
 
 // Загружает параметры интерфейса из xml
-void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
+void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &)
 {
     try
     {
@@ -363,7 +364,7 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
         ComponentControlName=xml.ReadString("ComponentControlName","");
         UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
         AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);*/
-        ALoadParameters(xml);
+        ALoadParameters();
         /*xml.SelectUp();
         xml.SelectUp();*/
     }
@@ -381,7 +382,7 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
     }*/
 }
 
-void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)
+void UVisualControllerWidget::ALoadParameters()
 {
 }
 

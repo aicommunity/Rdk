@@ -22,6 +22,19 @@ namespace RDK {
 
 class UEnvironment;
 
+/// Описание Predefined structure
+struct UEnvPredefinedStructDescription
+{
+/// Id структуры
+int Id;
+
+/// Краткое описание
+std::string ShortDescription;
+
+/// Подробное описание
+std::string DetailDescription;
+};
+
 /// Функция должна быть реализована в конечном проекте
 extern RDK_LIB_TYPE bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment* env, int predefined_structure);
 
@@ -87,6 +100,9 @@ std::string SourceControllerName;
 /// Имя переменной состояния компонента модели которому может передаваться
 /// сигнал о сбое в работе источника данных
 std::string SourceControllerProperty;
+
+/// Набор вариантов predefined structure
+std::map<int, UEnvPredefinedStructDescription> PredefinedStructures;
 
 protected: // Переменные быстрого доступа
 // Текущий компонент модели
@@ -213,6 +229,12 @@ virtual bool CreateModel(const UId& classid);
 // Уничтожает текущую модель
 virtual bool DestroyModel(void);
 
+/// Инициализирует модель
+virtual void ModelInit(void);
+
+/// Деинициализирует модель
+virtual void ModelUnInit(void);
+
 /// Время среды
 const UTimeControl& GetTime(void) const;
 UTimeControl& GetTime(void);
@@ -224,6 +246,21 @@ bool SetChannelIndex(int value);
 /// Шрифты
 RDK::UBitmapFontCollection& GetFonts(void);
 bool SetFonts(const RDK::UBitmapFontCollection& value);
+
+/// Возвращает набор вариантов predefined structures
+const std::map<int, UEnvPredefinedStructDescription>& GetPredefinedStructures(void) const;
+
+/// Возвращает вариантов predefined structure по id
+UEnvPredefinedStructDescription GetPredefinedStructureDescription(int id) const;
+
+/// Добавляет вариант predefined structure
+bool AddPredefinedStructure(const UEnvPredefinedStructDescription &descr);
+
+/// Добавляет удаляет predefined structure по id
+void DelPredefinedStructure(int id);
+
+/// Удаляет все predefined structures
+void ClearPredefinedStructures(void);
 // --------------------------
 
 // --------------------------
@@ -288,7 +325,7 @@ bool IsCalcFinished(void) const;
 virtual void RTCalculate(void);
 
 /// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
-virtual void FastCalculate(UTime calc_interval);
+virtual void FastCalculate(double calc_interval);
 
 // --------------------------
 

@@ -453,7 +453,7 @@ void ULoggerEnv::ClearReadLog(void)
   LastReadExceptionLogIndex=LogList.begin()->first;
  else
   LastReadExceptionLogIndex=0;
- CurrentExceptionsLogSize=LogList.size();
+ CurrentExceptionsLogSize=int(LogList.size());
  LastErrorLevel=INT_MAX;
 }
 

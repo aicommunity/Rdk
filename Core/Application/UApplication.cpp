@@ -40,7 +40,11 @@ UApplication::UApplication(void)
  TestMode=false;
  CloseAfterTest=true;
  AppIsInit = false;
-// DebugMode=false;
+ ConfigsMainPath="../../Configs/";
+ ChangeUseNewXmlFormatProjectFile(false);
+ ChangeUseNewProjectFilesStructure(false);
+
+ // DebugMode=false;
 }
 
 UApplication::~UApplication(void)
@@ -78,6 +82,20 @@ bool UApplication::SetWorkDirectory(const std::string& value)
   return true;
  WorkDirectory=value;
  UpdateLoggers();
+ return true;
+}
+
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& UApplication::GetConfigsMainPath(void) const
+{
+ return ConfigsMainPath;
+}
+
+bool UApplication::SetConfigsMainPath(const std::string &value)
+{
+ if(ConfigsMainPath == value)
+  return true;
+ ConfigsMainPath=value;
  return true;
 }
 
@@ -389,6 +407,7 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
 bool UApplication::Init(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
  Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
@@ -431,7 +450,7 @@ bool UApplication::UnInit(void)
  Sleep(10);
  CloseProject();
  EngineControl->UnInit();
- GetCore()->Destroy();
+ GetCoreLock()->Destroy();
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
  AppIsInit = false;
@@ -536,12 +555,6 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
 {
  CloseProject();
 
- ProjectOpenFlag=true;
- ProjectPath=extract_file_path(file_name);
- Project->SetConfig(project_config);
- Project->SetProjectPath(ProjectPath);
- ProjectFileName=extract_file_name(file_name);
-
  UApplication::SetNumChannels(project_config.NumChannels);
 
  for(int i=0;i<project_config.NumChannels;i++)
@@ -564,11 +577,21 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
    std::string modelXml;
    if(LoadFile(channel.ModelFileName, modelXml))
    {
-     MModel_LoadComponent(i, "", modelXml.c_str());
-     channel.ModelFileName = (i == 0) ? std::string("model.xml") : std::string("model_")+RDK::sntoa(i)+".xml";
+	 MModel_LoadComponent(i, "", modelXml.c_str());
+	 if(Project->GetForceNewConfigFilesStructure())
+	  channel.ModelFileName = std::string("Model_")+RDK::sntoa(i,2)+".xml";
+	 else
+	  channel.ModelFileName = (i == 0) ? std::string("model.xml") : std::string("model_")+RDK::sntoa(i)+".xml";
    }
   }
  }
+
+ ProjectOpenFlag=true;
+ ProjectPath=extract_file_path(file_name);
+ Project->SetConfig(project_config);
+ Project->SetForceNewConfigFilesStructure(true);
+ Project->SetProjectPath(ProjectPath);
+ ProjectFileName=extract_file_name(file_name);
 
  if(SaveProject())
  {
@@ -682,7 +705,7 @@ try{
    {
 	Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
 	if(channel_config.InitAfterLoad)
-	 MEnv_Init(i);
+     MEnv_ModelInit(i);
 	if(channel_config.ResetAfterLoad)
 	 MEnv_Reset(i,0);
    }
@@ -752,8 +775,8 @@ bool UApplication::SaveProject(void)
 
  int selected_channel_index=Core_GetSelectedChannelIndex();
 
+ ProjectXml.Create("Project");
  Project->WriteToXml(ProjectXml);
-
 try
 {
 
@@ -853,11 +876,12 @@ bool UApplication::CloseProject(void)
   Core_SelectChannel(i);
   if(GetEngine())
   {
+   Env_ModelUnInit();
    Env_DestroyStructure();
    Env_UnInit();
    Model_Destroy();
   }
-  Storage_ClearObjectsStorage();
+  Storage_FreeObjectsStorage();
  }
 
  return true;
@@ -1171,7 +1195,10 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
 
  std::string data;
  if(!LoadFile(file_name,data))
+ {
+  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load model file: ")+file_name).c_str());
   return false;
+ }
 
  if(!data.empty())
  {
@@ -1204,7 +1231,10 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string &
 
  std::string data;
  if(!LoadFile(file_name,data))
+ {
+  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load parameters file: ")+file_name).c_str());
   return false;
+ }
 
  if(!data.empty())
  {
@@ -1344,7 +1374,7 @@ void UApplication::LoadProjectsHistory(void)
  opt_name=opt_name.substr(0,opt_name.size()-4);
  opt_name=opt_name+".projecthist";
  RDK::UIniFile<char> history_ini;
- history_ini.LoadFromFile(opt_name.c_str());
+ history_ini.LoadFromFile((WorkDirectory+opt_name).c_str());
  std::vector<std::string> history;
  history_ini.GetVariableList("General",history);
  sort(history.begin(),history.end());
@@ -1374,7 +1404,42 @@ void UApplication::SaveProjectsHistory(void)
  if(opt_name.size()>4)
  opt_name=opt_name.substr(0,opt_name.size()-4);
  opt_name=opt_name+".projecthist";
- history_ini.SaveToFile(opt_name);
+ history_ini.SaveToFile(WorkDirectory+opt_name);
+}
+
+/// Флаг принудительного сохранения конфигураций в старом формате
+bool UApplication::IsUseNewXmlFormatProjectFile(void) const
+{
+ return UseNewXmlFormatProjectFile;
+}
+
+bool UApplication::ChangeUseNewXmlFormatProjectFile(bool value)
+{
+ if(UseNewXmlFormatProjectFile == value)
+  return true;
+
+ UseNewXmlFormatProjectFile=value;
+ if(Project)
+  Project->SetForceOldXmlFormat(!value);
+ return true;
+}
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool UApplication::IsUseNewProjectFilesStructure(void) const
+{
+ return UseNewProjectFilesStructure;
+}
+
+bool UApplication::ChangeUseNewProjectFilesStructure(bool value)
+{
+ if(UseNewProjectFilesStructure == value)
+  return true;
+
+ UseNewProjectFilesStructure=value;
+ if(Project)
+  Project->SetForceNewConfigFilesStructure(value);
+ return true;
 }
 // --------------------------
 

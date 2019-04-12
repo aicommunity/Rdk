@@ -3,6 +3,8 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include "QStandardItemModel"
+#include "QStandardItem"
 
 #define SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(param, value) \
   if(ui->checkBoxSettingToAllChannels->isChecked()) \
@@ -64,6 +66,10 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   connect(ui->checkBoxCPResetAfterLoad, SIGNAL(toggled(bool)), this, SLOT(setResetAfterLoad(bool)));
   connect(ui->checkBoxCPDebug         , SIGNAL(toggled(bool)), this, SLOT(setDebugMode(bool)));
 
+
+  connect(ui->listViewPredefinedStructures, SIGNAL(itemActivated(QListWidgetItem*)),
+                      this, SLOT(selectPredefinedStructure(QListWidgetItem*)));
+
   channelNumber = 0;
   ui->radioButtonMSFromComponent->setChecked(true);
   ui->frameMaxCalcModelTime->hide();
@@ -85,6 +91,27 @@ void UCreateConfigurationWizardWidget::onMSPredefinedModel(bool checked)
     ui->frameFromComponent->hide();
     ui->frameFromFile->hide();
     ui->framePredefinedModel->show();
+
+
+    PredefinedStructuresData.clear();
+
+    RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
+    if(env)
+    {
+     std::map<int, RDK::UEnvPredefinedStructDescription> descrs=env->GetPredefinedStructures();
+     std::map<int, RDK::UEnvPredefinedStructDescription>::iterator I=descrs.begin();
+     for(;I!=descrs.end();++I)
+     {
+      std::string str=RDK::sntoa(I->first);
+      str+=": ";
+      str+=I->second.ShortDescription;
+      PredefinedStructuresData.append(QString::fromLocal8Bit(str.c_str()));
+     }
+
+    }
+    stringListModelPredefinedStructures.setStringList(PredefinedStructuresData);
+    ui->listViewPredefinedStructures->setModel(&stringListModelPredefinedStructures);
+    ui->listViewPredefinedStructures->show();
 
     SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, ui->spinBoxPredefinedmModelID->value());
     SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName      , "");
@@ -361,6 +388,11 @@ void UCreateConfigurationWizardWidget::setDebugMode(bool checked)
   SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(DebugMode, checked);
 }
 
+void UCreateConfigurationWizardWidget::selectPredefinedStructure(QListWidgetItem* item)
+{
+
+}
+
 void UCreateConfigurationWizardWidget::accept()
 {
   // first page
@@ -375,7 +407,7 @@ void UCreateConfigurationWizardWidget::accept()
   if(ui->radioButtonSingleThread->isChecked())
     ProjectConfig.MultiThreadingMode = 0;
   else
-    ProjectConfig.MultiThreadingMode = 0;
+    ProjectConfig.MultiThreadingMode = 1;
 
   if(ui->radioButtonSystemTime->isChecked())
     ProjectConfig.CalcSourceTimeMode = 0;
@@ -395,4 +427,18 @@ void UCreateConfigurationWizardWidget::accept()
   }
 
   QWizard::accept();
+}
+
+void UCreateConfigurationWizardWidget::on_listViewPredefinedStructures_activated(const QModelIndex &index)
+{
+
+}
+
+void UCreateConfigurationWizardWidget::on_listViewPredefinedStructures_clicked(const QModelIndex &index)
+{
+ QString str=PredefinedStructuresData[index.row()];
+ int pos=str.indexOf(':');
+ int value=str.mid(0,pos).toInt();
+ ui->spinBoxPredefinedmModelID->setValue(value);
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, ui->spinBoxPredefinedmModelID->value());
 }

@@ -7,6 +7,7 @@
 #include "../../Core/Engine/UStorage.h"
 #include "../../Core/Engine/UEngine.h"
 #include "../../Core/Engine/UEnvironment.h"
+#include "rdk_version.h"
 
 // Менеджер DLL
 class RDK_LIB_TYPE URdkCoreManager
@@ -25,7 +26,7 @@ std::vector<RDK::UEngine*> EngineList;
 std::vector<UGenericMutex*> MutexList;
 
 /// Массив локеров
-std::vector<UGenericMutexExclusiveLocker*> LockerList;
+std::vector<RDK::UELockPtr<RDK::UEngine>*> LockerList;
 
 /// Массив логгеров
 std::vector<RDK::ULoggerEnv*> LoggerList;
@@ -93,7 +94,6 @@ PCreateNewEngine FuncCreateNewEngine;
 // Глобальная коллекция шрифтов
 RDK::UBitmapFontCollection Fonts;
 
-
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -147,6 +147,9 @@ bool SetClassesDescriptionFileName(const std::string& value);
 // Имя файла описаний общих параметров классов
 const std::string& GetCommonClassesDescriptionFileName(void) const;
 bool SetCommonClassesDescriptionFileName(const std::string& value);
+
+/// Возвращет версию ядра
+const RDK::UVersion& GetVersion(void) const;
 // --------------------------
 
 // --------------------------
@@ -259,6 +262,12 @@ RDK::UELockPtr<T> GetModelLock(int channel_index);
 
 template<class T>
 RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout);
+
+/// Метод прямой блокировки канала
+int LockChannel(int index);
+
+/// Метод снятия прямой блокировки канала
+int UnLockChannel(int index);
 // --------------------------
 
 // --------------------------

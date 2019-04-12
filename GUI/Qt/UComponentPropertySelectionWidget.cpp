@@ -3,18 +3,24 @@
 
 #include <QDebug>
 
-UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *parent, int mode, QString settingsFile, QString settingsGroup) :
+UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *parent, int mode, RDK::UApplication *app) :
     QDialog(parent),
     ui(new Ui::UComponentPropertySelectionWidget)
 {
     ui->setupUi(this);
     componentsList = NULL;
-    readSettings(settingsFile, settingsGroup);
-    componentsList = new UComponentsListWidget(this, settingsFile, settingsGroup+"_componentsList");
-    componentsList->UpdateInterval = 0;
+    application = app;
+    componentsList = new UComponentsListWidget(this, application, 0);
+    //componentsList->UpdateInterval = 0;
     componentsList->setVerticalOrientation(false);
     componentsList->openTabN(mode);
     ui->horizontalLayoutComponentsList->addWidget(componentsList);
+    if(application)
+    {
+     readSettings(QString::fromLocal8Bit(
+                   application->GetProjectPath().c_str())+"settings.qt");
+     componentsList->ALoadParameters();
+    }
 }
 
 UComponentPropertySelectionWidget::~UComponentPropertySelectionWidget()
@@ -28,8 +34,6 @@ void UComponentPropertySelectionWidget::readSettings(QString file, QString group
     settings.beginGroup(group);
     restoreGeometry(settings.value("geometry").toByteArray());
     settings.endGroup();
-
-    if(componentsList) componentsList->readSettings(file, group+"_componentsList");
 }
 
 void UComponentPropertySelectionWidget::writeSettings(QString file, QString group)
@@ -38,6 +42,4 @@ void UComponentPropertySelectionWidget::writeSettings(QString file, QString grou
     settings.beginGroup(group);
     settings.setValue("geometry", saveGeometry());
     settings.endGroup();
-
-    if(componentsList) componentsList->writeSettings(file, group+"_componentsList");
 }

@@ -37,15 +37,20 @@ public:
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
 
-    //расширени схемы при ресайзе
+    //расширение схемы при ресайзе
     void resizeEvent(QResizeEvent*);
 
-    ///перерисовка схему с флагом принудительной перезагрузки схемы текущего отображения
-    void reDrawScheme(bool shouldReloadXml);
-    ///Задание имени отрисовываемого компонента и перерисовка схема
+    /// перерисовка схему с флагом принудительной перезагрузки схемы текущего отображения
+    void reDrawScheme(bool shouldReloadXml, bool no_resize_canvas=false);
+
+    /// Задание имени отрисовываемого компонента и перерисовка схема
     void setComponentName(QString name);
-    ///Выбор компонента на схеме
+
+    /// Выбор компонента на схеме
     void selectComponent(QString name);
+
+    /// Меняет размер канвы
+    void ResizeCanvas(void);
 
 public slots:
     //Контекстное меню
@@ -56,6 +61,9 @@ public slots:
     void componentStartMoving();
     void componentFinishMoving();
     void componentCancelMoving();
+    void componentStartSwitching();
+    void componentFinishSwitching();
+    void componentCancelSwitching();
     void componentRename();
     void componentDelete();
     void componentCopyNameToClipboard();
@@ -64,6 +72,8 @@ public slots:
     void componentReset();
     void componentCalculate();
     void componentGUI();
+    void componentCopyXMLDescription();
+    void componentCloneComponent();
 
 signals:
     void componentSelected(QString name); //single click
@@ -73,6 +83,7 @@ signals:
 
     void viewLinks(QString componentName);
     void createLinks(QString firstComponentName, QString secondComponentName);
+    void switchLinks(QString firstComponentName, QString secondComponentName);
 
 private:
     //некоторые события контекстного меню
@@ -83,6 +94,10 @@ private:
     QAction *actionStartMoving;
     QAction *actionFinishMoving;
     QAction *actionCancelMoving;
+    QAction *actionSwitchLink;
+    QAction *actionFinishSwitching;
+    QAction *actionCancelSwitching;
+    QAction *actionCloneComponent;
 
     ///имя компонента для создания связй/перемещения
     QString firstComponentToConnection;
@@ -96,6 +111,10 @@ private:
     ///Перемещение
     QString startMoveComponent;
     QString endMoveComponent;
+
+    ///Переключение
+    QString startSwitchComponent;
+    QString endSwitchComponent;
 
     ///Popup Menu
     QMenu *contextMenu;

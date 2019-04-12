@@ -249,6 +249,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 // ProjectOpenFlag=false;
 //
  AppWinState=true;
+ LastProjectPath="";
 //
 // ProjectAutoSaveStateFlag=false;
 // EventsLogEnabled=true;
@@ -546,6 +547,8 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
+ std::string p = AnsiString(LastProjectPath).c_str();
+ xml.WriteString("LastProjectPath", p);
  xml.SelectNodeForce("Pages");
  xml.DelNodeInternalContent();
  int count=0;
@@ -661,6 +664,9 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
  AutoupdatePropertiesCheckBox->Checked=xml.ReadBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
  AutoupdatePropertiesCheckBoxClick(this);
+ std::string p = xml.ReadString("LastProjectPath", "");
+ LastProjectPath = String(p.c_str());
+
 }
 
 // Создает новый проект
@@ -2197,12 +2203,20 @@ void __fastcall TUGEngineControlForm::Performance1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
 {
- if(!RdkApplication.GetLastProjectsList().empty())
-  OpenDialog->InitialDir=ExtractFilePath(RdkApplication.GetLastProjectsList().front().c_str());
+ if(LastProjectPath=="")
+ {
+	 if(!RdkApplication.GetLastProjectsList().empty())
+	  OpenDialog->InitialDir=ExtractFilePath(RdkApplication.GetLastProjectsList().front().c_str());
+ }
+ else
+ {
+	 OpenDialog->InitialDir=LastProjectPath;
+ }
 
  if(!OpenDialog->Execute())
   return;
 
+ LastProjectPath = ExtractFilePath(OpenDialog->FileName);
  OpenProject(OpenDialog->FileName);
 }
 //---------------------------------------------------------------------------
@@ -2238,7 +2252,11 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
   UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
 
-  std::string project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\project.ini").c_str();
+  std::string project_file_name;
+  if(RdkApplication.IsUseNewProjectFilesStructure())
+   project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\Project.prj").c_str();
+  else
+   project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\project.ini").c_str();
 
   CreateProject(project_file_name, UCreateProjectWizardForm->ProjectConfig);
 
@@ -2408,7 +2426,10 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Icon->Assign(Application->Icon);
 
- RdkApplication.SetApplicationFileName(AnsiString(Application->ExeName).c_str());
+ //Исправляем проблему с тем, что путь указан как n:\p\...\р\р\р\..\..\..\р\р\e.exe
+ String ExeName = ExpandFileName(Application->ExeName);
+
+ RdkApplication.SetApplicationFileName(AnsiString(ExeName).c_str());
  // Грузим настройки приложения
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
@@ -2422,9 +2443,13 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
+ ConfigsMainPath=app_ini->ReadString("General", "ConfigsMainPath", "../../../Configs/");
  NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
  StartupDelay=app_ini->ReadInteger("General","StartupDelay",0);
+
+ UseNewXmlFormatProjectFile=app_ini->ReadBool("General","UseNewXmlFormatProjectFile",false);
+ UseNewProjectFilesStructure=app_ini->ReadBool("General","UseNewProjectFilesStructure",false);
 
  if(StartupDelay>0)
  {
@@ -2450,6 +2475,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetProject(&RdkProject);
  RdkApplication.SetTestManager(&RdkTestManager);
  RdkApplication.SetLogDir(AnsiString(LogDir).c_str());
+ RdkApplication.SetConfigsMainPath(AnsiString(ConfigsMainPath).c_str());
+ RdkApplication.ChangeUseNewXmlFormatProjectFile(UseNewXmlFormatProjectFile);
+ RdkApplication.ChangeUseNewProjectFilesStructure(UseNewProjectFilesStructure);
  RdkApplication.SetDebugMode(LogDebugMode);
 
  std::vector<std::string> args;

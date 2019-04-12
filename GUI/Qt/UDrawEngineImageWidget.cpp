@@ -31,6 +31,11 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionSeparator5->setSeparator(true);
     QAction *actionSeparator6 = new QAction(this);
     actionSeparator6->setSeparator(true);
+    QAction *actionSeparator7 = new QAction(this);
+    actionSeparator7->setSeparator(true);
+
+    QAction *actionSeparator8 = new QAction(this);
+    actionSeparator8->setSeparator(true);
 
     //события контекстного меню
     actionViewOrBreakLink = new QAction(contextMenu);
@@ -51,6 +56,21 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionCancelMoving = new QAction(contextMenu);
     actionCancelMoving->setText("Cancel moving");
     actionCancelMoving->setEnabled(false);
+
+    actionSwitchLink = new QAction(contextMenu);
+    actionSwitchLink->setText("Switch link");
+    actionSwitchLink->setEnabled(true);
+    actionFinishSwitching = new QAction(contextMenu);
+    actionFinishSwitching->setText("Finish switching");
+    actionFinishSwitching->setEnabled(false);
+    actionCancelSwitching = new QAction(contextMenu);
+    actionCancelSwitching->setText("Cancel switching");
+    actionCancelSwitching->setEnabled(false);
+
+    actionCloneComponent = new QAction(contextMenu);
+    actionCloneComponent->setText("Clone");
+    actionCloneComponent->setEnabled(true);
+
     QAction *actionRenameComponent = new QAction(contextMenu);
     actionRenameComponent->setText("Rename");    
     QAction *actionDeleteComponent = new QAction(contextMenu);
@@ -68,6 +88,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionGUI = new QAction(contextMenu);
     actionGUI->setText("GUI (not implemented)");
     actionGUI->setEnabled(false);
+    QAction *actionCopyComponentXMLDescription= new QAction(contextMenu);
+    actionCopyComponentXMLDescription->setText("Copy component XML description");;
 
     //добавление в меню
     contextMenu->addAction(actionViewOrBreakLink);
@@ -75,6 +97,10 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionCreateLink);
     contextMenu->addAction(actionFinishLink);
     contextMenu->addAction(actionCancelLink);
+    contextMenu->addAction(actionSeparator7);
+    contextMenu->addAction(actionSwitchLink);
+    contextMenu->addAction(actionFinishSwitching);
+    contextMenu->addAction(actionCancelSwitching);
     contextMenu->addAction(actionSeparator2);
     contextMenu->addAction(actionStartMoving);
     contextMenu->addAction(actionFinishMoving);
@@ -91,6 +117,9 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionCalculateComponent);
     contextMenu->addAction(actionSeparator6);
     contextMenu->addAction(actionGUI);
+    contextMenu->addAction(actionCopyComponentXMLDescription);
+    contextMenu->addAction(actionSeparator8);
+    contextMenu->addAction(actionCloneComponent);
 
     //связи
     connect(actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
@@ -100,6 +129,9 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionStartMoving, SIGNAL(triggered(bool)), this, SLOT(componentStartMoving()));
     connect(actionFinishMoving, SIGNAL(triggered(bool)), this, SLOT(componentFinishMoving()));
     connect(actionCancelMoving, SIGNAL(triggered(bool)), this, SLOT(componentCancelMoving()));
+    connect(actionSwitchLink, SIGNAL(triggered(bool)), this, SLOT(componentStartSwitching()));
+    connect(actionFinishSwitching, SIGNAL(triggered(bool)), this, SLOT(componentFinishSwitching()));
+    connect(actionCancelSwitching, SIGNAL(triggered(bool)), this, SLOT(componentCancelSwitching()));
     connect(actionRenameComponent, SIGNAL(triggered(bool)), this, SLOT(componentRename()));
     connect(actionDeleteComponent, SIGNAL(triggered(bool)), this, SLOT(componentDelete()));
     connect(actionCopyNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyNameToClipboard()));
@@ -108,7 +140,11 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionResetComponent, SIGNAL(triggered(bool)), this, SLOT(componentReset()));
     connect(actionCalculateComponent, SIGNAL(triggered(bool)), this, SLOT(componentCalculate()));
     connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
+    connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
+    connect(actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
     //</контекстное меню>
+
+    setScaledContents(true);
 
     //<код из билдера>
     Graph.SetCanvas(&GraphCanvas);
@@ -257,10 +293,10 @@ void UDrawEngineImageWidget::dragMoveEvent(QDragMoveEvent *event)
 
 void UDrawEngineImageWidget::resizeEvent(QResizeEvent *)
 {
-    reDrawScheme(false);
+    reDrawScheme(false,true);
 }
 
-void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
+void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml, bool no_resize_canvas)
 {
     if(shouldReloadXml)//(!NetXml.GetNumNodes())
     {
@@ -271,6 +307,9 @@ void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
         DrawEngine.SetNetXml(NetXml);
         shouldReloadXml = false;
     }
+
+    if(!no_resize_canvas)
+     ResizeCanvas();
     GraphCanvas.SetRes(width(), height(),RDK::ubmRGB24);
     Graph.SetCanvas(&GraphCanvas);
     DrawEngine.Draw();
@@ -278,6 +317,7 @@ void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml)
     QImage pict((const uchar *) GraphCanvas.GetData(), GraphCanvas.GetWidth(),
                   GraphCanvas.GetHeight(), GraphCanvas.GetLineByteLength(), QImage::Format_RGB888);
     setPixmap(QPixmap::fromImage(pict.rgbSwapped()));
+
 }
 
 void UDrawEngineImageWidget::setComponentName(QString name)
@@ -301,6 +341,14 @@ void UDrawEngineImageWidget::selectComponent(QString name)
     }
 }
 
+/// Меняет размер канвы
+void UDrawEngineImageWidget::ResizeCanvas(void)
+{
+ int rec_width(width()), rec_height(height());
+ DrawEngine.CalcRecommendSize(rec_width,rec_height);
+ setFixedSize(rec_width,rec_height);
+}
+
 void UDrawEngineImageWidget::componentViewOrBreakLink()
 {
     emit viewLinks(myLongName());
@@ -317,6 +365,10 @@ void UDrawEngineImageWidget::componentCreateLink()
     actionStartMoving->setEnabled(false);
     actionFinishMoving->setEnabled(false);
     actionCancelMoving->setEnabled(false);
+
+    actionSwitchLink->setEnabled(false);
+    actionFinishSwitching->setEnabled(false);
+    actionCancelSwitching->setEnabled(false);
 }
 
 void UDrawEngineImageWidget::componentFinishLink()
@@ -336,6 +388,46 @@ void UDrawEngineImageWidget::componentCancelLink()
     actionStartMoving->setEnabled(true);
     actionFinishMoving->setEnabled(true);
     actionCancelMoving->setEnabled(true);
+
+    actionSwitchLink->setEnabled(true);
+    actionFinishSwitching->setEnabled(false);
+    actionCancelSwitching->setEnabled(false);
+}
+
+void UDrawEngineImageWidget::componentStartSwitching()
+{
+    startSwitchComponent = myLongName();
+    actionFinishMoving->setEnabled(false);
+    actionCancelMoving->setEnabled(false);
+    actionStartMoving->setEnabled(false);
+
+    actionCreateLink->setEnabled(false);
+    actionFinishLink->setEnabled(false);
+    actionCancelLink->setEnabled(false);
+
+    actionSwitchLink->setEnabled(false);
+    actionFinishSwitching->setEnabled(true);
+    actionCancelSwitching->setEnabled(true);
+}
+void UDrawEngineImageWidget::componentFinishSwitching()
+{
+    emit switchLinks(startSwitchComponent, myLongName());
+
+    componentCancelSwitching();
+}
+void UDrawEngineImageWidget::componentCancelSwitching()
+{
+    actionFinishMoving->setEnabled(false);
+    actionCancelMoving->setEnabled(false);
+    actionStartMoving->setEnabled(true);
+
+    actionCreateLink->setEnabled(true);
+    actionFinishLink->setEnabled(true);
+    actionCancelLink->setEnabled(true);
+
+    actionSwitchLink->setEnabled(true);
+    actionFinishSwitching->setEnabled(false);
+    actionCancelSwitching->setEnabled(false);
 }
 
 void UDrawEngineImageWidget::componentStartMoving()
@@ -348,6 +440,10 @@ void UDrawEngineImageWidget::componentStartMoving()
     actionCreateLink->setEnabled(false);
     actionFinishLink->setEnabled(false);
     actionCancelLink->setEnabled(false);
+
+    actionSwitchLink->setEnabled(false);
+    actionFinishSwitching->setEnabled(false);
+    actionCancelSwitching->setEnabled(false);
 }
 
 void UDrawEngineImageWidget::componentFinishMoving()
@@ -371,6 +467,10 @@ void UDrawEngineImageWidget::componentCancelMoving()
     actionCreateLink->setEnabled(true);
     actionFinishLink->setEnabled(true);
     actionCancelLink->setEnabled(true);
+
+    actionSwitchLink->setEnabled(true);
+    actionFinishSwitching->setEnabled(false);
+    actionCancelSwitching->setEnabled(false);
 }
 
 void UDrawEngineImageWidget::componentRename()
@@ -444,7 +544,33 @@ void UDrawEngineImageWidget::componentCalculate()
 
 void UDrawEngineImageWidget::componentGUI()
 {
-    qDebug() << "component GUI";
+ qDebug() << "component GUI";
+}
+
+void UDrawEngineImageWidget::componentCopyXMLDescription()
+{
+    const char *xmlDescription = Model_SaveComponent(myLongName().toLocal8Bit());
+    if(xmlDescription)
+    {
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(QString(xmlDescription));
+    }
+    Engine_FreeBufString(xmlDescription);
+}
+
+void UDrawEngineImageWidget::componentCloneComponent()
+{
+ RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
+
+ if(!engine)
+  return;
+
+ int res=engine->Model_CloneComponent(myLongName().toLocal8Bit().constData(),"");
+ if(res == RDK_SUCCESS)
+ {
+  reDrawScheme(true);
+  emit updateComponentsList();
+ }
 }
 
 void UDrawEngineImageWidget::saveComponentPosition(std::string name)

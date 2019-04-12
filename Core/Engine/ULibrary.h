@@ -15,6 +15,11 @@ See file license.txt for more information
 
 //#include "ULibrary.h"
 #include "UStorage.h"
+#include "../../Deploy/Include/rdk_version.h"
+
+#ifndef RDK_LIB_CVS_REVISION
+#define RDK_LIB_CVS_REVISION 0
+#endif
 
 namespace RDK {
 
@@ -25,17 +30,25 @@ protected: // Данные единой коллекции библиотек
 //static std::list<ULibrary*> LibraryList;
 
 protected: // Параметры
-// Имя библиотеки
+/// Имя библиотеки
 string Name;
 
-// Версия библиотеки
+/// Версия библиотеки
 string Version;
+
+/// Ревизия контроля версий
+int Revision;
+
+/// Версия ядра, использованая при сборке библиотки
+RDK::UEPtr<RDK::UVersion> CoreVersion;
 
 /// Тип библиотеки
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
 /// 1 - Внешняя библиотека (загружена из внешней dll)
 /// 2 - Библиотека, созданная во время выполнения
 int Type;
+
+/// Ревизия ядра
 
 /// Зависимости библиотеки от других библиотек
 /// вида <имя библиотеки, версия библиотеки>
@@ -61,7 +74,8 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULibrary(const string &name, const string &version, int type=0);
+ULibrary(const string &name, const string &version, int type=0, int revision=RDK_LIB_CVS_REVISION); // Deprecated
+ULibrary(const string &name, const string &version, const RDK::UVersion &core_version, int type=0, int revision=RDK_LIB_CVS_REVISION);
 virtual ~ULibrary(void);
 // --------------------------
 
@@ -90,11 +104,17 @@ static void RemoveLibrary(ULibrary* const lib);
 // --------------------------
 // Методы доступа к параметрам библиотеки
 // --------------------------
-// Возвращает имя библиотеки
+/// Возвращает имя библиотеки
 const string& GetName(void) const;
 
-// Возвращает версию библиотеки
+/// Возвращает версию библиотеки
 const string& GetVersion(void) const;
+
+/// Возвращает ревизию системы контроля версий
+int GetRevision(void) const;
+
+/// Возвращает версию ядра, использованного при сборке библиотеки
+const UEPtr<RDK::UVersion> GetCoreVersion(void) const;
 
 /// Тип библиотеки
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
@@ -131,6 +151,9 @@ const vector<string>& GetIncomplete(void) const;
 template<class T>
 T* UploadClass(const std::string &class_name, const std::string &component_name, bool memory_measure=false);
 
+template<class T>
+void UploadClass(const std::string &class_name);
+
 // Заполняет заданное хранилище набором образцов классов.
 // Если класс с заданным именем уже существует, то он пропускается.
 // Возвращает число реально загруженных классов.
@@ -148,6 +171,7 @@ bool CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &de
 /// Добавляет в хранилище очередной класс
 virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
 virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
+virtual bool UploadClass(const std::string &class_name, const std::string &component_name, UComponent* (*funcPointer)(void));
 
 /// Удаление заданного класса из списка успешно загруженных
 /// Класс переносится в незагруженные (Incomplete)
@@ -225,11 +249,17 @@ T* ULibrary::UploadClass(const std::string &class_name, const std::string &compo
   Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, class_name+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
  return cont;
 }
-
+			   /*
+template<class T>
+void ULibrary::UploadClass(const std::string &class_name)
+{
+ UploadClass(class_name, T::NewStatic
+}                */
 
 
 typedef ULibrary* PUALibrary;
 
 }
+
 
 #endif

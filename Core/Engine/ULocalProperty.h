@@ -39,11 +39,11 @@ public: // Методы
 //Конструктор инициализации.
 UVBaseLProperty(const string &name, OwnerT * const owner)
  : UVBaseProperty<T,OwnerT>(owner)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 UVBaseLProperty(const string &name, OwnerT * const owner, T * const pdata)
  : UVBaseProperty<T,OwnerT>(owner, pdata)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 // -----------------------------
 };
 
@@ -67,14 +67,14 @@ public: // Методы
 UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod ,
 								typename UVProperty<T,OwnerT>::GetterRT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 UVLProperty(const string &name, OwnerT * const owner, T * const pdata, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, pdata,setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
-UVLProperty(UVLProperty<T,OwnerT> &v) {};
+UVLProperty(UVLProperty<T,OwnerT> &v) {}
 // -----------------------------
 
 public:
@@ -83,13 +83,13 @@ UVLProperty<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
-};
+}
 
 UVLProperty<T,OwnerT>& operator = (const UVLProperty<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;
-};
+}
 
 };
 
@@ -106,10 +106,10 @@ public:
 //Конструктор инициализации
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UProperty<T,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
-ULProperty(const ULProperty<T,OwnerT> &v) {};
+ULProperty(const ULProperty<T,OwnerT> &v) {}
 // -----------------------------
 
 // -----------------------------
@@ -121,23 +121,23 @@ ULProperty<T,OwnerT, type>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
-};
+}
 
 ULProperty<T,OwnerT, type>& operator = (const ULProperty<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;
-};
+}
 
 operator T (void) const
 {
  return this->GetData();
-};
+}
 
 const T& operator () (void) const
 {
  return this->GetData();
-};
+}
 
 // -----------------------------
 
@@ -157,15 +157,15 @@ public:
 //Конструктор инициализации
 UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UCProperty<T,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 //Конструктор инициализации для отдельных значений
 UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
  : UCProperty<T,OwnerT>(owner,setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
-UCLProperty(const UCProperty<T,OwnerT> &v) {};
+UCLProperty(const UCProperty<T,OwnerT> &v) {}
 // -----------------------------
 
 public: // Исключения
@@ -178,7 +178,7 @@ public:
 EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
 	 int min_value, int max_value, int error_value)
 : UIProperty::EPropertyError(owner_name, property_name),
-  MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {};
+  MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
 
 
 // Формирует строку лога об исключении
@@ -202,7 +202,7 @@ const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
 	0,int(this->v.size()),i);
 
  return this->v[i];
-};
+}
 
 // Запись элемента контейнера
 bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
@@ -218,42 +218,42 @@ bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
  this->RenewUpdateTime();
 
  return true;
-};
+}
 
 operator T (void) const
 {
  return this->GetData();
-};
+}
 
 const T& operator () (void) const
 {
  return this->GetData();
-};
+}
 
 T* operator -> (void)
-{ return const_cast<T*>(&this->GetData()); };
+{ return const_cast<T*>(&this->GetData()); }
 
 const T* operator -> (void) const
-{ return &this->GetData(); };
+{ return &this->GetData(); }
 
 T& operator * (void)
-{ return const_cast<T&>(this->GetData()); };
+{ return const_cast<T&>(this->GetData()); }
 
 const T& operator * (void) const
-{ return this->GetData(); };
+{ return this->GetData(); }
 
 // Оператор присваивания
 UCLProperty& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
-};
+}
 
 UCLProperty& operator = (const UCLProperty &value)
 {
  this->SetData(value.GetData());
  return *this;
-};
+}
 // -----------------------------
 
 // -----------------------------
@@ -261,10 +261,10 @@ UCLProperty& operator = (const UCLProperty &value)
 // -----------------------------
 public:
 typename UCProperty<T,OwnerT>::TV& operator [] (int i)
-{ return this->v[i]; };
+{ return this->v[i]; }
 
 const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
-{ return this->v[i]; };
+{ return this->v[i]; }
 // -----------------------------
 };
 /* ************************************************************************* */

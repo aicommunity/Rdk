@@ -63,11 +63,16 @@ class UComponentsListWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UComponentsListWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentsListWidget");
+    explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=1);
     virtual ~UComponentsListWidget();
 
     /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
     void AUpdateInterface();
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 
     // Доступ к данным для других виджетов:
 
@@ -94,6 +99,15 @@ public:
     /// Возвращает номер выбранного канала
     int getSelectedChannelIndex();
 
+    /// Режим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    void setChannelMode(int mode);
+
+    /// Возвращает номер рабочего канала
+    /// используемый при отображении информации
+    int getWorkChannelIndex();
+
     /// устанавливает доступность вкладок
     void setEnableTabN(int n, bool enable);
 
@@ -105,6 +119,7 @@ signals:
     void componentDoubleClick(QString name);
     void updateScheme(bool forceUpdate);
     void selectedPropertyValue(QString value);
+    void itemChanged(QTreeWidgetItem *item, int column);
 
 public slots:
     void updateComponentsListFromScheme();
@@ -121,13 +136,11 @@ public slots:
     void inputsListSelectionChanged();
     void outputsListSelectionChanged();
 
+    void parametersListItemChanged(QTreeWidgetItem *item, int column);
+
+
     /// Отправляет событие отрисовки выбранного компонента
     void drawSelectedComponent(QModelIndex index);
-
-    /// считывание файлов настроек
-    void readSettings(QString file, QString group = "UComponentsListWidget");
-    /// запись файлов настроек
-    void writeSettings(QString file, QString group = "UComponentsListWidget");
 
     //События контекстного меню
     void componentMoveUp();
@@ -172,6 +185,11 @@ private:
 
     /// Текущий канал для виджета
     int currentChannel;
+
+    /// Режим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    int channelMode;
 
     /// Флаг видимости компонента выбора канала
     bool channelsSelectionVisible;

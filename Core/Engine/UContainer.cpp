@@ -71,6 +71,8 @@ UContainer::UContainer(void)
  AddLookupProperty("CalculationDurationThreshold",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
  AddLookupProperty("DebugSysEventsMask",ptParameter | pgPublic | pgSystem,new UVProperty<unsigned int,UContainer>(this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
 
+ AddLookupProperty("StepDuration",ptState | pgPublic | pgSystem,new UVProperty<unsigned long long,UContainer>(this,&StepDuration));
+
  InitFlag=false;
 
  CalculationDurationThreshold= -1;
@@ -755,13 +757,13 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 // true -  искать в текущей компоненте и глубже
 const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all)
 {
- size_t numComp=GetNumComponents();
+ int numComp=GetNumComponents();
  UEPtr<UContainer> comp;
 
  switch(find_all)
  {
   case false:
-   for(size_t i=0; i<numComp; i++)
+   for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
 	if( comp->GetCompClassName() == name )
@@ -772,7 +774,7 @@ const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const Nam
    break;
 
   case true:
-   for(size_t i=0; i<numComp; i++)
+   for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
 	comp->GetComponentsByClassName(name, buffer, true);
@@ -1049,6 +1051,20 @@ void UContainer::Free(void)
   UComponent::Free();
 }
 
+	  /*
+// Указатель на этот объект в хранилище
+UEPtr<UInstancesStorageElement> UContainer::GetObjectIterator(void)
+{
+ return ObjectIterator;
+}
+
+void UContainer::SetObjectIterator(UEPtr<UInstancesStorageElement> value)
+{
+ if(ObjectIterator == value)
+  return;
+ ObjectIterator=value;
+}       */
+
 /// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
 void UContainer::AUpdateInternalData(void)
 {
@@ -1243,7 +1259,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
   comp->SharesInit();
   AfterAddComponent(comp,pointer);
  }
- catch(UException &exception)
+ catch(UException &)
  {
   // Откат
   BeforeDelComponent(comp);
@@ -1881,9 +1897,9 @@ bool UContainer::Default(void)
 
    // Если существует прообраз в хранилище, то берем настройки параметров
    // из прообраза
-   UEPtr<UContainer> original;
+   /*UEPtr<UContainer> original; // отмена фичи - рефакторин ядра на абстрактную фаьбрику
    if(Storage)
-	original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));
+ original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));*/
 
    SetTimeStep(2000);
    SetMaxCalculationDuration(-1);
@@ -1891,20 +1907,20 @@ bool UContainer::Default(void)
    SetDebugSysEventsMask(0xFFFFFFFF);
 
 
-   if(original && original != this)
+   /*if(original && original != this)
    {
 	NameT name=Name;
 	bool activity=Activity;
 	original->CopyProperties(this,ptParameter);
 	SetName(name);
 	SetActivity(activity);
-   }
+			}*/
 
    if(!ADefault())
 	return false;
    AfterDefault();
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -1959,7 +1975,7 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
 	 res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
    }
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -2017,7 +2033,7 @@ bool UContainer::Build(void)
 
    AfterBuild();
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -2090,7 +2106,7 @@ bool UContainer::Reset(void)
    AfterReset();
    LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_EXIT_OK);
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -2247,12 +2263,12 @@ bool UContainer::Calculate(void)
    }
 
    // Обрабатываем контроллеры
-   int numcontrollers=Controllers.size();
+   size_t numcontrollers=Controllers.size();
 
-   if(numcontrollers)
+   if(numcontrollers>0)
    {
 	UEPtr<UController>* controllers=&Controllers[0];
-	for(int i=0;i<numcontrollers;i++,controllers++)
+    for(size_t i=0;i<numcontrollers;i++,controllers++)
 	{
 	 (*controllers)->Update();
 	}
@@ -2275,7 +2291,7 @@ bool UContainer::Calculate(void)
    }
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -2331,7 +2347,7 @@ void UContainer::Init(void)
    InitFlag=true;
    Reset();
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -2379,7 +2395,7 @@ void UContainer::UnInit(void)
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->UnInit();
   }
-  catch(UException &exception)
+  catch(UException &)
   {
    throw;
   }
@@ -2679,7 +2695,7 @@ void UContainer::AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> poin
 {
  Components.push_back(comp);
  PComponents=&Components[0];
- NumComponents=Components.size();
+ NumComponents=int(Components.size());
 
  if(pointer)
   pointer->Set(comp);
@@ -2715,7 +2731,7 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
   }
  }
 
- NumComponents=Components.size();
+ NumComponents=int(Components.size());
  if(NumComponents>0)
   PComponents=&Components[0];
  else
@@ -2770,8 +2786,8 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
 
  comp->SetEnvironment(0);
 
- if(comp->GetMainOwner() == MainOwner)
-  comp->SetMainOwner(0);
+ //if(comp->GetMainOwner() == MainOwner)
+ comp->SetMainOwner(0);
 
  // Удаление из базы компонент
  // Удаляем компонент из таблицы соответствий владельца
@@ -3094,7 +3110,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
    }
    result=line+str_data;
   }
-  catch(UIProperty::EPropertyZeroPtr &ex)
+  catch(UIProperty::EPropertyZeroPtr &)
   {
    result=line+"[<Disconnected>]";
   }

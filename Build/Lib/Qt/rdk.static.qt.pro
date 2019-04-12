@@ -10,9 +10,14 @@ TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
 
-DEFINES += LIBRDK_LIBRARY_EXPORT
-DEFINES += RDK_UNICODE_RUN
-DEFINES += RDK_QT
+include(RdkDefines.pri)
+
+#DEFINES += LIBRDK_LIBRARY_EXPORT
+#DEFINES += RDK_UNICODE_RUN
+#DEFINES += RDK_QT
+
+VERSION = $$system(hg parents --template '{rev}')
+DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
@@ -47,6 +52,7 @@ SOURCES += \
     ../../../Core/Engine/UPropertyIO.cpp \
     ../../../Core/Engine/UPropertyOutput.cpp \
     ../../../Core/Engine/UShare.cpp \
+    ../../../Core/Engine/UComponentFactory.cpp \
     ../../../Core/Engine/UStorage.cpp \
     ../../../Core/Engine/UTime.cpp \
     ../../../Core/Engine/UXMLEnvSerialize.cpp \
@@ -135,13 +141,14 @@ SOURCES += \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
     ../../../Core/Application/UTestManager.cpp \
-    ../../../Core/System/Gcc/pevents.cpp
+    ../../../Core/System/Gcc/pevents.cpp \
+    ../../../Core/Engine/UComponentFactory.cpp \
+    ../../../Deploy/Include/rdk_version.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
-    ../../../Core/Engine/Engine.h.orig \
     ../../../Core/Engine/UADItem.h \
     ../../../Core/Engine/UAModel.h \
     ../../../Core/Engine/UBinaryEnvSerialize.h \
@@ -172,6 +179,7 @@ HEADERS +=\
     ../../../Core/Engine/UPropertyOutput.h \
     ../../../Core/Engine/UShare.h \
     ../../../Core/Engine/UStorage.h \
+    ../../../Core/Engine/UComponentFactory.h \
     ../../../Core/Engine/UTime.h \
     ../../../Core/Engine/UXMLEnvSerialize.h \
     ../../../Core/Graphics/Graphics.h \
@@ -256,10 +264,15 @@ HEADERS +=\
     ../../../Core/Application/UServerTransport.h \
     ../../../Core/Application/UServerTransportTcp.h \
     ../../../Core/Application/UTestManager.h \
-    ../../../Core/System/Gcc/pevents.h
+    ../../../Core/System/Gcc/pevents.h \
+    ../../../Core/Engine/UComponentFactory.h \
+    ../../../Deploy/Include/rdk_version.h
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
+#    INCLUDEPATH += /usr/local/boost_1_68_0
+    INCLUDEPATH += $$(BOOST_PATH)/include
+    INCLUDEPATH += $$(OPENCV3_PATH)/include
 }
 
 windows {

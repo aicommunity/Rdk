@@ -25,7 +25,21 @@ MMatrixSize::MMatrixSize(int rows, int cols)
  Dims[0]=rows;
  Dims[1]=cols;
 }
+/*
+MMatrixSize::MMatrixSize(size_t rows, size_t cols)
+{
+ Dims.resize(2);
+ Dims[0]=int(rows);
+ Dims[1]=int(cols);
+}
 
+MMatrixSize::MMatrixSize(unsigned rows, unsigned cols)
+{
+ Dims.resize(2);
+ Dims[0]=int(rows);
+ Dims[1]=int(cols);
+}
+*/
 MMatrixSize::MMatrixSize(const MMatrixSize &copy)
 {
  Dims=copy.Dims;
@@ -58,6 +72,16 @@ int MMatrixSize::operator [] (int i) const
 }
 
 int& MMatrixSize::operator [] (int i)
+{
+ return Dims[i];
+}
+
+int MMatrixSize::operator [] (size_t i) const
+{
+ return Dims[i];
+}
+
+int& MMatrixSize::operator [] (size_t i)
 {
  return Dims[i];
 }

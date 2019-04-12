@@ -125,7 +125,16 @@ UDrawEngine::UDrawEngine(void)
  // Цвет выделяемого элемента
  SelectedColor = UColorT(128, 128, 128, 0);
 
- InactiveSelectedColor=UColorT(128, 128, 128, 0);;
+ InactiveSelectedColor=UColorT(128, 128, 128, 0);
+
+ // Цвет входящих линий
+ InputLinksColor=UColorT(255, 0, 0, 0);
+
+ // Цвет исходящих линий
+ OutputLinksColor=UColorT(0, 0, 255, 0);
+
+ // Цвет линий по умолчанию
+ DefaultLinksColor=UColorT(180, 180, 180, 0);
 
  BackgroundLineStep=10;
 
@@ -312,6 +321,28 @@ void UDrawEngine::UpdateAllElementsSize(void)
  {
   I->second.Width=RectWidth;
   I->second.Height=RectHeight;
+ }
+}
+
+
+/// Возвращает рекомендуемый размер канвы
+void UDrawEngine::CalcRecommendSize(int &width, int &height)
+{
+ if(Descriptions.empty())
+  return;
+
+ DescriptionsTableIteratorT I, J;
+ I = Descriptions.begin();
+ J = Descriptions.end();
+
+ for(;I != J;++I)
+ {
+  int temp_width=I->second.Position(0)+I->second.Width;
+  if(width<temp_width)
+   width=temp_width;
+  int temp_height=I->second.Position(1)+I->second.Height;
+  if(height<temp_height)
+   height=temp_height;
  }
 }
 
@@ -753,7 +784,25 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
 
  if (links)
  {
-  GEngine->SetPenColor(out.LinkColor);
+  if(out.Highlight)
+  {
+   GEngine->SetPenColor(OutputLinksColor);
+  }
+  else
+  if(in.Highlight)
+  {
+   GEngine->SetPenColor(InputLinksColor);
+  }
+  else
+  {
+   GEngine->SetPenColor(DefaultLinksColor);
+  }
+
+
+
+  if(!out.Highlight && !in.Highlight)
+   GEngine->SetPenColor(DefaultLinksColor);
+
   GEngine->SetPenWidth(out.LinkWidth);
   RDK::MVector<double,3> &c_out=out.Position;
   RDK::MVector<double,3> &c_in=in.Position;

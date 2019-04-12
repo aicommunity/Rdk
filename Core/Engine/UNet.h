@@ -168,6 +168,11 @@ bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
 bool CheckLink(const NameT &itemname,
 						const NameT &connectorname, int connector_c_index=-1);
+
+/// Переключает исходящие связи от 'output_name1' выхода компонента 'item1' на выход 'output_name2' компонента 'item2'
+bool SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide &item2);
+bool SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
+						const NameT &itemname2, const NameT &output_name2);
 // ----------------------
 
 // --------------------------
@@ -200,6 +205,9 @@ virtual bool SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned i
 
 // Загружает все свойства компонента и его дочерних компонент из xml
 virtual bool LoadComponentProperties(RDK::USerStorageXML *serstorage);
+
+/// Сохраняет полную структуру компонента
+virtual bool SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент

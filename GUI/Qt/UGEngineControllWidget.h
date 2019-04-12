@@ -15,16 +15,49 @@
 #include "UCalculationChannelsWidget.h"
 #include "UEngineControlQt.h"
 #include "ULoggerWidget.h"
+#include "UComponentPropertyChanger.h"
 #include "UCreateConfigurationWizardWidget.h"
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
-#include "UAnalyticsSimpleSettingsWidget.h"
-
-#include "UComponentPropertyChanger.h"
+#include "USettingsReaderWidget.h"
+#include "UGraphWidget.h"
+//////////////////////////
+//#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
 }
+
+struct USubTabDescription
+{
+/// Имя вкладки
+QString Name;
+
+QMdiSubWindow *SubWindow;
+
+USubTabDescription(void)
+    : SubWindow(NULL)
+{}
+
+};
+
+struct USubTabDescriptionImages: public USubTabDescription
+{
+UImagesWidget* Images;
+
+USubTabDescriptionImages(void)
+    : USubTabDescription(),Images(NULL)
+{};
+};
+
+struct USubTabDescriptionWatches: public USubTabDescription
+{
+UGraphWidget* Watches;
+
+USubTabDescriptionWatches(void)
+    : USubTabDescription(),Watches(NULL)
+{};
+};
 
 /// UGEngineControllWidget class - главное окно интерфейса
 ///
@@ -38,13 +71,20 @@ public:
     explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
 
+    //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
+
+signals:
+    void showSimpleSettings();
+
 public slots:
+    // settings
+    void readSettings();
+    void writeSettings();
+
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
+    void switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
 
-    // settings
-    void readSettings(QString file, QString group = "UGEngineControllWidget");
-    void writeSettings(QString file, QString group = "UGEngineControllWidget");
 
     // actions:
 
@@ -64,43 +104,51 @@ public slots:
 
     // window menu
     void actionImages();
+    void actionNewImages();
     void actionComponentsControl();
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-/*
-signals:
-    void readSettingsSignal(QString file);
+    void actionWatchWindow();
+    void actionNewWatches();
+    //void actionVASimpleSettings();
 
-protected:
-    void timerEvent(QTimerEvent *);*/
+private slots:
+    void on_mdiArea_destroyed(QObject *arg1);
+
+
 
 private:
     // data
     Ui::UGEngineControllWidget *ui;
 
-    QString settingsFileName;
-    QString settingsGroupName;
-    QString configFileName;
-
     // widgets
+    USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;
+    QMainWindow *graphWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
+    UGraphWidget *graphWindowWidget;
+    //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+
+    /// Массив виджетов отображения картинок
+    std::vector<USubTabDescriptionImages> imagesVector;
+
+    /// Массив виджетов отображения графиков
+    std::vector<USubTabDescriptionWatches> watchesVector;
+
 
     /// Экзепляр класса приложения
     RDK::UApplication *application;
 
     // methods
-
-    //void initGraphicalEngine();
 
     ///if chanelIndex == -1 запускает все каналы расчета
     void startChannel(int chanelIndex);
@@ -116,6 +164,18 @@ private:
 
     ///Создает и вызывает диалоговое окно для наследника UVisualControllerWidget
     void execDialogUVisualControllWidget(UVisualControllerWidget* widget);
+
+    /// Добавляет новый виджет отображения картинок
+    void addImagesWidged();
+
+    /// Удаляет виджет отображения картинок
+    void delImagesWidged(size_t index);
+
+    /// Добавляет новый виджет отображения графиков
+    void addWatchesWidged();
+
+    /// Удаляет виджет отображения графиков
+    void delWatchesWidged(size_t index);
 };
 
 /// Не закрывающийся QMdiSubwindow для отображения схемы модели
@@ -127,31 +187,22 @@ protected:
     void closeEvent(QCloseEvent *event){event->ignore();}
 };
 
-/// тестовый класс для проверки обновления окошек из других потоков
-class ThreadGo: public QObject
+/*
+/// Не закрывающийся QMdiSubwindow для отображения схемы модели
+class SubWindowCloseExt: public QMdiSubWindow
 {
-    Q_OBJECT
-
 public:
-    explicit ThreadGo(UVisualControllerWidget *obj = NULL, QObject *parent = NULL) : QObject(parent)
+    explicit SubWindowCloseIgnore(UGEngineControllWidget* owner, QWidget *parent = 0, Qt::WindowFlags flags = 0):QMdiSubWindow(parent, flags), Owner(owner){}
+protected:
+    void closeEvent(QCloseEvent *event)
     {
-        ob = obj;
+     if(Owner)
+      Owner->
     }
-        ~ThreadGo(){ob = NULL;}
-public slots:
-    void startThread()
-    {
-        if(ob)
-        ob->UpdateInterface(true);
-        emit testFinished();
-
-    }
-signals:
-    void testFinished();
-
 
 private:
-    UVisualControllerWidget *ob;
-};
+UGEngineControllWidget* Owner;
+};*/
+
 
 #endif // UGENGINECONTROLLWIDGET_H

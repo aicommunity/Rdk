@@ -176,6 +176,9 @@ virtual int GetNumActiveInputs(void) const;
 
 /// Возвращает число реально подключенных элементов к заданному свойству
 virtual int GetNumActiveInputs(const NameT &connector_property_name) const;
+
+/// Возвращает число коннекторов к которым подключено заданное свойство
+virtual int GetNumActiveOutputs(const NameT &item_property_name) const=0;
 // --------------------------
 
 // --------------------------
@@ -208,6 +211,9 @@ virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) cons
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
 virtual void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const=0;
 // --------------------------
 
 // ----------------------
@@ -337,7 +343,7 @@ protected: // Данные
 /// Указатели на компоненты-приемники данных
 std::vector<UItem*> Connectors;
 
-/// Имя выхода компнента-источника данных
+/// Имена входов компнентов-приемников данных
 std::vector<std::string> ConnectorInputNames;
 
 public:
@@ -353,6 +359,9 @@ virtual UConnector* GetConnector(int index);
 
 /// Возвращает имя подключенного входа компонента-приемника
 virtual std::string GetConnectorInputName(int index) const;
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+virtual UIProperty* GetConnectorProperty(int index);
 };
 
 // Template methods UConnector

@@ -333,7 +333,7 @@ const UCItem& UConnector::GetCItem(const NameT &connector_property_name, const U
  for(size_t i=0;i<I->second.size();i++)
   if(I->second[i].Item == item)
   {
-   index = i;
+   index = int(i);
    return I->second[i];
   }
 
@@ -435,13 +435,13 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 
  if(!i_item_property && !(i_conn_property && (i_conn_property->GetIoType() & ipComp)))
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item_property_name);
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Output not found: ")+item_property_name);
   return false;
  }
 
  if(!i_conn_property)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector ")+connector_property_name+std::string(" not found or empty and AutoNumInputs disabled"));
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Input ")+connector_property_name+std::string(" not found or empty and AutoNumInputs disabled"));
   return false;
  }
 
@@ -461,7 +461,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 	if(I->second[i].Name == item_property_name)
 	{
 	 if(c_index == -1)
-	  c_index=i;
+      c_index=int(i);
 	 if(!forced_connect_same_item)
 	  return true;
 	}
@@ -845,6 +845,21 @@ std::string UIPropertyOutput::GetConnectorInputName(int index) const
 {
  return ConnectorInputNames[index];
 }
+
+
+/// Возвращает указатель на свойство подключенного входа компонента-приемника
+UIProperty* UIPropertyOutput::GetConnectorProperty(int index)
+{
+ if(index<0 || index>=int(Connectors.size()))
+  return 0;
+ UConnector *cont=Connectors[index];
+ if(!cont)
+     return 0;
+ UIProperty *property(0);
+ cont->FindInputProperty(ConnectorInputNames[index],property);
+ return property;
+}
+
 
 
 

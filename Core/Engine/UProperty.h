@@ -88,14 +88,14 @@ virtual const T& GetData(void) const
  if(PData)
   return *PData;
  throw EPropertyZeroPtr(GetOwnerName(),GetName());
-};
+}
 
 // Модифицирует данные
 virtual void SetData(const T& data)
 {
  (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
  RenewUpdateTime();
-};
+}
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -130,7 +130,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
    {
     operator << (*xml,GetData());
    }
-   catch(UIProperty::EPropertyZeroPtr &ex)
+   catch(UIProperty::EPropertyZeroPtr &)
    {
    }
    xml->SelectUp();
@@ -143,7 +143,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
    {
     operator << (*xml,GetData());
    }
-   catch(UIProperty::EPropertyZeroPtr &ex)
+   catch(UIProperty::EPropertyZeroPtr &)
    {
    }
    xml->SelectUp();
@@ -152,7 +152,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
  }
 
  return false;
-};
+}
 
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
@@ -206,7 +206,7 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
  }
 
  return false;
-};
+}
 
 // Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void)
@@ -276,7 +276,25 @@ virtual bool ResetPointer(int index, void* value)
 {
  return false;
 }
+
+/// Обновить указатели свойств-входов
+virtual void UpdateConnectedPointers(void)
+{
+}
 // --------------------------
+
+// -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+virtual bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ return false;
+}
+
+virtual void DetachFrom(void)
+{
+}
+// -----------------------------
 
 protected:
 // --------------------------
@@ -640,12 +658,17 @@ public:
 // Данные
 mutable T v;
 
+protected:
+/// Ссылка на внешнее свойство-источник данных
+UVBaseDataProperty<T>* ExternalDataSource;
+
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v(), ExternalDataSource(0) { this->PData=&v; };
 // -----------------------------
 
 // -----------------------------
@@ -664,17 +687,36 @@ void SetCheckEquals(bool value)
 // -----------------------------
 
 // -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ if(!prop)
+  return false;
+ ExternalDataSource=prop;
+ this->UpdateConnectedPointers();
+ return true;
+}
+
+void DetachFrom(void)
+{
+ ExternalDataSource=0;
+ this->UpdateConnectedPointers();
+}
+// -----------------------------
+
+// -----------------------------
 // Операторы доступа
 // -----------------------------
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return v;
-};
+ return (ExternalDataSource)?ExternalDataSource->GetData():v;
+}
 
 virtual void SetData(const T &value)
 {
- if(CheckEqualsFlag && v == value)
+ if(CheckEqualsFlag && value == ((ExternalDataSource)?ExternalDataSource->GetData():v))
   return;
 
  if(this->Owner)
@@ -682,15 +724,15 @@ virtual void SetData(const T &value)
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
-  v=value;
+  (ExternalDataSource)?ExternalDataSource->GetData():v=value;
   this->RenewUpdateTime();
   return;
  }
 
- v=value;
+ (ExternalDataSource)?ExternalDataSource->GetData():v=value;
  this->RenewUpdateTime();
  return;
-};
+}
 // -----------------------------
 };
 /* ************************************************************************* */

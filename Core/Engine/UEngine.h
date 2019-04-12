@@ -285,8 +285,10 @@ virtual const char* Storage_SaveAllClassesDescription(void);
 virtual int Storage_LoadAllClassesDescription(const char* xmltext);
 
 // Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
 virtual const char* Storage_GetClassProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+
+// Возвращает полную структуру компонента по идентификатору
+virtual const char* Storage_GetClassStructure(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 // ----------------------------
 
 // ----------------------------
@@ -385,6 +387,13 @@ virtual int Env_DestroyStructure(void);
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 virtual int Env_Destroy(void);
+
+// Инициализирует модель
+virtual int Env_ModelInit(void);
+
+// Деинициализирует модель
+virtual int Env_ModelUnInit(void);
+
 
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
@@ -557,6 +566,10 @@ virtual int Model_DelComponent(const char* stringid, const char *name);
 /// то возвращает false и не делает ничего
 virtual int Model_MoveComponent(const char* component, const char* target);
 
+/// Клонирует компонент со всеми содержимым и внутренними связями
+/// Если new_name - пустая строка, то имя назначается автоматически
+virtual int Model_CloneComponent(const char* component_name, const char* new_name);
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 virtual int Model_GetNumComponents(const char* stringid);
@@ -724,6 +737,9 @@ virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 // Проверяет, существует ли заданна связь
 virtual bool Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 virtual bool Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
+
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+virtual int Model_SwitchOutputLinks(const char* item_name1, const char* item_property_name1, const char* item_name2, const char* item_property_name2);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid

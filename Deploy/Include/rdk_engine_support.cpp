@@ -157,7 +157,7 @@ int URdkCoreManager::SetBufObjectsMode(int value)
 
    for(size_t i=0;i<EngineList.size();i++)
    {
-	GetEngineLock(i)->SetBufObjectsMode(value);
+    GetEngineLock(int(i))->SetBufObjectsMode(value);
    }
    BufObjectsMode=value;
    res=RDK_SUCCESS;
@@ -316,6 +316,12 @@ bool URdkCoreManager::SetCommonClassesDescriptionFileName(const std::string& val
  CommonClassesDescriptionFileName=value;
  return true;
 }
+
+/// Возвращет версию ядра
+const RDK::UVersion& URdkCoreManager::GetVersion(void) const
+{
+ return RDK::GetGlobalVersion();
+}
 // --------------------------
 
 // --------------------------
@@ -358,7 +364,7 @@ int URdkCoreManager::SetNumChannels(int num)
      UDestroyMutex(MutexList[i]);
     }
 
-    int old_num=EngineList.size();
+    int old_num=int(EngineList.size());
 
     EngineList.resize(num,0);
     StorageList.resize(num,0);
@@ -669,6 +675,8 @@ int URdkCoreManager::ChannelDestroy(int index)
  if(index<0 || index>=GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
+ UGenericMutexExclusiveLocker lock(MutexList[index]);
+
  if(EngineList[index])
  {
   if(EngineList[index] == Engine)
@@ -802,10 +810,12 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
 /// Уничтожает все
 void URdkCoreManager::Destroy(void)
 {
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
+
  for(int i=0;i<NumChannels;i++)
  {
   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
-  MCore_ChannelUnInit(i);
+  ChannelUnInit(i);
   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
  }
 
@@ -1092,6 +1102,32 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel
   return RDK::UELockPtr<RDK::UContainer>(0,0);
  return RDK::UELockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
 #endif
+}
+
+/// Метод прямой блокировки канала
+int URdkCoreManager::LockChannel(int index)
+{
+ if(RdkCoreManager.LockerList[index])
+  return RDK_E_CORE_LOCK_FAIL;
+
+ if(!RdkCoreManager.LockerList[index])
+  RdkCoreManager.LockerList[index]=new RDK::UELockPtr<RDK::UEngine>(RDK::GetEngineLock(index));//new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
+
+ return RDK_SUCCESS;
+}
+
+/// Метод снятия прямой блокировки канала
+int URdkCoreManager::UnLockChannel(int index)
+{
+ if(!RdkCoreManager.LockerList[index])
+  return RDK_E_CORE_UNLOCK_FAIL;
+
+ if(RdkCoreManager.LockerList[index])
+ {
+  delete RdkCoreManager.LockerList[index];//new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
+  RdkCoreManager.LockerList[index]=0;
+ }
+ return RDK_SUCCESS;
 }
 // --------------------------
 

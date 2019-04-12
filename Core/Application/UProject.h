@@ -192,6 +192,16 @@ std::string ProjectPath;
 /// Флаг наличия модификации в проекте
 bool ModifiedFlag;
 
+/// Флаг принудительного сохранения данных конфигурации в старом формате файла
+bool ForceOldXmlFormat;
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool ForceNewConfigFilesStructure;
+
+/// Версия файла конфигурации
+std::string ConfigVersion;
+
 public: // Данные
 // --------------------------
 // Конструкторы и деструкторы
@@ -220,6 +230,15 @@ bool SetModified(void);
 /// Сбрасывает признак наличия изменений в конфигурации проекта
 bool ResetModified(void);
 
+/// Флаг принудительного сохранения данных конфигурации в старом формате файла
+bool GetForceOldXmlFormat(void) const;
+bool SetForceOldXmlFormat(bool value);
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool GetForceNewConfigFilesStructure(void) const;
+bool SetForceNewConfigFilesStructure(bool value);
+
 /// Сбрасывает конфигурацию проекта в состояние по умолчанию
 /// Метод также сбрасывает ModifiedFlag
 void ResetToDefault(void);
@@ -233,11 +252,18 @@ bool ReadFromXml(USerStorageXML &xml);
 
 /// Сохраняет конфигурацию проекта в xml
 bool WriteToXml(USerStorageXML &xml);
+
+protected:
+bool ReadFromXmlOld(USerStorageXML &xml);
+bool ReadFromXmlNew(USerStorageXML &xml);
+bool WriteToXmlOld(USerStorageXML &xml);
+bool WriteToXmlNew(USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
 /// Управление числом каналов
 // --------------------------
+public:
 int GetNumChannels(void) const;
 bool SetNumChannels(int num);
 bool InsertChannel(int index);

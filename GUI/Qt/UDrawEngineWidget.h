@@ -22,15 +22,20 @@ class UDrawEngineWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UDrawEngineWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UDrawEngineWidget");
+    explicit UDrawEngineWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UDrawEngineWidget();
 
     void AUpdateInterface();
 
-public slots:
-    void readSettings(QString file, QString group = "UDrawEngineWidget");
-    void writeSettings(QString file, QString group = "UDrawEngineWidget");
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 
+    //расширение схемы при ресайзе
+    void resizeEvent(QResizeEvent*);
+
+public slots:
     void componentDoubleClick(QString name);
     void componentSingleClick(QString name);
 
@@ -44,8 +49,10 @@ signals:
 
     void viewLinksFromScheme(QString componentName);
     void createLinksFromScheme(QString firstComponentName, QString secondComponentName);
+    void switchLinksFromScheme(QString firstComponentName, QString secondComponentName);
 
 private:
+
     UDrawEngineImageWidget *modelScheme;
     UClassesListWidget *classesList;
 

@@ -33,6 +33,9 @@ public:
     int getSizeMode() const;
     void setSizeMode(int value);
 
+    int getImageWidth();
+    int getImageHeight();
+
     QImage getSrcImage() const;
 
     bool getConnected() const;

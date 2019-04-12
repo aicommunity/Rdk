@@ -128,7 +128,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
 {
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
-  unsigned int size=0;
+  int size=0;
   size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
   if(size == 0)
@@ -138,7 +138,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
   }
 
   data.Resize(size);
-  for(size_t i=0;i<size;i++)
+  for(int i=0;i<size;i++)
   {
    if(!storage.SelectNode("elem",i))
 	return storage;
@@ -271,7 +271,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
 template<typename T, int Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T, Rows> &data)
 {
- storage.SetNodeAttribute("Type","MGeometry");
+ storage.SetNodeAttribute("Type",std::string("MGeometry<")+typeid(T).name()+">");
  storage.AddNode("Vertices");
  storage<<data.GetVertices();
  storage.SelectUp();

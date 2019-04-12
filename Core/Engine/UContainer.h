@@ -90,7 +90,7 @@ typedef std::map<NameT,UPVariable> PointerMapT;
 typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
 typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
-friend class UStorage;
+//friend class UStorage;
 friend class UController;
 
 private: // Системные свойства
@@ -177,7 +177,7 @@ UEPtr<UContainer>* PComponents;
 int NumComponents;
 
 // Указатель на этот объект в хранилище
-UEPtr<UInstancesStorageElement> ObjectIterator;
+//UEPtr<UInstancesStorageElement> ObjectIterator;
 
 // Последний использованный Id компонент
 UId LastId;
@@ -302,6 +302,22 @@ bool CheckId(const UId &id);
 
 // Генерирует уникальный Id
 virtual UId GenerateId(void);
+
+
+// Возвращает базовый класс свойства с типом данных
+template<typename T>
+const UEPtr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name) const;
+
+template<typename T>
+UEPtr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name);
+
+/// Подключает к свойству destination_property данные свойства другого компонента
+template<typename T>
+bool AttachPropertyData(const NameT& destination_property, const NameT& source_component, const NameT &source_property);
+
+/// Отключает от свойства destination_property данные свойства другого компонента
+template<typename T>
+void DetachPropertyData(const NameT& destination_property);
 // --------------------------
 
 // --------------------------
@@ -464,6 +480,10 @@ virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copysta
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
 virtual void Free(void);
+
+// Указатель на этот объект в хранилище
+//UEPtr<UInstancesStorageElement> GetObjectIterator(void);
+//void SetObjectIterator(UEPtr<UInstancesStorageElement> value);
 
 protected:
 /// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
@@ -1113,6 +1133,62 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
 
  return buffer;
 }
+
+// Возвращает базовый класс свойства с типом данных
+template<typename T>
+const UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name) const
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(!property)
+  return 0;
+
+ if(property->GetLanguageType() != typeid(T))
+  return 0;
+
+ return reinterpret_cast<const UVBaseDataProperty<T>*>(property.Get());
+}
+
+template<typename T>
+UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name)
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(!property)
+  return 0;
+
+ if(property->GetLanguageType() != typeid(T))
+  return 0;
+
+ return reinterpret_cast<UVBaseDataProperty<T>*>(property.Get());
+}
+
+
+/// Подключает к свойству destination_property данные свойства другого компонента
+template<typename T>
+bool UContainer::AttachPropertyData(const NameT& destination_property, const NameT& source_component, const NameT &source_property)
+{
+ UEPtr<UVBaseDataProperty<T> > dest_prop=FindPropertyEx<T>(destination_property);
+ if(!dest_prop)
+  return false;
+ UEPtr<UContainer> source_cont=GetComponentL(source_component,true);
+ if(!source_cont)
+  return false;
+
+ UEPtr<UVBaseDataProperty<T> > source_prop=source_cont->FindPropertyEx<T>(source_property);
+ if(!source_prop)
+  return false;
+
+ return dest_prop->AttachTo(source_prop);
+}
+
+/// Отключает от свойства destination_property данные свойства другого компонента
+template<typename T>
+void UContainer::DetachPropertyData(const NameT& destination_property)
+{
+ UEPtr<UVBaseDataProperty<T> > dest=FindPropertyEx<T>(destination_property);
+ if(dest)
+  dest->DetachFrom();
+}
+
 
 }
 

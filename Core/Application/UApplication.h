@@ -37,6 +37,9 @@ std::string ApplicationFileName;
 /// Рабочий каталог
 std::string WorkDirectory;
 
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+std::string ConfigsMainPath;
+
 /// Признак наличия открытого проекта
 bool ProjectOpenFlag;
 
@@ -45,6 +48,13 @@ std::string ProjectPath;
 
 /// Имя файла проекта
 std::string ProjectFileName;
+
+/// Флаг принудительного сохранения конфигураций в старом формате
+bool UseNewXmlFormatProjectFile;
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool UseNewProjectFilesStructure;
 
 /// Список последних открытых проектов
 std::list<std::string> LastProjectsList;
@@ -109,6 +119,10 @@ bool SetApplicationFileName(const std::string& value);
 const std::string& GetWorkDirectory(void) const;
 bool SetWorkDirectory(const std::string& value);
 
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& GetConfigsMainPath(void) const;
+bool SetConfigsMainPath(const std::string &value);
+
 // Признак наличия открытого проекта
 bool GetProjectOpenFlag(void) const;
 bool SetProjectOpenFlag(bool value);
@@ -128,6 +142,15 @@ bool SetLastProjectsList(const std::list<std::string>& value);
 /// Размер истории последних открытых проектов
 int GetLastProjectsListMaxSize(void) const;
 bool SetLastProjectsListMaxSize(int value);
+
+/// Флаг принудительного сохранения конфигураций в старом формате
+bool IsUseNewXmlFormatProjectFile(void) const;
+bool ChangeUseNewXmlFormatProjectFile(bool value);
+
+/// Флаг включения нового представления файловой структуры конфигурации
+/// (только при сохранении данных конфигурации в новом формате)
+bool IsUseNewProjectFilesStructure(void) const;
+bool ChangeUseNewProjectFilesStructure(bool value);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;

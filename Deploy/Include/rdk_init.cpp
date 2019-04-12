@@ -2,8 +2,10 @@
 #define RDK_INIT_CPP
 
 #include <exception>
+#include <sstream>
 #include "rdk_init.h"
 #include "rdk.h"
+#include "rdk_version.h"
 //#include "rdk_rpc.cpp"
 #include "rdk_engine_support.h"
 #include "rdk_exceptions.h"
@@ -67,6 +69,65 @@ const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int
 {
  return RDK::RemoteCallInternal(request, return_value, channel_index);
 }
+// ----------------------------
+
+// ----------------------------
+// Функции определения версий
+// ----------------------------
+/// Возвращает мажорную версию ядра
+int RDK_CALL Ver_CoreMajor(void)
+{
+ return RdkCoreManager.GetVersion().Major;
+}
+
+/// Возвращает минорную версию ядра
+int RDK_CALL Ver_CoreMinor(void)
+{
+ return RdkCoreManager.GetVersion().Minor;
+}
+
+/// Возвращает версию патча ядра
+int RDK_CALL Ver_CoreRevision(void)
+{
+ return RdkCoreManager.GetVersion().Revision;
+}
+
+/// Возвращает полную версию ядра в виде строки
+const char* RDK_CALL Ver_Core(void)
+{
+ return RdkCoreManager.GetVersion().ToString().c_str();
+}
+
+/// Сравнивает версию ядра с переданной
+/// возвращает >0 если версия ядра больше,
+/// возвращает <0 если версия ядра меньше,
+/// возвращает 0 в случае совпадения.
+int RDK_CALL Ver_CoreCompare(int major, int minor, int revision)
+{
+ return RdkCoreManager.GetVersion().CompareCore(major, minor, revision);
+}
+
+/// Возвращает имя компилятора ядра
+const char* RDK_CALL Ver_CompilerName(void)
+{
+ return RdkCoreManager.GetVersion().CompilerName.c_str();
+}
+
+/// Возвращает версию компилятора ядра
+const char* RDK_CALL Ver_CompilerVersion(void)
+{
+ return RdkCoreManager.GetVersion().CompilerVersion.c_str();
+}
+/*
+/// Возвращает версию opencv (если используется)
+const char* RDK_CALL Ver_OpenCvVersion(void)
+{
+#ifdef CV_VERSION
+ return CV_VERSION;
+#else
+ return "";
+#endif
+}*/
 // ----------------------------
 
 // ----------------------------
@@ -556,12 +617,7 @@ int RDK_CALL MCore_LockChannel(int index)
  {
   try
   {
-   if(RdkCoreManager.LockerList[index])
-	return RDK_SUCCESS;
-
-   if(!RdkCoreManager.LockerList[index])
-	RdkCoreManager.LockerList[index]=new UGenericMutexExclusiveLocker(RdkCoreManager.MutexList[index]);
-   res=RDK_SUCCESS;
+   return RdkCoreManager.LockChannel(index);
   }
   catch (RDK::UException &exception)
   {
@@ -596,12 +652,7 @@ int RDK_CALL MCore_UnLockChannel(int index)
  {
   try
   {
-   if(!RdkCoreManager.LockerList[index])
-	return RDK_SUCCESS;
-
-   delete RdkCoreManager.LockerList[index];
-   RdkCoreManager.LockerList[index]=0;
-   res=RDK_SUCCESS;
+   return RdkCoreManager.UnLockChannel(index);
   }
   catch (RDK::UException &exception)
   {
@@ -971,6 +1022,27 @@ const char* RDK_CALL Storage_GetClassProperties(const char *stringid, unsigned i
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassProperties(stringid,type_mask);
 }
+
+const char* RDK_CALL MStorage_GetClassProperties(int channel_index, const char *stringid, unsigned int type_mask)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return 0;
+
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassProperties(stringid,type_mask);
+}
+
+const char* RDK_CALL Storage_GetClassStructure(const char *stringid, unsigned int type_mask)
+{
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassStructure(stringid,type_mask);
+}
+
+const char* RDK_CALL MStorage_GetClassStructure(int channel_index, const char *stringid, unsigned int type_mask)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return 0;
+
+ return RdkCoreManager.GetEngineLock()->Storage_GetClassStructure(stringid,type_mask);
+}
 // ----------------------------
 
 // ----------------------------
@@ -1240,6 +1312,33 @@ int RDK_CALL MEnv_Destroy(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
  return RdkCoreManager.GetEngineLock(channel_index)->Env_Destroy();
+}
+
+
+// Инициализирует модель
+int RDK_CALL Env_ModelInit(void)
+{
+    return RdkCoreManager.GetEngineLock()->Env_ModelInit();
+}
+
+int RDK_CALL MEnv_ModelInit(int channel_index)
+{
+    if(channel_index<0 || channel_index>=Core_GetNumChannels())
+     return RDK_E_CORE_CHANNEL_NOT_FOUND;
+    return RdkCoreManager.GetEngineLock(channel_index)->Env_ModelInit();
+}
+
+// Деинициализирует модель
+int RDK_CALL Env_ModelUnInit(void)
+{
+    return RdkCoreManager.GetEngineLock()->Env_ModelUnInit();
+}
+
+int RDK_CALL MEnv_ModelUnInit(int channel_index)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+ return RdkCoreManager.GetEngineLock(channel_index)->Env_ModelUnInit();
 }
 
 // Метод счета
@@ -2121,6 +2220,20 @@ bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const ch
 bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
  return RdkCoreManager.GetEngineLock()->Model_CheckLink(stringid1, item_property_name, stringid2, connector_property_name);
+}
+
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+int RDK_CALL Model_SwitchOutputLinks(const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2)
+{
+ return RdkCoreManager.GetEngineLock()->Model_SwitchOutputLinks(item_name_1, item_property_name1, item_name_2, item_property_name2);
+}
+
+int RDK_CALL MModel_SwitchOutputLinks(int channel_index, const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SwitchOutputLinks(item_name_1, item_property_name1, item_name_2, item_property_name2);
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer

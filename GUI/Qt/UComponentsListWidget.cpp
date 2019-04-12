@@ -11,10 +11,12 @@
 #include <QClipboard>
 #include <QScrollBar>
 
-UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
-    UVisualControllerWidget(parent),
+UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UComponentsListWidget)
 {
+    channelMode=channel_mode;
+    CheckModelFlag=false;
     ui->setupUi(this);
 
     componentsTree = new UComponentListTreeWidget(this);
@@ -29,7 +31,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
 
     UpdateInterval = -1;
     setAccessibleName("UComponentsListWidget"); // имя класса для сериализации
-    readSettings(settingsFile, settingsGroup);
+    //readSettings(app, settingsGroup);
 
     UpdateInterface(true);
 
@@ -51,6 +53,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, QString settingsFi
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()),
             this, SLOT(outputsListSelectionChanged()));
 
+    connect(ui->treeWidgetParameters, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
+            this, SLOT(parametersListItemChanged(QTreeWidgetItem *, int )));
     //выделение канала
     connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
 
@@ -128,6 +132,38 @@ void UComponentsListWidget::AUpdateInterface()
     }
 }
 
+void UComponentsListWidget::ASaveParameters()
+{
+    if(!application) return;
+
+    QSettings settings(QString::fromLocal8Bit(
+                         application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup(accessibleName());
+    settings.setValue("splitterState", ui->splitter->saveState());
+    settings.setValue("treeWidgetInputsHeader", ui->treeWidgetInputs->header()->saveState());
+    settings.setValue("treeWidgetOutputsHeader", ui->treeWidgetOutputs->header()->saveState());
+    settings.setValue("treeWidgetParameters", ui->treeWidgetParameters->header()->saveState());
+    settings.setValue("treeWidgetState", ui->treeWidgetState->header()->saveState());
+    settings.endGroup();
+}
+
+void UComponentsListWidget::ALoadParameters()
+{
+    if(!application) return;
+
+    QSettings settings(QString::fromLocal8Bit(
+                         application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup(accessibleName());
+    ui->splitter->restoreState(settings.value("splitterState").toByteArray());
+    ui->treeWidgetInputs->header()->restoreState(settings.value("treeWidgetInputsHeader").toByteArray());
+    ui->treeWidgetOutputs->header()->restoreState(settings.value("treeWidgetOutputsHeader").toByteArray());
+    ui->treeWidgetParameters->header()->restoreState(settings.value("treeWidgetParameters").toByteArray());
+    ui->treeWidgetState->header()->restoreState(settings.value("treeWidgetState").toByteArray());
+    settings.endGroup();
+}
+
 void UComponentsListWidget::setVerticalOrientation(bool vertical)
 {
     if (vertical)
@@ -193,6 +229,22 @@ int UComponentsListWidget::getSelectedChannelIndex()
     return currentChannel;
 }
 
+/// Режим выбора канала
+/// 0 - всегда работа с текущим каналом
+/// 1 - работа с изначально заданным каналом
+void UComponentsListWidget::setChannelMode(int mode)
+{
+ channelMode=mode;
+}
+
+/// Возвращает номер рабочего канала
+/// используемый при отображении информации
+int UComponentsListWidget::getWorkChannelIndex()
+{
+ return (channelMode == 0)?Core_GetSelectedChannelIndex():currentChannel;
+}
+
+
 void UComponentsListWidget::setEnableTabN(int n, bool enable)
 {
     if(n >= 0 && n < 4)
@@ -227,7 +279,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     currentDrawPropertyComponentName = selectedComponentLongName;
 
     //Class
-    const char *className=MModel_GetComponentClassName(currentChannel, currentDrawPropertyComponentName.toLocal8Bit());
+    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
     if(className)
         ui->labelComponentClassName->setText(className);
     Engine_FreeBufString(className);
@@ -245,7 +297,8 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
     try
     {
-        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(currentChannel);
+     UpdateInterfaceFlag=true;
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
 
         RDK::UEPtr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
@@ -253,9 +306,71 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         else
             cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
-        if(!cont) return;
+        if(!cont)
+        {
+         UpdateInterfaceFlag=false;
+         return;
+        }
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
         std::string buffer;
+
+        bool is_new_outputs(false);
+        bool is_new_inputs(false);
+
+        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        {
+            if (i->second.CheckMask(ptPubInput))
+            {
+             std::string::size_type k=i->first.find("DataInput");
+             if(k != 0 || k == std::string::npos)
+              is_new_inputs=true;
+            }
+
+            if (i->second.CheckMask(ptPubOutput))
+            {
+             std::string::size_type k=i->first.find("DataOutput");
+             if(k != 0 || k == std::string::npos)
+              is_new_outputs=true;
+            }
+
+            if(is_new_inputs && is_new_outputs)
+             break;
+        }
+
+        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end();)
+        {
+            if (i->second.CheckMask(ptPubInput) && is_new_inputs)
+            {
+             std::string::size_type k=i->first.find("DataInput");
+             if(k == 0)
+             {
+              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
+              varMap.erase(i);
+              i=j;
+             }
+             else
+              ++i;
+            }
+            else
+            if (i->second.CheckMask(ptPubOutput) && is_new_outputs)
+            {
+             std::string::size_type k=i->first.find("DataOutput");
+             if(k == 0)
+             {
+              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
+              varMap.erase(i);
+              i=j;
+             }
+             else
+              ++i;
+            }
+            else
+            {
+             ++i;
+            }
+        }
+
+
         for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
         {
             if (i->second.CheckMask(ptPubParameter))
@@ -268,6 +383,16 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 if(parameterName == selectedParameterName)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
+                if(i->second.Property->GetLanguageType() == typeid(bool))
+                {
+                 parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+
+                 const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
+                 if(*val)
+                  parametersItem->setCheckState(1,Qt::Checked);
+                 else
+                  parametersItem->setCheckState(1,Qt::Unchecked);
+                }
             }
             if (i->second.CheckMask(ptPubState))
             {
@@ -316,13 +441,16 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         ui->treeWidgetInputs->verticalScrollBar()->setValue(inputsScrollPosition);
         ui->treeWidgetOutputs->verticalScrollBar()->setMaximum(outputsScrollPosition);
         ui->treeWidgetOutputs->verticalScrollBar()->setValue(outputsScrollPosition);
+        UpdateInterfaceFlag=false;
     }
     catch (RDK::UException &exception)
     {
+     UpdateInterfaceFlag=false;
         Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
+     UpdateInterfaceFlag=false;
         Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
@@ -340,6 +468,59 @@ void UComponentsListWidget::parametersListSelectionChanged()
     selectedParameterName = changedParameterName;
 
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
+}
+
+void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int column)
+{
+ try
+ {
+  if(UpdateInterfaceFlag)
+   return;
+  RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+
+  RDK::UEPtr<RDK::UContainer> cont;
+  if (currentDrawPropertyComponentName.isEmpty())
+   cont = model.Get();
+  else
+   cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+
+  if(!cont)
+   return;
+
+  std::string buffer;
+  QString parameterName=item->text(0);
+  RDK::UEPtr<RDK::UIProperty> property;
+
+  property=cont->FindProperty(parameterName.toLocal8Bit().constData());
+
+  if(!property)
+   return;
+
+//  parametersItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+//  parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
+//  if(parameterName == selectedParameterName)
+//   ui->treeWidgetParameters->setCurrentItem(parametersItem);
+  if(property->GetLanguageType() == typeid(bool))
+  {
+//   parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+
+//   const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
+   bool value(false);
+   if(item->checkState(1) == Qt::Checked)
+    value=true;
+   else
+    value=false;
+   property->ReadFromMemory(&value);
+  }
+ }
+catch (RDK::UException &exception)
+{
+    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+}
+catch (std::exception &exception)
+{
+    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+}
 }
 
 void UComponentsListWidget::stateListSelectionChanged()
@@ -442,35 +623,12 @@ void UComponentsListWidget::drawSelectedComponent(QModelIndex index)
         componentsTree->currentItem()->setExpanded(true);
 }
 
-void UComponentsListWidget::readSettings(QString file, QString group)
-{
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-    ui->treeWidgetInputs->header()->restoreState(settings.value("treeWidgetInputsHeader").toByteArray());
-    ui->treeWidgetOutputs->header()->restoreState(settings.value("treeWidgetOutputsHeader").toByteArray());
-    ui->treeWidgetParameters->header()->restoreState(settings.value("treeWidgetParameters").toByteArray());
-    ui->treeWidgetState->header()->restoreState(settings.value("treeWidgetState").toByteArray());
-    settings.endGroup();
-}
-
-void UComponentsListWidget::writeSettings(QString file, QString group)
-{
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    settings.setValue("splitterState", ui->splitter->saveState());
-    settings.setValue("treeWidgetInputsHeader", ui->treeWidgetInputs->header()->saveState());
-    settings.setValue("treeWidgetOutputsHeader", ui->treeWidgetOutputs->header()->saveState());
-    settings.setValue("treeWidgetParameters", ui->treeWidgetParameters->header()->saveState());
-    settings.setValue("treeWidgetState", ui->treeWidgetState->header()->saveState());
-    settings.endGroup();
-}
 
 void UComponentsListWidget::componentMoveUp()
 {
     if(componentsTree->currentItem())
     {
-        MModel_ChangeComponentPosition(currentChannel, selectedComponentLongName.toLocal8Bit(),-1);
+        MModel_ChangeComponentPosition(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit(),-1);
         UpdateInterface(true);
     }
 }
@@ -479,7 +637,7 @@ void UComponentsListWidget::componentMoveDown()
 {
     if(componentsTree->currentItem())
     {
-        MModel_ChangeComponentPosition(currentChannel, selectedComponentLongName.toLocal8Bit(), 1);
+        MModel_ChangeComponentPosition(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit(), 1);
         UpdateInterface(true);
     }
 }
@@ -496,7 +654,7 @@ void UComponentsListWidget::componentRename()
         if (ok && !text.isEmpty())
         {
             std::string new_name(text.toLocal8Bit());
-            MModel_SetComponentPropertyData(currentChannel, selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
+            MModel_SetComponentPropertyData(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit(),"Name", &new_name);
 
             QStringList nameSeparator = selectedComponentLongName.split(".");
             nameSeparator.pop_back();
@@ -518,7 +676,7 @@ void UComponentsListWidget::componentDelete()
             if (reply == QMessageBox::Cancel) return;
         }
 
-        MModel_DelComponent(currentChannel, "", selectedComponentLongName.toLocal8Bit());
+        MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
         UpdateInterface(true);
         emit updateScheme(true);
     }
@@ -540,7 +698,7 @@ void UComponentsListWidget::componentCopyLongNameToClipboard()
 
 void UComponentsListWidget::componentCopyClassNameToClipboard()
 {
-    const char *className=MModel_GetComponentClassName(currentChannel, selectedComponentLongName.toLocal8Bit());
+    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit());
     if(className)
     {
         QClipboard *clipboard = QApplication::clipboard();
@@ -579,7 +737,7 @@ void UComponentsListWidget::setUpdateInterval(long value)
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
 {
-    const char * stringBuff = MModel_GetComponentsNameList(currentChannel, componentName.toLocal8Bit());
+    const char * stringBuff = MModel_GetComponentsNameList(getWorkChannelIndex(), componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
     QString str;

@@ -238,7 +238,7 @@ int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
  if(int(buffer.size())-start_index<int(sizeof(UPacketPrefix)))
   return -1;
 
- for(size_t i=start_index;i<buffer.size()-sizeof(UPacketPrefix);i++)
+ for(int i=start_index;i<int(buffer.size())-sizeof(UPacketPrefix);i++)
   if(!memcmp(UPacketPrefix,&buffer[i],sizeof(UPacketPrefix)))
    return i;
 
@@ -315,8 +315,8 @@ bool UTransferPacket::Save(UParamT &buffer)
  IntDivide(NumParams,buffer,pbuf); pbuf+=sizeof(NumParams);
  for(size_t i=0;i<Params.size();i++)
   {
-   (*this)(i,buffer,pbuf);
-   pbuf+=Params[i].size()+sizeof(int);
+   (*this)(int(i),buffer,pbuf);
+   pbuf+=int(Params[i].size())+sizeof(int);
   }
 
  CalcChecksum();
@@ -331,7 +331,7 @@ int UTransferPacket::GetPacketSize(void) const
  int size=0;
  
  for(size_t i=0;i<Params.size();i++)
-  size+=Params[i].size();
+  size+=int(Params[i].size());
 
  return size+sizeof(UPacketPrefix)+NumParams*sizeof(int)+sizeof(int)*4;
 }
@@ -359,7 +359,7 @@ UParamT& UTransferPacket::operator () (int i, UParamT &buffer, int istart)
  if(i<0 || i>= NumParams || istart < 0)
   return buffer;
 
- int size=Params[i].size();
+ int size=int(Params[i].size());
 
  IntDivide(size,buffer,istart);
  for(int j=0;j<size;j++)
@@ -470,7 +470,7 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
 	ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+start_search);
 	start_search=0;
    }
-   LastSize=Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),start_search);
+   LastSize=Packet.CheckBuffer(ClientBuffer,int(ClientBuffer.size()),start_search);
    if(LastSize<=int(ClientBuffer.size())-start_search+24)
    {
 	if(!Packet.Load(ClientBuffer,start_search))
@@ -508,7 +508,7 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
   }
 
 //  if(LastSize<=ClientBuffer.size()+24)
-  if(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
+  if(Packet.CheckBuffer(ClientBuffer,int(ClientBuffer.size()),0)<=0)
   {
    PacketInProgress=false;
    int start_search=0;
@@ -579,7 +579,7 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
  int start_search=0;
 
 // while(!PacketInProgress)
- while(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
+ while(Packet.CheckBuffer(ClientBuffer,int(ClientBuffer.size()),0)<=0)
  {
  //--------------
  start_search=Packet.FindPacketInBuffer(ClientBuffer, start_search);
@@ -599,7 +599,7 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
   {
    PacketInProgress=true;
   }
-  if(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
+  if(Packet.CheckBuffer(ClientBuffer,int(ClientBuffer.size()),0)<=0)
   {
 
    PacketInProgress=false;

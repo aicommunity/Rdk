@@ -9,6 +9,12 @@ namespace RDK {
 // --------------------------
 // Методы доступа к ядру без блокировки
 // --------------------------
+// Возвращает ссылку на версию ядра
+const RDK::UVersion& RDK_CALL GetCoreVersion(void)
+{
+ return RdkCoreManager.GetVersion();
+}
+
 // Возвращает ссылку на указатель ядра
 RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void)
 {

@@ -19,13 +19,15 @@ See file license.txt for more information
 #include "../Serialize/USerStorageXML.h"
 #include "UContainerDescription.h"
 
+#include "UComponentFactory.h"
+
 namespace RDK {
 
 /* *********************************************************************** */
 class ULibrary;
 class URuntimeLibrary;
 
-typedef UEPtr<UComponent> UClassStorageElement;
+typedef UEPtr<UComponentAbstractFactory> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
@@ -86,7 +88,7 @@ typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 
 class RDK_LIB_TYPE UStorage
 {
-friend class UContainer;
+//friend class UContainer;
 protected: // Системные свойства
 // Таблица соответствий имен и Id образцов классов
 std::map<std::string,UId> ClassesLookupTable;
@@ -159,8 +161,8 @@ const NameT FindClassName(const UId &id) const;
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
 // Если classid == ForbiddenId, то id назначается автоматически
-virtual UId AddClass(UEPtr<UComponent> classtemplate, const UId &classid=ForbiddenId);
-virtual UId AddClass(UEPtr<UComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
 // Если 'force' == true то принудительно удаляет из хранилища
@@ -172,8 +174,8 @@ virtual bool CheckClass(const UId &classid) const;
 virtual bool CheckClass(const string &classname) const;
 
 // Возвращает образец класса
-virtual UEPtr<UComponent> GetClass(const UId &classid) const;
-virtual UEPtr<UComponent> GetClass(const std::string &class_name) const;
+virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const UId &classid) const;
+virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const std::string &class_name) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;
@@ -187,10 +189,14 @@ virtual void GetClassIdList(std::vector<UId> &buffer) const;
 virtual void GetClassNameList(std::vector<std::string> &buffer) const;
 
 // Удаляет все не используемые образцы классов из хранилища
-virtual void FreeClassesStorage(void);
+/// Если force == true то удаляет даже если хранилище объектов не пустое
+/// и подавляет соответствующее исключение
+virtual void FreeClassesStorage(bool force=false);
 
-// Удаляет все образцы классов из хранилища
-virtual void ClearClassesStorage(void);
+/// Удаляет все образцы классов из хранилища
+/// Если force == true то удаляет даже если хранилище объектов не пустое
+/// и подавляет соответствующее исключение
+virtual void ClearClassesStorage(bool force=false);
 // --------------------------
 
 // --------------------------
@@ -214,16 +220,21 @@ virtual UId FindClass(UEPtr<UComponent> object) const;
 // Проверяет существует ли объект 'object' в хранилище
 virtual bool CheckObject(UEPtr<UContainer> object) const;
 
+// Ищет фабрику, непосредственно хранящую заданный компонент
+virtual UVirtualMethodFactory* FindVirualMethodFactory(UEPtr<UContainer> object);
+
 // Вычисляет суммарное число объектов в хранилище
 virtual int CalcNumObjects(void) const;
 virtual int CalcNumObjects(const UId &classid) const;
 virtual size_t CalcNumObjects(const string &classname) const;
 
 // Удалаяет все свободные объекты из хранилища
-virtual void FreeObjectsStorage(void);
+/// Если force == true то удаляет даже если объекты используются
+virtual void FreeObjectsStorage(bool force=false);
 
 // Удаляет все объекты из хранилища
-virtual void ClearObjectsStorage(void);
+/// Если force == true то удаляет даже если объекты используются
+virtual void ClearObjectsStorage(bool force=false);
 
 // Удалаяет все объекты заданного класса из хранилища
 virtual void ClearObjectsStorageByClass(const UId &classid);
@@ -233,7 +244,7 @@ virtual void ClearObjectsStorageByClass(const UId &classid);
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname) const;
+const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
@@ -343,11 +354,13 @@ protected:
 // Если объект уже принадлежит иному хранилищу то возвращает false
 virtual void PushObject(const UId &classid, UEPtr<UContainer> object);
 
+public:
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // В случае ошибки возвращает ForbiddenId
 virtual UId PopObject(UEPtr<UContainer> object);
 
+protected:
 // Перемещает объект в другое хранилище
 virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
 

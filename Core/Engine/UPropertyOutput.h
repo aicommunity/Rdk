@@ -33,65 +33,36 @@ operator T* (void)
 {
  return this->PData;
 }
-/*
-bool operator ! (void) const
-{
- return (&this->GetData())?true:false;
-};
-  */
-/*bool operator ! (void) const
-{
- return (GetPointer(0))?true:false;
-};
 
-T* operator -> (void)
-{
- return &this->v;
-};
-
-T& operator * (void)
-{
- return this->v;
-};
-
-operator T* (void)
-{
- return &this->v;
-}
-
-T& Value(void)
-{
- return this->v;
-}
-
-const T& Value(void) const
-{
- return this->v;
-}
-
-T& operator [] (int i)
-{
- return this->v;
-}
-
-const T& operator [] (int i) const
-{
- return this->v;
-}
-       */
 // --------------------------
 // Методы управления указателем
 // --------------------------
 // Возвращает указатель на данные выхода
 void const * GetPointer(int index) const
 {
- return &this->v;
+ return &this->GetData();
 }
 
 // Устанавливает указатель на данные выхода
 bool SetPointer(int index, void* value, UIProperty* output)
 {
  return true;
+}
+
+/// Обновить указатели свойств-входов
+void UpdateConnectedPointers(void)
+{
+ UEPtr<UConnector> item=dynamic_cast<UConnector*>(this->Owner);
+ size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
+ for(size_t i=0;i<num_inputs;i++)
+ {
+  UIProperty* property(0);
+  item->FindConnectedProperty(this->GetName(), int(i), property);
+  if(!property)
+   continue;
+
+  property->SetPointer(int(i), const_cast<void*>(GetPointer(0)), this);
+ }
 }
 // --------------------------
 

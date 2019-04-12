@@ -13,6 +13,7 @@ CONFIG += staticlib
 DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
+DEFINES += CURL_STATICLIB
 INCLUDEPATH += $$PWD/../../include
 
 unix {
@@ -21,6 +22,8 @@ unix {
 
 windows {
     DESTDIR = $$PWD/../../../../../Bin/Platform/Win/Lib.Qt
+
+#LIBS +=   -lWldap32
 }
 
 HEADERS += \

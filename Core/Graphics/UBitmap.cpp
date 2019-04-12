@@ -5900,9 +5900,9 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
   {
    res.Data[i].Int=abs(int(value1.Data[i].Int-value2.Data[i].Int));
    if(res.Data[i].Int<h_min)
-	h_min=res.Data[i].Int;
+    h_min=float(res.Data[i].Int);
    if(res.Data[i].Int>h_max)
-	h_max=res.Data[i].Int;
+    h_max=float(res.Data[i].Int);
   }
  }
 
@@ -5913,8 +5913,8 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
  }
  else
  {
-  res.Min.Int=h_min;
-  res.Max.Int=h_max;
+  res.Min.Int=unsigned(h_min);
+  res.Max.Int=unsigned(h_max);
  }
 
  return res;

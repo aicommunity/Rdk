@@ -230,6 +230,9 @@
         <CppCompile Include="..\..\..\Core\Engine\UComponentDescription.cpp">
             <BuildOrder>65</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UComponentFactory.cpp">
+            <BuildOrder>121</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UConnector.cpp">
             <BuildOrder>66</BuildOrder>
         </CppCompile>
@@ -514,6 +517,9 @@
         <CppCompile Include="..\..\..\Deploy\Include\rdk_rpc.cpp">
             <DependentOn>..\..\..\Deploy\Include\rdk_rpc.h</DependentOn>
             <BuildOrder>12</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Deploy\Include\rdk_version.cpp">
+            <BuildOrder>122</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\GUI\BCB\TUBitmap.cpp">
             <BuildOrder>13</BuildOrder>
@@ -997,9 +1003,9 @@
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

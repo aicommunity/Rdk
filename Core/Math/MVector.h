@@ -31,6 +31,7 @@ MVector(T xv, T yv, T zv=0);
 MVector(T xv, T yv, T zv, T dv);
 MVector(const MVector<T,Rows> &copy);
 explicit MVector(const MMatrix<T,Rows,1> &copy);
+explicit MVector(const MDMatrix<T> &copy);
 //MVector(const T* data);
 virtual ~MVector(void);
 // --------------------------
@@ -54,6 +55,7 @@ virtual bool Resize(const MMatrixSize &size);
 // Оператор присваивания
 MVector<T,Rows>& operator = (const MVector<T,Rows> &copy);
 MVector<T,Rows>& operator = (const MMatrix<T,Rows,1> &copy);
+MVector<T,Rows>& operator = (const MDMatrix<T> &copy);
 //MVector<T,Rows>& operator = (const T* data);
 MVector<T,Rows>& operator = (T value);
 
@@ -109,6 +111,11 @@ MVector<T,Rows>::MVector(const MVector<T,Rows> &copy)
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(const MMatrix<T,Rows,1> &copy)
 { *this=copy; };
+
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(const MDMatrix<T> &copy)
+{ *this=copy; }
+
 /*
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(const T* data)
@@ -168,6 +175,16 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (const MMatrix<T,Rows,1> &copy)
  memcpy(MMatrix<T,Rows,1>::Data,copy.Data,sizeof(T)*Rows);
  return *this;
 }
+
+template<class T, unsigned Rows>
+MVector<T,Rows>& MVector<T,Rows>::operator = (const MDMatrix<T> &copy)
+{
+ int copysize=(copy.GetRows()*copy.GetCols()<Rows)?copy.GetRows()*copy.GetCols():Rows;
+ if(copysize>0)
+  memcpy(MMatrix<T,Rows,1>::Data,copy.Data,sizeof(T)*copysize);
+ return *this;
+}
+
   /*
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (const T* data)

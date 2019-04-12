@@ -66,7 +66,7 @@ RDK_LIB_TYPE bool LoadJpegFromMemory(const std::vector<uint8_t> &buffer, UBitmap
   return false;
 
  int width(0),height(0), actual_comps(0);
- unsigned char * bytes=jpgd::decompress_jpeg_image_from_memory((const unsigned char*)&buffer[0], buffer.size(), &width, &height, &actual_comps, 3, false);
+ unsigned char * bytes=jpgd::decompress_jpeg_image_from_memory((const unsigned char*)&buffer[0], int(buffer.size()), &width, &height, &actual_comps, 3, false);
  if(!bytes)
   return false;
 

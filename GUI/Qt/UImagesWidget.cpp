@@ -6,16 +6,36 @@
 #include "UComponentPropertySelectionWidget.h"
 #include <QFileDialog>
 
-UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString settingsGroup) :
-    UVisualControllerWidget(parent),
+#define FORWARD_TO_USINGLEIMAGE(gridLayout, selectedImage, imageNum, methodCall) \
+  if (imageNum == -1 && selectedImage) \
+  { \
+    selectedImage->methodCall; \
+  } \
+  else \
+  { \
+    if (!(imageNum < 0) && imageNum < gridLayout->count()) \
+    { \
+      USingleImageWidget *item = qobject_cast<USingleImageWidget*>(gridLayout->itemAt(imageNum)->widget()); \
+      if (item) \
+      { \
+        item->methodCall; \
+      } \
+    } \
+  }
+
+UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UImagesWidget)
 {
     setAccessibleName("UImagesWidget");
     /*rowsCounter = 1;
     columnsCounter = 1;
-    showLegend = true;
-    imagesSizeMod = 0;*/
+    showLegend = true;*/
+    imagesSizeMod = 0;
     singleImageMode = false;
+    enableChanges=true;
+    columnsCounter=0;
+    rowsCounter=0;
 
     UpdateInterval = 0;
 
@@ -23,7 +43,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, QString settingsFile, QString sett
 
     ui->setupUi(this);
 
-    readSettings(settingsFile, settingsGroup);
+    ALoadParameters();
 
     //главное контекстное меню
     QAction *actionSeparator1 = new QAction(this);
@@ -77,42 +97,36 @@ UImagesWidget::~UImagesWidget()
 
 void UImagesWidget::AUpdateInterface()
 {
-    /*for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
+
+}
+
+///«адает размещение окошек в окне @param layoutW на @param layoutH
+void UImagesWidget::SetImageLayout(int layoutW, int layoutH)
+{
+    clearImagesWidget();
+    for(int i=0; i<layoutW; i++)
     {
-
-        int calcChannel = indChannels?(*i)->getCalcChannel():Core_GetSelectedChannelIndex();
-
-        int copy_res=MModel_CopyComponentBitmapOutputHeader(
-                        calcChannel,
-                        (*i)->getComponentName().toLocal8Bit(),
-                        (*i)->getComponentPropertyName().toLocal8Bit(), &bmp_param);
-
-        if(copy_res == 0)
+        for(int j=0; j<layoutH; j++)
         {
-            tempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
-            MModel_CopyComponentBitmapOutput(
-                        calcChannel,
-                        (*i)->getComponentName().toLocal8Bit(),
-                        (*i)->getComponentPropertyName().toLocal8Bit(), &tempBmp);
-            (*i)->setImage(fromUBitmap(&tempBmp));
+            addSingleItem(i,j);
         }
-        else
-        {
-            (*i)->setImage(QImage());
-        }
-        (*i)->reDrawWidget();
-    }*/
+    }
 }
 
-void UImagesWidget::setZones(QList<QPair<QPolygonF, QPen> > polygons)
+/// «адать параметры захвата дл€ текущего окна - номер канала, им€ компонента, свойство
+void UImagesWidget::selectCapture(const int channelNum, QString componentLongName, QString propertyName)
 {
-  if(selectedImage) selectedImage->setZones(polygons);
+    USingleImageWidget *item = selectedImage;
+
+    item->setCalcChannel(channelNum);
+    item->setComponentName(componentLongName);
+    item->setComponentPropertyName(propertyName);
 }
 
-void UImagesWidget::setImagePen(const QPen &value)
+/*QMenu* UImagesWidget::getContextMenu()
 {
-  if(selectedImage) selectedImage->setPainterPen(value);
-}
+    return contextMenu;
+}*/
 
 void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName)
 {
@@ -153,105 +167,209 @@ void UImagesWidget::setCaptureForChannels(int numChannels, QString componentLong
 
 void UImagesWidget::selectImage(int id)
 {
-  selectImage(dynamic_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(id)->widget()));
+  selectImage(qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(id)->widget()));
 }
 
-void UImagesWidget::setDrawable(bool value)
+void UImagesWidget::setEnableChanges(bool value)
 {
-  selectedImage->setDrawable(value);
+  enableChanges = value;
+  ui->actionAddColumn    ->setEnabled(value);
+  ui->actionAddRow       ->setEnabled(value);
+  ui->actionDeleteColumn ->setEnabled(value);
+  ui->actionDeleteRow    ->setEnabled(value);
+  ui->actionSelectSource ->setEnabled(value);
+  ui->checkBoxIndChannels->setEnabled(value);
+}
 
-  if(value)
+void UImagesWidget::setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum)
+{
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setPolygons(polygons))
+  /*if(imageNum == -1 && selectedImage)
   {
+    selectedImage->setPolygons(polygons);
+    return;
+  }
+
+  USingleImageWidget *item = qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+  if (item)
+  {
+   item->setPolygons(polygons);
+  }*/
+}
+
+void UImagesWidget::PreventContextMenu()
+{
+    this->setContextMenuPolicy(Qt::PreventContextMenu);
+    ui->frameImages->setContextMenuPolicy(Qt::PreventContextMenu);
+    foreach(USingleImageWidget * w, imagesList)
+    {
+        w->setContextMenuPolicy(Qt::PreventContextMenu);
+    }
+}
+
+void UImagesWidget::BlockContextMenu()
+{
+    this->setContextMenuPolicy(Qt::NoContextMenu);
     ui->frameImages->setContextMenuPolicy(Qt::NoContextMenu);
-  }
-  else
-  {
-    ui->frameImages->setContextMenuPolicy(Qt::ActionsContextMenu);
-  }
+    foreach(USingleImageWidget * w, imagesList)
+    {
+        w->setContextMenuPolicy(Qt::NoContextMenu);
+    }
 }
 
-void UImagesWidget::readSettings(QString file, QString group)
+void UImagesWidget::setImagePen(const QPen &value, int imageNum)
 {
-    settingsFileName = file;
+  //if(selectedImage) selectedImage->setPainterPen(value);
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setPainterPen(value))
+}
 
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
+void UImagesWidget::setDrawable(bool value, int imageNum)
+{
+  //selectedImage->setDrawable(value);
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setDrawable(value))
+}
 
-    restoreGeometry(settings.value("geometry").toByteArray());
+void UImagesWidget::selectPolygon(int id, int imageNum)
+{
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, selectPolygon(id))
+  //selectedImage->selectPolygon(id);
+}
 
-    showLegend = settings.value("showLegend").toBool();
-    ui->checkBoxShowLegend->setChecked(showLegend);
+void UImagesWidget::setRectangles(const QPair<QRectF, QRectF> &rects, int imageNum)
+{
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setRectangles(rects))
+}
 
-    indChannels = settings.value("IndChannels").toBool();
-    ui->checkBoxIndChannels->setChecked(indChannels);
+void UImagesWidget::setDrawRects(bool value, int imageNum)
+{
+  FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setDrawRects(value))
+}
 
-    imagesSizeMod = settings.value("imagesSizeMod").toInt();
-    switch(imagesSizeMod)
+///»звлекает насто€щую ширину изображени€
+int UImagesWidget::GetImageWidth(int imageNum)
+{
+    if (imageNum == -1 && selectedImage)
     {
-    case 0:
-        ui->radioButtonOriginalSize->setChecked(true);
-        break;
-    case 1:
-        ui->radioButtonPropSize->setChecked(true);
-        break;
-    case 2:
-        ui->radioButtonTiledSize->setChecked(true);
-        break;
+      return selectedImage->getImageWidth();
     }
-
-    //окошки images
-    //зачистка
-    clearImagesWidget();
-
-    columnsCounter = settings.value("columnsCounter").toInt();
-    rowsCounter = settings.value("rowsCounter").toInt();
-    if(rowsCounter == 0 || columnsCounter == 0)
+    else
     {
-        rowsCounter = 1;
-        columnsCounter = 1;
-    }
-
-    //заполнение
-    for(int i = 0; i < rowsCounter; i++)
-        for(int j = 0; j < columnsCounter; j++)
+      if (!(imageNum < 0) && imageNum < ui->gridLayoutImages->count())
+      {
+        USingleImageWidget *item = qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+        if (item)
         {
-            USingleImageWidget *item = addSingleItem(i, j);
-            QString source = settings.value(QString::number(i)+"x"+QString::number(j)).toString();
-            if(!source.isEmpty())
-            {
-                QStringList list = source.split("*");
-                if (list.size() == 3)
-                {
-                    item->setCalcChannel(list.at(0).toInt());
-                    item->setComponentName(list.at(1));
-                    item->setComponentPropertyName(list.at(2));
-                }
-            }
+          return item->getImageWidth();
         }
-
-    settings.endGroup();
+      }
+    }
+ return 0;
+}
+///»звлекает насто€щую высоту изображени€
+int UImagesWidget::GetImageHeight(int imageNum)
+{
+    if (imageNum == -1 && selectedImage)
+    {
+      return selectedImage->getImageHeight();
+    }
+    else
+    {
+      if (!(imageNum < 0) && imageNum < ui->gridLayoutImages->count())
+      {
+        USingleImageWidget *item = qobject_cast<USingleImageWidget*>(ui->gridLayoutImages->itemAt(imageNum)->widget());
+        if (item)
+        {
+          return item->getImageHeight();
+        }
+      }
+    }
+ return 0;
 }
 
-void UImagesWidget::writeSettings(QString file, QString group)
+void UImagesWidget::ASaveParameters()
 {
-    QSettings settings(file, QSettings::IniFormat);
-    settings.beginGroup(group);
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("showLegend", showLegend);
-    settings.setValue("IndChannels", indChannels);
-    settings.setValue("imagesSizeMod", imagesSizeMod);
-    settings.setValue("columnsCounter", columnsCounter);
-    settings.setValue("rowsCounter", rowsCounter);
+  if(!application) return;
 
-    for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-    {
-        if((*i)->getConnected())
-        settings.setValue(
-                    QString::number((*i)->getRow())+"x"+QString::number((*i)->getColumn()),
-                    QString::number((*i)->getCalcChannel())+"*"+(*i)->getComponentName()+"*"+(*i)->getComponentPropertyName());
-    }
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt", QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+  settings.setValue("geometry", saveGeometry());
+  settings.setValue("showLegend", ui->checkBoxShowLegend->isChecked());
+  settings.setValue("IndChannels", ui->checkBoxIndChannels->isChecked());
+  settings.setValue("imagesSizeMod", imagesSizeMod);
+  settings.setValue("columnsCounter", columnsCounter);
+  settings.setValue("rowsCounter", rowsCounter);
 
-    settings.endGroup();
+  for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
+  {
+      if((*i)->getConnected())
+      settings.setValue(
+                  QString::number((*i)->getRow())+"x"+QString::number((*i)->getColumn()),
+                  QString::number((*i)->getCalcChannel())+"*"+(*i)->getComponentName()+"*"+(*i)->getComponentPropertyName());
+  }
+
+  settings.endGroup();
+}
+
+void UImagesWidget::ALoadParameters()
+{
+  if(!application) return;
+
+  QSettings settings(QString::fromLocal8Bit(
+                       application->GetProjectPath().c_str())+"settings.qt",
+                     QSettings::IniFormat);
+  settings.beginGroup(accessibleName());
+
+  restoreGeometry(settings.value("geometry").toByteArray());
+
+  ui->checkBoxShowLegend->setChecked(settings.value("showLegend").toBool());
+  ui->checkBoxIndChannels->setChecked(settings.value("IndChannels").toBool());
+
+  imagesSizeMod = settings.value("imagesSizeMod").toInt();
+  switch(imagesSizeMod)
+  {
+  case 0:
+      ui->radioButtonOriginalSize->setChecked(true);
+      break;
+  case 1:
+      ui->radioButtonPropSize->setChecked(true);
+      break;
+  case 2:
+      ui->radioButtonTiledSize->setChecked(true);
+      break;
+  }
+
+  //окошки images
+  //зачистка
+  clearImagesWidget();
+
+  columnsCounter = settings.value("columnsCounter").toInt();
+  rowsCounter = settings.value("rowsCounter").toInt();
+  if(rowsCounter == 0 || columnsCounter == 0)
+  {
+      rowsCounter = 1;
+      columnsCounter = 1;
+  }
+
+  //заполнение
+  for(int i = 0; i < rowsCounter; i++)
+      for(int j = 0; j < columnsCounter; j++)
+      {
+          USingleImageWidget *item = addSingleItem(i, j);
+          QString source = settings.value(QString::number(i)+"x"+QString::number(j)).toString();
+          if(!source.isEmpty())
+          {
+              QStringList list = source.split("*");
+              if (list.size() == 3)
+              {
+                  item->setCalcChannel(list.at(0).toInt());
+                  item->setComponentName(list.at(1));
+                  item->setComponentPropertyName(list.at(2));
+              }
+          }
+      }
+
+  settings.endGroup();
 }
 
 void UImagesWidget::actionSaveToBMP()
@@ -290,8 +408,8 @@ void UImagesWidget::actionSaveAllToJPEG()
 
 void UImagesWidget::actionSelectSource()
 {
-    UComponentPropertySelectionWidget dialog(this, 3, settingsFileName);
-    dialog.componentsList->setChannelsListVisible(indChannels);
+    UComponentPropertySelectionWidget dialog(this, 3, application);
+    dialog.componentsList->setChannelsListVisible(ui->checkBoxIndChannels->isChecked());
 
     if (dialog.exec() && selectedImage)
     {
@@ -299,7 +417,8 @@ void UImagesWidget::actionSelectSource()
         selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
         selectedImage->setCalcChannel(dialog.componentsList->getSelectedChannelIndex());
     }
-    dialog.writeSettings(settingsFileName);
+    dialog.writeSettings(QString::fromLocal8Bit(
+                           application->GetProjectPath().c_str())+"settings.qt");
 }
 
 void UImagesWidget::actionAddColumn()
@@ -358,16 +477,14 @@ void UImagesWidget::actionDeleteRow()
 
 void UImagesWidget::setShowLegend(bool b)
 {
-    showLegend = b;
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
         (*i)->setShowLegend(b);
 }
 
 void UImagesWidget::setIndChannels(bool b)
 {
-    indChannels = b;
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-        (*i)->setShowChannels(indChannels);
+        (*i)->setShowChannels(b);
 }
 
 void UImagesWidget::setOriginalSize()
@@ -405,11 +522,11 @@ void UImagesWidget::selectImage(USingleImageWidget *item)
   if(item && item != selectedImage)
   {
     selectedImage = item;
+    emit selectedImageChannel(selectedImage->getCalcChannel());
+
     for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
       (*i)->setSelected(false);
     item->setSelected(true);
-
-    emit selectedImageChannel(selectedImage->getCalcChannel());
   }
 }
 
@@ -420,21 +537,29 @@ void UImagesWidget::showFullScreenImage(USingleImageWidget *item)
         for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
             (*i)->show();
         singleImageMode = false;
-        ui->actionAddColumn->setEnabled(true);
-        ui->actionAddRow->setEnabled(true);
-        ui->actionDeleteColumn->setEnabled(true);
-        ui->actionDeleteRow->setEnabled(true);
+        if(enableChanges)
+        {
+            ui->actionAddColumn   ->setEnabled(true);
+            ui->actionAddRow      ->setEnabled(true);
+            ui->actionDeleteColumn->setEnabled(true);
+            ui->actionDeleteRow   ->setEnabled(true);
+        }
     }
     else
     {
+     if(columnsCounter == 0 || rowsCounter == 0)
+      return;
         for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
             (*i)->hide();
         item->show();
         singleImageMode = true;
-        ui->actionAddColumn->setEnabled(false);
-        ui->actionAddRow->setEnabled(false);
-        ui->actionDeleteColumn->setEnabled(false);
-        ui->actionDeleteRow->setEnabled(false);
+        if(enableChanges)
+        {
+            ui->actionAddColumn   ->setEnabled(false);
+            ui->actionAddRow      ->setEnabled(false);
+            ui->actionDeleteColumn->setEnabled(false);
+            ui->actionDeleteRow   ->setEnabled(false);
+        }
     }
 }
 
@@ -453,12 +578,16 @@ void UImagesWidget::updateImages()
 
 USingleImageWidget* UImagesWidget::addSingleItem(int row, int column)
 {
-    USingleImageWidget *item = new USingleImageWidget(this, row, column, Core_GetSelectedChannelIndex(), showLegend, indChannels , imagesSizeMod);
+    USingleImageWidget *item = new USingleImageWidget(this, row, column, Core_GetSelectedChannelIndex(), ui->checkBoxShowLegend->isChecked(), ui->checkBoxIndChannels->isChecked() , imagesSizeMod);
     ui->gridLayoutImages->addWidget(item, row, column);
     imagesList.push_back(item);
     connect(item, SIGNAL(selectionSignal(USingleImageWidget*)), this, SLOT(selectImage(USingleImageWidget*)));
     connect(item, SIGNAL(fullScreenSignal(USingleImageWidget*)), this, SLOT(showFullScreenImage(USingleImageWidget*)));
-    connect(item, SIGNAL(zoneFinished(QPolygonF, QSize)), this, SIGNAL(zoneFinished(QPolygonF, QSize)));
+    connect(item, SIGNAL(polygonFinished(QPolygonF, QSize)), this, SIGNAL(polygonFinished(QPolygonF, QSize)));
+    connect(item, SIGNAL(polygonModified(UDrawablePolygon, QSize)), this, SIGNAL(polygonModified(UDrawablePolygon, QSize)));
+    connect(item, SIGNAL(polygonSelected(int)), this, SIGNAL(polygonSelected(int)));
+
+    connect(item, SIGNAL(rectanglesChanged(QPair<QRectF, QRectF>)), this, SIGNAL(rectanglesChanged(QPair<QRectF, QRectF>)));
     selectImage(item);
     return item;
 }

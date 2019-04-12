@@ -1,7 +1,7 @@
 object UImagesForm: TUImagesForm
   Left = 567
   Top = 277
-  Caption = 'UImagesForm'
+  Caption = 'Images View Window'
   ClientHeight = 609
   ClientWidth = 910
   Color = clBtnFace
@@ -80,6 +80,13 @@ object UImagesForm: TUImagesForm
       ExplicitTop = 588
       ExplicitWidth = 910
       ExplicitHeight = 21
+      inherited Labelshow: TLabel
+        Height = 19
+      end
+      inherited Labelsize: TLabel
+        Left = 601
+        Height = 19
+      end
       inherited ShowLegendCheckBox: TCheckBox
         Width = 110
         Height = 19
@@ -91,14 +98,14 @@ object UImagesForm: TUImagesForm
         ExplicitHeight = 19
       end
       inherited ShowHistogramCheckBox: TCheckBox
-        Left = 111
+        Left = 149
         Width = 130
         Height = 19
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        ExplicitLeft = 111
+        ExplicitLeft = 149
         ExplicitWidth = 130
         ExplicitHeight = 19
       end
@@ -127,26 +134,26 @@ object UImagesForm: TUImagesForm
         ExplicitHeight = 19
       end
       inherited ShowInfoCheckBox: TCheckBox
-        Left = 241
+        Left = 279
         Width = 100
         Height = 19
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        ExplicitLeft = 241
+        ExplicitLeft = 279
         ExplicitWidth = 100
         ExplicitHeight = 19
       end
       inherited IndChannelsCheckBox: TCheckBox
-        Left = 341
+        Left = 379
         Width = 122
         Height = 19
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        ExplicitLeft = 341
+        ExplicitLeft = 379
         ExplicitWidth = 122
         ExplicitHeight = 19
       end
@@ -163,10 +170,10 @@ object UImagesForm: TUImagesForm
         ExplicitHeight = 19
       end
       inherited CenterImageCheckBox: TCheckBox
-        Left = 564
+        Left = 501
         Width = 68
         Height = 19
-        ExplicitLeft = 564
+        ExplicitLeft = 501
         ExplicitWidth = 68
         ExplicitHeight = 19
       end

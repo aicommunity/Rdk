@@ -14,15 +14,9 @@ class UImagesWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UImagesWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UImagesWidget");
+    explicit UImagesWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UImagesWidget();
     void AUpdateInterface();
-
-    /// Устанавливает набор полигонов на выбранное изображение
-    void setZones(QList<QPair<QPolygonF, QPen> > polygons);
-
-    /// Устанавливает QPen в выделенное изображение (selectedImage)
-    void setImagePen(const QPen &value);
 
     /// Создает @param numChannels окошек и ставит для них источником компонент @param componentLongName
     void setCaptureForChannels(int numChannels, QString componentLongName, QString propertyName);
@@ -30,20 +24,64 @@ public:
     /// Выбирает изображение номер @param id
     void selectImage(int id);
 
-    /// Устанавливает режим рисования для текущего изображения
-    void setDrawable(bool value);
+    /// Запрещает/разрешает изменения виджета, такие как добавление/удаление столбцов и переключение IndChannels
+    void setEnableChanges(bool value);
 
-public slots:
-    ///считывание файлов настроек
-    void readSettings(QString file, QString group = "UImagesWidget");
-    ///запись файлов настроек
-    void writeSettings(QString file, QString group = "UImagesWidget");
+    /// Задать параметры захвата для текущего окна - номер канала, имя компонента, свойство
+    void selectCapture(const int channelNum, QString componentLongName, QString propertyName);
 
+    // ----- Проброс в UImagePainter -----
+    /// Устанавливает набор полигонов на выбранное изображение (selectedImage)
+    void setPolygons(const QList<UDrawablePolygon> &polygons, int imageNum = -1);
+
+    /// Устанавливает QPen в выделенное изображение (selectedImage)
+    void setImagePen(const QPen &value, int imageNum = -1);
+
+    /// Устанавливает режим рисования для текущего изображения (selectedImage)
+    void setDrawable(bool value, int imageNum = -1);
+
+    /// устанавливает зону как выбранную в выделеное изображение (selectedImage)
+    void selectPolygon(int id, int imageNum = -1);
+
+    /// Устанавливает режим рисования двух прямоугольников левой и правой кнопками мыши
+    void setDrawRects(bool value, int imageNum = -1);
+
+    /// Устанавливает два прямоугольника в текущий rectangles
+    void setRectangles(const QPair<QRectF, QRectF> &rects, int imageNum = -1);
+
+    ///Отключает функционал контекстного меню для самого виджета (с сохранением приема всех нажатий клавиш мыши)
+    /// а также отключает контекстное меню для внутренних классов
+    void PreventContextMenu();
+
+    ///Отключает контекстное меню у
+    void BlockContextMenu();
+
+    ///Извлекает настоящую ширину изображения
+    int GetImageWidth(int imageNum=-1);
+    ///Извлекает настоящую высоту изображения
+    int GetImageHeight(int imageNum=-1);
+
+    ///Задает размещение окошек в окне @param layoutW на @param layoutH
+    void SetImageLayout(int layoutW, int layoutH);
+
+    ///Возвращает ссылку на контекстное меню
+    //QMenu *getContextMenu();
+
+    // ------------------------------
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 signals:
     /// Сигнал отправляет канал текущего выбранного изображения, при смене selectedImage
     void selectedImageChannel(int channel);
 
-    void zoneFinished(QPolygonF, QSize);
+    // signals from USingleImagePainter
+    void polygonFinished(QPolygonF, QSize);
+    void polygonModified(UDrawablePolygon, QSize);
+    void polygonSelected(int);
+    void rectanglesChanged(QPair<QRectF, QRectF>);
 
 private slots:
     void actionSaveToBMP();
@@ -56,8 +94,12 @@ private slots:
     void actionDeleteColumn();
     void actionDeleteRow();
 
+    /// Отображение легенды для всех виджетов
     void setShowLegend(bool b);
+    /// Отображать изображение для всех виджетов, используя его индивидуальный канал
     void setIndChannels(bool b);
+
+    // images size policy
     void setOriginalSize();
     void setTiledSize();
     void setPropSize();
@@ -71,8 +113,6 @@ private slots:
 
 private:
     Ui::UImagesWidget *ui;
-
-    QString settingsFileName;
 
     //buffers
     RDK::UBitmap tempBmp;
@@ -100,12 +140,15 @@ private:
     /// 2 - растянуть на всю область
     int imagesSizeMod;
 
-    bool showLegend;
-    bool indChannels;
+    /// флаг, разрешающий изменения сетки изображений
+    bool enableChanges;
 
     /// Флаг режима отображения только одного окна на всё доступное место
     bool singleImageMode;
+
+    /// Счётчик столбцов
     int columnsCounter;
+    /// Счетчик строк
     int rowsCounter;
 };
 

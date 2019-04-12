@@ -277,7 +277,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
    break;
  }
 
- if(lastpos) *lastpos=i;
+ if(lastpos) *lastpos=int(i);
 
  return size;
 }
@@ -368,8 +368,13 @@ RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 /// Извлекает расширение файла из имени файла
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
+/// Модифицирует имя файла так, чтобы оно стало относительным относительно заданного пути
+RDK_LIB_TYPE string relative_file_path(const string &path, const string &relative_path_base);
+
 /// Заменяет все вхождения подстроки find_str на подстроку replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str);
+
+
 
 /// Загружает файл в строку
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer);

@@ -110,6 +110,40 @@ RDK_LIB_TYPE const char* RDK_CALL Core_RemoteCall(const char *request, int &retu
 // ----------------------------
 
 // ----------------------------
+// Функции определения версий
+// ----------------------------
+/// Возвращает мажорную версию ядра
+RDK_LIB_TYPE int RDK_CALL Ver_CoreMajor(void);
+
+/// Возвращает минорную версию ядра
+RDK_LIB_TYPE int RDK_CALL Ver_CoreMinor(void);
+
+/// Возвращает версию патча ядра
+RDK_LIB_TYPE int RDK_CALL Ver_CoreRevision(void);
+
+/// Возвращает полную версию ядра в виде строки
+RDK_LIB_TYPE const char* RDK_CALL Ver_Core(void);
+
+/// Сравнивает версию ядра с переданной
+/// возвращает >0 если версия ядра больше,
+/// возвращает <0 если версия ядра меньше,
+/// возвращает 0 в случае совпадения.
+RDK_LIB_TYPE int RDK_CALL Ver_CoreCompare(int major, int minor, int revision);
+
+/// Возвращает имя компилятора ядра
+RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerName(void);
+
+/// Возвращает версию компилятора ядра
+RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerVersion(void);
+
+/// Возвращает версию boost
+//RDK_LIB_TYPE const char* RDK_CALL Ver_BoostVersion(void);
+
+/// Возвращает версию opencv (если используется)
+//RDK_LIB_TYPE const char* RDK_CALL Ver_OpenCvVersion(void);
+// ----------------------------
+
+// ----------------------------
 // Функции логирования
 // ----------------------------
 // Возвращает состояние внутренего логгирования
@@ -369,8 +403,13 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
 RDK_LIB_TYPE int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
 
 // Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
 RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE const char* RDK_CALL MStorage_GetClassProperties(int channel_index, const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+
+
+// Возвращает полную структуру компонента по идентификатору
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassStructure(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE const char* RDK_CALL MStorage_GetClassStructure(int channel_index, const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 // --------------------------
 
 // ----------------------------
@@ -605,6 +644,14 @@ RDK_LIB_TYPE int RDK_CALL MEnv_DestroyStructure(int channel_index);
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 RDK_LIB_TYPE int RDK_CALL Env_Destroy(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_Destroy(int channel_index);
+
+// Инициализирует модель
+RDK_LIB_TYPE int RDK_CALL Env_ModelInit(void);
+RDK_LIB_TYPE int RDK_CALL MEnv_ModelInit(int channel_index);
+
+// Деинициализирует модель
+RDK_LIB_TYPE int RDK_CALL Env_ModelUnInit(void);
+RDK_LIB_TYPE int RDK_CALL MEnv_ModelUnInit(int channel_index);
 // ***********************************************
 // ----------------------------
 
@@ -918,6 +965,10 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringi
 // Проверяет, существует ли заданна связь
 RDK_LIB_TYPE bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
+
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+RDK_LIB_TYPE int RDK_CALL Model_SwitchOutputLinks(const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2);
+RDK_LIB_TYPE int RDK_CALL MModel_SwitchOutputLinks(int channel_index, const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid

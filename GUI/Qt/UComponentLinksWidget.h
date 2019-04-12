@@ -11,11 +11,13 @@ class UComponentLinksWidget;
 
 /// UComponentLinksWidget class - виджет работы со связями компонента
 ///
-/// Имеет два режима работы:
-/// - режим работы с одним компонентом - в этом режиме отображаются все входы и
+/// Имеет три режима работы:
+/// 1 - режим работы с одним компонентом - в этом режиме отображаются все входы и
 /// выходы (включая вложенные входы/выходы) одного компонента, и есть возможность создавать связи между собственными входами и выходами.
-/// - режим работы с двумя компонентами - в этом режиме отображаются выходы и связи (включая вложенные выходы/связи) первого компонента,
+/// 2 - режим работы с двумя компонентами - в этом режиме отображаются выходы и связи (включая вложенные выходы/связи) первого компонента,
 /// и входы второго (включая вложенные входы)
+/// 3 - режим переноса связей с одного компонента на другой - отображаются только доступные выходы первого и второго компонентов
+/// включая вложенные выходы и связи
 /// Важно! Выводит только публичные входы/выходы
 
 class UComponentLinksWidget : public UVisualControllerWidget
@@ -23,9 +25,14 @@ class UComponentLinksWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UComponentLinksWidget(QWidget *parent = 0, QString settingsFile = "settings.qt", QString settingsGroup = "UComponentLinksWidget");
+    explicit UComponentLinksWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UComponentLinksWidget();
     void AUpdateInterface();    
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
 
 public slots:
     ///Инициализация окна для просмотра входов/выходов/связей одного компонента
@@ -34,6 +41,9 @@ public slots:
 
     ///Инициализация окна для создания связей между двумя компонентами компонентами
     void initWidget(QString firstComponentName, QString secondComponentName);
+
+    ///Инициализирует виджет для работы в особом режиме, в частности в режиме переноса связей
+    void initWidget(QString firstComponentName, QString secondComponentName, int dlg_mode);
 
     ///Очищает интерфес, затирая компоненты
     void unInit();
@@ -44,19 +54,17 @@ public slots:
     ///разрушение выделенной связи
     void breakLink();
 
-    ///считывание файлов настроек
-    void readSettings(QString file, QString group = "UComponentLinksWidget");
-    ///запись файлов настроек
-    void writeSettings(QString file, QString group = "UComponentLinksWidget");
+    ///переключение выделенной связи
+    void switchLink();
+
+    void output1ItemSelectionChanged();
+
 
 signals:
     void updateScheme(bool forceUpdate);
 
 private:
     Ui::UComponentLinksWidget *ui;
-
-    QString settingsFileName;
-    QString settingsGroupName;
 
     ///Имя компонента источника
     QString firstComponentName;
@@ -80,6 +88,7 @@ private:
 /// 0 - не задан ни один компонент;
 /// 1 - отображение связей/входов/выходв одного компонента;
 /// 2 - отображение выходов/связей первого конмопонента, и входов другого;
+/// 3 - отображение выходов одного компонента и ...
     int mode;
 };
 

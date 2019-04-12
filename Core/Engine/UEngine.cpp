@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
 #include "../../Deploy/Include/rdk_error_codes.h"
+#include "UComponentFactory.h"
 
 // --------------------------------------
 // Объявления дополнительных функций
@@ -744,7 +745,7 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
  {
   try
   {
-   return Storage->CalcNumObjects(classname);
+   return int(Storage->CalcNumObjects(classname));
   }
   catch (RDK::UException &exception)
   {
@@ -1049,10 +1050,16 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
  {
   try
   {
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(Storage->GetClass(stringid));
+   UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(Storage->GetComponentFactory(stringid));
+
+
+			if(!factory)
+	return TempString.c_str();
+
+			UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(factory->GetComponent());
 
    if(!cont)
-	return TempString.c_str();
+    return TempString.c_str();
 
    XmlStorage.Create(cont->GetName());
    XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
@@ -1078,6 +1085,57 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
  }
  RDK_SYS_CATCH
  {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ DestroyTempString(TempString);
+ return 0;
+}
+
+// Возвращает полную структуру компонента по идентификатору
+// Память для buffer должна быть выделена!
+const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned int type_mask)
+{
+ RDK::USerStorageXML XmlStorage;
+ std::string& TempString=CreateTempString();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ UEPtr<RDK::UNet> cont;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   UEPtr<UComponentAbstractFactory> factory=Storage->GetComponentFactory(stringid);
+   cont=dynamic_pointer_cast<RDK::UNet>(factory->New());
+
+   if(!cont)
+	return TempString.c_str();
+
+   XmlStorage.Create(cont->GetName());
+   XmlStorage.SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+   if(!cont->SaveComponentStructure(&XmlStorage, true, type_mask))
+   {
+	DestroyTempString(TempString);
+    delete cont;
+	return 0;
+   }
+
+   XmlStorage.Save(TempString);
+   delete cont;
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   delete cont;
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   delete cont;
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  delete cont;
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
@@ -1619,7 +1677,6 @@ int UEngine::Storage_BuildStorage(void)
 // Индекс предарительно заданной модели обработки
 int UEngine::Env_GetPredefinedStructure(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1678,7 +1735,6 @@ int UEngine::Env_SetPredefinedStructure(int value)
 // false - хранилище не готово
 bool UEngine::Env_IsStoragePresent(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1704,7 +1760,6 @@ bool UEngine::Env_IsStoragePresent(void) const
 // Возвращает состояние инициализации
 bool UEngine::Env_IsInit(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1730,7 +1785,6 @@ bool UEngine::Env_IsInit(void) const
 // Признак наличия сформированной структуры
 bool UEngine::Env_IsStructured(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1756,7 +1810,6 @@ bool UEngine::Env_IsStructured(void) const
 // Возвращает состояние внутренего логгирования
 bool UEngine::Env_GetEventsLogMode(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1958,6 +2011,62 @@ int UEngine::Env_Destroy(void)
  }
  return res;
 }
+
+
+// Инициализирует модель
+int UEngine::Env_ModelInit(void)
+{
+    int res=RDK_UNHANDLED_EXCEPTION;
+    RDK_SYS_TRY
+    {
+     try
+     {
+      Environment->ModelInit();
+      res=RDK_SUCCESS;
+     }
+     catch (RDK::UException &exception)
+     {
+      res=ProcessException(exception);
+     }
+     catch (std::exception &exception)
+     {
+      res=ProcessException(RDK::UExceptionWrapperStd(exception));
+     }
+    }
+    RDK_SYS_CATCH
+    {
+     res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+    }
+    return res;
+}
+
+// Деинициализирует модель
+int UEngine::Env_ModelUnInit(void)
+{
+    int res=RDK_UNHANDLED_EXCEPTION;
+    RDK_SYS_TRY
+    {
+     try
+     {
+      Environment->ModelUnInit();
+      res=RDK_SUCCESS;
+     }
+     catch (RDK::UException &exception)
+     {
+      res=ProcessException(exception);
+     }
+     catch (std::exception &exception)
+     {
+      res=ProcessException(RDK::UExceptionWrapperStd(exception));
+     }
+    }
+    RDK_SYS_CATCH
+    {
+     res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+    }
+    return res;
+}
+
 
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
@@ -3040,7 +3149,7 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
    if(destcont)
 	return true;
   }
-  catch (UContainer::EComponentNameNotExist &exception)
+  catch (UContainer::EComponentNameNotExist &)
   {
    return false;
   }
@@ -3196,6 +3305,64 @@ int UEngine::Model_MoveComponent(const char* component, const char* target)
  return res;
 }
 
+
+/// Клонирует компонент со всеми содержимым и внутренними связями
+/// Если new_name - пустая строка, то имя назначается автоматически
+int UEngine::Model_CloneComponent(const char* component_name, const char* new_name)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   RDK::UEPtr<RDK::UNet> component=dynamic_pointer_cast<RDK::UNet>(FindComponent(component_name));
+
+   if(!component)
+    return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   RDK::UEPtr<RDK::UNet> owner=RDK::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
+   if(!owner)
+    return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+
+   RDK::UEPtr<RDK::UNet> new_component=RDK::dynamic_pointer_cast<RDK::UNet>(Storage->TakeObject(component->GetClass()));
+   if(!new_component)
+    return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
+
+   if(!new_name || strlen(new_name) == 0)
+    new_component->SetName(component->GetName());
+   else
+    new_component->SetName(new_name);
+
+   if(!owner->AddComponent(new_component))
+   {
+    Storage->ReturnObject(new_component);
+    return RDK_E_MODEL_ADD_COMPONENT_FAIL;
+   }
+
+   component->Copy(new_component);
+   RDK::MVector<double,3> coord=new_component->GetCoord();
+   coord(0)+=1;
+   coord(1)+=1;
+   new_component->SetCoord(coord);
+
+   AccessCache.clear();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
@@ -4647,7 +4814,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
 	cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
-   catch (UException &exception)// Заглушка!! здесь другое исключение
+   catch (UException &)// Заглушка!! здесь другое исключение
    {
 	return false;
    }
@@ -4686,7 +4853,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
 	cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
-   catch (UException &exception)// Заглушка!! здесь другое исключение
+   catch (UException &)// Заглушка!! здесь другое исключение
    {
 	return false;
    }
@@ -4710,6 +4877,48 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
  }
  return false;
 }
+
+/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+int UEngine::Model_SwitchOutputLinks(const char* item_name1, const char* item_property_name1, const char* item_name2, const char* item_property_name2)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!item_name1)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   if(!item_name2)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
+
+   bool temp_res=model->SwitchOutputLinks(item_name1,item_property_name1,item_name2,item_property_name2);
+   if(!temp_res)
+    return RDK_E_MODEL_SWITCH_LINK_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
@@ -7100,7 +7309,12 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	J=external_classes->end();
 	while(I != J)
 	{
-	 Storage->AddClass(*I);
+		UEPtr<UComponent> cont = *I;
+		cont->SetLogger(Storage->GetLogger());
+		cont->SetStorage(Storage);
+		cont->Build();
+		UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
+		Storage->AddClass(factory);
 	 ++I;
 	}
    }

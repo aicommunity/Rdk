@@ -14,8 +14,11 @@ See file license.txt for more information
 #define UASTORAGE_CPP
 
 #include <string.h>
+#include "../../Deploy/Include/rdk_version.h"
 #include "UStorage.h"
 #include "ULibrary.h"
+#include "../../Deploy/Include/rdk_exceptions.h"
+#include "UEnvException.h"
 
 namespace RDK {
 
@@ -110,8 +113,31 @@ UStorage::UStorage(void)
 
 UStorage::~UStorage(void)
 {
- ClearObjectsStorage();
- ClearClassesStorage();
+ try
+ {
+  ClearObjectsStorage(true);
+  ClearClassesStorage(true);
+ }
+ catch(EObjectStorageNotEmpty &ex)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+ }
+ catch(UException &ex)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+ }
+ catch(std::exception &ex)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+ }
+ catch(...)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Unknown excception");
+ }
 }
 // --------------------------
 
@@ -156,11 +182,11 @@ const NameT UStorage::FindClassName(const UId &id) const
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
-UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
+UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid)
 {
- UEPtr<UStorage> storage=classtemplate->GetStorage();
- if(storage)
-  storage->PopObject(classtemplate);
+// UEPtr<UStorage> storage=classtemplate->GetStorage();
+// if(storage)
+//  storage->PopObject(classtemplate);
 
  UId id=classid;
  if(id == ForbiddenId)
@@ -169,12 +195,8 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
  if(ClassesStorage.find(id) != ClassesStorage.end())
   throw EClassIdAlreadyExist(id);
 
- classtemplate->SetLogger(Logger);
- if(!classtemplate->Build())
-  return ForbiddenId;
-
- ClassesStorage[id]=classtemplate;
- classtemplate->SetClass(id);
+ ClassesStorage[id]=factory;
+ factory->SetClassId(id);
  LastClassId=id;
 
  // Заглушка!!! Это некоррректно, имени-то нет.
@@ -184,15 +206,17 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
 }
 
 // Добавляет образец класса объекта в хранилище
-UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const string &classname, const UId &classid)
+UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
   throw EClassNameAlreadyExist(classname);
 
- UId id=AddClass(classtemplate,classid);
+ UId id=AddClass(factory,classid);
  ClassesLookupTable[classname]=id;
- ClassesDescription[classname]=classtemplate->NewDescription();
- ClassesDescription[classname]->SetClassNameValue(classname);
+
+ // теперь ClassDescription не сохраняется
+// ClassesDescription[classname]=factory->NewDescription();
+// ClassesDescription[classname]->SetClassNameValue(classname);
  return id;
 }
 
@@ -270,7 +294,7 @@ bool UStorage::CheckClass(const string &classname) const
 }
 
 // Возвращает образец класса
-UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
+UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
@@ -280,16 +304,16 @@ UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
  return I->second;
 }
 
-UEPtr<UComponent> UStorage::GetClass(const std::string &class_name) const
+UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string &class_name) const
 {
  UId id=FindClassId(class_name);
- return GetClass(id);
+ return GetComponentFactory(id);
 }
 
 // Возвращает число классов
 int UStorage::GetNumClasses(void) const
 {
- return ClassesStorage.size();
+ return int(ClassesStorage.size());
 }
 
 // Возвращает список идентификаторов всех классов хранилища
@@ -323,7 +347,7 @@ void UStorage::GetClassNameList(vector<NameT> &buffer) const
 
 
 // Удаляет все не используемые образцы классов из хранилища
-void UStorage::FreeClassesStorage(void)
+void UStorage::FreeClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
  							  J=ClassesStorage.end(); I!=J; ++I)
@@ -332,26 +356,47 @@ void UStorage::FreeClassesStorage(void)
   if(temp != ObjectsStorage.end() && temp->second.size() == 0)
   {
    DelClass(I->first);
-   break;
   }
  }
 }
 
 // Удаляет все образцы классов из хранилища
-void UStorage::ClearClassesStorage(void)
+void UStorage::ClearClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
  							  J=ClassesStorage.end(); I!=J; ++I)
  {
   UObjectsStorageIterator temp=ObjectsStorage.find(I->first);
   if(temp != ObjectsStorage.end() && temp->second.size() != 0)
-   throw EObjectStorageNotEmpty(I->first);
+  {
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
+   if(!force)
+	throw EObjectStorageNotEmpty(I->first);
+   else
+    break;
+  }
  }
 
  for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
  {
-  if(I->second)
-   delete I->second.Get();
+  RDK_SYS_TRY
+  {
+   try
+   {
+	if(I->second)
+	 delete I->second.Get();
+   }
+   catch(...)
+   {
+	if(Logger)
+	 Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
+   }
+  }
+  RDK_SYS_CATCH
+  {
+   if(Logger)
+    Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  }
  }
  ClassesStorage.clear();
 
@@ -381,19 +426,18 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
   throw EClassIdNotExist(classid);
 
  UClassStorageElement tmpl=tmplI->second;
- UEPtr<UContainer> classtemplate=dynamic_pointer_cast<UContainer>(tmpl);
 
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
  if(instances != ObjectsStorage.end())
  {
   UInstancesStorageElement* element=0;// Заглушка!! instances->FindFree();
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
-											   J=instances->second.end(); I!=J; ++I)
+              J=instances->second.end(); I!=J; ++I)
   {
    if(I->UseFlag == false)
    {
-	element=&(*I);
-	break;
+   element=&(*I);
+   break;
    }
   }
 
@@ -403,11 +447,11 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
    if(obj)
    {
-    obj->Default();
-    if(!prototype)
-	 classtemplate->Copy(obj,this);
-	else
-	 dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
+	obj->Default();
+	if(!prototype)
+     tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
+    else
+     dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
     obj->SetActivity(true);
     element->UseFlag=true;
@@ -418,19 +462,27 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
 
  // Если свободного объекта не нашли
- UEPtr<UContainer> obj=classtemplate->New();
+ UEPtr<UContainer> obj;
+ if(prototype)
+ {
+  obj=dynamic_pointer_cast<UContainer>(tmpl->Prototype(prototype, this));
+ }
+ else
+ {
+  obj=dynamic_pointer_cast<UContainer>(tmpl->New());
+  if(obj)
+   obj->Default();
+ }
+
+ if(!obj)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class factory doesn't return object: ")+FindClassName(classid));
+  return 0;
+ }
+
  PushObject(classid,obj);
  obj->SetLogger(Logger);
- obj->Default();
-
- // В случае, если объект создается непосредственно как копия из хранилища...
- if(!prototype)
-  classtemplate->Copy(obj,this);
- else
-  // В случае, если объект создается из хранилища как часть более сложного
-  // объекта
-  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
-
  obj->SetActivity(true);
 
  return static_pointer_cast<UComponent>(obj);
@@ -470,13 +522,32 @@ bool UStorage::CheckObject(UEPtr<UContainer> object) const
  return false;
 }
 
+// Ищет фабрику, непосредственно хранящую заданный компонент
+UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> object)
+{
+ if(!object)
+  return 0;
+
+ UClassesStorageCIterator instances=ClassesStorage.begin();
+ for(;instances != ClassesStorage.end();++instances)
+ {
+  UEPtr<UVirtualMethodFactory> virtual_factory=dynamic_pointer_cast<UVirtualMethodFactory>(instances->second);
+  if(virtual_factory)
+  {
+   if(virtual_factory->GetComponent() == object)
+	return virtual_factory;
+  }
+ }
+ return 0;
+}
+
 // Вычисляет суммарное число объектов в хранилище
 int UStorage::CalcNumObjects(void) const
 {
  int result=0;
 
  for(UObjectsStorageCIterator I=ObjectsStorage.begin(),J=ObjectsStorage.end(); I!=J; ++I)
-  result+=I->second.size();
+  result+=int(I->second.size());
 
  return result;
 }
@@ -488,7 +559,7 @@ int UStorage::CalcNumObjects(const UId &classid) const
  if(instances == ObjectsStorage.end())
   throw EClassIdNotExist(classid);
 
- return instances->second.size();
+ return int(instances->second.size());
 }
 
 size_t UStorage::CalcNumObjects(const string &classname) const
@@ -498,39 +569,87 @@ size_t UStorage::CalcNumObjects(const string &classname) const
 
 
 // Удалаяет все свободные объекты из хранилища
-void UStorage::FreeObjectsStorage(void)
+void UStorage::FreeObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
  {
   std::string object_class_name=FindClassName(instances->first);
+  if(instances->second.empty())
+   continue;
+
+  size_t size=instances->second.size();
+  size_t count=0;
+
   if(Logger)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
-   if(!I->UseFlag)
+   std::string object_name=I->Object->GetName();
+   if(I->UseFlag && force)
    {
-    list<UInstancesStorageElement>::iterator K;
-	std::string object_name=I->Object->GetName();
+	if(Logger)
+	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("FORCED destroy objects by name ")+object_name+": object in use!");
+   }
+
+   if(!I->UseFlag || force)
+   {
+	list<UInstancesStorageElement>::iterator K;
 	if(Logger)
 	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
 	K=I; ++K;
 	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
-	delete object;
-	I=K;
+	RDK_SYS_TRY
+	{
+	 try
+	 {
+	  UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
+	  if(virtual_factory)
+	  {
+	   virtual_factory->FreeComponent();
+	  }
+	  delete object;
+	  ++count;
+	 }
+	 catch(...)
+	 {
+	  if(Logger)
+	   Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
+	 }
+	}
+	RDK_SYS_CATCH
+	{
+	 if(Logger)
+	  Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+	}
+    I=K;
    }
    else
-    ++I;
+   {
+	++I;
+	if(!force)
+	{
+	 if(Logger)
+	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+	}
+   }
   }
-  instances->second.clear();
+
+//  size_t end_size=instances->second.size();
+//  if(end_size>0)
+//  {
+//   if(Logger)
+//	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
+//  }
+//  instances->second.clear();
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has finished");
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
  }
 }
 
 // Удаляет все объекты из хранилища
-void UStorage::ClearObjectsStorage(void)
+void UStorage::ClearObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 												instances != iend; ++instances)
@@ -550,7 +669,7 @@ void UStorage::ClearObjectsStorage(void)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
  }
 
- FreeObjectsStorage();
+ FreeObjectsStorage(force);
 }
 
 // Удалаяет все объекты заданного класса из хранилища
@@ -571,12 +690,17 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname) const
+const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
  if(I == ClassesDescription.end())
-  throw EClassNameNotExist(classname);
+ {
+  if(nothrow)
+   return 0;
+  else
+   throw EClassNameNotExist(classname);
+ }
 
  return I->second;
 }
@@ -858,7 +982,7 @@ bool UStorage::DelCollection(const string &name)
  {
   UEPtr<ULibrary> lib=CollectionList[i];
   if(lib && lib->GetName() == name)
-   return DelCollection(i);
+   return DelCollection(int(i));
  }
 
  return true;
@@ -882,6 +1006,19 @@ bool UStorage::BuildStorage(void)
   UEPtr<ULibrary> lib=CollectionList[i];
   if(lib)
   {
+   GetLogger()->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(": collection version is ")+lib->GetVersion()+std::string(" (")+sntoa(lib->GetRevision())+")");
+
+   if(lib->GetCoreVersion())
+   {
+    if(!lib->GetCoreVersion()->IsEqualFull(GetGlobalVersion()))
+    {
+     Logger->LogMessage(RDK_EX_FATAL, lib->GetName()+std::string(" collection SKIPPED: application core version ")+GetGlobalVersion().ToStringFull()+std::string(" is incompatible lib core version ")+lib->GetCoreVersion()->ToStringFull());
+     continue;
+    }
+   }
+   else
+    Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
+
    Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
    unsigned long long total_used_memory_before(0);
    unsigned long long largest_free_block_before(0);
@@ -944,7 +1081,11 @@ UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 /// Метод не очищает переданный список библиотек, а только пополняет его
 void UStorage::FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
 {
- UEPtr<UContainer> class_data=dynamic_pointer_cast<UContainer>(GetClass(class_name));
+ UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(GetComponentFactory(class_name));
+ if(!factory)
+  return;
+
+ UEPtr<UContainer> class_data=factory->GetComponent();
  if(!class_data)
   return;
 
@@ -968,13 +1109,11 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 // Если объект уже принадлежит иному хранилищу то возвращает false
 void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
- UEPtr<UComponent> classtemplate=ClassesStorage.find(classid)->second;
-
  UInstancesStorage &instances=ObjectsStorage[classid];
 
  UInstancesStorageElement element(object,true);
  list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
- object->ObjectIterator=&(*instI);
+ //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
 
  object->SetStorage(this);
@@ -987,7 +1126,7 @@ UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
-  throw EClassIdNotExist(object->GetClass());
+  return ForbiddenId;
 
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
 						J=instances->second.end(); I!=J; ++I)
@@ -1011,10 +1150,23 @@ void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
- if(obj->ObjectIterator)
-  obj->ObjectIterator->UseFlag=false;
- obj->Activity=false;
+
+ obj->SetActivity(false);
  obj->BreakOwner();
+
+ UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
+ if(instances != ObjectsStorage.end())
+  return;
+
+ for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
+						J=instances->second.end(); I!=J; ++I)
+ {
+  if(I->Object == object)
+  {
+   I->UseFlag=false;
+   break;
+  }
+ }
 }
 
 // В случае ошибки возвращает ForbiddenId
@@ -1025,7 +1177,7 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
  instance_iterator->second.erase(object_iterator);
 
  UId classid=object->GetClass();
- object->ObjectIterator=0;
+ //object->SetObjectIterator(0);
  object->SetStorage(0);
  object->SetClass(ForbiddenId);
  return classid;

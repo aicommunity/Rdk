@@ -171,9 +171,17 @@ int BackgroundLineStep;
 // Цвет выделяемого элемента
 UColorT SelectedColor;
 
-// Цвет выделяемого элемента
+// Цвет неактивного элемента
 UColorT InactiveSelectedColor;
 
+// Цвет входящих линий
+UColorT InputLinksColor;
+
+// Цвет исходящих линий
+UColorT OutputLinksColor;
+
+// Цвет линий по умолчанию
+UColorT DefaultLinksColor;
 
 // Коэффициент зуммирования
 // Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y
@@ -248,6 +256,9 @@ void MoveComponent(const string &name, int x, int y);
 
 // Обновляет размеры всех элементов в соответствии с размерами по умолчанию
 void UpdateAllElementsSize(void);
+
+/// Возвращает рекомендуемый размер канвы
+void CalcRecommendSize(int &width, int &height);
 
 /// Шрифты
 RDK::UBitmapFontCollection& GetFonts(void);

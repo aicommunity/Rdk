@@ -1,11 +1,10 @@
 #include "ULoggerWidget.h"
 
 ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
-    UVisualControllerWidget(parent)
+    UVisualControllerWidget(parent, app)
 {
     setAccessibleName("ULoggerWidget");
     UpdateInterval = 200;
-    application = app;
     CheckModelFlag = false; // for updating logger when model not loaded yet
 
     layout = new QVBoxLayout(this);

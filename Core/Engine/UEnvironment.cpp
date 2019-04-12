@@ -364,6 +364,26 @@ bool UEnvironment::DestroyModel(void)
 
  return true;
 }
+
+/// Инициализирует модель
+void UEnvironment::ModelInit(void)
+{
+    if(!Model)
+     return;
+
+    Model->Init();
+}
+
+/// Деинициализирует модель
+void UEnvironment::ModelUnInit(void)
+{
+    if(!Model)
+     return;
+
+    Model->UnInit();
+}
+
+
 // --------------------------
 
 // --------------------------
@@ -506,6 +526,48 @@ bool UEnvironment::SetFonts(const RDK::UBitmapFontCollection& value)
  Fonts=value;
  return true;
 }
+
+/// Возвращает набор вариантов predefined structures
+const std::map<int, UEnvPredefinedStructDescription>& UEnvironment::GetPredefinedStructures(void) const
+{
+ return PredefinedStructures;
+}
+
+/// Возвращает вариантов predefined structure по id
+UEnvPredefinedStructDescription UEnvironment::GetPredefinedStructureDescription(int id) const
+{
+ std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(id);
+ if(I != PredefinedStructures.end())
+  return I->second;
+
+ return UEnvPredefinedStructDescription();
+}
+
+/// Добавляет вариант predefined structure
+bool UEnvironment::AddPredefinedStructure(const UEnvPredefinedStructDescription &descr)
+{
+ std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(descr.Id);
+ if(I != PredefinedStructures.end())
+  return false;
+ PredefinedStructures[descr.Id]=descr;
+ return true;
+}
+
+/// Добавляет удаляет predefined structure по id
+void UEnvironment::DelPredefinedStructure(int id)
+{
+ std::map<int, UEnvPredefinedStructDescription>::iterator I=PredefinedStructures.find(id);
+ if(I == PredefinedStructures.end())
+  return;
+
+ PredefinedStructures.erase(I);
+}
+
+/// Удаляет все predefined structures
+void UEnvironment::ClearPredefinedStructures(void)
+{
+ PredefinedStructures.clear();
+}
 // --------------------------
 
 
@@ -551,7 +613,7 @@ bool UEnvironment::CallSourceController(void)
   if(!iproperty->ReadFromMemory(&value))
    return false;
  }
- catch(UContainer::EComponentNameNotExist &exception)
+ catch(UContainer::EComponentNameNotExist &)
  {
   return false;
  }
@@ -644,7 +706,7 @@ void UEnvironment::RTCalculate(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't ialized.");
   return;
  }
 
@@ -719,7 +781,7 @@ void UEnvironment::RTCalculate(void)
 }
 
 /// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
-void UEnvironment::FastCalculate(UTime calc_interval)
+void UEnvironment::FastCalculate(double calc_interval)
 {
  if(!IsInit())
  {
@@ -1136,16 +1198,14 @@ void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, c
 void UEnvironment::AInit(void)
 {
  ModelCalculationComponent.Resize(0);
- if(Model)
-  Model->Init();
+ ModelInit();
  return;
 }
 
 // Деинициализация среды
 void UEnvironment::AUnInit(void)
 {
- if(Model)
-  Model->UnInit();
+ ModelUnInit();
 
  return;
 }

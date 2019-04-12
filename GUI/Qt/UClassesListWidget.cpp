@@ -6,8 +6,8 @@
 #include <QDrag>
 #include <QDebug>
 
-UClassesListWidget::UClassesListWidget(QWidget *parent) :
-    UVisualControllerWidget(parent),
+UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
+    UVisualControllerWidget(parent, app),
     ui(new Ui::UClassesListWidget)
 {
     ui->setupUi(this);

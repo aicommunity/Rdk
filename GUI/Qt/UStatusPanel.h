@@ -40,7 +40,6 @@ signals:
 
 private:
   Ui::UStatusPanel *ui;
-  RDK::UApplication *application;
 };
 
 #endif // USTATUSPANEL_H
