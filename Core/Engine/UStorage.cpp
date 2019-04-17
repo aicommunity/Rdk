@@ -1155,7 +1155,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
  obj->BreakOwner();
 
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
- if(instances != ObjectsStorage.end())
+ if(instances == ObjectsStorage.end())
   return;
 
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
