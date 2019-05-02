@@ -84,14 +84,14 @@ void UGraphWidget::addDataToGraph(int id, std::vector<double>  X1, std::vector<d
     //Изменить размер на нужный
     size_t startSizeElem = masX[id].size();
     size_t addSizeElem = X1.size();
-    masX[id].resize(startSizeElem+addSizeElem);
-    masY[id].resize(startSizeElem+addSizeElem);
+    masX[id].resize(int(startSizeElem+addSizeElem));
+    masY[id].resize(int(startSizeElem+addSizeElem));
 
    //Заполнить появившеся место
     for (size_t j=startSizeElem; j<startSizeElem+addSizeElem-1; j++)
     {
-        masX[id][j]=X1[j-startSizeElem];
-        masY[id][j]=Y1[j-startSizeElem];
+        masX[id][j]=X1[int(j-startSizeElem)];
+        masY[id][j]=Y1[int(j-startSizeElem)];
     }
     emit transferDataSignal(id, masX[id], masY[id]);
 }
