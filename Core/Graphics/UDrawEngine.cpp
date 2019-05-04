@@ -337,10 +337,10 @@ void UDrawEngine::CalcRecommendSize(int &width, int &height)
 
  for(;I != J;++I)
  {
-  int temp_width=I->second.Position(0)+I->second.Width;
+  int temp_width=int(I->second.Position(0))+I->second.Width;
   if(width<temp_width)
    width=temp_width;
-  int temp_height=I->second.Position(1)+I->second.Height;
+  int temp_height=int(I->second.Position(1))+I->second.Height;
   if(height<temp_height)
    height=temp_height;
  }

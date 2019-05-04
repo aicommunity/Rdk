@@ -5890,7 +5890,7 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
  {
   if(res.IsNormalized())
   {
-   res.Data[i].Float=fabs(value1.Data[i].Float-value2.Data[i].Float);
+   res.Data[i].Float=float(fabs(value1.Data[i].Float-value2.Data[i].Float));
    if(res.Data[i].Float<h_min)
 	h_min=res.Data[i].Float;
    if(res.Data[i].Float>h_max)

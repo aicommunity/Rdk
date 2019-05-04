@@ -31,7 +31,6 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
 void UComponentLinksWidget::output1ItemSelectionChanged()
 {
     QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
-    int k = 0;
 }
 
 UComponentLinksWidget::~UComponentLinksWidget()
