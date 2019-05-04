@@ -610,8 +610,13 @@ bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
 
+ if(!ProjectXml.LoadFromFile(filename,""))
+ {
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, (std::string("Can't read project file ")+filename).c_str());
+  return false;
+ }
+
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Open project ")+filename+"...").c_str());
- ProjectXml.LoadFromFile(filename,"");
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
