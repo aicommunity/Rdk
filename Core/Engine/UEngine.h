@@ -389,10 +389,10 @@ virtual int Env_DestroyStructure(void);
 virtual int Env_Destroy(void);
 
 // Инициализирует модель
-virtual int Env_ModelInit(void);
+virtual int Env_ModelInit(const char *stringid);
 
 // Деинициализирует модель
-virtual int Env_ModelUnInit(void);
+virtual int Env_ModelUnInit(const char *stringid);
 
 
 // Метод счета

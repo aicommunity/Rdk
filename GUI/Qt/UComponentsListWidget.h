@@ -152,6 +152,8 @@ public slots:
     void componentCopyClassNameToClipboard();
     void componentReset();
     void componentCalculate();
+    void componentInit();
+    void componentUnInit();
     void componentGUI();
 
     /// ¬нешн€€ установка UpdateInterval, дл€ уменьшени€ нагрузки на €дро

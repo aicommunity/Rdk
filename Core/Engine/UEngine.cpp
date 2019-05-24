@@ -2014,14 +2014,26 @@ int UEngine::Env_Destroy(void)
 
 
 // Инициализирует модель
-int UEngine::Env_ModelInit(void)
+int UEngine::Env_ModelInit(const char *stringid)
 {
     int res=RDK_UNHANDLED_EXCEPTION;
     RDK_SYS_TRY
     {
      try
      {
-      Environment->ModelInit();
+      if(!stringid)
+      {
+       Environment->ModelInit();
+      }
+      else
+      {
+       RDK::UContainer* destcont=FindComponent(stringid);
+       if(destcont)
+        destcont->Init();
+       else
+        return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+      }
+
       res=RDK_SUCCESS;
      }
      catch (RDK::UException &exception)
@@ -2041,14 +2053,26 @@ int UEngine::Env_ModelInit(void)
 }
 
 // Деинициализирует модель
-int UEngine::Env_ModelUnInit(void)
+int UEngine::Env_ModelUnInit(const char *stringid)
 {
     int res=RDK_UNHANDLED_EXCEPTION;
     RDK_SYS_TRY
     {
      try
      {
-      Environment->ModelUnInit();
+      if(!stringid)
+      {
+       Environment->ModelUnInit();
+      }
+      else
+      {
+       RDK::UContainer* destcont=FindComponent(stringid);
+       if(destcont)
+        destcont->UnInit();
+       else
+        return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+      }
+
       res=RDK_SUCCESS;
      }
      catch (RDK::UException &exception)
