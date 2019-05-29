@@ -60,7 +60,7 @@ inherited UImagesFrame: TUImagesFrame
       Left = 1
       Top = 1
       Width = 38
-      Height = 13
+      Height = 15
       Align = alLeft
       Caption = 'show   '
       Font.Charset = DEFAULT_CHARSET
@@ -69,12 +69,13 @@ inherited UImagesFrame: TUImagesFrame
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
+      ExplicitHeight = 13
     end
     object Labelsize: TLabel
       Left = 520
       Top = 1
       Width = 31
-      Height = 13
+      Height = 15
       Align = alRight
       Caption = 'size   '
       Font.Charset = DEFAULT_CHARSET
@@ -83,6 +84,7 @@ inherited UImagesFrame: TUImagesFrame
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
+      ExplicitHeight = 13
     end
     object ShowLegendCheckBox: TCheckBox
       Left = 39
@@ -174,8 +176,8 @@ inherited UImagesFrame: TUImagesFrame
     end
   end
   object PopupMenu: TPopupMenu
-    Left = 192
-    Top = 296
+    Left = 176
+    Top = 224
     object SaveToBmp: TMenuItem
       Caption = 'Save to Bmp'
       OnClick = SaveToBmpClick

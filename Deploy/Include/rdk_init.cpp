@@ -2150,6 +2150,15 @@ int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_prop
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
+int RDK_CALL MModel_CreateLinkByName(int channel_index, const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+  if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ RdkCoreManager.GetEngineLock(channel_index)->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
+ return 0;
+}
+
 int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
 {
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
@@ -2201,6 +2210,15 @@ int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
 int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentInputLinks(stringid);
+}
+
+int RDK_CALL MModel_BreakAllComponentInputLinks(int channel_index, const char* stringid)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ RdkCoreManager.GetEngineLock(channel_index)->Model_BreakAllComponentInputLinks(stringid);
+ return 0;
 }
 
 // Разрывает все выходные связи выбранного контейнера
