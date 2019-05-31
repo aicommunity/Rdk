@@ -1,11 +1,12 @@
 inherited DebugControlFrame: TDebugControlFrame
   Width = 465
-  Height = 389
+  Height = 430
+  Constraints.MinHeight = 430
   ExplicitWidth = 465
-  ExplicitHeight = 389
+  ExplicitHeight = 430
   object DebugImagesGroupBox: TGroupBox
     Left = 0
-    Top = 128
+    Top = 169
     Width = 465
     Height = 261
     Align = alBottom
@@ -164,56 +165,74 @@ inherited DebugControlFrame: TDebugControlFrame
       TabOrder = 13
     end
   end
-  object SnapshotSettingsGroupBox: TGroupBox
+  object TopPanel: TPanel
     Left = 0
     Top = 0
     Width = 465
-    Height = 128
+    Height = 169
     Align = alClient
-    Caption = #1057#1086#1093#1088#1072#1085#1077#1085#1080#1077' '#1089#1085#1080#1084#1082#1072' '#1089#1086#1089#1090#1086#1103#1085#1080#1103
     TabOrder = 1
-    object MakeSnapshotButton: TButton
-      Left = 16
-      Top = 86
-      Width = 164
-      Height = 36
-      Caption = #1057#1076#1077#1083#1072#1090#1100' '#1089#1085#1080#1084#1086#1082
+    object SnapshotSettingsGroupBox: TGroupBox
+      Left = 1
+      Top = 29
+      Width = 463
+      Height = 139
+      Align = alBottom
+      Caption = #1057#1086#1093#1088#1072#1085#1077#1085#1080#1077' '#1089#1085#1080#1084#1082#1072' '#1089#1086#1089#1090#1086#1103#1085#1080#1103
       TabOrder = 0
-      OnClick = MakeSnapshotButtonClick
+      object MakeSnapshotButton: TButton
+        Left = 16
+        Top = 86
+        Width = 164
+        Height = 36
+        Caption = #1057#1076#1077#1083#1072#1090#1100' '#1089#1085#1080#1084#1086#1082
+        TabOrder = 0
+        OnClick = MakeSnapshotButtonClick
+      end
+      object SaveSnapshotCheckBox: TCheckBox
+        Left = 16
+        Top = 40
+        Width = 225
+        Height = 17
+        Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1089#1090#1086#1103#1085#1080#1077' '#1084#1086#1076#1077#1083#1080
+        TabOrder = 1
+      end
+      object SaveImageCheckBox: TCheckBox
+        Left = 16
+        Top = 63
+        Width = 372
+        Height = 17
+        Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1080#1079#1086#1073#1088#1072#1078#1077#1085#1080#1077
+        TabOrder = 2
+      end
+      object SnapshotOneRadioButton: TRadioButton
+        Left = 16
+        Top = 17
+        Width = 113
+        Height = 17
+        Caption = #1058#1077#1082#1091#1097#1080#1081' '#1082#1072#1085#1072#1083
+        Checked = True
+        TabOrder = 3
+        TabStop = True
+      end
+      object SnapshotActiveRadioButton: TRadioButton
+        Left = 135
+        Top = 17
+        Width = 138
+        Height = 17
+        Caption = #1042#1089#1077' '#1072#1082#1090#1080#1074#1085#1099#1077' '#1082#1072#1085#1072#1083#1099
+        TabOrder = 4
+      end
     end
-    object SaveSnapshotCheckBox: TCheckBox
+    object EnableDebugModulesCheckBox: TCheckBox
       Left = 16
-      Top = 40
-      Width = 225
+      Top = 8
+      Width = 257
       Height = 17
-      Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1089#1090#1086#1103#1085#1080#1077' '#1084#1086#1076#1077#1083#1080
+      Caption = #1042#1082#1083#1102#1095#1080#1090#1100' '#1086#1090#1083#1072#1076#1086#1095#1085#1099#1077' '#1084#1086#1076#1091#1083#1080
       TabOrder = 1
-    end
-    object SaveImageCheckBox: TCheckBox
-      Left = 16
-      Top = 63
-      Width = 372
-      Height = 17
-      Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1080#1079#1086#1073#1088#1072#1078#1077#1085#1080#1077
-      TabOrder = 2
-    end
-    object SnapshotOneRadioButton: TRadioButton
-      Left = 16
-      Top = 17
-      Width = 113
-      Height = 17
-      Caption = #1058#1077#1082#1091#1097#1080#1081' '#1082#1072#1085#1072#1083
-      Checked = True
-      TabOrder = 3
-      TabStop = True
-    end
-    object SnapshotActiveRadioButton: TRadioButton
-      Left = 135
-      Top = 17
-      Width = 138
-      Height = 17
-      Caption = #1042#1089#1077' '#1072#1082#1090#1080#1074#1085#1099#1077' '#1082#1072#1085#1072#1083#1099
-      TabOrder = 4
+      OnClick = EnableDebugModulesCheckBoxClick
+      OnKeyPress = EnableDebugModulesCheckBoxKeyPress
     end
   end
 end

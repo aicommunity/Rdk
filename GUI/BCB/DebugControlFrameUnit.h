@@ -10,6 +10,7 @@
 #include <FileCtrl.hpp>
 #include "TUVisualControllerFrameUnit.h"
 #include "UComponentsListFormUnit.h"
+#include <Vcl.ExtCtrls.hpp>
 #include <vector>
 //---------------------------------------------------------------------------
 class TDebugControlFrame : public TUVisualControllerFrame
@@ -31,15 +32,17 @@ __published:	// IDE-managed Components
 	TLabel *ImgLBLabel;
 	TButton *ApplyButton;
 	TButton *SaveOneImageButton;
+	TRadioButton *SaveImgCurrentChannelRadioButton;
+	TRadioButton *SaveImgActiveChannelsRadioButton;
+	TCheckBox *SaveOnlyOnceCheckBox;
+	TPanel *TopPanel;
 	TGroupBox *SnapshotSettingsGroupBox;
 	TButton *MakeSnapshotButton;
 	TCheckBox *SaveSnapshotCheckBox;
 	TCheckBox *SaveImageCheckBox;
 	TRadioButton *SnapshotOneRadioButton;
 	TRadioButton *SnapshotActiveRadioButton;
-	TRadioButton *SaveImgCurrentChannelRadioButton;
-	TRadioButton *SaveImgActiveChannelsRadioButton;
-	TCheckBox *SaveOnlyOnceCheckBox;
+	TCheckBox *EnableDebugModulesCheckBox;
 	void __fastcall ImgTLButtonClick(TObject *Sender);
 	void __fastcall ImgTRButtonClick(TObject *Sender);
 	void __fastcall ImgLBButtonClick(TObject *Sender);
@@ -47,10 +50,17 @@ __published:	// IDE-managed Components
 	void __fastcall ApplyButtonClick(TObject *Sender);
 	void __fastcall SaveOneImageButtonClick(TObject *Sender);
 	void __fastcall MakeSnapshotButtonClick(TObject *Sender);
+	void __fastcall EnableDebugModulesCheckBoxClick(TObject *Sender);
+	void __fastcall EnableDebugModulesCheckBoxKeyPress(TObject *Sender, System::WideChar &Key);
+
 private:	// User declarations
 	bool LinkImages2x2(int channel_id);
 	bool SaveImages2x2(int channel_id);
 	bool SaveImages2x2path(int channel_id, const std::string path);
+	//Принимает на вход значения "0" для отключения и "1" для включения
+	//работы отладочных компонент на активных каналах
+	bool SetDebugAll(const std::string &debug_value);
+	void SwitchEnableElements(bool enable);
 	// Указатель на форму выбора компоненты-источника
 	TUComponentsListForm *MyComponentsListForm;
 

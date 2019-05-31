@@ -22,7 +22,7 @@ __fastcall TDebugControlFrame::TDebugControlFrame(TComponent* Owner)
 	ImgRBInputName = "ImgRB";
 	SaveOnlyOneName = "SaveImagesOnce";
 	SaveImagesName =  "SaveImages";
-    SaveFolderPath = "";
+	SaveFolderPath = "";
 }
 //---------------------------------------------------------------------------
 __fastcall TDebugControlFrame::~TDebugControlFrame(void)
@@ -41,7 +41,38 @@ void __fastcall TDebugControlFrame::ImgTLButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void TDebugControlFrame::AUpdateInterface(void)
 {
-
+  //Надо найти первый активный канал и считать его состояние дебага
+  //Если включен, то прожать включение на всех, если нет - прожать отключение на всех
+  static bool first_check = true;
+  if(first_check)
+  {
+	  int num_ch = Core_GetNumChannels();
+	  for(int i=0; i<num_ch; i++)
+	  {
+		//RDK::UEPtr<RDK::UNet> camera = RDK::static_pointer_cast<RDK::UNet>(model->GetComponentL(componentLongName.c_str(), true));
+		// if(!camera)
+		//  return;
+		std::string act = MModel_GetComponentParameterValue(i, "Pipeline1", "Activity");
+		if(act==std::string("1"))
+		{
+		  std::string debug_act = MModel_GetComponentParameterValue(i, "Pipeline1", "EnableDebugVisualisation");
+		  if(debug_act==std::string("1"))
+		  {
+		   SetDebugAll("1");
+		   EnableDebugModulesCheckBox->Checked = true;
+		   SwitchEnableElements(true);
+		  }
+		  else
+		  {
+		   SetDebugAll("0");
+		   EnableDebugModulesCheckBox->Checked = false;
+		   SwitchEnableElements(false);
+		  }
+		  break;
+		}
+	  }
+      first_check = false;
+  }
   if((!ImgLTComponentLongName.empty())&&(!ImgLTComponentOutput.empty()))
 	ImgTLEdit->Text=(UnicodeString)(ImgLTComponentLongName.c_str())+"->"+(UnicodeString)(ImgLTComponentOutput.c_str());
   if((!ImgLBComponentLongName.empty())&&(!ImgLBComponentOutput.empty()))
@@ -158,8 +189,8 @@ void __fastcall TDebugControlFrame::ApplyButtonClick(TObject *Sender)
 		if(act==std::string("1"))
 		{
 		  LinkImages2x2(i);
-        }
-     }
+		}
+	 }
 	}
 
 	//Как заставить систему сцепить вход на выход?
@@ -290,5 +321,89 @@ void TDebugControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
  ImgRBComponentLongName = xml.ReadString("ImgRBComponentLongName", ImgRBComponentLongName);
  ImgRBComponentOutput = xml.ReadString("ImgRBComponentOutput", ImgRBComponentOutput);
-	
+
 }
+
+//Принимает на вход значения "0" для отключения и "1" для включения
+//работы отладочных компонент на активных каналах
+bool TDebugControlFrame::SetDebugAll(const std::string &debug_value)
+{
+ int num_ch = Core_GetNumChannels();
+ for(int i=0; i<num_ch; i++)
+ {
+  //RDK::UEPtr<RDK::UNet> camera = RDK::static_pointer_cast<RDK::UNet>(model->GetComponentL(componentLongName.c_str(), true));
+  // if(!camera)
+  //  return;
+  std::string act = MModel_GetComponentParameterValue(i, "Pipeline1", "Activity");
+  if(act==std::string("1"))
+  {
+	 MModel_SetComponentParameterValue(i, "Pipeline1", "EnableDebugVisualization", debug_value.c_str());
+  }
+ }
+}
+
+void TDebugControlFrame::SwitchEnableElements(bool enable)
+{
+ SnapshotOneRadioButton->Enabled = enable;
+ SnapshotActiveRadioButton->Enabled = enable;
+ SaveSnapshotCheckBox->Enabled = enable;
+ SaveImageCheckBox->Enabled = enable;
+ MakeSnapshotButton->Enabled = enable;
+ EnableDebugImgSaveCheckBox->Enabled = enable;
+ //SaveOnlyOnceCheckBox->Enabled = enable;
+ ImgTLLabel->Enabled = enable;
+ ImgTLEdit->Enabled = enable;
+ ImgTLButton->Enabled = enable;
+
+ ImgTRLabel->Enabled = enable;
+ ImgTREdit->Enabled = enable;
+ ImgTRButton->Enabled = enable;
+
+ ImgLBLabel->Enabled = enable;
+ ImgLBEdit->Enabled = enable;
+ ImgLBButton->Enabled = enable;
+
+ ImgRBLabel->Enabled = enable;
+ ImgRBEdit->Enabled = enable;
+ ImgRBButton->Enabled = enable;
+
+ SaveImgCurrentChannelRadioButton->Enabled = enable;
+ SaveImgActiveChannelsRadioButton->Enabled = enable;
+ ApplyButton->Enabled = enable;
+ SaveOneImageButton->Enabled = enable;
+}
+
+void __fastcall TDebugControlFrame::EnableDebugModulesCheckBoxClick(TObject *Sender)
+{
+	if(!EnableDebugModulesCheckBox->Checked)
+	{
+	 //EnableDebugModulesCheckBox->Checked = false;
+	 SetDebugAll("0");
+	 SwitchEnableElements(false);
+	}
+	else
+	{
+	 if (MessageDlg("Включение отладочных компонентов замедлит работу, продолжить?", mtConfirmation, TMsgDlgButtons() << mbYes << mbNo,0) == mrYes)
+	 {
+	  SwitchEnableElements(true);
+	  SetDebugAll("1");
+	  //EnableDebugModulesCheckBox->Checked = true;
+
+	 }
+	 /*else
+	 {
+	  EnableDebugModulesCheckBox->Checked = false;
+	  SetDebugAll("0");
+	  SwitchEnableElements(false);
+	 }*/
+	}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TDebugControlFrame::EnableDebugModulesCheckBoxKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+Key=0;
+}
+//---------------------------------------------------------------------------
+
