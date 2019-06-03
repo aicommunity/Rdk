@@ -43,6 +43,9 @@ __published:	// IDE-managed Components
 	TRadioButton *SnapshotOneRadioButton;
 	TRadioButton *SnapshotActiveRadioButton;
 	TCheckBox *EnableDebugModulesCheckBox;
+	TButton *StartSaveIsolinesButton;
+	TButton *StopSaveIsolinesButton;
+	TButton *ShowDebugImagesButton;
 	void __fastcall ImgTLButtonClick(TObject *Sender);
 	void __fastcall ImgTRButtonClick(TObject *Sender);
 	void __fastcall ImgLBButtonClick(TObject *Sender);
@@ -52,6 +55,9 @@ __published:	// IDE-managed Components
 	void __fastcall MakeSnapshotButtonClick(TObject *Sender);
 	void __fastcall EnableDebugModulesCheckBoxClick(TObject *Sender);
 	void __fastcall EnableDebugModulesCheckBoxKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall ShowDebugImagesButtonClick(TObject *Sender);
+	void __fastcall StartSaveIsolinesButtonClick(TObject *Sender);
+	void __fastcall StopSaveIsolinesButtonClick(TObject *Sender);
 
 private:	// User declarations
 	bool LinkImages2x2(int channel_id);

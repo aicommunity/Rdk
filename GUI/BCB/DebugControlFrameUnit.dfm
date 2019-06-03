@@ -1,20 +1,20 @@
 inherited DebugControlFrame: TDebugControlFrame
-  Width = 465
-  Height = 430
+  Width = 494
+  Height = 493
   Constraints.MinHeight = 430
-  ExplicitWidth = 465
-  ExplicitHeight = 430
+  ExplicitWidth = 494
+  ExplicitHeight = 493
   object DebugImagesGroupBox: TGroupBox
     Left = 0
-    Top = 169
-    Width = 465
-    Height = 261
+    Top = 263
+    Width = 494
+    Height = 230
     Align = alBottom
     Caption = #1054#1090#1083#1072#1076#1086#1095#1085#1099#1077' '#1080#1079#1086#1073#1088#1072#1078#1077#1085#1080#1103
     TabOrder = 0
     DesignSize = (
-      465
-      261)
+      494
+      230)
     object ImgTLLabel: TLabel
       Left = 16
       Top = 63
@@ -46,7 +46,7 @@ inherited DebugControlFrame: TDebugControlFrame
     object EnableDebugImgSaveCheckBox: TCheckBox
       Left = 16
       Top = 16
-      Width = 433
+      Width = 462
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = #1042#1082#1083#1102#1095#1080#1090#1100' '#1089#1086#1093#1088#1072#1085#1077#1085#1080#1077' '#1086#1090#1083#1072#1076#1086#1095#1085#1099#1093' '#1080#1079#1086#1073#1088#1072#1078#1077#1085#1080#1081
@@ -155,7 +155,7 @@ inherited DebugControlFrame: TDebugControlFrame
     object SaveOnlyOnceCheckBox: TCheckBox
       Left = 16
       Top = 40
-      Width = 433
+      Width = 462
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = #1057#1086#1093#1088#1072#1085#1103#1090#1100' '#1090#1086#1083#1100#1082#1086' '#1086#1076#1080#1085' '#1088#1072#1079
@@ -168,15 +168,15 @@ inherited DebugControlFrame: TDebugControlFrame
   object TopPanel: TPanel
     Left = 0
     Top = 0
-    Width = 465
-    Height = 169
+    Width = 494
+    Height = 263
     Align = alClient
     TabOrder = 1
     object SnapshotSettingsGroupBox: TGroupBox
       Left = 1
-      Top = 29
-      Width = 463
-      Height = 139
+      Top = 120
+      Width = 492
+      Height = 142
       Align = alBottom
       Caption = #1057#1086#1093#1088#1072#1085#1077#1085#1080#1077' '#1089#1085#1080#1084#1082#1072' '#1089#1086#1089#1090#1086#1103#1085#1080#1103
       TabOrder = 0
@@ -233,6 +233,36 @@ inherited DebugControlFrame: TDebugControlFrame
       TabOrder = 1
       OnClick = EnableDebugModulesCheckBoxClick
       OnKeyPress = EnableDebugModulesCheckBoxKeyPress
+    end
+    object StartSaveIsolinesButton: TButton
+      Left = 181
+      Top = 31
+      Width = 137
+      Height = 37
+      Caption = #1053#1072#1095#1072#1090#1100' '#1089#1086#1093#1088#1072#1085#1103#1090#1100' '#1080#1079#1086#1083#1080#1085#1080#1080
+      TabOrder = 2
+      WordWrap = True
+      OnClick = StartSaveIsolinesButtonClick
+    end
+    object StopSaveIsolinesButton: TButton
+      Left = 324
+      Top = 31
+      Width = 137
+      Height = 37
+      Caption = #1055#1088#1077#1082#1088#1072#1090#1080#1090#1100' '#1089#1086#1093#1088#1072#1085#1103#1090#1100' '#1080#1079#1086#1083#1080#1085#1080#1080
+      TabOrder = 3
+      WordWrap = True
+      OnClick = StopSaveIsolinesButtonClick
+    end
+    object ShowDebugImagesButton: TButton
+      Left = 16
+      Top = 31
+      Width = 137
+      Height = 37
+      Caption = #1055#1086#1082#1072#1079#1072#1090#1100' '#1086#1090#1083#1072#1076#1086#1095#1085#1099#1077' '#1080#1079#1086#1073#1088#1072#1078#1077#1085#1080#1103
+      TabOrder = 4
+      WordWrap = True
+      OnClick = ShowDebugImagesButtonClick
     end
   end
 end

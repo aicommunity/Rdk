@@ -3,6 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include "UGEngineControlFormUnit.h"
 #include "DebugControlFrameUnit.h"
 #include "../../../Libraries/Rtv-StatisticLib/Core/RTVSaveDebugImages.h"
 //---------------------------------------------------------------------------
@@ -404,6 +405,50 @@ void __fastcall TDebugControlFrame::EnableDebugModulesCheckBoxKeyPress(TObject *
           System::WideChar &Key)
 {
 Key=0;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TDebugControlFrame::ShowDebugImagesButtonClick(TObject *Sender)
+{
+ //
+ UGEngineControlForm->Images1Click(this);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TDebugControlFrame::StartSaveIsolinesButtonClick(TObject *Sender)
+
+{
+ //Пройти по всем каналам, выставить опцию сохранения в 1
+ int num_ch = Core_GetNumChannels();
+ for(int i=0; i<num_ch; i++)
+ {
+  //RDK::UEPtr<RDK::UNet> camera = RDK::static_pointer_cast<RDK::UNet>(model->GetComponentL(componentLongName.c_str(), true));
+  // if(!camera)
+  //  return;
+  //std::string act = MModel_GetComponentParameterValue(i, "Pipeline1", "Activity");
+  //if(act==std::string("1"))
+  //{
+  MModel_SetComponentParameterValue(i, "Pipeline1.TIsolinesReceiver", "EnableIsolineLog", "1");
+  //}
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TDebugControlFrame::StopSaveIsolinesButtonClick(TObject *Sender)
+{
+ //Пройти по всем каналам, выставить опцию сохранения в 1
+ int num_ch = Core_GetNumChannels();
+ for(int i=0; i<num_ch; i++)
+ {
+  //RDK::UEPtr<RDK::UNet> camera = RDK::static_pointer_cast<RDK::UNet>(model->GetComponentL(componentLongName.c_str(), true));
+  // if(!camera)
+  //  return;
+  //std::string act = MModel_GetComponentParameterValue(i, "Pipeline1", "Activity");
+  //if(act==std::string("1"))
+  //{
+  MModel_SetComponentParameterValue(i, "Pipeline1.TIsolinesReceiver", "EnableIsolineLog", "0");
+  //}
+ }
 }
 //---------------------------------------------------------------------------
 
