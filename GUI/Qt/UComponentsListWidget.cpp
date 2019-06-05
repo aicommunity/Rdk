@@ -75,6 +75,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     componentsTree->addAction(actionSeparator2);
     componentsTree->addAction(ui->actionComponentReset);
     componentsTree->addAction(ui->actionComponentCalculate);
+    componentsTree->addAction(ui->actionComponentInit);
+    componentsTree->addAction(ui->actionComponentUnInit);
     componentsTree->addAction(actionSeparator3);
     componentsTree->addAction(ui->actionCopyNameToClipboard);
     componentsTree->addAction(ui->actionCopyLongNameToClipboard);
@@ -88,6 +90,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionComponentDelete, SIGNAL(triggered()), this, SLOT(componentDelete()));
     connect(ui->actionComponentReset, SIGNAL(triggered()), this, SLOT(componentReset()));
     connect(ui->actionComponentCalculate, SIGNAL(triggered()), this, SLOT(componentCalculate()));
+    connect(ui->actionComponentInit, SIGNAL(triggered()), this, SLOT(componentInit()));
+    connect(ui->actionComponentUnInit, SIGNAL(triggered()), this, SLOT(componentUnInit()));
     connect(ui->actionCopyNameToClipboard, SIGNAL(triggered()), this, SLOT(componentCopyNameToClipboard()));
     connect(ui->actionCopyLongNameToClipboard, SIGNAL(triggered()), this, SLOT(componentCopyLongNameToClipboard()));
     connect(ui->actionCopyClassNameToClipboard, SIGNAL(triggered()), this, SLOT(componentCopyClassNameToClipboard()));
@@ -723,6 +727,24 @@ void UComponentsListWidget::componentCalculate()
         Env_Calculate(selectedComponentLongName.toLocal8Bit());
         RDK::UIVisualControllerStorage::UpdateInterface();
     }
+}
+
+void UComponentsListWidget::componentInit()
+{
+ if(componentsTree->currentItem())
+ {
+     Env_ModelInit(selectedComponentLongName.toLocal8Bit());
+     RDK::UIVisualControllerStorage::UpdateInterface();
+ }
+}
+
+void UComponentsListWidget::componentUnInit()
+{
+ if(componentsTree->currentItem())
+ {
+     Env_ModelUnInit(selectedComponentLongName.toLocal8Bit());
+     RDK::UIVisualControllerStorage::UpdateInterface();
+ }
 }
 
 void UComponentsListWidget::componentGUI()

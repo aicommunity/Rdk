@@ -407,6 +407,22 @@
     <string>Show XML</string>
    </property>
   </action>
+  <action name="actionComponentInit">
+   <property name="text">
+    <string>Init</string>
+   </property>
+   <property name="toolTip">
+    <string>Call Init method for component</string>
+   </property>
+  </action>
+  <action name="actionComponentUnInit">
+   <property name="text">
+    <string>UnInit</string>
+   </property>
+   <property name="toolTip">
+    <string>Call UnInit method for component</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

@@ -710,7 +710,7 @@ try{
    {
 	Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
 	if(channel_config.InitAfterLoad)
-     MEnv_ModelInit(i);
+     MEnv_ModelInit(i,0);
 	if(channel_config.ResetAfterLoad)
 	 MEnv_Reset(i,0);
    }
@@ -881,7 +881,7 @@ bool UApplication::CloseProject(void)
   Core_SelectChannel(i);
   if(GetEngine())
   {
-   Env_ModelUnInit();
+   Env_ModelUnInit(0);
    Env_DestroyStructure();
    Env_UnInit();
    Model_Destroy();

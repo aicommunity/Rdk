@@ -646,12 +646,12 @@ RDK_LIB_TYPE int RDK_CALL Env_Destroy(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_Destroy(int channel_index);
 
 // Инициализирует модель
-RDK_LIB_TYPE int RDK_CALL Env_ModelInit(void);
-RDK_LIB_TYPE int RDK_CALL MEnv_ModelInit(int channel_index);
+RDK_LIB_TYPE int RDK_CALL Env_ModelInit(const char *stringid);
+RDK_LIB_TYPE int RDK_CALL MEnv_ModelInit(int channel_index, const char *stringid);
 
 // Деинициализирует модель
-RDK_LIB_TYPE int RDK_CALL Env_ModelUnInit(void);
-RDK_LIB_TYPE int RDK_CALL MEnv_ModelUnInit(int channel_index);
+RDK_LIB_TYPE int RDK_CALL Env_ModelUnInit(const char *stringid);
+RDK_LIB_TYPE int RDK_CALL MEnv_ModelUnInit(int channel_index, const char *stringid);
 // ***********************************************
 // ----------------------------
 

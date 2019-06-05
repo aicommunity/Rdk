@@ -67,6 +67,9 @@ __published:	// IDE-managed Components
 	TMenuItem *CopynametoClipboard1;
 	TMenuItem *CopyclasstoClipboard2;
 	TMenuItem *CopylongnametoClipboard1;
+	TMenuItem *N5;
+	TMenuItem *Init1;
+	TMenuItem *UnInit1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -146,6 +149,8 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG2BasicStringGridClick(TObject *Sender);
 	void __fastcall FrameMouseWheel(TObject *Sender, TShiftState Shift, int WheelDelta,
           TPoint &MousePos, bool &Handled);
+	void __fastcall Init1Click(TObject *Sender);
+	void __fastcall UnInit1Click(TObject *Sender);
 
 
 
