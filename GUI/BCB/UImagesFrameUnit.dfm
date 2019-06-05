@@ -42,6 +42,7 @@ inherited UImagesFrame: TUImagesFrame
       Width = 105
       Height = 105
       IncrementalDisplay = True
+      PopupMenu = PopupMenu1
       Proportional = True
       OnDblClick = FullImageDblClick
       OnMouseDown = FullImageMouseDown
@@ -176,8 +177,8 @@ inherited UImagesFrame: TUImagesFrame
     end
   end
   object PopupMenu: TPopupMenu
-    Left = 176
-    Top = 224
+    Left = 240
+    Top = 360
     object SaveToBmp: TMenuItem
       Caption = 'Save to Bmp'
       OnClick = SaveToBmpClick
@@ -236,5 +237,25 @@ inherited UImagesFrame: TUImagesFrame
     Filter = 'JPEG Image File (*.jpg)|*.jpg|Bitmaps (*.bmp)|*.bmp'
     Left = 240
     Top = 296
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 464
+    Top = 224
+    object SetPointsMode2: TMenuItem
+      Caption = 'Set Points Mode'
+      OnClick = SetPointsMode2Click
+    end
+    object DeleteLastPoint2: TMenuItem
+      Caption = 'Delete Last Point'
+      OnClick = DeleteLastPoint2Click
+    end
+    object DeleteAllPoints2: TMenuItem
+      Caption = 'Delete All Points'
+      OnClick = DeleteAllPoints2Click
+    end
+    object ShowPoints2: TMenuItem
+      Caption = 'Show Points'
+      OnClick = ShowPoints2Click
+    end
   end
 end

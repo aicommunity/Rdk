@@ -57,6 +57,11 @@ __published:    // IDE-managed Components
 	TMenuItem *Update1;
 	TLabel *Labelshow;
 	TLabel *Labelsize;
+	TPopupMenu *PopupMenu1;
+	TMenuItem *SetPointsMode2;
+	TMenuItem *DeleteLastPoint2;
+	TMenuItem *DeleteAllPoints2;
+	TMenuItem *ShowPoints2;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);
@@ -81,6 +86,10 @@ __published:    // IDE-managed Components
 	void __fastcall ProportionalSizeRadioButtonClick(TObject *Sender);
 	void __fastcall SaveToJpegClick(TObject *Sender);
 	void __fastcall Update1Click(TObject *Sender);
+	void __fastcall SetPointsMode2Click(TObject *Sender);
+	void __fastcall DeleteLastPoint2Click(TObject *Sender);
+	void __fastcall DeleteAllPoints2Click(TObject *Sender);
+	void __fastcall ShowPoints2Click(TObject *Sender);
 
 
 
@@ -116,11 +125,29 @@ std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickCompone
 // Массив легенд
 std::vector<std::vector<std::string> > Legends;
 
+// Массив точек, отображаемых на экране
+std::vector<std::vector<std::vector<RDK::UBPoint> > > OnScreenPoints;
+
 /// Цвет фона для отдельной картинки
 TColor SingleBackgroundColor;
 
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;
+
+// Флаг необходимости отображения кадров видеопотока
+bool IsShowCapturedFrames;
+
+// Режим задания точек на изображении
+bool IsSetPointsMode;
+
+// Необходимось отображения точек на изображении
+bool IsShowPoints;
+
+// Диаметр точки на изображении
+int PointSize;
+
+// Цвет точки на изображении
+RDK::UColorT PointColor;
 
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
@@ -154,6 +181,18 @@ int GetNumCellHeight(void);
 // Флаг отражения вокруг оси X изображений при выводе
 bool GetReflectionXFlag(void);
 void SetReflectionXFlag(bool value);
+
+// Флаг необходимости отображения кадров видеопотока
+void SetIsShowCapturedFrames(bool value);
+bool GetIsShowCapturedFrames(void);
+
+// Диаметр точки на изображении
+int SetPointSize(int value);
+int GetPointSize(void);
+
+// Цвет точки на изображении
+void SetPointColor(RDK::UColorT value);
+RDK::UColorT GetPointColor(void);
 // --------------------------
 
 // --------------------------
@@ -183,6 +222,9 @@ Graphics::TBitmap* GetImage(int i, int j);
 // Возвращает изображение в текущей ячейке
 Graphics::TBitmap* GetImage(void);
 
+// Отрисовка точек на изображении
+void DrowPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points);
+
 // Сохраняет изображение в файл
 bool SaveToBitmap(int i, int j);
 bool SaveToJpg(int i, int j);
@@ -195,6 +237,9 @@ void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 void AUpdateInterface(void);
+
+// Захват отдельного кадра
+void ManualUpdate(void);
 
 // Возврат интерфейса в исходное состояние
 virtual void AClearInterface(void);

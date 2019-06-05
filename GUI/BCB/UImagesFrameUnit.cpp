@@ -18,6 +18,9 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  ReflectionXFlag=true;
+ IsShowCapturedFrames=true;
+ IsShowPoints=false;
+ IsSetPointsMode=false;
  MyComponentsListForm=new TUComponentsListForm(this);
  UpdateInterval=100;
  SetNumCells(2, 2);
@@ -26,6 +29,10 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  SingleBackgroundColor=clBtnFace;
  presIm=false;
  x2=y2=0;
+ PointSize=3;
+ PointColor.rgb.r=255;
+ PointColor.rgb.g=0;
+ PointColor.rgb.b=0;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)
@@ -66,6 +73,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  MouseClickComponents.resize(width);
  ComponentChannelIndexes.resize(width);
  Legends.resize(width);
+ OnScreenPoints.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
@@ -74,6 +82,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   Legends[i].resize(height);
+  OnScreenPoints[i].resize(height);
   ComponentChannelIndexes[i].resize(height,Core_GetSelectedChannelIndex());
 //  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
 //  	ComponentChannelIndexes[i][k]=-1;
@@ -103,6 +112,42 @@ bool TUImagesFrame::GetReflectionXFlag(void)
 void TUImagesFrame::SetReflectionXFlag(bool value)
 {
  ReflectionXFlag=value;
+}
+
+// Флаг необходимости отображения кадров видеопотока
+void TUImagesFrame::SetIsShowCapturedFrames(bool value)
+{
+ IsShowCapturedFrames = value;
+}
+
+bool TUImagesFrame::GetIsShowCapturedFrames(void)
+{
+ return IsShowCapturedFrames;
+}
+
+// Диаметр точки на изображении
+int TUImagesFrame::SetPointSize(int value)
+{
+ if(value < 1)
+  return 1;
+
+ PointSize = value;
+}
+
+int TUImagesFrame::GetPointSize(void)
+{
+ return PointSize;
+}
+
+// Цвет точки на изображении
+void TUImagesFrame::SetPointColor(RDK::UColorT value)
+{
+ PointColor = value;
+}
+
+RDK::UColorT TUImagesFrame::GetPointColor(void)
+{
+ return PointColor;
 }
 // --------------------------
 
@@ -419,6 +464,18 @@ void TUImagesFrame::AAfterCalculate(void)
 
 }
 
+// Захват отдельного кадра
+void TUImagesFrame::ManualUpdate(void)
+{
+ bool CurrentShowCapturedMode = IsShowCapturedFrames;
+ // Флаг необходимости отображения кадров видеопотока
+ IsShowCapturedFrames = true;
+
+ UpdateInterface(true);
+
+ IsShowCapturedFrames = CurrentShowCapturedMode;
+}
+
 void TUImagesFrame::AUpdateInterface(void)
 {
  if(ShowMode == 0)
@@ -440,6 +497,8 @@ void TUImagesFrame::AUpdateInterface(void)
  }
 
  if(NumCols <=0 || NumRows <=0)
+  return;
+ if(!IsShowCapturedFrames)
   return;
 
  if(DrawGrid->Visible)
@@ -593,6 +652,11 @@ void TUImagesFrame::AUpdateInterface(void)
   FullImage->Picture->Bitmap->Assign(tbmp);
   FullImage->Top=0;
   FullImage->Left=0;
+
+  // Отрисовка точек на изображении
+  if(IsShowPoints)
+   DrowPoints(FullImage->Picture->Bitmap, OnScreenPoints[DrawGrid->Col][DrawGrid->Row]);
+
   FullImage->Repaint();
  }
 
@@ -726,6 +790,28 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
  {
   String info=IntToStr(Images[ACol][ARow]->Picture->Bitmap->Width)+"x"+IntToStr(Images[ACol][ARow]->Picture->Bitmap->Height);
   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Right-50,Rect.Top,info);
+ }
+}
+//---------------------------------------------------------------------------
+
+// Отрисовка точек на изображении
+void TUImagesFrame::DrowPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points)
+{
+ int point_radius = PointSize>>1;
+
+ for(int i = 0; i < points.size(); i++)
+ {
+	 for(int k = -point_radius; k <= point_radius; k++)
+	 {
+	  if(points[i].X+k < 0 || points[i].X+k > bitmap->Width - 1)
+	   continue;
+	  for(int m = -point_radius; m <= point_radius; m++)
+	  {
+	   if(points[i].Y+m < 0 || points[i].Y+m > bitmap->Height - 1)
+		continue;
+	   bitmap->Canvas->Pixels[points[i].X+k][points[i].Y+m] = PointColor.c;
+	  }
+	 }
  }
 }
 //---------------------------------------------------------------------------
@@ -919,6 +1005,26 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
   presIm=true;
   x2=X;
   y2=Y;
+
+  // Задаём точку на изображении
+  {
+   if(Button == mbRight)
+	return;
+
+   if(!IsSetPointsMode)
+	return;
+
+   double xx, yy;
+
+   xx = double(X) * double(FullImage->Picture->Bitmap->Width) / double(FullImage->Width);
+   yy = double(Y) * double(FullImage->Picture->Bitmap->Height) / double(FullImage->Height);
+
+   OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
+   OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);
+   OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].Y = int(yy+0.5);
+   ManualUpdate();
+  }
+
 }
 //---------------------------------------------------------------------------
 
@@ -1022,5 +1128,47 @@ void __fastcall TUImagesFrame::Update1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUImagesFrame::SetPointsMode2Click(TObject *Sender)
+{
+ SetPointsMode2->Checked = (SetPointsMode2->Checked)? false : true;
+ IsSetPointsMode = SetPointsMode2->Checked;
 
+ if(IsSetPointsMode)
+ {
+  ShowPoints2->Checked = IsSetPointsMode;
+  IsShowPoints = IsSetPointsMode;
+ }
+ ManualUpdate();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::DeleteLastPoint2Click(TObject *Sender)
+{
+  // Удаляем последнюю заданную точку на изображении
+  if(!IsSetPointsMode)
+   return;
+
+  OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1);
+  ManualUpdate();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::DeleteAllPoints2Click(TObject *Sender)
+{
+  // Удаляем все точки на изображении
+  if(!IsSetPointsMode)
+   return;
+
+  OnScreenPoints[DrawGrid->Col][DrawGrid->Row].clear();
+  ManualUpdate();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ShowPoints2Click(TObject *Sender)
+{
+ ShowPoints2->Checked = (ShowPoints2->Checked)? false : true;
+ IsShowPoints = ShowPoints2->Checked;
+ ManualUpdate();
+}
+//---------------------------------------------------------------------------
 
