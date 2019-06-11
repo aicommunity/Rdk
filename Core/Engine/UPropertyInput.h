@@ -45,7 +45,7 @@ void ApplyOutputUpdateTime(void) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
+class UPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
 {
 protected:
 public: // Ìועמהû

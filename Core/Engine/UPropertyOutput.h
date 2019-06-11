@@ -116,7 +116,7 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int index, typenam
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputCBase: public UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
