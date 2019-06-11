@@ -87,6 +87,20 @@ virtual ULongTime GetUpdateTime(void) const
  return UPropertyInputPreBase<T,OwnerT>::GetUpdateTime();
 }
 
+// -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ return UVProperty<T,OwnerT>::AttachTo(prop);
+}
+
+void DetachFrom(void)
+{
+ return UVProperty<T,OwnerT>::DetachFrom();
+}
+// -----------------------------
+
 // --------------------------
 // Методы управления входами
 // --------------------------
