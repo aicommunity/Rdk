@@ -724,7 +724,13 @@ virtual const T& GetData(void) const
 
 virtual void SetData(const T &value)
 {
- if(CheckEqualsFlag && value == ((this->ExternalDataSource)?this->ExternalDataSource->GetData():v))
+ if(this->ExternalDataSource)
+ {
+  this->ExternalDataSource->SetData(value);
+  return;
+ }
+
+ if(CheckEqualsFlag && value == v)
   return;
 
  if(this->Owner)
@@ -732,12 +738,12 @@ virtual void SetData(const T &value)
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
-  (this->ExternalDataSource)?this->ExternalDataSource->GetData():v=value;
+  v=value;
   this->RenewUpdateTime();
   return;
  }
 
- (this->ExternalDataSource)?this->ExternalDataSource->GetData():v=value;
+ v=value;
  this->RenewUpdateTime();
  return;
 }
@@ -799,11 +805,17 @@ void SetCheckEquals(bool value)
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return v;
+ return (this->ExternalDataSource)?this->ExternalDataSource->GetData():v;
 };
 
 virtual void SetData(const T &value)
 {
+ if(this->ExternalDataSource)
+ {
+  this->ExternalDataSource->SetData(value);
+  return;
+ }
+
  if(CheckEqualsFlag && v == value)
   return;
 
