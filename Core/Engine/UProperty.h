@@ -719,7 +719,11 @@ void SetCheckEquals(bool value)
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return (this->ExternalDataSource)?this->ExternalDataSource->GetData():v;
+ if(this->ExternalDataSource)
+ {
+  return this->ExternalDataSource->GetData();
+ }
+ return v;
 }
 
 virtual void SetData(const T &value)
