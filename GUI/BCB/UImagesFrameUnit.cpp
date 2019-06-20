@@ -149,6 +149,12 @@ RDK::UColorT TUImagesFrame::GetPointColor(void)
 {
  return PointColor;
 }
+
+// Заданные на изображении точки
+std::vector<RDK::UBPoint> &TUImagesFrame::GetOnScreenPoints(int col, int row)
+{
+ return OnScreenPoints[DrawGrid->Col][DrawGrid->Row];
+}
 // --------------------------
 
 // --------------------------
