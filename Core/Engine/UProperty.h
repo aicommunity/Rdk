@@ -467,18 +467,21 @@ protected: // Данные
 GetterRT GetterR;
 SetterRT SetterR;
 
+protected:
+/// Ссылка на внешнее свойство-источник данных
+UVBaseDataProperty<T>* ExternalDataSource;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod)
+  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0)
 {
 }
 
 UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod)
+  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0)
 {
 }
 // -----------------------------
@@ -489,6 +492,9 @@ UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
 // Возврат значения
 virtual const T& GetData(void) const
 {
+ if(ExternalDataSource)
+  return ExternalDataSource->GetData();
+
  if(this->Owner)
  {
   if(this->PData)
@@ -504,6 +510,12 @@ virtual const T& GetData(void) const
 // Установка значения
 virtual void SetData(const T &value)
 {
+ if(ExternalDataSource)
+ {
+  ExternalDataSource->SetData(value);
+  return;
+ }
+
  if(this->PData && !SetterR)
  {
   *this->PData=value;
@@ -522,6 +534,25 @@ virtual void SetData(const T &value)
   }
  }
 };
+// -----------------------------
+
+// -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ if(!prop)
+  return false;
+ ExternalDataSource=prop;
+ this->UpdateConnectedPointers();
+ return true;
+}
+
+void DetachFrom(void)
+{
+ ExternalDataSource=0;
+ this->UpdateConnectedPointers();
+}
 // -----------------------------
 
 // -----------------------------
@@ -658,17 +689,13 @@ public:
 // Данные
 mutable T v;
 
-protected:
-/// Ссылка на внешнее свойство-источник данных
-UVBaseDataProperty<T>* ExternalDataSource;
-
 
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v(), ExternalDataSource(0) { this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
 // -----------------------------
 
 // -----------------------------
@@ -687,36 +714,27 @@ void SetCheckEquals(bool value)
 // -----------------------------
 
 // -----------------------------
-// Привязка внешней ссылки как источника данных
-// -----------------------------
-bool AttachTo(UVBaseDataProperty<T>* prop)
-{
- if(!prop)
-  return false;
- ExternalDataSource=prop;
- this->UpdateConnectedPointers();
- return true;
-}
-
-void DetachFrom(void)
-{
- ExternalDataSource=0;
- this->UpdateConnectedPointers();
-}
-// -----------------------------
-
-// -----------------------------
 // Операторы доступа
 // -----------------------------
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return (ExternalDataSource)?ExternalDataSource->GetData():v;
+ if(this->ExternalDataSource)
+ {
+  return this->ExternalDataSource->GetData();
+ }
+ return v;
 }
 
 virtual void SetData(const T &value)
 {
- if(CheckEqualsFlag && value == ((ExternalDataSource)?ExternalDataSource->GetData():v))
+ if(this->ExternalDataSource)
+ {
+  this->ExternalDataSource->SetData(value);
+  return;
+ }
+
+ if(CheckEqualsFlag && value == v)
   return;
 
  if(this->Owner)
@@ -724,12 +742,12 @@ virtual void SetData(const T &value)
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
-  (ExternalDataSource)?ExternalDataSource->GetData():v=value;
+  v=value;
   this->RenewUpdateTime();
   return;
  }
 
- (ExternalDataSource)?ExternalDataSource->GetData():v=value;
+ v=value;
  this->RenewUpdateTime();
  return;
 }
@@ -791,11 +809,17 @@ void SetCheckEquals(bool value)
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return v;
+ return (this->ExternalDataSource)?this->ExternalDataSource->GetData():v;
 };
 
 virtual void SetData(const T &value)
 {
+ if(this->ExternalDataSource)
+ {
+  this->ExternalDataSource->SetData(value);
+  return;
+ }
+
  if(CheckEqualsFlag && v == value)
   return;
 

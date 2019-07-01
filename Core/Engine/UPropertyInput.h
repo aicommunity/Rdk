@@ -45,7 +45,7 @@ void ApplyOutputUpdateTime(void) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
+class UPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
 {
 protected:
 public: // Методы
@@ -86,6 +86,28 @@ virtual ULongTime GetUpdateTime(void) const
 {
  return UPropertyInputPreBase<T,OwnerT>::GetUpdateTime();
 }
+
+// -----------------------------
+// Привязка внешней ссылки как источника данных
+// -----------------------------
+bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+ bool res=UVProperty<T,OwnerT>::AttachTo(prop);
+ if(res)
+ {
+  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
+  UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=true;
+ }
+ return res;
+}
+
+void DetachFrom(void)
+{
+ *this->PData=UPropertyInputBase<T,OwnerT,type>::Local;
+ UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=false;
+ UVProperty<T,OwnerT>::DetachFrom();
+}
+// -----------------------------
 
 // --------------------------
 // Методы управления входами

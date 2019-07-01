@@ -2172,3 +2172,27 @@ void __fastcall TUComponentsListFrame::FrameMouseWheel(TObject *Sender, TShiftSt
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::Init1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ Env_ModelInit(SelectedComponentName.c_str());
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::UnInit1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ Env_ModelUnInit(SelectedComponentName.c_str());
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

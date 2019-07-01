@@ -607,6 +607,17 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Hint = 'Calls component Calculate'
       OnClick = Calculate1Click
     end
+    object N5: TMenuItem
+      Caption = '-'
+    end
+    object Init1: TMenuItem
+      Caption = 'Init'
+      OnClick = Init1Click
+    end
+    object UnInit1: TMenuItem
+      Caption = 'UnInit'
+      OnClick = UnInit1Click
+    end
     object N4: TMenuItem
       Caption = '-'
     end
