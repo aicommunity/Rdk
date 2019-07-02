@@ -193,6 +193,9 @@ int GetPointSize(void);
 // Цвет точки на изображении
 void SetPointColor(RDK::UColorT value);
 RDK::UColorT GetPointColor(void);
+
+// Заданные на изображении точки
+std::vector<RDK::UBPoint> &GetOnScreenPoints(int col, int row);
 // --------------------------
 
 // --------------------------
