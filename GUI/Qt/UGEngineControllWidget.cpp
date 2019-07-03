@@ -123,6 +123,13 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
+    //chanels menu actions:
+    connect(ui->actionAddNew, SIGNAL(triggered(bool)), this, SLOT(actionAddNew()));
+    connect(ui->actionInsert, SIGNAL(triggered(bool)), this, SLOT(actionInsert()));
+    connect(ui->actionDeleteLast, SIGNAL(triggered(bool)), this, SLOT(actionDeleteLast()));
+    connect(ui->actionDeleteAll, SIGNAL(triggered(bool)), this, SLOT(actionDeleteAll()));
+    connect(ui->actionClone, SIGNAL(triggered(bool)), this, SLOT(actionClone()));
+
     // calculate menu actions:
     connect(ui->actionStart, SIGNAL(triggered(bool)), this, SLOT(actionStart()));
     connect(ui->actionPause, SIGNAL(triggered(bool)), this, SLOT(actionPause()));
@@ -221,6 +228,59 @@ void UGEngineControllWidget::actionSaveConfig()
 void UGEngineControllWidget::actionExit()
 {
   QApplication::quit();
+}
+
+//chanels menu actions:
+void UGEngineControllWidget::actionAddNew()
+{
+    if(!application->GetProjectOpenFlag())
+     return;
+
+    pauseChannel(-1);
+    application->SetNumChannels(application->GetNumChannels()+1);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+}
+
+void UGEngineControllWidget::actionInsert()
+{
+    if(!application->GetProjectOpenFlag())
+     return;
+    pauseChannel(-1);
+    int i=Core_GetSelectedChannelIndex();
+    application->InsertChannel(i);
+    //application->AddChannel(ChannelsStringGrid->Row);
+    //RDK::UIVisualControllerStorage::UpdateInterface(true);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+}
+
+void UGEngineControllWidget::actionDeleteLast()
+{
+    /*if(!application->GetProjectOpenFlag())
+     return;
+    application->SetNumChannels(Core_GetNumChannels()-1);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);*/
+    pauseChannel(-1);
+    application->DeleteChannel(application->GetNumChannels()-1);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+
+}
+
+void UGEngineControllWidget::actionDeleteAll()
+{
+    if(!application->GetProjectOpenFlag())
+     return;
+    pauseChannel(-1);
+    application->SetNumChannels(1);
+    //RDK::UIVisualControllerStorage::UpdateInterface(true);
+}
+
+void UGEngineControllWidget::actionClone()
+{
+    pauseChannel(-1);
+    int cloned_id=application->GetNumChannels();
+    application->CloneChannel(Core_GetSelectedChannelIndex(), cloned_id);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+
 }
 
 // calculate menu actions

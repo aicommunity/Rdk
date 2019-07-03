@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>979</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -87,6 +87,7 @@
     <addaction name="actionInsert"/>
     <addaction name="actionDeleteLast"/>
     <addaction name="actionDeleteAll"/>
+    <addaction name="actionClone"/>
    </widget>
    <widget class="QMenu" name="menuCalculate">
     <property name="title">
@@ -579,6 +580,14 @@
    </property>
    <property name="toolTip">
     <string>Run N Steps</string>
+   </property>
+  </action>
+  <action name="actionClone">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Clone</string>
    </property>
   </action>
  </widget>

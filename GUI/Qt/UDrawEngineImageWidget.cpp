@@ -303,6 +303,8 @@ void UDrawEngineImageWidget::reDrawScheme(bool shouldReloadXml, bool no_resize_c
         const char *xml=Model_SaveComponentDrawInfo(ComponentName.toLocal8Bit());
         if(xml)
             NetXml.Load(xml,"");
+        else
+            NetXml.Destroy();
         Engine_FreeBufString(xml);
         DrawEngine.SetNetXml(NetXml);
         shouldReloadXml = false;

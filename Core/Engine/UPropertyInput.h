@@ -92,12 +92,20 @@ virtual ULongTime GetUpdateTime(void) const
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
 {
- return UVProperty<T,OwnerT>::AttachTo(prop);
+ bool res=UVProperty<T,OwnerT>::AttachTo(prop);
+ if(res)
+ {
+  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
+  UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=true;
+ }
+ return res;
 }
 
 void DetachFrom(void)
 {
- return UVProperty<T,OwnerT>::DetachFrom();
+ *this->PData=UPropertyInputBase<T,OwnerT,type>::Local;
+ UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=false;
+ UVProperty<T,OwnerT>::DetachFrom();
 }
 // -----------------------------
 
