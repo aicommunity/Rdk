@@ -8,6 +8,7 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   ui->setupUi(this);
   UpdateInterval = 0;
   currentChannel = 0;
+  CheckModelFlag =false;
   setAccessibleName("UCalculationChannelsWidget");
 
   //contextMenu
@@ -93,7 +94,8 @@ void UCalculationChannelsWidget::actionDeleteSelectedChannel()
   if(!application->GetProjectOpenFlag()) return;
 
   QTreeWidgetItem *item = ui->treeWidgetChannels->currentItem();
-  if(!item) return;
+  if(!item)
+      return;
 
   application->DeleteChannel(item->data(0, Qt::UserRole).toInt());
   UpdateInterface(true);

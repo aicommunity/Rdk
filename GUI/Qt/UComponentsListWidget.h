@@ -63,7 +63,7 @@ class UComponentsListWidget : public UVisualControllerWidget
     Q_OBJECT
 
 public:
-    explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=1);
+    explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=0);
     virtual ~UComponentsListWidget();
 
     /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
