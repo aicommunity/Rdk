@@ -1015,6 +1015,9 @@ bool UApplication::InsertChannel(int index)
 
 bool UApplication::DeleteChannel(int index)
 {
+if (index == 0)
+    return false;
+
  if(!EngineControl->DeleteChannel(index))
   return false;
 
@@ -1029,8 +1032,14 @@ bool UApplication::DeleteChannel(int index)
 /// Клонирует канал source_id в cloned_id
 bool UApplication::CloneChannel(int source_id, int cloned_id)
 {
- if(source_id<0 || cloned_id <0 || source_id>=GetNumChannels() || cloned_id >=GetNumChannels())
+ if(source_id<0 || cloned_id <0)
   return false;
+
+ if(cloned_id>=Core_GetNumChannels())
+ {
+  if(!SetNumChannels(cloned_id+1))
+   return false;
+ }
 
  try
  {

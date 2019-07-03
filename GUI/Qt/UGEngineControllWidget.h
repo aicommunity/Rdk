@@ -94,6 +94,14 @@ public slots:
     void actionSaveConfig();
     void actionExit();
 
+    //chanels menu
+    void actionAddNew();
+    void actionInsert();
+    void actionDeleteLast();
+    void actionDeleteAll();
+    void actionClone();
+
+
     // calculate menu
     void actionReloadParameters();
     void actionStart();
