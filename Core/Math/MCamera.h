@@ -86,6 +86,7 @@ MMatrix<T,3,3> InvIcc;
 // 0 - Учета дисторсии нет
 // 1 - Модель OpenCV
 // 2 - Модель Artoolkit
+// 3 - Модель Цая (DistortionCoeff - 2, DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм)
 int DistortionMode;
 
 /// Модель камеры
@@ -481,6 +482,100 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res(0)=p*x+DistortionCoeff[0];
    res(1)=p*y+DistortionCoeff[1];
    res(2)=1;
+   return res;
+  }
+
+  if(DistortionMode == 3)
+  {
+   if(DistortionCoeff.GetSize() != 2)
+	return point;
+
+   MVector<T,3> res;
+
+   // Tsai/cal_tran.cpp
+   //void      Tsai::undistorted_to_distorted_sensor_coord (double Xu, double Yu, double *Xd, double *Yd)
+   double Ru, Rd, lambda, c, d, Q, R, D, S, TT, sinT, cosT;
+   double Xu, Yu, Xd, Yd;	// a, b, x', y' - Здесь и ниже в комментах обозначения OpenCv
+   double kappa1;	// k1 (?)
+
+   Xu = DistortionCoeff(1)*point(0);	// a
+   Yu = DistortionCoeff(1)*point(1);   // b
+   kappa1 = DistortionCoeff(0);	// k1
+
+   if(((Xu == 0) && (Yu == 0)) || kappa1 == 0)
+   {
+	res(0) = Xu;
+	res(1) = Yu;
+	res(2) = 1;
+	return res;
+   }
+
+   Ru = sqrt(Xu*Xu + Yu*Yu); // r
+
+   c = 1.0 / kappa1;
+   d = -c * Ru;
+
+   Q = c / 3.0;
+   R = -d / 2.0;
+   D = Q*Q*Q + R*R;
+
+   if(D >= 0) 		// one real root
+   {
+	D = sqrt(D);
+
+	if(R+D == 0)
+	 S = 0;
+	else if(R+D > 0)
+	 S = pow((R+D), (double) 1.0 / 3.0);
+	else
+	 S = -pow(-(R+D), (double) 1.0 / 3.0);
+
+	if(R-D == 0)
+	 TT = 0;
+	else if(R-D > 0)
+	 TT = pow((R-D), (double) 1.0 / 3.0);
+	else
+	 TT = -pow(-(R-D), (double) 1.0 / 3.0);
+
+	Rd = S + TT; // TETAd
+
+	if(Rd < 0)
+	 Rd = sqrt(-1.0 / (3.0 * kappa1));
+   }
+   else        // three real roots
+   {
+	D = sqrt(-D);
+
+	double hypot = sqrt(R*R + D*D);
+	if(hypot == 0)
+	 S = 0;
+	else if(hypot > 0)
+	 S = pow((hypot), (double) 1.0 / 3.0);
+	else
+	 S = -pow(-(hypot), (double) 1.0 / 3.0);
+
+	TT = atan2(D, R) / 3.0;
+	sinT = sin(TT);
+	cosT = cos(TT);
+
+	// the larger positive root is    2*S*cos(T)
+	// the smaller positive root is   -S*cos(T) + SQRT(3)*S*sin(T)
+	// the negative root is           -S*cos(T) - SQRT(3)*S*sin(T)
+
+	// Корень из трёх
+	double SQRT3 = 1.732050807568877293527446341505872366943;
+	Rd = -S * cosT + SQRT3 * S * sinT;	// use the smaller positive root
+   }
+
+   lambda = Rd / Ru;
+
+   res(0) = Xu * lambda; // x' = a * TETAd / r
+   res(1) = Yu * lambda; // x' = b * TETAd / r
+   res(2) = 1.0;
+
+   res(0) = res(0) / DistortionCoeff(1);
+   res(1) = res(1) / DistortionCoeff(1);
+
    return res;
   }
  }
