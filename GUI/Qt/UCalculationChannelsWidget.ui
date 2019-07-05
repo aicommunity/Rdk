@@ -64,7 +64,20 @@
     <string>Insert Channel</string>
    </property>
   </action>
-  <action name="actionStartChannel">
+  <action name="actionDeleteSelectedChannel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Delete Selected Channel</string>
+   </property>
+  </action>
+  <action name="actionCloneChannel">
+   <property name="text">
+    <string>Clone Channel</string>
+   </property>
+  </action>
+<action name="actionStartChannel">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -86,19 +99,6 @@
    </property>
    <property name="text">
     <string>Reset Channel</string>
-   </property>
-  </action>
-  <action name="actionDeleteSelectedChannel">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Delete Selected Channel</string>
-   </property>
-  </action>
-  <action name="actionCloneChannel">
-   <property name="text">
-    <string>Clone Channel</string>
    </property>
   </action>
  </widget>
