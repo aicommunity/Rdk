@@ -15,17 +15,17 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   ui->treeWidgetChannels->addAction(ui->actionAddChannel);
   ui->treeWidgetChannels->addAction(ui->actionInsertChannel);
   ui->treeWidgetChannels->addAction(ui->actionDeleteSelectedChannel);
+  ui->treeWidgetChannels->addAction(ui->actionCloneChannel);
   ui->treeWidgetChannels->addAction(ui->actionStartChannel);
   ui->treeWidgetChannels->addAction(ui->actionPauseChannel);
   ui->treeWidgetChannels->addAction(ui->actionResetChannel);
-  ui->treeWidgetChannels->addAction(ui->actionCloneChannel);
   connect(ui->actionAddChannel, SIGNAL(triggered(bool)), this, SLOT(actionAddChannel()));
   connect(ui->actionInsertChannel, SIGNAL(triggered(bool)), this, SLOT(actionInsertChannel()));
   connect(ui->actionDeleteSelectedChannel, SIGNAL(triggered(bool)), this, SLOT(actionDeleteSelectedChannel()));
+  connect(ui->actionCloneChannel, SIGNAL(triggered(bool)), this, SLOT(actionCloneChannel()));
   connect(ui->actionStartChannel, SIGNAL(triggered(bool)), this, SLOT(actionStartChannel()));
   connect(ui->actionPauseChannel, SIGNAL(triggered(bool)), this, SLOT(actionPauseChannel()));
   connect(ui->actionResetChannel, SIGNAL(triggered(bool)), this, SLOT(actionResetChannel()));
-  connect(ui->actionCloneChannel, SIGNAL(triggered(bool)), this, SLOT(actionCloneChannel()));
 
   connect(ui->treeWidgetChannels, SIGNAL(itemSelectionChanged()), this, SLOT(channelSelectionChanged()));
 
