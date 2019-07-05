@@ -330,6 +330,9 @@
    </property>
   </action>
   <action name="actionAddNew">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -509,6 +512,12 @@
    </property>
   </action>
   <action name="actionCreateConfig">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
    <property name="enabled">
     <bool>true</bool>
    </property>
