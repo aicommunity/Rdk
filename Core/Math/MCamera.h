@@ -86,7 +86,7 @@ MMatrix<T,3,3> InvIcc;
 // 0 - Учета дисторсии нет
 // 1 - Модель OpenCV
 // 2 - Модель Artoolkit
-// 3 - Модель Цая (DistortionCoeff - 2, DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм)
+// 3 - Модель Цая (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм)
 int DistortionMode;
 
 /// Модель камеры
