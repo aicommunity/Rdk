@@ -21,7 +21,7 @@ void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLi
                                            double lowerLimit, double upperLimit,
                                            const QString& nameX, const QString& nameY)
 {
-    std::cout<<"MainSettings"<<std::endl;
+    //std::cout<<"MainSettings"<<std::endl;
     ui->widget->clearGraphs();//очищаем все графики
 
     leftLimitGraph=leftLimit;
@@ -35,10 +35,10 @@ void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLi
     ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
     ui->widget->yAxis->setRange(lowerLimitGraph, upperLimitGraph);
     currentItem=-1;
-    std::cout<<getLeftLimitGraph()<<std::endl;
-    std::cout<<getRightLimitGraph()<<std::endl;
-    std::cout<<getLowerLimitGraph()<<std::endl;
-    std::cout<<getUpperLimitGraph()<<std::endl;
+    //std::cout<<getLeftLimitGraph()<<std::endl;
+    //std::cout<<getRightLimitGraph()<<std::endl;
+    //std::cout<<getLowerLimitGraph()<<std::endl;
+    //std::cout<<getUpperLimitGraph()<<std::endl;
 }
 \
 
@@ -52,7 +52,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QC
     newTSingleGraph.t_graphColor=myColor;
     newTSingleGraph.t_graphName=graphName;
     vectorGraph.push_back(newTSingleGraph);
-    std::cout<<"addGraph"<<std::endl;
+    //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
     return int(myID);
@@ -86,7 +86,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, in
     newTSingleGraph.t_graphColor=masColor[myColor];
     newTSingleGraph.t_graphName=graphName;
     vectorGraph.push_back(newTSingleGraph);
-    std::cout<<"addGraph"<<std::endl;
+    //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
     return int(myID);
@@ -99,7 +99,7 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
     newTSingleGraph.t_graphColor=Qt::green;
     newTSingleGraph.t_graphName=graphName;
     vectorGraph.push_back(newTSingleGraph);
-    std::cout<<"addGraph"<<std::endl;
+    //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
     ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
     return int(myID);
@@ -116,29 +116,6 @@ void UGraphPaintWidget::setGraphDataSource(int graph_index, int channel_index, c
     vectorGraph[graph_index].Jx=jx;
     vectorGraph[graph_index].Jy=jy;
 }
-
-/*// Применение границ окна СК
-// Идет по вектору структур и рисует графики
-void UGraphWindow::pressEvent()
-{
-    int t=0;
-    upperLimitGraph=2;
-    lowerLimitGraph=-2;
-    ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
-    ui->widget->yAxis->setRange(lowerLimitGraph, upperLimitGraph);
-    for (size_t j = 0; j<vectorGraph.size(); j++)
-    {
-        if (currentItem!=-1)
-        {
-            ui->widget->graph(j)->setPen(QPen(vectorGraph[j].t_graphColor));
-            t++;
-        }
-    }
-    if (currentItem!=-1)
-        ui->widget->graph(currentItem)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 6));
-    if(t!=0)
-        ui->widget->replot();
-}*/
 
 
 void UGraphPaintWidget::delAllGraph(void)
