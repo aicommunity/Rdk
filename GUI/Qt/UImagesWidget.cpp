@@ -40,6 +40,9 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     UpdateInterval = 0;
 
     selectedImage = NULL;
+    isChekBoxIndChannel=true;
+
+
 
     ui->setupUi(this);
 
@@ -83,10 +86,13 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     connect(ui->checkBoxShowLegend, SIGNAL(toggled(bool)), this, SLOT(setShowLegend(bool)));
     connect(ui->checkBoxIndChannels, SIGNAL(toggled(bool)), this, SLOT(setIndChannels(bool)));
 
+
     //создание первого окошка
     /*USingleImageWidget *item = addSingleItem(0, 0);
     item->setSelected(true);
     selectedImage = item;*/
+
+
 }
 
 UImagesWidget::~UImagesWidget()
@@ -483,8 +489,11 @@ void UImagesWidget::setShowLegend(bool b)
 
 void UImagesWidget::setIndChannels(bool b)
 {
-    for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
-        (*i)->setShowChannels(b);
+    if (isChekBoxIndChannel)
+    {
+        for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
+            (*i)->setShowChannels(b);
+    }
 }
 
 void UImagesWidget::setOriginalSize()
@@ -605,3 +614,13 @@ void UImagesWidget::clearImagesWidget()
   columnsCounter = 0;
   rowsCounter = 0;
 }
+
+void UImagesWidget::SetIsChekBoxIndChannel(bool isIt)
+{
+    isChekBoxIndChannel = isIt;
+    if (isIt == false)
+    {
+        ui->checkBoxIndChannels->setEnabled(false);
+    }
+}
+
