@@ -239,12 +239,28 @@ void UDrawEngineImageWidget::mouseMoveEvent(QMouseEvent *event)
 
 void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
 {
+    QByteArray itemData = event->mimeData()->data("Component");
+    QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+    QString classname;
+    dataStream >> classname;
+
+    //если модель не существует, спросить не создать ли ее
+    if(!Model_Check())
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model?", QMessageBox::Yes|QMessageBox::Cancel);
+        if (reply == QMessageBox::Yes)
+        {
+            //создать новую модель
+            Model_Create(classname.toLocal8Bit());
+        }
+    }
+
     if (event->mimeData()->hasFormat("Component"))
     {
-        QByteArray itemData = event->mimeData()->data("Component");
+        /*QByteArray itemData = event->mimeData()->data("Component");
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
         QString classname;
-        dataStream >> classname;
+        dataStream >> classname;*/
         //qDebug() << event->pos() << "   " << classname;
 
         const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());

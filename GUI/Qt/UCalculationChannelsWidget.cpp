@@ -12,10 +12,14 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   setAccessibleName("UCalculationChannelsWidget");
 
   //contextMenu
+  QAction *actionSeparator1 = new QAction(this);
+  actionSeparator1->setSeparator(true);
+
   ui->treeWidgetChannels->addAction(ui->actionAddChannel);
   ui->treeWidgetChannels->addAction(ui->actionInsertChannel);
   ui->treeWidgetChannels->addAction(ui->actionDeleteSelectedChannel);
   ui->treeWidgetChannels->addAction(ui->actionCloneChannel);
+  ui->treeWidgetChannels->addAction(actionSeparator1);
   ui->treeWidgetChannels->addAction(ui->actionStartChannel);
   ui->treeWidgetChannels->addAction(ui->actionPauseChannel);
   ui->treeWidgetChannels->addAction(ui->actionResetChannel);
