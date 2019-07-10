@@ -86,7 +86,7 @@ MMatrix<T,3,3> InvIcc;
 // 0 - Учета дисторсии нет
 // 1 - Модель OpenCV
 // 2 - Модель Artoolkit
-// 3 - Модель Цая (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм)
+// 3 - Модель Цая (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм), DistortionCoeff(2) = s (маштабирующий коэффициент)
 int DistortionMode;
 
 /// Модель камеры
@@ -485,9 +485,10 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    return res;
   }
 
+  // 3 - Модель Цая (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм), DistortionCoeff(2) = s (маштабирующий коэффициент)
   if(DistortionMode == 3)
   {
-   if(DistortionCoeff.GetSize() != 2)
+   if(DistortionCoeff.GetSize() != 3)
 	return point;
 
    MVector<T,3> res;
@@ -507,6 +508,10 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 	res(0) = Xu;
 	res(1) = Yu;
 	res(2) = 1;
+
+	res(0) = res(0) / DistortionCoeff(1);
+    res(1) = res(1) / DistortionCoeff(1);
+
 	return res;
    }
 
@@ -573,7 +578,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res(1) = Yu * lambda; // x' = b * TETAd / r
    res(2) = 1.0;
 
-   res(0) = res(0) / DistortionCoeff(1);
+   res(0) = (res(0) / DistortionCoeff(1)) * DistortionCoeff(2);
    res(1) = res(1) / DistortionCoeff(1);
 
    return res;
