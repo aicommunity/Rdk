@@ -71,6 +71,9 @@ public:
     explicit UGEngineControllWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControllWidget();
 
+    ///Показывает виджет с переключением каналов
+    void showChannelsWidget (UCalculationChannelsWidget *chan);
+
     //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
 signals:
@@ -184,6 +187,7 @@ private:
 
     /// Удаляет виджет отображения графиков
     void delWatchesWidged(size_t index);
+
 };
 
 /// Не закрывающийся QMdiSubwindow для отображения схемы модели
