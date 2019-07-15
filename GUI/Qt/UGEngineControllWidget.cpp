@@ -576,3 +576,8 @@ void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
   }
  }
 }
+
+void UGEngineControllWidget::showChannelsWidget (void)
+{
+    channels->show();
+}
