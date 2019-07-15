@@ -1022,8 +1022,23 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
 
    double xx, yy;
 
-   xx = double(X) * double(FullImage->Picture->Bitmap->Width) / double(FullImage->Width);
-   yy = double(Y) * double(FullImage->Picture->Bitmap->Height) / double(FullImage->Height);
+   double FullImageWidth = double(FullImage->Width);
+   double FullImageHeight = double(FullImage->Height);
+
+   double ImageRatio = double(FullImage->Picture->Bitmap->Width)/double(FullImage->Picture->Bitmap->Height);
+   double FullImageRatio = double(FullImage->Width)/double(FullImage->Height);
+
+   if(FullImageRatio>=ImageRatio)
+   {
+	  FullImageWidth = double(FullImage->Height)*ImageRatio;
+   }
+   else
+   {
+	   FullImageHeight = double(FullImage->Width)/ImageRatio;
+   }
+
+   xx = double(X) * double(FullImage->Picture->Bitmap->Width) / FullImageWidth ;
+   yy = double(Y) * double(FullImage->Picture->Bitmap->Height) / FullImageHeight ;
 
    OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
    OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);

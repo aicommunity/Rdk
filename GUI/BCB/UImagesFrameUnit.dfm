@@ -36,6 +36,8 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
+    ExplicitLeft = -1
+    ExplicitTop = -5
     object FullImage: TImage
       Left = 237
       Top = 172
