@@ -37,7 +37,8 @@ USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int
     setAccessibleName("USingleImageWidget"+QString::number(row)+"x"+QString::number(column));
 
     setShowLegend(showLegend);
-    setShowChannels(indChannels);
+    //setShowChannels(indChannels);
+    setShowChannels(true);
     //reDrawWidget();
 }
 

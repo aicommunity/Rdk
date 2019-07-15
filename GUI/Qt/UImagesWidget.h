@@ -64,6 +64,11 @@ public:
     ///Задает размещение окошек в окне @param layoutW на @param layoutH
     void SetImageLayout(int layoutW, int layoutH);
 
+    ///задает значение isChekBoxIndChannel
+    ///true - может изменяться
+    ///false - не может изменяться
+    void SetIsChekBoxIndChannel(bool isIt);
+
     ///Возвращает ссылку на контекстное меню
     //QMenu *getContextMenu();
 
@@ -150,6 +155,11 @@ private:
     int columnsCounter;
     /// Счетчик строк
     int rowsCounter;
+
+    ///показатель того, может ли быть активен check box index chanel
+    ///если нет - значит он всегда активен
+    bool isChekBoxIndChannel;
+
 };
 
 #endif // UIMAGESWIDGET_H
