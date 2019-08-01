@@ -87,3 +87,5 @@ CMakeFiles
 CMakeCache.txt
 Makefile
 Doxygen
+# Default ignored files
+Build/Tools/PyCodeGenerator/.idea/workspace.xml

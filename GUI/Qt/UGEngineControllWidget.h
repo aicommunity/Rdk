@@ -72,7 +72,7 @@ public:
     virtual ~UGEngineControllWidget();
 
     ///Показывает виджет с переключением каналов
-    void showChannelsWidget (UCalculationChannelsWidget *chan);
+    void showChannelsWidget ();
     void showChannelsWidget(void);
 
     //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);

@@ -72,7 +72,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionCloneComponent->setEnabled(true);
 
     QAction *actionRenameComponent = new QAction(contextMenu);
-    actionRenameComponent->setText("Rename");    
+    actionRenameComponent->setText("Rename");
     QAction *actionDeleteComponent = new QAction(contextMenu);
     actionDeleteComponent->setText("Delete");
     QAction *actionCopyNameToClipboard = new QAction(contextMenu);
@@ -255,6 +255,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
         }
     }
 
+
     if (event->mimeData()->hasFormat("Component"))
     {
         /*QByteArray itemData = event->mimeData()->data("Component");
@@ -263,6 +264,46 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
         dataStream >> classname;*/
         //qDebug() << event->pos() << "   " << classname;
 
+        /*bool ok;
+        QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"), tr("User name:"), QLineEdit::Normal, classname.toLocal8Bit(), &ok);
+        if (ok && !text.isEmpty())
+        {
+            QByteArray ba = text.toLocal8Bit();
+            //const char *c_text = ba.data();
+            //const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), text.toLocal8Bit());
+            const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());
+            if(pname)
+            {
+                std::string name=pname;
+                Engine_FreeBufString(pname);
+                reDrawScheme(true);
+                DrawEngine.MoveComponent(name, event->pos().x(), event->pos().y());
+                saveComponentPosition(name);
+                emit updateComponentsList();
+
+                selectedComponent = name;
+                DrawEngine.SelectSingleComponent(selectedComponent);
+                emit componentSelected(QString::fromStdString(selectedComponent));
+                reDrawScheme(false);
+
+                std::string new_name(text.toLocal8Bit());
+                Model_SetComponentPropertyData(myLongName().toLocal8Bit(),"Name", &new_name);
+
+                emit updateComponentsList();
+                reDrawScheme(true);
+                //выбрать компонент с новым именем
+                selectComponent(ComponentName.isEmpty()? QString::fromStdString(new_name)
+                                                       : ComponentName + "." + QString::fromStdString(new_name));
+                emit componentSelected(myLongName());
+
+                const char* a =Model_GetComponentParameterValue(myLongName().toLocal8Bit(),"Name");
+                //char* k= a;
+                if (new_name != a)
+                {
+                    QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Component with this name is exists. Continue by adding the next number?", QMessageBox::Yes|QMessageBox::Cancel);
+                    if (reply == QMessageBox::Cancel) componentRename();
+                }
+            }*/
         const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());
         if(pname)
         {

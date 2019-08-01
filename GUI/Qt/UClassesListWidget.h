@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QModelIndex>
 
+
 namespace Ui {
 class UClassesListWidget;
 }
@@ -35,6 +36,11 @@ public slots:
 
 signals:
     void classSelectionChanged();
+
+private slots:
+    void on_lineEdit_textChanged(const QString &arg1);
+
+
 
 private:
     Ui::UClassesListWidget *ui;
