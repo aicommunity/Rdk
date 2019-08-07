@@ -14,6 +14,8 @@ def createMapFile(old_data, new_data, file_name, map_file):
         text = file.read()
         for index, replaced_data in enumerate(old_data):
             text = text.replace('@UPP'+replaced_data, new_data[index].upper())
+            text = text.replace('@NORM' + replaced_data, new_data[index].title())
+            text = text.replace('@DOWN' + replaced_data, new_data[index].lower())
             text = text.replace(replaced_data, new_data[index])
         with open(map_file, 'w') as file:
             file.write(text)
@@ -83,7 +85,23 @@ os.rename(new_path+'/Build/Qt/Qt.pro', new_path+'/Build/Qt/'+namespace_name.capi
 
 #создание заготовок под компилятор Qt
 createMapFile(template_data, dest_data, 'CodeTemplates/Qt.pro', new_path+'/Build/Qt/'+namespace_name+'-'+lib_name+'.pro')
+#создание заготовок под компилятор CodeBlocks
+createMapFile(template_data, dest_data, 'CodeTemplates/CodeBlocks.cbp', new_path+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp')
+lookup ='<Add option="-Wall" />'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    data = file.readlines()
 
+text1 = '\n#<Unit filename="../../Core/' + 'U'+lib_name+'.h" />'+'   \n'
+text2 = '#<Unit filename="../../Core/' + 'U'+lib_name+'.cpp" />'+'   \n'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere+1] = text1+text2
+            break
+
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp', 'w') as file:
+    file.writelines(data)
 
 #создание Lib.h и Lib.cpp в Deploy/Include
 createMapFile(template_data, dest_data, 'CodeTemplates/Lib.h', new_path+'/Deploy/Include/'+'Lib.h')

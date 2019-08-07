@@ -157,3 +157,21 @@ with open(lib_path.text+namespace_name+'-'+lib_name+'/Deploy/Include/Lib.cpp') a
 
 with open(lib_path.text+namespace_name+'-'+lib_name+'/Deploy/Include/Lib.cpp', 'w') as file:
     file.writelines(data)
+
+#обновление заготовок под компилятор CodeBlocks
+lookup ='<Add option="-Wall" />'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    data = file.readlines()
+
+text1 = '\n#<Unit filename="../../Core/' + component_name+'.h" />'+'   \n'
+text2 = '#<Unit filename="../../Core/' + component_name+'.cpp" />'+'   \n'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere+1] = text1+text2
+            break
+
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp', 'w') as file:
+    file.writelines(data)
+    file.writelines(data)
