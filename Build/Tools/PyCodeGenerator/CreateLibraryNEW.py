@@ -57,7 +57,7 @@ os.system('hg init '+new_path)
 # Создаем внутренние папки библиотеки
 os.makedirs(new_path+'/Bin')
 os.makedirs(new_path+'/Core')
-os.makedirs(new_path+'/Deploy')
+os.makedirs(new_path+'/Deploy/Include')
 
 # Копируем шаблоны
 shutil.copy('LibProjects/.hgignore',new_path+'/.hgignore')
@@ -66,10 +66,11 @@ shutil.copytree('LibProjects/Build', new_path+'/Build')
 
 # Модифицируем шаблоны библиотеки
 template_data = ['@NAMESPACE_NAME@', '@HEADER_FILE_NAME@','@CPP_FILE_NAME@', '@CLASS_NAME@', '@LIBRARY_NAME@']
-dest_data = [namespace_name, 'U'+lib_name+'.h', 'U'+lib_name+'.cpp', 'U'+lib_name, lib_name]
+dest_data = [namespace_name, 'U'+lib_name+'.h', 'U'+lib_name+'.h', 'U'+lib_name, lib_name]
 
-createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.h', new_path+'/Core/'+'U'+lib_name+'.h')
+
 createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/'+'U'+lib_name+'.cpp')
+createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/'+'U'+lib_name+'.h')
 
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.h', new_path+'/Core/U'+lib_name='.h')
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/U'+lib_name='.cpp')
@@ -78,5 +79,12 @@ createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.cpp', ne
 os.rename(new_path+'/Build/Bcb/Rdk-BasicLib.cbproj', new_path+'/Build/Bcb/'+namespace_name.capitalize()+'-'+lib_name+'.cbproj')
 os.rename(new_path+'/Build/CodeBlocks/Rdk-BasicLib.cbp', new_path+'/Build/CodeBlocks/'+namespace_name.capitalize()+'-'+lib_name+'.cbp')
 os.rename(new_path+'/Build/Vs/Rdk-BasicLib.vcxproj', new_path+'/Build/Vs/'+namespace_name.capitalize()+'-'+lib_name+'.vcxproj')
+os.rename(new_path+'/Build/Qt/Qt.pro', new_path+'/Build/Qt/'+namespace_name.capitalize()+'-'+lib_name+'.pro')
+
+#создание заготовок под компилятор Qt
+createMapFile(template_data, dest_data, 'CodeTemplates/Qt.pro', new_path+'/Build/Qt/'+namespace_name+'-'+lib_name+'.pro')
 
 
+#создание Lib.h и Lib.cpp в Deploy/Include
+createMapFile(template_data, dest_data, 'CodeTemplates/Lib.h', new_path+'/Deploy/Include/'+'Lib.h')
+createMapFile(template_data, dest_data, 'CodeTemplates/Lib.cpp', new_path+'/Deploy/Include/'+'Lib.cpp')
