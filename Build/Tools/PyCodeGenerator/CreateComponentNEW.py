@@ -25,7 +25,7 @@ print ('Library path: '+lib_path.text)
 
 num_args=len(sys.argv)
 
-print ('Library creting script started')
+print('Library creting script started')
 
 if num_args <3:
     exit(0)
@@ -112,7 +112,7 @@ if component_name[0] == 'R':
                 SimpleComponent_name = SimpleComponent_name[:0] + SimpleComponent_name[(0 + 1):]
 
 
-new_data = [component_name,SimpleComponent_name]
+new_data = [component_name, SimpleComponent_name]
 with open(new_path + 'U' + lib_name + '.cpp') as file:
     text = file.read()
     for index, replaced_data in enumerate(template_data):
@@ -120,3 +120,58 @@ with open(new_path + 'U' + lib_name + '.cpp') as file:
         text = text.replace(replaced_data, new_data[index])
 with open(new_path + 'U' + lib_name + '.cpp', 'w') as file:
     file.write(text)
+
+# добавление h-ника cpp-шника в Qt -> pro файл
+lookupH ='HEADERS +='
+lookupCPP ='SOURCES +='
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/Qt/'+namespace_name+'-'+lib_name+'.pro') as file:
+    data = file.readlines()
+
+textH = '\n    ../../Core/' + component_name+'.h'+' \  \n'
+textCPP = '\n    ../../Core/' + component_name+'.cpp'+' \  \n'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/Qt/'+namespace_name+'-'+lib_name+'.pro') as file:
+    for num, line in enumerate(file, 1):
+        if lookupH in line:
+            writeHere = num
+            data[writeHere] = textH
+        if lookupCPP in line:
+            writeHere = num
+            data[writeHere] = textCPP
+            break
+
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/Qt/'+namespace_name+'-'+lib_name+'.pro', 'w') as file:
+    file.writelines(data)
+
+#изменение Lib.cpp в Deploy/Include
+lookup ='//#include "../../Core/CPP_FILE_NAME" '
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Deploy/Include/Lib.cpp') as file:
+    data = file.readlines()
+
+text = '\n#include "../../Core/' + component_name+'.cpp"'+'   \n'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Deploy/Include/Lib.cpp') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere] = text
+            break
+
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Deploy/Include/Lib.cpp', 'w') as file:
+    file.writelines(data)
+
+#обновление заготовок под компилятор CodeBlocks
+lookup ='<Add option="-Wall" />'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    data = file.readlines()
+
+text1 = '\n#<Unit filename="../../Core/' + component_name+'.h" />'+'   \n'
+text2 = '#<Unit filename="../../Core/' + component_name+'.cpp" />'+'   \n'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere+1] = text1+text2
+            break
+
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp', 'w') as file:
+    file.writelines(data)
+    file.writelines(data)

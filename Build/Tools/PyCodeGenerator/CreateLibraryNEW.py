@@ -14,6 +14,8 @@ def createMapFile(old_data, new_data, file_name, map_file):
         text = file.read()
         for index, replaced_data in enumerate(old_data):
             text = text.replace('@UPP'+replaced_data, new_data[index].upper())
+            text = text.replace('@NORM' + replaced_data, new_data[index].title())
+            text = text.replace('@DOWN' + replaced_data, new_data[index].lower())
             text = text.replace(replaced_data, new_data[index])
         with open(map_file, 'w') as file:
             file.write(text)
@@ -57,7 +59,7 @@ os.system('hg init '+new_path)
 # Создаем внутренние папки библиотеки
 os.makedirs(new_path+'/Bin')
 os.makedirs(new_path+'/Core')
-os.makedirs(new_path+'/Deploy')
+os.makedirs(new_path+'/Deploy/Include')
 
 # Копируем шаблоны
 shutil.copy('LibProjects/.hgignore',new_path+'/.hgignore')
@@ -66,10 +68,11 @@ shutil.copytree('LibProjects/Build', new_path+'/Build')
 
 # Модифицируем шаблоны библиотеки
 template_data = ['@NAMESPACE_NAME@', '@HEADER_FILE_NAME@','@CPP_FILE_NAME@', '@CLASS_NAME@', '@LIBRARY_NAME@']
-dest_data = [namespace_name, 'U'+lib_name+'.h', 'U'+lib_name+'.cpp', 'U'+lib_name, lib_name]
+dest_data = [namespace_name, 'U'+lib_name+'.h', 'U'+lib_name+'.h', 'U'+lib_name, lib_name]
 
-createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.h', new_path+'/Core/'+'U'+lib_name+'.h')
+
 createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/'+'U'+lib_name+'.cpp')
+createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/'+'U'+lib_name+'.h')
 
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.h', new_path+'/Core/U'+lib_name='.h')
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/U'+lib_name='.cpp')
@@ -78,5 +81,28 @@ createMapFile(template_data, dest_data, 'CodeTemplates/ULibraryTemplate.cpp', ne
 os.rename(new_path+'/Build/Bcb/Rdk-BasicLib.cbproj', new_path+'/Build/Bcb/'+namespace_name.capitalize()+'-'+lib_name+'.cbproj')
 os.rename(new_path+'/Build/CodeBlocks/Rdk-BasicLib.cbp', new_path+'/Build/CodeBlocks/'+namespace_name.capitalize()+'-'+lib_name+'.cbp')
 os.rename(new_path+'/Build/Vs/Rdk-BasicLib.vcxproj', new_path+'/Build/Vs/'+namespace_name.capitalize()+'-'+lib_name+'.vcxproj')
+os.rename(new_path+'/Build/Qt/Qt.pro', new_path+'/Build/Qt/'+namespace_name.capitalize()+'-'+lib_name+'.pro')
 
+#создание заготовок под компилятор Qt
+createMapFile(template_data, dest_data, 'CodeTemplates/Qt.pro', new_path+'/Build/Qt/'+namespace_name+'-'+lib_name+'.pro')
+#создание заготовок под компилятор CodeBlocks
+createMapFile(template_data, dest_data, 'CodeTemplates/CodeBlocks.cbp', new_path+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp')
+lookup ='<Add option="-Wall" />'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    data = file.readlines()
 
+text1 = '\n#<Unit filename="../../Core/' + 'U'+lib_name+'.h" />'+'   \n'
+text2 = '#<Unit filename="../../Core/' + 'U'+lib_name+'.cpp" />'+'   \n'
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere+1] = text1+text2
+            break
+
+with open(lib_path.text+namespace_name+'-'+lib_name+'/Build/CodeBlocks/'+namespace_name+'-'+ lib_name+'.cbp', 'w') as file:
+    file.writelines(data)
+
+#создание Lib.h и Lib.cpp в Deploy/Include
+createMapFile(template_data, dest_data, 'CodeTemplates/Lib.h', new_path+'/Deploy/Include/'+'Lib.h')
+createMapFile(template_data, dest_data, 'CodeTemplates/Lib.cpp', new_path+'/Deploy/Include/'+'Lib.cpp')
