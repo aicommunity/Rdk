@@ -789,7 +789,7 @@ bool UEngineControl::DeleteChannel(int index)
   if(EngineStateThread)
    EngineStateThread->UnRegisterCalcThread(index);
   delete EngineControlThreads[index];
-  EngineControlThreads[index]=0;
+  EngineControlThreads[index]=NULL;
  }
 
  int del_res=Core_DelChannel(index);

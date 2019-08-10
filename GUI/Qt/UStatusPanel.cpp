@@ -71,7 +71,7 @@ void UStatusPanel::AAfterLoadProject()
 
   if(config.MultiThreadingMode)
   {
-   if(config.MultiThreadingMode != (ui->radioButtonMultiThreaded->isChecked())?1:0)
+   if(config.MultiThreadingMode != ((ui->radioButtonMultiThreaded->isChecked())?1:0))
     ui->radioButtonMultiThreaded->setChecked(true);
   }
   else
