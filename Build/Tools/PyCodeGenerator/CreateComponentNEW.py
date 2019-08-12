@@ -13,6 +13,8 @@ def createMapFile(old_data, new_data, file_name, map_file):
         text = file.read()
         for index, replaced_data in enumerate(old_data):
             text = text.replace('@UPP' + replaced_data, new_data[index].upper())
+            text = text.replace('@NORM' + replaced_data, new_data[index].title())
+            text = text.replace('@DOWN' + replaced_data, new_data[index].lower())
             text = text.replace(replaced_data, new_data[index])
         with open(map_file, 'w') as file:
             file.write(text)

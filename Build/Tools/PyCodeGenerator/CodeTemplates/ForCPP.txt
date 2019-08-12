@@ -1,0 +1,5 @@
+ 
+ cont=new @CLASS_NAME@<int>;
+ cont->SetName("@SIMPLE_CLASS_NAME@");
+ cont->Default();
+ UploadClass("@CLASS_NAME@",cont);
