@@ -36,8 +36,6 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
-    ExplicitLeft = -1
-    ExplicitTop = -5
     object FullImage: TImage
       Left = 237
       Top = 172
@@ -157,6 +155,8 @@ inherited UImagesFrame: TUImagesFrame
       Align = alLeft
       Caption = 'Ind. channels'
       TabOrder = 5
+      ExplicitLeft = 221
+      ExplicitTop = 6
     end
     object ProportionalSizeRadioButton: TRadioButton
       Left = 654
