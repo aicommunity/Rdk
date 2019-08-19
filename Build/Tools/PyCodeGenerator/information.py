@@ -1,15 +1,55 @@
 import glob, os
 import xml.etree.ElementTree as ET
 from tkinter import *
+import copy
 
 class CppClass (object):
-    def __init__(self, name, parent):
+    def __init__(self, name = 'none', parent = 'none'):
         self.name = name
         self.publicFields = []
         self.signals = []
         self.slots = []
-        self.publicMethods = []
+        self.publicMethods= []
         self.parent = parent
+        self.isUI = FALSE
+
+    def analyzerStringToClass(self, isPublic, isSlot, isSignal, str, text):
+        head, sep, tail = text.partition('///')
+        text = tail
+
+
+        if 'Ui::' in str:
+            self.isUI = TRUE
+            return
+        if ';' in str:
+            if isSlot == 1:
+                if text:
+                    self.slots.append(text)
+                self.slots.append(str)
+                return
+            if isSignal == 1:
+                if text:
+                    self.signals.append(text)
+                self.signals.append(str)
+                return
+            if isPublic == 1:
+                if ':' in str:
+                    head, sep, tail = str.partition(':')
+                    str = tail
+
+                if '(' in str:
+                    if text:
+                        self.publicMethods.append(text.strip())
+                    self.publicMethods.append(str.strip())
+                else:
+                    if text:
+                        self.publicFields.append(text.strip())
+                    self.publicFields.append(str.strip())
+
+
+
+
+CopyOfCppClass = type('CopyOfCppClass', CppClass.__bases__, dict(CppClass.__dict__))
 
 clicks = 0
 mainList= []
@@ -93,19 +133,60 @@ def findAllH():
     return listH
 ################################## Конец нахождения списка всех заголовочных файлов##################################
 
-
 ################################## Нахождение списка классов внутри одного заголовочного файла ##################################
 def findClassInH(path):
     cwd = os.getcwd()
+    text = ''
     myList = []
     myList.clear()
     lookup = 'class'
-    isPublic = 1
+    endClassLookup = '};'
+    isPublic = 0
+    #0-класса нет -1 - не публичные 1 - публичные
+    isSlot = 0
+    isSignal = 0
     if (os.path.exists(path)):
         # найти конструкцию class *smth* *имя класса*: public *от чего наследуется*
         with open(path) as file:
             for num, line in enumerate(file, 1):
+                #поиск комментариев, которые нужно выводить
+                if '///' in line:
+                    text = text + line
+                if isPublic == 1 or line.find('public')>-1:
+                    if endClassLookup in line:
+                        isPublic = 0
+                        text = ''
+                    else:
+                        #идем по строкам класса
+                        #если не комментарий, то анализируется
+                        head, sep, tail = line.partition('//')
+                        #если строка до комментария не пустая
+                        if head:
+                            #проверка на ключевые слова
+                            if head.find('public') != -1:
+                                isPublic = 1
+                                isSlot = 0
+                                isSignal = 0
+                            if head.find('protected') != -1:
+                                isPublic = 0
+                                isSlot = 0
+                                isSignal = 0
+                            if head.find('private') != -1:
+                                isPublic = 0
+                                isSlot = 0
+                                isSignal = 0
+                            if head.find('slots') != -1:
+                                isSlot = 1
+                            if head.find('signals') != -1:
+                                isSignal = 1
+                            if myList:
+                                myList[-1].analyzerStringToClass(isPublic, isSlot, isSignal, head, text)
+                                text = ''
+                                #print (myList)
+
                 if lookup in line:
+                    text = ''
+                    isPublic = 1
                     # в строке описывается класс
                     listWord = line.split()
                     if listWord[0].find ('//') == -1:
@@ -118,10 +199,10 @@ def findClassInH(path):
                             if item.find(':')!= -1:
                                 if (len(item) >1 ):
                                     myList.append(CppClass(item.replace(':',''), parentName))
+
                                 else:
                                     newIndx = listWord.index(item)
                                     myList.append(CppClass(listWord[newIndx-1], parentName))
-
     os.chdir(cwd)
     cwd = os.getcwd()
     return myList
@@ -228,6 +309,7 @@ def find(name, path):
 
 def onselect1(e):
     global mainList
+    global secondList
     indexList = listbox1.curselection()
     if not indexList:
         return
@@ -263,6 +345,36 @@ def onselect1(e):
                     secondList.append(item.name)
                     secondList.append('Имя родителя: ')
                     secondList.append(item.parent)
+
+                    if item.publicFields:
+                        secondList.append('Поля: ')
+                        a = item.publicFields
+                        # secondList.append(a)
+                        secondList = secondList + a
+                    else:
+                        secondList.append('Поля: отсутствуют')
+                    if item.publicMethods:
+                        secondList.append('Методы: ')
+                        a = item.publicMethods
+                        #secondList.append(a)
+                        secondList = secondList + a
+                    else:
+                        secondList.append('Методы: отсутствуют')
+
+                    if item.signals:
+                        secondList.append('Сигналы: ')
+                        a = item.signals
+                        secondList = secondList + a
+                    else:
+                        secondList.append('Сигналы: отсутствуют')
+
+                    if item.slots:
+                        secondList.append('Слоты: ')
+                        a = item.slots
+                        secondList = secondList + a
+                    else:
+                        secondList.append('Слоты: отсутствуют')
+
 
                     listbox2.delete(0, 'end')
                     for i in secondList:
@@ -322,7 +434,7 @@ listbox1 = Listbox(root,height=35, width=45, selectmode=EXTENDED)
 listbox1.grid(row=1,column=1, rowspan=20)
 listbox1.bind('<<ListboxSelect>>', onselect1)
 
-listbox2 = Listbox(root,height=10, width=45, selectmode=EXTENDED)
+listbox2 = Listbox(root,height=20, width=85, selectmode=EXTENDED)
 listbox2.grid(row=3,column=3, rowspan=10)
 listbox2.bind('<<ListboxSelect>>', onselect2)
 
