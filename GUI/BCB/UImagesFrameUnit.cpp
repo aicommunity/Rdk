@@ -432,7 +432,7 @@ bool TUImagesFrame::SaveToBitmap(int i, int j)
   return false;
 
  SavePictureDialog->DefaultExt="bmp";
- SavePictureDialog->FilterIndex=1;
+ SavePictureDialog->FilterIndex=2;
  if(!SavePictureDialog->Execute())
   return false;
  Images[DrawGrid->Col][DrawGrid->Row]->Picture->SaveToFile(SavePictureDialog->FileName);
@@ -445,7 +445,7 @@ bool TUImagesFrame::SaveToJpg(int i, int j)
   return false;
 
  SavePictureDialog->DefaultExt="jpg";
- SavePictureDialog->FilterIndex=0;
+ SavePictureDialog->FilterIndex=1;
  if(!SavePictureDialog->Execute())
   return false;
 

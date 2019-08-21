@@ -155,8 +155,6 @@ inherited UImagesFrame: TUImagesFrame
       Align = alLeft
       Caption = 'Ind. channels'
       TabOrder = 5
-      ExplicitLeft = 221
-      ExplicitTop = 6
     end
     object ProportionalSizeRadioButton: TRadioButton
       Left = 654
