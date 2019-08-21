@@ -1,5 +1,5 @@
-#ifndef @NAMESPACE_NAME@_@CLASS_NAME@_CPP
-#define @NAMESPACE_NAME@_@CLASS_NAME@_CPP
+#ifndef @NAMESPACE_NAME@_@UPP@CLASS_NAME@_CPP
+#define @NAMESPACE_NAME@_@UPP@CLASS_NAME@_CPP
 
 #include "@HEADER_FILE_NAME@"
 
@@ -25,7 +25,9 @@ namespace @NAMESPACE_NAME@ {
 // Не требуется предварительная очистка массива и уборка памяти.
 void @CLASS_NAME@::CreateClassSamples(RDK::UStorage *storage)
 {
- RDK::UContainer *cont(0);
+ RDK::UContainer *cont;
+ //Uppload class here
+
 /*
  cont=new UStatisticMatrix<int>;
  cont->SetName("StatisticIntMatrix");

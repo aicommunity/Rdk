@@ -71,7 +71,7 @@ UGraphWidget::~UGraphWidget()
     delete ui;
 }
 
-void UGraphWidget::addDataToGraph(int id, std::vector<double>  X1, std::vector<double> Y1)
+void UGraphWidget::addDataToGraph(size_t id, std::vector<double>  X1, std::vector<double> Y1)
 {
     //проверить есть ли массив с нужным id, если нет, то добавить
     size_t startSizeMas=masX.size();
@@ -90,13 +90,13 @@ void UGraphWidget::addDataToGraph(int id, std::vector<double>  X1, std::vector<d
    //Заполнить появившеся место
     for (size_t j=startSizeElem; j<startSizeElem+addSizeElem-1; j++)
     {
-        masX[id][j]=X1[int(j-startSizeElem)];
-        masY[id][j]=Y1[int(j-startSizeElem)];
+        masX[id][j]=X1[j-startSizeElem];
+        masY[id][j]=Y1[j-startSizeElem];
     }
     emit transferDataSignal(id, masX[id], masY[id]);
 }
 
-void UGraphWidget::addDataToGraph(int id, double X1, double Y1)
+void UGraphWidget::addDataToGraph(size_t id, double X1, double Y1)
 {
     //проверить есть ли массив с нужным id, если нет, то добавить
     size_t startSizeMas=masX.size();
@@ -144,8 +144,8 @@ void UGraphWidget::setCurrentItem(int myCurrentItem)
 
 void UGraphWidget::AUpdateInterface()
 {
-    int n=graphPainter->getSize();
-    for(int i=0; i<n; i++)
+    size_t n=graphPainter->getSize();
+    for(size_t i=0; i<n; i++)
     {
         const TSingleGraph& current_graph=graphPainter->getGraph(i);
 
