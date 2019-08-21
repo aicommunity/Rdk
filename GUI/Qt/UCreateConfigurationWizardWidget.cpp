@@ -136,6 +136,43 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
     ui->frameFromComponent->hide();
     ui->framePredefinedModel->hide();
     ui->frameFromFile->show();
+    QStringList files;
+    std::vector< RDK::StandartXMLInCatalog > XMLArr;
+
+    //RDK::StandartXMLInCatalog* files;
+    std::string workDir = application->GetModelsMainPath().c_str();
+    std::string workDir2 = application->GetProjectPath().c_str();
+    //GetProjectPath
+    QDir dir(QString::fromLocal8Bit(application->GetModelsMainPath().c_str()));
+
+    dir.cd("../../Models/");
+    QStringList filters;
+    filters << "*.xml";
+    //dir.setNameFilters(filters);
+    files = dir.entryList(filters);
+    QStringList::Iterator it;
+    int size = 0;
+    it = files.begin();
+    dir.makeAbsolute();
+    QString path = dir.path();
+    while (it != files.end())
+    {
+        RDK::USerStorageXML XmlStorage;
+        std::string tmp=it->toLocal8Bit().constData();
+        std::string tmp2 = path.toLocal8Bit().constData();
+        tmp2=tmp2+"/"+tmp;
+        tmp = "D:/VideoAnalytics/Rtv-VideoAnalytics/Bin/Models/"+ tmp;
+        //tmp = "../../Models/" + tmp;
+        bool isTrue = XmlStorage.LoadFromFile(tmp2,"Save");
+        std::string deskr= XmlStorage.GetNodeAttribute("ModelDescription");
+        std::string name= XmlStorage.GetNodeAttribute("ModelName");
+        RDK::StandartXMLInCatalog newXMLType;
+        newXMLType.XMLName=name;
+        newXMLType.XMLDescription=deskr;
+        XMLArr.push_back(newXMLType);
+
+        ++it;
+    }
 
     /*ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = ui->lineEditModelFromFile->text().toLocal8Bit().constData();
     ProjectConfig.ChannelsConfig[channelNumber].ClassName = "";

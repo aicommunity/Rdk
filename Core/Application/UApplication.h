@@ -40,6 +40,9 @@ std::string WorkDirectory;
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 std::string ConfigsMainPath;
 
+/// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
+std::string ModelsMainPath;
+
 /// Признак наличия открытого проекта
 bool ProjectOpenFlag;
 
@@ -122,6 +125,10 @@ bool SetWorkDirectory(const std::string& value);
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& GetConfigsMainPath(void) const;
 bool SetConfigsMainPath(const std::string &value);
+
+/// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
+const std::string& GetModelsMainPath(void) const;
+bool SetModelsMainPath(const std::string &value);
 
 // Признак наличия открытого проекта
 bool GetProjectOpenFlag(void) const;
@@ -356,6 +363,14 @@ void CalcAppCaption(void);
 /// Обновляет состояние средств логгирования
 void UpdateLoggers(void);
 // --------------------------
+};
+
+struct StandartXMLInCatalog
+{
+/// Имя xml файла
+std::string XMLName;
+/// Имя xml файла
+std::string XMLDescription;
 };
 
 }

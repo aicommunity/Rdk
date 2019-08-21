@@ -1,12 +1,14 @@
 #ifndef UCREATEPROJECTWIZARDWIDGET_H
 #define UCREATEPROJECTWIZARDWIDGET_H
-
+#include <QDir>
 #include <QWizard>
 #include <QListWidgetItem>
 #include <QStringListModel>
 
 #include <rdk_application.h>
 #include "UClassesListWidget.h"
+
+
 
 namespace Ui {
 class UCreateConfigurationWizardWidget;

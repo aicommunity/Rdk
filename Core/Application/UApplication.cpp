@@ -41,6 +41,7 @@ UApplication::UApplication(void)
  CloseAfterTest=true;
  AppIsInit = false;
  ConfigsMainPath="../../Configs/";
+ ModelsMainPath="../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
 
@@ -96,6 +97,20 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  if(ConfigsMainPath == value)
   return true;
  ConfigsMainPath=value;
+ return true;
+}
+
+/// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
+const std::string& UApplication::GetModelsMainPath(void) const
+{
+ return ModelsMainPath;
+}
+
+bool UApplication::SetModelsMainPath(const std::string &value)
+{
+ if(ModelsMainPath == value)
+  return true;
+ ModelsMainPath=value;
  return true;
 }
 
