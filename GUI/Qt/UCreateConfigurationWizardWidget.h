@@ -29,6 +29,7 @@ public slots:
   void onMSModelFromComponent(bool checked);
   void modelFromFileNameChanged(QString value);
   void modelFromComponentChanged();
+  void onMSLoadModelFromModelsCollection (bool checked);
 
   // channels number stuff
   void setApplySettingToAllChannels(bool checked);
@@ -72,6 +73,10 @@ private slots:
 
   void on_listViewPredefinedStructures_clicked(const QModelIndex &index);
 
+  void on_listViewModelsFromFile_clicked(const QModelIndex &index);
+
+  void on_listViewModelsFromFile_activated(const QModelIndex &index);
+
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
 
@@ -87,6 +92,9 @@ private:
   // Данные для списка predefined structures
   QStringList PredefinedStructuresData;
   QStringListModel stringListModelPredefinedStructures;
+  //Данные для списка Models from file
+  QStringList ModelsFromFileData;
+  QStringListModel stringListModelsFromFile;
 
   UClassesListWidget *classesList;
 

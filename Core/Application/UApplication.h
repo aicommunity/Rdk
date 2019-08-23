@@ -19,6 +19,7 @@
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 
+
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"
 #endif
@@ -27,6 +28,14 @@ namespace RDK {
 
 class UEngineControl;
 class UServerControl;
+
+struct StandartXMLInCatalog
+{
+/// Имя xml файла
+std::string XMLName;
+/// Имя xml файла
+std::string XMLDescription;
+};
 
 class RDK_LIB_TYPE UApplication: public UAppController
 {
@@ -76,6 +85,9 @@ bool CloseAfterTest;
 
 /// Флаг инцициализации
 bool AppIsInit;
+
+///Список имен и описаний xml файлов из папки с хранилищем моделей (обычно /Bin/Models)
+std::list<StandartXMLInCatalog> xmlInCatalog;
 
 protected: // Модули приложения
 /// Диспетчер команд
@@ -158,6 +170,10 @@ bool ChangeUseNewXmlFormatProjectFile(bool value);
 /// (только при сохранении данных конфигурации в новом формате)
 bool IsUseNewProjectFilesStructure(void) const;
 bool ChangeUseNewProjectFilesStructure(bool value);
+
+///Список имен и описаний xml файлов из папки с хранилищем моделей (обычно /Bin/Models)
+const std::list<StandartXMLInCatalog>& GetStandartXMLInCatalog(void) const;
+bool SetStandartXMLInCatalog(void);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;
@@ -365,13 +381,7 @@ void UpdateLoggers(void);
 // --------------------------
 };
 
-struct StandartXMLInCatalog
-{
-/// Имя xml файла
-std::string XMLName;
-/// Имя xml файла
-std::string XMLDescription;
-};
+
 
 }
 

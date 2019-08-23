@@ -31,6 +31,7 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   connect(ui->radioButtonMSFromComponent  , SIGNAL(toggled(bool))       , this, SLOT(onMSModelFromComponent(bool)));
   connect(ui->radioButtonMSFromFile       , SIGNAL(toggled(bool))       , this, SLOT(onMSLoadModelFromFile(bool)));
   connect(ui->lineEditModelFromFile       , SIGNAL(textChanged(QString)), this, SLOT(modelFromFileNameChanged(QString)));
+  connect(ui->radioButtonFromModelsCollection, SIGNAL(toggled(bool))       , this, SLOT(onMSLoadModelFromModelsCollection(bool)));
 
   // channels number stuff
   connect(ui->checkBoxSettingToAllChannels, SIGNAL(toggled(bool)), this, SLOT(setApplySettingToAllChannels(bool)));
@@ -91,6 +92,7 @@ void UCreateConfigurationWizardWidget::onMSPredefinedModel(bool checked)
     ui->frameFromComponent->hide();
     ui->frameFromFile->hide();
     ui->framePredefinedModel->show();
+    ui->frameFromModelsCollection->hide();
 
 
     PredefinedStructuresData.clear();
@@ -135,44 +137,9 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
   {
     ui->frameFromComponent->hide();
     ui->framePredefinedModel->hide();
+    ui->frameFromModelsCollection->hide();
     ui->frameFromFile->show();
-    QStringList files;
-    std::vector< RDK::StandartXMLInCatalog > XMLArr;
 
-    //RDK::StandartXMLInCatalog* files;
-    std::string workDir = application->GetModelsMainPath().c_str();
-    std::string workDir2 = application->GetProjectPath().c_str();
-    //GetProjectPath
-    QDir dir(QString::fromLocal8Bit(application->GetModelsMainPath().c_str()));
-
-    dir.cd("../../Models/");
-    QStringList filters;
-    filters << "*.xml";
-    //dir.setNameFilters(filters);
-    files = dir.entryList(filters);
-    QStringList::Iterator it;
-    int size = 0;
-    it = files.begin();
-    dir.makeAbsolute();
-    QString path = dir.path();
-    while (it != files.end())
-    {
-        RDK::USerStorageXML XmlStorage;
-        std::string tmp=it->toLocal8Bit().constData();
-        std::string tmp2 = path.toLocal8Bit().constData();
-        tmp2=tmp2+"/"+tmp;
-        tmp = "D:/VideoAnalytics/Rtv-VideoAnalytics/Bin/Models/"+ tmp;
-        //tmp = "../../Models/" + tmp;
-        bool isTrue = XmlStorage.LoadFromFile(tmp2,"Save");
-        std::string deskr= XmlStorage.GetNodeAttribute("ModelDescription");
-        std::string name= XmlStorage.GetNodeAttribute("ModelName");
-        RDK::StandartXMLInCatalog newXMLType;
-        newXMLType.XMLName=name;
-        newXMLType.XMLDescription=deskr;
-        XMLArr.push_back(newXMLType);
-
-        ++it;
-    }
 
     /*ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = ui->lineEditModelFromFile->text().toLocal8Bit().constData();
     ProjectConfig.ChannelsConfig[channelNumber].ClassName = "";
@@ -183,12 +150,41 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
   }
 }
 
+void UCreateConfigurationWizardWidget::onMSLoadModelFromModelsCollection(bool checked)
+{
+    ui->frameFromComponent->hide();
+    ui->framePredefinedModel->hide();
+    ui->frameFromFile->hide();
+    ui->frameFromModelsCollection->show();
+
+    std::list<RDK::StandartXMLInCatalog> fileList;
+    ModelsFromFileData.clear();
+    fileList = application->GetStandartXMLInCatalog();
+    /*for (int i=0; i< fileList.size(); i++)
+    {
+       QString tmp = fileList[i].XMLName;
+       ModelsFromFileData
+    }*/
+    for (RDK::StandartXMLInCatalog n :fileList)
+    {
+          QString tmp=QString::fromStdString(n.XMLName);
+          tmp = tmp + "   " +QString::fromStdString(n.XMLDescription);
+          ModelsFromFileData.push_back(tmp);
+    }
+
+    //ModelsFromFileData
+    stringListModelsFromFile.setStringList(ModelsFromFileData);
+    ui->listViewModelsFromFile->setModel(&stringListModelsFromFile);
+    ui->listViewModelsFromFile->show();
+}
+
 void UCreateConfigurationWizardWidget::onMSModelFromComponent(bool checked)
 {
   if(checked)
   {
     ui->frameFromFile->hide();
     ui->framePredefinedModel->hide();
+    ui->frameFromModelsCollection->hide();
     ui->frameFromComponent->show();
 
     /*ProjectConfig.ChannelsConfig[channelNumber].ClassName =
@@ -478,4 +474,23 @@ void UCreateConfigurationWizardWidget::on_listViewPredefinedStructures_clicked(c
  int value=str.mid(0,pos).toInt();
  ui->spinBoxPredefinedmModelID->setValue(value);
  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, ui->spinBoxPredefinedmModelID->value());
+}
+
+void UCreateConfigurationWizardWidget::on_listViewModelsFromFile_clicked(const QModelIndex &index)
+{
+    std::list<RDK::StandartXMLInCatalog> fileList;
+    fileList = application->GetStandartXMLInCatalog();
+    std::list<RDK::StandartXMLInCatalog>::iterator itt = fileList.begin();
+    std::advance(itt, index.row());
+    RDK::StandartXMLInCatalog tmp = *itt;
+    std::string value = application->GetWorkDirectory();
+    //value = "D:/VideoAnalytics/Rtv-VideoAnalytics/Bin/Models/" + tmp.XMLName;
+    value = value + application->GetModelsMainPath();
+    value = value + tmp.XMLName;
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName, value);
+}
+
+void UCreateConfigurationWizardWidget::on_listViewModelsFromFile_activated(const QModelIndex &index)
+{
+
 }

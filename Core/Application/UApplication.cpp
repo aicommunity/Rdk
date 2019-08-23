@@ -3,6 +3,7 @@
 
 #include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../../Rdk/Deploy/Include/rdk.h"
 
 #ifndef __BORLANDC__
 #include <boost/program_options/cmdline.hpp>
@@ -41,9 +42,12 @@ UApplication::UApplication(void)
  CloseAfterTest=true;
  AppIsInit = false;
  ConfigsMainPath="../../Configs/";
- ModelsMainPath="../../Models/";
+ //ModelsMainPath="../../Models/";
+ ModelsMainPath="../../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
+ SetStandartXMLInCatalog();
+
 
  // DebugMode=false;
 }
@@ -418,6 +422,40 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
  return true;
 }
 
+const std::list<StandartXMLInCatalog>&  UApplication::GetStandartXMLInCatalog(void) const
+{
+    return xmlInCatalog;
+}
+
+bool UApplication::SetStandartXMLInCatalog(void)
+{
+    //std::string path = "D:/VideoAnalytics/Rtv-VideoAnalytics/Bin/Models/";
+    std::string path=GetWorkDirectory() + GetModelsMainPath();
+    std::string mask = "*.xml";
+    std::vector<std::string> results;
+    //int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
+    int a = FindFilesList(path, mask, true, results);
+    for (int i=0; i< results.size(); i++)
+    {
+        StandartXMLInCatalog newXMLType;
+        RDK::USerStorageXML XmlStorage;
+        std::string tmp=results[i];
+        newXMLType.XMLName=tmp;
+
+        tmp = path + tmp;
+        XmlStorage.LoadFromFile(tmp,"Save");
+        std::string deskr= XmlStorage.GetNodeAttribute("ModelDescription");
+        std::string name= XmlStorage.GetNodeAttribute("ModelName");
+
+        newXMLType.XMLDescription=deskr;
+        xmlInCatalog.push_back(newXMLType);
+    }
+
+    if (a>0)
+        return false;
+    return true;
+}
+
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
@@ -448,6 +486,10 @@ bool UApplication::Init(void)
   ProcessCommandLineArgs();
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
  }*/
+
+
+
+
  AppIsInit = true;
  return true;
 }
