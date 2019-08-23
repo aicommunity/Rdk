@@ -46,7 +46,7 @@ UApplication::UApplication(void)
  ModelsMainPath="../../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
- SetStandartXMLInCatalog();
+ //SetStandartXMLInCatalog();
 
 
  // DebugMode=false;
@@ -486,7 +486,7 @@ bool UApplication::Init(void)
   ProcessCommandLineArgs();
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
  }*/
-
+ SetStandartXMLInCatalog();
 
 
 
