@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include "QStandardItemModel"
 #include "QStandardItem"
+#include <QTextCodec>
 
 #define SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(param, value) \
   if(ui->checkBoxSettingToAllChannels->isChecked()) \
@@ -168,9 +169,13 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromModelsCollection(bool ch
     for (RDK::StandartXMLInCatalog n :fileList)
     {
           QString tmp=QString::fromStdString(n.XMLName);
-          tmp = tmp + "   " +QString::fromStdString(n.XMLDescription);
+          QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+          QByteArray byteArray(n.XMLDescription.c_str(), n.XMLDescription.length());
+          QString utf8Str = codec->toUnicode(byteArray);
+          tmp = tmp + "   " + utf8Str;
           ModelsFromFileData.push_back(tmp);
     }
+    ModelsFromFileData.sort();
 
     //ModelsFromFileData
     stringListModelsFromFile.setStringList(ModelsFromFileData);
