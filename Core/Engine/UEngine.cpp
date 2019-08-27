@@ -4337,6 +4337,7 @@ const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const 
  }
 
  return 0;
+
 }
 
 // Копирует данные 'data' в заданное свойство компонента

@@ -93,3 +93,71 @@ void UClassesListWidget::dragEvent(QModelIndex index)
 
     drag->exec(Qt::CopyAction, Qt::CopyAction);
 }
+
+void UClassesListWidget::on_lineEdit_textChanged(const QString &arg1)
+{
+    ui->treeWidgetStorageByLibs->clear();
+
+    //нициализация древовидного списка по библиотекам
+    const char * stringBuff = Storage_GetClassLibrariesList();
+    QStringList componentNames = QString(stringBuff).split(",");
+    Engine_FreeBufString(stringBuff);
+    QString str;
+    foreach(str, componentNames)
+    {
+        if(str != "")
+        {
+            if (str.contains(arg1, Qt::CaseInsensitive))
+            {
+                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
+                item->setExpanded(true);
+                item->setText(0, str);
+                stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+                QStringList libClasses = QString(stringBuff).split(",");
+                Engine_FreeBufString(stringBuff);
+                QString className;
+                foreach(className, libClasses)
+                {
+                    if(className != "")
+                    {
+                         QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
+                         classItem->setText(0, className);
+                    }
+                }
+
+            }
+            else
+            {
+                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
+                bool isLibFind = false;
+                item->setExpanded(true);
+                item->setText(0, str);
+                stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+                QStringList libClasses = QString(stringBuff).split(",");
+                Engine_FreeBufString(stringBuff);
+                QString className;
+                foreach(className, libClasses)
+                {
+                    if(className != "" && ((className.contains(arg1, Qt::CaseInsensitive))))
+                    {
+                         isLibFind = true;
+                         QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
+                         classItem->setText(0, className);
+                    }
+                }
+                if (!isLibFind)
+                {
+                    delete item;
+                }
+
+            }
+
+        }
+    }
+    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
+
+    //вот тут менять
+    /*QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Component with this name is exists. Continue by adding the next number?", QMessageBox::Yes|QMessageBox::Cancel);
+    if (reply == QMessageBox::Cancel) return;*/
+}
+

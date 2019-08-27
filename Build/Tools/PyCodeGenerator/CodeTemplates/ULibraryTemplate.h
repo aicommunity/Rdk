@@ -1,7 +1,8 @@
-#ifndef @NAMESPACE_NAME@_@CLASS_NAME@_H
-#define @NAMESPACE_NAME@_@CLASS_NAME@_H
+#ifndef @NAMESPACE_NAME@_@UPP@CLASS_NAME@_H
+#define @NAMESPACE_NAME@_@UPP@CLASS_NAME@_H
 
 #include "../../../Rdk/Deploy/Include/rdk.h"
+//open file here
 
 namespace @NAMESPACE_NAME@ {
 
