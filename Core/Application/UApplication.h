@@ -19,6 +19,7 @@
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 
+
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"
 #endif
@@ -27,6 +28,14 @@ namespace RDK {
 
 class UEngineControl;
 class UServerControl;
+
+struct StandartXMLInCatalog
+{
+/// Имя xml файла
+std::string XMLName;
+/// Имя xml файла
+std::string XMLDescription;
+};
 
 class RDK_LIB_TYPE UApplication: public UAppController
 {
@@ -39,6 +48,9 @@ std::string WorkDirectory;
 
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 std::string ConfigsMainPath;
+
+/// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
+std::string ModelsMainPath;
 
 /// Признак наличия открытого проекта
 bool ProjectOpenFlag;
@@ -73,6 +85,9 @@ bool CloseAfterTest;
 
 /// Флаг инцициализации
 bool AppIsInit;
+
+///Список имен и описаний xml файлов из папки с хранилищем моделей (обычно /Bin/Models)
+std::list<StandartXMLInCatalog> xmlInCatalog;
 
 protected: // Модули приложения
 /// Диспетчер команд
@@ -123,6 +138,10 @@ bool SetWorkDirectory(const std::string& value);
 const std::string& GetConfigsMainPath(void) const;
 bool SetConfigsMainPath(const std::string &value);
 
+/// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
+const std::string& GetModelsMainPath(void) const;
+bool SetModelsMainPath(const std::string &value);
+
 // Признак наличия открытого проекта
 bool GetProjectOpenFlag(void) const;
 bool SetProjectOpenFlag(bool value);
@@ -151,6 +170,10 @@ bool ChangeUseNewXmlFormatProjectFile(bool value);
 /// (только при сохранении данных конфигурации в новом формате)
 bool IsUseNewProjectFilesStructure(void) const;
 bool ChangeUseNewProjectFilesStructure(bool value);
+
+///Список имен и описаний xml файлов из папки с хранилищем моделей (обычно /Bin/Models)
+const std::list<StandartXMLInCatalog>& GetStandartXMLInCatalog(void) const;
+bool SetStandartXMLInCatalog(void);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;
@@ -357,6 +380,8 @@ void CalcAppCaption(void);
 void UpdateLoggers(void);
 // --------------------------
 };
+
+
 
 }
 

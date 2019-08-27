@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include "QStandardItemModel"
 #include "QStandardItem"
+#include <QTextCodec>
 
 #define SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(param, value) \
   if(ui->checkBoxSettingToAllChannels->isChecked()) \
@@ -31,6 +32,7 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   connect(ui->radioButtonMSFromComponent  , SIGNAL(toggled(bool))       , this, SLOT(onMSModelFromComponent(bool)));
   connect(ui->radioButtonMSFromFile       , SIGNAL(toggled(bool))       , this, SLOT(onMSLoadModelFromFile(bool)));
   connect(ui->lineEditModelFromFile       , SIGNAL(textChanged(QString)), this, SLOT(modelFromFileNameChanged(QString)));
+  connect(ui->radioButtonFromModelsCollection, SIGNAL(toggled(bool))       , this, SLOT(onMSLoadModelFromModelsCollection(bool)));
 
   // channels number stuff
   connect(ui->checkBoxSettingToAllChannels, SIGNAL(toggled(bool)), this, SLOT(setApplySettingToAllChannels(bool)));
@@ -91,6 +93,7 @@ void UCreateConfigurationWizardWidget::onMSPredefinedModel(bool checked)
     ui->frameFromComponent->hide();
     ui->frameFromFile->hide();
     ui->framePredefinedModel->show();
+    ui->frameFromModelsCollection->hide();
 
 
     PredefinedStructuresData.clear();
@@ -135,7 +138,9 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
   {
     ui->frameFromComponent->hide();
     ui->framePredefinedModel->hide();
+    ui->frameFromModelsCollection->hide();
     ui->frameFromFile->show();
+
 
     /*ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = ui->lineEditModelFromFile->text().toLocal8Bit().constData();
     ProjectConfig.ChannelsConfig[channelNumber].ClassName = "";
@@ -146,12 +151,45 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromFile(bool checked)
   }
 }
 
+void UCreateConfigurationWizardWidget::onMSLoadModelFromModelsCollection(bool checked)
+{
+    ui->frameFromComponent->hide();
+    ui->framePredefinedModel->hide();
+    ui->frameFromFile->hide();
+    ui->frameFromModelsCollection->show();
+
+    std::list<RDK::StandartXMLInCatalog> fileList;
+    ModelsFromFileData.clear();
+    fileList = application->GetStandartXMLInCatalog();
+    /*for (int i=0; i< fileList.size(); i++)
+    {
+       QString tmp = fileList[i].XMLName;
+       ModelsFromFileData
+    }*/
+    for (RDK::StandartXMLInCatalog n :fileList)
+    {
+          QString tmp=QString::fromStdString(n.XMLName);
+          QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+          QByteArray byteArray(n.XMLDescription.c_str(), n.XMLDescription.length());
+          QString utf8Str = codec->toUnicode(byteArray);
+          tmp = tmp + "   " + utf8Str;
+          ModelsFromFileData.push_back(tmp);
+    }
+    ModelsFromFileData.sort();
+
+    //ModelsFromFileData
+    stringListModelsFromFile.setStringList(ModelsFromFileData);
+    ui->listViewModelsFromFile->setModel(&stringListModelsFromFile);
+    ui->listViewModelsFromFile->show();
+}
+
 void UCreateConfigurationWizardWidget::onMSModelFromComponent(bool checked)
 {
   if(checked)
   {
     ui->frameFromFile->hide();
     ui->framePredefinedModel->hide();
+    ui->frameFromModelsCollection->hide();
     ui->frameFromComponent->show();
 
     /*ProjectConfig.ChannelsConfig[channelNumber].ClassName =
@@ -441,4 +479,23 @@ void UCreateConfigurationWizardWidget::on_listViewPredefinedStructures_clicked(c
  int value=str.mid(0,pos).toInt();
  ui->spinBoxPredefinedmModelID->setValue(value);
  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(PredefinedStructure, ui->spinBoxPredefinedmModelID->value());
+}
+
+void UCreateConfigurationWizardWidget::on_listViewModelsFromFile_clicked(const QModelIndex &index)
+{
+    std::list<RDK::StandartXMLInCatalog> fileList;
+    fileList = application->GetStandartXMLInCatalog();
+    std::list<RDK::StandartXMLInCatalog>::iterator itt = fileList.begin();
+    std::advance(itt, index.row());
+    RDK::StandartXMLInCatalog tmp = *itt;
+    std::string value = application->GetWorkDirectory();
+    //value = "D:/VideoAnalytics/Rtv-VideoAnalytics/Bin/Models/" + tmp.XMLName;
+    value = value + application->GetModelsMainPath();
+    value = value + tmp.XMLName;
+    SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ModelFileName, value);
+}
+
+void UCreateConfigurationWizardWidget::on_listViewModelsFromFile_activated(const QModelIndex &index)
+{
+
 }
