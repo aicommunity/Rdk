@@ -14,7 +14,7 @@
    <string>UGEngineControllWidget</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayoutCentralWidget">
+   <layout class="QFormLayout" name="formLayout">
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -27,7 +27,7 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item>
+    <item row="0" column="0">
      <widget class="QMdiArea" name="mdiArea">
       <property name="viewMode">
        <enum>QMdiArea::TabbedView</enum>
@@ -126,6 +126,7 @@
     <addaction name="actionFavoriteInformation"/>
     <addaction name="actionDrawEngine"/>
     <addaction name="actionWatchWindow"/>
+    <addaction name="actionProfiling"/>
     <addaction name="actionVASimpleSettings"/>
     <addaction name="separator"/>
     <addaction name="menuBroadcasters"/>
@@ -208,6 +209,15 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetProfiling">
+   <property name="windowTitle">
+    <string>Profiling</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3"/>
   </widget>
   <action name="actionLoadConfig">
    <property name="enabled">
@@ -597,6 +607,11 @@
    </property>
    <property name="text">
     <string>Clone</string>
+   </property>
+  </action>
+  <action name="actionProfiling">
+   <property name="text">
+    <string>Profiling</string>
    </property>
   </action>
  </widget>

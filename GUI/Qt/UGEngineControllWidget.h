@@ -21,6 +21,7 @@
 #include "UStatusPanel.h"
 #include "USettingsReaderWidget.h"
 #include "UGraphWidget.h"
+#include "UTableInfo.h"
 //////////////////////////
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
@@ -122,6 +123,7 @@ public slots:
     void actionTestCreator();
     void actionWatchWindow();
     void actionNewWatches();
+    void actionProfiling();
     //void actionVASimpleSettings();
 
 private slots:
@@ -141,12 +143,14 @@ private:
     UImagesWidget *images;
     QMainWindow *imagesWindow;
     QMainWindow *graphWindow;
+    QMainWindow *profilingWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
     UGraphWidget *graphWindowWidget;
+    UTableInfo *profilingWindowWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 
     /// Массив виджетов отображения картинок

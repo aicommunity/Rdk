@@ -210,7 +210,7 @@ void UGraphWidget::ASaveParameters()
 {
     if(!application) return;
 
-    std::cout<<"ASaveParameters()"<<std::endl;
+    //std::cout<<"ASaveParameters()"<<std::endl;
 
     QSettings settings(QString::fromLocal8Bit(
                          application->GetProjectPath().c_str())+"settings.qt", QSettings::IniFormat);
@@ -269,7 +269,7 @@ void UGraphWidget::ASaveParameters()
 void UGraphWidget::ALoadParameters()
 {
     if(!application) return;
-    std::cout<<"ALoadParameters()"<<std::endl;
+    //std::cout<<"ALoadParameters()"<<std::endl;
 
     QSettings settings(QString::fromLocal8Bit(
                        application->GetProjectPath().c_str())+"settings.qt",
@@ -344,7 +344,7 @@ void UGraphWidget::ALoadParameters()
 
 void UGraphWidget::slotActionSelectOutput()
 {
-    std::cout<<"selectDir_clicked"<<std::endl;
+    //std::cout<<"selectDir_clicked"<<std::endl;
     /*/// Ёкзепл€р класса приложени€
     RDK::UApplication *application;
     /// true - во врем€ выполнени€ AUpdateInterface, все остальное врем€ - false

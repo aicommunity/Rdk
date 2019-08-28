@@ -44,6 +44,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     //videoAnalyticsSimpleWidget=NULL;
     graphWindowWidget=NULL;
     graphWindow=NULL;
+    profilingWindow=NULL;
+    profilingWindowWidget=NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -104,6 +106,10 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     ui->dockWidgetGraph->setWidget(graphWindowWidget);
     graphWindowWidget->setWindowTitle("Graph");
 
+    profilingWindowWidget = new UTableInfo(this, application);
+    ui->dockWidgetProfiling->setWidget(profilingWindowWidget);
+    profilingWindowWidget->setWindowTitle("Profiling");
+
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
 
     createTestWidget = new UCreateTestWidget(this, application);
@@ -145,6 +151,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
+    connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
@@ -382,16 +389,41 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
-    if(!graphWindow)
+    if (!ui->dockWidgetGraph->isVisible())
     {
-        graphWindow = new QMainWindow(this);
-        graphWindow->setCentralWidget(graphWindowWidget);
+
+        if(!graphWindow )
+        {
+            graphWindow = new QMainWindow(this);
+            graphWindow->setCentralWidget(graphWindowWidget);
+        }
+        graphWindow->resize(graphWindowWidget->size());
+        graphWindow->setWindowTitle("");
+        graphWindow->show();
+        graphWindow->showNormal();
+        graphWindow->activateWindow();
     }
-    graphWindow->resize(graphWindowWidget->size());
-    graphWindow->setWindowTitle("");
-    graphWindow->show();
-    graphWindow->showNormal();
-    graphWindow->activateWindow();
+
+    //отобразить *graphWindowWidget
+//    ui->dockWidgetGraph->show();
+}
+
+void UGEngineControllWidget::actionProfiling()
+{
+    if (!ui->dockWidgetProfiling->isVisible())
+    {
+        ui->dockWidgetProfiling->show();
+        /*if(!profilingWindow)
+        {
+            profilingWindow = new QMainWindow(this);
+            profilingWindow->setCentralWidget(profilingWindowWidget);
+        }
+        profilingWindow->resize(profilingWindowWidget->size());
+        profilingWindow->setWindowTitle("Profiling");
+        profilingWindow->show();
+        profilingWindow->showNormal();
+        profilingWindow->activateWindow();*/
+    }
 
     //отобразить *graphWindowWidget
 //    ui->dockWidgetGraph->show();
