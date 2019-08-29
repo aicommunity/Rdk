@@ -413,17 +413,17 @@ void UGEngineControllWidget::actionProfiling()
     if (!ui->dockWidgetProfiling->isVisible())
     {
         ui->dockWidgetProfiling->show();
-        /*if(!profilingWindow)
-        {
-            profilingWindow = new QMainWindow(this);
-            profilingWindow->setCentralWidget(profilingWindowWidget);
-        }
-        profilingWindow->resize(profilingWindowWidget->size());
-        profilingWindow->setWindowTitle("Profiling");
-        profilingWindow->show();
-        profilingWindow->showNormal();
-        profilingWindow->activateWindow();*/
     }
+    /*if(!profilingWindow)
+    {
+        profilingWindow = new QMainWindow(this);
+        profilingWindow->setCentralWidget(profilingWindowWidget);
+    }
+    profilingWindow->resize(profilingWindowWidget->size());
+    profilingWindow->setWindowTitle("Profiling");
+    profilingWindow->show();
+    profilingWindow->showNormal();
+    profilingWindow->activateWindow();*/
 
     //отобразить *graphWindowWidget
 //    ui->dockWidgetGraph->show();

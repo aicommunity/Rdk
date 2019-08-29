@@ -35,6 +35,8 @@ class UTableInfo : public UVisualControllerWidget
         virtual void ASaveParameters();
         /// Считывание файла настроек
         virtual void ALoadParameters();
+        void updateVetorComponent(void);
+
 
 
 public slots:
@@ -46,7 +48,12 @@ public slots:
 
 private:
         Ui::UTableInfo* ui;
-        //UGraphPaintWidget* graphPainter;
+
+private:
+    /// Вектор имен элементов, которых нужно отображать в таблице
+    //int componentNameVectr;
+    std::vector<std::string> componentNameVector;
+
 };
 
 #endif

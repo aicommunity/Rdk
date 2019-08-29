@@ -80,25 +80,6 @@ void UTableInfo::AUpdateInterface()
 
 
     }
-    /*pefromance->AddAllComponents(componentname);
-    std::list<std::pair<std::string, RDK::UPerfomanceResults> > comp_perfomance2 = pefromance->GetComponentsProfilerOutputData();
-
-    cI=comp_perfomance2.begin();
-    cJ=comp_perfomance2.end();
-    for(int i=0;cI != cJ;++cI, i++)
-    {
-        // Вставляем строку
-        ui->tableWidget->insertRow(i);
-
-        ui->tableWidget->setItem(i,0, new QTableWidgetItem(cI->first.c_str()));
-        ui->tableWidget->setItem(i,1, new QTableWidgetItem(QString::number(cI->second.AvgDuration*1000)));
-    }*/
-
-
-    //pefromance->AddAllComponents(componentname);
-
-
-
 }
 
 
@@ -127,6 +108,18 @@ void UTableInfo::ALoadParameters()
     }
 }
 
+void UTableInfo::updateVetorComponent (void)
+{
+    RDK::UChannelProfiler* pefromance=application->GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
+
+    for (std::string compName : componentNameVector)
+    {
+        pefromance->AddAllComponents(compName);
+
+    }
+}
+
+
 void UTableInfo::slotSelectComponent()
 {
     if(!application)
@@ -136,6 +129,7 @@ void UTableInfo::slotSelectComponent()
     if (dialog.exec())
     {
         std::string componentName = dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data();
+        componentNameVector.push_back(componentName);
 
 
         /*selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
