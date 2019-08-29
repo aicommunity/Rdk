@@ -129,10 +129,27 @@ void UTableInfo::ALoadParameters()
 
 void UTableInfo::slotSelectComponent()
 {
+    if(!application)
+        return;
+
+    UComponentPropertySelectionWidget dialog(this, 3, application);
+    if (dialog.exec())
+    {
+        std::string componentName = dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data();
+
+
+        /*selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
+        selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
+        selectedImage->setCalcChannel(dialog.componentsList->getSelectedChannelIndex());*/
+    }
+    dialog.writeSettings(QString::fromLocal8Bit(
+                           application->GetProjectPath().c_str())+"settings.qt");
 
 }
 
-
+void UTableInfo::slotSelectAllComponents(){}
+void UTableInfo::slotDeleteAll(){}
+void UTableInfo::slotDeleteCurrentItem(){}
 
 #endif
 
