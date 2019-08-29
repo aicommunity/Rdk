@@ -56,17 +56,17 @@
   </action>
   <action name="actionselectAllComponents">
    <property name="text">
-    <string>Select All Components</string>
+    <string>Select All Main Components</string>
    </property>
   </action>
   <action name="actionDeleteAll">
    <property name="text">
-    <string>Delete all Components</string>
+    <string>Delete Extral Components</string>
    </property>
   </action>
-  <action name="actionDeleteCurrentItem">
+  <action name="actionAddGroupComponents">
    <property name="text">
-    <string>Delete current row</string>
+    <string>Add Group Components</string>
    </property>
   </action>
  </widget>

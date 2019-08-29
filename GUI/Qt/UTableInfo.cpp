@@ -35,14 +35,14 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     addAction(ui->actionSelectComponent);
     addAction(ui->actionselectAllComponents);
     addAction(ui->actionDeleteAll);
-    addAction(ui->actionDeleteCurrentItem);
+    addAction(ui->actionAddGroupComponents);
 
 
     //Соединение действия выше и слотав котором выполняется действие, кпо щелчку
     connect(ui->actionSelectComponent, SIGNAL(triggered()), this, SLOT(slotSelectComponent()));
     connect(ui->actionselectAllComponents, SIGNAL(triggered()), this, SLOT(slotSelectAllComponents()));
     connect(ui->actionDeleteAll, SIGNAL(triggered()), this, SLOT(slotDeleteAll()));
-    connect(ui->actionDeleteCurrentItem, SIGNAL(triggered()), this, SLOT(slotDeleteCurrentItem()));
+    connect(ui->actionAddGroupComponents, SIGNAL(triggered()), this, SLOT(slotAddGroupComponents()));
 
 }
 
@@ -57,7 +57,7 @@ void UTableInfo::AUpdateInterface()
 {
     int sel_index=Core_GetSelectedChannelIndex();
     RDK::UChannelProfiler* profiler=application->GetEngineControl()->GetChannelProfiler(sel_index);
-    RDK::UChannelProfiler* pefromance=application->GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
+
     if(!profiler)
         return;
     std::list<std::pair<std::string, RDK::UPerfomanceResults> > comp_perfomance = profiler->GetComponentsProfilerOutputData();
@@ -135,9 +135,41 @@ void UTableInfo::slotSelectComponent()
 
 }
 
-void UTableInfo::slotSelectAllComponents(){}
-void UTableInfo::slotDeleteAll(){}
-void UTableInfo::slotDeleteCurrentItem(){}
+
+void UTableInfo::slotSelectAllComponents()
+{
+    if(!application)
+        return;
+    RDK::UChannelProfiler* pefromance=application->GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
+    pefromance->AddAllComponents("");
+
+}
+void UTableInfo::slotDeleteAll()
+{
+    if(!application)
+        return;
+    RDK::UChannelProfiler* pefromance=application->GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
+    pefromance->DelAllComponents();
+}
+void UTableInfo::slotAddGroupComponents()
+{
+    if(!application)
+        return;
+
+    UComponentPropertySelectionWidget dialog(this, 3, application);
+    if (dialog.exec())
+    {
+        std::string componentName = dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data();
+
+        RDK::UChannelProfiler* pefromance=application->GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
+        pefromance->AddAllComponents(componentName);
+
+    }
+    dialog.writeSettings(QString::fromLocal8Bit(
+                           application->GetProjectPath().c_str())+"settings.qt");
+
+}
+
 
 #endif
 

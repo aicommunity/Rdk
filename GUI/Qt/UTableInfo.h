@@ -43,7 +43,8 @@ public slots:
         void slotSelectComponent();
         void slotSelectAllComponents();
         void slotDeleteAll();
-        void slotDeleteCurrentItem();
+        void slotAddGroupComponents();
+
 
 
 private:
