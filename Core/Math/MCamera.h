@@ -12,10 +12,10 @@ template<class T>
 class MCamera
 {
 private: // Данные камеры
-// Матрица внешней калибровки
+/// Матрица внешней калибровки
 MMatrix<T,4,4> Ecc;
 
-// Обратная матрица внешней калибровки
+/// Обратная матрица внешней калибровки
 MMatrix<T,4,4> InvEcc;
 
 public: // Методы
@@ -27,38 +27,38 @@ MCamera(const MCamera& copy);
 virtual ~MCamera(void);
 // --------------------------
 
-// Управление матрицей внешней калибровки камеры
+/// Управление матрицей внешней калибровки камеры
 const MMatrix<T,4,4>& GetEcc(void) const;
 const MMatrix<T,4,4>& GetInvEcc(void) const;
 bool SetEcc(const MMatrix<T,4,4>& value);
 bool SetInvEcc(const MMatrix<T,4,4>& value);
 
-// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
+/// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
 virtual MVector<T,3> CalcPixelPositionFromNormalPosition(const MVector<T,3> &point)=0;
 
-// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
+/// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
 virtual MVector<T,3> CalcDistortPixelPosition(const MVector<T,3> &undistort_pixel)=0;
 
-// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
+/// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
 virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixel)=0;
 
-// Вычисляет положение точки на кадре по положению точки в пространстве
+/// Вычисляет положение точки на кадре по положению точки в пространстве
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point)=0;
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point)=0;
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
 
-// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
+/// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance)=0;
 
-// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
-// h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
+/// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
+/// h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
 virtual T CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distance)=0;
 
-// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
+/// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
 virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length)=0;
 
-// Преобразует 3D геометрию в 2D
+/// Преобразует 3D геометрию в 2D
 virtual void Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeometry<T,3> &geometry_2d);
 
 /// Преобразует 3D геометрию в 2D
@@ -76,10 +76,10 @@ template<class T>
 class MCameraStandard: public MCamera<T>
 {
 private: // Данные
-// Матрица внутренней калибровки
+/// Матрица внутренней калибровки
 MMatrix<T,3,3> Icc;
 
-// Обратная матрица внутренней калибровки
+/// Обратная матрица внутренней калибровки
 MMatrix<T,3,3> InvIcc;
 
 // Модель дисторсии
@@ -94,8 +94,14 @@ int DistortionMode;
 /// 1 - fisheye (opencv)
 int CameraMode;
 
-// К-ты дисторсии
+/// К-ты дисторсии
 MDVector<double> DistortionCoeff;
+
+/// Ширина изображения на котором проводилась калибровка
+int CalibrationWidth;
+
+/// Высота изображения на котором проводилась калибровка
+int CalibrationHeight;
 
 public: // Методы
 // --------------------------
@@ -106,49 +112,57 @@ MCameraStandard(const MCameraStandard& copy);
 virtual ~MCameraStandard(void);
 // --------------------------
 
-// Управление матрицей внутренней калибровки камеры
+/// Управление матрицей внутренней калибровки камеры
 const MMatrix<T,3,3>& GetIcc(void) const;
 const MMatrix<T,3,3>& GetInvIcc(void) const;
-bool SetIcc(const MMatrix<T,3,3>& value);
-bool SetInvIcc(const MMatrix<T,3,3>& value);
+virtual bool SetIcc(const MMatrix<T,3,3>& value);
+virtual bool SetInvIcc(const MMatrix<T,3,3>& value);
 
-// Модель дисторсии
+/// Модель дисторсии
 const int& GetDistortionMode(void) const;
-bool SetDistortionMode(const int &value);
+virtual bool SetDistortionMode(const int &value);
 
 /// Модель камеры
 /// 0 - обычная (pinhole)
 /// 1 - fisheye (opencv)
 const int& GetCameraMode(void) const;
-bool SetCameraMode(const int& value);
+virtual bool SetCameraMode(const int& value);
 
-// К-ты дисторсии
+/// К-ты дисторсии
 const MDVector<T>& GetDistortionCoeff(void) const;
-bool SetDistortionCoeff(const MDVector<T>& value);
+virtual bool SetDistortionCoeff(const MDVector<T>& value);
 
-// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
+/// Ширина изображения на котором проводилась калибровка
+const int& GetCalibrationWidth(void) const;
+virtual bool SetCalibrationWidth(const int& value);
+
+/// Высота изображения на котором проводилась калибровка
+const int& GetCalibrationHeight(void) const;
+virtual bool SetCalibrationHeight(const int& value);
+
+/// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
 virtual MVector<T,3> CalcPixelPositionFromNormalPosition(const MVector<T,3> &point);
 
-// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
+/// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
 virtual MVector<T,3> CalcDistortPixelPosition(const MVector<T,3> &undistort_pixel);
 
-// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
+/// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
 virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixel);
 
-// Вычисляет положение точки на кадре по положению точки в пространстве
+/// Вычисляет положение точки на кадре по положению точки в пространстве
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point);
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point);
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
 
-// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
+/// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance);
 
-// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
-// h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
+/// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
+/// h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
 virtual T CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distance);
 
-// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
+/// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
 virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length);
 
 /// Вычисляет угловое значение пикселя в модели камеры
@@ -160,17 +174,17 @@ virtual T CalcPixelXByAngle(T angle) const;
 virtual T CalcPixelYByAngle(T angle) const;
 
 /// Вычисляет матрицу внутренней калибровки по известным полям зрения
-virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc);
+virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc, MMatrix<T,3,3> &norm_icc);
 
 /// Вычисляет матрицу внутренней калибровки по известным полям зрения
 virtual bool CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height);
 
 protected: // Скрытые методы
 
-// Функция вычисления дисторсии для fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
+/// Функция вычисления дисторсии для fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
 T FuncTheta(T thetaD, T Xthet) const;
 
-// Метод хорд для нахождения численного решения уравнения относительно theta
+/// Метод хорд для нахождения численного решения уравнения относительно theta
 T ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const;
 
 
@@ -281,7 +295,7 @@ void MCamera<T>::Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<
 // --------------------------
 template<class T>
 MCameraStandard<T>::MCameraStandard(void)
-: MCamera<T>(), DistortionMode(0), CameraMode(0)
+: MCamera<T>(), DistortionMode(0), CameraMode(0), CalibrationWidth(0), CalibrationHeight(0)
 {
  SetIcc(MMatrix<T,3,3>::Eye());
 }
@@ -371,6 +385,35 @@ bool MCameraStandard<T>::SetDistortionCoeff(const MDVector<T>& value)
 {
  DistortionCoeff.Resize(value.GetSize());
  DistortionCoeff=value;
+ return true;
+}
+
+
+/// Ширина изображения на котором проводилась калибровка
+template<class T>
+const int& MCameraStandard<T>::GetCalibrationWidth(void) const
+{
+ return CalibrationWidth;
+}
+
+template<class T>
+bool MCameraStandard<T>::SetCalibrationWidth(const int& value)
+{
+ CalibrationWidth=value;
+ return true;
+}
+
+/// Высота изображения на котором проводилась калибровка
+template<class T>
+const int& MCameraStandard<T>::GetCalibrationHeight(void) const
+{
+ return CalibrationHeight;
+}
+
+template<class T>
+bool MCameraStandard<T>::SetCalibrationHeight(const int& value)
+{
+ CalibrationHeight=value;
  return true;
 }
 
@@ -885,7 +928,7 @@ T MCameraStandard<T>::CalcPixelYByAngle(T angle) const
 
 /// Вычисляет матрицу внутренней калибровки по известным полям зрения
 template<class T>
-bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc)
+bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc, MMatrix<T,3,3> &norm_icc)
 {
  switch(CameraMode)
  {
@@ -923,6 +966,13 @@ bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_
  }
  break;
  }
+
+ // Вычисляем нормированную ICC
+ norm_icc(0,0)/=image_width;
+ norm_icc(1,1)/=image_height;
+ norm_icc(0,2)/=image_width;
+ norm_icc(1,2)/=image_height;
+
  return true;
 }
 
