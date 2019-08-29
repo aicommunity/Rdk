@@ -74,12 +74,14 @@ void UTableInfo::AUpdateInterface()
     {
         // Вставляем строку
         ui->tableWidget->insertRow(i);
+        QString a =  cI->first.c_str();
+        a.remove("\r\n");
+        ui->tableWidget->setItem(i,0, new QTableWidgetItem(a));
 
-        ui->tableWidget->setItem(i,0, new QTableWidgetItem(cI->first.c_str()));
+        //ui->tableWidget->setItem(i,0, new QTableWidgetItem(cI->first.c_str()));
         ui->tableWidget->setItem(i,1, new QTableWidgetItem(QString::number(cI->second.AvgDuration*1000)));
-
-
     }
+
 }
 
 
@@ -95,12 +97,6 @@ void UTableInfo::ASaveParameters()
 void UTableInfo::ALoadParameters()
 {
     if(!application) return;
-    /*int sel_index=Core_GetSelectedChannelIndex();
-    RDK::UChannelProfiler* profiler=application->GetEngineControl()->GetChannelProfiler(sel_index);
-    if(!profiler)
-        return;
-    std::list<std::pair<std::string, RDK::UPerfomanceResults> > comp_perfomance = profiler->GetComponentsProfilerOutputData();
-    std::list<std::pair<std::string, RDK::UPerfomanceResults> >::iterator cI=comp_perfomance.begin(),cJ=comp_perfomance.end();*/
     int rowCount =ui->tableWidget->rowCount();
     for (int j=rowCount-1; j>=0; j--)
     {
@@ -108,15 +104,12 @@ void UTableInfo::ALoadParameters()
     }
 }
 
-void UTableInfo::updateVetorComponent (void)
+void UTableInfo::updateVetorComponent (std::string compName)
 {
     RDK::UChannelProfiler* pefromance=application->GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
 
-    for (std::string compName : componentNameVector)
-    {
-        pefromance->AddAllComponents(compName);
+    pefromance->AddComponent(compName);
 
-    }
 }
 
 
@@ -129,7 +122,8 @@ void UTableInfo::slotSelectComponent()
     if (dialog.exec())
     {
         std::string componentName = dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data();
-        componentNameVector.push_back(componentName);
+        //componentNameVector.push_back(componentName);
+        updateVetorComponent(componentName);
 
 
         /*selectedImage->setComponentName(dialog.componentsList->getSelectedComponentLongName());
