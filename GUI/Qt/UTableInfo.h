@@ -11,6 +11,7 @@ namespace Ui {
 class UTableInfo;
 }
 
+///Виджет отрисовки таблицы с временем выполнения отдельных компонентов и некоторых их совокупностей
 class UTableInfo : public UVisualControllerWidget
 {
         Q_OBJECT
@@ -40,9 +41,15 @@ class UTableInfo : public UVisualControllerWidget
 
 
 public slots:
+        ///Выбор компонента, информацию о времени выполнении которого необходимо добавить в таблицу
         void slotSelectComponent();
+        ///Выбор внешних компонентов
         void slotSelectAllComponents();
+        /// Удаление всех не базовых компонентов из таблицы
+        /// Базовые: Model, Overhead, Full Step, Gui
         void slotDeleteAll();
+        ///Выбор компонента, информацию о времени выполнении всех его составных частей которого необходимо добавить в таблицу
+        /// если компонент не сдержит в себе других компонентов. ничего не произойдет
         void slotAddGroupComponents();
 
 
