@@ -13,16 +13,16 @@ private:
 
 public:
     UDllLoaderQt();
-    UDllLoaderQt(std::string dll_name);
+	UDllLoaderQt(const std::string &dll_name);
     virtual ~UDllLoaderQt();
 
     virtual bool Load(void);
-    virtual bool Load(std::string dll_name);
+	virtual bool Load(const std::string &dll_name);
     virtual bool isLoaded();
 
     /// QLibrary НЕ выгрузит бибилиотеку, пока все созданные объекты Qlibrary не сделаю UnLoad
     virtual bool UnLoad(void);
-    virtual void * Resolve(std::string symbol);
+	virtual void * Resolve(const std::string &symbol);
     virtual std::string GetErrorString();
 };
 
@@ -32,7 +32,7 @@ UDllLoaderQt::UDllLoaderQt()
 
 }
 
-UDllLoaderQt::UDllLoaderQt(std::string dll_name)
+UDllLoaderQt::UDllLoaderQt(const std::string &dll_name)
 {
     library.setFileName(QString::fromLocal8Bit(dll_name.c_str()));
 }
@@ -47,7 +47,7 @@ bool UDllLoaderQt::Load(void)
     return library.load();
 }
 
-bool UDllLoaderQt::Load(std::string dll_name)
+bool UDllLoaderQt::Load(const std::string &dll_name)
 {
     library.setFileName(QString::fromLocal8Bit(dll_name.c_str()));
     return library.load();
@@ -63,7 +63,7 @@ bool UDllLoaderQt::UnLoad(void)
     return library.unload();
 }
 
-void *UDllLoaderQt::Resolve(std::string symbol)
+void *UDllLoaderQt::Resolve(const std::string &symbol)
 {
     return (void *)library.resolve(symbol.c_str());
 }
