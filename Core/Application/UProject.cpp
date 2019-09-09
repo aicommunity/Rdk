@@ -141,6 +141,8 @@ TProjectConfig::TProjectConfig(void)
 
  MTUpdateInterfaceInterval=30;
 
+ GuiUpdateMode = 0;
+
  NumChannels=1;
  ChannelsConfig.resize(1);
 }
@@ -188,6 +190,8 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  EventsLogMode=copy.EventsLogMode;
  OverrideLogParameters=copy.OverrideLogParameters;
  MTUpdateInterfaceInterval=copy.MTUpdateInterfaceInterval;
+
+ GuiUpdateMode = copy.GuiUpdateMode;
 }
 
 bool TProjectConfig::operator != (const TProjectConfig& copy) const
@@ -215,6 +219,7 @@ bool TProjectConfig::operator != (const TProjectConfig& copy) const
  (DebugSysEventsMask != copy.DebugSysEventsMask) ||
  (DebuggerMessageFlag != copy.DebuggerMessageFlag) ||
  (MTUpdateInterfaceInterval != copy.MTUpdateInterfaceInterval) ||
+ (GuiUpdateMode != copy.GuiUpdateMode) ||
  (EventsLogMode != copy.EventsLogMode) ||
  (OverrideLogParameters != copy.OverrideLogParameters);
 }
@@ -449,6 +454,8 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
  Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
 
  Config.MTUpdateInterfaceInterval=xml.ReadInteger("MTUpdateInterfaceInterval",30);
+ Config.GuiUpdateMode=xml.ReadInteger("GuiUpdateMode",0);
+
 
  int num_engines=xml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
@@ -573,6 +580,7 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
  Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
 
  Config.MTUpdateInterfaceInterval=xml.ReadInteger("MTUpdateInterfaceInterval",30);
+ Config.GuiUpdateMode=xml.ReadInteger("GuiUpdateMode",0);
 
  int num_engines=xml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
@@ -678,6 +686,7 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
  xml.WriteInteger("MTUpdateInterfaceInterval",Config.MTUpdateInterfaceInterval);
+ xml.WriteInteger("GuiUpdateMode",Config.GuiUpdateMode);
 
  for(int i=0;i<Config.NumChannels;i++)
  {
@@ -851,6 +860,7 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
  xml.WriteInteger("MTUpdateInterfaceInterval",Config.MTUpdateInterfaceInterval);
+ xml.WriteInteger("GuiUpdateMode",Config.GuiUpdateMode);
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
 

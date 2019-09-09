@@ -41,6 +41,12 @@ RDK::UELockVar<int> UseControllersMode;
 /// По умолчанию равно 100, может меняться методами get/set
 RDK::UELockVar<int> UpdateInterval;
 
+/// Режим обновления отрисовки GUI
+/// 0 - В обычном режиме, независимо от работы каналов
+/// 1 - Режим ожидания завершения расчета каналов перед отрисовкой GUI
+/// (во время отрисовки каналы не ведут расчет, исключая внутренние потоки компонентов)
+RDK::UELockVar<int> GuiUpdateMode;
+
 protected: // Данные
 /// Указатель на экземпляр приложения
 UEPtr<UApplication> Application;
@@ -97,7 +103,14 @@ bool SetCalculationTimeSource(int channel_index, int value);
 
 /// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
 RDK::UTime GetMinInterstepsInterval(int channel_index) const;
-bool SetMinInterstepsInterval(int channel_index, RDK::UTime value);
+bool SetMinInterstepsInterval(int channel_index, RDK::UTime value);    \
+
+/// Режим обновления отрисовки GUI
+/// 0 - В обычном режиме, независимо от работы каналов
+/// 1 - Режим ожидания завершения расчета каналов перед отрисовкой GUI
+/// (во время отрисовки каналы не ведут расчет, исключая внутренние потоки компонентов)
+int GetGuiUpdateMode(void) const;
+bool SetGuiUpdateMode(int value);
 // --------------------------
 
 // --------------------------

@@ -22,7 +22,9 @@ UEngineControl::UEngineControl(void)
 
     UseControllersMode=0;
 
-    UpdateInterval = 100;
+	UpdateInterval = 100;
+
+    SetGuiUpdateMode(0);
 
     InitFlag=false;
 
@@ -118,6 +120,27 @@ bool UEngineControl::SetMinInterstepsInterval(int channel_index, RDK::UTime valu
  if(channel_index>=int(EngineControlThreads.size()))
   return false;
  EngineControlThreads[channel_index]->SetMinInterstepsInterval(value);
+ return true;
+}
+
+/// –ежим обновлени€ отрисовки GUI
+/// 0 - ¬ обычном режиме, независимо от работы каналов
+/// 1 - –ежим ожидани€ завершени€ расчета каналов перед отрисовкой GUI
+/// (во врем€ отрисовки каналы не ведут расчет, исключа€ внутренние потоки компонентов)
+int UEngineControl::GetGuiUpdateMode(void) const
+{
+ return GuiUpdateMode;
+}
+
+bool UEngineControl::SetGuiUpdateMode(int value)
+{
+ if(GuiUpdateMode == value)
+  return true;
+
+ if(GuiUpdateMode<0 || GuiUpdateMode>1)
+  return false;
+
+ GuiUpdateMode=value;
  return true;
 }
 // --------------------------
@@ -480,6 +503,23 @@ void UEngineControl::TimerExecute(void)
 
  case 1:
  {
+  int num_channels=GetNumChannels();
+  if(GuiUpdateMode == 1)
+  {
+   for(int i=0;i<num_channels;i++)
+   {
+    EngineControlThreads[i]->WaitSyncSignal();
+   }
+
+   for(int i=0;i<num_channels;i++)
+   {
+	if(EngineControlThreads[i]->WaitForCalculationComplete(UpdateInterval) == false)
+	{
+	 MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_WARNING, (std::string("Calculation doesn't complete for channel #")+sntoa(i)+std::string(" by GUI UpdateInterval=")+sntoa(UpdateInterval)+" ms").c_str());
+	}
+   }
+  }
+
   if(UseControllersMode == 0)
    RDK::UIControllerStorage::AfterCalculate(-1);
 
@@ -490,12 +530,10 @@ void UEngineControl::TimerExecute(void)
   catch(std::exception &ex)
   {
    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:SendMetadata - ")+ex.what()).c_str());
-   throw;
   }
   catch(...)
   {
    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:SendMetadata - unhandled exception");
-   throw;
   }
 //  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
@@ -505,7 +543,6 @@ void UEngineControl::TimerExecute(void)
 
   try
   {
-   int num_channels=GetNumChannels();
    for(int i=0;i<num_channels;i++)
    {
 	EngineControlThreads[i]->GetProfiler()->CalculateGui();
@@ -519,7 +556,14 @@ void UEngineControl::TimerExecute(void)
   catch(...)
   {
    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
-   throw;
+  }
+
+  if(GuiUpdateMode == 1)
+  {
+   for(int i=0;i<num_channels;i++)
+   {
+	EngineControlThreads[i]->WaitSyncSignalOff();
+   }
   }
  }
  break;

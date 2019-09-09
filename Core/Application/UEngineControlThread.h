@@ -83,6 +83,8 @@ UGenericEvent* CalcStarted;
 
 UGenericEvent* CalculationNotInProgress;
 
+UGenericEvent* CalcWaitOff;
+
 protected: // Потоки
 /// Поток расчета
 boost::thread Thread;
@@ -160,6 +162,15 @@ virtual UEngineControlThread::UCalcState CheckCalcState(void) const;
 /// Возвращает true когда завершится текущая итерация расчета за заданный timeout
 /// Если timeout == -1 То ждет с таймаутом по умолчанию
 virtual bool WaitForCalculationComplete(int timeout=-1) const;
+
+/// Включает режим ожидания
+/// Снимает состояние события CalcWaitOff и немедленно отдает управление
+/// НЕ ожидает окончание итерации расчета
+virtual void WaitSyncSignal(void);
+
+/// Выключает режим ожидания
+/// Взводит состояние события CalcWaitOff и немедленно отдает управление
+virtual void WaitSyncSignalOff(void);
 
 /// Возвращает состояния запуска треда
 virtual int IsCalcStarted(void) const;

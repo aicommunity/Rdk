@@ -782,6 +782,8 @@ try{
   Sleep(0);
  }
 
+ EngineControl->SetGuiUpdateMode(config.GuiUpdateMode);
+
  if(selected_channel_index>=GetNumChannels())
   selected_channel_index=0;
 

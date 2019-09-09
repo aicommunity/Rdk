@@ -50,6 +50,8 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
 
  CalculationNotInProgress=UCreateEvent(true);
 
+ CalcWaitOff=UCreateEvent(true);
+
  RealLastCalculationTime=0.0;
  CalculationTime=0.0;
  ServerTimeStamp=0.0;
@@ -67,6 +69,7 @@ UEngineControlThread::~UEngineControlThread(void)
  Terminated=true;
  Thread.join();
 
+ UDestroyEvent(CalcWaitOff);
  UDestroyEvent(CalcState);
  UDestroyEvent(CalcEnable);
  UDestroyEvent(CalcStarted);
@@ -221,6 +224,7 @@ void UEngineControlThread::Calculate(void)
   {
    if(CalcEnable->wait(30) == false)
 	return;
+
    CalcEnable->reset();
   }
 
@@ -298,6 +302,9 @@ void UEngineControlThread::Execute(void)
    if(CalcStarted->wait(30) == false)
 	continue;
 
+   if(CalcWaitOff->wait(30) == false)
+	continue;
+
    Calculate();
   }
   catch(RDK::UException &ex)
@@ -336,6 +343,22 @@ bool UEngineControlThread::WaitForCalculationComplete(int timeout) const
  return CalculationNotInProgress->wait(ThreadTimeout);
 }
 
+
+/// Включает режим ожидания
+/// Снимает состояние события CalcWaitOff
+/// и ожидает окончание итерации расчета
+void UEngineControlThread::WaitSyncSignal(void)
+{
+ CalcWaitOff->reset();
+}
+
+/// Выключает режим ожидания
+/// Взводит состояние события CalcWaitOff и отдает управление
+void UEngineControlThread::WaitSyncSignalOff(void)
+{
+ CalcWaitOff->set();
+}
+
 /// Возвращает состояния запуска треда
 int UEngineControlThread::IsCalcStarted(void) const
 {
@@ -360,6 +383,7 @@ void UEngineControlThread::Start(void)
 
  CalcStarted->set();
  CalcState->set();
+ CalcWaitOff->set();
 }
 
 /// Останавливает аналитику канала
