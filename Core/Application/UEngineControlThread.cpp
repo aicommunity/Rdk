@@ -246,6 +246,9 @@ void UEngineControlThread::Calculate(void)
    return;
   }
 
+  // Взяли блокировку канала т.к. дальше будет много обращений в ядро
+  UELockPtr<UContainer> model=GetModelLock(EngineIndex);
+
   int use_controllers_mode=EngineControl->GetUseControllersMode();
   if(use_controllers_mode == 1)
    RDK::UIControllerStorage::BeforeCalculate(EngineIndex);
