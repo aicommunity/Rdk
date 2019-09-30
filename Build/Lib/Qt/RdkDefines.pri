@@ -28,6 +28,7 @@ contains(DEFINES,RDK_USE_PYTHON) {
 
 
 unix {
+    INCLUDEPATH += $$(BOOST_PATH)#/include
     INCLUDEPATH += $$(BOOST_PATH)/include
     INCLUDEPATH += $$(OPENCV3_PATH)/include
 
