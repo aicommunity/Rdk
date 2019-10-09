@@ -14,9 +14,10 @@ void ExceptionHandler(int channel_index)
   return;
 
  UGenericMutexExclusiveLocker locker(UEngineStateThread::GetRdkExceptionHandlerMutex());
+ std::list<int>& ch_indexes_ref=UEngineStateThread::GetUnsentLogChannelIndexes();
 
- if(find(UEngineStateThread::GetUnsentLogChannelIndexes().begin(), UEngineStateThread::GetUnsentLogChannelIndexes().end(),channel_index) == UEngineStateThread::GetUnsentLogChannelIndexes().end())
-  UEngineStateThread::GetUnsentLogChannelIndexes().push_back(channel_index);
+ if(find(ch_indexes_ref.begin(), ch_indexes_ref.end(),channel_index) == ch_indexes_ref.end())
+  ch_indexes_ref.push_back(channel_index);
 }
 
 namespace RDK {
@@ -29,6 +30,8 @@ UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 {
  if(!GetRdkExceptionHandlerMutex())
   GetRdkExceptionHandlerMutex()=UCreateMutex();
+
+ GetUnsentLogChannelIndexes();
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  TUThreadInfo info;
  info.Name="UEngineStateThread";
@@ -367,8 +370,13 @@ void UEngineStateThread::ProcessLog(void)
  std::list<int> ch_indexes;
  {
   UGenericMutexExclusiveLocker locker(GetRdkExceptionHandlerMutex());
-  ch_indexes=GetUnsentLogChannelIndexes();
-  GetUnsentLogChannelIndexes().clear();
+  std::list<int>& ch_indexes_ref=GetUnsentLogChannelIndexes();
+
+  if(!ch_indexes_ref.empty())
+  {
+   ch_indexes=ch_indexes_ref;
+   ch_indexes_ref.clear();
+  }
  }
 
  if(ch_indexes.empty())

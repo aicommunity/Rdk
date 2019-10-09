@@ -1,5 +1,7 @@
 #include "UEngineControlQt.h"
+#ifdef QT_GUI_LIB
 #include <UVisualControllerWidget.h>
+#endif
 
 UEngineControlQt::UEngineControlQt(QObject *parent):
     QObject(parent)
@@ -21,12 +23,16 @@ void UEngineControlQt::StartChannel(int channel_index)
     switch(GetThreadMode())
     {
     case 0:
+        #ifdef QT_GUI_LIB
         UVisualControllerWidget::CalculationModeFlag=true;
+        #endif
         timer->start(1, this);
         break;
 
     case 1:
+        #ifdef QT_GUI_LIB
         UVisualControllerWidget::CalculationModeFlag=true;
+        #endif
         timer->start(GetApplication()->GetProjectConfig().MTUpdateInterfaceInterval, this);
         break;
     }
@@ -38,12 +44,16 @@ void UEngineControlQt::PauseChannel(int channel_index)
     switch(GetThreadMode())
     {
     case 0:
+        #ifdef QT_GUI_LIB
         UVisualControllerWidget::CalculationModeFlag=false;
+        #endif
         timer->stop();
         break;
 
     case 1:
+        #ifdef QT_GUI_LIB
         UVisualControllerWidget::CalculationModeFlag=false;
+        #endif
         timer->stop();
         break;
     }
