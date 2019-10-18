@@ -301,10 +301,10 @@ void MGraphics<T,Rows>::Repaint(void)
 
    // Отрисовываем контуры
    Graphics->SetPenWidth(Descriptions[i].PenWidth);
-   for(size_t j=0;j<geometry.GetNumBorders();j++)
+   for(int j=0;j<int(geometry.GetNumBorders());j++)
    {
-	if(geometry.Border(j).size()>0)
-	 for(size_t k=0;k<geometry.Border(j).size()-1;k++)
+    if(geometry.Border(j).size()>0)
+     for(int k=0;k<int(geometry.Border(j).size())-1;k++)
      {
 	  MVector<T,Rows> v1=vertices[geometry.Border(j)[k]];
 	  MVector<T,Rows> v2=vertices[geometry.Border(j)[k+1]];

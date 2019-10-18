@@ -539,7 +539,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    // Tsai/cal_tran.cpp
    //void      Tsai::undistorted_to_distorted_sensor_coord (double Xu, double Yu, double *Xd, double *Yd)
    double Ru, Rd, lambda, c, d, Q, R, D, S, TT, sinT, cosT;
-   double Xu, Yu, Xd, Yd;	// a, b, x', y' - Здесь и ниже в комментах обозначения OpenCv
+   double Xu, Yu;	// a, b, x', y' - Здесь и ниже в комментах обозначения OpenCv
    double kappa1;	// k1 (?)
 
    Xu = DistortionCoeff(1)*point(0);	// a
