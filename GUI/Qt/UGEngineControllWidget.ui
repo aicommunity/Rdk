@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>979</width>
+    <width>744</width>
     <height>548</height>
    </rect>
   </property>
@@ -14,7 +14,13 @@
    <string>UGEngineControllWidget</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QFormLayout" name="formLayout">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -27,8 +33,20 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item row="0" column="0">
+    <item>
      <widget class="QMdiArea" name="mdiArea">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="background">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>160</red>
+         <green>160</green>
+         <blue>160</blue>
+        </color>
+       </brush>
+      </property>
       <property name="viewMode">
        <enum>QMdiArea::TabbedView</enum>
       </property>
@@ -47,7 +65,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>979</width>
+     <width>744</width>
      <height>21</height>
     </rect>
    </property>
