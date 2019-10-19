@@ -159,6 +159,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     readSettings();
 }
 
+
+
 UGEngineControllWidget::~UGEngineControllWidget()
 {
     application->UnInit();
@@ -612,4 +614,18 @@ void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
 void UGEngineControllWidget::showChannelsWidget (void)
 {
     channels->show();
+}
+
+void UGEngineControllWidget::closeEvent(QCloseEvent *event)
+{
+ application->PauseChannel(-1);
+ application->CloseProject();
+ application->UnInit();
+ event->accept();
+ //   if (maybeSave()) {
+ //       writeSettings();
+ //       event->accept();
+ //   } else {
+ //       event->ignore();
+ //   }
 }

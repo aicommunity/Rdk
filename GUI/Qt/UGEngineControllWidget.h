@@ -129,7 +129,7 @@ public slots:
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
 
-
+    void closeEvent(QCloseEvent *event);
 
 private:
     // data
