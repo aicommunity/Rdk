@@ -216,8 +216,8 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
 /// Обрезает лидирующие и завершающие пробелы в строке
 RDK_LIB_TYPE std::string trim_spaces(const std::string &str)
 {
- std::string::size_type first_sym=str.find_first_not_of(" /r/n/t");
- std::string::size_type last_sym=str.find_last_not_of(" /r/n/t");
+ std::string::size_type first_sym=str.find_first_not_of(" \r\n\t");
+ std::string::size_type last_sym=str.find_last_not_of(" \r\n\t");
  if(first_sym == std::string::npos || last_sym == std::string::npos)
   return "";
  return str.substr(first_sym,last_sym-first_sym+1);
