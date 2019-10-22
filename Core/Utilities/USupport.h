@@ -357,10 +357,11 @@ inline int signum(T x)
 }
 #endif
 
+/// Обрезает лидирующие и завершающие пробелы в строке
+RDK_LIB_TYPE std::string trim_spaces(const std::string &str);
 
 /// Извлекает путь из полного имени файла
 RDK_LIB_TYPE std::string extract_file_path(const std::string& full_name);
-
 
 /// Извлекает имя файла из полного имени файла
 RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
