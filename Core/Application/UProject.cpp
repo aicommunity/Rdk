@@ -574,14 +574,13 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
 
  Config.EventsLogFlag=xml.ReadBool("EventsLogEnabled",true);
  Config.ProjectShowChannelsStates=xml.ReadBool("ProjectShowChannelsStates",true);
+ Config.GuiUpdateMode=xml.ReadInteger("GuiUpdateMode",0);
 
  int calc_time_mode=xml.ReadInteger("CalculationTimeSourceMode",0);
 
  Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
 
  Config.MTUpdateInterfaceInterval=xml.ReadInteger("MTUpdateInterfaceInterval",30);
- Config.GuiUpdateMode=xml.ReadInteger("GuiUpdateMode",0);
-
  int num_engines=xml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;

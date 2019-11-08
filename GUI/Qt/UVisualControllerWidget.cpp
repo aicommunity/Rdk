@@ -12,6 +12,12 @@ UVisualControllerWidget::UVisualControllerWidget(QWidget *parent, RDK::UApplicat
     CalculationStepUpdatedFlag=false;
     CheckModelFlag=true;
 
+    /// Время последнего обновления
+    LastUpdateTime=0;
+
+    /// Время, потраченное на обновление интерфейса
+    UpdateTime=0;
+
     RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -158,7 +164,7 @@ void UVisualControllerWidget::AAfterCalculate(void)
 void UVisualControllerWidget::UpdateInterface(bool force_update)
 {
     if(UpdateInterval.Get() == 0 && !force_update) return;
-    unsigned long long current_time=0;
+    unsigned long long current_time=RDK::GetCurrentStartupTime();
     try
     {
         //  UpdateTime=RDK::GetCurrentStartupTime();
@@ -170,13 +176,13 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
             //if(!Showing && !AlwaysUpdateFlag)
             if(!isVisible() && !AlwaysUpdateFlag)
             {
-                UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
+                //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                 return;
             }
             //не обновляется если отец невидим и е проставлен AlwaysUpdateFlag
             if(!parentWidget() || (!AlwaysUpdateFlag && !(parentWidget()->isVisible())) || (UpdateInterval<0 && CalculationModeFlag))
             {
-                UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
+                //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                 return;
             }
             if(UpdateInterval>0 && CalculationModeFlag)
@@ -184,13 +190,13 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
                 unsigned long long curr_time=RDK::GetCurrentStartupTime();
                 if(curr_time-LastUpdateTime<(unsigned long long)(UpdateInterval))
                 {
-                    UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
+                    //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                     return;
                 }
 
                 if(GetCalculationStepUpdatedFlag() == true)
                 {
-                    UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
+                   // UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                     return;
                 }
                 else
@@ -202,17 +208,17 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
 
         if(!Core_IsChannelInit())
         {
-            UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
+           // UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
             return;
         }
 
         if(CheckModelFlag && !Model_Check())
         {
-            UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
+           // UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
             return;
         }
         UpdateInterfaceFlag=true;
-        current_time=RDK::GetCurrentStartupTime();
+ //       current_time=RDK::GetCurrentStartupTime();
         AUpdateInterface();
     }
     catch (RDK::UException &exception)

@@ -137,7 +137,7 @@ bool UEngineControl::SetGuiUpdateMode(int value)
  if(GuiUpdateMode == value)
   return true;
 
- if(GuiUpdateMode<0 || GuiUpdateMode>1)
+ if(value<0 || value>1)
   return false;
 
  GuiUpdateMode=value;
@@ -433,7 +433,7 @@ void UEngineControl::StepChannel(int channel_index)
    if(MCore_IsChannelInit(i) && MModel_Check(i))
    {
 	EngineControlThreads[i]->EnableCalculation();
-	EngineControlThreads[i]->Calculate();
+    EngineControlThreads[i]->Calculate();
    }
   }
  }
@@ -513,9 +513,10 @@ void UEngineControl::TimerExecute(void)
 
    for(int i=0;i<num_channels;i++)
    {
-	if(EngineControlThreads[i]->WaitForCalculationComplete(UpdateInterval) == false)
+    unsigned long long model_full_step_duration=MModel_GetFullStepDuration(i,"");
+    if(EngineControlThreads[i]->WaitForCalculationComplete(int(model_full_step_duration)) == false)
 	{
-	 MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_WARNING, (std::string("Calculation doesn't complete for channel #")+sntoa(i)+std::string(" by GUI UpdateInterval=")+sntoa(UpdateInterval)+" ms").c_str());
+     MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, (std::string("Calculation doesn't complete for channel #")+sntoa(i)+std::string(" for =")+sntoa(model_full_step_duration)+" ms").c_str());
 	}
    }
   }
