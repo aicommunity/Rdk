@@ -22,8 +22,6 @@ UException::UException(void)
  unsigned long long seconds(0);
  GetTimeOfDayInMicroseconds(seconds, TimeMsecs);
  Time=seconds;
-// std::time(&Time);
- Time=seconds;
 }
 
 UException::UException(const UException &copy)
@@ -32,6 +30,7 @@ UException::UException(const UException &copy)
 {
 // Number=copy.Number;
  Time=copy.Time;
+ TimeMsecs=copy.TimeMsecs;
 }
 
 

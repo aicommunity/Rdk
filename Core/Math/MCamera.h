@@ -297,7 +297,8 @@ template<class T>
 MCameraStandard<T>::MCameraStandard(void)
 : MCamera<T>(), DistortionMode(0), CameraMode(0), CalibrationWidth(0), CalibrationHeight(0)
 {
- SetIcc(MMatrix<T,3,3>::Eye());
+ Icc=MMatrix<T,3,3>::Eye();
+ InvIcc=MMatrix<T,3,3>::Eye();
 }
 
 template<class T>
