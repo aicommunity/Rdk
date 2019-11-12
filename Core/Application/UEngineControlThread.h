@@ -67,6 +67,9 @@ UELockVar<double> LastCalculationServerTimeStamp;
 /// Метка реального времени окончания последнего расчета
 UELockVar<double> RealLastCalculationTime;
 
+/// Время, затраченное последней итерацией расчета, мс
+UELockVar<int> LastFullStepDuration;
+
 /// Класс-владелец потоков
 UEngineControl* EngineControl;
 
@@ -132,6 +135,9 @@ bool SetServerTimeStamp(double value);
 double GetLastCalculationServerTimeStamp(void) const;
 
 double GetRealLastCalculationTime(void) const;
+
+/// Время, затраченное последней итерацией расчета, мс
+int GetLastFullStepDuration(void) const;
 
 /// Возвращает класс-владелец потока
 virtual UEngineControl* GetEngineControl(void);

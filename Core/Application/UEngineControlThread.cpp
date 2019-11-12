@@ -61,6 +61,8 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
  Profiler=new UChannelProfiler;
  Profiler->SetChannelIndex(channel_index);
+
+ LastFullStepDuration=0;
 }
 
 UEngineControlThread::~UEngineControlThread(void)
@@ -172,6 +174,13 @@ double UEngineControlThread::GetLastCalculationServerTimeStamp(void) const
 double UEngineControlThread::GetRealLastCalculationTime(void) const
 {
  return RealLastCalculationTime;
+}
+
+
+/// ¬рем€, затраченное последней итерацией расчета, мс
+int UEngineControlThread::GetLastFullStepDuration(void) const
+{
+ return LastFullStepDuration;
 }
 
 /// ¬озвращает класс-владелец потока
@@ -291,6 +300,7 @@ void UEngineControlThread::Calculate(void)
    RDK::UIControllerStorage::AfterCalculate(EngineIndex);
   CalculationNotInProgress->set();
   Profiler->CalculateCore();
+  LastFullStepDuration=MModel_GetFullStepDuration(EngineIndex,0);
 }
 
 void UEngineControlThread::Execute(void)
@@ -394,6 +404,7 @@ void UEngineControlThread::Pause(void)
 
  CalcStarted->reset();
  CalcState->reset();
+ LastFullStepDuration=0;
 }
 
 /// —брасывает аналитику канала
@@ -406,6 +417,7 @@ void UEngineControlThread::Reset(void)
  RealLastCalculationTime=0;
  CalculationTime=0.0;
  ServerTimeStamp=0.0;
+ LastFullStepDuration=0;
 }
 
 /// ”станавливает приоритет потока

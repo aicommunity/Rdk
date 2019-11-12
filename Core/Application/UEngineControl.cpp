@@ -513,10 +513,13 @@ void UEngineControl::TimerExecute(void)
 
    for(int i=0;i<num_channels;i++)
    {
-    unsigned long long model_full_step_duration=MModel_GetFullStepDuration(i,"");
-    if(EngineControlThreads[i]->WaitForCalculationComplete(int(model_full_step_duration)) == false)
+	unsigned long long model_full_step_duration=EngineControlThreads[i]->GetLastFullStepDuration();
+	if(model_full_step_duration>0)
 	{
-     MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, (std::string("Calculation doesn't complete for channel #")+sntoa(i)+std::string(" for =")+sntoa(model_full_step_duration)+" ms").c_str());
+	 if(EngineControlThreads[i]->WaitForCalculationComplete(int(model_full_step_duration)) == false)
+	 {
+	  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, (std::string("Calculation doesn't complete for channel #")+sntoa(i)+std::string(" for =")+sntoa(model_full_step_duration)+" ms").c_str());
+	 }
 	}
    }
   }
