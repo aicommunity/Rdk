@@ -179,7 +179,16 @@ virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T princip
 /// Вычисляет матрицу внутренней калибровки по известным полям зрения
 virtual bool CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height);
 
+// Получение мировых координат точки в пространстве по её экранным координатам
+virtual int GetWorldPoint(double Xfd, double Yfd, double zw, double &xw, double &yw);
+
 protected: // Скрытые методы
+
+virtual int image_coord_to_world_coord (double Xfd, double Yfd, double zw,
+					  double &xw, double &yw);
+
+void distorted_to_undistorted_sensor_coord (double Xd, double Yd, double &Xu, double &Yu);
+
 
 /// Функция вычисления дисторсии для fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
 T FuncTheta(T thetaD, T Xthet) const;
@@ -1033,6 +1042,108 @@ bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &ang
  }
  return true;
 }
+
+
+
+// Получение мировых координат точки в пространстве по её экранным координатам
+template<class T>
+int MCameraStandard<T>::GetWorldPoint(double Xfd, double Yfd, double zw, double &xw, double &yw)
+{
+ if(DistortionMode != 3)
+  return 10;
+
+// if(IsInitialized < 2 && fabs(zw) > 0.0000001)
+//  return -2;
+
+ return image_coord_to_world_coord(Xfd,Yfd,zw,xw,yw);
+}
+
+template<class T>
+int MCameraStandard<T>::image_coord_to_world_coord (double Xfd, double Yfd, double zw, double &xw, double &yw)
+{
+    double    Xd,
+              Yd,
+              Xu,
+              Yu,
+			  common_denominator;
+
+	if(DistortionCoeff.GetSize()<2)
+	 return 1;
+
+	if(fabs(DistortionCoeff(2))<0.00001)
+	 return 2;
+
+	if(fabs(Icc(0,0))<0.00001)
+	 return 3;
+
+	if(fabs(Icc(1,1))<0.00001)
+	 return 4;
+
+	/* convert from image to distorted sensor coordinates */
+	Xd = (DistortionCoeff(1)/Icc(0,0)) * (Xfd - Icc(0,2)) / DistortionCoeff(2);
+	Yd = (DistortionCoeff(1)/Icc(1,1)) * (Yfd - Icc(1,2));
+
+    /* convert from distorted sensor to undistorted sensor plane coordinates */
+	distorted_to_undistorted_sensor_coord (Xd, Yd, Xu, Yu);
+
+    /* calculate the corresponding xw and yw world coordinates	 */
+    /* (these equations were derived by simply inverting	 */
+	/* the perspective projection equations using Macsyma)	 */
+
+	const MMatrix<T,4,4>& ecc=GetEcc();
+
+	double r1=ecc(0,0), r2=ecc(0,1), r3=ecc(0,2),
+		   r4=ecc(1,0), r5=ecc(1,1), r6=ecc(1,2),
+		   r7=ecc(2,0), r8=ecc(2,1), r9=ecc(2,2);
+	double f=DistortionCoeff(1);
+
+	// Положение Tsai
+	RDK::MVector<double,6> tsai_position;
+
+	CalcObjectAnglesAndShifts(ecc,tsai_position,6);
+
+  //	mat_tsai_cam_to_scene = RDK::CalcObjectPositionMatrix(tsai_position,6);
+
+//	double Tz=Ecc(3,2), Tx=Ecc(3,0), Ty=Ecc(3,1);
+	double Tx=tsai_position(0), Ty=tsai_position(1), Tz=tsai_position(2);
+
+	common_denominator = ((r1 * r8 - r2 * r7) * Yu +
+			  (r5 * r7 - r4 * r8) * Xu -
+			  f * r1 * r5 + f * r2 * r4);
+
+	if(fabs(common_denominator)<0.00001)
+	 return 5;
+
+	xw = (((r2 * r9 - r3 * r8) * Yu +
+		(r6 * r8 - r5 * r9) * Xu -
+		f * r2 * r6 + f * r3 * r5) * zw +
+	   (r2 * Tz - r8 * Tx) * Yu +
+	   (r8 * Ty - r5 * Tz) * Xu -
+	   f * r2 * Ty + f * r5 * Tx) / common_denominator;
+
+	yw = -(((r1 * r9 - r3 * r7) * Yu +
+		 (r6 * r7 - r4 * r9) * Xu -
+		 f * r1 * r6 + f * r3 * r4) * zw +
+		(r1 * Tz - r7 * Tx) * Yu +
+		(r7 * Ty - r4 * Tz) * Xu -
+		f * r1 * Ty + f * r4 * Tx) / common_denominator;
+
+ return 0;
+}
+
+template<class T>
+void MCameraStandard<T>::distorted_to_undistorted_sensor_coord (double Xd, double Yd, double &Xu, double &Yu)
+{
+	double    distortion_factor;
+
+	double kappa1 = DistortionCoeff(0);
+
+    /* convert from distorted to undistorted sensor plane coordinates */
+    distortion_factor = 1 + kappa1 * (Xd*Xd + Yd*Yd);
+	Xu = Xd * distortion_factor;
+    Yu = Yd * distortion_factor;
+}
+
 
 // Функция вычисления дисторсии для fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
 template<class T>
