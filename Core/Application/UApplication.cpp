@@ -667,6 +667,7 @@ bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
 
+ bool is_loaded(false);
  if(!ProjectXml.LoadFromFile(filename,""))
  {
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, (std::string("Can't read project file ")+filename).c_str());
@@ -738,18 +739,25 @@ try{
    {
 	if(extract_file_path(channel_config.ModelFileName).empty())
 	{
-	 LoadModelFromFile(i,ProjectPath+channel_config.ModelFileName);
+	 is_loaded=LoadModelFromFile(i,ProjectPath+channel_config.ModelFileName);
 	}
 	else
-	 LoadModelFromFile(i,channel_config.ModelFileName);
+	 is_loaded=LoadModelFromFile(i,channel_config.ModelFileName);
+
+	if(!is_loaded)
+	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open model file: ")+channel_config.ModelFileName).c_str());
    }
+
 
    if(!channel_config.ParametersFileName.empty())
    {
 	if(extract_file_path(channel_config.ParametersFileName).empty())
-	 LoadParametersFromFile(i,ProjectPath+channel_config.ParametersFileName);
+	 is_loaded=LoadParametersFromFile(i,ProjectPath+channel_config.ParametersFileName);
 	else
-	 LoadParametersFromFile(i,channel_config.ParametersFileName);
+	 is_loaded=LoadParametersFromFile(i,channel_config.ParametersFileName);
+
+ 	if(!is_loaded)
+	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open parameters file: ")+channel_config.ParametersFileName).c_str());
    }
 
    if(config.ProjectAutoSaveStatesFlag)
@@ -757,9 +765,12 @@ try{
 	if(!channel_config.StatesFileName.empty())
 	{
 	 if(extract_file_path(channel_config.StatesFileName).empty())
-	  LoadStatesFromFile(i,ProjectPath+channel_config.StatesFileName);
+	  is_loaded=LoadStatesFromFile(i,ProjectPath+channel_config.StatesFileName);
 	 else
-	  LoadStatesFromFile(i,channel_config.StatesFileName);
+	  is_loaded=LoadStatesFromFile(i,channel_config.StatesFileName);
+
+	 if(!is_loaded)
+	  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open states file: ")+channel_config.StatesFileName).c_str());
 	}
    }
 
@@ -793,9 +804,12 @@ try{
  if(!config.InterfaceFileName.empty())
  {
   if(extract_file_path(config.InterfaceFileName).empty())
-   InterfaceXml.LoadFromFile(ProjectPath+config.InterfaceFileName,"Interfaces");
+   is_loaded=InterfaceXml.LoadFromFile(ProjectPath+config.InterfaceFileName,"Interfaces");
   else
-   InterfaceXml.LoadFromFile(config.InterfaceFileName,"Interfaces");
+   is_loaded=InterfaceXml.LoadFromFile(config.InterfaceFileName,"Interfaces");
+
+  if(!is_loaded)
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open interface file: ")+config.InterfaceFileName).c_str());
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
@@ -838,6 +852,7 @@ bool UApplication::SaveProject(void)
   return false;
 
  int selected_channel_index=Core_GetSelectedChannelIndex();
+ bool is_saved(false);
 
  ProjectXml.Create("Project");
  Project->WriteToXml(ProjectXml);
@@ -855,38 +870,49 @@ try
  if(!config.InterfaceFileName.empty())
  {
   if(extract_file_path(config.InterfaceFileName).empty())
-   InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
+   is_saved=InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
   else
-   InterfaceXml.SaveToFile(config.InterfaceFileName);
+   is_saved=InterfaceXml.SaveToFile(config.InterfaceFileName);
  }
  else
  {
   ProjectXml.WriteString("InterfaceFileName","Interface.xml");
-  InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
+  is_saved=InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
  }
+
+ if(!is_saved)
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save interface file: ")+config.InterfaceFileName).c_str());
 
  for(int i=0;i<config.NumChannels;i++)
  {
   Core_SelectChannel(i);
 
   TProjectChannelConfig &channel_config=config.ChannelsConfig[i];
-
   if(extract_file_path(channel_config.ModelFileName).empty())
-   SaveModelToFile(i, ProjectPath+channel_config.ModelFileName);
+   is_saved=SaveModelToFile(i, ProjectPath+channel_config.ModelFileName);
   else
-   SaveModelToFile(i, channel_config.ModelFileName);
+   is_saved=SaveModelToFile(i, channel_config.ModelFileName);
+
+  if(!is_saved)
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save model file: ")+channel_config.ModelFileName).c_str());
 
   if(extract_file_path(channel_config.ParametersFileName).empty())
-   SaveParametersToFile(i, ProjectPath+channel_config.ParametersFileName);
+   is_saved=SaveParametersToFile(i, ProjectPath+channel_config.ParametersFileName);
   else
-   SaveParametersToFile(i,channel_config.ParametersFileName);
+   is_saved=SaveParametersToFile(i,channel_config.ParametersFileName);
+
+  if(!is_saved)
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save parameters file: ")+channel_config.ParametersFileName).c_str());
 
   if(config.ProjectAutoSaveStatesFlag)
   {
    if(extract_file_path(channel_config.StatesFileName).empty())
-	SaveStatesToFile(i, ProjectPath+channel_config.StatesFileName);
+	is_saved=SaveStatesToFile(i, ProjectPath+channel_config.StatesFileName);
    else
-	SaveStatesToFile(i, channel_config.StatesFileName);
+	is_saved=SaveStatesToFile(i, channel_config.StatesFileName);
+
+   if(!is_saved)
+    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save states file: ")+channel_config.StatesFileName).c_str());
   }
 
 
@@ -896,7 +922,10 @@ try
  Core_SelectChannel(selected_channel_index);
 
 
- ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
+ is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
+
+ if(!is_saved)
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save project config file: ")+ProjectFileName).c_str());
 }
 catch(RDK::UException &exception)
 {
@@ -1004,6 +1033,7 @@ bool UApplication::SaveProjectConfig(void)
  if(!ProjectOpenFlag)
   return false;
 
+ bool is_saved(false);
  Project->WriteToXml(ProjectXml);
 
  try
@@ -1016,7 +1046,9 @@ bool UApplication::SaveProjectConfig(void)
    ProjectXml.WriteString("InterfaceFileName","Interface.xml");
   }
 
-  ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
+  is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
+  if(!is_saved)
+   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save project config file: ")+ProjectFileName).c_str());
  }
  catch(RDK::UException &exception)
  {
