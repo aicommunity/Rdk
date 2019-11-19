@@ -1331,10 +1331,10 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string &file_na
    return false;
   }
 
-  if(SaveBuffer[0]=' ')
+  if(SaveBuffer[0]!='<')
   {
    SaveBuffer[0]='<';
-   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveModelToFile in")+file_name+" warning: first symbol is SPACE. Fixed.").c_str());
+   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveModelToFile in")+file_name+" warning: first symbol INVALID. Fixed.").c_str());
   }
 
   res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
@@ -1379,10 +1379,10 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string &fi
    return false;
   }
 
-  if(SaveBuffer[0]=' ')
+  if(SaveBuffer[0]!='<')
   {
    SaveBuffer[0]='<';
-   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveParametersToFile in")+file_name+" warning: first symbol is SPACE. Fixed.").c_str());
+   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveParametersToFile in")+file_name+" warning: first symbol INVALID. Fixed.").c_str());
   }
 
   res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
