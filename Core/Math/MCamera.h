@@ -180,7 +180,7 @@ virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T princip
 virtual bool CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height);
 
 // Получение мировых координат точки в пространстве по её экранным координатам
-virtual int GetWorldPoint(double Xfd, double Yfd, double zw, double &xw, double &yw);
+virtual int GetWorldPoint(double Xfd, double Yfd, double yw, double &xw, double &zw);
 
 protected: // Скрытые методы
 
@@ -1047,7 +1047,7 @@ bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &ang
 
 // Получение мировых координат точки в пространстве по её экранным координатам
 template<class T>
-int MCameraStandard<T>::GetWorldPoint(double Xfd, double Yfd, double zw, double &xw, double &yw)
+int MCameraStandard<T>::GetWorldPoint(double Xfd, double Yfd, double yw, double &xw, double &zw)
 {
  if(DistortionMode != 3)
   return 10;
@@ -1055,7 +1055,7 @@ int MCameraStandard<T>::GetWorldPoint(double Xfd, double Yfd, double zw, double 
 // if(IsInitialized < 2 && fabs(zw) > 0.0000001)
 //  return -2;
 
- return image_coord_to_world_coord(Xfd,Yfd,zw,xw,yw);
+ return image_coord_to_world_coord(Xfd,Yfd,-yw,xw,zw);
 }
 
 template<class T>
