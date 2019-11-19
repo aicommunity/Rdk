@@ -865,7 +865,7 @@ try
  TProjectConfig config=Project->GetConfig();
  ProjectXml.SelectNodeRoot("Project/General");
 
- SaveFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription);
+ SaveFileSafe(ProjectPath+config.DescriptionFileName,config.ProjectDescription,"save.tmp",3);
 
  if(!config.InterfaceFileName.empty())
  {
@@ -1320,12 +1320,25 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string &file_na
   return false;
 
  const char *p_buf=MModel_SaveComponent(channel_index, "");
- bool res=true;
+ bool res=false;
  if(p_buf)
  {
-  res=SaveFile(file_name,p_buf);
+  SaveBuffer=p_buf;
+  Engine_FreeBufString(p_buf);
+  if(SaveBuffer.empty())
+  {
+   MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("SaveModelToFile in")+file_name+" error: model size iz zero! File not changed.").c_str());
+   return false;
+  }
+
+  if(SaveBuffer[0]=' ')
+  {
+   SaveBuffer[0]='<';
+   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveModelToFile in")+file_name+" warning: first symbol is SPACE. Fixed.").c_str());
+  }
+
+  res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
  }
- Engine_FreeBufString(p_buf);
  return res;
 }
 
@@ -1355,12 +1368,25 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string &fi
   return false;
 
  const char *p_buf=MModel_SaveComponentParameters(channel_index, "");
- bool res=true;
+ bool res=false;
  if(p_buf)
  {
-  res=SaveFile(file_name,p_buf);
+  SaveBuffer=p_buf;
+  Engine_FreeBufString(p_buf);
+  if(SaveBuffer.empty())
+  {
+   MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("SaveParametersToFile in")+file_name+" error: model size iz zero! File not changed.").c_str());
+   return false;
+  }
+
+  if(SaveBuffer[0]=' ')
+  {
+   SaveBuffer[0]='<';
+   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveParametersToFile in")+file_name+" warning: first symbol is SPACE. Fixed.").c_str());
+  }
+
+  res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
  }
- Engine_FreeBufString(p_buf);
  return res;
 }
 
@@ -1395,7 +1421,7 @@ bool UApplication::SaveStatesToFile(int channel_index, const std::string &file_n
  bool res=true;
  if(p_buf)
  {
-  res=SaveFile(file_name,p_buf);
+  res=SaveFileSafe(file_name,p_buf,"save.tmp",3);
  }
  Engine_FreeBufString(p_buf);
  Core_SelectChannel(i);
@@ -1435,7 +1461,7 @@ bool UApplication::SaveClassesDescriptionsToFile(const std::string &file_name)
  bool res=true;
  if(p)
  {
-  res=SaveFile(file_name,p);
+  res=SaveFileSafe(file_name,p,"save.tmp",3);
   Engine_FreeBufString(p);
  }
  return res;
@@ -1464,7 +1490,7 @@ bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string &file_n
  bool res=true;
  if(p)
  {
-  res=SaveFile(file_name,p);
+  res=SaveFileSafe(file_name,p,"save.tmp",3);
   Engine_FreeBufString(p);
  }
 
@@ -1608,6 +1634,66 @@ void UApplication::UpdateLoggers(void)
   GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
  }
 //  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
+}
+
+
+
+
+/// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
+/// Если сохранение не удалось, то старый файл остается как был.
+/// Если сохранение удалось, то временный файл заменяет старый
+bool UApplication::SaveFileSafe(const std::string &file_name, const std::string &buffer, const std::string &temp_file_name, int n_pass)
+{
+ if(temp_file_name.empty())
+  return false;
+
+ if(n_pass<1)
+  return false;
+
+ if(temp_file_name == file_name)
+  return false;
+
+ bool is_temp_saved(false);
+
+ for(int i=0;i<n_pass;i++)
+ {
+  bool is_saved=SaveFile(temp_file_name,buffer);
+  if(!is_saved)
+  {
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" save attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   continue;
+  }
+
+  std::string temp_buffer;
+  bool is_loaded=LoadFile(temp_file_name,temp_buffer);
+  if(!is_loaded)
+  {
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" test load attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   continue;
+  }
+
+  if(buffer != temp_buffer)
+  {
+   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" compare attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   continue;
+  }
+  is_temp_saved=true;
+  break;
+ }
+
+ if(!is_temp_saved)
+ {
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" all ")+sntoa(n_pass)+" attepmts FAILED.").c_str());
+  return false;
+ }
+
+ int copy_error=RdkCopyFile(temp_file_name, file_name);
+
+ if(!copy_error)
+  return true;
+
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+temp_file_name+std::string(" copy to ")+file_name+std::string(" FAILED with error code ")+sntoa(copy_error)).c_str());
+ return false;
 }
 // --------------------------
 
