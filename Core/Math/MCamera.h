@@ -832,10 +832,33 @@ T MCameraStandard<T>::CalcAngleX(int pixel) const
  {
  case 0:
  {
-  T center=pixel-GetIcc()(0,2);
-  T tg_res=center/GetIcc()(0,0);
-  T res=atan(tg_res);
-  return res;
+  if(DistortionMode==3)  //Модель Тсаи
+  {
+      double dxmm_d=(pixel-GetIcc()(0,2))*DistortionCoeff(1)/(GetIcc()(0,0)*DistortionCoeff(2));
+	  double dymm_d=(pixel-GetIcc()(1,2))*DistortionCoeff(1)/GetIcc()(1,1);
+	  double dxmm_u, dymm_u;
+
+	  //distorted_to_undistorted_sensor_coord(dxmm_d, dymm_d, dxmm_u, dymm_u);
+
+	  double    distortion_factor;
+
+	  double kappa1 = DistortionCoeff(0);
+
+	  /* convert from distorted to undistorted sensor plane coordinates */
+	  distortion_factor = 1 + kappa1 * (dxmm_d*dxmm_d + dymm_d*dymm_d);
+	  dxmm_u = dxmm_d * distortion_factor;
+	  dymm_u = dymm_d * distortion_factor;
+
+	  double axrad = atan2(dxmm_u,DistortionCoeff(1));
+	  return axrad;
+  }
+  else
+  {
+	  T center=pixel-GetIcc()(0,2);
+	  T tg_res=center/GetIcc()(0,0);
+	  T res=atan(tg_res);
+	  return res;
+  }
  }
  break;
 
@@ -864,10 +887,33 @@ T MCameraStandard<T>::CalcAngleY(int pixel) const
  {
  case 0:
  {
-  T center=pixel-GetIcc()(1,2);
-  T tg_res=center/GetIcc()(1,1);
-  T res=atan(tg_res);
-  return res;
+  if(DistortionMode==3) //Модель Тсаи
+  {
+	  double dxmm_d=(pixel-GetIcc()(0,2))*DistortionCoeff(1)/(GetIcc()(0,0)*DistortionCoeff(2));
+	  double dymm_d=(pixel-GetIcc()(1,2))*DistortionCoeff(1)/GetIcc()(1,1);
+	  double dxmm_u, dymm_u;
+	  //distorted_to_undistorted_sensor_coord(dxmm_d, dymm_d, dxmm_u, dymm_u);
+
+	  double    distortion_factor;
+
+	  double kappa1 = DistortionCoeff(0);
+
+	  /* convert from distorted to undistorted sensor plane coordinates */
+	  distortion_factor = 1 + kappa1 * (dxmm_d*dxmm_d + dymm_d*dymm_d);
+	  dxmm_u = dxmm_d * distortion_factor;
+	  dymm_u = dymm_d * distortion_factor;
+
+
+	  double ayrad = atan2(dymm_u,DistortionCoeff(1));
+	  return ayrad;
+  }
+  else
+  {
+	  T center=pixel-GetIcc()(1,2);
+	  T tg_res=center/GetIcc()(1,1);
+	  T res=atan(tg_res);
+	  return res;
+  }
  }
  break;
 
@@ -1090,21 +1136,47 @@ int MCameraStandard<T>::image_coord_to_world_coord (double Xfd, double Yfd, doub
     /* (these equations were derived by simply inverting	 */
 	/* the perspective projection equations using Macsyma)	 */
 
-	const MMatrix<T,4,4>& ecc=GetEcc();
+	const MMatrix<T,4,4>& ecc=GetInvEcc();
+	MMatrix<T,4,4> mat_tsai_scene_to_cam;
+	MMatrix<T,4,4> ecc_tsai;
 
-	double r1=ecc(0,0), r2=ecc(0,1), r3=ecc(0,2),
-		   r4=ecc(1,0), r5=ecc(1,1), r6=ecc(1,2),
-		   r7=ecc(2,0), r8=ecc(2,1), r9=ecc(2,2);
+	//MMatrix<T,4,4> inp_ecc = ecc;
+	//inp_ecc(0,3) *= 1000; inp_ecc(1,3) *= 1000; inp_ecc(2,3) *= 1000;
+	//MMatrix<T,4,4> inp_ecc;
+	//RDK::InverseEcc<double>(ecc,inp_ecc);
+	//inp_ecc = RDK::CalcObjectPositionMatrix(Position,6);;
+
+	//Матрица перехода из СК Тсаи в СК Глагола (сцена)
+	RDK::MMatrix<double,4,4> mat_glagol_to_tsai;
+	mat_glagol_to_tsai(0,0) = 1.0;	mat_glagol_to_tsai(0,1) = 0.0;	mat_glagol_to_tsai(0,2) = 0.0;	mat_glagol_to_tsai(0,3) = 0.0;
+	mat_glagol_to_tsai(1,0) = 0.0;	mat_glagol_to_tsai(1,1) = 0.0;	mat_glagol_to_tsai(1,2) = 1.0;	mat_glagol_to_tsai(1,3) = 0.0;
+	mat_glagol_to_tsai(2,0) = 0.0;	mat_glagol_to_tsai(2,1) = -1.0;	mat_glagol_to_tsai(2,2) = 0.0;	mat_glagol_to_tsai(2,3) = 0.0;
+	mat_glagol_to_tsai(3,0) = 0.0;	mat_glagol_to_tsai(3,1) = 0.0;	mat_glagol_to_tsai(3,2) = 0.0;	mat_glagol_to_tsai(3,3) = 1.0;
+	//Матрица перехода из СК Глагола (сцена) в СК Тсаи
+	//RDK::MMatrix<double,4,4> mat_glagol_to_tsai;
+	//RDK::InverseEcc<double>(mat_tsai_to_glagol,mat_glagol_to_tsai);
+	// Матрица (сцена -> камера) в СК Тсаи
+	mat_tsai_scene_to_cam = mat_glagol_to_tsai*ecc;
+	// Матрица (сцена <- камера) в СК Tsai
+	RDK::InverseEcc<double>(mat_tsai_scene_to_cam,ecc_tsai);
+	//ecc_tsai = mat_tsai_scene_to_cam;
+
+
+	//MMatrix<T,4,4> ecc_tsai_inv;
+	//RDK::InverseEcc<double>(ecc_tsai,ecc_tsai_inv);
+
+	double r1=ecc_tsai(0,0), r2=ecc_tsai(0,1), r3=ecc_tsai(0,2),
+		   r4=ecc_tsai(1,0), r5=ecc_tsai(1,1), r6=ecc_tsai(1,2),
+		   r7=ecc_tsai(2,0), r8=ecc_tsai(2,1), r9=ecc_tsai(2,2);
 	double f=DistortionCoeff(1);
 
 	// Положение Tsai
 	RDK::MVector<double,6> tsai_position;
+	CalcObjectAnglesAndShifts(ecc_tsai,tsai_position,6);
 
-	CalcObjectAnglesAndShifts(ecc,tsai_position,6);
+	//mat_tsai_cam_to_scene = RDK::CalcObjectPositionMatrix(tsai_position,6);
 
-  //	mat_tsai_cam_to_scene = RDK::CalcObjectPositionMatrix(tsai_position,6);
-
-//	double Tz=Ecc(3,2), Tx=Ecc(3,0), Ty=Ecc(3,1);
+	//double Tz=ecc_tsai(2,3), Tx=ecc_tsai(0,3), Ty=ecc_tsai(1,3);
 	double Tx=tsai_position(0), Ty=tsai_position(1), Tz=tsai_position(2);
 
 	common_denominator = ((r1 * r8 - r2 * r7) * Yu +
@@ -1139,9 +1211,9 @@ void MCameraStandard<T>::distorted_to_undistorted_sensor_coord (double Xd, doubl
 	double kappa1 = DistortionCoeff(0);
 
     /* convert from distorted to undistorted sensor plane coordinates */
-    distortion_factor = 1 + kappa1 * (Xd*Xd + Yd*Yd);
+	distortion_factor = 1 + kappa1 * (Xd*Xd + Yd*Yd);
 	Xu = Xd * distortion_factor;
-    Yu = Yd * distortion_factor;
+	Yu = Yd * distortion_factor;
 }
 
 

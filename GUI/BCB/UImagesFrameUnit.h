@@ -128,6 +128,8 @@ std::vector<std::vector<std::string> > Legends;
 // Массив точек, отображаемых на экране
 std::vector<std::vector<std::vector<RDK::UBPoint> > > OnScreenPoints;
 
+std::vector<std::vector<std::vector<RDK::UColorT> > > OnScreenPointsColors;
+
 /// Цвет фона для отдельной картинки
 TColor SingleBackgroundColor;
 
@@ -196,6 +198,10 @@ RDK::UColorT GetPointColor(void);
 
 // Заданные на изображении точки
 std::vector<RDK::UBPoint> &GetOnScreenPoints(int col, int row);
+// Цвета точек заданных на изображении
+std::vector<RDK::UColorT> &GetOnScreenPointsColors(int col, int row);
+
+bool AddExternalPoint(int col, int row, int X, int Y, const RDK::UColorT& color);
 // --------------------------
 
 // --------------------------
@@ -226,7 +232,7 @@ Graphics::TBitmap* GetImage(int i, int j);
 Graphics::TBitmap* GetImage(void);
 
 // Отрисовка точек на изображении
-void DrowPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points);
+void DrawPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points, std::vector<RDK::UColorT> &colors);
 
 // Сохраняет изображение в файл
 bool SaveToBitmap(int i, int j);

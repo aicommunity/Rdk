@@ -74,6 +74,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  ComponentChannelIndexes.resize(width);
  Legends.resize(width);
  OnScreenPoints.resize(width);
+ OnScreenPointsColors.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
@@ -83,6 +84,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   MouseClickComponents[i].resize(height);
   Legends[i].resize(height);
   OnScreenPoints[i].resize(height);
+  OnScreenPointsColors[i].resize(height);
   ComponentChannelIndexes[i].resize(height,Core_GetSelectedChannelIndex());
 //  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
 //  	ComponentChannelIndexes[i][k]=-1;
@@ -154,6 +156,12 @@ RDK::UColorT TUImagesFrame::GetPointColor(void)
 std::vector<RDK::UBPoint> &TUImagesFrame::GetOnScreenPoints(int col, int row)
 {
  return OnScreenPoints[DrawGrid->Col][DrawGrid->Row];
+}
+
+// Заданные на изображении точки
+std::vector<RDK::UColorT> &TUImagesFrame::GetOnScreenPointsColors(int col, int row)
+{
+ return OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row];
 }
 // --------------------------
 
@@ -661,7 +669,7 @@ void TUImagesFrame::AUpdateInterface(void)
 
   // Отрисовка точек на изображении
   if(IsShowPoints)
-   DrowPoints(FullImage->Picture->Bitmap, OnScreenPoints[DrawGrid->Col][DrawGrid->Row]);
+   DrawPoints(FullImage->Picture->Bitmap, OnScreenPoints[DrawGrid->Col][DrawGrid->Row], OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row]);
 
   FullImage->Repaint();
  }
@@ -801,7 +809,7 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
 //---------------------------------------------------------------------------
 
 // Отрисовка точек на изображении
-void TUImagesFrame::DrowPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points)
+void TUImagesFrame::DrawPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points, std::vector<RDK::UColorT> &colors)
 {
  int point_radius = PointSize>>1;
 
@@ -815,7 +823,7 @@ void TUImagesFrame::DrowPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &point
 	  {
 	   if(points[i].Y+m < 0 || points[i].Y+m > bitmap->Height - 1)
 		continue;
-	   bitmap->Canvas->Pixels[points[i].X+k][points[i].Y+m] = PointColor.c;
+	   bitmap->Canvas->Pixels[points[i].X+k][points[i].Y+m] = colors[i].c;
 	  }
 	 }
  }
@@ -1043,9 +1051,20 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
    OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
    OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);
    OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].Y = int(yy+0.5);
+   OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()+1);
+   OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row][OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()-1] = PointColor;
    ManualUpdate();
   }
 
+}
+//---------------------------------------------------------------------------
+bool TUImagesFrame::AddExternalPoint(int col, int row, int X, int Y, const RDK::UColorT& color)
+{
+ OnScreenPoints[col][row].resize(OnScreenPoints[col][row].size()+1);
+ OnScreenPoints[col][row][OnScreenPoints[col][row].size()-1].X = X;
+ OnScreenPoints[col][row][OnScreenPoints[col][row].size()-1].Y = Y;
+ OnScreenPointsColors[col][row].resize(OnScreenPointsColors[col][row].size()+1);
+ OnScreenPointsColors[col][row][OnScreenPointsColors[col][row].size()-1] = color;
 }
 //---------------------------------------------------------------------------
 
@@ -1170,6 +1189,7 @@ void __fastcall TUImagesFrame::DeleteLastPoint2Click(TObject *Sender)
    return;
 
   OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1);
+  OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()-1);
   ManualUpdate();
 }
 //---------------------------------------------------------------------------
@@ -1181,6 +1201,7 @@ void __fastcall TUImagesFrame::DeleteAllPoints2Click(TObject *Sender)
    return;
 
   OnScreenPoints[DrawGrid->Col][DrawGrid->Row].clear();
+  OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].clear();
   ManualUpdate();
 }
 //---------------------------------------------------------------------------
