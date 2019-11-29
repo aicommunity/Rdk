@@ -127,8 +127,20 @@ std::vector<std::vector<std::string> > Legends;
 
 // Массив точек, отображаемых на экране
 std::vector<std::vector<std::vector<RDK::UBPoint> > > OnScreenPoints;
-
 std::vector<std::vector<std::vector<RDK::UColorT> > > OnScreenPointsColors;
+
+// Массив точек, отображаемых на экране
+std::vector<std::vector<std::vector<RDK::UBPoint> > > ExternalPoints;
+std::vector<std::vector<std::vector<RDK::UColorT> > > ExternalPointsColors;
+
+//Обновлять точки циклически
+bool CyclicPointUpdate;
+
+//Максимальное число точек при циклическом обновлении
+int MaxPointCount;
+
+//Последняя обновленная точка
+std::vector<std::vector<int> > LastUpdatedPoint;
 
 /// Цвет фона для отдельной картинки
 TColor SingleBackgroundColor;
@@ -196,10 +208,23 @@ int GetPointSize(void);
 void SetPointColor(RDK::UColorT value);
 RDK::UColorT GetPointColor(void);
 
+void SetCyclicPointUpdate(bool value) {CyclicPointUpdate=value;};
+bool GetCyclicPointUpdate() {return CyclicPointUpdate;};
+
+void SetMaxPointCount(int value) {MaxPointCount=value;};
+int GetMaxPointCount(){return MaxPointCount;};
+
 // Заданные на изображении точки
 std::vector<RDK::UBPoint> &GetOnScreenPoints(int col, int row);
 // Цвета точек заданных на изображении
 std::vector<RDK::UColorT> &GetOnScreenPointsColors(int col, int row);
+
+// Заданные на изображении точки
+std::vector<RDK::UBPoint> &GetExternalPoints(int col, int row);
+// Цвета точек заданных на изображении
+std::vector<RDK::UColorT> &GetExternalPointsColors(int col, int row);
+
+int GetLastUpdatedPoint(int col, int row);
 
 bool AddExternalPoint(int col, int row, int X, int Y, const RDK::UColorT& color);
 // --------------------------

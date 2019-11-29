@@ -33,6 +33,9 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  PointColor.rgb.r=255;
  PointColor.rgb.g=0;
  PointColor.rgb.b=0;
+
+ CyclicPointUpdate=false;
+ MaxPointCount=0;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)
@@ -75,6 +78,9 @@ void TUImagesFrame::SetNumCells(int width, int height)
  Legends.resize(width);
  OnScreenPoints.resize(width);
  OnScreenPointsColors.resize(width);
+ LastUpdatedPoint.resize(width);
+ ExternalPoints.resize(width);
+ ExternalPointsColors.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
@@ -85,6 +91,9 @@ void TUImagesFrame::SetNumCells(int width, int height)
   Legends[i].resize(height);
   OnScreenPoints[i].resize(height);
   OnScreenPointsColors[i].resize(height);
+  LastUpdatedPoint[i].resize(height);
+  ExternalPoints[i].resize(height);
+  ExternalPointsColors[i].resize(height);
   ComponentChannelIndexes[i].resize(height,Core_GetSelectedChannelIndex());
 //  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
 //  	ComponentChannelIndexes[i][k]=-1;
@@ -155,13 +164,31 @@ RDK::UColorT TUImagesFrame::GetPointColor(void)
 // Заданные на изображении точки
 std::vector<RDK::UBPoint> &TUImagesFrame::GetOnScreenPoints(int col, int row)
 {
- return OnScreenPoints[DrawGrid->Col][DrawGrid->Row];
+ return OnScreenPoints[col][row];
 }
 
 // Заданные на изображении точки
 std::vector<RDK::UColorT> &TUImagesFrame::GetOnScreenPointsColors(int col, int row)
 {
- return OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row];
+ return OnScreenPointsColors[col][row];
+}
+
+int TUImagesFrame::GetLastUpdatedPoint(int col, int row)
+{
+	return LastUpdatedPoint[row][col];
+}
+// --------------------------
+
+// Заданные на изображении точки
+std::vector<RDK::UBPoint> &TUImagesFrame::GetExternalPoints(int col, int row)
+{
+ return ExternalPoints[col][row];
+}
+
+// Заданные на изображении точки
+std::vector<RDK::UColorT> &TUImagesFrame::GetExternalPointsColors(int col, int row)
+{
+ return ExternalPointsColors[col][row];
 }
 // --------------------------
 
@@ -669,8 +696,10 @@ void TUImagesFrame::AUpdateInterface(void)
 
   // Отрисовка точек на изображении
   if(IsShowPoints)
+  {
+   DrawPoints(FullImage->Picture->Bitmap, ExternalPoints[DrawGrid->Col][DrawGrid->Row], ExternalPointsColors[DrawGrid->Col][DrawGrid->Row]);
    DrawPoints(FullImage->Picture->Bitmap, OnScreenPoints[DrawGrid->Col][DrawGrid->Row], OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row]);
-
+  }
   FullImage->Repaint();
  }
 
@@ -1048,11 +1077,39 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
    xx = double(X) * double(FullImage->Picture->Bitmap->Width) / FullImageWidth ;
    yy = double(Y) * double(FullImage->Picture->Bitmap->Height) / FullImageHeight ;
 
-   OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
-   OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);
-   OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].Y = int(yy+0.5);
-   OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()+1);
-   OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row][OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()-1] = PointColor;
+   if(CyclicPointUpdate && MaxPointCount>0)
+   {
+	if(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()<MaxPointCount)
+	{
+	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
+	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);
+	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].Y = int(yy+0.5);
+	 OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()+1);
+	 OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row][OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()-1] = PointColor;
+	 LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row] = OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1;
+	}
+	else
+	{
+	 LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]+=1;
+	 if(LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]>=OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size())
+	 {
+	  LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]=0;
+	 }
+
+	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row][LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]].X = int(xx+0.5);
+	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row][LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]].Y = int(yy+0.5);
+	 OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row][LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]] = PointColor;
+    }
+   }
+   else
+   {
+	OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
+	OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);
+	OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].Y = int(yy+0.5);
+	OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()+1);
+	OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row][OnScreenPointsColors[DrawGrid->Col][DrawGrid->Row].size()-1] = PointColor;
+   }
+
    ManualUpdate();
   }
 
@@ -1060,11 +1117,11 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
 //---------------------------------------------------------------------------
 bool TUImagesFrame::AddExternalPoint(int col, int row, int X, int Y, const RDK::UColorT& color)
 {
- OnScreenPoints[col][row].resize(OnScreenPoints[col][row].size()+1);
- OnScreenPoints[col][row][OnScreenPoints[col][row].size()-1].X = X;
- OnScreenPoints[col][row][OnScreenPoints[col][row].size()-1].Y = Y;
- OnScreenPointsColors[col][row].resize(OnScreenPointsColors[col][row].size()+1);
- OnScreenPointsColors[col][row][OnScreenPointsColors[col][row].size()-1] = color;
+ ExternalPoints[col][row].resize(ExternalPoints[col][row].size()+1);
+ ExternalPoints[col][row][ExternalPoints[col][row].size()-1].X = X;
+ ExternalPoints[col][row][ExternalPoints[col][row].size()-1].Y = Y;
+ ExternalPointsColors[col][row].resize(ExternalPointsColors[col][row].size()+1);
+ ExternalPointsColors[col][row][ExternalPointsColors[col][row].size()-1] = color;
 }
 //---------------------------------------------------------------------------
 
