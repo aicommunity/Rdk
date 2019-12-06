@@ -22,11 +22,10 @@ See file license.txt for more information
 #include <fstream>
 
 #include "USupport.h"
-#ifdef __BORLANDC__
-extern std::wstring s2ws(const std::string& s);
-
-extern std::string ws2s(const std::wstring& s);
-#endif
+//#ifdef __BORLANDC__
+//extern std::wstring s2ws(const std::string& s);
+//extern std::string ws2s(const std::wstring& s);
+//#endif
 
 //#include "UPtr.cpp"
 
@@ -159,7 +158,7 @@ std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, 
 
  return result;
 }*/
-
+	  /*
 #ifndef __BORLANDC__
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
@@ -238,7 +237,7 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
 }
 
 #endif
-
+       */
 
 /// Обрезает лидирующие и завершающие пробелы в строке
 RDK_LIB_TYPE std::string trim_spaces(const std::string &str)

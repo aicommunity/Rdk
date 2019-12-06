@@ -313,18 +313,21 @@ RDK_LIB_TYPE std::string get_text_time_from_seconds(double time_data, char date_
 //std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
 
 // Конвертация string<->wstring
+// !!! Платформенно-зависимая реализация !!!
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
 //@brief Сужает широкую строку, используя локализацию loc
 //   @return Возвращает суженную строку или пустую суженную строку, в
 //   случае. если возникла ошибка
-RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
+//RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
+//RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage);
 
 //std::string narrow2(const std::wstring& wstr);
 
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
-RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
+//RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
+//RDK_LIB_TYPE std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage);
 
 //std::wstring widen2(const std::string& str);
 

@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <fstream>
 #include "USerStorageXML.h"
 #include "../Utilities/USupport.h"
+#include "../System/rdk_system.h"
 
 namespace RDK {
 

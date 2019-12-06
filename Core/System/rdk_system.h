@@ -59,6 +59,20 @@ RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle);
 /// Если не удалось определить то возвращает false
 RDK_LIB_TYPE bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block);
 
+/// Преобразует широкую строку в обычную
+/// 0 - означает кодировку по умолчанию
+RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage=0);
+
+/// Deprecated
+RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
+
+/// Преобразует обычную строку в широкую
+/// 0 - означает кодировку по умолчанию
+RDK_LIB_TYPE std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage=0);
+
+/// Deprecated
+RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
+
 }
 
 }
