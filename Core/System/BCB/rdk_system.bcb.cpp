@@ -245,6 +245,101 @@ bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long lon
  return true;
 }
 
+
+/// Преобразует широкую строку в обычную
+std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage)
+{
+ unsigned real_codepage=(codepage==0)?CP_ACP:codepage;
+
+	int slength = (int)wstr.length() + 1;
+	int len = WideCharToMultiByte(real_codepage, 0, wstr.c_str(), slength, 0, 0, 0, 0);
+	result.resize(len, '\0');
+	WideCharToMultiByte(real_codepage, 0, wstr.c_str(), slength, &result[0], len, 0, 0);
+
+//	int r_size1=r.size();
+//	int r_length1=r.length();
+	if(!result.empty())
+	 result.resize(len-1);
+
+//	int r_size2=r.size();
+//	int r_length2=r.length();
+	return result;
+}
+
+/// Deprecated
+std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result)
+{
+ return narrow(wstr, result);
+}
+
+
+/// Преобразует обычную строку в широкую
+std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage)
+{
+ unsigned real_codepage=(codepage==0)?CP_ACP:codepage;
+	int slength = (int)str.length() + 1;
+	int len = MultiByteToWideChar(real_codepage, 0, str.c_str(), slength, 0, 0);
+	result.resize(len, L'\0');
+	MultiByteToWideChar(real_codepage, 0, str.c_str(), slength, &result[0], len);
+
+ //	int r_size1=r.size();
+ //	int r_length1=r.length();
+	if(!result.empty())
+	 result.resize(len-1);
+ //	int r_size2=r.size();
+ //	int r_length2=r.length();
+	return result;
+}
+
+
+/// Deprecated
+std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result)
+{
+ return widen(str, result);
+}
+
+
+/*
+
+// Копипаста из https://codereview.stackexchange.com/questions/419/converting-between-stdwstring-and-stdstring
+std::wstring s2ws(const std::string& s)
+{
+
+	int slength = (int)s.length() + 1;
+	int len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	std::wstring r(len, L'\0');
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, &r[0], len);
+
+	int r_size1=r.size();
+	int r_length1=r.length();
+	if(!r.empty())
+	 r.resize(len-1);
+	int r_size2=r.size();
+	int r_length2=r.length();
+	return r;
+
+}
+
+std::string ws2s(const std::wstring& s)
+{
+	int slength = (int)s.length() + 1;
+	int len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0);
+    std::string r(len, '\0');
+	WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, &r[0], len, 0, 0);
+
+	int r_size1=r.size();
+	int r_length1=r.length();
+  	if(!r.empty())
+	 r.resize(len-1);
+
+	int r_size2=r.size();
+	int r_length2=r.length();
+	return r;
+
+}
+*/
+
+
 }
 #endif
 
