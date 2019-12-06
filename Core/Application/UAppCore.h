@@ -95,30 +95,30 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  // Инициализация из стартового ini файла
  RDK::UIniFile<char> projectIniFile;
  projectIniFile.LoadFromFile("VideoAnalytics.ini");
- std::string startProjectName = projectIniFile("General", "AutoexecProjectFileName", "");
- int autoStartProjectFlag = RDK::atoi(projectIniFile("General", "autoStartProjectFlag", "0"));
- int hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
- int startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
+ startProjectName = projectIniFile("General", "AutoexecProjectFileName", "");
+ autoStartProjectFlag = RDK::atoi(projectIniFile("General", "autoStartProjectFlag", "0"));
+ hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
+ startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
 
- std::string mainFormName=projectIniFile("General", "MainFormName", "");
- int minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
- std::string programName=projectIniFile("General","ProgramName","Server");
- std::string configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../../Configs/");
- int neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
- std::string logDir=projectIniFile("Log","Dir","");
- int startupDelay=atoi(projectIniFile("General","StartupDelay","0"));
+ mainFormName=projectIniFile("General", "MainFormName", "");
+ minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
+ programName=projectIniFile("General","ProgramName","Server");
+ configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../../Configs/");
+ neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
+ logDir=projectIniFile("Log","Dir","");
+ startupDelay=atoi(projectIniFile("General","StartupDelay","0"));
 
- int useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
- int useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
+ useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
+ useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
 
  if(startupDelay>0)
  {
   RDK::Sleep(startupDelay);
  }
 
- int logDebugMode=atoi(projectIniFile("Log","DebugMode","1"));
+ logDebugMode=atoi(projectIniFile("Log","DebugMode","1"));
 
- int disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
+ disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
 
  application.SetApplicationFileName(application_file_name);
  if(logDir.empty())
