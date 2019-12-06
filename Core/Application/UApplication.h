@@ -115,6 +115,9 @@ RDK::USerStorageXML ProjectXml;
 /// Файл настроек интефрейса
 RDK::USerStorageXML InterfaceXml;
 
+/// Переменная для сохранения данных
+std::string SaveBuffer;
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -378,6 +381,11 @@ void CalcAppCaption(void);
 
 /// Обновляет состояние средств логгирования
 void UpdateLoggers(void);
+
+/// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
+/// Если сохранение не удалось, то старый файл остается как был.
+/// Если сохранение удалось, то временный файл заменяет старый
+bool SaveFileSafe(const std::string &file_name, const std::string &buffer, const std::string &temp_file_name, int n_pass=3);
 // --------------------------
 };
 
