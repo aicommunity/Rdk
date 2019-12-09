@@ -170,6 +170,67 @@ bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long lon
  return false;
 }
 
+
+/// ѕреобразует широкую строку в обычную
+std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage)
+{
+ QString qs(QString::fromStdWString(wstr));
+ result=qs.toStdString();
+ return result;
+ /*
+ unsigned real_codepage=(codepage==0)?CP_ACP:codepage;
+
+    int slength = (int)wstr.length() + 1;
+    int len = WideCharToMultiByte(real_codepage, 0, wstr.c_str(), slength, 0, 0, 0, 0);
+    result.resize(len, '\0');
+    WideCharToMultiByte(real_codepage, 0, wstr.c_str(), slength, &result[0], len, 0, 0);
+
+//	int r_size1=r.size();
+//	int r_length1=r.length();
+    if(!result.empty())
+     result.resize(len-1);
+
+//	int r_size2=r.size();
+//	int r_length2=r.length();
+    return result;*/
+}
+
+/// Deprecated
+std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result)
+{
+ return narrow(wstr, result);
+}
+
+
+/// ѕреобразует обычную строку в широкую
+std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage)
+{
+ QString qs(QString::fromStdString(str.c_str()));
+ result=qs.toStdWString();
+ return result;
+ /*
+ unsigned real_codepage=(codepage==0)?CP_ACP:codepage;
+    int slength = (int)str.length() + 1;
+    int len = MultiByteToWideChar(real_codepage, 0, str.c_str(), slength, 0, 0);
+    result.resize(len, L'\0');
+    MultiByteToWideChar(real_codepage, 0, str.c_str(), slength, &result[0], len);
+
+ //	int r_size1=r.size();
+ //	int r_length1=r.length();
+    if(!result.empty())
+     result.resize(len-1);
+ //	int r_size2=r.size();
+ //	int r_length2=r.length();
+    return result;*/
+}
+
+
+/// Deprecated
+std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result)
+{
+ return widen(str, result);
+}
+
 }
 #endif
 
