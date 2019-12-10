@@ -123,8 +123,17 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 
 int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
 {
-    QFile::copy(QString::fromLocal8Bit(source_file.c_str()), QString::fromLocal8Bit(dest_file.c_str()));
- return 1;
+ QString src=QString::fromLocal8Bit(source_file.c_str());
+ QString dest=QString::fromLocal8Bit(dest_file.c_str());
+ if (QFile::exists(dest))
+ {
+     QFile::remove(dest);
+ }
+ bool res=QFile::copy(src, dest);
+ if(!res)
+  return 1;
+
+ return 0;
 }
 
 int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask)
