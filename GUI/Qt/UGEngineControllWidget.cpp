@@ -103,8 +103,10 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     ui->dockWidgetLoger->setWidget(logger);
 
     graphWindowWidget = new UGraphWidget(this, application);
-    ui->dockWidgetGraph->setWidget(graphWindowWidget);
+//    ui->dockWidgetGraph->setWidget(graphWindowWidget);
     graphWindowWidget->setWindowTitle("Graph");
+       graphWindowWidget->hide();
+    ui->dockWidgetGraph->hide();
 
     profilingWindowWidget = new UTableInfo(this, application);
     ui->dockWidgetProfiling->setWidget(profilingWindowWidget);
@@ -391,21 +393,22 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
-    if (!ui->dockWidgetGraph->isVisible())
-    {
+ if(!graphWindow )
+ {
+     graphWindow = new QMainWindow(this);
+     graphWindow->setCentralWidget(graphWindowWidget);
+     graphWindowWidget->show();
+ }
 
-        if(!graphWindow )
-        {
-            graphWindow = new QMainWindow(this);
-            graphWindow->setCentralWidget(graphWindowWidget);
-        }
+    if (!graphWindow->isVisible())
+    {
         graphWindow->resize(graphWindowWidget->size());
         graphWindow->setWindowTitle("");
         graphWindow->show();
         graphWindow->showNormal();
-        graphWindow->activateWindow();
     }
 
+    graphWindow->activateWindow();
     //отобразить *graphWindowWidget
 //    ui->dockWidgetGraph->show();
 }
