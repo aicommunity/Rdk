@@ -300,7 +300,7 @@ void UGEngineControllWidget::actionCopyConfig()
   std::string open_file_name=res_path.toLocal8Bit().constData();
   open_file_name+=project_file_name;
   application->OpenProject(open_file_name);
-  this->setWindowTitle("project: " + open_file_name);
+  this->setWindowTitle(QString("project: ") + open_file_name.c_str());
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
 
