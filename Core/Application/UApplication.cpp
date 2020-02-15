@@ -662,6 +662,32 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
   return false;
 }
 
+bool UApplication::CreateProject(const std::string &file_name, const std::string &model_classname)
+{
+ RDK::TProjectConfig project_config;
+
+ project_config.DebugMode=true;
+ project_config.SetNumChannels(1);
+ project_config.ProjectMode=0;
+ project_config.ProjectName="Autocreated configuration";
+ project_config.ProjectType=1;
+ project_config.EventsLogFlag=true;
+ project_config.CalcSourceTimeMode=0;
+ project_config.MultiThreadingMode=1;
+ project_config.MTUpdateInterfaceInterval=100;
+ project_config.ChannelsConfig[0].ClassName=model_classname;
+ project_config.ChannelsConfig[0].ModelMode=3;
+ project_config.ChannelsConfig[0].InitAfterLoad=true;
+ project_config.ChannelsConfig[0].GlobalTimeStep=2000;
+ project_config.ChannelsConfig[0].ResetAfterLoad=true;
+// project_config.ChannelsConfig[0].CalculationMode
+ project_config.ChannelsConfig[0].DefaultTimeStep=2000;
+ project_config.ChannelsConfig[0].MinInterstepsInterval=1;
+ project_config.ChannelsConfig[0].MaxCalculationModelTime=1000;
+
+ return CreateProject(file_name,project_config);
+}
+
 /// Открывает проект
 bool UApplication::OpenProject(const std::string &filename)
 {

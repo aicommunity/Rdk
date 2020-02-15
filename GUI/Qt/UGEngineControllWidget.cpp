@@ -132,6 +132,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionCreateConfig, SIGNAL(triggered(bool)), this, SLOT(actionCreateConfig()));
     connect(ui->actionLoadConfig, SIGNAL(triggered(bool)), this, SLOT(actionLoadConfig()));
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
+    connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
+
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
     //chanels menu actions:
@@ -237,6 +239,12 @@ void UGEngineControllWidget::actionCreateConfig()
 void UGEngineControllWidget::actionSaveConfig()
 {
     application->SaveProject();
+}
+
+void UGEngineControllWidget::actionCloseConfig()
+{
+ application->PauseChannel(-1);
+ application->CloseProject();
 }
 
 void UGEngineControllWidget::actionExit()

@@ -309,8 +309,20 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(QListWidgetItem *
 
 void UCreateConfigurationWizardWidget::browseNewProjectDirectory()
 {
+ QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
+ QDir path1(default_path);
+ if(!path1.exists(default_path))
+ {
+  default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
+  QDir path2(default_path);
+  if(!path2.exists(default_path))
+  {
+   default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
+  }
+ }
+
   ui->lineEditProjectDirectory->setText(
-        QFileDialog::getExistingDirectory(this, tr("Create project directory"), ""));
+        QFileDialog::getExistingDirectory(this, tr("Create project directory"), default_path, QFileDialog::ShowDirsOnly));
 }
 
 void UCreateConfigurationWizardWidget::browseModelXML()

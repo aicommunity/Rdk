@@ -9,9 +9,11 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QFileDialog>
 
 UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
 {
+ Application=NULL;
     setMinimumSize(QSize(300,350));
 
     //<контекстное меню>
@@ -244,15 +246,57 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
     QString classname;
     dataStream >> classname;
 
+    // Если конфигурация не открыта, то создать новую
+    if(!Application->GetProjectOpenFlag())
+    {
+     QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Config not created. Auto-create one-channel configuration and model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
+     if (reply == QMessageBox::Yes)
+     {
+      std::string file_name;
+
+      QString default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../Configs/").c_str());
+      QDir path1(default_path);
+      if(!path1.exists(default_path))
+      {
+       default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../../Configs/").c_str());
+       QDir path2(default_path);
+       if(!path2.exists(default_path))
+       {
+        default_path=QString::fromLocal8Bit(Application->GetWorkDirectory().c_str());
+       }
+      }
+
+      QString result_path=QFileDialog::getExistingDirectory(this, tr("Create project directory"), default_path, QFileDialog::ShowDirsOnly);
+
+      result_path+="/Project.ini";
+      file_name=result_path.toLocal8Bit().constData();
+
+
+      Application->CreateProject(file_name, classname.toLocal8Bit().constData());
+
+      selectedComponent = "";
+      DrawEngine.SelectSingleComponent(selectedComponent);
+      emit componentSelected(QString::fromStdString(selectedComponent));
+      reDrawScheme(true);
+
+     }
+     return;
+    }
+
     //если модель не существует, спросить не создать ли ее
     if(!Model_Check())
     {
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model?", QMessageBox::Yes|QMessageBox::Cancel);
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
         if (reply == QMessageBox::Yes)
         {
             //создать новую модель
             Model_Create(classname.toLocal8Bit());
+            selectedComponent = "";
+            DrawEngine.SelectSingleComponent(selectedComponent);
+            emit componentSelected(QString::fromStdString(selectedComponent));
+            reDrawScheme(true);
         }
+     return;
     }
 
 
@@ -658,3 +702,9 @@ QString UDrawEngineImageWidget::myLongName()
     return ComponentName + "." + QString::fromStdString(selectedComponent);
 }
 
+
+/// Устанавливает указатель на ядро
+void UDrawEngineImageWidget::SetApplication(RDK::UApplication *app)
+{
+ Application=app;
+}

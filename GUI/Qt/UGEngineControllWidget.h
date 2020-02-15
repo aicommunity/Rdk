@@ -96,6 +96,7 @@ public slots:
     void actionLoadConfig();
     void actionCreateConfig();
     void actionSaveConfig();
+    void actionCloseConfig();
     void actionExit();
 
     //chanels menu

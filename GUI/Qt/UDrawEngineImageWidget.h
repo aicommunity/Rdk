@@ -52,6 +52,9 @@ public:
     /// Меняет размер канвы
     void ResizeCanvas(void);
 
+    /// Устанавливает указатель на ядро
+    void SetApplication(RDK::UApplication *app);
+
 public slots:
     //Контекстное меню
     void componentViewOrBreakLink();
@@ -147,6 +150,9 @@ private:
     /// Xml описание сети
     RDK::USerStorageXML NetXml;
     //</код из билдера>
+
+    /// Укзатель на ядро
+    RDK::UApplication* Application;
 
 };
 

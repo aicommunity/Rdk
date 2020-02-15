@@ -23,6 +23,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
 
 
     modelScheme = new UDrawEngineImageWidget(ui->scrollArea);
+    modelScheme->SetApplication(app);
     connect(modelScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
     connect(modelScheme, SIGNAL(componentDoubleClick(QString)), this, SIGNAL(componentDoubleClickFromScheme(QString)));
     connect(modelScheme, SIGNAL(componentStapBack()), this, SIGNAL(componentStapBackFromScheme()));
