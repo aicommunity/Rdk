@@ -15,6 +15,7 @@ public:
     void AUpdateInterface();
 
 private:
+    void AddString(int log_level, const QString &string);
     QVBoxLayout *layout;
     QPlainTextEdit *textEdit;
 };
