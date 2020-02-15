@@ -133,6 +133,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionLoadConfig, SIGNAL(triggered(bool)), this, SLOT(actionLoadConfig()));
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
+    connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
 
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
@@ -204,7 +205,19 @@ void UGEngineControllWidget::switchLinksForTwoComponents(QString firstComponentN
 
 void UGEngineControllWidget::actionLoadConfig()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open config file"), QApplication::applicationDirPath()+"/../../../Configs", tr("*.ini"));
+ QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
+ QDir path1(default_path);
+ if(!path1.exists(default_path))
+ {
+  default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
+  QDir path2(default_path);
+  if(!path2.exists(default_path))
+  {
+   default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
+  }
+ }
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open config file"), default_path, tr("*.ini"));
 
     if (fileName.isEmpty())
       return;
@@ -243,8 +256,63 @@ void UGEngineControllWidget::actionSaveConfig()
 
 void UGEngineControllWidget::actionCloseConfig()
 {
- application->PauseChannel(-1);
- application->CloseProject();
+ try
+ {
+  application->PauseChannel(-1);
+  application->CloseProject();
+ }
+ catch(RDK::UException& e)
+ {
+  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+ }
+ catch(std::exception& e)
+ {
+  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+ }
+}
+
+void UGEngineControllWidget::actionCopyConfig()
+{
+ try
+ {
+ QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
+ QDir path1(default_path);
+ if(!path1.exists(default_path))
+ {
+  default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
+  QDir path2(default_path);
+  if(!path2.exists(default_path))
+  {
+   default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
+  }
+ }
+
+ QString res_path=QFileDialog::getExistingDirectory(this, tr("Create project directory"), default_path, QFileDialog::ShowDirsOnly);
+ res_path+="/";
+
+ application->CopyProject(res_path.toLocal8Bit().constData());
+
+ QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Current configuration has been copied to selected destination. Switch to new destination? If you select NO we continue work with previous configuration.", QMessageBox::Yes|QMessageBox::No);
+ if(reply == QMessageBox::Yes)
+ {
+  std::string project_file_name=application->GetProjectFileName();
+  actionCloseConfig();
+  std::string open_file_name=res_path.toLocal8Bit().constData();
+  open_file_name+=project_file_name;
+  application->OpenProject(open_file_name);
+  this->setWindowTitle("project: " + open_file_name);
+  RDK::UIVisualControllerStorage::UpdateInterface(true);
+ }
+
+ }
+ catch(RDK::UException& e)
+ {
+   QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+ }
+ catch(std::exception& e)
+ {
+   QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+ }
 }
 
 void UGEngineControllWidget::actionExit()
