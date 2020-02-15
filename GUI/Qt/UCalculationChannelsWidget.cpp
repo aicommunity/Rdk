@@ -15,14 +15,14 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   QAction *actionSeparator1 = new QAction(this);
   actionSeparator1->setSeparator(true);
 
-  ui->treeWidgetChannels->addAction(ui->actionAddChannel);
-  ui->treeWidgetChannels->addAction(ui->actionInsertChannel);
-  ui->treeWidgetChannels->addAction(ui->actionDeleteSelectedChannel);
-  ui->treeWidgetChannels->addAction(ui->actionCloneChannel);
-  ui->treeWidgetChannels->addAction(actionSeparator1);
-  ui->treeWidgetChannels->addAction(ui->actionStartChannel);
-  ui->treeWidgetChannels->addAction(ui->actionPauseChannel);
-  ui->treeWidgetChannels->addAction(ui->actionResetChannel);
+  ui->listWidgetChannels->addAction(ui->actionAddChannel);
+  ui->listWidgetChannels->addAction(ui->actionInsertChannel);
+  ui->listWidgetChannels->addAction(ui->actionDeleteSelectedChannel);
+  ui->listWidgetChannels->addAction(ui->actionCloneChannel);
+  ui->listWidgetChannels->addAction(actionSeparator1);
+  ui->listWidgetChannels->addAction(ui->actionStartChannel);
+  ui->listWidgetChannels->addAction(ui->actionPauseChannel);
+  ui->listWidgetChannels->addAction(ui->actionResetChannel);
   connect(ui->actionAddChannel, SIGNAL(triggered(bool)), this, SLOT(actionAddChannel()));
   connect(ui->actionInsertChannel, SIGNAL(triggered(bool)), this, SLOT(actionInsertChannel()));
   connect(ui->actionDeleteSelectedChannel, SIGNAL(triggered(bool)), this, SLOT(actionDeleteSelectedChannel()));
@@ -31,7 +31,7 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   connect(ui->actionPauseChannel, SIGNAL(triggered(bool)), this, SLOT(actionPauseChannel()));
   connect(ui->actionResetChannel, SIGNAL(triggered(bool)), this, SLOT(actionResetChannel()));
 
-  connect(ui->treeWidgetChannels, SIGNAL(itemSelectionChanged()), this, SLOT(channelSelectionChanged()));
+  connect(ui->listWidgetChannels, SIGNAL(itemSelectionChanged()), this, SLOT(channelSelectionChanged()));
 
   //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action));
 
@@ -45,14 +45,15 @@ UCalculationChannelsWidget::~UCalculationChannelsWidget()
 
 void UCalculationChannelsWidget::AUpdateInterface()
 {
-  ui->treeWidgetChannels->clear();
+  ui->listWidgetChannels->clear();
   channelsCounter = Core_GetNumChannels();
   for(int i = 0; i < channelsCounter; i++)
   {
-    QTreeWidgetItem *item = new QTreeWidgetItem(ui->treeWidgetChannels);
-    item->setText(0, QString::number(i) + " ch.");
-    item->setData(0, Qt::UserRole, i);
-    if(i == currentChannel) ui->treeWidgetChannels->setCurrentItem(item);
+    QListWidgetItem *item = new QListWidgetItem(ui->listWidgetChannels);
+    item->setText(QString::number(i));
+//    item->setText(0, QString::number(i) + " ch.");
+    item->setData(Qt::UserRole, i);
+    if(i == currentChannel) ui->listWidgetChannels->setCurrentItem(item);
   }
 }
 
@@ -61,12 +62,12 @@ void UCalculationChannelsWidget::channelSelectionChanged()
   if(!application) return;
   if(!application->GetProjectOpenFlag()) return;
 
-  QTreeWidgetItem *item = ui->treeWidgetChannels->currentItem();
+  QListWidgetItem *item = ui->listWidgetChannels->currentItem();
   if(!item) return;
 
-  int selectedChannel = item->data(0, Qt::UserRole).toInt();
+  int selectedChannel = item->data(Qt::UserRole).toInt();
   if(selectedChannel == currentChannel) return;
-  currentChannel = item->data(0, Qt::UserRole).toInt();
+  currentChannel = item->data(Qt::UserRole).toInt();
   Core_SelectChannel(currentChannel);
   RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
@@ -85,10 +86,10 @@ void UCalculationChannelsWidget::actionInsertChannel()
   if(!application) return;
   if(!application->GetProjectOpenFlag()) return;
 
-  QTreeWidgetItem *item = ui->treeWidgetChannels->currentItem();
+  QListWidgetItem *item = ui->listWidgetChannels->currentItem();
   if(!item) return;
 
-  application->InsertChannel(item->data(0, Qt::UserRole).toInt());
+  application->InsertChannel(item->data(Qt::UserRole).toInt());
   UpdateInterface(true);
 }
 
@@ -97,11 +98,11 @@ void UCalculationChannelsWidget::actionDeleteSelectedChannel()
   if(!application) return;
   if(!application->GetProjectOpenFlag()) return;
 
-  QTreeWidgetItem *item = ui->treeWidgetChannels->currentItem();
+  QListWidgetItem *item = ui->listWidgetChannels->currentItem();
   if(!item)
       return;
 
-  application->DeleteChannel(item->data(0, Qt::UserRole).toInt());
+  application->DeleteChannel(item->data(Qt::UserRole).toInt());
   UpdateInterface(true);
 }
 

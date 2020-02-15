@@ -97,6 +97,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     images->hide();
 
     channels = new UCalculationChannelsWidget(this, application);
+    QRect rect=channels->geometry();
+    rect.setWidth(50);
+    channels->setGeometry(rect);
     ui->dockWidgetChannels->setWidget(channels);
 
     logger = new ULoggerWidget(this, application);
