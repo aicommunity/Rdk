@@ -11,7 +11,16 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     ui->setupUi(this);
 
     classesList = new UClassesListWidget(this);
+
     ui->verticalLayoutForClassesList->addWidget(classesList);
+ //   QRect rect= classesList->geometry();
+ //   rect.setWidth(100);
+ //   classesList->setGeometry(rect);
+
+ //   QRect rect=ui->verticalLayoutForClassesList->geometry();
+ //   rect.setWidth(100);
+ //   ui->verticalLayoutForClassesList->setGeometry(rect);
+
 
     modelScheme = new UDrawEngineImageWidget(ui->scrollArea);
     connect(modelScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
@@ -24,6 +33,9 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     ui->scrollArea->setWidget(modelScheme);
     ui->scrollArea->setWidgetResizable(true);
     modelScheme->setFixedSize(ui->scrollArea->width(),ui->scrollArea->height());
+
+    ui->splitter->setStretchFactor(0,1);
+    ui->splitter->setStretchFactor(1,0);
 
     UpdateInterval = 0; // don't update by core ticks
     setAccessibleName("UDrawEngineWidget"); // имя класса для сериализации
