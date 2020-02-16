@@ -159,6 +159,10 @@ public slots:
     /// ¬нешн€€ установка UpdateInterval, дл€ уменьшени€ нагрузки на €дро
     void setUpdateInterval(long value);
 
+    void propertyCopyNameToClipboard();
+    void propertyCopyValueToClipboard();
+    void propertyPasteValueFromClipboard();
+
 private:
     /// ”дал€ет из переданных данных лидирующие переводы строк
     std::string& EraseLeadEndls(std::string &value);

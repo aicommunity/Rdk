@@ -94,7 +94,7 @@
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tabParameters">
           <attribute name="title">
@@ -115,6 +115,9 @@
            </property>
            <item>
             <widget class="QTreeWidget" name="treeWidgetParameters">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
              <column>
               <property name="text">
                <string>Name</string>
@@ -148,6 +151,9 @@
            </property>
            <item>
             <widget class="QTreeWidget" name="treeWidgetState">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
              <column>
               <property name="text">
                <string>Name</string>
@@ -181,6 +187,9 @@
            </property>
            <item>
             <widget class="QTreeWidget" name="treeWidgetInputs">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
              <column>
               <property name="text">
                <string>Name</string>
@@ -219,6 +228,9 @@
            </property>
            <item>
             <widget class="QTreeWidget" name="treeWidgetOutputs">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
              <column>
               <property name="text">
                <string>Name</string>
@@ -421,6 +433,30 @@
    </property>
    <property name="toolTip">
     <string>Call UnInit method for component</string>
+   </property>
+  </action>
+  <action name="actionCopyPropertyNameToClipboard">
+   <property name="text">
+    <string>Copy Name To Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Name To Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopyPropertyValueToClipboard">
+   <property name="text">
+    <string>Copy Value To Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Value To Clipboard</string>
+   </property>
+  </action>
+  <action name="actionPastePropertyValueFromClipboard">
+   <property name="text">
+    <string>Paste Value From Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Paste Value From Clipboard</string>
    </property>
   </action>
  </widget>

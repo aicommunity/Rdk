@@ -97,6 +97,29 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionCopyClassNameToClipboard, SIGNAL(triggered()), this, SLOT(componentCopyClassNameToClipboard()));
     connect(ui->actionComponentGUI, SIGNAL(triggered()), this, SLOT(componentGUI()));
 
+    QAction *actionSeparatorProperty1 = new QAction(this);
+    actionSeparatorProperty1->setSeparator(true);
+    ui->treeWidgetParameters->addAction(ui->actionCopyPropertyNameToClipboard);
+    ui->treeWidgetState->addAction(ui->actionCopyPropertyNameToClipboard);
+    ui->treeWidgetInputs->addAction(ui->actionCopyPropertyNameToClipboard);
+    ui->treeWidgetOutputs->addAction(ui->actionCopyPropertyNameToClipboard);
+    connect(ui->actionCopyPropertyNameToClipboard, SIGNAL(triggered()), this, SLOT(propertyCopyNameToClipboard()));
+
+    QAction *actionSeparatorProperty2 = new QAction(this);
+    actionSeparatorProperty2->setSeparator(true);
+    ui->treeWidgetParameters->addAction(ui->actionCopyPropertyValueToClipboard);
+    ui->treeWidgetState->addAction(ui->actionCopyPropertyValueToClipboard);
+    ui->treeWidgetInputs->addAction(ui->actionCopyPropertyValueToClipboard);
+    ui->treeWidgetOutputs->addAction(ui->actionCopyPropertyValueToClipboard);
+    connect(ui->actionCopyPropertyValueToClipboard, SIGNAL(triggered()), this, SLOT(propertyCopyValueToClipboard()));
+
+    QAction *actionSeparatorProperty3 = new QAction(this);
+    actionSeparatorProperty3->setSeparator(true);
+    ui->treeWidgetParameters->addAction(ui->actionPastePropertyValueFromClipboard);
+    ui->treeWidgetState->addAction(ui->actionPastePropertyValueFromClipboard);
+    ui->treeWidgetInputs->addAction(ui->actionPastePropertyValueFromClipboard);
+    ui->treeWidgetOutputs->addAction(ui->actionPastePropertyValueFromClipboard);
+    connect(ui->actionPastePropertyValueFromClipboard, SIGNAL(triggered()), this, SLOT(propertyPasteValueFromClipboard()));
 }
 
 UComponentsListWidget::~UComponentsListWidget()
@@ -848,4 +871,111 @@ std::string& UComponentsListWidget::PreparePropertyValueToListView(std::string &
  return value;
 }
 
+
+void UComponentsListWidget::propertyCopyNameToClipboard()
+{
+ QClipboard *clipboard = QApplication::clipboard();
+
+ QString value;
+ switch(ui->tabWidgetComponentInfo->currentIndex())
+ {
+   case 0:
+     if(ui->treeWidgetParameters->currentItem())
+       value=ui->treeWidgetParameters->currentItem()->data(0, Qt::DisplayRole).toString();
+   break;
+
+   case 1:
+     if(ui->treeWidgetState->currentItem())
+       value=ui->treeWidgetState->currentItem()->data(0, Qt::DisplayRole).toString();
+   break;
+
+   case 2:
+     if(ui->treeWidgetInputs->currentItem())
+       value=ui->treeWidgetInputs->currentItem()->data(0, Qt::DisplayRole).toString();
+   break;
+
+   case 3:
+     if(ui->treeWidgetOutputs->currentItem())
+       value=ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
+   break;
+ }
+
+ clipboard->setText(value);
+}
+
+void UComponentsListWidget::propertyCopyValueToClipboard()
+{
+ QClipboard *clipboard = QApplication::clipboard();
+
+ QString value;
+ switch(ui->tabWidgetComponentInfo->currentIndex())
+ {
+   case 0:
+     if(ui->treeWidgetParameters->currentItem())
+       value=ui->treeWidgetParameters->currentItem()->data(1, Qt::DisplayRole).toString();
+   break;
+
+   case 1:
+     if(ui->treeWidgetState->currentItem())
+       value=ui->treeWidgetState->currentItem()->data(1, Qt::DisplayRole).toString();
+   break;
+
+   case 2:
+     if(ui->treeWidgetInputs->currentItem())
+       value=ui->treeWidgetInputs->currentItem()->data(1, Qt::DisplayRole).toString();
+   break;
+
+   case 3:
+     if(ui->treeWidgetOutputs->currentItem())
+       value=ui->treeWidgetOutputs->currentItem()->data(1, Qt::DisplayRole).toString();
+   break;
+ }
+
+ clipboard->setText(value);
+}
+
+void UComponentsListWidget::propertyPasteValueFromClipboard()
+{
+ QClipboard *clipboard = QApplication::clipboard();
+
+ QString value=clipboard->text();
+ switch(ui->tabWidgetComponentInfo->currentIndex())
+ {
+   case 0:
+     if(ui->treeWidgetParameters->currentItem())
+     {
+      ui->treeWidgetParameters->currentItem()->setData(1, Qt::UserRole, value);
+      std::string temp=value.toLocal8Bit().constData();
+      ui->treeWidgetParameters->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
+     }
+   break;
+
+   case 1:
+     if(ui->treeWidgetState->currentItem())
+     {
+      ui->treeWidgetState->currentItem()->setData(1, Qt::UserRole, value);
+      std::string temp=value.toLocal8Bit().constData();
+      ui->treeWidgetState->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
+     }
+   break;
+
+   case 2:
+     if(ui->treeWidgetInputs->currentItem())
+     {
+      ui->treeWidgetInputs->currentItem()->setData(1, Qt::UserRole, value);
+      std::string temp=value.toLocal8Bit().constData();
+      ui->treeWidgetInputs->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
+     }
+   break;
+
+   case 3:
+     if(ui->treeWidgetOutputs->currentItem())
+     {
+      ui->treeWidgetOutputs->currentItem()->setData(1, Qt::UserRole, value);
+      std::string temp=value.toLocal8Bit().constData();
+      ui->treeWidgetOutputs->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
+     }
+   break;
+ }
+}
 
