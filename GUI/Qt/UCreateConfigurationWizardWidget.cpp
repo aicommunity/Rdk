@@ -86,6 +86,25 @@ UCreateConfigurationWizardWidget::~UCreateConfigurationWizardWidget()
   delete ui;
 }
 
+void UCreateConfigurationWizardWidget::UpdateInterface(void)
+{
+ if(!application)
+  return;
+
+ if(application->GetProjectOpenFlag())
+ {
+  ProjectConfig=application->GetProjectConfig();
+  // TODO:...
+ }
+ else
+ {
+
+ }
+ //ProjectConfig;
+
+}
+
+
 void UCreateConfigurationWizardWidget::onMSPredefinedModel(bool checked)
 {
   if(checked)
@@ -443,8 +462,24 @@ void UCreateConfigurationWizardWidget::selectPredefinedStructure(QListWidgetItem
 
 }
 
+void UCreateConfigurationWizardWidget::showEvent(QShowEvent *ev)
+{
+ QWizard::showEvent(ev);
+ UpdateInterface();
+}
+
 void UCreateConfigurationWizardWidget::accept()
 {
+ if(!application)
+  return;
+
+ if(application->GetProjectOpenFlag())
+ {
+  // TODO:...
+  application->UpdateProject(ProjectConfig);
+ }
+ else
+ {
   // first page
   ProjectConfig.ProjectName = ui->lineEditProjectName->text().toLocal8Bit().constData();
   ProjectConfig.ProjectDescription = ui->plainTextEditProjectDescription->toPlainText().toLocal8Bit().constData();
@@ -475,6 +510,8 @@ void UCreateConfigurationWizardWidget::accept()
           (ui->lineEditProjectDirectory->text()
            + "/project.ini").toLocal8Bit().constData(), ProjectConfig);
   }
+ }
+ //ProjectConfig;
 
   QWizard::accept();
 }

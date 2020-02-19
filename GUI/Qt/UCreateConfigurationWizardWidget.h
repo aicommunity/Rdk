@@ -68,6 +68,10 @@ public slots:
 protected:
   virtual void accept() override;
 
+  void showEvent(QShowEvent *ev);
+
+  void UpdateInterface(void);
+
 private slots:
   void on_listViewPredefinedStructures_activated(const QModelIndex &index);
 
