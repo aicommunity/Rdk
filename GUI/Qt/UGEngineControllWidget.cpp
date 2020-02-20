@@ -248,8 +248,24 @@ void UGEngineControllWidget::actionLoadConfig()
 
 void UGEngineControllWidget::actionCreateConfig()
 {
-    createConfigurationWizardWidget->show();
-    //QMessageBox::information(this,"Create new project", "He-he-he, NO! >:]", QMessageBox::Ok);
+ if(application->GetProjectOpenFlag())
+ {
+  QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Another configuration is open. Close?", QMessageBox::Save|QMessageBox::Close|QMessageBox::Cancel);
+  if (reply == QMessageBox::Save)
+  {
+   application->SaveProject();
+   application->CloseProject();
+  }
+  else
+  if(reply == QMessageBox::Close)
+  {
+   application->CloseProject();
+  }
+  else
+   return;
+ }
+
+ createConfigurationWizardWidget->show();
 }
 
 void UGEngineControllWidget::actionSaveConfig()

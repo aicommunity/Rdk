@@ -91,6 +91,11 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  if(!application)
   return;
 
+ QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+ //QByteArray byteArray(n.XMLDescription.c_str(), n.XMLDescription.length());
+ //QString utf8Str = codec->toUnicode(byteArray);
+
+
  if(application->GetProjectOpenFlag())
  {
   ProjectConfig=application->GetProjectConfig();
@@ -105,7 +110,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  }
 
  // обновляем интерфейс в соответствии с ProjectConfig
- ui->lineEditProjectName->setText(QString::fromLocal8Bit(ProjectConfig.ProjectName.c_str()));
+ ui->lineEditProjectName->setText(codec->toUnicode(ProjectConfig.ProjectName.c_str()));
 
  ui->plainTextEditProjectDescription->setPlainText(ProjectConfig.ProjectDescription.c_str());
  ui->checkBoxAutosaveProject->setChecked(ProjectConfig.ProjectAutoSaveFlag);
@@ -171,7 +176,29 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
 
  ui->checkBoxSDiasbleStopVS->setChecked(ProjectConfig.DisableStopVideoSources);
 
- ui->checkBoxLogEvents->setChecked(ProjectConfig.EventsLogMode);
+ ui->checkBoxEventsLogMode->setChecked(ProjectConfig.EventsLogMode);
+
+ ui->lineEditMTUpdateInterfaceInterval->setText(QString::number(ProjectConfig.MTUpdateInterfaceInterval));
+
+ switch (ProjectConfig.GuiUpdateMode)
+ {
+ case 0:
+  ui->radioButtonGuiUpdateMode0->setChecked(true);
+  ui->radioButtonGuiUpdateMode1->setChecked(false);
+ break;
+
+ case 1:
+  ui->radioButtonGuiUpdateMode0->setChecked(false);
+  ui->radioButtonGuiUpdateMode1->setChecked(true);
+ break;
+ }
+
+ ui->checkBox->setChecked(ProjectConfig.DebugMode);
+ ui->checkBoxDebuggerMessageFlag->setChecked(ProjectConfig.DebuggerMessageFlag);
+ ui->checkBoxLogEvents->setChecked(ProjectConfig.EventsLogFlag);
+ ui->checkBoxOverrideLogParameters->setChecked(ProjectConfig.OverrideLogParameters);
+
+
 
  // каналы...
  ui->checkBoxSettingToAllChannels->setChecked(false);
@@ -191,50 +218,40 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  ui->listWidgetChannels->setCurrentRow(0);
  channelSelectionChanged(0);
 
-
+/*
+#define RDK_SYS_DEBUG_NONE 0
+#define RDK_SYS_DEBUG_CALC 1
+#define RDK_SYS_DEBUG_RESET 2
+#define RDK_SYS_DEBUG_PROPERTIES 4
+#define RDK_SYS_DEBUG_PARAMETERS 8
+#define RDK_SYS_DEBUG_STATES 16
+#define RDK_SYS_DEBUG_INPUTS 32
+#define RDK_SYS_DEBUG_OUTPUTS 64
+*/
+ if(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_NONE)
+ {
+  ui->checkBoxDebugSysEventsNone->setChecked(true);
+  ui->checkBoxDebugSysEventsCalc->setChecked(false);
+  ui->checkBoxDebugSysEventsReset->setChecked(false);
+  ui->checkBoxDebugSysEventsProperties->setChecked(false);
+  ui->checkBoxDebugSysEventsParameters->setChecked(false);
+  ui->checkBoxDebugSysEventsStates->setChecked(false);
+  ui->checkBoxDebugSysEventsInputs->setChecked(false);
+  ui->checkBoxDebugSysEventsOutputs->setChecked(false);
+ }
+ else
+ {
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+  ui->checkBoxDebugSysEventsCalc->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_CALC);
+  ui->checkBoxDebugSysEventsReset->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_RESET);
+  ui->checkBoxDebugSysEventsProperties->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_PROPERTIES);
+  ui->checkBoxDebugSysEventsParameters->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_PARAMETERS);
+  ui->checkBoxDebugSysEventsStates->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_STATES);
+  ui->checkBoxDebugSysEventsInputs->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_INPUTS);
+  ui->checkBoxDebugSysEventsOutputs->setChecked(ProjectConfig.DebugSysEventsMask & RDK_SYS_DEBUG_OUTPUTS);
+ }
 
    /*
-
- if(old_project_config.MTUpdateInterfaceInterval != project_config.MTUpdateInterfaceInterval)
- {
-
- }
-
- if(old_project_config.GuiUpdateMode != project_config.GuiUpdateMode)
- {
-
- }
-
- if(old_project_config.ShowChannelsStateFlag != project_config.ShowChannelsStateFlag)
- {
-
- }
-
- if(old_project_config.ReflectionFlag != project_config.ReflectionFlag)
- {
-
- }
-
- if(old_project_config.DebugMode != project_config.DebugMode)
- {
-
- }
-
- if(old_project_config.DebugSysEventsMask != project_config.DebugSysEventsMask)
- {
-
- }
-
- if(old_project_config.DebuggerMessageFlag != project_config.DebuggerMessageFlag)
- {
-
- }
-
-
- if(old_project_config.OverrideLogParameters != project_config.OverrideLogParameters)
- {
-  is_reload_needed=true;
- }
 
  if(old_project_config.ServerInterfaceAddress != project_config.ServerInterfaceAddress)
  {
@@ -246,22 +263,6 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
 
  }
 
- if(old_project_config.ProjectShowChannelsStates != project_config.ProjectShowChannelsStates)
- {
-
- }
-
- if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
- {
-  is_reload_needed=true;
- }
-
- if(old_project_config.NumChannels != project_config.NumChannels)
- {
-  is_reload_needed=true;
- }
-
- int min_num_channels=(project_config.NumChannels<old_project_config.NumChannels)?project_config.NumChannels:old_project_config.NumChannels;
  for(int i=0;i<min_num_channels;i++)
  {
   if(old_project_config.ChannelsConfig[i].ModelMode != old_project_config.ChannelsConfig[i].ModelMode)
@@ -544,6 +545,58 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index
  ui->checkBoxCPInitAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].InitAfterLoad);
  ui->checkBoxCPResetAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].ResetAfterLoad);
  ui->checkBoxCPDebug->setChecked(ProjectConfig.ChannelsConfig[channelNumber].DebugMode);
+
+/*
+ for(int i=0;i<min_num_channels;i++)
+ {
+  if(old_project_config.ChannelsConfig[i].ModelMode != old_project_config.ChannelsConfig[i].ModelMode)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].PredefinedStructure != old_project_config.ChannelsConfig[i].PredefinedStructure)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ModelFileName != old_project_config.ChannelsConfig[i].ModelFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ParametersFileName != old_project_config.ChannelsConfig[i].ParametersFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].StatesFileName != old_project_config.ChannelsConfig[i].StatesFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ClassName != old_project_config.ChannelsConfig[i].ClassName)
+  {
+   is_reload_needed=true;
+  }
+
+
+  if(old_project_config.ChannelsConfig[i].DebugSysEventsMask != old_project_config.ChannelsConfig[i].DebugSysEventsMask)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebuggerMessageFlag != old_project_config.ChannelsConfig[i].DebuggerMessageFlag)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].EventsLogMode != old_project_config.ChannelsConfig[i].EventsLogMode)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].ChannelName != old_project_config.ChannelsConfig[i].ChannelName)
+  {
+  }
+
+*/
 }
 
 
@@ -694,47 +747,78 @@ void UCreateConfigurationWizardWidget::accept()
  if(!application)
   return;
 
+ // first page
+ ProjectConfig.ProjectName = ui->lineEditProjectName->text().toLocal8Bit().constData();
+ ProjectConfig.ProjectDescription = ui->plainTextEditProjectDescription->toPlainText().toLocal8Bit().constData();
+
+ if(ui->radioButtonSimplePM->isChecked())
+   ProjectConfig.ProjectMode = 0;
+ else
+   ProjectConfig.ProjectMode = 1;
+
+ if(ui->radioButtonSingleThread->isChecked())
+   ProjectConfig.MultiThreadingMode = 0;
+ else
+   ProjectConfig.MultiThreadingMode = 1;
+
+ if(ui->radioButtonSystemTime->isChecked())
+   ProjectConfig.CalcSourceTimeMode = 0;
+ else
+   ProjectConfig.CalcSourceTimeMode = 1;
+
+ ProjectConfig.ProjectAutoSaveFlag = ui->checkBoxAutosaveProject->isChecked();
+ ProjectConfig.ProjectAutoSaveStatesFlag = ui->checkBoxAutosaveStates->isChecked();
+ ProjectConfig.EventsLogFlag = ui->checkBoxLogEvents->isChecked();
+ ProjectConfig.DisableStopVideoSources = ui->checkBoxSDiasbleStopVS->isChecked();
+
+ ProjectConfig.DebugSysEventsMask=0;
+
+ if(ui->checkBoxDebugSysEventsNone->isChecked())
+  ProjectConfig.DebugSysEventsMask = 0;
+ else
+ {
+  if(ui->checkBoxDebugSysEventsCalc->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_CALC;
+  if(ui->checkBoxDebugSysEventsReset->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_RESET;
+  if(ui->checkBoxDebugSysEventsProperties->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_PROPERTIES;
+  if(ui->checkBoxDebugSysEventsParameters->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_PARAMETERS;
+  if(ui->checkBoxDebugSysEventsStates->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_STATES;
+  if(ui->checkBoxDebugSysEventsInputs->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_INPUTS;
+  if(ui->checkBoxDebugSysEventsOutputs->isChecked())
+   ProjectConfig.DebugSysEventsMask |= RDK_SYS_DEBUG_OUTPUTS;
+ }
+
+ ProjectConfig.EventsLogMode=ui->checkBoxEventsLogMode->isChecked();
+
+ ProjectConfig.MTUpdateInterfaceInterval=ui->lineEditMTUpdateInterfaceInterval->text().toInt();
+
+ if(ui->radioButtonGuiUpdateMode0->isChecked())
+  ProjectConfig.GuiUpdateMode=0;
+ else
+  ProjectConfig.GuiUpdateMode=1;
+
+ ProjectConfig.DebugMode=ui->checkBox->isChecked();
+ ProjectConfig.DebuggerMessageFlag=ui->checkBoxDebuggerMessageFlag->isChecked();
+ ProjectConfig.EventsLogFlag=ui->checkBoxLogEvents->isChecked();
+ ProjectConfig.OverrideLogParameters=ui->checkBoxOverrideLogParameters->isChecked();
+
  if(application->GetProjectOpenFlag())
  {
-  // TODO:...
   application->UpdateProject(ProjectConfig);
  }
  else
  {
-  // first page
-  ProjectConfig.ProjectName = ui->lineEditProjectName->text().toLocal8Bit().constData();
-  ProjectConfig.ProjectDescription = ui->plainTextEditProjectDescription->toPlainText().toLocal8Bit().constData();
-
-  if(ui->radioButtonSimplePM->isChecked())
-    ProjectConfig.ProjectMode = 0;
-  else
-    ProjectConfig.ProjectMode = 1;
-
-  if(ui->radioButtonSingleThread->isChecked())
-    ProjectConfig.MultiThreadingMode = 0;
-  else
-    ProjectConfig.MultiThreadingMode = 1;
-
-  if(ui->radioButtonSystemTime->isChecked())
-    ProjectConfig.CalcSourceTimeMode = 0;
-  else
-    ProjectConfig.CalcSourceTimeMode = 1;
-
-  ProjectConfig.ProjectAutoSaveFlag = ui->checkBoxAutosaveProject->isChecked();
-  ProjectConfig.ProjectAutoSaveStatesFlag = ui->checkBoxAutosaveStates->isChecked();
-  ProjectConfig.EventsLogFlag = ui->checkBoxLogEvents->isChecked();
-  ProjectConfig.DisableStopVideoSources = ui->checkBoxSDiasbleStopVS->isChecked();
-
-  if(application)
-  {
     application->CreateProject(
           (ui->lineEditProjectDirectory->text()
            + "/project.ini").toLocal8Bit().constData(), ProjectConfig);
-  }
  }
- //ProjectConfig;
 
-  QWizard::accept();
+ QWizard::accept();
 }
 
 void UCreateConfigurationWizardWidget::on_listViewPredefinedStructures_activated(const QModelIndex &index)
