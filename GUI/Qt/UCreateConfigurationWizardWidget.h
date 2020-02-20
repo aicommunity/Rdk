@@ -35,6 +35,7 @@ public slots:
   void setApplySettingToAllChannels(bool checked);
   void setCalculationChannelsNumber(int value);
   void channelSelectionChanged(QListWidgetItem *current, QListWidgetItem *previous);
+  void channelSelectionChanged(int channel_index);
 
   // Browse buttons
   void browseNewProjectDirectory();

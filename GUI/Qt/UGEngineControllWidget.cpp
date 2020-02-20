@@ -135,6 +135,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
 
+    connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
+
+
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
     //chanels menu actions:
@@ -318,6 +321,11 @@ void UGEngineControllWidget::actionCopyConfig()
 void UGEngineControllWidget::actionExit()
 {
   QApplication::quit();
+}
+
+void UGEngineControllWidget::actionConfigOptions()
+{
+ createConfigurationWizardWidget->show();
 }
 
 //chanels menu actions:

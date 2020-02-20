@@ -94,13 +94,228 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  if(application->GetProjectOpenFlag())
  {
   ProjectConfig=application->GetProjectConfig();
-  // TODO:...
+  ui->lineEditProjectDirectory->setText((application->GetProjectPath()+application->GetProjectFileName()).c_str());
+
  }
  else
  {
+  RDK::TProjectConfig def;
+  ProjectConfig=def;
+  ui->lineEditProjectDirectory->setText("");
+ }
+
+ // обновляем интерфейс в соответствии с ProjectConfig
+ ui->lineEditProjectName->setText(QString::fromLocal8Bit(ProjectConfig.ProjectName.c_str()));
+
+ ui->plainTextEditProjectDescription->setPlainText(ProjectConfig.ProjectDescription.c_str());
+ ui->checkBoxAutosaveProject->setChecked(ProjectConfig.ProjectAutoSaveFlag);
+ ui->checkBoxAutosaveStates->setChecked(ProjectConfig.ProjectAutoSaveStatesFlag);
+ ui->checkBoxLogEvents->setChecked(ProjectConfig.EventsLogFlag);
+ if(ProjectConfig.ProjectMode == 0)
+ {
+  ui->radioButtonSimplePM->setChecked(true);
+  ui->radioButtonServerPM->setChecked(false);
+ }
+ else
+ {
+  ui->radioButtonSimplePM->setChecked(false);
+  ui->radioButtonServerPM->setChecked(true);
+ }
+
+ switch(ProjectConfig.ProjectType)
+ {
+ case 0:
+  ui->radioButtonPTUniversal->setChecked(true);
+  ui->radioButtonPTVideoAnalysis->setChecked(false);
+  ui->radioButtonPTModeling->setChecked(false);
+ break;
+
+ case 1:
+  ui->radioButtonPTUniversal->setChecked(false);
+  ui->radioButtonPTVideoAnalysis->setChecked(true);
+  ui->radioButtonPTModeling->setChecked(false);
+ break;
+
+ case 2:
+  ui->radioButtonPTUniversal->setChecked(false);
+  ui->radioButtonPTVideoAnalysis->setChecked(false);
+  ui->radioButtonPTModeling->setChecked(true);
+ break;
+ }
+
+ switch (ProjectConfig.MultiThreadingMode)
+ {
+ case 0:
+  ui->radioButtonSingleThread->setChecked(true);
+  ui->radioButtonMultiThreads->setChecked(false);
+ break;
+
+ case 1:
+  ui->radioButtonSingleThread->setChecked(false);
+  ui->radioButtonMultiThreads->setChecked(true);
+ break;
+ }
+
+ switch (ProjectConfig.MultiThreadingMode)
+ {
+ case 0:
+  ui->radioButtonSystemTime->setChecked(true);
+  ui->radioButtonExternalDataTime->setChecked(false);
+ break;
+
+ case 1:
+  ui->radioButtonSystemTime->setChecked(false);
+  ui->radioButtonExternalDataTime->setChecked(true);
+ break;
+ }
+
+ ui->checkBoxSDiasbleStopVS->setChecked(ProjectConfig.DisableStopVideoSources);
+
+ ui->checkBoxLogEvents->setChecked(ProjectConfig.EventsLogMode);
+
+ // каналы...
+ ui->checkBoxSettingToAllChannels->setChecked(false);
+ ui->spinBoxChannelsNumber->setValue(ProjectConfig.NumChannels);
+ int listSize = ui->listWidgetChannels->count();
+
+ for(int i = listSize; i > ProjectConfig.NumChannels; --i)
+ {
+  delete ui->listWidgetChannels->takeItem(i-1);
+ }
+
+ for(int i = listSize; i < ProjectConfig.NumChannels; ++i)
+ {
+  ui->listWidgetChannels->addItem(QString::number(i));
+ }
+
+ ui->listWidgetChannels->setCurrentRow(0);
+ channelSelectionChanged(0);
+
+
+
+   /*
+
+ if(old_project_config.MTUpdateInterfaceInterval != project_config.MTUpdateInterfaceInterval)
+ {
 
  }
- //ProjectConfig;
+
+ if(old_project_config.GuiUpdateMode != project_config.GuiUpdateMode)
+ {
+
+ }
+
+ if(old_project_config.ShowChannelsStateFlag != project_config.ShowChannelsStateFlag)
+ {
+
+ }
+
+ if(old_project_config.ReflectionFlag != project_config.ReflectionFlag)
+ {
+
+ }
+
+ if(old_project_config.DebugMode != project_config.DebugMode)
+ {
+
+ }
+
+ if(old_project_config.DebugSysEventsMask != project_config.DebugSysEventsMask)
+ {
+
+ }
+
+ if(old_project_config.DebuggerMessageFlag != project_config.DebuggerMessageFlag)
+ {
+
+ }
+
+
+ if(old_project_config.OverrideLogParameters != project_config.OverrideLogParameters)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.ServerInterfaceAddress != project_config.ServerInterfaceAddress)
+ {
+
+ }
+
+ if(old_project_config.ServerInterfacePort != project_config.ServerInterfacePort)
+ {
+
+ }
+
+ if(old_project_config.ProjectShowChannelsStates != project_config.ProjectShowChannelsStates)
+ {
+
+ }
+
+ if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.NumChannels != project_config.NumChannels)
+ {
+  is_reload_needed=true;
+ }
+
+ int min_num_channels=(project_config.NumChannels<old_project_config.NumChannels)?project_config.NumChannels:old_project_config.NumChannels;
+ for(int i=0;i<min_num_channels;i++)
+ {
+  if(old_project_config.ChannelsConfig[i].ModelMode != old_project_config.ChannelsConfig[i].ModelMode)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].PredefinedStructure != old_project_config.ChannelsConfig[i].PredefinedStructure)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ModelFileName != old_project_config.ChannelsConfig[i].ModelFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ParametersFileName != old_project_config.ChannelsConfig[i].ParametersFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].StatesFileName != old_project_config.ChannelsConfig[i].StatesFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ClassName != old_project_config.ChannelsConfig[i].ClassName)
+  {
+   is_reload_needed=true;
+  }
+
+
+  if(old_project_config.ChannelsConfig[i].DebugSysEventsMask != old_project_config.ChannelsConfig[i].DebugSysEventsMask)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebuggerMessageFlag != old_project_config.ChannelsConfig[i].DebuggerMessageFlag)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].EventsLogMode != old_project_config.ChannelsConfig[i].EventsLogMode)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].ChannelName != old_project_config.ChannelsConfig[i].ChannelName)
+  {
+  }
+
+
+ }
+*/
+
+
 
 }
 
@@ -288,43 +503,49 @@ void UCreateConfigurationWizardWidget::setCalculationChannelsNumber(int value)
 
 void UCreateConfigurationWizardWidget::channelSelectionChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
-  channelNumber = current->text().toInt();
-
-  if(!ProjectConfig.ChannelsConfig[channelNumber].ClassName.empty())
-  {
-    ui->radioButtonMSFromComponent->setChecked(true);
-  }
-
-    /*ProjectConfig.ChannelsConfig[channelNumber].ClassName =
-            classesList->selctedClass().toStdString();
-        ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = "";
-        ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;*/
-
-  ui->lineEditTimeStepDurationDefault->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].DefaultTimeStep));
-  ui->lineEditTimeStepDurationGlobal->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].GlobalTimeStep));
-
-  switch(ProjectConfig.ChannelsConfig[channelNumber].CalculationMode)
-  {
-    case 0:
-      ui->radioButtonCMSimple->setChecked(true);
-      break;
-    case 1:
-      ui->radioButtonCMRealTime->setChecked(true);
-      break;
-    case 2:
-      ui->radioButtonCMBySignal->setChecked(true);
-      break;
-    case 3:
-      ui->radioButtonCMFastest->setChecked(true);
-      break;
-  }
-
-  ui->lineEditMaxCalculationModelTime->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].MaxCalculationModelTime));
-  ui->lineEditMinInterstepInterval->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].MinInterstepsInterval));
-  ui->checkBoxCPInitAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].InitAfterLoad);
-  ui->checkBoxCPResetAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].ResetAfterLoad);
-  ui->checkBoxCPDebug->setChecked(ProjectConfig.ChannelsConfig[channelNumber].DebugMode);
+ channelSelectionChanged(current->text().toInt());
 }
+
+void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index)
+{
+ channelNumber = channel_index;
+
+ if(!ProjectConfig.ChannelsConfig[channelNumber].ClassName.empty())
+ {
+   ui->radioButtonMSFromComponent->setChecked(true);
+ }
+
+   /*ProjectConfig.ChannelsConfig[channelNumber].ClassName =
+           classesList->selctedClass().toStdString();
+       ProjectConfig.ChannelsConfig[channelNumber].ModelFileName = "";
+       ProjectConfig.ChannelsConfig[channelNumber].PredefinedStructure = 0;*/
+
+ ui->lineEditTimeStepDurationDefault->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].DefaultTimeStep));
+ ui->lineEditTimeStepDurationGlobal->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].GlobalTimeStep));
+
+ switch(ProjectConfig.ChannelsConfig[channelNumber].CalculationMode)
+ {
+   case 0:
+     ui->radioButtonCMSimple->setChecked(true);
+     break;
+   case 1:
+     ui->radioButtonCMRealTime->setChecked(true);
+     break;
+   case 2:
+     ui->radioButtonCMBySignal->setChecked(true);
+     break;
+   case 3:
+     ui->radioButtonCMFastest->setChecked(true);
+     break;
+ }
+
+ ui->lineEditMaxCalculationModelTime->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].MaxCalculationModelTime));
+ ui->lineEditMinInterstepInterval->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].MinInterstepsInterval));
+ ui->checkBoxCPInitAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].InitAfterLoad);
+ ui->checkBoxCPResetAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].ResetAfterLoad);
+ ui->checkBoxCPDebug->setChecked(ProjectConfig.ChannelsConfig[channelNumber].DebugMode);
+}
+
 
 void UCreateConfigurationWizardWidget::browseNewProjectDirectory()
 {
