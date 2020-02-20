@@ -82,6 +82,14 @@ private slots:
 
   void on_listViewModelsFromFile_activated(const QModelIndex &index);
 
+  void on_checkBoxChannelDebugMode_stateChanged(int arg1);
+
+  void on_checkBoxDebuggerMessageFlag_2_stateChanged(int arg1);
+
+  void on_checkBoxLogEvents_2_stateChanged(int arg1);
+
+  void on_lineEditChannelName_editingFinished();
+
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
 

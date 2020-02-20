@@ -66,7 +66,7 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   // checkboxes at the bottom
   connect(ui->checkBoxCPInitAfterLoad , SIGNAL(toggled(bool)), this, SLOT(setInitAfterLoad(bool)));
   connect(ui->checkBoxCPResetAfterLoad, SIGNAL(toggled(bool)), this, SLOT(setResetAfterLoad(bool)));
-  connect(ui->checkBoxCPDebug         , SIGNAL(toggled(bool)), this, SLOT(setDebugMode(bool)));
+  connect(ui->checkBoxChannelDebugMode, SIGNAL(toggled(bool)), this, SLOT(setDebugMode(bool)));
 
 
   connect(ui->listViewPredefinedStructures, SIGNAL(itemActivated(QListWidgetItem*)),
@@ -74,7 +74,6 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
 
   channelNumber = 0;
   ui->radioButtonMSFromComponent->setChecked(true);
-  ui->frameMaxCalcModelTime->hide();
   ui->radioButtonPTUniversal->setChecked(true);
 
   ProjectConfig.NumChannels = 1;
@@ -544,7 +543,7 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index
  ui->lineEditMinInterstepInterval->setText(QString::number(ProjectConfig.ChannelsConfig[channelNumber].MinInterstepsInterval));
  ui->checkBoxCPInitAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].InitAfterLoad);
  ui->checkBoxCPResetAfterLoad->setChecked(ProjectConfig.ChannelsConfig[channelNumber].ResetAfterLoad);
- ui->checkBoxCPDebug->setChecked(ProjectConfig.ChannelsConfig[channelNumber].DebugMode);
+ ui->checkBoxChannelDebugMode->setChecked(ProjectConfig.ChannelsConfig[channelNumber].DebugMode);
 
 /*
  for(int i=0;i<min_num_channels;i++)
@@ -580,22 +579,6 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index
   }
 
 
-  if(old_project_config.ChannelsConfig[i].DebugSysEventsMask != old_project_config.ChannelsConfig[i].DebugSysEventsMask)
-  {
-  }
-
-  if(old_project_config.ChannelsConfig[i].DebuggerMessageFlag != old_project_config.ChannelsConfig[i].DebuggerMessageFlag)
-  {
-  }
-
-  if(old_project_config.ChannelsConfig[i].EventsLogMode != old_project_config.ChannelsConfig[i].EventsLogMode)
-  {
-  }
-
-  if(old_project_config.ChannelsConfig[i].ChannelName != old_project_config.ChannelsConfig[i].ChannelName)
-  {
-  }
-
 */
 }
 
@@ -630,9 +613,9 @@ void UCreateConfigurationWizardWidget::onPTUniversal(bool checked)
 {
   if(checked)
   {
-    ui->lineEditTimeStepDurationDefault->clear();
-    ui->lineEditTimeStepDurationGlobal ->clear();
-    ui->lineEditMinInterstepInterval   ->clear();
+   ui->lineEditTimeStepDurationDefault->setText("30");
+   ui->lineEditTimeStepDurationGlobal ->setText("30");
+   ui->lineEditMinInterstepInterval   ->setText("30");
     ui->radioButtonCMSimple->setChecked(true);
   }
 }
@@ -644,7 +627,7 @@ void UCreateConfigurationWizardWidget::onPTVideoAnalysis(bool checked)
     ui->lineEditTimeStepDurationDefault->setText("30");
     ui->lineEditTimeStepDurationGlobal ->setText("30");
     ui->lineEditMinInterstepInterval   ->setText("30");
-    ui->radioButtonCMRealTime->setChecked(true);
+    ui->radioButtonCMSimple->setChecked(true);
   }
 }
 
@@ -655,7 +638,7 @@ void UCreateConfigurationWizardWidget::onPTModeling(bool checked)
     ui->lineEditTimeStepDurationDefault->setText("2000");
     ui->lineEditTimeStepDurationGlobal ->setText("2000");
     ui->lineEditMinInterstepInterval   ->setText("30");
-    ui->radioButtonCMFastest->setChecked(true);
+    ui->radioButtonCMRealTime->setChecked(true);
   }
 }
 
@@ -680,10 +663,10 @@ void UCreateConfigurationWizardWidget::onCMRealTime(bool checked)
   {
     SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(CalculationMode, 1);
 
-    ui->frameMaxCalcModelTime->show();
+//    ui->groupBox_15->hide();
   }
-  else
-    ui->frameMaxCalcModelTime->hide();
+//  else
+//    ui->groupBox_15->show();
 }
 
 void UCreateConfigurationWizardWidget::onCMBySignal(bool checked)
@@ -700,10 +683,10 @@ void UCreateConfigurationWizardWidget::onCMFastest(bool checked)
   {
     SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(CalculationMode, 3);
 
-    ui->frameMaxCalcModelTime->show();
+//    ui->groupBox_15->hide();
   }
-  else
-    ui->frameMaxCalcModelTime->hide();
+//  else
+//    ui->groupBox_15->show();
 }
 
 void UCreateConfigurationWizardWidget::maxCalculationModelTimeChanged(QString text)
@@ -852,4 +835,24 @@ void UCreateConfigurationWizardWidget::on_listViewModelsFromFile_clicked(const Q
 void UCreateConfigurationWizardWidget::on_listViewModelsFromFile_activated(const QModelIndex &index)
 {
 
+}
+
+void UCreateConfigurationWizardWidget::on_checkBoxChannelDebugMode_stateChanged(int arg1)
+{
+
+}
+
+void UCreateConfigurationWizardWidget::on_checkBoxDebuggerMessageFlag_2_stateChanged(int arg1)
+{
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(DebuggerMessageFlag, arg1);
+}
+
+void UCreateConfigurationWizardWidget::on_checkBoxLogEvents_2_stateChanged(int arg1)
+{
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(EventsLogMode, arg1);
+}
+
+void UCreateConfigurationWizardWidget::on_lineEditChannelName_editingFinished()
+{
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ChannelName, ui->lineEditChannelName->text().toLocal8Bit().constData());
 }
