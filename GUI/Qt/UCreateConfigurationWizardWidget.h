@@ -66,6 +66,9 @@ public slots:
 
   void selectPredefinedStructure(QListWidgetItem* item);
 
+  void selectDebugEvents(int state);
+  void selectDebugEventsChannel(int state);
+
 protected:
   virtual void accept() override;
 
@@ -90,6 +93,10 @@ private slots:
 
   void on_lineEditChannelName_editingFinished();
 
+  void on_checkBoxDebugSysEventsNone_2_clicked();
+
+  void on_checkBoxDebugSysEventsNone_clicked();
+
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
 
@@ -112,6 +119,9 @@ private:
   UClassesListWidget *classesList;
 
   RDK::UApplication *application;
+
+  bool ChangeCheckDebugStateChannel;
+  bool ChangeCheckDebugState;
 };
 
 #endif // UCREATEPROJECTWIZARDWIDGET_H

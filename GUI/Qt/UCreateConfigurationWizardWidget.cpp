@@ -22,6 +22,9 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
 {
   ui->setupUi(this);
 
+  ChangeCheckDebugStateChannel=false;
+  ChangeCheckDebugState=false;
+
   application = app;
 
   classesList = new UClassesListWidget(this);
@@ -71,6 +74,26 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
 
   connect(ui->listViewPredefinedStructures, SIGNAL(itemActivated(QListWidgetItem*)),
                       this, SLOT(selectPredefinedStructure(QListWidgetItem*)));
+
+ // connect(ui->checkBoxDebugSysEventsNone, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsCalc, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsReset, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsProperties, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsParameters, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsStates, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsInputs, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+  connect(ui->checkBoxDebugSysEventsOutputs, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
+
+  //connect(ui->checkBoxDebugSysEventsNone_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsCalc_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsReset_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsProperties_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsParameters_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsStates_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsInputs_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+  connect(ui->checkBoxDebugSysEventsOutputs_2, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEventsChannel(int)));
+
+
 
   channelNumber = 0;
   ui->radioButtonMSFromComponent->setChecked(true);
@@ -719,6 +742,135 @@ void UCreateConfigurationWizardWidget::selectPredefinedStructure(QListWidgetItem
 
 }
 
+void UCreateConfigurationWizardWidget::selectDebugEvents(int state)
+{
+ if(ChangeCheckDebugState)
+  return;
+ ChangeCheckDebugState=true;
+
+ if(ui->checkBoxDebugSysEventsCalc->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsReset->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsProperties->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsParameters->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsStates->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsInputs->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsOutputs->isChecked())
+  ui->checkBoxDebugSysEventsNone->setChecked(false);
+/*
+ unsigned int debug_mask=0;
+ if(ui->checkBoxDebugSysEventsNone->isChecked())
+  debug_mask = 0;
+ else
+ {
+  if(ui->checkBoxDebugSysEventsCalc->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_CALC;
+  if(ui->checkBoxDebugSysEventsReset->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_RESET;
+  if(ui->checkBoxDebugSysEventsProperties->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_PROPERTIES;
+  if(ui->checkBoxDebugSysEventsParameters->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_PARAMETERS;
+  if(ui->checkBoxDebugSysEventsStates->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_STATES;
+  if(ui->checkBoxDebugSysEventsInputs->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_INPUTS;
+  if(ui->checkBoxDebugSysEventsOutputs->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_OUTPUTS;
+ }
+
+ if(debug_mask == 0)
+ {
+  ui->checkBoxDebugSysEventsNone->setChecked(true);
+  ui->checkBoxDebugSysEventsCalc->setChecked(false);
+  ui->checkBoxDebugSysEventsReset->setChecked(false);
+  ui->checkBoxDebugSysEventsProperties->setChecked(false);
+  ui->checkBoxDebugSysEventsParameters->setChecked(false);
+  ui->checkBoxDebugSysEventsStates->setChecked(false);
+  ui->checkBoxDebugSysEventsInputs->setChecked(false);
+  ui->checkBoxDebugSysEventsOutputs->setChecked(false);
+ }
+*/
+ ChangeCheckDebugState=false;
+}
+
+void UCreateConfigurationWizardWidget::selectDebugEventsChannel(int state)
+{
+ if(ChangeCheckDebugStateChannel)
+  return;
+ ChangeCheckDebugStateChannel=true;
+
+ unsigned int debug_mask=0;
+
+ if(ui->checkBoxDebugSysEventsCalc_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsReset_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsProperties_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsParameters_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsStates_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsInputs_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsOutputs_2->isChecked())
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+
+ if(ui->checkBoxDebugSysEventsNone_2->isChecked())
+  debug_mask = 0;
+ else
+ {
+  if(ui->checkBoxDebugSysEventsCalc_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_CALC;
+  if(ui->checkBoxDebugSysEventsReset_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_RESET;
+  if(ui->checkBoxDebugSysEventsProperties_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_PROPERTIES;
+  if(ui->checkBoxDebugSysEventsParameters_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_PARAMETERS;
+  if(ui->checkBoxDebugSysEventsStates_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_STATES;
+  if(ui->checkBoxDebugSysEventsInputs_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_INPUTS;
+  if(ui->checkBoxDebugSysEventsOutputs_2->isChecked())
+   debug_mask |= RDK_SYS_DEBUG_OUTPUTS;
+ }
+/*
+ if(debug_mask != 0)
+  ui->checkBoxDebugSysEventsNone_2->setChecked(false);
+ else
+ {
+  ui->checkBoxDebugSysEventsNone_2->setChecked(true);
+  ui->checkBoxDebugSysEventsCalc_2->setChecked(false);
+  ui->checkBoxDebugSysEventsReset_2->setChecked(false);
+  ui->checkBoxDebugSysEventsProperties_2->setChecked(false);
+  ui->checkBoxDebugSysEventsParameters_2->setChecked(false);
+  ui->checkBoxDebugSysEventsStates_2->setChecked(false);
+  ui->checkBoxDebugSysEventsInputs_2->setChecked(false);
+  ui->checkBoxDebugSysEventsOutputs_2->setChecked(false);
+ }*/
+ ChangeCheckDebugStateChannel=false;
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(DebugSysEventsMask, debug_mask);
+}
+
 void UCreateConfigurationWizardWidget::showEvent(QShowEvent *ev)
 {
  QWizard::showEvent(ev);
@@ -855,4 +1007,43 @@ void UCreateConfigurationWizardWidget::on_checkBoxLogEvents_2_stateChanged(int a
 void UCreateConfigurationWizardWidget::on_lineEditChannelName_editingFinished()
 {
  SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(ChannelName, ui->lineEditChannelName->text().toLocal8Bit().constData());
+}
+
+void UCreateConfigurationWizardWidget::on_checkBoxDebugSysEventsNone_2_clicked()
+{
+ if(ChangeCheckDebugStateChannel)
+  return;
+ ChangeCheckDebugStateChannel=true;
+
+ if(ui->checkBoxDebugSysEventsNone_2->isChecked())
+ {
+  ui->checkBoxDebugSysEventsCalc_2->setChecked(false);
+  ui->checkBoxDebugSysEventsReset_2->setChecked(false);
+  ui->checkBoxDebugSysEventsProperties_2->setChecked(false);
+  ui->checkBoxDebugSysEventsParameters_2->setChecked(false);
+  ui->checkBoxDebugSysEventsStates_2->setChecked(false);
+  ui->checkBoxDebugSysEventsInputs_2->setChecked(false);
+  ui->checkBoxDebugSysEventsOutputs_2->setChecked(false);
+ }
+ ChangeCheckDebugStateChannel=false;
+ SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(DebugSysEventsMask, false);
+}
+
+void UCreateConfigurationWizardWidget::on_checkBoxDebugSysEventsNone_clicked()
+{
+ if(ChangeCheckDebugState)
+  return;
+ ChangeCheckDebugState=true;
+
+ if(ui->checkBoxDebugSysEventsNone->isChecked())
+ {
+  ui->checkBoxDebugSysEventsCalc->setChecked(false);
+  ui->checkBoxDebugSysEventsReset->setChecked(false);
+  ui->checkBoxDebugSysEventsProperties->setChecked(false);
+  ui->checkBoxDebugSysEventsParameters->setChecked(false);
+  ui->checkBoxDebugSysEventsStates->setChecked(false);
+  ui->checkBoxDebugSysEventsInputs->setChecked(false);
+  ui->checkBoxDebugSysEventsOutputs->setChecked(false);
+ }
+ ChangeCheckDebugState=false;
 }

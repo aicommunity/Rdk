@@ -1182,6 +1182,16 @@
     </item>
    </layout>
   </widget>
+  <action name="actionSelectDebugEventsChannel">
+   <property name="text">
+    <string>SelectDebugEventsChannel</string>
+   </property>
+  </action>
+  <action name="actionSelectDebugEvents">
+   <property name="text">
+    <string>SelectDebugEvents</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
