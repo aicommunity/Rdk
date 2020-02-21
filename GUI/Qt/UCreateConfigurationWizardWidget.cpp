@@ -318,22 +318,6 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
   }
 
 
-  if(old_project_config.ChannelsConfig[i].DebugSysEventsMask != old_project_config.ChannelsConfig[i].DebugSysEventsMask)
-  {
-  }
-
-  if(old_project_config.ChannelsConfig[i].DebuggerMessageFlag != old_project_config.ChannelsConfig[i].DebuggerMessageFlag)
-  {
-  }
-
-  if(old_project_config.ChannelsConfig[i].EventsLogMode != old_project_config.ChannelsConfig[i].EventsLogMode)
-  {
-  }
-
-  if(old_project_config.ChannelsConfig[i].ChannelName != old_project_config.ChannelsConfig[i].ChannelName)
-  {
-  }
-
 
  }
 */
