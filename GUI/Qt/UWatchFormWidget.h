@@ -15,6 +15,9 @@ public:
  explicit UWatchFormWidget(QWidget *parent = nullptr);
  ~UWatchFormWidget();
 
+private slots:
+    void on_pushButton_2_clicked();
+
 private:
  Ui::UWatchFormWidget *ui;
 };
