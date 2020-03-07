@@ -1,5 +1,5 @@
-#ifndef UWATCHFORMWIDGET_H
-#define UWATCHFORMWIDGET_H
+#ifndef UWATCHWIDGETFORM_H
+#define UWATCHWIDGETFORM_H
 
 #include <QWidget>
 
@@ -7,19 +7,16 @@ namespace Ui {
 class UWatchFormWidget;
 }
 
-class UWatchFormWidget : public QWidget
+class UWatchWidgetForm : public QWidget
 {
  Q_OBJECT
 
 public:
- explicit UWatchFormWidget(QWidget *parent = nullptr);
- ~UWatchFormWidget();
-
-private slots:
-    void on_pushButton_2_clicked();
+ explicit UWatchWidgetForm(QWidget *parent = nullptr);
+ ~UWatchWidgetForm();
 
 private:
  Ui::UWatchFormWidget *ui;
 };
 
-#endif // UWATCHFORMWIDGET_H
+#endif // UWATCHWIDGETFORM_H
