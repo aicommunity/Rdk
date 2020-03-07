@@ -2,21 +2,30 @@
 #define UWATCHWIDGETFORM_H
 
 #include <QWidget>
+#include <QMenu>
+#include "UVisualControllerWidget.h"
 
 namespace Ui {
 class UWatchFormWidget;
 }
 
-class UWatchWidgetForm : public QWidget
+class UWatchFormWidget : public UVisualControllerWidget
 {
  Q_OBJECT
 
 public:
- explicit UWatchWidgetForm(QWidget *parent = nullptr);
- ~UWatchWidgetForm();
+ explicit UWatchFormWidget(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
+ ~UWatchFormWidget();
+
+public slots:
+        void actionWatch_Settings();
+
+private slots:
+        void on_graphicsView_customContextMenuRequested(const QPoint &pos);
 
 private:
  Ui::UWatchFormWidget *ui;
+ QMenu *contextMenu;
 };
 
 #endif // UWATCHWIDGETFORM_H
