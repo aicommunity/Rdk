@@ -688,6 +688,467 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  return CreateProject(file_name,project_config);
 }
 
+/// Обновляет проект по новой конфигурации
+bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
+{
+ if(!ProjectOpenFlag)
+  return false;
+
+ // Если необходима перезагрузка конфигурации, то выполняем перезагрузку
+ bool is_reload_needed(false);
+
+ const TProjectConfig old_project_config=Project->GetConfig();
+ Project->SetConfig(project_config);
+
+ // Первый проход. Определяем необходима ли перезагрузка конфигурации
+
+ if(old_project_config.ProjectName != project_config.ProjectName)
+ {
+ }
+
+ if(old_project_config.ProjectDescription != project_config.ProjectDescription)
+ {
+ }
+
+ if(old_project_config.DescriptionFileName != project_config.DescriptionFileName)
+ {
+ }
+
+ if(old_project_config.ProjectAutoSaveFlag != project_config.ProjectAutoSaveFlag)
+ {
+ }
+
+ if(old_project_config.ProjectAutoSaveStatesFlag != project_config.ProjectAutoSaveStatesFlag)
+ {
+ }
+
+ if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
+ {
+ }
+
+ if(old_project_config.ProjectMode != project_config.ProjectMode)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.ProjectType != project_config.ProjectType)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.MultiThreadingMode != project_config.MultiThreadingMode)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.CalcSourceTimeMode != project_config.CalcSourceTimeMode)
+ {
+
+ }
+
+ if(old_project_config.MTUpdateInterfaceInterval != project_config.MTUpdateInterfaceInterval)
+ {
+
+ }
+
+ if(old_project_config.GuiUpdateMode != project_config.GuiUpdateMode)
+ {
+
+ }
+
+ if(old_project_config.ShowChannelsStateFlag != project_config.ShowChannelsStateFlag)
+ {
+
+ }
+
+ if(old_project_config.ReflectionFlag != project_config.ReflectionFlag)
+ {
+
+ }
+
+ if(old_project_config.DisableStopVideoSources != project_config.DisableStopVideoSources)
+ {
+
+ }
+
+ if(old_project_config.DebugMode != project_config.DebugMode)
+ {
+
+ }
+
+ if(old_project_config.DebugSysEventsMask != project_config.DebugSysEventsMask)
+ {
+
+ }
+
+ if(old_project_config.DebuggerMessageFlag != project_config.DebuggerMessageFlag)
+ {
+
+ }
+
+ if(old_project_config.EventsLogMode != project_config.EventsLogMode)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.OverrideLogParameters != project_config.OverrideLogParameters)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.ServerInterfaceAddress != project_config.ServerInterfaceAddress)
+ {
+
+ }
+
+ if(old_project_config.ServerInterfacePort != project_config.ServerInterfacePort)
+ {
+
+ }
+
+ if(old_project_config.ProjectShowChannelsStates != project_config.ProjectShowChannelsStates)
+ {
+
+ }
+
+ if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.NumChannels != project_config.NumChannels)
+ {
+  is_reload_needed=true;
+ }
+
+ int min_num_channels=(project_config.NumChannels<old_project_config.NumChannels)?project_config.NumChannels:old_project_config.NumChannels;
+ for(int i=0;i<min_num_channels;i++)
+ {
+  if(old_project_config.ChannelsConfig[i].ModelMode != old_project_config.ChannelsConfig[i].ModelMode)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].PredefinedStructure != old_project_config.ChannelsConfig[i].PredefinedStructure)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ModelFileName != old_project_config.ChannelsConfig[i].ModelFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ParametersFileName != old_project_config.ChannelsConfig[i].ParametersFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].StatesFileName != old_project_config.ChannelsConfig[i].StatesFileName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].ClassName != old_project_config.ChannelsConfig[i].ClassName)
+  {
+   is_reload_needed=true;
+  }
+
+  if(old_project_config.ChannelsConfig[i].GlobalTimeStep != old_project_config.ChannelsConfig[i].GlobalTimeStep)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DefaultTimeStep != old_project_config.ChannelsConfig[i].DefaultTimeStep)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].CalculationMode != old_project_config.ChannelsConfig[i].CalculationMode)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].MinInterstepsInterval != old_project_config.ChannelsConfig[i].MinInterstepsInterval)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].InitAfterLoad != old_project_config.ChannelsConfig[i].InitAfterLoad)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].ResetAfterLoad != old_project_config.ChannelsConfig[i].ResetAfterLoad)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebugMode != old_project_config.ChannelsConfig[i].DebugMode)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebugSysEventsMask != old_project_config.ChannelsConfig[i].DebugSysEventsMask)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebuggerMessageFlag != old_project_config.ChannelsConfig[i].DebuggerMessageFlag)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].EventsLogMode != old_project_config.ChannelsConfig[i].EventsLogMode)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].ChannelName != old_project_config.ChannelsConfig[i].ChannelName)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].MaxCalculationModelTime != old_project_config.ChannelsConfig[i].MaxCalculationModelTime)
+  {
+  }
+
+ }
+
+ // Если необходима перезагрузка конфигурации то выполняем
+ if(is_reload_needed)
+ {
+  if(!SaveProject())
+   return false;
+
+  if(!OpenProject(GetProjectPath()+GetProjectFileName()))
+   return false;
+
+  return true;
+ }
+
+ // ... иначе применяем отдельные настройки
+ if(old_project_config.ProjectName != project_config.ProjectName)
+ {
+ }
+
+ if(old_project_config.ProjectDescription != project_config.ProjectDescription)
+ {
+ }
+
+ if(old_project_config.DescriptionFileName != project_config.DescriptionFileName)
+ {
+ }
+
+ if(old_project_config.ProjectAutoSaveFlag != project_config.ProjectAutoSaveFlag)
+ {
+ }
+
+ if(old_project_config.ProjectAutoSaveStatesFlag != project_config.ProjectAutoSaveStatesFlag)
+ {
+ }
+
+ if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
+ {
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(project_config.EventsLogFlag);
+ }
+
+ if(old_project_config.ProjectMode != project_config.ProjectMode)
+ {
+  // нет действий - приводит к повторному открытию конфигурации ранее
+ }
+
+ if(old_project_config.ProjectType != project_config.ProjectType)
+ {
+  // нет действий - приводит к повторному открытию конфигурации ранее
+ }
+
+ if(old_project_config.MultiThreadingMode != project_config.MultiThreadingMode)
+ {
+  // нет действий - приводит к повторному открытию конфигурации ранее
+ }
+
+ if(old_project_config.CalcSourceTimeMode != project_config.CalcSourceTimeMode)
+ {
+  for(int i=0;i<project_config.NumChannels;i++)
+  {
+   EngineControl->SetCalculationTimeSource(i, project_config.CalcSourceTimeMode);
+  }
+ }
+
+ if(old_project_config.MTUpdateInterfaceInterval != project_config.MTUpdateInterfaceInterval)
+ {
+
+ }
+
+ if(old_project_config.GuiUpdateMode != project_config.GuiUpdateMode)
+ {
+  EngineControl->SetGuiUpdateMode(project_config.GuiUpdateMode);
+ }
+
+ if(old_project_config.ShowChannelsStateFlag != project_config.ShowChannelsStateFlag)
+ {
+
+ }
+
+ if(old_project_config.ReflectionFlag != project_config.ReflectionFlag)
+ {
+
+ }
+
+ if(old_project_config.DisableStopVideoSources != project_config.DisableStopVideoSources)
+ {
+
+ }
+
+ if(old_project_config.DebugMode != project_config.DebugMode)
+ {
+  for(int i=0;i<project_config.NumChannels;i++)
+  {
+   MLog_SetDebugMode(i,project_config.DebugMode);
+  }
+ }
+
+ if(old_project_config.DebugSysEventsMask != project_config.DebugSysEventsMask)
+ {
+  for(int i=0;i<project_config.NumChannels;i++)
+  {
+   MLog_SetDebugSysEventsMask(i,project_config.DebugSysEventsMask);
+  }
+ }
+
+ if(old_project_config.DebuggerMessageFlag != project_config.DebuggerMessageFlag)
+ {
+  for(int i=0;i<project_config.NumChannels;i++)
+  {
+   MLog_SetDebuggerMessageFlag(i,project_config.DebuggerMessageFlag);
+  }
+ }
+
+ if(old_project_config.EventsLogMode != project_config.EventsLogMode)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.OverrideLogParameters != project_config.OverrideLogParameters)
+ {
+  is_reload_needed=true;
+ }
+
+ if(old_project_config.ServerInterfaceAddress != project_config.ServerInterfaceAddress)
+ {
+
+ }
+
+ if(old_project_config.ServerInterfacePort != project_config.ServerInterfacePort)
+ {
+
+ }
+
+ if(old_project_config.ProjectShowChannelsStates != project_config.ProjectShowChannelsStates)
+ {
+
+ }
+
+ if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
+ {
+  // нет действий - приводит к повторному открытию конфигурации ранее
+ }
+
+ if(old_project_config.NumChannels != project_config.NumChannels)
+ {
+  // нет действий - приводит к повторному открытию конфигурации ранее
+ }
+
+ // обработка каналов
+ for(int i=0;i<project_config.NumChannels;i++)
+ {
+  if(old_project_config.ChannelsConfig[i].ModelMode != project_config.ChannelsConfig[i].ModelMode)
+  {
+   // нет действий - приводит к повторному открытию конфигурации ранее
+  }
+
+  if(old_project_config.ChannelsConfig[i].PredefinedStructure != project_config.ChannelsConfig[i].PredefinedStructure)
+  {
+   // нет действий - приводит к повторному открытию конфигурации ранее
+  }
+
+  if(old_project_config.ChannelsConfig[i].ModelFileName != project_config.ChannelsConfig[i].ModelFileName)
+  {
+   // нет действий - приводит к повторному открытию конфигурации ранее
+  }
+
+  if(old_project_config.ChannelsConfig[i].ParametersFileName != project_config.ChannelsConfig[i].ParametersFileName)
+  {
+   // нет действий - приводит к повторному открытию конфигурации ранее
+  }
+
+  if(old_project_config.ChannelsConfig[i].StatesFileName != project_config.ChannelsConfig[i].StatesFileName)
+  {
+   // нет действий - приводит к повторному открытию конфигурации ранее
+  }
+
+  if(old_project_config.ChannelsConfig[i].ClassName != project_config.ChannelsConfig[i].ClassName)
+  {
+   // нет действий - приводит к повторному открытию конфигурации ранее
+  }
+
+  if(old_project_config.ChannelsConfig[i].GlobalTimeStep != project_config.ChannelsConfig[i].GlobalTimeStep)
+  {
+   if(MModel_Check(i))
+   {
+    MModel_SetGlobalTimeStep(i,"",project_config.ChannelsConfig[i].GlobalTimeStep);
+   }
+  }
+
+  if(old_project_config.ChannelsConfig[i].DefaultTimeStep != project_config.ChannelsConfig[i].DefaultTimeStep)
+  {
+   if(MModel_Check(i))
+   {
+    MModel_SetDefaultTimeStep(i,project_config.ChannelsConfig[i].DefaultTimeStep);
+   }
+  }
+
+  if(old_project_config.ChannelsConfig[i].CalculationMode != project_config.ChannelsConfig[i].CalculationMode)
+  {
+   EngineControl->SetCalculateMode(i, project_config.ChannelsConfig[i].CalculationMode);
+  }
+
+  if(old_project_config.ChannelsConfig[i].MinInterstepsInterval != project_config.ChannelsConfig[i].MinInterstepsInterval)
+  {
+   EngineControl->SetMinInterstepsInterval(i,project_config.ChannelsConfig[i].MinInterstepsInterval);
+  }
+
+  if(old_project_config.ChannelsConfig[i].InitAfterLoad != project_config.ChannelsConfig[i].InitAfterLoad)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].ResetAfterLoad != project_config.ChannelsConfig[i].ResetAfterLoad)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebugMode != project_config.ChannelsConfig[i].DebugMode)
+  {
+   MLog_SetDebugMode(i,project_config.ChannelsConfig[i].DebugMode);
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebugSysEventsMask != project_config.ChannelsConfig[i].DebugSysEventsMask)
+  {
+   MLog_SetDebugSysEventsMask(i,project_config.ChannelsConfig[i].DebugSysEventsMask);
+  }
+
+  if(old_project_config.ChannelsConfig[i].DebuggerMessageFlag != project_config.ChannelsConfig[i].DebuggerMessageFlag)
+  {
+   MLog_SetDebuggerMessageFlag(i,project_config.ChannelsConfig[i].DebuggerMessageFlag);
+  }
+
+  if(old_project_config.ChannelsConfig[i].EventsLogMode != project_config.ChannelsConfig[i].EventsLogMode)
+  {
+   MLog_SetEventsLogMode(i,project_config.ChannelsConfig[i].EventsLogMode);
+  }
+
+  if(old_project_config.ChannelsConfig[i].ChannelName != project_config.ChannelsConfig[i].ChannelName)
+  {
+  }
+
+  if(old_project_config.ChannelsConfig[i].MaxCalculationModelTime != project_config.ChannelsConfig[i].MaxCalculationModelTime)
+  {
+   GetEnvironmentLock()->SetMaxCalcTime(project_config.ChannelsConfig[i].MaxCalculationModelTime);
+  }
+ }
+
+ return SaveProject();
+}
+
 /// Открывает проект
 bool UApplication::OpenProject(const std::string &filename)
 {
