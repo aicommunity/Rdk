@@ -35,6 +35,7 @@ public slots:
   void setApplySettingToAllChannels(bool checked);
   void setCalculationChannelsNumber(int value);
   void channelSelectionChanged(QListWidgetItem *current, QListWidgetItem *previous);
+  void channelSelectionChanged(int channel_index);
 
   // Browse buttons
   void browseNewProjectDirectory();
@@ -65,8 +66,15 @@ public slots:
 
   void selectPredefinedStructure(QListWidgetItem* item);
 
+  void selectDebugEvents(int state);
+  void selectDebugEventsChannel(int state);
+
 protected:
   virtual void accept() override;
+
+  void showEvent(QShowEvent *ev);
+
+  void UpdateInterface(void);
 
 private slots:
   void on_listViewPredefinedStructures_activated(const QModelIndex &index);
@@ -76,6 +84,18 @@ private slots:
   void on_listViewModelsFromFile_clicked(const QModelIndex &index);
 
   void on_listViewModelsFromFile_activated(const QModelIndex &index);
+
+  void on_checkBoxChannelDebugMode_stateChanged(int arg1);
+
+  void on_checkBoxDebuggerMessageFlag_2_stateChanged(int arg1);
+
+  void on_checkBoxLogEvents_2_stateChanged(int arg1);
+
+  void on_lineEditChannelName_editingFinished();
+
+  void on_checkBoxDebugSysEventsNone_2_clicked();
+
+  void on_checkBoxDebugSysEventsNone_clicked();
 
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
@@ -99,6 +119,9 @@ private:
   UClassesListWidget *classesList;
 
   RDK::UApplication *application;
+
+  bool ChangeCheckDebugStateChannel;
+  bool ChangeCheckDebugState;
 };
 
 #endif // UCREATEPROJECTWIZARDWIDGET_H

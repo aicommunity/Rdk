@@ -1100,6 +1100,7 @@ RDK_LIB_TYPE const char* RDK_CALL Model_SaveComponentDrawInfo(const char *string
 // Управляет шагом счета модели по умолчанию
 RDK_LIB_TYPE unsigned int RDK_CALL Model_GetDefaultTimeStep(void);
 RDK_LIB_TYPE int RDK_CALL Model_SetDefaultTimeStep(unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MModel_SetDefaultTimeStep(int channel_index, unsigned int value);
 
 // Управляет шагом счета компонента
 RDK_LIB_TYPE unsigned int RDK_CALL Model_GetTimeStep(const char *stringid);
@@ -1107,6 +1108,7 @@ RDK_LIB_TYPE int RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int v
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
 RDK_LIB_TYPE int RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MModel_SetGlobalTimeStep(int channel_index, const char *stringid, unsigned int value);
 
 // Возвращает текущее время модели
 RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetTime(void);
