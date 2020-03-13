@@ -19,6 +19,7 @@ public:
 
 public slots:
         void actionWatch_Settings();
+        void actionAdd_Watch();
 
 private slots:
         void on_graphicsView_customContextMenuRequested(const QPoint &pos);
