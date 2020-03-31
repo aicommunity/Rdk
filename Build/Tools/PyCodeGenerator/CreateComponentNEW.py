@@ -228,8 +228,8 @@ lookup ='<Add option="-Wall" />'
 with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp') as file:
     data = file.readlines()
 
-text1 = '\n#<Unit filename="../../Core/' + component_name+'.h" />'+'   \n'
-text2 = '#<Unit filename="../../Core/' + component_name+'.cpp" />'+'   \n'
+text1 = '\n<Unit filename="../../Core/' + component_name+'.h" />'+'   \n'
+text2 = '<Unit filename="../../Core/' + component_name+'.cpp" />'+'   \n'
 with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp') as file:
     for num, line in enumerate(file, 1):
         if lookup in line:
@@ -239,4 +239,19 @@ with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp') as file:
 
 with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp', 'w') as file:
     file.writelines(data)
+
+#обновление заготовок под компилятор C++ Builder
+lookup ='<ItemGroup>'
+with open(lib_path.text+lib_name+'/Build/Bcb/'+lib_name+'.cbproj') as file:
+    data = file.readlines()
+
+text1 = '\n<CppCompile Include="../../Core/' + component_name+'.cpp" >'+'   \n </CppCompile> \n'
+with open(lib_path.text+lib_name+'/Build/Bcb/'+lib_name+'.cbproj') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere+1] = text1
+            break
+
+with open(lib_path.text+lib_name+'/Build/Bcb/'+lib_name+'.cbproj', 'w') as file:
     file.writelines(data)
