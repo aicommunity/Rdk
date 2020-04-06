@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import os.path
 import os
 import shutil
+import argparse
 
 def createMapFile(old_data, new_data, file_name, map_file):
     with open(file_name) as file:
@@ -18,6 +19,17 @@ def createMapFile(old_data, new_data, file_name, map_file):
             text = text.replace(replaced_data, new_data[index])
         with open(map_file, 'w') as file:
             file.write(text)
+            
+def parseCommandLine():
+    parser = argparse.ArgumentParser(description='Create new component')
+    parser.add_argument('--lib', help='Library name (for example Rdk-BasicLib)')
+    parser.add_argument('--namespace', help='Namespace name for component (for example RDK)')
+    parser.add_argument('--component', help='New component class name (Recommend use CamelCase convension and prefix "U" or "T")')
+    parser.add_argument('--parent', nargs='?', help='[Optional] Parent component class name (used RDK::UNet by default)')
+    parser.add_argument('--lib_file', nargs='?', help='[Optional] Library main file (used Lib.h/cpp by default)')
+
+    args = parser.parse_args()
+    return args;
 
 tree = ET.parse('CodeGeneratorIni.xml')
 root = tree.getroot()
@@ -25,23 +37,33 @@ libs=root.find('Libraries')
 lib_path=libs.find('Path')
 print ('Library path: '+lib_path.text)
 
-num_args=len(sys.argv)
+
+args=parseCommandLine()
+
+if not args.lib:
+    print("error: the following arguments are required: lib")
+    exit(1)
+
+if not args.namespace:
+    print("error: the following arguments are required: namespace")
+    exit(1)
+
+if not args.component:
+    print("error: the following arguments are required: component")
+    exit(1)
 
 print('Component creting script started')
 
-if num_args <3:
-    exit(1)
+lib_name=args.lib
 
-lib_name=sys.argv[1]
+namespace_name=args.namespace
 
-namespace_name=sys.argv[2]
-
-component_name=sys.argv[3]
+component_name=args.component
 
 include_file_name='../../../Rdk/Deploy/Include/rdk.h'
 
-if num_args == 5:
-   inheritance_name=sys.argv[4]
+if args.parent and len(args.parent)>0:
+   inheritance_name=args.parent
 else:
    inheritance_name='RDK::UNet'
 
