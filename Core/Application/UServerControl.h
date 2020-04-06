@@ -3,6 +3,15 @@
 
 #include "../../Deploy/Include/rdk.h"
 #include "UIVisualController.h"
+#include "UServerTransportTcp.h"
+//Проредить потом?
+#include "URpcDispatcherQueues.h"
+#include "URpcDispatcher.h"
+#include "URpcDecoder.h"
+#include "URpcDecoderInternal.h"
+#include "URpcDecoderCommon.h"
+#include "URpcCommand.h"
+#include "URpcCommandInternal.h"
 
 namespace RDK {
 
@@ -37,6 +46,12 @@ std::string DebugOutputPath;
 protected: // Данные
 /// Указатель на экземпляр приложения
 UEPtr<UApplication> Application;
+
+/// Указатель на экземпляр транспорта
+UEPtr<UServerTransport> ServerTransport;
+
+/// Диспетчер команд
+UEPtr<URpcDispatcher> RpcDispatcher;
 
 /// Флаг состояния инициализации
 bool InitFlag;
@@ -105,6 +120,17 @@ const std::string& GetDebugOutputPath(void) const;
 UEPtr<UApplication> GetApplication(void);
 bool SetApplication(UEPtr<UApplication> value);
 // --------------------------
+/// Возвращает указатель на экземпляр транспорта
+UEPtr<UServerTransport> GetServerTransport(void);
+bool SetServerTransport(UEPtr<UServerTransport> value);
+// --------------------------
+
+/// Предоставляет доступ к диспетчеру команд
+virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
+
+/// Устанавливает новый диспетчер команд
+/// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
+virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
 
 // --------------------------
 // Данные для оценки производительности и сохранения отладочной информации
@@ -168,11 +194,34 @@ virtual void AfterCalculate(void);
 // --------------------------
 
 // --------------------------
+// Вспомогательные методы (обработка взаимодействия с транспортом)
+// --------------------------
+
+public:
+/// Отправляет ответ на команду
+virtual void SendCommandResponse(UServerTransport *transport, std::string &client_address, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
+/// Отправляет ответ на команду
+//virtual void ASendCommandResponse(RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
+
+virtual void ProcessCommandQueue();
+
+virtual void ProcessIncomingData(std::string &bind);
+
+protected:
+
+
+/// Кодирует строку в вектор
+void ConvertStringToVector(const std::string &source, RDK::UParamT &dest);
+
+/// Кодирует вектор в строку
+void ConvertVectorToString(const RDK::UParamT &source, std::string &dest);
+
+// --------------------------
 /// Управление числом каналов
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-virtual bool SetNumChannels(int num);
+virtual bool SetNumChannels(int number);
 virtual bool ASetNumChannels(int num);
 
 virtual bool InsertChannel(int index);

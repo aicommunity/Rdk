@@ -301,6 +301,7 @@ bool UApplication::IsInit(void) const
 // Методы инициализации
 // --------------------------
 /// Предоставляет доступ к диспетчеру команд
+/*
 UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
 {
  return RpcDispatcher;
@@ -319,7 +320,7 @@ bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  RpcDispatcher->SetApplication(this);
  return true;
 }
-
+*/
 /// Предоставляет доступ к контроллеру движка
 UEPtr<UEngineControl> UApplication::GetEngineControl(void)
 {

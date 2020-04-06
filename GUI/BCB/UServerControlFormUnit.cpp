@@ -40,6 +40,122 @@ extern RDK::UApplication RdkApplication;
 /// Экземпляр класса контроллера расчета
 extern UEngineControlVcl RdkEngineControl;
 
+//Задает адрес и порт входящего интерфейса сервера
+void UServerTransportTcpVcl::SetServerBinding(std::string &interface_address, int port)
+{
+ if(interface_address == GetServerBindingInterfaceAddress() &&
+	port == GetServerBindingPort())
+
+ UServerControlForm->SetServerBinding(interface_address, port);
+}
+
+//Получение адреса интерфейса управления сервером
+std::string UServerTransportTcpVcl::GetServerBindingInterfaceAddress()
+{
+ return UServerControlForm->GetServerBindingInterfaceAddress();
+}
+
+//Получение адреса интерфейса управления сервером
+int UServerTransportTcpVcl::GetServerBindingPort(void) const
+{
+ return UServerControlForm->GetServerBindingPort();
+}
+
+///Инициировать остановку сервера, отключить все приемники
+void UServerTransportTcpVcl::ServerStop()
+{
+ UServerControlForm->ServerStop();
+}
+
+/// Читает входящие байты из выбранного источника, контекст привязки
+/// всегда определяется строкой вне зависимости от типа транспорта
+int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
+{
+ if(UServerControlForm->IdTCPServer->Active && !bind.empty())
+ {
+  try
+  {
+   TList *list=UServerControlForm->IdTCPServer->Contexts->LockList();
+   std::string current_bind;
+   for(int i=0;i<list->Count;i++)
+   {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	current_bind=AnsiString(context->Binding->PeerIP).c_str();
+	current_bind+=":";
+	current_bind+=RDK::sntoa(context->Binding->PeerPort);
+
+	if(current_bind == bind)
+	{
+	  /// Это все уедет в транспорт, в платформозависимую часть
+	  TIdBytes VBuffer;
+	  int length=context->Connection->IOHandler->InputBuffer->Size;
+	  if(length>0)
+	  {
+	   context->Connection->IOHandler->ReadBytes(VBuffer, length);
+	   length=VBuffer.Length;
+	   bytes.resize(length);
+	   memcpy(&bytes[0],&VBuffer[0],length);
+	   bytes.resize(length);
+	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+	   //Отпустить список
+	   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+	   //Вернуть длину
+	   return length;
+	   break;
+	  }
+	}
+   }
+
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+   return 0;
+  }
+  catch (...)
+  {
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+   return 0;//?????
+   throw;
+  }
+ }
+ return 0;
+}
+
+/// Отправить ответ на команду соответствующему получателю
+void UServerTransportTcpVcl::SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr)
+{
+  TByteDynArray arr;
+  arr.set_length(buffer.size());
+  memcpy(&arr[0],&buffer[0],buffer.size());
+
+ if(UServerControlForm->IdTCPServer->Active && !responce_addr.empty())
+ {
+  try
+  {
+   TList *list=UServerControlForm->IdTCPServer->Contexts->LockList();
+   std::string current_bind;
+   for(int i=0;i<list->Count;i++)
+   {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	current_bind=AnsiString(context->Binding->PeerIP).c_str();
+	current_bind+=":";
+	current_bind+=RDK::sntoa(context->Binding->PeerPort);
+
+	if(current_bind == responce_addr)
+	{
+	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 //context->Connection->IOHandler->WriteBufferFlush();  //Это было закомменчено до меня
+	}
+   }
+
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+  }
+  catch (...)
+  {
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+   throw;
+  }
+ }
+}
+
 
 // --------------------------
 // Методы управления вещателями
@@ -104,23 +220,8 @@ int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, in
 bool UServerControlVcl::ASetNumChannels(int old_num)
 {
  int num=Core_GetNumChannels();
- if(num<=0)
-  return false;
-
- if(RdkApplication.GetRpcDispatcher())
-  RdkApplication.GetRpcDispatcher()->UpdateDecoders();
-
- for(int i=old_num;i<num;i++)
- {
-  if(Core_GetNumChannels()<=i)
-   break;
-
-  if((!MCore_IsChannelInit(i) || !MModel_Check(i)) && i != 0)
-  {
-//   UGEngineControlForm->CloneProject(0, i); // TODO: необходимо починить клонирование
-//   MEnv_Reset(i,0);
-  }
- }
+ //if(num<=0)
+ // return false;
 
 #ifdef RDK_VIDEO
  if(RdkApplication.GetProjectConfig().ProjectMode == 1 && VideoOutputForm)
@@ -207,13 +308,6 @@ bool UServerControlVcl::ASetNumChannels(int old_num)
 #endif
 
 // ChannelNames.resize(value);
- TProjectConfig config=RdkApplication.GetProjectConfig();
- for(size_t i=0;i<config.ChannelsConfig.size();i++)
- {
-  if(config.ChannelsConfig[i].ChannelName.empty())
-   config.ChannelsConfig[i].ChannelName=RDK::sntoa(i);
- }
- RdkApplication.SetProjectConfig(config);
 
  //UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
 
@@ -501,24 +595,8 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
 
 }
 
-/// Кодирует строку в вектор
-void TUServerControlForm::ConvertStringToVector(const std::string &source, UParamT &dest)
-{
- dest.resize(source.size());
- if(source.size()>0)
-  memcpy(&dest[0],source.c_str(),source.size());
-}
-
-/// Кодирует вектор в строку
-void TUServerControlForm::ConvertVectorToString(const UParamT &source, std::string &dest)
-{
- dest.resize(source.size());
- if(source.size()>0)
-  memcpy(&dest[0],&source[0],source.size());
-}
-
 /// Отправляет ответ на команду
-void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+/*void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
 
@@ -543,11 +621,15 @@ void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest
 	str.resize(packet.GetParamSize(0));
 	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
 	Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
-}
+} */
 
 
-void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
-{
+//void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+//{
+ ///Это все напрямую улетит в транспорт, когда будет готов его прототип и дочерний класс
+ ///видимо будет размещен в этом файле, ведь транспорт только про содержимое
+ ///не должен знать, а адрес отправителя - очень даже
+ /*
  if(IdTCPServer->Active && !dest.empty())
  {
   try
@@ -577,34 +659,37 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
    throw;
   }
  }
-}
+ */
+//}
 
 /// Устанавливает параметры сервера
 bool TUServerControlForm::SetServerBinding(const std::string &interface_address, int port)
 {
- if(interface_address == GetServerBindingInterfaceAddress() &&
-	port == GetServerBindingPort())
-  return true;
+ //TODO: Это теперь должно вызываться только напрямую из транвпорта
 
  IdTCPServer->Active=false;
  IdTCPServer->Bindings->Items[0]->Port=port;
  IdTCPServer->Bindings->Items[0]->IP=interface_address.c_str();
- if(RdkApplication.GetServerControl()->GetAutoStartFlag())
-  ServerStartButtonClick(this);
+
+ //02.04.2020 Закомментировано
+ //if(RdkApplication.GetServerControl()->GetAutoStartFlag())
+ // ServerStartButtonClick(this);
+
  return true;
 }
 
 /// Возвращает параметры сервера
-std::string TUServerControlForm::GetServerBindingInterfaceAddress(void) const
+//Вызов только через интерфейс транспорта, потом мб уберется совсем
+std::string TUServerControlForm::GetServerBindingInterfaceAddress(void)
 {
+
  return AnsiString(IdTCPServer->Bindings->Items[0]->IP).c_str();
 }
-
+//Вызов только через интерфейс транспорта, потом мб уберется совсем
 int TUServerControlForm::GetServerBindingPort(void) const
 {
  return IdTCPServer->Bindings->Items[0]->Port;
 }
-
 
 
 // -----------------------------
@@ -629,7 +714,7 @@ void TUServerControlForm::AUpdateInterface(void)
  PerformanceChart->Series[1]->Clear();
  PerformanceChart->Series[2]->Clear();
 
-const std::vector<RDK::ULongTime> &model_avg=RdkApplication.GetServerControl()->GetModelAvg(),
+ const std::vector<RDK::ULongTime> &model_avg=RdkApplication.GetServerControl()->GetModelAvg(),
 							&transport_avg=RdkApplication.GetServerControl()->GetTransportAvg();
 
  for(size_t i=0;i<model_avg.size();i++)
@@ -796,13 +881,14 @@ int TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
 /// или загружает проект для всех каналов, если channel_id<0
 int TUServerControlForm::LoadProject(int channel_id, const std::string &project_file_name)
 {
- UGEngineControlForm->OpenProject(project_file_name.c_str());
+ //UGEngineControlForm->OpenProject(project_file_name.c_str());
  return 0;
 }
 
 /// Сохраняет проект
 int TUServerControlForm::SaveProject(void)
 {
+ //Это тоже надо бы с осторожностью
  UGEngineControlForm->SaveProject();
  return 0;
 }
@@ -833,7 +919,7 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
-return; // TODO: запуск отключен.
+//return; // TODO: запуск отключен.
  ServerRestartTimer->Enabled=true;
  try
  {
@@ -844,15 +930,16 @@ return; // TODO: запуск отключен.
  {
   Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
- catch(EIdCouldNotBindSocket &ex)
+ catch(EIdCouldNotBindSocket &ex2)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
  }
 
 // TcpServer->Active=true;
 }
 //---------------------------------------------------------------------------
-void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
+
+void TUServerControlForm::ServerStop()
 {
  ServerRestartTimer->Enabled=false;
 
@@ -863,9 +950,14 @@ void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 	context->Connection->Disconnect();
  }
 
-   IdTCPServer->Contexts->UnlockList();
+ IdTCPServer->Contexts->UnlockList();
 
  IdTCPServer->Active=false;
+}
+
+void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
+{
+ RdkApplication.GetServerControl()->GetServerTransport()->ServerStop();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
@@ -883,14 +975,18 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  int new_num_channels=StrToInt(NumberOfChannelsLabeledEdit->Text);
  if(new_num_channels < 1)
   return;
-
+ ///01.04.2020 - закрываю, потому что вообще непонятно, насколько допустимо в
+ ///реалиях 2020 так делать
+ /*
  if(new_num_channels != Core_GetNumChannels())
  {
   UGEngineControlForm->Pause1Click(Sender);
 
-  RdkApplication.SetNumChannels(new_num_channels);
-//  SetNumChannels(Core_GetNumChannels());
- }
+
+  ///RdkApplication.SetNumChannels(new_num_channels);
+  ////////////////////////////////////
+//  SetNumChannels(Core_GetNumChannels());///Это было раньше закрыто
+ }*/
 
 // UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
@@ -902,7 +998,11 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  config.ServerInterfaceAddress=AnsiString(new_address).c_str();
  config.ServerInterfacePort=new_port;
  RdkApplication.SetProjectConfig(config);
- SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
+
+ ///Это наверное будет работать так:
+ RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
+ ///А это уберется
+ ///SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
 
  RdkApplication.GetServerControl()->SetServerName(AnsiString(ServerNameLabeledEdit->Text).c_str());
  RdkApplication.GetServerControl()->SetServerId(AnsiString(ServerIdLabeledEdit->Text).c_str());
@@ -951,22 +1051,7 @@ void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
 {
 try
 {
- if(!RdkApplication.GetRpcDispatcher())
-  return;
-
-  // Обработка очереди выполненных команд диспетчера
-  RDK::UEPtr<RDK::URpcCommand> pcmd;
-  RDK::UParamT response;
-  std::vector<RDK::UParamT> binary_response;
-
-
-  while(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
-  {
-   RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
-   ConvertStringToVector(pcmd_int->Response, response);
-   SendCommandResponse(pcmd_int->RecepientId, response, binary_response);
-   delete pcmd_int;
-  }
+ RdkApplication.GetServerControl()->ProcessCommandQueue();
 }
 catch (...)
 {
@@ -990,11 +1075,10 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
 
- std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
- if(I != PacketReaders.end())
- {
-  PacketReaders.erase(I);
- }
+ //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
+ //t->DisconnectClient(bind);
+
+ RdkApplication.GetServerControl()->GetServerTransport()->ConnectClient(bind);
 
  Log_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
 }
@@ -1006,91 +1090,28 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 //  return;
 // ResetEvent(ServerReceivingNotInProgress);
 
+//Хз как сделать здесь... событие не хочется пробрасывать по цепочке, через базовые классы
+//по типу UServerControl, так как потеряем контекст (TIdContext *AContext)
+//поэтому делаем хитрый финт ушами: сначала парсим сообщение в функции в UServerTransportTcpVcl,
+//где по факту просто пробиваем его в форму, и в похожей на эту функцию парсим
+//как вариант, обращаемся к компоненту форму
+//потом распарсенное сообщение отдаем в UServerControl  для обработки, по необходимости
+//спуская часть работы на UServerControlVcl
+
+//Распарсить сообщение:
+
 try
 {
- vector<unsigned char> client_buffer;
- TIdBytes VBuffer;
- int length=AContext->Connection->IOHandler->InputBuffer->Size;
- if(length>0)
- {
-  std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
-  bind+=":";
-  bind+=RDK::sntoa(AContext->Binding->PeerPort);
+ std::string bind=AnsiString(AContext->Binding->PeerIP.c_str()).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+ //Убираем отсюда всю обработку, пусть это и грозит потерей контекста
+ RdkApplication.GetServerControl()->ProcessIncomingData( bind );
 
-   AContext->Connection->IOHandler->ReadBytes(VBuffer, length);
-   length=VBuffer.Length;
-   client_buffer.resize(length);
-   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
-
-   if(length>0)
-   {
-	memcpy(&client_buffer[0],&VBuffer[0],length);
-	client_buffer.resize(length);
-	std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
-	if(I == PacketReaders.end())
-	{
-//	 SetEvent(CommandQueueUnlockEvent);
-//	 SetEvent(ServerReceivingNotInProgress);
-	 return;
-	}
-	I->second.ProcessDataPart2(client_buffer);
-	Log_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
-	while(I->second.GetNumPackets()>0)
-	{
-	 UTransferPacket packet=I->second.GetFirstPacket();
-	 I->second.DelFirstPacket();
-	 if(packet.GetNumParams()>0)
-	 {
-//	  RDK::URpcCommandInternal cmd;
-
-	  RDK::URpcCommandInternal CurrentProcessedCommand;
-	  CurrentProcessedCommand.RecepientId=bind;
-	  std::string req;
-	  ConvertVectorToString(packet(0),req);
-	  CurrentProcessedCommand.Request=req;
-	  CurrentProcessedCommand.IsDecoded=false;
-	  if(!CurrentProcessedCommand.DecodeBasicData())
-	  {
-	   // TODO: пишем в лог ошибку декодирования
-	  }
-			/*
-	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
-	  {
-	   CurrentProcessedMainThreadCommand=CurrentProcessedCommand;
-	   ProcessControlCommand();
-//	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
-//		SendCommandResponse(AContext, Response, BinaryResponse);
-	  }
-	  else         */
-	  {
-	   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
-	   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
-	   cmd_pair.first=CurrentProcessedCommand.RecepientId;
-	   cmd_pair.second=pcmd;
-//	   if(CurrentProcessedCommand.FunctionName != "Ptz_SetCameraParameter")
-		RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
-//	   else
-//	    delete pcmd;
-	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
-
-	  }
-	 }
-	}
-   }
-  Sleep(1);
- }
- else
-  Sleep(10);
-}
-catch(Exception &ex)
-{
-// SetEvent(ServerReceivingNotInProgress);
- Log_LogMessage(RDK_EX_DEBUG, (std::string("Server Tcp command receiver error: ")+AnsiString(ex.Message).c_str()).c_str());
 }
 catch(...)
 {
-// SetEvent(ServerReceivingNotInProgress);
- throw;
+Log_LogMessage(RDK_EX_DEBUG, std::string("UServerControl data processing error").c_str());
 }
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
@@ -1101,11 +1122,11 @@ catch(...)
 
 void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
 {
- std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+ UnicodeString b = AContext->Binding->PeerIP;
+ std::string bind=AnsiString(b).c_str();
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
- PacketReaders[bind].ResetProcessing();
- PacketReaders[bind].ClearPacketList();
+ RdkApplication.GetServerControl()->GetServerTransport()->ConnectClient(bind);
  Log_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
 }
 //---------------------------------------------------------------------------

@@ -28,6 +28,24 @@
 #include <IdTCPServer.hpp>
 #include <VclTee.TeeGDIPlus.hpp>
 
+class RDK_LIB_TYPE UServerTransportTcpVcl: public RDK::UServerTransportTcp
+{
+public:
+/// Читает входящие байты из выбранного источника, контекст привязки
+/// всегда определяется строкой вне зависимости от типа транспорта
+virtual int ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes);
+/// Отправить ответ на команду соответствующему получателю
+virtual void SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr);
+/// Задает адрес и порт входящего интерфейса сервера
+virtual void SetServerBinding(std::string &interface_address, int port);
+/// Получение адреса интерфейса управления сервером
+virtual std::string GetServerBindingInterfaceAddress(void);
+/// Получить порт сервера
+int GetServerBindingPort(void) const;
+/// Инициировать остановку сервера, отключить все приемники
+virtual void ServerStop();
+};
+
 class RDK_LIB_TYPE UServerControlVcl: public RDK::UServerControl
 {
 public:
@@ -164,26 +182,15 @@ TMemoryStream* MemStream;
 TBitmap *Bitmap;
 RDK::UBitmap TempUBitmap;
 
-std::map<std::string, RDK::UTransferReader> PacketReaders;
-
 RDK::UELockVar<RDK::URpcCommandInternal> CurrentProcessedMainThreadCommand;
-
-/// Кодирует строку в вектор
-void ConvertStringToVector(const std::string &source, RDK::UParamT &dest);
-
-/// Кодирует вектор в строку
-void ConvertVectorToString(const RDK::UParamT &source, std::string &dest);
-
-/// Отправляет ответ на команду
-void SendCommandResponse(TIdContext *context, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
-void SendCommandResponse(const std::string &client_binding, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
 
 /// Устанавливает параметры сервера
 bool SetServerBinding(const std::string &interface_address, int port);
-
 /// Возвращает параметры сервера
-std::string GetServerBindingInterfaceAddress(void) const;
+std::string GetServerBindingInterfaceAddress(void);
 int GetServerBindingPort(void) const;
+
+void ServerStop();
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
