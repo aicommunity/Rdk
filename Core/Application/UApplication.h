@@ -284,6 +284,9 @@ void ProcessCommandLineArgs(int argc, char **argv);
 virtual bool CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config);
 virtual bool CreateProject(const std::string &file_name, const std::string &model_classname);
 
+/// Обновляет проект по новой конфигурации
+virtual bool UpdateProject(RDK::TProjectConfig &project_config);
+
 /// Открывает проект
 virtual bool OpenProject(const std::string &filename);
 

@@ -1136,7 +1136,7 @@ int MCameraStandard<T>::image_coord_to_world_coord (double Xfd, double Yfd, doub
     /* (these equations were derived by simply inverting	 */
 	/* the perspective projection equations using Macsyma)	 */
 
-	const MMatrix<T,4,4>& ecc=GetInvEcc();
+ const MMatrix<T,4,4>& ecc=this->GetInvEcc();
 	MMatrix<T,4,4> mat_tsai_scene_to_cam;
 	MMatrix<T,4,4> ecc_tsai;
 

@@ -135,6 +135,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
 
+    connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
+
+
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
     //chanels menu actions:
@@ -245,8 +248,24 @@ void UGEngineControllWidget::actionLoadConfig()
 
 void UGEngineControllWidget::actionCreateConfig()
 {
-    createConfigurationWizardWidget->show();
-    //QMessageBox::information(this,"Create new project", "He-he-he, NO! >:]", QMessageBox::Ok);
+ if(application->GetProjectOpenFlag())
+ {
+  QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Another configuration is open. Close?", QMessageBox::Save|QMessageBox::Close|QMessageBox::Cancel);
+  if (reply == QMessageBox::Save)
+  {
+   application->SaveProject();
+   application->CloseProject();
+  }
+  else
+  if(reply == QMessageBox::Close)
+  {
+   application->CloseProject();
+  }
+  else
+   return;
+ }
+
+ createConfigurationWizardWidget->show();
 }
 
 void UGEngineControllWidget::actionSaveConfig()
@@ -318,6 +337,11 @@ void UGEngineControllWidget::actionCopyConfig()
 void UGEngineControllWidget::actionExit()
 {
   QApplication::quit();
+}
+
+void UGEngineControllWidget::actionConfigOptions()
+{
+ createConfigurationWizardWidget->show();
 }
 
 //chanels menu actions:
