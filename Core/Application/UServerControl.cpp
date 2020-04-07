@@ -178,6 +178,19 @@ bool UServerControl::SetServerTransport(UEPtr<UServerTransport> value)
  ServerTransport=value;
  return true;
 }
+
+UEPtr<UServerTransport> UServerControl::GetServerTransportHttp(void)
+{
+ return ServerTransportHttp;
+}
+bool UServerControl::SetServerTransportHttp(UEPtr<UServerTransport> value)
+{
+ if(ServerTransportHttp == value)
+  return true;
+
+ ServerTransportHttp=value;
+ return true;
+}
 // --------------------------
 
 
@@ -500,7 +513,7 @@ void UServerControl::SendCommandResponse(UServerTransport *transport, std::strin
  Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
 }
 
-void UServerControl::ProcessCommandQueue()
+void UServerControl::ProcessCommandQueue(UServerTransport *transport)
 {
  if(!GetRpcDispatcher())
   return;
@@ -515,15 +528,15 @@ void UServerControl::ProcessCommandQueue()
   {
    RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
    ConvertStringToVector(pcmd_int->Response, response);
-   SendCommandResponse(GetServerTransport(), pcmd_int->RecepientId, response, binary_response);
+   SendCommandResponse(transport, pcmd_int->RecepientId, response, binary_response);
    delete pcmd_int;
   }
 }
 
-void UServerControl::ProcessIncomingData(std::string &bind)
+void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *transport)
 {
  std::vector<RDK::URpcCommandInternal> commands;
- GetServerTransport()->ProcessIncomingData(bind, commands);
+ transport->ProcessIncomingData(bind, commands);
 
  if(!commands.empty())
  {

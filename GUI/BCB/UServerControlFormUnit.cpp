@@ -747,6 +747,46 @@ void TUServerControlForm::AUpdateInterface(void)
 
  MetadataComponentNameLabeledEdit->Text=RdkApplication.GetServerControl()->GetMetaComponentName().c_str();
  MetadataComponentStateNameLabeledEdit->Text=RdkApplication.GetServerControl()->GetMetaComponentStateName().c_str();
+
+ if(IdTCPServer->Active==false)
+ {
+  TcpServerIndicatorPanel->Color=clRed;
+  TcpServerIndicatorLabel->Caption = "Tcp server stopped";
+ }
+ else
+ {
+  TList *list=IdTCPServer->Contexts->LockList();
+  if(list->Count>0)
+  {
+   bool connected = false;
+   for(int i=0; i<list->Count; i++)
+   {
+	TIdContext *AContext = reinterpret_cast<TIdContext *>(list->Items[i]);
+	if(AContext->Connection->Connected())
+	{
+	 connected=true;
+	 break;
+	}
+   }
+
+   if(connected)
+   {
+	TcpServerIndicatorPanel->Color=clLime;
+	TcpServerIndicatorLabel->Caption = "Tcp server active and connected";
+   }
+   else
+   {
+	TcpServerIndicatorPanel->Color=clGreen;
+	TcpServerIndicatorLabel->Caption = "Tcp server waiting for connection";
+   }
+  }
+  else
+  {
+   TcpServerIndicatorPanel->Color=clGreen;
+   TcpServerIndicatorLabel->Caption = "Tcp server waiting for connection";
+  }
+  IdTCPServer->Contexts->UnlockList();
+ }
 }
 
 // Возврат интерфейса в исходное состояние
@@ -934,7 +974,7 @@ void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
  {
   Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
  }
-
+ this->UpdateInterface();
 // TcpServer->Active=true;
 }
 //---------------------------------------------------------------------------
@@ -953,6 +993,7 @@ void TUServerControlForm::ServerStop()
  IdTCPServer->Contexts->UnlockList();
 
  IdTCPServer->Active=false;
+ this->UpdateInterface();
 }
 
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
@@ -1051,7 +1092,7 @@ void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
 {
 try
 {
- RdkApplication.GetServerControl()->ProcessCommandQueue();
+ RdkApplication.GetServerControl()->ProcessCommandQueue(RdkApplication.GetServerControl()->GetServerTransport());
 }
 catch (...)
 {
@@ -1078,9 +1119,10 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
  //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
  //t->DisconnectClient(bind);
 
- RdkApplication.GetServerControl()->GetServerTransport()->ConnectClient(bind);
+ RdkApplication.GetServerControl()->GetServerTransport()->DisсonnectClient(bind);
 
  Log_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
+ this->UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -1106,7 +1148,7 @@ try
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
  //Убираем отсюда всю обработку, пусть это и грозит потерей контекста
- RdkApplication.GetServerControl()->ProcessIncomingData( bind );
+ RdkApplication.GetServerControl()->ProcessIncomingData( bind, RdkApplication.GetServerControl()->GetServerTransport() );
 
 }
 catch(...)
@@ -1128,6 +1170,7 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
  RdkApplication.GetServerControl()->GetServerTransport()->ConnectClient(bind);
  Log_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
+ this->UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -1153,6 +1196,11 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 //---------------------------------------------------------------------------
 
 
+void __fastcall TUServerControlForm::IdHTTPServerAuthorization(TObject *Sender, TIdAuthentication *Authentication, bool &Handled)
+{
+ Log_LogMessage(RDK_EX_INFO, (std::string(AnsiString("HTTP Server authorization attemp with login: "+Authentication->Username + " and password: "+Authentication->Password).c_str()).c_str());
+}
+//---------------------------------------------------------------------------
 
 
 

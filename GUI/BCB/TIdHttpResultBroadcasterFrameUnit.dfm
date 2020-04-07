@@ -139,7 +139,7 @@ inherited IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
     Request.Ranges.Units = 'bytes'
     Request.Ranges = <>
     HTTPOptions = [hoForceEncodeParams]
-    Left = 120
+    Left = 96
     Top = 32
   end
   object PageProducer: TPageProducer

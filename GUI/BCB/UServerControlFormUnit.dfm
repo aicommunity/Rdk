@@ -2,7 +2,7 @@ object UServerControlForm: TUServerControlForm
   Left = 0
   Top = 0
   Caption = 'Server Control'
-  ClientHeight = 513
+  ClientHeight = 473
   ClientWidth = 754
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,8 +20,8 @@ object UServerControlForm: TUServerControlForm
     Left = 0
     Top = 0
     Width = 754
-    Height = 513
-    ActivePage = ControlTabSheet
+    Height = 473
+    ActivePage = HttpServerTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
@@ -31,7 +31,7 @@ object UServerControlForm: TUServerControlForm
         Left = 0
         Top = 0
         Width = 746
-        Height = 443
+        Height = 403
         Align = alClient
         Caption = ' Channels performance '
         TabOrder = 0
@@ -39,7 +39,7 @@ object UServerControlForm: TUServerControlForm
           Left = 2
           Top = 15
           Width = 742
-          Height = 393
+          Height = 353
           BackWall.Brush.Gradient.Direction = gdBottomTop
           BackWall.Brush.Gradient.EndColor = clWhite
           BackWall.Brush.Gradient.StartColor = 15395562
@@ -114,7 +114,7 @@ object UServerControlForm: TUServerControlForm
         end
         object Panel: TPanel
           Left = 2
-          Top = 408
+          Top = 368
           Width = 742
           Height = 33
           Align = alBottom
@@ -142,74 +142,44 @@ object UServerControlForm: TUServerControlForm
       end
       object Panel4: TPanel
         Left = 0
-        Top = 443
+        Top = 403
         Width = 746
         Height = 42
         Align = alBottom
         TabOrder = 1
-        object ServerStartButton: TButton
-          Left = 10
-          Top = 6
-          Width = 79
-          Height = 28
-          Caption = 'Start'
-          TabOrder = 0
-          OnClick = ServerStartButtonClick
-        end
-        object ServerStopButton: TButton
-          Left = 95
-          Top = 8
-          Width = 79
-          Height = 26
-          Caption = 'Stop'
-          TabOrder = 1
-          OnClick = ServerStopButtonClick
-        end
       end
     end
     object OptionsTabSheet: TTabSheet
-      Caption = 'Options'
+      Caption = 'Server Settings'
       ImageIndex = 1
       object Panel1: TPanel
         Left = 0
         Top = 0
         Width = 332
-        Height = 444
+        Height = 404
         Align = alLeft
         TabOrder = 0
         object GroupBox1: TGroupBox
           Left = 1
           Top = 1
           Width = 330
-          Height = 201
+          Height = 160
           Align = alTop
-          Caption = ' Main options '
+          Caption = 'Main options'
           TabOrder = 0
           DesignSize = (
             330
-            201)
-          object ServerControlPortLabeledEdit: TLabeledEdit
-            Left = 210
-            Top = 122
-            Width = 110
-            Height = 21
-            Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 57
-            EditLabel.Height = 13
-            EditLabel.Caption = 'Binding port'
-            TabOrder = 0
-            Text = '45045'
-          end
+            160)
           object NumberOfChannelsLabeledEdit: TLabeledEdit
             Left = 6
-            Top = 171
+            Top = 117
             Width = 314
             Height = 21
             Anchors = [akLeft, akTop, akRight]
             EditLabel.Width = 83
             EditLabel.Height = 13
             EditLabel.Caption = 'Channels number'
-            TabOrder = 1
+            TabOrder = 0
             Text = '1'
           end
           object ServerNameLabeledEdit: TLabeledEdit
@@ -221,7 +191,7 @@ object UServerControlForm: TUServerControlForm
             EditLabel.Width = 62
             EditLabel.Height = 13
             EditLabel.Caption = 'Server Name'
-            TabOrder = 2
+            TabOrder = 1
             Text = 'Server'
           end
           object ServerIdLabeledEdit: TLabeledEdit
@@ -233,27 +203,15 @@ object UServerControlForm: TUServerControlForm
             EditLabel.Width = 45
             EditLabel.Height = 13
             EditLabel.Caption = 'Server Id'
-            TabOrder = 3
+            TabOrder = 2
             Text = 'Server'
-          end
-          object BindingAddressLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 122
-            Width = 198
-            Height = 21
-            Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 75
-            EditLabel.Height = 13
-            EditLabel.Caption = 'Binging address'
-            TabOrder = 4
-            Text = '127.0.0.1'
           end
         end
         object GroupBox2: TGroupBox
           Left = 1
-          Top = 202
+          Top = 161
           Width = 330
-          Height = 241
+          Height = 242
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
@@ -261,7 +219,7 @@ object UServerControlForm: TUServerControlForm
             Left = 2
             Top = 15
             Width = 326
-            Height = 224
+            Height = 225
             Align = alClient
             ColCount = 2
             DefaultRowHeight = 20
@@ -276,12 +234,12 @@ object UServerControlForm: TUServerControlForm
         Left = 332
         Top = 0
         Width = 414
-        Height = 444
+        Height = 404
         Align = alClient
         TabOrder = 1
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
-          Top = 387
+          Top = 347
           Width = 412
           Height = 56
           Align = alBottom
@@ -293,7 +251,7 @@ object UServerControlForm: TUServerControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitLeft = 1
-          ExplicitTop = 387
+          ExplicitTop = 347
           ExplicitWidth = 412
           ExplicitHeight = 56
           inherited Image1: TImage
@@ -342,7 +300,7 @@ object UServerControlForm: TUServerControlForm
       end
       object Panel3: TPanel
         Left = 0
-        Top = 444
+        Top = 404
         Width = 746
         Height = 41
         Align = alBottom
@@ -367,12 +325,181 @@ object UServerControlForm: TUServerControlForm
         end
       end
     end
+    object TcpServerTabSheet: TTabSheet
+      Caption = 'Tcp Server'
+      ImageIndex = 3
+      object Panel6: TPanel
+        Left = 0
+        Top = 404
+        Width = 746
+        Height = 41
+        Align = alBottom
+        TabOrder = 0
+        object ServerStopButton: TButton
+          Left = 103
+          Top = 6
+          Width = 79
+          Height = 26
+          Caption = 'Stop'
+          TabOrder = 0
+          OnClick = ServerStopButtonClick
+        end
+        object ServerStartButton: TButton
+          Left = 18
+          Top = 6
+          Width = 79
+          Height = 28
+          Caption = 'Start'
+          TabOrder = 1
+          OnClick = ServerStartButtonClick
+        end
+      end
+      object GroupBox6: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 746
+        Height = 113
+        Align = alTop
+        Caption = 'Tcp server options'
+        TabOrder = 1
+        object TcpServerIndicatorLabel: TLabel
+          Left = 32
+          Top = 67
+          Width = 121
+          Height = 13
+          Caption = 'Tcp Server indicator label'
+        end
+        object TcpServerIndicatorPanel: TPanel
+          Left = 3
+          Top = 61
+          Width = 23
+          Height = 25
+          Color = clRed
+          ParentBackground = False
+          TabOrder = 0
+        end
+        object BindingAddressLabeledEdit: TLabeledEdit
+          Left = 3
+          Top = 34
+          Width = 198
+          Height = 21
+          EditLabel.Width = 75
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Binging address'
+          TabOrder = 1
+          Text = '127.0.0.1'
+        end
+        object ServerControlPortLabeledEdit: TLabeledEdit
+          Left = 207
+          Top = 34
+          Width = 110
+          Height = 21
+          EditLabel.Width = 57
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Binding port'
+          TabOrder = 2
+          Text = '45045'
+        end
+      end
+    end
+    object HttpServerTabSheet: TTabSheet
+      Caption = 'Http Server'
+      ImageIndex = 2
+      object GroupBox5: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 746
+        Height = 233
+        Align = alTop
+        Caption = ' Main options '
+        TabOrder = 0
+        DesignSize = (
+          746
+          233)
+        object HttpServerIndicationLabel: TLabel
+          Left = 47
+          Top = 159
+          Width = 128
+          Height = 13
+          Caption = 'Http server indication label'
+        end
+        object HttpAddressPortLabeledEdit: TLabeledEdit
+          Left = 18
+          Top = 34
+          Width = 374
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          EditLabel.Width = 141
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Http address (http://ip:port/)'
+          TabOrder = 0
+          Text = 'http://127.0.0.1:40004/'
+        end
+        object HttpServerIndicationPanel: TPanel
+          Left = 18
+          Top = 153
+          Width = 23
+          Height = 25
+          Color = clRed
+          ParentBackground = False
+          TabOrder = 1
+        end
+        object HttpLoginLabeledEdit: TLabeledEdit
+          Left = 18
+          Top = 74
+          Width = 374
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          EditLabel.Width = 61
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Server login:'
+          TabOrder = 2
+        end
+        object HttpPasswordLabeledEdit: TLabeledEdit
+          Left = 18
+          Top = 114
+          Width = 374
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          EditLabel.Width = 85
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Server password:'
+          TabOrder = 3
+        end
+      end
+      object Panel5: TPanel
+        Left = 0
+        Top = 404
+        Width = 746
+        Height = 41
+        Align = alBottom
+        TabOrder = 1
+        object Button3: TButton
+          Left = 103
+          Top = 6
+          Width = 79
+          Height = 27
+          Caption = 'Stop'
+          TabOrder = 0
+          OnClick = ServerStopButtonClick
+        end
+        object Button4: TButton
+          Left = 18
+          Top = 6
+          Width = 79
+          Height = 28
+          Caption = 'Start'
+          TabOrder = 1
+          OnClick = ServerStartButtonClick
+        end
+      end
+    end
   end
   object CommandTimer: TTimer
     Interval = 10
     OnTimer = CommandTimerTimer
-    Left = 80
-    Top = 40
+    Left = 24
+    Top = 312
   end
   object IdTCPServer: TIdTCPServer
     Bindings = <
@@ -384,13 +511,43 @@ object UServerControlForm: TUServerControlForm
     OnConnect = IdTCPServerConnect
     OnDisconnect = IdTCPServerDisconnect
     OnExecute = IdTCPServerExecute
-    Left = 208
-    Top = 40
+    Left = 96
+    Top = 296
   end
   object ServerRestartTimer: TTimer
     Enabled = False
     OnTimer = ServerRestartTimerTimer
-    Left = 256
-    Top = 40
+    Left = 168
+    Top = 320
+  end
+  object HttpCommandTimer: TTimer
+    Interval = 10
+    OnTimer = CommandTimerTimer
+    Left = 16
+    Top = 384
+  end
+  object HttpServerRestartTimer: TTimer
+    Enabled = False
+    OnTimer = ServerRestartTimerTimer
+    Left = 192
+    Top = 384
+  end
+  object IdHTTPServer: TIdHTTP
+    AllowCookies = True
+    ProxyParams.BasicAuthentication = False
+    ProxyParams.ProxyPort = 0
+    Request.ContentLength = -1
+    Request.ContentRangeEnd = -1
+    Request.ContentRangeStart = -1
+    Request.ContentRangeInstanceLength = -1
+    Request.Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    Request.BasicAuthentication = False
+    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
+    Request.Ranges.Units = 'bytes'
+    Request.Ranges = <>
+    HTTPOptions = [hoForceEncodeParams]
+    OnAuthorization = IdHTTPServerAuthorization
+    Left = 92
+    Top = 336
   end
 end

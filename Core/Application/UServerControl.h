@@ -50,6 +50,9 @@ UEPtr<UApplication> Application;
 /// Указатель на экземпляр транспорта
 UEPtr<UServerTransport> ServerTransport;
 
+/// Указатель на экземпляр транспорта для приема и передачи HTTP
+UEPtr<UServerTransport> ServerTransportHttp;
+
 /// Диспетчер команд
 UEPtr<URpcDispatcher> RpcDispatcher;
 
@@ -123,6 +126,9 @@ bool SetApplication(UEPtr<UApplication> value);
 /// Возвращает указатель на экземпляр транспорта
 UEPtr<UServerTransport> GetServerTransport(void);
 bool SetServerTransport(UEPtr<UServerTransport> value);
+
+UEPtr<UServerTransport> GetServerTransportHttp(void);
+bool SetServerTransportHttp(UEPtr<UServerTransport> value);
 // --------------------------
 
 /// Предоставляет доступ к диспетчеру команд
@@ -203,9 +209,9 @@ virtual void SendCommandResponse(UServerTransport *transport, std::string &clien
 /// Отправляет ответ на команду
 //virtual void ASendCommandResponse(RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
 
-virtual void ProcessCommandQueue();
+virtual void ProcessCommandQueue(UServerTransport *transport);
 
-virtual void ProcessIncomingData(std::string &bind);
+virtual void ProcessIncomingData(std::string &bind,UServerTransport *transport);
 
 protected:
 

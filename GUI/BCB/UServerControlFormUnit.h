@@ -27,6 +27,10 @@
 #include <IdCustomTCPServer.hpp>
 #include <IdTCPServer.hpp>
 #include <VclTee.TeeGDIPlus.hpp>
+#include <IdHTTP.hpp>
+#include <IdTCPClient.hpp>
+#include <IdTCPConnection.hpp>
+#include <IdAuthentication.hpp>
 
 class RDK_LIB_TYPE UServerTransportTcpVcl: public RDK::UServerTransportTcp
 {
@@ -122,7 +126,6 @@ __published:	// IDE-managed Components
 	TTabSheet *OptionsTabSheet;
 	TPanel *Panel1;
 	TGroupBox *GroupBox1;
-	TLabeledEdit *ServerControlPortLabeledEdit;
 	TLabeledEdit *NumberOfChannelsLabeledEdit;
 	TGroupBox *GroupBox2;
 	TGroupBox *GroupBox3;
@@ -135,8 +138,6 @@ __published:	// IDE-managed Components
 	TUHttpServerFrame *UHttpServerFrame;
 	TPanel *Panel3;
 	TPanel *Panel4;
-	TButton *ServerStartButton;
-	TButton *ServerStopButton;
 	TButton *ApplyOptionsButton;
 	TButton *ReturnOptionsButton;
 	TStringGrid *ChannelNamesStringGrid;
@@ -147,10 +148,31 @@ __published:	// IDE-managed Components
 	TTimer *ServerRestartTimer;
 	TLabeledEdit *ServerNameLabeledEdit;
 	TLabeledEdit *ServerIdLabeledEdit;
-	TLabeledEdit *BindingAddressLabeledEdit;
 	TGroupBox *GroupBox4;
 	TLabeledEdit *MetadataComponentNameLabeledEdit;
 	TLabeledEdit *MetadataComponentStateNameLabeledEdit;
+	TTabSheet *HttpServerTabSheet;
+	TTimer *HttpCommandTimer;
+	TTimer *HttpServerRestartTimer;
+	TIdHTTP *IdHTTPServer;
+	TGroupBox *GroupBox5;
+	TLabeledEdit *HttpAddressPortLabeledEdit;
+	TPanel *Panel5;
+	TButton *Button3;
+	TButton *Button4;
+	TPanel *HttpServerIndicationPanel;
+	TLabel *HttpServerIndicationLabel;
+	TTabSheet *TcpServerTabSheet;
+	TPanel *Panel6;
+	TGroupBox *GroupBox6;
+	TPanel *TcpServerIndicatorPanel;
+	TLabel *TcpServerIndicatorLabel;
+	TLabeledEdit *BindingAddressLabeledEdit;
+	TLabeledEdit *ServerControlPortLabeledEdit;
+	TButton *ServerStopButton;
+	TButton *ServerStartButton;
+	TLabeledEdit *HttpLoginLabeledEdit;
+	TLabeledEdit *HttpPasswordLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall ServerStartButtonClick(TObject *Sender);
@@ -165,6 +187,9 @@ __published:	// IDE-managed Components
 	void __fastcall IdTCPServerConnect(TIdContext *AContext);
 	void __fastcall ServerRestartTimerTimer(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+	void __fastcall Button2Click(TObject *Sender);
+	void __fastcall IdHTTPServerAuthorization(TObject *Sender, TIdAuthentication *Authentication,
+          bool &Handled);
 
 
 
