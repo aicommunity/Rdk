@@ -31,8 +31,28 @@
 #include <IdTCPClient.hpp>
 #include <IdTCPConnection.hpp>
 #include <IdAuthentication.hpp>
+#include <IdCustomHTTPServer.hpp>
+#include <IdHTTPServer.hpp>
 
 class RDK_LIB_TYPE UServerTransportTcpVcl: public RDK::UServerTransportTcp
+{
+public:
+/// Читает входящие байты из выбранного источника, контекст привязки
+/// всегда определяется строкой вне зависимости от типа транспорта
+virtual int ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes);
+/// Отправить ответ на команду соответствующему получателю
+virtual void SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr);
+/// Задает адрес и порт входящего интерфейса сервера
+virtual void SetServerBinding(std::string &interface_address, int port);
+/// Получение адреса интерфейса управления сервером
+virtual std::string GetServerBindingInterfaceAddress(void);
+/// Получить порт сервера
+int GetServerBindingPort(void) const;
+/// Инициировать остановку сервера, отключить все приемники
+virtual void ServerStop();
+};
+
+class RDK_LIB_TYPE UServerTransportHttpVcl: public RDK::UServerTransportHttp
 {
 public:
 /// Читает входящие байты из выбранного источника, контекст привязки
@@ -154,12 +174,11 @@ __published:	// IDE-managed Components
 	TTabSheet *HttpServerTabSheet;
 	TTimer *HttpCommandTimer;
 	TTimer *HttpServerRestartTimer;
-	TIdHTTP *IdHTTPServer;
 	TGroupBox *GroupBox5;
-	TLabeledEdit *HttpAddressPortLabeledEdit;
+	TLabeledEdit *HttpIPAddressLabeledEdit;
 	TPanel *Panel5;
-	TButton *Button3;
-	TButton *Button4;
+	TButton *HttpStopButton;
+	TButton *HttpStartButton;
 	TPanel *HttpServerIndicationPanel;
 	TLabel *HttpServerIndicationLabel;
 	TTabSheet *TcpServerTabSheet;
@@ -173,6 +192,12 @@ __published:	// IDE-managed Components
 	TButton *ServerStartButton;
 	TLabeledEdit *HttpLoginLabeledEdit;
 	TLabeledEdit *HttpPasswordLabeledEdit;
+	TButton *HttpApplyButton;
+	TButton *HttpReturnButton;
+	TLabeledEdit *HttpPortLabeledEdit;
+	TIdHTTPServer *IdHTTPServer;
+	TButton *TcpApplyButton;
+	TButton *TcpReturnButton;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall ServerStartButtonClick(TObject *Sender);
@@ -187,9 +212,13 @@ __published:	// IDE-managed Components
 	void __fastcall IdTCPServerConnect(TIdContext *AContext);
 	void __fastcall ServerRestartTimerTimer(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-	void __fastcall Button2Click(TObject *Sender);
 	void __fastcall IdHTTPServerAuthorization(TObject *Sender, TIdAuthentication *Authentication,
           bool &Handled);
+	void __fastcall HttpApplyButtonClick(TObject *Sender);
+	void __fastcall HttpReturnButtonClick(TObject *Sender);
+	void __fastcall HttpStartButtonClick(TObject *Sender);
+	void __fastcall HttpServerRestartTimerTimer(TObject *Sender);
+	void __fastcall TcpApplyButtonClick(TObject *Sender);
 
 
 
@@ -198,6 +227,9 @@ __published:	// IDE-managed Components
 
 
 private:	// User declarations
+ UnicodeString HttpAuthLogin;
+ UnicodeString HttpAuthPassword;
+ UnicodeString HttpUrl;
 
 public:		// User declarations
 	__fastcall TUServerControlForm(TComponent* Owner);
@@ -214,6 +246,12 @@ bool SetServerBinding(const std::string &interface_address, int port);
 /// Возвращает параметры сервера
 std::string GetServerBindingInterfaceAddress(void);
 int GetServerBindingPort(void) const;
+
+/// Устанавливает параметры сервера
+bool SetHttpServerBinding(const std::string &interface_address, int port);
+/// Возвращает параметры сервера
+std::string GetHttpServerBindingInterfaceAddress(void);
+int GetHttpServerBindingPort(void) const;
 
 void ServerStop();
 

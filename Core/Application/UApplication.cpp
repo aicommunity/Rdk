@@ -1035,6 +1035,28 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  }
 
+  if(old_project_config.HttpServerInterfaceAddress != project_config.HttpServerInterfaceAddress)
+ {
+
+ }
+
+ if(old_project_config.HttpServerInterfacePort != project_config.HttpServerInterfacePort)
+ {
+
+ }
+
+
+  if(old_project_config.HttpServerLogin != project_config.HttpServerLogin)
+ {
+
+ }
+
+ if(old_project_config.HttpServerPassword != project_config.HttpServerPassword)
+ {
+
+ }
+
+
  if(old_project_config.ProjectShowChannelsStates != project_config.ProjectShowChannelsStates)
  {
 

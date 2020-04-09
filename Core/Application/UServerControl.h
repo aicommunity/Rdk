@@ -4,6 +4,7 @@
 #include "../../Deploy/Include/rdk.h"
 #include "UIVisualController.h"
 #include "UServerTransportTcp.h"
+#include "UServerTransportHttp.h"
 //Проредить потом?
 #include "URpcDispatcherQueues.h"
 #include "URpcDispatcher.h"

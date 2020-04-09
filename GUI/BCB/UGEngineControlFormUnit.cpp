@@ -2885,9 +2885,33 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
   need_update=true;
  }
 
- if(app_ini->ReadString("Server","BindPort","") != RdkApplication.GetProjectConfig().ServerInterfacePort)
+ if(StrToInt(app_ini->ReadString("Server","BindPort","")) != RdkApplication.GetProjectConfig().ServerInterfacePort)
  {
   app_ini->WriteInteger("Server","BindPort",RdkApplication.GetProjectConfig().ServerInterfacePort);
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","HttpBindAddress","") != RdkApplication.GetProjectConfig().HttpServerInterfaceAddress.c_str())
+ {
+  app_ini->WriteString("Server","HttpBindAddress",RdkApplication.GetProjectConfig().HttpServerInterfaceAddress.c_str());
+  need_update=true;
+ }
+
+ if(StrToInt(app_ini->ReadString("Server","HttpBindPort","")) != RdkApplication.GetProjectConfig().HttpServerInterfacePort)
+ {
+  app_ini->WriteInteger("Server","HttpBindPort",RdkApplication.GetProjectConfig().HttpServerInterfacePort);
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","HttpServerLogin","") != RdkApplication.GetProjectConfig().HttpServerLogin.c_str())
+ {
+  app_ini->WriteString("Server","HttpServerLogin",RdkApplication.GetProjectConfig().HttpServerLogin.c_str());
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","HttpServerPassword","") != RdkApplication.GetProjectConfig().HttpServerPassword.c_str())
+ {
+  app_ini->WriteString("Server","HttpServerPassword",RdkApplication.GetProjectConfig().HttpServerPassword.c_str());
   need_update=true;
  }
 

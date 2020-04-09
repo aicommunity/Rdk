@@ -178,6 +178,18 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  /// Порт интерфейса управления сервером
  ServerInterfacePort=copy.ServerInterfacePort;
 
+  /// Адрес интерфейса Http-сервера
+ HttpServerInterfaceAddress=copy.HttpServerInterfaceAddress;
+
+  /// Порт интерфейса управления сервером
+ HttpServerInterfacePort=copy.HttpServerInterfacePort;
+
+  /// Порт интерфейса управления сервером
+ HttpServerLogin=copy.HttpServerLogin;
+
+  /// Порт интерфейса управления сервером
+ HttpServerPassword=copy.HttpServerPassword;
+
  // Флаг отображения состояний каналов
  ProjectShowChannelsStates=copy.ProjectShowChannelsStates;
 
@@ -212,6 +224,10 @@ bool TProjectConfig::operator != (const TProjectConfig& copy) const
  (ChannelsConfig != copy.ChannelsConfig) ||
  (ServerInterfaceAddress != copy.ServerInterfaceAddress) ||
  (ServerInterfacePort != copy.ServerInterfacePort) ||
+ (HttpServerInterfaceAddress != copy.HttpServerInterfaceAddress) ||
+ (HttpServerInterfacePort != copy.HttpServerInterfacePort) ||
+ (HttpServerLogin != copy.HttpServerLogin) ||
+ (HttpServerPassword != copy.HttpServerPassword) ||
  (ProjectShowChannelsStates != copy.ProjectShowChannelsStates) ||
  (InterfaceFileName != copy.InterfaceFileName) ||
  (DescriptionFileName != copy.DescriptionFileName) ||

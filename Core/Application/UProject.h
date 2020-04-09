@@ -160,6 +160,18 @@ std::string ServerInterfaceAddress;
 /// Порт интерфейса управления сервером
 int ServerInterfacePort;
 
+/// Адрес интерфейса управления сервером
+std::string HttpServerInterfaceAddress;
+
+/// Порт интерфейса управления сервером
+int HttpServerInterfacePort;
+
+/// Логин для подключения к серверу
+std::string HttpServerLogin;
+
+///  Пароль для подключения к серверу
+std::string HttpServerPassword;
+
 // Флаг отображения состояний каналов
 bool ProjectShowChannelsStates;
 

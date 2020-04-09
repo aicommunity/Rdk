@@ -2,7 +2,7 @@ object UServerControlForm: TUServerControlForm
   Left = 0
   Top = 0
   Caption = 'Server Control'
-  ClientHeight = 473
+  ClientHeight = 485
   ClientWidth = 754
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,26 +20,31 @@ object UServerControlForm: TUServerControlForm
     Left = 0
     Top = 0
     Width = 754
-    Height = 473
+    Height = 485
     ActivePage = HttpServerTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 445
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
         Width = 746
-        Height = 403
+        Height = 415
         Align = alClient
         Caption = ' Channels performance '
         TabOrder = 0
+        ExplicitHeight = 403
         object PerformanceChart: TChart
           Left = 2
           Top = 15
           Width = 742
-          Height = 353
+          Height = 365
           BackWall.Brush.Gradient.Direction = gdBottomTop
           BackWall.Brush.Gradient.EndColor = clWhite
           BackWall.Brush.Gradient.StartColor = 15395562
@@ -88,6 +93,7 @@ object UServerControlForm: TUServerControlForm
           Zoom.Pen.Mode = pmNotXor
           Align = alClient
           TabOrder = 0
+          ExplicitHeight = 353
           DefaultCanvas = 'TGDIPlusCanvas'
           ColorPaletteIndex = 13
           object Series1: TBarSeries
@@ -114,12 +120,13 @@ object UServerControlForm: TUServerControlForm
         end
         object Panel: TPanel
           Left = 2
-          Top = 368
+          Top = 380
           Width = 742
           Height = 33
           Align = alBottom
           TabOrder = 1
           Visible = False
+          ExplicitTop = 368
           object FpsRadioButton: TRadioButton
             Left = 8
             Top = 6
@@ -142,11 +149,12 @@ object UServerControlForm: TUServerControlForm
       end
       object Panel4: TPanel
         Left = 0
-        Top = 403
+        Top = 415
         Width = 746
         Height = 42
         Align = alBottom
         TabOrder = 1
+        ExplicitTop = 403
       end
     end
     object OptionsTabSheet: TTabSheet
@@ -156,7 +164,7 @@ object UServerControlForm: TUServerControlForm
         Left = 0
         Top = 0
         Width = 332
-        Height = 404
+        Height = 416
         Align = alLeft
         TabOrder = 0
         object GroupBox1: TGroupBox
@@ -211,15 +219,16 @@ object UServerControlForm: TUServerControlForm
           Left = 1
           Top = 161
           Width = 330
-          Height = 242
+          Height = 254
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
+          ExplicitHeight = 242
           object ChannelNamesStringGrid: TStringGrid
             Left = 2
             Top = 15
             Width = 326
-            Height = 225
+            Height = 237
             Align = alClient
             ColCount = 2
             DefaultRowHeight = 20
@@ -227,6 +236,7 @@ object UServerControlForm: TUServerControlForm
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
             TabOrder = 0
             OnKeyDown = ChannelNamesStringGridKeyDown
+            ExplicitHeight = 225
           end
         end
       end
@@ -234,12 +244,12 @@ object UServerControlForm: TUServerControlForm
         Left = 332
         Top = 0
         Width = 414
-        Height = 404
+        Height = 416
         Align = alClient
         TabOrder = 1
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
-          Top = 347
+          Top = 359
           Width = 412
           Height = 56
           Align = alBottom
@@ -251,7 +261,7 @@ object UServerControlForm: TUServerControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitLeft = 1
-          ExplicitTop = 347
+          ExplicitTop = 359
           ExplicitWidth = 412
           ExplicitHeight = 56
           inherited Image1: TImage
@@ -300,11 +310,12 @@ object UServerControlForm: TUServerControlForm
       end
       object Panel3: TPanel
         Left = 0
-        Top = 404
+        Top = 416
         Width = 746
         Height = 41
         Align = alBottom
         TabOrder = 2
+        ExplicitTop = 404
         object ApplyOptionsButton: TButton
           Left = 7
           Top = 6
@@ -328,15 +339,20 @@ object UServerControlForm: TUServerControlForm
     object TcpServerTabSheet: TTabSheet
       Caption = 'Tcp Server'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 445
       object Panel6: TPanel
         Left = 0
-        Top = 404
+        Top = 416
         Width = 746
         Height = 41
         Align = alBottom
         TabOrder = 0
+        ExplicitTop = 404
         object ServerStopButton: TButton
-          Left = 103
+          Left = 263
           Top = 6
           Width = 79
           Height = 26
@@ -345,13 +361,31 @@ object UServerControlForm: TUServerControlForm
           OnClick = ServerStopButtonClick
         end
         object ServerStartButton: TButton
-          Left = 18
+          Left = 178
           Top = 6
           Width = 79
           Height = 28
           Caption = 'Start'
           TabOrder = 1
           OnClick = ServerStartButtonClick
+        end
+        object TcpApplyButton: TButton
+          Left = 8
+          Top = 5
+          Width = 79
+          Height = 28
+          Caption = 'Apply'
+          TabOrder = 2
+          OnClick = TcpApplyButtonClick
+        end
+        object TcpReturnButton: TButton
+          Left = 93
+          Top = 6
+          Width = 79
+          Height = 27
+          Caption = 'Return'
+          TabOrder = 3
+          OnClick = HttpReturnButtonClick
         end
       end
       object GroupBox6: TGroupBox
@@ -423,17 +457,17 @@ object UServerControlForm: TUServerControlForm
           Height = 13
           Caption = 'Http server indication label'
         end
-        object HttpAddressPortLabeledEdit: TLabeledEdit
-          Left = 18
+        object HttpIPAddressLabeledEdit: TLabeledEdit
+          Left = 20
           Top = 34
-          Width = 374
+          Width = 183
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          EditLabel.Width = 141
+          EditLabel.Width = 73
           EditLabel.Height = 13
-          EditLabel.Caption = 'Http address (http://ip:port/)'
+          EditLabel.Caption = 'BindingAddress'
           TabOrder = 0
-          Text = 'http://127.0.0.1:40004/'
+          Text = '127.0.0.1'
         end
         object HttpServerIndicationPanel: TPanel
           Left = 18
@@ -466,16 +500,29 @@ object UServerControlForm: TUServerControlForm
           EditLabel.Caption = 'Server password:'
           TabOrder = 3
         end
+        object HttpPortLabeledEdit: TLabeledEdit
+          Left = 209
+          Top = 34
+          Width = 183
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          EditLabel.Width = 141
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Http address (http://ip:port/)'
+          TabOrder = 4
+          Text = '40004'
+        end
       end
       object Panel5: TPanel
         Left = 0
-        Top = 404
+        Top = 416
         Width = 746
         Height = 41
         Align = alBottom
         TabOrder = 1
-        object Button3: TButton
-          Left = 103
+        ExplicitTop = 404
+        object HttpStopButton: TButton
+          Left = 271
           Top = 6
           Width = 79
           Height = 27
@@ -483,14 +530,32 @@ object UServerControlForm: TUServerControlForm
           TabOrder = 0
           OnClick = ServerStopButtonClick
         end
-        object Button4: TButton
-          Left = 18
+        object HttpStartButton: TButton
+          Left = 186
           Top = 6
           Width = 79
           Height = 28
           Caption = 'Start'
           TabOrder = 1
-          OnClick = ServerStartButtonClick
+          OnClick = HttpStartButtonClick
+        end
+        object HttpApplyButton: TButton
+          Left = 16
+          Top = 5
+          Width = 79
+          Height = 28
+          Caption = 'Apply'
+          TabOrder = 2
+          OnClick = HttpApplyButtonClick
+        end
+        object HttpReturnButton: TButton
+          Left = 101
+          Top = 6
+          Width = 79
+          Height = 27
+          Caption = 'Return'
+          TabOrder = 3
+          OnClick = HttpReturnButtonClick
         end
       end
     end
@@ -528,26 +593,13 @@ object UServerControlForm: TUServerControlForm
   end
   object HttpServerRestartTimer: TTimer
     Enabled = False
-    OnTimer = ServerRestartTimerTimer
+    OnTimer = HttpServerRestartTimerTimer
     Left = 192
     Top = 384
   end
-  object IdHTTPServer: TIdHTTP
-    AllowCookies = True
-    ProxyParams.BasicAuthentication = False
-    ProxyParams.ProxyPort = 0
-    Request.ContentLength = -1
-    Request.ContentRangeEnd = -1
-    Request.ContentRangeStart = -1
-    Request.ContentRangeInstanceLength = -1
-    Request.Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-    Request.BasicAuthentication = False
-    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    Request.Ranges.Units = 'bytes'
-    Request.Ranges = <>
-    HTTPOptions = [hoForceEncodeParams]
-    OnAuthorization = IdHTTPServerAuthorization
-    Left = 92
-    Top = 336
+  object IdHTTPServer: TIdHTTPServer
+    Bindings = <>
+    Left = 100
+    Top = 368
   end
 end

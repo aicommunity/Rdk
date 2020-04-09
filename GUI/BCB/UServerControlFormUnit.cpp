@@ -157,6 +157,123 @@ void UServerTransportTcpVcl::SendResponseBuffer(std::vector<unsigned char> buffe
 }
 
 
+//Задает адрес и порт входящего интерфейса сервера
+void UServerTransportHttpVcl::SetServerBinding(std::string &interface_address, int port)
+{
+ if(interface_address == GetServerBindingInterfaceAddress() &&
+	port == GetServerBindingPort())
+
+ UServerControlForm->SetServerBinding(interface_address, port);
+}
+
+//Получение адреса интерфейса управления сервером
+std::string UServerTransportHttpVcl::GetServerBindingInterfaceAddress()
+{
+ return UServerControlForm->GetServerBindingInterfaceAddress();
+}
+
+//Получение адреса интерфейса управления сервером
+int UServerTransportHttpVcl::GetServerBindingPort(void) const
+{
+ return UServerControlForm->GetServerBindingPort();
+}
+
+///Инициировать остановку сервера, отключить все приемники
+void UServerTransportHttpVcl::ServerStop()
+{
+ UServerControlForm->ServerStop();
+}
+
+/// Читает входящие байты из выбранного источника, контекст привязки
+/// всегда определяется строкой вне зависимости от типа транспорта
+int UServerTransportHttpVcl::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
+{
+ if(UServerControlForm->IdTCPServer->Active && !bind.empty())
+ {
+  try
+  {
+   TList *list=UServerControlForm->IdTCPServer->Contexts->LockList();
+   std::string current_bind;
+   for(int i=0;i<list->Count;i++)
+   {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	current_bind=AnsiString(context->Binding->PeerIP).c_str();
+	current_bind+=":";
+	current_bind+=RDK::sntoa(context->Binding->PeerPort);
+
+	if(current_bind == bind)
+	{
+	  /// Это все уедет в транспорт, в платформозависимую часть
+	  TIdBytes VBuffer;
+	  int length=context->Connection->IOHandler->InputBuffer->Size;
+	  if(length>0)
+	  {
+	   context->Connection->IOHandler->ReadBytes(VBuffer, length);
+	   length=VBuffer.Length;
+	   bytes.resize(length);
+	   memcpy(&bytes[0],&VBuffer[0],length);
+	   bytes.resize(length);
+	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+	   //Отпустить список
+	   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+	   //Вернуть длину
+	   return length;
+	   break;
+	  }
+	}
+   }
+
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+   return 0;
+  }
+  catch (...)
+  {
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+   return 0;//?????
+   throw;
+  }
+ }
+ return 0;
+}
+
+/// Отправить ответ на команду соответствующему получателю
+void UServerTransportHttpVcl::SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr)
+{
+  TByteDynArray arr;
+  arr.set_length(buffer.size());
+  memcpy(&arr[0],&buffer[0],buffer.size());
+
+ if(UServerControlForm->IdTCPServer->Active && !responce_addr.empty())
+ {
+  try
+  {
+   TList *list=UServerControlForm->IdTCPServer->Contexts->LockList();
+   std::string current_bind;
+   for(int i=0;i<list->Count;i++)
+   {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	current_bind=AnsiString(context->Binding->PeerIP).c_str();
+	current_bind+=":";
+	current_bind+=RDK::sntoa(context->Binding->PeerPort);
+
+	if(current_bind == responce_addr)
+	{
+	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 //context->Connection->IOHandler->WriteBufferFlush();  //Это было закомменчено до меня
+	}
+   }
+
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+  }
+  catch (...)
+  {
+   UServerControlForm->IdTCPServer->Contexts->UnlockList();
+   throw;
+  }
+ }
+}
+
+
 // --------------------------
 // Методы управления вещателями
 // --------------------------
@@ -691,6 +808,39 @@ int TUServerControlForm::GetServerBindingPort(void) const
  return IdTCPServer->Bindings->Items[0]->Port;
 }
 
+/// Устанавливает параметры сервера
+bool TUServerControlForm::SetHttpServerBinding(const std::string &interface_address, int port)
+{
+ //TODO: Это теперь должно вызываться только напрямую из транспорта
+
+ IdHTTPServer->Active = false;
+ if(IdHTTPServer->Bindings->Count!=1)
+ {
+  IdHTTPServer->Bindings->Clear();
+  IdHTTPServer->Bindings->Add();
+ }
+ IdTCPServer->Bindings->Items[0]->Port=port;
+ IdTCPServer->Bindings->Items[0]->IP=interface_address.c_str();
+
+ //IdHTTPServer->Bindings->operator [](0)->SetBinding(UnicodeString(interface_address.c_str()),Port);
+
+ return true;
+}
+
+/// Возвращает параметры сервера
+//Вызов только через интерфейс транспорта, потом мб уберется совсем
+std::string TUServerControlForm::GetHttpServerBindingInterfaceAddress(void)
+{
+
+ return AnsiString(IdHTTPServer->Bindings->operator [](0)->IP).c_str();
+}
+//Вызов только через интерфейс транспорта, потом мб уберется совсем
+int TUServerControlForm::GetHttpServerBindingPort(void) const
+{
+ return IdHTTPServer->Bindings->operator [](0)->Port;
+}
+
+
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -998,7 +1148,7 @@ void TUServerControlForm::ServerStop()
 
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
- RdkApplication.GetServerControl()->GetServerTransport()->ServerStop();
+ RdkApplication.GetServerControl()->GetServerTransportHttp()->ServerStop();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
@@ -1031,17 +1181,6 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
 // UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
- int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
- String new_address=BindingAddressLabeledEdit->Text;
-
- RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
-
- config.ServerInterfaceAddress=AnsiString(new_address).c_str();
- config.ServerInterfacePort=new_port;
- RdkApplication.SetProjectConfig(config);
-
- ///Это наверное будет работать так:
- RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
  ///А это уберется
  ///SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
 
@@ -1198,9 +1337,99 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 
 void __fastcall TUServerControlForm::IdHTTPServerAuthorization(TObject *Sender, TIdAuthentication *Authentication, bool &Handled)
 {
- Log_LogMessage(RDK_EX_INFO, (std::string(AnsiString("HTTP Server authorization attemp with login: "+Authentication->Username + " and password: "+Authentication->Password).c_str()).c_str());
+ Log_LogMessage(RDK_EX_INFO, (std::string(AnsiString("HTTP Server authorization attemp with login: "+Authentication->Username + " and password: "+Authentication->Password).c_str()).c_str()));
 }
 //---------------------------------------------------------------------------
 
 
+
+void __fastcall TUServerControlForm::HttpApplyButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ int new_port=StrToInt(HttpPortLabeledEdit->Text);
+ String new_address=HttpIPAddressLabeledEdit->Text;
+
+ String new_login = HttpLoginLabeledEdit->Text;
+ String new_password = HttpPasswordLabeledEdit->Text;
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ config.HttpServerInterfaceAddress=AnsiString(new_address).c_str();
+ config.HttpServerInterfacePort=new_port;
+ config.HttpServerLogin = AnsiString(new_login).c_str();
+ config.HttpServerPassword = AnsiString(new_password).c_str();
+
+ RdkApplication.SetProjectConfig(config);
+
+ ///Это наверное будет работать так:
+ RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::HttpReturnButtonClick(TObject *Sender)
+{
+ this->UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::HttpStartButtonClick(TObject *Sender)
+{
+ //HttpAuthLogin=HttpLoginLabeledEdit->Text;
+ //HttpAuthPassword = HttpPasswordLabeledEdit->Text;
+ //HttpUrl = HttpAddressPortLabeledEdit->Text;
+
+ HttpServerRestartTimer->Enabled=true;
+ try
+ {
+  //UHttpServerFrame->ServerListenOn();
+  IdTCPServer->Active=true;
+ }
+ catch(EIdSocketError &ex)
+ {
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+ }
+ catch(EIdCouldNotBindSocket &ex2)
+ {
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
+ }
+ this->UpdateInterface();
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::HttpServerRestartTimerTimer(TObject *Sender)
+
+{
+ /*
+ if(IdTCPServer->Active)
+  return;
+
+ if(RdkApplication.GetServerControl()->GetAutoStartFlag())
+ {
+  ServerStartButtonClick(Sender);
+ }
+ */
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::TcpApplyButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
+ String new_address=BindingAddressLabeledEdit->Text;
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ config.ServerInterfaceAddress=AnsiString(new_address).c_str();
+ config.ServerInterfacePort=new_port;
+ RdkApplication.SetProjectConfig(config);
+
+ ///Это наверное будет работать так:
+ RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
+}
+//---------------------------------------------------------------------------
 
