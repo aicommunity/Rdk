@@ -40,67 +40,67 @@ const typename std::vector<V>::const_reference operator [] (size_t index) const
 
 bool empty(void) const
 {
- return v.empty();
+ return this->v.empty();
 }
 
 void resize(size_t size, const V &val)
 {
- v.resize(size,val);
+ this->v.resize(size,val);
 }
 
 void resize(size_t size)
 {
- v.resize(size);
+ this->v.resize(size);
 }
 
 void assign(size_t size, const V &val)
 {
- v.assign(size,val);
+ this->v.assign(size,val);
 }
 
 typename std::vector<V>::const_iterator begin(void) const
 {
- return v.begin();
+ return this->v.begin();
 }
 
 typename std::vector<V>::iterator begin(void)
 {
- return v.begin();
+ return this->v.begin();
 }
 
 typename std::vector<V>::const_iterator end(void) const
 {
- return v.end();
+ return this->v.end();
 }
 
 typename std::vector<V>::iterator end(void)
 {
- return v.end();
+ return this->v.end();
 }
 
 V& back(void)
 {
- return v.back();
+ return this->v.back();
 }
 
 V& front(void)
 {
- return v.front();
+ return this->v.front();
 }
 
 const V& back(void) const
 {
- return v.back();
+ return this->v.back();
 }
 
 const V& front(void) const
 {
- return v.front();
+ return this->v.front();
 }
 
 size_t size(void) const
 {
- return v.size();
+ return this->v.size();
 }
 
 ULProperty<std::vector<V>,OwnerT,type>& operator = (const std::vector<V> &value)
@@ -111,7 +111,7 @@ ULProperty<std::vector<V>,OwnerT,type>& operator = (const std::vector<V> &value)
 
 ULProperty<std::vector<V>,OwnerT, type>& operator = (const ULProperty<std::vector<V>,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -159,57 +159,57 @@ const typename std::list<V>::const_reference operator [] (size_t index) const
 
 bool empty(void) const
 {
- return v.empty();
+ return this->v.empty();
 }
 
 typename std::list<V>::const_iterator begin(void) const
 {
- return v.begin();
+ return this->v.begin();
 }
 
 typename std::list<V>::iterator begin(void)
 {
- return v.begin();
+ return this->v.begin();
 }
 
 typename std::list<V>::const_iterator end(void) const
 {
- return v.end();
+ return this->v.end();
 }
 
 typename std::list<V>::iterator end(void)
 {
- return v.end();
+ return this->v.end();
 }
 
 V& back(void)
 {
- return v.back();
+ return this->v.back();
 }
 
 V& front(void)
 {
- return v.front();
+ return this->v.front();
 }
 
 const V& back(void) const
 {
- return v.back();
+ return this->v.back();
 }
 
 const V& front(void) const
 {
- return v.front();
+ return this->v.front();
 }
 
 void push_back(const V &value)
 {
- v.push_back(value);
+ this->v.push_back(value);
 }
 
 size_t size(void) const
 {
- return v.size();
+ return this->v.size();
 }
 
 /// Оператор присваивания
@@ -221,7 +221,7 @@ ULProperty<std::list<V>,OwnerT,type>& operator = (const std::list<V> &value)
 
 ULProperty<std::list<V>,OwnerT, type>& operator = (const ULProperty<std::list<V>,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -269,57 +269,57 @@ const typename std::map<T,V>::const_reference operator [] (T index) const
 
 bool empty(void) const
 {
- return v.empty();
+ return this->v.empty();
 }
 
 typename std::map<T,V>::const_iterator begin(void) const
 {
- return v.begin();
+ return this->v.begin();
 }
 
 typename std::map<T,V>::iterator begin(void)
 {
- return v.begin();
+ return this->v.begin();
 }
 
 typename std::map<T,V>::const_iterator end(void) const
 {
- return v.end();
+ return this->v.end();
 }
 
 typename std::map<T,V>::iterator end(void)
 {
- return v.end();
+ return this->v.end();
 }
 
 V& back(void)
 {
- return v.back();
+ return this->v.back();
 }
 
 V& front(void)
 {
- return v.front();
+ return this->v.front();
 }
 
 const V& back(void) const
 {
- return v.back();
+ return this->v.back();
 }
 
 const V& front(void) const
 {
- return v.front();
+ return this->v.front();
 }
 
 void push_back(const V &value)
 {
- v.push_back(value);
+ this->v.push_back(value);
 }
 
 size_t size(void) const
 {
- return v.size();
+ return this->v.size();
 }
 
 /// Оператор присваивания
@@ -331,7 +331,7 @@ ULProperty<std::map<T,V>,OwnerT,type>& operator = (const std::map<T,V> &value)
 
 ULProperty<std::map<T,V>,OwnerT, type>& operator = (const ULProperty<std::map<T,V>,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -369,78 +369,78 @@ public:
 /// Оператор доступа по индексу
 V& operator [] (size_t index)
 {
- return v[index];
+ return this->v[index];
 }
 
 const V& operator [] (size_t index) const
 {
- return v[index];
+ return this->v[index];
 }
 
 V& operator () (int row, int col)
 {
- return v(row,col);
+ return this->v(row,col);
 }
 
 const V& operator () (int row, int col) const
 {
- return v(row,col);
+ return this->v(row,col);
 }
 
 /// Возвращает число элементов по всем размерностям
 MMatrixSize GetMatrixSize(void) const
 {
- return v.GetMatrixSize();
+ return this->v.GetMatrixSize();
 }
 
 void Resize(int rows, int cols)
 {
- v.Resize(rows,cols);
+ this->v.Resize(rows,cols);
 }
 
 void Resize(const MMatrixSize &size)
 {
- v.Resize(size);
+ this->v.Resize(size);
 }
 
 void Assign(int rows, int cols, const V &val)
 {
- v.Assign(rows,cols,val);
+ this->v.Assign(rows,cols,val);
 }
 
 void Assign(int rows, int cols, const V *val)
 {
- v.Assign(rows,cols,val);
+ this->v.Assign(rows,cols,val);
 }
 
 bool Assign(const MMatrixSize &size, const V *data)
 {
- return v.Assign(size,data);
+ return this->v.Assign(size,data);
 }
 
 bool Assign(const MMatrixSize &size, V value)
 {
- return v.Assign(size,value);
+ return this->v.Assign(size,value);
 }
 
 bool Assign(const MMatrixSize &size, const void *data)
 {
- return v.Assign(size,data);
+ return this->v.Assign(size,data);
 }
 
 int GetRows(void) const
 {
- return v.GetRows();
+ return this->v.GetRows();
 }
 
 int GetCols(void) const
 {
- return v.GetCols();
+ return this->v.GetCols();
 }
 
 void ToZero(void) const
 {
- v.ToZero();
+ this->v.ToZero();
 }
 
 /// Оператор присваивания
@@ -452,7 +452,7 @@ ULProperty<MDMatrix<V>,OwnerT,type>& operator = (const MDMatrix<V> &value)
 
 ULProperty<MDMatrix<V>,OwnerT, type>& operator = (const ULProperty<MDMatrix<V>,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -544,88 +544,88 @@ public:
 /// Оператор доступа по индексу
 V& operator [] (size_t index)
 {
- return v[index];
+ return this->v[index];
 }
 
 const V& operator [] (size_t index) const
 {
- return v[index];
+ return this->v[index];
 }
 
 V& operator () (int index)
 {
- return v(index);
+ return this->v(index);
 }
 
 const V& operator () (int index) const
 {
- return v(index);
+ return this->v(index);
 }
 
 /// Возвращает число элементов по всем размерностям
 MMatrixSize GetMatrixSize(void) const
 {
- return v.GetMatrixSize();
+ return this->v.GetMatrixSize();
 }
 
 void Resize(int size)
 {
- v.Resize(size);
+ this->v.Resize(size);
 }
 
 void Resize(const MMatrixSize &size)
 {
- v.Resize(size);
+ this->v.Resize(size);
 }
 
 void Resize(int size, V def_value)
 {
- v.Resize(size,def_value);
+ this->v.Resize(size,def_value);
 }
 
 void Assign(int size, V data)
 {
- v.Assign(size, data);
+ this->v.Assign(size, data);
 }
 
 void Assign(int size, const void *data)
 {
- v.Assign(size, data);
+ this->v.Assign(size, data);
 }
 
 void Assign(int size, const V &val)
 {
- v.Assign(size,val);
+ this->v.Assign(size,val);
 }
 
 void Assign(int size, const V *val)
 {
- v.Assign(size,val);
+ this->v.Assign(size,val);
 }
 
 bool Assign(const MMatrixSize &size, const V *data)
 {
- return v.Assign(size,data);
+ return this->v.Assign(size,data);
 }
 
 bool Assign(const MMatrixSize &size, V value)
 {
- return v.Assign(size,value);
+ return this->v.Assign(size,value);
 }
 
 bool Assign(const MMatrixSize &size, const void *data)
 {
- return v.Assign(size,data);
+ return this->v.Assign(size,data);
 }
 
 int GetSize(void) const
 {
- return v.GetSize();
+ return this->v.GetSize();
 }
 
 void ToZero(void) const
 {
- v.ToZero();
+ this->v.ToZero();
 }
 
 /// Оператор присваивания
@@ -637,7 +637,7 @@ ULProperty<MDVector<V>,OwnerT,type>& operator = (const MDVector<V> &value)
 
 ULProperty<MDVector<V>,OwnerT, type>& operator = (const ULProperty<MDVector<V>,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -722,7 +722,7 @@ ULProperty<double,OwnerT, type>& operator = (const double &value)
 
 ULProperty<double,OwnerT, type>& operator = (const ULProperty<double,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -759,43 +759,43 @@ ULProperty(const ULProperty<int,OwnerT,type> &v) {}
 public:
 
 operator int (void) const
-{ return v; }
+{ return this->v; }
 
 int operator ++ (void)
 {
- if(SetterR)
-  SetData(v+1);
+ if(this->SetterR)
+  SetData(this->v+1);
  else
-  ++v;
- return v;
+  ++this->v;
+ return this->v;
 }
 
 int operator ++ (int)
 {
- int temp=v;
- if(SetterR)
-  SetData(v+1);
+ int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v+1);
  else
-  v++;
+  this->v++;
  return temp;
 }
 
 int operator -- (void)
 {
- if(SetterR)
-  SetData(v-1);
+ if(this->SetterR)
+  SetData(this->v-1);
  else
-  ++v;
- return v;
+  ++this->v;
+ return this->v;
 }
 
 int operator -- (int)
 {
- int temp=v;
- if(SetterR)
-  SetData(v-1);
+ int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v-1);
  else
-  v--;
+  this->v--;
  return temp;
 }
 
@@ -807,7 +807,7 @@ ULProperty<int,OwnerT,type>& operator = (const int &value)
 
 ULProperty<int,OwnerT, type>& operator = (const ULProperty<int,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -837,44 +837,44 @@ ULProperty(const ULProperty<unsigned int,OwnerT,type> &v) {}
 public:
 
 operator unsigned int (void) const
-{ return v; }
+{ return this->v; }
 
 
 unsigned int operator ++ (void)
 {
- if(SetterR)
-  SetData(v+1);
+ if(this->SetterR)
+  SetData(this->v+1);
  else
-  ++v;
- return v;
+  ++this->v;
+ return this->v;
 }
 
 unsigned int operator ++ (int)
 {
- int temp=v;
- if(SetterR)
-  SetData(v+1);
+ int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v+1);
  else
-  v++;
+  this->v++;
  return temp;
 }
 
 unsigned int operator -- (void)
 {
- if(SetterR)
-  SetData(v-1);
+ if(this->SetterR)
+  SetData(this->v-1);
  else
-  ++v;
- return v;
+  ++this->v;
+ return this->v;
 }
 
 unsigned int operator -- (int)
 {
- unsigned int temp=v;
- if(SetterR)
-  SetData(v-1);
+ unsigned int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v-1);
  else
-  v--;
+  this->v--;
  return temp;
 }
 
@@ -886,7 +886,7 @@ ULProperty<unsigned int,OwnerT,type>& operator = (const unsigned int &value)
 
 ULProperty<unsigned int,OwnerT, type>& operator = (const ULProperty<unsigned int,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -896,7 +896,7 @@ const unsigned int& operator () (void) const
 }
 
 };
-
+/*
 /// Специализация: свойства - bool
 template<typename OwnerT, unsigned int type>
 class ULProperty<bool,OwnerT,type>: public UProperty<bool,OwnerT>
@@ -917,7 +917,7 @@ public:
 
 
 operator bool (void) const
-{ return v; }
+{ return this->v; }
 
 ULProperty<bool,OwnerT,type>& operator = (const bool &value)
 {
@@ -927,7 +927,7 @@ ULProperty<bool,OwnerT,type>& operator = (const bool &value)
 
 ULProperty<bool,OwnerT, type>& operator = (const ULProperty<bool,OwnerT, type> &v)
 {
- this->SetData(v.GetData());
+ this->SetData(this->v.GetData());
  return *this;
 }
 
@@ -936,7 +936,7 @@ const bool& operator () (void) const
  return this->GetData();
 }
 
-};
+};*/
                       /*
 // Класс - свойство-контейнер со значением внутри
 template<typename V, typename OwnerT, unsigned int type>
@@ -1008,7 +1008,7 @@ UPropertyRange<V,std::list<V>, OwnerT,type>& operator = (const std::list<V> &val
 
 UPropertyRange<V,std::list<V>, OwnerT,type>& operator = (const UPropertyRange<V,std::list<V>, OwnerT,type> &v)
 {
- static_cast<UPropertyRangeLocal<V,std::list<V>, OwnerT,type>& >(*this)=v.Value;
+ static_cast<UPropertyRangeLocal<V,std::list<V>, OwnerT,type>& >(*this)=this->v.Value;
  return *this;
 };
 // -----------------------------
@@ -1099,7 +1099,7 @@ UPropertyRange<V,std::vector<V>, OwnerT,type>& operator = (const std::vector<V> 
 
 UPropertyRange<V,std::vector<V>, OwnerT,type>& operator = (const UPropertyRange<V,std::vector<V>, OwnerT,type> &v)
 {
- static_cast<UPropertyRangeLocal<V,std::vector<V>, OwnerT,type>& >(*this)=v.Value;
+ static_cast<UPropertyRangeLocal<V,std::vector<V>, OwnerT,type>& >(*this)=this->v.Value;
  return *this;
 };
 // -----------------------------
