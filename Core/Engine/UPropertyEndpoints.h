@@ -100,7 +100,7 @@ const V& front(void) const
 
 size_t size(void) const
 {
- return Value.size();
+ return v.size();
 }
 
 ULProperty<std::vector<V>,OwnerT,type>& operator = (const std::vector<V> &value)
@@ -468,6 +468,61 @@ const MDMatrix<V>& operator () (void) const
 
 };
 
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator - (const ULProperty<MDMatrix<V>,OwnerT, type> &v1,const ULProperty<MDMatrix<V>,OwnerT, type> &v2)
+{
+ return v1.v-v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator - (const MDMatrix<V> &v1,const ULProperty<MDMatrix<V>,OwnerT, type> &v2)
+{
+ return v1-v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator - (const ULProperty<MDMatrix<V>,OwnerT, type> &v1,const MDMatrix<V> &v2)
+{
+ return v1.v-v2;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator + (const ULProperty<MDMatrix<V>,OwnerT, type> &v1,const ULProperty<MDMatrix<V>,OwnerT, type> &v2)
+{
+ return v1.v+v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator + (const MDMatrix<V> &v1,const ULProperty<MDMatrix<V>,OwnerT, type> &v2)
+{
+ return v1+v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator + (const ULProperty<MDMatrix<V>,OwnerT, type> &v1,const MDMatrix<V> &v2)
+{
+ return v1.v+v2;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator - (const ULProperty<MDMatrix<V>,OwnerT, type> &v1,const ULProperty<V,OwnerT, type> &v2)
+{
+ return v1.v-v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator - (const MDMatrix<V> &v1,const ULProperty<V,OwnerT, type> &v2)
+{
+ return v1-v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDMatrix<V> operator - (const ULProperty<MDMatrix<V>,OwnerT, type> &v1,const V &v2)
+{
+ return v1.v-v2;
+}
+
+
 /// Специализация: свойства - MDVector
 template<typename V, typename OwnerT, unsigned int type>
 class ULProperty<MDVector<V>,OwnerT,type>: public UProperty<MDVector<V>,OwnerT>
@@ -521,6 +576,21 @@ void Resize(int size)
 void Resize(const MMatrixSize &size)
 {
  v.Resize(size);
+}
+
+void Resize(int size, V def_value)
+{
+ v.Resize(size,def_value);
+}
+
+void Assign(int size, V data)
+{
+ v.Assign(size, data);
+}
+
+void Assign(int size, const void *data)
+{
+ v.Assign(size, data);
 }
 
 void Assign(int size, const V &val)
@@ -582,6 +652,44 @@ const MDVector<V>& operator () (void) const
 }
 
 };
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDVector<V> operator - (const ULProperty<MDVector<V>,OwnerT, type> &v1,const ULProperty<MDVector<V>,OwnerT, type> &v2)
+{
+ return v1.v-v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDVector<V> operator - (const MDVector<V> &v1,const ULProperty<MDVector<V>,OwnerT, type> &v2)
+{
+ return v1-v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDVector<V> operator - (const ULProperty<MDVector<V>,OwnerT, type> &v1,const MDVector<V> &v2)
+{
+ return v1.v-v2;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDVector<V> operator + (const ULProperty<MDVector<V>,OwnerT, type> &v1,const ULProperty<MDVector<V>,OwnerT, type> &v2)
+{
+ return v1.v+v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDVector<V> operator + (const MDVector<V> &v1,const ULProperty<MDVector<V>,OwnerT, type> &v2)
+{
+ return v1+v2.v;
+}
+
+template<typename V, typename OwnerT, unsigned int type>
+const MDVector<V> operator + (const ULProperty<MDVector<V>,OwnerT, type> &v1,const MDVector<V> &v2)
+{
+ return v1.v+v2;
+}
+
+
 
 /// Специализация: свойства - double
 template<typename OwnerT, unsigned int type>
@@ -658,7 +766,7 @@ int operator ++ (void)
  if(SetterR)
   SetData(v+1);
  else
-  ++Value;
+  ++v;
  return v;
 }
 
@@ -677,8 +785,8 @@ int operator -- (void)
  if(SetterR)
   SetData(v-1);
  else
-  ++Value;
- return Value;
+  ++v;
+ return v;
 }
 
 int operator -- (int)
