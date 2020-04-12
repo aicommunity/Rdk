@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import os.path
 import os
 import shutil
+import argparse
 
 def createMapFile(old_data, new_data, file_name, map_file):
     with open(file_name) as file:
@@ -18,6 +19,17 @@ def createMapFile(old_data, new_data, file_name, map_file):
             text = text.replace(replaced_data, new_data[index])
         with open(map_file, 'w') as file:
             file.write(text)
+            
+def parseCommandLine():
+    parser = argparse.ArgumentParser(description='Create new component')
+    parser.add_argument('--lib', help='Library name (for example Rdk-BasicLib)')
+    parser.add_argument('--namespace', help='Namespace name for component (for example RDK)')
+    parser.add_argument('--component', help='New component class name (Recommend use CamelCase convension and prefix "U" or "T")')
+    parser.add_argument('--parent', nargs='?', help='[Optional] Parent component class name (used RDK::UNet by default)')
+    parser.add_argument('--lib_file', nargs='?', help='[Optional] Library main file (used Lib.h/cpp by default)')
+
+    args = parser.parse_args()
+    return args;
 
 tree = ET.parse('CodeGeneratorIni.xml')
 root = tree.getroot()
@@ -25,23 +37,33 @@ libs=root.find('Libraries')
 lib_path=libs.find('Path')
 print ('Library path: '+lib_path.text)
 
-num_args=len(sys.argv)
+
+args=parseCommandLine()
+
+if not args.lib:
+    print("error: the following arguments are required: lib")
+    exit(1)
+
+if not args.namespace:
+    print("error: the following arguments are required: namespace")
+    exit(1)
+
+if not args.component:
+    print("error: the following arguments are required: component")
+    exit(1)
 
 print('Component creting script started')
 
-if num_args <3:
-    exit(1)
+lib_name=args.lib
 
-lib_name=sys.argv[1]
+namespace_name=args.namespace
 
-namespace_name=sys.argv[2]
-
-component_name=sys.argv[3]
+component_name=args.component
 
 include_file_name='../../../Rdk/Deploy/Include/rdk.h'
 
-if num_args == 5:
-   inheritance_name=sys.argv[4]
+if args.parent and len(args.parent)>0:
+   inheritance_name=args.parent
 else:
    inheritance_name='RDK::UNet'
 
@@ -228,8 +250,8 @@ lookup ='<Add option="-Wall" />'
 with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp') as file:
     data = file.readlines()
 
-text1 = '\n#<Unit filename="../../Core/' + component_name+'.h" />'+'   \n'
-text2 = '#<Unit filename="../../Core/' + component_name+'.cpp" />'+'   \n'
+text1 = '\n<Unit filename="../../Core/' + component_name+'.h" />'+'   \n'
+text2 = '<Unit filename="../../Core/' + component_name+'.cpp" />'+'   \n'
 with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp') as file:
     for num, line in enumerate(file, 1):
         if lookup in line:
@@ -239,4 +261,19 @@ with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp') as file:
 
 with open(lib_path.text+lib_name+'/Build/CodeBlocks/'+lib_name+'.cbp', 'w') as file:
     file.writelines(data)
+
+#обновление заготовок под компилятор C++ Builder
+lookup ='<ItemGroup>'
+with open(lib_path.text+lib_name+'/Build/Bcb/'+lib_name+'.cbproj') as file:
+    data = file.readlines()
+
+text1 = '\n<CppCompile Include="../../Core/' + component_name+'.cpp" >'+'   \n </CppCompile> \n'
+with open(lib_path.text+lib_name+'/Build/Bcb/'+lib_name+'.cbproj') as file:
+    for num, line in enumerate(file, 1):
+        if lookup in line:
+            writeHere = num
+            data[writeHere+1] = text1
+            break
+
+with open(lib_path.text+lib_name+'/Build/Bcb/'+lib_name+'.cbproj', 'w') as file:
     file.writelines(data)

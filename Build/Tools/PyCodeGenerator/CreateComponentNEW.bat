@@ -1,0 +1,1 @@
+python CreateComponentNEW.py --lib %1 --namespace %2 --component %3 --parent %4 --lib_file %5
