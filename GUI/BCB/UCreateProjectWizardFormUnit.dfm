@@ -608,7 +608,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         end
                       end
                       inherited LibsTabSheet: TTabSheet
-                        ExplicitLeft = 4
                         ExplicitTop = 25
                         ExplicitWidth = 526
                         ExplicitHeight = 307
@@ -622,6 +621,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                       end
                       inherited LibsControlTabSheet: TTabSheet
                         TabVisible = False
+                        ExplicitLeft = 4
+                        ExplicitTop = 24
+                        ExplicitWidth = 499
+                        ExplicitHeight = 515
                         inherited Splitter1: TSplitter
                           Top = 291
                           ExplicitTop = 188
@@ -711,5 +714,12 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Title = 'Select model file name'
     Left = 448
     Top = 32
+  end
+  object FileOpenDialog: TFileOpenDialog
+    FavoriteLinks = <>
+    FileTypes = <>
+    Options = [fdoPickFolders, fdoForceFileSystem, fdoPathMustExist]
+    Left = 332
+    Top = 36
   end
 end

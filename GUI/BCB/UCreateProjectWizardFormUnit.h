@@ -75,6 +75,7 @@ __published:	// IDE-managed Components
 	TRichEdit *RichEdit1;
 	TRichEdit *ModelInfoRichEdit;
 	TCheckBox *DisableStopVideoSourcesCheckBox;
+	TFileOpenDialog *FileOpenDialog;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);

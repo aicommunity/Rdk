@@ -299,8 +299,26 @@ void __fastcall TUCreateProjectWizardForm::FinishButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::Button1Click(TObject *Sender)
 {
- String chosenDir=ExtractFilePath(Application->ExeName);
+ String appPath=ExtractFilePath(Application->ExeName);
+ String chosenDir;
+ chosenDir=appPath+"..\\..\\Config";
+ if(!DirectoryExists(chosenDir))
+ {
+  chosenDir=appPath+"..\\..\\..\\Config";
+  if(!DirectoryExists(chosenDir))
+   chosenDir=appPath;
+ }
 
+ if(Win32MajorVersion >= 6)
+ {
+ // FileOpenDialog->FileName=chosenDir;
+ // FileOpenDialog->DefaultFolder=chosenDir;
+  if(FileOpenDialog->Execute())
+  {
+   ProjectDirectoryLabeledEdit->Text=FileOpenDialog->FileName;
+  }
+ }
+ else
  if(SelectDirectory("Select project directory", "", chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI << sdShowEdit << sdValidateDir, this))
  {
   ProjectDirectoryLabeledEdit->Text=chosenDir;
