@@ -238,7 +238,7 @@ int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
  if(int(buffer.size())-start_index<int(sizeof(UPacketPrefix)))
   return -1;
 
- for(int i=start_index;i<int(buffer.size())-sizeof(UPacketPrefix);i++)
+ for(int i=start_index;i<int(buffer.size())-int(sizeof(UPacketPrefix));i++)
   if(!memcmp(UPacketPrefix,&buffer[i],sizeof(UPacketPrefix)))
    return i;
 
