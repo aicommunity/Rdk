@@ -48,7 +48,7 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslis
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
-virtual UNet* New(void);
+virtual UContainer* New(void);
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров

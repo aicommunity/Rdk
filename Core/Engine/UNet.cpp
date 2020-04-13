@@ -77,7 +77,7 @@ bool UNet::ADelComponent(UEPtr<UContainer> comp)
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
-UNet* UNet::New(void)
+UContainer* UNet::New(void)
 {
  return new UNet;
 }

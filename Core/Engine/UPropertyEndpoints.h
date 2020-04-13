@@ -108,12 +108,12 @@ ULProperty<std::vector<V>,OwnerT,type>& operator = (const std::vector<V> &value)
  this->SetData(value);
  return *this;
 };
-
+	/*
 ULProperty<std::vector<V>,OwnerT, type>& operator = (const ULProperty<std::vector<V>,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}          */
 
 operator std::vector<V> (void) const
 {
@@ -218,12 +218,12 @@ ULProperty<std::list<V>,OwnerT,type>& operator = (const std::list<V> &value)
  this->SetData(value);
  return *this;
 };
-
+  /*
 ULProperty<std::list<V>,OwnerT, type>& operator = (const ULProperty<std::list<V>,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}      */
 
 operator std::list<V> (void) const
 {
@@ -328,12 +328,12 @@ ULProperty<std::map<T,V>,OwnerT,type>& operator = (const std::map<T,V> &value)
  this->SetData(value);
  return *this;
 };
-
+  /*
 ULProperty<std::map<T,V>,OwnerT, type>& operator = (const ULProperty<std::map<T,V>,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}        */
 
 operator std::map<T,V> (void) const
 {
@@ -449,12 +449,12 @@ ULProperty<MDMatrix<V>,OwnerT,type>& operator = (const MDMatrix<V> &value)
  this->SetData(value);
  return *this;
 };
-
+/*
 ULProperty<MDMatrix<V>,OwnerT, type>& operator = (const ULProperty<MDMatrix<V>,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}*/
 
 operator MDMatrix<V> (void) const
 {
@@ -634,12 +634,12 @@ ULProperty<MDVector<V>,OwnerT,type>& operator = (const MDVector<V> &value)
  this->SetData(value);
  return *this;
 };
-
+	  /*
 ULProperty<MDVector<V>,OwnerT, type>& operator = (const ULProperty<MDVector<V>,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}       */
 
 operator MDVector<V> (void) const
 {
@@ -719,12 +719,12 @@ ULProperty<double,OwnerT, type>& operator = (const double &value)
  this->SetData(value);
  return *this;
 }
-
+			 /*
 ULProperty<double,OwnerT, type>& operator = (const ULProperty<double,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}              */
 
 operator double (void) const
 {
@@ -761,7 +761,7 @@ public:
 operator int (void) const
 { return this->v; }
 
-int operator ++ (void)
+int& operator ++ (void)
 {
  if(this->SetterR)
   SetData(this->v+1);
@@ -770,7 +770,7 @@ int operator ++ (void)
  return this->v;
 }
 
-int operator ++ (int)
+int& operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -780,7 +780,7 @@ int operator ++ (int)
  return temp;
 }
 
-int operator -- (void)
+int& operator -- (void)
 {
  if(this->SetterR)
   SetData(this->v-1);
@@ -789,7 +789,7 @@ int operator -- (void)
  return this->v;
 }
 
-int operator -- (int)
+int& operator -- (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -804,12 +804,12 @@ ULProperty<int,OwnerT,type>& operator = (const int &value)
  this->SetData(value);
  return *this;
 };
-
+/*
 ULProperty<int,OwnerT, type>& operator = (const ULProperty<int,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}*/
 
 const int& operator () (void) const
 {
@@ -818,7 +818,7 @@ const int& operator () (void) const
 
 };
 
-/// Специализация: свойства - int
+/// Специализация: свойства - unsigned int
 template<typename OwnerT, unsigned int type>
 class ULProperty<unsigned int,OwnerT,type>: public UProperty<unsigned int,OwnerT>
 {
@@ -840,7 +840,7 @@ operator unsigned int (void) const
 { return this->v; }
 
 
-unsigned int operator ++ (void)
+unsigned int& operator ++ (void)
 {
  if(this->SetterR)
   SetData(this->v+1);
@@ -849,7 +849,7 @@ unsigned int operator ++ (void)
  return this->v;
 }
 
-unsigned int operator ++ (int)
+unsigned int& operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -859,7 +859,7 @@ unsigned int operator ++ (int)
  return temp;
 }
 
-unsigned int operator -- (void)
+unsigned int& operator -- (void)
 {
  if(this->SetterR)
   SetData(this->v-1);
@@ -868,7 +868,7 @@ unsigned int operator -- (void)
  return this->v;
 }
 
-unsigned int operator -- (int)
+unsigned int& operator -- (int)
 {
  unsigned int temp=this->v;
  if(this->SetterR)
@@ -883,14 +883,93 @@ ULProperty<unsigned int,OwnerT,type>& operator = (const unsigned int &value)
  this->SetData(value);
  return *this;
 };
-
+/*
 ULProperty<unsigned int,OwnerT, type>& operator = (const ULProperty<unsigned int,OwnerT, type> &v)
 {
  this->SetData(this->v.GetData());
  return *this;
-}
+}*/
 
 const unsigned int& operator () (void) const
+{
+ return this->GetData();
+}
+
+};
+
+/// Специализация: свойства - unsigned long long
+template<typename OwnerT, unsigned int type>
+class ULProperty<unsigned long long,OwnerT,type>: public UProperty<unsigned long long,OwnerT>
+{
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+ULProperty(const string &name, OwnerT * const owner, typename UVProperty<unsigned long long,OwnerT>::SetterRT setmethod=0)
+ : UProperty<unsigned long long,OwnerT>(owner, setmethod)
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+
+protected:
+ULProperty(const ULProperty<unsigned long long,OwnerT,type> &v) {}
+
+public:
+
+operator unsigned long long (void) const
+{ return this->v; }
+
+
+unsigned long long& operator ++ (void)
+{
+ if(this->SetterR)
+  SetData(this->v+1);
+ else
+  ++this->v;
+ return this->v;
+}
+
+unsigned long long& operator ++ (int)
+{
+ int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v+1);
+ else
+  this->v++;
+ return temp;
+}
+
+unsigned long long& operator -- (void)
+{
+ if(this->SetterR)
+  SetData(this->v-1);
+ else
+  ++this->v;
+ return this->v;
+}
+
+unsigned long long& operator -- (int)
+{
+ unsigned int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v-1);
+ else
+  this->v--;
+ return temp;
+}
+
+ULProperty<unsigned long long,OwnerT,type>& operator = (const unsigned long long &value)
+{
+ this->SetData(value);
+ return *this;
+};
+/*
+ULProperty<unsigned int,OwnerT, type>& operator = (const ULProperty<unsigned int,OwnerT, type> &v)
+{
+ this->SetData(this->v.GetData());
+ return *this;
+}*/
+
+const unsigned long long& operator () (void) const
 {
  return this->GetData();
 }
