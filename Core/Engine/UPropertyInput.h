@@ -693,25 +693,28 @@ virtual std::string GetItemFullName(int index) const
 
 protected:
 /// Возвращает имя подключенного компонента
-virtual UItem* GetItem(void);
+virtual UItem* GetItem(void)
+{
+ return 0;
+}
 
 /// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const;
-/*{
+virtual std::string GetItemName(void) const
+{
  return UIPropertyInput::GetItemName();
-} */
+}
 
 /// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const;
-/*{
+virtual std::string GetItemFullName(void) const
+{
  return UIPropertyInput::GetItemFullName();
-}               */
+}
 
 /// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const;
-/*{
+virtual std::string GetItemOutputName(void) const
+{
  return UIPropertyInput::GetItemOutputName();
-} */
+}
 // --------------------------
 
 };
