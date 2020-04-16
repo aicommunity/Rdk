@@ -3,8 +3,8 @@
 namespace RDK
 {
 
-
  UVirtualMethodFactory::UVirtualMethodFactory(UEPtr<UComponent> comp)
+  : UComponentAbstractFactory(comp->GetStorage())
  {
   Component = dynamic_pointer_cast<UContainer>(comp);
   if(Component)
@@ -26,19 +26,21 @@ namespace RDK
    return 0;
 
   UEPtr<UContainer> obj = Component->New();
+  obj->SetStorage(Component->GetStorage());
   obj->Default();
   Component->Copy(obj, Component->GetStorage());
   return static_pointer_cast<UComponent>(obj);
  }
 
- UEPtr<UComponent> UVirtualMethodFactory::Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage)
+ UEPtr<UComponent> UVirtualMethodFactory::Prototype(UEPtr<UComponent> prototype)
  {
   if(!Component)
    return 0;
 
   UEPtr<UContainer> obj = Component->New();
+  obj->SetStorage(Storage);
   obj->Default();
-  dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, storage);
+  dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
  }
 
@@ -59,7 +61,8 @@ void UVirtualMethodFactory::FreeComponent()
 }
 
 
- UComponentFactoryMethod::UComponentFactoryMethod(UComponent* (*funcPointer)(), const std::string &default_component_name)
+ UComponentFactoryMethod::UComponentFactoryMethod(const UEPtr<UStorage> &storage, UComponent* (*funcPointer)(), const std::string &default_component_name)
+  : UComponentAbstractFactory(storage)
  {
   Method = funcPointer;
   DefaultComponentName=default_component_name;
@@ -74,18 +77,18 @@ void UVirtualMethodFactory::FreeComponent()
  {
   UEPtr<UComponent> obj = Method();
   dynamic_pointer_cast<UContainer>(obj)->SetName(DefaultComponentName);
+  obj->SetStorage(Storage);
   obj->Default();
-  obj->Build();
-
   return obj;
  }
 
- UEPtr<UComponent> UComponentFactoryMethod::Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage)
+ UEPtr<UComponent> UComponentFactoryMethod::Prototype(UEPtr<UComponent> prototype)
  {
   UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
+  obj->SetStorage(Storage);
   obj->Default();
   obj->SetName(DefaultComponentName);
-  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, storage);
+  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
  }
 
@@ -121,11 +124,11 @@ void UVirtualMethodFactory::FreeComponent()
 
  }*/
 
- UComponentAbstractFactory::UComponentAbstractFactory()
-  : ClassId(ForbiddenId)
- {
 
- }
+UComponentAbstractFactory::UComponentAbstractFactory(const UEPtr<UStorage> &storage)
+: Storage(storage), ClassId(ForbiddenId)
+{
+}
 
  UComponentAbstractFactory::~UComponentAbstractFactory()
  {

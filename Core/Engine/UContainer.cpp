@@ -92,7 +92,7 @@ UContainer::~UContainer(void)
 
  BreakOwner();
 
- if(Storage)
+ if(Storage && !GetStaticFlag())
   Storage->PopObject(UEPtr<UContainer>(this));
 }
 // --------------------------
@@ -2016,6 +2016,9 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
 bool UContainer::Build(void)
 {
  if(Ready)
+  return true;
+
+ if(!Storage) // TODO: отказ в сборке если хранилище не готово.
   return true;
 
  RDK_SYS_TRY
