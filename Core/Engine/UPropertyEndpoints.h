@@ -785,7 +785,7 @@ int& operator -- (void)
  if(this->SetterR)
   SetData(this->v-1);
  else
-  ++this->v;
+  --this->v;
  return this->v;
 }
 
@@ -864,7 +864,7 @@ unsigned int& operator -- (void)
  if(this->SetterR)
   SetData(this->v-1);
  else
-  ++this->v;
+  --this->v;
  return this->v;
 }
 
@@ -943,7 +943,7 @@ unsigned long long& operator -- (void)
  if(this->SetterR)
   SetData(this->v-1);
  else
-  ++this->v;
+  --this->v;
  return this->v;
 }
 

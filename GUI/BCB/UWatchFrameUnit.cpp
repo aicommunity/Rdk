@@ -935,10 +935,18 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    else
    if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
    {
-	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
+	 const RDK::MDMatrix<double>* mm=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->XDataSourceName.c_str(), wd->XOutputIndex.c_str()));
+	 if(!mm)
+      continue;
+
+	 RDK::MDMatrix<double> m=*mm;
+	 if(m.GetRows()<=0)
+      continue;
+     int xdata_size=m.GetCols();//Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
 	 vxdata.assign(xdata_size*3+2,0);
 	 vydata.assign(xdata_size*3+2,0);
-	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
+	 double* xx=m.Data;//(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
+
 
 	 if(!xx || !xdata_size)
 	 {
@@ -1577,18 +1585,24 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 
  std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- std::string::size_type i=comp_output.find("DataOutput");
- if(i == std::string::npos)
+// std::string::size_type i=comp_output.find("DataOutput");
+/* if(i == std::string::npos)
  {
   return;
  }
  comp_output=comp_output.substr(10);
-
-
+   */
+ //comp_output="0";
  int num_watches=GetNumWatches();
  int yshift=num_watches+1;
 
- Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0,yshift);
+ //Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0,yshift);
+ Add(0x100, comp_name, "", comp_output, 0, "", 0, 0, 0, yshift,psSolid, TColor(0));
+ //Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+
+//   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+//  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+// Add(0x100, "",componentName,"",0,componentOutput,0,0,0);
 }
 //---------------------------------------------------------------------------
 
