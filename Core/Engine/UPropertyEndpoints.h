@@ -770,7 +770,7 @@ int& operator ++ (void)
  return this->v;
 }
 
-int& operator ++ (int)
+int operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -789,7 +789,7 @@ int& operator -- (void)
  return this->v;
 }
 
-int& operator -- (int)
+int operator -- (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -849,7 +849,7 @@ unsigned int& operator ++ (void)
  return this->v;
 }
 
-unsigned int& operator ++ (int)
+unsigned int operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -868,7 +868,7 @@ unsigned int& operator -- (void)
  return this->v;
 }
 
-unsigned int& operator -- (int)
+unsigned int operator -- (int)
 {
  unsigned int temp=this->v;
  if(this->SetterR)
@@ -928,7 +928,7 @@ unsigned long long& operator ++ (void)
  return this->v;
 }
 
-unsigned long long& operator ++ (int)
+unsigned long long operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
@@ -947,7 +947,7 @@ unsigned long long& operator -- (void)
  return this->v;
 }
 
-unsigned long long& operator -- (int)
+unsigned long long operator -- (int)
 {
  unsigned int temp=this->v;
  if(this->SetterR)

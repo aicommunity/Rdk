@@ -14,10 +14,10 @@ namespace RDK {
  protected:
   UId ClassId;
 
-  UEPtr<UStorage> Storage;
+  UStorage* Storage;
 
  public:
-  UComponentAbstractFactory(const UEPtr<UStorage> &storage);
+  UComponentAbstractFactory(UStorage* storage);
   virtual ~UComponentAbstractFactory();
 
   /// Создание компонента

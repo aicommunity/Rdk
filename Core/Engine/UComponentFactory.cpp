@@ -26,9 +26,9 @@ namespace RDK
    return 0;
 
   UEPtr<UContainer> obj = Component->New();
-  obj->SetStorage(Component->GetStorage());
+  obj->SetStorage(Storage);
   obj->Default();
-  Component->Copy(obj, Component->GetStorage());
+  Component->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
  }
 
@@ -125,8 +125,8 @@ void UVirtualMethodFactory::FreeComponent()
  }*/
 
 
-UComponentAbstractFactory::UComponentAbstractFactory(const UEPtr<UStorage> &storage)
-: Storage(storage), ClassId(ForbiddenId)
+UComponentAbstractFactory::UComponentAbstractFactory(UStorage* storage)
+: ClassId(ForbiddenId),Storage(storage)
 {
 }
 
