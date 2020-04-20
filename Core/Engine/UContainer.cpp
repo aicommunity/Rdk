@@ -839,6 +839,21 @@ bool UContainer::SetTimeStep(const UTime &timestep)
  return true;
 }
 
+/// Переключает режим использования индивидуального TimeStep для компонента и всех дочерних компонент
+/// Предназначено только для вызова из UEnvironment
+void UContainer::ChangeUseIndTimeStepMode(bool value)
+{
+ if(value)
+  ChangeLookupPropertyType("TimeStep",ptPubParameter | pgSystem);
+ else
+  ChangeLookupPropertyType("TimeStep",ptParameter | pgSystem);
+
+ // Обращение ко всем компонентам объекта
+ UEPtr<UContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++,comps++)
+  (*comps)->ChangeUseIndTimeStepMode(value);
+}
+
 // Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
 bool UContainer::SetGlobalTimeStep(UTime timestep)
 {
@@ -1254,6 +1269,13 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 
  comp->SetEnvironment(Environment);
 
+ const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
+ unsigned int time_step_prop_type=prop_ts->GetType();
+ if(time_step_prop_type & ptPubParameter == ptPubParameter)
+  comp->ChangeUseIndTimeStepMode(true);
+ else
+  comp->ChangeUseIndTimeStepMode(false);
+
  try{
   AAddComponent(comp,pointer);
   comp->SharesInit();
@@ -1323,6 +1345,13 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
  comp->SetStaticFlag(true);
  comp->SetName(name);
  StaticComponents[comp]=classname;
+
+ const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
+ unsigned int time_step_prop_type=prop_ts->GetType();
+ if(time_step_prop_type & ptPubParameter == ptPubParameter)
+  comp->ChangeUseIndTimeStepMode(true);
+ else
+  comp->ChangeUseIndTimeStepMode(false);
 }
 
 /// Удаляет компонент как статическую переменную

@@ -55,6 +55,8 @@ UEnvironment::UEnvironment(void)
  RTModelCalcTime=0.0;
  MaxCalcTime=0.0;
  CalcFinishedFlag=false;
+
+ UseIndTimeStepFlag=false;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -162,6 +164,23 @@ bool UEnvironment::SetMaxCalcTime(double value)
  MaxCalcTime=value;
  return true;
 }
+
+/// Флаг включения использования индидвидуальных параметров TimeStep для
+/// каждого компонента
+bool UEnvironment::GetUseIndTimeStepFlag(void) const
+{
+ return UseIndTimeStepFlag;
+}
+
+bool UEnvironment::SetUseIndTimeStepFlag(bool value)
+{
+ UseIndTimeStepFlag=value;
+ if(Model)
+  Model->ChangeUseIndTimeStepMode(value);
+ return true;
+}
+
+
 
 
 /*
