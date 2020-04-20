@@ -66,6 +66,10 @@ std::string ChannelName;
 /// Максмально допустимое время расчета модели
 double MaxCalculationModelTime;
 
+/// Флаг включения использования индидвидуальных параметров TimeStep для
+/// каждого компонента
+bool UseIndTimeStepFlag;
+
 TProjectChannelConfig(void);
 TProjectChannelConfig(const TProjectChannelConfig& copy);
 

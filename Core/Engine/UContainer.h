@@ -350,6 +350,10 @@ bool SetTimeStep(const UTime &timestep);
 // Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
 bool SetGlobalTimeStep(UTime timestep);
 
+/// Переключает режим использования индивидуального TimeStep для компонента и всех дочерних компонент
+/// Предназначено только для вызова из UEnvironment
+void ChangeUseIndTimeStepMode(bool value);
+
 // Устанавливает флаг активности объекта
 const bool& GetActivity(void) const;
 virtual bool SetActivity(const bool &activity);
