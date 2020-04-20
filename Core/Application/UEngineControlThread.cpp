@@ -212,11 +212,7 @@ void UEngineControlThread::AfterCalculate(void)
 {
  std::ofstream ofs2;
   std::string s;
- //s = std::string("D:/debug_alarms_")+RDK::sntoa(EngineIndex)+std::string(".txt");
- //ofs2.open(s.c_str(), std::ios_base::app);
- //ofs2<<"UEngineControlThread::AfterCalculate"<<std::endl;
- //ofs2.close();
- //Log_LogMessage(RDK_EX_DEBUG, "UEngineControlThread::AfterCalculate");
+
  GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
  AAfterCalculate();
  if(GetEnvironmentLock(EngineIndex)->IsCalcFinished())

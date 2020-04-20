@@ -1263,7 +1263,7 @@ try{
 
    if(Model_Check())
    {
-	Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
+//	Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
 	if(channel_config.InitAfterLoad)
      MEnv_ModelInit(i,0);
 	if(channel_config.ResetAfterLoad)
