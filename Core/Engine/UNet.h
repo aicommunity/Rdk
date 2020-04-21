@@ -514,7 +514,12 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
 {
  UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
  if(comp)
-  return comp;
+ {
+  if(comp->GetCompClassName() == class_name)
+   return comp;
+  else
+   DelComponent(component_name);
+ }
 
  if(!Storage)
  {
