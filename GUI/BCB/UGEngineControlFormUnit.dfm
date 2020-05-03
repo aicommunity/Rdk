@@ -633,42 +633,42 @@ object UGEngineControlForm: TUGEngineControlForm
               ExplicitWidth = 235
               ExplicitHeight = 390
               inherited PageControl: TPageControl
+                Top = 22
                 Width = 235
-                Height = 390
+                Height = 368
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
                 ExplicitWidth = 235
-                ExplicitHeight = 390
+                ExplicitHeight = 369
                 inherited NameTabSheet: TTabSheet
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
-                  ExplicitWidth = 499
-                  ExplicitHeight = 515
+                  ExplicitHeight = 494
+                  inherited StringGrid: TStringGrid
+                    ExplicitHeight = 494
+                  end
                 end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitTop = 25
                   ExplicitWidth = 227
-                  ExplicitHeight = 361
+                  ExplicitHeight = 340
                   inherited TreeView: TTreeView
                     Width = 227
-                    Height = 361
+                    Height = 339
                     ExplicitWidth = 227
-                    ExplicitHeight = 361
+                    ExplicitHeight = 340
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
+                  ExplicitHeight = 373
                   inherited Splitter1: TSplitter
-                    Top = 90
+                    Top = 69
                     Height = 8
                     ExplicitTop = 11
                     ExplicitWidth = 175
                     ExplicitHeight = 8
                   end
                   inherited Panel1: TPanel
-                    Top = 265
+                    Top = 244
                     Height = 129
-                    ExplicitTop = 265
+                    ExplicitTop = 244
                     ExplicitHeight = 129
                     inherited LoadLibraryButton: TButton
                       Height = 26
@@ -698,19 +698,19 @@ object UGEngineControlForm: TUGEngineControlForm
                     end
                   end
                   inherited GroupBox1: TGroupBox
-                    Height = 90
-                    ExplicitHeight = 90
+                    Height = 69
+                    ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
-                      Height = 72
+                      Height = 51
                       ExplicitTop = 16
-                      ExplicitHeight = 72
+                      ExplicitHeight = 51
                     end
                   end
                   inherited GroupBox2: TGroupBox
-                    Top = 98
+                    Top = 77
                     Height = 167
-                    ExplicitTop = 98
+                    ExplicitTop = 77
                     ExplicitHeight = 167
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
@@ -720,6 +720,14 @@ object UGEngineControlForm: TUGEngineControlForm
                     end
                   end
                 end
+              end
+              inherited SearchEdit: TEdit
+                Width = 235
+                Height = 22
+                ExplicitLeft = 0
+                ExplicitTop = 0
+                ExplicitWidth = 235
+                ExplicitHeight = 22
               end
             end
           end
@@ -1320,7 +1328,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03B00410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03B40410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
