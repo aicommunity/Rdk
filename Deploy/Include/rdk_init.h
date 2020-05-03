@@ -742,6 +742,11 @@ RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int channel_index, const c
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
 RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const char *name);
 
+/// Клонирует компонент со всеми содержимым и внутренними связями
+/// Если new_name - пустая строка, то имя назначается автоматически
+RDK_LIB_TYPE int RDK_CALL Model_CloneComponent(const char* component_name, const char* new_name);
+RDK_LIB_TYPE int RDK_CALL MModel_CloneComponent(int channel_index, const char* component_name, const char* new_name);
+
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент

@@ -585,6 +585,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
     object N2: TMenuItem
       Caption = '-'
     end
+    object Clone1: TMenuItem
+      Caption = 'Clone'
+      OnClick = Clone1Click
+    end
     object Rename1: TMenuItem
       Caption = 'Rename'
       OnClick = Rename1Click

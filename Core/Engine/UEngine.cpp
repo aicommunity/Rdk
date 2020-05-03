@@ -3280,7 +3280,6 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
  return res;
 }
 
-
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент
@@ -3348,7 +3347,7 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
    if(!owner)
     return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
-   RDK::UEPtr<RDK::UNet> new_component=RDK::dynamic_pointer_cast<RDK::UNet>(Storage->TakeObject(component->GetClass()));
+   RDK::UEPtr<RDK::UNet> new_component=RDK::dynamic_pointer_cast<RDK::UNet>(Storage->TakeObject(component->GetClass(),component.Get()));
    if(!new_component)
     return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
 
@@ -3363,7 +3362,7 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
     return RDK_E_MODEL_ADD_COMPONENT_FAIL;
    }
 
-   component->Copy(new_component);
+ //  component->Copy(new_component);
    RDK::MVector<double,3> coord=new_component->GetCoord();
    coord(0)+=1;
    coord(1)+=1;

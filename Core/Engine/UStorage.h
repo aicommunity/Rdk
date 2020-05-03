@@ -212,6 +212,9 @@ virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent>
 virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
 
 template<class T>
+UEPtr<T> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
+
+template<class T>
 UEPtr<T> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
@@ -456,6 +459,20 @@ std::string CreateLogMessage(void) const
 
 // --------------------------
 };
+
+template<class T>
+UEPtr<T> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
+{
+ UEPtr<T> p;
+ UEPtr<UComponent> got_class=TakeObject(classid,prototype);
+ p=dynamic_pointer_cast<T>(got_class);
+ if(!p)
+ {
+  ReturnObject(got_class);
+  throw EInvalidClassType(FindClassName(classid), typeid(T).name());
+ }
+ return p;
+}
 
 template<class T>
 UEPtr<T> UStorage::TakeObject(const string &classname, const UEPtr<UComponent> &prototype)

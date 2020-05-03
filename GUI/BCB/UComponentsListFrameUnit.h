@@ -70,6 +70,7 @@ __published:	// IDE-managed Components
 	TMenuItem *N5;
 	TMenuItem *Init1;
 	TMenuItem *UnInit1;
+	TMenuItem *Clone1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -151,6 +152,7 @@ __published:	// IDE-managed Components
           TPoint &MousePos, bool &Handled);
 	void __fastcall Init1Click(TObject *Sender);
 	void __fastcall UnInit1Click(TObject *Sender);
+	void __fastcall Clone1Click(TObject *Sender);
 
 
 

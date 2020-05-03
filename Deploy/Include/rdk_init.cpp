@@ -1756,6 +1756,20 @@ int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_DelComponent(stringid, name);
 }
 
+// Создают копию уже существующего компонента 'stringid'
+// Возвращает имя созданного компонента
+int RDK_CALL Model_CloneComponent(const char* component_name, const char* new_name)
+{
+ return RdkCoreManager.GetEngineLock()->Model_CloneComponent(component_name,new_name);
+}
+
+int RDK_CALL MModel_CloneComponent(int channel_index, const char* component_name, const char* new_name)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CloneComponent(component_name,new_name);
+}
+
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент
