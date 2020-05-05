@@ -897,6 +897,79 @@ const unsigned int& operator () (void) const
 
 };
 
+/// Специализация: свойства - int
+template<typename OwnerT, unsigned int type>
+class ULProperty<unsigned long int,OwnerT,type>: public UProperty<unsigned long int,OwnerT>
+{
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+ULProperty(const string &name, OwnerT * const owner, typename UVProperty<unsigned long int,OwnerT>::SetterRT setmethod=0)
+ : UProperty<unsigned long int,OwnerT>(owner, setmethod)
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+
+protected:
+ULProperty(const ULProperty<size_t,OwnerT,type> &v) {}
+
+public:
+
+operator unsigned long int (void) const
+{ return this->v; }
+
+unsigned long int& operator ++ (void)
+{
+ if(this->SetterR)
+  SetData(this->v+1);
+ else
+  ++this->v;
+ return this->v;
+}
+
+unsigned long int operator ++ (int)
+{
+ unsigned long int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v+1);
+ else
+  this->v++;
+ return temp;
+}
+
+unsigned long int& operator -- (void)
+{
+ if(this->SetterR)
+  SetData(this->v-1);
+ else
+  --this->v;
+ return this->v;
+}
+
+unsigned long int operator -- (int)
+{
+ unsigned long int temp=this->v;
+ if(this->SetterR)
+  SetData(this->v-1);
+ else
+  this->v--;
+ return temp;
+}
+
+ULProperty<unsigned long int,OwnerT,type>& operator = (const unsigned long int &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+const unsigned long int& operator () (void) const
+{
+ return this->GetData();
+}
+
+};
+
+
 /// Специализация: свойства - unsigned long long
 template<typename OwnerT, unsigned int type>
 class ULProperty<unsigned long long,OwnerT,type>: public UProperty<unsigned long long,OwnerT>
