@@ -8,6 +8,7 @@
 #include "USeriesControlUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "UComponentsListFormUnit.h"
+#include "TMatrixFormUnit.h"
 //---------------------------------------------------------------------------
 #define ISNAN(x) ((x) != (x))
 //---------------------------------------------------------------------------
@@ -600,7 +601,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  {
   if(!yname.empty())
   {
-   wd.Legend=yname;
+   wd.Legend=yname+std::string(":")+youtput;
    wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
    wd.Legend+=RDK::sntoa(mcol)+string(")");
   }
@@ -617,8 +618,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
   if(!xname.empty())
   {
    wd.Legend=xname;
-   wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
-   wd.Legend+=RDK::sntoa(xoutindex)+string("]");
+   wd.Legend+=string(":")+RDK::sntoa(xoutput);
   }
  }
 
@@ -1630,6 +1630,14 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   if(!ym)
    return;
 
+  if(!MatrixForm->SelectMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),
+								UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput()))
+   return;
+
+  if(MatrixForm->ShowModal() != mrOk)
+   return;
+
+   /*
   UListInputForm->PresentSelect=true;
   UListInputForm->MustInput=true;
   vector<string> listvals;
@@ -1648,7 +1656,9 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   if(UListInputForm->ShowModal() != mrOk)
    return;
   int col=StrToInt(UListInputForm->Edit->Text);
-
+  */
+  int col=MatrixForm->SelectedCol;
+  int row=MatrixForm->SelectedRow;
   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
   std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
  Add(0x200, "",componentName,"",0,componentOutput,0,row,col);

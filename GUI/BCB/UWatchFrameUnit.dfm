@@ -53,10 +53,12 @@ inherited UWatchFrame: TUWatchFrame
     Top = 16
     object AddWatch1: TMenuItem
       Caption = 'Add Time-Y Watch'
+      Visible = False
       OnClick = AddWatch1Click
     end
     object AddTimeYWatchold1: TMenuItem
       Caption = 'Add Time-Y Watch (old)'
+      Visible = False
       OnClick = AddTimeYWatchold1Click
     end
     object AddTimeMatrixWatch1: TMenuItem
@@ -65,6 +67,7 @@ inherited UWatchFrame: TUWatchFrame
     end
     object AddTimeVectorWatch1: TMenuItem
       Caption = 'Add Time-Vector Watch'
+      Visible = False
       OnClick = AddTimeVectorWatch1Click
     end
     object AddXPulseWatch1: TMenuItem
