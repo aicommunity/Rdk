@@ -136,6 +136,7 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  CacheIndex=0;
  AutoMinYValue=true;
  AutoMaxYValue=true;
+ SelectedSeriesIndex=-1;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -475,6 +476,7 @@ int __fastcall TUWatchFrame::GetNumWatches(void)
 // Добавление нового наблюдения
 int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 {
+ SelectedSeriesIndex=-1;
  if(wd.XOutputIndex.empty() || wd.YOutputIndex.empty())
  {
  // Проверяем, есть ли серия с такими же данными
@@ -579,6 +581,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 // Возвращает индекс серии
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
+ SelectedSeriesIndex=-1;
  TUWatchInfo wd;
  wd.FullUpdate=false;
  //wd.WatchInterval=watchinterval;
@@ -635,6 +638,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
+ SelectedSeriesIndex=-1;
  TUWatchInfo wd;
  wd.FullUpdate=false;
  //wd.WatchInterval=watchinterval;
@@ -692,6 +696,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift, TPenStyle style, TColor color)
 {
+ SelectedSeriesIndex=-1;
  TUWatchInfo wd;
  wd.FullUpdate=true;
 
@@ -753,7 +758,7 @@ void __fastcall TUWatchFrame::Del(int seriesindex)
 {
  if(seriesindex >= (int)NameList.size())
   return;
-// DelSeries(seriesindex);
+ SelectedSeriesIndex=-1;
 
  TChartSeries *ser;
 
@@ -773,6 +778,7 @@ void __fastcall TUWatchFrame::Del(int seriesindex)
 // Удаляет все наблюдения
 void __fastcall TUWatchFrame::Clear(void)
 {
+ SelectedSeriesIndex=-1;
  map<string,TUWatchInfo*>::iterator I;
 
  if(NameList.size() == 0)
@@ -1710,4 +1716,32 @@ void __fastcall TUWatchFrame::AddTimeVectorWatch1Click(TObject *Sender)
   Add(0x400, "",componentName,"",0,componentOutput,0,vectorName,vectorIndexX, vectorIndexY);
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::DeleteActiveWatch1Click(TObject *Sender)
+{
+ if(SelectedSeriesIndex < 0)
+ {
+  Application->MessageBox(L"Nothing to do! Please select series first.",L"Error", MB_OK);
+  return;
+ }
+
+ String str=L"Are you sure to delete ";
+ str=str+NameList[SelectedSeriesIndex].Legend.c_str();
+ str=str+" series?";
+ if(Application->MessageBox(str.c_str(),L"Warning", MB_YESNO) == ID_NO)
+  return;
+
+ Del(SelectedSeriesIndex);
+ SelectedSeriesIndex=-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::Chart1ClickSeries(TCustomChart *Sender, TChartSeries *Series,
+          int ValueIndex, TMouseButton Button, TShiftState Shift, int X,
+          int Y)
+{
+ SelectedSeriesIndex=Series->SeriesIndex;
+}
+//---------------------------------------------------------------------------
+
 

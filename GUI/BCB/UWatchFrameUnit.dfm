@@ -26,6 +26,7 @@ inherited UWatchFrame: TUWatchFrame
     MarginTop = 0
     Title.Text.Strings = (
       ' ')
+    OnClickSeries = Chart1ClickSeries
     DepthAxis.Automatic = False
     DepthAxis.AutomaticMaximum = False
     DepthAxis.AutomaticMinimum = False
@@ -73,6 +74,10 @@ inherited UWatchFrame: TUWatchFrame
     object AddXYWatch1: TMenuItem
       Caption = 'Add XY Watch'
       Enabled = False
+    end
+    object DeleteActiveWatch1: TMenuItem
+      Caption = 'Delete Active Watch'
+      OnClick = DeleteActiveWatch1Click
     end
     object DeleteAll1: TMenuItem
       Caption = 'Delete All Watches'
