@@ -17,7 +17,7 @@ contains(DEFINES,RDK_USE_CUDA) {
 
 contains(DEFINES,RDK_USE_PYTHON) {
     RDK_PYTHON_MAJOR = 3
-    RDK_PYTHON_MINOR = 5
+    RDK_PYTHON_MINOR = 6
 }
 
 
@@ -27,7 +27,7 @@ unix {
     INCLUDEPATH += $$(OPENCV3_PATH)/include
 
     contains(DEFINES, GPU) {
-        INCLUDEPATH += /usr/local/cuda-9.0/include
+        INCLUDEPATH += /usr/local/cuda/include
 }
 
 
@@ -36,8 +36,9 @@ unix {
         isEmpty(ANACONDA_PATH) {
             INCLUDEPATH += /usr/include/numpy
             INCLUDEPATH += /usr/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
-            INCLUDEPATH += $$(HOME)/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
-            INCLUDEPATH += /home/user/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy
+            INCLUDEPATH += /usr/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/numpy
+            #INCLUDEPATH += $$(HOME)/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
+            #INCLUDEPATH += /home/user/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy
         } else{
             INCLUDEPATH += $$(ANACONDA_PATH)/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m/
             INCLUDEPATH += $$(ANACONDA_PATH)/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
