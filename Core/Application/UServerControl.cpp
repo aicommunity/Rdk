@@ -569,6 +569,26 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
  commands.clear();
 }
 
+void UServerControl::ProcessIncomingDataString(std::string &command_data,UServerTransport *transport)
+{
+ RDK::URpcCommandInternal CurrentProcessedCommand;
+ CurrentProcessedCommand.Request=command_data;
+ CurrentProcessedCommand.IsDecoded=false;
+ if(!CurrentProcessedCommand.DecodeBasicData())
+ {
+  // TODO: пишем в лог ошибку декодирования
+  Log_LogMessage(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
+ }
+ else
+ {
+  RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
+  GetRpcDispatcher()->PushCommand(pcmd);
+  Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+ }
+}
+
+
+
 // --------------------------
 /// Управление числом каналов
 /// Выполнение вспомогательных методов

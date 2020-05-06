@@ -30,7 +30,7 @@ object UServerControlForm: TUServerControlForm
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 445
+      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -39,7 +39,6 @@ object UServerControlForm: TUServerControlForm
         Align = alClient
         Caption = ' Channels performance '
         TabOrder = 0
-        ExplicitHeight = 403
         object PerformanceChart: TChart
           Left = 2
           Top = 15
@@ -93,7 +92,6 @@ object UServerControlForm: TUServerControlForm
           Zoom.Pen.Mode = pmNotXor
           Align = alClient
           TabOrder = 0
-          ExplicitHeight = 353
           DefaultCanvas = 'TGDIPlusCanvas'
           ColorPaletteIndex = 13
           object Series1: TBarSeries
@@ -126,7 +124,6 @@ object UServerControlForm: TUServerControlForm
           Align = alBottom
           TabOrder = 1
           Visible = False
-          ExplicitTop = 368
           object FpsRadioButton: TRadioButton
             Left = 8
             Top = 6
@@ -154,7 +151,6 @@ object UServerControlForm: TUServerControlForm
         Height = 42
         Align = alBottom
         TabOrder = 1
-        ExplicitTop = 403
       end
     end
     object OptionsTabSheet: TTabSheet
@@ -223,7 +219,6 @@ object UServerControlForm: TUServerControlForm
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
-          ExplicitHeight = 242
           object ChannelNamesStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -236,7 +231,6 @@ object UServerControlForm: TUServerControlForm
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
             TabOrder = 0
             OnKeyDown = ChannelNamesStringGridKeyDown
-            ExplicitHeight = 225
           end
         end
       end
@@ -315,7 +309,6 @@ object UServerControlForm: TUServerControlForm
         Height = 41
         Align = alBottom
         TabOrder = 2
-        ExplicitTop = 404
         object ApplyOptionsButton: TButton
           Left = 7
           Top = 6
@@ -342,7 +335,7 @@ object UServerControlForm: TUServerControlForm
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 445
+      ExplicitHeight = 0
       object Panel6: TPanel
         Left = 0
         Top = 416
@@ -350,7 +343,6 @@ object UServerControlForm: TUServerControlForm
         Height = 41
         Align = alBottom
         TabOrder = 0
-        ExplicitTop = 404
         object ServerStopButton: TButton
           Left = 263
           Top = 6
@@ -439,6 +431,10 @@ object UServerControlForm: TUServerControlForm
     object HttpServerTabSheet: TTabSheet
       Caption = 'Http Server'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox5: TGroupBox
         Left = 0
         Top = 0
@@ -520,7 +516,6 @@ object UServerControlForm: TUServerControlForm
         Height = 41
         Align = alBottom
         TabOrder = 1
-        ExplicitTop = 404
         object HttpStopButton: TButton
           Left = 271
           Top = 6
@@ -587,8 +582,8 @@ object UServerControlForm: TUServerControlForm
   end
   object HttpCommandTimer: TTimer
     Interval = 10
-    OnTimer = CommandTimerTimer
-    Left = 16
+    OnTimer = HttpCommandTimerTimer
+    Left = 32
     Top = 384
   end
   object HttpServerRestartTimer: TTimer
@@ -598,7 +593,13 @@ object UServerControlForm: TUServerControlForm
     Top = 384
   end
   object IdHTTPServer: TIdHTTPServer
-    Bindings = <>
+    Bindings = <
+      item
+        Port = 80
+      end>
+    OnConnect = IdHTTPServerConnect
+    OnDisconnect = IdHTTPServerDisconnect
+    OnCommandGet = IdHTTPServerCommandGet
     Left = 100
     Top = 368
   end

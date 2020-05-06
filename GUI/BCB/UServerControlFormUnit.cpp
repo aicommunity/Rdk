@@ -67,6 +67,12 @@ void UServerTransportTcpVcl::ServerStop()
  UServerControlForm->ServerStop();
 }
 
+/// Инициировать запуск сервера
+void UServerTransportTcpVcl::ServerStart()
+{
+ UServerControlForm->ServerStart();
+}
+
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта
 int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
@@ -181,7 +187,13 @@ int UServerTransportHttpVcl::GetServerBindingPort(void) const
 ///Инициировать остановку сервера, отключить все приемники
 void UServerTransportHttpVcl::ServerStop()
 {
- UServerControlForm->ServerStop();
+ UServerControlForm->ServerStopHttp();
+}
+
+/// Инициировать запуск сервера
+void UServerTransportHttpVcl::ServerStart()
+{
+ UServerControlForm->ServerStartHttp();
 }
 
 /// Читает входящие байты из выбранного источника, контекст привязки
@@ -895,6 +907,9 @@ void TUServerControlForm::AUpdateInterface(void)
  ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;
  BindingAddressLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->IP;
 
+ HttpPortLabeledEdit->Text=IdHTTPServer->Bindings->Items[0]->Port;
+ HttpIPAddressLabeledEdit->Text=IdHTTPServer->Bindings->Items[0]->IP;
+
  MetadataComponentNameLabeledEdit->Text=RdkApplication.GetServerControl()->GetMetaComponentName().c_str();
  MetadataComponentStateNameLabeledEdit->Text=RdkApplication.GetServerControl()->GetMetaComponentStateName().c_str();
 
@@ -1109,23 +1124,7 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
-//return; // TODO: запуск отключен.
- ServerRestartTimer->Enabled=true;
- try
- {
-  //UHttpServerFrame->ServerListenOn();
-  IdTCPServer->Active=true;
- }
- catch(EIdSocketError &ex)
- {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
- }
- catch(EIdCouldNotBindSocket &ex2)
- {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
- }
- this->UpdateInterface();
-// TcpServer->Active=true;
+ RdkApplication.GetServerControl()->GetServerTransportHttp()->ServerStart();
 }
 //---------------------------------------------------------------------------
 
@@ -1145,6 +1144,64 @@ void TUServerControlForm::ServerStop()
  IdTCPServer->Active=false;
  this->UpdateInterface();
 }
+
+void TUServerControlForm::ServerStart()
+{
+//return; // TODO: запуск отключен.
+ ServerRestartTimer->Enabled=true;
+ try
+ {
+  //UHttpServerFrame->ServerListenOn();
+  IdTCPServer->Active=true;
+ }
+ catch(EIdSocketError &ex)
+ {
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+ }
+ catch(EIdCouldNotBindSocket &ex2)
+ {
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
+ }
+ this->UpdateInterface();
+// TcpServer->Active=true;
+}
+
+void TUServerControlForm::ServerStopHttp()
+{
+ HttpServerRestartTimer->Enabled=false;
+
+ TList *list=IdHTTPServer->Contexts->LockList();
+ for(int i=0;i<list->Count;i++)
+ {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	context->Connection->Disconnect();
+ }
+
+ IdHTTPServer->Contexts->UnlockList();
+
+ IdHTTPServer->Active=false;
+ this->UpdateInterface();
+}
+
+void TUServerControlForm::ServerStartHttp()
+{
+ HttpServerRestartTimer->Enabled=true;
+ try
+ {
+  //UHttpServerFrame->ServerListenOn();
+  IdHTTPServer->Active=true;
+ }
+ catch(EIdSocketError &ex)
+ {
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+ }
+ catch(EIdCouldNotBindSocket &ex2)
+ {
+  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
+ }
+ this->UpdateInterface();
+}
+
 
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
@@ -1384,7 +1441,7 @@ void __fastcall TUServerControlForm::HttpStartButtonClick(TObject *Sender)
  try
  {
   //UHttpServerFrame->ServerListenOn();
-  IdTCPServer->Active=true;
+  IdHTTPServer->Active=true;
  }
  catch(EIdSocketError &ex)
  {
@@ -1430,6 +1487,108 @@ void __fastcall TUServerControlForm::TcpApplyButtonClick(TObject *Sender)
 
  ///Это наверное будет работать так:
  RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::IdHTTPServerConnect(TIdContext *AContext)
+{
+ UnicodeString b = AContext->Binding->PeerIP;
+ std::string bind=AnsiString(b).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+ RdkApplication.GetServerControl()->GetServerTransportHttp()->ConnectClient(bind);
+ Log_LogMessage(RDK_EX_INFO, (std::string("Http client connected: ")+bind).c_str());
+ this->UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::IdHTTPServerDisconnect(TIdContext *AContext)
+
+{
+ std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+
+ //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
+ //t->DisconnectClient(bind);
+
+ RdkApplication.GetServerControl()->GetServerTransportHttp()->DisсonnectClient(bind);
+
+ Log_LogMessage(RDK_EX_INFO, (std::string("Http client Disconnected: ")+bind).c_str());
+ this->UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUServerControlForm::HttpCommandTimerTimer(TObject *Sender)
+{
+ try
+ {
+  RdkApplication.GetServerControl()->ProcessCommandQueue(RdkApplication.GetServerControl()->GetServerTransport());
+  RdkApplication.GetServerControl()->ProcessCommandQueue(RdkApplication.GetServerControl()->GetServerTransportHttp());
+ }
+ catch (...)
+ {
+  Log_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
+ // throw;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::IdHTTPServerCommandGet(TIdContext *AContext,
+		  TIdHTTPRequestInfo *ARequestInfo, TIdHTTPResponseInfo *AResponseInfo)
+
+{
+//Получить имя пользователя и пароль
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ String login = config.HttpServerLogin.c_str();
+ String password = config.HttpServerPassword.c_str();
+
+//Проверка соответствия пришедших данных настройкам
+ if((ARequestInfo->AuthExists)&&(ARequestInfo->AuthUsername==login)&&(ARequestInfo->AuthPassword==password))
+ {
+  //enum THTTPCommandType : unsigned char { hcUnknown, hcHEAD, hcGET, hcPOST, hcDELETE, hcPUT, hcTRACE, hcOPTION };
+  if((ARequestInfo->CommandType == hcPOST)&&(ARequestInfo->ContentType=="text/plain"))
+  {
+   if(ARequestInfo->PostStream!=NULL)
+   {
+	//SenderAddress = ARequestInfo->RemoteIP;
+
+	TStringStream *s = new TStringStream();
+	s->LoadFromStream(ARequestInfo->PostStream);
+	String str = s->DataString;
+	//Log(str);
+
+	std::string data_string = AnsiString(str).c_str();
+
+	//Распарсить сообщение:
+	try
+	{
+	 std::string bind=AnsiString(AContext->Binding->PeerIP.c_str()).c_str();
+	 bind+=":";
+	 bind+=RDK::sntoa(AContext->Binding->PeerPort);
+	 //Убираем отсюда всю обработку, пусть это и грозит потерей контекста
+	 RdkApplication.GetServerControl()->ProcessIncomingData( bind, RdkApplication.GetServerControl()->GetServerTransport() );
+	}
+	catch(...)
+	{
+	 Log_LogMessage(RDK_EX_DEBUG, std::string("UServerControl data processing error").c_str());
+	}
+	//  Memo1.Lines.Add(LLine);
+	//  AContext.Connection.IOHandler.WriteLn('OK');
+	//  TIdNotify.NotifyMethod( StopStartServerdMessage );
+	// SetEvent(ServerReceivingNotInProgress);
+   }
+  }
+ }
+ else
+ {
+  Log_LogMessage(RDK_EX_DEBUG, std::string("Request failed because of wrong authentification data").c_str());
+  AResponseInfo->ResponseNo = 401;
+  AResponseInfo->ResponseText = "Wrong authorization login/password";
+ }
 }
 //---------------------------------------------------------------------------
 

@@ -50,6 +50,8 @@ virtual std::string GetServerBindingInterfaceAddress(void);
 int GetServerBindingPort(void) const;
 /// Инициировать остановку сервера, отключить все приемники
 virtual void ServerStop();
+/// Инициировать запуск сервера
+virtual void ServerStart();
 };
 
 class RDK_LIB_TYPE UServerTransportHttpVcl: public RDK::UServerTransportHttp
@@ -68,6 +70,8 @@ virtual std::string GetServerBindingInterfaceAddress(void);
 int GetServerBindingPort(void) const;
 /// Инициировать остановку сервера, отключить все приемники
 virtual void ServerStop();
+/// Инициировать запуск сервера
+virtual void ServerStart();
 };
 
 class RDK_LIB_TYPE UServerControlVcl: public RDK::UServerControl
@@ -219,6 +223,11 @@ __published:	// IDE-managed Components
 	void __fastcall HttpStartButtonClick(TObject *Sender);
 	void __fastcall HttpServerRestartTimerTimer(TObject *Sender);
 	void __fastcall TcpApplyButtonClick(TObject *Sender);
+	void __fastcall IdHTTPServerConnect(TIdContext *AContext);
+	void __fastcall IdHTTPServerDisconnect(TIdContext *AContext);
+	void __fastcall HttpCommandTimerTimer(TObject *Sender);
+	void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
+          TIdHTTPResponseInfo *AResponseInfo);
 
 
 
@@ -254,6 +263,12 @@ std::string GetHttpServerBindingInterfaceAddress(void);
 int GetHttpServerBindingPort(void) const;
 
 void ServerStop();
+
+void ServerStart();
+
+void ServerStopHttp();
+
+void ServerStartHttp();
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

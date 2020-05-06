@@ -59,6 +59,9 @@ virtual void ConnectClient(std::string& bind);
 virtual void DisсonnectClient(std::string& bind);
 ///Инициировать остановку сервера, отключить все приемники
 virtual void ServerStop();
+/// По аналогии с ServerStop, инициировать включение сервера
+/// (переопределять в конечных классах)
+virtual void ServerStart();
 
 /// Кодирует строку в вектор
 void ConvertStringToVector(const std::string &source, UParamT &dest);

@@ -214,6 +214,8 @@ virtual void ProcessCommandQueue(UServerTransport *transport);
 
 virtual void ProcessIncomingData(std::string &bind,UServerTransport *transport);
 
+virtual void ProcessIncomingDataString(std::string &command_data,UServerTransport *transport);
+
 protected:
 
 
