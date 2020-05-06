@@ -31,7 +31,6 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 520
     object Panel4: TPanel
       Left = 0
       Top = 0
@@ -56,9 +55,6 @@ object USeriesControlForm: TUSeriesControlForm
         Align = alRight
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitLeft = 296
-        ExplicitTop = -1
-        ExplicitHeight = 254
         object Button1: TButton
           Left = 12
           Top = 16
@@ -167,6 +163,8 @@ object USeriesControlForm: TUSeriesControlForm
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
           TabOrder = 0
           OnDblClick = StringGrid1DblClick
+          ExplicitLeft = -3
+          ExplicitTop = 17
         end
       end
     end
@@ -197,9 +195,9 @@ object USeriesControlForm: TUSeriesControlForm
           281
           313)
         object Label7: TLabel
-          Left = 11
+          Left = 9
           Top = 194
-          Width = 44
+          Width = 46
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
@@ -209,9 +207,9 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1051#1077#1075#1077#1085#1076#1072':'
         end
         object Label8: TLabel
-          Left = 60
+          Left = 57
           Top = 251
-          Width = 130
+          Width = 133
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
@@ -405,7 +403,6 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitHeight = 520
     object Panel6: TPanel
       Left = 0
       Top = 225
@@ -481,7 +478,7 @@ object USeriesControlForm: TUSeriesControlForm
         object Label2: TLabel
           Left = 25
           Top = 25
-          Width = 49
+          Width = 50
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
@@ -490,9 +487,9 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1055#1086#1076#1087#1080#1089#1100': '
         end
         object Label3: TLabel
-          Left = 56
+          Left = 54
           Top = 89
-          Width = 26
+          Width = 28
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
@@ -502,9 +499,9 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1062#1074#1077#1090':'
         end
         object Label4: TLabel
-          Left = 28
+          Left = 25
           Top = 57
-          Width = 54
+          Width = 57
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
@@ -526,9 +523,9 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1058#1080#1087' '#1083#1080#1085#1080#1080':'
         end
         object Label6: TLabel
-          Left = 36
+          Left = 33
           Top = 156
-          Width = 46
+          Width = 49
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
@@ -690,7 +687,6 @@ object USeriesControlForm: TUSeriesControlForm
         NumGlyphs = 2
         TabOrder = 2
         OnClick = BitBtn2Click
-        ExplicitTop = 258
       end
     end
     object GroupBox4: TGroupBox
@@ -721,6 +717,8 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 0
         OnClick = StringGrid2Click
         OnDblClick = StringGrid2DblClick
+        ExplicitLeft = -1
+        ExplicitTop = 17
       end
     end
   end

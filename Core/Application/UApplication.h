@@ -16,6 +16,7 @@
 #include "UEngineStateThread.h"
 #include "UBroadcasterInterface.h"
 #include "UServerControl.h"
+#include "UServerTransport.h"
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 
@@ -216,11 +217,11 @@ bool IsInit(void) const;
 // Методы инициализации
 // --------------------------
 /// Предоставляет доступ к диспетчеру команд
-virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
+//virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
 
 /// Устанавливает новый диспетчер команд
 /// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
-virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
+//virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
 
 /// Предоставляет доступ к контроллеру движка
 virtual UEPtr<UEngineControl> GetEngineControl(void);
@@ -282,6 +283,9 @@ void ProcessCommandLineArgs(int argc, char **argv);
 /// Создает проект (через сохранение и открытие)
 virtual bool CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config);
 virtual bool CreateProject(const std::string &file_name, const std::string &model_classname);
+
+/// Обновляет проект по новой конфигурации
+virtual bool UpdateProject(RDK::TProjectConfig &project_config);
 
 /// Открывает проект
 virtual bool OpenProject(const std::string &filename);

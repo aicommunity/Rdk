@@ -2196,3 +2196,28 @@ void __fastcall TUComponentsListFrame::UnInit1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::Clone1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentLongName();
+ if(stringcompid == "..")
+  return;
+
+ TKeyboardState State;
+ GetKeyboardState(State);
+ bool result = ((State[VK_SHIFT] & 128) != 0);
+ std::string new_name;
+ if(result)
+ {
+  String value = InputBox("Component name", "Please enter new component name", GetSelectedComponentName().c_str());
+  if(value.Length()!=0)
+   new_name=AnsiString(value).c_str();
+ }
+
+ int res=Model_CloneComponent(stringcompid.c_str(), new_name.c_str());
+
+ if(DrawEngineFrame)
+  DrawEngineFrame->ReloadNet();
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

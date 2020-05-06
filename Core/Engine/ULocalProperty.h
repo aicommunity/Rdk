@@ -109,7 +109,7 @@ ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owner
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
-ULProperty(const ULProperty<T,OwnerT> &v) {}
+ULProperty(const ULProperty<T,OwnerT,type> &v) {}
 // -----------------------------
 
 // -----------------------------
@@ -123,7 +123,7 @@ ULProperty<T,OwnerT, type>& operator = (const T &value)
  return *this;
 }
 
-ULProperty<T,OwnerT, type>& operator = (const ULProperty<T,OwnerT> &v)
+ULProperty<T,OwnerT, type>& operator = (const ULProperty<T,OwnerT, type> &v)
 {
  this->SetData(v.GetData());
  return *this;
@@ -270,8 +270,8 @@ const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
 /* ************************************************************************* */
 
 
-template<typename T, typename OwnerT>
-std::ostream& operator << (std::ostream &stream, ULProperty<T,OwnerT> &property)
+template<typename T, typename OwnerT, unsigned int type>
+std::ostream& operator << (std::ostream &stream, ULProperty<T,OwnerT, type> &property)
 {
  using namespace std;
  stream<<"Property "<<property.GetOwnerName()<<":"<<property.GetName();

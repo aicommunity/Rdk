@@ -742,6 +742,11 @@ RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int channel_index, const c
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
 RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const char *name);
 
+/// Клонирует компонент со всеми содержимым и внутренними связями
+/// Если new_name - пустая строка, то имя назначается автоматически
+RDK_LIB_TYPE int RDK_CALL Model_CloneComponent(const char* component_name, const char* new_name);
+RDK_LIB_TYPE int RDK_CALL MModel_CloneComponent(int channel_index, const char* component_name, const char* new_name);
+
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент
@@ -1100,6 +1105,7 @@ RDK_LIB_TYPE const char* RDK_CALL Model_SaveComponentDrawInfo(const char *string
 // Управляет шагом счета модели по умолчанию
 RDK_LIB_TYPE unsigned int RDK_CALL Model_GetDefaultTimeStep(void);
 RDK_LIB_TYPE int RDK_CALL Model_SetDefaultTimeStep(unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MModel_SetDefaultTimeStep(int channel_index, unsigned int value);
 
 // Управляет шагом счета компонента
 RDK_LIB_TYPE unsigned int RDK_CALL Model_GetTimeStep(const char *stringid);
@@ -1107,6 +1113,7 @@ RDK_LIB_TYPE int RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int v
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
 RDK_LIB_TYPE int RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value);
+RDK_LIB_TYPE int RDK_CALL MModel_SetGlobalTimeStep(int channel_index, const char *stringid, unsigned int value);
 
 // Возвращает текущее время модели
 RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetTime(void);

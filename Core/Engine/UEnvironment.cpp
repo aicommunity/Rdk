@@ -55,6 +55,8 @@ UEnvironment::UEnvironment(void)
  RTModelCalcTime=0.0;
  MaxCalcTime=0.0;
  CalcFinishedFlag=false;
+
+ UseIndTimeStepFlag=false;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -162,6 +164,23 @@ bool UEnvironment::SetMaxCalcTime(double value)
  MaxCalcTime=value;
  return true;
 }
+
+/// Флаг включения использования индидвидуальных параметров TimeStep для
+/// каждого компонента
+bool UEnvironment::GetUseIndTimeStepFlag(void) const
+{
+ return UseIndTimeStepFlag;
+}
+
+bool UEnvironment::SetUseIndTimeStepFlag(bool value)
+{
+ UseIndTimeStepFlag=value;
+ if(Model)
+  Model->ChangeUseIndTimeStepMode(value);
+ return true;
+}
+
+
 
 
 /*
@@ -715,7 +734,7 @@ void UEnvironment::RTCalculate(void)
  Build();
 
  CurrentTime=GetCurrentStartupTime();
- Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
+// Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
  // Если первый шаг расчета после Reset
  if(Time.GetTime() == 0)
@@ -726,6 +745,8 @@ void UEnvironment::RTCalculate(void)
   ProcEndTime=StartupTime;
  }
 
+ double cur_time=(Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*86400.0;
+ Time.SetSourceCurrentLocalTime(cur_time);
 
  unsigned long long curtime;
  unsigned long long timer_interval=0;
@@ -738,7 +759,9 @@ void UEnvironment::RTCalculate(void)
  int i=0;
  if(LastDuration < timer_interval)
   LastDuration=timer_interval;
- double model_duration=(Time.GetRealTime()-Time.GetDoubleTime()*1e6)/1000.0;
+ double realtime=Time.GetSourceCurrentLocalTime();
+ double doubletime=Time.GetDoubleTime();
+ double model_duration=Time.GetSourceCurrentLocalTime()-Time.GetDoubleTime();
  double model_start_calc_time=Time.GetDoubleTime();
 
  if(model_duration>MaxModelDuration)
@@ -751,7 +774,10 @@ void UEnvironment::RTCalculate(void)
  }
  else
  {
-  elapsed_counter=0;
+  if(Time.GetTime() == 0)
+   elapsed_counter=1;
+  else
+   elapsed_counter=0;
  }
 
  curtime=GetCurrentStartupTime();
@@ -794,7 +820,7 @@ void UEnvironment::FastCalculate(double calc_interval)
  Build();
 
  CurrentTime=GetCurrentStartupTime();
- Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
+// Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
  // Если первый шаг расчета после Reset
  if(Time.GetTime() == 0)
@@ -805,6 +831,8 @@ void UEnvironment::FastCalculate(double calc_interval)
   ProcEndTime=StartupTime;
  }
 
+ ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
+ Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
  unsigned long long curtime;
  unsigned long long timer_interval=0;

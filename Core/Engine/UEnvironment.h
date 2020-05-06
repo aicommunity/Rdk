@@ -58,6 +58,10 @@ ULongTime MinInterstepsInterval;
 /// если 0 - то не ограничено
 double MaxCalcTime;
 
+/// Флаг включения использования индидвидуальных параметров TimeStep для
+/// каждого компонента
+bool UseIndTimeStepFlag;
+
 protected: // Состояния
 // Флаг состояния инициализации
 // true - хранилище готово к использованию
@@ -158,6 +162,11 @@ bool SetMinInterstepsInterval(long long value);
 /// если 0 - то не ограничено
 double GetMaxCalcTime(void) const;
 bool SetMaxCalcTime(double value);
+
+/// Флаг включения использования индидвидуальных параметров TimeStep для
+/// каждого компонента
+bool GetUseIndTimeStepFlag(void) const;
+bool SetUseIndTimeStepFlag(bool value);
 
 /// Флаг включения режима отладки
 //bool GetDebugMode(void) const;

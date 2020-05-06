@@ -241,8 +241,8 @@ T* ULibrary::UploadClass(const std::string &class_name, const std::string &compo
 
  T* cont=new T;
  cont->SetName(component_name);
- cont->Default();
  UploadClass(class_name, cont);
+ cont->Default();
  unsigned long long total_used_memory_after(0);
  unsigned long long largest_free_block_after(0);
  if(memory_measure && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))

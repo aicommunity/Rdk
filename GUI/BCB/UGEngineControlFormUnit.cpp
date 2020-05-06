@@ -49,17 +49,19 @@ TUGEngineControlForm *UGEngineControlForm;
 using namespace RDK;
 
 /// Ёкзепл€р прототипа декодера команд
-//RDK::URpcDecoderInternal RdkRpcDecoder;
+RDK::URpcDecoderInternal RdkRpcDecoder;
 
 /// Ёкзепл€р класса диспетчера команд
-//RDK::URpcDispatcher RdkRpcDispatcher;
+RDK::URpcDispatcher RdkRpcDispatcher;
 
 /// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
 /// Ёкземпл€р класса контроллера сервера
 UServerControlVcl RdkServerControl;
-//URpcDecoderCommonVcl RdkRpcDecoderCommon;
+URpcDecoderCommonVcl RdkRpcDecoderCommon;
+
+UServerTransportTcpVcl RdkServerTransport;
 
 /// Ёкземпл€р класса контроллера расчета
 UEngineControlVcl RdkEngineControl;
@@ -2317,6 +2319,11 @@ void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
  {
   RdkApplication.CopyProject(AnsiString(chosenDir+"\\").c_str());
  }
+
+ if(Application->MessageBox(L"Open copied project?", L"Info",MB_YESNO) == ID_YES)
+ {
+  OpenProject(chosenDir+"\\"+RdkApplication.GetProjectFileName().c_str());
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -2467,9 +2474,16 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Hint=ProgramName;
 
-// RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
-// RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
-// RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
+ //TODO: –азобратьс€ с пор€дком вызовов
+ RdkRpcDispatcher.SetApplication(&RdkApplication);
+ RdkRpcDecoder.SetDispatcher(&RdkRpcDispatcher);
+ RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
+ RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
+ RdkRpcDecoderCommon.SetDispatcher(&RdkRpcDispatcher);
+ RdkServerControl.SetApplication(&RdkApplication);
+ RdkServerControl.SetRpcDispatcher(&RdkRpcDispatcher);
+ //02.04.2020 - надеюсь, так правильно прописать нужный транспорт
+ RdkServerControl.SetServerTransport(&RdkServerTransport);
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
@@ -2876,9 +2890,33 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
   need_update=true;
  }
 
- if(app_ini->ReadString("Server","BindPort","") != RdkApplication.GetProjectConfig().ServerInterfacePort)
+ if(StrToInt(app_ini->ReadString("Server","BindPort","")) != RdkApplication.GetProjectConfig().ServerInterfacePort)
  {
   app_ini->WriteInteger("Server","BindPort",RdkApplication.GetProjectConfig().ServerInterfacePort);
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","HttpBindAddress","") != RdkApplication.GetProjectConfig().HttpServerInterfaceAddress.c_str())
+ {
+  app_ini->WriteString("Server","HttpBindAddress",RdkApplication.GetProjectConfig().HttpServerInterfaceAddress.c_str());
+  need_update=true;
+ }
+
+ if(StrToInt(app_ini->ReadString("Server","HttpBindPort","")) != RdkApplication.GetProjectConfig().HttpServerInterfacePort)
+ {
+  app_ini->WriteInteger("Server","HttpBindPort",RdkApplication.GetProjectConfig().HttpServerInterfacePort);
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","HttpServerLogin","") != RdkApplication.GetProjectConfig().HttpServerLogin.c_str())
+ {
+  app_ini->WriteString("Server","HttpServerLogin",RdkApplication.GetProjectConfig().HttpServerLogin.c_str());
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","HttpServerPassword","") != RdkApplication.GetProjectConfig().HttpServerPassword.c_str())
+ {
+  app_ini->WriteString("Server","HttpServerPassword",RdkApplication.GetProjectConfig().HttpServerPassword.c_str());
   need_update=true;
  }
 
@@ -3089,7 +3127,7 @@ void __fastcall TUGEngineControlForm::ApplicationEventsException(TObject *Sender
 {
  if(Core_GetNumChannels()>0 && MCore_IsChannelInit(0))
  {
-  std::string message=std::string("Unhandled exception: ")+AnsiString(E->Message).c_str();
+  std::string message=AnsiString("Unhandled exception: "+E->Message).c_str();
   message+=" in class ";
   message+=AnsiString(Sender->ToString()).c_str();
   MLog_LogMessage(0, RDK_EX_ERROR, message.c_str());

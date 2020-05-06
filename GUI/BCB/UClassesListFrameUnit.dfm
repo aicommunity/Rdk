@@ -7,20 +7,23 @@ inherited UClassesListFrame: TUClassesListFrame
   ExplicitHeight = 543
   object PageControl: TPageControl
     Left = 0
-    Top = 0
+    Top = 21
     Width = 507
-    Height = 543
+    Height = 522
     ActivePage = NameTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
+    ExplicitTop = 0
+    ExplicitHeight = 543
     object NameTabSheet: TTabSheet
       Caption = 'By Name'
+      ExplicitHeight = 515
       object StringGrid: TStringGrid
         Left = 0
         Top = 0
         Width = 499
-        Height = 515
+        Height = 494
         Align = alClient
         ColCount = 2
         DefaultRowHeight = 18
@@ -31,16 +34,18 @@ inherited UClassesListFrame: TUClassesListFrame
         TabOrder = 0
         OnMouseEnter = StringGridMouseEnter
         OnMouseMove = StringGridMouseMove
+        ExplicitHeight = 515
       end
     end
     object LibsTabSheet: TTabSheet
       Caption = 'By Libs'
       ImageIndex = 1
+      ExplicitHeight = 515
       object TreeView: TTreeView
         Left = 0
         Top = 0
         Width = 499
-        Height = 515
+        Height = 494
         Align = alClient
         Indent = 19
         ParentShowHint = False
@@ -52,11 +57,16 @@ inherited UClassesListFrame: TUClassesListFrame
         TabOrder = 0
         OnMouseEnter = TreeViewMouseEnter
         OnMouseMove = TreeViewMouseMove
+        ExplicitHeight = 515
       end
     end
     object LibsControlTabSheet: TTabSheet
       Caption = 'Libs Control'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Splitter1: TSplitter
         Left = 0
         Top = 225
@@ -170,5 +180,17 @@ inherited UClassesListFrame: TUClassesListFrame
         end
       end
     end
+  end
+  object SearchEdit: TEdit
+    Left = 0
+    Top = 0
+    Width = 507
+    Height = 21
+    Align = alTop
+    TabOrder = 1
+    OnChange = SearchEditChange
+    ExplicitLeft = 240
+    ExplicitTop = 8
+    ExplicitWidth = 121
   end
 end

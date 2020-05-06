@@ -22,6 +22,7 @@
 #include "USettingsReaderWidget.h"
 #include "UGraphWidget.h"
 #include "UTableInfo.h"
+#include "UWatchFormWidget.h"
 //////////////////////////
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
@@ -99,6 +100,7 @@ public slots:
     void actionCloseConfig();
     void actionCopyConfig();
     void actionExit();
+    void actionConfigOptions();
 
     //chanels menu
     void actionAddNew();
@@ -152,6 +154,7 @@ private:
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
     UGraphWidget *graphWindowWidget;
+    UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 

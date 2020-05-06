@@ -46,6 +46,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     graphWindow=NULL;
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
+    watchFormWidget=NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -111,6 +112,10 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
        graphWindowWidget->hide();
     ui->dockWidgetGraph->hide();
 
+    watchFormWidget= new UWatchFormWidget(this, application);
+    watchFormWidget->setWindowTitle("Watches");
+    watchFormWidget->hide();
+
     profilingWindowWidget = new UTableInfo(this, application);
     ui->dockWidgetProfiling->setWidget(profilingWindowWidget);
     profilingWindowWidget->setWindowTitle("Profiling");
@@ -134,6 +139,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
+
+    connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
+
 
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
@@ -245,8 +253,24 @@ void UGEngineControllWidget::actionLoadConfig()
 
 void UGEngineControllWidget::actionCreateConfig()
 {
-    createConfigurationWizardWidget->show();
-    //QMessageBox::information(this,"Create new project", "He-he-he, NO! >:]", QMessageBox::Ok);
+ if(application->GetProjectOpenFlag())
+ {
+  QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Another configuration is open. Close?", QMessageBox::Save|QMessageBox::Close|QMessageBox::Cancel);
+  if (reply == QMessageBox::Save)
+  {
+   application->SaveProject();
+   application->CloseProject();
+  }
+  else
+  if(reply == QMessageBox::Close)
+  {
+   application->CloseProject();
+  }
+  else
+   return;
+ }
+
+ createConfigurationWizardWidget->show();
 }
 
 void UGEngineControllWidget::actionSaveConfig()
@@ -318,6 +342,11 @@ void UGEngineControllWidget::actionCopyConfig()
 void UGEngineControllWidget::actionExit()
 {
   QApplication::quit();
+}
+
+void UGEngineControllWidget::actionConfigOptions()
+{
+ createConfigurationWizardWidget->show();
 }
 
 //chanels menu actions:
@@ -475,13 +504,17 @@ void UGEngineControllWidget::actionWatchWindow()
  if(!graphWindow )
  {
      graphWindow = new QMainWindow(this);
-     graphWindow->setCentralWidget(graphWindowWidget);
-     graphWindowWidget->show();
+     graphWindow->setWindowTitle("Watches");
+     //graphWindow->setCentralWidget(graphWindowWidget);
+     //graphWindowWidget->show();
+     graphWindow->setCentralWidget(watchFormWidget);
+     watchFormWidget->show();
  }
 
     if (!graphWindow->isVisible())
     {
-        graphWindow->resize(graphWindowWidget->size());
+        graphWindow->resize(watchFormWidget->size());
+//        graphWindow->resize(graphWindowWidget->size());
         graphWindow->setWindowTitle("");
         graphWindow->show();
         graphWindow->showNormal();

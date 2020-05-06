@@ -384,7 +384,10 @@ void UStorage::ClearClassesStorage(bool force)
    try
    {
 	if(I->second)
+	{
+     std::string name=FindClassName(I->first);
 	 delete I->second.Get();
+	}
    }
    catch(...)
    {
@@ -465,13 +468,11 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  UEPtr<UContainer> obj;
  if(prototype)
  {
-  obj=dynamic_pointer_cast<UContainer>(tmpl->Prototype(prototype, this));
+  obj=dynamic_pointer_cast<UContainer>(tmpl->Prototype(prototype));
  }
  else
  {
   obj=dynamic_pointer_cast<UContainer>(tmpl->New());
-  if(obj)
-   obj->Default();
  }
 
  if(!obj)

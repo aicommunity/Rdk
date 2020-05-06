@@ -5,6 +5,7 @@
 #pragma hdrstop
 
 #include "UClassesListFrameUnit.h"
+#include <boost/algorithm/string.hpp>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
@@ -25,6 +26,8 @@ __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 // Отрисовка фрейма
 void TUClassesListFrame::AUpdateInterface(void)
 {
+ std::string search=AnsiString(Trim(SearchEdit->Text)).c_str();
+
  if(PageControl->ActivePage == LibsTabSheet)
  {
 // const char* lib_list=Storage_GetClassLibrariesList();
@@ -35,6 +38,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   int num_classes=0;
   LibraryClassNames.clear();
   NewLibraryNames.resize(Storage_GetNumClassLibraries());
+
   for(size_t i=0;i<NewLibraryNames.size();i++)
   {
    const char *p=Storage_GetClassLibraryNameByIndex(i);
@@ -45,8 +49,43 @@ void TUClassesListFrame::AUpdateInterface(void)
    if(class_names)
     num_classes+=RDK::separatestring(std::string(class_names),TempLibraryNames, ',');
    Engine_FreeBufString(class_names);
+
+   std::vector<std::string>::iterator I=TempLibraryNames.begin(),K;
+   if(!search.empty())
+	while(I != TempLibraryNames.end())
+	{
+	 bool f1 = boost::icontains(*I, search);
+	 if(!f1)
+	 {
+	  TempLibraryNames.erase(I);
+	 }
+	 else
+	  ++I;
+	}
    sort(TempLibraryNames.begin(),TempLibraryNames.end());
-   LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
+   if(!TempLibraryNames.empty())
+   {
+	LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
+   }
+   else
+   {
+	LibraryClassNames.erase(NewLibraryNames[i]);
+   }
+  }
+
+  vector<string> v;
+  for(std::map<std::string, std::vector<std::string> >::iterator it = LibraryClassNames.begin(); it != LibraryClassNames.end(); ++it)
+  {
+   v.push_back(it->first);
+  }
+
+  std::vector<std::string>::iterator libI=NewLibraryNames.begin();
+  while(libI != NewLibraryNames.end())
+  {
+   if(find(v.begin(),v.end(),*libI) == v.end())
+	NewLibraryNames.erase(libI);
+   else
+    ++libI;
   }
 
   if(NewLibraryNames == LibraryNames)
@@ -87,7 +126,6 @@ void TUClassesListFrame::AUpdateInterface(void)
 
   int row=StringGrid->Row;
   StringGrid->ColCount=1;
-  StringGrid->RowCount=numclasses+1;
 
   std::vector<int> ids;
   ids.resize(numclasses);
@@ -101,7 +139,23 @@ void TUClassesListFrame::AUpdateInterface(void)
    Engine_FreeBufString(pclass_name);
   }
 
+  std::vector<std::string>::iterator I=ClassNames.begin(),K;
+  if(!search.empty())
+   while(I != ClassNames.end())
+   {
+	bool f1 = boost::icontains(*I, search);
+	if(!f1)
+	{
+	 ClassNames.erase(I);
+	}
+ 	else
+	 ++I;
+   }
+
   sort(ClassNames.begin(),ClassNames.end());
+  numclasses=int(ClassNames.size());
+  StringGrid->RowCount=numclasses+1;
+
   for(int i=0;i<numclasses;i++)
   {
    StringGrid->Cells[0][i+1]=ClassNames[i].c_str();
@@ -469,6 +523,12 @@ void __fastcall TUClassesListFrame::TreeViewMouseMove(TObject *Sender, TShiftSta
  {
 
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::SearchEditChange(TObject *Sender)
+{
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

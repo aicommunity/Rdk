@@ -885,3 +885,10 @@ void __fastcall TUDrawEngineFrame::CancelSwitching1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUDrawEngineFrame::Clone1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->Clone1Click(Sender);
+}
+//---------------------------------------------------------------------------
+

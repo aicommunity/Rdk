@@ -426,6 +426,12 @@ virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
  Variable=var;
 }
 
+// Метод возвращает указатель компонента-владельца свойства
+virtual UContainer* GetOwner(void) const
+{
+ return dynamic_cast<UContainer*>(Owner);
+}
+
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const
 {

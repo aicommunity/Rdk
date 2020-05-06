@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UWatchFormWidget</class>
+ <widget class="QWidget" name="UWatchFormWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>638</width>
+    <height>446</height>
+   </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::ActionsContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGraphicsView" name="graphicsView">
+     <property name="contextMenuPolicy">
+      <enum>Qt::CustomContextMenu</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionAdd_Watch">
+   <property name="text">
+    <string>Add Watch</string>
+   </property>
+  </action>
+  <action name="actionDel_Watch">
+   <property name="text">
+    <string>Del Watch</string>
+   </property>
+  </action>
+  <action name="actionDel_All_Watches">
+   <property name="text">
+    <string>Del All Watches</string>
+   </property>
+  </action>
+  <action name="actionWatch_Settings">
+   <property name="text">
+    <string>Watch Settings</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

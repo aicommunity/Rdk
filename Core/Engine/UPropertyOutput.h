@@ -113,6 +113,19 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int index, typenam
 
 };
 // -----------------------------
+
+/// Оператор присваивания
+UPropertyOutputData<T,OwnerT,type>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+UPropertyOutputData<T,OwnerT, type>& operator = (const UPropertyOutputData<T,OwnerT, type> &v)
+{
+ this->SetData(v.GetData());
+ return *this;
+}
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>

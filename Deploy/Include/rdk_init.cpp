@@ -1756,6 +1756,20 @@ int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_DelComponent(stringid, name);
 }
 
+// Создают копию уже существующего компонента 'stringid'
+// Возвращает имя созданного компонента
+int RDK_CALL Model_CloneComponent(const char* component_name, const char* new_name)
+{
+ return RdkCoreManager.GetEngineLock()->Model_CloneComponent(component_name,new_name);
+}
+
+int RDK_CALL MModel_CloneComponent(int channel_index, const char* component_name, const char* new_name)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CloneComponent(component_name,new_name);
+}
+
 /// Перемещает компоненту в другой компонент
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент
@@ -2613,6 +2627,14 @@ int RDK_CALL Model_SetDefaultTimeStep(unsigned int value)
  return RdkCoreManager.GetEngineLock()->Model_SetDefaultTimeStep(value);
 }
 
+int RDK_CALL MModel_SetDefaultTimeStep(int channel_index, unsigned int value)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetDefaultTimeStep(value);
+}
+
 // Управляет шагом счета компонента
 unsigned int RDK_CALL Model_GetTimeStep(const char *stringid)
 {
@@ -2631,6 +2653,14 @@ int RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetGlobalTimeStep(stringid, value);
+}
+
+int RDK_CALL MModel_SetGlobalTimeStep(int channel_index, const char *stringid, unsigned int value)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return 0;
+
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SetGlobalTimeStep(stringid, value);
 }
 
 // Возвращает текущее время модели

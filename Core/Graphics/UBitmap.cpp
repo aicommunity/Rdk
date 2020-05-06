@@ -422,8 +422,8 @@ void UBitmap::Fill(UColorT color, const UBRect &rect)
 
  case ubmRGB24:
   pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
-  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength-realrect.Width)
-   for(int i=0;i<realrect.Width;++i)
+  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength-realrect.Width*PixelByteLength)
+   for(int j=0;j<realrect.Width;++j)
    {
 	*pdata++=color.rgb.b;
 	*pdata++=color.rgb.g;
@@ -433,8 +433,12 @@ void UBitmap::Fill(UColorT color, const UBRect &rect)
 
  case ubmY32:
   pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
-  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength)
-   *reinterpret_cast<unsigned int*>(pdata)=color.c;
+  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength-realrect.Width*PixelByteLength)
+   for(int j=0;j<realrect.Width;++j)
+   {
+	*reinterpret_cast<unsigned int*>(pdata)=color.c;
+    pdata+=4;
+   }
  break;
  }
 }

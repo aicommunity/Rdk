@@ -149,6 +149,7 @@ __published:	// IDE-managed Components
 	TMenuItem *AddTimeMatrixWatch1;
 	TMenuItem *AddTimeYWatchold1;
 	TMenuItem *AddTimeVectorWatch1;
+	TMenuItem *DeleteActiveWatch1;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
 	void __fastcall AddWatch1Click(TObject *Sender);
@@ -157,6 +158,9 @@ __published:	// IDE-managed Components
 	void __fastcall AddTimeMatrixWatch1Click(TObject *Sender);
 	void __fastcall AddTimeYWatchold1Click(TObject *Sender);
 	void __fastcall AddTimeVectorWatch1Click(TObject *Sender);
+	void __fastcall DeleteActiveWatch1Click(TObject *Sender);
+	void __fastcall Chart1ClickSeries(TCustomChart *Sender, TChartSeries *Series, int ValueIndex,
+          TMouseButton Button, TShiftState Shift, int X, int Y);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUWatchFrame(TComponent* Owner);
@@ -165,6 +169,9 @@ public:		// User declarations
 protected:	// Параметры
 // Размер кеша отображаемых данных
 int CacheSize;
+
+/// Индекс выделенной серии
+int SelectedSeriesIndex;
 
 protected:	// Данные
         // -----------------------------------------

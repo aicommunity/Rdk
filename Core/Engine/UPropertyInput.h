@@ -647,6 +647,76 @@ const T* operator [] (int i) const
  return (this->v[i])?this->v[i]:Local[i];
 }
 // --------------------------
+
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual UItem* GetItem(int index)
+{
+ if(int(this->v.size())>index && index >=0)
+ {
+  return static_cast<UItem*>(ConnectedOutput[index]->GetOwner());
+ }
+ return 0;
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(int index) const
+{
+ if(int(this->v.size())>index && index >=0)
+ {
+  return ConnectedOutput[index]->GetName();
+ }
+ return std::string();
+}
+
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(int index) const
+{
+ if(int(this->v.size())>index && index >=0)
+ {
+  return ConnectedOutput[index]->GetOwner()->GetName();
+ }
+ return std::string();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(int index) const
+{
+ if(int(this->v.size())>index && index >=0)
+ {
+  return ConnectedOutput[index]->GetOwner()->GetFullName();
+ }
+ return std::string();
+}
+
+protected:
+/// Возвращает имя подключенного компонента
+virtual UItem* GetItem(void)
+{
+ return 0;
+}
+
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(void) const
+{
+ return UIPropertyInput::GetItemName();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(void) const
+{
+ return UIPropertyInput::GetItemFullName();
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(void) const
+{
+ return UIPropertyInput::GetItemOutputName();
+}
+// --------------------------
+
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>

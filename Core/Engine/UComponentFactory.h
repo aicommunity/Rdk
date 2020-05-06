@@ -14,15 +14,17 @@ namespace RDK {
  protected:
   UId ClassId;
 
+  UStorage* Storage;
+
  public:
-  UComponentAbstractFactory();
+  UComponentAbstractFactory(UStorage* storage);
   virtual ~UComponentAbstractFactory();
 
   /// Создание компонента
   virtual UEPtr<UComponent> New() = 0;
 
   /// Создание компонента с копированием в него компонента @param prototype
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage) = 0;
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype) = 0;
 
   /// Сбрасывает объект к исходному состоянию, которое зависит от порождающей фабрики
   virtual void ResetComponent(UEPtr<UComponent> component) const = 0;
@@ -44,7 +46,7 @@ namespace RDK {
 
   virtual UEPtr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage);
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype);
 
   virtual void ResetComponent(UEPtr<UComponent> component) const;
 
@@ -61,12 +63,12 @@ namespace RDK {
   std::string DefaultComponentName;
 
  public:
-  UComponentFactoryMethod(UComponent* (*funcPointer)(void), const std::string &default_component_name);
+  UComponentFactoryMethod(const UEPtr<UStorage> &storage, UComponent* (*funcPointer)(void), const std::string &default_component_name);
   virtual ~UComponentFactoryMethod();
 
   virtual UEPtr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, const UEPtr<UStorage> storage);
+  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype);
 
   virtual void ResetComponent(UEPtr<UComponent> component) const;
  };
