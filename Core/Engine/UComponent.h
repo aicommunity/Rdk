@@ -421,6 +421,9 @@ virtual unsigned int GetType(void) const=0;
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const=0;
 
+// Метод возвращает указатель компонента-владельца свойства
+virtual UContainer* GetOwner(void) const=0;
+
 // Метод возвращает строковое имя компонента-владельца свойства
 virtual std::string GetOwnerName(void) const=0;
 

@@ -8,6 +8,7 @@
 #include "USeriesControlUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "UComponentsListFormUnit.h"
+#include "TMatrixFormUnit.h"
 //---------------------------------------------------------------------------
 #define ISNAN(x) ((x) != (x))
 //---------------------------------------------------------------------------
@@ -136,6 +137,7 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  CacheIndex=0;
  AutoMinYValue=true;
  AutoMaxYValue=true;
+ SelectedSeriesIndex=-1;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -475,6 +477,7 @@ int __fastcall TUWatchFrame::GetNumWatches(void)
 // Добавление нового наблюдения
 int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 {
+ SelectedSeriesIndex=-1;
  if(wd.XOutputIndex.empty() || wd.YOutputIndex.empty())
  {
  // Проверяем, есть ли серия с такими же данными
@@ -579,6 +582,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 // Возвращает индекс серии
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
+ SelectedSeriesIndex=-1;
  TUWatchInfo wd;
  wd.FullUpdate=false;
  //wd.WatchInterval=watchinterval;
@@ -597,7 +601,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  {
   if(!yname.empty())
   {
-   wd.Legend=yname;
+   wd.Legend=yname+std::string(":")+youtput;
    wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
    wd.Legend+=RDK::sntoa(mcol)+string(")");
   }
@@ -614,8 +618,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
   if(!xname.empty())
   {
    wd.Legend=xname;
-   wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
-   wd.Legend+=RDK::sntoa(xoutindex)+string("]");
+   wd.Legend+=string(":")+RDK::sntoa(xoutput);
   }
  }
 
@@ -635,6 +638,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
+ SelectedSeriesIndex=-1;
  TUWatchInfo wd;
  wd.FullUpdate=false;
  //wd.WatchInterval=watchinterval;
@@ -692,6 +696,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift, TPenStyle style, TColor color)
 {
+ SelectedSeriesIndex=-1;
  TUWatchInfo wd;
  wd.FullUpdate=true;
 
@@ -753,7 +758,7 @@ void __fastcall TUWatchFrame::Del(int seriesindex)
 {
  if(seriesindex >= (int)NameList.size())
   return;
-// DelSeries(seriesindex);
+ SelectedSeriesIndex=-1;
 
  TChartSeries *ser;
 
@@ -773,6 +778,7 @@ void __fastcall TUWatchFrame::Del(int seriesindex)
 // Удаляет все наблюдения
 void __fastcall TUWatchFrame::Clear(void)
 {
+ SelectedSeriesIndex=-1;
  map<string,TUWatchInfo*>::iterator I;
 
  if(NameList.size() == 0)
@@ -935,10 +941,18 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    else
    if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
    {
-	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
+	 const RDK::MDMatrix<double>* mm=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->XDataSourceName.c_str(), wd->XOutputIndex.c_str()));
+	 if(!mm)
+      continue;
+
+	 RDK::MDMatrix<double> m=*mm;
+	 if(m.GetRows()<=0)
+      continue;
+     int xdata_size=m.GetCols();//Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
 	 vxdata.assign(xdata_size*3+2,0);
 	 vydata.assign(xdata_size*3+2,0);
-	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
+	 double* xx=m.Data;//(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
+
 
 	 if(!xx || !xdata_size)
 	 {
@@ -1577,18 +1591,24 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 
  std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- std::string::size_type i=comp_output.find("DataOutput");
- if(i == std::string::npos)
+// std::string::size_type i=comp_output.find("DataOutput");
+/* if(i == std::string::npos)
  {
   return;
  }
  comp_output=comp_output.substr(10);
-
-
+   */
+ //comp_output="0";
  int num_watches=GetNumWatches();
  int yshift=num_watches+1;
 
- Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0,yshift);
+ //Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0,yshift);
+ Add(0x100, comp_name, "", comp_output, 0, "", 0, 0, 0, yshift,psSolid, TColor(0));
+ //Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+
+//   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+//  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+// Add(0x100, "",componentName,"",0,componentOutput,0,0,0);
 }
 //---------------------------------------------------------------------------
 
@@ -1610,6 +1630,14 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   if(!ym)
    return;
 
+  if(!MatrixForm->SelectMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),
+								UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput()))
+   return;
+
+  if(MatrixForm->ShowModal() != mrOk)
+   return;
+
+   /*
   UListInputForm->PresentSelect=true;
   UListInputForm->MustInput=true;
   vector<string> listvals;
@@ -1628,7 +1656,9 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   if(UListInputForm->ShowModal() != mrOk)
    return;
   int col=StrToInt(UListInputForm->Edit->Text);
-
+  */
+  int col=MatrixForm->SelectedCol;
+  int row=MatrixForm->SelectedRow;
   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
   std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
  Add(0x200, "",componentName,"",0,componentOutput,0,row,col);
@@ -1696,4 +1726,32 @@ void __fastcall TUWatchFrame::AddTimeVectorWatch1Click(TObject *Sender)
   Add(0x400, "",componentName,"",0,componentOutput,0,vectorName,vectorIndexX, vectorIndexY);
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::DeleteActiveWatch1Click(TObject *Sender)
+{
+ if(SelectedSeriesIndex < 0)
+ {
+  Application->MessageBox(L"Nothing to do! Please select series first.",L"Error", MB_OK);
+  return;
+ }
+
+ String str=L"Are you sure to delete ";
+ str=str+NameList[SelectedSeriesIndex].Legend.c_str();
+ str=str+" series?";
+ if(Application->MessageBox(str.c_str(),L"Warning", MB_YESNO) == ID_NO)
+  return;
+
+ Del(SelectedSeriesIndex);
+ SelectedSeriesIndex=-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::Chart1ClickSeries(TCustomChart *Sender, TChartSeries *Series,
+          int ValueIndex, TMouseButton Button, TShiftState Shift, int X,
+          int Y)
+{
+ SelectedSeriesIndex=Series->SeriesIndex;
+}
+//---------------------------------------------------------------------------
+
 

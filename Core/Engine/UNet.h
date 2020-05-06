@@ -48,6 +48,8 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslis
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
+virtual UContainer* New(void);
+
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
@@ -270,7 +272,7 @@ UEPtr<T> FindComponentByNameAndType(const NameT &component_name);
 /// Возвращает указатель на созданный экземпляр, если он был добавлен
 /// или 0
 template<typename T>
-UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_name);
+UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_name, UEPtr<UIPointer> pointer=0);
 // ----------------------
 
 // --------------------------
@@ -508,11 +510,16 @@ UEPtr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
 /// Возвращает указатель на созданный экземпляр, если он был добавлен
 /// или 0
 template<typename T>
-UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name)
+UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name, UEPtr<UIPointer> pointer)
 {
  UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
  if(comp)
-  return comp;
+ {
+  if(comp->GetCompClassName() == class_name)
+   return comp;
+  else
+   DelComponent(component_name);
+ }
 
  if(!Storage)
  {
@@ -529,7 +536,7 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
  comp=dynamic_pointer_cast<T>(proto);
  comp->SetName(component_name);
  comp->SetTimeStep(TimeStep);
- if(!AddComponent(comp))
+ if(!AddComponent(comp, pointer))
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - AddComponent failed. ClassName=")+class_name);
   Storage->ReturnObject(comp);

@@ -26,6 +26,7 @@ inherited UWatchFrame: TUWatchFrame
     MarginTop = 0
     Title.Text.Strings = (
       ' ')
+    OnClickSeries = Chart1ClickSeries
     DepthAxis.Automatic = False
     DepthAxis.AutomaticMaximum = False
     DepthAxis.AutomaticMinimum = False
@@ -52,10 +53,12 @@ inherited UWatchFrame: TUWatchFrame
     Top = 16
     object AddWatch1: TMenuItem
       Caption = 'Add Time-Y Watch'
+      Visible = False
       OnClick = AddWatch1Click
     end
     object AddTimeYWatchold1: TMenuItem
       Caption = 'Add Time-Y Watch (old)'
+      Visible = False
       OnClick = AddTimeYWatchold1Click
     end
     object AddTimeMatrixWatch1: TMenuItem
@@ -64,6 +67,7 @@ inherited UWatchFrame: TUWatchFrame
     end
     object AddTimeVectorWatch1: TMenuItem
       Caption = 'Add Time-Vector Watch'
+      Visible = False
       OnClick = AddTimeVectorWatch1Click
     end
     object AddXPulseWatch1: TMenuItem
@@ -73,6 +77,10 @@ inherited UWatchFrame: TUWatchFrame
     object AddXYWatch1: TMenuItem
       Caption = 'Add XY Watch'
       Enabled = False
+    end
+    object DeleteActiveWatch1: TMenuItem
+      Caption = 'Delete Active Watch'
+      OnClick = DeleteActiveWatch1Click
     end
     object DeleteAll1: TMenuItem
       Caption = 'Delete All Watches'

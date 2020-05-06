@@ -2319,6 +2319,11 @@ void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
  {
   RdkApplication.CopyProject(AnsiString(chosenDir+"\\").c_str());
  }
+
+ if(Application->MessageBox(L"Open copied project?", L"Info",MB_YESNO) == ID_YES)
+ {
+  OpenProject(chosenDir+"\\"+RdkApplication.GetProjectFileName().c_str());
+ }
 }
 //---------------------------------------------------------------------------
 

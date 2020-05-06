@@ -38,6 +38,8 @@ TProjectChannelConfig::TProjectChannelConfig(void)
  DebuggerMessageFlag=false;
 
  MaxCalculationModelTime=0;
+
+ UseIndTimeStepFlag=false;
 }
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
@@ -64,7 +66,8 @@ bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) cons
  (ChannelName != copy.ChannelName) ||
  (DebugSysEventsMask != copy.DebugSysEventsMask) ||
  (DebuggerMessageFlag != copy.DebuggerMessageFlag) ||
- (MaxCalculationModelTime != copy.MaxCalculationModelTime);
+ (MaxCalculationModelTime != copy.MaxCalculationModelTime ||
+ (UseIndTimeStepFlag != copy.UseIndTimeStepFlag));
 }
 
 bool TProjectChannelConfig::operator == (const TProjectChannelConfig& copy) const
@@ -101,6 +104,8 @@ TProjectChannelConfig& TProjectChannelConfig::operator = (const TProjectChannelC
  ChannelName=copy.ChannelName;
 
  MaxCalculationModelTime=copy.MaxCalculationModelTime;
+
+ UseIndTimeStepFlag=copy.UseIndTimeStepFlag;
  return *this;
 }
 
@@ -535,6 +540,8 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
  Config.ChannelsConfig[0].DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",Config.ChannelsConfig[0].DebugSysEventsMask);
  Config.ChannelsConfig[0].DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
  Config.ChannelsConfig[0].MaxCalculationModelTime=xml.ReadFloat("MaxCalculationModelTime", 0.0);
+ Config.ChannelsConfig[0].UseIndTimeStepFlag=xml.ReadBool("UseIndTimeStepFlag", false);
+
 
 
  for(int i=1;i<num_engines;i++)
@@ -558,6 +565,7 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
   Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned(std::string("DebugSysEventsMask_")+RDK::sntoa(i),Config.ChannelsConfig[i].DebugSysEventsMask);
   Config.ChannelsConfig[i].DebuggerMessageFlag=xml.ReadBool(std::string("DebuggerMessageFlag_")+RDK::sntoa(i),false);
   Config.ChannelsConfig[i].MaxCalculationModelTime=xml.ReadFloat(std::string("MaxCalculationModelTime_")+RDK::sntoa(i), 0.0);
+  Config.ChannelsConfig[i].UseIndTimeStepFlag=xml.ReadBool(std::string("UseIndTimeStepFlag")+RDK::sntoa(i), false);
  }
 
  // TODO: Реализовать загрузку описания
@@ -647,6 +655,7 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
   Config.ChannelsConfig[0].DebugSysEventsMask=Config.ChannelsConfig[0].DebugSysEventsMask;
   Config.ChannelsConfig[0].DebuggerMessageFlag=false;
   Config.ChannelsConfig[0].MaxCalculationModelTime=0.0;
+  Config.ChannelsConfig[0].UseIndTimeStepFlag=false;
  }
  else
  for(int i=0;i<num_engines;i++)
@@ -671,6 +680,7 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
   Config.ChannelsConfig[i].DebugSysEventsMask=xml.ReadUnsigned("DebugSysEventsMask",Config.ChannelsConfig[i].DebugSysEventsMask);
   Config.ChannelsConfig[i].DebuggerMessageFlag=xml.ReadBool("DebuggerMessageFlag",false);
   Config.ChannelsConfig[i].MaxCalculationModelTime=xml.ReadFloat("MaxCalculationModelTime", 0.0);
+  Config.ChannelsConfig[i].UseIndTimeStepFlag=xml.ReadBool("UseIndTimeStepFlag", false);
   xml.SelectUp();
  }
  return true;
@@ -790,6 +800,7 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
    xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
    xml.WriteBool("DebuggerMessageFlag",channel_config.DebuggerMessageFlag);
    xml.WriteFloat("MaxCalculationModelTime",channel_config.MaxCalculationModelTime);
+   xml.WriteBool("UseIndTimeStepFlag",channel_config.UseIndTimeStepFlag);
   }
   else
   {
@@ -811,6 +822,7 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
    xml.WriteUnsigned(std::string("DebugSysEventsMask_")+suffix,channel_config.DebugSysEventsMask);
    xml.WriteBool(std::string("DebuggerMessageFlag_")+suffix,channel_config.DebuggerMessageFlag);
    xml.WriteFloat("MaxCalculationModelTime_"+suffix,channel_config.MaxCalculationModelTime);
+   xml.WriteBool(std::string("UseIndTimeStepFlag_")+suffix,channel_config.UseIndTimeStepFlag);
   }
  }
 
@@ -951,6 +963,7 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
   xml.WriteUnsigned("DebugSysEventsMask",channel_config.DebugSysEventsMask);
   xml.WriteBool("DebuggerMessageFlag",channel_config.DebuggerMessageFlag);
   xml.WriteFloat("MaxCalculationModelTime",channel_config.MaxCalculationModelTime);
+  xml.WriteBool("UseIndTimeStepFlag",channel_config.UseIndTimeStepFlag);
 
   xml.SelectUp();
  }

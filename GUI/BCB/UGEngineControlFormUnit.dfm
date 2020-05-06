@@ -2,7 +2,7 @@ object UGEngineControlForm: TUGEngineControlForm
   Left = 150
   Top = 0
   Caption = 'Engine Control'
-  ClientHeight = 681
+  ClientHeight = 702
   ClientWidth = 1074
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,19 +23,19 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 95
     Top = 44
     Width = 979
-    Height = 595
+    Height = 616
     Align = alClient
     TabOrder = 0
     object Splitter2: TSplitter
       Left = 262
       Top = 1
       Width = 7
-      Height = 451
+      Height = 472
       ExplicitHeight = 483
     end
     object Splitter3: TSplitter
       Left = 1
-      Top = 452
+      Top = 473
       Width = 977
       Height = 7
       Cursor = crVSplit
@@ -46,7 +46,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Left = 1
       Top = 1
       Width = 261
-      Height = 451
+      Height = 472
       Align = alLeft
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -55,7 +55,7 @@ object UGEngineControlForm: TUGEngineControlForm
         Left = 1
         Top = 1
         Width = 259
-        Height = 449
+        Height = 470
         Align = alClient
         DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
@@ -69,7 +69,7 @@ object UGEngineControlForm: TUGEngineControlForm
         ExplicitLeft = 1
         ExplicitTop = 1
         ExplicitWidth = 259
-        ExplicitHeight = 449
+        ExplicitHeight = 470
         inherited Splitter1: TSplitter
           Left = 0
           Top = 227
@@ -86,21 +86,21 @@ object UGEngineControlForm: TUGEngineControlForm
           Left = 0
           Top = 235
           Width = 259
-          Height = 214
+          Height = 235
           ExplicitLeft = 0
           ExplicitTop = 235
           ExplicitWidth = 259
-          ExplicitHeight = 214
+          ExplicitHeight = 235
           inherited PageControl1: TPageControl
             Width = 257
-            Height = 212
+            Height = 233
             ExplicitWidth = 257
-            ExplicitHeight = 212
+            ExplicitHeight = 233
             inherited TabSheet6: TTabSheet
               ExplicitWidth = 249
-              ExplicitHeight = 185
+              ExplicitHeight = 206
               inherited Splitter5: TSplitter
-                Top = 103
+                Top = 124
                 Width = 249
                 Height = 12
                 ExplicitTop = 138
@@ -109,9 +109,9 @@ object UGEngineControlForm: TUGEngineControlForm
               end
               inherited EnchancedSG1: TEnchancedSG
                 Width = 249
-                Height = 103
+                Height = 124
                 ExplicitWidth = 249
-                ExplicitHeight = 103
+                ExplicitHeight = 124
                 inherited BasicStringGrid: TStringGrid
                   Left = 17
                   Top = 58
@@ -193,7 +193,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 end
               end
               inherited HeaderControl2: THeaderControl
-                Top = 149
+                Top = 170
                 Width = 249
                 Height = 36
                 ExplicitTop = 170
@@ -201,13 +201,13 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitHeight = 36
               end
               inherited NiceParamValRichEdit: TRichEdit
-                Top = 115
+                Top = 136
                 Width = 249
                 Height = 34
                 Font.Height = -12
                 Constraints.MinHeight = 20
                 OnMouseEnter = UComponentsListFrame1NiceParamValRichEditMouseEnter
-                ExplicitTop = 115
+                ExplicitTop = 136
                 ExplicitWidth = 249
                 ExplicitHeight = 34
               end
@@ -420,7 +420,7 @@ object UGEngineControlForm: TUGEngineControlForm
     end
     object Panel4: TPanel
       Left = 1
-      Top = 459
+      Top = 480
       Width = 977
       Height = 135
       Align = alBottom
@@ -439,10 +439,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -589,7 +585,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Left = 269
       Top = 1
       Width = 709
-      Height = 451
+      Height = 472
       ActivePage = Draw
       Align = alClient
       DoubleBuffered = True
@@ -604,7 +600,7 @@ object UGEngineControlForm: TUGEngineControlForm
           Left = 0
           Top = 0
           Width = 701
-          Height = 423
+          Height = 444
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -614,11 +610,11 @@ object UGEngineControlForm: TUGEngineControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitWidth = 701
-          ExplicitHeight = 423
+          ExplicitHeight = 444
           inherited Splitter1: TSplitter
             Left = 452
             Width = 12
-            Height = 371
+            Height = 392
             ExplicitLeft = 454
             ExplicitWidth = 12
             ExplicitHeight = 409
@@ -626,45 +622,53 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited Panel1: TPanel
             Left = 464
             Width = 237
-            Height = 371
+            Height = 392
             ExplicitLeft = 464
             ExplicitWidth = 237
-            ExplicitHeight = 371
+            ExplicitHeight = 392
             inherited UClassesListFrame: TUClassesListFrame
               Width = 235
-              Height = 369
+              Height = 390
               Font.Height = -12
               ExplicitWidth = 235
-              ExplicitHeight = 369
+              ExplicitHeight = 390
               inherited PageControl: TPageControl
+                Top = 22
                 Width = 235
-                Height = 369
+                Height = 368
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
                 ExplicitWidth = 235
                 ExplicitHeight = 369
+                inherited NameTabSheet: TTabSheet
+                  ExplicitHeight = 494
+                  inherited StringGrid: TStringGrid
+                    ExplicitHeight = 494
+                  end
+                end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitTop = 25
                   ExplicitWidth = 227
                   ExplicitHeight = 340
                   inherited TreeView: TTreeView
                     Width = 227
-                    Height = 340
+                    Height = 339
                     ExplicitWidth = 227
                     ExplicitHeight = 340
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
+                  ExplicitHeight = 373
                   inherited Splitter1: TSplitter
-                    Top = 90
+                    Top = 69
                     Height = 8
                     ExplicitTop = 11
                     ExplicitWidth = 175
                     ExplicitHeight = 8
                   end
                   inherited Panel1: TPanel
-                    Top = 265
+                    Top = 244
                     Height = 129
-                    ExplicitTop = 265
+                    ExplicitTop = 244
                     ExplicitHeight = 129
                     inherited LoadLibraryButton: TButton
                       Height = 26
@@ -694,19 +698,19 @@ object UGEngineControlForm: TUGEngineControlForm
                     end
                   end
                   inherited GroupBox1: TGroupBox
-                    Height = 90
-                    ExplicitHeight = 90
+                    Height = 69
+                    ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
-                      Height = 72
+                      Height = 51
                       ExplicitTop = 16
-                      ExplicitHeight = 72
+                      ExplicitHeight = 51
                     end
                   end
                   inherited GroupBox2: TGroupBox
-                    Top = 98
+                    Top = 77
                     Height = 167
-                    ExplicitTop = 98
+                    ExplicitTop = 77
                     ExplicitHeight = 167
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
@@ -717,11 +721,19 @@ object UGEngineControlForm: TUGEngineControlForm
                   end
                 end
               end
+              inherited SearchEdit: TEdit
+                Width = 235
+                Height = 22
+                ExplicitLeft = 0
+                ExplicitTop = 0
+                ExplicitWidth = 235
+                ExplicitHeight = 22
+              end
             end
           end
           inherited Panel2: TPanel
             Width = 452
-            Height = 371
+            Height = 392
             ExplicitWidth = 452
             ExplicitHeight = 392
             inherited ScrollBox: TScrollBox
@@ -742,10 +754,10 @@ object UGEngineControlForm: TUGEngineControlForm
             end
           end
           inherited Panel3: TPanel
-            Top = 371
+            Top = 392
             Width = 701
             Height = 52
-            ExplicitTop = 371
+            ExplicitTop = 392
             ExplicitWidth = 701
             ExplicitHeight = 52
             inherited Label1: TLabel
@@ -857,7 +869,7 @@ object UGEngineControlForm: TUGEngineControlForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 656
+    Top = 677
     Width = 1074
     Height = 25
     Panels = <
@@ -876,13 +888,12 @@ object UGEngineControlForm: TUGEngineControlForm
       item
         Width = 50
       end>
-    ExplicitTop = 677
   end
   object ChannelsStringGrid: TStringGrid
     Left = 0
     Top = 44
     Width = 95
-    Height = 595
+    Height = 616
     Align = alLeft
     ColCount = 3
     DefaultColWidth = 24
@@ -897,7 +908,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Visible = False
     OnClick = ChannelsStringGridClick
     OnSelectCell = ChannelsStringGridSelectCell
-    ExplicitHeight = 616
   end
   object ToolBar: TToolBar
     Left = 0
@@ -1016,12 +1026,11 @@ object UGEngineControlForm: TUGEngineControlForm
   end
   object Panel3: TPanel
     Left = 0
-    Top = 639
+    Top = 660
     Width = 1074
     Height = 17
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 660
     object ShowDebugMessagesCheckBox: TCheckBox
       Left = 1
       Top = 1
@@ -1319,7 +1328,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03C00410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03B40410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

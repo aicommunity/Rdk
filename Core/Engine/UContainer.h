@@ -163,7 +163,7 @@ protected: // Временные переменные
 // Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
 // счетчиком текущего интервала ожидания.
 // В противном случае 'CalcCounter' не ипользуется
-UTime CalcCounter;
+int CalcCounter;
 
 // Хранит величину шага счета родительского
 // объекта или величину шага счета этого объекта
@@ -349,6 +349,10 @@ bool SetTimeStep(const UTime &timestep);
 
 // Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
 bool SetGlobalTimeStep(UTime timestep);
+
+/// Переключает режим использования индивидуального TimeStep для компонента и всех дочерних компонент
+/// Предназначено только для вызова из UEnvironment
+void ChangeUseIndTimeStepMode(bool value);
 
 // Устанавливает флаг активности объекта
 const bool& GetActivity(void) const;

@@ -143,6 +143,7 @@ int TUImagesFrame::SetPointSize(int value)
   return 1;
 
  PointSize = value;
+ return true;
 }
 
 int TUImagesFrame::GetPointSize(void)
@@ -842,7 +843,7 @@ void TUImagesFrame::DrawPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &point
 {
  int point_radius = PointSize>>1;
 
- for(int i = 0; i < points.size(); i++)
+ for(int i = 0; i < int(points.size()); i++)
  {
 	 for(int k = -point_radius; k <= point_radius; k++)
 	 {
@@ -981,7 +982,7 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
 {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
-  if(Images.size()<=DrawGrid->Col || Images[DrawGrid->Col].size()<= DrawGrid->Row)
+  if(int(Images.size())<=DrawGrid->Col || int(Images[DrawGrid->Col].size())<= DrawGrid->Row)
    return;
   Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
 
@@ -1079,7 +1080,7 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
 
    if(CyclicPointUpdate && MaxPointCount>0)
    {
-	if(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()<MaxPointCount)
+	if(int(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size())<MaxPointCount)
 	{
 	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row].resize(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()+1);
 	 OnScreenPoints[DrawGrid->Col][DrawGrid->Row][OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()-1].X = int(xx+0.5);
@@ -1091,7 +1092,7 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
 	else
 	{
 	 LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]+=1;
-	 if(LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]>=OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size())
+	 if(LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]>=int(OnScreenPoints[DrawGrid->Col][DrawGrid->Row].size()))
 	 {
 	  LastUpdatedPoint[DrawGrid->Col][DrawGrid->Row]=0;
 	 }
@@ -1122,6 +1123,7 @@ bool TUImagesFrame::AddExternalPoint(int col, int row, int X, int Y, const RDK::
  ExternalPoints[col][row][ExternalPoints[col][row].size()-1].Y = Y;
  ExternalPointsColors[col][row].resize(ExternalPointsColors[col][row].size()+1);
  ExternalPointsColors[col][row][ExternalPointsColors[col][row].size()-1] = color;
+ return true;
 }
 //---------------------------------------------------------------------------
 

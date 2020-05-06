@@ -269,10 +269,27 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return true;
 
  std::vector<std::string>::iterator I;
- cont->SetLogger(Storage->GetLogger());
- cont->SetStorage(Storage);
- cont->Build();
- UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
+ UEPtr<UVirtualMethodFactory> factory;
+ try
+ {
+  cont->SetLogger(Storage->GetLogger());
+  cont->SetStorage(Storage);
+  cont->Build();
+  factory = new UVirtualMethodFactory(cont);
+ }
+ catch(...)
+ {
+  if(find(Incomplete.begin(),Incomplete.end(),name) == Incomplete.end())
+   Incomplete.push_back(name);
+  I=find(ClassesList.begin(),ClassesList.end(),name);
+  if(I != ClassesList.end())
+   ClassesList.erase(I);
+  I=find(Complete.begin(),Complete.end(),name);
+  if(I != Complete.end())
+   Complete.erase(I);
+  delete factory;
+  return false;
+ }
 
  if(!Storage->AddClass(factory,name))
  {
@@ -314,7 +331,7 @@ bool ULibrary::UploadClass(const std::string &class_name, const std::string &com
   return true;
 
  std::vector<std::string>::iterator I;
- UEPtr<UComponentFactoryMethod> factory = new UComponentFactoryMethod(funcPointer,component_name);
+ UEPtr<UComponentFactoryMethod> factory = new UComponentFactoryMethod(Storage,funcPointer,component_name);
 
  if(!Storage->AddClass(factory,class_name))
  {

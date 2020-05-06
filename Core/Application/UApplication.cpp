@@ -1167,6 +1167,12 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
   {
    GetEnvironmentLock()->SetMaxCalcTime(project_config.ChannelsConfig[i].MaxCalculationModelTime);
   }
+
+  if(old_project_config.ChannelsConfig[i].UseIndTimeStepFlag != project_config.ChannelsConfig[i].UseIndTimeStepFlag)
+  {
+   GetEnvironmentLock()->SetUseIndTimeStepFlag(project_config.ChannelsConfig[i].UseIndTimeStepFlag);
+  }
+
  }
 
  return SaveProject();
@@ -1286,7 +1292,8 @@ try{
 
    if(Model_Check())
    {
-	Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
+	if(!channel_config.UseIndTimeStepFlag)
+	 Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
 	if(channel_config.InitAfterLoad)
      MEnv_ModelInit(i,0);
 	if(channel_config.ResetAfterLoad)
@@ -1295,6 +1302,7 @@ try{
 
    EngineControl->SetCalculateMode(i, channel_config.CalculationMode);
    GetEnvironmentLock()->SetMaxCalcTime(channel_config.MaxCalculationModelTime);
+   GetEnvironmentLock()->SetUseIndTimeStepFlag(channel_config.UseIndTimeStepFlag);
   }
   catch(RDK::UException &exception)
   {
@@ -1413,6 +1421,8 @@ try
 
   if(!is_saved)
    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save parameters file: ")+channel_config.ParametersFileName).c_str());
+
+  channel_config.UseIndTimeStepFlag=GetEnvironmentLock()->GetUseIndTimeStepFlag();
 
   if(config.ProjectAutoSaveStatesFlag)
   {
