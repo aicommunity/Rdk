@@ -34,6 +34,7 @@ __published:	// IDE-managed Components
 	TGroupBox *GroupBox2;
 	TStringGrid *LibComponentListStringGrid;
 	TButton *AddClassButton;
+	TEdit *SearchEdit;
 	void __fastcall PageControlChange(TObject *Sender);
 	void __fastcall StringGridMouseEnter(TObject *Sender);
 	void __fastcall TreeViewMouseEnter(TObject *Sender);
@@ -47,6 +48,7 @@ __published:	// IDE-managed Components
 	void __fastcall LibComponentListStringGridMouseMove(TObject *Sender, TShiftState Shift,
           int X, int Y);
 	void __fastcall TreeViewMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
+	void __fastcall SearchEditChange(TObject *Sender);
 
 
 private:	// User declarations
