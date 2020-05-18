@@ -50,6 +50,9 @@ std::string WorkDirectory;
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 std::string ConfigsMainPath;
 
+/// Относительный путь до папки с хранилищем проектов (пока обычно /Database)
+std::string DatabaseMainPath;
+
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 std::string ModelsMainPath;
 
@@ -141,6 +144,9 @@ bool SetWorkDirectory(const std::string& value);
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& GetConfigsMainPath(void) const;
 bool SetConfigsMainPath(const std::string &value);
+
+const std::string& GetDatabaseMainPath(void) const;
+bool SetDatabaseMainPath(const std::string &value);
 
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 const std::string& GetModelsMainPath(void) const;

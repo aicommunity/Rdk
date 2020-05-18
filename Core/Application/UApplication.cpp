@@ -104,6 +104,20 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& UApplication::GetDatabaseMainPath(void) const
+{
+ return DatabaseMainPath;
+}
+
+bool UApplication::SetDatabaseMainPath(const std::string &value)
+{
+ if(DatabaseMainPath == value)
+  return true;
+ DatabaseMainPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
 {
