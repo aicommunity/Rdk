@@ -56,7 +56,7 @@ virtual void SendResponseBuffer(std::vector<unsigned char> buffer, std::string &
 virtual void ConnectClient(std::string& bind);
 ///Отсоединяет клиента для чтения данных
 ///Фактически - очищает объект для обработки пакетов от конкретного клиента
-virtual void DisсonnectClient(std::string& bind);
+virtual void DisconnectClient(std::string& bind);
 ///Инициировать остановку сервера, отключить все приемники
 virtual void ServerStop();
 /// По аналогии с ServerStop, инициировать включение сервера

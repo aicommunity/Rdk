@@ -104,7 +104,7 @@ void UServerTransport::ConnectClient(std::string& bind)
  PacketReaders[bind].ClearPacketList();
 }
 
-void UServerTransport::DisñonnectClient(std::string& bind)
+void UServerTransport::DisconnectClient(std::string& bind)
 {
  std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
  if(I != PacketReaders.end())
