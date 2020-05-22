@@ -214,8 +214,8 @@ lookupCPP ='SOURCES +='
 with open(lib_path.text+lib_name+'/Build/Qt/'+lib_name+'.pro') as file:
     data = file.readlines()
 
-textH = '\n    ../../Core/' + component_name+'.h'+' \  \n'
-textCPP = '\n    ../../Core/' + component_name+'.cpp'+' \  \n'
+textH = '    ../../Core/' + component_name+'.h'+' \  \n'
+textCPP = '    ../../Core/' + component_name+'.cpp'+' \  \n'
 with open(lib_path.text+lib_name+'/Build/Qt/'+lib_name+'.pro') as file:
     for num, line in enumerate(file, 1):
         if lookupH in line:
