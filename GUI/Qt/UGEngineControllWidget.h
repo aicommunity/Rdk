@@ -76,6 +76,9 @@ public:
     ///Показывает виджет с переключением каналов
     void showChannelsWidget(void);
 
+    ///Загрузить проект из внешнего источника (пока только из конфигуратора на основе СУБД)
+    void loadProjectExternal(const QString &config_path);
+
     //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
 signals:
