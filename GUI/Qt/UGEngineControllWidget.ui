@@ -96,6 +96,8 @@
     <addaction name="actionSaveCommonDescriptions"/>
     <addaction name="actionSaveClassesDescriptions"/>
     <addaction name="separator"/>
+    <addaction name="actionGenerateClass"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuChannels">
@@ -660,6 +662,11 @@
   <action name="actionCloseConfig">
    <property name="text">
     <string>Close Config</string>
+   </property>
+  </action>
+  <action name="actionGenerateClass">
+   <property name="text">
+    <string>Generate Class</string>
    </property>
   </action>
  </widget>

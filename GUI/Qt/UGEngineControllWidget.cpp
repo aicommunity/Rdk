@@ -151,6 +151,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionDeleteLast, SIGNAL(triggered(bool)), this, SLOT(actionDeleteLast()));
     connect(ui->actionDeleteAll, SIGNAL(triggered(bool)), this, SLOT(actionDeleteAll()));
     connect(ui->actionClone, SIGNAL(triggered(bool)), this, SLOT(actionClone()));
+    connect(ui->actionGenerateClass, SIGNAL(triggered(bool)), this, SLOT(actionGenerateClass()));
 
     // calculate menu actions:
     connect(ui->actionStart, SIGNAL(triggered(bool)), this, SLOT(actionStart()));
@@ -169,7 +170,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
-    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
+    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));    
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -551,6 +552,13 @@ void UGEngineControllWidget::actionNewWatches()
     addWatchesWidged();
 }
 
+void UGEngineControllWidget::actionGenerateClass()
+{
+    auto classGenerator = new QMainWindow(this);
+    classGenerator->setWindowTitle("Class generator");
+    classGenerator->setCentralWidget(new UClassGenerator);
+    classGenerator->show();
+}
 
 /*void UGEngineControllWidget::actionVASimpleSettings()
 {
