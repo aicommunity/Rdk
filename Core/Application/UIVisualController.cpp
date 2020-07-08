@@ -63,6 +63,33 @@ void UIVisualControllerStorage::AfterLoadProject(void)
 }
 
 
+
+// Метод, вызываемый перед закрытием проекта
+void UIVisualControllerStorage::BeforeCloseProject(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+  {
+   try
+   {
+    InterfaceUpdaters[i]->BeforeCloseProject();
+   }
+   catch(RDK::UException &ex)
+   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+   }
+   catch(std::exception &ex)
+   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+   }
+   catch(...)
+   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+   }
+  }
+}
+
+
 // Метод, вызываемый перед сбросом модели
 void UIVisualControllerStorage::BeforeReset(void)
 {
@@ -362,7 +389,7 @@ void UIControllerStorage::AfterLoadProject(int channel_index)
   {
    try
    {
-	GetControllers()[i]->AfterLoadProject();
+    GetControllers()[i]->AfterLoadProject();
    }
    catch(RDK::UException &ex)
    {
@@ -379,6 +406,30 @@ void UIControllerStorage::AfterLoadProject(int channel_index)
   }
 }
 
+// Метод, вызываемый перед закрытием проекта
+void UIControllerStorage::BeforeCloseProject(int channel_index)
+{
+ for(size_t i=0;i<GetControllers().size();i++)
+  if(GetControllers()[i])
+  {
+   try
+   {
+    GetControllers()[i]->BeforeCloseProject();
+   }
+   catch(RDK::UException &ex)
+   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+   }
+   catch(std::exception &ex)
+   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+   }
+   catch(...)
+   {
+    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+   }
+  }
+}
 
 // Метод, вызываемый перед сбросом модели
 void UIControllerStorage::BeforeReset(int channel_index)
@@ -546,6 +597,13 @@ UAppController::~UAppController(void)
 // Класс дефолтный прототип интерфейсов
 // Метод, вызываемый после загрузки проекта
 void UAppController::AfterLoadProject(void)
+{
+
+}
+
+
+// Метод, вызываемый перед закрытием проекта
+void UAppController::BeforeCloseProject(void)
 {
 
 }

@@ -66,6 +66,11 @@ protected:
     virtual void AfterLoadProject(void);
     virtual void AAfterLoadProject(void);
 
+    /// Метод, вызываемый перед закрытием проекта
+    /// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
+    virtual void BeforeCloseProject(void);
+    virtual void ABeforeCloseProject(void);
+
     /// Метод, вызываемый перед сбросом модели
     /// \details Вызывает метод ABeforeReset() в блоке обработки исключений
     virtual void BeforeReset(void);
