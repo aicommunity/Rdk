@@ -32,7 +32,7 @@ class UGraphWidget : public UVisualControllerWidget
         /// Флаг говорит о том, что должны указываться последние
         /// Н-элементов по оси Х
         /// Если число -1, то график должен
-        double lastNElements;
+        int lastNElements;
 
         ///Подпись оси х
         QString lableX;
@@ -45,15 +45,15 @@ class UGraphWidget : public UVisualControllerWidget
         /// Создает в себе Виджет графика
         /// Связывает кнопки с действиями Виджета графика
         /// Определяет начальные параметры: размеры СК, подписи осей
-        explicit UGraphWidget(QWidget *parent = 0, RDK::UApplication* app = NULL);
+        explicit UGraphWidget(QWidget *parent = NULL, RDK::UApplication* app = NULL);
 
         /// Деструктор
         ~UGraphWidget();
 
         /// Передача значений, по которым строить график
         /// Параметры номер графика, координаты X, координаты Y
-        void addDataToGraph(int id, std::vector<double> X1, std::vector<double> Y1);
-        void addDataToGraph(int id, double X1, double Y1);
+        void addDataToGraph(size_t id, std::vector<double> X1, std::vector<double> Y1);
+        void addDataToGraph(size_t id, double X1, double Y1);
 
         /// Добавляет на СК основные начальные параметры пааметры
         /// Границы СК, подписи осей

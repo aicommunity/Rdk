@@ -38,7 +38,7 @@ protected: // Внутренние данные
 std::vector<double> CalcThreadStateTime;
 
 /// Последние моменты времени успешного расчета
-std::vector<RDK::ULongTime> CalcThreadSuccessTime;
+std::vector<double> CalcThreadSuccessTime;
 
 /// Длина очереди для расчета среднего времени обработки канала
 /// (число итераций для усреднения)

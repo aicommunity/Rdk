@@ -242,7 +242,7 @@ void UServerControl::LoadParameters(RDK::USerStorageXML &xml)
  SetMetaComponentName(xml.ReadString("MetadataComponentName",""));
  SetMetaComponentStateName(xml.ReadString("MetadataComponentStateName",""));
 
- int source_num_channels=xml.ReadInteger("NumberOfChannels",Core_GetNumChannels());
+// int source_num_channels=xml.ReadInteger("NumberOfChannels",Core_GetNumChannels());
 // SetNumEngines(source_num_channels);
  TProjectConfig config=GetApplication()->GetProjectConfig();
  for(size_t i=0;i<GetApplication()->GetProjectConfig().ChannelsConfig.size();i++)
