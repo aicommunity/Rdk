@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <locale>
 #include "USharedMemoryLoader.h"
 #include "UGenericMutex.h"
 #include "UDllLoader.h"
