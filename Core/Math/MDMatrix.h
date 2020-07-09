@@ -394,8 +394,12 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
 	for(int j=0;j<c_cols; j++)
 	 new_data[i*cols+j]=Data[i*Cols+j];
 
-   for(int i=c_rows; i<rows; i++)
+   for(int i=0; i<c_rows; i++)
 	for(int j=c_cols;j<cols; j++)
+	 new_data[i*cols+j]=defvalue;
+
+   for(int i=c_rows; i<rows; i++)
+	for(int j=0;j<cols; j++)
 	 new_data[i*cols+j]=defvalue;
   }
  }
