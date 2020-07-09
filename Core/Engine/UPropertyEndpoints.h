@@ -398,6 +398,11 @@ void Resize(int rows, int cols)
  this->v.Resize(rows,cols);
 }
 
+void Resize(int rows, int cols, V def_value)
+{
+ this->v.Resize(rows,cols, def_value);
+}
+
 void Resize(const MMatrixSize &size)
 {
  this->v.Resize(size);
