@@ -32,6 +32,9 @@ public:
 // Метод, вызываемый после загрузки проекта
 virtual void AfterLoadProject(void)=0;
 
+// Метод, вызываемый перед закрытием проекта
+virtual void BeforeCloseProject(void)=0;
+
 // Метод, вызываемый перед сбросом модели
 virtual void BeforeReset(void)=0;
 
@@ -112,6 +115,9 @@ static void DelController(RDK::UIController *value);
 // Метод, вызываемый после загрузки проекта
 static void AfterLoadProject(int channel_index);
 
+// Метод, вызываемый перед закрытием проекта
+static void BeforeCloseProject(int channel_index);
+
 // Метод, вызываемый перед сбросом модели
 static void BeforeReset(int channel_index);
 
@@ -150,6 +156,9 @@ static void DelInterface(RDK::UIVisualController *value);
 
 // Метод, вызываемый после загрузки проекта
 static void AfterLoadProject(void);
+
+// Метод, вызываемый перед закрытием проекта
+static void BeforeCloseProject(void);
 
 // Метод, вызываемый перед сбросом модели
 static void BeforeReset(void);
@@ -199,6 +208,9 @@ virtual ~UAppController(void);
 
 // Метод, вызываемый после загрузки проекта
 virtual void AfterLoadProject(void);
+
+// Метод, вызываемый перед закрытием проекта
+virtual void BeforeCloseProject(void);
 
 // Метод, вызываемый перед сбросом модели
 virtual void BeforeReset(void);

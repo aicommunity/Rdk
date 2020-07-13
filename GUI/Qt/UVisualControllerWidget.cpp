@@ -55,6 +55,33 @@ void UVisualControllerWidget::AAfterLoadProject(void)
 //  throw RDK::UException();
 }
 
+/// Метод, вызываемый перед закрытием проекта
+/// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
+void UVisualControllerWidget::BeforeCloseProject(void)
+{
+ try
+ {
+     ABeforeCloseProject();
+ }
+ catch (RDK::UException &exception)
+ {
+     Log_LogMessage(exception.GetType(), (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+     Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+ }
+ /*catch(Exception &exception)
+ {
+     Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }*/
+}
+
+void UVisualControllerWidget::ABeforeCloseProject(void)
+{
+
+}
+
 // Метод, вызываемый перед сбросом модели
 void UVisualControllerWidget::BeforeReset(void)
 {

@@ -61,6 +61,33 @@ void TUVisualControllerFrame::AAfterLoadProject(void)
 
 }
 
+/// Метод, вызываемый перед закрытием проекта
+/// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
+void TUVisualControllerFrame::BeforeCloseProject(void)
+{
+ try
+ {
+     ABeforeCloseProject();
+ }
+ catch (RDK::UException &exception)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, exception.GetType(), (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_ERROR, (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_ERROR, (std::string("GUI-BeforeCloseProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+}
+
+void TUVisualControllerFrame::ABeforeCloseProject(void)
+{
+
+}
+
 // Метод, вызываемый перед сбросом модели
 void TUVisualControllerFrame::BeforeReset(void)
 {
