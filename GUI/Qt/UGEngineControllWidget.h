@@ -23,6 +23,7 @@
 #include "UGraphWidget.h"
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
+#include "UTcpServerControlWidget.h"
 //////////////////////////
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
@@ -131,6 +132,7 @@ public slots:
     void actionWatchWindow();
     void actionNewWatches();
     void actionProfiling();
+    void actionTcpServer();
     //void actionVASimpleSettings();
 
 private slots:
@@ -159,6 +161,7 @@ private:
     UGraphWidget *graphWindowWidget;
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
+    UTcpServerControlWidget *tcpServerControlWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 
     /// Массив виджетов отображения картинок

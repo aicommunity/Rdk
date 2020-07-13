@@ -570,6 +570,19 @@ void UGEngineControllWidget::actionProfiling()
 //    ui->dockWidgetGraph->show();
 }
 
+void UGEngineControllWidget::actionTcpServer()
+{
+    if(!tcpServerControlWidget)
+    {
+     tcpServerControlWidget = new UTcpServerControlWidget(NULL, application);
+    }
+
+    if(!tcpServerControlWidget->isVisible())
+    {
+     tcpServerControlWidget->show();
+    }
+}
+
 void UGEngineControllWidget::actionNewWatches()
 {
     addWatchesWidged();
