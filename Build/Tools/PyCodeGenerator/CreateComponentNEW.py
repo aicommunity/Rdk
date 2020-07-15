@@ -91,17 +91,43 @@ createMapFile(template_data,dest_data,'CodeTemplates/UComponentTemplate.cpp',new
 # открытие файла с компонентой в h-нике библиотеки
 newText = '#include<' +component_name+'.h'+'> \n'
 
+files= os.listdir(path=new_path)
+for filename in files:
+    print(filename)
+    inp = open(filename).readlines()
+
+    for i in iter(inp):
+        if "ULibrary" in i:
+            libFileName=f
+    if libFileName in locals():
+        print(libFileName+" found!")
 if os.path.exists(new_path+'U'+lib_name+'.h'):
+   libFileName='U'+lib_name
+   print("Found "+libFileName)
+elif os.path.exists(new_path+'N'+lib_name+'.h'):
+   libFileName='N'+lib_name
+   print("Found "+libFileName)
+
+if os.path.exists(new_path+'U'+lib_name+'.h'):
+   print("Found "+'U'+lib_name+'.h')
    with open(new_path+'U'+lib_name+'.h', 'r') as file:
         data = file.readlines()
    data.insert(5,newText)
    with open(new_path+'U'+lib_name+'.h', 'w') as file:
         file.writelines(data)
-elif os.path.exists(new_path+'Lib.h'):
-   with open(new_path+'Lib.h', 'r') as file:
+elif os.path.exists(new_path+'N'+lib_name+'.h'):
+    print("Found " + 'N' + lib_name + '.h')
+    with open(new_path + 'N' + lib_name + '.h', 'r') as file:
         data = file.readlines()
-   data.insert(5,newText)
-   with open(new_path+'Lib.h', 'w') as file:
+    data.insert(5, newText)
+    with open(new_path + 'N' + lib_name + '.h', 'w') as file:
+        file.writelines(data)
+elif os.path.exists(new_path+'Lib.h'):
+    print("Found Lib.h")
+    with open(new_path+'Lib.h', 'r') as file:
+        data = file.readlines()
+    data.insert(5,newText)
+    with open(new_path+'Lib.h', 'w') as file:
         file.writelines(data)
 else:
     print ('Lib .h file not found!')
@@ -111,7 +137,7 @@ else:
 with open('CodeTemplates/ForCPP.txt') as file:
     text = file.read()
 text = text + '\n';
-lookup ='//Uppload class here\n'
+lookup ='// Upload class here\n'
 
 if os.path.exists(new_path+'U'+lib_name+'.cpp'):
    with open(new_path+'U'+lib_name+'.cpp', 'r') as file:
@@ -125,6 +151,19 @@ if os.path.exists(new_path+'U'+lib_name+'.cpp'):
                break
 
    with open(new_path+'U'+lib_name+'.cpp', 'w') as file:
+        file.writelines(data)
+elif os.path.exists(new_path+'N'+lib_name+'.cpp'):
+   with open(new_path+'N'+lib_name+'.cpp', 'r') as file:
+        data = file.readlines()
+
+   with open(new_path + 'N' + lib_name + '.cpp') as file:
+        for num, line in enumerate(file, 1):
+            if lookup in line:
+               writeHere = num
+               data[writeHere] = text
+               break
+
+   with open(new_path+'N'+lib_name+'.cpp', 'w') as file:
         file.writelines(data)
 elif os.path.exists(new_path+'Lib.cpp'):
    with open(new_path+'Lib.cpp', 'r') as file:

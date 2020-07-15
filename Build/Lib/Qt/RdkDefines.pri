@@ -20,8 +20,10 @@ contains(DEFINES,RDK_USE_PYTHON) {
     RDK_PYTHON_MINOR = 5
 }
 
+android {
+INCLUDEPATH += $$(BOOST_PATH)/android-ndk-19/include
 
-unix {
+} else:unix {
     INCLUDEPATH += $$(BOOST_PATH)#/include
     INCLUDEPATH += $$(BOOST_PATH)/include
     INCLUDEPATH += $$(OPENCV3_PATH)/include
