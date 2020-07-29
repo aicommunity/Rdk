@@ -47,6 +47,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
     watchFormWidget=NULL;
+    tcpServerControlWindow=NULL;
+    tcpServerControlWidget=0;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -125,6 +127,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
 
+    tcpServerControlWidget = new UTcpServerControlWidget(this, application);
+    tcpServerControlWidget->hide();
+
     statusPanel = new UStatusPanel(this, application);
     ui->statusBar->addWidget(statusPanel, 1);
     connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
@@ -169,7 +174,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
-    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
+    //connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
+    connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -572,15 +578,20 @@ void UGEngineControllWidget::actionProfiling()
 
 void UGEngineControllWidget::actionTcpServer()
 {
-    if(!tcpServerControlWidget)
+    if(!tcpServerControlWindow )
     {
-     tcpServerControlWidget = new UTcpServerControlWidget(NULL, application);
+        tcpServerControlWindow = new QMainWindow(this);
+        tcpServerControlWindow->setWindowTitle("TcpServerControl");
+        //graphWindow->setCentralWidget(graphWindowWidget);
+        //graphWindowWidget->show();
+        tcpServerControlWindow->setCentralWidget(tcpServerControlWidget);
     }
 
-    if(!tcpServerControlWidget->isVisible())
-    {
-     tcpServerControlWidget->show();
-    }
+    tcpServerControlWindow->resize(tcpServerControlWidget->size());
+    tcpServerControlWidget->show();
+    tcpServerControlWindow->show();
+    tcpServerControlWindow->showNormal();
+    tcpServerControlWindow->activateWindow();
 }
 
 void UGEngineControllWidget::actionNewWatches()

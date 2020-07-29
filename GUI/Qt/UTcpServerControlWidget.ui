@@ -44,24 +44,29 @@
     <widget class="QLineEdit" name="lineEditServerPort"/>
    </item>
    <item>
-    <widget class="QLabel" name="labelServerLogin">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButtonReset">
+       <property name="text">
+        <string>Сбросить</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonApply">
+       <property name="text">
+        <string>Принять</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxServerIsActive">
      <property name="text">
-      <string>Логин</string>
+      <string>Server stopped</string>
      </property>
     </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEditServerLogin"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelServerPassword">
-     <property name="text">
-      <string>Пароль</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEditServerPassword"/>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -77,18 +82,18 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QPushButton" name="pushButtonReset">
+      <widget class="QPushButton" name="pushButtonServerStart">
        <property name="text">
-        <string>Сбросить</string>
+        <string>Запустить сервер</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonApply">
+      <widget class="QPushButton" name="pushButtonServerStop">
        <property name="text">
-        <string>Принять</string>
+        <string>Остановить сервер</string>
        </property>
       </widget>
      </item>

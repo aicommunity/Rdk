@@ -5,9 +5,13 @@
 #include "../../Core/Application/UServerTransportTcp.h"
 
 #include <QTcpServer>
+#include <QTimer>
 
-class UServerTransportTcpQt: public RDK::UServerTransportTcp
+
+
+class UServerTransportTcpQt: public QObject, public RDK::UServerTransportTcp
 {
+    Q_OBJECT
 public:
     UServerTransportTcpQt();
     ~UServerTransportTcpQt();
@@ -26,10 +30,54 @@ public:
     virtual void ServerStop();
     /// Инициировать запуск сервера
     virtual void ServerStart();
+    /*
+    virtual void ConnectClient(std::string &bind);
+    virtual void DisconnectClient(std::string &bind);
+    */
 
+public slots:
+    void ServerNewConnection();
 private:
     QTcpServer *server;
+    std::string server_address;
+    int server_port;
 
+};
+
+class RDK_LIB_TYPE UServerControlQt: public RDK::UServerControl
+{
+public:
+// --------------------------
+// Методы управления вещателями
+// --------------------------
+/// Регистрирует удаленный приемник метаданных
+virtual int RegisterMetadataReceiver(const std::string &address, int port);
+
+/// Удаляет удаленный приемник метаданных
+virtual int UnRegisterMetadataReceiver(const std::string &address, int port);
+// --------------------------
+
+private:
+// --------------------------
+/// Управление числом каналов
+/// Выполнение вспомогательных методов
+/// Вызывается из UApplication
+// --------------------------
+virtual bool ASetNumChannels(int old_num);
+virtual bool AInsertChannel(int index);
+virtual bool ADeleteChannel(int index);
+// --------------------------
+
+public: // TODO: костыль
+// --------------------------
+// Вспомогательные методы
+// --------------------------
+// Метод, вызываемый после сброса модели
+virtual void AfterReset(void);
+
+// Метод, вызываемый после шага расчета
+virtual void AfterCalculate(void);
+// --------------------------
 };
 
 namespace Ui {
@@ -51,8 +99,24 @@ public:
   /// обновление интерфейса
   virtual void AUpdateInterface();
 
+private slots:
+
+    void PushButtonResetClicked();
+    void PushButtonApplyClicked();
+    void PushButtonServerStartClicked();
+    void PushButtonServerStopClicked();
+
+    void TcpCommandTimerTick();
+    void TcpServerRestartTimerTick();
+
+
 private:
   Ui::UTcpServerControlWidget *ui;
+
+  QTimer *tcpCommandTimer;
+  QTimer *tcpServerRestartTimer;
+
+
 };
 
 #endif //UTcpServerControlWidget_H

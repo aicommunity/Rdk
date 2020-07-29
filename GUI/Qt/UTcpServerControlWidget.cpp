@@ -2,6 +2,7 @@
 #define UTcpServerControlWidget_CPP
 
 #include "UTcpServerControlWidget.h"
+#include "UGEngineControllWidget.h"
 #include "ui_UTcpServerControlWidget.h"
 #include <QTcpSocket>
 
@@ -16,6 +17,7 @@ extern RDK::UApplication RdkApplication;
 UServerTransportTcpQt::UServerTransportTcpQt()
 {
     server=new QTcpServer();
+    connect(server, SIGNAL(newConnection()), this, SLOT(ServerNewConnection()));
 }
 UServerTransportTcpQt::~UServerTransportTcpQt()
 {
@@ -30,24 +32,82 @@ void UServerTransportTcpQt::SetServerBinding(std::string &interface_address, int
 {
  if(interface_address == GetServerBindingInterfaceAddress() && port == GetServerBindingPort())
     return;
+
+ server_address=interface_address;
+ server_port = port;
+
  QHostAddress ha;
  ha.setAddress(QString(interface_address.c_str()));
+
  server->listen(ha, port);
  server->close();
+ QString s = server->serverAddress().toString();
+ int i=0;
 }
 
 //Получение адреса интерфейса управления сервером
 std::string UServerTransportTcpQt::GetServerBindingInterfaceAddress()
 {
- QString s = server->serverAddress().toString();
- std::string ss = s.toUtf8().constData();
- return ss;
+ if(server->isListening())
+ {
+  QString s = server->serverAddress().toString();
+  std::string ss = s.toUtf8().constData();
+  return ss;
+ }
+ else
+ {
+  return server_address;
+ }
 }
 
 //Получение адреса интерфейса управления сервером
 int UServerTransportTcpQt::GetServerBindingPort(void) const
 {
- return server->serverPort();
+ if(server->isListening())
+ {
+  int p = server->serverPort();
+  return server->serverPort();
+ }
+ else
+ {
+  return server_port;
+ }
+}
+
+void UServerTransportTcpQt::ServerNewConnection()
+{
+    if(server->hasPendingConnections())
+    {
+     bool stop=false;
+     while(!stop)
+     {
+      QTcpSocket *socket = server->nextPendingConnection();
+      if(socket==nullptr)
+       break;
+
+      QString peer_name = socket->peerAddress().toString();
+      QString peer_port = QString::number(socket->peerPort());
+      QString b = peer_name+":"+peer_port;
+      std::string bnd = b.toUtf8().constData();
+
+      bool b3 = Application!=NULL;
+      bool b1 = Application->GetServerControl()!=NULL;
+      bool b2 = Application->GetServerControl()->GetServerTransport()!=NULL;
+
+      std::map<std::string, QTcpSocket*>::iterator I = serverSockets.find(bnd);
+
+      if(I!=serverSockets.end())
+      {
+        delete(I->second);
+        serverSockets.erase(I);
+      }
+
+      serverSockets[bnd] = socket;
+
+      Application->GetServerControl()->GetServerTransport()->ConnectClient(bnd);
+      Application->GetServerControl()->ProcessIncomingData(bnd, Application->GetServerControl()->GetServerTransport());
+     }
+    }
 }
 
 ///Инициировать остановку сервера, отключить все приемники
@@ -59,9 +119,13 @@ void UServerTransportTcpQt::ServerStop()
 /// Инициировать запуск сервера
 void UServerTransportTcpQt::ServerStart()
 {
- QHostAddress sa = server->serverAddress();
- qint16 sp = server->serverPort();
- server->listen(sa,sp);
+    if(server_address!="" && server_port!=0)
+    {
+        QHostAddress ha;
+        ha.setAddress(QString(server_address.c_str()));
+
+        server->listen(ha, server_port);
+    }
 }
 
 /// Читает входящие байты из выбранного источника, контекст привязки
@@ -236,13 +300,214 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
  }
  */
 }
+/*
+void UServerTransportTcpQt::ConnectClient(std::string &bind)
+{
+ UServerTransport::ConnectClient(bind);
+
+}
+
+void UServerTransportTcpQt::DisconnectClient(std::string &bind)
+{
+
+}
+*/
+
+//==========================================================================================
+
+// --------------------------
+// Методы управления вещателями
+// --------------------------
+/// Регистрирует удаленный приемник метаданных
+int UServerControlQt::RegisterMetadataReceiver(const std::string &address, int port)
+{
+ return 0;
+ /*
+
+ UnRegisterMetadataReceiver(address, port);
+ TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
+ if(broadcaster)
+ {
+
+ }
+ else
+ {
+  IdTcpResultBroadcasterForm->AddBroadcaster();
+  broadcaster=IdTcpResultBroadcasterForm->GetBroadcasterFrame(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+
+  if(broadcaster)
+  {
+   string bind2=address;
+   bind2+=":";
+   bind2+=sntoa(port);
+   broadcaster->ServerAddressLabeledEdit->Text=bind2.c_str();
+   broadcaster->XmlComponentNameLabeledEdit->Text=MetaComponentName.c_str();//"Pipeline1.AggrPureOutput";
+   broadcaster->XmlComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
+   broadcaster->EnableXmlTranslationCheckBox->Checked=true;
+   broadcaster->ConnectButtonClick(UServerControlForm);
+   Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
+  }
+ }
+ */
+ return 0;
+}
+
+/// Удаляет удаленный приемник метаданных
+int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int port)
+{
+ return 0;
+ /*
+ TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
+ if(broadcaster)
+ {
+  broadcaster->EnableXmlTranslationCheckBox->Checked=false;
+ // broadcaster->ConnectButtonClick(this);
+  int index=IdTcpResultBroadcasterForm->GetBroadcasterFrameIndex(broadcaster);
+  if(index >= 0)
+  {
+   IdTcpResultBroadcasterForm->DelBroadcaster(index);
+  }
+  Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
+ }
+ */
+ return 0;
+}
+// --------------------------
 
 
+// --------------------------
+/// Управление числом каналов
+/// Выполнение вспомогательных методов
+/// Вызывается из UApplication
+// --------------------------
+bool UServerControlQt::ASetNumChannels(int old_num)
+{
+ int num=Core_GetNumChannels();
+ //if(num<=0)
+ // return false;
 
+#ifdef RDK_VIDEO
+ if(RdkApplication.GetProjectConfig().ProjectMode == 1 && VideoOutputForm)
+ {
+  if(VideoOutputForm->GetNumSources()<num)
+  {
+   for(int i=VideoOutputForm->GetNumSources();i<num;i++)
+   {
+    VideoOutputForm->AddSource();
+    VideoOutputForm->GetVideoOutputFrame(i)->Init(0);
+//	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
+//	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
+//    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->CloseButtonClick(this);
+   }
+   VideoOutputForm->UpdateInterface();
+  }
+  else
+  {
+   while(VideoOutputForm->GetNumSources()>num)
+   {
+    VideoOutputForm->DelSource(VideoOutputForm->GetNumSources()-1);
+   }
+  }
 
+  if(IdTcpResultBroadcasterForm->GetNumBroadcasters()<num)
+  {
+   for(int i=IdTcpResultBroadcasterForm->GetNumBroadcasters();i<num;i++)
+   {
+    IdTcpResultBroadcasterForm->AddBroadcaster();
 
+    TIdTcpResultBroadcasterFrame *frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(i);
+    if(frame)
+    {
+     frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+     frame->ServerAddressLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+     frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+     frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+     frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+     frame->EnableXmlTranslationCheckBoxClick(UServerControlForm);
+    }
+   }
+   IdTcpResultBroadcasterForm->UpdateInterface();
+  }
+  else
+  {
+   while(IdTcpResultBroadcasterForm->GetNumBroadcasters()>num)
+   {
+    IdTcpResultBroadcasterForm->DelBroadcaster(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+   }
+  }
+ }
+#endif
 
+#ifdef DVA_GEVISCOPE
+  if(GeViScopeResultBroadcasterForm->GetNumBroadcasters()<value)
+  {
+   for(int i=GeViScopeResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+   {
+    GeViScopeResultBroadcasterForm->AddBroadcaster();
 
+    TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(i);
+    if(frame)
+    {
+     frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+     frame->ServerAddressLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+     frame->UsernameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->UsernameLabeledEdit->Text;
+     frame->PasswordLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->PasswordLabeledEdit->Text;
+     frame->MediaChannelLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->MediaChannelLabeledEdit->Text;
+     frame->XmlComponentNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+     frame->XmlComponentStateNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+     frame->EnableXmlTranslationCheckBox->Checked=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+     frame->EnableXmlTranslationCheckBoxClick(this);
+    }
+   }
+   GeViScopeResultBroadcasterForm->UpdateInterface();
+  }
+  else
+  {
+   while(GeViScopeResultBroadcasterForm->GetNumBroadcasters()>value)
+   {
+    GeViScopeResultBroadcasterForm->DelBroadcaster(GeViScopeResultBroadcasterForm->GetNumBroadcasters()-1);
+   }
+  }
+#endif
+
+// ChannelNames.resize(value);
+
+ //UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
+
+// AAfterReset();
+ RDK::UIVisualControllerStorage::UpdateInterface();
+ return true;
+}
+
+bool UServerControlQt::AInsertChannel(int index)
+{
+ return true;
+}
+
+bool UServerControlQt::ADeleteChannel(int index)
+{
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// Вспомогательные методы
+// --------------------------
+// Метод, вызываемый после сброса модели
+void UServerControlQt::AfterReset(void)
+{
+ UServerControl::AfterReset();
+}
+
+// Метод, вызываемый после шага расчета
+void UServerControlQt::AfterCalculate(void)
+{
+ UServerControl::AfterCalculate();
+}
+// --------------------------
+
+//==========================================================================================
+//==========================================================================================
 
 UTcpServerControlWidget::UTcpServerControlWidget(QWidget *parent, RDK::UApplication *app) :
   UVisualControllerWidget(parent, app),
@@ -251,6 +516,26 @@ UTcpServerControlWidget::UTcpServerControlWidget(QWidget *parent, RDK::UApplicat
   ui->setupUi(this);
   UpdateInterval = 0;
   setAccessibleName("UTcpServerControlWidget");
+
+
+  tcpCommandTimer = new QTimer(this);
+  tcpCommandTimer->setInterval(10);
+  connect(tcpCommandTimer, SIGNAL(timeout()), this, SLOT(TcpCommandTimerTick()));
+  tcpCommandTimer->setSingleShot(false);
+
+  tcpServerRestartTimer = new QTimer(this);
+  tcpServerRestartTimer->setInterval(1000);
+  connect(tcpServerRestartTimer, SIGNAL(timeout()), this, SLOT(TcpServerRestartTimerTick()));
+  tcpServerRestartTimer->setSingleShot(false);//Здесь не уверен
+
+  connect(ui->pushButtonReset, SIGNAL(clicked()), this, SLOT(PushButtonResetClicked()));
+  connect(ui->pushButtonApply, SIGNAL(clicked()), this, SLOT(PushButtonApplyClicked()));
+  connect(ui->pushButtonServerStop, SIGNAL(clicked()), this, SLOT(PushButtonServerStopClicked()));
+  connect(ui->pushButtonServerStart, SIGNAL(clicked()), this, SLOT(PushButtonServerStartClicked()));
+
+  ui->lineEditServerAddress->setText("127.0.0.1");
+  ui->lineEditServerPort->setText("45045");
+  PushButtonApplyClicked();
 }
 
 UTcpServerControlWidget::~UTcpServerControlWidget()
@@ -258,10 +543,69 @@ UTcpServerControlWidget::~UTcpServerControlWidget()
   delete ui;
 }
 
+void UTcpServerControlWidget::PushButtonResetClicked()
+{
+ AUpdateInterface();
+}
+
+void UTcpServerControlWidget::PushButtonApplyClicked()
+{
+ if(UpdateInterfaceFlag)
+     return;
+
+ int new_port = ui->lineEditServerPort->text().toInt();
+ std::string new_ip = ui->lineEditServerAddress->text().toUtf8().constData();
+
+ RDK::TProjectConfig config = application->GetProjectConfig();
+
+ config.ServerInterfaceAddress = new_ip;
+ config.ServerInterfacePort = new_port;
+
+ application->SetProjectConfig(config);
+
+ application->GetServerControl()->GetServerTransport()->SetServerBinding(new_ip, new_port);
+}
+
+void UTcpServerControlWidget::PushButtonServerStartClicked()
+{
+ PushButtonApplyClicked();
+ application->GetServerControl()->GetServerTransport()->ServerStart();
+}
+
+void UTcpServerControlWidget::PushButtonServerStopClicked()
+{
+ application->GetServerControl()->GetServerTransport()->ServerStop();
+}
+
+void UTcpServerControlWidget::TcpCommandTimerTick()
+{
+ try
+ {
+    application->GetServerControl()->ProcessCommandQueue(application->GetServerControl()->GetServerTransport());
+ }
+ catch(...)
+ {
+  Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+ }
+}
+
+void UTcpServerControlWidget::TcpServerRestartTimerTick()
+{
+ //Вот тут должна быть еще проверка на то что все уже запущено
+ //но так как все переехало в класс - она дб там
+
+ if(application->GetServerControl()->GetAutoStartFlag())
+     PushButtonServerStartClicked();
+}
+
+
+
 /// обновление интерфейса
 void UTcpServerControlWidget::AUpdateInterface()
 {
-
+ std::string addr = application->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress();
+ ui->lineEditServerAddress->setText(QString(addr.c_str()));
+ ui->lineEditServerPort->setText(QString::number(application->GetServerControl()->GetServerTransport()->GetServerBindingPort()));
 }
 
 void UTcpServerControlWidget::ASaveParameters()

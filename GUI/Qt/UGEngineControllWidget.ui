@@ -664,6 +664,9 @@
    </property>
   </action>
   <action name="actionTcpServer">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>TcpServer</string>
    </property>

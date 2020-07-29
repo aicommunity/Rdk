@@ -1,4 +1,5 @@
 #include "UServerTransport.h"
+#include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 namespace RDK {
@@ -23,6 +24,21 @@ void UServerTransport::ConvertStringToVector(const std::string &source, UParamT 
  dest.resize(source.size());
  if(source.size()>0)
   memcpy(&dest[0],source.c_str(),source.size());
+}
+
+/// Возвращает указатель на экземпляр приложения
+UEPtr<UApplication> UServerTransport::GetApplication(void)
+{
+ return Application;
+}
+
+bool UServerTransport::SetApplication(UEPtr<UApplication> value)
+{
+ if(Application == value)
+  return true;
+
+ Application=value;
+ return true;
 }
 
 /// Кодирует вектор в строку
