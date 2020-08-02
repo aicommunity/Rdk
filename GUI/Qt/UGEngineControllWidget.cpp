@@ -501,6 +501,11 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
+    UWatch *WatchWindow = new UWatch(this);
+    WatchWindow->setWindowTitle("Watch window");
+    WatchWindow->show();
+
+    /*
  if(!graphWindow )
  {
      graphWindow = new QMainWindow(this);
@@ -522,7 +527,7 @@ void UGEngineControllWidget::actionWatchWindow()
 
     graphWindow->activateWindow();
     //отобразить *graphWindowWidget
-//    ui->dockWidgetGraph->show();
+//    ui->dockWidgetGraph->show();*/
 }
 
 void UGEngineControllWidget::actionProfiling()

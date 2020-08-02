@@ -23,6 +23,7 @@
 #include "UGraphWidget.h"
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
+#include"UWatch.h"
 //////////////////////////
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
@@ -125,7 +126,7 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-    void actionWatchWindow();
+    void actionWatchWindow();///<-----------
     void actionNewWatches();
     void actionProfiling();
     //void actionVASimpleSettings();
