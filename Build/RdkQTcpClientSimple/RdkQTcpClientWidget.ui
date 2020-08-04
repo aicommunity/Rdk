@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>676</width>
-    <height>437</height>
+    <height>637</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,18 +53,75 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QPushButton" name="pushButtonStartServer">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="labelChannelIndex">
+         <property name="text">
+          <string>Channel index</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEditChannelIndex"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="labelChannelName">
+         <property name="text">
+          <string>ChannelName</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEditChannelName"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QPushButton" name="pushButtonGetChannelName">
        <property name="text">
-        <string>Start</string>
+        <string>Get Channel Name</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonStopServer">
+      <widget class="QPushButton" name="pushButtonSetChannelName">
        <property name="text">
-        <string>Stop</string>
+        <string>Set Channel Name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pushButtonStartChannel">
+       <property name="text">
+        <string>Start Channel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonResetChannel">
+       <property name="text">
+        <string>Reset Channel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonStopChannel">
+       <property name="text">
+        <string>Stop Channel</string>
        </property>
       </widget>
      </item>
@@ -80,7 +137,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="lineEditNumChannels"/>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonGetNumChannels">
@@ -91,6 +148,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonSetNumChannels">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Set</string>
        </property>
@@ -110,11 +170,28 @@
      <item>
       <widget class="QPushButton" name="pushButtonSaveServer">
        <property name="text">
-        <string>Save Server</string>
+        <string>Save Server Config</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonLoadServerConfig">
+       <property name="text">
+        <string>Load Config...</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxWriteServerResponse">
+     <property name="cursor">
+      <cursorShape>WaitCursor</cursorShape>
+     </property>
+     <property name="text">
+      <string>Write server response</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="labelLog">

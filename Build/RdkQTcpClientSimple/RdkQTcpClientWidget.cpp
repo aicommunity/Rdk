@@ -2,6 +2,7 @@
 #include "ui_RdkQTcpClientWidget.h"
 #include <iostream>
 
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QDateTime>
 
@@ -31,6 +32,21 @@ RdkQTcpClientWidget::RdkQTcpClientWidget(QWidget *parent)
 
     connect(ui->pushButtonConnect, SIGNAL(clicked()), this, SLOT(onPushButtonConnectClick()));
     connect(ui->pushButtonDisconnect, SIGNAL(clicked()), this, SLOT(onPushButtonDisconnectClick()));
+
+
+    connect(ui->pushButtonStartChannel, SIGNAL(clicked()), this, SLOT(onPushButtonStartChannelClick()));
+    connect(ui->pushButtonStopChannel, SIGNAL(clicked()), this, SLOT(onPushButtonStopChannelClick()));
+    connect(ui->pushButtonResetChannel, SIGNAL(clicked()), this, SLOT(onPushButtonResetChannelClick()));
+    connect(ui->pushButtonGetNumChannels, SIGNAL(clicked()), this, SLOT(onPushButtonGetNumChannelsClick()));
+    connect(ui->pushButtonSaveServer, SIGNAL(clicked()), this, SLOT(onPushButtonSaveServerClick()));
+
+    connect(ui->pushButtonGetChannelName, SIGNAL(clicked()), this, SLOT(onPushButtonGetChannelNameClick()));
+    connect(ui->pushButtonSetChannelName, SIGNAL(clicked()), this, SLOT(onPushButtonSetChannelNameClick()));
+
+    connect(ui->pushButtonLoadServerConfig, SIGNAL(clicked()), this, SLOT(onPushButtonLoadConfigClick()));
+
+    ui->lineEditChannelIndex->setText("0");
+
 }
 
 RdkQTcpClientWidget::~RdkQTcpClientWidget()
@@ -89,7 +105,7 @@ void RdkQTcpClientWidget::onPushButtonConnectClick()
  {
     const char* server_addr = address.c_str();
     int res = Rpc_Connect(0, server_addr, port);
-    res = Rpc_Connect(1, server_addr, port);
+    //res = Rpc_Connect(1, server_addr, port);
     if(Rpc_IsClientConnected(0))
     {
         WriteLog("Client connected");
@@ -102,8 +118,93 @@ void RdkQTcpClientWidget::onPushButtonConnectClick()
 void RdkQTcpClientWidget::onPushButtonDisconnectClick()
 {
     int res = Rpc_Disconnect(0);
+    if(!Rpc_IsClientConnected(0))
+    {
+        WriteLog("Client disconnected");
+    }
+    WriteLogError(res);
     //WriteLog("")
 }
+
+void RdkQTcpClientWidget::onPushButtonStartChannelClick()
+{
+    const char* serverAnswer=NULL;
+    int res=Rpc_StartChannel(0, ui->lineEditChannelIndex->text().toInt(), 60000);
+    if(WriteLogError(res))
+    {
+     serverAnswer=Rpc_GetServerAnswerDebug(0);
+     if(serverAnswer != NULL && ui->checkBoxWriteServerResponse->isChecked())
+         ui->plainTextEditLog->appendPlainText(QString(serverAnswer));
+    }
+}
+
+void RdkQTcpClientWidget::onPushButtonStopChannelClick()
+{
+    const char* serverAnswer=NULL;
+    int res=Rpc_StopChannel(0, ui->lineEditChannelIndex->text().toInt(), 5000);
+    if(WriteLogError(res))
+    {
+     serverAnswer=Rpc_GetServerAnswerDebug(0);
+     if(serverAnswer != NULL && ui->checkBoxWriteServerResponse->isChecked())
+      ui->plainTextEditLog->appendPlainText(QString(serverAnswer));
+    }
+}
+
+void RdkQTcpClientWidget::onPushButtonResetChannelClick()
+{
+    const char* serverAnswer=NULL;
+    int res=Rpc_ResetChannel(0, ui->lineEditChannelIndex->text().toInt(), 5000);
+    if(WriteLogError(res))
+    {
+     serverAnswer=Rpc_GetServerAnswerDebug(0);
+     if(serverAnswer != NULL && ui->checkBoxWriteServerResponse->isChecked())
+      ui->plainTextEditLog->appendPlainText(QString(serverAnswer));
+    }
+}
+
+void RdkQTcpClientWidget::onPushButtonGetNumChannelsClick()
+{
+    int res=0;
+    Rpc_GetNumChannels(0, res, 10000);
+    ui->lineEditNumChannels->setText(QString::number(res));
+}
+
+void RdkQTcpClientWidget::onPushButtonSaveServerClick()
+{
+   int res=Rpc_SaveProject(0, 10000);
+}
+
+void RdkQTcpClientWidget::onPushButtonGetChannelNameClick()
+{
+    const char *res=0;
+    Rpc_GetChannelName(0, ui->lineEditChannelIndex->text().toInt(), res, 1000);
+     if(res)
+      ui->lineEditChannelName->setText(QString(res));
+}
+
+void RdkQTcpClientWidget::onPushButtonSetChannelNameClick()
+{
+   std::string name = ui->lineEditChannelName->text().toUtf8().constData();
+   Rpc_SetChannelName(0, ui->lineEditChannelIndex->text().toInt(), name.c_str(), 1000);
+}
+
+void RdkQTcpClientWidget::onPushButtonLoadConfigClick()
+{
+    QFileDialog fd(this);
+    fd.setWindowTitle("Open config file");
+    fd.setDirectory("/home/ivan");
+    fd.selectNameFilter("*.ini");
+
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open config file"), QCoreApplication::applicationDirPath(), tr("*.ini"), nullptr, QFileDialog::DontUseNativeDialog);
+        if (fileName.isEmpty())
+          return;
+
+        std::string name = fileName.toUtf8().constData();
+        Rpc_LoadProject(0, name.c_str(), 1000);
+
+}
+
 
 /*
 void RdkQTcpClientWidget::onPushButtonPingClick()

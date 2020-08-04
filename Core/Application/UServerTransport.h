@@ -48,6 +48,10 @@ virtual std::string GetServerBindingInterfaceAddress(void);
 //ѕолучение адреса интерфейса управлени€ сервером
 virtual int GetServerBindingPort(void) const;
 
+virtual int GetSocketState(std::string bind);
+
+virtual bool ServerIsActive();
+
 /// ќбрабатывает вход€щие данные, преобразовыва€ пакеты в сообщени€
 /// 01.04.2020 пока в этом классе, возможно уедет потом в дочерние *Tcp, *Http, *Udp
 void ProcessIncomingData(std::string &bind, std::vector<URpcCommandInternal> &command_list);

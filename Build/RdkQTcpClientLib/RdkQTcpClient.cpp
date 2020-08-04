@@ -6,7 +6,7 @@ RdkQTcpThread::RdkQTcpThread()
 
 }
 
-RdkQTcpThread::RdkQTcpThread(QTcpSocket *socket, RDK::UTransferReader &packetReader, bool CreateSUspended, QObject *parent):
+RdkQTcpThread::RdkQTcpThread(QTcpSocket *socket, RDK::UTransferReader &packetReader, bool CreateSuspended, QObject *parent):
 _socket(socket), QThread(parent), PacketReader(&packetReader)
 {
  CalcEnable = UCreateEvent(true);
@@ -14,7 +14,12 @@ _socket(socket), QThread(parent), PacketReader(&packetReader)
  CalculationNotInProgress = UCreateEvent(false);
  CalculationInProgress = UCreateEvent(true);
  SendInProgress = UCreateEvent(true);
+ SendInProgress->set();
  ThreadError = 0;
+ if(!CreateSuspended)
+ {
+  start();
+ }
 }
 
 RdkQTcpThread::~RdkQTcpThread()
@@ -62,6 +67,9 @@ void RdkQTcpThread::run()
    //   continue;
      try
      {
+      bool sv = _socket->isValid();
+      bool cst = _socket->state()==QAbstractSocket::SocketState::ConnectedState;
+      int bav = _socket->bytesAvailable();
       if((_socket->isValid()) && (_socket->state()==QAbstractSocket::SocketState::ConnectedState) && (_socket->bytesAvailable()>0))
       {
        RDK::UParamT ClientBuffer;
@@ -82,7 +90,7 @@ void RdkQTcpThread::run()
        QDataStream in;
        in.setDevice(_socket);
        in.setVersion(QDataStream::Qt_5_0);
-       in.startTransaction();
+       //in.startTransaction();
        //int len = _socket->bytesAvailable();
        char *buffer;
        uint length=0;
@@ -114,6 +122,10 @@ void RdkQTcpThread::run()
         }
 
        }
+       PacketReaderUnlockEvent->exclusive_unlock();
+
+       //in.commitTransaction();
+
        if(new_packet_size>prev_packet_size)
            CalcEnable->reset();
         //ResetEvent(CalcEnable);
@@ -199,6 +211,7 @@ void RdkQTcpClient::AddIdCmdsRemovablePacket(int value)
   //ReleaseMutex(Thread->PacketReaderUnlockEvent);
   Thread->PacketReaderUnlockEvent->exclusive_unlock();
  }
+ Thread->PacketReaderUnlockEvent->exclusive_unlock();
 }
 
 /// Очищает список пакетов ожидающих удаление
@@ -212,6 +225,7 @@ void RdkQTcpClient::ClearIdCmdsRemovablePackets(void)
   //ReleaseMutex(Thread->PacketReaderUnlockEvent);
   Thread->PacketReaderUnlockEvent->exclusive_unlock();
  }
+ Thread->PacketReaderUnlockEvent->exclusive_unlock();
 }
 
 /// Очистка списка пришедших пакетов от ответов сервера на асинхронные команды и команды с вышедшем таймаутом ожидания ответа
@@ -268,7 +282,10 @@ bool RdkQTcpClient::EraseUnresponcedPackets(void)
   Thread->PacketReaderUnlockEvent->exclusive_unlock();
  }
  else
+ {
+  Thread->PacketReaderUnlockEvent->exclusive_unlock();
   return false;
+ }
 
  return true;
 }
@@ -326,7 +343,7 @@ int RdkQTcpClient::SendControlCommand(RDK::USerStorageXML &xml)
    QDataStream out;
    out.setDevice(TcpSocket);
    out.setVersion(QDataStream::Qt_5_0);
-   out.startTransaction();
+   //out.startTransaction();
 
    char* buf;
    buf = new char[buffer.size()];
@@ -385,7 +402,7 @@ int RdkQTcpClient::FindPacketById(int cmdId, RDK::USerStorageXML &xml, bool eras
     if(erase_found)
      packetList.erase(it);
     //ReleaseMutex(Thread->PacketReaderUnlockEvent);
-    Thread->PacketReaderUnlockEvent->exclusive_lock();
+    Thread->PacketReaderUnlockEvent->exclusive_unlock();
     return 1;
    }
   }
@@ -430,7 +447,7 @@ int RdkQTcpClient::FindPacketById(int cmdId, RDK::USerStorageXML &xml, std::vect
     if(erase_found)
      packetList.erase(it);
     //ReleaseMutex(Thread->PacketReaderUnlockEvent);
-    Thread->PacketReaderUnlockEvent->exclusive_lock();
+    Thread->PacketReaderUnlockEvent->exclusive_unlock();
     return 1;
    }
   }
@@ -458,6 +475,7 @@ void RdkQTcpClient::ErasePacket(std::list<RDK::UTransferPacket>::iterator &it)
   //ReleaseMutex(Thread->PacketReaderUnlockEvent);
   Thread->PacketReaderUnlockEvent->exclusive_unlock();
  }
+ Thread->PacketReaderUnlockEvent->exclusive_unlock();
 }
 
 
@@ -475,12 +493,14 @@ int RdkQTcpClient::WaitServerResponse(int cmdId, RDK::USerStorageXML &response, 
 //  {
 //   break;
 //  }
-  if(timeout<e_timer.elapsed())
+  if(e_timer.elapsed()>timeout)
       break;
 
-  int diff=timeout-e_timer.elapsed();
+  QCoreApplication::processEvents();
+
+  //int diff=timeout-e_timer.elapsed();
   //if(WaitForSingleObject(Thread->PacketReceivedEvent, diff) != WAIT_TIMEOUT)
-  if(Thread->PacketReceivedEvent->wait(diff)!=false)
+  if(Thread->PacketReceivedEvent->wait(10)!=false)
   {
    //ResetEvent(Thread->PacketReceivedEvent);
    Thread->PacketReceivedEvent->reset();

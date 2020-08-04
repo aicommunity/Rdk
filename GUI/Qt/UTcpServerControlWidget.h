@@ -5,11 +5,37 @@
 #include "../../Core/Application/UServerTransportTcp.h"
 
 #include <QTcpServer>
+#include <QTcpSocket>
 #include <QTimer>
 
 
+class UServerSocketQt: public QObject
+{
+    Q_OBJECT
+public:
+    UServerSocketQt();
+    UServerSocketQt(QTcpSocket* s);
+    ~UServerSocketQt();
 
-class UServerTransportTcpQt: public QObject, public RDK::UServerTransportTcp
+    void SetSocket(QTcpSocket *s);
+    QTcpSocket* GetSocket();
+
+    //void WriteData(/*???*/);
+    //void GetIncomingData(const char* data, int& size);
+
+signals:
+    //void onConnected(std::string bind);
+    void onDisconnected(std::string bind);
+    void onReadyRead(std::string bind);
+private slots:
+    virtual void readyRead();
+    virtual void disconnected();
+
+private:
+    QTcpSocket *socket;
+};
+
+class UServerTransportTcpQt: public QTcpServer, public RDK::UServerTransportTcp
 {
     Q_OBJECT
 public:
@@ -30,17 +56,25 @@ public:
     virtual void ServerStop();
     /// Инициировать запуск сервера
     virtual void ServerStart();
-    /*
-    virtual void ConnectClient(std::string &bind);
-    virtual void DisconnectClient(std::string &bind);
-    */
+    //virtual void ConnectClient(std::string &bind);
+    //virtual void DisconnectClient(std::string &bind);
+
+    virtual int GetSocketState(std::string bind);
+
+    bool ServerIsActive();
 
 public slots:
     void ServerNewConnection();
+    void SocketReadyRead(std::string bind);
+    void SocketDisconnected(std::string bind);
 private:
     QTcpServer *server;
+    std::map<std::string, UServerSocketQt*> serverSockets;
+
     std::string server_address;
     int server_port;
+
+
 
 };
 

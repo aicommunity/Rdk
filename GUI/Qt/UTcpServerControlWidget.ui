@@ -62,9 +62,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBoxServerIsActive">
+    <widget class="QLabel" name="labelServerState">
      <property name="text">
-      <string>Server stopped</string>
+      <string>Server is stopped</string>
      </property>
     </widget>
    </item>

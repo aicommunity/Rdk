@@ -134,6 +134,16 @@ void UServerTransport::SetServerBinding(std::string &interface_address, int port
 
 }
 
+int UServerTransport::GetSocketState(std::string bind)
+{
+    return -1;
+}
+
+bool UServerTransport::ServerIsActive()
+{
+ return false;
+}
+
 //Получение адреса интерфейса управления сервером
 std::string UServerTransport::GetServerBindingInterfaceAddress(void)
 {

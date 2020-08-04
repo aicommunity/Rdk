@@ -506,3 +506,13 @@ int Rpc_SaveProject(int server_index, int timeout)
  RDK::USerStorageXML request,response;
  return ProcessSimpleCommand("SaveProject", server_index, -1, timeout, request, response);
 }
+
+
+int Rpc_LoadProject(int server_index, const char* project_path, int timeout)
+{
+    RDK::USerStorageXML request,response;
+
+    request.Create("Request");
+    request.WriteString("FileName", project_path);
+    return ProcessSimpleCommand("LoadProject", server_index, -1, timeout, request, response);
+}

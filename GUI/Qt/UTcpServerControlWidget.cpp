@@ -13,6 +13,68 @@ extern RDK::UApplication RdkApplication;
 /// Экземпляр класса контроллера расчета
 //extern UEngineControlVcl RdkEngineControl;
 
+UServerSocketQt::UServerSocketQt()
+{
+
+}
+
+UServerSocketQt::UServerSocketQt(QTcpSocket* s)
+{
+    this->socket = s;
+    connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+}
+
+UServerSocketQt::~UServerSocketQt()
+{
+
+}
+
+void UServerSocketQt::SetSocket(QTcpSocket *s)
+{
+  /*if(socket!=NULL)
+  {
+      if(socket->isOpen())
+      {
+          socket->close();
+      }
+      delete socket;
+      socket=NULL;
+  }*/
+
+    disconnect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    disconnect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
+    this->socket = s;
+
+    connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+}
+
+QTcpSocket* UServerSocketQt::GetSocket()
+{
+    return socket;
+}
+
+void UServerSocketQt::readyRead()
+{
+    //Рассчитать bind
+    QString peer_name = socket->peerAddress().toString();
+    QString peer_port = QString::number(socket->peerPort());
+    QString b = peer_name+":"+peer_port;
+    std::string bnd = b.toUtf8().constData();
+    emit(onReadyRead(bnd));
+}
+
+void UServerSocketQt::disconnected()
+{
+    //Рассчитать bind
+    QString peer_name = socket->peerAddress().toString();
+    QString peer_port = QString::number(socket->peerPort());
+    QString b = peer_name+":"+peer_port;
+    std::string bnd = b.toUtf8().constData();
+    emit(onDisconnected(bnd));
+}
 
 UServerTransportTcpQt::UServerTransportTcpQt()
 {
@@ -94,7 +156,7 @@ void UServerTransportTcpQt::ServerNewConnection()
       bool b1 = Application->GetServerControl()!=NULL;
       bool b2 = Application->GetServerControl()->GetServerTransport()!=NULL;
 
-      std::map<std::string, QTcpSocket*>::iterator I = serverSockets.find(bnd);
+      std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bnd);
 
       if(I!=serverSockets.end())
       {
@@ -102,17 +164,68 @@ void UServerTransportTcpQt::ServerNewConnection()
         serverSockets.erase(I);
       }
 
-      serverSockets[bnd] = socket;
+      UServerSocketQt* sqt = new UServerSocketQt(socket);
+      connect(sqt, SIGNAL(onReadyRead(std::string)), this, SLOT(SocketReadyRead(std::string)));
+      connect(sqt, SIGNAL(onDisconnected(std::string)), this, SLOT(SocketDisconnected(std::string)));
 
+      serverSockets[bnd] = sqt;
       Application->GetServerControl()->GetServerTransport()->ConnectClient(bnd);
-      Application->GetServerControl()->ProcessIncomingData(bnd, Application->GetServerControl()->GetServerTransport());
+      //Application->GetServerControl()->ProcessIncomingData(bnd, Application->GetServerControl()->GetServerTransport());
      }
     }
+}
+
+void UServerTransportTcpQt::SocketReadyRead(std::string bind)
+{
+    Application->GetServerControl()->ProcessIncomingData(bind, Application->GetServerControl()->GetServerTransport());
+}
+
+void UServerTransportTcpQt::SocketDisconnected(std::string bind)
+{
+    Application->GetServerControl()->GetServerTransport()->DisconnectClient(bind);
+    //Получить ссылку на сокет
+    std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
+    if(I!=serverSockets.end())
+    {
+        delete I->second;
+        serverSockets.erase(I);
+    }
+}
+
+int UServerTransportTcpQt::GetSocketState(std::string bind)
+{
+    std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
+    if(I!=serverSockets.end())
+    {
+        if(I->second->GetSocket()->isValid() && I->second->GetSocket()->state()==QAbstractSocket::SocketState::ConnectedState)
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+bool UServerTransportTcpQt::ServerIsActive()
+{
+ server->isListening();
 }
 
 ///Инициировать остановку сервера, отключить все приемники
 void UServerTransportTcpQt::ServerStop()
 {
+ server->pauseAccepting();
+ for(std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.begin(); I!=serverSockets.end(); I++)
+ {
+    delete I->second;
+ }
+ serverSockets.clear();
  server->close();
 }
 
@@ -136,16 +249,16 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
  {
   try
   {
-   if(server->hasPendingConnections())
-   {
-    bool stop=false;
-    while(!stop)
+    //Здесь что-то вроде IdTcpServerExecute ???
+    //Получить ссылку на сокет
+    std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
+    if(I!=serverSockets.end())
     {
-     QTcpSocket *socket = server->nextPendingConnection();
+     QTcpSocket *socket = I->second->GetSocket();
      if(socket==nullptr)
-      break;
+      return 0;//?????
 
-     QString peer_name = socket->peerName();
+     QString peer_name = socket->peerAddress().toString();
      QString peer_port = QString::number(socket->peerPort());
      QString b = peer_name+":"+peer_port;
      if(b==QString(bind.c_str()))
@@ -163,7 +276,6 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
       return length;
      }
     }
-   }
   }
   catch (...)
   {
@@ -172,6 +284,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
    return 0;//?????
   }
  }
+ return 0;
  /*
  if(UServerControlForm->IdTCPServer->Active && !bind.empty())
  {
@@ -219,7 +332,6 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
   }
  }
  */
- return 0;
 }
 
 /// Отправить ответ на команду соответствующему получателю
@@ -235,15 +347,15 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
  {
   try
   {
-    if(server->hasPendingConnections())
-    {
-     bool stop=false;
-     while(!stop)
+     //Здесь что-то вроде IdTcpServerExecute ???
+     //Получить ссылку на сокет
+     std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(responce_addr);
+     if(I!=serverSockets.end())
      {
-      QTcpSocket *socket = server->nextPendingConnection();
+      QTcpSocket *socket = I->second->GetSocket();
       if(socket==nullptr)
-       break;
-      QString peer_name = socket->peerName();
+       return;
+      QString peer_name = socket->peerAddress().toString();
       QString peer_port = QString::number(socket->peerPort());
       QString b = peer_name+":"+peer_port;
       if(b==QString(responce_addr.c_str()))
@@ -261,7 +373,6 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
        return;
       }
      }
-    }
    }
    catch (...)
    {
@@ -522,6 +633,7 @@ UTcpServerControlWidget::UTcpServerControlWidget(QWidget *parent, RDK::UApplicat
   tcpCommandTimer->setInterval(10);
   connect(tcpCommandTimer, SIGNAL(timeout()), this, SLOT(TcpCommandTimerTick()));
   tcpCommandTimer->setSingleShot(false);
+  tcpCommandTimer->start();
 
   tcpServerRestartTimer = new QTimer(this);
   tcpServerRestartTimer->setInterval(1000);
@@ -570,11 +682,13 @@ void UTcpServerControlWidget::PushButtonServerStartClicked()
 {
  PushButtonApplyClicked();
  application->GetServerControl()->GetServerTransport()->ServerStart();
+ AUpdateInterface();
 }
 
 void UTcpServerControlWidget::PushButtonServerStopClicked()
 {
  application->GetServerControl()->GetServerTransport()->ServerStop();
+ AUpdateInterface();
 }
 
 void UTcpServerControlWidget::TcpCommandTimerTick()
@@ -606,6 +720,20 @@ void UTcpServerControlWidget::AUpdateInterface()
  std::string addr = application->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress();
  ui->lineEditServerAddress->setText(QString(addr.c_str()));
  ui->lineEditServerPort->setText(QString::number(application->GetServerControl()->GetServerTransport()->GetServerBindingPort()));
+ std::string bnd = addr+":"+ui->lineEditServerPort->text().toUtf8().constData();
+
+ if(application->GetServerControl()->GetServerTransport().Get()!=nullptr)
+ {
+     bool state = application->GetServerControl()->GetServerTransport()->GetSocketState(bnd);
+     if(!application->GetServerControl()->GetServerTransport()->ServerIsActive())
+     {
+         ui->labelServerState->setText("Server is disabled");
+     }
+     else
+     {
+         ui->labelServerState->setText("Server is active");
+     }
+ }
 }
 
 void UTcpServerControlWidget::ASaveParameters()

@@ -29,6 +29,17 @@ private slots:
     void onPushButtonConnectClick();
     void onPushButtonDisconnectClick();
 
+    void onPushButtonStartChannelClick();
+    void onPushButtonStopChannelClick();
+    void onPushButtonResetChannelClick();
+    void onPushButtonGetNumChannelsClick();
+    void onPushButtonSaveServerClick();
+
+    void onPushButtonGetChannelNameClick();
+    void onPushButtonSetChannelNameClick();
+
+    void onPushButtonLoadConfigClick();
+
 private:
     Ui::RdkQTcpClientWidget *ui;
     std::map<int, QString> Errors;

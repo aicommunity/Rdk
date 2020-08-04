@@ -18,7 +18,7 @@ class RdkQTcpThread: public QThread
 Q_OBJECT
 public: //Конструкторы и деструкторы
     RdkQTcpThread();
-    RdkQTcpThread(QTcpSocket *socket, RDK::UTransferReader &packetReader, bool CreateSUspended, QObject *parent);
+    RdkQTcpThread(QTcpSocket *socket, RDK::UTransferReader &packetReader, bool CreateSuspended, QObject *parent);
     ~RdkQTcpThread();
 
 public: //События

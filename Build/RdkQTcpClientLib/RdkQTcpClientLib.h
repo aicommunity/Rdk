@@ -75,5 +75,24 @@ int  Rpc_AddServer(void);
 
 int  Rpc_DelServer(int server_index);
 
+///////////////
+
+int  Rpc_StartChannel(int server_index, int channel_index, int timeout);
+
+int  Rpc_StopChannel(int server_index, int channel_index, int timeout);
+
+int  Rpc_ResetChannel(int server_index, int channel_index, int timeout);
+
+int  Rpc_GetNumChannels(int server_index, int &results, int timeout);
+
+int  Rpc_SetNumChannels(int server_index, int num_channels, int timeout);
+
+int  Rpc_GetChannelName(int server_index, int channel_index, const char* &result, int timeout);
+
+int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout);
+
+ int Rpc_SaveProject(int server_index, int timeout);
+
+ int Rpc_LoadProject(int server_index, const char* project_path, int timeout);
 
 #endif // RDKQTCPCLIENTLIB_H
