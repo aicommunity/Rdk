@@ -157,6 +157,7 @@ private:
     UGraphWidget *graphWindowWidget;
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
+    UWatch *watchWindow;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 
     /// Массив виджетов отображения картинок

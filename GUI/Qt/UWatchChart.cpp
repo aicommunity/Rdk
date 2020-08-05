@@ -1,6 +1,9 @@
 #include "UWatchChart.h"
 #include "ui_UWatchChart.h"
 #include <QVBoxLayout>
+#include <iostream>
+
+#include "UWatchTab.h"
 
 UWatchChart::UWatchChart(QWidget *parent) :
     QWidget(parent),
@@ -8,35 +11,43 @@ UWatchChart::UWatchChart(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QVBoxLayout *verticalLayout = new QVBoxLayout(this);
-    setLayout(verticalLayout);
-
-    ui->setupUi(this);
-
-    //создаем сам график
+    //создаем график, скроллбар и располагаем вертикально
+    verticalLayout = new QVBoxLayout(this);
     chart = new QChart();
     chartView = new QChartView(this);
-
-    //создаем скролл бар
     horizontalScrolBar = new QScrollBar(Qt::Horizontal,this);
+
+    setLayout(verticalLayout);
 
     verticalLayout->addWidget(chartView);
     verticalLayout->addWidget(horizontalScrolBar);
     verticalLayout->setSpacing(0);
+    verticalLayout->setContentsMargins(0,0,0,0);
 
     //создаем и настраиваем оси
     axisX = new QValueAxis(this);
     axisY = new QValueAxis(this);
+
+    ///Дефолтные подписи осей и их макс и мин
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
-
     axisX->setRange(0, axisXrange);
     axisY->setRange(-5, 5);
 
+    //устанавливаем оси
     chart->addAxis(axisX, Qt::AlignBottom);
     chart->addAxis(axisY, Qt::AlignLeft);
 
+    //устанавливаем график в график -_-
     chartView->setChart(chart);
+
+    //делаем красивую рамочку для графика
+    chartView->setFrameStyle(QFrame::Panel |QFrame::StyledPanel);
+
+    chartView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(chartView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
+
+    //UWatchTab *WatchTab = dynamic_cast<UWatchTab>(parent) ;
 }
 
 UWatchChart::~UWatchChart()
@@ -47,6 +58,11 @@ UWatchChart::~UWatchChart()
 void UWatchChart::setChartTitle(QString title)
 {
     chart->setTitle(title);
+}
+
+void UWatchChart::setChartIndex(int index)
+{
+    chartIndex = index;
 }
 
 void UWatchChart::setSerieName(int serieIndex, QString name)
@@ -89,10 +105,12 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     chart->addSeries(series.last());
     series.last()->attachAxis(axisX);
     series.last()->attachAxis(axisY);
+
     //имя графика = имя компонента +  имя свойства
-    series.last()->setName(componentName+ " " + propertyName +"(" + QString::number(jx)+", "+ QString::number(jy)+")");
+    series.last()->setName(componentName+ ": " + propertyName +"(" + QString::number(jx)+", "+ QString::number(jy)+")");
     series.last()->setColor(defaultColors[series.count()-1]);
-    //записываем данные об источнике данных
+
+    //записываем параметры источника данных
     series.last()->indexChannel = channelIndex;
     series.last()->nameComponent = componentName;
     series.last()->nameProperty = propertyName;
@@ -245,4 +263,82 @@ void UWatchChart::keyPressEvent(QKeyEvent *event)
 void UWatchChart::keyReleaseEvent(QKeyEvent *event)
 {
     if(event->key() == 16777249) isCtrlPressed = false;
+}
+
+void UWatchChart::slotCustomMenuRequested(QPoint pos)
+{
+    // Создаем объект контекстного меню
+    QMenu * menu = new QMenu(this);
+
+    // Создаём действия для контекстного меню
+    QAction * addSeiesAction = new QAction("Add series", this);
+    QAction * chartOptionAction = new QAction("Chart's option", this);
+    QAction * saveJpegAction = new QAction("Save chart to JPEG", this);
+
+    //пока еще не реализованно
+    chartOptionAction->setDisabled(true);
+
+    /* Подключаем СЛОТы обработчики для действий контекстного меню */
+    connect(addSeiesAction, SIGNAL(triggered()), this, SLOT(addSeriesSlot()));
+    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
+    connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
+
+    /* Устанавливаем действия в меню */
+    menu->addAction(addSeiesAction);
+    menu->addAction(chartOptionAction);
+    menu->addAction(saveJpegAction);
+
+    /* Вызываем контекстное меню */
+    menu->popup(mapToGlobal(pos));
+}
+
+void UWatchChart::addSeriesSlot()
+{
+    //вызываем окно для добавления новой серии
+    emit addSerieSignal(chartIndex);
+}
+
+void UWatchChart::chartOptionSlot()
+{
+    ;//пока сложна
+}
+
+void UWatchChart::saveToJpegSlot()
+{
+    QPixmap screenShot;
+    screenShot = chartView->grab(); //захватываем только текущую вкладку
+    QString currentDate = QDateTime::currentDateTime().toString("dd-MM-yy HH-mm"); //не ставить . и :, иначе не создает расшираение
+
+    //работа с путем к папке screenshot
+    QDir dir = QDir::current();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+
+    //проверяем, есть ли папка screenshots
+    //если нет, то создаем
+    if(dir.cd("screenshots"))
+    {
+        std::cout<<"screenshot folder is exist"<<std::endl;
+    }
+    else {
+         std::cout<<"screenshot folder is not exist"<<std::endl;
+         std::cout<<"screenshot folder creating"<<std::endl;
+         dir.mkdir("screenshots");
+         dir.cd("screenshots");
+    }
+
+    if(screenShot.save((dir.path()+"/"+chart->title()+ " " + currentDate + ".jpeg")))
+    {
+        //говорим что все хорошо и где натйи скриншот
+        std::cout<<"chart save succes"<<std::endl;
+        QMessageBox messageBox;
+        messageBox.setText("Chart save successfully!");
+        messageBox.setInformativeText("saved in folder \"screenshots\"");
+        messageBox.setWindowTitle("Saving chart");
+        messageBox.setIcon(QMessageBox::Information);
+        messageBox.setStandardButtons(QMessageBox::Cancel);
+        messageBox.exec();
+    }
+    else std::cout<<"chart save not succes"<<std::endl;  //что-то не так
 }

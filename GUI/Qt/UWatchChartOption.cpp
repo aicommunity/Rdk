@@ -11,6 +11,8 @@ UWatchChartOption::UWatchChartOption(QWidget *parent) :
 
     Watch = dynamic_cast<UWatch*>(parent);
     updateChartList();
+    updateLayoutBox();
+    ui->updateIntervalMs->setText(QString::number(Watch->getCurrentTab()->UpdateIntervalMs));
 }
 
 UWatchChartOption::~UWatchChartOption()
@@ -47,10 +49,28 @@ void UWatchChartOption::updateChartList()
     ui->allChartsList->setCurrentRow(0);
 }
 
+void UWatchChartOption::updateLayoutBox()
+{
+    //настраиваем пол€ выбора layout в соотвествии с текущим layout
+    int currentLayoutMode = Watch->getCurrentTab()->layoutMode;
+    ui->chartLayot_CB->setCurrentIndex(currentLayoutMode);
+
+    int colNumber = Watch->getCurrentTab()->getColNumber();
+    int rowNumber = Watch->getCurrentTab()->getRowNumber();
+    if (colNumber && rowNumber)
+    {
+        ui->chartColNumber_spin->setValue(colNumber);
+        ui->chartRowNumber_spin->setValue(rowNumber);
+    }
+}
+
 void UWatchChartOption::updateParameters(int chartIndex)
 {
     ui->graphNameEditor->setText(Watch->getCurrentTab()->getChart(chartIndex)->getChartTitle());
 
+    /*ƒќƒ≈Ћј“№*/
+    ui->legendVisibilitSB->setDisabled(true);
+    ui->tittleVisibilityCB->setDisabled(true);
     //ui->legendVisibilitSB->setTristate(Watch->getCurrentTab()->getChart(currentRow)->)
     //добавить видимость легенды и названи€
 
@@ -60,6 +80,10 @@ void UWatchChartOption::updateParameters(int chartIndex)
 
     ui->axisYzoomCB->setChecked(Watch->getCurrentTab()->getChart(chartIndex)->isAxisYzoomable);
     ui->axisYscrollCB->setChecked(Watch->getCurrentTab()->getChart(chartIndex)->isAxisYscrollable);
+    ui->axisXtrackCB->setChecked(Watch->getCurrentTab()->getChart(chartIndex)->isAxisXtrackable);
+
+    if(ui->axisXtrackCB->isChecked()) ui->axisXrangeSB->setEnabled(true);
+    else ui->axisXrangeSB->setDisabled(true);
 
     ui->axisYmaxSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYmax());
     ui->axisYminSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYmin());
@@ -68,6 +92,22 @@ void UWatchChartOption::updateParameters(int chartIndex)
 
 void UWatchChartOption::createLayout()
 {
+    //спрашиваем юзера, точно ли он хочет помен€ть layout
+    //но не спрашиваем если single layout и там нет серий
+    if (Watch->getCurrentTab()->layoutMode == 0 && Watch->getCurrentTab()->getChart(0)->countSeries() == 0);
+    else
+    {
+        //спрашиваем юзера точно ли он уверен в закрытие
+        QMessageBox messageBox;
+        messageBox.setText("Are you sure you want to change layout?");
+        messageBox.setInformativeText("All data about current charts will be lost");
+        messageBox.setWindowTitle("Change layout");
+        messageBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+        messageBox.setIcon(QMessageBox::Question);
+
+        if(messageBox.exec() != QMessageBox::Yes) return;
+    }
+
     //создание нового расположени€
     int currentMethod =ui->chartLayot_CB->currentIndex();
     int colNumber = ui->chartColNumber_spin->value();
@@ -94,6 +134,9 @@ void UWatchChartOption::saveParameters()
    Watch->getCurrentTab()->getChart(index)->axisXrange = ui->axisXrangeSB->value();
    Watch->getCurrentTab()->getChart(index)->isAxisYzoomable = ui->axisYzoomCB->isChecked();
    Watch->getCurrentTab()->getChart(index)->isAxisYscrollable= ui->axisYscrollCB->isChecked();
+   Watch->getCurrentTab()->getChart(index)->isAxisXtrackable= ui->axisXtrackCB->isChecked();
+
+   Watch->getCurrentTab()->saveUpdateInterval(ui->updateIntervalMs->text().toInt());
 }
 void UWatchChartOption::on_allChartsList_currentRowChanged(int currentRow)
 {
@@ -120,4 +163,10 @@ void UWatchChartOption::on_closeButoon_clicked()
     close();
     destroy();
     delete this;
+}
+
+void UWatchChartOption::on_axisXtrackCB_stateChanged(int arg1)
+{
+    if(arg1) ui->axisXrangeSB->setEnabled(true);
+    else ui->axisXrangeSB->setDisabled(true);
 }

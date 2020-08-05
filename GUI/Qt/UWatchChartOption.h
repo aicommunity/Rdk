@@ -31,14 +31,19 @@ private slots:
     void on_applyButton_clicked();
     void on_closeButoon_clicked();
 
+    void on_axisXtrackCB_stateChanged(int arg1);
+
 private:
     Ui::UWatchChartOption *ui;
     UWatch *Watch;
 
     void updateChartList(); //обновить имена в лист графиков
+    void updateLayoutBox();
     void updateParameters(int chartIndex);//обновить параметры выбранного в листе графика
     void createLayout(); //создать новое расположение
     void saveParameters(); //сохранить изменения
+
+
 };
 
 #endif // UWATCHCHARTOPTION_H

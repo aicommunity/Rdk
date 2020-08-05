@@ -42,14 +42,14 @@
           <item>
            <widget class="QPushButton" name="addSerieButton">
             <property name="text">
-             <string>Add new serie</string>
+             <string>Add new series</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="removeSerieButton">
             <property name="text">
-             <string>Remove selected serie</string>
+             <string>Remove selected series</string>
             </property>
            </widget>
           </item>
@@ -63,7 +63,7 @@
    <item row="3" column="1">
     <widget class="QGroupBox" name="groupBox_5">
      <property name="title">
-      <string>Serie's properties</string>
+      <string>Series properties</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
@@ -320,23 +320,6 @@
         <string>Close</string>
        </property>
       </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="3" column="0">
-    <layout class="QFormLayout" name="formLayout_4">
-     <property name="horizontalSpacing">
-      <number>20</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Update interval, ms:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="updateIntervalMs"/>
      </item>
     </layout>
    </item>

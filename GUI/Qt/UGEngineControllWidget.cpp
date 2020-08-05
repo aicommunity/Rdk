@@ -47,6 +47,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
     watchFormWidget=NULL;
+    watchWindow = NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -501,10 +502,13 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
-    UWatch *WatchWindow = new UWatch(this);
-    WatchWindow->setWindowTitle("Watch window");
-    WatchWindow->show();
-
+    if(watchWindow != NULL) watchWindow->show();
+    else
+    {
+        watchWindow = new UWatch(this);
+        watchWindow->setWindowTitle("Watch window");
+        watchWindow->show();
+    }
     /*
  if(!graphWindow )
  {

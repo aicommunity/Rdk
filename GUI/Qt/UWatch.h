@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QVector>
+#include <QMessageBox>
+#include <QDir>
+#include <QDateTime>
 
 #include "UWatchTab.h"
 #include "UWatchChartOption.h"
@@ -34,6 +37,8 @@ private slots:
     void on_actionSeries_option_triggered();
     void on_actionCharts_option_triggered();
     void on_tabWidget_tabCloseRequested(int index);
+
+    void on_actionTake_screenshot_triggered();
 
 private:
     QVector <UWatchTab*> tab;

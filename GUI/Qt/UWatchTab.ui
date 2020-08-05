@@ -29,6 +29,13 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="horizontalSpacing">
+      <number>0</number>
+     </property>
+    </layout>
+   </item>
   </layout>
  </widget>
  <resources/>

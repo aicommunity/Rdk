@@ -12,7 +12,6 @@ UWatchSeriesOption::UWatchSeriesOption(QWidget *parent) :
     Watch = dynamic_cast<UWatch*>(parent);
 
     loadGraphsName();
-    ui->updateIntervalMs->setText(QString::number(Watch->getCurrentTab()->UpdateIntervalMs));
 }
 
 UWatchSeriesOption::~UWatchSeriesOption()
@@ -151,5 +150,5 @@ void UWatchSeriesOption::saveParemeters()
 
     Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieName(currentSerieIndex, name);
     Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieStyle(currentSerieIndex, defaultColors[colorIndex], width+1, defaultLineStyle[lineTypeIndex]);
-    Watch->getCurrentTab()->saveUpdateInterval(ui->updateIntervalMs->text().toInt());
+
 }

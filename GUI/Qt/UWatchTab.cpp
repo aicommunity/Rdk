@@ -1,11 +1,14 @@
 #include "UWatchTab.h"
 #include "ui_UWatchTab.h"
 
+
+
 UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UWatchTab)
 {
     ui->setupUi(this);
+    colSplitter = nullptr;
     //создаем один график на вкладке
     createSingleLayout();
 
@@ -20,7 +23,11 @@ UWatchTab::~UWatchTab()
 
 void UWatchTab::createGraph()
 {
+    //создание 1 графика
     graph.push_back(new UWatchChart(this));
+    graph.last()->setChartIndex(graph.count()-1);
+
+    connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
 }
 
 void UWatchTab::deleteGraph(int index)
@@ -29,12 +36,6 @@ void UWatchTab::deleteGraph(int index)
     graph.remove(index);
 }
 
-void UWatchTab::deleteAllGraph()
-{
-    if (!graph.isEmpty())
-        for (int i = graph.count()-1; i>=0 ; i--)
-            deleteGraph(i);
-}
 
 void UWatchTab::AUpdateInterface()
 {
@@ -65,60 +66,126 @@ void UWatchTab::AUpdateInterface()
             // и добавим ее в график
             graph[graphIndex]->addDataToSerie(serieIndex, x, y);
         }
-        //смещаем ось ’ вслед за временем
+        //смещаем max оси ’ вслед за временем
         if (x > graph[graphIndex]->axisXrange)
         {
             graph[graphIndex]->setAxisXmax(x+0.1);
-            graph[graphIndex]->setAxisXmin(x-graph[graphIndex]->axisXrange);
+            //и min если позволено
+            if(graph[graphIndex]->isAxisXtrackable)graph[graphIndex]->setAxisXmin(x-graph[graphIndex]->axisXrange);
         }
 
     }
 }
 
+void UWatchTab::createSelectionDialogSlot(int index)
+{
+    createSelectionDialog(index);
+}
+
+void UWatchTab::createSplitterGrid(int rowNumber)
+{
+    //создаем вертикальный контейнер, в котором располагаютс€ горизонтальные
+
+    colSplitter = new QSplitter(this);
+    colSplitter->setOrientation(Qt::Vertical);
+
+    for (int i = 0; i < rowNumber; ++i)
+    {
+        rowSplitter.push_back(new QSplitter(this));
+        rowSplitter.last()->setOrientation(Qt::Horizontal);
+        colSplitter->addWidget(rowSplitter.last());
+    }
+    ui->horizontalLayout->addWidget(colSplitter);
+}
+
+void UWatchTab::deleteAllGraph()
+{
+    //удал€ем все графики
+    for (int i = tabRowNumber-1; i >= 0; --i)
+    {
+        for (int j = tabColNumber-1; j >= 0; --j)
+        {
+            delete graph.takeLast();
+        }
+        delete rowSplitter.takeLast();
+    }
+    //удал€ем расположение
+    if (colSplitter !=nullptr)
+    {
+        ui->horizontalLayout->removeWidget(colSplitter);
+        delete colSplitter;
+    }
+}
+
+
 void UWatchTab::createSingleLayout()
 {
-   createGrid();
    deleteAllGraph();
+   tabColNumber=1;
+   tabRowNumber=1;
+
    createGraph();
    graph.last()->setChartTitle("Single graph");
-   grid->addWidget(graph.last(),1,1);
+
+   createSplitterGrid(1);
+   rowSplitter.last()->addWidget(graph.last());
+   layoutMode = 0;
 }
 
 void UWatchTab::createRowLayout(int rowNumber)
 {
-    createGrid();
     deleteAllGraph();
-    for(int i=1; i <= rowNumber;i++)
+    tabColNumber=1;
+    tabRowNumber=rowNumber;
+
+    createSplitterGrid(rowNumber);
+    for(int i=0; i < rowNumber;i++)
     {
         createGraph();
         graph.last()->setChartTitle(QString("Horizontal graph %1").arg(QString::number(i)));
-        grid->addWidget(graph.last(),i, 1);
+        rowSplitter[i]->addWidget(graph.last());
     }
+    layoutMode = 2;
 }
 
 void UWatchTab::createColLayout(int colNumber)
 {
-    createGrid();
     deleteAllGraph();
-    for(int i=1; i <= colNumber;i++)
+
+    tabColNumber=colNumber;
+    tabRowNumber=1;
+
+    createSplitterGrid(1);
+
+    for(int i=0; i < colNumber;i++)
     {
         createGraph();
         graph.last()->setChartTitle(QString("Vertical graph %1").arg(QString::number(i)));
-        grid->addWidget(graph.last(),1, i);
+        rowSplitter[0]->addWidget(graph.last());
     }
+    layoutMode = 1;
 }
 
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
-    createGrid();
+
     deleteAllGraph();
-    for(int i=1; i <= rowNumber;i++)
-        for(int j=1; j <= colNumber; j++)
+
+    tabColNumber=colNumber;
+    tabRowNumber=rowNumber;
+
+    createSplitterGrid(rowNumber);
+    for(int i=0; i < rowNumber;i++)
+    {
+        for(int j=0; j < colNumber; j++)
         {
             createGraph();
-            graph.last()->setChartTitle(QString("Grid graph %1").arg(QString::number((i-1)*colNumber+j)));
-            grid->addWidget(graph.last(),i, j);
+            graph.last()->setChartTitle(QString("Grid graph %1").arg(QString::number((i)*colNumber+j+1)));
+
+            rowSplitter[i]->addWidget(graph.last());
         }
+    }
+    layoutMode = 3;
 }
 
 UWatchChart *UWatchTab::getChart(int index)
@@ -152,8 +219,12 @@ void UWatchTab::createSelectionDialog(int chartIndex)
          componentProperty = dialog.componentsList->getSelectedPropertyName();
     }
 
-    //создаем серию дл€ выбранного источника
-    graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0);
+    //провер€ем что у выбран не пустой элемент (если нет модели)
+    if(!componentName.isEmpty() && !componentProperty.isEmpty())
+    {
+        //создаем серию дл€ выбранного источника
+        graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0);
+    }
 }
 
 void UWatchTab::saveUpdateInterval(int newInterval)
@@ -162,18 +233,12 @@ void UWatchTab::saveUpdateInterval(int newInterval)
     UpdateInterval = newInterval;
 }
 
-void UWatchTab::createGrid()
+int UWatchTab::getColNumber()
 {
-    //создаем сетку дл€ графиков
-    ///рабоатет криво - опправить
-    if(!ui->horizontalLayout->isEmpty())
-    {
-        ui->horizontalLayout->removeItem(grid);
-        delete grid;
-    }
+    return tabColNumber;
+}
 
-    grid = new QGridLayout(this);
-    grid->setSpacing(0);
-    ui->horizontalLayout->addLayout(grid);
-    grid->update();
+int UWatchTab::getRowNumber()
+{
+    return tabRowNumber;
 }
