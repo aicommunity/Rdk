@@ -3,6 +3,7 @@
 
 #include "UVisualControllerWidget.h"
 #include "../../Core/Application/UServerTransportTcp.h"
+#include <QMainWindow>
 
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -112,7 +113,47 @@ virtual void AfterReset(void);
 // Метод, вызываемый после шага расчета
 virtual void AfterCalculate(void);
 // --------------------------
+
+
 };
+
+
+class URpcDecoderCommonQt: public RDK::URpcDecoderCommon
+{
+/// Строка результирующего ответа от обработчика сервера
+std::string ControlResponseString;
+
+std::vector<RDK::UParamT> binary_data;
+
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+URpcDecoderCommonQt(void);
+virtual ~URpcDecoderCommonQt(void);
+// --------------------------
+
+// --------------------------
+// Методы управления командами
+// --------------------------
+/// Проверяет, поддерживается ли команда диспетчером
+/// ожидает, что команда уже декодирована иначе всегда возвращает false
+virtual bool IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const;
+
+/// Создает копию этого декодера
+virtual URpcDecoderCommonQt* New(void);
+
+virtual std::string ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value);
+
+void SetEngine(QMainWindow* e);
+QMainWindow* GetEngine();
+
+// --------------------------
+private:
+QMainWindow *engine;
+
+};
+
 
 namespace Ui {
   class UTcpServerControlWidget;

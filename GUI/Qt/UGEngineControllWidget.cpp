@@ -268,7 +268,7 @@ void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
   /*QStringList list = configFileName.split("/");
   list.pop_back();*/
 
-  RDK::UIVisualControllerStorage::UpdateInterface(true);
+  //RDK::UIVisualControllerStorage::UpdateInterface(true);
   //drawEngine->updateScheme(true);
  }
  catch(RDK::UException& e)

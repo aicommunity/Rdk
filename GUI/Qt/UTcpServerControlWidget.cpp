@@ -2,8 +2,8 @@
 #define UTcpServerControlWidget_CPP
 
 #include "UTcpServerControlWidget.h"
-#include "UGEngineControllWidget.h"
 #include "ui_UTcpServerControlWidget.h"
+#include "UGEngineControllWidget.h"
 #include <QTcpSocket>
 
 
@@ -618,6 +618,164 @@ void UServerControlQt::AfterCalculate(void)
 // --------------------------
 
 //==========================================================================================
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+URpcDecoderCommonQt::URpcDecoderCommonQt(void):
+engine(0)
+{
+
+}
+
+URpcDecoderCommonQt::~URpcDecoderCommonQt(void)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы управления командами
+// --------------------------
+/// Проверяет, поддерживается ли команда диспетчером
+/// ожидает, что команда уже декодирована иначе всегда возвращает false
+bool URpcDecoderCommonQt::IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const
+{
+ if(!command || !command->IsDecoded)
+  return false;
+
+ std::string cmd=command->FunctionName;
+ if(cmd == "LoadProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "SaveProject")
+ {
+  return true;
+ }
+ return URpcDecoderCommon::IsCmdSupported(command);
+}
+
+/// Создает копию этого декодера
+URpcDecoderCommonQt* URpcDecoderCommonQt::New(void)
+{
+ return new URpcDecoderCommonQt;
+}
+
+std::string URpcDecoderCommonQt::ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int channel_index, int &return_value)
+{
+ ControlResponseString.clear();
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
+ if(cmd == "GetChannelVideoSource")
+ {
+  return_value=1;
+ }
+ else
+ if(cmd == "SetChannelVideoSource")
+ {
+  return_value=1;
+ }
+ else
+ if(cmd == "CheckChannelVideoSourceConnection")
+ {
+    //result.WriteInteger("State",UServerControlForm->CheckChannelVideoSourceConnection(channel_index));
+     result.WriteInteger("State",-1);
+    return_value=1;
+ }
+ else
+ if(cmd == "GetChannelBroacaster")
+ {
+  int type=xml.ReadInteger("BroadcasterType",0);
+  result.SelectNodeForce("Data");
+  result.SelectUp();
+  return_value=0;
+ }
+ else
+ if(cmd == "SetChannelBroadcaster")
+ {
+  //int type=xml.ReadInteger("BroadcasterType",0);
+  //result.WriteInteger("BroadcasterType",type);
+  return_value=1;
+ }
+ else
+ if(cmd == "ReadImageFromVideoSource")
+ {
+   return_value=1;
+ }
+ else
+ if(cmd == "StartVideoSource")
+ {
+   return_value=1;
+ }
+ else
+ if(cmd == "StopVideoSource")
+ {
+   return_value=1;
+ }
+ else
+ if(cmd == "LoadProject")
+ {
+  std::string file_name=xml.ReadString("FileName","");
+  if(!file_name.empty())
+  {
+      //GetApplication()->OpenProject(file_name);
+      //RDK::UIVisualControllerStorage::UpdateInterface(true);
+
+      if(!engine)
+      {
+          return_value=1;
+      }
+      else
+      {
+          UGEngineControllWidget* eng = dynamic_cast<UGEngineControllWidget*>(engine);
+          eng->loadProjectExternal(QString(file_name.c_str()));
+          return_value=0;
+      }
+
+      //UServerControlForm->LoadProject(channel_index,file_name);
+  }
+ }
+ else
+ if(cmd == "SaveProject")
+ {
+  //GetApplication()->SaveProject();
+  if(!engine)
+  {
+      return_value=1;
+  }
+  else
+  {
+      UGEngineControllWidget* eng = dynamic_cast<UGEngineControllWidget*>(engine);
+      eng->actionSaveConfig();
+      return_value=0;
+  }
+  //return_value=0;//UServerControlForm->SaveProject();
+ }
+ else
+  return_value=2001;
+
+ if(return_value=2001)
+ {
+    return URpcDecoderCommon::ARemoteCall(cmd, xml, component_name, channel_index, return_value);
+ }
+
+ return ControlResponseString;
+
+}
+// --------------------------
+
+void URpcDecoderCommonQt::SetEngine(QMainWindow* e)
+{
+    engine = e;
+}
+QMainWindow* URpcDecoderCommonQt::GetEngine()
+{
+    return engine;
+}
+
 //==========================================================================================
 
 UTcpServerControlWidget::UTcpServerControlWidget(QWidget *parent, RDK::UApplication *app) :
