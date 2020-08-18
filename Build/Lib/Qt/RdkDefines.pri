@@ -24,7 +24,16 @@ contains(DEFINES,RDK_USE_PYTHON) {
 unix {
     INCLUDEPATH += $$(BOOST_PATH)#/include
     INCLUDEPATH += $$(BOOST_PATH)/include
-    INCLUDEPATH += $$(OPENCV3_PATH)/include
+
+    contains(DEFINES, OPENCV_4) {
+        INCLUDEPATH += $$(OPENCV4_PATH)/include/opencv4
+    }else{
+        INCLUDEPATH += $$(OPENCV3_PATH)/include
+    }
+
+
+
+
 
     contains(DEFINES, GPU) {
         INCLUDEPATH += /usr/local/cuda/include
