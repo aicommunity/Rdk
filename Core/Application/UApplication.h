@@ -17,6 +17,7 @@
 #include "UBroadcasterInterface.h"
 #include "UServerControl.h"
 #include "UServerTransport.h"
+#include "UProjectDeployer.h"
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 

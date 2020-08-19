@@ -718,7 +718,7 @@ std::string URpcDecoderCommonQt::ARemoteCall(const std::string &cmd, RDK::USerSt
  else
  if(cmd == "LoadProject")
  {
-  std::string file_name=xml.ReadString("FileName","");
+  /*std::string file_name=xml.ReadString("FileName","");
   if(!file_name.empty())
   {
       //GetApplication()->OpenProject(file_name);
@@ -736,12 +736,14 @@ std::string URpcDecoderCommonQt::ARemoteCall(const std::string &cmd, RDK::USerSt
       }
 
       //UServerControlForm->LoadProject(channel_index,file_name);
-  }
+  }*/
+     return_value=1;
  }
  else
  if(cmd == "SaveProject")
  {
   //GetApplication()->SaveProject();
+     /*
   if(!engine)
   {
       return_value=1;
@@ -752,7 +754,9 @@ std::string URpcDecoderCommonQt::ARemoteCall(const std::string &cmd, RDK::USerSt
       eng->actionSaveConfig();
       return_value=0;
   }
+  */
   //return_value=0;//UServerControlForm->SaveProject();
+     return_value=1;
  }
  else
   return_value=2001;

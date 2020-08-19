@@ -7,6 +7,7 @@
 
 namespace RDK {
 class UApplication;
+
 class RDK_LIB_TYPE UServerTransport: public UAppController
 {
 friend class UApplication;
@@ -90,8 +91,6 @@ void ConvertVectorToString(const UParamT &source, std::string &dest);
 // --------------------------
 
 };
-
-
 
 }//namespace RDK
 #endif

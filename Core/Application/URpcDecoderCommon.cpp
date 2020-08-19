@@ -128,12 +128,12 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  else
  if(cmd == "LoadProject")
  {
-  return false;
+  return true;
  }
  else
  if(cmd == "SaveProject")
  {
-  return false;
+  return true;
  }
  else
  if(cmd == "ReadImageFromVideoSource")
@@ -318,7 +318,6 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    int port=xml.ReadInteger("Port",1000);
    return_value=GetApplication()->GetServerControl()->UnRegisterMetadataReceiver(address, port);
   }
-  /*
   else
   if(cmd == "LoadProject")
   {
@@ -335,7 +334,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   {
    GetApplication()->SaveProject();
    return_value=0;//UServerControlForm->SaveProject();
-  }*/
+  }
  }
 // }
 
