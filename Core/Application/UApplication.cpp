@@ -585,8 +585,16 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 {
   InitCmdParser();
 
-  po::store(po::parse_command_line(argc, argv, CmdLineDescription), CmdVariablesMap);
-  po::notify(CmdVariablesMap);
+  try
+  {
+   po::store(po::parse_command_line(argc, argv, CmdLineDescription), CmdVariablesMap);
+   po::notify(CmdVariablesMap);
+  }
+  catch(po::unknown_option &ex)
+  {
+   MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_WARNING,ex.what());
+   return;
+  }
 
   if(CmdVariablesMap.count("test"))
   {
@@ -594,7 +602,7 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 	SetTestsDescriptionFileName(CmdVariablesMap["test"].as<std::string>());
   }
   else
-	ChangeTestModeState(false);
+   ChangeTestModeState(false);
 
   if(CmdVariablesMap.count("run"))
 	CloseAfterTest=false;
@@ -2093,9 +2101,16 @@ void UApplication::InitCmdParser(void)
 {
 #ifndef __BORLANDC__
  CmdLineDescription.add_options()
-	("help", "produce help message")
-	("test", po::value<string>(), "Test file name")
-	("run", "Run application after test");
+    ("help", "produce help message")
+    ("conf", po::value<string>(), "Configuration file name")
+    ("ctime", po::value<double>(), "Calculation time interval, in seconds")
+    ("info", po::value<string>(), "Information about core, possible: CollectionsList, ClassesList, CollectionClassesList, ClassProperties")
+    ("class", po::value<string>(), "Class name")
+    ("collection", po::value<string>(), "collection name")
+    ("mask", po::value<unsigned>(), "Property mask")
+    ("save_model_bmp", po::value<string>(), "Component name")
+    ("session", po::value<unsigned>(), "Session Id")
+;
 #endif
 }
 /*
