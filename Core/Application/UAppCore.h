@@ -1,9 +1,9 @@
 #ifndef UAppCore_H
 #define UAppCore_H
 
-#include "../../../../Rdk/Core/Utilities/USupport.h"
-#include "../../../../Rdk/Core/Utilities/UIniFile.h"
-#include "../../../../Rdk/Deploy/Include/rdk_application.h"
+#include "../Utilities/USupport.h"
+#include "../Utilities/UIniFile.h"
+#include "../../Deploy/Include/rdk_application.h"
 
 
 namespace RDK {
