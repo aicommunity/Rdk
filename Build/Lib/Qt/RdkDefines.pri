@@ -22,6 +22,15 @@ contains(DEFINES,RDK_USE_PYTHON) {
 
 contains(DEFINES,RDK_USE_OPENCV) {
 
+# функция добавляет постфикс(второй параметр) ко всем элементам первого входного параметра
+defineReplace(addPostfix) {
+ libList = $$1
+ for(lib, libList) {
+  returnValue += $${lib}$${2}
+ }
+ return($$returnValue)
+}
+
     unix {
         contains(DEFINES, OPENCV_4) {
             INCLUDEPATH += $$(OPENCV4_PATH)/include/opencv4
@@ -32,9 +41,27 @@ contains(DEFINES,RDK_USE_OPENCV) {
 
     windows {
         contains(DEFINES, OPENCV_4) {
-            INCLUDEPATH += $$(OPENCV4_PATH)/build/include/opencv4
+            OPENCV_LIBS_VERSION = 440
+            OPENCV_PATH=$$(OPENCV4_PATH)
         }else{
-            INCLUDEPATH += $$(OPENCV3_PATH)/build/include
+            OPENCV_LIBS_VERSION = 345
+            OPENCV_PATH=$$(OPENCV3_PATH)
+        }
+
+        INCLUDEPATH += $${OPENCV_PATH}/build/include
+
+        contains(DEFINES, RDK_USE_CUDA) {
+            OPENCV_COMPILED_VERSION_64 = vc15cuda
+            OPENCV_COMPILED_VERSION_86 = vc15
+        } else {
+            OPENCV_COMPILED_VERSION_64 = vc15
+            OPENCV_COMPILED_VERSION_86 = vc15
+        }
+
+        !contains(QMAKE_TARGET.arch, x86_64) {
+            OPENCV_LIB_PATH = $${OPENCV_PATH}/build/x86/$${OPENCV_COMPILED_VERSION_86}/lib
+        } else {
+            OPENCV_LIB_PATH = $${OPENCV_PATH}/build/x64/$${OPENCV_COMPILED_VERSION_64}/lib
         }
     }
 }
@@ -62,6 +89,7 @@ unix {
 }
 
 windows {
+    BOOST_COMPILED_VERSION = msvc-$$(VisualStudioVersion)
     INCLUDEPATH += $$(BOOST_PATH)
 
     contains(DEFINES,RDK_USE_PYTHON) {
@@ -75,19 +103,15 @@ windows {
 }
 
 contains(DEFINES, RDK_USE_TENSORFLOW) {
-
-
-# TF
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-genfiles
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/eigen_archive
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/protobuf_archive/src
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_protobuf/src
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_absl
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
-DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
-INCLUDEPATH += $$(TENSORFLOW_PATH)
-DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
-
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-genfiles
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/eigen_archive
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/protobuf_archive/src
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_protobuf/src
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_absl
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
+    DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
+    INCLUDEPATH += $$(TENSORFLOW_PATH)
+    DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
 
 windows {
 
