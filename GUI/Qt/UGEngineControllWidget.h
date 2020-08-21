@@ -161,6 +161,7 @@ private:
     UGraphWidget *graphWindowWidget;
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
+    QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 

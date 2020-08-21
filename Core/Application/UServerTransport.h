@@ -7,6 +7,7 @@
 
 namespace RDK {
 class UApplication;
+
 class RDK_LIB_TYPE UServerTransport: public UAppController
 {
 friend class UApplication;
@@ -28,6 +29,14 @@ virtual ~UServerTransport(void);
 // --------------------------
 
 // --------------------------
+// Методы доступа к данным
+// --------------------------
+/// Возвращает указатель на экземпляр приложения
+UEPtr<UApplication> GetApplication(void);
+bool SetApplication(UEPtr<UApplication> value);
+// --------------------------
+
+// --------------------------
 // Методы транспортировки данных
 // --------------------------
 
@@ -39,6 +48,10 @@ virtual std::string GetServerBindingInterfaceAddress(void);
 
 //Получение адреса интерфейса управления сервером
 virtual int GetServerBindingPort(void) const;
+
+virtual int GetSocketState(std::string bind);
+
+virtual bool ServerIsActive();
 
 /// Обрабатывает входящие данные, преобразовывая пакеты в сообщения
 /// 01.04.2020 пока в этом классе, возможно уедет потом в дочерние *Tcp, *Http, *Udp
@@ -78,8 +91,6 @@ void ConvertVectorToString(const UParamT &source, std::string &dest);
 // --------------------------
 
 };
-
-
 
 }//namespace RDK
 #endif
