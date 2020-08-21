@@ -66,6 +66,26 @@ defineReplace(addPostfix) {
     }
 }
 
+# Ћинковка OpenCV
+contains(DEFINES, RDK_USE_OPENCV) {
+
+    windows {
+        CONFIG(debug){
+#            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Debug)
+            LIBS += -L$${OPENCV_LIB_PATH}/Debug $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION}d)
+        }
+
+        CONFIG(release) {
+#            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Release)
+            LIBS += -L$${OPENCV_LIB_PATH}/Release $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION})
+        }
+
+    } else:unix {
+        LIBS += -L$${OPENCV_LIB_PATH}/lib $$OPENCV_LIBS_LIST
+    }
+}
+
+#Boost
 unix {
     INCLUDEPATH += $$(BOOST_PATH)
     INCLUDEPATH += $$(BOOST_PATH)/include
@@ -86,6 +106,32 @@ unix {
             INCLUDEPATH += $$(ANACONDA_PATH)/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
         }
     }
+
+    LIBS += -L$$(BOOST_PATH)/lib -lboost_system \
+        -lboost_system \
+        -lboost_chrono \
+        -lboost_thread \
+        -lboost_program_options \
+        -lboost_filesystem \
+        -lboost_date_time \
+        -lboost_timer
+
+    # —ледующие две строки должна быть строго выше чем строки линковки питона из анаконды!!!
+    LIBS += -L$$(QTDIR)/lib -lQt5Core -lQt5Widgets -lQt5Gui -lQt5PrintSupport -lGL
+    LIBS += -L/usr/lib/x86_64-linux-gnu -lcurl
+
+    contains(DEFINES, RDK_USE_PYTHON) {
+        LIBS += -L$$(BOOST_PATH)/lib -lboost_python$${RDK_PYTHON_MAJOR}$${RDK_PYTHON_MINOR} \
+            -lboost_numpy$${RDK_PYTHON_MAJOR}$${RDK_PYTHON_MINOR}
+
+    isEmpty(ANACONDA_PATH) {
+         LIBS += -L/usr/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/config-$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m-x86_64-linux-gnu -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
+         LIBS += -L/usr/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/config-$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m-aarch64-linux-gnu -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
+    } else {
+         LIBS += -L$$(ANACONDA_PATH)/lib -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR} #-lpng -lssl
+    }
+}
+
 }
 
 windows {
@@ -100,6 +146,24 @@ windows {
     contains(DEFINES, GPU) {
          INCLUDEPATH += $$(CUDA_PATH)/include
     }
+
+    !contains(QMAKE_TARGET.arch, x86_64) {
+        LIBS += -L$$(BOOST_PATH)/$${BOOST_COMPILED_VERSION}-x86/lib/
+    } else {
+         LIBS += -L$$(BOOST_PATH)/$${BOOST_COMPILED_VERSION}-x64/lib/
+    }
+
+    LIBS +=   -lWldap32
+    LIBS +=   -lAdvapi32
+
+    LIBS += -L$$(ANACONDA_PATH)/libs/
+}
+
+
+contains(DEFINES, RDK_USE_DARKNET) {
+    unix {
+        LIBS+= -L$$PWD/../../../Libraries/Rdk-DarknetLib/ThirdParty/darknet -ldarknet
+    }
 }
 
 contains(DEFINES, RDK_USE_TENSORFLOW) {
@@ -113,11 +177,11 @@ contains(DEFINES, RDK_USE_TENSORFLOW) {
     INCLUDEPATH += $$(TENSORFLOW_PATH)
     DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
 
-windows {
-
-} else:unix {
-
-}
+    windows {
+        LIBS += -L$$(TENSORFLOW_PATH)/bazel-bin/tensorflow -ltensorflow_framework.dll.if -ltensorflow.dll.if -ltensorflow_cc.dll.if
+    } else:unix {
+        LIBS += -L$$(TENSORFLOW_PATH)/bazel-bin/tensorflow -ltensorflow_cc -ltensorflow_framework
+    }
 
 }
 
