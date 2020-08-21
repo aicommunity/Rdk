@@ -16,7 +16,7 @@ UProjectDeployerQt::~UProjectDeployerQt(void)
 
 int StartProjectDeployment(const std::string &project_path, const std::string &project_url)
 {
-
+ return 0;
 }
 
 // --------------------------

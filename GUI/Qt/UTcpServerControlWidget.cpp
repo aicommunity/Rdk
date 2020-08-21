@@ -215,6 +215,7 @@ int UServerTransportTcpQt::GetSocketState(std::string bind)
 bool UServerTransportTcpQt::ServerIsActive()
 {
  server->isListening();
+ return true;
 }
 
 ///Инициировать остановку сервера, отключить все приемники
