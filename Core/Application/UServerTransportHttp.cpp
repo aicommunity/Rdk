@@ -1,14 +1,14 @@
-#include "UServerTransportTcp.h"
+#include "UServerTransportHttp.h"
 
 namespace RDK{
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UServerTransportTcp::UServerTransportTcp(void)
+UServerTransportHttp::UServerTransportHttp(void)
 {
 
 }
-UServerTransportTcp::~UServerTransportTcp(void)
+UServerTransportHttp::~UServerTransportHttp(void)
 {
 
 }
@@ -20,7 +20,7 @@ UServerTransportTcp::~UServerTransportTcp(void)
 
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта
-//int UServerTransportTcp::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
+//int UServerTransportHttp::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
 //{
 
 //}

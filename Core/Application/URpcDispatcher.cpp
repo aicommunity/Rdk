@@ -193,8 +193,9 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   }
 
   // TODO: Ниже неэффективный код с двойной проверкой IsCmdSupported
-  if(channel_index<0)
-  {
+  ///06.04.2020 Закомментировано в рамках проверки работы без индекса, внутренняя логика говорит о том что он тут лишний
+  //if(channel_index<0)
+  //{
    if(!CommonDecoder)
    {
 	// Ошибка - не задан главный декодер сервера
@@ -212,9 +213,10 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
 	}
    return;
    }
-   else
-    channel_index=0; // TODO: Заглушка. Не понятно нужно ли это
-  }
+  ///06.04.2020 Закомментировано в рамках проверки работы без индекса, внутренняя логика говорит о том что он тут лишний
+  // else
+  //	channel_index=0; // TODO: Заглушка. Не понятно нужно ли это
+  //}
 
   unsigned cmd_id=0;
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))

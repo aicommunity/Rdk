@@ -203,6 +203,12 @@
             <DependentOn>..\..\..\Core\Application\UServerTransport.h</DependentOn>
             <BuildOrder>113</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UServerTransportHttp.cpp">
+            <BuildOrder>123</BuildOrder>
+        </CppCompile>
+        <None Include="..\..\..\Core\Application\UServerTransportHttp.h">
+            <BuildOrder>124</BuildOrder>
+        </None>
         <CppCompile Include="..\..\..\Core\Application\UServerTransportTcp.cpp">
             <DependentOn>..\..\..\Core\Application\UServerTransportTcp.h</DependentOn>
             <BuildOrder>114</BuildOrder>
@@ -999,12 +1005,12 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>

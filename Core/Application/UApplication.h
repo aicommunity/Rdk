@@ -16,6 +16,7 @@
 #include "UEngineStateThread.h"
 #include "UBroadcasterInterface.h"
 #include "UServerControl.h"
+#include "UServerTransport.h"
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 
@@ -48,6 +49,9 @@ std::string WorkDirectory;
 
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 std::string ConfigsMainPath;
+
+/// Относительный путь до папки с хранилищем проектов (пока обычно /Database)
+std::string DatabaseMainPath;
 
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 std::string ModelsMainPath;
@@ -141,6 +145,9 @@ bool SetWorkDirectory(const std::string& value);
 const std::string& GetConfigsMainPath(void) const;
 bool SetConfigsMainPath(const std::string &value);
 
+const std::string& GetDatabaseMainPath(void) const;
+bool SetDatabaseMainPath(const std::string &value);
+
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 const std::string& GetModelsMainPath(void) const;
 bool SetModelsMainPath(const std::string &value);
@@ -216,11 +223,11 @@ bool IsInit(void) const;
 // Методы инициализации
 // --------------------------
 /// Предоставляет доступ к диспетчеру команд
-virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
+//virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
 
 /// Устанавливает новый диспетчер команд
 /// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
-virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
+//virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
 
 /// Предоставляет доступ к контроллеру движка
 virtual UEPtr<UEngineControl> GetEngineControl(void);

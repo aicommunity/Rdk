@@ -104,6 +104,20 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& UApplication::GetDatabaseMainPath(void) const
+{
+ return DatabaseMainPath;
+}
+
+bool UApplication::SetDatabaseMainPath(const std::string &value)
+{
+ if(DatabaseMainPath == value)
+  return true;
+ DatabaseMainPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
 {
@@ -301,6 +315,7 @@ bool UApplication::IsInit(void) const
 // Методы инициализации
 // --------------------------
 /// Предоставляет доступ к диспетчеру команд
+/*
 UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
 {
  return RpcDispatcher;
@@ -319,7 +334,7 @@ bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  RpcDispatcher->SetApplication(this);
  return true;
 }
-
+*/
 /// Предоставляет доступ к контроллеру движка
 UEPtr<UEngineControl> UApplication::GetEngineControl(void)
 {
@@ -1041,6 +1056,28 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  {
 
  }
+
+  if(old_project_config.HttpServerInterfaceAddress != project_config.HttpServerInterfaceAddress)
+ {
+
+ }
+
+ if(old_project_config.HttpServerInterfacePort != project_config.HttpServerInterfacePort)
+ {
+
+ }
+
+
+  if(old_project_config.HttpServerLogin != project_config.HttpServerLogin)
+ {
+
+ }
+
+ if(old_project_config.HttpServerPassword != project_config.HttpServerPassword)
+ {
+
+ }
+
 
  if(old_project_config.ProjectShowChannelsStates != project_config.ProjectShowChannelsStates)
  {
