@@ -143,7 +143,11 @@ SOURCES += \
     ../../../Core/Application/UTestManager.cpp \
     ../../../Core/System/Gcc/pevents.cpp \
     ../../../Core/Engine/UComponentFactory.cpp \
-    ../../../Deploy/Include/rdk_version.cpp
+    ../../../Deploy/Include/rdk_version.cpp \
+    ../../../Core/Application/UProjectDeployer.cpp \
+    ../../../Core/Application/Qt/UProjectDeployerQt.cpp \
+    ../../../Core/Application/UServerTransportHttp.cpp \
+    ../../../Core/Application/UServerTransportHttp.cpp
 
 HEADERS +=\
         rdk.qt_global.h \
@@ -266,7 +270,11 @@ HEADERS +=\
     ../../../Core/Application/UTestManager.h \
     ../../../Core/System/Gcc/pevents.h \
     ../../../Core/Engine/UComponentFactory.h \
-    ../../../Deploy/Include/rdk_version.h
+    ../../../Deploy/Include/rdk_version.h \
+    ../../../Core/Application/UProjectDeployer.h \
+    ../../../Core/Application/Qt/UProjectDeployerQt.h \
+    ../../../Core/Application/UServerTransportHttp.h \
+    ../../../Core/Application/UServerTransportHttp.h
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt

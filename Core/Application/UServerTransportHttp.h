@@ -1,12 +1,12 @@
-#ifndef UServerTransportTcpH
-#define UServerTransportTcpH
+#ifndef UServerTransportHttpH
+#define UServerTransportHttpH
 
 #include "UServerTransport.h"
 
 namespace RDK{
 class UApplication;
 
-class RDK_LIB_TYPE UServerTransportTcp: public UServerTransport
+class RDK_LIB_TYPE UServerTransportHttp: public UServerTransport
 {
 protected: // Параметры
 
@@ -16,8 +16,8 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UServerTransportTcp(void);
-virtual ~UServerTransportTcp(void);
+UServerTransportHttp(void);
+virtual ~UServerTransportHttp(void);
 // --------------------------
 
 // --------------------------

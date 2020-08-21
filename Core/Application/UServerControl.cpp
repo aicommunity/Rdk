@@ -127,6 +127,29 @@ const std::string& UServerControl::GetDebugOutputPath(void) const
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+
+// --------------------------
+// Методы инициализации
+// --------------------------
+/// Предоставляет доступ к диспетчеру команд
+UEPtr<URpcDispatcher> UServerControl::GetRpcDispatcher(void)
+{
+ return RpcDispatcher;
+}
+
+/// Устанавливает новый диспетчер команд
+/// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
+bool UServerControl::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
+{
+ if(RpcDispatcher == value)
+  return true;
+
+ if(RpcDispatcher)
+  RpcDispatcher->SetApplication(0);
+ RpcDispatcher=value;
+ RpcDispatcher->SetApplication(Application);
+ return true;
+}
 /// Возвращает указатель на экземпляр приложения
 UEPtr<UApplication> UServerControl::GetApplication(void)
 {
@@ -142,6 +165,35 @@ bool UServerControl::SetApplication(UEPtr<UApplication> value)
  return true;
 }
 // --------------------------
+/// Возвращает указатель на экземпляр транспорта
+UEPtr<UServerTransport> UServerControl::GetServerTransport(void)
+{
+ return ServerTransport;
+}
+bool UServerControl::SetServerTransport(UEPtr<UServerTransport> value)
+{
+ if(ServerTransport == value)
+  return true;
+
+ ServerTransport=value;
+ return true;
+}
+
+UEPtr<UServerTransport> UServerControl::GetServerTransportHttp(void)
+{
+ return ServerTransportHttp;
+}
+bool UServerControl::SetServerTransportHttp(UEPtr<UServerTransport> value)
+{
+ if(ServerTransportHttp == value)
+  return true;
+
+ ServerTransportHttp=value;
+ return true;
+}
+// --------------------------
+
+
 
 // --------------------------
 // Данные для оценки производительности и сохранения отладочной информации
@@ -420,17 +472,166 @@ void UServerControl::AfterCalculate(void)
 }
 // --------------------------
 
+// --------------------------
+// Вспомогательные методы (обработка взаимодействия с транспортом)
+// --------------------------
+/// Кодирует строку в вектор
+void UServerControl::ConvertStringToVector(const std::string &source, UParamT &dest)
+{
+ dest.resize(source.size());
+ if(source.size()>0)
+  memcpy(&dest[0],source.c_str(),source.size());
+}
+
+/// Кодирует вектор в строку
+void UServerControl::ConvertVectorToString(const UParamT &source, std::string &dest)
+{
+ dest.resize(source.size());
+ if(source.size()>0)
+  memcpy(&dest[0],&source[0],source.size());
+}
+
+void UServerControl::SendCommandResponse(UServerTransport *transport, std::string &client_address, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+{
+ UTransferPacket packet;
+ packet.SetNumParams(1+binary_data.size());
+ packet.SetParamSize(0,dest.size());
+ packet.SetParam(0,dest);
+ for(size_t i=0;i<binary_data.size();i++)
+ {
+  packet.SetParamSize(i+1,binary_data[i].size());
+  packet.SetParam(i+1,binary_data[i]);
+ }
+ RDK::UParamT buffer;
+ packet.Save(buffer);
+
+ transport->SendResponseBuffer(buffer, client_address);
+
+ std::string str;
+ str.resize(packet.GetParamSize(0));
+ memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
+ Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+}
+
+void UServerControl::ProcessCommandQueue(UServerTransport *transport)
+{
+ if(!GetRpcDispatcher())
+  return;
+
+  // Обработка очереди выполненных команд диспетчера
+  RDK::UEPtr<RDK::URpcCommand> pcmd;
+  RDK::UParamT response;
+  std::vector<RDK::UParamT> binary_response;
+
+
+  while(pcmd=GetRpcDispatcher()->PopProcessedCommand())
+  {
+   RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
+   ConvertStringToVector(pcmd_int->Response, response);
+   SendCommandResponse(transport, pcmd_int->RecepientId, response, binary_response);
+   delete pcmd_int;
+  }
+}
+
+void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *transport)
+{
+ std::vector<RDK::URpcCommandInternal> commands;
+ transport->ProcessIncomingData(bind, commands);
+
+ if(!commands.empty())
+ {
+  for(int i=0; i<commands.size(); i++)
+  {
+			/*
+	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
+	  {
+	   CurrentProcessedMainThreadCommand=CurrentProcessedCommand;
+	   ProcessControlCommand();
+//	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
+//		SendCommandResponse(AContext, Response, BinaryResponse);
+	  }
+	  else         */
+	  //{
+	   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(commands[i]);
+	   ///Закомментировано  01.04.2020, так как неясно, куда эта пара нужна
+	   ///std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
+	   ///cmd_pair.first=CurrentProcessedCommand.RecepientId;
+	   ///cmd_pair.second=pcmd;
+
+//	   if(CurrentProcessedCommand.FunctionName != "Ptz_SetCameraParameter")
+	   GetRpcDispatcher()->PushCommand(pcmd);
+//	   else
+//	    delete pcmd;
+	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
+  }
+ }
+ //02.04.2020 - Это мб неверно
+ commands.clear();
+}
+
+void UServerControl::ProcessIncomingDataString(std::string &command_data,UServerTransport *transport)
+{
+ RDK::URpcCommandInternal CurrentProcessedCommand;
+ CurrentProcessedCommand.Request=command_data;
+ CurrentProcessedCommand.IsDecoded=false;
+ if(!CurrentProcessedCommand.DecodeBasicData())
+ {
+  // TODO: пишем в лог ошибку декодирования
+  Log_LogMessage(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
+ }
+ else
+ {
+  RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
+  GetRpcDispatcher()->PushCommand(pcmd);
+  Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+ }
+}
+
+
 
 // --------------------------
 /// Управление числом каналов
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-bool UServerControl::SetNumChannels(int num)
+bool UServerControl::SetNumChannels(int number)
 {
-
- if(!ASetNumChannels(num))
+ int num=Core_GetNumChannels();
+ if(num<=0)
   return false;
+
+ //31.03.2020 - притащил сюда из дочернего, подозреваю что клонирование
+ //проекта от платформы больше не зависит
+ for(int i=number;i<num;i++)
+ {
+  if(Core_GetNumChannels()<=i)
+   break;
+
+  if((!MCore_IsChannelInit(i) || !MModel_Check(i)) && i != 0)
+  {
+//   UGEngineControlForm->CloneProject(0, i); // TODO: необходимо починить клонирование
+//   MEnv_Reset(i,0);
+  }
+ }
+
+ if(GetRpcDispatcher())
+  GetRpcDispatcher()->UpdateDecoders();
+ ///////////////////////////////////////////////
+
+
+ if(!ASetNumChannels(number))
+  return false;
+
+ //31.03.2020 - притащил сюда из дочернего
+ TProjectConfig config=Application->GetProjectConfig();
+ for(size_t i=0;i<config.ChannelsConfig.size();i++)
+ {
+  if(config.ChannelsConfig[i].ChannelName.empty())
+   config.ChannelsConfig[i].ChannelName=RDK::sntoa(i);
+ }
+ Application->SetProjectConfig(config);
+ ///////////////////////////////////////////////
+
  AfterReset();
  return true;
 }

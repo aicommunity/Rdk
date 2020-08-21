@@ -74,7 +74,7 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  rpcDispatcher.SetDecoderPrototype(&rpcDecoder);
  rpcDispatcher.SetCommonDecoder(&rpcDecoderCommon);
 
- application.SetRpcDispatcher(&rpcDispatcher);
+ //application.SetRpcDispatcher(&rpcDispatcher);
  application.SetServerControl(&serverControl);
  application.SetEngineControl(&engineControl);
  application.SetProject(&project);

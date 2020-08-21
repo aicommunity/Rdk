@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>864</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -150,6 +150,7 @@
     <addaction name="separator"/>
     <addaction name="menuBroadcasters"/>
     <addaction name="actionServerControl"/>
+    <addaction name="actionTcpServer"/>
    </widget>
    <widget class="QMenu" name="menuNewWindow">
     <property name="title">
@@ -660,6 +661,14 @@
   <action name="actionCloseConfig">
    <property name="text">
     <string>Close Config</string>
+   </property>
+  </action>
+  <action name="actionTcpServer">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>TcpServer</string>
    </property>
   </action>
  </widget>

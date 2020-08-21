@@ -17,20 +17,82 @@ contains(DEFINES,RDK_USE_CUDA) {
 
 contains(DEFINES,RDK_USE_PYTHON) {
     RDK_PYTHON_MAJOR = 3
-    RDK_PYTHON_MINOR = 5
+    RDK_PYTHON_MINOR = 6
 }
 
-android {
-INCLUDEPATH += $$(BOOST_PATH)/android-ndk-19/include
+contains(DEFINES,RDK_USE_OPENCV) {
 
-} else:unix {
-    INCLUDEPATH += $$(BOOST_PATH)#/include
+# функция добавляет постфикс(второй параметр) ко всем элементам первого входного параметра
+defineReplace(addPostfix) {
+ libList = $$1
+ for(lib, libList) {
+  returnValue += $${lib}$${2}
+ }
+ return($$returnValue)
+}
+
+    unix {
+        contains(DEFINES, OPENCV_4) {
+            INCLUDEPATH += $$(OPENCV4_PATH)/include/opencv4
+        }else{
+            INCLUDEPATH += $$(OPENCV3_PATH)/include
+        }
+    }
+
+    windows {
+        contains(DEFINES, OPENCV_4) {
+            OPENCV_LIBS_VERSION = 440
+            OPENCV_PATH=$$(OPENCV4_PATH)
+        }else{
+            OPENCV_LIBS_VERSION = 345
+            OPENCV_PATH=$$(OPENCV3_PATH)
+        }
+
+        INCLUDEPATH += $${OPENCV_PATH}/build/include
+
+        contains(DEFINES, RDK_USE_CUDA) {
+            OPENCV_COMPILED_VERSION_64 = vc15cuda
+            OPENCV_COMPILED_VERSION_86 = vc15
+        } else {
+            OPENCV_COMPILED_VERSION_64 = vc15
+            OPENCV_COMPILED_VERSION_86 = vc15
+        }
+
+        !contains(QMAKE_TARGET.arch, x86_64) {
+            OPENCV_LIB_PATH = $${OPENCV_PATH}/build/x86/$${OPENCV_COMPILED_VERSION_86}/lib
+        } else {
+            OPENCV_LIB_PATH = $${OPENCV_PATH}/build/x64/$${OPENCV_COMPILED_VERSION_64}/lib
+        }
+    }
+}
+
+# Линковка OpenCV
+contains(DEFINES, RDK_USE_OPENCV) {
+
+    windows {
+        CONFIG(debug){
+#            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Debug)
+            LIBS += -L$${OPENCV_LIB_PATH}/Debug $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION}d)
+        }
+
+        CONFIG(release) {
+#            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Release)
+            LIBS += -L$${OPENCV_LIB_PATH}/Release $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION})
+        }
+
+    } else:unix {
+        LIBS += -L$${OPENCV_LIB_PATH}/lib $$OPENCV_LIBS_LIST
+    }
+}
+
+#Boost
+unix {
+    INCLUDEPATH += $$(BOOST_PATH)
     INCLUDEPATH += $$(BOOST_PATH)/include
-    INCLUDEPATH += $$(OPENCV3_PATH)/include
 
     contains(DEFINES, GPU) {
-        INCLUDEPATH += /usr/local/cuda-9.0/include
-}
+        INCLUDEPATH += /usr/local/cuda/include
+    }
 
 
     contains(DEFINES,RDK_USE_PYTHON) {
@@ -38,50 +100,88 @@ INCLUDEPATH += $$(BOOST_PATH)/android-ndk-19/include
         isEmpty(ANACONDA_PATH) {
             INCLUDEPATH += /usr/include/numpy
             INCLUDEPATH += /usr/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
-            INCLUDEPATH += $$(HOME)/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
-            INCLUDEPATH += /home/user/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy
+            INCLUDEPATH += /usr/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/numpy
         } else{
             INCLUDEPATH += $$(ANACONDA_PATH)/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m/
             INCLUDEPATH += $$(ANACONDA_PATH)/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
         }
     }
+
+    LIBS += -L$$(BOOST_PATH)/lib -lboost_system \
+        -lboost_system \
+        -lboost_chrono \
+        -lboost_thread \
+        -lboost_program_options \
+        -lboost_filesystem \
+        -lboost_date_time \
+        -lboost_timer
+
+    # Следующие две строки должна быть строго выше чем строки линковки питона из анаконды!!!
+    LIBS += -L$$(QTDIR)/lib -lQt5Core -lQt5Widgets -lQt5Gui -lQt5PrintSupport -lGL
+    LIBS += -L/usr/lib/x86_64-linux-gnu -lcurl
+
+    contains(DEFINES, RDK_USE_PYTHON) {
+        LIBS += -L$$(BOOST_PATH)/lib -lboost_python$${RDK_PYTHON_MAJOR}$${RDK_PYTHON_MINOR} \
+            -lboost_numpy$${RDK_PYTHON_MAJOR}$${RDK_PYTHON_MINOR}
+
+    isEmpty(ANACONDA_PATH) {
+         LIBS += -L/usr/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/config-$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m-x86_64-linux-gnu -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
+         LIBS += -L/usr/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/config-$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m-aarch64-linux-gnu -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
+    } else {
+         LIBS += -L$$(ANACONDA_PATH)/lib -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR} #-lpng -lssl
+    }
+}
+
 }
 
 windows {
+    BOOST_COMPILED_VERSION = msvc-$$(VisualStudioVersion)
     INCLUDEPATH += $$(BOOST_PATH)
 
     contains(DEFINES,RDK_USE_PYTHON) {
         INCLUDEPATH += $$(ANACONDA_PATH)/include/
         INCLUDEPATH += $$(ANACONDA_PATH)/Lib/site-packages/numpy/core/include/numpy
-}
-    INCLUDEPATH += $$(BOOST_PATH)
-    INCLUDEPATH += $$(OPENCV3_PATH)/build/include
+    }
 
     contains(DEFINES, GPU) {
-        INCLUDEPATH += $$(CUDA_PATH)/include
+         INCLUDEPATH += $$(CUDA_PATH)/include
+    }
+
+    !contains(QMAKE_TARGET.arch, x86_64) {
+        LIBS += -L$$(BOOST_PATH)/$${BOOST_COMPILED_VERSION}-x86/lib/
+    } else {
+         LIBS += -L$$(BOOST_PATH)/$${BOOST_COMPILED_VERSION}-x64/lib/
+    }
+
+    LIBS +=   -lWldap32
+    LIBS +=   -lAdvapi32
+
+    LIBS += -L$$(ANACONDA_PATH)/libs/
 }
+
+
+contains(DEFINES, RDK_USE_DARKNET) {
+    unix {
+        LIBS+= -L$$PWD/../../../Libraries/Rdk-DarknetLib/ThirdParty/darknet -ldarknet
+    }
 }
 
 contains(DEFINES, RDK_USE_TENSORFLOW) {
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-genfiles
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/eigen_archive
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/protobuf_archive/src
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_protobuf/src
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_absl
+    INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
+    DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
+    INCLUDEPATH += $$(TENSORFLOW_PATH)
+    DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
 
-
-# TF
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-genfiles
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/eigen_archive
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/protobuf_archive/src
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_protobuf/src
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-tensorflow/external/com_google_absl
-INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
-DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
-INCLUDEPATH += $$(TENSORFLOW_PATH)
-DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
-
-
-windows {
-
-} else:unix {
-
-}
+    windows {
+        LIBS += -L$$(TENSORFLOW_PATH)/bazel-bin/tensorflow -ltensorflow_framework.dll.if -ltensorflow.dll.if -ltensorflow_cc.dll.if
+    } else:unix {
+        LIBS += -L$$(TENSORFLOW_PATH)/bazel-bin/tensorflow -ltensorflow_cc -ltensorflow_framework
+    }
 
 }
 

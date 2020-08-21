@@ -324,13 +324,16 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    std::string file_name=xml.ReadString("FileName","");
    if(!file_name.empty())
    {
-	return_value=1;//UServerControlForm->LoadProject(channel_index,file_name);
+       GetApplication()->OpenProject(file_name);
+       RDK::UIVisualControllerStorage::UpdateInterface(true);
+       return_value=0;//UServerControlForm->LoadProject(channel_index,file_name);
    }
   }
   else
   if(cmd == "SaveProject")
   {
-   return_value=1;//UServerControlForm->SaveProject();
+   GetApplication()->SaveProject();
+   return_value=0;//UServerControlForm->SaveProject();
   }
  }
 // }
