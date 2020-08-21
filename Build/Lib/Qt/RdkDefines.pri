@@ -20,24 +20,32 @@ contains(DEFINES,RDK_USE_PYTHON) {
     RDK_PYTHON_MINOR = 6
 }
 
+contains(DEFINES,RDK_USE_OPENCV) {
 
-unix {
-    INCLUDEPATH += $$(BOOST_PATH)#/include
-    INCLUDEPATH += $$(BOOST_PATH)/include
-
-    contains(DEFINES, OPENCV_4) {
-        INCLUDEPATH += $$(OPENCV4_PATH)/include/opencv4
-    }else{
-        INCLUDEPATH += $$(OPENCV3_PATH)/include
+    unix {
+        contains(DEFINES, OPENCV_4) {
+            INCLUDEPATH += $$(OPENCV4_PATH)/include/opencv4
+        }else{
+            INCLUDEPATH += $$(OPENCV3_PATH)/include
+        }
     }
 
+    windows {
+        contains(DEFINES, OPENCV_4) {
+            INCLUDEPATH += $$(OPENCV4_PATH)/build/include/opencv4
+        }else{
+            INCLUDEPATH += $$(OPENCV3_PATH)/build/include
+        }
+    }
+}
 
-
-
+unix {
+    INCLUDEPATH += $$(BOOST_PATH)
+    INCLUDEPATH += $$(BOOST_PATH)/include
 
     contains(DEFINES, GPU) {
         INCLUDEPATH += /usr/local/cuda/include
-}
+    }
 
 
     contains(DEFINES,RDK_USE_PYTHON) {
@@ -46,8 +54,6 @@ unix {
             INCLUDEPATH += /usr/include/numpy
             INCLUDEPATH += /usr/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
             INCLUDEPATH += /usr/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/numpy
-            #INCLUDEPATH += $$(HOME)/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
-            #INCLUDEPATH += /home/user/.local/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy
         } else{
             INCLUDEPATH += $$(ANACONDA_PATH)/include/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m/
             INCLUDEPATH += $$(ANACONDA_PATH)/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/site-packages/numpy/core/include/numpy/
@@ -61,13 +67,11 @@ windows {
     contains(DEFINES,RDK_USE_PYTHON) {
         INCLUDEPATH += $$(ANACONDA_PATH)/include/
         INCLUDEPATH += $$(ANACONDA_PATH)/Lib/site-packages/numpy/core/include/numpy
-}
-    INCLUDEPATH += $$(BOOST_PATH)
-    INCLUDEPATH += $$(OPENCV3_PATH)/build/include
+    }
 
     contains(DEFINES, GPU) {
-        INCLUDEPATH += $$(CUDA_PATH)/include
-}
+         INCLUDEPATH += $$(CUDA_PATH)/include
+    }
 }
 
 contains(DEFINES, RDK_USE_TENSORFLOW) {
