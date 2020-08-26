@@ -20,7 +20,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<std::vector<V>,OwnerT>::SetterRT setmethod=0)
  : UProperty<std::vector<V>,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<std::vector<V>,OwnerT,type> &v) {}
@@ -139,7 +139,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<std::list<V>,OwnerT>::SetterRT setmethod=0)
  : UProperty<std::list<V>,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<std::list<V>,OwnerT,type> &v) {}
@@ -249,7 +249,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<std::map<T,V>,OwnerT>::SetterRT setmethod=0)
  : UProperty<std::map<T,V>,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<std::map<T,V>,OwnerT,type> &v) {}
@@ -359,7 +359,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<MDMatrix<V>,OwnerT>::SetterRT setmethod=0)
  : UProperty<MDMatrix<V>,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<MDMatrix<V>,OwnerT,type> &v) {}
@@ -539,7 +539,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<MDVector<V>,OwnerT>::SetterRT setmethod=0)
  : UProperty<MDVector<V>,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<MDVector<V>,OwnerT,type> &v) {}
@@ -707,7 +707,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<double,OwnerT>::SetterRT setmethod=0)
  : UProperty<double,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<double,OwnerT,type> &v) {}
@@ -756,7 +756,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<int,OwnerT>::SetterRT setmethod=0)
  : UProperty<int,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<int,OwnerT,type> &v) {}
@@ -834,7 +834,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<unsigned int,OwnerT>::SetterRT setmethod=0)
  : UProperty<unsigned int,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<unsigned int,OwnerT,type> &v) {}
@@ -913,7 +913,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<unsigned long int,OwnerT>::SetterRT setmethod=0)
  : UProperty<unsigned long int,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<size_t,OwnerT,type> &v) {}
@@ -986,7 +986,7 @@ public: // Методы
 //Конструктор инициализации.
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<unsigned long long,OwnerT>::SetterRT setmethod=0)
  : UProperty<unsigned long long,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
 
 protected:
 ULProperty(const ULProperty<unsigned long long,OwnerT,type> &v) {}
