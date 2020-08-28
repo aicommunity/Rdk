@@ -512,10 +512,12 @@ UEPtr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
 template<typename T>
 UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name, UEPtr<UIPointer> pointer)
 {
- UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
- if(comp)
+ UEPtr<UContainer> found_comp=GetComponent(component_name,true);
+ UEPtr<T> comp;
+ if(found_comp)
  {
-  if(comp->GetCompClassName() == class_name)
+  comp=dynamic_pointer_cast<T>(found_comp);
+  if(comp && comp->GetCompClassName() == class_name)
    return comp;
   else
    DelComponent(component_name);
