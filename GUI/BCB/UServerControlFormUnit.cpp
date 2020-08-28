@@ -1315,7 +1315,7 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
  //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
  //t->DisconnectClient(bind);
 
- RdkApplication.GetServerControl()->GetServerTransport()->DisñonnectClient(bind);
+ //RdkApplication.GetServerControl()->GetServerTransport()->DisñonnectClient(bind);
 
  Log_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
@@ -1512,7 +1512,7 @@ void __fastcall TUServerControlForm::IdHTTPServerDisconnect(TIdContext *AContext
  //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
  //t->DisconnectClient(bind);
 
- RdkApplication.GetServerControl()->GetServerTransportHttp()->DisñonnectClient(bind);
+ //RdkApplication.GetServerControl()->GetServerTransportHttp()->DisñonnectClient(bind);
 
  Log_LogMessage(RDK_EX_INFO, (std::string("Http client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
