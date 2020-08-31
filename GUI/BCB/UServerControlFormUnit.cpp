@@ -1124,7 +1124,8 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
- RdkApplication.GetServerControl()->GetServerTransportHttp()->ServerStart();
+ if(RdkApplication.GetServerControl()->GetServerTransportHttp())
+  RdkApplication.GetServerControl()->GetServerTransportHttp()->ServerStart();
 }
 //---------------------------------------------------------------------------
 
@@ -1205,7 +1206,8 @@ void TUServerControlForm::ServerStartHttp()
 
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
- RdkApplication.GetServerControl()->GetServerTransportHttp()->ServerStop();
+ if(RdkApplication.GetServerControl()->GetServerTransportHttp())
+  RdkApplication.GetServerControl()->GetServerTransportHttp()->ServerStop();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
@@ -1315,7 +1317,7 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
  //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
  //t->DisconnectClient(bind);
 
- RdkApplication.GetServerControl()->GetServerTransport()->DisñonnectClient(bind);
+ RdkApplication.GetServerControl()->GetServerTransport()->ClientDisconnect(bind);
 
  Log_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
@@ -1364,7 +1366,7 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  std::string bind=AnsiString(b).c_str();
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
- RdkApplication.GetServerControl()->GetServerTransport()->ConnectClient(bind);
+ RdkApplication.GetServerControl()->GetServerTransport()->ClientConnect(bind);
  Log_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
  this->UpdateInterface();
 }
@@ -1394,7 +1396,7 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 
 void __fastcall TUServerControlForm::IdHTTPServerAuthorization(TObject *Sender, TIdAuthentication *Authentication, bool &Handled)
 {
- Log_LogMessage(RDK_EX_INFO, (std::string(AnsiString("HTTP Server authorization attemp with login: "+Authentication->Username + " and password: "+Authentication->Password).c_str()).c_str()));
+ Log_LogMessage(RDK_EX_INFO, (std::string((AnsiString("HTTP Server authorization attempt with login: ")+Authentication->Username + AnsiString(" and password: ")+Authentication->Password).c_str()).c_str()));
 }
 //---------------------------------------------------------------------------
 
@@ -1496,7 +1498,7 @@ void __fastcall TUServerControlForm::IdHTTPServerConnect(TIdContext *AContext)
  std::string bind=AnsiString(b).c_str();
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
- RdkApplication.GetServerControl()->GetServerTransportHttp()->ConnectClient(bind);
+ RdkApplication.GetServerControl()->GetServerTransportHttp()->ClientConnect(bind);
  Log_LogMessage(RDK_EX_INFO, (std::string("Http client connected: ")+bind).c_str());
  this->UpdateInterface();
 }
@@ -1512,8 +1514,8 @@ void __fastcall TUServerControlForm::IdHTTPServerDisconnect(TIdContext *AContext
  //UServerTransport *t = RdkApplication.GetServerControl()->GetServerTransport();
  //t->DisconnectClient(bind);
 
- RdkApplication.GetServerControl()->GetServerTransportHttp()->DisñonnectClient(bind);
-
+ RdkApplication.GetServerControl()->GetServerTransportHttp()->ClientDisconnect(bind);
+ //  ^^ TODO: íóæíî íî íå ñîáèðàåòñÿ â áèëäåðå
  Log_LogMessage(RDK_EX_INFO, (std::string("Http client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
 }

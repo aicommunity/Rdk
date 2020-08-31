@@ -23,7 +23,7 @@
 #include "UGraphWidget.h"
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
-#include "UTcpServerControlWidget.h"
+#include"UWatch.h"
 //////////////////////////
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
@@ -77,9 +77,6 @@ public:
     ///Показывает виджет с переключением каналов
     void showChannelsWidget(void);
 
-    ///Загрузить проект из внешнего источника (пока только из конфигуратора на основе СУБД)
-    void loadProjectExternal(const QString &config_path);
-
     //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
 signals:
@@ -129,10 +126,9 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-    void actionWatchWindow();
+    void actionWatchWindow();///<-----------
     void actionNewWatches();
     void actionProfiling();
-    void actionTcpServer();
     //void actionVASimpleSettings();
 
 private slots:
@@ -161,8 +157,7 @@ private:
     UGraphWidget *graphWindowWidget;
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
-    QMainWindow *tcpServerControlWindow;
-    UTcpServerControlWidget *tcpServerControlWidget;
+    UWatch *watchWindow;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 
     /// Массив виджетов отображения картинок
