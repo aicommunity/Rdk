@@ -56,7 +56,7 @@ public: // Ìועמהû
 UPropertyInputBase(const string &name, OwnerT * const owner, int input_type)
  : UPropertyInputPreBase<T,OwnerT>(owner, input_type)
 {
- reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
+ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
 };
 // -----------------------------
 
