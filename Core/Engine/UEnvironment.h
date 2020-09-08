@@ -35,6 +35,63 @@ std::string ShortDescription;
 std::string DetailDescription;
 };
 
+/// Описание точки съема данных
+struct UDataSource
+{
+/// Имя компонента
+std::string ComponentName;
+
+/// Имя свойства
+std::string PropertyName;
+
+/// Последняя точка модельного времени выбора данных
+double LastReadTime;
+
+/// Последняя точка модельного времени добавления данных
+double LastWriteTime;
+
+/// Указатель на среду
+UEnvironment *Env;
+
+UDataSource(UEnvironment *env);
+
+/// Обновляет хранимые данные добавляя новые
+virtual void UpdateData(void)=0;
+
+/// Удаляет все хранимые данные
+virtual void ClearData(void)=0;
+
+/// Настраивает точку съема данных
+virtual bool Configure(const std::string &component_name, const std::string &property_name)=0;
+
+/// Возвращает тип данных
+virtual const type_info& GetDataType(void) const=0;
+};
+
+template <class T>
+struct UDataSourceT: public UDataSource
+{
+/// Данные
+std::vector<MDMatrix<T> > Data;
+
+UDataSourceT(UEnvironment *env);
+
+/// Обновляет хранимые данные добавляя новые
+virtual void UpdateData(void);
+
+/// Считывает данные и очищает массив
+virtual void ExtractData(std::vector<MDMatrix<T> > &buffer);
+
+/// Удаляет все хранимые данные
+virtual void ClearData(void);
+
+/// Настраивает точку съема данных
+virtual bool Configure(const std::string &component_name, const std::string &property_name);
+
+/// Возвращает тип данных
+virtual const type_info& GetDataType(void) const;
+};
+
 /// Функция должна быть реализована в конечном проекте
 extern RDK_LIB_TYPE bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment* env, int predefined_structure);
 
@@ -108,6 +165,9 @@ std::string SourceControllerProperty;
 /// Набор вариантов predefined structure
 std::map<int, UEnvPredefinedStructDescription> PredefinedStructures;
 
+/// Набор источников данных
+std::vector<UDataSource*> DataSources;
+
 protected: // Переменные быстрого доступа
 // Текущий компонент модели
 UEPtr<UComponent> CurrentComponent;
@@ -167,25 +227,6 @@ bool SetMaxCalcTime(double value);
 /// каждого компонента
 bool GetUseIndTimeStepFlag(void) const;
 bool SetUseIndTimeStepFlag(bool value);
-
-/// Флаг включения режима отладки
-//bool GetDebugMode(void) const;
-//bool SetDebugMode(bool value);
-
-/// Маска системных событий для логирования
-//unsigned int GetDebugSysEventsMask(void) const;
-//bool SetDebugSysEventsMask(unsigned int value);
-
-/// Возвращает флаг включения вывода лога в отладчик
-//bool GetDebuggerMessageFlag(void) const;
-
-/// Устанавливает флаг включения вывода лога в отладчик
-//bool SetDebuggerMessageFlag(bool value);
-
-/// Флаг включения внутренней регистрации событий в лог-файл
-/// true - регистрация включена
-//bool GetEventsLogMode(void) const;
-//bool SetEventsLogMode(bool value);
 // --------------------------
 
 // --------------------------
@@ -285,6 +326,24 @@ bool CallSourceController(void);
 // --------------------------
 
 // --------------------------
+// Методы управления регистрацией данных
+// --------------------------
+/// Регистрирует новую точку съема данных (вида MDMatrix)
+bool RegisterDataSource(const std::string &component_name, const std::string &property_name);
+
+/// Снимает регистрацию точки съема данных (вида MDMatrix)
+void UnRegisterDataSource(const std::string &component_name, const std::string &property_name);
+
+/// Снимает регистрацию всех точек съема данных (вида MDMatrix)
+void UnRegisterAllDataSources(void);
+
+/// Возвращает данные точки съема
+/// Возвращает false если тип данных не совпал с ожидаемым
+template<class T>
+bool ReadDataSource(const std::string &component_name, const std::string &property_name, std::vector<MDMatrix<T> > &buffer);
+// --------------------------
+
+// --------------------------
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
@@ -339,62 +398,6 @@ virtual void FastCalculate(double calc_interval);
 // --------------------------
 
 // --------------------------
-// Методы управления исключениями
-// --------------------------
-/*
-public:
-// Обрабатывает возникшее исключение
-virtual void ProcessException(UException &exception) const;
-
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
-int GetMaxExceptionsLogSize(void) const;
-void SetMaxExceptionsLogSize(int value);
-
-// Возвращает массив строк лога
-const char* GetLog(int &error_level) const;
-
-/// Возвращает число строк лога
-int GetNumLogLines(void) const;
-
-/// Возвращает строку лога с индексом i
-const char* GetLogLine(int i, int &error_level, int &number, time_t &time) const;
-
-/// Возвращает число непрочитанных строк лога
-int GetNumUnreadLogLines(void) const;
-
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
-const char* GetUnreadLog(int &error_level, int &number, time_t &time);
-bool GetUnreadLog(UException &ex);
-
-// Управление функцией-обработчиком исключений
-PExceptionHandler GetExceptionHandler(void) const;
-bool SetExceptionHandler(PExceptionHandler value);
-
-/// Управление функцией-предобработчиком исключений
-PExceptionPreprocessor GetExceptionPreprocessor(void) const;
-bool SetExceptionPreprocessor(PExceptionPreprocessor value);
-
-/// Управление функцией-постобработки исключений
-PExceptionPostprocessor GetExceptionPostprocessor(void) const;
-bool SetExceptionPostprocessor(PExceptionPostprocessor value);
-
-/// Очищает лог
-void ClearLog(void);
-
-/// Очищает лог прочитанных сообщений
-void ClearReadLog(void);
-
-// Вызов обработчика исключений среды для простой записи данных в лог
-void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
-void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
-void LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number=0);
-void LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number=0);
-*/
-// --------------------------
-
-// --------------------------
 // Скрытые методы управления счетом
 // --------------------------
 protected:
@@ -427,6 +430,120 @@ virtual bool AReset(void);
 virtual bool ACalculate(void);
 // --------------------------
 };
+
+template<class T>
+UDataSourceT<T>::UDataSourceT(UEnvironment *env)
+ : UDataSource(env)
+{
+}
+
+/// Обновляет хранимые данные добавляя новые
+template<class T>
+void UDataSourceT<T>::UpdateData(void)
+{
+ if(!Env)
+  return;
+
+ if(!Env->GetModel())
+ {
+  Env->UnRegisterDataSource(ComponentName,PropertyName);
+  return;
+ }
+
+ UContainer *cont=Env->GetModel()->GetComponentL(ComponentName);
+ if(!cont)
+ {
+  Env->UnRegisterDataSource(ComponentName,PropertyName);
+  return;
+ }
+ const MDMatrix<T> *data=cont->AccessPropertyData<MDMatrix<T> >(PropertyName);
+ if(!data)
+ {
+  Env->UnRegisterDataSource(ComponentName,PropertyName);
+  return;
+ }
+
+ if(LastReadTime>=LastWriteTime)
+ {
+  Data.clear();
+  LastReadTime=0.0;
+ }
+ Data.push_back(*data);
+ LastWriteTime=Env->GetTime().GetDoubleTime();
+};
+
+/// Считывает данные и очищает массив
+template<class T>
+void UDataSourceT<T>::ExtractData(std::vector<MDMatrix<T> > &buffer)
+{
+ buffer=Data;
+ LastReadTime=Env->GetTime().GetDoubleTime();
+}
+
+/// Удаляет все хранимые данные
+template<class T>
+void UDataSourceT<T>::ClearData(void)
+{
+ Data.clear();
+ LastReadTime=LastWriteTime=0.0;
+};
+
+/// Настраивает точку съема данных
+template<class T>
+bool UDataSourceT<T>::Configure(const std::string &component_name, const std::string &property_name)
+{
+ if(ComponentName == component_name && PropertyName == property_name)
+  return true;
+ ClearData();
+ ComponentName.clear();
+ PropertyName.clear();
+ if(!Env)
+  return false;
+
+ if(!Env->GetModel())
+  return false;
+
+ UContainer *cont=Env->GetModel()->GetComponentL(ComponentName);
+ if(!cont)
+  return false;
+
+ UEPtr<UIProperty> prop=cont->FindProperty(PropertyName);
+ if(!prop)
+  return false;
+
+ if(prop->GetLanguageType() != typeid(MDMatrix<T>))
+  return false;
+
+ ComponentName=component_name;
+ PropertyName=property_name;
+ return true;
+};
+
+/// Возвращает тип данных
+template<class T>
+const type_info& UDataSourceT<T>::GetDataType(void) const
+{
+ return typeid(MDMatrix<T>);
+}
+
+/// Возвращает данные точки съема
+/// Возвращает false если тип данных не совпал с ожидаемым
+template<class T>
+bool UEnvironment::ReadDataSource(const std::string &component_name, const std::string &property_name, std::vector<MDMatrix<T> > &buffer)
+{
+ for(size_t i=0;i<DataSources.size();i++)
+ {
+  if(DataSources[i] && DataSources[i]->ComponentName == component_name && DataSources[i]->PropertyName == property_name)
+  {
+   if(DataSources[i]->GetDataType() != typeid(MDMatrix<T>)
+	return false;
+
+   buffer=DataSources[i]->Data;
+   return true;
+  }
+ }
+ return false;
+}
 
 }
 #endif

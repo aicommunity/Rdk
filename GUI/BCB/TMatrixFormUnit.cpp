@@ -187,6 +187,7 @@ bool TMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &
  SelectedRow=SelectedCol=0;
 
  UpdateInterface(true);
+ return true;
 }
 
 //---------------------------------------------------------------------------
