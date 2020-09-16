@@ -25,7 +25,6 @@ object MatrixForm: TMatrixForm
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
-    ExplicitTop = -5
   end
   object Panel2: TPanel
     Left = 0
@@ -36,7 +35,6 @@ object MatrixForm: TMatrixForm
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 1
-    ExplicitTop = 19
     object StringGrid: TStringGrid
       Left = 1
       Top = 1
@@ -46,8 +44,6 @@ object MatrixForm: TMatrixForm
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing]
       TabOrder = 0
       OnSelectCell = StringGridSelectCell
-      ExplicitLeft = 0
-      ExplicitTop = 6
     end
   end
   object Panel3: TPanel
@@ -60,7 +56,6 @@ object MatrixForm: TMatrixForm
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 2
-    ExplicitTop = 262
     DesignSize = (
       505
       51)
