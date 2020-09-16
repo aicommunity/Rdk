@@ -122,7 +122,6 @@ void TMatrixForm::AUpdateInterface(void)
  }
  break;
  }
-
 }
 
 // Возврат интерфейса в исходное состояние
@@ -192,7 +191,13 @@ bool TMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &
 //---------------------------------------------------------------------------
 void __fastcall TMatrixForm::FormShow(TObject *Sender)
 {
- SelectedRow=SelectedCol=-1;
+ UpdateInterface();
+
+ if(SelectedCol<0 && StringGrid->ColCount>1)
+  SelectedCol=0;
+
+ if(SelectedRow<0 && StringGrid->RowCount>1)
+  SelectedRow=0;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMatrixForm::StringGridSelectCell(TObject *Sender, int ACol, int ARow,
