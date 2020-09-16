@@ -205,7 +205,7 @@ int ULibrary::Upload(UStorage *storage)
  CreateClassSamples(Storage);
  count=int(Complete.size());
 
- Storage=0;
+ //Storage=0;
  return count;
 }
 // --------------------------
@@ -401,39 +401,109 @@ URuntimeLibrary::~URuntimeLibrary(void)
 // Методы управления данными
 // --------------------------
 /// Описание компонент библиотеки
-const USerStorageXML& URuntimeLibrary::GetClassesStructure(void) const
+const USerStorageXML& URuntimeLibrary::GetCurrentComponentStruct(void) const
 {
- return ClassesStructure;
+    return CurrentComponentStruct;
 }
 
-bool URuntimeLibrary::SetClassesStructure(const USerStorageXML& xml)
+/// Загружает описание компонент из файлов в массив строк
+bool URuntimeLibrary::LoadCompDescriptions()
 {
- ClassesStructure=xml;
- return true;
+    // Папка библиотеки
+    std::string lib_path = "../../../RTlibs/" + Name;
+
+    // Проход по всем существующим xml файлам в папке
+    // с записью их данных в строки ClassesStructures
+    std::vector<std::string> comp_descriptions;
+
+    if(RDK::FindFilesList(lib_path,"*.xml",true,comp_descriptions))
+        return false;
+
+    ClassesStructures.resize(comp_descriptions.size());
+
+    for(int i = 0 ; i < comp_descriptions.size(); i++)
+    {
+        // Парсинг текущего файла
+        CurrentComponentStruct.LoadFromFile(lib_path+"/"+comp_descriptions[i],"");
+        // Запись описания в строку
+        CurrentComponentStruct.Save(ClassesStructures[i]);
+    }
+    CurrentComponentStruct.Destroy();
+    return true;
 }
 
-bool URuntimeLibrary::SetClassesStructure(const std::string &buffer)
+/// Добавляет новый компонент (сохранение в файл)
+bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, UContainer *newclass)
 {
- ClassesStructure.Load(buffer,"Library");
- return true;
+    UEPtr<UComponent> p = newclass;
+    UEPtr<UNet> cont = dynamic_pointer_cast<UNet>(p);
+     std::string buff;
+    CurrentComponentStruct.Destroy();
+
+    // Сохранение XML и добавление новго поля RTname с именем
+    // TODO при втором добавлении класса XML пуст
+    cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter);
+    CurrentComponentStruct.SelectNode(cont->GetName());
+    CurrentComponentStruct.SetNodeAttribute("RTname", new_class_name);
+    CurrentComponentStruct.Save(buff);
+
+    //std::string class_name = CurrentComponentStruct.GetNodeAttribute("Class");
+    //cont=dynamic_pointer_cast<UNet>(Storage->TakeObject(class_name));
+
+    std::string lib_path = "../../../RTlibs/" + Name;
+    CurrentComponentStruct.SaveToFile(lib_path+"/"+new_class_name+".xml");
+
+    UEPtr<UContainer> cont_1 = CreateClassSample(Storage, CurrentComponentStruct);
+
+
+    if(UploadClass(new_class_name, cont_1))
+        ClassesStructures.push_back(buff);
+
+
+    CurrentComponentStruct.Destroy();
+
+    return true;
 }
 
-/// Добавляет в описание компонент новый компонент
-bool URuntimeLibrary::AddClassStructure(const std::string &buffer)
+/// Заменяет существующий компонент
+bool URuntimeLibrary::ReplaceClass(const std::string &new_class_name, UContainer *newclass)
 {
- return true;
+    // Удаление сущ. класса
+    DelClass(new_class_name);
+
+    // Добавление нового
+    AddNewClass(new_class_name,newclass);
+
+    return true;
 }
 
-bool URuntimeLibrary::AddClassStructure(const USerStorageXML& xml)
+/// Удаляет класс из коллекции и Storage
+bool URuntimeLibrary::DelClass(const std::string &class_name)
 {
- return true;
+    // Удаление сущ. класса
+    if(Storage->CheckClass(class_name))
+        Storage->DelClass(Storage->FindClassId(class_name));
+
+    CurrentComponentStruct.Destroy();
+
+    for(auto it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
+    {
+        CurrentComponentStruct.Load(*it,"");
+        std::string search_name = CurrentComponentStruct.GetNodeAttribute("RTname");
+        if(class_name == search_name)
+        {
+            ClassesStructures.erase(it);
+            break;
+        }
+    }
+    CurrentComponentStruct.Destroy();
 }
 
-
-/// Обновляет структуру классов в соответствии с хранилищем
-bool URuntimeLibrary::UpdateClassesStructure(void)
+bool URuntimeLibrary::DeleteOwnDirectory(void)
 {
- return true;
+    // Папка библиотеки
+    std::string lib_path = "../../../RTlibs/" + Name;
+    RDK::DeleteDirectory(lib_path.c_str());
 }
 // --------------------------
 
@@ -444,17 +514,20 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
  UEPtr<UNet> cont;
 
  if(!storage)
-  return 0;
+    return 0;
 
  std::string class_name=xml.GetNodeAttribute("Class");
+
  cont=dynamic_pointer_cast<UNet>(storage->TakeObject(class_name));
+
  if(!cont)
-  return 0;
+    return 0;
 
  if(!cont->LoadComponent(&xml,true))
  {
-  storage->ReturnObject(cont);
-  return 0;
+     //log
+    storage->ReturnObject(cont);
+    return 0;
  }
 
  return cont;
@@ -464,22 +537,27 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
 // Не требуется предварительная очистка массива и уборка памяти.
 void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 {
- ClassesStructure.SelectRoot();
- int num_classes=ClassesStructure.GetNumNodes();
- for(int i=0;i<num_classes;i++)
- {
-  try
-  {
-   ClassesStructure.SelectNode(i);
-   UEPtr<UContainer> cont=CreateClassSample(storage, ClassesStructure);
-   UploadClass(std::string("T")+cont->GetName(),cont);
-  }
-  catch(UException &)
-  {
-   ClassesStructure.SelectUp();
-  }
-  ClassesStructure.SelectUp();
- }
+    int num_classes = ClassesStructures.size();
+
+    for(int i=0;i<num_classes;i++)
+    {
+        try
+        {
+            CurrentComponentStruct.Destroy();
+            CurrentComponentStruct.Load(ClassesStructures[i],"");
+
+            UEPtr<UContainer> cont=CreateClassSample(storage, CurrentComponentStruct);
+
+            std::string class_name=CurrentComponentStruct.GetNodeAttribute("RTname");
+
+            UploadClass(class_name,cont);
+        }
+        catch(UException &)
+        {
+            // smth
+        }
+    }
+    CurrentComponentStruct.Destroy();
 }
 // --------------------------
 

@@ -64,9 +64,12 @@ vector<string> Complete;
 // Содержит имена всех не загруженных образцов
 vector<string> Incomplete;
 
-private: // Внутренние данные
 // Хранилище для загрузки
 UStorage *Storage;
+
+private: // Внутренние данные
+// Хранилище для загрузки
+//UStorage *Storage;
 // Массив образцов классов, формируемый библиотекой
 //map<string, UComponent*> ClassSamples;
 
@@ -190,8 +193,11 @@ protected: // Данные единой коллекции библиотек
 protected: // Параметры
 
 protected: // Данные
-/// Описание компонент библиотеки
-USerStorageXML ClassesStructure;
+/// Описание текущего компонента XML
+USerStorageXML CurrentComponentStruct;
+
+/// Описание компонент библиотеки в формате строк (xml)
+vector<string> ClassesStructures;
 
 public: // Методы
 // --------------------------
@@ -205,16 +211,23 @@ virtual ~URuntimeLibrary(void);
 // Методы управления данными
 // --------------------------
 /// Описание компонент библиотеки
-const USerStorageXML& GetClassesStructure(void) const;
-bool SetClassesStructure(const USerStorageXML& xml);
-bool SetClassesStructure(const std::string &buffer);
+const USerStorageXML& GetCurrentComponentStruct(void) const;
 
-/// Добавляет в описание компонент новый компонент
-bool AddClassStructure(const std::string &buffer);
-bool AddClassStructure(const USerStorageXML& xml);
 
-/// Обновляет структуру классов в соответствии с хранилищем
-bool UpdateClassesStructure(void);
+/// Добавляет новый компонент (описание, сохранение)
+bool AddNewClass(const std::string &new_class_name, UContainer *newclass);
+
+/// Заменяет существующий компонент (описание, сохранение)
+bool ReplaceClass(const std::string &new_class_name, UContainer *newclass);
+
+/// Удаляет класс из коллекции и Storage
+bool DelClass(const std::string &class_name);
+
+/// Загружает описание компонент из файлов в массив строк
+bool LoadCompDescriptions(void);
+
+/// Удаляет директорию библиотеки вместе со всеми файлами
+bool DeleteOwnDirectory(void);
 // --------------------------
 
 // --------------------------

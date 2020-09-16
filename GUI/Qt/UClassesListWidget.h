@@ -2,12 +2,12 @@
 #define UCLASSESLISTWIDGET_H
 
 #include "UVisualControllerWidget.h"
-
+#include "UDrawEngineImageWidget.h"
 #include <QWidget>
 #include <QDragMoveEvent>
 #include <QMouseEvent>
 #include <QModelIndex>
-
+#include <QListWidget>
 
 namespace Ui {
 class UClassesListWidget;
@@ -31,6 +31,8 @@ public:
 
     QString selctedClass() const;
 
+    virtual void AUpdateInterface(void);
+
 public slots:
     void dragEvent(QModelIndex index);
 
@@ -41,9 +43,20 @@ private slots:
     void on_lineEdit_textChanged(const QString &arg1);
 
 
+    void on_CreateRTlibButton_clicked();
+
+    void on_AddNewClassButton_clicked();
+
+    void on_listWidgetRTlibs_itemSelectionChanged();
+
+    void on_DeleteLibButton_clicked();
+
+    void on_DeleteClassButton_clicked();
 
 private:
     Ui::UClassesListWidget *ui;
+
+    UDrawEngineImageWidget* neighbor;
 };
 
 #endif // UCLASSESLISTWIDGET_H

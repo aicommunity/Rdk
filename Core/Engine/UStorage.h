@@ -37,6 +37,7 @@ typedef std::map<std::string, UEPtr<UContainerDescription> >::iterator UClassesD
 typedef std::map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
+typedef std::vector<URuntimeLibrary*> URTLibraryList;
 /* *********************************************************************** */
 // Элемент списка существующих объектов определенного класса
 class RDK_LIB_TYPE UInstancesStorageElement
@@ -109,6 +110,7 @@ std::map<std::string, UPropertyDescription> CommonDescriptions;
 protected: // Описания библиотек
 // Массив доступных библиотек
 UClassLibraryList CollectionList;
+
 
 /// Таблица соответствий между именами классов и библиотек
 /// имеет вид <имя класса, имя его библиотеки>
@@ -299,18 +301,24 @@ const string& GetCollectionVersion(int index);
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);
 
-/// Добавялет новый образец класса в коллекцию
-virtual bool AddClassToCollection(const std::string &new_class_name, UContainer *newclass, URuntimeLibrary *library);
+//Работа с RT-библиотеками
+/// Инициализация существующих динамических библиотек
+/// Вызывается в Engine один раз
+void InitRTlibs(void);
+
+/// Загружает runtime-библиотеку по её имени
+virtual bool LoadRuntimeCollection(const std::string &lib_name, bool force_build=false);
+
+/// Добавляет новый образец класса в коллекцию (сразу соранение в файл)
+/// Если класс с таким именем существует возможно перезапись при force_replace = true
+virtual bool AddClassToCollection(const std::string &new_class_name, bool force_replace, UContainer *newclass, const std::string &lib_name);
+
+/// Удаляет образец класса из RT коллекции
+virtual bool DelClassFromCollection(const std::string &class_name, const std::string &lib_name);
 
 /// Создает новую библиотеку с заданным именем
 virtual bool CreateRuntimeCollection(const std::string &lib_name);
 
-/// Загружает runtime-библиотеку из строки
-virtual bool LoadRuntimeCollection(const std::string &buffer, bool force_build=false);
-
-/// Сохраняет runtime-библиотеку в строку
-virtual bool SaveRuntimeCollection(const std::string &lib_name, std::string &buffer);
-virtual bool SaveRuntimeCollection(URuntimeLibrary *library, std::string &buffer);
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.

@@ -49,6 +49,24 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     }
     ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
 
+    //инициализация runtime-библиотек
+    auto storage = RDK::GetStorageLock();
+    int lib_num = storage->GetNumCollections();
+    componentNames.clear();
+    for (int i = 0; i <lib_num;i++)
+    {
+        storage->GetCollection(i);
+        RDK::UEPtr<RDK::ULibrary> lib = storage->GetCollection(i);
+        if(lib && lib->GetType() == 2)
+        {
+            componentNames.append(QString::fromStdString(lib->GetName()));
+        }
+    }
+
+    ui->listWidgetRTlibs->addItems(componentNames);
+    ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
+
+
     //связь нажатия на компонент для события перетаскивания
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
@@ -78,6 +96,26 @@ QString UClassesListWidget::selctedClass() const
   }
 }
 
+void UClassesListWidget::AUpdateInterface(void)
+{
+    // обновление runtime-библиотек
+    auto storage = RDK::GetStorageLock();
+    int lib_num = storage->GetNumCollections();
+    QStringList componentNames;
+    for (int i = 0; i <lib_num;i++)
+    {
+        storage->GetCollection(i);
+        RDK::UEPtr<RDK::ULibrary> lib = storage->GetCollection(i);
+        if(lib && lib->GetType() == 2)
+        {
+            componentNames.append(QString::fromStdString(lib->GetName()));
+        }
+    }
+    ui->listWidgetRTlibs->clear();
+    ui->listWidgetRTlibs->addItems(componentNames);
+    ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
+
+}
 
 void UClassesListWidget::dragEvent(QModelIndex index)
 {
@@ -160,4 +198,90 @@ void UClassesListWidget::on_lineEdit_textChanged(const QString &arg1)
     /*QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Component with this name is exists. Continue by adding the next number?", QMessageBox::Yes|QMessageBox::Cancel);
     if (reply == QMessageBox::Cancel) return;*/
 }
+
+void UClassesListWidget::on_CreateRTlibButton_clicked()
+{
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+     return;
+
+    std::string lib_name = ui->lineEdit->text().toUtf8().data();
+
+    storage->CreateRuntimeCollection(lib_name);
+
+    AUpdateInterface();
+}
+
+void UClassesListWidget::on_AddNewClassButton_clicked()
+{
+    RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
+
+    if(!engine)
+     return;
+
+    std::string lib_name        = ui->lineEdit->text().toUtf8().data();
+    //std::string new_comp_name   = ui->CompName->text().toUtf8().data();
+
+
+    auto container = engine->GetModel()->GetComponent("Capture", true);
+
+    engine->GetEnvironment()->
+            GetStorage()->AddClassToCollection(lib_name,true,container,"NewLiba");
+
+}
+
+void UClassesListWidget::on_DeleteClassButton_clicked()
+{
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+     return;
+
+    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+    QString lib_name = item->text();
+
+    item = ui->listWidgetRTlibClasses->currentItem();
+    QString class_name = item->text();
+    //TODO удаление + удаление файла
+    storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data());
+    AUpdateInterface();
+}
+
+void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
+{
+    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+    QString lib_name = item->text().toUtf8().data();
+
+    // Заполнение списка компонентов библиотеки
+    const char* stringBuff = Storage_GetLibraryClassNames(lib_name.toLocal8Bit());
+    QStringList libClasses = QString(stringBuff).split(",");
+    Engine_FreeBufString(stringBuff);
+
+    QString className;
+    ui->listWidgetRTlibClasses->clear();
+    foreach(className, libClasses)
+    {
+        if(className != "")
+        {
+             ui->listWidgetRTlibClasses->addItem(className);
+        }
+    }
+}
+
+void UClassesListWidget::on_DeleteLibButton_clicked()
+{
+    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+    QString lib_name = item->text().toUtf8().data();
+
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+     return;
+
+    storage->DelCollection(lib_name.toLocal8Bit().data());
+
+    AUpdateInterface();
+}
+
 
