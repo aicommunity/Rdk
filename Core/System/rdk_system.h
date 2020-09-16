@@ -38,6 +38,9 @@ RDK_LIB_TYPE void Sleep(int value);
 /// 3 - если произошла другая ошибка
 RDK_LIB_TYPE int CreateNewDirectory(const char* path);
 
+/// Удаляет директорию вместе со всем её содерижмым
+RDK_LIB_TYPE int DeleteDirectory(const char* path);
+
 /// Получает список файлов или каталогов по заданному пути
 RDK_LIB_TYPE int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results);
 
