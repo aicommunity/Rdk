@@ -889,6 +889,10 @@ const string& UStorage::GetCollectionVersion(int index)
 /// Непосредственно добавялет новый образец класса в хранилище
 bool UStorage::AddClassToCollection(const std::string &new_class_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
 {
+
+    try
+    {
+
     // Библиотека создает новое описание компонента и сохраняет его в файл
     // + внутри Upload
     URuntimeLibrary *library = nullptr;
@@ -903,6 +907,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, bool forc
     }
 
     // Проверка на существование класса
+    // TODO адекватная обработка, если класс существует
     if(CheckClass(new_class_name))
     {
         // Разрешена ли замена
@@ -918,6 +923,13 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, bool forc
     else
     {
         library->AddNewClass(new_class_name, newclass);
+    }
+
+    }
+    catch(UException &ex)
+    {
+     if(Logger)
+      Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
     }
 
     return true;
@@ -938,7 +950,8 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
             library = dynamic_cast<URuntimeLibrary*>(lib.Get());
         }
     }
-
+    // TODO Storage ищет компонент и удаляет из нужной библиотеки
+    // Добавляет компонент
     library->DelClass(class_name);
     return true;
 }
@@ -950,23 +963,64 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     if(lib_name.empty())
         return false;
 
-    URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
+    // TODO проверка на занятое имя
+    if(GetCollection(lib_name) != nullptr)
+        return false;
+
+    //Создание папки библиотеки
+    std::string lib_path = "../../../RTlibs/" + lib_name;
+
+    URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
 
     if(AddCollection(lib))
     {
         //Создание папки библиотеки
-        std::string lib_path = "../../../RTlibs/" + lib_name;
 
-        if(RDK::CreateNewDirectory(lib_path.c_str())==0)
+        if(RDK::CreateNewDirectory(lib->GetLibPath().c_str())==0)
         {
             return true;
         }
-        delete lib;
-        return false;
+        else
+        {
+            delete lib;
+            return false;
+        }
     }
     else
     {
         delete lib;
+        return false;
+    }
+}
+
+/// Удаляет runtime-библиотеку
+bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
+{
+    int index = 0;
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib=CollectionList[i];
+        if(lib && lib->GetName() == lib_name)
+        {
+           index = i;
+           break;
+        }
+    }
+
+    if(index < 0 || index >= int(CollectionList.size()))
+        return false;
+
+    std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
+    if((*I)->GetType() == 2)
+    {
+        static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
+        delete *I;
+        CollectionList.erase(I);
+        DelAbandonedClasses();
+        return true;
+    }
+    else
+    {
         return false;
     }
 }
@@ -982,18 +1036,17 @@ void UStorage::InitRTlibs(void)
     // с записью их данных в строки ClassesStructures
     std::vector<std::string> lib_names;
 
-    // TODO
     if(RDK::FindFilesList(lib_path,"*",false,lib_names))
         return;
 
     for(int i = 0 ; i < lib_names.size(); i++)
     {
-       LoadRuntimeCollection(lib_names[i],true);
+       LoadRuntimeCollection(lib_names[i]);
     }
 }
 
 /// Загружает runtime-библиотеку по её имени
-bool UStorage::LoadRuntimeCollection(const std::string &lib_name, bool force_build)
+bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 {
     // Создание новой runtime-библиотеки
     if(lib_name.empty())
@@ -1003,13 +1056,16 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name, bool force_bui
     if(GetCollection(lib_name) != nullptr)
         return false;
 
-    URuntimeLibrary* lib = new URuntimeLibrary(lib_name,"");
+    //Создание папки библиотеки
+    std::string lib_path = "../../../RTlibs/" + lib_name;
+
+    URuntimeLibrary* lib = new URuntimeLibrary(lib_name,"",lib_path);
 
     // Загрузка описаний компонентов внутри библиотеки
-    if(lib->LoadCompDescriptions())
+    lib->LoadCompDescriptions();
 
 
-    if(AddCollection(lib, true))
+    if(AddCollection(lib))
     {
         return true;
     }
@@ -1057,7 +1113,7 @@ bool UStorage::DelCollection(int index)
  std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
  if((*I)->GetType() == 2)
  {
-  static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
+  //static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
   delete *I;
  }
  CollectionList.erase(I);

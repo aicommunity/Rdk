@@ -37,7 +37,6 @@ typedef std::map<std::string, UEPtr<UContainerDescription> >::iterator UClassesD
 typedef std::map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
-typedef std::vector<URuntimeLibrary*> URTLibraryList;
 /* *********************************************************************** */
 // Элемент списка существующих объектов определенного класса
 class RDK_LIB_TYPE UInstancesStorageElement
@@ -303,11 +302,11 @@ const string& GetCollectionVersion(int index);
 
 //Работа с RT-библиотеками
 /// Инициализация существующих динамических библиотек
-/// Вызывается в Engine один раз
+/// Вызывается в Engine один раз. Добавляет библиотеки в CollectionList
 void InitRTlibs(void);
 
 /// Загружает runtime-библиотеку по её имени
-virtual bool LoadRuntimeCollection(const std::string &lib_name, bool force_build=false);
+virtual bool LoadRuntimeCollection(const std::string &lib_name);
 
 /// Добавляет новый образец класса в коллекцию (сразу соранение в файл)
 /// Если класс с таким именем существует возможно перезапись при force_replace = true
@@ -319,6 +318,8 @@ virtual bool DelClassFromCollection(const std::string &class_name, const std::st
 /// Создает новую библиотеку с заданным именем
 virtual bool CreateRuntimeCollection(const std::string &lib_name);
 
+/// Удаляет runtime-библиотеку
+bool DeleteRuntimeCollection(const std::string &lib_name);
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.

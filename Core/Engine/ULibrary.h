@@ -193,6 +193,9 @@ protected: // Данные единой коллекции библиотек
 protected: // Параметры
 
 protected: // Данные
+/// Путь библиотеки
+std::string LibPath;
+
 /// Описание текущего компонента XML
 USerStorageXML CurrentComponentStruct;
 
@@ -203,16 +206,17 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-URuntimeLibrary(const string &name, const string &version);
+URuntimeLibrary(const string &name, const string &version, const string& path);
 virtual ~URuntimeLibrary(void);
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
-/// Описание компонент библиотеки
-const USerStorageXML& GetCurrentComponentStruct(void) const;
+vector<string>& GetClassesStructures();
 
+/// Возращает путь библиотеки
+const std::string& GetLibPath() const;
 
 /// Добавляет новый компонент (описание, сохранение)
 bool AddNewClass(const std::string &new_class_name, UContainer *newclass);

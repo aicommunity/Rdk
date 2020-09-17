@@ -7354,8 +7354,9 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	 ++I;
 	}
    }
-   Storage->InitRTlibs();
+
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
+   Storage->InitRTlibs();
    Storage->BuildStorage();
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
   }

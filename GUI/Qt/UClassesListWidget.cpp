@@ -5,12 +5,14 @@
 #include <QDragMoveEvent>
 #include <QDrag>
 #include <QDebug>
+#include <QDialog>
 
 UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UClassesListWidget)
 {
     ui->setupUi(this);
+
     UpdateInterval = 0; // обновление по системным тикам не происходит
     setAccessibleName("UClassesListWidget"); // имя класса для сериализации
 
@@ -66,7 +68,6 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     ui->listWidgetRTlibs->addItems(componentNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
 
-
     //связь нажатия на компонент для события перетаскивания
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
@@ -75,6 +76,24 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     connect(ui->treeWidgetStorageByLibs, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SIGNAL(classSelectionChanged()));
     connect(ui->listWidgetStorageByName, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SIGNAL(classSelectionChanged()));
 
+    // Меню области списка библиотек
+    ui->listWidgetRTlibs->addAction(ui->actionCreateRuntimeLibrary);
+    ui->listWidgetRTlibs->addAction(ui->actionDeleteRuntimeLibrary);
+    ui->listWidgetRTlibs->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    connect(ui->actionCreateRuntimeLibrary, SIGNAL(triggered()), this, SLOT(CreateRTlibrary()));
+    connect(ui->actionDeleteRuntimeLibrary, SIGNAL(triggered()), this, SLOT(DeleteRTlibrary()));
+
+    ui->listWidgetRTlibs->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    // Меню области списка компонентов
+    ui->listWidgetRTlibClasses->addAction(ui->actionAddNewClass);
+    ui->listWidgetRTlibClasses->addAction(ui->actionDeleteClass);
+
+    connect(ui->actionAddNewClass, SIGNAL(triggered()), this, SLOT(AddNewClass()));
+    connect(ui->actionDeleteClass, SIGNAL(triggered()), this, SLOT(DeleteClass()));
+
+    ui->listWidgetRTlibClasses->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
 UClassesListWidget::~UClassesListWidget()
@@ -114,7 +133,6 @@ void UClassesListWidget::AUpdateInterface(void)
     ui->listWidgetRTlibs->clear();
     ui->listWidgetRTlibs->addItems(componentNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
-
 }
 
 void UClassesListWidget::dragEvent(QModelIndex index)
@@ -199,59 +217,10 @@ void UClassesListWidget::on_lineEdit_textChanged(const QString &arg1)
     if (reply == QMessageBox::Cancel) return;*/
 }
 
-void UClassesListWidget::on_CreateRTlibButton_clicked()
-{
-    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
-
-    if(!storage)
-     return;
-
-    std::string lib_name = ui->lineEdit->text().toUtf8().data();
-
-    storage->CreateRuntimeCollection(lib_name);
-
-    AUpdateInterface();
-}
-
-void UClassesListWidget::on_AddNewClassButton_clicked()
-{
-    RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
-
-    if(!engine)
-     return;
-
-    std::string lib_name        = ui->lineEdit->text().toUtf8().data();
-    //std::string new_comp_name   = ui->CompName->text().toUtf8().data();
-
-
-    auto container = engine->GetModel()->GetComponent("Capture", true);
-
-    engine->GetEnvironment()->
-            GetStorage()->AddClassToCollection(lib_name,true,container,"NewLiba");
-
-}
-
-void UClassesListWidget::on_DeleteClassButton_clicked()
-{
-    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
-
-    if(!storage)
-     return;
-
-    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
-    QString lib_name = item->text();
-
-    item = ui->listWidgetRTlibClasses->currentItem();
-    QString class_name = item->text();
-    //TODO удаление + удаление файла
-    storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data());
-    AUpdateInterface();
-}
-
 void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
 {
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
-    QString lib_name = item->text().toUtf8().data();
+    QString lib_name = item->text();
 
     // Заполнение списка компонентов библиотеки
     const char* stringBuff = Storage_GetLibraryClassNames(lib_name.toLocal8Bit());
@@ -269,7 +238,21 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
     }
 }
 
-void UClassesListWidget::on_DeleteLibButton_clicked()
+void UClassesListWidget::CreateRTlibrary()
+{
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+     return;
+
+    std::string lib_name = ui->lineEdit->text().toUtf8().data();
+
+    storage->CreateRuntimeCollection(lib_name);
+
+    AUpdateInterface();
+}
+
+void UClassesListWidget::DeleteRTlibrary()
 {
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
     QString lib_name = item->text().toUtf8().data();
@@ -279,9 +262,44 @@ void UClassesListWidget::on_DeleteLibButton_clicked()
     if(!storage)
      return;
 
-    storage->DelCollection(lib_name.toLocal8Bit().data());
+    storage->DeleteRuntimeCollection(lib_name.toLocal8Bit().data());
 
     AUpdateInterface();
 }
 
+void UClassesListWidget::AddNewClass()
+{
+    RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
+    if(!engine)
+     return;
+
+    std::string cont_name       = ui->lineEdit->text().toUtf8().data();
+    std::string new_comp_name   = ui->lineEditSearch->text().toUtf8().data();
+    std::string lib_name        = ui->listWidgetRTlibs->currentItem()->text().toUtf8().data();
+
+    RDK::UEPtr<RDK::UContainer> container = engine->GetModel()->GetComponent(cont_name, true);
+
+    engine->GetEnvironment()->
+            GetStorage()->AddClassToCollection(new_comp_name,true,container,lib_name);
+
+    AUpdateInterface();
+}
+
+void UClassesListWidget::DeleteClass()
+{
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+     return;
+
+    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+    QString lib_name = item->text();
+
+    item = ui->listWidgetRTlibClasses->currentItem();
+    QString class_name = item->text();
+    //TODO удаление + удаление файла
+    storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data());
+
+    AUpdateInterface();
+}

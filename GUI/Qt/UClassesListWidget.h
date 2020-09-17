@@ -42,21 +42,23 @@ signals:
 private slots:
     void on_lineEdit_textChanged(const QString &arg1);
 
-
-    void on_CreateRTlibButton_clicked();
-
-    void on_AddNewClassButton_clicked();
-
+    // переключение фокуса библиотек
     void on_listWidgetRTlibs_itemSelectionChanged();
 
-    void on_DeleteLibButton_clicked();
 
-    void on_DeleteClassButton_clicked();
+public slots:
+    //События контекстного меню
+    // создание/удаление библиотеки
+    void CreateRTlibrary();
+    void DeleteRTlibrary();
+
+    //создание/удаление класса
+    void AddNewClass();
+    void DeleteClass();
 
 private:
     Ui::UClassesListWidget *ui;
 
-    UDrawEngineImageWidget* neighbor;
 };
 
 #endif // UCLASSESLISTWIDGET_H

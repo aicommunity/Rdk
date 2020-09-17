@@ -162,60 +162,43 @@
          </layout>
         </widget>
        </item>
-       <item>
-        <layout class="QVBoxLayout" name="ButtonsPanel">
-         <property name="spacing">
-          <number>3</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="LoadRTlibButton">
-           <property name="text">
-            <string>Load Library</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="CreateRTlibButton">
-           <property name="text">
-            <string>Create Runtime Library</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="DeleteLibButton">
-           <property name="text">
-            <string>Delete Library</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="RenameRTlibButton">
-           <property name="text">
-            <string>Rename Runtime Library</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="AddNewClassButton">
-           <property name="text">
-            <string>Add New Class</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="DeleteClassButton">
-           <property name="text">
-            <string>Delete Class</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
       </layout>
      </widget>
     </widget>
    </item>
   </layout>
+  <action name="actionCreateRuntimeLibrary">
+   <property name="text">
+    <string>Create Runtime Library</string>
+   </property>
+   <property name="toolTip">
+    <string>Create Runtime Library</string>
+   </property>
+  </action>
+  <action name="actionDeleteRuntimeLibrary">
+   <property name="text">
+    <string>Delete Runtime Library</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Runtime Library</string>
+   </property>
+  </action>
+  <action name="actionAddNewClass">
+   <property name="text">
+    <string>Add New Class</string>
+   </property>
+   <property name="toolTip">
+    <string>Add New Class</string>
+   </property>
+  </action>
+  <action name="actionDeleteClass">
+   <property name="text">
+    <string>Delete Class</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Class</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
