@@ -97,14 +97,29 @@ int CreateNewDirectory(const char* path)
   return 3;
 }
 
-// Удаляет директорию вместе со всем её содерижмым
+// Удаляет все файлы в директории
+// И саму директорию, если в ней были только файлы
 int DeleteDirectory(const char* path)
 {
     QDir dir(path);
     if(!dir.exists())
        return 1;
 
-    if(dir.removeRecursively())
+    if(dir.entryList(QDir::Dirs | QDir::NoDot | QDir::NoDotDot).count() != 0)
+        return 1;
+
+    dir.removeRecursively();
+    return 0;
+}
+
+// Удаляет файл
+int DeleteFile(const char* path)
+{
+    QFile file(path);
+    if(!file.exists())
+        return 1;
+
+    if(file.remove())
         return 0;
     else
         return 1;
