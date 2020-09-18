@@ -14,6 +14,9 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -27,7 +30,13 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="QLineEdit" name="lineEditSearch"/>
+   </item>
+   <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
      <property name="currentIndex">
       <number>2</number>
      </property>
@@ -74,9 +83,6 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLineEdit" name="lineEdit"/>
-       </item>
-       <item>
         <widget class="QTreeWidget" name="treeWidgetStorageByLibs">
          <attribute name="headerVisible">
           <bool>false</bool>
@@ -116,9 +122,6 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item>
-        <widget class="QLineEdit" name="lineEditSearch"/>
-       </item>
        <item>
         <widget class="QGroupBox" name="groupBoxLibList">
          <property name="autoFillBackground">

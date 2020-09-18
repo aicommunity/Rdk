@@ -297,6 +297,10 @@ const string& GetCollectionName(int index);
 // Возвращает версию библиотеки по индексу
 const string& GetCollectionVersion(int index);
 
+// Возвращается строку runtime-библиотек, разделенных запятой
+// Буфер 'buffer' будет очищен от предыдущих значений
+void GetRTlibsNameList(std::string &buffer) const;
+
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);
 

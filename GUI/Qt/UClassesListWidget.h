@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QModelIndex>
 #include <QListWidget>
+#include <QDialog>
 
 namespace Ui {
 class UClassesListWidget;
@@ -40,10 +41,17 @@ signals:
     void classSelectionChanged();
 
 private slots:
-    void on_lineEdit_textChanged(const QString &arg1);
 
-    // переключение фокуса библиотек
+    // переключение фокуса библиотек во вкладке LibsCtrl
     void on_listWidgetRTlibs_itemSelectionChanged();
+
+    // изменение некста поисковой строки
+    void on_lineEditSearch_textChanged(const QString &arg1);
+
+    // реакция разных вкладок в зависимости от их активности на изменение текста поисковой строки
+    void tab0_textChanged(const QString &arg1);
+    void tab1_textChanged(const QString &arg1);
+    void tab2_textChanged(const QString &arg1);
 
 
 public slots:
@@ -57,8 +65,49 @@ public slots:
     void DeleteClass();
 
 private:
+
     Ui::UClassesListWidget *ui;
 
+};
+
+// Диалоговое окно для создания новой библиотеки
+class CrLibDialog: public QDialog
+{
+    Q_OBJECT
+private:
+    QLineEdit* InputLibName;
+    QLabel* Message;
+
+public:
+    CrLibDialog(QWidget* pwgt = 0);
+
+    const std::string GetLibName() const;
+
+public slots:
+    void ProcessInput();
+};
+
+// Диалоговое окно для создания нового класса
+class CrClassDialog: public QDialog
+{
+    Q_OBJECT
+private:
+    QLineEdit* InputClassName;
+    QLineEdit* ComponentName;
+    QLabel* Info;
+    QLabel* MessageClass;
+    QLabel* MessageComp;
+    // нужно ли делать replace класса
+    bool Replace;
+
+public:
+    CrClassDialog(QString lib_name, QWidget* pwgt = 0);
+    const bool GetReplace() const;
+    const std::string GetClassName() const;
+    const std::string GetCompName() const;
+
+public slots:
+    void ProcessInput();
 };
 
 #endif // UCLASSESLISTWIDGET_H

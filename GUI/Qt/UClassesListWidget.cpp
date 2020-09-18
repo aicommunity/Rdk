@@ -5,7 +5,7 @@
 #include <QDragMoveEvent>
 #include <QDrag>
 #include <QDebug>
-#include <QDialog>
+#include <QPushButton>
 
 UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app),
@@ -53,17 +53,9 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 
     //инициализация runtime-библиотек
     auto storage = RDK::GetStorageLock();
-    int lib_num = storage->GetNumCollections();
-    componentNames.clear();
-    for (int i = 0; i <lib_num;i++)
-    {
-        storage->GetCollection(i);
-        RDK::UEPtr<RDK::ULibrary> lib = storage->GetCollection(i);
-        if(lib && lib->GetType() == 2)
-        {
-            componentNames.append(QString::fromStdString(lib->GetName()));
-        }
-    }
+    std::string buff;
+    storage->GetRTlibsNameList(buff);
+    componentNames = QString(buff.c_str()).split(",");
 
     ui->listWidgetRTlibs->addItems(componentNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
@@ -103,6 +95,10 @@ UClassesListWidget::~UClassesListWidget()
 
 QString UClassesListWidget::selctedClass() const
 {
+  // непонятная заглушка от sigfault
+  if(ui->listWidgetStorageByName->selectedItems().size() ==0)
+      return QString();
+
   switch(ui->tabWidget->currentIndex())
   {
     case 0:
@@ -150,7 +146,52 @@ void UClassesListWidget::dragEvent(QModelIndex index)
     drag->exec(Qt::CopyAction, Qt::CopyAction);
 }
 
-void UClassesListWidget::on_lineEdit_textChanged(const QString &arg1)
+// Поиск компонентов в разных полях
+void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
+{
+    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+    QString lib_name = item->text();
+
+    // Заполнение списка компонентов библиотеки
+    const char* stringBuff = Storage_GetLibraryClassNames(lib_name.toLocal8Bit());
+    QStringList libClasses = QString(stringBuff).split(",");
+    Engine_FreeBufString(stringBuff);
+
+    QString className;
+    ui->listWidgetRTlibClasses->clear();
+    foreach(className, libClasses)
+    {
+        if(className != "")
+        {
+             ui->listWidgetRTlibClasses->addItem(className);
+        }
+    }
+}
+
+void UClassesListWidget::tab0_textChanged(const QString &arg1)
+{
+    ui->listWidgetStorageByName->clear();
+
+    // список всех классов
+    const char * stringBuff = Storage_GetClassesNameList();
+    QStringList componentNames = QString(stringBuff).split(",");
+    Engine_FreeBufString(stringBuff);
+    QString str;
+
+    foreach(str, componentNames)
+    {
+        if(str != "")
+        {
+            if (str.contains(arg1, Qt::CaseInsensitive))
+            {
+                 ui->listWidgetStorageByName->addItem(str);
+            }
+        }
+    }
+    ui->listWidgetStorageByName->sortItems(Qt::AscendingOrder);
+}
+
+void UClassesListWidget::tab1_textChanged(const QString &arg1)
 {
     ui->treeWidgetStorageByLibs->clear();
 
@@ -211,50 +252,88 @@ void UClassesListWidget::on_lineEdit_textChanged(const QString &arg1)
         }
     }
     ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
-
-    //вот тут менять
-    /*QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Component with this name is exists. Continue by adding the next number?", QMessageBox::Yes|QMessageBox::Cancel);
-    if (reply == QMessageBox::Cancel) return;*/
 }
 
-void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
+void UClassesListWidget::tab2_textChanged(const QString &arg1)
 {
-    QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
-    QString lib_name = item->text();
+    ui->listWidgetRTlibs->clear();
 
-    // Заполнение списка компонентов библиотеки
-    const char* stringBuff = Storage_GetLibraryClassNames(lib_name.toLocal8Bit());
-    QStringList libClasses = QString(stringBuff).split(",");
-    Engine_FreeBufString(stringBuff);
+    // поиск имен runtime-библиотек
+    // TODO сделать метод в Storage возвращающий список
+    auto storage = RDK::GetStorageLock();
+    std::string buff;
+    storage->GetRTlibsNameList(buff);
+    QStringList componentNames = QString(buff.c_str()).split(",");
 
-    QString className;
-    ui->listWidgetRTlibClasses->clear();
-    foreach(className, libClasses)
+    QString str;
+
+    foreach(str, componentNames)
     {
-        if(className != "")
+        if(str != "")
         {
-             ui->listWidgetRTlibClasses->addItem(className);
+            if (str.contains(arg1, Qt::CaseInsensitive))
+            {
+                 ui->listWidgetRTlibs->addItem(str);
+            }
         }
     }
+
+    ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
 }
 
+void UClassesListWidget::on_lineEditSearch_textChanged(const QString &arg1)
+{
+    switch(ui->tabWidget->currentIndex())
+    {
+    case 0:
+        {
+            tab0_textChanged(arg1);
+            break;
+        }
+    case 1:
+        {
+            tab1_textChanged(arg1);
+            break;
+        }
+    case 2:
+        {
+            tab2_textChanged(arg1);
+            break;
+        }
+    }
+
+}
+
+// Actions
 void UClassesListWidget::CreateRTlibrary()
 {
-    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+    CrLibDialog* dialog = new CrLibDialog;
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
 
-    if(!storage)
-     return;
+        if(!storage)
+         return;
 
-    std::string lib_name = ui->lineEdit->text().toUtf8().data();
+        std::string lib_name = dialog->GetLibName();
 
-    storage->CreateRuntimeCollection(lib_name);
+        storage->CreateRuntimeCollection(lib_name);
 
-    AUpdateInterface();
+        AUpdateInterface();
+    }
+    delete dialog;
 }
 
 void UClassesListWidget::DeleteRTlibrary()
 {
+    // Если никакая библиотека не выбрана
+    if(ui->listWidgetRTlibs->selectedItems().size() == 0)
+    {
+        return;
+    }
+
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+
     QString lib_name = item->text().toUtf8().data();
 
     RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
@@ -269,25 +348,53 @@ void UClassesListWidget::DeleteRTlibrary()
 
 void UClassesListWidget::AddNewClass()
 {
+    // Если никакая библиотека не выбрана
+    if(ui->listWidgetRTlibs->selectedItems().size() == 0)
+    {
+        return;
+    }
+
     RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
     if(!engine)
-     return;
+         return;
 
-    std::string cont_name       = ui->lineEdit->text().toUtf8().data();
-    std::string new_comp_name   = ui->lineEditSearch->text().toUtf8().data();
-    std::string lib_name        = ui->listWidgetRTlibs->currentItem()->text().toUtf8().data();
+    // Если не существует модели -> предупреждение
+    if(!engine->GetModel())
+    {
+        return;
+    }
 
-    RDK::UEPtr<RDK::UContainer> container = engine->GetModel()->GetComponent(cont_name, true);
+    QString lib_name  = ui->listWidgetRTlibs->currentItem()->text();
 
-    engine->GetEnvironment()->
-            GetStorage()->AddClassToCollection(new_comp_name,true,container,lib_name);
+    CrClassDialog* dialog = new CrClassDialog(lib_name);
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        RDK::UEPtr<RDK::UContainer> container = engine->GetModel()->GetComponent(dialog->GetCompName(), true);
+        // если объект не существует
+        if(!container)
+        {
+            delete dialog;
+            return;
+        }
+        engine->GetEnvironment()->
+                GetStorage()->AddClassToCollection(dialog->GetClassName(),dialog->GetReplace(),
+                                                   container,lib_name.toUtf8().data());
 
-    AUpdateInterface();
+        AUpdateInterface();
+    }
+
+    delete dialog;
 }
 
 void UClassesListWidget::DeleteClass()
 {
+    // Если никакая библиотека не выбрана или никакой класс не выбран
+    if(ui->listWidgetRTlibs->selectedItems().empty() || ui->listWidgetRTlibClasses->selectedItems().empty())
+    {
+        return;
+    }
+
     RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
 
     if(!storage)
@@ -298,8 +405,159 @@ void UClassesListWidget::DeleteClass()
 
     item = ui->listWidgetRTlibClasses->currentItem();
     QString class_name = item->text();
-    //TODO удаление + удаление файла
+
+    // Удаление
     storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data());
 
     AUpdateInterface();
 }
+
+// Диалоговое окно для создания библиотеки
+CrLibDialog::CrLibDialog(QWidget* pwgt)
+{
+    setWindowTitle("Create New Library");
+
+    InputLibName = new QLineEdit;
+
+    Message = new QLabel("Enter library name");
+    QPushButton* ok_button = new QPushButton("Ok");
+    QPushButton* cancel_button = new QPushButton("Cancel");
+
+    connect(ok_button,SIGNAL(clicked()),this,SLOT(ProcessInput()));
+    connect(cancel_button,SIGNAL(clicked()),SLOT(reject()));
+
+    QHBoxLayout* hbox_layout = new QHBoxLayout;
+    hbox_layout->addWidget(ok_button);
+    hbox_layout->addWidget(cancel_button);
+
+    QVBoxLayout* vbox_layout = new QVBoxLayout;
+    vbox_layout->addWidget(Message);
+    vbox_layout->addWidget(InputLibName);
+    vbox_layout->addLayout(hbox_layout);
+    setLayout(vbox_layout);
+}
+
+void CrLibDialog::ProcessInput()
+{
+    // Если ввод пустой
+    if(InputLibName->text().isEmpty())
+    {
+        return;
+    }
+
+    std::string lib_name = InputLibName->text().toUtf8().data();
+
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+     return;
+
+    // Если библиотеки с таким именем нет
+    if(!storage->GetCollection(lib_name))
+        accept(); // метод-слот успешного завершения диалогового окна
+    else
+        Message->setText("Library with this name already exists");
+
+
+}
+
+const std::string CrLibDialog::GetLibName() const
+{
+    return InputLibName->text().toUtf8().data();
+}
+
+// Диалоговое окно для создания класса
+CrClassDialog::CrClassDialog(QString lib_name, QWidget* pwgt) :Replace(false)
+{
+    setWindowTitle("Add New Class");
+
+    Info = new QLabel("Adding Class to \"" + lib_name + "\" library");
+    MessageClass = new QLabel("Enter Class name");
+    InputClassName = new QLineEdit;
+    MessageComp = new QLabel("Enter Comp name");
+    ComponentName = new QLineEdit;
+    QPushButton* ok_button = new QPushButton("Ok");
+    QPushButton* cancel_button = new QPushButton("Cancel");
+
+    connect(ok_button,SIGNAL(clicked()),this,SLOT(ProcessInput()));
+    connect(cancel_button,SIGNAL(clicked()),SLOT(reject()));
+
+    QHBoxLayout* hbox_layout = new QHBoxLayout;
+    hbox_layout->addWidget(ok_button);
+    hbox_layout->addWidget(cancel_button);
+
+    QVBoxLayout* vbox_layout = new QVBoxLayout;
+    vbox_layout->addWidget(Info);
+    vbox_layout->addWidget(MessageClass);
+    vbox_layout->addWidget(InputClassName);
+    vbox_layout->addWidget(MessageComp);
+    vbox_layout->addWidget(ComponentName);
+    vbox_layout->addLayout(hbox_layout);
+    setLayout(vbox_layout);
+}
+
+void CrClassDialog::ProcessInput()
+{
+    QString class_name = InputClassName->text();
+
+    // Если ввод пустой
+    if(class_name.isEmpty())
+    {
+        return;
+    }
+
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+
+    if(!storage)
+        return;
+
+    // Проверка на существование компонента
+    RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
+
+    if(!engine)
+         return;
+
+    RDK::UEPtr<RDK::UContainer> container = engine->GetModel()->GetComponent(ComponentName->text().toUtf8().data(), true);
+
+    if(!container)
+    {
+        MessageComp->setText("Component with this name doesn't exist in the model");
+        return;
+    }
+
+    // Если класс не существует - завершаем диалог -> создание класса
+    if(!storage->CheckClass(class_name.toUtf8().data()))
+    {
+        accept();
+    }
+    else
+    {
+        QString oldMessage = MessageClass->text();
+        std::string lib_name = storage->FindCollection(class_name.toUtf8().data())->GetName();
+        MessageClass->setText("Class \"" + class_name +"\" already exists in \"" + QString::fromStdString(lib_name) + "\" library"
+                         +"\n" + "If you want to replace it, press \"Ok\" again");
+        //Если Message идентичный -> значит это второе нажатие "Ок" -> замена класса
+        if(oldMessage == MessageClass->text())
+        {
+            Replace = true;
+            accept();
+        }
+    }
+
+}
+
+const bool CrClassDialog::GetReplace() const
+{
+    return Replace;
+}
+
+const std::string CrClassDialog::GetClassName() const
+{
+    return InputClassName->text().toUtf8().data();
+}
+
+const std::string CrClassDialog::GetCompName() const
+{
+    return ComponentName->text().toUtf8().data();
+}
+

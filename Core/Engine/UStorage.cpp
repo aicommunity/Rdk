@@ -885,16 +885,29 @@ const string& UStorage::GetCollectionVersion(int index)
  return CollectionList[index]->GetVersion();
 }
 
+// Возвращается строку runtime-библиотек, разделенных запятой
+// Буфер 'buffer' будет очищен от предыдущих значений
+void UStorage::GetRTlibsNameList(std::string &buffer) const
+{
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib = CollectionList[i];
+        if(lib && lib->GetType() == 2)
+        {
+            buffer.append(lib->GetName());
+            buffer.append(",");
+        }
+    }
+    buffer.erase(buffer.length()-1);
+}
 
 /// Непосредственно добавялет новый образец класса в хранилище
 bool UStorage::AddClassToCollection(const std::string &new_class_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
 {
-
     try
     {
 
-    // Библиотека создает новое описание компонента и сохраняет его в файл
-    // + внутри Upload
+    // Библиотека куда добавляеться класс
     URuntimeLibrary *library = nullptr;
 
     for(size_t i=0;i<CollectionList.size();i++)
@@ -907,13 +920,19 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, bool forc
     }
 
     // Проверка на существование класса
-    // TODO адекватная обработка, если класс существует
     if(CheckClass(new_class_name))
     {
         // Разрешена ли замена
         if(force_replace)
         {
-            library->ReplaceClass(new_class_name, newclass);
+            // Библиотека где класс уже существует
+            URuntimeLibrary *lib = dynamic_cast<URuntimeLibrary*>(FindCollection(new_class_name).Get());
+
+            //Сначала удаляем из нужной
+            lib->DelClass(new_class_name);
+            //Добавление в нужную
+            library->AddNewClass(new_class_name, newclass);
+
         }
         else
         {
@@ -938,8 +957,6 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, bool forc
 /// Удаляет образец класса из RT коллекции
 bool UStorage::DelClassFromCollection(const std::string &class_name, const std::string &lib_name)
 {
-    // Библиотека создает новое описание компонента и сохраняет его в файл
-    // + внутри Upload
     URuntimeLibrary *library = nullptr;
 
     for(size_t i=0;i<CollectionList.size();i++)
@@ -950,12 +967,10 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
             library = dynamic_cast<URuntimeLibrary*>(lib.Get());
         }
     }
-    // TODO Storage ищет компонент и удаляет из нужной библиотеки
-    // Добавляет компонент
+    // Удаляет компонент
     library->DelClass(class_name);
     return true;
 }
-
 
 /// Создает новую библиотеку с заданным именем
 bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
@@ -963,7 +978,6 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     if(lib_name.empty())
         return false;
 
-    // TODO проверка на занятое имя
     if(GetCollection(lib_name) != nullptr)
         return false;
 

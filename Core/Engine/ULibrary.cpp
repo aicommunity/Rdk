@@ -404,11 +404,6 @@ URuntimeLibrary::~URuntimeLibrary(void)
 // --------------------------
 
 
-vector<string>& URuntimeLibrary::GetClassesStructures()
-{
-    return ClassesStructures;
-}
-
 /// Возращает путь библиотеки
 const std::string& URuntimeLibrary::GetLibPath() const
 {
@@ -465,13 +460,20 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, UContainer 
 
     CurrentComponentStruct.SaveToFile(LibPath+"/"+new_class_name+".xml");
 
+    try
+    {
+
     UEPtr<UContainer> cont_1 = CreateClassSample(Storage, CurrentComponentStruct);
 
 
     if(UploadClass(new_class_name, cont_1))
         ClassesStructures.push_back(buff);
 
-
+    }
+    catch(UException &ex)
+    {
+        Storage->GetLogger()->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+    }
     return true;
 }
 
@@ -490,30 +492,24 @@ bool URuntimeLibrary::ReplaceClass(const std::string &new_class_name, UContainer
 /// Удаляет класс из коллекции и Storage
 bool URuntimeLibrary::DelClass(const std::string &class_name)
 {
-    // TODO если класс в другой библиотеке передать удаление ей
-    URuntimeLibrary *library = nullptr;
-
     // Удаление сущ. класса
     if(Storage->CheckClass(class_name))
     {
-        UEPtr<ULibrary> lib = Storage->GetCollection(class_name);
-
-        library = dynamic_cast<URuntimeLibrary*>(lib.Get());
+        // Если класс из другой библиотеки
+        if(Storage->FindCollection(class_name).Get()!= dynamic_cast<ULibrary*>(this))
+            return false;
 
         Storage->DelClass(Storage->FindClassId(class_name));
     }
 
-    auto ClStr = library->GetClassesStructures();
-
-    for(auto it = ClStr.begin(); it != ClStr.end(); ++it)
+    for(auto it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
     {
-        // Не важно чей xml парсер
         CurrentComponentStruct.Load(*it,"");
         std::string search_name = CurrentComponentStruct.GetNodeAttribute("RTname");
         if(class_name == search_name)
         {
-            ClStr.erase(it);
-            std::string xml_path = "../../../RTlibs/" + library->GetName() +"/" + search_name + ".xml";
+            ClassesStructures.erase(it);
+            std::string xml_path = LibPath +"/" + search_name + ".xml";
             RDK::DeleteFile(xml_path.c_str());
             break;
         }
@@ -522,7 +518,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
 
 bool URuntimeLibrary::DeleteOwnDirectory(void)
 {
-    RDK::DeleteDirectory(LibPath.c_str());
+    return (!RDK::DeleteDirectory(LibPath.c_str()));
 }
 // --------------------------
 
@@ -544,7 +540,6 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
 
  if(!cont->LoadComponent(&xml,true))
  {
-     //log
     storage->ReturnObject(cont);
     return 0;
  }
@@ -566,13 +561,16 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 
             UEPtr<UContainer> cont=CreateClassSample(storage, CurrentComponentStruct);
 
+            if(!cont)
+                return;
+
             std::string class_name=CurrentComponentStruct.GetNodeAttribute("RTname");
 
             UploadClass(class_name,cont);
         }
-        catch(UException &)
+        catch(UException &ex)
         {
-            // smth
+            Storage->GetLogger()->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
         }
     }
 }

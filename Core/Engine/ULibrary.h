@@ -213,7 +213,6 @@ virtual ~URuntimeLibrary(void);
 // --------------------------
 // Методы управления данными
 // --------------------------
-vector<string>& GetClassesStructures();
 
 /// Возращает путь библиотеки
 const std::string& GetLibPath() const;
