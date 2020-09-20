@@ -55,6 +55,9 @@ public:
     /// Устанавливает указатель на ядро
     void SetApplication(RDK::UApplication *app);
 
+    /// Возвращается имя выбрано компонента
+    std::string GetSelectedCmponent();
+
 public slots:
     //Контекстное меню
     void componentViewOrBreakLink();

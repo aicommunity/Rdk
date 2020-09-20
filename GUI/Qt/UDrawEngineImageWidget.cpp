@@ -708,3 +708,13 @@ void UDrawEngineImageWidget::SetApplication(RDK::UApplication *app)
 {
  Application=app;
 }
+
+/// Возвращается имя выбрано компонента
+std::string UDrawEngineImageWidget::GetSelectedCmponent()
+{
+    if(ComponentName.isEmpty())
+        std::string one = ComponentName.toUtf8().data();
+    if(selectedComponent.empty())
+        std::string two = selectedComponent;
+    return selectedComponent;
+}

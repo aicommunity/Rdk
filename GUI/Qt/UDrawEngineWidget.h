@@ -35,6 +35,9 @@ public:
     //расширение схемы при ресайзе
     void resizeEvent(QResizeEvent*);
 
+    /// Возвращается имя выбрано компонента из UDrawEngineImageWidget
+    std::string GetSelectedCmponent();
+
 public slots:
     void componentDoubleClick(QString name);
     void componentSingleClick(QString name);

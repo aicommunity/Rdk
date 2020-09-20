@@ -108,3 +108,10 @@ void UDrawEngineWidget::updateScheme(bool reloadXml)
 {
  modelScheme->reDrawScheme(reloadXml);
 }
+
+std::string UDrawEngineWidget::GetSelectedCmponent()
+{
+    if(!modelScheme)
+        return "";
+    return modelScheme->GetSelectedCmponent();
+}

@@ -9,6 +9,7 @@
 #include <QModelIndex>
 #include <QListWidget>
 #include <QDialog>
+#include <QComboBox>
 
 namespace Ui {
 class UClassesListWidget;
@@ -77,6 +78,7 @@ class CrLibDialog: public QDialog
 private:
     QLineEdit* InputLibName;
     QLabel* Message;
+    QPushButton* AddButton;
 
 public:
     CrLibDialog(QWidget* pwgt = 0);
@@ -92,22 +94,28 @@ class CrClassDialog: public QDialog
 {
     Q_OBJECT
 private:
-    QLineEdit* InputClassName;
-    QLineEdit* ComponentName;
-    QLabel* Info;
+
+    QLabel* MessageLib;
+    QComboBox* Libraries;
     QLabel* MessageClass;
-    QLabel* MessageComp;
-    // нужно ли делать replace класса
+    QLineEdit* InputClassName;
+    QPushButton* AddButton;
+    QPushButton* ReplaceButton;
     bool Replace;
-
 public:
-    CrClassDialog(QString lib_name, QWidget* pwgt = 0);
-    const bool GetReplace() const;
+    CrClassDialog(QStringList libs, QString cur_lib, QWidget* pwgt = 0);
     const std::string GetClassName() const;
-    const std::string GetCompName() const;
-
+    const std::string GetLibName() const;
+    const bool GetReplace() const;
 public slots:
     void ProcessInput();
 };
 
+class DeleteDialog: public QDialog
+{
+    Q_OBJECT
+public:
+     DeleteDialog(QString title, QString message, QWidget* pwgt = 0);
+
+};
 #endif // UCLASSESLISTWIDGET_H
