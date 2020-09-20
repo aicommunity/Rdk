@@ -436,7 +436,7 @@ bool URuntimeLibrary::LoadCompDescriptions()
 }
 
 /// Добавляет новый компонент (сохранение в файл)
-bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, UContainer *newclass)
+bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass)
 {
     UEPtr<UContainer> p = newclass;
     UEPtr<UNet> cont = dynamic_pointer_cast<UNet>(p);
@@ -452,6 +452,7 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, UContainer 
     // Сохранение XML и добавление нового поля RTname с именем
     cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter);
     CurrentComponentStruct.SelectNode(cont->GetName());
+    CurrentComponentStruct.RenameNode(new_comp_name);
     CurrentComponentStruct.SetNodeAttribute("RTname", new_class_name);
     CurrentComponentStruct.Save(buff);
 
@@ -464,7 +465,7 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, UContainer 
     {
 
     UEPtr<UContainer> cont_1 = CreateClassSample(Storage, CurrentComponentStruct);
-
+    // Имя компонента
 
     if(UploadClass(new_class_name, cont_1))
         ClassesStructures.push_back(buff);
@@ -474,18 +475,6 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, UContainer 
     {
         Storage->GetLogger()->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
     }
-    return true;
-}
-
-/// Заменяет существующий компонент
-bool URuntimeLibrary::ReplaceClass(const std::string &new_class_name, UContainer *newclass)
-{
-    // Удаление сущ. класса
-    DelClass(new_class_name);
-
-    // Добавление нового
-    AddNewClass(new_class_name,newclass);
-
     return true;
 }
 

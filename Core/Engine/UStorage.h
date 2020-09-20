@@ -314,7 +314,7 @@ virtual bool LoadRuntimeCollection(const std::string &lib_name);
 
 /// Добавляет новый образец класса в коллекцию (сразу соранение в файл)
 /// Если класс с таким именем существует возможно перезапись при force_replace = true
-virtual bool AddClassToCollection(const std::string &new_class_name, bool force_replace, UContainer *newclass, const std::string &lib_name);
+virtual bool AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name);
 
 /// Удаляет образец класса из RT коллекции
 virtual bool DelClassFromCollection(const std::string &class_name, const std::string &lib_name);

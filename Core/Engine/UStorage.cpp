@@ -902,7 +902,7 @@ void UStorage::GetRTlibsNameList(std::string &buffer) const
 }
 
 /// Непосредственно добавялет новый образец класса в хранилище
-bool UStorage::AddClassToCollection(const std::string &new_class_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
+bool UStorage::AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
 {
     try
     {
@@ -931,7 +931,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, bool forc
             //Сначала удаляем из нужной
             lib->DelClass(new_class_name);
             //Добавление в нужную
-            library->AddNewClass(new_class_name, newclass);
+            library->AddNewClass(new_class_name, new_comp_name, newclass);
 
         }
         else
@@ -941,7 +941,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, bool forc
     }
     else
     {
-        library->AddNewClass(new_class_name, newclass);
+        library->AddNewClass(new_class_name, new_comp_name, newclass);
     }
 
     }

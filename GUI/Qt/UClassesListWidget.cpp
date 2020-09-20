@@ -1,6 +1,5 @@
 #include "UClassesListWidget.h"
 #include "ui_UClassesListWidget.h"
-#include "UDrawEngineWidget.h"
 #include <QMimeData>
 #include <QDragMoveEvent>
 #include <QDrag>
@@ -8,7 +7,7 @@
 #include <QPushButton>
 
 UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
-    UVisualControllerWidget(parent, app),
+    UVisualControllerWidget(parent, app), ModelScheme(nullptr),
     ui(new Ui::UClassesListWidget)
 {
     ui->setupUi(this);
@@ -16,25 +15,62 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     UpdateInterval = 0; // обновление по системным тикам не происходит
     setAccessibleName("UClassesListWidget"); // имя класса для сериализации
 
-    //инициализация спика по всем классам
+    // Список RT библиотек
+    auto storage = RDK::GetStorageLock();
+    std::string buff;
+    storage->GetRTlibsNameList(buff);
+    QStringList RTlibsNames = QString(buff.c_str()).split(",");
+
+    // Список всех компонентов из RT библиотек
+    QStringList RTclassesNames;
+    QString str;
+    foreach(str, RTlibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        // Если нет классов
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        RTclassesNames += libClasses;
+    }
+
+    //инициализация списка по всем классам
     const char * stringBuff = Storage_GetClassesNameList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
-    ui->listWidgetStorageByName->addItems(componentNames);
+    foreach(str, componentNames)
+    {
+        QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
+        if(RTclassesNames.indexOf(str)!=-1)
+            item->setBackgroundColor(Qt::lightGray);
+        item->setText(str);
+        ui->listWidgetStorageByName->addItem(item);
+    }
     ui->listWidgetStorageByName->sortItems(Qt::AscendingOrder);
 
-    //нициализация древовидного списка по библиотекам
+    //инициализация древовидного списка по библиотекам
     stringBuff = Storage_GetClassLibrariesList();
     componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
-    QString str;
+    bool isRTlib = false;
     foreach(str, componentNames)
     {
         if(str != "")
         {
+            isRTlib = false;
+            // Если это RT библиотека
+            if(RTlibsNames.indexOf(str)!=-1)
+                isRTlib = true;
             QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
             item->setExpanded(true);
             item->setText(0, str);
+            if(isRTlib)
+                item->setBackgroundColor(0,Qt::darkGray);
             stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
             QStringList libClasses = QString(stringBuff).split(",");
             Engine_FreeBufString(stringBuff);
@@ -45,6 +81,8 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
                 {
                      QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                      classItem->setText(0, className);
+                     if(isRTlib)
+                         classItem->setBackgroundColor(0,Qt::lightGray);
                 }
             }
         }
@@ -52,17 +90,14 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
 
     //инициализация runtime-библиотек
-    auto storage = RDK::GetStorageLock();
-    std::string buff;
-    storage->GetRTlibsNameList(buff);
-    componentNames = QString(buff.c_str()).split(",");
-
-    ui->listWidgetRTlibs->addItems(componentNames);
+    ui->listWidgetRTlibs->addItems(RTlibsNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
 
     //связь нажатия на компонент для события перетаскивания
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
+    connect(ui->listWidgetRTlibClasses, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
+
 
     //связи на внешний сигнал изменения выделения компонента
     connect(ui->treeWidgetStorageByLibs, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SIGNAL(classSelectionChanged()));
@@ -132,6 +167,11 @@ void UClassesListWidget::AUpdateInterface(void)
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
 }
 
+void UClassesListWidget::SetModelScheme(UDrawEngineImageWidget* model)
+{
+    ModelScheme = model;
+}
+
 void UClassesListWidget::dragEvent(QModelIndex index)
 {
     QByteArray itemData;
@@ -173,11 +213,35 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
 {
     ui->listWidgetStorageByName->clear();
 
+    // Список RT библиотек
+    auto storage = RDK::GetStorageLock();
+    std::string buff;
+    storage->GetRTlibsNameList(buff);
+    QStringList RTlibsNames = QString(buff.c_str()).split(",");
+
+    // Список всех компонентов из RT библиотек
+    QStringList RTclassesNames;
+    QString str;
+    foreach(str, RTlibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        // Если нет классов
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        RTclassesNames += libClasses;
+    }
+
+
     // список всех классов
     const char * stringBuff = Storage_GetClassesNameList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
-    QString str;
 
     foreach(str, componentNames)
     {
@@ -185,7 +249,11 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
         {
             if (str.contains(arg1, Qt::CaseInsensitive))
             {
-                 ui->listWidgetStorageByName->addItem(str);
+                QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
+                if(RTclassesNames.indexOf(str)!=-1)
+                    item->setBackgroundColor(Qt::lightGray);
+                item->setText(str);
+                ui->listWidgetStorageByName->addItem(item);
             }
         }
     }
@@ -196,20 +264,52 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
 {
     ui->treeWidgetStorageByLibs->clear();
 
+    // Список RT библиотек
+    auto storage = RDK::GetStorageLock();
+    std::string buff;
+    storage->GetRTlibsNameList(buff);
+    QStringList RTlibsNames = QString(buff.c_str()).split(",");
+
+    // Список всех компонентов из RT библиотек
+    QStringList RTclassesNames;
+    QString str;
+    foreach(str, RTlibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        // Если нет классов
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        RTclassesNames += libClasses;
+    }
+
     //нициализация древовидного списка по библиотекам
     const char * stringBuff = Storage_GetClassLibrariesList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
-    QString str;
+
+    bool isRTlib = false;
     foreach(str, componentNames)
     {
         if(str != "")
         {
+            isRTlib = false;
+            // Если это RT библиотека
+            if(RTlibsNames.indexOf(str)!=-1)
+                isRTlib = true;
+
             if (str.contains(arg1, Qt::CaseInsensitive))
             {
                 QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
                 item->setExpanded(true);
                 item->setText(0, str);
+                if(isRTlib)
+                    item->setBackgroundColor(0,Qt::darkGray);
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
                 QStringList libClasses = QString(stringBuff).split(",");
                 Engine_FreeBufString(stringBuff);
@@ -220,6 +320,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                     {
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
+                         if(isRTlib)
+                             classItem->setBackgroundColor(0,Qt::lightGray);
                     }
                 }
 
@@ -230,6 +332,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 bool isLibFind = false;
                 item->setExpanded(true);
                 item->setText(0, str);
+                if(isRTlib)
+                    item->setBackgroundColor(0,Qt::darkGray);
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
                 QStringList libClasses = QString(stringBuff).split(",");
                 Engine_FreeBufString(stringBuff);
@@ -241,6 +345,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                          isLibFind = true;
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
+                         if(isRTlib)
+                             classItem->setBackgroundColor(0,Qt::lightGray);
                     }
                 }
                 if (!isLibFind)
@@ -361,9 +467,16 @@ void UClassesListWidget::AddNewClass()
 {
     RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
-    // Если
+    // Если нет модели
     if(!engine || !engine->GetModel())
          return;
+
+    // Выделенный компонент
+    RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
+                                ->GetComponent(ModelScheme->GetSelectedCmponent(), true);
+    // Если компонент не выделен
+    if(!container)
+        return;
 
     // Имя текущей выбранной библиотеки (если выбрана)
     QString lib_name = "";
@@ -374,21 +487,12 @@ void UClassesListWidget::AddNewClass()
     engine->GetModel()->GetStorage()->GetRTlibsNameList(buff);
     QStringList libs_names = QString(buff.c_str()).split(",");
 
-    CrClassDialog* dialog = new CrClassDialog(libs_names,lib_name);
+    CrClassDialog* dialog = new CrClassDialog(libs_names, lib_name, QString::fromStdString(container->GetName()));
     if(dialog->exec() == QDialog::Accepted)
     {
-        // Выделенный компонент
-        RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
-                                    ->GetComponent(static_cast<UDrawEngineWidget*>(this->parentWidget()->parentWidget()->parentWidget())->GetSelectedCmponent(), true);
-        // если объект не существует
-        if(!container)
-        {
-            delete dialog;
-            return;
-        }
         engine->GetEnvironment()->
-                GetStorage()->AddClassToCollection(dialog->GetClassName(),dialog->GetReplace(),
-                                                   container,lib_name.toUtf8().data());
+                GetStorage()->AddClassToCollection(dialog->GetClassName(), dialog->GetCompName(),
+                                                   dialog->GetReplace(), container, dialog->GetLibName());
 
         AUpdateInterface();
     }
@@ -494,7 +598,7 @@ const std::string CrLibDialog::GetLibName() const
 }
 
 // Диалоговое окно для создания класса
-CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QWidget* pwgt)
+CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp_name, QWidget* pwgt)
 {
     setWindowTitle("Add New Class");
 
@@ -507,6 +611,10 @@ CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QWidget* pwgt)
     if ( index != -1 ) { // -1 Если не найдено
        Libraries->setCurrentIndex(index);
     }
+
+    MessageComp = new QLabel("Enter New Component Name");
+
+    InputCompName = new QLineEdit(cur_comp_name);
 
     MessageClass = new QLabel("Enter Class Name");
 
@@ -531,6 +639,8 @@ CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QWidget* pwgt)
     QVBoxLayout* vbox_layout = new QVBoxLayout;
     vbox_layout->addWidget(MessageLib);
     vbox_layout->addWidget(Libraries);
+    vbox_layout->addWidget(MessageComp);
+    vbox_layout->addWidget(InputCompName);
     vbox_layout->addWidget(MessageClass);
     vbox_layout->addWidget(InputClassName);
     vbox_layout->addLayout(hbox_layout);
@@ -540,7 +650,7 @@ CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QWidget* pwgt)
 void CrClassDialog::ProcessInput()
 {
     // Если ввод пустой
-    if(InputClassName->text().isEmpty())
+    if(InputClassName->text().isEmpty() || InputCompName->text().isEmpty())
     {
         MessageClass->setText("Enter Class Name");
         AddButton->setEnabled(false);
@@ -570,7 +680,7 @@ void CrClassDialog::ProcessInput()
         MessageClass->setText("Enter Class Name");
         AddButton->setEnabled(true);
     }
-    else // Если существует - предупреждение
+    else// Если существует - предупреждение
     {
         std::string lib_name = storage->FindCollection(class_name.toUtf8().data())->GetName();
         MessageClass->setText("Class \"" + class_name +"\" already exists in \"" + QString::fromStdString(lib_name) + "\" library");
@@ -587,6 +697,11 @@ const bool CrClassDialog::GetReplace() const
 const std::string CrClassDialog::GetClassName() const
 {
     return InputClassName->text().toUtf8().data();
+}
+
+const std::string CrClassDialog::GetCompName() const
+{
+    return InputCompName->text().toUtf8().data();
 }
 
 const std::string CrClassDialog::GetLibName() const

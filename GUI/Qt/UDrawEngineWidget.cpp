@@ -23,6 +23,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
 
 
     modelScheme = new UDrawEngineImageWidget(ui->scrollArea);
+    classesList->SetModelScheme(modelScheme);
     modelScheme->SetApplication(app);
     connect(modelScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
     connect(modelScheme, SIGNAL(componentDoubleClick(QString)), this, SIGNAL(componentDoubleClickFromScheme(QString)));
@@ -107,11 +108,4 @@ void UDrawEngineWidget::componentSingleClick(QString name)
 void UDrawEngineWidget::updateScheme(bool reloadXml)
 {
  modelScheme->reDrawScheme(reloadXml);
-}
-
-std::string UDrawEngineWidget::GetSelectedCmponent()
-{
-    if(!modelScheme)
-        return "";
-    return modelScheme->GetSelectedCmponent();
 }

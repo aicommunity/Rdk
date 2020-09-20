@@ -218,10 +218,7 @@ virtual ~URuntimeLibrary(void);
 const std::string& GetLibPath() const;
 
 /// Добавляет новый компонент (описание, сохранение)
-bool AddNewClass(const std::string &new_class_name, UContainer *newclass);
-
-/// Заменяет существующий компонент (описание, сохранение)
-bool ReplaceClass(const std::string &new_class_name, UContainer *newclass);
+bool AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass);
 
 /// Удаляет класс из коллекции и Storage
 bool DelClass(const std::string &class_name);

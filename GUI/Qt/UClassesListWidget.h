@@ -35,6 +35,8 @@ public:
 
     virtual void AUpdateInterface(void);
 
+    void SetModelScheme(UDrawEngineImageWidget* model);
+
 public slots:
     void dragEvent(QModelIndex index);
 
@@ -66,7 +68,7 @@ public slots:
     void DeleteClass();
 
 private:
-
+    UDrawEngineImageWidget* ModelScheme;
     Ui::UClassesListWidget *ui;
 
 };
@@ -97,14 +99,17 @@ private:
 
     QLabel* MessageLib;
     QComboBox* Libraries;
+    QLabel* MessageComp;
+    QLineEdit* InputCompName;
     QLabel* MessageClass;
     QLineEdit* InputClassName;
     QPushButton* AddButton;
     QPushButton* ReplaceButton;
     bool Replace;
 public:
-    CrClassDialog(QStringList libs, QString cur_lib, QWidget* pwgt = 0);
+    CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp_name, QWidget* pwgt = 0);
     const std::string GetClassName() const;
+    const std::string GetCompName() const;
     const std::string GetLibName() const;
     const bool GetReplace() const;
 public slots:
