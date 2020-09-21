@@ -21,11 +21,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-UDataSource::UDataSource(UEnvironment *env)
- : Env(env), LastReadTime(0.0), LastWriteTime(0.0)
-{
-}
-
 // --------------------------
 // Constructors & destructors
 // --------------------------
@@ -321,6 +316,8 @@ bool UEnvironment::DestroyModel(void)
  if(!Model)
   return true;
 
+ UnRegisterAllDataReaders();
+
  Model->Free();
  Model=0;
  CurrentComponent=0;
@@ -589,69 +586,72 @@ bool UEnvironment::CallSourceController(void)
 // Методы управления регистрацией данных
 // --------------------------
 /// Регистрирует новую точку съема данных (вида MDMatrix)
-bool UEnvironment::RegisterDataSource(const std::string &component_name, const std::string &property_name)
+UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
- for(size_t i=0;i<DataSources.size();i++)
-  if(DataSources[i] && DataSources[i]->ComponentName == component_name && DataSources[i]->PropertyName == property_name)
-   return true;
+ for(size_t i=0;i<DataReaders.size();i++)
+  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
+	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+   return DataReaders[i];
 
  if(!Model)
-  return false;
+  return 0;
 
  UContainer *cont=Model->GetComponentL(component_name);
  if(!cont)
-  return false;
+  return 0;
 
  UEPtr<UIProperty> prop=cont->FindProperty(property_name);
  if(!prop)
-  return false;
+  return 0;
 
- if(prop->GetLanguageType() == typeid(MDMatrix<double>))
- {
-  UDataSource *data=new UDataSourceT<double>(this);
-  if(!data->Configure(component_name,property_name))
+ UControllerDataReader *data=new UControllerDataReader();
+ if(!data->Configure(cont,prop))
   {
    delete data;
-   return false;
+   return 0;
   }
-  DataSources.push_back(data);
-  return true;
- }
- else
- if(prop->GetLanguageType() == typeid(MDMatrix<double>))
- {
-  UDataSource *data=new UDataSourceT<int>(this);
-  if(!data->Configure(component_name,property_name))
-  {
-   delete data;
-   return false;
-  }
-  DataSources.push_back(data);
-  return true;
- }
- return false;
+
+ data->SetMatrixCoord(row,col);
+
+ DataReaders.push_back(data);
+ return data;
 }
 
 /// Снимает регистрацию точки съема данных (вида MDMatrix)
-void UEnvironment::UnRegisterDataSource(const std::string &component_name, const std::string &property_name)
+void UEnvironment::UnRegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
- for(size_t i=0;i<DataSources.size();i++)
+ for(size_t i=0;i<DataReaders.size();i++)
  {
-  if(DataSources[i] && DataSources[i]->ComponentName == component_name && DataSources[i]->PropertyName == property_name)
+  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
+	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
   {
-   delete DataSources[i];
-   DataSources.erase(DataSources.begin()+i);
+   delete DataReaders[i];
+   DataReaders.erase(DataReaders.begin()+i);
    return;
   }
  }
 }
 
 /// Снимает регистрацию всех точек съема данных (вида MDMatrix)
-void UEnvironment::UnRegisterAllDataSources(void)
+void UEnvironment::UnRegisterAllDataReaders(void)
 {
- for(size_t i=0;i<DataSources.size();i++)
-  delete DataSources[i];
- DataSources.clear();
+ for(size_t i=0;i<DataReaders.size();i++)
+  delete DataReaders[i];
+ DataReaders.clear();
+}
+
+/// Возвращает данные точки съема
+UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
+{
+ for(size_t i=0;i<DataReaders.size();i++)
+ {
+  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
+	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+  {
+   return DataReaders[i];
+  }
+ }
+ return 0;
 }
 // --------------------------
 
@@ -798,8 +798,8 @@ void UEnvironment::RTCalculate(void)
  while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
   Calculate();
-  for(size_t i=0;i<DataSources.size();i++)
-   DataSources[i]->UpdateData();
+  //for(size_t i=0;i<DataReaders.size();i++)
+  // DataReaders[i]->Update();
 
   ++i;
   curtime=GetCurrentStartupTime();
@@ -880,8 +880,8 @@ void UEnvironment::FastCalculate(double calc_interval)
  while(i<elapsed_counter)
  {
   Calculate();
-  for(size_t i=0;i<DataSources.size();i++)
-   DataSources[i]->UpdateData();
+  //for(size_t i=0;i<DataReaders.size();i++)
+  // DataReaders[i]->Update();
 
   ++i;
   if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
@@ -1013,8 +1013,8 @@ bool UEnvironment::AReset(void)
   Logger->Reset();
  RTModelCalcTime=0;
 
- for(size_t i=0;i<DataSources.size();i++)
-  DataSources[i]->ClearData();
+ for(size_t i=0;i<DataReaders.size();i++)
+  DataReaders[i]->Clear();
 
  if(!Model)
   return true;
@@ -1083,8 +1083,8 @@ bool UEnvironment::ACalculate(void)
    return false;
  }
 
- for(size_t i=0;i<DataSources.size();i++)
-  DataSources[i]->UpdateData();
+ //for(size_t i=0;i<DataReaders.size();i++)
+ // DataReaders[i]->Update();
 
  // Если мы считаем всю модель, то расчитываем время модели здесь,
  // иначе мы ожидаем, что вызывающий модуль сам расчитает время модели

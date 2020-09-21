@@ -39,6 +39,11 @@ inherited UWatchFrame: TUWatchFrame
     PopupMenu = PopupMenu
     TabOrder = 0
     DefaultCanvas = 'TGDIPlusCanvas'
+    PrintMargins = (
+      15
+      14
+      15
+      14)
     ColorPaletteIndex = 13
   end
   object SavePictureDialog: TSavePictureDialog
@@ -51,32 +56,13 @@ inherited UWatchFrame: TUWatchFrame
   object PopupMenu: TPopupMenu
     Left = 72
     Top = 16
-    object AddWatch1: TMenuItem
-      Caption = 'Add Time-Y Watch'
-      Visible = False
-      OnClick = AddWatch1Click
-    end
-    object AddTimeYWatchold1: TMenuItem
-      Caption = 'Add Time-Y Watch (old)'
-      Visible = False
-      OnClick = AddTimeYWatchold1Click
-    end
     object AddTimeMatrixWatch1: TMenuItem
       Caption = 'Add Time-Matrix Watch'
       OnClick = AddTimeMatrixWatch1Click
     end
-    object AddTimeVectorWatch1: TMenuItem
-      Caption = 'Add Time-Vector Watch'
-      Visible = False
-      OnClick = AddTimeVectorWatch1Click
-    end
     object AddXPulseWatch1: TMenuItem
       Caption = 'Add X-Pulse Watch'
       OnClick = AddXPulseWatch1Click
-    end
-    object AddXYWatch1: TMenuItem
-      Caption = 'Add XY Watch'
-      Enabled = False
     end
     object DeleteActiveWatch1: TMenuItem
       Caption = 'Delete Active Watch'

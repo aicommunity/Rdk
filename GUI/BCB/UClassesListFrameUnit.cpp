@@ -17,6 +17,7 @@ using namespace RDK;
 __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
+ UpdateInterval=-1;
  UpdateInterfaceFlag=false;
  CheckModelFlag=false;
  RepaintNeeded=false;
