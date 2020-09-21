@@ -62,6 +62,7 @@ inherited UWatchFrame: TUWatchFrame
     end
     object AddXPulseWatch1: TMenuItem
       Caption = 'Add X-Pulse Watch'
+      Enabled = False
       OnClick = AddXPulseWatch1Click
     end
     object DeleteActiveWatch1: TMenuItem

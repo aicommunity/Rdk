@@ -618,7 +618,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 }
 
 
-
+/*
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift, TPenStyle style, TColor color)
 {
  SelectedSeriesIndex=-1;
@@ -661,7 +661,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  wd.Style=style;
  return Add(wd);
 }
-
+    */
 
 // Удаление наблюдения
 void __fastcall TUWatchFrame::Del(int seriesindex)
@@ -748,6 +748,7 @@ void __fastcall TUWatchFrame::SeriesEnable(int seriesindex)
 // Обновление информации за 'stepcount' прошедших шагов интегрирования
 void __fastcall TUWatchFrame::StepUpdate(void)
 {
+ RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
  for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
  {
   TUWatchInfo *wd;
@@ -761,271 +762,51 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    continue;
 
   static_cast<TFastLineSeries*>(series)->DrawAllPoints=true;
-//  static_cast<TFastLineSeries*>(series)->Stairs=true;
 
   if(!wd->Visible)
    continue;
 
-   const double *x=0, *y=0;
-   const RDK::MDMatrix<double> *ym=0;
-   double xdata;
-   std::vector<double> vxdata, vydata;
+  if(wd->Type == 0x200)
+  {
+   std::list<double>::iterator buffIX, buffIY;
+   RDK::UControllerDataReader* data=env->GetDataReader(wd->YDataSourceName.c_str(), wd->YOutputIndex, wd->MRow, wd->MCol);
+   if(!data)
+	continue;
 
-   if(wd->Type == 0x400)
+   int data_size=data->XData.size();
+
+   wd->X.set_length(data_size);
+   wd->Y.set_length(data_size);
+
+   buffIX=data->XData.begin();
+   buffIY=data->YData.begin();
+   int i=0;
+   for(;buffIX != data->XData.end();buffIX++,buffIY++,i++)
    {
-     std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
-	 int data_size=0;                                                                                                 
-	 if(wd->MVectorName == "Row")
-	 {
-	  data_size=ym->GetCols();
-	  if(componentName=="PulseReceiver")
-	  {	
-	   vxdata.assign(2*data_size,0);
-	   vydata.assign(2*data_size,0);
-	  }
-	  else
-	  {	
-	   vxdata.assign(data_size,0);
-	   vydata.assign(data_size,0);
-	  }
-	  if(componentName!="PulseReceiver")
-	  {
-	  for(int i=0; i<data_size; i++)
-	   {
-		vxdata[i]=(*ym)(wd->MVectorIndexX, i);
-		vydata[i]=(*ym)(wd->MVectorIndexY, i);
-	   }
-	  }
-	  else
-	  {
-	   for(int i=0; i<data_size; i++)
-	   {
-		vxdata[2*i]=(*ym)(wd->MVectorIndexX, i);
-		vxdata[2*i+1]=(*ym)(wd->MVectorIndexX, i);
-		vydata[2*i+1]=(*ym)(wd->MVectorIndexY, i);
-		if(vydata[2*i+1]==1)
-		 vydata[2*i]=0;
-		else if (vydata[2*i+1]==0)
-		 vydata[2*i]=1;
-	   }
-	  }
-	 }
-	 else if(wd->MVectorName == "Col")
-	 {
-	  data_size=ym->GetRows();
-	  vxdata.assign(data_size,0);
-	  vydata.assign(data_size,0);
-	  for(int i=0; i<data_size; i++)
-	  {
-	   vxdata[i]=(*ym)(i, wd->MVectorIndexX);
-	   vydata[i]=(*ym)(i, wd->MVectorIndexY);
-	  }
-	 }
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=data_size;
+	wd->X[i]=*buffIX;
+	wd->Y[i]=*buffIY+wd->YShift;
    }
-   else
-   if(wd->YDataSourceName.size() && wd->XDataSourceName.size()==0)
-   {
-   /*
-	 xdata=Model_GetDoubleTime();
-	 x=&xdata;
 
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
-	 if(!ym)
-	 {
-	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
-	  if(!y)
-	   continue;
-	 }
-	 else
-	 {
-	  if(ym->GetRows()<=wd->MRow || ym->GetCols()<=wd->MCol)
-	   continue;
-	  y=&(*ym)(wd->MRow,wd->MCol);
-	  if(!y)
-	   continue;
-	 }
-	 */
-	if(wd->Type == 0x200)
-	{
-	 RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
-	 std::list<double>::iterator buffIX, buffIY;
-	 RDK::UControllerDataReader* data=env->GetDataReader(wd->YDataSourceName.c_str(), wd->YOutputIndex, wd->MRow, wd->MCol);
-	 if(!data)
-	  continue;
-
-	 int data_size=data->XData.size();
-
-	 wd->X.set_length(data_size);
-	 wd->Y.set_length(data_size);
-
-	 buffIX=data->XData.begin();
-	 buffIY=data->YData.begin();
-     int i=0;
-	 for(;buffIX != data->XData.end();buffIX++,buffIY++,i++)
-	 {
-	  wd->X[i]=*buffIX;
-	  wd->Y[i]=*buffIY;
-	 }
-
- //	 y=&chart_y_data[0];
- //	 x=&chart_x_data[0];
-	 wd->XYSize=data_size;
-    }
-   }
-   else
-   if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
-   {
-	 const RDK::MDMatrix<double>* mm=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->XDataSourceName.c_str(), wd->XOutputIndex.c_str()));
-	 if(!mm)
-	  continue;
-
-	 RDK::MDMatrix<double> m=*mm;
-	 if(m.GetRows()<=0)
-      continue;
-     int xdata_size=m.GetCols();//Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
-	 vxdata.assign(xdata_size*3+2,0);
-	 vydata.assign(xdata_size*3+2,0);
-	 double* xx=m.Data;//(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
-
-
-	 if(!xx || !xdata_size)
-	 {
-	  vxdata[0]=Model_GetDoubleTime();
-	  vydata[0]=0;
-	 }
-	 else
-	 {
-	  vxdata[0]=xx[0]-0.0001;
-	  vydata[0]=0;
-	  for(int i=0,j=1;i<xdata_size;i++,j+=3)
-	  {
-	   vxdata[j]=xx[i]-0.0001;
-	   vydata[j]=0;
-	   vxdata[j+1]=xx[i];
-	   vydata[j+1]=1;
-	   vxdata[j+2]=xx[i]+0.0001;
-	   vydata[j+2]=0;
-	  }
-	  vxdata[xdata_size*3+1]=Model_GetDoubleTime();
-	  vydata[xdata_size*3+1]=0;
-	 }
-
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=xdata_size*3+2;
-   }
+   wd->XYSize=data_size;
+  }
 
   // Смотрим способ обновления данных наблюдения...
-  if(wd->FullUpdate)
+  static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
+
+  if(wd->XYSize>0 && wd->X.get_length() == wd->XYSize)
   {
-   series->Clear();
+   series->XValues->Value=wd->X;
+   series->XValues->Count=wd->XYSize;
+   series->XValues->Modified=true;
 
-//   if(!wd->YDataSourceName.size())
-//	continue;
-
-  // static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
-
-	for(int i=0;i<wd->XYSize;i++)
-	{
-	 if(!x || !y || ISNAN(x[i]) || ISNAN(y[i]))
-	  continue;
-	 series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
-	}
-  // static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
+   series->YValues->Value=wd->Y;
+   series->YValues->Count=wd->XYSize;
+   series->YValues->Modified=true;
   }
-  else
-  {
-//   if(wd->WatchInterval < 0)
-//	continue;
 
-//   if(!wd->YDataSourceName.size())
-//	continue;
+  Chart1->BottomAxis->Automatic=true;
 
-  // static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
-
- //	 series->XValues->Count= wd->XYSize;
-//	 int old_size=series->XValues->Value.get_length();
-//	 series->XValues->Value.set_length(series->XValues->Value.get_length()+chart_x_data.get_length());
-//	 for(int i=0;i<wd->XYSize;i++)
-//	  series->XValues->Value[i+old_size]=chart_x_data[i];
-
-	if(wd->XYSize>0 && wd->X.get_length() == wd->XYSize)
-	{
-	 series->XValues->Value=wd->X;
-	 series->XValues->Count=wd->XYSize;
-	 series->XValues->Modified=true;
-
-	 series->YValues->Value=wd->Y;
-	 series->YValues->Count=wd->XYSize;
-	 series->YValues->Modified=true;
-	}
- //	 series->YValues->Value=series->YValues->Value+chart_y_data;
- //	 series->YValues->Value.set_length(series->YValues->Value.get_length()+chart_y_data.get_length());
- //	 for(int i=0;i<wd->XYSize;i++)
- //	  series->YValues->Value[i+old_size]=chart_x_data[i];
-
-  //	 series->YValues->Modified=true;
-
-/*
-   for(int i=0;i<wd->XYSize;i++)
-   {
-	if(!x || !y || ISNAN(x[i]) || ISNAN(y[i]))
-	 continue;
-	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
-   } */
-   Chart1->BottomAxis->Automatic=true;
-
-	 /*
-   Chart1->BottomAxis->Automatic=false;
-   if(wd->WatchInterval>0)
-   {
-	double ser_max,ser_min;
-	do{
-	 if(series->Count() > 1)
-	 {
-	  ser_max=series->XValue[series->Count()-1];
-	  ser_min=series->XValue[1];
-	 }
-	 else
-	 {
-	  ser_max=0;
-	  ser_min=0;
-	 }
-
-	 if(ser_max-wd->WatchInterval<0)
-	 {
-	  Chart1->BottomAxis->Minimum=0;
-	  Chart1->BottomAxis->Maximum=wd->WatchInterval;
-	 }
-	 else
-	 if(ser_max-wd->WatchInterval<Chart1->BottomAxis->Maximum)
-	 {
-	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;
-	  Chart1->BottomAxis->Maximum=ser_max;
-	 }
-	 else
-	 {
-	  Chart1->BottomAxis->Maximum=ser_max;
-	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;
-	 }
-
-	 if(fabs(ser_max-ser_min) > wd->WatchInterval)
-	 {
-	  series->Delete(0);
-//	  series->Delete(0);
-	 }
-	}while (fabs(ser_max-ser_min) > wd->WatchInterval);
-   }
-   else
-   {
-	Chart1->BottomAxis->Automatic=true;
-   }                    */
-  // static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
-  }
+  static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   ModifyState=true;
  }
 }

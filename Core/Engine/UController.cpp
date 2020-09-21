@@ -22,6 +22,7 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UController::UController(void)
+ : Component(0)
 {
  Enabled=false;
 }

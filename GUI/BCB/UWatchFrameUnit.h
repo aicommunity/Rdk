@@ -295,7 +295,7 @@ public:	// Методы
 		// Добавление нового наблюдения по имени компонента и индексу выхода
 		// Возвращает индекс серии
 		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
-		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+ //		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);
