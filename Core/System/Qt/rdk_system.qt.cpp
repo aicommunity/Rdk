@@ -113,7 +113,7 @@ int DeleteDirectory(const char* path)
 }
 
 // Óהאכÿוע פאיכ
-int DeleteFile(const char* path)
+int RemoveFile(const char* path)
 {
     QFile file(path);
     if(!file.exists())

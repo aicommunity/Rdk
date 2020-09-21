@@ -908,7 +908,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
     {
 
     // Библиотека куда добавляеться класс
-    URuntimeLibrary *library = nullptr;
+	URuntimeLibrary *library = 0;
 
     for(size_t i=0;i<CollectionList.size();i++)
     {
@@ -957,7 +957,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
 /// Удаляет образец класса из RT коллекции
 bool UStorage::DelClassFromCollection(const std::string &class_name, const std::string &lib_name)
 {
-    URuntimeLibrary *library = nullptr;
+	URuntimeLibrary *library = 0;
 
     for(size_t i=0;i<CollectionList.size();i++)
     {
@@ -978,7 +978,7 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     if(lib_name.empty())
         return false;
 
-    if(GetCollection(lib_name) != nullptr)
+	if(GetCollection(lib_name) != 0)
         return false;
 
     //Создание папки библиотеки
@@ -1053,7 +1053,7 @@ void UStorage::InitRTlibs(void)
     if(RDK::FindFilesList(lib_path,"*",false,lib_names))
         return;
 
-    for(int i = 0 ; i < lib_names.size(); i++)
+    for(size_t i = 0 ; i < lib_names.size(); i++)
     {
        LoadRuntimeCollection(lib_names[i]);
     }
@@ -1067,7 +1067,7 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
         return false;
 
     // удалять бибилиотеку и пересобирать заново?
-    if(GetCollection(lib_name) != nullptr)
+    if(GetCollection(lib_name) != 0)
         return false;
 
     //Создание папки библиотеки

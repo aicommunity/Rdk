@@ -491,7 +491,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
         Storage->DelClass(Storage->FindClassId(class_name));
     }
 
-    for(auto it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
+    for(vector<string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
     {
         CurrentComponentStruct.Load(*it,"");
         std::string search_name = CurrentComponentStruct.GetNodeAttribute("RTname");
@@ -499,7 +499,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
         {
             ClassesStructures.erase(it);
             std::string xml_path = LibPath +"/" + search_name + ".xml";
-            RDK::DeleteFile(xml_path.c_str());
+            RDK::RemoveFile(xml_path.c_str());
             break;
         }
     }

@@ -43,7 +43,7 @@ RDK_LIB_TYPE int CreateNewDirectory(const char* path);
 RDK_LIB_TYPE int DeleteDirectory(const char* path);
 
 /// Удаляет файл
-RDK_LIB_TYPE int DeleteFile(const char* path);
+RDK_LIB_TYPE int RemoveFile(const char* path);
 
 /// Получает список файлов или каталогов по заданному пути
 RDK_LIB_TYPE int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results);
