@@ -322,7 +322,7 @@ virtual bool DelClassFromCollection(const std::string &class_name, const std::st
 /// Создает новую библиотеку с заданным именем
 virtual bool CreateRuntimeCollection(const std::string &lib_name);
 
-/// Удаляет runtime-библиотеку
+/// Удаляет runtime-библиотеку вместе с папкой
 bool DeleteRuntimeCollection(const std::string &lib_name);
 
 // Подключает динамическую библиотеку с набором образцов классов.

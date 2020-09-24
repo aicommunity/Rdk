@@ -47,7 +47,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     {
         QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
         if(RTclassesNames.indexOf(str)!=-1)
-            item->setBackgroundColor(Qt::lightGray);
+            item->setTextColor(Qt::darkCyan);
         item->setText(str);
         ui->listWidgetStorageByName->addItem(item);
     }
@@ -70,7 +70,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
             item->setExpanded(true);
             item->setText(0, str);
             if(isRTlib)
-                item->setBackgroundColor(0,Qt::darkGray);
+                item->setTextColor(0,Qt::darkBlue);
             stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
             QStringList libClasses = QString(stringBuff).split(",");
             Engine_FreeBufString(stringBuff);
@@ -82,7 +82,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
                      QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                      classItem->setText(0, className);
                      if(isRTlib)
-                         classItem->setBackgroundColor(0,Qt::lightGray);
+                         classItem->setTextColor(0,Qt::darkCyan);
                 }
             }
         }
@@ -131,7 +131,6 @@ UClassesListWidget::~UClassesListWidget()
 
 QString UClassesListWidget::selctedClass() const
 {
-  // непонятная заглушка от sigfault
   if(ui->listWidgetStorageByName->selectedItems().size() ==0)
       return QString();
 
@@ -147,24 +146,24 @@ QString UClassesListWidget::selctedClass() const
   }
 }
 
-void UClassesListWidget::AUpdateInterface(void)
+void UClassesListWidget::AUpdateLibsView(QString lib_name)
 {
     // обновление runtime-библиотек
-    auto storage = RDK::GetStorageLock();
-    int lib_num = storage->GetNumCollections();
-    QStringList componentNames;
-    for (int i = 0; i <lib_num;i++)
-    {
-        storage->GetCollection(i);
-        RDK::UEPtr<RDK::ULibrary> lib = storage->GetCollection(i);
-        if(lib && lib->GetType() == 2)
-        {
-            componentNames.append(QString::fromStdString(lib->GetName()));
-        }
-    }
+    // Storage
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+    if(!storage)
+        return;
+
+    std::string buff;
+    storage->GetRTlibsNameList(buff);
+    QStringList RTlibsNames = QString(buff.c_str()).split(",");
+
     ui->listWidgetRTlibs->clear();
-    ui->listWidgetRTlibs->addItems(componentNames);
+    ui->listWidgetRTlibs->addItems(RTlibsNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
+    auto chosen = ui->listWidgetRTlibs->findItems(lib_name, Qt::MatchExactly);
+    if(chosen.size()==1)
+        ui->listWidgetRTlibs->setCurrentItem(chosen.at(0));
 }
 
 void UClassesListWidget::SetModelScheme(UDrawEngineImageWidget* model)
@@ -187,10 +186,11 @@ void UClassesListWidget::dragEvent(QModelIndex index)
     drag->exec(Qt::CopyAction, Qt::CopyAction);
 }
 
-// Поиск компонентов в разных полях
 void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
 {
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
+    if(!item)
+        return;
     QString lib_name = item->text();
 
     // Заполнение списка компонентов библиотеки
@@ -209,6 +209,7 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
     }
 }
 
+// Поиск компонентов в разных полях
 void UClassesListWidget::tab0_textChanged(const QString &arg1)
 {
     ui->listWidgetStorageByName->clear();
@@ -251,7 +252,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
             {
                 QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
                 if(RTclassesNames.indexOf(str)!=-1)
-                    item->setBackgroundColor(Qt::lightGray);
+                    item->setTextColor(Qt::darkCyan);
                 item->setText(str);
                 ui->listWidgetStorageByName->addItem(item);
             }
@@ -309,7 +310,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 item->setExpanded(true);
                 item->setText(0, str);
                 if(isRTlib)
-                    item->setBackgroundColor(0,Qt::darkGray);
+                    item->setTextColor(0,Qt::darkBlue);
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
                 QStringList libClasses = QString(stringBuff).split(",");
                 Engine_FreeBufString(stringBuff);
@@ -321,7 +322,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
                          if(isRTlib)
-                             classItem->setBackgroundColor(0,Qt::lightGray);
+                             classItem->setTextColor(0,Qt::darkCyan);
                     }
                 }
 
@@ -333,7 +334,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 item->setExpanded(true);
                 item->setText(0, str);
                 if(isRTlib)
-                    item->setBackgroundColor(0,Qt::darkGray);
+                    item->setTextColor(0,Qt::darkBlue);
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
                 QStringList libClasses = QString(stringBuff).split(",");
                 Engine_FreeBufString(stringBuff);
@@ -346,7 +347,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
                          if(isRTlib)
-                             classItem->setBackgroundColor(0,Qt::lightGray);
+                             classItem->setTextColor(0,Qt::darkCyan);
                     }
                 }
                 if (!isLibFind)
@@ -413,19 +414,19 @@ void UClassesListWidget::on_lineEditSearch_textChanged(const QString &arg1)
 // Actions
 void UClassesListWidget::CreateRTlibrary()
 {
+    // Storage
+    RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+    if(!storage)
+        return;
+
     CrLibDialog* dialog = new CrLibDialog;
     if(dialog->exec() == QDialog::Accepted)
     {
-        RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
-
-        if(!storage)
-         return;
-
         std::string lib_name = dialog->GetLibName();
 
         storage->CreateRuntimeCollection(lib_name);
 
-        AUpdateInterface();
+        AUpdateLibsView(QString::fromStdString(lib_name));
     }
     delete dialog;
 }
@@ -438,7 +439,6 @@ void UClassesListWidget::DeleteRTlibrary()
 
     // Storage
     RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
-
     if(!storage)
         return;
 
@@ -453,11 +453,9 @@ void UClassesListWidget::DeleteRTlibrary()
 
     if(dialog->exec() == QDialog::Accepted)
     {
-
         storage->DeleteRuntimeCollection(lib_name.toLocal8Bit().data());
 
-        AUpdateInterface();
-
+        AUpdateLibsView("");
     }
     delete dialog;
 
@@ -468,7 +466,7 @@ void UClassesListWidget::AddNewClass()
     RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
     // Если нет модели
-    if(!engine || !engine->GetModel())
+    if(!engine || !engine->GetModel() || !engine->GetModel()->GetStorage())
          return;
 
     // Выделенный компонент
@@ -494,7 +492,7 @@ void UClassesListWidget::AddNewClass()
                 GetStorage()->AddClassToCollection(dialog->GetClassName(), dialog->GetCompName(),
                                                    dialog->GetReplace(), container, dialog->GetLibName());
 
-        AUpdateInterface();
+        AUpdateLibsView(QString::fromStdString(dialog->GetLibName()));
     }
 
     delete dialog;
@@ -528,7 +526,7 @@ void UClassesListWidget::DeleteClass()
     {
         storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data());
 
-        AUpdateInterface();
+        AUpdateLibsView(lib_name);
     }
     delete dialog;
 }
@@ -580,7 +578,7 @@ void CrLibDialog::ProcessInput()
     // Если библиотеки с таким именем нет
     if(!storage->GetCollection(lib_name))
     {
-        Message->setText("Enter library name");
+        Message->setText("Enter Library name");
         AddButton->setEnabled(true);
     }
     else
@@ -627,7 +625,7 @@ CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp
     QPushButton* cancel_button = new QPushButton("Cancel");
 
     connect(AddButton,SIGNAL(clicked()),this,SLOT(accept()));
-    connect(ReplaceButton,SIGNAL(clicked()),this,SLOT(accept()));
+    connect(ReplaceButton,SIGNAL(clicked()),this,SLOT(ReplaceClicked()));
     connect(cancel_button,SIGNAL(clicked()),this, SLOT(reject()));
     connect(InputClassName,SIGNAL(textChanged(const QString &)),this,SLOT(ProcessInput()));
 
@@ -687,6 +685,23 @@ void CrClassDialog::ProcessInput()
         ReplaceButton->setEnabled(true);
         Replace = true;
     }
+}
+
+void CrClassDialog::ReplaceClicked()
+{
+    // Диалоговое окно подтверждения замены класса
+    QString message =  MessageClass->text() +
+                       "\n" + "You are going to replace class \"" + InputClassName->text() + "\"";
+
+    DeleteDialog* dialog = new DeleteDialog("Replacing class", message);
+
+    // При подтверджении замены класса
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        accept();
+    }
+    delete dialog;
+
 }
 
 const bool CrClassDialog::GetReplace() const

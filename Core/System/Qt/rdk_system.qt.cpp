@@ -116,8 +116,9 @@ int DeleteDirectory(const char* path)
 int RemoveFile(const char* path)
 {
     QFile file(path);
+    // Если файла не существует
     if(!file.exists())
-        return 1;
+        return 0;
 
     if(file.remove())
         return 0;

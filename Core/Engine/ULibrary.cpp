@@ -413,9 +413,6 @@ const std::string& URuntimeLibrary::GetLibPath() const
 /// Загружает описание компонент из файлов в массив строк
 bool URuntimeLibrary::LoadCompDescriptions()
 {
-
-
-
     // Проход по всем существующим xml файлам в папке
     // с записью их данных в строки ClassesStructures
     std::vector<std::string> comp_descriptions;
@@ -441,56 +438,66 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
     UEPtr<UContainer> p = newclass;
     UEPtr<UNet> cont = dynamic_pointer_cast<UNet>(p);
 
+    if(!cont)
+        return false;
+
     std::string buff;
 
     // XML парсер ведет себя проблемно.
-    // И если делать Destroy() не инициализоварованого, то ломается. Поэтому сначала Create
+    // И если делать Destroy() не инициализоварованого, то ломается. Поэтому сначала Create заглушки
     CurrentComponentStruct.Create("stub");
 
     CurrentComponentStruct.Destroy();
 
     // Сохранение XML и добавление нового поля RTname с именем
-    cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter);
+    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter))
+        return false;
+
     CurrentComponentStruct.SelectNode(cont->GetName());
     CurrentComponentStruct.RenameNode(new_comp_name);
     CurrentComponentStruct.SetNodeAttribute("RTname", new_class_name);
     CurrentComponentStruct.Save(buff);
 
-    //std::string class_name = CurrentComponentStruct.GetNodeAttribute("Class");
-    //cont=dynamic_pointer_cast<UNet>(Storage->TakeObject(class_name));
-
     CurrentComponentStruct.SaveToFile(LibPath+"/"+new_class_name+".xml");
 
-    try
-    {
-
     UEPtr<UContainer> cont_1 = CreateClassSample(Storage, CurrentComponentStruct);
-    // Имя компонента
 
-    if(UploadClass(new_class_name, cont_1))
-        ClassesStructures.push_back(buff);
+    if(!cont_1)
+        return false;
 
-    }
-    catch(UException &ex)
+    if(!UploadClass(new_class_name, cont_1))
     {
-        Storage->GetLogger()->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+        if(Storage->GetLogger())
+            Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "UploadClass failed while uploading \""+new_class_name + "\" class");
+        return false;
     }
+
+    ClassesStructures.push_back(buff);
+
     return true;
 }
 
 /// Удаляет класс из коллекции и Storage
 bool URuntimeLibrary::DelClass(const std::string &class_name)
 {
+    if(class_name.empty())
+        return false;
     // Удаление сущ. класса
     if(Storage->CheckClass(class_name))
     {
         // Если класс из другой библиотеки
-        if(Storage->FindCollection(class_name).Get()!= dynamic_cast<ULibrary*>(this))
+        if(Storage->FindCollection(class_name).Get()!= static_cast<ULibrary*>(this))
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "\""+class_name + "\" class exists in another library. Not in \"" + Name +"\"");
             return false;
+        }
 
+        // Может выбросить исключение
         Storage->DelClass(Storage->FindClassId(class_name));
     }
 
+    // Поиск в массиве компонент
     for(vector<string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
     {
         CurrentComponentStruct.Load(*it,"");
@@ -503,6 +510,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
             break;
         }
     }
+    return true;
 }
 
 bool URuntimeLibrary::DeleteOwnDirectory(void)
@@ -529,6 +537,9 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
 
  if(!cont->LoadComponent(&xml,true))
  {
+    if(Storage->GetLogger())
+        Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while LoadComponent() from XML file for class \"" +class_name +"\"");
+
     storage->ReturnObject(cont);
     return 0;
  }
@@ -559,7 +570,8 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
         }
         catch(UException &ex)
         {
-            Storage->GetLogger()->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
         }
     }
 }

@@ -33,7 +33,8 @@ public:
 
     QString selctedClass() const;
 
-    virtual void AUpdateInterface(void);
+    // Обновляет поле библиотек и ставит библиотеку с именем lib_name выбраной
+    void AUpdateLibsView(QString lib_name);
 
     void SetModelScheme(UDrawEngineImageWidget* model);
 
@@ -113,9 +114,11 @@ public:
     const std::string GetLibName() const;
     const bool GetReplace() const;
 public slots:
+    void ReplaceClicked();
     void ProcessInput();
 };
 
+// Диалоговое окно подтверждения удаления библиотеки/класса
 class DeleteDialog: public QDialog
 {
     Q_OBJECT
