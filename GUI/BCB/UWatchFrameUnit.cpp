@@ -463,8 +463,7 @@ int __fastcall TUWatchFrame::GetNumWatches(void)
 int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 {
  SelectedSeriesIndex=-1;
- if(wd.XOutputIndex.empty() || wd.YOutputIndex.empty())
- {
+
  // Проверяем, есть ли серия с такими же данными
  int seriesindex=-1;
 
@@ -473,13 +472,10 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  int i=0;
  while(I != NameList.end())
   {
-   if((wd.Type != 0x200 && wd.Type !=0x400) ||
-   (I->XDataSourceName == wd.XDataSourceName &&
-	I->YDataSourceName == wd.YDataSourceName))
+   if(I->YDataSourceName == wd.YDataSourceName &&
+	I->YOutputIndex == wd.YOutputIndex && I->MCol == wd.MCol && I->MRow == I->MRow)
 	return i;
 
-   if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
-	return i;
    ++I; ++i;
   }
 
@@ -487,8 +483,6 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  seriesindex=NameList.size()-1;
  NameList[seriesindex]=wd;
 
-  if(wd.Type == 0x200)
-  {
    RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
    RDK::UControllerDataReader * data=env->RegisterDataReader(wd.YDataSourceName,wd.YOutputIndex,wd.MRow,wd.MCol);
@@ -496,7 +490,6 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
    {
 	data->SetTimeInterval(wd.WatchInterval);
    }
-  }
 
  // Добавляем новый график
  TFastLineSeries *ser;
@@ -518,54 +511,6 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 
  ModifyState=true;
  return seriesindex;
- }
- else
- {
- // Проверяем, есть ли серия с такими же данными
- int seriesindex=-1;
-
- vector<TUWatchInfo>::iterator I;
- I=NameList.begin();
- int i=0;
- while(I != NameList.end())
-  {
-   if((wd.Type != 0x200 && wd.Type !=0x400 &&
-   ((I->XDataSourceName == wd.XDataSourceName && I->XOutputIndex == wd.XOutputIndex &&
-	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndex == wd.YOutputIndex))) ||
-	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
-	return i;
-
-   if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
-	return i;
-   ++I; ++i;
-  }
-
- NameList.resize(NameList.size()+1);
- seriesindex=NameList.size()-1;
- NameList[seriesindex]=wd;
-
-
- // Добавляем новый график
- TFastLineSeries *ser;
-
- ser=new TFastLineSeries(Chart1);
- ser->ParentChart=Chart1;
- ser->Title=wd.Legend.c_str();
- ser->ColorSource=wd.Color;
- ser->SeriesColor=wd.Color;
- ser->Pen->Style=wd.Style;
- ser->Pen->Width=wd.LineWidth;
-
- // ...заносим точки в серию
- StepUpdate();
-
-// AddSeries(NameList.size()-1);
-
- // ... добавляем остальное...
-
- ModifyState=true;
- return seriesindex;
- }
 }
 
 // Добавление нового наблюдения по имени компонента и индексу выхода
@@ -587,20 +532,13 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
  if(wd.Type == 0x200)
  {
-  if(!yname.empty())
-  {
    wd.Legend=yname+std::string(":")+youtput;
    wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
    wd.Legend+=RDK::sntoa(mcol)+string(")");
-  }
  }
  else
  {
-  if(!xname.empty())
-  {
-   wd.Legend=xname;
-   wd.Legend+=string(":")+RDK::sntoa(xoutput);
-  }
+   wd.Legend=yname+std::string(":")+youtput;
  }
 
  if(color == 0) // Подбор подходящего цвета
@@ -756,6 +694,9 @@ void __fastcall TUWatchFrame::StepUpdate(void)
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
 
+  if(Chart1->SeriesCount()<=seriesindex)
+   continue;
+
   TChartSeries* series=Chart1->Series[seriesindex];
 
   if(!series)
@@ -766,8 +707,6 @@ void __fastcall TUWatchFrame::StepUpdate(void)
   if(!wd->Visible)
    continue;
 
-  if(wd->Type == 0x200)
-  {
    std::list<double>::iterator buffIX, buffIY;
    RDK::UControllerDataReader* data=env->GetDataReader(wd->YDataSourceName.c_str(), wd->YOutputIndex, wd->MRow, wd->MCol);
    if(!data)
@@ -788,7 +727,6 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    }
 
    wd->XYSize=data_size;
-  }
 
   // Смотрим способ обновления данных наблюдения...
   static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
@@ -1311,18 +1249,19 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
-  const RDK::MDMatrix<double> *ym=0;
-  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
-  if(!ym)
-   return;
+//  const RDK::MDMatrix<double> *ym_double=0;
+//  const RDK::MDMatrix<int> *ym_int=0;
+//  ym_double=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
 
-  if(!MatrixForm->SelectMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),
-								UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput()))
-   return;
 
-  if(MatrixForm->ShowModal() != mrOk)
-   return;
-
+ int type=0x0;
+  if(MatrixForm->SelectMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),
+								UComponentsListForm->ComponentsListFrame1->GetSelectedComponentPropertyName()))
+  {
+   type=0x200;
+   if(MatrixForm->ShowModal() != mrOk)
+	return;
+  }
    /*
   UListInputForm->PresentSelect=true;
   UListInputForm->MustInput=true;
@@ -1346,8 +1285,8 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   int col=MatrixForm->SelectedCol;
   int row=MatrixForm->SelectedRow;
   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
-  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- Add(0x200, "",componentName,"",componentOutput,row,col);
+  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentPropertyName();
+ Add(type, "",componentName,"",componentOutput,row,col);
 }
 //---------------------------------------------------------------------------
 

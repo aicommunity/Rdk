@@ -57,12 +57,13 @@ inherited UWatchFrame: TUWatchFrame
     Left = 72
     Top = 16
     object AddTimeMatrixWatch1: TMenuItem
-      Caption = 'Add Time-Matrix Watch'
+      Caption = 'Add'
       OnClick = AddTimeMatrixWatch1Click
     end
     object AddXPulseWatch1: TMenuItem
       Caption = 'Add X-Pulse Watch'
       Enabled = False
+      Visible = False
       OnClick = AddXPulseWatch1Click
     end
     object DeleteActiveWatch1: TMenuItem
