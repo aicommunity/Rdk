@@ -121,6 +121,8 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     connect(ui->actionDeleteClass, SIGNAL(triggered()), this, SLOT(DeleteClass()));
 
     ui->listWidgetRTlibClasses->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    setAcceptDrops(true);
 }
 
 UClassesListWidget::~UClassesListWidget()
@@ -169,6 +171,59 @@ void UClassesListWidget::AUpdateLibsView(QString lib_name)
 void UClassesListWidget::SetModelScheme(UDrawEngineImageWidget* model)
 {
     ModelScheme = model;
+}
+
+void UClassesListWidget::dropEvent(QDropEvent *event)
+{
+    /*
+    QByteArray itemData = event->mimeData()->data("ComponentName");
+    QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+    QString compname;
+    dataStream >> compname;
+    */
+
+    // Определение координат дропа в систему координат списка библиотек
+    QString lib = "";
+    QPoint globalPos = this->mapToGlobal(event->pos());
+    QPoint RTlibsPos = ui->listWidgetRTlibs->mapFromGlobal(globalPos);
+
+    QListWidgetItem* item = ui->listWidgetRTlibs->itemAt(RTlibsPos);
+    if(item)
+        lib = item->text();
+
+    AddNewClass(lib);
+}
+
+void UClassesListWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+
+//    QPoint globalPos = this->mapToGlobal(event->pos());
+//    QPoint GBoxLibsPos = ui->groupBoxLibList->mapFromGlobal(globalPos);
+//    QPoint GBoxCompsPos = ui->groupBoxLibComps->mapFromGlobal(globalPos);
+
+    if(event->mimeData()->hasFormat("ComponentName") && (ui->tabWidget->currentIndex() == 2))
+           // && (ui->groupBoxLibList->rect().contains(GBoxLibsPos) || ui->groupBoxLibComps->rect().contains(GBoxCompsPos)))
+    {
+      event->setDropAction(Qt::MoveAction);
+      event->accept();
+    }
+    else
+    {
+      event->ignore();
+    }
+}
+
+void UClassesListWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+    if(event->mimeData()->hasFormat("ComponentName") && (ui->tabWidget->currentIndex() == 2))
+    {
+      event->setDropAction(Qt::MoveAction);
+      event->accept();
+    }
+    else
+    {
+      event->ignore();
+    }
 }
 
 void UClassesListWidget::dragEvent(QModelIndex index)
@@ -424,7 +479,11 @@ void UClassesListWidget::CreateRTlibrary()
     {
         std::string lib_name = dialog->GetLibName();
 
-        storage->CreateRuntimeCollection(lib_name);
+        if(!storage->CreateRuntimeCollection(lib_name))
+        {
+            QMessageBox::warning(this, "Error",
+                         "An error occurred while creating library \"" + QString::fromStdString(dialog->GetLibName())+"\"");
+        }
 
         AUpdateLibsView(QString::fromStdString(lib_name));
     }
@@ -453,7 +512,11 @@ void UClassesListWidget::DeleteRTlibrary()
 
     if(dialog->exec() == QDialog::Accepted)
     {
-        storage->DeleteRuntimeCollection(lib_name.toLocal8Bit().data());
+        if(!storage->DeleteRuntimeCollection(lib_name.toLocal8Bit().data()))
+        {
+            QMessageBox::warning(this, "Error",
+                         "An error occurred while deleting library \"" + lib_name+"\"");
+        }
 
         AUpdateLibsView("");
     }
@@ -461,7 +524,7 @@ void UClassesListWidget::DeleteRTlibrary()
 
 }
 
-void UClassesListWidget::AddNewClass()
+void UClassesListWidget::AddNewClass(QString cur_lib)
 {
     RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
@@ -471,14 +534,14 @@ void UClassesListWidget::AddNewClass()
 
     // Выделенный компонент
     RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
-                                ->GetComponent(ModelScheme->GetSelectedCmponent(), true);
+                                ->GetComponentL(ModelScheme->GetLongName(), true);
     // Если компонент не выделен
     if(!container)
         return;
 
     // Имя текущей выбранной библиотеки (если выбрана)
-    QString lib_name = "";
-    if(ui->listWidgetRTlibs->currentItem())
+    QString lib_name = cur_lib;
+    if(ui->listWidgetRTlibs->currentItem() && lib_name.isEmpty())
         lib_name  = ui->listWidgetRTlibs->currentItem()->text();
 
     std::string buff;
@@ -488,10 +551,14 @@ void UClassesListWidget::AddNewClass()
     CrClassDialog* dialog = new CrClassDialog(libs_names, lib_name, QString::fromStdString(container->GetName()));
     if(dialog->exec() == QDialog::Accepted)
     {
-        engine->GetEnvironment()->
+        if(!engine->GetEnvironment()->
                 GetStorage()->AddClassToCollection(dialog->GetClassName(), dialog->GetCompName(),
-                                                   dialog->GetReplace(), container, dialog->GetLibName());
-
+                                                   dialog->GetReplace(), container, dialog->GetLibName()))
+        {
+            QMessageBox::warning(this, "Error",
+                         "An error occurred while adding new class \"" + QString::fromStdString(dialog->GetClassName())
+                         + "\" to library \"" +  QString::fromStdString(dialog->GetLibName()) +"\"");
+        }
         AUpdateLibsView(QString::fromStdString(dialog->GetLibName()));
     }
 
@@ -524,7 +591,11 @@ void UClassesListWidget::DeleteClass()
 
     if(dialog->exec() == QDialog::Accepted)
     {
-        storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data());
+        if(!storage->DelClassFromCollection(class_name.toUtf8().data(), lib_name.toUtf8().data()))
+        {
+            QMessageBox::warning(this, "Error",
+                         "An error occurred while delecting class \"" + class_name +"\"");
+        }
 
         AUpdateLibsView(lib_name);
     }

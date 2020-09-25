@@ -232,15 +232,18 @@ virtual int CalcNumObjects(void) const;
 virtual int CalcNumObjects(const UId &classid) const;
 virtual size_t CalcNumObjects(const string &classname) const;
 
-// Удалаяет все свободные объекты из хранилища
+// Удаляет все свободные объекты из хранилища
 /// Если force == true то удаляет даже если объекты используются
 virtual void FreeObjectsStorage(bool force=false);
+
+// Удаляет все свободные объекты заданного класса из хранилища
+virtual void FreeObjectsStorageByClass(const UId &classid);
 
 // Удаляет все объекты из хранилища
 /// Если force == true то удаляет даже если объекты используются
 virtual void ClearObjectsStorage(bool force=false);
 
-// Удалаяет все объекты заданного класса из хранилища
+// Удаляет все объекты заданного класса из хранилища
 virtual void ClearObjectsStorageByClass(const UId &classid);
 // --------------------------
 

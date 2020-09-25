@@ -236,6 +236,10 @@ void UStorage::DelClass(const UId &classid, bool force)
 
  if(!force)
  {
+  FreeObjectsStorageByClass(classid);
+  // Если после очистки у класса не осталось объектов
+  if(temp != ObjectsStorage.end() && temp->second.empty())
+      ObjectsStorage.erase(temp);
   if(temp != ObjectsStorage.end() && temp->second.size() > 0)
    throw EObjectStorageNotEmpty(classid);
  }
@@ -576,7 +580,7 @@ size_t UStorage::CalcNumObjects(const string &classname) const
 }
 
 
-// Удалаяет все свободные объекты из хранилища
+// Удаляет все свободные объекты из хранилища
 void UStorage::FreeObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
@@ -656,6 +660,79 @@ void UStorage::FreeObjectsStorage(bool force)
  }
 }
 
+// Удаляет все свободные объекты заданного класса из хранилища
+void UStorage::FreeObjectsStorageByClass(const UId &classid)
+{
+    UObjectsStorageIterator instances=ObjectsStorage.find(classid);
+
+    if(instances==ObjectsStorage.end())
+        return;
+    std::string object_class_name=FindClassName(instances->first);
+
+    if(instances->second.empty())
+        return;
+
+    size_t size=instances->second.size();
+    size_t count=0;
+
+    if(Logger)
+        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+
+    for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
+    {
+        std::string object_name=I->Object->GetName();
+        if(I->UseFlag)
+        {
+            if(Logger)
+                Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Can't destroy objects by name ")+object_name+": object in use!");
+        }
+
+        if(!I->UseFlag)
+        {
+            list<UInstancesStorageElement>::iterator K;
+            if(Logger)
+                Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+            K=I; ++K;
+            UEPtr<UContainer> object=I->Object;
+            PopObject(instances,I);
+            RDK_SYS_TRY
+            {
+                try
+                {
+                UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
+                if(virtual_factory)
+                {
+                    virtual_factory->FreeComponent();
+                }
+                delete object;
+                ++count;
+                }
+                catch(...)
+                {
+                if(Logger)
+                    Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
+                }
+            }
+            RDK_SYS_CATCH
+            {
+                if(Logger)
+                    Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+            }
+            I=K;
+        }
+        else
+        {
+           ++I;
+           if(Logger)
+               Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+        }
+    }
+
+    if(Logger)
+        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+
+}
+
 // Удаляет все объекты из хранилища
 void UStorage::ClearObjectsStorage(bool force)
 {
@@ -680,7 +757,7 @@ void UStorage::ClearObjectsStorage(bool force)
  FreeObjectsStorage(force);
 }
 
-// Удалаяет все объекты заданного класса из хранилища
+// Удаляет все объекты заданного класса из хранилища
 void UStorage::ClearObjectsStorageByClass(const UId &classid)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
@@ -945,11 +1022,17 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
                 if(!lib->DelClass(new_class_name))
                     return false;
             }
-            catch(UException &ex)
+            catch(EObjectStorageNotEmpty &ex)
             {
              if(Logger)
-                Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
-             return false;
+              Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+              return false;
+            }
+            catch(EClassIdNotExist &ex)
+            {
+             if(Logger)
+              Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+              return false;
             }
             // Добавление в нужную
             // AddNewClass сам запишет в Logger описания ошибок
@@ -996,10 +1079,16 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
         if(!library->DelClass(class_name))
             return  false;
     }
-    catch(UException &ex)
+    catch(EObjectStorageNotEmpty &ex)
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+     if(Logger)
+        Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+        return false;
+    }
+    catch(EClassIdNotExist &ex)
+    {
+     if(Logger)
+        Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
         return false;
     }
     return true;
@@ -1088,14 +1177,20 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 
         try
         {
-        // внутри DelClass() может выбросить исключение
+        // внутри DelClass() может выбросить исключения (EObjectStorageNotEmpty или EClassIdNotExist)
         DelAbandonedClasses();
         }
-        catch(UException &ex)
+        catch(EObjectStorageNotEmpty &ex)
         {
-        if(Logger)
-           Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
-        return false;
+         if(Logger)
+          Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+          return false;
+        }
+        catch(EClassIdNotExist &ex)
+        {
+         if(Logger)
+          Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+          return false;
         }
         return true;
     }

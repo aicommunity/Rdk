@@ -4,12 +4,14 @@
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
 #include <QWidget>
+#include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QMouseEvent>
 #include <QModelIndex>
 #include <QListWidget>
 #include <QDialog>
 #include <QComboBox>
+#include <QMessageBox>
 
 namespace Ui {
 class UClassesListWidget;
@@ -38,6 +40,9 @@ public:
 
     void SetModelScheme(UDrawEngineImageWidget* model);
 
+    void dropEvent(QDropEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
 public slots:
     void dragEvent(QModelIndex index);
 
@@ -65,7 +70,7 @@ public slots:
     void DeleteRTlibrary();
 
     //создание/удаление класса
-    void AddNewClass();
+    void AddNewClass(QString cur_lib = "");
     void DeleteClass();
 
 private:
