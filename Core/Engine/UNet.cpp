@@ -640,6 +640,24 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
   serstorage->AddNode(GetName());
   if(Storage)
    serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+
+  unsigned int prop_type = 0x1;
+  unsigned int prop_group = params_type_mask & 0xFFFF00;
+  for(int i = 0; i < 5; i++)
+  {
+   prop_type = params_type_mask & (0x1 << i);
+   if(prop_type)
+   {
+    serstorage->AddNode(UVariable::GetPropertyTypeNameByType(prop_type));
+    if(!GetComponentProperties(serstorage, prop_type | prop_group))
+    {
+     serstorage->SelectUp();
+     return false;
+    }
+    serstorage->SelectUp();
+   }
+  }
+    /*
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
   if(!GetComponentProperties(serstorage,params_type_mask))
   {
@@ -647,7 +665,7 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
    return false;
   }
   serstorage->SelectUp();
-
+  */
   if(links)
   {
    serstorage->AddNode("Links");
@@ -685,6 +703,24 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
 
   if(Storage)
    serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+
+  unsigned int prop_type = 0x1;
+  unsigned int prop_group = type_mask & 0xFFFF00;
+  for(int i = 0; i < 5; i++)
+  {
+   prop_type = type_mask & (0x1 << i);
+   if(prop_type)
+   {
+    serstorage->AddNode(UVariable::GetPropertyTypeNameByType(prop_type));
+    if(!GetComponentProperties(serstorage, prop_type | prop_group))
+    {
+     serstorage->SelectUp();
+     return false;
+    }
+    serstorage->SelectUp();
+   }
+  }
+  /*
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask)); // ptParameter
   if(!GetComponentProperties(serstorage,type_mask))
   {
@@ -692,7 +728,7 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
    return false;
   }
   serstorage->SelectUp();
-
+  */
   if(links)
   {
    serstorage->AddNode("Links");
@@ -825,10 +861,26 @@ bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int
 
   serstorage->AddNode(GetName());
   serstorage->SetNodeAttribute("Class",Storage->FindClassName(GetClass()));
-  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
-  if(!GetComponentProperties(serstorage,type_mask))
-   return false;
-  serstorage->SelectUp();
+  unsigned int prop_type = 0x1;
+  unsigned int prop_group = type_mask & 0xFFFF00;
+  for(int i = 0; i < 5; i++)
+  {
+   prop_type = type_mask & (0x1 << i);
+   if(prop_type)
+   {
+    serstorage->AddNode(UVariable::GetPropertyTypeNameByType(prop_type));
+    if(!GetComponentProperties(serstorage, prop_type | prop_group))
+    {
+     serstorage->SelectUp();
+     return false;
+    }
+    serstorage->SelectUp();
+   }
+  }
+//  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+//  if(!GetComponentProperties(serstorage,type_mask))
+//   return false;
+//  serstorage->SelectUp();
 
   serstorage->AddNode("Components");
   for(int i=0;i<GetNumComponents();i++)

@@ -2556,7 +2556,7 @@ int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stringid, const c
 const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask)
 {
 
- return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFFFF);
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
@@ -2565,7 +2565,7 @@ const char * RDK_CALL MModel_SaveComponentParameters(int channel_index, const ch
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return 0;
 
- return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFFFF);
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml

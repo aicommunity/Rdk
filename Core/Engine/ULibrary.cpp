@@ -450,7 +450,7 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
     CurrentComponentStruct.Destroy();
 
     // Сохранение XML и добавление нового поля RTname с именем
-    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter))
+    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptAny|pgPublic))
         return false;
 
     CurrentComponentStruct.SelectNode(cont->GetName());
@@ -513,6 +513,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
     return true;
 }
 
+/// Удаляет директорию библиотеки вместе со всеми файлами
 bool URuntimeLibrary::DeleteOwnDirectory(void)
 {
     return (!RDK::DeleteDirectory(LibPath.c_str()));
