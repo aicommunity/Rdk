@@ -473,7 +473,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  while(I != NameList.end())
   {
    if(I->YDataSourceName == wd.YDataSourceName &&
-	I->YOutputIndex == wd.YOutputIndex && I->MCol == wd.MCol && I->MRow == I->MRow)
+	I->YOutputIndex == wd.YOutputIndex && I->MCol == wd.MCol && I->MRow == wd.MRow)
 	return i;
 
    ++I; ++i;
