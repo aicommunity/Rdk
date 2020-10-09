@@ -64,9 +64,12 @@ vector<string> Complete;
 // Содержит имена всех не загруженных образцов
 vector<string> Incomplete;
 
-private: // Внутренние данные
 // Хранилище для загрузки
 UStorage *Storage;
+
+private: // Внутренние данные
+// Хранилище для загрузки
+//UStorage *Storage;
 // Массив образцов классов, формируемый библиотекой
 //map<string, UComponent*> ClassSamples;
 
@@ -190,31 +193,41 @@ protected: // Данные единой коллекции библиотек
 protected: // Параметры
 
 protected: // Данные
-/// Описание компонент библиотеки
-USerStorageXML ClassesStructure;
+/// Путь библиотеки
+std::string LibPath;
+
+/// Описание текущего компонента XML
+USerStorageXML CurrentComponentStruct;
+
+/// Описание компонент библиотеки в формате строк (xml)
+vector<string> ClassesStructures;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-URuntimeLibrary(const string &name, const string &version);
+URuntimeLibrary(const string &name, const string &version, const string& path);
 virtual ~URuntimeLibrary(void);
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
-/// Описание компонент библиотеки
-const USerStorageXML& GetClassesStructure(void) const;
-bool SetClassesStructure(const USerStorageXML& xml);
-bool SetClassesStructure(const std::string &buffer);
 
-/// Добавляет в описание компонент новый компонент
-bool AddClassStructure(const std::string &buffer);
-bool AddClassStructure(const USerStorageXML& xml);
+/// Возращает путь библиотеки
+const std::string& GetLibPath() const;
 
-/// Обновляет структуру классов в соответствии с хранилищем
-bool UpdateClassesStructure(void);
+/// Добавляет новый компонент (описание, сохранение)
+bool AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass);
+
+/// Удаляет класс из коллекции и Storage
+bool DelClass(const std::string &class_name);
+
+/// Загружает описание компонент из файлов в массив строк
+bool LoadCompDescriptions(void);
+
+/// Удаляет директорию библиотеки вместе со всеми файлами
+bool DeleteOwnDirectory(void);
 // --------------------------
 
 // --------------------------

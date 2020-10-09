@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QContextMenuEvent>
 #include <QDropEvent>
+#include <QDrag>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QMenu>
@@ -37,6 +38,8 @@ public:
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
 
+    void dragEvent();
+
     //расширение схемы при ресайзе
     void resizeEvent(QResizeEvent*);
 
@@ -54,6 +57,9 @@ public:
 
     /// Устанавливает указатель на ядро
     void SetApplication(RDK::UApplication *app);
+
+    /// Возвращается имя выбрано компонента
+    const std::string GetLongName();
 
 public slots:
     //Контекстное меню

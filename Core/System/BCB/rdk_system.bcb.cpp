@@ -102,6 +102,34 @@ int CreateNewDirectory(const char* path)
  return 0;
 }
 
+// Удаляет все файлы в директории
+// И саму директорию, если в ней были только файлы
+int DeleteDirectory(const char* path)
+{
+ std::vector<std::string> results;
+ if(FindFilesList(path, "*", true, results) != 0)
+  return 1;
+
+ for(size_t i=0;i<results.size();i++)
+  if(RemoveFile((std::string(path)+"\\"+results[i]).c_str()) != 0)
+   return 2;
+
+ BOOL res=::RemoveDirectory(path);
+ if(!res)
+  return 3;
+
+ return 0;
+}
+
+// Удаляет файл
+int RemoveFile(const char* path)
+{
+ BOOL res=::DeleteFile(path);
+ if(res)
+  return 0;
+
+ return 1;
+}
 
 //---------------------------------------------------------------------------
 

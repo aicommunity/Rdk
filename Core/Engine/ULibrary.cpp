@@ -205,7 +205,9 @@ int ULibrary::Upload(UStorage *storage)
  CreateClassSamples(Storage);
  count=int(Complete.size());
 
- Storage=0;
+ //Оставление ссылки на Storage для RunTime библиотек
+ if(Type != 2)
+    Storage=0;
  return count;
 }
 // --------------------------
@@ -385,8 +387,8 @@ void ULibrary::RemoveClassFromCompletedList(const string &name)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-URuntimeLibrary::URuntimeLibrary(const string &name, const string &version)
- : ULibrary(name,version,2)
+URuntimeLibrary::URuntimeLibrary(const string &name, const string &version, const string& path)
+ : ULibrary(name,version,2), LibPath(path)
 {
 
 }
@@ -400,40 +402,120 @@ URuntimeLibrary::~URuntimeLibrary(void)
 // --------------------------
 // Методы управления данными
 // --------------------------
-/// Описание компонент библиотеки
-const USerStorageXML& URuntimeLibrary::GetClassesStructure(void) const
+
+
+/// Возращает путь библиотеки
+const std::string& URuntimeLibrary::GetLibPath() const
 {
- return ClassesStructure;
+    return LibPath;
 }
 
-bool URuntimeLibrary::SetClassesStructure(const USerStorageXML& xml)
+/// Загружает описание компонент из файлов в массив строк
+bool URuntimeLibrary::LoadCompDescriptions()
 {
- ClassesStructure=xml;
- return true;
+    // Проход по всем существующим xml файлам в папке
+    // с записью их данных в строки ClassesStructures
+    std::vector<std::string> comp_descriptions;
+
+    if(RDK::FindFilesList(LibPath,"*.xml",true,comp_descriptions))
+        return false;
+
+    ClassesStructures.resize(comp_descriptions.size());
+    for(int i = 0 ; i < comp_descriptions.size(); i++)
+    {
+        // Парсинг текущего файла
+        CurrentComponentStruct.LoadFromFile(LibPath+"/"+comp_descriptions[i],"");
+        // Запись описания в строку
+        CurrentComponentStruct.Save(ClassesStructures[i]);
+    }
+
+    return true;
 }
 
-bool URuntimeLibrary::SetClassesStructure(const std::string &buffer)
+/// Добавляет новый компонент (сохранение в файл)
+bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass)
 {
- ClassesStructure.Load(buffer,"Library");
- return true;
+    UEPtr<UContainer> p = newclass;
+    UEPtr<UNet> cont = dynamic_pointer_cast<UNet>(p);
+
+    if(!cont)
+        return false;
+
+    std::string buff;
+
+    // XML парсер ведет себя проблемно.
+    // И если делать Destroy() не инициализоварованого, то ломается. Поэтому сначала Create заглушки
+    CurrentComponentStruct.Create("stub");
+
+    CurrentComponentStruct.Destroy();
+
+    // Сохранение XML и добавление нового поля RTname с именем
+    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter))
+        return false;
+
+    CurrentComponentStruct.SelectNode(cont->GetName());
+    CurrentComponentStruct.RenameNode(new_comp_name);
+    CurrentComponentStruct.SetNodeAttribute("RTname", new_class_name);
+    CurrentComponentStruct.Save(buff);
+
+    CurrentComponentStruct.SaveToFile(LibPath+"/"+new_class_name+".xml");
+
+    UEPtr<UContainer> cont_1 = CreateClassSample(Storage, CurrentComponentStruct);
+
+    if(!cont_1)
+        return false;
+
+    if(!UploadClass(new_class_name, cont_1))
+    {
+        if(Storage->GetLogger())
+            Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "UploadClass failed while uploading \""+new_class_name + "\" class");
+        return false;
+    }
+
+    ClassesStructures.push_back(buff);
+
+    return true;
 }
 
-/// Добавляет в описание компонент новый компонент
-bool URuntimeLibrary::AddClassStructure(const std::string &buffer)
+/// Удаляет класс из коллекции и Storage
+bool URuntimeLibrary::DelClass(const std::string &class_name)
 {
- return true;
+    if(class_name.empty())
+        return false;
+    // Удаление сущ. класса
+    if(Storage->CheckClass(class_name))
+    {
+        // Если класс из другой библиотеки
+        if(Storage->FindCollection(class_name).Get()!= static_cast<ULibrary*>(this))
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "\""+class_name + "\" class exists in another library. Not in \"" + Name +"\"");
+            return false;
+        }
+
+        // Может выбросить исключение
+        Storage->DelClass(Storage->FindClassId(class_name));
+    }
+
+    // Поиск в массиве компонент
+    for(vector<string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
+    {
+        CurrentComponentStruct.Load(*it,"");
+        std::string search_name = CurrentComponentStruct.GetNodeAttribute("RTname");
+        if(class_name == search_name)
+        {
+            ClassesStructures.erase(it);
+            std::string xml_path = LibPath +"/" + search_name + ".xml";
+            RDK::RemoveFile(xml_path.c_str());
+            break;
+        }
+    }
+    return true;
 }
 
-bool URuntimeLibrary::AddClassStructure(const USerStorageXML& xml)
+bool URuntimeLibrary::DeleteOwnDirectory(void)
 {
- return true;
-}
-
-
-/// Обновляет структуру классов в соответствии с хранилищем
-bool URuntimeLibrary::UpdateClassesStructure(void)
-{
- return true;
+    return (!RDK::DeleteDirectory(LibPath.c_str()));
 }
 // --------------------------
 
@@ -444,17 +526,22 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
  UEPtr<UNet> cont;
 
  if(!storage)
-  return 0;
+    return 0;
 
  std::string class_name=xml.GetNodeAttribute("Class");
+
  cont=dynamic_pointer_cast<UNet>(storage->TakeObject(class_name));
+
  if(!cont)
-  return 0;
+    return 0;
 
  if(!cont->LoadComponent(&xml,true))
  {
-  storage->ReturnObject(cont);
-  return 0;
+    if(Storage->GetLogger())
+        Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while LoadComponent() from XML file for class \"" +class_name +"\"");
+
+    storage->ReturnObject(cont);
+    return 0;
  }
 
  return cont;
@@ -464,22 +551,29 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
 // Не требуется предварительная очистка массива и уборка памяти.
 void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 {
- ClassesStructure.SelectRoot();
- int num_classes=ClassesStructure.GetNumNodes();
- for(int i=0;i<num_classes;i++)
- {
-  try
-  {
-   ClassesStructure.SelectNode(i);
-   UEPtr<UContainer> cont=CreateClassSample(storage, ClassesStructure);
-   UploadClass(std::string("T")+cont->GetName(),cont);
-  }
-  catch(UException &)
-  {
-   ClassesStructure.SelectUp();
-  }
-  ClassesStructure.SelectUp();
- }
+    int num_classes = ClassesStructures.size();
+
+    for(int i=0;i<num_classes;i++)
+    {
+        try
+        {
+            CurrentComponentStruct.Load(ClassesStructures[i],"");
+
+            UEPtr<UContainer> cont=CreateClassSample(storage, CurrentComponentStruct);
+
+            if(!cont)
+                return;
+
+            std::string class_name=CurrentComponentStruct.GetNodeAttribute("RTname");
+
+            UploadClass(class_name,cont);
+        }
+        catch(UException &ex)
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+        }
+    }
 }
 // --------------------------
 

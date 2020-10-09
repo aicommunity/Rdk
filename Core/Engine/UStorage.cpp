@@ -117,6 +117,13 @@ UStorage::~UStorage(void)
  {
   ClearObjectsStorage(true);
   ClearClassesStorage(true);
+
+  // Удаление всех библиотек
+  for(int i =0; i < CollectionList.size();i++)
+  {
+      DelCollection(i);
+  }
+
  }
  catch(EObjectStorageNotEmpty &ex)
  {
@@ -225,10 +232,14 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &c
 // все объекты этого класса
 void UStorage::DelClass(const UId &classid, bool force)
 {
- UObjectsStorageCIterator temp=ObjectsStorage.find(classid);
+ UObjectsStorageIterator temp=ObjectsStorage.find(classid);
 
  if(!force)
  {
+  FreeObjectsStorageByClass(classid);
+  // Если после очистки у класса не осталось объектов
+  if(temp != ObjectsStorage.end() && temp->second.empty())
+      ObjectsStorage.erase(temp);
   if(temp != ObjectsStorage.end() && temp->second.size() > 0)
    throw EObjectStorageNotEmpty(classid);
  }
@@ -569,7 +580,7 @@ size_t UStorage::CalcNumObjects(const string &classname) const
 }
 
 
-// Удалаяет все свободные объекты из хранилища
+// Удаляет все свободные объекты из хранилища
 void UStorage::FreeObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
@@ -649,6 +660,79 @@ void UStorage::FreeObjectsStorage(bool force)
  }
 }
 
+// Удаляет все свободные объекты заданного класса из хранилища
+void UStorage::FreeObjectsStorageByClass(const UId &classid)
+{
+    UObjectsStorageIterator instances=ObjectsStorage.find(classid);
+
+    if(instances==ObjectsStorage.end())
+        return;
+    std::string object_class_name=FindClassName(instances->first);
+
+    if(instances->second.empty())
+        return;
+
+    size_t size=instances->second.size();
+    size_t count=0;
+
+    if(Logger)
+        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+
+    for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
+    {
+        std::string object_name=I->Object->GetName();
+        if(I->UseFlag)
+        {
+            if(Logger)
+                Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Can't destroy objects by name ")+object_name+": object in use!");
+        }
+
+        if(!I->UseFlag)
+        {
+            list<UInstancesStorageElement>::iterator K;
+            if(Logger)
+                Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+            K=I; ++K;
+            UEPtr<UContainer> object=I->Object;
+            PopObject(instances,I);
+            RDK_SYS_TRY
+            {
+                try
+                {
+                UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
+                if(virtual_factory)
+                {
+                    virtual_factory->FreeComponent();
+                }
+                delete object;
+                ++count;
+                }
+                catch(...)
+                {
+                if(Logger)
+                    Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
+                }
+            }
+            RDK_SYS_CATCH
+            {
+                if(Logger)
+                    Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+            }
+            I=K;
+        }
+        else
+        {
+           ++I;
+           if(Logger)
+               Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+        }
+    }
+
+    if(Logger)
+        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+
+}
+
 // Удаляет все объекты из хранилища
 void UStorage::ClearObjectsStorage(bool force)
 {
@@ -673,7 +757,7 @@ void UStorage::ClearObjectsStorage(bool force)
  FreeObjectsStorage(force);
 }
 
-// Удалаяет все объекты заданного класса из хранилища
+// Удаляет все объекты заданного класса из хранилища
 void UStorage::ClearObjectsStorageByClass(const UId &classid)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
@@ -877,62 +961,313 @@ const string& UStorage::GetCollectionVersion(int index)
 {
  return CollectionList[index]->GetVersion();
 }
-		   /*
-// Непосредственно добавялет новый образец класса в хранилище
-bool UStorage::AddClass(UContainer *newclass)
-{
- UId classid=newclass->GetClass();
- if(!AddClass(newclass,classid) == ForbiddenId)
-  return false;
 
- return true;
-}            */
+// Возвращается строку runtime-библиотек, разделенных запятой
+// Буфер 'buffer' будет очищен от предыдущих значений
+void UStorage::GetRTlibsNameList(std::string &buffer) const
+{
+    buffer.clear();
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib = CollectionList[i];
+        if(lib && lib->GetType() == 2)
+        {
+            buffer.append(lib->GetName());
+            buffer.append(",");
+        }
+    }
+    if(!buffer.empty())
+         buffer.erase(buffer.length()-1);
+}
 
 /// Непосредственно добавялет новый образец класса в хранилище
-bool UStorage::AddClassToCollection(const std::string &new_class_name, UContainer *newclass, URuntimeLibrary *library)
+bool UStorage::AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
 {
- library->UploadClass(std::string("T")+newclass->GetName(),newclass);
- return true;
+    if(new_class_name.empty())
+        return false;
+
+    // Библиотека куда добавляеться класс
+	URuntimeLibrary *library = 0;
+
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib = CollectionList[i];
+        if(lib && lib->GetName() == lib_name)
+        {
+            library = dynamic_cast<URuntimeLibrary*>(lib.Get());
+        }
+    }
+
+    // Если не найдена или это не runtime библиотека
+    if(!library || (library->GetType()!=2))
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
+        return false;
+    }
+
+    // Проверка на существование класса
+    if(CheckClass(new_class_name))
+    {
+        // Разрешена ли замена
+        if(force_replace)
+        {
+            // Библиотека где класс уже существует
+            URuntimeLibrary *lib = static_cast<URuntimeLibrary*>(FindCollection(new_class_name).Get());
+            if(!lib)
+                return false;
+            try
+            {
+                //Сначала удаляем из нужной
+                if(!lib->DelClass(new_class_name))
+                    return false;
+            }
+            catch(EObjectStorageNotEmpty &ex)
+            {
+             if(Logger)
+              Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+              return false;
+            }
+            catch(EClassIdNotExist &ex)
+            {
+             if(Logger)
+              Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+              return false;
+            }
+            // Добавление в нужную
+            // AddNewClass сам запишет в Logger описания ошибок
+            if(!library->AddNewClass(new_class_name, new_comp_name, newclass))
+                return false;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {   // AddNewClass сам запишет в Logger описания ошибок
+        if(!library->AddNewClass(new_class_name, new_comp_name, newclass))
+            return false;
+    }
+
+    return true;
+}
+
+/// Удаляет образец класса из RT коллекции
+bool UStorage::DelClassFromCollection(const std::string &class_name, const std::string &lib_name)
+{
+	URuntimeLibrary *library = 0;
+
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib = CollectionList[i];
+        if(lib && lib->GetName() == lib_name)
+        {
+            library = static_cast<URuntimeLibrary*>(lib.Get());
+        }
+    }
+    // Если не найдена или это не runtime библиотека
+    if(!library || (library->GetType()!=2))
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
+        return false;
+    }
+    // Удаление компонента
+    try
+    {
+        if(!library->DelClass(class_name))
+            return  false;
+    }
+    catch(EObjectStorageNotEmpty &ex)
+    {
+     if(Logger)
+        Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+        return false;
+    }
+    catch(EClassIdNotExist &ex)
+    {
+     if(Logger)
+        Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+        return false;
+    }
+    return true;
 }
 
 /// Создает новую библиотеку с заданным именем
 bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
 {
- URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
- return AddCollection(lib);
+    if(lib_name.empty())
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Empty lib name");
+        return false;
+    }
+
+	if(GetCollection(lib_name) != 0)
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library with name \"" + lib_name + "\" already exists");
+        return false;
+    }
+
+    //Создание папки библиотеки
+    std::string lib_path = "../../../RTlibs/" + lib_name;
+
+    URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
+
+    if(AddCollection(lib))
+    {
+        //Создание папки библиотеки
+        if(RDK::CreateNewDirectory(lib->GetLibPath().c_str())==0)
+        {
+            return true;
+        }
+        else
+        {
+            if(Logger)
+                Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "CreateNewDirectory() failed while creating directrory for library \"" + lib_name + "\"");
+            delete lib;
+            return false;
+        }
+    }
+    else
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "AddCollection() failed while adding the library \"" + lib_name + "\"");
+        delete lib;
+        return false;
+    }
 }
 
-/// Загружает runtime-библиотеку из строки
-bool UStorage::LoadRuntimeCollection(const std::string &buffer, bool force_build)
+/// Удаляет runtime-библиотеку вместе с папкой
+bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 {
- USerStorageXML xml;
- xml.Load(buffer,"Library");
- std::string lib_name=xml.GetNodeAttribute("Name");
- if(lib_name.empty())
-  return false;
+    int index = -1;
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib=CollectionList[i];
+        if(lib && lib->GetName() == lib_name)
+        {
+           index = i;
+           break;
+        }
+    }
 
- if(GetCollection(lib_name) != 0)
-  return false;
+    if(index < 0 || index >= int(CollectionList.size()))
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \""+lib_name+"\" not found");
+        return false;
+    }
 
- URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
- lib->SetClassesStructure(xml);
- AddCollection(lib,force_build);
+    std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
+    // Если имя действительно runtime-библиотеки
+    if((*I)->GetType() == 2)
+    {
+        // Неудачная попытка удаления папки
+        if(!static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory())
+        {
+            if(Logger)
+               Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" isn't runtime-library");
+            return false;
+        }
+        delete *I;
+        CollectionList.erase(I);
 
- return true;
+        try
+        {
+        // внутри DelClass() может выбросить исключения (EObjectStorageNotEmpty или EClassIdNotExist)
+        DelAbandonedClasses();
+        }
+        catch(EObjectStorageNotEmpty &ex)
+        {
+         if(Logger)
+          Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+          return false;
+        }
+        catch(EClassIdNotExist &ex)
+        {
+         if(Logger)
+          Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+          return false;
+        }
+        return true;
+    }
+    else
+    {
+        if(Logger)
+           Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" isn't runtime-library");
+        return false;
+    }
 }
 
-/// Сохраняет runtime-библиотеку в строку
-bool UStorage::SaveRuntimeCollection(const std::string &lib_name, std::string &buffer)
+/// Инициализация существующих динамических библиотек
+/// Вызывается в Engine один раз
+void UStorage::InitRTlibs(void)
 {
- UEPtr<URuntimeLibrary> lib=dynamic_pointer_cast<URuntimeLibrary>(GetCollection(lib_name));
- return SaveRuntimeCollection(lib,buffer);
+    // Считывание имен библиотек из папки RTlibs
+    std::string lib_path = "../../../RTlibs";
+
+    // Проход по всем существующим xml файлам в папке
+    // с записью их данных в строки ClassesStructures
+    std::vector<std::string> lib_names;
+
+    if(RDK::FindFilesList(lib_path,"*",false,lib_names))
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "FindFilesList() error");
+        return;
+    }
+
+    for(size_t i = 0 ; i < lib_names.size(); i++)
+    {
+       LoadRuntimeCollection(lib_names[i]);
+    }
 }
 
-bool UStorage::SaveRuntimeCollection(URuntimeLibrary *library, std::string &buffer)
+/// Загружает runtime-библиотеку по её имени
+bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 {
- library->UpdateClassesStructure();
- library->GetClassesStructure().Save(buffer);
- return true;
+    // Создание новой runtime-библиотеки
+    if(lib_name.empty())
+        return false;
+
+    // уже существует
+    if(GetCollection(lib_name) != 0)
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \""+lib_name+"\" already exists");
+        return false;
+    }
+
+    //Создание папки библиотеки
+    std::string lib_path = "../../../RTlibs/" + lib_name;
+
+    URuntimeLibrary* lib = new URuntimeLibrary(lib_name,"",lib_path);
+
+    // Загрузка описаний компонентов внутри библиотеки
+    if(!lib->LoadCompDescriptions())
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" error ");
+        delete lib;
+        return false;
+    }
+
+    if(AddCollection(lib))
+    {
+        return true;
+    }
+    else
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "AddCollection() failed while adding the library \"" + lib_name + "\"");
+        delete lib;
+        return false;
+    }
+
+    //return true;
 }
 
 
@@ -969,7 +1304,10 @@ bool UStorage::DelCollection(int index)
   return false;
  std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
  if((*I)->GetType() == 2)
+ {
+  //static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
   delete *I;
+ }
  CollectionList.erase(I);
  DelAbandonedClasses();
  return true;

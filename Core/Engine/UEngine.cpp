@@ -1613,7 +1613,7 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, c
    if(!library)
 	return RDK_E_STORAGE_COLLECTION_NOT_FOUND;
 
-   if(!Storage->AddClassToCollection(class_name, sample,library))
+   if(!Storage->AddClassToCollection(class_name, "", false, sample,collection_name))
 	return RDK_E_STORAGE_ADD_COLLECTION_FAIL;
 
    AccessCache.clear();
@@ -7356,6 +7356,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
    }
 
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
+   Storage->InitRTlibs();
    Storage->BuildStorage();
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
   }

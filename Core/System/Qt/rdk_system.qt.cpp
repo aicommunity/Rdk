@@ -97,6 +97,35 @@ int CreateNewDirectory(const char* path)
   return 3;
 }
 
+// Удаляет все файлы в директории
+// И саму директорию, если в ней были только файлы
+int DeleteDirectory(const char* path)
+{
+    QDir dir(path);
+    if(!dir.exists())
+       return 1;
+
+    if(dir.entryList(QDir::Dirs | QDir::NoDot | QDir::NoDotDot).count() != 0)
+        return 1;
+
+    dir.removeRecursively();
+    return 0;
+}
+
+// Удаляет файл
+int RemoveFile(const char* path)
+{
+    QFile file(path);
+    // Если файла не существует
+    if(!file.exists())
+        return 0;
+
+    if(file.remove())
+        return 0;
+    else
+        return 1;
+}
+
 // Получает список файлов или каталогов по заданному пути
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
