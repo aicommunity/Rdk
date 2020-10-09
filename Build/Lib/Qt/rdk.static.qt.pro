@@ -46,6 +46,7 @@ SOURCES += \
     ../../../Core/Engine/ULogger.cpp \
     ../../../Core/Engine/UModule.cpp \
     ../../../Core/Engine/UNet.cpp \
+    ../../../Core/Engine/UMockUNet.cpp \
     ../../../Core/Engine/UPointer.cpp \
     ../../../Core/Engine/UProperty.cpp \
     ../../../Core/Engine/UPropertyInput.cpp \
@@ -176,6 +177,7 @@ HEADERS +=\
     ../../../Core/Engine/ULogger.h \
     ../../../Core/Engine/UModule.h \
     ../../../Core/Engine/UNet.h \
+    ../../../Core/Engine/UMockUNet.h \
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
     ../../../Core/Engine/UPropertyInput.h \
