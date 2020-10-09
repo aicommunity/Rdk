@@ -1209,6 +1209,10 @@ void UStorage::InitRTlibs(void)
     // Считывание имен библиотек из папки RTlibs
     std::string lib_path = "../../../RTlibs";
 
+    //Создание папки, если требуется
+    if(RDK::CreateNewDirectory("../../../RTlibs/"))
+        return;
+
     // Проход по всем существующим xml файлам в папке
     // с записью их данных в строки ClassesStructures
     std::vector<std::string> lib_names;
