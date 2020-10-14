@@ -3224,6 +3224,7 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 
    if(destcont->AddComponent(cont))
    {
+    cont->Reset();
 	TempString=cont->GetName();
    }
    else
