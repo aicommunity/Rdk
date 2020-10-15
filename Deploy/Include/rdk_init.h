@@ -1048,8 +1048,8 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *st
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptAny | pgPublic);
-RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *stringid, unsigned int params_type_mask=ptAny | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml

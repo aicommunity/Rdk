@@ -14,7 +14,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 
-UMockUNet(RDK::USerStorageXML *serstorage);
+UMockUNet(RDK::USerStorageXML *serstorage=0);
 virtual ~UMockUNet(void);
 
 // Выделяет память для новой чистой копии объекта этого класса
@@ -49,6 +49,12 @@ class CreatorProperty
 {
 public:
     static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet);
+};
+
+// Класс заглушка для параметризации типов, где неизвестен четкий тип
+class UnKnow
+{
+
 };
 
 }
