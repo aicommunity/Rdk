@@ -106,7 +106,8 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UStorage::UStorage(void)
+UStorage::UStorage(void):
+        BuildMode(1)
 {
  LastClassId=0;
 }
@@ -1209,6 +1210,10 @@ void UStorage::InitRTlibs(void)
     // Считывание имен библиотек из папки RTlibs
     std::string lib_path = "../../../RTlibs";
 
+    //Создание папки, если требуется
+    if(RDK::CreateNewDirectory("../../../RTlibs/"))
+        return;
+
     // Проход по всем существующим xml файлам в папке
     // с записью их данных в строки ClassesStructures
     std::vector<std::string> lib_names;
@@ -1313,6 +1318,117 @@ bool UStorage::DelCollection(int index)
  return true;
 }
 
+bool UStorage::InitMockLibs(void)
+{
+    // Папка с библиотеками-заглушками
+    std::string lib_path = "../../../MockLibs/";
+    std::string lib_list_file = "../../../MockLibs/0_LibList.xml";
+
+    USerStorageXML LibList;
+    LibList.LoadFromFile(lib_list_file,"LibraryList");
+
+    USerStorageXML CompDesctips;
+
+    // Создание библиотек поочередно
+    for(int i = 0, size = LibList.GetNumNodes() ; i < size; i++)
+    {
+        LibList.SelectNode(i);
+        std::string lib_name = LibList.GetNodeText();
+
+        // Если такая библиотека-заглушка есть
+        if(GetCollection(lib_name) != 0)
+            continue;
+
+
+        UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
+
+        // Заполнение описаний классов
+        CompDesctips.LoadFromFile(lib_path+"/"+lib_name+".xml","MockLib");
+
+        lib_mock->LoadFromXML(CompDesctips);
+
+        if(!AddCollection(lib_mock))
+        {
+            delete lib_mock;
+        }
+        LibList.SelectUp();
+    }
+
+    return true;
+
+}
+
+bool UStorage::CreateMockLibs(void)
+{
+    // Создание библиотек-заглушек из статических библиотек
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib=CollectionList[i];
+        if(lib && lib->GetType()==0)
+        {
+            //Создание папки библиотеки
+            std::string lib_path = "../../../MockLibs/";
+
+            //Создание папки, если требуется
+            if(RDK::CreateNewDirectory(lib_path.c_str()))
+                return false;
+
+            // имя библиотеки-заглушки
+            std::string lib_name = lib->GetName()+"_Mock";
+
+            // Если такая библиотека-заглушка есть
+            if(GetCollection(lib_name) != 0)
+                continue;
+
+            UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
+
+            // Заполнение описаний классов
+            lib->FillMockLibrary(lib_mock);
+
+            if(!AddCollection(lib_mock))
+            {
+                delete lib_mock;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool UStorage::SaveMockLibs(void)
+{
+    GetLogger()->LogMessage(RDK_EX_DEBUG, "Starting saving libraries to MockLibs directory");
+
+    // Сохранения списка библиотек-заглушек по порядку (такой же как в CollectionList)
+    USerStorageXML LibList;
+    LibList.Create("LibraryList");
+
+    std::string lib_name = "";
+
+    // Сохранение библиотек в отдельные файлы
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib=CollectionList[i];
+
+        if(lib && lib->GetType()==3)
+        {
+            // Библиотека куда добавляеться класс
+            UMockLibrary *library = 0;
+            library = dynamic_cast<UMockLibrary*>(lib.Get());
+
+            library->SaveLibraryToFile();
+
+
+            LibList.AddNode("library");
+            LibList.SetNodeText(lib->GetName());
+            LibList.SelectUp();
+        }
+    }
+
+    std::string file_name = "/home/user/Rtv-VideoAnalytics/Bin/MockLibs/0_LibList.xml";
+    LibList.SaveToFile(file_name);
+}
+
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool UStorage::DelCollection(const string &name)
@@ -1340,48 +1456,84 @@ bool UStorage::DelAllCollections(void)
 // Операция предварительно уничтожает модель и очищает хранилище
 bool UStorage::BuildStorage(void)
 {
- for(size_t i=0;i<CollectionList.size();i++)
+ switch (BuildMode)
  {
-  UEPtr<ULibrary> lib=CollectionList[i];
-  if(lib)
-  {
-   GetLogger()->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(": collection version is ")+lib->GetVersion()+std::string(" (")+sntoa(lib->GetRevision())+")");
+ case 1:
+ {
+     BuildStorage(0);
+     BuildStorage(2);
+     break;
+ }
 
-   if(lib->GetCoreVersion())
-   {
-    if(!lib->GetCoreVersion()->IsEqualFull(GetGlobalVersion()))
-    {
-     Logger->LogMessage(RDK_EX_FATAL, lib->GetName()+std::string(" collection SKIPPED: application core version ")+GetGlobalVersion().ToStringFull()+std::string(" is incompatible lib core version ")+lib->GetCoreVersion()->ToStringFull());
-     continue;
-    }
-   }
-   else
-    Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
+ case 2:
+ {
+     BuildStorage(0);
+     BuildStorage(3);
+     BuildStorage(2);
+     break;
+ }
 
-   Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
-   unsigned long long total_used_memory_before(0);
-   unsigned long long largest_free_block_before(0);
-   ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
-
-   CollectionList[i]->Upload(this);
-   unsigned long long total_used_memory_after(0);
-   unsigned long long largest_free_block_after(0);
-   if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
-	Logger->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
-
-   Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
-   if(!lib->GetIncomplete().empty())
-    Logger->LogMessage(RDK_EX_DEBUG, std::string("Failed to add [")+sntoa(lib->GetIncomplete().size())+std::string("]: ")+concat_strings(lib->GetIncomplete(),std::string(",")));
-   CompletedClassNames.insert(CompletedClassNames.end(),
-							 lib->GetComplete().begin(),
-							 lib->GetComplete().end());
-   IncompletedClassNames.insert(IncompletedClassNames.end(),
-							 lib->GetIncomplete().begin(),
-							 lib->GetIncomplete().end());
-  }
+ case 3:
+ {
+     BuildStorage(3);
+     BuildStorage(2);
+     break;
+ }
  }
 
  return true;
+}
+
+// Заполняет хранилище данными библиотек конктретного типа
+// Тип библиотеки:
+// 0 - Внутренняя библиотека (собрана вместе с ядром)
+// 1 - Внешняя библиотека (загружена из внешней dll)
+// 2 - Библиотека, созданная во время выполнения
+// 3 - Библиотека-заглушка (все компоненты-заглушки)
+bool UStorage::BuildStorage(int lib_type)
+{
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+     UEPtr<ULibrary> lib=CollectionList[i];
+     if(lib && lib->GetType()==lib_type)
+     {
+      GetLogger()->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(": collection version is ")+lib->GetVersion()+std::string(" (")+sntoa(lib->GetRevision())+")");
+
+      if(lib->GetCoreVersion())
+      {
+       if(!lib->GetCoreVersion()->IsEqualFull(GetGlobalVersion()))
+       {
+        Logger->LogMessage(RDK_EX_FATAL, lib->GetName()+std::string(" collection SKIPPED: application core version ")+GetGlobalVersion().ToStringFull()+std::string(" is incompatible lib core version ")+lib->GetCoreVersion()->ToStringFull());
+        continue;
+       }
+      }
+      else
+       Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
+
+      Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
+      unsigned long long total_used_memory_before(0);
+      unsigned long long largest_free_block_before(0);
+      ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+
+      CollectionList[i]->Upload(this);
+      unsigned long long total_used_memory_after(0);
+      unsigned long long largest_free_block_after(0);
+      if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
+       Logger->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+
+      Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
+      if(!lib->GetIncomplete().empty())
+       Logger->LogMessage(RDK_EX_DEBUG, std::string("Failed to add [")+sntoa(lib->GetIncomplete().size())+std::string("]: ")+concat_strings(lib->GetIncomplete(),std::string(",")));
+      CompletedClassNames.insert(CompletedClassNames.end(),
+                                lib->GetComplete().begin(),
+                                lib->GetComplete().end());
+      IncompletedClassNames.insert(IncompletedClassNames.end(),
+                                lib->GetIncomplete().begin(),
+                                lib->GetIncomplete().end());
+     }
+    }
+
+    return true;
 }
 
 /// Удаляет все образцы классов, для которых нет библиотек

@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include "ULibrary.h"
 #include "UNet.h"
+#include "UMockUNet.h"
 #include "UComponentFactory.h"
 
 namespace RDK {
@@ -206,8 +207,8 @@ int ULibrary::Upload(UStorage *storage)
  count=int(Complete.size());
 
  //Оставление ссылки на Storage для RunTime библиотек
- if(Type != 2)
-    Storage=0;
+// if(Type != 2)
+//    Storage=0;
  return count;
 }
 // --------------------------
@@ -379,10 +380,37 @@ void ULibrary::RemoveClassFromCompletedList(const string &name)
  if(I == Incomplete.end())
   Incomplete.push_back(name);
 }
+
+/// Заполняет библиотеку-заглушку всеми XML описаниями собственных компонентов
+bool ULibrary::FillMockLibrary(UMockLibrary* lib)
+{
+    USerStorageXML ComponentStruct;
+    ComponentStruct.Create("stub");
+
+    // Проход по всем успешно созданным классам
+    for(vector<string>::iterator it = Complete.begin(); it !=  Complete.end(); ++it)
+    {
+        UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(Storage->TakeObject(*it));
+
+        if(!cont)
+            return false;
+
+        ComponentStruct.Destroy();
+
+        // Сохранение XML всего описания компонента
+        if(!cont->SaveComponent(&ComponentStruct, true, ptAny|pgPublic))
+            return false;
+
+        lib->AddNewCompDescription(ComponentStruct);
+
+        Storage->ReturnObject(cont);
+    }
+
+    Storage->FreeObjectsStorage();
+
+    return true;
+}
 // --------------------------
-
-
-
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -402,7 +430,6 @@ URuntimeLibrary::~URuntimeLibrary(void)
 // --------------------------
 // Методы управления данными
 // --------------------------
-
 
 /// Возращает путь библиотеки
 const std::string& URuntimeLibrary::GetLibPath() const
@@ -578,6 +605,96 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 }
 // --------------------------
 
+
+
+// Библиотеки-заглушки
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UMockLibrary::UMockLibrary(const string &name, const string &version, const string& path)
+ : ULibrary(name,version,3), LibPath(path)
+{
+
+}
+
+UMockLibrary::~UMockLibrary(void)
+{
+
+}
+
+// Добавляет описание компонента в ClassesStructures
+bool UMockLibrary::AddNewCompDescription(USerStorageXML& descript)
+{
+    std::string added;
+    descript.Save(added);
+    ClassesStructures.push_back(added);
+    return true;
+}
+
+bool UMockLibrary::SaveLibraryToFile()
+{
+    //Создание папки, если требуется
+    if(RDK::CreateNewDirectory("../../../MockLibs/"))
+        return false;
+
+    std::string all_comps;
+
+    // Сложение всех строчек
+    for(std::vector<std::string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
+    {
+        all_comps += (*it)+"\n";
+    }
+
+    CurrentComponentStruct.Create("a");
+    CurrentComponentStruct.Destroy();
+
+    CurrentComponentStruct.Create("MockLib");
+    CurrentComponentStruct.SelectRoot();
+
+    CurrentComponentStruct.SetNodeAttribute("name", Name);
+    CurrentComponentStruct.SetNodeAttribute("version", Version);
+    CurrentComponentStruct.SetNodeAttribute("revision", std::to_string(Revision));
+
+    // XML со всеми компонентами
+    USerStorageXML CompStruct;
+    CompStruct.Load(all_comps,"");
+
+    // Добавление компонентов в XML библиотеки
+    CurrentComponentStruct.LoadToNode(CompStruct,true);
+
+    std::string file_name = LibPath + "/" + Name + ".xml";
+    CurrentComponentStruct.SaveToFile(file_name);
+
+    return true;
+}
+
+bool UMockLibrary::LoadFromXML(USerStorageXML& xml)
+{
+    xml.SelectRoot();
+
+    // Создание библиотек поочередно
+    for(int i = 0, size = xml.GetNumNodes() ; i < size; i++)
+    {
+        xml.SelectNode(i);
+        std::string add;
+        xml.SaveFromNode(add);
+        ClassesStructures.push_back(add);
+
+        xml.SelectUp();
+    }
+
+}
+
+
+/// Создает компонент из описания xml
+UEPtr<UContainer> UMockLibrary::CreateClassSample(UStorage *storage, USerStorageXML &xml)
+{}
+
+// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+// Не требуется предварительная очистка массива и уборка памяти.
+void UMockLibrary::CreateClassSamples(UStorage *storage)
+{}
 
 }
 

@@ -43,7 +43,7 @@ bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
 
 //  ласс дл€ частичной специализации метода CreatePropertyByType. ¬ызываетс€ в CreateProperty
 // ¬ который в качестве значени€ шаблона передаетс€ “»ѕ данных
-// если тип подразумевает шаблон внутри (std::vector<typename>), то передать int - заглушку и переопределить метод
+// если тип подразумевает шаблон внутри (std::vector<typename>), то передать UnKnow - заглушку и переопределить метод
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt, typename T>
 class CreatorProperty
 {
@@ -51,10 +51,11 @@ public:
     static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet);
 };
 
-//  ласс заглушка дл€ параметризации типов, где неизвестен четкий тип
+//  ласс заглушка дл€ параметризации типов, где неизвестен некоторый внутренний тип
 class UnKnow
 {
-
+private:
+    UnKnow() {};
 };
 
 }
