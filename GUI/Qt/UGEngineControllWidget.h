@@ -25,6 +25,7 @@
 #include "UWatchFormWidget.h"
 #include "UTcpServerControlWidget.h"
 //////////////////////////
+#include "UCurlFtpClientTestWidget.h"
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
 namespace Ui {
@@ -134,6 +135,7 @@ public slots:
     void actionProfiling();
     void actionTcpServer();
     //void actionVASimpleSettings();
+    void actionFtpTest();
 
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
@@ -164,6 +166,7 @@ private:
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+    UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
     /// Массив виджетов отображения картинок
     std::vector<USubTabDescriptionImages> imagesVector;

@@ -258,6 +258,11 @@ int Rpc_UnInit(void)
  return 0;
 }
 
+bool Rpc_IsInit()
+{
+  return (ClientsArray.size()>0);
+}
+
 
 /// Коммуникация с сервером
 int Rpc_Ping(int server_index, int timeout)
@@ -408,6 +413,11 @@ int Rpc_AddServer(void)
  return 0;
 }
 
+int Rpc_LastServerId()
+{
+ return (int)ClientsArray.size()-1;
+}
+
 int Rpc_DelServer(int server_index)
 {
  if((int)ClientsArray.size()-1 < server_index)
@@ -491,6 +501,25 @@ int Rpc_GetChannelName(int server_index, int channel_index, const char* &result,
  return 0;
 }
 
+int  Rpc_GetDeploymentState(int server_index, const char* &dp_state, int& dp_progress, int& dp_cap, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res=ProcessSimpleCommand("GetChannelName", server_index, -1, timeout, request, response);
+    if(res)
+     return res;
+
+    static std::string res_string;
+    res_string=response.ReadString("Data", "").c_str();
+
+    std::string s;
+    std::stringstream ss;
+    ss<<res_string.c_str();
+    ss>>dp_cap>>dp_progress>>s;
+
+    dp_state=s.c_str();
+    return 0;
+}
+
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout)
 {
  RDK::USerStorageXML request,response;
@@ -515,4 +544,25 @@ int Rpc_LoadProject(int server_index, const char* project_path, int timeout)
     request.Create("Request");
     request.WriteString("FileName", project_path);
     return ProcessSimpleCommand("LoadProject", server_index, -1, timeout, request, response);
+}
+
+
+int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    request.Create("Request");
+    request.WriteInteger("TaskId", task_index);
+    int res=ProcessSimpleCommand("DeployProject", server_index, 0, timeout, request, response);
+
+    static std::string res_string;
+    res_string=response.ReadString("Data", "").c_str();
+    resp = atoi(res_string.c_str());
+
+
+    //result=res_string.c_str();
+
+    if(res)
+     return res;
+
+
 }

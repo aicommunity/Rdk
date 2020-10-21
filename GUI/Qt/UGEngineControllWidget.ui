@@ -151,6 +151,7 @@
     <addaction name="menuBroadcasters"/>
     <addaction name="actionServerControl"/>
     <addaction name="actionTcpServer"/>
+    <addaction name="actionFtpTest"/>
    </widget>
    <widget class="QMenu" name="menuNewWindow">
     <property name="title">
@@ -669,6 +670,11 @@
    </property>
    <property name="text">
     <string>TcpServer</string>
+   </property>
+  </action>
+  <action name="actionFtpTest">
+   <property name="text">
+    <string>Ftp Test</string>
    </property>
   </action>
  </widget>

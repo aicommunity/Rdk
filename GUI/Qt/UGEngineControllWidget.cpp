@@ -49,6 +49,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     watchFormWidget=NULL;
     tcpServerControlWindow=NULL;
     tcpServerControlWidget=0;
+    curlFtpClientTestWidget=NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -132,6 +133,12 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     statusPanel = new UStatusPanel(this, application);
     ui->statusBar->addWidget(statusPanel, 1);
+
+    curlFtpClientTestWidget = new UCurlFtpClientTestWidget(NULL, application);
+    curlFtpClientTestWidget->hide();
+
+
+
     connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
     connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
             propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
@@ -176,6 +183,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
     //connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
     connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
+    connect(ui->actionFtpTest, SIGNAL(triggered(bool)), this, SLOT(actionFtpTest()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -592,6 +600,12 @@ void UGEngineControllWidget::actionTcpServer()
     tcpServerControlWindow->show();
     tcpServerControlWindow->showNormal();
     tcpServerControlWindow->activateWindow();
+}
+
+void UGEngineControllWidget::actionFtpTest()
+{
+    curlFtpClientTestWidget->show();
+    curlFtpClientTestWidget->activateWindow();
 }
 
 void UGEngineControllWidget::actionNewWatches()

@@ -21,7 +21,6 @@
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 
-
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"
 #endif
@@ -109,6 +108,9 @@ UEPtr<UServerControl> ServerControl;
 
 /// Менеджер тестов
 UEPtr<UTestManager> TestManager;
+
+/// Деплоер проекта
+UEPtr<UProjectDeployer> ProjectDeployer;
 
 protected: // Временные переменные
 /// Заголовок приложения
@@ -261,6 +263,10 @@ virtual bool SetServerControl(const UEPtr<UServerControl> &value);
 /// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
 UEPtr<UTestManager> GetTestManager(void);
 virtual bool SetTestManager(const UEPtr<UTestManager> &value);
+
+/// Деплоер проекта (под кончретную задачу)
+UEPtr<UProjectDeployer> GetProjectDeployer(void);
+virtual bool SetProjectDeployer(const UEPtr<UProjectDeployer> &value);
 
 /// Инициализирует приложение
 virtual bool Init(void);
