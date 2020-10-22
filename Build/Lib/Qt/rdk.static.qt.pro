@@ -20,6 +20,7 @@ VERSION = $$system(hg parents --template '{rev}')
 DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
+    ../../../Core/Engine/UBasePropCreator.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -151,6 +152,7 @@ SOURCES += \
     ../../../Core/Application/UServerTransportHttp.cpp
 
 HEADERS +=\
+    ../../../Core/Engine/UBasePropCreator.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \

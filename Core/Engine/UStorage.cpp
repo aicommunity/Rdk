@@ -19,7 +19,7 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
-
+#include "UBasePropCreator.h"
 namespace RDK {
 
 /* *********************************************************************** */
@@ -107,7 +107,7 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 // Конструкторы и деструкторы
 // --------------------------
 UStorage::UStorage(void):
-        BuildMode(1)
+        BuildMode(3)
 {
  LastClassId=0;
 }
@@ -1320,6 +1320,8 @@ bool UStorage::DelCollection(int index)
 
 bool UStorage::InitMockLibs(void)
 {
+    UBasePropCreator::AddFuncCrPropFunc(this);
+
     // Папка с библиотеками-заглушками
     std::string lib_path = "../../../MockLibs/";
     std::string lib_list_file = "../../../MockLibs/0_LibList.xml";
@@ -1418,8 +1420,10 @@ bool UStorage::SaveMockLibs(void)
 
             library->SaveLibraryToFile();
 
-
             LibList.AddNode("library");
+            LibList.SetNodeAttribute("Version",lib->GetVersion());
+            LibList.SetNodeAttribute("Revision",std::to_string(lib->GetRevision()));
+            LibList.SetNodeAttribute("CoreVersion",GetGlobalVersion().ToStringFull());
             LibList.SetNodeText(lib->GetName());
             LibList.SelectUp();
         }
@@ -1467,6 +1471,8 @@ bool UStorage::BuildStorage(void)
 
  case 2:
  {
+     // Иницилазиация мок-либ
+     InitMockLibs();
      BuildStorage(0);
      BuildStorage(3);
      BuildStorage(2);
@@ -1475,6 +1481,8 @@ bool UStorage::BuildStorage(void)
 
  case 3:
  {
+     // Иницилазиация мок-либ
+     InitMockLibs();
      BuildStorage(3);
      BuildStorage(2);
      break;
@@ -1701,6 +1709,27 @@ void UStorage::DelLookupClass(const NameT &name)
  ClassesLookupTable.erase(I);
 }
 // --------------------------
+// Публичные методы для работы с функциями-создалеями свойства для UMockUnet-ов
+bool UStorage::AddFuncCrPropMock(funcCrPropMock func_ptr)
+{
+    // Нулевой указатель
+    if(func_ptr == 0)
+        return false;
+
+    // Если уже существует
+    if ( std::find(FunctionsCrPropMock.begin(), FunctionsCrPropMock.end(), func_ptr) != FunctionsCrPropMock.end() )
+        return false;
+
+    FunctionsCrPropMock.push_back(func_ptr);
+    return true;
+}
+
+const std::vector<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
+{
+    return FunctionsCrPropMock;
+}
+
+
 /* *************************************************************************** */
               /*
 // --------------------------

@@ -652,9 +652,10 @@ bool UMockLibrary::SaveLibraryToFile()
     CurrentComponentStruct.Create("MockLib");
     CurrentComponentStruct.SelectRoot();
 
-    CurrentComponentStruct.SetNodeAttribute("name", Name);
-    CurrentComponentStruct.SetNodeAttribute("version", Version);
-    CurrentComponentStruct.SetNodeAttribute("revision", std::to_string(Revision));
+    CurrentComponentStruct.SetNodeAttribute("Name", Name);
+    CurrentComponentStruct.SetNodeAttribute("Version", Version);
+    CurrentComponentStruct.SetNodeAttribute("Revision", std::to_string(Revision));
+    CurrentComponentStruct.SetNodeAttribute("CoreVersion",GetGlobalVersion().ToStringFull());
 
     // XML со всеми компонентами
     USerStorageXML CompStruct;
@@ -673,7 +674,7 @@ bool UMockLibrary::LoadFromXML(USerStorageXML& xml)
 {
     xml.SelectRoot();
 
-    // Создание библиотек поочередно
+    // Создание описаний компонентов поочередно
     for(int i = 0, size = xml.GetNumNodes() ; i < size; i++)
     {
         xml.SelectNode(i);
@@ -688,13 +689,66 @@ bool UMockLibrary::LoadFromXML(USerStorageXML& xml)
 
 
 /// Создает компонент из описания xml
-UEPtr<UContainer> UMockLibrary::CreateClassSample(UStorage *storage, USerStorageXML &xml)
-{}
+UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage *storage)
+{
+    std::string class_name=xml.GetNodeAttribute("Class");
+
+    UEPtr<UMockUNet> mock = new UMockUNet(&xml,storage);
+
+    UEPtr<UNet> cont =dynamic_pointer_cast<UNet>(mock);
+
+    if(!cont)
+    {
+        delete mock;
+        return 0;
+    }
+
+    /*
+    if(!cont->LoadComponent(&xml,true))
+    {
+       if(Storage->GetLogger())
+           Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while LoadComponent() from XML file for class \"" +class_name +"\"");
+
+       delete mock;
+
+       return 0;
+    }
+    */
+    return cont;
+}
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
 void UMockLibrary::CreateClassSamples(UStorage *storage)
-{}
+{
+    int num_classes = ClassesStructures.size();
+
+    for(int i=0;i<num_classes;i++)
+    {
+        try
+        {
+            CurrentComponentStruct.Load(ClassesStructures[i],"");
+
+            UEPtr<UContainer> cont=CreateClassSample(CurrentComponentStruct,Storage);
+
+            if(!cont)
+                return;
+            CurrentComponentStruct.Load(ClassesStructures[i],"");
+            std::string class_name=CurrentComponentStruct.GetNodeAttribute("Class");
+            if(class_name == "UOpenCvDetector")
+            {
+                int g= 9;
+                g++;
+            }
+            UploadClass(class_name,cont);
+        }
+        catch(UException &ex)
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+        }
+    }
+}
 
 }
 

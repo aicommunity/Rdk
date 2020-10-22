@@ -84,7 +84,14 @@ typedef pair<UId,UInstancesStorage> UObjectStorageElement;
 typedef map<UId, UInstancesStorage> UObjectsStorage;
 typedef map<UId, UInstancesStorage>::iterator UObjectsStorageIterator;
 typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
+
+class UMockUNet;
+// Указатель на функцию, которая создает все возможные свойства
+// согласно описанию USerStorageXML для UMockUNet
+typedef bool (*funcCrPropMock)(USerStorageXML*, UMockUNet*);
+
 /* *********************************************************************** */
+
 
 class RDK_LIB_TYPE UStorage
 {
@@ -136,10 +143,16 @@ UId LastClassId;
 // 3 -  сборка только заглушек. Сборка библиотек-заглушек, затем динамических. Все компоненты заглушки (не рабочие)
 int BuildMode;
 
+// Массив функций-создателей Property для MockUNet
+std::vector<funcCrPropMock> FunctionsCrPropMock;
+
 protected: // Временные переменные
 
 
 public: // Методы
+bool AddFuncCrPropMock(funcCrPropMock func_ptr);
+
+const std::vector<funcCrPropMock> &GetFunctionsCrPropMock() const;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

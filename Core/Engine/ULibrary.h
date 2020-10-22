@@ -285,7 +285,7 @@ bool SaveLibraryToFile();
 bool LoadFromXML(USerStorageXML& xml);
 // --------------------------
 /// Создает компонент из описания xml
-UEPtr<UContainer> CreateClassSample(UStorage *storage, USerStorageXML &xml);
+UEPtr<UContainer> CreateClassSample(USerStorageXML &xml, UStorage *storage);
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
