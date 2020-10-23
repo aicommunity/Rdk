@@ -209,6 +209,15 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
  storage.SetNodeAttribute("Type","std::map");
  storage.SetNodeAttribute("Size",sntoa(data.size()));
 
+/* // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
+ T temp;
+ USerStorageXML tempXML;
+ tempXML.Destroy();
+ tempXML.Create("temp");
+ tempXML << temp;
+ std::string type = tempXML.GetNodeAttribute("Type");
+ storage.SetNodeAttribute("elemType",type);
+*/
  if(data.empty())
   return storage;
 
@@ -266,6 +275,15 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
  storage.SetNodeAttribute("Type","std::list");
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
+
+ // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
+ T temp;
+ USerStorageXML tempXML;
+ tempXML.Destroy();
+ tempXML.Create("temp");
+ tempXML << temp;
+ std::string type = tempXML.GetNodeAttribute("Type");
+ storage.SetNodeAttribute("elemType",type);
 
  if(size == 0)
   return storage;
@@ -333,6 +351,27 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
  storage.SetNodeAttribute("Type","std::vector");
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
+
+ // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
+
+ T temp;
+ USerStorageXML tempXML;
+ tempXML.Destroy();
+ tempXML.Create("temp");
+ tempXML << temp;
+ std::string type = tempXML.GetNodeAttribute("Type");
+
+ if(type == "UBVSObject")
+ {
+     int k=0;
+     k++;
+ }
+ // Если сериализация не сработало нормально
+ if(type.empty())
+ {
+  type = typeid(T).name();
+ }
+ storage.SetNodeAttribute("elemType",type);
 
  if(size == 0)
   return storage;

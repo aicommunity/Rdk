@@ -48,7 +48,14 @@ public:
 class UnKnow
 {
 private:
-    UnKnow() {};
+    UnKnow() {}
+};
+
+// Класс заглушка для "простого" вектора
+class simpleVector
+{
+private:
+    simpleVector() {}
 };
 
 

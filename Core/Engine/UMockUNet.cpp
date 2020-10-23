@@ -5,7 +5,7 @@
 #include "UStorage.h"
 
 namespace RDK {
-//TODO другое сохранение simplevector-a
+
 /* *************************************************************************** */
 // --------------------------
 // Конструкторы и деструкторы
@@ -31,41 +31,52 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
         (*f)(serstorage, this);
     }
     // TODO обработка на то, если какие-либо свойства не создались
-    // нельзя делать UploadClass
+    // нельзя делать UploadClass (или можно?)
 
     // Список свойств текущей заглушки
     std::map<NameT,UVariable> propers = this->GetPropertiesList();
 
-    std::vector<std::string> PropsNames;
+    // Список свойств из xml-ки
+    std::vector<std::pair<std::string,std::string> > PropsNames;
 
     // Проход по ТИПАМ свойств: Paramenters -> State -> Input -> Output
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
         serstorage->SelectNode(i);
+
         std::string prop_type = serstorage->GetNodeName();
         for(int j = 0, props = serstorage->GetNumNodes(); j < props; j++)
         {
             serstorage->SelectNode(j);
             std::string prop_name = serstorage->GetNodeName();
+            std::string type = serstorage->GetNodeAttribute("Type");
 
-            PropsNames.push_back(prop_name);
+            PropsNames.push_back(make_pair(prop_name,type));
+
             serstorage->SelectUp();
-         }
+        }
         serstorage->SelectUp();
     }
-    static std::vector<std::string> errors;
+
+    std::vector<std::string> errors;
     errors.clear();
     // проверка на то все ли созданы
-    for(std::vector<std::string>::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
+    for(std::vector<std::pair<std::string,std::string> >::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
     {
-        if(propers.find(*p) == propers.end())
+        if(propers.find((*p).first) == propers.end())
         {
             std::string temp;
-            temp = *p + "Wasn't created in " + class_name;
+
+            if(std::find(ForbiddenInputs.begin(),ForbiddenInputs.end(),(*p).first) != ForbiddenInputs.end())
+                continue;
+
+            if(std::find(ForbiddenOutputs.begin(),ForbiddenOutputs.end(),(*p).first) != ForbiddenOutputs.end())
+                continue;
+
+            temp = (*p).first + " in " + class_name +"  Type: " + (*p).second;
             errors.push_back(temp);
         }
     }
-
 
     SetStorage(0);
 

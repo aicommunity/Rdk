@@ -3,6 +3,9 @@
 
 #include "UNet.h"
 
+extern std::vector<std::string> ForbiddenInputs;
+extern std::vector<std::string> ForbiddenOutputs;
+
 // RTV для UBVSObject
 //#include "../../../Libraries/Rtv-BasicLib/Core/RTVSupport.h"
 

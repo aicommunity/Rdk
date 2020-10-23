@@ -117,9 +117,15 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
     }
 
     //Для вектора (тип данных вектора определяется далее внутри метода CreatePropertyByType) - аналогично для остальных контейнеров
-    if(type == "std::vector" || type == "simplevector")
+    if(type == "std::vector")
     {
         CreatorProperty<PropType, TypeInt, std::vector<UnKnow> >::CreatePropertyByType(serstorage,mock_unet);
+        return;
+    }
+    // Для векторов с простейщими типами (bool, int, double)
+    if(type == "simplevector")
+    {
+        CreatorProperty<PropType, TypeInt, simpleVector >::CreatePropertyByType(serstorage,mock_unet);
         return;
     }
 
@@ -317,12 +323,22 @@ public:
     static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
     {
         std::string prop_name = serstorage->GetNodeName();
-        int size=serstorage->GetNumNodes();
-        if(!(serstorage->SelectNode("elem",size-1)))
-            return false;
 
-        std::string type = serstorage->GetNodeAttribute("Type");
-        serstorage->SelectUp();
+        int size=serstorage->GetNumNodes();
+        // если вектор пуст берем тип - elemType
+        // если есть элементы берем тип элементов
+        std::string type;
+        if(size == 0)
+        {
+            type = serstorage->GetNodeAttribute("elemType");
+        }
+        else
+        {
+            serstorage->SelectNode("elem",size-1);
+            type = serstorage->GetNodeAttribute("elemType");
+            serstorage->SelectUp();
+        }
+
 
         if(type == typeid(bool).name())
         {
@@ -421,12 +437,86 @@ public:
             CreatorProperty<PropType, TypeInt, std::vector<std::pair<UnKnow,UnKnow> > >::CreatePropertyByType(serstorage, mock_unet);
             return true;
         }
-        //вектор из MVector<double>
+        // вектор из простейщих векторов
+        if(type == "simplevector")
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<simpleVector> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        //вектор из MVector<T>
         if(type.find("MVector",0) == 0)
         {
             CreatorProperty<PropType, TypeInt, std::vector<MVector<UnKnow, 0> > >::CreatePropertyByType(serstorage, mock_unet);
             return true;
         }
+        //вектор из MDMatrix<T>
+        if(type.find("MDMatrix",0) == 0)
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<MDMatrix<UnKnow> > >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+    }
+};
+
+// Частичная специализация для вектора с простейщими типами данным
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+class CreatorProperty<PropType, TypeInt, simpleVector >
+{
+public:
+    static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
+    {
+        std::string prop_name = serstorage->GetNodeName();
+        std::string type = serstorage->GetNodeAttribute("elemType");
+
+        if(type == typeid(bool).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<char> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(int).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<int> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(double).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<double> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+    }
+};
+
+// Частичная специализация для вектора простейщих векторов
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+class CreatorProperty<PropType, TypeInt, std::vector<simpleVector> >
+{
+public:
+    static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
+    {
+        std::string prop_name = serstorage->GetNodeName();
+        int size=serstorage->GetNumNodes();
+        if(!(serstorage->SelectNode("elem",size-1)))
+            return false;
+
+        std::string type = serstorage->GetNodeAttribute("elemType");
+        serstorage->SelectUp();
+
+        if(type == typeid(bool).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<std::vector<char> > >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(int).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<std::vector<int> > >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(double).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<std::vector<double> > >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+
     }
 };
 
@@ -469,7 +559,7 @@ public:
     }
 };
 
-// Частичная специализация для вектора
+// Частичная специализация для вектора из MVector<T>
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 class CreatorProperty<PropType, TypeInt, std::vector<MVector<UnKnow, 0> > >
 {
@@ -521,6 +611,114 @@ public:
     }
 };
 
+// Частичная специализация для вектора из MDMatrix<T>
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+class CreatorProperty<PropType, TypeInt, std::vector<MDMatrix<UnKnow> > >
+{
+public:
+    static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
+    {
+        std::string prop_name = serstorage->GetNodeName();
+
+        int size=serstorage->GetNumNodes();
+        // если вектор пуст берем тип - elemType
+        // если есть элементы берем тип элементов
+        std::string type;
+        if(size == 0)
+        {
+            type = serstorage->GetNodeAttribute("elemType");
+        }
+        else
+        {
+            serstorage->SelectNode("elem",size-1);
+            type = serstorage->GetNodeAttribute("Type");
+            serstorage->SelectUp();
+        }
+
+        // Удаление слова MDMatrix
+        size_t pos = type.find("MDMatrix");
+        if (pos != std::string::npos)
+        {
+            type.erase(pos, std::string("MDMatrix").length());
+        }
+        // Удаление символов '<' и '>'
+        type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
+        type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
+
+        if(type == typeid(bool).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<bool> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(char).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<char> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(unsigned char).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<unsigned char> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(short).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<short> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(unsigned short).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<unsigned short> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(int).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(unsigned int).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<unsigned int> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(long).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<long> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(unsigned long).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<unsigned long> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(long long).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<long long> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(unsigned long long).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<unsigned long long> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(float).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<float> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(double).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<double> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == typeid(long double).name())
+        {
+            CreatorProperty<PropType, TypeInt, MDVector<long double> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+
+    }
+};
+
 // Частичная специализация для list
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 class CreatorProperty<PropType, TypeInt, std::list<UnKnow> >
@@ -530,11 +728,20 @@ public:
     {
         std::string prop_name = serstorage->GetNodeName();
         int size=serstorage->GetNumNodes();
-        if(!(serstorage->SelectNode("elem",size-1)))
-            return false;
+        // если вектор пуст берем тип - elemType
+        // если есть элементы берем тип элементов
+        std::string type;
+        if(size == 0)
+        {
+            type = serstorage->GetNodeAttribute("elemType");
+        }
+        else
+        {
+            serstorage->SelectNode("elem",size-1);
+            type = serstorage->GetNodeAttribute("elemType");
+            serstorage->SelectUp();
+        }
 
-        std::string type = serstorage->GetNodeAttribute("Type");
-        serstorage->SelectUp();
 
         if(type == typeid(bool).name())
         {

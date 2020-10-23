@@ -163,6 +163,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &d
  storage.SetNodeAttribute("Type","simplevector");
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
+ storage.SetNodeAttribute("elemType",typeid(bool).name());
 
  if(size <= 0)
   return storage;
@@ -232,6 +233,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> 
  storage.SetNodeAttribute("Type","simplevector");
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
+ storage.SetNodeAttribute("elemType",typeid(double).name());
 
  if(size <= 0)
   return storage;
@@ -297,6 +299,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<int> &da
  storage.SetNodeAttribute("Type","simplevector");
  int size=int(data.size());
  storage.SetNodeAttribute("Size",sntoa(size));
+ storage.SetNodeAttribute("elemType",typeid(int).name());
 
  if(size <= 0)
   return storage;
