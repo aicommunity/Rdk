@@ -153,6 +153,7 @@ SOURCES += \
 
 HEADERS +=\
     ../../../Core/Engine/UBasePropCreator.h \
+    ../../../Core/Engine/UCreatorPropTemplate.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \

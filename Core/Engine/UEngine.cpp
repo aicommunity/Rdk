@@ -7398,8 +7398,10 @@ int UEngine::LoadPredefinedCrPropFunctions(void)
 {
  if(!Storage)
      return 0;
- // ƒобавление базового набора создаталей-свойств
+
+ // ƒобавление базового набора создателей-свойств
  Storage->AddCrPropMockFunc(UBasePropCreator::BaseCrPropMock);
+
  RdkLoadPredefinedCrPropFunctions(Storage);
  return 0;
 }

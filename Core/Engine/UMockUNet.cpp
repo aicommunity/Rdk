@@ -14,80 +14,68 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 {
     std::string comp_name = serstorage->GetNodeName();
     serstorage->SelectNode(comp_name);
+
+    // Имя компонента
     this->SetName(comp_name);
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
+    // Установка указателя на хранилище
     SetStorage(storage);
 
     // Вызов всех добавленных функций создания свойств
-    if(!GetStorage())
-        return;
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
-    int size = funcs.size();
-    size++;
-    for (std::list<funcCrPropMock>::iterator f = funcs.begin();
-         f != funcs.end(); ++f)
+    for (std::list<funcCrPropMock>::iterator f = funcs.begin(); f != funcs.end(); ++f)
     {
+        // Вызов функций создания свойств по очереди
         (*f)(serstorage, this);
     }
-    // TODO обработка на то, если какие-либо свойства не создались
-    // нельзя делать UploadClass (или можно?)
 
-    // Список свойств текущей заглушки
-    std::map<NameT,UVariable> propers = this->GetPropertiesList();
+    // Список сфомированных свойств текущей заглушки
+    std::map<NameT,UVariable> CreatedProps = this->GetPropertiesList();
 
     // Список свойств из xml-ки
     std::vector<std::pair<std::string,std::string> > PropsNames;
-
-    // Проход по ТИПАМ свойств: Paramenters -> State -> Input -> Output
+    // Проход по всем свойствам для формирования списка свойств
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
         serstorage->SelectNode(i);
-
-        std::string prop_type = serstorage->GetNodeName();
         for(int j = 0, props = serstorage->GetNumNodes(); j < props; j++)
         {
             serstorage->SelectNode(j);
+
             std::string prop_name = serstorage->GetNodeName();
             std::string type = serstorage->GetNodeAttribute("Type");
 
-            PropsNames.push_back(make_pair(prop_name,type));
+            PropsNames.push_back(make_pair(prop_name, type));
 
             serstorage->SelectUp();
         }
         serstorage->SelectUp();
     }
 
-    std::vector<std::string> errors;
-    errors.clear();
-    // проверка на то все ли созданы
+    // Сравнение списков свойств
     for(std::vector<std::pair<std::string,std::string> >::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
     {
-        if(propers.find((*p).first) == propers.end())
+        if(CreatedProps.find((*p).first) == CreatedProps.end())
         {
-            std::string temp;
-
             if(std::find(ForbiddenInputs.begin(),ForbiddenInputs.end(),(*p).first) != ForbiddenInputs.end())
                 continue;
 
             if(std::find(ForbiddenOutputs.begin(),ForbiddenOutputs.end(),(*p).first) != ForbiddenOutputs.end())
                 continue;
-
-            temp = (*p).first + " in " + class_name +"  Type: " + (*p).second;
-            errors.push_back(temp);
+            if(GetStorage()->GetLogger())
+            {
+                GetStorage()->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__,
+                                                      "In class "+ class_name + ": failed to create property: " + (*p).first + "with type" + (*p).second);
+            }
         }
     }
 
-    SetStorage(0);
-
+    // Сохранение собственного описания в XML
     ClassDesriptionXML.Destroy();
-
     std::string temp;
     serstorage->Save(temp);
-
     ClassDesriptionXML.Load(temp,"");
-
-    //this->SaveComponent(&ClassDesriptionXML, false, ptAny|pgPublic);
 }
 
 UMockUNet* UMockUNet::New(void)

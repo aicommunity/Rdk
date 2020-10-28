@@ -34,7 +34,7 @@ virtual ~UMockUNet(void);
 virtual UMockUNet* New(void);
 
 private:
-
+// ќписание класса (отсюда формируютс€ свойства)
 USerStorageXML ClassDesriptionXML;
 
 };

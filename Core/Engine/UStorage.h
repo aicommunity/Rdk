@@ -151,17 +151,7 @@ protected: // Временные переменные
 
 
 public: // Методы
-// Установка необходимого режима сборки
-void SetBuildMode(int mode);
 
-// Получение текущего режима сборки
-int GetBuildMode();
-
-// Добавление функции-создателя свойств для UMockUnet
-bool AddCrPropMockFunc(funcCrPropMock func_ptr);
-
-// Получение массива функций-создателей свойств для UMockUnet
-const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -331,15 +321,12 @@ const string& GetCollectionName(int index);
 const string& GetCollectionVersion(int index);
 
 // Очищает списки Complete и Incomplete во всех библиотеках
+// Нужно перед сборкой
 void ClearAllLibsClassesNameArrays(void);
 
-// Возвращается строку runtime-библиотек, разделенных запятой
+// Возвращается строку имен библиотек конкретного типа, разделенных запятой
 // Буфер 'buffer' будет очищен от предыдущих значений
-void GetRTlibsNameList(std::string &buffer) const;
-
-// Возвращается строку mock-библиотек, разделенных запятой
-// Буфер 'buffer' будет очищен от предыдущих значений
-void GetMocklibsNameList(std::string &buffer) const;
+void GetLibsNameListByType(std::string &buffer, int type) const;
 
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);
@@ -380,7 +367,7 @@ virtual bool DelCollection(int index);
 // В правильном порядке (порядок опредлен в конкретном файле)
 bool InitMockLibs(void);
 
-// Создание всех библиотек-заглушек (которых не сущетсвует)
+// Создание всех библиотек-заглушек (которых не существует)
 // из статических библиотек
 bool CreateMockLibs(void);
 
@@ -395,6 +382,12 @@ bool DelCollection(const string &name);
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 virtual bool DelAllCollections(void);
+
+// Установка необходимого режима сборки
+void SetBuildMode(int mode);
+
+// Получение текущего режима сборки
+int GetBuildMode();
 
 // Заполняет хранилище данными библиотек
 virtual bool BuildStorage(void);
@@ -419,6 +412,15 @@ virtual UEPtr<ULibrary> FindCollection(const UId &classid);
 /// Метод не очищает переданный список библиотек, а только пополняет его
 virtual void FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
 // --------------------------
+
+// --------------------------
+// Методы для работы с компонентами-заглушками (UMockUnet)
+// --------------------------
+// Добавление функции-создателя свойств для UMockUnet в массив в Storage
+bool AddCrPropMockFunc(funcCrPropMock func_ptr);
+
+// Получение массива функций-создателей свойств для UMockUnet
+const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 
 // --------------------------
 // Скрытые методы управления хранилищем объектов

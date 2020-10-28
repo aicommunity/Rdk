@@ -972,33 +972,15 @@ void UStorage::ClearAllLibsClassesNameArrays(void)
     }
 }
 
-// Возвращает строку runtime-библиотек, разделенных запятой
+// Возвращается строку имен библиотек конкретного типа, разделенных запятой
 // Буфер 'buffer' будет очищен от предыдущих значений
-void UStorage::GetRTlibsNameList(std::string &buffer) const
+void UStorage::GetLibsNameListByType(std::string &buffer, int type) const
 {
     buffer.clear();
     for(size_t i=0;i<CollectionList.size();i++)
     {
         UEPtr<ULibrary> lib = CollectionList[i];
-        if(lib && lib->GetType() == 2)
-        {
-            buffer.append(lib->GetName());
-            buffer.append(",");
-        }
-    }
-    if(!buffer.empty())
-         buffer.erase(buffer.length()-1);
-}
-
-// Возвращает строку mock-библиотек, разделенных запятой
-// Буфер 'buffer' будет очищен от предыдущих значений
-void UStorage::GetMocklibsNameList(std::string &buffer) const
-{
-    buffer.clear();
-    for(size_t i=0;i<CollectionList.size();i++)
-    {
-        UEPtr<ULibrary> lib = CollectionList[i];
-        if(lib && lib->GetType() == 3)
+        if(lib && lib->GetType() == type)
         {
             buffer.append(lib->GetName());
             buffer.append(",");
@@ -1347,30 +1329,41 @@ bool UStorage::DelCollection(int index)
 
 bool UStorage::InitMockLibs(void)
 {
-    // Папка с библиотеками-заглушками
+    // Папка с библиотеками-заглушками и файл
     std::string lib_path = "../../../MockLibs/";
     std::string lib_list_file = "../../../MockLibs/0_LibList.xml";
 
     USerStorageXML LibList;
-    LibList.LoadFromFile(lib_list_file,"LibraryList");
+    if(!LibList.LoadFromFile(lib_list_file,"LibraryList"))
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_ERROR, std::string("Error while loading Library List from file: " + lib_list_file));
+        return false;
+    }
 
     USerStorageXML CompDesctips;
 
     // Создание библиотек поочередно
     for(int i = 0, size = LibList.GetNumNodes() ; i < size; i++)
     {
-        LibList.SelectNode(i);
+        if(!LibList.SelectNode(i))
+            continue;
         std::string lib_name = LibList.GetNodeText();
 
         // Если такая библиотека-заглушка есть
-        if(GetCollection(lib_name) != 0)
+        if(lib_name.empty() || GetCollection(lib_name) != 0)
             continue;
-
 
         UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
 
         // Заполнение описаний классов
-        CompDesctips.LoadFromFile(lib_path+"/"+lib_name+".xml","MockLib");
+        if(!CompDesctips.LoadFromFile(lib_path+"/"+lib_name+".xml","MockLib"))
+        {
+            if(Logger)
+                Logger->LogMessage(RDK_EX_ERROR, std::string("Error while loading Library Classes Descriptions from file: " + lib_path+"/"+lib_name+".xml"));
+            delete lib_mock;
+            continue;
+        }
 
         lib_mock->LoadFromXML(CompDesctips);
 
@@ -1387,18 +1380,24 @@ bool UStorage::InitMockLibs(void)
 
 bool UStorage::CreateMockLibs(void)
 {
+    if(Logger)
+        Logger->LogMessage(RDK_EX_DEBUG, std::string("Creating Mock Libraries from Static Libraries"));
+
     // Создание библиотек-заглушек из статических библиотек
     for(size_t i=0;i<CollectionList.size();i++)
     {
         UEPtr<ULibrary> lib=CollectionList[i];
         if(lib && lib->GetType()==0)
         {
-            //Создание папки библиотеки
+            // Создание папки библиотеки, если требуется
             std::string lib_path = "../../../MockLibs/";
 
-            //Создание папки, если требуется
             if(RDK::CreateNewDirectory(lib_path.c_str()))
+            {
+                if(Logger)
+                    Logger->LogMessage(RDK_EX_ERROR, std::string("Error while creating MockLibs path :" + lib_path));
                 return false;
+            }
 
             // имя библиотеки-заглушки
             std::string lib_name = lib->GetName()+"_Mock";
@@ -1424,7 +1423,8 @@ bool UStorage::CreateMockLibs(void)
 
 bool UStorage::SaveMockLibs(void)
 {
-    GetLogger()->LogMessage(RDK_EX_DEBUG, "Starting saving libraries to MockLibs directory");
+    if(Logger)
+        Logger->LogMessage(RDK_EX_DEBUG, std::string("Starting saving Mock Libraries to files"));
 
     // Сохранения списка библиотек-заглушек по порядку (такой же как в CollectionList)
     USerStorageXML LibList;
@@ -1439,7 +1439,7 @@ bool UStorage::SaveMockLibs(void)
 
         if(lib && lib->GetType()==3)
         {
-            // Библиотека куда добавляеться класс
+            // Библиотека куда добавляется класс
             UMockLibrary *library = 0;
             library = dynamic_cast<UMockLibrary*>(lib.Get());
 
@@ -1454,7 +1454,7 @@ bool UStorage::SaveMockLibs(void)
         }
     }
 
-    std::string file_name = "/home/user/Rtv-VideoAnalytics/Bin/MockLibs/0_LibList.xml";
+    std::string file_name = "../../../MockLibs/0_LibList.xml";
     LibList.SaveToFile(file_name);
 }
 
@@ -1481,6 +1481,18 @@ bool UStorage::DelAllCollections(void)
  return true;
 }
 
+// Уставнока необходимого режима сборки
+void UStorage::SetBuildMode(int mode)
+{
+    BuildMode = mode;
+}
+
+// Получение текущего режима сборки
+int UStorage::GetBuildMode()
+{
+    return BuildMode;
+}
+
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
 bool UStorage::BuildStorage(void)
@@ -1490,27 +1502,43 @@ bool UStorage::BuildStorage(void)
  {
  case 1:
  {
-     BuildStorage(0);
-     BuildStorage(2);
+     BuildStorage(0); // сборка статических библиотек
+     BuildStorage(2); // сборка runtime-библиотек
      break;
  }
 
  case 2:
  {
+     BuildStorage(0); // сборка статических библиотек
+
      // Иницилазиация мок-либ
-     InitMockLibs();
-     BuildStorage(0);
-     BuildStorage(3);
-     BuildStorage(2);
+     if(InitMockLibs())
+     {
+        BuildStorage(3); // сборка mock-библиотек
+     }
+     else
+     {
+         if(Logger)
+             Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
+     }
+
+     BuildStorage(2); // сборка runtime-библиотек
      break;
  }
-
  case 3:
  {
      // Иницилазиация мок-либ
-     InitMockLibs();
-     BuildStorage(3);
-     BuildStorage(2);
+     if(InitMockLibs())
+     {
+        BuildStorage(3); // сборка mock-библиотек
+     }
+     else
+     {
+         if(Logger)
+             Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
+     }
+
+     BuildStorage(2); // сборка runtime-библиотек
      break;
  }
  }
@@ -1735,28 +1763,27 @@ void UStorage::DelLookupClass(const NameT &name)
  ClassesLookupTable.erase(I);
 }
 // --------------------------
-// Уставнока необходимого режима сборки
-void UStorage::SetBuildMode(int mode)
-{
-    BuildMode = mode;
-}
 
-// Получение текущего режима сборки
-int UStorage::GetBuildMode()
-{
-    return BuildMode;
-}
-
-// Публичные методы для работы с функциями-создалеями свойства для UMockUnet-ов
+// --------------------------
+// Методы для работы с компонентами-заглушками (UMockUnet)
+// --------------------------
+// Добавление функции-создателя свойств для UMockUnet в массив в Storage
 bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
 {
     // Нулевой указатель
     if(func_ptr == 0)
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add null function to FunctionsCrPropMock list in Storage");
         return false;
-
+    }
     // Если уже существует
-    if ( std::find(FunctionsCrPropMock.begin(), FunctionsCrPropMock.end(), func_ptr) != FunctionsCrPropMock.end() )
+    if(std::find(FunctionsCrPropMock.begin(), FunctionsCrPropMock.end(), func_ptr) != FunctionsCrPropMock.end())
+    {
+        if(Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add function that already exists in FunctionsCrPropMock list in Storage");
         return false;
+    }
 
     FunctionsCrPropMock.push_back(func_ptr);
     return true;

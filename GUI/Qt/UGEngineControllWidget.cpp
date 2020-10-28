@@ -387,12 +387,8 @@ void UGEngineControllWidget::actionConfigOptions()
 
 void UGEngineControllWidget::actionCreateSaveMockLibs()
 {
- RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
- if(!storage)
-     return;
-
- storage->CreateMockLibs();
- storage->SaveMockLibs();
+ if(application)
+  application->CreateSaveMockLibs();
 }
 
 void UGEngineControllWidget::updateShemeClassesList()
@@ -405,42 +401,25 @@ void UGEngineControllWidget::updateShemeClassesList()
 
 void UGEngineControllWidget::actionBuildMode1()
 {
- int build_mode = application->GetStorageBuildMode();
- if(build_mode == 1)
- {
-  return;
- }
- else
+ if(application)
  {
   application->SetStorageBuildMode(1);
   updateShemeClassesList();
  }
-
 }
 
 void UGEngineControllWidget::actionBuildMode2()
 {
- int build_mode = application->GetStorageBuildMode();
- if(build_mode == 2)
- {
-  return;
- }
- else
+ if(application)
  {
   application->SetStorageBuildMode(2);
   updateShemeClassesList();
  }
-
 }
 
 void UGEngineControllWidget:: actionBuildMode3()
 {
- int build_mode = application->GetStorageBuildMode();
- if(build_mode == 3)
- {
-  return;
- }
- else
+ if(application)
  {
   application->SetStorageBuildMode(3);
   updateShemeClassesList();

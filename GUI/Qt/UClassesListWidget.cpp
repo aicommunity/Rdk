@@ -18,7 +18,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из RT библиотек
@@ -157,7 +157,7 @@ void UClassesListWidget::AUpdateLibsView(QString lib_name)
         return;
 
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     ui->listWidgetRTlibs->clear();
@@ -272,7 +272,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из RT библиотек
@@ -294,7 +294,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
     }
 
     // Список Mock библиотек
-    storage->GetMocklibsNameList(buff);
+    storage->GetLibsNameListByType(buff,3);
     QStringList MockLibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из Mock библиотек
@@ -349,7 +349,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из RT библиотек
@@ -372,7 +372,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
 
 
     // Список Mock библиотек
-    storage->GetMocklibsNameList(buff);
+    storage->GetLibsNameListByType(buff,3);
     QStringList MockLibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из Mock библиотек
@@ -489,7 +489,7 @@ void UClassesListWidget::tab2_textChanged(const QString &arg1)
     // поиск имен runtime-библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList componentNames = QString(buff.c_str()).split(",");
 
     QString str;
@@ -610,7 +610,7 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
         lib_name  = ui->listWidgetRTlibs->currentItem()->text();
 
     std::string buff;
-    engine->GetModel()->GetStorage()->GetRTlibsNameList(buff);
+    engine->GetModel()->GetStorage()->GetLibsNameListByType(buff,2);
     QStringList libs_names = QString(buff.c_str()).split(",");
 
     CrClassDialog* dialog = new CrClassDialog(libs_names, lib_name, QString::fromStdString(container->GetName()));

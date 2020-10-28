@@ -4,16 +4,6 @@
 std::vector<std::string> ForbiddenInputs  = {"DataInput0", "DataInput1", "DataInput2","DataInput3" , "DataInput4", "DataInput5"};
 std::vector<std::string> ForbiddenOutputs = {"DataOutput0", "DataOutput1", "DataOutput2", "DataOutput3", "DataOutput4", "DataOutput5"};
 
-class ParseException: public std::exception {
-private:
-    std::string message_;
-public:
-    explicit ParseException(const std::string& message){message_=message;}
-    const char* what() const noexcept override {
-        return message_.c_str();
-    }
-};
-
 using namespace RDK;
 
 UBasePropCreator::UBasePropCreator()

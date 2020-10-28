@@ -195,7 +195,7 @@ virtual void CreateClassSamples(UStorage *storage)=0;
 // Дополнительные методы
 // --------------------------
 /// Заполняет библиотеку-заглушку всеми XML описаниями собсвтенных компонентов
-bool FillMockLibrary(UMockLibrary* lib);
+void FillMockLibrary(UMockLibrary* lib);
 
 // --------------------------
 };
@@ -285,7 +285,7 @@ bool AddNewCompDescription(USerStorageXML& descript);
 bool SaveLibraryToFile();
 
 // Загрузка описаний классов из xml файла в ClassesStructures
-bool LoadFromXML(USerStorageXML& xml);
+void LoadFromXML(USerStorageXML& xml);
 // --------------------------
 /// Создает компонент из описания xml
 UEPtr<UContainer> CreateClassSample(USerStorageXML &xml, UStorage *storage);

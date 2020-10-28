@@ -314,6 +314,10 @@ bool UApplication::IsInit(void) const
 /// Установка необходимого режима сборки
 void UApplication::SetStorageBuildMode(int mode)
 {
+ // пересборка не нужна
+ if(StorageBuildMode == mode)
+     return;
+
  StorageBuildMode = mode;
  CloseProject();
  RDK::GetCoreLock()->SetStorageBuildMode(StorageBuildMode);
@@ -324,8 +328,6 @@ void UApplication::SetStorageBuildMode(int mode)
  {
      MCore_ChannelInit(i,0,(void*)ExceptionHandler);
  }
-
-
 }
 
 /// Получение текущего режима сборки
@@ -337,8 +339,10 @@ int UApplication::GetStorageBuildMode()
 /// Создание библиотек-заглушек из статических библиотек с сохранением файлов
 void UApplication::CreateSaveMockLibs()
 {
-    RDK::GetStorageLock()->CreateMockLibs();
-    RDK::GetStorageLock()->SaveMockLibs();
+    RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+    if(!storage->CreateMockLibs())
+        return;
+    storage->SaveMockLibs();
 }
 // --------------------------
 // Методы инициализации

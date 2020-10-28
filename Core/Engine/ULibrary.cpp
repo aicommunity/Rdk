@@ -389,7 +389,7 @@ void ULibrary::RemoveClassFromCompletedList(const string &name)
 }
 
 /// Заполняет библиотеку-заглушку всеми XML описаниями собственных компонентов
-bool ULibrary::FillMockLibrary(UMockLibrary* lib)
+void ULibrary::FillMockLibrary(UMockLibrary* lib)
 {
     USerStorageXML ComponentStruct;
     ComponentStruct.Create("stub");
@@ -397,19 +397,38 @@ bool ULibrary::FillMockLibrary(UMockLibrary* lib)
     // Проход по всем успешно созданным классам
     for(vector<string>::iterator it = Complete.begin(); it !=  Complete.end(); ++it)
     {
-        UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(Storage->TakeObject(*it));
+        UEPtr<UComponent> obj;
+        try{
+        obj = Storage->TakeObject(*it);
+        }
+        catch(UException &ex)
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+            continue;
+        }
+
+        UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(obj);
 
         if(!cont)
-            return false;
+            continue;
 
-        ComponentStruct.Destroy();
+        if(!ComponentStruct.Destroy())
+        {
+            Storage->ReturnObject(cont);
+            continue;
+        }
 
         // Сохранение XML всего описания компонента
         if(!cont->SaveComponent(&ComponentStruct, true, ptAny|pgPublic))
-            return false;
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while saving XML description of class " + *it);
+            Storage->ReturnObject(cont);
+            continue;
+        }
 
         lib->AddNewCompDescription(ComponentStruct);
-
         Storage->ReturnObject(cont);
     }
 
@@ -634,7 +653,8 @@ UMockLibrary::~UMockLibrary(void)
 bool UMockLibrary::AddNewCompDescription(USerStorageXML& descript)
 {
     std::string added;
-    descript.Save(added);
+    if(!descript.Save(added))
+        return false;
     ClassesStructures.push_back(added);
     return true;
 }
@@ -677,23 +697,26 @@ bool UMockLibrary::SaveLibraryToFile()
     return true;
 }
 
-bool UMockLibrary::LoadFromXML(USerStorageXML& xml)
+void UMockLibrary::LoadFromXML(USerStorageXML& xml)
 {
     xml.SelectRoot();
 
     // Создание описаний компонентов поочередно
     for(int i = 0, size = xml.GetNumNodes() ; i < size; i++)
     {
-        xml.SelectNode(i);
-        std::string add;
-        xml.SaveFromNode(add);
-        ClassesStructures.push_back(add);
+        if(!xml.SelectNode(i))
+            continue;
 
+        std::string add;
+
+        if(!xml.SaveFromNode(add))
+            continue;
+
+        ClassesStructures.push_back(add);
         xml.SelectUp();
     }
 
 }
-
 
 /// Создает компонент из описания xml
 UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage *storage)
@@ -710,17 +733,6 @@ UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage 
         return 0;
     }
 
-    /*
-    if(!cont->LoadComponent(&xml,true))
-    {
-       if(Storage->GetLogger())
-           Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while LoadComponent() from XML file for class \"" +class_name +"\"");
-
-       delete mock;
-
-       return 0;
-    }
-    */
     return cont;
 }
 
@@ -741,12 +753,9 @@ void UMockLibrary::CreateClassSamples(UStorage *storage)
             if(!cont)
                 return;
             CurrentComponentStruct.Load(ClassesStructures[i],"");
+
             std::string class_name=CurrentComponentStruct.GetNodeAttribute("Class");
-            if(class_name == "UOpenCvDetector")
-            {
-                int g= 9;
-                g++;
-            }
+
             UploadClass(class_name,cont);
         }
         catch(UException &ex)
