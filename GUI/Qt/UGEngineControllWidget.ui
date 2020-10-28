@@ -73,6 +73,14 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuChooseBuildStorageMode">
+     <property name="title">
+      <string>Choose Build Storage Mode</string>
+     </property>
+     <addaction name="actionBuildMode1"/>
+     <addaction name="actionBuildMode2"/>
+     <addaction name="actionBuildMode3"/>
+    </widget>
     <addaction name="actionCreateConfig"/>
     <addaction name="actionLoadConfig"/>
     <addaction name="actionSaveConfig"/>
@@ -82,6 +90,8 @@
     <addaction name="actionConfigOptions"/>
     <addaction name="actionApplicationOptions"/>
     <addaction name="actionClassesDescriptio"/>
+    <addaction name="separator"/>
+    <addaction name="menuChooseBuildStorageMode"/>
     <addaction name="separator"/>
     <addaction name="actionCreateModel"/>
     <addaction name="actionLoadModel"/>
@@ -95,6 +105,8 @@
     <addaction name="separator"/>
     <addaction name="actionSaveCommonDescriptions"/>
     <addaction name="actionSaveClassesDescriptions"/>
+    <addaction name="separator"/>
+    <addaction name="actionCreateSaveMockLibs"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -669,6 +681,29 @@
    </property>
    <property name="text">
     <string>TcpServer</string>
+   </property>
+  </action>
+  <action name="actionCreateSaveMockLibs">
+   <property name="text">
+    <string>Create and Save Mock Libs</string>
+   </property>
+   <property name="toolTip">
+    <string>Create and Save Mock Libs</string>
+   </property>
+  </action>
+  <action name="actionBuildMode1">
+   <property name="text">
+    <string>Build Mode 1 (Static -&gt; RT)</string>
+   </property>
+  </action>
+  <action name="actionBuildMode2">
+   <property name="text">
+    <string>Build Mode 2 (Static -&gt; Mock -&gt; RT)</string>
+   </property>
+  </action>
+  <action name="actionBuildMode3">
+   <property name="text">
+    <string>Build Mode 3 (Mock -&gt; RT)</string>
    </property>
   </action>
  </widget>

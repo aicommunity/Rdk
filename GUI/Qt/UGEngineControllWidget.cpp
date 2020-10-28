@@ -147,6 +147,12 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
 
+    updateShemeClassesList();
+    connect(ui->actionBuildMode1,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode1()));
+    connect(ui->actionBuildMode2,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode2()));
+    connect(ui->actionBuildMode3,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode3()));
+
+    connect(ui->actionCreateSaveMockLibs,  SIGNAL(triggered(bool)), this, SLOT(actionCreateSaveMockLibs()));
 
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
@@ -378,6 +384,69 @@ void UGEngineControllWidget::actionConfigOptions()
 {
  createConfigurationWizardWidget->show();
 }
+
+void UGEngineControllWidget::actionCreateSaveMockLibs()
+{
+ RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+ if(!storage)
+     return;
+
+ storage->CreateMockLibs();
+ storage->SaveMockLibs();
+}
+
+void UGEngineControllWidget::updateShemeClassesList()
+{
+ drawEngine->updateScheme(true);
+ drawEngine->updateClassesList();
+ int build_mode = application->GetStorageBuildMode();
+ ui->menuChooseBuildStorageMode->setTitle("Choose Build Storage Mode [" + QString::number(build_mode) +"]");
+}
+
+void UGEngineControllWidget::actionBuildMode1()
+{
+ int build_mode = application->GetStorageBuildMode();
+ if(build_mode == 1)
+ {
+  return;
+ }
+ else
+ {
+  application->SetStorageBuildMode(1);
+  updateShemeClassesList();
+ }
+
+}
+
+void UGEngineControllWidget::actionBuildMode2()
+{
+ int build_mode = application->GetStorageBuildMode();
+ if(build_mode == 2)
+ {
+  return;
+ }
+ else
+ {
+  application->SetStorageBuildMode(2);
+  updateShemeClassesList();
+ }
+
+}
+
+void UGEngineControllWidget:: actionBuildMode3()
+{
+ int build_mode = application->GetStorageBuildMode();
+ if(build_mode == 3)
+ {
+  return;
+ }
+ else
+ {
+  application->SetStorageBuildMode(3);
+  updateShemeClassesList();
+ }
+}
+
 
 //chanels menu actions:
 void UGEngineControllWidget::actionAddNew()

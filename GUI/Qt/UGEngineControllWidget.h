@@ -105,6 +105,10 @@ public slots:
     void actionCopyConfig();
     void actionExit();
     void actionConfigOptions();
+    void actionCreateSaveMockLibs();
+    void actionBuildMode1();
+    void actionBuildMode2();
+    void actionBuildMode3();
 
     //chanels menu
     void actionAddNew();
@@ -203,6 +207,11 @@ private:
 
     /// Удаляет виджет отображения графиков
     void delWatchesWidged(size_t index);
+
+    /// Обновляет схему модели, список классов
+    /// и текст в меню Choose Storage Build Mode [N]
+    /// Вызов после смены режима сборки (пересборки)
+    void updateShemeClassesList();
 
 };
 

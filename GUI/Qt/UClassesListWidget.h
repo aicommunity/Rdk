@@ -62,7 +62,6 @@ private slots:
     void tab1_textChanged(const QString &arg1);
     void tab2_textChanged(const QString &arg1);
 
-
 public slots:
     //События контекстного меню
     // создание/удаление библиотеки
@@ -72,6 +71,8 @@ public slots:
     //создание/удаление класса
     void AddNewClass(QString cur_lib = "");
     void DeleteClass();
+
+    void on_tabWidget_currentChanged(int index);
 
 private:
     UDrawEngineImageWidget* ModelScheme;

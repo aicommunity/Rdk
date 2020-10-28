@@ -40,6 +40,7 @@ public slots:
     void componentSingleClick(QString name);
 
     void updateScheme(bool reloadXml);
+    void updateClassesList();
 
 signals:
     void componentSelectedFromScheme(QString name);
