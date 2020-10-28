@@ -232,7 +232,7 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &c
 // все объекты этого класса
 void UStorage::DelClass(const UId &classid, bool force)
 {
- UObjectsStorageCIterator temp=ObjectsStorage.find(classid);
+ UObjectsStorageIterator temp=ObjectsStorage.find(classid);
 
  if(!force)
  {
@@ -1035,13 +1035,13 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
             catch(EObjectStorageNotEmpty &ex)
             {
              if(Logger)
-              Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+              Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
               return false;
             }
             catch(EClassIdNotExist &ex)
             {
              if(Logger)
-              Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+              Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
               return false;
             }
             // Добавление в нужную
