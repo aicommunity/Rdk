@@ -134,6 +134,7 @@ DeploymentState UProjectDeployProcessingThread::GetDeploymentState()
  return deploymentState;
 }
 
+/*
 std::string UProjectDeployProcessingThread::GetDeploymentStateString()
 {
  std::string result;
@@ -168,6 +169,7 @@ std::string UProjectDeployProcessingThread::GetDeploymentStateString()
  }
  return result;
 }
+*/
 
 int UProjectDeployProcessingThread::GetDeploymentProgress()
 {
@@ -180,6 +182,8 @@ int UProjectDeployProcessingThread::GetDeploymentProgressCap()
     QMutexLocker locker(&deploymentProgressCapMutex);
     return deploymentProgressCap;
 }
+
+
 
 void UProjectDeployProcessingThread::run()
 {
@@ -216,6 +220,14 @@ void UProjectDeployProcessingThread::run()
         //Запись чего-то в лог
         //Изначально самая примитивная верификация, потом усложним
     }
+
+    deploymentState = DS_Finished;
+
+}
+
+std::string UProjectDeployProcessingThread::GetLastError()
+{
+
 }
 
 bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, const QString& dst_zip_file)
@@ -792,8 +804,8 @@ bool UProjectDeployerQt::DestroyProcessingThread()
 
 int UProjectDeployerQt::StartProjectDeployment(int task_id)
 {
- std::string s = GetDeploymentState();
- if(s!="DS_NULL")
+ int ds = GetDeploymentState();
+ if(ds!=DeploymentState::DS_NULL)
  {
      return 20;
  }
@@ -1067,28 +1079,42 @@ void UProjectDeployerQt::AConnectToDatabase()
 /*
 enum DeploymentState
 {
-    DS_DownloadProject,
-    DS_UnpackProject,
+    DS_NULL,
+    DS_Unknown,
+    DS_DownloadTemplate,
+    DS_UnpackTemplate,
     DS_DownloadWeights,
     DS_UnpackWeights,
     DS_DownloadScripts,
     DS_UnpackScripts,
     DS_DownloadData,
-    DS_UnpackData
+    DS_UnpackData,
+    DS_Error
 };
 */
 
-
-std::string UProjectDeployerQt::GetDeploymentState()
+std::string UProjectDeployerQt::GetLastError()
 {
     if(deployProcessingThread==NULL)
     {
-        return "DS_NULL";
+        return "NULL";
+    }
+    else
+    {
+        return deployProcessingThread->GetLastError();
+    }
+}
+
+int UProjectDeployerQt::GetDeploymentState()
+{
+    if(deployProcessingThread==NULL)
+    {
+        return DeploymentState::DS_NULL;
     }
     else
     {
         bool t = deployProcessingThread->isRunning();
-        return deployProcessingThread->GetDeploymentStateString();
+        return deployProcessingThread->GetDeploymentState();
     }
 }
 

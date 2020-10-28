@@ -49,7 +49,7 @@ void UProjectDeployer::SetDatabaseAccess(const std::string &db_address,
     AConnectToDatabase();
 }
 
-std::string UProjectDeployer::GetDeploymentState()
+int UProjectDeployer::GetDeploymentState()
 {
 
 }
@@ -72,6 +72,11 @@ int UProjectDeployer::StartProjectDeployment(int task_id)
 void UProjectDeployer::SetFtpRemotePath(const std::string &path)
 {
     ftp_remote_path = path;
+}
+
+std::string UProjectDeployer::GetLastError()
+{
+    return std::string();
 }
 
 /*

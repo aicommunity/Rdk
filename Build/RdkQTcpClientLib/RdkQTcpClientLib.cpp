@@ -501,23 +501,40 @@ int Rpc_GetChannelName(int server_index, int channel_index, const char* &result,
  return 0;
 }
 
-int  Rpc_GetDeploymentState(int server_index, const char* &dp_state, int& dp_progress, int& dp_cap, int timeout)
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout)
 {
     RDK::USerStorageXML request,response;
-    int res=ProcessSimpleCommand("GetChannelName", server_index, -1, timeout, request, response);
+    request.Create("Request");
+    request.WriteInteger("Test", -1);
+    int res=ProcessSimpleCommand("GetDeploymentState", server_index, -1, timeout, request, response);
     if(res)
      return res;
 
     static std::string res_string;
     res_string=response.ReadString("Data", "").c_str();
 
-    std::string s;
-    std::stringstream ss;
-    ss<<res_string.c_str();
-    ss>>dp_cap>>dp_progress>>s;
+    //int state=-1;
+    std::stringstream ss(res_string.c_str());
+    ss>>dp_state>>dp_progress>>dp_cap;
 
-    dp_state=s.c_str();
-    return 0;
+    //dp_state=state;
+    return res;
+}
+
+int  Rpc_GetLastError(int server_index, int channel_indes, int timeout, const char* &err_str)
+{
+    RDK::USerStorageXML request,response;
+    request.Create("Request");
+    int res=ProcessSimpleCommand("GetLastError", server_index, -1, timeout, request, response);
+    /*if(res)
+     return res;*/
+
+    static std::string res_string;
+    res_string=response.ReadString("Data", "").c_str();
+
+    err_str = res_string.c_str();
+
+    return res;
 }
 
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout)

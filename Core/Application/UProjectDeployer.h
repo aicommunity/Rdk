@@ -60,9 +60,11 @@ virtual void AConnectToDatabase();
 ///
 //virtual void SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id);
 
-virtual std::string GetDeploymentState();
+virtual int GetDeploymentState();
 virtual int GetStageCap();
 virtual int GetStageProgress();
+
+virtual std::string GetLastError();
 
 virtual void SetFtpRemotePath(const std::string &path);
 

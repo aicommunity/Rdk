@@ -155,6 +155,11 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  {
   return true;
  }
+ else
+ if(cmd == "GetLastError")
+ {
+  return true;
+ }
  /*else
  if(cmd == "GetDeploymentStageMax")
  {
@@ -369,15 +374,28 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   if(cmd == "GetDeploymentState")
   {
    //GetApplication()->SaveProject();
-   std::string stage = GetApplication()->GetProjectDeployer()->GetDeploymentState();
+   int d_state = GetApplication()->GetProjectDeployer()->GetDeploymentState();
    int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
    int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
 
    std::stringstream ss;
-   ss<<stage.c_str()<<" "<<stage_pos<<" "<<stage_max;
-\
+   ss<<d_state<<" "<<stage_pos<<" "<<stage_max;
    response=ss.str();
    return_value=0;//UServerControlForm->SaveProject();
+  }
+  else
+  if(cmd == "GetLastError")
+  {
+   std::string last_error=GetApplication()->GetProjectDeployer()->GetLastError();
+   //GetApplication()->SaveProject();
+   int d_state = GetApplication()->GetProjectDeployer()->GetDeploymentState();
+   int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
+   int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
+
+   std::stringstream ss;
+   ss<<d_state<<" "<<stage_pos<<" "<<stage_max;
+   response=ss.str();
+   return_value=0;
   }
 /*
   else

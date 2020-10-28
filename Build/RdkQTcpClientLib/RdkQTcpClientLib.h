@@ -93,7 +93,7 @@ int  Rpc_SetNumChannels(int server_index, int num_channels, int timeout);
 
 int  Rpc_GetChannelName(int server_index, int channel_index, const char* &result, int timeout);
 
-int  Rpc_GetDeploymentState(int server_index, const char* &dp_state, int& dp_progress, int& dp_cap, int timeout);
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout);
 
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout);
 

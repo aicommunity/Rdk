@@ -40,17 +40,18 @@ class UApplication;
 
 enum DeploymentState
 {
-    DS_NULL,
-    DS_Unknown,
-    DS_DownloadTemplate,
-    DS_UnpackTemplate,
-    DS_DownloadWeights,
-    DS_UnpackWeights,
-    DS_DownloadScripts,
-    DS_UnpackScripts,
-    DS_DownloadData,
-    DS_UnpackData,
-    DS_Error
+    DS_NULL=0,
+    DS_Unknown=1,
+    DS_DownloadTemplate=2,
+    DS_UnpackTemplate=3,
+    DS_DownloadWeights=4,
+    DS_UnpackWeights=5,
+    DS_DownloadScripts=6,
+    DS_UnpackScripts=7,
+    DS_DownloadData=8,
+    DS_UnpackData=9,
+    DS_Finished=10,
+    DS_Error=100
 };
 
 class RDK_LIB_TYPE UProjectDeployProcessingThread: public QThread
@@ -85,9 +86,9 @@ public:
     QString GetDownloadTempPath(); //Временные папки для закачки и развертывания обычно разнче
 
     DeploymentState GetDeploymentState();
-    std::string GetDeploymentStateString();
     int GetDeploymentProgress();
     int GetDeploymentProgressCap();
+    std::string GetLastError();
 
 private slots:
     void processReadyReadStandardError();
@@ -106,6 +107,12 @@ private:
     bool VerifyWeights();
     void DeployData();
     bool VerifyData();
+
+
+    //Не уверен, что это надо, мб через стейт получать?
+    //bool ErrorOccured();
+    //Нужна нормальная интерпретация того, какая ошибка случилась, для человека
+    //std::string GetLastError();
 
 private:
     QMutex deploymentStateMutex;
@@ -126,6 +133,8 @@ private:
     int deploymentProgress;
 
     QProcess zip_process;
+
+    std::string lastError;
 
     CURL *curl;
     CURLcode res;
@@ -227,9 +236,10 @@ virtual int StartProjectDeployment(int task_id);
 
 virtual void AConnectToDatabase();
 
-virtual std::string GetDeploymentState();
+virtual int GetDeploymentState();
 virtual int GetStageCap();
 virtual int GetStageProgress();
+virtual std::string GetLastError();
 
 public: // Методы доступа к данным
 
