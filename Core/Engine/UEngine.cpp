@@ -3227,6 +3227,10 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 
    if(destcont->AddComponent(cont))
    {
+	if(!cont->IsInit())
+	 cont->Init(); // TODO: Возможно тут надо учитывать настройки конфигурации?
+	else
+     cont->Reset();
 	TempString=cont->GetName();
    }
    else

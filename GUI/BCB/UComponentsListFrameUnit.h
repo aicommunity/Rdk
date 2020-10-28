@@ -204,6 +204,9 @@ protected:		// User declarations
 		// Выбранный вход объекта
 		std::string SelectedComponentInput;
 
+		// Имя выделенного свойства (независимо от того чем оно является)
+		std::string SelectedComponentPropertyName;
+
 		// true если запрещено изменение значений дерева реестра
 		bool TreeReadOnlyFlag;
 
@@ -283,6 +286,9 @@ public:
 		// Выбранный вход объекта
 		const std::string& GetSelectedComponentInput(void) const;
 
+		// Имя выделенного свойства (независимо от того чем оно является)
+		const std::string& GetSelectedComponentPropertyName(void) const;
+
 		// Включение-выключение отображения параметров в виде xml
 		bool GetShowXMLComponentParameters(void) const;
 
@@ -345,12 +351,6 @@ void UpdateState(void);
 
 // Обновляет данные ввода-вывода
 void UpdateIO(void);
-
-// Обновляет данные списка параметров
-void UpdateParametersList(void);
-
-// Обновляет данные списка переменных состояния
-void UpdateStatesList(void);
 
 // Обновляет данные измененного списка параметров
 void UpdateNiceParamsList(TEnchancedSG *frame);

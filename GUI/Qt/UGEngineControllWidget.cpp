@@ -47,8 +47,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
     watchFormWidget=NULL;
-    tcpServerControlWindow=NULL;
-    tcpServerControlWidget=0;
+    watchWindow = NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -127,9 +126,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
 
-    tcpServerControlWidget = new UTcpServerControlWidget(this, application);
-    tcpServerControlWidget->hide();
-
     statusPanel = new UStatusPanel(this, application);
     ui->statusBar->addWidget(statusPanel, 1);
     connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
@@ -180,8 +176,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
-    //connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
-    connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
+    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -261,30 +256,6 @@ void UGEngineControllWidget::actionLoadConfig()
     {
       QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
     }
-}
-
-void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
-{
- try
- {
-  application->OpenProject(config_path.toLocal8Bit().constData());
-
-  this->setWindowTitle("project: " + config_path);
-
-  /*QStringList list = configFileName.split("/");
-  list.pop_back();*/
-
-  //RDK::UIVisualControllerStorage::UpdateInterface(true);
-  //drawEngine->updateScheme(true);
- }
- catch(RDK::UException& e)
- {
-  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
- }
- catch(std::exception& e)
- {
-  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
- }
 }
 
 void UGEngineControllWidget::actionCreateConfig()
@@ -579,6 +550,14 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
+    if(watchWindow != NULL) watchWindow->show();
+    else
+    {
+        watchWindow = new UWatch(this);
+        watchWindow->setWindowTitle("Watch window");
+        watchWindow->show();
+    }
+    /*
  if(!graphWindow )
  {
      graphWindow = new QMainWindow(this);
@@ -600,7 +579,7 @@ void UGEngineControllWidget::actionWatchWindow()
 
     graphWindow->activateWindow();
     //отобразить *graphWindowWidget
-//    ui->dockWidgetGraph->show();
+//    ui->dockWidgetGraph->show();*/
 }
 
 void UGEngineControllWidget::actionProfiling()
@@ -622,24 +601,6 @@ void UGEngineControllWidget::actionProfiling()
 
     //отобразить *graphWindowWidget
 //    ui->dockWidgetGraph->show();
-}
-
-void UGEngineControllWidget::actionTcpServer()
-{
-    if(!tcpServerControlWindow )
-    {
-        tcpServerControlWindow = new QMainWindow(this);
-        tcpServerControlWindow->setWindowTitle("TcpServerControl");
-        //graphWindow->setCentralWidget(graphWindowWidget);
-        //graphWindowWidget->show();
-        tcpServerControlWindow->setCentralWidget(tcpServerControlWidget);
-    }
-
-    tcpServerControlWindow->resize(tcpServerControlWidget->size());
-    tcpServerControlWidget->show();
-    tcpServerControlWindow->show();
-    tcpServerControlWindow->showNormal();
-    tcpServerControlWindow->activateWindow();
 }
 
 void UGEngineControllWidget::actionNewWatches()

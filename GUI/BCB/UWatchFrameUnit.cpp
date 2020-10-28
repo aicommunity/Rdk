@@ -32,18 +32,11 @@ TUWatchInfo::TUWatchInfo(void)
  SeriesIndex=-1;
  Color=TColor(0);
 
- X=0;
- Y=0;
  XYSize=0;
  Style=psDot;
  LineWidth=3;
 
  Visible=true;
-
- XOutputIndexOld=0;
- XOutputElementIndex=0;
- YOutputIndexOld=0;
- YOutputElementIndex=0;
 
  // Координаты выхода, хранящего данные по оси Y для случая MDMatrix
  MRow=0;
@@ -75,12 +68,8 @@ TUWatchInfo::TUWatchInfo(const TUWatchInfo &wd)
 
  XDataSourceName=wd.XDataSourceName;
  XOutputIndex=wd.XOutputIndex;
- XOutputIndexOld=wd.XOutputIndexOld;
- XOutputElementIndex=wd.XOutputElementIndex;
  YDataSourceName=wd.YDataSourceName;
  YOutputIndex=wd.YOutputIndex;
- YOutputIndexOld=wd.YOutputIndexOld;
- YOutputElementIndex=wd.YOutputElementIndex;
  MRow=wd.MRow;
  MCol=wd.MCol;
  MVectorName=wd.MVectorName;
@@ -106,12 +95,8 @@ TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
 
  XDataSourceName=wd.XDataSourceName;
  XOutputIndex=wd.XOutputIndex;
- XOutputIndexOld=wd.XOutputIndexOld;
- XOutputElementIndex=wd.XOutputElementIndex;
  YDataSourceName=wd.YDataSourceName;
  YOutputIndex=wd.YOutputIndex;
- YOutputIndexOld=wd.YOutputIndexOld;
- YOutputElementIndex=wd.YOutputElementIndex;
  MRow=wd.MRow;
  MCol=wd.MCol;
 
@@ -478,8 +463,7 @@ int __fastcall TUWatchFrame::GetNumWatches(void)
 int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 {
  SelectedSeriesIndex=-1;
- if(wd.XOutputIndex.empty() || wd.YOutputIndex.empty())
- {
+
  // Проверяем, есть ли серия с такими же данными
  int seriesindex=-1;
 
@@ -488,16 +472,10 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  int i=0;
  while(I != NameList.end())
   {
-   if((wd.Type != 0x200 && wd.Type !=0x400 && ((wd.Y && (wd.Y == I->Y)) ||
-   (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndexOld == wd.XOutputIndexOld &&
-	I->XOutputElementIndex == wd.XOutputElementIndex &&
-	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndexOld == wd.YOutputIndexOld &&
-	I->YOutputElementIndex == wd.YOutputElementIndex)))/* ||
-	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y)*/)
+   if(I->YDataSourceName == wd.YDataSourceName &&
+	I->YOutputIndex == wd.YOutputIndex && I->MCol == wd.MCol && I->MRow == wd.MRow)
 	return i;
 
-   if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
-	return i;
    ++I; ++i;
   }
 
@@ -505,6 +483,13 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  seriesindex=NameList.size()-1;
  NameList[seriesindex]=wd;
 
+   RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
+
+   RDK::UControllerDataReader * data=env->RegisterDataReader(wd.YDataSourceName,wd.YOutputIndex,wd.MRow,wd.MCol);
+   if(data)
+   {
+	data->SetTimeInterval(wd.WatchInterval);
+   }
 
  // Добавляем новый график
  TFastLineSeries *ser;
@@ -526,61 +511,11 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 
  ModifyState=true;
  return seriesindex;
- }
- else
- {
- // Проверяем, есть ли серия с такими же данными
- int seriesindex=-1;
-
- vector<TUWatchInfo>::iterator I;
- I=NameList.begin();
- int i=0;
- while(I != NameList.end())
-  {
-   if((wd.Type != 0x200 && wd.Type !=0x400 && ((wd.Y && (wd.Y == I->Y)) ||
-   (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndex == wd.XOutputIndex &&
-	I->XOutputElementIndex == wd.XOutputElementIndex &&
-	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndex == wd.YOutputIndex &&
-	I->YOutputElementIndex == wd.YOutputElementIndex))) ||
-	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
-	return i;
-
-   if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
-	return i;
-   ++I; ++i;
-  }
-
- NameList.resize(NameList.size()+1);
- seriesindex=NameList.size()-1;
- NameList[seriesindex]=wd;
-
-
- // Добавляем новый график
- TFastLineSeries *ser;
-
- ser=new TFastLineSeries(Chart1);
- ser->ParentChart=Chart1;
- ser->Title=wd.Legend.c_str();
- ser->ColorSource=wd.Color;
- ser->SeriesColor=wd.Color;
- ser->Pen->Style=wd.Style;
- ser->Pen->Width=wd.LineWidth;
-
- // ...заносим точки в серию
- StepUpdate();
-
-// AddSeries(NameList.size()-1);
-
- // ... добавляем остальное...
-
- ModifyState=true;
- return seriesindex;
- }
 }
 
 // Добавление нового наблюдения по имени компонента и индексу выхода
 // Возвращает индекс серии
-int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
+int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
  SelectedSeriesIndex=-1;
  TUWatchInfo wd;
@@ -589,37 +524,21 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
  wd.YShift=yshift;
  wd.XOutputIndex=xoutput;
- wd.XOutputElementIndex=xoutindex;
 
  wd.YOutputIndex=youtput;
- wd.YOutputElementIndex=youtindex;
  wd.MRow=mrow;
  wd.MCol=mcol;
  wd.Type=type;
 
  if(wd.Type == 0x200)
  {
-  if(!yname.empty())
-  {
    wd.Legend=yname+std::string(":")+youtput;
    wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
    wd.Legend+=RDK::sntoa(mcol)+string(")");
-  }
  }
  else
  {
-  if(!yname.empty())
-  {
-   wd.Legend=yname;
-   wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
-   wd.Legend+=RDK::sntoa(youtindex)+string("]");
-  }
-  else
-  if(!xname.empty())
-  {
-   wd.Legend=xname;
-   wd.Legend+=string(":")+RDK::sntoa(xoutput);
-  }
+   wd.Legend=yname+std::string(":")+youtput;
  }
 
  if(color == 0) // Подбор подходящего цвета
@@ -636,65 +555,9 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  return Add(wd);
 }
 
-int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
-{
- SelectedSeriesIndex=-1;
- TUWatchInfo wd;
- wd.FullUpdate=false;
- //wd.WatchInterval=watchinterval;
 
- wd.YShift=yshift;
- wd.XOutputIndexOld=xoutput;
- wd.XOutputElementIndex=xoutindex;
-
- wd.YOutputIndexOld=youtput;
- wd.YOutputElementIndex=youtindex;
- wd.MRow=mrow;
- wd.MCol=mcol;
- wd.Type=type;
-
- if(wd.Type == 0x200)
- {
-  if(!yname.empty())
-  {
-   wd.Legend=yname;
-   wd.Legend+=string("[")+RDK::sntoa(youtput)+string("]");
-   wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
-   wd.Legend+=RDK::sntoa(mcol)+string(")");
-  }
- }
- else
- {
-  if(!yname.empty())
-  {
-   wd.Legend=yname;
-   wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
-   wd.Legend+=RDK::sntoa(youtindex)+string("]");
-  }
-  else
-  if(!xname.empty())
-  {
-   wd.Legend=xname;
-   wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
-   wd.Legend+=RDK::sntoa(xoutindex)+string("]");
-  }
- }
-
- if(color == 0) // Подбор подходящего цвета
-  wd.Color=Chart1->GetFreeSeriesColor(true);
- else
-  wd.Color=color;
-
- wd.XDataSourceName=xname;
- wd.YDataSourceName=yname;
-
- if(xname.empty())
-  wd.XYSize=1;
- wd.Style=style;
- return Add(wd);
-}
-
-int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift, TPenStyle style, TColor color)
+/*
+int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift, TPenStyle style, TColor color)
 {
  SelectedSeriesIndex=-1;
  TUWatchInfo wd;
@@ -702,10 +565,8 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 
  wd.YShift=yshift;
  wd.XOutputIndex=xoutput;
- wd.XOutputElementIndex=xoutindex;
 
  wd.YOutputIndex=youtput;
- wd.YOutputElementIndex=youtindex;
  wd.MVectorName = mvectorname;
  wd.MVectorIndexX = mvectorindexx;
  wd.MVectorIndexY = mvectorindexy;
@@ -723,19 +584,6 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  }
  else
  {
-  if(!yname.empty())
-  {
-   wd.Legend=yname;
-   wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
-   wd.Legend+=RDK::sntoa(youtindex)+string("]");
-  }
-  else
-  if(!xname.empty())
-  {
-   wd.Legend=xname;
-   wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
-   wd.Legend+=RDK::sntoa(xoutindex)+string("]");
-  }
  }
 
  if(color == 0) // Подбор подходящего цвета
@@ -751,7 +599,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  wd.Style=style;
  return Add(wd);
 }
-
+    */
 
 // Удаление наблюдения
 void __fastcall TUWatchFrame::Del(int seriesindex)
@@ -838,6 +686,7 @@ void __fastcall TUWatchFrame::SeriesEnable(int seriesindex)
 // Обновление информации за 'stepcount' прошедших шагов интегрирования
 void __fastcall TUWatchFrame::StepUpdate(void)
 {
+ RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
  for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
  {
   TUWatchInfo *wd;
@@ -845,243 +694,57 @@ void __fastcall TUWatchFrame::StepUpdate(void)
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
 
+  if(Chart1->SeriesCount()<=seriesindex)
+   continue;
+
   TChartSeries* series=Chart1->Series[seriesindex];
 
   if(!series)
    continue;
 
   static_cast<TFastLineSeries*>(series)->DrawAllPoints=true;
-//  static_cast<TFastLineSeries*>(series)->Stairs=true;
 
   if(!wd->Visible)
    continue;
 
-   const double *x=0, *y=0;
-   const RDK::MDMatrix<double> *ym=0;
-   double xdata;
-   std::vector<double> vxdata, vydata;
+   std::list<double>::iterator buffIX, buffIY;
+   RDK::UControllerDataReader* data=env->GetDataReader(wd->YDataSourceName.c_str(), wd->YOutputIndex, wd->MRow, wd->MCol);
+   if(!data)
+	continue;
 
-   if(wd->Type == 0x400)
+   int data_size=data->XData.size();
+
+   wd->X.set_length(data_size);
+   wd->Y.set_length(data_size);
+
+   buffIX=data->XData.begin();
+   buffIY=data->YData.begin();
+   int i=0;
+   for(;buffIX != data->XData.end();buffIX++,buffIY++,i++)
    {
-     std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
-	 int data_size=0;                                                                                                 
-	 if(wd->MVectorName == "Row")
-	 {
-	  data_size=ym->GetCols();
-	  if(componentName=="PulseReceiver")
-	  {	
-	   vxdata.assign(2*data_size,0);
-	   vydata.assign(2*data_size,0);
-	  }
-	  else
-	  {	
-	   vxdata.assign(data_size,0);
-	   vydata.assign(data_size,0);
-	  }
-	  if(componentName!="PulseReceiver")
-	  {
-	  for(int i=0; i<data_size; i++)
-	   {
-		vxdata[i]=(*ym)(wd->MVectorIndexX, i);
-		vydata[i]=(*ym)(wd->MVectorIndexY, i);
-	   }
-	  }
-	  else
-	  {
-	   for(int i=0; i<data_size; i++)
-	   {
-		vxdata[2*i]=(*ym)(wd->MVectorIndexX, i);
-		vxdata[2*i+1]=(*ym)(wd->MVectorIndexX, i);
-		vydata[2*i+1]=(*ym)(wd->MVectorIndexY, i);
-		if(vydata[2*i+1]==1)
-		 vydata[2*i]=0;
-		else if (vydata[2*i+1]==0)
-		 vydata[2*i]=1;
-	   }
-	  }
-	 }
-	 else if(wd->MVectorName == "Col")
-	 {
-	  data_size=ym->GetRows();
-	  vxdata.assign(data_size,0);
-	  vydata.assign(data_size,0);
-	  for(int i=0; i<data_size; i++)
-	  {
-	   vxdata[i]=(*ym)(i, wd->MVectorIndexX);
-	   vydata[i]=(*ym)(i, wd->MVectorIndexY);
-	  }
-	 }
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=data_size;
+	wd->X[i]=*buffIX;
+	wd->Y[i]=*buffIY+wd->YShift;
    }
-   else
-   if(wd->YDataSourceName.size() && wd->XDataSourceName.size()==0)
-   {
-	 xdata=Model_GetDoubleTime();
-	 x=&xdata;
 
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
-	 if(!ym)
-	 {
-	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
-	  if(!y)
-	   continue;
-	 }
-	 else
-	 {
-	  if(ym->GetRows()<=wd->MRow || ym->GetCols()<=wd->MCol)
-	   continue;
-	  y=&(*ym)(wd->MRow,wd->MCol);
-	  if(!y)
-	   continue;
-	 }
-   }
-   else
-   if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
-   {
-	 const RDK::MDMatrix<double>* mm=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->XDataSourceName.c_str(), wd->XOutputIndex.c_str()));
-	 if(!mm)
-      continue;
-
-	 RDK::MDMatrix<double> m=*mm;
-	 if(m.GetRows()<=0)
-      continue;
-     int xdata_size=m.GetCols();//Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
-	 vxdata.assign(xdata_size*3+2,0);
-	 vydata.assign(xdata_size*3+2,0);
-	 double* xx=m.Data;//(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
-
-
-	 if(!xx || !xdata_size)
-	 {
-	  vxdata[0]=Model_GetDoubleTime();
-	  vydata[0]=0;
-	 }
-	 else
-	 {
-	  vxdata[0]=xx[0]-0.0001;
-	  vydata[0]=0;
-	  for(int i=0,j=1;i<xdata_size;i++,j+=3)
-	  {
-	   vxdata[j]=xx[i]-0.0001;
-	   vydata[j]=0;
-	   vxdata[j+1]=xx[i];
-	   vydata[j+1]=1;
-	   vxdata[j+2]=xx[i]+0.0001;
-	   vydata[j+2]=0;
-	  }
-	  vxdata[xdata_size*3+1]=Model_GetDoubleTime();
-	  vydata[xdata_size*3+1]=0;
-	 }
-
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=xdata_size*3+2;
-   }
-   else
-   {
-	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
-	int ydata_size=Model_GetComponentOutputDataSize(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
-	int data_size=(xdata_size<ydata_size)?xdata_size:ydata_size;
-	 vxdata.assign(data_size,0);
-	 vydata.assign(data_size,0);
-	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndexOld);
-	 double* yy=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
-	 if(!xx || !yy)
-	  continue;
-	 for(int i=0,j=0;i<data_size;i++,j++)
-	 {
-	  vxdata[j]=xx[i];
-	  vydata[j]=yy[i];
-	 }
-
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=data_size;
-   }
+   wd->XYSize=data_size;
 
   // Смотрим способ обновления данных наблюдения...
-  if(wd->FullUpdate)
+  static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
+
+  if(wd->XYSize>0 && wd->X.get_length() == wd->XYSize)
   {
-   series->Clear();
+   series->XValues->Value=wd->X;
+   series->XValues->Count=wd->XYSize;
+   series->XValues->Modified=true;
 
-//   if(!wd->YDataSourceName.size())
-//	continue;
-
-   static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
-
-	for(int i=0;i<wd->XYSize;i++)
-	{
-	 if(!x || !y || ISNAN(x[i]) || ISNAN(y[i]))
-	  continue;
-	 series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
-	}
-   static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
+   series->YValues->Value=wd->Y;
+   series->YValues->Count=wd->XYSize;
+   series->YValues->Modified=true;
   }
-  else
-  {
-//   if(wd->WatchInterval < 0)
-//	continue;
 
-//   if(!wd->YDataSourceName.size())
-//	continue;
+  Chart1->BottomAxis->Automatic=true;
 
-   static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
-   for(int i=0;i<wd->XYSize;i++)
-   {
-	if(!x || !y || ISNAN(x[i]) || ISNAN(y[i]))
-	 continue;
-	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
-   }
-
-   Chart1->BottomAxis->Automatic=false;
-   if(wd->WatchInterval>0)
-   {
-	double ser_max,ser_min;
-	do{
-	 if(series->Count() > 1)
-	 {
-	  ser_max=series->XValue[series->Count()-1];
-	  ser_min=series->XValue[1];
-	 }
-	 else
-	 {
-	  ser_max=0;
-	  ser_min=0;
-	 }
-
-	 if(ser_max-wd->WatchInterval<0)
-	 {
-	  Chart1->BottomAxis->Minimum=0;
-	  Chart1->BottomAxis->Maximum=wd->WatchInterval;
-	 }
-	 else
-	 if(ser_max-wd->WatchInterval<Chart1->BottomAxis->Maximum)
-	 {
-	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;
-	  Chart1->BottomAxis->Maximum=ser_max;
-	 }
-	 else
-	 {
-	  Chart1->BottomAxis->Maximum=ser_max;
-	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;
-	 }
-
-	 if(fabs(ser_max-ser_min) > wd->WatchInterval)
-	 {
-	  series->Delete(0);
-//	  series->Delete(0);
-	 }
-	}while (fabs(ser_max-ser_min) > wd->WatchInterval);
-   }
-   else
-   {
-	Chart1->BottomAxis->Automatic=true;
-   }
-   static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
-  }
+  static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   ModifyState=true;
  }
 }
@@ -1399,12 +1062,8 @@ void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
    xml.WriteInteger("LineWidth",NameList[seriesindex].LineWidth);
    xml.WriteString("XDataSourceName",NameList[seriesindex].XDataSourceName);
    xml.WriteString("XOutputIndexNew",NameList[seriesindex].XOutputIndex);
-   xml.WriteInteger("XOutputIndex",NameList[seriesindex].XOutputIndexOld);
-   xml.WriteInteger("XOutputElementIndex",NameList[seriesindex].XOutputElementIndex);
    xml.WriteString("YDataSourceName",NameList[seriesindex].YDataSourceName);
    xml.WriteString("YOutputIndexNew",NameList[seriesindex].YOutputIndex);
-   xml.WriteInteger("YOutputIndex",NameList[seriesindex].YOutputIndexOld);
-   xml.WriteInteger("YOutputElementIndex",NameList[seriesindex].YOutputElementIndex);
    xml.WriteInteger("XYSize", NameList[seriesindex].XYSize);
    xml.WriteFloat("WatchInterval", NameList[seriesindex].WatchInterval);
 
@@ -1491,13 +1150,9 @@ void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
 	wd->Style=(TPenStyle)xml.ReadInteger("Style",psSolid);
 	wd->LineWidth=xml.ReadInteger("LineWidth",1);
 	wd->XDataSourceName=xml.ReadString("XDataSourceName","");
-	wd->XOutputIndexOld=xml.ReadInteger("XOutputIndex",0);
 	wd->XOutputIndex=xml.ReadString("XOutputIndexNew","");
-	wd->XOutputElementIndex=xml.ReadInteger("XOutputElementIndex",0);
 	wd->YDataSourceName=xml.ReadString("YDataSourceName","");
-	wd->YOutputIndexOld=xml.ReadInteger("YOutputIndex",0);
 	wd->YOutputIndex=xml.ReadString("YOutputIndexNew","");
-	wd->YOutputElementIndex=xml.ReadInteger("YOutputElementIndex",0);
 	wd->XYSize=xml.ReadInteger("XYSize", 1);
 	wd->Visible=xml.ReadBool("Visible",true);
 	wd->WatchInterval=xml.ReadFloat("WatchInterval", 5);
@@ -1564,24 +1219,6 @@ void __fastcall TUWatchFrame::bmp1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
-{
- UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
- if(UComponentsListForm->ShowIOSelect() != mrOk)
-  return;
-
- std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
- std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- std::string::size_type i=comp_output.find("DataOutput");
- if(i == std::string::npos)
- {
-  return;
- }
- comp_output=comp_output.substr(10);
-
- Add(0, "",comp_name,0,0,RDK::atoi(comp_output),0,0,0);
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 {
@@ -1591,24 +1228,11 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 
  std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
-// std::string::size_type i=comp_output.find("DataOutput");
-/* if(i == std::string::npos)
- {
-  return;
- }
- comp_output=comp_output.substr(10);
-   */
- //comp_output="0";
+
  int num_watches=GetNumWatches();
  int yshift=num_watches+1;
 
- //Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0,yshift);
- Add(0x100, comp_name, "", comp_output, 0, "", 0, 0, 0, yshift,psSolid, TColor(0));
- //Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
-
-//   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
-//  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
-// Add(0x100, "",componentName,"",0,componentOutput,0,0,0);
+ Add(0x100, comp_name, "", comp_output, "", 0, 0, yshift,psSolid, TColor(0));
 }
 //---------------------------------------------------------------------------
 
@@ -1625,18 +1249,19 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
-  const RDK::MDMatrix<double> *ym=0;
-  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
-  if(!ym)
-   return;
+//  const RDK::MDMatrix<double> *ym_double=0;
+//  const RDK::MDMatrix<int> *ym_int=0;
+//  ym_double=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
 
-  if(!MatrixForm->SelectMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),
-								UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput()))
-   return;
 
-  if(MatrixForm->ShowModal() != mrOk)
-   return;
-
+ int type=0x0;
+  if(MatrixForm->SelectMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),
+								UComponentsListForm->ComponentsListFrame1->GetSelectedComponentPropertyName()))
+  {
+   type=0x200;
+   if(MatrixForm->ShowModal() != mrOk)
+	return;
+  }
    /*
   UListInputForm->PresentSelect=true;
   UListInputForm->MustInput=true;
@@ -1660,72 +1285,12 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   int col=MatrixForm->SelectedCol;
   int row=MatrixForm->SelectedRow;
   std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
-  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
- Add(0x200, "",componentName,"",0,componentOutput,0,row,col);
+  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentPropertyName();
+ Add(type, "",componentName,"",componentOutput,row,col);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUWatchFrame::AddTimeYWatchold1Click(TObject *Sender)
-{
- UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
- if(UComponentsListForm->ShowIOSelect() != mrOk)
-  return;
 
- int index=UComponentsListForm->ComponentsListFrame1->OutputsStringGrid->Row-1;
- if(index>=0)
-  Add(0, "", UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(), 0, 0, index, 0, 0, 0);
-// Add(0, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TUWatchFrame::AddTimeVectorWatch1Click(TObject *Sender)
-{
-  UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
-  if(UComponentsListForm->ShowIOSelect() != mrOk)
-   return;
-
-  const RDK::MDMatrix<double> *ym=0;
-  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
-  if(!ym)
-   return;
-
-  UListInputForm->PresentSelect=true;
-  UListInputForm->MustInput=true;
-  vector<string> listvals;
-  listvals.resize(2);
-  listvals[0]="Row";
-  listvals[1]="Col";
-
-  
-  UListInputForm->Init("Rows or Cols?",listvals,"0");
-  if(UListInputForm->ShowModal() != mrOk)
-   return;
-  std::string vectorName=AnsiString(UListInputForm->Edit->Text).c_str();
-
-  if(vectorName == "Row")
-   listvals.resize(ym->GetRows());
-  else if(vectorName == "Col")
-   listvals.resize(ym->GetCols());
-
-  for(size_t i=0;i<listvals.size();i++)
-   listvals[i]=RDK::sntoa(i,2);
-  UListInputForm->Init("Input X"+vectorName+" Number",listvals,"0");
-  if(UListInputForm->ShowModal() != mrOk)
-   return;
-  int vectorIndexX=StrToInt(UListInputForm->Edit->Text);
-
-  for(size_t i=0;i<listvals.size();i++)
-  listvals[i]=RDK::sntoa(i,2);
-  UListInputForm->Init("Input Y"+vectorName+" Number",listvals,"0");
-  if(UListInputForm->ShowModal() != mrOk)
-   return;
-  int vectorIndexY=StrToInt(UListInputForm->Edit->Text);
-
-  std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
-  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
-  Add(0x400, "",componentName,"",0,componentOutput,0,vectorName,vectorIndexX, vectorIndexY);
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUWatchFrame::DeleteActiveWatch1Click(TObject *Sender)
 {

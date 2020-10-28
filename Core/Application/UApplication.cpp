@@ -1883,8 +1883,8 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
  if(!data.empty())
  {
   MModel_Destroy(channel_index);
-  MModel_LoadComponent(channel_index, "",data.c_str());
-  return true;
+  if(MModel_LoadComponent(channel_index, "",data.c_str()) == RDK_SUCCESS)
+   return true;
  }
  return false;
 }
