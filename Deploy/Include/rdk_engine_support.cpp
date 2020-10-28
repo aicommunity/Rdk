@@ -35,6 +35,8 @@ URdkCoreManager::URdkCoreManager(void)
  SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
  SystemLogger.SetDebugMode(true);
  SystemLogger.SetDebuggerMessageFlag(false);
+
+ StorageBuildMode = 1;
 }
 
 URdkCoreManager::~URdkCoreManager(void)
@@ -51,6 +53,19 @@ URdkCoreManager::~URdkCoreManager(void)
 // --------------------------
 // Методы управления данными
 // --------------------------
+
+// Установка необходимого режима сборки
+void URdkCoreManager::SetStorageBuildMode(int mode)
+{
+    StorageBuildMode = mode;
+}
+
+// Получение текущего режима сборки
+int URdkCoreManager::GetStorageBuildMode()
+{
+    return StorageBuildMode;
+}
+
 // Возвращает имя каталога бинарных файлов
 const char* URdkCoreManager::GetSystemDir(void)
 {
@@ -616,6 +631,8 @@ int URdkCoreManager::ChannelCreate(int index)
     ChannelDestroy(index);
     return RDK_E_CORE_STORAGE_CREATE_FAIL;
    }
+   //
+   StorageList[index]->SetBuildMode(StorageBuildMode);
 
    EnvironmentList[index]=FuncCreateNewEnvironment();
    if(!EnvironmentList[index])

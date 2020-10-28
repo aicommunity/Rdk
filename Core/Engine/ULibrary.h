@@ -147,6 +147,9 @@ const vector<string>& GetComplete(void) const;
 
 // Содержит имена всех не загруженных образцов
 const vector<string>& GetIncomplete(void) const;
+
+// Очищает оба списка Complete и Incomplete
+void ClearIncompleteAndComplete(void);
 // --------------------------
 
 // --------------------------

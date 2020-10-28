@@ -5,7 +5,7 @@
 #include "UStorage.h"
 
 namespace RDK {
-
+// TODO вывод в Logger информации о несозданных свойствах
 /* *************************************************************************** */
 // --------------------------
 // Конструкторы и деструкторы
@@ -22,10 +22,10 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     // Вызов всех добавленных функций создания свойств
     if(!GetStorage())
         return;
-    std::vector<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
+    std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
     int size = funcs.size();
     size++;
-    for (std::vector<funcCrPropMock>::iterator f = funcs.begin();
+    for (std::list<funcCrPropMock>::iterator f = funcs.begin();
          f != funcs.end(); ++f)
     {
         (*f)(serstorage, this);

@@ -21,6 +21,7 @@ See file license.txt for more information
 
 #include "UComponentFactory.h"
 
+
 namespace RDK {
 
 /* *********************************************************************** */
@@ -144,15 +145,23 @@ UId LastClassId;
 int BuildMode;
 
 // Массив функций-создателей Property для MockUNet
-std::vector<funcCrPropMock> FunctionsCrPropMock;
+std::list<funcCrPropMock> FunctionsCrPropMock;
 
 protected: // Временные переменные
 
 
 public: // Методы
-bool AddFuncCrPropMock(funcCrPropMock func_ptr);
+// Установка необходимого режима сборки
+void SetBuildMode(int mode);
 
-const std::vector<funcCrPropMock> &GetFunctionsCrPropMock() const;
+// Получение текущего режима сборки
+int GetBuildMode();
+
+// Добавление функции-создателя свойств для UMockUnet
+bool AddCrPropMockFunc(funcCrPropMock func_ptr);
+
+// Получение массива функций-создателей свойств для UMockUnet
+const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -321,9 +330,16 @@ const string& GetCollectionName(int index);
 // Возвращает версию библиотеки по индексу
 const string& GetCollectionVersion(int index);
 
+// Очищает списки Complete и Incomplete во всех библиотеках
+void ClearAllLibsClassesNameArrays(void);
+
 // Возвращается строку runtime-библиотек, разделенных запятой
 // Буфер 'buffer' будет очищен от предыдущих значений
 void GetRTlibsNameList(std::string &buffer) const;
+
+// Возвращается строку mock-библиотек, разделенных запятой
+// Буфер 'buffer' будет очищен от предыдущих значений
+void GetMocklibsNameList(std::string &buffer) const;
 
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);

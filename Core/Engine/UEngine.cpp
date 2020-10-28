@@ -21,6 +21,7 @@ See file license.txt for more information
 #include "UEnvException.h"
 #include "../../Deploy/Include/rdk_error_codes.h"
 #include "UComponentFactory.h"
+#include "UMockUNet.h"
 
 // --------------------------------------
 // Объявления дополнительных функций
@@ -382,6 +383,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
    ClassesList.clear();
    if(LoadPredefinedLibraries())
 	return false;
+   if(LoadPredefinedCrPropFunctions())
+    return false;
    if(LoadClasses())
 	return false;
    if(LoadLibraries())
@@ -7360,8 +7363,10 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 
    Storage->BuildStorage();
 
-   //Storage->CreateMockLibs();
-   //Storage->SaveMockLibs();
+   /*
+   Storage->CreateMockLibs();
+   Storage->SaveMockLibs();
+   */
 
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
   }
@@ -7385,6 +7390,17 @@ int UEngine::LoadPredefinedLibraries(void)
 {
  RdkLoadPredefinedLibraries(LibrariesList);
 
+ return 0;
+}
+
+//Загружает функции формирования свойств для фиктивных компонентов из библиотек в хранилище
+int UEngine::LoadPredefinedCrPropFunctions(void)
+{
+ if(!Storage)
+     return 0;
+ // Добавление базового набора создаталей-свойств
+ Storage->AddCrPropMockFunc(UBasePropCreator::BaseCrPropMock);
+ RdkLoadPredefinedCrPropFunctions(Storage);
  return 0;
 }
 

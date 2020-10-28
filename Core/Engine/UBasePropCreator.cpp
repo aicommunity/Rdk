@@ -21,12 +21,6 @@ UBasePropCreator::UBasePropCreator()
 
 }
 
-bool UBasePropCreator::AddFuncCrPropFunc(RDK::UStorage * storage)
-{
-    storage->AddFuncCrPropMock(BaseCrPropMock);
-    return true;
-}
-
 bool UBasePropCreator::BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     // Проход по ТИПАМ свойств: Paramenters -> State -> Input -> Output
@@ -335,7 +329,7 @@ public:
         else
         {
             serstorage->SelectNode("elem",size-1);
-            type = serstorage->GetNodeAttribute("elemType");
+            type = serstorage->GetNodeAttribute("Type");
             serstorage->SelectUp();
         }
 
@@ -423,6 +417,11 @@ public:
         if(type == "UBitmapParam")
         {
             CreatorProperty<PropType, TypeInt, std::vector<UBitmapParam> >::CreatePropertyByType(serstorage, mock_unet);
+            return true;
+        }
+        if(type == "UBitmap")
+        {
+            CreatorProperty<PropType, TypeInt, std::vector<UBitmap> >::CreatePropertyByType(serstorage, mock_unet);
             return true;
         }
 //        //Из RTV

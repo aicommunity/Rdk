@@ -2,6 +2,7 @@
 #define UMOCKUNET_H
 
 #include "UNet.h"
+#include "UBasePropCreator.h"
 
 extern std::vector<std::string> ForbiddenInputs;
 extern std::vector<std::string> ForbiddenOutputs;

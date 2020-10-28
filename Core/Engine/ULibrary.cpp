@@ -180,6 +180,13 @@ const vector<string>& ULibrary::GetIncomplete(void) const
 {
  return Incomplete;
 }
+
+// Очищает оба списка Complete и Incomplete
+void ULibrary::ClearIncompleteAndComplete(void)
+{
+    Incomplete.clear();
+    Complete.clear();
+}
 // --------------------------
 
 // --------------------------

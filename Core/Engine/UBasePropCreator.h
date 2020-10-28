@@ -14,8 +14,6 @@ class UBasePropCreator
 public:
     UBasePropCreator();
 
-    static bool AddFuncCrPropFunc(RDK::UStorage * storage);
-
     static bool BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
     // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства

@@ -19,7 +19,7 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
-#include "UBasePropCreator.h"
+
 namespace RDK {
 
 /* *********************************************************************** */
@@ -106,8 +106,7 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UStorage::UStorage(void):
-        BuildMode(3)
+UStorage::UStorage(void)
 {
  LastClassId=0;
 }
@@ -963,7 +962,17 @@ const string& UStorage::GetCollectionVersion(int index)
  return CollectionList[index]->GetVersion();
 }
 
-// Возвращается строку runtime-библиотек, разделенных запятой
+// Очищает списки Complete и Incomplete во всех библиотеках
+void UStorage::ClearAllLibsClassesNameArrays(void)
+{
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+     UEPtr<ULibrary> lib=CollectionList[i];
+     lib->ClearIncompleteAndComplete();
+    }
+}
+
+// Возвращает строку runtime-библиотек, разделенных запятой
 // Буфер 'buffer' будет очищен от предыдущих значений
 void UStorage::GetRTlibsNameList(std::string &buffer) const
 {
@@ -972,6 +981,24 @@ void UStorage::GetRTlibsNameList(std::string &buffer) const
     {
         UEPtr<ULibrary> lib = CollectionList[i];
         if(lib && lib->GetType() == 2)
+        {
+            buffer.append(lib->GetName());
+            buffer.append(",");
+        }
+    }
+    if(!buffer.empty())
+         buffer.erase(buffer.length()-1);
+}
+
+// Возвращает строку mock-библиотек, разделенных запятой
+// Буфер 'buffer' будет очищен от предыдущих значений
+void UStorage::GetMocklibsNameList(std::string &buffer) const
+{
+    buffer.clear();
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        UEPtr<ULibrary> lib = CollectionList[i];
+        if(lib && lib->GetType() == 3)
         {
             buffer.append(lib->GetName());
             buffer.append(",");
@@ -1320,8 +1347,6 @@ bool UStorage::DelCollection(int index)
 
 bool UStorage::InitMockLibs(void)
 {
-    UBasePropCreator::AddFuncCrPropFunc(this);
-
     // Папка с библиотеками-заглушками
     std::string lib_path = "../../../MockLibs/";
     std::string lib_list_file = "../../../MockLibs/0_LibList.xml";
@@ -1460,6 +1485,7 @@ bool UStorage::DelAllCollections(void)
 // Операция предварительно уничтожает модель и очищает хранилище
 bool UStorage::BuildStorage(void)
 {
+ ClearAllLibsClassesNameArrays();
  switch (BuildMode)
  {
  case 1:
@@ -1709,8 +1735,20 @@ void UStorage::DelLookupClass(const NameT &name)
  ClassesLookupTable.erase(I);
 }
 // --------------------------
+// Уставнока необходимого режима сборки
+void UStorage::SetBuildMode(int mode)
+{
+    BuildMode = mode;
+}
+
+// Получение текущего режима сборки
+int UStorage::GetBuildMode()
+{
+    return BuildMode;
+}
+
 // Публичные методы для работы с функциями-создалеями свойства для UMockUnet-ов
-bool UStorage::AddFuncCrPropMock(funcCrPropMock func_ptr)
+bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
 {
     // Нулевой указатель
     if(func_ptr == 0)
@@ -1724,11 +1762,11 @@ bool UStorage::AddFuncCrPropMock(funcCrPropMock func_ptr)
     return true;
 }
 
-const std::vector<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
+// Получение массива функций-создателей свойств для UMockUnet
+const std::list<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
 {
     return FunctionsCrPropMock;
 }
-
 
 /* *************************************************************************** */
               /*

@@ -46,6 +46,7 @@ UApplication::UApplication(void)
  ModelsMainPath="../../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
+ StorageBuildMode = 1;
  //SetStandartXMLInCatalog();
 
 
@@ -309,8 +310,36 @@ bool UApplication::IsInit(void) const
 {
  return AppIsInit;
 }
-// --------------------------
 
+/// Установка необходимого режима сборки
+void UApplication::SetStorageBuildMode(int mode)
+{
+ StorageBuildMode = mode;
+ CloseProject();
+ RDK::GetCoreLock()->SetStorageBuildMode(StorageBuildMode);
+
+ int size = GetNumChannels();
+
+ for(int i = 0; i<size;i++)
+ {
+     MCore_ChannelInit(i,0,(void*)ExceptionHandler);
+ }
+
+
+}
+
+/// Получение текущего режима сборки
+int UApplication::GetStorageBuildMode()
+{
+ return StorageBuildMode;
+}
+// --------------------------
+/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+void UApplication::CreateSaveMockLibs()
+{
+    RDK::GetStorageLock()->CreateMockLibs();
+    RDK::GetStorageLock()->SaveMockLibs();
+}
 // --------------------------
 // Методы инициализации
 // --------------------------
