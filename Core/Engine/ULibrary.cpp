@@ -434,7 +434,7 @@ void ULibrary::FillMockLibrary(UMockLibrary* lib)
 
     Storage->FreeObjectsStorage();
 
-    return true;
+    return;
 }
 // --------------------------
 

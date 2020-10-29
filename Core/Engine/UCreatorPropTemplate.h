@@ -1,5 +1,7 @@
 #ifndef UCREATORPROPTEMPLATE_H
 #define UCREATORPROPTEMPLATE_H
+#include "UStorage.h"
+#include "UMockUNet.h"
 #include "../../Deploy/Include/rdk.h"
 
 //  ласс дл€ частичной специализации своего метода CreatePropertyByType.
