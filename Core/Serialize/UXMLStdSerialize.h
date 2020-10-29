@@ -169,6 +169,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
  return storage;
 }
 
+USerStorageXML& operator << (USerStorageXML& storage, const UnKnow &data);
+USerStorageXML& operator >> (USerStorageXML& storage, UnKnow &data);
+
 // Пары
 template<typename T1, typename T2>
 USerStorageXML& operator << (USerStorageXML& storage, const std::pair<T1,T2> &data)

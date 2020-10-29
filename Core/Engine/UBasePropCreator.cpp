@@ -1,14 +1,33 @@
 #include "UBasePropCreator.h"
 #include "UComponent.h"
+#include "../Utilities/USupport.h"
 
-std::vector<std::string> ForbiddenInputs  = {"DataInput0", "DataInput1", "DataInput2","DataInput3" , "DataInput4", "DataInput5"};
-std::vector<std::string> ForbiddenOutputs = {"DataOutput0", "DataOutput1", "DataOutput2", "DataOutput3", "DataOutput4", "DataOutput5"};
+std::vector<std::string> ForbiddenInputs;
+std::vector<std::string> ForbiddenOutputs;
 
 using namespace RDK;
 
 UBasePropCreator::UBasePropCreator()
 {
+ if(ForbiddenInputs.empty())
+ {
+  ForbiddenInputs.push_back("DataInput0");
+  ForbiddenInputs.push_back("DataInput1");
+  ForbiddenInputs.push_back("DataInput2");
+  ForbiddenInputs.push_back("DataInput3");
+  ForbiddenInputs.push_back("DataInput4");
+  ForbiddenInputs.push_back("DataInput5");
+ }
 
+ if(ForbiddenOutputs.empty())
+ {
+  ForbiddenOutputs.push_back("DataOutput0");
+  ForbiddenOutputs.push_back("DataOutput1");
+  ForbiddenOutputs.push_back("DataOutput2");
+  ForbiddenOutputs.push_back("DataOutput3");
+  ForbiddenOutputs.push_back("DataOutput4");
+  ForbiddenOutputs.push_back("DataOutput5");
+ }
 }
 
 bool UBasePropCreator::BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
@@ -195,14 +214,14 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
     // MVector
     if(type.find("MVector",0) == 0)
     {
-        CreatorProperty<PropType, TypeInt, MVector<UnKnow,0> >::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
+		CreatorProperty<PropType, TypeInt, MVector<UnKnow,1> >::CreatePropertyByType(serstorage,mock_unet);
+		return;
+	}
 
-    // MMatrix
-    if(type.find("MMatrix",0) == 0)
-    {
-        CreatorProperty<PropType, TypeInt, MMatrix<UnKnow,0,0> >::CreatePropertyByType(serstorage,mock_unet);
+	// MMatrix
+	if(type.find("MMatrix",0) == 0)
+	{
+        CreatorProperty<PropType, TypeInt, MMatrix<UnKnow,1,1> >::CreatePropertyByType(serstorage,mock_unet);
         return;
     }
 }
@@ -1047,7 +1066,7 @@ public:
 
 // Частичная специализация для MMatrix [rows,cols] - [3,3][4,4] типы - double, int, bool
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-class CreatorProperty<PropType, TypeInt, MMatrix<UnKnow,0,0> >
+class CreatorProperty<PropType, TypeInt, MMatrix<UnKnow,1,1> >
 {
 public:
     static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
@@ -1103,7 +1122,7 @@ public:
             }
             if( (rows == 4) && (cols == 4))
             {
-                CreatorProperty<PropType, TypeInt, MMatrix<double,4,4> >::CreatePropertyByType(serstorage, mock_unet);
+				CreatorProperty<PropType, TypeInt, MMatrix<double,4,4> >::CreatePropertyByType(serstorage, mock_unet);
                 return true;
             }
         }

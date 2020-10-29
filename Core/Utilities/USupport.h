@@ -84,6 +84,22 @@ See file license.txt for more information
 #define ISNAN(x) ((x) != (x))
 #endif
 
+// Класс заглушка для параметризации типов, где неизвестен некоторый внутренний тип
+class UnKnow
+{
+private:
+public:
+    UnKnow() {}
+};
+
+// Класс заглушка для "простого" вектора
+class simpleVector
+{
+private:
+public:
+ simpleVector() {}
+};
+
 
 namespace RDK {
 

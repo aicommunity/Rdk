@@ -227,7 +227,7 @@ void UProjectDeployProcessingThread::run()
 
 std::string UProjectDeployProcessingThread::GetLastError()
 {
-
+ return std::string("");
 }
 
 bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, const QString& dst_zip_file)
@@ -612,7 +612,7 @@ void UProjectDeployProcessingThread::DeployScript()
 
 bool UProjectDeployProcessingThread::VerifyScript()
 {
-
+ return true; // TODO:
 }
 
 void UProjectDeployProcessingThread::DeployWeights()
@@ -745,7 +745,7 @@ void UProjectDeployProcessingThread::DeployData()
 
 bool UProjectDeployProcessingThread::VerifyData()
 {
-
+ return true; // TODO:
 }
 
 // --------------------------

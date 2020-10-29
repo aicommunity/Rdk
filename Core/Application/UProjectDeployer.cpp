@@ -51,7 +51,7 @@ void UProjectDeployer::SetDatabaseAccess(const std::string &db_address,
 
 int UProjectDeployer::GetDeploymentState()
 {
-
+ return 0;
 }
 
 int UProjectDeployer::GetStageCap()

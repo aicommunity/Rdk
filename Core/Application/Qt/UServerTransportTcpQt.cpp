@@ -181,7 +181,7 @@ void UServerTransportTcpQt::ServerNewConnection()
       connect(sqt, SIGNAL(onDisconnected(std::string)), this, SLOT(SocketDisconnected(std::string)));
 
       serverSockets[bnd] = sqt;
-      Application->GetServerControl()->GetServerTransport()->ConnectClient(bnd);
+      Application->GetServerControl()->GetServerTransport()->ClientConnect(bnd);
       //Application->GetServerControl()->ProcessIncomingData(bnd, Application->GetServerControl()->GetServerTransport());
      }
     }
@@ -194,7 +194,7 @@ void UServerTransportTcpQt::SocketReadyRead(std::string bind)
 
 void UServerTransportTcpQt::SocketDisconnected(std::string bind)
 {
-    Application->GetServerControl()->GetServerTransport()->DisconnectClient(bind);
+    Application->GetServerControl()->GetServerTransport()->ClientDisconnect(bind);
     //Получить ссылку на сокет
     std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
     if(I!=serverSockets.end())

@@ -9,7 +9,9 @@
 #include <QMutex>
 #include <thread>
 #include <mutex>
+#ifdef __unix__
 #include <curl/curl.h>
+#endif
 
 struct FtpFile {
   const char *filename;

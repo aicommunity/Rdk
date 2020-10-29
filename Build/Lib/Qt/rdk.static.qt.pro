@@ -300,5 +300,6 @@ unix {
 
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
+    QMAKE_CXXFLAGS += /bigobj
 }
 

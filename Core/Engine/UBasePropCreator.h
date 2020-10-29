@@ -24,20 +24,4 @@ public:
 
 };
 
-
-// Класс заглушка для параметризации типов, где неизвестен некоторый внутренний тип
-class UnKnow
-{
-private:
-    UnKnow() {}
-};
-
-// Класс заглушка для "простого" вектора
-class simpleVector
-{
-private:
-    simpleVector() {}
-};
-
-
 #endif // UBASEPROPCREATOR_H

@@ -1447,7 +1447,7 @@ bool UStorage::SaveMockLibs(void)
 
             LibList.AddNode("library");
             LibList.SetNodeAttribute("Version",lib->GetVersion());
-            LibList.SetNodeAttribute("Revision",std::to_string(lib->GetRevision()));
+            LibList.SetNodeAttribute("Revision",sntoa(lib->GetRevision()));
             LibList.SetNodeAttribute("CoreVersion",GetGlobalVersion().ToStringFull());
             LibList.SetNodeText(lib->GetName());
             LibList.SelectUp();
@@ -1456,6 +1456,7 @@ bool UStorage::SaveMockLibs(void)
 
     std::string file_name = "../../../MockLibs/0_LibList.xml";
     LibList.SaveToFile(file_name);
+    return true;
 }
 
 // Удаляет подключенную библиотеку из списка по имени

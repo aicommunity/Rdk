@@ -681,7 +681,7 @@ bool UMockLibrary::SaveLibraryToFile()
 
     CurrentComponentStruct.SetNodeAttribute("Name", Name);
     CurrentComponentStruct.SetNodeAttribute("Version", Version);
-    CurrentComponentStruct.SetNodeAttribute("Revision", std::to_string(Revision));
+    CurrentComponentStruct.SetNodeAttribute("Revision", sntoa(Revision));
     CurrentComponentStruct.SetNodeAttribute("CoreVersion",GetGlobalVersion().ToStringFull());
 
     // XML со всеми компонентами
