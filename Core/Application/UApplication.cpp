@@ -470,6 +470,26 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
  return true;
 }
 
+/// Деплоер проекта (под кончретную задачу)
+UEPtr<UProjectDeployer> UApplication::GetProjectDeployer(void)
+{
+ return ProjectDeployer;
+}
+
+ bool UApplication::SetProjectDeployer(const UEPtr<UProjectDeployer> &value)
+{
+     if(ProjectDeployer == value)
+      return true;
+
+     if(ProjectDeployer)
+      ProjectDeployer->SetApplication(0);
+
+     ProjectDeployer=value;
+     ProjectDeployer->SetApplication(this);
+
+     return true;
+}
+
 const std::list<StandartXMLInCatalog>&  UApplication::GetStandartXMLInCatalog(void) const
 {
     return xmlInCatalog;
@@ -641,6 +661,7 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
   catch(po::unknown_option &ex)
   {
    MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_WARNING,ex.what());
+   throw ex;
    return;
   }
 

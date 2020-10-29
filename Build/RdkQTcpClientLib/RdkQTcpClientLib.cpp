@@ -258,6 +258,11 @@ int Rpc_UnInit(void)
  return 0;
 }
 
+bool Rpc_IsInit()
+{
+  return (ClientsArray.size()>0);
+}
+
 
 /// Коммуникация с сервером
 int Rpc_Ping(int server_index, int timeout)
@@ -408,6 +413,11 @@ int Rpc_AddServer(void)
  return 0;
 }
 
+int Rpc_LastServerId()
+{
+ return (int)ClientsArray.size()-1;
+}
+
 int Rpc_DelServer(int server_index)
 {
  if((int)ClientsArray.size()-1 < server_index)
@@ -491,6 +501,42 @@ int Rpc_GetChannelName(int server_index, int channel_index, const char* &result,
  return 0;
 }
 
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    request.Create("Request");
+    request.WriteInteger("Test", -1);
+    int res=ProcessSimpleCommand("GetDeploymentState", server_index, -1, timeout, request, response);
+    if(res)
+     return res;
+
+    static std::string res_string;
+    res_string=response.ReadString("Data", "").c_str();
+
+    //int state=-1;
+    std::stringstream ss(res_string.c_str());
+    ss>>dp_state>>dp_progress>>dp_cap;
+
+    //dp_state=state;
+    return res;
+}
+
+int  Rpc_GetLastError(int server_index, int channel_indes, int timeout, const char* &err_str)
+{
+    RDK::USerStorageXML request,response;
+    request.Create("Request");
+    int res=ProcessSimpleCommand("GetLastError", server_index, -1, timeout, request, response);
+    /*if(res)
+     return res;*/
+
+    static std::string res_string;
+    res_string=response.ReadString("Data", "").c_str();
+
+    err_str = res_string.c_str();
+
+    return res;
+}
+
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout)
 {
  RDK::USerStorageXML request,response;
@@ -515,4 +561,25 @@ int Rpc_LoadProject(int server_index, const char* project_path, int timeout)
     request.Create("Request");
     request.WriteString("FileName", project_path);
     return ProcessSimpleCommand("LoadProject", server_index, -1, timeout, request, response);
+}
+
+
+int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    request.Create("Request");
+    request.WriteInteger("TaskId", task_index);
+    int res=ProcessSimpleCommand("DeployProject", server_index, 0, timeout, request, response);
+
+    static std::string res_string;
+    res_string=response.ReadString("Data", "").c_str();
+    resp = atoi(res_string.c_str());
+
+
+    //result=res_string.c_str();
+
+    if(res)
+     return res;
+
+
 }

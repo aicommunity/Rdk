@@ -146,6 +146,31 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
   return true;
  }
  else
+ if(cmd == "DeployProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetDeploymentState")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetLastError")
+ {
+  return true;
+ }
+ /*else
+ if(cmd == "GetDeploymentStageMax")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetDeploymentStagePosition")
+ {
+  return true;
+ }*/
+ else
  if(cmd == "StopVideoSource")
   return true;
 
@@ -335,6 +360,65 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    GetApplication()->SaveProject();
    return_value=0;//UServerControlForm->SaveProject();
   }
+  else
+  if(cmd == "DeployProject")
+  {
+   int task_id=xml.ReadInteger("TaskId",-1);
+   int resp = GetApplication()->GetProjectDeployer()->StartProjectDeployment(task_id);
+   std::stringstream ss;
+   ss<<resp;
+   response = ss.str();
+   return_value=0;
+  }
+  else
+  if(cmd == "GetDeploymentState")
+  {
+   //GetApplication()->SaveProject();
+   int d_state = GetApplication()->GetProjectDeployer()->GetDeploymentState();
+   int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
+   int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
+
+   std::stringstream ss;
+   ss<<d_state<<" "<<stage_pos<<" "<<stage_max;
+   response=ss.str();
+   return_value=0;//UServerControlForm->SaveProject();
+  }
+  else
+  if(cmd == "GetLastError")
+  {
+   std::string last_error=GetApplication()->GetProjectDeployer()->GetLastError();
+   //GetApplication()->SaveProject();
+   int d_state = GetApplication()->GetProjectDeployer()->GetDeploymentState();
+   int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
+   int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
+
+   std::stringstream ss;
+   ss<<d_state<<" "<<stage_pos<<" "<<stage_max;
+   response=ss.str();
+   return_value=0;
+  }
+/*
+  else
+  if(cmd == "GetDeploymentStageMax")
+  {
+   //GetApplication()->SaveProject();
+
+   std::stringstream ss;
+   ss<<stage_max;
+   response=ss.str();
+   return_value=0;//UServerControlForm->SaveProject();
+  }
+  else
+  if(cmd == "GetDeploymentStagePosition")
+  {
+   //GetApplication()->SaveProject();
+   int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
+   std::stringstream ss;
+   ss<<stage_pos;
+   response=ss.str();
+   return_value=0;//UServerControlForm->SaveProject();
+  }
+*/
  }
 // }
 

@@ -64,6 +64,8 @@ int  Rpc_Init(int num_serverPtz_MoveZoom);
 
 int  Rpc_UnInit(void);
 
+bool Rpc_IsInit();
+
 /// Коммуникация с сервером
 int  Rpc_Ping(int server_index, int timeout);
 
@@ -74,6 +76,8 @@ int  Rpc_Disconnect(int server_index);
 int  Rpc_AddServer(void);
 
 int  Rpc_DelServer(int server_index);
+
+int  Rpc_LastServerId();
 
 ///////////////
 
@@ -89,10 +93,14 @@ int  Rpc_SetNumChannels(int server_index, int num_channels, int timeout);
 
 int  Rpc_GetChannelName(int server_index, int channel_index, const char* &result, int timeout);
 
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout);
+
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout);
 
  int Rpc_SaveProject(int server_index, int timeout);
 
  int Rpc_LoadProject(int server_index, const char* project_path, int timeout);
+
+ int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout=-1);
 
 #endif // RDKQTCPCLIENTLIB_H
