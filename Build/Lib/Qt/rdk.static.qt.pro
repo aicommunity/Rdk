@@ -5,12 +5,18 @@
 #-------------------------------------------------
 
 QT       -= gui
+QT       += network
 
 TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
 
 include(RdkDefines.pri)
+
+contains(DEFINES, RDK_USE_SQL)
+{
+ QT += sql
+}
 
 #DEFINES += LIBRDK_LIBRARY_EXPORT
 #DEFINES += RDK_UNICODE_RUN
@@ -142,13 +148,12 @@ SOURCES += \
     ../../../Core/Application/UServerControl.cpp \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
+    ../../../Core/Application/Qt/UServerTransportTcpQt.cpp \
     ../../../Core/Application/UTestManager.cpp \
     ../../../Core/System/Gcc/pevents.cpp \
     ../../../Core/Engine/UComponentFactory.cpp \
     ../../../Deploy/Include/rdk_version.cpp \
     ../../../Core/Application/UProjectDeployer.cpp \
-    ../../../Core/Application/Qt/UProjectDeployerQt.cpp \
-    ../../../Core/Application/UServerTransportHttp.cpp \
     ../../../Core/Application/UServerTransportHttp.cpp
 
 HEADERS +=\
@@ -272,14 +277,22 @@ HEADERS +=\
     ../../../Core/Application/UServerControl.h \
     ../../../Core/Application/UServerTransport.h \
     ../../../Core/Application/UServerTransportTcp.h \
+    ../../../Core/Application/Qt/UServerTransportTcpQt.h \
     ../../../Core/Application/UTestManager.h \
     ../../../Core/System/Gcc/pevents.h \
     ../../../Core/Engine/UComponentFactory.h \
     ../../../Deploy/Include/rdk_version.h \
     ../../../Core/Application/UProjectDeployer.h \
-    ../../../Core/Application/Qt/UProjectDeployerQt.h \
-    ../../../Core/Application/UServerTransportHttp.h \
     ../../../Core/Application/UServerTransportHttp.h
+
+contains(DEFINES, RDK_USE_SQL)
+{
+SOURCES += \
+    ../../../Core/Application/Qt/UProjectDeployerQt.cpp # \
+
+HEADERS +=\
+    ../../../Core/Application/Qt/UProjectDeployerQt.h # \
+}
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt

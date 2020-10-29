@@ -24,7 +24,9 @@
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
 #include"UWatch.h"
+#include "UTcpServerControlWidget.h"
 //////////////////////////
+#include "UCurlFtpClientTestWidget.h"
 //#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
 namespace Ui {
@@ -76,6 +78,9 @@ public:
 
     ///Показывает виджет с переключением каналов
     void showChannelsWidget(void);
+
+    ///Загрузить проект из внешнего источника (пока только из конфигуратора на основе СУБД)
+    void loadProjectExternal(const QString &config_path);
 
     //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
@@ -130,10 +135,12 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-    void actionWatchWindow();///<-----------
+    void actionWatchWindow();
     void actionNewWatches();
     void actionProfiling();
+    void actionTcpServer();
     //void actionVASimpleSettings();
+    void actionFtpTest();
 
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
@@ -162,7 +169,10 @@ private:
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
+    QMainWindow *tcpServerControlWindow;
+    UTcpServerControlWidget *tcpServerControlWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+    UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
     /// Массив виджетов отображения картинок
     std::vector<USubTabDescriptionImages> imagesVector;

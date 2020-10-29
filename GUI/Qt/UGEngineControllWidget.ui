@@ -163,6 +163,7 @@
     <addaction name="menuBroadcasters"/>
     <addaction name="actionServerControl"/>
     <addaction name="actionTcpServer"/>
+    <addaction name="actionFtpTest"/>
    </widget>
    <widget class="QMenu" name="menuNewWindow">
     <property name="title">
@@ -704,6 +705,11 @@
   <action name="actionBuildMode3">
    <property name="text">
     <string>Build Mode 3 (Mock -&gt; RT)</string>
+   </property>
+  </action>
+  <action name="actionFtpTest">
+   <property name="text">
+    <string>Ftp Test</string>
    </property>
   </action>
  </widget>
