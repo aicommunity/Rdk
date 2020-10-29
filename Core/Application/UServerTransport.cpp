@@ -114,13 +114,13 @@ void UServerTransport::SendResponseBuffer(std::vector<unsigned char> buffer, std
 
 }
 
-void UServerTransport::ClientConnect(std::string& bind)
+void UServerTransport::ConnectClient(std::string& bind)
 {
  PacketReaders[bind].ResetProcessing();
  PacketReaders[bind].ClearPacketList();
 }
 
-void UServerTransport::ClientDisconnect(std::string& bind)
+void UServerTransport::DisconnectClient(std::string& bind)
 {
  std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
  if(I != PacketReaders.end())
