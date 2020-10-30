@@ -108,12 +108,6 @@ private:
     void DeployData();
     bool VerifyData();
 
-
-    //Не уверен, что это надо, мб через стейт получать?
-    //bool ErrorOccured();
-    //Нужна нормальная интерпретация того, какая ошибка случилась, для человека
-    //std::string GetLastError();
-
 private:
     QMutex deploymentStateMutex;
     QMutex deploymentProgressMutex;
@@ -207,6 +201,8 @@ QString download_temp_path;
 
 UProjectDeployProcessingThread *deployProcessingThread;
 
+std::string lastError;
+
 /*
 //Дубликация?
 //Пути к проекту (вар-т 1)
@@ -240,6 +236,7 @@ virtual int GetDeploymentState();
 virtual int GetStageCap();
 virtual int GetStageProgress();
 virtual std::string GetLastError();
+virtual std::string GetProjectFileName();
 
 public: // Методы доступа к данным
 

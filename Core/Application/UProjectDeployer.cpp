@@ -79,6 +79,11 @@ std::string UProjectDeployer::GetLastError()
     return std::string();
 }
 
+std::string UProjectDeployer::GetProjectFileName()
+{
+    return std::string();
+}
+
 /*
 void UProjectDeployer::SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id)
 {

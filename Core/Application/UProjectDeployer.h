@@ -65,6 +65,7 @@ virtual int GetStageCap();
 virtual int GetStageProgress();
 
 virtual std::string GetLastError();
+virtual std::string GetProjectFileName();
 
 virtual void SetFtpRemotePath(const std::string &path);
 

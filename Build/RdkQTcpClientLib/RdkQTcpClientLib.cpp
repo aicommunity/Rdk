@@ -580,6 +580,12 @@ int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout)
 
     if(res)
      return res;
-
-
 }
+
+int Rpc_OpenDeployedProject(int server_index, int timeout)
+{
+    RDK::USerStorageXML request,response;
+
+    return ProcessSimpleCommand("OpenDeployedProject", server_index, -1, timeout, request, response);
+}
+

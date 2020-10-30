@@ -30,6 +30,8 @@ UProjectDeployProcessingThread::~UProjectDeployProcessingThread()
 }
 
 
+
+
 void UProjectDeployProcessingThread::processReadyReadStandardError()
 {
     //std::cout<<"Unzip process std_error: "<<zip_process.readAllStandardError();
@@ -227,7 +229,7 @@ void UProjectDeployProcessingThread::run()
 
 std::string UProjectDeployProcessingThread::GetLastError()
 {
-
+    return lastError;
 }
 
 bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, const QString& dst_zip_file)
@@ -240,12 +242,16 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
         //8QMessageBox::information(this, "error", "Remote file path is empty");
 
         std::cout<<"Remote file path is empty";
+
+        std::stringstream ss;
+        lastError = "Zip download file path was empty";
         return false;
     }
     if(dst_zip_file=="")
     {
         //QMessageBox::information(this, "error", "Path to receive file is empty");
         std::cout<<"Path to receive file is empty";
+        lastError = "Zip destination file path was empty";
         return false;
     }
 
@@ -273,6 +279,7 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
      if(!fi.exists())
      {
       std::cout<<"Directory to save file is not exists, create it before start";
+      lastError = "Attempt to download/unpack to inexistent directory";
       return false;
      }
 
@@ -280,6 +287,7 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
      if(ls.size()<2)
      {
          std::cout<<"Wrong remote file path '"<<dst_zip_file.toUtf8().constData();
+         lastError = "Wrong zip download remote file path";
          return false;
      }
 
@@ -341,6 +349,10 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
         if(CURLE_OK != res) {
           /* we failed */
           std::cerr<<"curl told us "<<res<<std::endl;
+          std::stringstream ss_curl;
+          ss_curl<<"curl told us "<<res;
+          lastError = ss_curl.str();
+          return false;
         }
     }
     if(ftp_file.stream!=NULL)
@@ -437,6 +449,7 @@ void UProjectDeployProcessingThread::DeployTemplate()
         if(!DownloadZip(ftp_project_path, download_zip_file))
         {
             std::cout<<"Download ERROR";
+            lastError+=" Download Error";
             SetDeploymentState(DeploymentState::DS_Error);
             return;
         }
@@ -449,6 +462,7 @@ void UProjectDeployProcessingThread::DeployTemplate()
     if(!UnpackZipFolder(download_zip_file, du_d.path()))
     {
         std::cout<<"Unpack ERROR";
+        lastError+=" Unpack Error";
         SetDeploymentState(DeploymentState::DS_Error);
         return;
     }
@@ -591,6 +605,7 @@ void UProjectDeployProcessingThread::DeployScript()
         if(!DownloadZip(remote_ftp_zip_path, zip_download_path))
         {
             std::cout<<"Download ERROR";
+            lastError+=" Download Error";
             SetDeploymentState(DeploymentState::DS_Error);
             return;
         }
@@ -603,6 +618,7 @@ void UProjectDeployProcessingThread::DeployScript()
     if(!UnpackZipFolder(zip_download_path, du_d.path()))
     {
         std::cout<<"Unpack ERROR";
+        lastError+=" Unpack Error";
         SetDeploymentState(DeploymentState::DS_Error);
         return;
     }
@@ -649,7 +665,9 @@ void UProjectDeployProcessingThread::DeployWeights()
     {
         if(!DownloadZip(ftp_zip_file, dwd_zip_file))
         {
-           qDebug()<<"Dowonlad error";
+           qDebug()<<"Download error";
+            lastError+=" Download Error";
+            SetDeploymentState(DeploymentState::DS_Error);
            return;
         }
     }
@@ -658,6 +676,8 @@ void UProjectDeployProcessingThread::DeployWeights()
         if(!UnpackZipFolder(dwd_zip_file, zip_unpack_dir))
         {
             qDebug()<<"Unpack error";
+            lastError+=" Unpack Error";
+            SetDeploymentState(DeploymentState::DS_Error);
             return;
         }
     }
@@ -727,18 +747,24 @@ void UProjectDeployProcessingThread::DeployData()
     if(!DownloadZip(ftp_remote_path, dwd_zip_file))
     {
         qDebug()<<"Dowonlad error";
+        lastError+=" Download Error";
+        SetDeploymentState(DeploymentState::DS_Error);
         return;
     }
 
     if(!dwd_fi.exists())
     {
         qDebug()<<"File "<<dwd_fi.absoluteFilePath()<<" not exists, cannot be unpacked";
+        lastError+=" Downloaded file not exists, cannot be unpacked";
+        SetDeploymentState(DeploymentState::DS_Error);
         return;
     }
 
     if(!UnpackZipFolder(dwd_zip_file, unpack_zip_fiolder))
     {
         qDebug()<<"Zip file "+dwd_zip_file+" unpack error";
+        lastError+=" Unpack error";
+        SetDeploymentState(DeploymentState::DS_Error);
         return;
     }
 }
@@ -807,21 +833,34 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  int ds = GetDeploymentState();
  if(ds!=DeploymentState::DS_NULL)
  {
+    lastError = "Deployment thread exists and currently active";
      return 20;
  }
 
  if(!DestroyProcessingThread())
  {
+    lastError = "Deployment thread exists and cannot be destroyed";
      return 20;
  }
 
  if(task_id<0)
-     return 1;
+ {
+    std::stringstream ss;
+    ss<<"Wrong task_id sent by server controller "<<task_id;
+    lastError = ss.str();
+    return 1;
+ }
 
  if(!db)
+ {
+    lastError = "Database pointer is NULL";
      return 1;
+ }
  if(!db->isOpen()&&db->isValid())
-     return 2;
+ {
+    lastError = "Database connection is not opened or database connection is not valid";
+    return 2;
+ }
 
  //Получить данные из базы (по индексу)
  QSqlQuery q(*db);
@@ -829,7 +868,11 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  q.exec();
  q.first();
  if(!q.isValid())
+ {
+     lastError = "Task query by task id invalid";
      return 3;
+ }
+
 
  task_name = q.value(0).toString();
  task_template_id = q.value(1).toInt();
@@ -846,7 +889,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  q.exec();
  q.first();
  if(!q.isValid())
+ {
+    lastError = "Project query by project id invalid";
      return 4;
+ }
 
  task_template_name = q.value(0).toString();
  task_template_path = q.value(1).toString();
@@ -893,7 +939,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  q.first();
 
  if(!q.isValid())
+ {
+    lastError = "Weights query by weights id invalid";
      return 5;
+ }
 
  task_weights_path = q.value(0).toString();
  QString weights_conf_path = q.value(1).toString();
@@ -932,8 +981,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  q.exec();
  q.first();
  if(!q.isValid())
+ {
+    lastError = "Script query by script id invalid";
      return 6;
-
+ }
  task_script_path = q.value(0).toString();
  QString abs_script_path = task_script_path;
  abs_script_path.replace("{Database}", database_path);
@@ -959,6 +1010,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      q.first();
      if(!q.isValid())
      {
+        lastError = "Video query by video id invalid";
          return 7;
      }
      task_src_path = q.value(0).toString();
@@ -982,6 +1034,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      q.first();
      if(!q.isValid())
      {
+        lastError = "Image sequence query by imseq id invalid";
          return 8;
      }
      task_src_path = q.value(0).toString();
@@ -1008,7 +1061,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      }
  }
  else
+ {
+     lastError = "Invalid video source type index";
      return 10;
+ }
 
  //Потом и вообще, возможно, "/tmp/..."
  //Это куда грузить, распаковка должна идти по стандартному пути в {Database}/...
@@ -1021,7 +1077,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  if(deployProcessingThread)
  {
      if(!DestroyProcessingThread())
+     {
+         lastError = "Unable to destroy processing thread";
          return 20;
+     }
  }
 
  deployProcessingThread = new UProjectDeployProcessingThread();
@@ -1050,16 +1109,23 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
 
  deployProcessingThread->RunProjectDeployment();
+ lastError = "";
  return 0;
 }
 
 void UProjectDeployerQt::AConnectToDatabase()
 {
     if(db==NULL)
+    {
         db=new QSqlDatabase();
-
-    if(db->isOpen())
-        db->close();
+    }
+    else
+    {
+        if(db->isOpen())
+            db->close();
+        delete db;
+        db=new QSqlDatabase();
+    }
 
     *db = QSqlDatabase::addDatabase("QPSQL");
 
@@ -1095,13 +1161,18 @@ enum DeploymentState
 
 std::string UProjectDeployerQt::GetLastError()
 {
+    std::string le = "";
+    if(lastError!="")
+    {
+        le = "UProjectDeployerQt lastError="+lastError+" ";
+    }
     if(deployProcessingThread==NULL)
     {
-        return "NULL";
+        le+="DeployProcessingThread lastError: Deploy thread not exists. ";
     }
     else
     {
-        return deployProcessingThread->GetLastError();
+        return le+="DeployProcessingThread lastError: "+deployProcessingThread->GetLastError();
     }
 }
 
@@ -1115,6 +1186,26 @@ int UProjectDeployerQt::GetDeploymentState()
     {
         bool t = deployProcessingThread->isRunning();
         return deployProcessingThread->GetDeploymentState();
+    }
+}
+
+std::string UProjectDeployerQt::GetProjectFileName()
+{
+    if(task_template_path!="")
+    {
+        QFileInfo fi(task_template_path);
+        if(fi.exists())
+        {
+            return task_template_path.toUtf8().constData();
+        }
+        else
+        {
+            return std::string();
+        }
+    }
+    else
+    {
+        return std::string();
     }
 }
 
