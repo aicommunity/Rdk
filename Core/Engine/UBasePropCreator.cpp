@@ -454,7 +454,7 @@ public:
         //вектор из MVector<T>
         if(type.find("MVector",0) == 0)
         {
-            CreatorProperty<PropType, TypeInt, std::vector<MVector<UnKnow, 0> > >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::vector<MVector<UnKnow, 1> > >::CreatePropertyByType(serstorage, mock_unet);
             return true;
         }
         //вектор из MDMatrix<T>
@@ -569,7 +569,7 @@ public:
 
 // „астична€ специализаци€ дл€ вектора из MVector<T>
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-class CreatorProperty<PropType, TypeInt, std::vector<MVector<UnKnow, 0> > >
+class CreatorProperty<PropType, TypeInt, std::vector<MVector<UnKnow, 1> > >
 {
 public:
     static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
@@ -1017,7 +1017,7 @@ public:
 
 // „астична€ специализаци€ дл€ MVector  size - 2,3,4   тип - double
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-class CreatorProperty<PropType, TypeInt, MVector<UnKnow,0> >
+class CreatorProperty<PropType, TypeInt, MVector<UnKnow,1> >
 {
 public:
     static bool CreatePropertyByType(RDK::USerStorageXML* serstorage, UMockUNet* mock_unet)
