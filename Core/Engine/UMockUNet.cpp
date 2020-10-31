@@ -3,6 +3,8 @@
 
 #include "UMockUNet.h"
 #include "UStorage.h"
+#include "UBasePropCreator.h"
+
 
 namespace RDK {
 // TODO вывод в Logger информации о несозданных свойствах

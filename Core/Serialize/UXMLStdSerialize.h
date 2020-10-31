@@ -171,6 +171,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
 
 USerStorageXML& operator << (USerStorageXML& storage, const UnKnow &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UnKnow &data);
+USerStorageXML& operator << (USerStorageXML& storage, const simpleVector &data);
+USerStorageXML& operator >> (USerStorageXML& storage, simpleVector &data);
+
 
 // Пары
 template<typename T1, typename T2>

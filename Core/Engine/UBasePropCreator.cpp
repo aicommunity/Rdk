@@ -210,10 +210,10 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
         CreatorProperty<PropType, TypeInt, MDVector<UnKnow> >::CreatePropertyByType(serstorage,mock_unet);
         return;
     }
-
-    // MVector
-    if(type.find("MVector",0) == 0)
-    {
+#ifndef __BORLANDC__   // TODO: Разобраться как обеспечить сборку в билдере этой части кода
+	// MVector
+	if(type.find("MVector",0) == 0)
+	{
 		CreatorProperty<PropType, TypeInt, MVector<UnKnow,1> >::CreatePropertyByType(serstorage,mock_unet);
 		return;
 	}
@@ -221,9 +221,10 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
 	// MMatrix
 	if(type.find("MMatrix",0) == 0)
 	{
-        CreatorProperty<PropType, TypeInt, MMatrix<UnKnow,1,1> >::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
+		CreatorProperty<PropType, TypeInt, MMatrix<UnKnow,1,1> >::CreatePropertyByType(serstorage,mock_unet);
+		return;
+	}
+#endif
 }
 
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
@@ -450,7 +451,8 @@ public:
         {
             CreatorProperty<PropType, TypeInt, std::vector<simpleVector> >::CreatePropertyByType(serstorage, mock_unet);
             return true;
-        }
+		}
+
         //вектор из MVector<T>
         if(type.find("MVector",0) == 0)
         {

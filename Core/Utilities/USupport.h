@@ -89,7 +89,13 @@ class UnKnow
 {
 private:
 public:
-    UnKnow() {}
+	UnKnow() {};
+	UnKnow(const UnKnow & value) {};
+	UnKnow(int value) {};
+	bool operator == (const UnKnow &value) const { return true; };
+	bool operator < (const UnKnow &value) const { return false; };
+	bool operator ! (void) const { return false; };
+	UnKnow& operator = (const int &value) { return *this; };
 };
 
 // Класс заглушка для "простого" вектора
@@ -98,6 +104,9 @@ class simpleVector
 private:
 public:
  simpleVector() {}
+
+	bool operator == (const simpleVector &value) const { return true; };
+	bool operator < (const simpleVector &value) const { return false; };
 };
 
 

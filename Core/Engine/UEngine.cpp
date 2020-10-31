@@ -22,6 +22,7 @@ See file license.txt for more information
 #include "../../Deploy/Include/rdk_error_codes.h"
 #include "UComponentFactory.h"
 #include "UMockUNet.h"
+#include "UBasePropCreator.h"
 
 // --------------------------------------
 // ќбъ€влени€ дополнительных функций
