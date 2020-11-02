@@ -161,6 +161,7 @@ void TUComponentsListFrame::AClearInterface(void)
  CurrentPath.clear();
  SelectedComponentOutput.clear();
  SelectedComponentInput.clear();
+ SelectedComponentPropertyName.clear();
 
  SelectedId=-1;
 
@@ -201,6 +202,7 @@ void TUComponentsListFrame::ALoadParameters(RDK::USerStorageXML &xml)
  SelectedComponentParameterName.clear();
  SelectedComponentStateName.clear();
  CurrentPath.clear();
+ SelectedComponentPropertyName.clear();
 
 }
 
@@ -398,78 +400,6 @@ __finally
   OutputsStringGrid->Invalidate();
 }
  UpdateInterfaceFlag=false;
-}
-
-
-// Обновляет данные списка параметров
-void TUComponentsListFrame::UpdateParametersList(void)
-{
-/* if(PageControl1->ActivePage != TabSheet4)
-  return;
- UpdateInterfaceFlag=true;
-
- std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongName().c_str());
- RDK::USerStorageXML xml;
- xml.Load(xml_data,"");
- xml.SelectNode("Parameters");
- int num=xml.GetNumNodes();
-
-
- ParametersListStringGrid->RowCount=1+num;
- ParametersListStringGrid->ColCount=1+3;
-
- if(ParametersListStringGrid->RowCount>1)
-  ParametersListStringGrid->FixedRows=1;
-
- ParametersListStringGrid->Cells[0][0]="#";
- ParametersListStringGrid->Cells[1][0]="Name";
- ParametersListStringGrid->Cells[2][0]="Value";
- ParametersListStringGrid->Cells[3][0]="Description";
-
- for(int i=1;i<ParametersListStringGrid->ColCount;i++)
-  ParametersListStringGrid->ColWidths[i]=10;
-
- for(int i=0;i<num;i++)
- {
-  ParametersListStringGrid->Cells[0][i+1]=IntToStr(i);
-  xml.SelectNode(i);
-  ParametersListStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
-  if(xml.GetNumNodes() == 0)
-   ParametersListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
-  else
-  {
-   std::string value;
-   xml.SaveFromNode(value);
-   ParametersListStringGrid->Cells[2][i+1]=value.c_str();
-  }
-  int global_width=ParametersListStringGrid->ColWidths[0];
-  ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
-  int width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[1][i+1])+10;
-  if(width>ParametersListStringGrid->Width/2)
-   width=ParametersListStringGrid->Width/2;
-  if(ParametersListStringGrid->ColWidths[1]<width)
-   ParametersListStringGrid->ColWidths[1]=width;
-  global_width+=ParametersListStringGrid->ColWidths[1];
-
-  width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[2][i+1])+10;
-  if(width>ParametersListStringGrid->Width/2)
-   width=ParametersListStringGrid->Width/2;
-  if(ParametersListStringGrid->ColWidths[2]<width)
-   ParametersListStringGrid->ColWidths[2]=width;
-  global_width+=ParametersListStringGrid->ColWidths[2];
-
-  width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[3][i+1])+10;
-  if(width < ParametersListStringGrid->Width-global_width)
-   width=ParametersListStringGrid->Width-global_width;
-
-  if(ParametersListStringGrid->ColWidths[3]<width)
-   ParametersListStringGrid->ColWidths[3]=width;
-  xml.SelectUp();
- }
-
- SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
- ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
- UpdateInterfaceFlag=false;  */
 }
 
 // Обновляет данные измененного списка параметров
@@ -715,76 +645,6 @@ __finally
  UpdateInterfaceFlag=false;
 }
 
-// Обновляет данные списка переменных состояния
-void TUComponentsListFrame::UpdateStatesList(void)
-{
-/* if(PageControl1->ActivePage != TabSheet5)
-  return;
- UpdateInterfaceFlag=true;
-
- std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
- RDK::USerStorageXML xml;
- xml.Load(xml_data,"");
- xml.SelectNode("State");
- int num=xml.GetNumNodes();
-
-
- StatesListStringGrid->RowCount=1+num;
- StatesListStringGrid->ColCount=1+3;
-
- if(StatesListStringGrid->RowCount>1)
-  StatesListStringGrid->FixedRows=1;
-
- StatesListStringGrid->Cells[0][0]="#";
- StatesListStringGrid->Cells[1][0]="Name";
- StatesListStringGrid->Cells[2][0]="Value";
- StatesListStringGrid->Cells[3][0]="Description";
-
- for(int i=1;i<StatesListStringGrid->ColCount;i++)
-  StatesListStringGrid->ColWidths[i]=10;
-
- for(int i=0;i<num;i++)
- {
-  StatesListStringGrid->Cells[0][i+1]=IntToStr(i);
-  xml.SelectNode(i);
-  StatesListStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
-  if(xml.GetNumNodes() == 0)
-   StatesListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
-  else
-  {
-   std::string value;
-   xml.SaveFromNode(value);
-   StatesListStringGrid->Cells[2][i+1]=value.c_str();
-  }
-  int global_width=StatesListStringGrid->ColWidths[0];
-  StatesListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
-  int width=StatesListStringGrid->Canvas->TextWidth(StatesListStringGrid->Cells[1][i+1])+10;
-  if(width>StatesListStringGrid->Width/2)
-   width=StatesListStringGrid->Width/2;
-  if(StatesListStringGrid->ColWidths[1]<width)
-   StatesListStringGrid->ColWidths[1]=width;
-  global_width+=StatesListStringGrid->ColWidths[1];
-
-  width=StatesListStringGrid->Canvas->TextWidth(StatesListStringGrid->Cells[2][i+1])+10;
-  if(width>StatesListStringGrid->Width/2)
-   width=StatesListStringGrid->Width/2;
-  if(StatesListStringGrid->ColWidths[2]<width)
-   StatesListStringGrid->ColWidths[2]=width;
-  global_width+=StatesListStringGrid->ColWidths[2];
-
-  width=StatesListStringGrid->Canvas->TextWidth(StatesListStringGrid->Cells[3][i+1])+10;
-  if(width < StatesListStringGrid->Width-global_width)
-   width=StatesListStringGrid->Width-global_width;
-
-  if(StatesListStringGrid->ColWidths[3]<width)
-   StatesListStringGrid->ColWidths[3]=width;
-  xml.SelectUp();
- }
-
- SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
- UpdateInterfaceFlag=false;    */
-}
-
 // Обновляет длинные имена выбранных компонент
 void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
 {
@@ -908,6 +768,13 @@ const std::string& TUComponentsListFrame::GetSelectedComponentOutput(void) const
 const std::string& TUComponentsListFrame::GetSelectedComponentInput(void) const
 {
  return SelectedComponentInput;
+}
+
+
+// Имя выделенного свойства (независимо от того чем оно является)
+const std::string& TUComponentsListFrame::GetSelectedComponentPropertyName(void) const
+{
+ return SelectedComponentPropertyName;
 }
 
 // Включение-выключение отображения параметров в виде xml
@@ -1152,7 +1019,7 @@ void __fastcall TUComponentsListFrame::StateHeaderControlSectionClick(THeaderCon
 
 void __fastcall TUComponentsListFrame::OutputsStringGridClick(TObject *Sender)
 {
- SelectedComponentOutput=AnsiString(OutputsStringGrid->Cells[0][OutputsStringGrid->Row]).c_str();
+ SelectedComponentPropertyName=SelectedComponentOutput=AnsiString(OutputsStringGrid->Cells[0][OutputsStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
@@ -1184,7 +1051,7 @@ void __fastcall TUComponentsListFrame::InputsStringGridDblClick(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::InputsStringGridClick(TObject *Sender)
 {
- SelectedComponentInput=AnsiString(InputsStringGrid->Cells[0][InputsStringGrid->Row]).c_str();
+ SelectedComponentPropertyName=SelectedComponentInput=AnsiString(InputsStringGrid->Cells[0][InputsStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
@@ -1635,7 +1502,7 @@ void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridSelectCell(TOb
 	TProperty p;
 	EnchancedSG1->m_storage.GetPropertyByIndex(ARow-1, &p);
 	NiceParamValRichEdit->Text = p.GetString();
-	SelectedComponentParameterName=AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][ARow]).c_str();
+	SelectedComponentPropertyName=SelectedComponentParameterName=AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][ARow]).c_str();
   }
 
 }
@@ -1650,7 +1517,7 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridSelectCell(TOb
 	TProperty p;
 	EnchancedSG2->m_storage.GetPropertyByIndex(ARow-1, &p);
 	NiceStateValRichEdit->Text = p.GetString();
-	SelectedComponentStateName=AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][ARow]).c_str();
+	SelectedComponentPropertyName=SelectedComponentStateName=AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][ARow]).c_str();
   }
 }
 //---------------------------------------------------------------------------

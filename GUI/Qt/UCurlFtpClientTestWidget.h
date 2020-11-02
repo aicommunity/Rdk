@@ -2,7 +2,9 @@
 #define UCurlFtpClientTestWidget_H
 
 #include "UVisualControllerWidget.h"
+#ifdef __unix__
 #include <curl/curl.h>
+#endif
 
 #include <QProcess>
 namespace Ui {

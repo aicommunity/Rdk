@@ -84,6 +84,31 @@ See file license.txt for more information
 #define ISNAN(x) ((x) != (x))
 #endif
 
+// Класс заглушка для параметризации типов, где неизвестен некоторый внутренний тип
+class UnKnow
+{
+private:
+public:
+	UnKnow() {};
+	UnKnow(const UnKnow & value) {};
+	UnKnow(int value) {};
+	bool operator == (const UnKnow &value) const { return true; };
+	bool operator < (const UnKnow &value) const { return false; };
+	bool operator ! (void) const { return false; };
+	UnKnow& operator = (const int &value) { return *this; };
+};
+
+// Класс заглушка для "простого" вектора
+class simpleVector
+{
+private:
+public:
+ simpleVector() {}
+
+	bool operator == (const simpleVector &value) const { return true; };
+	bool operator < (const simpleVector &value) const { return false; };
+};
+
 
 namespace RDK {
 

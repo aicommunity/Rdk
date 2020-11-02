@@ -10,7 +10,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     CheckModelFlag=false;
     ui->setupUi(this);
 
-    classesList = new UClassesListWidget(this);
+    classesList = new UClassesListWidget(this,app);
 
     ui->verticalLayoutForClassesList->addWidget(classesList);
  //   QRect rect= classesList->geometry();
@@ -23,6 +23,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
 
 
     modelScheme = new UDrawEngineImageWidget(ui->scrollArea);
+    classesList->SetModelScheme(modelScheme);
     modelScheme->SetApplication(app);
     connect(modelScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
     connect(modelScheme, SIGNAL(componentDoubleClick(QString)), this, SIGNAL(componentDoubleClickFromScheme(QString)));
@@ -107,4 +108,9 @@ void UDrawEngineWidget::componentSingleClick(QString name)
 void UDrawEngineWidget::updateScheme(bool reloadXml)
 {
  modelScheme->reDrawScheme(reloadXml);
+}
+
+void UDrawEngineWidget::updateClassesList()
+{
+ classesList->on_tabWidget_currentChanged(0);
 }

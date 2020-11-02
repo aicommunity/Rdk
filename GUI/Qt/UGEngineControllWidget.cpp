@@ -47,6 +47,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
     watchFormWidget=NULL;
+    watchWindow = NULL;
     tcpServerControlWindow=NULL;
     tcpServerControlWidget=0;
     curlFtpClientTestWidget=NULL;
@@ -137,8 +138,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     curlFtpClientTestWidget = new UCurlFtpClientTestWidget(NULL, application);
     curlFtpClientTestWidget->hide();
 
-
-
     connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
     connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
             propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
@@ -154,6 +153,12 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
 
+    updateShemeClassesList();
+    connect(ui->actionBuildMode1,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode1()));
+    connect(ui->actionBuildMode2,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode2()));
+    connect(ui->actionBuildMode3,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode3()));
+
+    connect(ui->actionCreateSaveMockLibs,  SIGNAL(triggered(bool)), this, SLOT(actionCreateSaveMockLibs()));
 
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
 
@@ -387,6 +392,48 @@ void UGEngineControllWidget::actionConfigOptions()
  createConfigurationWizardWidget->show();
 }
 
+void UGEngineControllWidget::actionCreateSaveMockLibs()
+{
+ if(application)
+  application->CreateSaveMockLibs();
+}
+
+void UGEngineControllWidget::updateShemeClassesList()
+{
+ drawEngine->updateScheme(true);
+ drawEngine->updateClassesList();
+ int build_mode = application->GetStorageBuildMode();
+ ui->menuChooseBuildStorageMode->setTitle("Choose Build Storage Mode [" + QString::number(build_mode) +"]");
+}
+
+void UGEngineControllWidget::actionBuildMode1()
+{
+ if(application)
+ {
+  application->SetStorageBuildMode(1);
+  updateShemeClassesList();
+ }
+}
+
+void UGEngineControllWidget::actionBuildMode2()
+{
+ if(application)
+ {
+  application->SetStorageBuildMode(2);
+  updateShemeClassesList();
+ }
+}
+
+void UGEngineControllWidget:: actionBuildMode3()
+{
+ if(application)
+ {
+  application->SetStorageBuildMode(3);
+  updateShemeClassesList();
+ }
+}
+
+
 //chanels menu actions:
 void UGEngineControllWidget::actionAddNew()
 {
@@ -539,6 +586,14 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
+    if(watchWindow != NULL) watchWindow->show();
+    else
+    {
+        watchWindow = new UWatch(this);
+        watchWindow->setWindowTitle("Watch window");
+        watchWindow->show();
+    }
+    /*
  if(!graphWindow )
  {
      graphWindow = new QMainWindow(this);
@@ -560,7 +615,7 @@ void UGEngineControllWidget::actionWatchWindow()
 
     graphWindow->activateWindow();
     //отобразить *graphWindowWidget
-//    ui->dockWidgetGraph->show();
+//    ui->dockWidgetGraph->show();*/
 }
 
 void UGEngineControllWidget::actionProfiling()

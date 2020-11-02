@@ -21,6 +21,8 @@ See file license.txt for more information
 #include "UEnvException.h"
 #include "../../Deploy/Include/rdk_error_codes.h"
 #include "UComponentFactory.h"
+#include "UMockUNet.h"
+#include "UBasePropCreator.h"
 
 // --------------------------------------
 // Объявления дополнительных функций
@@ -382,6 +384,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
    ClassesList.clear();
    if(LoadPredefinedLibraries())
 	return false;
+   if(LoadPredefinedCrPropFunctions())
+    return false;
    if(LoadClasses())
 	return false;
    if(LoadLibraries())
@@ -1613,7 +1617,7 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, c
    if(!library)
 	return RDK_E_STORAGE_COLLECTION_NOT_FOUND;
 
-   if(!Storage->AddClassToCollection(class_name, sample,library))
+   if(!Storage->AddClassToCollection(class_name, "", false, sample,collection_name))
 	return RDK_E_STORAGE_ADD_COLLECTION_FAIL;
 
    AccessCache.clear();
@@ -3224,6 +3228,10 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 
    if(destcont->AddComponent(cont))
    {
+	if(!cont->IsInit())
+	 cont->Init(); // TODO: Возможно тут надо учитывать настройки конфигурации?
+	else
+     cont->Reset();
 	TempString=cont->GetName();
    }
    else
@@ -7356,7 +7364,15 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
    }
 
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
+   Storage->InitRTlibs();
+
    Storage->BuildStorage();
+
+   /*
+   Storage->CreateMockLibs();
+   Storage->SaveMockLibs();
+   */
+
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
   }
   catch (RDK::UException &exception)
@@ -7379,6 +7395,19 @@ int UEngine::LoadPredefinedLibraries(void)
 {
  RdkLoadPredefinedLibraries(LibrariesList);
 
+ return 0;
+}
+
+//Загружает функции формирования свойств для фиктивных компонентов из библиотек в хранилище
+int UEngine::LoadPredefinedCrPropFunctions(void)
+{
+ if(!Storage)
+     return 0;
+
+ // Добавление базового набора создателей-свойств
+ Storage->AddCrPropMockFunc(UBasePropCreator::BaseCrPropMock);
+
+ RdkLoadPredefinedCrPropFunctions(Storage);
  return 0;
 }
 

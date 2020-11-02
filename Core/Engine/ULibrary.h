@@ -23,6 +23,8 @@ See file license.txt for more information
 
 namespace RDK {
 
+class UMockLibrary;
+
 class RDK_LIB_TYPE ULibrary//: public ULibrary
 {
 protected: // Данные единой коллекции библиотек
@@ -46,6 +48,7 @@ RDK::UEPtr<RDK::UVersion> CoreVersion;
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
 /// 1 - Внешняя библиотека (загружена из внешней dll)
 /// 2 - Библиотека, созданная во время выполнения
+/// 3 - Библиотека-заглушка (все компоненты-заглушки)
 int Type;
 
 /// Ревизия ядра
@@ -64,9 +67,12 @@ vector<string> Complete;
 // Содержит имена всех не загруженных образцов
 vector<string> Incomplete;
 
-private: // Внутренние данные
 // Хранилище для загрузки
 UStorage *Storage;
+
+private: // Внутренние данные
+// Хранилище для загрузки
+//UStorage *Storage;
 // Массив образцов классов, формируемый библиотекой
 //map<string, UComponent*> ClassSamples;
 
@@ -120,6 +126,7 @@ const UEPtr<RDK::UVersion> GetCoreVersion(void) const;
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
 /// 1 - Внешняя библиотека (загружена из внешней dll)
 /// 2 - Библиотека, созданная во время выполнения
+/// 3 - Библиотека-заглушка (все компоненты-заглушки)
 int GetType(void) const;
 
 /// Зависимости библиотеки от других библиотек
@@ -140,6 +147,9 @@ const vector<string>& GetComplete(void) const;
 
 // Содержит имена всех не загруженных образцов
 const vector<string>& GetIncomplete(void) const;
+
+// Очищает оба списка Complete и Incomplete
+void ClearIncompleteAndComplete(void);
 // --------------------------
 
 // --------------------------
@@ -180,6 +190,13 @@ virtual void RemoveClassFromCompletedList(const string &name);
 /// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 /// Не требуется предварительная очистка массива и уборка памяти.
 virtual void CreateClassSamples(UStorage *storage)=0;
+
+// --------------------------
+// Дополнительные методы
+// --------------------------
+/// Заполняет библиотеку-заглушку всеми XML описаниями собсвтенных компонентов
+void FillMockLibrary(UMockLibrary* lib);
+
 // --------------------------
 };
 
@@ -190,31 +207,41 @@ protected: // Данные единой коллекции библиотек
 protected: // Параметры
 
 protected: // Данные
-/// Описание компонент библиотеки
-USerStorageXML ClassesStructure;
+/// Путь библиотеки
+std::string LibPath;
+
+/// Описание текущего компонента XML
+USerStorageXML CurrentComponentStruct;
+
+/// Описание компонент библиотеки в формате строк (xml)
+vector<string> ClassesStructures;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-URuntimeLibrary(const string &name, const string &version);
+URuntimeLibrary(const string &name, const string &version, const string& path);
 virtual ~URuntimeLibrary(void);
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
-/// Описание компонент библиотеки
-const USerStorageXML& GetClassesStructure(void) const;
-bool SetClassesStructure(const USerStorageXML& xml);
-bool SetClassesStructure(const std::string &buffer);
 
-/// Добавляет в описание компонент новый компонент
-bool AddClassStructure(const std::string &buffer);
-bool AddClassStructure(const USerStorageXML& xml);
+/// Возращает путь библиотеки
+const std::string& GetLibPath() const;
 
-/// Обновляет структуру классов в соответствии с хранилищем
-bool UpdateClassesStructure(void);
+/// Добавляет новый компонент (описание, сохранение)
+bool AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass);
+
+/// Удаляет класс из коллекции и Storage
+bool DelClass(const std::string &class_name);
+
+/// Загружает описание компонент из файлов в массив строк
+bool LoadCompDescriptions(void);
+
+/// Удаляет директорию библиотеки вместе со всеми файлами
+bool DeleteOwnDirectory(void);
 // --------------------------
 
 // --------------------------
@@ -227,6 +254,49 @@ virtual void CreateClassSamples(UStorage *storage);
 // --------------------------
 
 };
+
+class RDK_LIB_TYPE UMockLibrary: public ULibrary
+{
+protected: // Данные единой коллекции библиотек
+
+protected: // Параметры
+
+protected: // Данные
+/// Путь библиотеки
+std::string LibPath;
+
+/// Описание текущего компонента XML
+USerStorageXML CurrentComponentStruct;
+
+/// Описание компонент библиотеки в формате строк (xml)
+vector<string> ClassesStructures;
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UMockLibrary(const string &name, const string &version, const string& path);
+virtual ~UMockLibrary(void);
+
+
+// Добавляет описание компонента в ClassesStructures
+bool AddNewCompDescription(USerStorageXML& descript);
+
+// Сохранение в файл
+bool SaveLibraryToFile();
+
+// Загрузка описаний классов из xml файла в ClassesStructures
+void LoadFromXML(USerStorageXML& xml);
+// --------------------------
+/// Создает компонент из описания xml
+UEPtr<UContainer> CreateClassSample(USerStorageXML &xml, UStorage *storage);
+
+// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+// Не требуется предварительная очистка массива и уборка памяти.
+virtual void CreateClassSamples(UStorage *storage);
+// --------------------------
+
+};
+
 
 /// Создает образец типа T с именем класса в хранилище class_name и именем
 /// компонента по умолчанию component_name

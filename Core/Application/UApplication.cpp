@@ -46,6 +46,7 @@ UApplication::UApplication(void)
  ModelsMainPath="../../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
+ StorageBuildMode = 1;
  //SetStandartXMLInCatalog();
 
 
@@ -309,8 +310,40 @@ bool UApplication::IsInit(void) const
 {
  return AppIsInit;
 }
-// --------------------------
 
+/// Установка необходимого режима сборки
+void UApplication::SetStorageBuildMode(int mode)
+{
+ // пересборка не нужна
+ if(StorageBuildMode == mode)
+     return;
+
+ StorageBuildMode = mode;
+ CloseProject();
+ RDK::GetCoreLock()->SetStorageBuildMode(StorageBuildMode);
+
+ int size = GetNumChannels();
+
+ for(int i = 0; i<size;i++)
+ {
+     MCore_ChannelInit(i,0,(void*)ExceptionHandler);
+ }
+}
+
+/// Получение текущего режима сборки
+int UApplication::GetStorageBuildMode()
+{
+ return StorageBuildMode;
+}
+// --------------------------
+/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+void UApplication::CreateSaveMockLibs()
+{
+    RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+    if(!storage->CreateMockLibs())
+        return;
+    storage->SaveMockLibs();
+}
 // --------------------------
 // Методы инициализации
 // --------------------------
@@ -1871,8 +1904,8 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
  if(!data.empty())
  {
   MModel_Destroy(channel_index);
-  MModel_LoadComponent(channel_index, "",data.c_str());
-  return true;
+  if(MModel_LoadComponent(channel_index, "",data.c_str()) == RDK_SUCCESS)
+   return true;
  }
  return false;
 }

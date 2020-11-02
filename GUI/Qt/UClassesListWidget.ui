@@ -6,14 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>188</width>
-    <height>407</height>
+    <width>405</width>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -27,9 +30,15 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="QLineEdit" name="lineEditSearch"/>
+   </item>
+   <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabStorageByName">
       <attribute name="title">
@@ -54,6 +63,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabStorageByLibs">
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
       <attribute name="title">
        <string>By Libs</string>
       </attribute>
@@ -71,9 +83,6 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLineEdit" name="lineEdit"/>
-       </item>
-       <item>
         <widget class="QTreeWidget" name="treeWidgetStorageByLibs">
          <attribute name="headerVisible">
           <bool>false</bool>
@@ -87,9 +96,112 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabLibsCtrl">
+      <property name="mouseTracking">
+       <bool>false</bool>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <attribute name="title">
+       <string>Libs Control</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QGroupBox" name="groupBoxLibList">
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="title">
+          <string>Library List</string>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QListWidget" name="listWidgetRTlibs">
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxLibComps">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="title">
+          <string>Library Components</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QListWidget" name="listWidgetRTlibClasses"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
+  <action name="actionCreateRuntimeLibrary">
+   <property name="text">
+    <string>Create Runtime Library</string>
+   </property>
+   <property name="toolTip">
+    <string>Create Runtime Library</string>
+   </property>
+  </action>
+  <action name="actionDeleteRuntimeLibrary">
+   <property name="text">
+    <string>Delete Runtime Library</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Runtime Library</string>
+   </property>
+  </action>
+  <action name="actionAddNewClass">
+   <property name="text">
+    <string>Add New Class</string>
+   </property>
+   <property name="toolTip">
+    <string>Add New Class</string>
+   </property>
+  </action>
+  <action name="actionDeleteClass">
+   <property name="text">
+    <string>Delete Class</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Class</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

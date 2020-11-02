@@ -23,6 +23,9 @@ namespace RDK{
 /// Функция должна быть реализована в конечном проекте и загружать требуемые библиотеки
 extern RDK_LIB_TYPE bool RDK_CALL RdkLoadPredefinedLibraries(std::list<RDK::ULibrary*> &libs_list);
 
+/// Функция должна быть реализована в конечном проекте
+/// и загружать функции формирования свойств для фиктивных компонентов из библиотек
+extern RDK_LIB_TYPE bool RDK_CALL RdkLoadPredefinedCrPropFunctions(RDK::UStorage* storage);
 
 class RDK_LIB_TYPE UEngine: public UModule
 {
@@ -985,6 +988,9 @@ void CreateEnvironment(bool isinit=true, list<UContainer*>* external_classes=0, 
 
 // Загружает набор предустановленных библиотек
 virtual int LoadPredefinedLibraries(void);
+
+//Загружает функции формирования свойств для фиктивных компонентов из библиотек в хранилище
+virtual int LoadPredefinedCrPropFunctions(void);
 
 // Загружает набор классов
 int LoadClasses(void);

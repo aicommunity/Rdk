@@ -7,8 +7,6 @@
 QT       -= gui
 QT       += network
 
-
-
 TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
@@ -28,6 +26,7 @@ VERSION = $$system(hg parents --template '{rev}')
 DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
+    ../../../Core/Engine/UBasePropCreator.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -54,6 +53,7 @@ SOURCES += \
     ../../../Core/Engine/ULogger.cpp \
     ../../../Core/Engine/UModule.cpp \
     ../../../Core/Engine/UNet.cpp \
+    ../../../Core/Engine/UMockUNet.cpp \
     ../../../Core/Engine/UPointer.cpp \
     ../../../Core/Engine/UProperty.cpp \
     ../../../Core/Engine/UPropertyInput.cpp \
@@ -157,6 +157,8 @@ SOURCES += \
     ../../../Core/Application/UServerTransportHttp.cpp
 
 HEADERS +=\
+    ../../../Core/Engine/UBasePropCreator.h \
+    ../../../Core/Engine/UCreatorPropTemplate.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
@@ -183,6 +185,7 @@ HEADERS +=\
     ../../../Core/Engine/ULogger.h \
     ../../../Core/Engine/UModule.h \
     ../../../Core/Engine/UNet.h \
+    ../../../Core/Engine/UMockUNet.h \
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
     ../../../Core/Engine/UPropertyInput.h \
@@ -297,5 +300,6 @@ unix {
 
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
+    QMAKE_CXXFLAGS += /bigobj
 }
 

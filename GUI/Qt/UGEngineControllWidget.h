@@ -23,6 +23,7 @@
 #include "UGraphWidget.h"
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
+#include"UWatch.h"
 #include "UTcpServerControlWidget.h"
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
@@ -106,6 +107,10 @@ public slots:
     void actionCopyConfig();
     void actionExit();
     void actionConfigOptions();
+    void actionCreateSaveMockLibs();
+    void actionBuildMode1();
+    void actionBuildMode2();
+    void actionBuildMode3();
 
     //chanels menu
     void actionAddNew();
@@ -163,6 +168,7 @@ private:
     UGraphWidget *graphWindowWidget;
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
+    UWatch *watchWindow;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
     //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
@@ -206,6 +212,11 @@ private:
 
     /// Удаляет виджет отображения графиков
     void delWatchesWidged(size_t index);
+
+    /// Обновляет схему модели, список классов
+    /// и текст в меню Choose Storage Build Mode [N]
+    /// Вызов после смены режима сборки (пересборки)
+    void updateShemeClassesList();
 
 };
 
