@@ -103,4 +103,6 @@ int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_
 
  int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout=-1);
 
+ int Rpc_OpenDeployedProject(int server_index, int timeout);
+
 #endif // RDKQTCPCLIENTLIB_H
