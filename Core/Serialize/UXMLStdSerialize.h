@@ -169,10 +169,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
  return storage;
 }
 
-USerStorageXML& operator << (USerStorageXML& storage, const UnKnow &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UnKnow &data);
-USerStorageXML& operator << (USerStorageXML& storage, const simpleVector &data);
-USerStorageXML& operator >> (USerStorageXML& storage, simpleVector &data);
+
 
 
 // Пары
