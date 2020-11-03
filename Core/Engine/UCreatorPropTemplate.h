@@ -2,7 +2,6 @@
 #define UCREATORPROPTEMPLATE_H
 #include "UStorage.h"
 #include "UMockUNet.h"
-#include "../../Deploy/Include/rdk.h"
 
 namespace RDK {
 
