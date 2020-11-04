@@ -27,6 +27,9 @@ DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
     ../../../Core/Engine/UBasePropCreator.cpp \
+    ../../../Core/Engine/UBasePropCreatorMatrix.cpp \
+    ../../../Core/Engine/UBasePropCreatorTempl.cpp \
+    ../../../Core/Engine/UBasePropCreatorVector.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -158,6 +161,9 @@ SOURCES += \
 
 HEADERS +=\
     ../../../Core/Engine/UBasePropCreator.h \
+    ../../../Core/Engine/UBasePropCreatorMatrix.h \
+    ../../../Core/Engine/UBasePropCreatorTempl.h \
+    ../../../Core/Engine/UBasePropCreatorVector.h \
     ../../../Core/Engine/UCreatorPropTemplate.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \

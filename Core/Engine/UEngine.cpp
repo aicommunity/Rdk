@@ -23,6 +23,8 @@ See file license.txt for more information
 #include "UComponentFactory.h"
 #include "UMockUNet.h"
 #include "UBasePropCreator.h"
+#include "UBasePropCreatorVector.h"
+#include "UBasePropCreatorMatrix.h"
 
 // --------------------------------------
 // Объявления дополнительных функций
@@ -7406,6 +7408,8 @@ int UEngine::LoadPredefinedCrPropFunctions(void)
 
  // Добавление базового набора создателей-свойств
  Storage->AddCrPropMockFunc(UBasePropCreator::BaseCrPropMock);
+ Storage->AddCrPropMockFunc(UBasePropCreatorVector::BaseCrPropMock);
+ Storage->AddCrPropMockFunc(UBasePropCreatorMatrix::BaseCrPropMock);
 
  RdkLoadPredefinedCrPropFunctions(Storage);
  return 0;

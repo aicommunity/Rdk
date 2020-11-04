@@ -1,26 +1,22 @@
-#ifndef UBASEPROPCREATOR_H
-#define UBASEPROPCREATOR_H
+#ifndef UBASEPROPCREATORVECTOR_H
+#define UBASEPROPCREATORVECTOR_H
 
 #include "UBasePropCreatorTempl.h"
 
 namespace RDK {
 
 // Отвечает за создание функции для формирования базовых свойств
-class UBasePropCreator: public UBasePropCreatorTempl
+class UBasePropCreatorVector: public UBasePropCreatorTempl
 {
 
 public:
-    // Основная функция создания свойств всех возможных типов (добавляется в Storage)
-    static bool BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+	// Основная функция создания свойств всех возможных типов (добавляется в Storage)
+	static bool BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-    // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
-    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+	// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+	static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-    // Проверяет тип на встроенные типы данных и создает, если это так
-    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static bool CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-/*
 	// Функция для создания свойства типа вектор
 	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 	static void CreatePropertyVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
@@ -29,14 +25,14 @@ public:
 	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 	static void CreatePropertySimpleVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-    // Функция для создания свойства типа вектор простейших векторов std::vector<simpleVector> >
-    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreatePropertyVectorOfSimVec(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+	// Функция для создания свойства типа вектор простейших векторов std::vector<simpleVector> >
+	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+	static void CreatePropertyVectorOfSimVec(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-    // Функция для создания свойства типа вектор пар
-    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreatePropertyVectorOfPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-
+	// Функция для создания свойства типа вектор пар
+	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+	static void CreatePropertyVectorOfPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+/*
     // Функция для создания свойства типа вектор из MVector<T>
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyVectorOfMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
@@ -44,11 +40,7 @@ public:
     // Функция для создания свойства типа вектор из MDMatrix<T>
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-	 */
-	// Функция для создания свойства типа list
-	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-	static void CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-       /*
+
     // Функция для создания свойства типа MDMatrix
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
@@ -64,102 +56,31 @@ public:
     // Функция для создания свойства типа MMatrix [rows,cols] - [3,3][4,4] типы - double, int, bool
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-  */
-    // Функция для создания свойства типа std::pair
-    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-
-    // Функция для создания свойства типа std::map
-    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
-
+	  */
 };
 
 
 // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
 
-    // Проверка на встроенный ли тип данных у свойства
-    // Если да - создание и выход
-    if(CreateSimpleTypeProperty<PropType,TypeInt>(serstorage,mock_unet))
-        return;
-
-    // Строка
-    if(type == "std::string")
+    //Для вектора (тип данных вектора определяется далее внутри метода CreatePropertyByType) - аналогично для остальных контейнеров
+    if(type == "std::vector")
     {
-        CreatorProperty<PropType, TypeInt, std::string>::CreatePropertyByType(serstorage,mock_unet);
+        CreatePropertyVector<PropType, TypeInt>(serstorage,mock_unet);
         return;
 	}
 
-    // Для list
-    if(type == "std::list")
+    // Для векторов с простейщими типами (bool, int, double)
+    if(type == "simplevector")
     {
-        CreatePropertyList<PropType, TypeInt>(serstorage,mock_unet);
-        return;
-    }
-
-    // Для pair
-    if(type == "std::pair")
-    {
-        CreatePropertyPair<PropType, TypeInt>(serstorage,mock_unet);
-        return;
-    }
-
-    // Для map
-    if(type == "std::map")
-    {
-        CreatePropertyMap<PropType, TypeInt>(serstorage,mock_unet);
-        return;
-    }
-
-    //UBMColorModel
-    if(type == "UBMColorModel")
-    {
-        CreatorProperty<PropType, TypeInt, UBMColorModel>::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
-
-    // UColorT
-    if(type == "UColorT")
-    {
-        CreatorProperty<PropType, TypeInt, UColorT>::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
-
-    // UBitmap
-    if(type == "UBitmap")
-    {
-        CreatorProperty<PropType, TypeInt, UBitmap>::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
-
-    // UBRect
-    if(type == "UBRect")
-    {
-        CreatorProperty<PropType, TypeInt, UBRect>::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
-
-    // UBPoint
-    if(type == "UBPoint")
-    {
-        CreatorProperty<PropType, TypeInt, UBPoint>::CreatePropertyByType(serstorage,mock_unet);
-        return;
-    }
-
+        CreatePropertySimpleVector<PropType, TypeInt>(serstorage,mock_unet);
+		return;
+	}
 	/*
-    // pointer // не знаю как обрабатывать
-    if(type == "pointer")
-    {
-       // CreatorProperty<PropType, TypeInt, ...>::CreatePropertyByType(serstorage,this);
-        return;
-    }
-    */
-		 /*
-    // MDMatrix
+	// MDMatrix
     if(type.find("MDMatrix",0) == 0)
     {
         CreatePropertyMDMatrix<PropType, TypeInt>(serstorage,mock_unet);
@@ -185,13 +106,13 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
     {
         CreatePropertyMMatrix<PropType, TypeInt>(serstorage,mock_unet);
         return;
-    }
-//#endif    */
+	}       */
+//#endif
 }
-
+          /*
 // Проверяет тип на встроенные типы данных и создает, если это так
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet * mock_unet)
+bool UBasePropCreatorVector::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet * mock_unet)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
@@ -271,24 +192,257 @@ bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage,
     return false;
 
 }
+	  */
+// Функция для создания свойства типа вектор
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+void UBasePropCreatorVector::CreatePropertyVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+{
+    std::string prop_name = serstorage->GetNodeName();
 
-      /*
+    int size=serstorage->GetNumNodes();
+    // если вектор пуст берем тип - elemType
+    // если есть элементы берем тип элементов
+    std::string type;
+    if(size == 0)
+    {
+        type = serstorage->GetNodeAttribute("elemType");
+    }
+    else
+    {
+        serstorage->SelectNode("elem",size-1);
+        type = serstorage->GetNodeAttribute("Type");
+        serstorage->SelectUp();
+    }
+
+
+    if(type == typeid(bool).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<bool> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(char).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<char> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(unsigned char).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<unsigned char> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(short).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<short> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(unsigned short).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<unsigned short> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(int).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<int> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(unsigned int).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<unsigned int> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(long).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<long> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(unsigned long).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<unsigned long> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(long long).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<long long> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(unsigned long long).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<unsigned long long> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(float).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<float> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(double).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<double> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(long double).name())
+    {
+		CreatorProperty<PropType, TypeInt, std::vector<long double> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == "UColorT")
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<UColorT> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == "std::string")
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<std::string> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == "UBitmapParam")
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<UBitmapParam> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == "UBitmap")
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<UBitmap> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+
+    //Из RTV
+//    if(type == "UBVSObject")
+//    {
+//        CreatorProperty<PropType, TypeInt, std::vector<RTV::UBVSObject3D> >::CreatePropertyByType(serstorage, mock_unet);
+//        return;
+//    }
+
+	// вектор пар
+	if(type == "std::pair")
+	{
+		CreatePropertyVectorOfPair<PropType, TypeInt>(serstorage, mock_unet);
+		return;
+	}
+
+    // вектор из простейщих векторов
+    if(type == "simplevector")
+    {
+        CreatePropertyVectorOfSimVec<PropType, TypeInt>(serstorage, mock_unet);
+        return;
+    }
+       /*
+    //вектор из MVector<T>
+    if(type.find("MVector",0) == 0)
+    {
+        CreatePropertyVectorOfMVector<PropType, TypeInt>(serstorage, mock_unet);
+        return;
+    }
+    //вектор из MDMatrix<T>
+    if(type.find("MDMatrix",0) == 0)
+    {
+        CreatePropertyVectorOfMDMatrix<PropType, TypeInt>(serstorage, mock_unet);
+        return;
+    }        */
+}
+
+// Функция для создания свойства типа вектор с простейшими типами данным (simpleVector)
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+void UBasePropCreatorVector::CreatePropertySimpleVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+{
+    std::string prop_name = serstorage->GetNodeName();
+    std::string type = serstorage->GetNodeAttribute("elemType");
+
+    if(type == typeid(bool).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<char> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(int).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<int> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(double).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<double> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+}
+
+// Функция для создания свойства типа вектор простейших векторов std::vector<simpleVector> >
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+void UBasePropCreatorVector::CreatePropertyVectorOfSimVec(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+{
+    std::string prop_name = serstorage->GetNodeName();
+    int size=serstorage->GetNumNodes();
+    if(!(serstorage->SelectNode("elem",size-1)))
+        return;
+
+    std::string type = serstorage->GetNodeAttribute("elemType");
+    serstorage->SelectUp();
+
+    if(type == typeid(bool).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<std::vector<char> > >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(int).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<std::vector<int> > >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == typeid(double).name())
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<std::vector<double> > >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+}
+
+// Функция для создания свойства типа вектор пар
+template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+void UBasePropCreatorVector::CreatePropertyVectorOfPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+{
+    std::string prop_name = serstorage->GetNodeName();
+    int size=serstorage->GetNumNodes();
+    if(!(serstorage->SelectNode("elem",size-1)))
+        return;
+    size=serstorage->GetNumNodes();
+    if(size!=2)
+        return;
+    std::string first_type;
+    std::string second_type;
+
+    serstorage->SelectNode("first");
+    first_type = serstorage->GetNodeAttribute("Type");
+    serstorage->SelectUp();
+
+    serstorage->SelectNode("second");
+    second_type = serstorage->GetNodeAttribute("Type");
+    serstorage->SelectUp();
+    serstorage->SelectUp();
+
+    if(first_type == "std::string")
+    {
+        if(second_type == typeid(bool).name())
+        {
+            CreatorProperty<PropType, TypeInt, std::pair<std::string,bool> >::CreatePropertyByType(serstorage, mock_unet);
+            return;
+        }
+    }
+}
+              /*
 // Функция для создания свойства типа вектор из MVector<T>
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyVectorOfMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyVectorOfMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
-	std::string prop_name = serstorage->GetNodeName();
+    std::string prop_name = serstorage->GetNodeName();
 
-	if(!(serstorage->SelectNode("elem")))
-		return;
+    if(!(serstorage->SelectNode("elem")))
+        return;
 
-	std::string type = serstorage->GetNodeAttribute("Type");
-	int size= RDK::atoi(serstorage->GetNodeAttribute("Size"));
+    std::string type = serstorage->GetNodeAttribute("Type");
+    int size= RDK::atoi(serstorage->GetNodeAttribute("Size"));
 
-	// Удаление слова MVector
-	size_t pos = type.find("MVector");
-	if (pos != std::string::npos)
-	{
+    // Удаление слова MVector
+    size_t pos = type.find("MVector");
+    if (pos != std::string::npos)
+    {
         type.erase(pos, std::string("MVector").length());
     }
     // Удаление символов '<' и '>'
@@ -322,7 +476,7 @@ void UBasePropCreator::CreatePropertyVectorOfMVector(RDK::USerStorageXML* sersto
 
 // Функция для создания свойства типа вектор из MDMatrix<T>
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string prop_name = serstorage->GetNodeName();
 
@@ -421,11 +575,11 @@ void UBasePropCreator::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML* serst
         CreatorProperty<PropType, TypeInt, MDVector<long double> >::CreatePropertyByType(serstorage, mock_unet);
         return;
     }
-}                             */
+}
 
  // Функция для создания свойства типа list
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string prop_name = serstorage->GetNodeName();
     int size=serstorage->GetNumNodes();
@@ -515,10 +669,10 @@ void UBasePropCreator::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::
         return;
     }
 }
-								   /*
+
 // Функция для создания свойства типа MDMatrix
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
@@ -609,7 +763,7 @@ void UBasePropCreator::CreatePropertyMDMatrix(RDK::USerStorageXML* serstorage, R
 
 // Функция для создания свойства типа MDVector
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyMDVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyMDVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
@@ -700,7 +854,7 @@ void UBasePropCreator::CreatePropertyMDVector(RDK::USerStorageXML* serstorage, R
 
 // Функция для создания свойства типа MVector  size - 2,3,4   тип - double
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
@@ -744,7 +898,7 @@ void UBasePropCreator::CreatePropertyMVector(RDK::USerStorageXML* serstorage, RD
 
 // Функция для создания свойства типа MMatrix [rows,cols] - [3,3][4,4] типы - double, int, bool
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyMMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyMMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
@@ -800,12 +954,12 @@ void UBasePropCreator::CreatePropertyMMatrix(RDK::USerStorageXML* serstorage, RD
             CreatorProperty<PropType, TypeInt, MMatrix<double,4,4> >::CreatePropertyByType(serstorage, mock_unet);
             return;
         }
-	}
-}                                 */
+    }
+}
 
 // Функция для создания свойства типа std::pair
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string prop_name = serstorage->GetNodeName();
 
@@ -874,7 +1028,7 @@ void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::
 
 // Функция для создания свойства типа std::map
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreatorVector::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string prop_name = serstorage->GetNodeName();
     int size=serstorage->GetNumNodes();
@@ -934,9 +1088,9 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
             CreatorProperty<PropType, TypeInt, std::map<int,UColorT> >::CreatePropertyByType(serstorage, mock_unet);
             return;
         }
-	}
+    }
 }
-
+			 */
 
 }
 #endif // UBASEPROPCREATOR_H
