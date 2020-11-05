@@ -135,7 +135,13 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  programName=projectIniFile("General","ProgramName","Server");
  configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../../Configs/");
  neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
- logDir=projectIniFile("Log","Dir","");
+ logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
+ if(logDir.empty())
+  logDir=projectIniFile("Log","FixedLogPath",""); // TODO: Аналог Log/Dir
+ int logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
+
+// bool SetFixedLogPath(const std::string& value);
+
  startupDelay=atoi(projectIniFile("General","StartupDelay","0"));
 
  useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
@@ -166,10 +172,18 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
 
  application.SetApplicationFileName(application_file_name);
+ application.SetLogCreationMode(logCreationMode);
+
  if(logDir.empty())
+ {
+  application.SetFixedLogPath(log_dir);
   application.SetLogDir(log_dir);
+ }
  else
+ {
+  application.SetFixedLogPath(logDir);
   application.SetLogDir(logDir);
+ }
 
  application.SetDebugMode(logDebugMode);
 
@@ -177,7 +191,6 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  application.SetConfigsMainPath(configsMainPath);
  application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
  application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);
-
 
  try
  {
