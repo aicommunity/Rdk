@@ -1122,7 +1122,7 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     }
 
     //Создание папки библиотеки
-    std::string lib_path = "../../../RTlibs/" + lib_name;
+    std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
     URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
 
@@ -1212,15 +1212,27 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
     }
 }
 
+// Установка пути к папкам библиотек
+void UStorage::SetLibrariesPath(const std::string& value)
+{
+    LibrariesPath = value;
+}
+
+// Получение пути к папкам библиотек
+const std::string UStorage::GetLibrariesPath() const
+{
+    return LibrariesPath;
+}
+
 /// Инициализация существующих динамических библиотек
 /// Вызывается в Engine один раз
 void UStorage::InitRTlibs(void)
 {
     // Считывание имен библиотек из папки RTlibs
-    std::string lib_path = "../../../RTlibs";
+    std::string lib_path = LibrariesPath + "RTlibs";
 
     //Создание папки, если требуется
-    if(RDK::CreateNewDirectory("../../../RTlibs/"))
+    if(RDK::CreateNewDirectory(lib_path.c_str()))
         return;
 
     // Проход по всем существующим xml файлам в папке
@@ -1256,7 +1268,7 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
     }
 
     //Создание папки библиотеки
-    std::string lib_path = "../../../RTlibs/" + lib_name;
+    std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
     URuntimeLibrary* lib = new URuntimeLibrary(lib_name,"",lib_path);
 
@@ -1330,8 +1342,8 @@ bool UStorage::DelCollection(int index)
 bool UStorage::InitMockLibs(void)
 {
     // Папка с библиотеками-заглушками и файл
-    std::string lib_path = "../../../MockLibs/";
-    std::string lib_list_file = "../../../MockLibs/0_LibList.xml";
+    std::string lib_path = LibrariesPath + "/MockLibs/";
+    std::string lib_list_file = lib_path + "0_LibList.xml";
 
     USerStorageXML LibList;
     if(!LibList.LoadFromFile(lib_list_file,"LibraryList"))
@@ -1390,7 +1402,7 @@ bool UStorage::CreateMockLibs(void)
         if(lib && lib->GetType()==0)
         {
             // Создание папки библиотеки, если требуется
-            std::string lib_path = "../../../MockLibs/";
+            std::string lib_path = LibrariesPath + "MockLibs/";
 
             if(RDK::CreateNewDirectory(lib_path.c_str()))
             {
@@ -1454,7 +1466,7 @@ bool UStorage::SaveMockLibs(void)
         }
     }
 
-    std::string file_name = "../../../MockLibs/0_LibList.xml";
+    std::string file_name = LibrariesPath + "MockLibs/0_LibList.xml";
     LibList.SaveToFile(file_name);
     return true;
 }

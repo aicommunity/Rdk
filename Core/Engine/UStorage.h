@@ -147,6 +147,9 @@ int BuildMode;
 // Массив функций-создателей Property для MockUNet
 std::list<funcCrPropMock> FunctionsCrPropMock;
 
+// Путь к папкам библиотек (в данной директории будут две папки MockLibs RTlibs)
+std::string LibrariesPath;
+
 protected: // Временные переменные
 
 
@@ -330,6 +333,12 @@ void GetLibsNameListByType(std::string &buffer, int type) const;
 
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);
+
+// Установка пути к папкам библиотек
+void SetLibrariesPath(const std::string& value);
+
+// Получение пути к папкам библиотек
+const std::string GetLibrariesPath() const;
 
 //Работа с RT-библиотеками
 /// Инициализация существующих динамических библиотек

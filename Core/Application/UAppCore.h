@@ -141,6 +141,8 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
  useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
 
+ std::string librariesPath=projectIniFile("General", "LibrariesPath", "../../../");
+
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
 
@@ -171,6 +173,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  application.SetDebugMode(logDebugMode);
 
+ application.SetLibrariesPath(librariesPath);
  application.SetConfigsMainPath(configsMainPath);
  application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
  application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);

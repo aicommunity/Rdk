@@ -105,6 +105,20 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
+/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+const std::string& UApplication::GetLibrariesPath(void) const
+{
+ return LibrariesPath;
+}
+
+bool UApplication::SetLibrariesPath(const std::string &value)
+{
+ if(LibrariesPath == value)
+  return true;
+ LibrariesPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
@@ -540,6 +554,7 @@ bool UApplication::Init(void)
  Core_LoadFonts();
 
  EngineControl->Init();
+ RDK::GetCoreLock()->SetLibrariesPath(LibrariesPath);
  UApplication::SetNumChannels(1);
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
@@ -555,8 +570,6 @@ bool UApplication::Init(void)
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
  }*/
  SetStandartXMLInCatalog();
-
-
 
  AppIsInit = true;
  return true;
