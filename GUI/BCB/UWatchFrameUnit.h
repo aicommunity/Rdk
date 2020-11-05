@@ -45,10 +45,8 @@ class TUWatchInfo
 {
 public: // Связи
 // Тип серии
-// 0 - Обычная (выход по времени)
-// 0x100 - Зависимость X(Y)
+// 0 - double или int
 // 0x200 - MDMatrix
-// 0x400 - вектор из MDMatrix
 int Type;
 
 // Индекс графика в массиве серий
@@ -59,20 +57,12 @@ string XDataSourceName;
 
 // Индекс выхода хранящего данные по оси X
 string XOutputIndex;
-int XOutputIndexOld;
 
-// Индекс элемента выхода хранящего данные по оси X
-int XOutputElementIndex;
-
-// Имя компонента-источника данных по оси X
+// Имя компонента-источника данных по оси Y
 string YDataSourceName;
 
-// Индекс выхода хранящего данные по оси X
+// Индекс выхода хранящего данные по оси Y
 string YOutputIndex;
-int YOutputIndexOld;
-
-// Индекс элемента выхода хранящего данные по оси X
-int YOutputElementIndex;
 
 // Координаты выхода, хранящего данные по оси Y для случая MDMatrix
 int MRow, MCol;
@@ -85,8 +75,7 @@ int MVectorIndexX;
 int MVectorIndexY;
 
 public: // Данные графика
-const double *X;
-const double *Y;
+System::DynamicArray<double> X, Y;
 int XYSize;
 
 // Кеш максимума и минимума за заданный интервал времени
@@ -140,24 +129,17 @@ __published:	// IDE-managed Components
 	TPopupMenu *PopupMenu;
 	TMenuItem *N1;
 	TMenuItem *bmp1;
-	TMenuItem *AddWatch1;
 	TMenuItem *N2;
 	TMenuItem *AddXPulseWatch1;
-	TMenuItem *AddXYWatch1;
 	TMenuItem *DeleteAll1;
 	TMenuItem *N3;
 	TMenuItem *AddTimeMatrixWatch1;
-	TMenuItem *AddTimeYWatchold1;
-	TMenuItem *AddTimeVectorWatch1;
 	TMenuItem *DeleteActiveWatch1;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
-	void __fastcall AddWatch1Click(TObject *Sender);
 	void __fastcall AddXPulseWatch1Click(TObject *Sender);
 	void __fastcall DeleteAll1Click(TObject *Sender);
 	void __fastcall AddTimeMatrixWatch1Click(TObject *Sender);
-	void __fastcall AddTimeYWatchold1Click(TObject *Sender);
-	void __fastcall AddTimeVectorWatch1Click(TObject *Sender);
 	void __fastcall DeleteActiveWatch1Click(TObject *Sender);
 	void __fastcall Chart1ClickSeries(TCustomChart *Sender, TChartSeries *Series, int ValueIndex,
           TMouseButton Button, TShiftState Shift, int X, int Y);
@@ -310,9 +292,8 @@ public:	// Методы
 
 		// Добавление нового наблюдения по имени компонента и индексу выхода
 		// Возвращает индекс серии
-		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
-		int __fastcall Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
-		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+ //		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);

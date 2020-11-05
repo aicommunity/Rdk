@@ -22,20 +22,21 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UController::UController(void)
+ : Component(0)
 {
  Enabled=false;
 }
 
 UController::~UController(void)
 {
- UnLinkAll();
+ UnLink();
 }
 // --------------------------
 
 // --------------------------
 // Методы управления параметрами
 // --------------------------
-// Флаг разрешения обновления интерфейса
+// Флаг разрешения обновления данных контроллера
 bool UController::IsEnabled(void) const
 {
  return Enabled;
@@ -49,32 +50,24 @@ bool UController::IsEnabled(bool value)
  Enabled=value;
  return true;
 }
-// --------------------------
 
-// --------------------------
-// Методы управления данными
-// --------------------------
-// Возвращает число компонент к которым подключен контроллер
-size_t UController::GetNumComponents(void) const
+// Возвращает имя компонента
+std::string UController::GetComponentName(void) const
 {
- return Components.size();
+ std::string result;
+ if(Component)
+ {
+  result=Component->GetFullName();
+  result=result.substr(result.find_first_of(".")+1);
+ }
+ return result;
 }
 
-// Возвращает компонент к которому подключен контроллер по индексу
-UContainer* UController::GetComponents(size_t index)
+std::string UController::GetComponentName(UContainer *level) const
 {
- return Components[index];
-}
-
-// Возвращает индекс компонента по указателю
-int UController::FindComponent(UContainer* component) const
-{
- vector<UContainer*>::const_iterator I=find(Components.begin(),Components.end(),component);
-
- if(I != Components.end())
-  return int(I-Components.begin());
-
- return -1;
+ if(Component)
+  return Component->GetLongName(level);
+ return std::string("");
 }
 // --------------------------
 
@@ -84,16 +77,19 @@ int UController::FindComponent(UContainer* component) const
 // Связывает интерфейс с компонентом
 bool UController::Link(UContainer* component, bool forchilds)
 {
- if(find(Components.begin(),Components.end(),component) != Components.end())
+ if(!component)
+  return false;
+
+ if(Component == component)
   return true;
 
- Components.push_back(component);
- component->AddController(this,forchilds);
+ Component=component;
+ Component->AddController(this,forchilds);
 
  if(!ALink(component))
  {
   component->DelController(this,forchilds);
-  Components.erase(Components.begin()+(Components.size()-1));
+  Component=0;
   return false;
  }
 
@@ -101,40 +97,16 @@ bool UController::Link(UContainer* component, bool forchilds)
 }
 
 // Отвязывает интерфейс от компонента
-bool UController::UnLink(int index, bool forchilds)
+bool UController::UnLink(bool forchilds)
 {
- if(index<0 || index> int(Components.size()))
+ if(!AUnLink(forchilds))
   return false;
 
- if(!AUnLink(index,forchilds))
-  return false;
-
- Components[index]->DelController(this,forchilds);
- Components.erase(Components.begin()+index);
+ if(Component)
+  Component->DelController(this,forchilds);
+ Component=0;
  return true;
 }
-
-bool UController::UnLink(UContainer* component, bool forchilds)
-{
- int index=FindComponent(component);
-
- if(index < 0)
-  return true;
-
- return UnLink(index, forchilds);
-}
-
-bool UController::UnLinkAll(bool forchilds)
-{
- bool res=true;
- while(Components.begin() != Components.end())
- {
-  res &= UnLink(int(Components.size())-1,forchilds);
- }
-
- return res;
-}
-
 
 // Обновляет интерфейс
 bool UController::Update(void)
@@ -142,9 +114,285 @@ bool UController::Update(void)
  if(!Enabled)
   return true;
 
+ if(!Component)
+  return true;
+
  return AUpdate();
 }
+
+// Связывает интерфейс с компонентом
+bool UController::ALink(UContainer* component, bool forchilds)
+{
+ return true;
+}
+
+// Отвязывает интерфейс от компонента
+bool UController::AUnLink(bool forchilds)
+{
+ return true;
+}
 // --------------------------
+
+UControllerData::UControllerData(void)
+ : NumPoints(1)
+{
+}
+
+/// Задает размер хранимых данных
+void UControllerData::SetNumPoints(int value)
+{
+ if(value<0)
+  return;
+
+ NumPoints=value;
+}
+
+
+std::string UControllerData::GetPropertyName(void) const
+{
+ if(Property)
+  return Property->GetName();
+ return std::string("");
+}
+
+
+/// Возвращает тип данных
+const type_info& UControllerData::GetDataType(void) const
+{
+ if(Property)
+  return Property->GetLanguageType();
+
+ // TODO: Нет возвращаемого значения
+}
+
+// *****************************************************************
+
+UControllerDataReader::UControllerDataReader(void)
+ : MRow(0), MCol(0), PropertyType(0)
+{
+}
+
+/// Задает длину интервала в секундах
+void UControllerDataReader::SetTimeInterval(double value)
+{
+ TimeInterval=value;
+ if(value>0)
+  SetNumPoints(value*Component->GetTimeStep());
+ else
+  SetNumPoints(100000);
+}
+
+/// Координаты матрицы по которым берутся данные
+void UControllerDataReader::SetMatrixCoord(int row, int col)
+{
+ MRow=row;
+ MCol=col;
+}
+
+// Отвязывает интерфейс от компонента
+bool UControllerDataReader::AUnLink(bool forchilds)
+{
+ PropertyType=0;
+ return UControllerData::AUnLink(forchilds);
+}
+
+/// Обновляет хранимые данные добавляя новые
+bool UControllerDataReader::AUpdate(void)
+{
+ if(!Property)
+  return false;
+
+ double x(0.0), y(0.0);
+
+ if(PropertyType == 1)
+ {
+  const double *data=reinterpret_cast<const double*>(Property->GetMemoryArea());
+  if(!data)
+   return false;
+
+  y=*data;
+ }
+ else
+ if(PropertyType == 2)
+ {
+  const int *data=reinterpret_cast<const int*>(Property->GetMemoryArea());
+  if(!data)
+   return false;
+
+  y=*data;
+ }
+ else
+ if(PropertyType == 3)
+ {
+  const MDMatrix<double> *data=reinterpret_cast<const MDMatrix<double>*>(Property->GetMemoryArea());
+  if(!data)
+   return false;
+  if(data->GetCols()<=MCol)
+   return false;
+  if(data->GetRows()<=MRow)
+   return false;
+  y=(*data)(MRow,MCol);
+ }
+ else
+ if(PropertyType == 4)
+ {
+  const MDMatrix<int> *data=reinterpret_cast<const MDMatrix<int>*>(Property->GetMemoryArea());
+  if(!data)
+   return false;
+  if(data->GetCols()<=MCol)
+   return false;
+  if(data->GetRows()<=MRow)
+   return false;
+  y=(*data)(MRow,MCol);
+ }
+ else
+  return false;
+
+ x=Component->GetTime().GetDoubleTime();
+ XData.push_back(x);
+ YData.push_back(y);
+ if(int(XData.size())>NumPoints)
+  XData.erase(XData.begin());
+ if(int(YData.size())>NumPoints)
+  YData.erase(YData.begin());
+ return true;
+}
+
+/// Удаляет все хранимые данные
+void UControllerDataReader::Clear(void)
+{
+ XData.clear();
+ YData.clear();
+}
+
+/// Настраивает точку съема данных
+bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> property)
+{
+ if(Property == property && Component == container)
+  return true;
+
+ UnLink();
+ Clear();
+
+ if(!Link(container))
+  return false;
+
+ if(!property)
+ {
+  UnLink();
+  return false;
+ }
+
+ if(property->GetLanguageType() == typeid(double))
+ {
+  PropertyType=1;
+ }
+ else
+ if(property->GetLanguageType() == typeid(double))
+ {
+  PropertyType=2;
+ }
+ else
+ if(property->GetLanguageType() == typeid(MDMatrix<double>))
+ {
+  PropertyType=3;
+ }
+ else
+ if(property->GetLanguageType() == typeid(MDMatrix<int>))
+ {
+  PropertyType=4;
+ }
+ else
+ {
+  UnLink();
+  return false;
+ }
+
+ Property=property;
+ Enabled=true;
+ return true;
+}
+
+/// Задает размер хранимых данных
+void UControllerDataReader::SetNumPoints(int value)
+{
+ UControllerData::SetNumPoints(value);
+}
+
+// *********************************************************************
+UControllerDataReaderTimeEvents::UControllerDataReaderTimeEvents(void)
+{
+}
+
+/// Координаты матрицы по которым берутся данные
+void UControllerDataReaderTimeEvents::SetMatrixCoord(int row, int col)
+{
+ UControllerDataReader::SetMatrixCoord(row, col);
+}
+
+/// Обновляет хранимые данные добавляя новые
+bool UControllerDataReaderTimeEvents::AUpdate(void)
+{
+ if(!Property)
+  return false;
+
+ if(PropertyType != 3)
+  return false;
+
+ double x(0.0), y(0.0);
+
+ const MDMatrix<double> *data=reinterpret_cast<const MDMatrix<double>*>(Property->GetMemoryArea());
+ if(!data)
+  return false;
+
+ if(data->GetCols()>0 && data->GetRows()>0)
+ {
+  for(int i=0;i<data->GetCols();i++)
+  {
+   x=(*data)(0,i);
+   std::list<double>::iterator I=XData.begin();
+   bool check(false);
+   for(;I != XData.end();I++)
+   {
+	if(*I == x)
+	{
+	 check=true;
+	 break;
+	}
+   }
+
+   if(check)
+	continue;
+
+   XData.push_back(x);
+   YData.push_back(0);
+   XData.push_back(x+0.00001);
+   YData.push_back(1);
+   XData.push_back(x+0.00002);
+   YData.push_back(0);
+   if(int(XData.size())>NumPoints)
+	XData.erase(XData.begin());
+   if(int(YData.size())>NumPoints)
+    YData.erase(YData.begin());
+  }
+
+  // Удаляем лишнее
+  if(XData.size()>1)
+  {
+   double t1=XData.front();
+   double t2=XData.back();
+   while(t2-t1>TimeInterval && !XData.empty())
+   {
+	XData.erase(XData.begin());
+	YData.erase(YData.begin());
+	t1=XData.front();
+   }
+  }
+ }
+
+ return true;
+}
+
 
 }
 

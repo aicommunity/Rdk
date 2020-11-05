@@ -184,7 +184,15 @@ void UDrawEngineImageWidget::mousePressEvent(QMouseEvent *event)
         emit componentSelected(myLongName());
         reDrawScheme(false);
         if(event->button() == Qt::RightButton)
+        {
             contextMenu->popup(QWidget::mapToGlobal(event->pos()));
+            return;
+        }
+        if(QApplication::keyboardModifiers() == Qt::ControlModifier)
+        {
+            dragEvent();
+            return;
+        }
     }
     else
         if((event->x() < 10 || event->y() < 10
@@ -368,7 +376,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
 
 void UDrawEngineImageWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat("Component"))
+    if(event->mimeData()->hasFormat("Component"))
     {
       event->setDropAction(Qt::MoveAction);
       event->accept();
@@ -381,7 +389,7 @@ void UDrawEngineImageWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void UDrawEngineImageWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasFormat("Component"))
+    if(event->mimeData()->hasFormat("Component"))
     {
       event->setDropAction(Qt::MoveAction);
       event->accept();
@@ -391,6 +399,22 @@ void UDrawEngineImageWidget::dragMoveEvent(QDragMoveEvent *event)
       event->ignore();
     }
 }
+
+void UDrawEngineImageWidget::dragEvent()
+{
+    QByteArray itemData;
+    QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+    dataStream << QString::fromStdString(GetLongName());
+
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setData("ComponentName", itemData);
+
+    QDrag *drag = new QDrag(this);
+    drag->setMimeData(mimeData);
+
+    drag->exec(Qt::CopyAction, Qt::CopyAction);
+}
+
 
 void UDrawEngineImageWidget::resizeEvent(QResizeEvent *)
 {
@@ -707,4 +731,10 @@ QString UDrawEngineImageWidget::myLongName()
 void UDrawEngineImageWidget::SetApplication(RDK::UApplication *app)
 {
  Application=app;
+}
+
+/// Возвращается имя выбрано компонента
+const std::string UDrawEngineImageWidget::GetLongName()
+{
+    return myLongName().toUtf8().data();
 }

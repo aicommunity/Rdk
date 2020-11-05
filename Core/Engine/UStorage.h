@@ -110,6 +110,7 @@ protected: // Описания библиотек
 // Массив доступных библиотек
 UClassLibraryList CollectionList;
 
+
 /// Таблица соответствий между именами классов и библиотек
 /// имеет вид <имя класса, имя его библиотеки>
 //std::map<std::string, std::string> ClassLibraryLookupTable;
@@ -231,15 +232,18 @@ virtual int CalcNumObjects(void) const;
 virtual int CalcNumObjects(const UId &classid) const;
 virtual size_t CalcNumObjects(const string &classname) const;
 
-// Удалаяет все свободные объекты из хранилища
+// Удаляет все свободные объекты из хранилища
 /// Если force == true то удаляет даже если объекты используются
 virtual void FreeObjectsStorage(bool force=false);
+
+// Удаляет все свободные объекты заданного класса из хранилища
+virtual void FreeObjectsStorageByClass(const UId &classid);
 
 // Удаляет все объекты из хранилища
 /// Если force == true то удаляет даже если объекты используются
 virtual void ClearObjectsStorage(bool force=false);
 
-// Удалаяет все объекты заданного класса из хранилища
+// Удаляет все объекты заданного класса из хранилища
 virtual void ClearObjectsStorageByClass(const UId &classid);
 // --------------------------
 
@@ -296,21 +300,33 @@ const string& GetCollectionName(int index);
 // Возвращает версию библиотеки по индексу
 const string& GetCollectionVersion(int index);
 
+// Возвращается строку runtime-библиотек, разделенных запятой
+// Буфер 'buffer' будет очищен от предыдущих значений
+void GetRTlibsNameList(std::string &buffer) const;
+
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);
 
-/// Добавялет новый образец класса в коллекцию
-virtual bool AddClassToCollection(const std::string &new_class_name, UContainer *newclass, URuntimeLibrary *library);
+//Работа с RT-библиотеками
+/// Инициализация существующих динамических библиотек
+/// Вызывается в Engine один раз. Добавляет библиотеки в CollectionList
+void InitRTlibs(void);
+
+/// Загружает runtime-библиотеку по её имени
+virtual bool LoadRuntimeCollection(const std::string &lib_name);
+
+/// Добавляет новый образец класса в коллекцию (сразу соранение в файл)
+/// Если класс с таким именем существует возможно перезапись при force_replace = true
+virtual bool AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name);
+
+/// Удаляет образец класса из RT коллекции
+virtual bool DelClassFromCollection(const std::string &class_name, const std::string &lib_name);
 
 /// Создает новую библиотеку с заданным именем
 virtual bool CreateRuntimeCollection(const std::string &lib_name);
 
-/// Загружает runtime-библиотеку из строки
-virtual bool LoadRuntimeCollection(const std::string &buffer, bool force_build=false);
-
-/// Сохраняет runtime-библиотеку в строку
-virtual bool SaveRuntimeCollection(const std::string &lib_name, std::string &buffer);
-virtual bool SaveRuntimeCollection(URuntimeLibrary *library, std::string &buffer);
+/// Удаляет runtime-библиотеку вместе с папкой
+bool DeleteRuntimeCollection(const std::string &lib_name);
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.

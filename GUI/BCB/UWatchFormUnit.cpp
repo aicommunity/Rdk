@@ -169,7 +169,11 @@ void __fastcall TUWatchForm::DeletePage1Click(TObject *Sender)
 
 void __fastcall TUWatchForm::RenamePage1Click(TObject *Sender)
 {
-// RenamePage(PageControl->ActivePageIndex);
+ String value = InputBox("Rename page", "Please enter new name", PageControl->Pages[PageControl->ActivePageIndex]->Caption);
+ if(value.Length()==0)
+  return;
+
+ PageControl->Pages[PageControl->ActivePageIndex]->Caption=value;
 }
 //---------------------------------------------------------------------------
 

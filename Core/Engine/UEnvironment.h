@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../System/rdk_system.h"
 #include "ULoggerEnv.h"
+#include "UController.h"
 
 namespace RDK {
 
@@ -34,6 +35,7 @@ std::string ShortDescription;
 /// Подробное описание
 std::string DetailDescription;
 };
+
 
 /// Функция должна быть реализована в конечном проекте
 extern RDK_LIB_TYPE bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment* env, int predefined_structure);
@@ -108,6 +110,9 @@ std::string SourceControllerProperty;
 /// Набор вариантов predefined structure
 std::map<int, UEnvPredefinedStructDescription> PredefinedStructures;
 
+/// Набор источников данных
+std::vector<UControllerDataReader*> DataReaders;
+
 protected: // Переменные быстрого доступа
 // Текущий компонент модели
 UEPtr<UComponent> CurrentComponent;
@@ -167,25 +172,6 @@ bool SetMaxCalcTime(double value);
 /// каждого компонента
 bool GetUseIndTimeStepFlag(void) const;
 bool SetUseIndTimeStepFlag(bool value);
-
-/// Флаг включения режима отладки
-//bool GetDebugMode(void) const;
-//bool SetDebugMode(bool value);
-
-/// Маска системных событий для логирования
-//unsigned int GetDebugSysEventsMask(void) const;
-//bool SetDebugSysEventsMask(unsigned int value);
-
-/// Возвращает флаг включения вывода лога в отладчик
-//bool GetDebuggerMessageFlag(void) const;
-
-/// Устанавливает флаг включения вывода лога в отладчик
-//bool SetDebuggerMessageFlag(bool value);
-
-/// Флаг включения внутренней регистрации событий в лог-файл
-/// true - регистрация включена
-//bool GetEventsLogMode(void) const;
-//bool SetEventsLogMode(bool value);
 // --------------------------
 
 // --------------------------
@@ -285,6 +271,22 @@ bool CallSourceController(void);
 // --------------------------
 
 // --------------------------
+// Методы управления регистрацией данных
+// --------------------------
+/// Регистрирует новую точку съема данных (вида MDMatrix)
+UControllerDataReader* RegisterDataReader(const std::string &component_name, const std::string &property_name, int row=0, int col=0);
+
+/// Снимает регистрацию точки съема данных (вида MDMatrix)
+void UnRegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col);
+
+/// Снимает регистрацию всех точек съема данных (вида MDMatrix)
+void UnRegisterAllDataReaders(void);
+
+/// Возвращает данные точки съема
+UControllerDataReader* GetDataReader(const std::string &component_name, const std::string &property_name, int row, int col);
+// --------------------------
+
+// --------------------------
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
@@ -336,62 +338,6 @@ virtual void RTCalculate(void);
 /// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
 virtual void FastCalculate(double calc_interval);
 
-// --------------------------
-
-// --------------------------
-// Методы управления исключениями
-// --------------------------
-/*
-public:
-// Обрабатывает возникшее исключение
-virtual void ProcessException(UException &exception) const;
-
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
-int GetMaxExceptionsLogSize(void) const;
-void SetMaxExceptionsLogSize(int value);
-
-// Возвращает массив строк лога
-const char* GetLog(int &error_level) const;
-
-/// Возвращает число строк лога
-int GetNumLogLines(void) const;
-
-/// Возвращает строку лога с индексом i
-const char* GetLogLine(int i, int &error_level, int &number, time_t &time) const;
-
-/// Возвращает число непрочитанных строк лога
-int GetNumUnreadLogLines(void) const;
-
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
-const char* GetUnreadLog(int &error_level, int &number, time_t &time);
-bool GetUnreadLog(UException &ex);
-
-// Управление функцией-обработчиком исключений
-PExceptionHandler GetExceptionHandler(void) const;
-bool SetExceptionHandler(PExceptionHandler value);
-
-/// Управление функцией-предобработчиком исключений
-PExceptionPreprocessor GetExceptionPreprocessor(void) const;
-bool SetExceptionPreprocessor(PExceptionPreprocessor value);
-
-/// Управление функцией-постобработки исключений
-PExceptionPostprocessor GetExceptionPostprocessor(void) const;
-bool SetExceptionPostprocessor(PExceptionPostprocessor value);
-
-/// Очищает лог
-void ClearLog(void);
-
-/// Очищает лог прочитанных сообщений
-void ClearReadLog(void);
-
-// Вызов обработчика исключений среды для простой записи данных в лог
-void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
-void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
-void LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number=0);
-void LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number=0);
-*/
 // --------------------------
 
 // --------------------------

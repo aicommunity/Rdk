@@ -179,67 +179,6 @@ bool UEnvironment::SetUseIndTimeStepFlag(bool value)
   Model->ChangeUseIndTimeStepMode(value);
  return true;
 }
-
-
-
-
-/*
-/// Флаг включения режима отладки
-bool UEnvironment::GetDebugMode(void) const
-{
- return Logger.GetDebugMode();
-}
-
-bool UEnvironment::SetDebugMode(bool value)
-{
- return Logger.SetDebugMode();
-}
-
-/// Маска системных событий для логирования
-unsigned int UEnvironment::GetDebugSysEventsMask(void) const
-{
- return DebugSysEventsMask;
-}
-
-bool UEnvironment::SetDebugSysEventsMask(unsigned int value)
-{
- if(DebugSysEventsMask == value)
-  return true;
-
- DebugSysEventsMask=value;
- return true;
-}
-
-/// Возвращает флаг включения вывода лога в отладчик
-bool UEnvironment::GetDebuggerMessageFlag(void) const
-{
- return DebuggerMessageFlag;
-}
-
-/// Устанавливает флаг включения вывода лога в отладчик
-bool UEnvironment::SetDebuggerMessageFlag(bool value)
-{
- if(DebuggerMessageFlag == value)
-  return true;
-
- DebuggerMessageFlag=value;
- return true;
-}
-
-/// Флаг включения внутренней регистрации событий в лог-файл
-/// true - регистрация включена
-bool UEnvironment::GetEventsLogMode(void) const
-{
- UGenericMutexExclusiveLocker lock(LogMutex);
- return EventsLogMode;
-}
-
-bool UEnvironment::SetEventsLogMode(bool value)
-{
- UGenericMutexExclusiveLocker lock(LogMutex);
- EventsLogMode=value;
- return true;
-}              */
 // --------------------------
 
 
@@ -376,6 +315,8 @@ bool UEnvironment::DestroyModel(void)
 {
  if(!Model)
   return true;
+
+ UnRegisterAllDataReaders();
 
  Model->Free();
  Model=0;
@@ -642,6 +583,79 @@ bool UEnvironment::CallSourceController(void)
 
 
 // --------------------------
+// Методы управления регистрацией данных
+// --------------------------
+/// Регистрирует новую точку съема данных (вида MDMatrix)
+UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
+{
+ for(size_t i=0;i<DataReaders.size();i++)
+  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
+	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+   return DataReaders[i];
+
+ if(!Model)
+  return 0;
+
+ UContainer *cont=Model->GetComponentL(component_name);
+ if(!cont)
+  return 0;
+
+ UEPtr<UIProperty> prop=cont->FindProperty(property_name);
+ if(!prop)
+  return 0;
+
+ UControllerDataReader *data=new UControllerDataReader();
+ if(!data->Configure(cont,prop))
+  {
+   delete data;
+   return 0;
+  }
+
+ data->SetMatrixCoord(row,col);
+
+ DataReaders.push_back(data);
+ return data;
+}
+
+/// Снимает регистрацию точки съема данных (вида MDMatrix)
+void UEnvironment::UnRegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
+{
+ for(size_t i=0;i<DataReaders.size();i++)
+ {
+  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
+	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+  {
+   delete DataReaders[i];
+   DataReaders.erase(DataReaders.begin()+i);
+   return;
+  }
+ }
+}
+
+/// Снимает регистрацию всех точек съема данных (вида MDMatrix)
+void UEnvironment::UnRegisterAllDataReaders(void)
+{
+ for(size_t i=0;i<DataReaders.size();i++)
+  delete DataReaders[i];
+ DataReaders.clear();
+}
+
+/// Возвращает данные точки съема
+UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
+{
+ for(size_t i=0;i<DataReaders.size();i++)
+ {
+  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
+	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+  {
+   return DataReaders[i];
+  }
+ }
+ return 0;
+}
+// --------------------------
+
+// --------------------------
 // Методы управления счетом
 // --------------------------
 // Производит увеличение времени модели на требуемую величину
@@ -784,6 +798,8 @@ void UEnvironment::RTCalculate(void)
  while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
   Calculate();
+  //for(size_t i=0;i<DataReaders.size();i++)
+  // DataReaders[i]->Update();
 
   ++i;
   curtime=GetCurrentStartupTime();
@@ -864,6 +880,8 @@ void UEnvironment::FastCalculate(double calc_interval)
  while(i<elapsed_counter)
  {
   Calculate();
+  //for(size_t i=0;i<DataReaders.size();i++)
+  // DataReaders[i]->Update();
 
   ++i;
   if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
@@ -885,337 +903,6 @@ void UEnvironment::FastCalculate(double calc_interval)
  double model_stop_calc_time=Time.GetDoubleTime();
  RTModelCalcTime=model_stop_calc_time-model_start_calc_time;
 }
-// --------------------------
-
-// --------------------------
-// Методы управления исключениями
-// --------------------------
-/*
-// Обрабатывает возникшее исключение
-void UEnvironment::ProcessException(UException &exception) const
-{
- UGenericMutexExclusiveLocker lock(LogMutex);
-
- UException* processed_exception=&exception;
- UException temp_ex;
- if(ExceptionPreprocessor)
- {
-  if(ExceptionPreprocessor(const_cast<UEnvironment*>(this),Model, exception,temp_ex))
-   processed_exception=&temp_ex;
- }
-
- if(LastErrorLevel>processed_exception->GetType())
-  LastErrorLevel=processed_exception->GetType();
- ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
- {
-  int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
-  if(int(LogList.size())>erase_size)
-  {
-   for(int i=0;i<erase_size;i++)
-    LogList.erase(LogList.begin());
-  }
-  else
-   LogList.clear();
- }
-
- UException log(*processed_exception);
- log.SetMessage(sntoa(ChannelIndex)+std::string("> ")+processed_exception->what());
- LogList[LogIndex++]=log;
-
- if(EventsLogMode) // Если включено, то сохраняем события в файл
- {
-  Logger.LogMessage(log.GetMessage());  // TODO: Проверить на RDK_SUCCESS
- }
-
- if(DebuggerMessageFlag)
-  RdkDebuggerMessage(log.GetMessage());
-
- if(ExceptionPostprocessor)
-  ExceptionPostprocessor(const_cast<UEnvironment*>(this),Model, *processed_exception); // TODO: Нет проверки возвращаемого значения
-
- if(ExceptionHandler)
-  ExceptionHandler(ChannelIndex);
-}
-
-// Возвращает массив строк лога
-const char* UEnvironment::GetLog(int &error_level) const
-{
- UGenericMutexSharedLocker lock(LogMutex);
- TempString.clear();
- std::map<unsigned, UException >::const_iterator I,J;
- I=LogList.begin(); J=LogList.end();
- for(;I != J;++I)
- {
-  TempString+=I->second.GetMessage();
-  TempString+="/r/n";
- }
- error_level=LastErrorLevel;
- LastErrorLevel=INT_MAX;
- return TempString.c_str();
-}
-
-/// Возвращает число строк лога
-int UEnvironment::GetNumLogLines(void) const
-{
- UGenericMutexSharedLocker lock(LogMutex);
- return int(LogList.size());
-}
-
-/// Возвращает строку лога с индексом i
-const char* UEnvironment::GetLogLine(int i, int &error_level, int &number, time_t &time) const
-{
- UGenericMutexSharedLocker lock(LogMutex);
- std::map<unsigned, UException >::const_iterator I=LogList.find(i);
-
- if(I == LogList.end())
- {
-  TempString.clear();
-  return TempString.c_str();
- }
-
- TempString=I->second.GetMessage();
- error_level=I->second.GetType();
- number=I->second.GetNumber();
- time=I->second.GetTime();
- return TempString.c_str();
-}
-
-/// Возвращает число непрочитанных строк лога
-int UEnvironment::GetNumUnreadLogLines(void) const
-{
- UGenericMutexSharedLocker lock(LogMutex);
-
- std::map<unsigned, UException >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
- if(I == LogList.end())
-  return int(LogList.size());
-
- int size=0;
- for(;I!=LogList.end();++I)
-  ++size;
- return size;
-}
-
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
-const char* UEnvironment::GetUnreadLog(int &error_level, int &number, time_t &time)
-{
- UGenericMutexSharedLocker lock(LogMutex);
- TempString.clear();
- error_level=INT_MAX;
- number=0;
- time=time_t();
-
- if(LogList.empty())
-  return TempString.c_str();
-
- if(LastReadExceptionLogIndex == 0)
- {
-  LastReadExceptionLogIndex=LogList.begin()->first;
-  TempString=LogList.begin()->second.GetMessage();
-  error_level=LogList.begin()->second.GetType();
-  number=LogList.begin()->second.GetNumber();
-  time=LogList.begin()->second.GetTime();
- }
- else
- {
-  std::map<unsigned, UException >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
-  if(I != LogList.end())
-  {
-   ++I;
-   if(I != LogList.end())
-   {
-	LastReadExceptionLogIndex=I->first;
-	TempString=I->second.GetMessage();
-	error_level=I->second.GetType();
-	number=I->second.GetNumber();
-	time=I->second.GetTime();
-	return TempString.c_str();
-   }
-  }
-  else
-   LastReadExceptionLogIndex=LogList.begin()->first;
- }
-
- error_level=RDK_EX_UNKNOWN;
- return TempString.c_str();
-}
-
-// Управление функцией-обработчиком исключений
-UEnvironment::PExceptionHandler UEnvironment::GetExceptionHandler(void) const
-{
- return ExceptionHandler;
-}
-
-bool UEnvironment::SetExceptionHandler(PExceptionHandler value)
-{
- if(ExceptionHandler == value)
-  return true;
-
- ExceptionHandler=value;
- return true;
-}
-
-// Управление функцией-предобработчиком исключений
-UEnvironment::PExceptionPreprocessor UEnvironment::GetExceptionPreprocessor(void) const
-{
- return ExceptionPreprocessor;
-}
-
-bool UEnvironment::SetExceptionPreprocessor(PExceptionPreprocessor value)
-{
- if(ExceptionPreprocessor == value)
-  return true;
-
- ExceptionPreprocessor=value;
- return true;
-}
-
-/// Управление функцией-постобработки исключений
-UEnvironment::PExceptionPostprocessor UEnvironment::GetExceptionPostprocessor(void) const
-{
- return ExceptionPostprocessor;
-}
-
-bool UEnvironment::SetExceptionPostprocessor(PExceptionPostprocessor value)
-{
- if(ExceptionPostprocessor == value)
-  return true;
-
- ExceptionPostprocessor=value;
- return true;
-}
-
-
-
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
-int UEnvironment::GetMaxExceptionsLogSize(void) const
-{
- UGenericMutexSharedLocker lock(LogMutex);
- return MaxExceptionsLogSize;
-}
-
-void UEnvironment::SetMaxExceptionsLogSize(int value)
-{
- UGenericMutexExclusiveLocker lock(LogMutex);
- if(MaxExceptionsLogSize == value)
-  return;
-
- MaxExceptionsLogSize=value;
- if(MaxExceptionsLogSize>0 && CurrentExceptionsLogSize>MaxExceptionsLogSize)
- {
-  //ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
-  CurrentExceptionsLogSize=MaxExceptionsLogSize;
- }
-}
-
-/// Очищает лог
-void UEnvironment::ClearLog(void)
-{
- UGenericMutexExclusiveLocker lock(LogMutex);
- LastReadExceptionLogIndex=0;
- CurrentExceptionsLogSize=0;
- LastErrorLevel=INT_MAX;
- LogList.clear();
- LogIndex=1;
-}
-
-/// Очищает лог прочитанных сообщений
-void UEnvironment::ClearReadLog(void)
-{
- UGenericMutexExclusiveLocker lock(LogMutex);
- std::map<unsigned, UException >::iterator I=LogList.find(LastReadExceptionLogIndex);
- if(I != LogList.end())
- {
-  ++I;
-  std::map<unsigned, UException >::iterator J=LogList.begin(),K;
-  while(J != I)
-  {
-   K=J; ++K;
-   LogList.erase(J);
-   J=K;
-  }
- }
- if(!LogList.empty())
-  LastReadExceptionLogIndex=LogList.begin()->first;
- else
-  LastReadExceptionLogIndex=0;
- CurrentExceptionsLogSize=LogList.size();
- LastErrorLevel=INT_MAX;
-// TempLogString.clear();
-}
-
-// Вызов обработчика исключений среды для простой записи данных в лог
-void UEnvironment::LogMessage(int msg_level, const std::string &line, int error_event_number)
-{
- LogMessageEx(msg_level, "", line, error_event_number);
-}
-
-void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
-{
- LogMessageEx(msg_level, "", method_name, line, error_event_number);
-}
-
-void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, const std::string &line, int error_event_number)
-{
- switch (msg_level)
- {
- case RDK_EX_FATAL:
- {
-  EStringFatal exception(line,error_event_number);
- }
- break;
-
- case RDK_EX_ERROR:
- {
-  EStringError exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_WARNING:
- {
-  EStringWarning exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_INFO:
- {
-  EStringInfo exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
-
- case RDK_EX_DEBUG:
- {
-  if(DebugMode)
-  {
-   EStringDebug exception(line,error_event_number);
-   exception.SetObjectName(object_name);
-   ProcessException(exception);
-  }
- }
- break;
-
- case RDK_EX_APP:
- {
-  EStringApp exception(line,error_event_number);
-  exception.SetObjectName(object_name);
-  ProcessException(exception);
- }
- break;
- }
-}
-
-void UEnvironment::LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number)
-{
- LogMessageEx(msg_level, object_name, method_name+std::string(" - ")+line, error_event_number);
-}           */
 // --------------------------
 
 
@@ -1321,16 +1008,13 @@ bool UEnvironment::AReset(void)
  ProcEndTime=StartupTime;
  LastDuration=1;
  LastStepStartTime=0;
-// LastErrorLevel=INT_MAX;
+
  if(Logger)
   Logger->Reset();
  RTModelCalcTime=0;
 
-// if(EventsLogMode)
-// {
-//  Logger.Clear();
-//  Logger.InitLog();
-// }
+ for(size_t i=0;i<DataReaders.size();i++)
+  DataReaders[i]->Clear();
 
  if(!Model)
   return true;
@@ -1398,6 +1082,9 @@ bool UEnvironment::ACalculate(void)
   if(!destcont->Calculate())
    return false;
  }
+
+ //for(size_t i=0;i<DataReaders.size();i++)
+ // DataReaders[i]->Update();
 
  // Если мы считаем всю модель, то расчитываем время модели здесь,
  // иначе мы ожидаем, что вызывающий модуль сам расчитает время модели

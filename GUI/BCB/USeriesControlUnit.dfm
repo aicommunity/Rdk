@@ -163,8 +163,6 @@ object USeriesControlForm: TUSeriesControlForm
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
           TabOrder = 0
           OnDblClick = StringGrid1DblClick
-          ExplicitLeft = -3
-          ExplicitTop = 17
         end
       end
     end
@@ -180,6 +178,7 @@ object USeriesControlForm: TUSeriesControlForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitLeft = 1
       object GroupBox2: TGroupBox
         Left = 13
         Top = 0
@@ -476,8 +475,8 @@ object USeriesControlForm: TUSeriesControlForm
           281
           277)
         object Label2: TLabel
-          Left = 25
-          Top = 25
+          Left = 32
+          Top = 27
           Width = 50
           Height = 13
           Margins.Left = 4
@@ -555,7 +554,7 @@ object USeriesControlForm: TUSeriesControlForm
         end
         object Edit4: TEdit
           Left = 89
-          Top = 53
+          Top = 54
           Width = 184
           Height = 21
           Margins.Left = 4
@@ -717,8 +716,6 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 0
         OnClick = StringGrid2Click
         OnDblClick = StringGrid2DblClick
-        ExplicitLeft = -1
-        ExplicitTop = 17
       end
     end
   end
