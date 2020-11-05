@@ -46,6 +46,7 @@ UApplication::UApplication(void)
  ModelsMainPath="../../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
+ LogCreationMode=0;
  //SetStandartXMLInCatalog();
 
 
@@ -86,7 +87,8 @@ bool UApplication::SetWorkDirectory(const std::string& value)
  if(WorkDirectory == value)
   return true;
  WorkDirectory=value;
- UpdateLoggers();
+ if(FixedLogPath.empty())
+  UpdateLoggers();
  return true;
 }
 
@@ -156,7 +158,8 @@ bool UApplication::SetProjectPath(const std::string& value)
  if(ProjectPath == value)
   return true;
  ProjectPath=value;
- UpdateLoggers();
+ if(LogCreationMode == 0 || LogCreationMode == 1)
+  UpdateLoggers();
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
  return true;
@@ -264,18 +267,53 @@ bool UApplication::SetDebugMode(bool value)
 std::string UApplication::CalcCurrentLogDir(void) const
 {
  std::string log_dir;
- if(Project && Project->GetConfig().OverrideLogParameters && !ProjectPath.empty())
+ switch(LogCreationMode)
  {
-  log_dir=ProjectPath+"EventsLog/";
+ case 0:
+ case 1:
+ {
+  if(Project && Project->GetConfig().OverrideLogParameters && !ProjectPath.empty())
+  {
+   log_dir=ProjectPath+"EventsLog/";
+  }
+  else
+  {
+   if(FixedLogPath.empty())
+   {
+    log_dir=Core_GetLogDir();
+    if(log_dir.empty())
+     log_dir=WorkDirectory+"EventsLog/";
+   }
+   else
+   {
+    log_dir=FixedLogPath;
+   }
+   if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
+    log_dir+="/";
+  }
  }
- else
+ break;
+
+ case 2:
+ case 3:
  {
-  log_dir=Core_GetLogDir();
-  if(log_dir.empty())
-   log_dir=WorkDirectory+"EventsLog/";
+  if(FixedLogPath.empty())
+  {
+   log_dir=Core_GetLogDir();
+   if(log_dir.empty())
+    log_dir=WorkDirectory+"EventsLog/";
+  }
+  else
+  {
+   log_dir=FixedLogPath;
+  }
   if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
    log_dir+="/";
  }
+ break;
+ }
+
+
  return log_dir;
 }
 
@@ -308,6 +346,43 @@ bool UApplication::IsCloseAfterTest(void) const
 bool UApplication::IsInit(void) const
 {
  return AppIsInit;
+}
+
+/// Фиксированный путь до логов
+const std::string& UApplication::GetFixedLogPath(void) const
+{
+ return FixedLogPath;
+}
+
+bool UApplication::SetFixedLogPath(const std::string& value)
+{
+ if(FixedLogPath == value)
+  return true;
+
+ FixedLogPath=value;
+ return true;
+}
+
+/// Режим записи логов
+/// 0 - запись по умолчанию (логи создаются заново при каждом вызове Reset в папке конфигурации)
+/// 1 - файл лога создается заново только при открытии каждой новой конфигурации. В папке конфигурации
+/// 2 - файл лога создается заново только при открытии каждой новой конфигурации. В системной папке
+/// 3 - файл лога создается единожды на весь период работы приложения в системной папке
+int UApplication::GetLogCreationMode(void) const
+{
+ return LogCreationMode;
+}
+
+bool UApplication::SetLogCreationMode(int mode)
+{
+ if(LogCreationMode == mode)
+  return true;
+
+ if(mode<0 || mode>3)
+  return false;
+
+ LogCreationMode=mode;
+ return true;
 }
 // --------------------------
 
@@ -1217,7 +1292,8 @@ bool UApplication::OpenProject(const std::string &filename)
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
  Project->ReadFromXml(ProjectXml);
- UpdateLoggers();
+ if(LogCreationMode != 3)
+  UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(config.EventsLogFlag);

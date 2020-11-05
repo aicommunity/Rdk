@@ -263,7 +263,8 @@ void UEngineControl::StartChannel(int channel_index)
  if(channel_index>=GetNumChannels())
   return;
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+ if(Application && Application->GetLogCreationMode() == 0)
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
 // EngineStateThread->RecreateEventsLogFile();
  switch(ThreadMode)
  {
@@ -377,7 +378,8 @@ void UEngineControl::ResetChannel(int channel_index)
  if(channel_index>=GetNumChannels())
   return;
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+ if(Application && Application->GetLogCreationMode() == 0)
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
 // EngineStateThread->RecreateEventsLogFile();
  if(channel_index == -1)
  {
