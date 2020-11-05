@@ -94,7 +94,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 {
  // Инициализация из стартового ini файла
  RDK::UIniFile<char> projectIniFile;
- projectIniFile.LoadFromFile("VideoAnalytics.ini");
+ projectIniFile.LoadFromFile(RDK::extract_file_name_wo_ext(application_file_name)+".ini");
  startProjectName = projectIniFile("General", "AutoexecProjectFileName", "");
  autoStartProjectFlag = RDK::atoi(projectIniFile("General", "autoStartProjectFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));

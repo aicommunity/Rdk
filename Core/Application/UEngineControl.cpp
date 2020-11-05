@@ -368,7 +368,8 @@ void UEngineControl::PauseChannel(int channel_index)
  break;
  }
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
+ if(Application && Application->GetLogCreationMode() == 0)
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
 // EngineStateThread->CloseEventsLogFile();
 }
 

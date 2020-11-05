@@ -1297,7 +1297,8 @@ bool UApplication::OpenProject(const std::string &filename)
 
  TProjectConfig config=Project->GetConfig();
  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(config.EventsLogFlag);
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
+ if(LogCreationMode != 3)
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
 // EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
 // EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);

@@ -369,6 +369,9 @@ RDK_LIB_TYPE std::string extract_file_path(const std::string& full_name);
 /// Извлекает имя файла из полного имени файла
 RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 
+/// Извлекает имя файла из полного имени файла исключая расширение
+RDK_LIB_TYPE std::string extract_file_name_wo_ext(const std::string& full_name);
+
 /// Извлекает расширение файла из имени файла
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
