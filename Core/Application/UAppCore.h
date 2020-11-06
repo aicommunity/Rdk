@@ -152,6 +152,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  logDebugMode=atoi(projectIniFile("Log","DebugMode","1"));
 
  disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
+ std::string temp_proj_path = projectIniFile("General", "TemporaryProjectPath", "");
 
  serverPort = atoi(projectIniFile("Server","BindPort","45545"));
  serverAddress = projectIniFile("Server","BindAddress","127.0.0.2");
@@ -201,6 +202,12 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  {
      application.SetDatabaseMainPath(databaseMainPath);
  }
+
+ if(temp_proj_path!="")
+ {
+    application.GetProjectDeployer()->SetTempProjectDeploymentPath(temp_proj_path);
+ }
+
  application.GetServerControl()->GetServerTransport()->SetServerBinding(serverAddress, serverPort);
  cout<<"ServerAutoStartFlag: "<<serverAutostartFlag<<"\n";
  std::cout<<"Test cout "<<serverAddress.c_str()<<" "<<serverPort<<std::endl;

@@ -55,11 +55,6 @@ void UProjectDeployProcessingThread::SetDownloadTempPath(const QString& path)
     downloadTempPath = path;
 }
 
-void UProjectDeployProcessingThread::SetDeploymentTempPath(const QString& path)
-{
- deploymentTempPath = path;
-}
-
 void UProjectDeployProcessingThread::SetFtpRemoteBasePath(const QString& path)
 {
     ftpRemoteBasePath = path;
@@ -124,11 +119,6 @@ QString UProjectDeployProcessingThread::GetFtpRemoteBasePath()
 QString UProjectDeployProcessingThread::GetDownloadTempPath()
 {
  return downloadTempPath;
-}
-
-QString UProjectDeployProcessingThread::GetDeploymentTempPath()
-{
- return deploymentTempPath;
 }
 
 DeploymentState UProjectDeployProcessingThread::GetDeploymentState()
@@ -223,7 +213,7 @@ void UProjectDeployProcessingThread::run()
         //Изначально самая примитивная верификация, потом усложним
     }
 
-    deploymentState = DS_Finished;
+    deploymentState = DS_DeployFinished;
 
 }
 
@@ -779,7 +769,8 @@ bool UProjectDeployProcessingThread::VerifyData()
 // --------------------------
 UProjectDeployerQt::UProjectDeployerQt(void):
     db(NULL),
-    deployProcessingThread(NULL)
+    deployProcessingThread(NULL),
+    deploymentState(DS_NULL)
 {
     //Инициализация curl, которую надо выполнить только один раз
     //Этот класс же тоочно не создается дважды?
@@ -836,6 +827,8 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
     lastError = "Deployment thread exists and currently active";
      return 20;
  }
+
+ deploymentState=DS_NULL;
 
  if(!DestroyProcessingThread())
  {
@@ -1014,9 +1007,9 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
          return 7;
      }
      task_src_path = q.value(0).toString();
-     QString abs_src_path = task_src_path;
-     abs_src_path.replace("{Database}", database_path);
-     QFileInfo qfi_src_file(abs_src_path);
+     task_src_fullpath = task_src_path;
+     task_src_fullpath.replace("{Database}", database_path);
+     QFileInfo qfi_src_file(task_src_fullpath);
      if(!qfi_src_file.exists())
      {
          task_src_download_required = true;
@@ -1039,10 +1032,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      }
      task_src_path = q.value(0).toString();
      int frame_length = q.value(1).toInt();
-     QString abs_src_path = task_src_path;
-     abs_src_path.replace("{Database}", database_path);
+     task_src_fullpath = task_src_path;
+     task_src_fullpath.replace("{Database}", database_path);
      //QFileInfo qfi_src_file(abs_src_path);
-     QDir seq_dir(abs_src_path);
+     QDir seq_dir(task_src_fullpath);
      if(seq_dir.exists())
      {
          QStringList ldr = seq_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
@@ -1070,9 +1063,6 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  //Это куда грузить, распаковка должна идти по стандартному пути в {Database}/...
  download_temp_path = database_path+"/Temp";
 
- //Место, куда разворачивать zip проекта именно, уже при копировании из датабасе
- deployment_temp_path = database_path+"/Deploy";
-
 
  if(deployProcessingThread)
  {
@@ -1083,32 +1073,39 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      }
  }
 
- deployProcessingThread = new UProjectDeployProcessingThread();
-
- deployProcessingThread->SetDatabasePath(database_path);
- deployProcessingThread->SetDeploymentState(DS_Unknown);
- deployProcessingThread->SetDeploymentTempPath(deployment_temp_path);
- deployProcessingThread->SetDownloadTempPath(download_temp_path);
- if(ftp_remote_path!="")
+ if(task_template_download_required||task_weights_download_required||
+    task_script_download_required||task_src_download_required)
  {
-    deployProcessingThread->SetFtpRemoteBasePath(QString(ftp_remote_path.c_str()));
+     deployProcessingThread = new UProjectDeployProcessingThread();
+
+     deployProcessingThread->SetDatabasePath(database_path);
+     deployProcessingThread->SetDeploymentState(DS_Unknown);
+     deployProcessingThread->SetDownloadTempPath(download_temp_path);
+     if(ftp_remote_path!="")
+     {
+        deployProcessingThread->SetFtpRemoteBasePath(QString(ftp_remote_path.c_str()));
+     }
+     else
+     {
+        qDebug("Empty ftp_remote_path on deploy processing stage");
+     }
+
+     std::cout<<"Initialize deployment thread: ttdr="<<task_template_download_required<<" atf="<<abs_template_file.toUtf8().constData()<<
+            " twdr="<<task_weights_download_required<<" twp="<<task_weights_path.toUtf8().constData()<<" tsdr="<<task_script_download_required<<
+            " tsp="<<task_script_path.toUtf8().constData()<<" tsrcdr="<<task_src_download_required<<" tst="<<task_src_type<<" tsp="<<task_src_path.toUtf8().constData();
+
+     deployProcessingThread->PrepareProjectDeployment(task_template_download_required, task_template_path,
+                                                      task_weights_download_required, task_weights_path,
+                                                      task_script_download_required, task_script_path,
+                                                      task_src_download_required, task_src_type, task_src_path);
+     deployProcessingThread->RunProjectDeployment();
  }
  else
  {
-    qDebug("Empty ftp_remote_path on deploy processing stage");
+    //Что по идее не совсем правда, так как доставка и не начиналась, но будет ли работать?
+    this->deploymentState = DS_DeployFinished;
  }
 
- std::cout<<"Initialize deployment thread: ttdr="<<task_template_download_required<<" atf="<<abs_template_file.toUtf8().constData()<<
-        " twdr="<<task_weights_download_required<<" twp="<<task_weights_path.toUtf8().constData()<<" tsdr="<<task_script_download_required<<
-        " tsp="<<task_script_path.toUtf8().constData()<<" tsrcdr="<<task_src_download_required<<" tst="<<task_src_type<<" tsp="<<task_src_path.toUtf8().constData();
-
- deployProcessingThread->PrepareProjectDeployment(task_template_download_required, task_template_path,
-                                                  task_weights_download_required, task_weights_path,
-                                                  task_script_download_required, task_script_path,
-                                                  task_src_download_required, task_src_type, task_src_path);
-
-
- deployProcessingThread->RunProjectDeployment();
  lastError = "";
  return 0;
 }
@@ -1164,23 +1161,27 @@ std::string UProjectDeployerQt::GetLastError()
     std::string le = "";
     if(lastError!="")
     {
-        le = "UProjectDeployerQt lastError="+lastError+" ";
+        le = std::string("UProjectDeployerQt lastError=")+lastError+std::string(" ");
     }
     if(deployProcessingThread==NULL)
     {
-        le+="DeployProcessingThread lastError: Deploy thread not exists. ";
+        if(le=="")
+            le=le+std::string("DeployProcessingThread lastError: Deploy thread not exists. ");
     }
     else
     {
-        return le+="DeployProcessingThread lastError: "+deployProcessingThread->GetLastError();
+        std::string dtle = deployProcessingThread->GetLastError();
+        if(dtle!="")
+            le=le+std::string("DeployProcessingThread lastError: ")+dtle;
     }
+    return le;
 }
 
 int UProjectDeployerQt::GetDeploymentState()
 {
     if(deployProcessingThread==NULL)
     {
-        return DeploymentState::DS_NULL;
+        return deploymentState;
     }
     else
     {
@@ -1233,9 +1234,231 @@ int UProjectDeployerQt::GetStageProgress()
     }
 }
 
+///Подготовить к запуску проект:
+/// 1. Скопировать во временное хранилище
+/// 2. Открыть в тестовом режиме и настроить пути и связи?
+/// 3. Закрыть
+int UProjectDeployerQt::PrepareProject(std::string &response)
+{
+    lastError="";
+    if(this->deploymentState!=DS_DeployFinished)
+    {
+        response = "Project deployment is not opened, can't start preparations";
+        lastError=response;
+        return 1;
+    }
+    this->deploymentState = DS_CopyProject;
+    if(CopyProjectToTempFolder()!=0)
+    {
+        this->deploymentState=DS_Error;
+        response = "error during copying";
+        lastError=response;
+        return 1;
+    }
+    this->deploymentState=DS_PrepareProject;
+    if(OpenProjectMockMode()!=0)
+    {
+        this->deploymentState=DS_Error;
+        response = "error during opening in mock mode";
+        lastError=response;
+        return 1;
+    }
+    if(SetupProjectMockParameters()!=0)
+    {
+        this->deploymentState=DS_Error;
+        response = "error during mock parameters setup";
+        lastError=response;
+        return 1;
+    }
+    if(CloseMockProject()!=0)
+    {
+        this->deploymentState=DS_Error;
+        response = "error during mocked project closing";
+        lastError=response;
+        return 1;
+    }
+    this->deploymentState=DS_ProjectPrepared;
+    response = "project prepared successfully";
+    lastError=response;
+    return 0;
+}
+
+///Открыть подготовленный проект
+int UProjectDeployerQt::OpenPreparedProject(std::string &response)
+{
+    if(this->deploymentState!=DS_ProjectPrepared)
+    {
+        response = "Project is not prepared yet";
+        lastError=response;
+        return 1;
+    }
+    deploymentState = DS_OpenProject;
+    //Здесь какие-то инструкции для правильного открытия проекта
+    //RDK::Sleep(3);
+    Application->SetStorageBuildMode(1);
+    QString pdpath = GetTempProjectDeploymentPath().c_str();
+    QString project_path = pdpath+"/project_full.ini";
+    if(!Application->OpenProject(project_path.toUtf8().constData()))
+    {
+        lastError="UApplication OpenProject normally error";
+        return 1;
+    }
+    ////
+    deploymentState = DS_ProjectOpened;
+    response = "project opened successfully";
+    lastError=response;
+    return 0;
+}
+
 // --------------------------
 // Методы транспортировки данных
 // --------------------------
+
+///Скопировать проект во временную директорию, в которой будет выполняться работа
+int UProjectDeployerQt::CopyProjectToTempFolder()
+{
+    QString pdpath = GetTempProjectDeploymentPath().c_str();
+    if(pdpath=="")
+    {
+        lastError="project temporary deployment path empty - cannot copy";
+        return 1;
+    }
+    QString abs_ttp = task_template_path;
+    QString db_p = Application->GetDatabaseMainPath().c_str();
+    abs_ttp.replace("{Database}", db_p);
+
+    QFileInfo fi(abs_ttp);
+    QDir src_dir(fi.absoluteDir());
+    QStringList files_dirs = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
+    //Скопировать все файлы
+    for(QString fn:files_dirs)
+    {
+        QFile::copy(src_dir.path()+"/"+fn, pdpath+"/"+fn);
+    }
+    QDir pddir(pdpath);
+    //Обязательная для лога событий
+    pddir.mkdir("EventsLog");
+    //..и предполагаемая для результатов
+    pddir.mkdir("Results");
+
+    //RDK::Sleep(3);
+    return 0;
+}
+
+/// Открыть проект в заглушенном режиме
+int UProjectDeployerQt::OpenProjectMockMode()
+{
+    //Сделать заготовки библиотек
+    Application->CreateSaveMockLibs();
+    //Это у нас заглушки вместо компонентов
+    Application->SetStorageBuildMode(3);
+    QString pdpath = GetTempProjectDeploymentPath().c_str();
+    QString project_path = pdpath+"/project_full.ini";
+    if(!Application->OpenProject(project_path.toUtf8().constData()))
+    {
+        lastError="UApplication OpenProject Mock Components error";
+        return 1;
+    }
+    return 0;
+}
+
+/// Задать параметры проекта в заглушенном режиме
+int UProjectDeployerQt::SetupProjectMockParameters()
+{
+    RDK::Sleep(3);
+
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(0);
+
+    if(!model) return 1;
+
+    //Настроить видеоисточник
+
+    RDK::UEPtr<RDK::UContainer> video_cont;
+    RDK::UEPtr<RDK::UContainer> imseq_cont;
+    std::vector<std::string> vid_names;
+    vid_names = model->GetComponentsNameByClassName("TCaptureOpenCV", vid_names);
+    std::vector<std::string> imseq_names;
+    imseq_names = model->GetComponentsNameByClassName("TCaptureImageSequence", imseq_names);
+
+    if(task_src_type==0)//TODO: Проверить - видео
+    {
+        if(vid_names.empty())
+        {
+            //Видеозаписей - нет
+            lastError="Model does not contain video data source, fix project file/task parameters";
+            return 1;
+        }
+        video_cont = model->GetComponentL(vid_names[0]);
+        bool *video_Activity = video_cont->AccessPropertyData<bool>("Activity");
+        bool *video_EnableCapture = video_cont->AccessPropertyData<bool>("EnableCapture");
+        std::string *video_CameraPath = video_cont->AccessPropertyData<std::string>("CameraPath");
+        *video_Activity = true;
+        *video_EnableCapture = true;
+        *video_CameraPath = task_src_fullpath.toUtf8().constData();
+
+        if(!imseq_names.empty())
+        {
+            imseq_cont = model->GetComponentL(imseq_names[0]);
+            bool *act = imseq_cont->AccessPropertyData<bool>("Activity");
+            *act = false;
+        }
+    }
+    else if(task_src_type==1)//TODO: Проверить - картинки
+    {
+        if(imseq_names.empty())
+        {
+            //Компонента с картинками - нет
+            lastError="Model does not contain image sequence data source, fix project file/task parameters";
+            return 1;
+        }
+    }
+    else
+    {
+        //Тип источника странный, не поддерживается системой
+        lastError="Video source type has undefined value";
+        return 1;
+    }
+
+    /*
+    if(cont)
+    {
+    std::map<std::string, RTV::RTVAlarmPlan> *schedules =
+      cont->AccessPropertyData<std::map<std::string, RTV::RTVAlarmPlan> >(schedulesPropertyName.toLocal8Bit().constData());
+
+    int stepCounter = 0;
+    for(std::map<std::string, RTV::RTVAlarmPlan>::iterator i = schedules->begin();
+        i != schedules->end(); ++i, ++stepCounter)
+    {
+      ui->tableWidgetSchedule->insertRow(stepCounter);
+      ui->tableWidgetSchedule->setItem(stepCounter, 0, new QTableWidgetItem(QString::fromLocal8Bit(i->first.c_str())));
+      ui->tableWidgetSchedule->setItem(stepCounter, 1, new QTableWidgetItem(QString::number(i->second.StartTime)));
+      ui->tableWidgetSchedule->setItem(stepCounter, 2, new QTableWidgetItem(QString::number(i->second.StopTime)));
+
+      for(int checkBoxIterator = 0; checkBoxIterator < 8; ++checkBoxIterator)
+      {
+        QCheckBox *checkBox = new QCheckBox();
+        if(i->second.DaysOfWeek & 1 << checkBoxIterator)
+          checkBox->setChecked(true);
+        ui->tableWidgetSchedule->setCellWidget(stepCounter, checkBoxIterator + 3, checkBox);
+      }
+    }
+    }
+    */
+
+    return 0;
+}
+
+/// Закрыть заглушенный проект
+int UProjectDeployerQt::CloseMockProject()
+{
+    //RDK::Sleep(3);
+    Application->SaveProject();
+    Application->CloseProject();
+    return 0;
+}
+
+
+
 
 
 

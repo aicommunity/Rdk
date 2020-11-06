@@ -501,6 +501,19 @@ int Rpc_GetChannelName(int server_index, int channel_index, const char* &result,
  return 0;
 }
 
+int Rpc_GetLastError(int server_index, const char* &result, int timeout)
+{
+ RDK::USerStorageXML request,response;
+ int res=ProcessSimpleCommand("GetLastError", server_index, -1, timeout, request, response);
+ if(res)
+  return res;
+
+ static std::string res_string;
+ res_string=response.ReadString("Data", "").c_str();
+ result=res_string.c_str();
+ return 0;
+}
+
 int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout)
 {
     RDK::USerStorageXML request,response;
@@ -582,9 +595,16 @@ int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout)
      return res;
 }
 
-int Rpc_OpenDeployedProject(int server_index, int timeout)
-{
+int Rpc_PrepareProject(int server_index, const char* &verbose_response, int timeout)
+ {
     RDK::USerStorageXML request,response;
-    return ProcessSimpleCommand("OpenDeployedProject", server_index, -1, timeout, request, response);
+    return ProcessSimpleCommand("PrepareProject", server_index, -1, timeout, request, response);
 }
+
+ int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout)
+ {
+    RDK::USerStorageXML request,response;
+    return ProcessSimpleCommand("OpenPreparedProject", server_index, -1, timeout, request, response);
+}
+
 

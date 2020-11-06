@@ -161,7 +161,12 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
   return true;
  }
  else
- if(cmd == "OpenDeployedProject")
+ if(cmd == "PrepareProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "OpenPreparedProject")
  {
   return true;
  }
@@ -396,24 +401,20 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    return_value=0;
   }
   else
-  if(cmd == "OpenDeployedProject")
+  if(cmd == "PrepareProject")
   {
-   std::string project_file = GetApplication()->GetProjectDeployer()->GetProjectFileName();
-
-   if(project_file!="")
-   {
-     GetApplication()->OpenProject(project_file);
-   }
-   /*std::string last_error=GetApplication()->GetProjectDeployer()->GetLastError();
-   //GetApplication()->SaveProject();
-   int d_state = GetApplication()->GetProjectDeployer()->GetDeploymentState();
-   int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
-   int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
-
-   std::stringstream ss;
-   ss<<d_state<<" "<<stage_pos<<" "<<stage_max;
-   response=ss.str();*/
-   return_value=0;
+    std::string resp="";
+    int rs = GetApplication()->GetProjectDeployer()->PrepareProject(resp="");
+    response=resp;
+    return_value=0;
+  }
+  else
+  if(cmd=="OpenPreparedProject")
+  {
+    std::string resp="";
+    int rs = GetApplication()->GetProjectDeployer()->OpenPreparedProject(resp);
+    response=resp;
+    return_value=0;
   }
 /*
   else

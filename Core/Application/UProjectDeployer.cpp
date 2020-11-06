@@ -74,6 +74,33 @@ void UProjectDeployer::SetFtpRemotePath(const std::string &path)
     ftp_remote_path = path;
 }
 
+void UProjectDeployer::SetTempProjectDeploymentPath(const std::string &path)
+{
+    temp_project_deployment_path = path;
+}
+
+std::string UProjectDeployer::GetTempProjectDeploymentPath()
+{
+    return temp_project_deployment_path;
+}
+
+///Подготовить к запуску проект:
+/// 1. Скопировать во временное хранилище
+/// 2. Открыть в тестовом режиме и настроить пути и связи?
+/// 3. Закрыть
+int UProjectDeployer::PrepareProject(std::string &response)
+{
+    response="base class called";
+    return -1;
+}
+
+///Открыть подготовленный проект
+int UProjectDeployer::OpenPreparedProject(std::string &response)
+{
+    response="base class called";
+    return -1;
+}
+
 std::string UProjectDeployer::GetLastError()
 {
     return std::string();
