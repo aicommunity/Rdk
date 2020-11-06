@@ -158,31 +158,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, long double &data)
 }
 
 
-USerStorageXML& operator << (USerStorageXML& storage, const UnKnow &data)
-{
- storage.SetNodeAttribute("Type",std::string("UnKnow"));
-
- return storage;
-}
-
-USerStorageXML& operator >> (USerStorageXML& storage, UnKnow &data)
-{
- return storage;
-}
-
-USerStorageXML& operator << (USerStorageXML& storage, const simpleVector &data)
-{
- storage.SetNodeAttribute("Type",std::string("simpleVector"));
-
- return storage;
-}
-
-USerStorageXML& operator >> (USerStorageXML& storage, simpleVector &data)
-{
- return storage;
-}
-
-
 // Вектора
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data)
 {

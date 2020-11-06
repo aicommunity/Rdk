@@ -7,7 +7,7 @@
 
 
 namespace RDK {
-// TODO вывод в Logger информации о несозданных свойствах
+
 /* *************************************************************************** */
 // --------------------------
 //  онструкторы и деструкторы
@@ -60,10 +60,10 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     {
         if(CreatedProps.find((*p).first) == CreatedProps.end())
         {
-            if(std::find(ForbiddenInputs.begin(),ForbiddenInputs.end(),(*p).first) != ForbiddenInputs.end())
+            if(std::find(UBasePropCreator::GetForbiddenInputs().begin(),UBasePropCreator::GetForbiddenInputs().end(),(*p).first) != UBasePropCreator::GetForbiddenInputs().end())
                 continue;
 
-            if(std::find(ForbiddenOutputs.begin(),ForbiddenOutputs.end(),(*p).first) != ForbiddenOutputs.end())
+            if(std::find( UBasePropCreator::GetForbiddenOutputs().begin(), UBasePropCreator::GetForbiddenOutputs().end(),(*p).first) != UBasePropCreator::GetForbiddenOutputs().end())
                 continue;
             if(GetStorage()->GetLogger())
             {

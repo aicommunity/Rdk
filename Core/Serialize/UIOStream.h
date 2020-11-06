@@ -18,7 +18,6 @@ See file license.txt for more information
 #include <map>
 #include <list>
 #include <string>
-#include "../Utilities/USupport.h"
 //#include <memory.h>
 
 
@@ -259,17 +258,6 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, T dat
 }
    */
 
-template<typename CharT>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const UnKnow &data)
-{
- return stream;
-}
-
-template<typename CharT>
-std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, UnKnow &data)
-{
- return stream;
-}
 
 }
 #endif

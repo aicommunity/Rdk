@@ -50,6 +50,9 @@ std::string WorkDirectory;
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 std::string ConfigsMainPath;
 
+/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+std::string LibrariesPath;
+
 /// Относительный путь до папки с хранилищем проектов (пока обычно /Database)
 std::string DatabaseMainPath;
 
@@ -100,6 +103,17 @@ std::list<StandartXMLInCatalog> xmlInCatalog;
 //      Остальные (которые есть в библиотеках-заглушка, но нет сейчас в хранилище) - заглушки.
 // 3 -  сборка только заглушек. Сборка библиотек-заглушек, затем динамических. Все компоненты заглушки (не рабочие)
 int StorageBuildMode;
+
+/// Фиксированный путь до логов
+/// Используется вместо системного пути если задан
+std::string FixedLogPath;
+
+/// Режим записи логов
+/// 0 - запись по умолчанию (логи создаются заново при каждом вызове ResetChannel или StartChannel в папке конфигурации)
+/// 1 - файл лога создается заново только при открытии каждой новой конфигурации. В папке конфигурации
+/// 2 - файл лога создается заново только при открытии каждой новой конфигурации. В системной папке
+/// 3 - файл лога создается единожды на весь период работы приложения в системной папке
+int LogCreationMode;
 
 protected: // Модули приложения
 /// Диспетчер команд
@@ -159,6 +173,10 @@ bool SetConfigsMainPath(const std::string &value);
 const std::string& GetDatabaseMainPath(void) const;
 bool SetDatabaseMainPath(const std::string &value);
 
+/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTLibs)
+const std::string& GetLibrariesPath(void) const;
+bool SetLibrariesPath(const std::string &value);
+
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 const std::string& GetModelsMainPath(void) const;
 bool SetModelsMainPath(const std::string &value);
@@ -195,6 +213,18 @@ bool ChangeUseNewProjectFilesStructure(bool value);
 ///Список имен и описаний xml файлов из папки с хранилищем моделей (обычно /Bin/Models)
 const std::list<StandartXMLInCatalog>& GetStandartXMLInCatalog(void) const;
 bool SetStandartXMLInCatalog(void);
+
+/// Фиксированный путь до логов
+const std::string& GetFixedLogPath(void) const;
+bool SetFixedLogPath(const std::string& value);
+
+/// Режим записи логов
+/// 0 - запись по умолчанию (логи создаются заново при каждом вызове ResetChannel или StartChannel в папке конфигурации)
+/// 1 - файл лога создается заново только при открытии каждой новой конфигурации. В папке конфигурации
+/// 2 - файл лога создается заново только при открытии каждой новой конфигурации. В системной папке
+/// 3 - файл лога создается единожды на весь период работы приложения в системной папке
+int GetLogCreationMode(void) const;
+bool SetLogCreationMode(int mode);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;
