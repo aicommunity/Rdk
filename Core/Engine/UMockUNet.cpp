@@ -3,7 +3,7 @@
 
 #include "UMockUNet.h"
 #include "UStorage.h"
-#include "UBasePropCreator.h"
+#include "UBasePropCreatorTempl.h"
 
 
 namespace RDK {
@@ -37,6 +37,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
     // Список свойств из xml-ки
     std::vector<std::pair<std::string,std::string> > PropsNames;
+
     // Проход по всем свойствам для формирования списка свойств
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
@@ -58,18 +59,18 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     // Сравнение списков свойств
     for(std::vector<std::pair<std::string,std::string> >::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
     {
+        // Свойство не найдено - то есть не было создано
         if(CreatedProps.find((*p).first) == CreatedProps.end())
         {
-            if(std::find(UBasePropCreator::GetForbiddenInputs().begin(),UBasePropCreator::GetForbiddenInputs().end(),(*p).first) != UBasePropCreator::GetForbiddenInputs().end())
+            if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(),  UBasePropCreatorTempl::GetForbiddenInputs().end(),  (*p).first) != UBasePropCreatorTempl::GetForbiddenInputs().end())
                 continue;
 
-            if(std::find( UBasePropCreator::GetForbiddenOutputs().begin(), UBasePropCreator::GetForbiddenOutputs().end(),(*p).first) != UBasePropCreator::GetForbiddenOutputs().end())
+            if(std::find(UBasePropCreatorTempl::GetForbiddenOutputs().begin(), UBasePropCreatorTempl::GetForbiddenOutputs().end(), (*p).first) != UBasePropCreatorTempl::GetForbiddenOutputs().end())
                 continue;
-            if(GetStorage()->GetLogger())
-            {
-                GetStorage()->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__,
-                                                      "In class "+ class_name + ": failed to create property: " + (*p).first + "with type" + (*p).second);
-            }
+
+            LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+                         "In class "+ class_name + ": failed to create property: " + (*p).first + "with type" + (*p).second);
+
         }
     }
 

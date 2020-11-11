@@ -63,7 +63,7 @@ void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK
         CreatePropertyMDVector<PropType, TypeInt>(serstorage,mock_unet);
 		return;
 	}
-//#ifndef __BORLANDC__   // TODO: Разобраться как обеспечить сборку в билдере этой части кода (возможно убрать теперь?)
+
 	// MVector
 	if(type.find("MVector",0) == 0)
 	{
@@ -77,7 +77,6 @@ void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK
 		CreatePropertyMMatrix<PropType, TypeInt>(serstorage,mock_unet);
 		return;
 	}
-//#endif
 
     if(type == "std::vector")
 	{
@@ -263,7 +262,6 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML*
         return;
     }
 }
-
 
 // Функция для создания свойства типа MDMatrix
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>

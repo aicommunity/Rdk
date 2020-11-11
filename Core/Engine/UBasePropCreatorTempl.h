@@ -45,11 +45,11 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
 
                 if(prop_type == "Parameters")
                 {
-					CreatorT::CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet);
                 }
                 else if(prop_type == "State")
                 {
-					CreatorT::CreateProperty<ULProperty,ptPubState>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<ULProperty,ptPubState>(serstorage,mock_unet);
                 }
                 else if(prop_type == "Input")
                 {
@@ -59,7 +59,7 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
                         serstorage->SelectUp();
                         continue;
                     }
-                    CreatorT::CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet);
                 }
                 else if(prop_type == "Output")
                 {
@@ -69,7 +69,7 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
                         serstorage->SelectUp();
                         continue;
                     }
-                    CreatorT::CreateProperty<UPropertyOutputData,ptPubOutput>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<UPropertyOutputData,ptPubOutput>(serstorage,mock_unet);
                 }
             }
             catch(UComponent::EPropertyNameAlreadyExist& e)
@@ -87,60 +87,6 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
     return true;
 }
 
-	   /*
-// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
-template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreatorTempl::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
-{
-    std::string type = serstorage->GetNodeAttribute("Type");
-
-    // Проверка на встроенный ли тип данных у свойства
-    // Если да - создание и выход
-    if(CreateSimpleTypeProperty<PropType,TypeInt>(serstorage,mock_unet))
-        return;
-
-    // Строка
-    if(type == "std::string")
-	{
-		CreatorProperty<PropType, TypeInt, std::string>::CreatePropertyByType(serstorage,mock_unet);
-		return;
-	}
-
-	//UBMColorModel
-	if(type == "UBMColorModel")
-	{
-		CreatorProperty<PropType, TypeInt, UBMColorModel>::CreatePropertyByType(serstorage,mock_unet);
-		return;
-	}
-
-	// UColorT
-	if(type == "UColorT")
-	{
-		CreatorProperty<PropType, TypeInt, UColorT>::CreatePropertyByType(serstorage,mock_unet);
-		return;
-	}
-
-	// UBitmap
-	if(type == "UBitmap")
-	{
-		CreatorProperty<PropType, TypeInt, UBitmap>::CreatePropertyByType(serstorage,mock_unet);
-		return;
-	}
-
-	// UBRect
-	if(type == "UBRect")
-	{
-		CreatorProperty<PropType, TypeInt, UBRect>::CreatePropertyByType(serstorage,mock_unet);
-		return;
-	}
-
-	// UBPoint
-	if(type == "UBPoint")
-	{
-		CreatorProperty<PropType, TypeInt, UBPoint>::CreatePropertyByType(serstorage,mock_unet);
-		return;
-	}
-}              */
 
 
 }
