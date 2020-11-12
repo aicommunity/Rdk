@@ -110,14 +110,14 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
         return;
     }
 
-	/*
-    // pointer // не знаю как обрабатывать
+
+    // pointer
     if(type == "pointer")
     {
-       // CreatorProperty<PropType, TypeInt, ...>::CreatePropertyByType(serstorage,this);
+        CreatorProperty<PropType, TypeInt, void*>::CreatePropertyByType(serstorage, mock_unet);
         return;
     }
-    */
+
 
 }
 
@@ -386,6 +386,7 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
 
     serstorage->SelectNode("second");
     second_type = serstorage->GetNodeAttribute("Type");
+    serstorage->SelectUp();
     serstorage->SelectUp();
 
     if(first_type == "std::string")

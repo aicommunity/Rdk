@@ -21,8 +21,9 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     this->SetName(comp_name);
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
-    // Установка указателя на хранилище
+    // Установка хранилище и логера
     SetStorage(storage);
+    SetLogger(storage->GetLogger());
 
     // Вызов всех добавленных функций создания свойств
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
@@ -68,14 +69,16 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
             if(std::find(UBasePropCreatorTempl::GetForbiddenOutputs().begin(), UBasePropCreatorTempl::GetForbiddenOutputs().end(), (*p).first) != UBasePropCreatorTempl::GetForbiddenOutputs().end())
                 continue;
 
-            LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
-                         "In class "+ class_name + ": failed to create property: " + (*p).first + "with type" + (*p).second);
+            LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+                         "In class "+ class_name + ": failed to create property: " + (*p).first + " with type: " + (*p).second);
 
         }
     }
 
     // Сохранение собственного описания в XML
     ClassDesriptionXML.Destroy();
+
+    // TODO сохранять желатемое описание в собственное (чтобы при дальнейших созданиях компонента был вывод ошибок в лог)
     std::string temp;
     serstorage->Save(temp);
     ClassDesriptionXML.Load(temp,"");

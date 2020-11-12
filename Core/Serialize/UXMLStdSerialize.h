@@ -146,6 +146,7 @@ template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const T *data)
 {
  storage.SetNodeAttribute("Type","pointer");
+
  std::stringstream stream;
  stream<<data;
 
@@ -362,19 +363,35 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
  tempXML.Destroy();
  tempXML.Create("temp");
  tempXML << temp;
- std::string type = tempXML.GetNodeAttribute("Type");
+ std::string elem_type = tempXML.GetNodeAttribute("Type");
 
- if(type == "UBVSObject")
+ storage.SetNodeAttribute("elemType",elem_type);
+
+ if(elem_type == "simplevector")
  {
-     int k=0;
-     k++;
+     T elem_temp;
+     USerStorageXML elem_tempXML;
+     elem_tempXML.Destroy();
+     elem_tempXML.Create("elem_temp");
+     elem_tempXML << elem_temp;
+     std::string elem_SV_type = elem_tempXML.GetNodeAttribute("elemType");
+
+     storage.SetNodeAttribute("elemSVType",elem_SV_type);
  }
- // ≈сли сериализаци€ не сработало нормально
- if(type.empty())
+
+ /*
+ if(elem_type == "pointer")
  {
-  type = typeid(T).name();
+     T elem_temp;
+     USerStorageXML elem_tempXML;
+     elem_tempXML.Destroy();
+     elem_tempXML.Create("elem_temp");
+     elem_tempXML << elem_temp;
+     std::string elem_point_type = elem_tempXML.GetNodeAttribute("pointType");
+
+     storage.SetNodeAttribute("elemPointType",elem_point_type);
  }
- storage.SetNodeAttribute("elemType",type);
+ */
 
  if(size == 0)
   return storage;

@@ -168,7 +168,16 @@ void UBasePropCreatorVector::CreatePropertyVector(RDK::USerStorageXML* serstorag
         CreatorProperty<PropType, TypeInt, std::vector<UBitmap> >::CreatePropertyByType(serstorage, mock_unet);
         return;
     }
-
+    if(type == "UBRect")
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<UBRect> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+    if(type == "UBPoint")
+    {
+        CreatorProperty<PropType, TypeInt, std::vector<UBPoint> >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
     //Из RTV
 //    if(type == "UBVSObject")
 //    {
@@ -189,19 +198,14 @@ void UBasePropCreatorVector::CreatePropertyVector(RDK::USerStorageXML* serstorag
         CreatePropertyVectorOfSimVec<PropType, TypeInt>(serstorage, mock_unet);
         return;
     }
-       /*
-    //вектор из MVector<T>
-    if(type.find("MVector",0) == 0)
+
+    // вектор из указателей
+    if(type == "pointer")
     {
-        CreatePropertyVectorOfMVector<PropType, TypeInt>(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::vector<void*> >::CreatePropertyByType(serstorage, mock_unet);
         return;
     }
-    //вектор из MDMatrix<T>
-    if(type.find("MDMatrix",0) == 0)
-    {
-        CreatePropertyVectorOfMDMatrix<PropType, TypeInt>(serstorage, mock_unet);
-        return;
-    }        */
+
 }
 
 // Функция для создания свойства типа вектор с простейшими типами данным (simpleVector)
@@ -234,11 +238,21 @@ void UBasePropCreatorVector::CreatePropertyVectorOfSimVec(RDK::USerStorageXML* s
 {
     std::string prop_name = serstorage->GetNodeName();
     int size=serstorage->GetNumNodes();
-    if(!(serstorage->SelectNode("elem",size-1)))
-        return;
 
-    std::string type = serstorage->GetNodeAttribute("elemType");
-    serstorage->SelectUp();
+    std::string type;
+
+    if(size==0)
+    {
+        type = serstorage->GetNodeAttribute("elemSVType");
+    }
+    else
+    {
+        if(!(serstorage->SelectNode("elem",size-1)))
+            return;
+
+        type = serstorage->GetNodeAttribute("elemType");
+        serstorage->SelectUp();
+    }
 
     if(type == typeid(bool).name())
     {
