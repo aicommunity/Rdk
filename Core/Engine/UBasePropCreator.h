@@ -371,23 +371,37 @@ template <template<typename, typename, unsigned int> class PropType, unsigned in
 void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     std::string prop_name = serstorage->GetNodeName();
-    int size=serstorage->GetNumNodes();
-    if(!(serstorage->SelectNode("elem",size-1)))
-        return;
-    size=serstorage->GetNumNodes();
-    if(size!=2)
-        return;
+
     std::string first_type;
     std::string second_type;
 
-    serstorage->SelectNode("first");
-    first_type = serstorage->GetNodeAttribute("Type");
-    serstorage->SelectUp();
+    int size=serstorage->GetNumNodes();
 
-    serstorage->SelectNode("second");
-    second_type = serstorage->GetNodeAttribute("Type");
-    serstorage->SelectUp();
-    serstorage->SelectUp();
+    //Если есть элементы
+    if(serstorage->SelectNode("elem",size-1))
+    {
+        size=serstorage->GetNumNodes();
+        if(size!=2)
+        {
+            serstorage->SelectUp();
+            return;
+        }
+
+        serstorage->SelectNode("first");
+        first_type = serstorage->GetNodeAttribute("Type");
+        serstorage->SelectUp();
+
+        serstorage->SelectNode("second");
+        second_type = serstorage->GetNodeAttribute("Type");
+        serstorage->SelectUp();
+        serstorage->SelectUp();
+    }
+    else
+    {
+        first_type = serstorage->GetNodeAttribute("firstType");
+        second_type = serstorage->GetNodeAttribute("secondType");
+    }
+
 
     if(first_type == "std::string")
     {
@@ -406,19 +420,27 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
             CreatorProperty<PropType, TypeInt, std::map<std::string,bool> >::CreatePropertyByType(serstorage, mock_unet);
             return;
         }
-//        if(second_type == "UBPtzPelcoCmd")
-//        {
-//            CreatorProperty<PropType, TypeInt, std::map<std::string, UBPtzPelcoCmd> >::CreatePropertyByType(serstorage, mock_unet);
-//            return;
-//        }
-    }
 
-    if(second_type == "std::string")
-    {
-        if(first_type == typeid(int).name())
+        if(second_type.find("MDVector",0) == 0)
         {
-            CreatorProperty<PropType, TypeInt, std::map<int,std::string> >::CreatePropertyByType(serstorage, mock_unet);
-            return;
+
+            // Удаление слова MDVector
+            size_t pos = second_type.find("MDVector");
+            if (pos != std::string::npos)
+            {
+                second_type.erase(pos, std::string("MDVector").length());
+            }
+            // Удаление символов '<' и '>'
+            second_type.erase(std::remove(second_type.begin(), second_type.end(), '>'), second_type.end());
+            second_type.erase(std::remove(second_type.begin(), second_type.end(), '<'), second_type.end());
+
+            std::string matrix_type = second_type;
+
+            if(matrix_type == typeid(int).name())
+            {
+                CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage, mock_unet);
+                return;
+            }
         }
     }
 
@@ -427,6 +449,11 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
         if(second_type == "UColorT")
         {
             CreatorProperty<PropType, TypeInt, std::map<int,UColorT> >::CreatePropertyByType(serstorage, mock_unet);
+            return;
+        }
+        if(second_type == "std::string")
+        {
+            CreatorProperty<PropType, TypeInt, std::map<int,std::string> >::CreatePropertyByType(serstorage, mock_unet);
             return;
         }
 	}

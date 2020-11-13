@@ -119,11 +119,22 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMVector(RDK::USerStorageXML* 
 {
     std::string prop_name = serstorage->GetNodeName();
 
-    if(!(serstorage->SelectNode("elem")))
-		return;
+    std::string type;
+    int size;
 
-    std::string type = serstorage->GetNodeAttribute("Type");
-    int size= RDK::atoi(serstorage->GetNodeAttribute("Size"));
+    // Если вектор не пустой
+    if((serstorage->SelectNode("elem")))
+    {
+        type = serstorage->GetNodeAttribute("Type");
+        size= RDK::atoi(serstorage->GetNodeAttribute("Size"));
+        serstorage->SelectUp();
+    }
+    else
+    {
+        type = serstorage->GetNodeAttribute("elemType");
+        size = RDK::atoi(serstorage->GetNodeAttribute("elemSize"));
+    }
+
 
     // Удаление слова MVector
     size_t pos = type.find("MVector");
