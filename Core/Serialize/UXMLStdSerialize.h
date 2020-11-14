@@ -362,6 +362,13 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
 { 
 
  storage.SetNodeAttribute("Type","std::vector");
+
+ // Исключительный случай для конкретного свойства сложного типа
+ if(storage.GetNodeName() == "PPlanePoints")
+ {
+  storage.SetNodeAttribute("Type","PPlanePoints");
+ }
+
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
