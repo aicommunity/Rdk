@@ -23,7 +23,7 @@ unix {
 windows {
     DESTDIR = $$PWD/../../../../../Bin/Platform/Win/Lib.Qt
 
-#LIBS +=   -lWldap32
+ LIBS +=   -lWldap32 -lWs2_32 -lCrypt32
 }
 
 HEADERS += \
