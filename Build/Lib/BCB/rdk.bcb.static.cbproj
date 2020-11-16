@@ -233,6 +233,15 @@
         <CppCompile Include="..\..\..\Core\Engine\UBasePropCreator.cpp">
             <BuildOrder>125</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorMatrix.cpp">
+            <BuildOrder>130</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorTempl.cpp">
+            <BuildOrder>129</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorVector.cpp">
+            <BuildOrder>128</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UBinaryEnvSerialize.cpp">
             <DependentOn>..\..\..\Core\Engine\UBinaryEnvSerialize.h</DependentOn>
             <BuildOrder>63</BuildOrder>
@@ -1015,13 +1024,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

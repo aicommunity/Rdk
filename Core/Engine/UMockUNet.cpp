@@ -3,7 +3,7 @@
 
 #include "UMockUNet.h"
 #include "UStorage.h"
-#include "UBasePropCreator.h"
+#include "UBasePropCreatorTempl.h"
 
 
 namespace RDK {
@@ -21,8 +21,9 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     this->SetName(comp_name);
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
-    // Установка указателя на хранилище
+    // Установка хранилище и логера
     SetStorage(storage);
+    SetLogger(storage->GetLogger());
 
     // Вызов всех добавленных функций создания свойств
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
@@ -37,10 +38,17 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
     // Список свойств из xml-ки
     std::vector<std::pair<std::string,std::string> > PropsNames;
+
     // Проход по всем свойствам для формирования списка свойств
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
         serstorage->SelectNode(i);
+        // Если дошли до секции компонентов и связей
+        if(serstorage->GetNodeName() == "Components" || serstorage->GetNodeName() == "Links")
+        {
+            serstorage->SelectUp();
+            break;
+        }
         for(int j = 0, props = serstorage->GetNumNodes(); j < props; j++)
         {
             serstorage->SelectNode(j);
@@ -58,26 +66,81 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     // Сравнение списков свойств
     for(std::vector<std::pair<std::string,std::string> >::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
     {
+        // Свойство не найдено - то есть не было создано
         if(CreatedProps.find((*p).first) == CreatedProps.end())
         {
-            if(std::find(UBasePropCreator::GetForbiddenInputs().begin(),UBasePropCreator::GetForbiddenInputs().end(),(*p).first) != UBasePropCreator::GetForbiddenInputs().end())
+            if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(),  UBasePropCreatorTempl::GetForbiddenInputs().end(),  (*p).first) != UBasePropCreatorTempl::GetForbiddenInputs().end())
                 continue;
 
-            if(std::find( UBasePropCreator::GetForbiddenOutputs().begin(), UBasePropCreator::GetForbiddenOutputs().end(),(*p).first) != UBasePropCreator::GetForbiddenOutputs().end())
+            if(std::find(UBasePropCreatorTempl::GetForbiddenOutputs().begin(), UBasePropCreatorTempl::GetForbiddenOutputs().end(), (*p).first) != UBasePropCreatorTempl::GetForbiddenOutputs().end())
                 continue;
-            if(GetStorage()->GetLogger())
-            {
-                GetStorage()->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__,
-                                                      "In class "+ class_name + ": failed to create property: " + (*p).first + "with type" + (*p).second);
-            }
+
+            LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+                         "In class "+ class_name + ": failed to create property: " + (*p).first + " with type: " + (*p).second);
+
         }
     }
 
     // Сохранение собственного описания в XML
     ClassDesriptionXML.Destroy();
+
     std::string temp;
     serstorage->Save(temp);
     ClassDesriptionXML.Load(temp,"");
+
+    // Загрузка компонентов и связей
+    DelAllComponents();
+
+    if(!serstorage->SelectNode("Components"))
+    {
+        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
+        return;
+    }
+    storage = GetStorage();
+    for(int i=0;i<serstorage->GetNumNodes();i++)
+    {
+        serstorage->SelectNode(i);
+        std::string nodename=serstorage->GetNodeName();
+        std::string name=serstorage->GetNodeAttribute("Class");
+        try
+        {
+            int id=Storage->FindClassId(name);
+            UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+            if(!newcont)
+                continue;
+            if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+            {
+                if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+                {
+                    storage->ReturnObject(newcont);
+                    continue;
+                }
+            }
+
+            if(!newcont->LoadComponent(serstorage,false))
+            {
+                std::string tempname;
+                LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(tempname));
+            }
+        }
+        catch(UException &exception)
+        {
+            if(Logger)
+                Logger->ProcessException(exception);
+        }
+        serstorage->SelectUp();
+    }
+    serstorage->SelectUp();
+
+    // связи
+    serstorage->SelectNode("Links");
+    if(!SetComponentInternalLinks(serstorage,0))
+    {
+        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Links creating failed in class ") + class_name);
+        return;
+    }
+    serstorage->SelectUp();
+
 }
 
 UMockUNet* UMockUNet::New(void)

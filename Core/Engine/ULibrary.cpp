@@ -661,10 +661,6 @@ bool UMockLibrary::AddNewCompDescription(USerStorageXML& descript)
 
 bool UMockLibrary::SaveLibraryToFile()
 {
-    //Создание папки, если требуется
-    if(RDK::CreateNewDirectory("../../../MockLibs/"))
-        return false;
-
     std::string all_comps;
 
     // Сложение всех строчек
