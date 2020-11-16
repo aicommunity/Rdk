@@ -43,6 +43,12 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
         serstorage->SelectNode(i);
+        // Если дошли до секции компонентов и связей
+        if(serstorage->GetNodeName() == "Components" || serstorage->GetNodeName() == "Links")
+        {
+            serstorage->SelectUp();
+            break;
+        }
         for(int j = 0, props = serstorage->GetNumNodes(); j < props; j++)
         {
             serstorage->SelectNode(j);
@@ -78,10 +84,63 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     // Сохранение собственного описания в XML
     ClassDesriptionXML.Destroy();
 
-    // TODO сохранять желатемое описание в собственное (чтобы при дальнейших созданиях компонента был вывод ошибок в лог)
     std::string temp;
     serstorage->Save(temp);
     ClassDesriptionXML.Load(temp,"");
+
+    // Загрузка компонентов и связей
+    DelAllComponents();
+
+    if(!serstorage->SelectNode("Components"))
+    {
+        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
+        return;
+    }
+    storage = GetStorage();
+    for(int i=0;i<serstorage->GetNumNodes();i++)
+    {
+        serstorage->SelectNode(i);
+        std::string nodename=serstorage->GetNodeName();
+        std::string name=serstorage->GetNodeAttribute("Class");
+        try
+        {
+            int id=Storage->FindClassId(name);
+            UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+            if(!newcont)
+                continue;
+            if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+            {
+                if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+                {
+                    storage->ReturnObject(newcont);
+                    continue;
+                }
+            }
+
+            if(!newcont->LoadComponent(serstorage,false))
+            {
+                std::string tempname;
+                LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(tempname));
+            }
+        }
+        catch(UException &exception)
+        {
+            if(Logger)
+                Logger->ProcessException(exception);
+        }
+        serstorage->SelectUp();
+    }
+    serstorage->SelectUp();
+
+    // связи
+    serstorage->SelectNode("Links");
+    if(!SetComponentInternalLinks(serstorage,0))
+    {
+        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Links creating failed in class ") + class_name);
+        return;
+    }
+    serstorage->SelectUp();
+
 }
 
 UMockUNet* UMockUNet::New(void)
