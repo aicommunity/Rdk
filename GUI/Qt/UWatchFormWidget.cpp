@@ -1,4 +1,4 @@
-#include "UWatchFormWidget.h"
+ #include "UWatchFormWidget.h"
 #include "ui_UWatchFormWidget.h"
 #include "UWatchSettingsDialog.h"
 #include "UComponentPropertySelectionWidget.h"

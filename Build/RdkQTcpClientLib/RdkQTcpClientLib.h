@@ -97,10 +97,16 @@ int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, i
 
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout);
 
+int Rpc_GetLastError(int server_index, const char* &result, int timeout);
+
  int Rpc_SaveProject(int server_index, int timeout);
 
  int Rpc_LoadProject(int server_index, const char* project_path, int timeout);
 
  int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout=-1);
+
+ int Rpc_PrepareProject(int server_index, const char* &verbose_response, int timeout);
+
+ int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout);
 
 #endif // RDKQTCPCLIENTLIB_H

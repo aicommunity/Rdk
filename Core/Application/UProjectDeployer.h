@@ -28,6 +28,8 @@ std::string database_password;
 
 std::string ftp_remote_path;
 
+std::string temp_project_deployment_path;
+
 /*
 //Отпилили предварительно (не появится ранее дочернего класса!)
 //Пути к проекту (вар-т 1)
@@ -50,8 +52,17 @@ UEPtr<UApplication> GetApplication(void);
 bool SetApplication(UEPtr<UApplication> value);
 // --------------------------
 
-///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
+///Выполнить загрузку данных для выполнения задачи,
+/// заданной пользоватлем (на вход идет индекс в базе данных)
 virtual int StartProjectDeployment(int task_id);
+
+///Подготовить к запуску проект:
+/// 1. Скопировать во временное хранилище
+/// 2. Открыть в тестовом режиме и настроить пути и связи?
+/// 3. Закрыть
+virtual int PrepareProject(std::string &response);
+///Открыть подготовленный проект
+virtual int OpenPreparedProject(std::string &response);
 
 ///Задать пар-ры конннекта к СУБД
 virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
@@ -65,8 +76,12 @@ virtual int GetStageCap();
 virtual int GetStageProgress();
 
 virtual std::string GetLastError();
+virtual std::string GetProjectFileName();
 
 virtual void SetFtpRemotePath(const std::string &path);
+virtual void SetTempProjectDeploymentPath(const std::string &path);
+
+virtual std::string GetTempProjectDeploymentPath();
 
 // --------------------------
 // Конструкторы и деструкторы

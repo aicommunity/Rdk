@@ -135,11 +135,19 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  programName=projectIniFile("General","ProgramName","Server");
  configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../../Configs/");
  neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
- logDir=projectIniFile("Log","Dir","");
+ logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
+ if(logDir.empty())
+  logDir=projectIniFile("Log","FixedLogPath",""); // TODO: Аналог Log/Dir
+ int logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
+
+// bool SetFixedLogPath(const std::string& value);
+
  startupDelay=atoi(projectIniFile("General","StartupDelay","0"));
 
  useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
  useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
+
+ std::string librariesPath=projectIniFile("General", "LibrariesPath", "../../../");
 
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
@@ -152,6 +160,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  logDebugMode=atoi(projectIniFile("Log","DebugMode","1"));
 
  disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
+ std::string temp_proj_path = projectIniFile("General", "TemporaryProjectPath", "");
 
  serverPort = atoi(projectIniFile("Server","BindPort","45545"));
  serverAddress = projectIniFile("Server","BindAddress","127.0.0.2");
@@ -164,17 +173,25 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
 
  application.SetApplicationFileName(application_file_name);
+ application.SetLogCreationMode(logCreationMode);
+
  if(logDir.empty())
+ {
+  application.SetFixedLogPath(log_dir);
   application.SetLogDir(log_dir);
+ }
  else
+ {
+  application.SetFixedLogPath(logDir);
   application.SetLogDir(logDir);
+ }
 
  application.SetDebugMode(logDebugMode);
 
+ application.SetLibrariesPath(librariesPath);
  application.SetConfigsMainPath(configsMainPath);
  application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
  application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);
-
 
  try
  {
@@ -201,6 +218,12 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  {
      application.SetDatabaseMainPath(databaseMainPath);
  }
+
+ if(temp_proj_path!="")
+ {
+    application.GetProjectDeployer()->SetTempProjectDeploymentPath(temp_proj_path);
+ }
+
  application.GetServerControl()->GetServerTransport()->SetServerBinding(serverAddress, serverPort);
  cout<<"ServerAutoStartFlag: "<<serverAutostartFlag<<"\n";
  std::cout<<"Test cout "<<serverAddress.c_str()<<" "<<serverPort<<std::endl;

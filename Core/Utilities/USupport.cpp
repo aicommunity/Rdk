@@ -268,6 +268,17 @@ std::string extract_file_name(const std::string& full_name)
 		 : full_name.substr(pos+1);
 }
 
+/// Извлекает имя файла из полного имени файла исключая расширение
+std::string extract_file_name_wo_ext(const std::string& full_name)
+{
+     std::string file_name=extract_file_name(full_name);
+
+     size_t pos = file_name.find_last_of(".");
+     return (std::string::npos == pos)
+         ? file_name
+         : file_name.substr(0,pos);
+}
+
 /// Извлекает расширение файла из имени файла
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
 {

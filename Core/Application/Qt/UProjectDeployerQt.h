@@ -52,7 +52,12 @@ enum DeploymentState
     DS_UnpackScripts=7,
     DS_DownloadData=8,
     DS_UnpackData=9,
-    DS_Finished=10,
+    DS_DeployFinished=10,
+    DS_CopyProject=11,
+    DS_PrepareProject=12,
+    DS_ProjectPrepared=13,
+    DS_OpenProject=14,
+    DS_ProjectOpened=15,
     DS_Error=100
 };
 
@@ -68,7 +73,6 @@ public:
 
     void SetDatabasePath(const QString& path);
     void SetDownloadTempPath(const QString& path);
-    void SetDeploymentTempPath(const QString& path);
     void SetFtpRemoteBasePath(const QString& path);
     void SetDeploymentState(const DeploymentState& state);
     void SetDeploymentProgress(const int &progress);
@@ -84,7 +88,6 @@ public:
     ///Get
     QString GetDatabasePath();
     QString GetFtpRemoteBasePath();
-    QString GetDeploymentTempPath();
     QString GetDownloadTempPath(); //Временные папки для закачки и развертывания обычно разнче
 
     DeploymentState GetDeploymentState();
@@ -110,12 +113,6 @@ private:
     void DeployData();
     bool VerifyData();
 
-
-    //Не уверен, что это надо, мб через стейт получать?
-    //bool ErrorOccured();
-    //Нужна нормальная интерпретация того, какая ошибка случилась, для человека
-    //std::string GetLastError();
-
 private:
     QMutex deploymentStateMutex;
     QMutex deploymentProgressMutex;
@@ -123,7 +120,6 @@ private:
 
     QString databasePath;
     QString ftpRemoteBasePath;
-    QString deploymentTempPath;
     QString downloadTempPath;
 
     bool template_dr, weights_dr, script_dr, videosource_dr;
@@ -199,15 +195,19 @@ bool task_script_download_required;
 //Подготовка источника изображений
 //Путь к источнику (с учетом того что тип уже известен)
 QString task_src_path;
+QString task_src_fullpath;
 //Надо ли загружать
 bool task_src_download_required;
 //Путь к архиву (не факт что нужен именно тут)
 QString task_src_zip_url;
 
-QString deployment_temp_path;
 QString download_temp_path;
 
 UProjectDeployProcessingThread *deployProcessingThread;
+
+std::string lastError;
+
+DeploymentState deploymentState;
 
 /*
 //Дубликация?
@@ -232,6 +232,15 @@ public: // Методы
 ///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
 virtual int StartProjectDeployment(int task_id);
 
+///Подготовить к запуску проект:
+/// 1. Скопировать во временное хранилище
+/// 2. Открыть в тестовом режиме и настроить пути и связи?
+/// 3. Закрыть
+virtual int PrepareProject(std::string &response);
+///Открыть подготовленный проект
+virtual int OpenPreparedProject(std::string &response);
+
+
 ///Создать и настроить соединение с СУБД
 //virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
 //virtual void SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id);
@@ -242,6 +251,7 @@ virtual int GetDeploymentState();
 virtual int GetStageCap();
 virtual int GetStageProgress();
 virtual std::string GetLastError();
+virtual std::string GetProjectFileName();
 
 public: // Методы доступа к данным
 
@@ -254,9 +264,22 @@ UProjectDeployerQt(void);
 virtual ~UProjectDeployerQt(void);
 // --------------------------
 
+protected:
 // --------------------------
 // Методы транспортировки данных
 // --------------------------
+///Скопировать проект во временную директорию, в которой будет выполняться работа
+int CopyProjectToTempFolder();
+/// Открыть проект в заглушенном режиме
+int OpenProjectMockMode();
+/// Задать параметры проекта в заглушенном режиме
+int SetupProjectMockParameters();
+/// Закрыть заглушенный проект
+int CloseMockProject();
+/// Открыть проект в боевом режиме
+/// (пока мб сразу в основной функции)
+//int OpenPreparedProject();
+
 
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта

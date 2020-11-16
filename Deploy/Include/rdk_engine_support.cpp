@@ -66,6 +66,18 @@ int URdkCoreManager::GetStorageBuildMode()
     return StorageBuildMode;
 }
 
+// Установка пути к папкам библиотек
+void URdkCoreManager::SetLibrariesPath(const std::string& value)
+{
+    LibrariesPath = value;
+}
+
+// Получение пути к папкам библиотек
+const std::string URdkCoreManager::GetLibrariesPath(void) const
+{
+ return LibrariesPath;
+}
+
 // Возвращает имя каталога бинарных файлов
 const char* URdkCoreManager::GetSystemDir(void)
 {
@@ -633,6 +645,7 @@ int URdkCoreManager::ChannelCreate(int index)
    }
    //
    StorageList[index]->SetBuildMode(StorageBuildMode);
+   StorageList[index]->SetLibrariesPath(LibrariesPath);
 
    EnvironmentList[index]=FuncCreateNewEnvironment();
    if(!EnvironmentList[index])
