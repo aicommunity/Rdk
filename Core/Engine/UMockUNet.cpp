@@ -88,59 +88,107 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     serstorage->Save(temp);
     ClassDesriptionXML.Load(temp,"");
 
-    // Загрузка компонентов и связей
+
+    // Загрузка внутренних компонентов и связей
+    if(!this->LoadComponent(&ClassDesriptionXML,true))
+    {
+        LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+                     "In class "+ class_name + ": failed to load component from XML");
+    }
+
+}
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
+{
+    if(!serstorage)
+     return false;
+
+    std::string name=serstorage->GetNodeAttribute("Class");
+//    UId id=Storage->FindClassId(name);
+
+//    if(GetClass() != id)
+//    {
+//     LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(GetClass())+std::string(" found ")+sntoa(id));
+//     return false;
+//    }
+
+    SetName(serstorage->GetNodeName());
+
+    for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+    {
+     if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+     {
+      try
+      {
+       if(SetComponentProperties(serstorage))
+       {
+        std::string name;
+        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
+  //	  return false;
+       }
+      }
+      catch(UException &exception)
+      {
+       ProcessException(exception);
+      }
+      serstorage->SelectUp();
+     }
+    }
+
     DelAllComponents();
 
     if(!serstorage->SelectNode("Components"))
     {
-        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
-        return;
+     LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
+     return false;
     }
-    storage = GetStorage();
+    UStorage* storage=GetStorage();
     for(int i=0;i<serstorage->GetNumNodes();i++)
     {
-        serstorage->SelectNode(i);
-        std::string nodename=serstorage->GetNodeName();
-        std::string name=serstorage->GetNodeAttribute("Class");
-        try
-        {
-            int id=Storage->FindClassId(name);
-            UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
-            if(!newcont)
-                continue;
-            if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
-            {
-                if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
-                {
-                    storage->ReturnObject(newcont);
-                    continue;
-                }
-            }
+     serstorage->SelectNode(i);
+     std::string nodename=serstorage->GetNodeName();
+     name=serstorage->GetNodeAttribute("Class");
+     try
+     {
+      int id=Storage->FindClassId(name);
+      UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+      if(!newcont)
+       continue;
+      if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+      {
+       if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+       {
+        storage->ReturnObject(newcont);
+        continue;
+       }
+      }
 
-            if(!newcont->LoadComponent(serstorage,false))
-            {
-                std::string tempname;
-                LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(tempname));
-            }
-        }
-        catch(UException &exception)
-        {
-            if(Logger)
-                Logger->ProcessException(exception);
-        }
-        serstorage->SelectUp();
+      if(!newcont->LoadComponent(serstorage,false))
+      {
+       std::string tempname;
+       LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(tempname));
+  //	 return false;
+      }
+     }
+     catch(UException &exception)
+     {
+      ProcessException(exception);
+     }
+     serstorage->SelectUp();
     }
     serstorage->SelectUp();
 
-    // связи
-    serstorage->SelectNode("Links");
-    if(!SetComponentInternalLinks(serstorage,0))
+    if(links)
     {
-        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Links creating failed in class ") + class_name);
-        return;
+     serstorage->SelectNode("Links");
+     if(!SetComponentInternalLinks(serstorage,0))
+      return false;
+     serstorage->SelectUp();
     }
-    serstorage->SelectUp();
 
+   return true;
 }
 
 UMockUNet* UMockUNet::New(void)
