@@ -299,7 +299,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
       in.readBytes(buffer, length);
       bytes.resize(length);
       memcpy(&bytes[0],buffer,length);
-      Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+QString::number(length).toUtf8().constData()).c_str());
+      //Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+QString::number(length).toUtf8().constData()).c_str());
       return length;
      }
     }

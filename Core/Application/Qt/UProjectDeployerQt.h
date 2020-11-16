@@ -18,6 +18,22 @@ struct FtpFile {
   FILE *stream;
 };
 
+///Структура, содержащая имена тэгов класса в библиотеке машинного обучения
+/// Если тэг пустой, то значит не используется
+struct MLlibDescr
+{
+ std::string LibName;               //Имя библиотеки (Тэг компонента может гулять)
+ std::string LibScriptFileTagName;  //Тэг файла скрипта
+ std::string LibWeightFileTagName;  //Тэг файла весов
+ std::string LibConfigFileTagName;  //Тэг файла конфигурации
+ MLlibDescr(){
+ LibName="";
+ LibScriptFileTagName="";
+ LibWeightFileTagName="";
+ LibConfigFileTagName="";
+ }
+};
+
 static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 {
   struct FtpFile *out = (struct FtpFile *)stream;
@@ -178,6 +194,9 @@ bool task_weights_download_required;
 bool task_weights_conf_download_required;
 //Путь к конфигурации - возможно не нужен
 QString task_weights_config_path;
+
+QString absolute_config_file;
+QString absolute_weights_file;
 //Уберем пока
 //std::string task_weights_zip_url;
 //std::string task_weights_conf_zip_url;
@@ -189,6 +208,7 @@ int task_script_id;
 QString task_script_path;
 //Нужна ли загрузка скрипта
 bool task_script_download_required;
+QString absolute_script_file;
 //Архив уберем пока
 //std::string task_script_zip_url;
 
@@ -208,6 +228,10 @@ UProjectDeployProcessingThread *deployProcessingThread;
 std::string lastError;
 
 DeploymentState deploymentState;
+
+//Что где куда искать/менять
+std::map<std::string, MLlibDescr> file_tags;
+std::vector<std::string> component_classes;
 
 /*
 //Дубликация?
