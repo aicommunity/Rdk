@@ -618,7 +618,7 @@ void UProjectDeployProcessingThread::DeployScript()
 
 bool UProjectDeployProcessingThread::VerifyScript()
 {
-
+ return true;
 }
 
 void UProjectDeployProcessingThread::DeployWeights()
@@ -761,7 +761,7 @@ void UProjectDeployProcessingThread::DeployData()
 
 bool UProjectDeployProcessingThread::VerifyData()
 {
-
+ return true;
 }
 
 // --------------------------
