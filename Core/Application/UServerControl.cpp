@@ -562,7 +562,7 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
 	   GetRpcDispatcher()->PushCommand(pcmd);
 //	   else
 //	    delete pcmd;
-	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
+       //Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
   }
  }
  //02.04.2020 - Это мб неверно

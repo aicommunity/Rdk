@@ -775,6 +775,42 @@ UProjectDeployerQt::UProjectDeployerQt(void):
     //Инициализация curl, которую надо выполнить только один раз
     //Этот класс же тоочно не создается дважды?
     curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  MLlibDescr classification;
+  classification.LibName = "TPyUBitmapClassifier";
+  classification.LibConfigFileTagName = "";
+  classification.LibScriptFileTagName = "PythonScriptFileName";
+  classification.LibWeightFileTagName = "WeightsPath";
+  file_tags["TPyUBitmapClassifier"] = classification;
+  component_classes.push_back("TPyUBitmapClassifier");
+  MLlibDescr sq_det;
+  sq_det.LibName = "TPyObjectDetectorSqueezeDet";
+  sq_det.LibConfigFileTagName="ConfigPath";
+  sq_det.LibScriptFileTagName="PythonScriptFileName";
+  sq_det.LibWeightFileTagName="WeightsPath";
+  file_tags["TPyObjectDetectorSqueezeDet"] = sq_det;
+  component_classes.push_back("TPyObjectDetectorSqueezeDet");
+  MLlibDescr det_yolo;
+  det_yolo.LibName="TPyObjectDetector";
+  det_yolo.LibConfigFileTagName="ConfigPathYOLO";
+  det_yolo.LibScriptFileTagName="PythonScriptFileName";
+  det_yolo.LibWeightFileTagName="WeightsPathYOLO";
+  file_tags["TPyObjectDetector"] = det_yolo;
+  component_classes.push_back("TPyObjectDetector");
+  MLlibDescr protobuf;
+  protobuf.LibName = "TPySegmentatorProtobuf";
+  protobuf.LibConfigFileTagName = "JSONPath";
+  protobuf.LibScriptFileTagName = "PythonScriptFileName";
+  protobuf.LibWeightFileTagName = "ProtobufPath";
+  file_tags["TPySegmentatorProtobuf"] = protobuf;
+  component_classes.push_back("TPySegmentatorProtobuf");
+  MLlibDescr unet;
+  unet.LibName = "TPySegmentatorUNet";
+  unet.LibConfigFileTagName = "";
+  unet.LibScriptFileTagName = "PythonScriptFileName";
+  unet.LibWeightFileTagName = "WeightsPath";
+  file_tags["TPySegmentatorUNet"] = unet;
+  component_classes.push_back("TPySegmentatorUNet");
 }
 UProjectDeployerQt::~UProjectDeployerQt(void)
 {
@@ -948,13 +984,13 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  q.finish();
  q.clear();
 
- QString abs_weights_path = task_weights_path;
- abs_weights_path.replace("{Database}", database_path);
- QString abs_weights_conf_path = weights_conf_path;
- abs_weights_conf_path.replace("{Database}", database_path);
+ absolute_weights_file = task_weights_path;
+ absolute_weights_file.replace("{Database}", database_path);
+ absolute_config_file = weights_conf_path;
+ absolute_config_file.replace("{Database}", database_path);
 
- QFileInfo fi_weights_path(abs_weights_path), fi_weights_conf_path(abs_weights_conf_path);
- if(!fi_weights_path.exists() || !fi_weights_conf_path.exists())
+ QFileInfo fi_weights_path(absolute_weights_file), fi_weights_conf_path(absolute_config_file);
+ if(!fi_weights_path.exists() || ((weights_conf_path!="")&&(!fi_weights_conf_path.exists())))
  {
      task_weights_download_required = true;
      /*
@@ -979,9 +1015,9 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      return 6;
  }
  task_script_path = q.value(0).toString();
- QString abs_script_path = task_script_path;
- abs_script_path.replace("{Database}", database_path);
- QFileInfo fi_script_path(abs_script_path);
+ absolute_script_file = task_script_path;
+ absolute_script_file.replace("{Database}", database_path);
+ QFileInfo fi_script_path(absolute_script_file);
 
  q.finish();
  q.clear();
@@ -1392,14 +1428,36 @@ int UProjectDeployerQt::SetupProjectMockParameters()
         bool *video_Activity = video_cont->AccessPropertyData<bool>("Activity");
         bool *video_EnableCapture = video_cont->AccessPropertyData<bool>("EnableCapture");
         std::string *video_CameraPath = video_cont->AccessPropertyData<std::string>("CameraPath");
+        bool *video_OneShotRun = video_cont->AccessPropertyData<bool>("OneShotRun");
+        bool *video_ProcessEvenFrames = video_cont->AccessPropertyData<bool>("ProcessEvenFrames");
+        int *video_ProcessEveryXFrame = video_cont->AccessPropertyData<int>("ProcessEveryXFrame");
+        std::string *video_DllName = video_cont->AccessPropertyData<std::string>("DllName");
+
+        //bool *video_RepeatFlag = video_cont->AccessPropertyData<bool>("RepeatFlag");
+        int *video_RestartMode = video_cont->AccessPropertyData<int>("RestartMode");
+
+        bool *video_UseRelativePathFromConfig = video_cont->AccessPropertyData<bool>("UseRelativePathFromConfig");
+        bool *video_UseRelativePathFromDir = video_cont->AccessPropertyData<bool>("UseRelativePathFromDir");
+
         *video_Activity = true;
         *video_EnableCapture = true;
         *video_CameraPath = task_src_fullpath.toUtf8().constData();
+        *video_DllName = "VideoCaptureOpenCVDll";
+        *video_OneShotRun = true;
+        *video_ProcessEvenFrames = true;
+        *video_ProcessEveryXFrame = 1;
+        if(video_UseRelativePathFromConfig!=NULL)
+            *video_UseRelativePathFromConfig = false;
+        if(video_UseRelativePathFromDir!=NULL)
+            *video_UseRelativePathFromDir = false;
+        //*video_RepeatFlag = false;
+        *video_RestartMode = 0;
 
         if(!imseq_names.empty())
         {
             imseq_cont = model->GetComponentL(imseq_names[0]);
             bool *act = imseq_cont->AccessPropertyData<bool>("Activity");
+            //TODO: Brake wrong link
             *act = false;
         }
     }
@@ -1411,6 +1469,34 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             lastError="Model does not contain image sequence data source, fix project file/task parameters";
             return 1;
         }
+
+        imseq_cont = model->GetComponentL(imseq_names[0]);
+        bool *imseq_Activity = imseq_cont->AccessPropertyData<bool>("Activity");
+        std::string *imseq_Path = imseq_cont->AccessPropertyData<std::string>("Path");
+        bool *imseq_EnableCapture = imseq_cont->AccessPropertyData<bool>("EnableCapture");
+        double *imseq_DesiredFps = imseq_cont->AccessPropertyData<double>("DesiredFps");
+        bool *imseq_RepeatFlag = imseq_cont->AccessPropertyData<bool>("RepeatFlag");
+        int  *imseq_RestartMode = imseq_cont->AccessPropertyData<int>("RestartMode");
+        bool *imseq_UseRelativePathFromConfig = imseq_cont->AccessPropertyData<bool>("UseRelativePathFromConfig");
+        bool *imseq_UseRelativePathFromDir = imseq_cont->AccessPropertyData<bool>("UseRelativePathFromDir");
+
+        *imseq_Activity = true;
+        *imseq_Path = task_src_fullpath.toUtf8().constData();
+        *imseq_EnableCapture = true;
+        *imseq_DesiredFps = 0;
+        *imseq_RepeatFlag = false;
+        *imseq_RestartMode = 0;
+        *imseq_UseRelativePathFromConfig = false;
+        if(imseq_UseRelativePathFromDir)
+            *imseq_UseRelativePathFromDir = false;
+
+        if(!vid_names.empty())
+        {
+            video_cont = model->GetComponentL(vid_names[0]);
+            bool *act = video_cont->AccessPropertyData<bool>("Activity");
+            //TODO: Brake wrong link
+            *act = false;
+        }
     }
     else
     {
@@ -1419,31 +1505,52 @@ int UProjectDeployerQt::SetupProjectMockParameters()
         return 1;
     }
 
-    /*
-    if(cont)
+    //Дальше настройка конкретного компонента
+    //std::vector<std::string> pipelineNames;
+    /*RDK::UEPtr<RDK::UContainer> pipeline;
+    pipeline = model->GetComponentL("Pipeline1");
+    if(!pipeline.Get())
     {
-    std::map<std::string, RTV::RTVAlarmPlan> *schedules =
-      cont->AccessPropertyData<std::map<std::string, RTV::RTVAlarmPlan> >(schedulesPropertyName.toLocal8Bit().constData());
-
-    int stepCounter = 0;
-    for(std::map<std::string, RTV::RTVAlarmPlan>::iterator i = schedules->begin();
-        i != schedules->end(); ++i, ++stepCounter)
+        lastError="VideoAnalytics Pipeline1 class undetected";
+        return 1;
+    }*/
+    std::vector<std::string> components_names;
+    std::string class_name = "";
+    for(std::string cls_name: component_classes)
     {
-      ui->tableWidgetSchedule->insertRow(stepCounter);
-      ui->tableWidgetSchedule->setItem(stepCounter, 0, new QTableWidgetItem(QString::fromLocal8Bit(i->first.c_str())));
-      ui->tableWidgetSchedule->setItem(stepCounter, 1, new QTableWidgetItem(QString::number(i->second.StartTime)));
-      ui->tableWidgetSchedule->setItem(stepCounter, 2, new QTableWidgetItem(QString::number(i->second.StopTime)));
+        components_names = model->GetComponentsNameByClassName(cls_name.c_str(), components_names, true);
+        if(!components_names.empty())
+        {
+            class_name = cls_name;
+            break;
+        }
+    }
 
-      for(int checkBoxIterator = 0; checkBoxIterator < 8; ++checkBoxIterator)
-      {
-        QCheckBox *checkBox = new QCheckBox();
-        if(i->second.DaysOfWeek & 1 << checkBoxIterator)
-          checkBox->setChecked(true);
-        ui->tableWidgetSchedule->setCellWidget(stepCounter, checkBoxIterator + 3, checkBox);
-      }
+    // !!! Here I do not take into account situation when      !!!
+    // !!! more than one neural component present into project !!!
+    if(components_names.empty() || class_name=="")
+    {
+        //No classes found
+        lastError="No one neural network related component found";
+        return 1;
     }
-    }
-    */
+
+    //Here component class found
+    RDK::UEPtr<RDK::UContainer> neural_cont;
+    neural_cont = model->GetComponentL(components_names[0]);
+
+    bool *nn_Activity = neural_cont->AccessPropertyData<bool>("Activity");
+    std::string *nn_ScriptFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibScriptFileTagName.c_str());
+    std::string *nn_WeightsFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibWeightFileTagName.c_str());
+    std::string *nn_ConfigFile;
+    if(file_tags[class_name].LibConfigFileTagName!="")
+        nn_ConfigFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibConfigFileTagName.c_str());
+
+    *nn_Activity = true;
+    *nn_ScriptFile = absolute_script_file.toUtf8().constData();
+    *nn_WeightsFile = absolute_weights_file.toUtf8().constData();
+    if(file_tags[class_name].LibConfigFileTagName!="")
+        *nn_ConfigFile = absolute_config_file.toUtf8().constData();
 
     return 0;
 }
