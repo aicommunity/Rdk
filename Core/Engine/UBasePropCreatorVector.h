@@ -41,6 +41,13 @@ void UBasePropCreatorVector::CreateProperty(RDK::USerStorageXML* serstorage, RDK
 {
     std::string type = serstorage->GetNodeAttribute("Type");
 
+    // »сключительный случай дл€ свойства NetStructure
+    if(type == "NetStructure")
+    {
+        CreatorProperty<PropType, TypeInt, vector<vector<vector<vector<vector<UId> > > > > >::CreatePropertyByType(serstorage, mock_unet);
+        return;
+    }
+
     //ƒл€ вектора (тип данных вектора определ€етс€ далее внутри метода CreatePropertyByType) - аналогично дл€ остальных контейнеров
     if(type == "std::vector")
     {
