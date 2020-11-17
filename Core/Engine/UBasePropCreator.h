@@ -15,98 +15,98 @@ public:
 
     // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+    static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
     // Проверяет тип на встроенные типы данных и создает, если это так
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static bool CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+    static bool CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
 	// Функция для создания свойства типа list
-	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-	static void CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+    template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
+    static void CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
     // Функция для создания свойства типа std::pair
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+    static void CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
     // Функция для создания свойства типа std::map
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-    static void CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
+    static void CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
 };
 
 
 // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
 
     // Проверка на встроенный ли тип данных у свойства
     // Если да - создание и выход
-    if(CreateSimpleTypeProperty<PropType,TypeInt>(serstorage,mock_unet))
+    if(CreateSimpleTypeProperty<PropType, TypeInt>(serstorage,mock_unet, ptype))
         return;
 
     // Строка
     if(type == "std::string")
     {
-        CreatorProperty<PropType, TypeInt, std::string>::CreatePropertyByType(serstorage,mock_unet);
+        CreatorProperty<PropType, TypeInt, std::string>::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
 	}
 
     // Для list
     if(type == "std::list")
     {
-        CreatePropertyList<PropType, TypeInt>(serstorage,mock_unet);
+        CreatePropertyList<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
     }
 
     // Для pair
     if(type == "std::pair")
     {
-        CreatePropertyPair<PropType, TypeInt>(serstorage,mock_unet);
+        CreatePropertyPair<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
     }
 
     // Для map
     if(type == "std::map")
     {
-        CreatePropertyMap<PropType, TypeInt>(serstorage,mock_unet);
+        CreatePropertyMap<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
     }
 
     //UBMColorModel
     if(type == "UBMColorModel")
     {
-        CreatorProperty<PropType, TypeInt, UBMColorModel>::CreatePropertyByType(serstorage,mock_unet);
+        CreatorProperty<PropType, TypeInt, UBMColorModel>::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 
     // UColorT
     if(type == "UColorT")
     {
-        CreatorProperty<PropType, TypeInt, UColorT>::CreatePropertyByType(serstorage,mock_unet);
+        CreatorProperty<PropType, TypeInt, UColorT>::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 
     // UBitmap
     if(type == "UBitmap")
     {
-        CreatorProperty<PropType, TypeInt, UBitmap>::CreatePropertyByType(serstorage,mock_unet);
+        CreatorProperty<PropType, TypeInt, UBitmap>::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 
     // UBRect
     if(type == "UBRect")
     {
-        CreatorProperty<PropType, TypeInt, UBRect>::CreatePropertyByType(serstorage,mock_unet);
+        CreatorProperty<PropType, TypeInt, UBRect>::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 
     // UBPoint
     if(type == "UBPoint")
     {
-        CreatorProperty<PropType, TypeInt, UBPoint>::CreatePropertyByType(serstorage,mock_unet);
+        CreatorProperty<PropType, TypeInt, UBPoint>::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 
@@ -114,7 +114,7 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
     // pointer
     if(type == "pointer")
     {
-        CreatorProperty<PropType, TypeInt, void*>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, void*>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
 
@@ -123,7 +123,7 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
 
 // Проверяет тип на встроенные типы данных и создает, если это так
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet * mock_unet)
+bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet * mock_unet, unsigned int ptype)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
@@ -131,72 +131,72 @@ bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage,
     // Встроенные типы
     if(type == typeid(bool).name())
     {
-        CreatorProperty<PropType, TypeInt, bool>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, bool>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(char).name())
     {
-        CreatorProperty<PropType, TypeInt, char>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, char>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(unsigned char).name())
     {
-        CreatorProperty<PropType, TypeInt, unsigned char>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, unsigned char>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(short).name())
     {
-        CreatorProperty<PropType, TypeInt, short>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, short>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(unsigned short).name())
     {
-        CreatorProperty<PropType, TypeInt, unsigned short>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, unsigned short>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(int).name())
     {
-        CreatorProperty<PropType, TypeInt, int>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, int>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(unsigned int).name())
     {
-        CreatorProperty<PropType, TypeInt, unsigned int>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, unsigned int>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(long).name())
     {
-        CreatorProperty<PropType, TypeInt, long>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, long>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(unsigned long).name())
     {
-        CreatorProperty<PropType, TypeInt, unsigned long>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, unsigned long>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(long long).name())
     {
-        CreatorProperty<PropType, TypeInt, long long>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, long long>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(unsigned long long).name())
     {
-        CreatorProperty<PropType, TypeInt, unsigned long long>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, unsigned long long>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(float).name())
     {
-        CreatorProperty<PropType, TypeInt, float>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, float>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(double).name())
     {
-        CreatorProperty<PropType, TypeInt, double>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, double>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(long double).name())
     {
-        CreatorProperty<PropType, TypeInt, long double>::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, long double>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     //throw ParseException("can't handle simple type: " + type);
@@ -206,7 +206,7 @@ bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage,
 
  // Функция для создания свойства типа list
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreator::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string prop_name = serstorage->GetNodeName();
     int size=serstorage->GetNumNodes();
@@ -227,79 +227,79 @@ void UBasePropCreator::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::
 
     if(type == typeid(bool).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<bool> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<bool> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(char).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<char> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(unsigned char).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned char> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<unsigned char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(short).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<short> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<short> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(unsigned short).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned short> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<unsigned short> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(int).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<int> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(unsigned int).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned int> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<unsigned int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(long).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<long> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(unsigned long).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned long> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<unsigned long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(long long).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<long long> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<long long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(unsigned long long).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned long long> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<unsigned long long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(float).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<float> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<float> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(double).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<double> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<double> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(long double).name())
     {
-        CreatorProperty<PropType, TypeInt, std::list<long double> >::CreatePropertyByType(serstorage, mock_unet);
+        CreatorProperty<PropType, TypeInt, std::list<long double> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
 }
 
 // Функция для создания свойства типа std::pair
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string prop_name = serstorage->GetNodeName();
 
@@ -323,17 +323,17 @@ void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::
     {
         if(second_type == "std::string")
         {
-            CreatorProperty<PropType, TypeInt, std::pair<std::string,std::string> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::pair<std::string,std::string> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
         if(second_type == typeid(int).name())
         {
-            CreatorProperty<PropType, TypeInt, std::pair<std::string,int> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::pair<std::string,int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
         if(second_type == typeid(bool).name())
         {
-            CreatorProperty<PropType, TypeInt, std::pair<std::string,bool> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::pair<std::string,bool> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
     }
@@ -342,7 +342,7 @@ void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::
     {
         if(first_type == typeid(int).name())
         {
-            CreatorProperty<PropType, TypeInt, std::pair<int,std::string> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::pair<int,std::string> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
     }
@@ -351,7 +351,7 @@ void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::
     {
         if(second_type == "UColorT")
         {
-            CreatorProperty<PropType, TypeInt, std::pair<int,UColorT> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::pair<int,UColorT> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
     }
@@ -360,7 +360,7 @@ void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::
     {
         if(second_type == typeid(int).name())
         {
-            CreatorProperty<PropType, TypeInt, std::pair<double,int> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::pair<double,int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
     }
@@ -368,7 +368,7 @@ void UBasePropCreator::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::
 
 // Функция для создания свойства типа std::map
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
-void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
+void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string prop_name = serstorage->GetNodeName();
 
@@ -407,17 +407,17 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
     {
         if(second_type == "std::string")
         {
-            CreatorProperty<PropType, TypeInt, std::map<std::string,std::string> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::map<std::string,std::string> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
         if(second_type == typeid(int).name())
         {
-            CreatorProperty<PropType, TypeInt, std::map<std::string,int> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::map<std::string,int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
         if(second_type == typeid(bool).name())
         {
-            CreatorProperty<PropType, TypeInt, std::map<std::string,bool> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::map<std::string,bool> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
 
@@ -438,7 +438,7 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
 
             if(matrix_type == typeid(int).name())
             {
-                CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage, mock_unet);
+                CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
                 return;
             }
         }
@@ -448,12 +448,12 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
     {
         if(second_type == "UColorT")
         {
-            CreatorProperty<PropType, TypeInt, std::map<int,UColorT> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::map<int,UColorT> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
         if(second_type == "std::string")
         {
-            CreatorProperty<PropType, TypeInt, std::map<int,std::string> >::CreatePropertyByType(serstorage, mock_unet);
+            CreatorProperty<PropType, TypeInt, std::map<int,std::string> >::CreatePropertyByType(serstorage, mock_unet, ptype);
             return;
         }
 	}
