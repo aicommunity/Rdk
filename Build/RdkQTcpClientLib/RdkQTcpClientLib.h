@@ -107,6 +107,8 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout);
 
  int Rpc_PrepareProject(int server_index, const char* &verbose_response, int timeout);
 
+ int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, int timeout);
+
  int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout);
 
 #endif // RDKQTCPCLIENTLIB_H

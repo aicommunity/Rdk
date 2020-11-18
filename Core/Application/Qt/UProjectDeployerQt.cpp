@@ -770,7 +770,8 @@ bool UProjectDeployProcessingThread::VerifyData()
 UProjectDeployerQt::UProjectDeployerQt(void):
     db(NULL),
     deployProcessingThread(NULL),
-    deploymentState(DS_NULL)
+    deploymentState(DS_NULL),
+    preparationResult(-1)
 {
     //Инициализация curl, которую надо выполнить только один раз
     //Этот класс же тоочно не создается дважды?
@@ -781,6 +782,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   classification.LibConfigFileTagName = "";
   classification.LibScriptFileTagName = "PythonScriptFileName";
   classification.LibWeightFileTagName = "WeightsPath";
+  classification.LibClassCountTagName = "NumClasses";
   file_tags["TPyUBitmapClassifier"] = classification;
   component_classes.push_back("TPyUBitmapClassifier");
   MLlibDescr sq_det;
@@ -788,6 +790,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   sq_det.LibConfigFileTagName="ConfigPath";
   sq_det.LibScriptFileTagName="PythonScriptFileName";
   sq_det.LibWeightFileTagName="WeightsPath";
+  sq_det.LibClassCountTagName = "";
   file_tags["TPyObjectDetectorSqueezeDet"] = sq_det;
   component_classes.push_back("TPyObjectDetectorSqueezeDet");
   MLlibDescr det_yolo;
@@ -795,6 +798,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   det_yolo.LibConfigFileTagName="ConfigPathYOLO";
   det_yolo.LibScriptFileTagName="PythonScriptFileName";
   det_yolo.LibWeightFileTagName="WeightsPathYOLO";
+  det_yolo.LibClassCountTagName = "";
   file_tags["TPyObjectDetector"] = det_yolo;
   component_classes.push_back("TPyObjectDetector");
   MLlibDescr protobuf;
@@ -802,6 +806,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   protobuf.LibConfigFileTagName = "JSONPath";
   protobuf.LibScriptFileTagName = "PythonScriptFileName";
   protobuf.LibWeightFileTagName = "ProtobufPath";
+  protobuf.LibClassCountTagName = "";
   file_tags["TPySegmentatorProtobuf"] = protobuf;
   component_classes.push_back("TPySegmentatorProtobuf");
   MLlibDescr unet;
@@ -809,6 +814,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   unet.LibConfigFileTagName = "";
   unet.LibScriptFileTagName = "PythonScriptFileName";
   unet.LibWeightFileTagName = "WeightsPath";
+  unet.LibClassCountTagName = "";
   file_tags["TPySegmentatorUNet"] = unet;
   component_classes.push_back("TPySegmentatorUNet");
 }
@@ -914,7 +920,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  //Извлеаем последовательно данные о том, где должны располагаться распакованные файлы
  //Сначала проект
- q.prepare("SELECT project_name, project_file, project_model, project_params, project_interface FROM vid_an.projects WHERE project_id="+QString::number(task_template_id)+";");
+ q.prepare("SELECT project_name, project_file FROM vid_an.projects WHERE project_id="+QString::number(task_template_id)+";");
  q.exec();
  q.first();
  if(!q.isValid())
@@ -925,9 +931,6 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  task_template_name = q.value(0).toString();
  task_template_path = q.value(1).toString();
- QString task_template_model = q.value(2).toString();
- QString task_template_params = q.value(3).toString();
- QString task_template_interface = q.value(4).toString();
 
  q.finish();
  q.clear();
@@ -936,16 +939,10 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  QString abs_template_file = task_template_path;
  abs_template_file.replace("{Database}", database_path);
- QString abs_template_model = task_template_model;
- abs_template_model.replace("{Database}", database_path);
- QString abs_template_params = task_template_params;
- abs_template_params.replace("{Database}", database_path);
- QString abs_template_interface = task_template_interface;
- abs_template_interface.replace("{Database}", database_path);
 
- QFile t_file(abs_template_file), t_model(abs_template_model), t_params(abs_template_params), t_interf(abs_template_interface);
+ QFile t_file(abs_template_file);
 
- if(!t_file.exists() || !t_model.exists() || !t_params.exists() || !t_interf.exists())
+ if(!t_file.exists())
  {
      task_template_download_required = true;
  }
@@ -975,7 +972,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  task_weights_path = q.value(0).toString();
  QString weights_conf_path = q.value(1).toString();
- int weights_num_cls = q.value(2).toInt();
+ weights_classes_number = q.value(2).toInt();
  int weights_in_W = q.value(3).toInt();
  int weights_in_H = q.value(4).toInt();
  QString weights_out_format = q.value(5).toString();
@@ -1281,6 +1278,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     {
         response = "Project deployment is not opened, can't start preparations";
         lastError=response;
+        preparationResult=1;
         return 1;
     }
     this->deploymentState = DS_CopyProject;
@@ -1289,6 +1287,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during copying";
         lastError=response;
+        preparationResult=1;
         return 1;
     }
     this->deploymentState=DS_PrepareProject;
@@ -1297,6 +1296,14 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during opening in mock mode";
         lastError=response;
+        preparationResult=1;
+        return 1;
+    }
+    std::string bug_string="";
+    if(AnalyzeLogForErrors(bug_string)>=0)
+    {
+        lastError="Mock open error: "+bug_string;
+        preparationResult=1;
         return 1;
     }
     if(SetupProjectMockParameters()!=0)
@@ -1304,6 +1311,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during mock parameters setup";
         lastError=response;
+        preparationResult=1;
         return 1;
     }
     if(CloseMockProject()!=0)
@@ -1311,12 +1319,67 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during mocked project closing";
         lastError=response;
+        preparationResult=1;
+        return 1;
+    }
+    if(AnalyzeLogForErrors(bug_string)>=0)
+    {
+        lastError="Mock open error: "+bug_string;
+        preparationResult=1;
         return 1;
     }
     this->deploymentState=DS_ProjectPrepared;
     response = "project prepared successfully";
     lastError=response;
+    preparationResult=0;
     return 0;
+}
+
+int UProjectDeployerQt::AnalyzeLogForErrors(std::string &problem_string)
+{
+    std::list<std::string> gui_unsent_log = Application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
+
+    for(std::string log_entry: gui_unsent_log)
+    {
+        QString msg_line = log_entry.c_str();
+        //Take string and split into parts
+        int sys_info_end = msg_line.indexOf("] ", 0)+1;//index of first space of message
+
+        if(sys_info_end>=0)
+        {
+            //Process line taking into account lines saved previously
+            QString sys_info_line = msg_line.left(sys_info_end);
+            QString message_data = msg_line.right(msg_line.length()-sys_info_end);
+            QStringList str_parts = sys_info_line.split(" ");
+
+            //QString src_info = str_parts[0];
+            //src_info = src_info.replace(">", "").trimmed();
+            //QString date_info = str_parts[1];
+            //QString time_info = str_parts[2];
+            QString error_level_i = str_parts[3];
+            int error_level = error_level_i.replace(">", "").trimmed().toInt();
+            //QString error_level_s = str_parts[4];
+            //Unknown, Fatal, Error levels
+            if(error_level>=0 && error_level<=2)
+            {
+                //std::cerr<<message_data.toUtf8().constData()<<"\n\n";
+                problem_string = message_data.toUtf8().constData();
+                //Found fatal error, nothing needed to read any longer
+                return error_level;
+            }
+        }
+
+    }
+
+   //std::string log_path = Application->Get
+   problem_string = "No error occured";
+   return -1;
+}
+
+int UProjectDeployerQt::GetPreparationResult(std::string &response)
+{
+    response=lastError;
+    return preparationResult;
 }
 
 ///Открыть подготовленный проект
@@ -1403,7 +1466,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
 {
     RDK::Sleep(3);
 
-    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(0);
+    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(0);
 
     if(!model) return 1;
 
@@ -1458,6 +1521,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             imseq_cont = model->GetComponentL(imseq_names[0]);
             bool *act = imseq_cont->AccessPropertyData<bool>("Activity");
             //TODO: Brake wrong link
+            model->BreakAllOutgoingLinks(imseq_names[0]);
             *act = false;
         }
     }
@@ -1495,6 +1559,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             video_cont = model->GetComponentL(vid_names[0]);
             bool *act = video_cont->AccessPropertyData<bool>("Activity");
             //TODO: Brake wrong link
+            model->BreakAllOutgoingLinks(vid_names[0]);
             *act = false;
         }
     }
@@ -1543,14 +1608,19 @@ int UProjectDeployerQt::SetupProjectMockParameters()
     std::string *nn_ScriptFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibScriptFileTagName.c_str());
     std::string *nn_WeightsFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibWeightFileTagName.c_str());
     std::string *nn_ConfigFile;
+    int *nn_ClassCount;
     if(file_tags[class_name].LibConfigFileTagName!="")
         nn_ConfigFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibConfigFileTagName.c_str());
 
+    if(file_tags[class_name].LibClassCountTagName!="")
+        nn_ClassCount = neural_cont->AccessPropertyData<int>(file_tags[class_name].LibClassCountTagName.c_str());
     *nn_Activity = true;
     *nn_ScriptFile = absolute_script_file.toUtf8().constData();
     *nn_WeightsFile = absolute_weights_file.toUtf8().constData();
     if(file_tags[class_name].LibConfigFileTagName!="")
         *nn_ConfigFile = absolute_config_file.toUtf8().constData();
+    if(file_tags[class_name].LibClassCountTagName!="")
+        *nn_ClassCount = weights_classes_number;
 
     return 0;
 }

@@ -166,6 +166,11 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
   return true;
  }
  else
+ if(cmd == "GetPreparationResult")
+ {
+  return true;
+ }
+ else
  if(cmd == "OpenPreparedProject")
  {
   return true;
@@ -404,8 +409,18 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   if(cmd == "PrepareProject")
   {
     std::string resp="";
-    int rs = GetApplication()->GetProjectDeployer()->PrepareProject(resp="");
+    int rs = GetApplication()->GetProjectDeployer()->PrepareProject(resp);
     response=resp;
+    return_value=0;
+  }
+  else
+  if(cmd == "GetPreparationResult")
+  {
+    std::string resp="";
+    int rs = GetApplication()->GetProjectDeployer()->GetPreparationResult(resp);
+    std::stringstream ss;
+    ss<<rs<<"|"<<resp.c_str();
+    response=ss.str();
     return_value=0;
   }
   else

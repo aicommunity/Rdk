@@ -26,11 +26,13 @@ struct MLlibDescr
  std::string LibScriptFileTagName;  //Тэг файла скрипта
  std::string LibWeightFileTagName;  //Тэг файла весов
  std::string LibConfigFileTagName;  //Тэг файла конфигурации
+ std::string LibClassCountTagName;  //Тэг количества классов в библиотеке
  MLlibDescr(){
  LibName="";
  LibScriptFileTagName="";
  LibWeightFileTagName="";
  LibConfigFileTagName="";
+ LibClassCountTagName="";
  }
 };
 
@@ -164,13 +166,12 @@ protected: // Данные
 /// Указатель на экземпляр приложения
 QSqlDatabase *db;
 
-
-protected: // Параметры
+//protected: // Параметры
 
 protected: // Данные
 
 //Параметры задачи
-QString task_name; //Имя задачи
+QString task_name;     //Имя задачи
 int task_template_id;  //Индекс шаблона задачи
 int task_weights_id;   //Индекс весов
 int task_src_type;     //Тип источника изображений (0-видео, 1-набор изображений)
@@ -182,8 +183,6 @@ bool task_template_download_required;
 QString task_template_name;
 //Путь к шаблону (относительный)
 QString task_template_path;
-//Путь к ZIP шаблона, пока не требуем
-//std::string task_template_zip_url;
 
 //Подготовка весов
 //Путь к весам
@@ -192,10 +191,13 @@ QString task_weights_path;
 bool task_weights_download_required;
 //Надо ли грузить конфиг (скорее всего не надо, так как полная корреляция с весами ДБ
 bool task_weights_conf_download_required;
+//Число классов для настройки весов
+int weights_classes_number;
 //Путь к конфигурации - возможно не нужен
 QString task_weights_config_path;
-
+//Абсолютный путь к файлу конфигурации (нужен для настройки проекте)
 QString absolute_config_file;
+//Абсолютный путь к файлу весов (нужен для настройки проекте)
 QString absolute_weights_file;
 //Уберем пока
 //std::string task_weights_zip_url;
@@ -208,43 +210,38 @@ int task_script_id;
 QString task_script_path;
 //Нужна ли загрузка скрипта
 bool task_script_download_required;
+//Абсолютный путь к файлу скрипта
 QString absolute_script_file;
-//Архив уберем пока
-//std::string task_script_zip_url;
 
 //Подготовка источника изображений
 //Путь к источнику (с учетом того что тип уже известен)
 QString task_src_path;
+//Полный путь к источнику (для настройки)
 QString task_src_fullpath;
 //Надо ли загружать
 bool task_src_download_required;
 //Путь к архиву (не факт что нужен именно тут)
 QString task_src_zip_url;
-
+//Временный путь для загрузки (пока что в {Database}/Temp по умолчанию)
 QString download_temp_path;
 
+//Указатель на поток деплоя с FTP
 UProjectDeployProcessingThread *deployProcessingThread;
 
+//Последняя ошибка в режиме доставки/открытия/настройки/запуска/закрытия
 std::string lastError;
 
+//Результат подготовки проекта
+//альтернативный результат для получения через GetPreparationResult
+int preparationResult;
+
+//Состояние деплоймента
 DeploymentState deploymentState;
 
-//Что где куда искать/менять
+//Параметры настройки компонентов в зависимости
+// от типа (заполняется в конструкторе)
 std::map<std::string, MLlibDescr> file_tags;
 std::vector<std::string> component_classes;
-
-/*
-//Дубликация?
-//Пути к проекту (вар-т 1)
-std::string project_path;
-std::string project_url;
-
-//Параметры проекта
-int project_gt_id;
-int project_sln_id;
-int project_weigts_id;
-int project_script_id;
-*/
 
 protected://Методы
 
@@ -261,24 +258,30 @@ virtual int StartProjectDeployment(int task_id);
 /// 2. Открыть в тестовом режиме и настроить пути и связи?
 /// 3. Закрыть
 virtual int PrepareProject(std::string &response);
+/// Получить результат подготовки проекта
+virtual int GetPreparationResult(std::string &response);
 ///Открыть подготовленный проект
 virtual int OpenPreparedProject(std::string &response);
 
-
-///Создать и настроить соединение с СУБД
-//virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
-//virtual void SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id);
-
+///То место где реально идет коннект к базе
+/// попытка сделать аналог той структуры через А, А2
+/// как в остальной либе (не оч удачная)
 virtual void AConnectToDatabase();
 
+/// Получить состояние деплоймента
 virtual int GetDeploymentState();
+/// Получить максимум прогресса
 virtual int GetStageCap();
+/// Получить текущее состояние прогресса
 virtual int GetStageProgress();
+/// Получить последнюю ошибку
 virtual std::string GetLastError();
+/// Получить имя файла проекта (кстати, зачем?)
 virtual std::string GetProjectFileName();
 
 public: // Методы доступа к данным
 
+/// Получить ссылку на базу данных
 QSqlDatabase *GetDatabase() {return db;};
 
 // --------------------------
@@ -304,26 +307,16 @@ int CloseMockProject();
 /// (пока мб сразу в основной функции)
 //int OpenPreparedProject();
 
+/// Проанализировать лог на предмет наличия ошибок
+/// высокого уровня (0-2, Unknown, Fatal, Error)
+/// возвращает: -1 - нет ошибок, 0-2 - уровень ошибки
+int AnalyzeLogForErrors(std::string &problem_string);
+
 
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта
 //virtual int ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }//namespace RDK
 #endif

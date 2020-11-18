@@ -61,6 +61,8 @@ virtual int StartProjectDeployment(int task_id);
 /// 2. Открыть в тестовом режиме и настроить пути и связи?
 /// 3. Закрыть
 virtual int PrepareProject(std::string &response);
+/// Получить результат подготовки проекта
+virtual int GetPreparationResult(std::string &response);
 ///Открыть подготовленный проект
 virtual int OpenPreparedProject(std::string &response);
 

@@ -101,6 +101,12 @@ int UProjectDeployer::OpenPreparedProject(std::string &response)
     return -1;
 }
 
+int UProjectDeployer::GetPreparationResult(std::string &response)
+{
+    response="base class called";
+    return -1;
+}
+
 std::string UProjectDeployer::GetLastError()
 {
     return std::string();

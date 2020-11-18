@@ -601,6 +601,24 @@ int Rpc_PrepareProject(int server_index, const char* &verbose_response, int time
     return ProcessSimpleCommand("PrepareProject", server_index, -1, timeout, request, response);
 }
 
+int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, int timeout)
+ {
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("GetPreparationResult", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    QString qs = res_string.c_str();
+    QStringList spl = qs.split("|");
+    int rs = spl[0].trimmed().toInt();
+    verbose_response = spl[1].toUtf8().constData();
+
+    if(res)
+     return res;
+}
+
  int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout)
  {
     RDK::USerStorageXML request,response;
