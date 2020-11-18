@@ -29,47 +29,47 @@ template <class CreatorT>
 bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
     // Проход по ТИПАМ свойств: Paramenters -> State -> Input -> Output
-    for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
+    for(int i = serstorage->GetNumNodes() - 1; i >= 0; i--)
     {
         if(!serstorage->SelectNode(i))
             return false;
         std::string prop_type = serstorage->GetNodeName();
 
-        // Проход по конкретным свойствам внутри типа
-        for(int j =0, props = serstorage->GetNumNodes(); j < props; j++)
+        // Проход по конкретным свойствам внутри типа (в обратном порядке)
+        for(int j = 0, props = serstorage->GetNumNodes(); j < props; j++)
         {
             try{
                 if(!serstorage->SelectNode(j))
                     return false;
                 std::string prop_name = serstorage->GetNodeName();
-
+                unsigned int p_type = RDK::atoi(serstorage->GetNodeAttribute("PType"));
                 if(prop_type == "Parameters")
                 {
-                    CreatorT::template CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet,p_type);
                 }
                 else if(prop_type == "State")
                 {
-                    CreatorT::template CreateProperty<ULProperty,ptPubState>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<ULProperty,ptPubState>(serstorage,mock_unet,p_type);
                 }
                 else if(prop_type == "Input")
                 {
                     // проверки на запрещенные имена
-					if(std::find(CreatorT::GetForbiddenInputs().begin(),CreatorT::GetForbiddenInputs().end(),serstorage->GetNodeName()) != CreatorT::GetForbiddenInputs().end())
+                    if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(), UBasePropCreatorTempl::GetForbiddenInputs().end(),serstorage->GetNodeName()) != UBasePropCreatorTempl::GetForbiddenInputs().end())
                     {
                         serstorage->SelectUp();
                         continue;
                     }
-                    CreatorT::template CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet,p_type);
                 }
                 else if(prop_type == "Output")
                 {
                     // проверки на запрещенные имена
-					if(std::find(CreatorT::GetForbiddenOutputs().begin(),CreatorT::GetForbiddenOutputs().end(),serstorage->GetNodeName()) != CreatorT::GetForbiddenOutputs().end())
+                    if(std::find(UBasePropCreatorTempl::GetForbiddenOutputs().begin(),UBasePropCreatorTempl::GetForbiddenOutputs().end(),serstorage->GetNodeName()) != UBasePropCreatorTempl::GetForbiddenOutputs().end())
                     {
                         serstorage->SelectUp();
                         continue;
                     }
-                    CreatorT::template CreateProperty<UPropertyOutputData,ptPubOutput>(serstorage,mock_unet);
+                    CreatorT::template CreateProperty<UPropertyOutputData,ptPubOutput>(serstorage,mock_unet,p_type);
                 }
             }
             catch(UComponent::EPropertyNameAlreadyExist& e)

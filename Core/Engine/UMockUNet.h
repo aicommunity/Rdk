@@ -29,6 +29,11 @@ virtual ~UMockUNet(void);
 // Выделяет память для новой чистой копии объекта этого класса
 virtual UMockUNet* New(void);
 
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+bool LoadComponent(RDK::USerStorageXML *serstorage, bool links);
+
+
 private:
 // Описание класса (отсюда формируются свойства)
 USerStorageXML ClassDesriptionXML;
