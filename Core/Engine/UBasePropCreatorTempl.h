@@ -41,8 +41,9 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
             try{
                 if(!serstorage->SelectNode(j))
                     return false;
-                std::string prop_name = serstorage->GetNodeName();
-                unsigned int p_type = RDK::atoi(serstorage->GetNodeAttribute("PType"));
+                std::string prop_name   = serstorage->GetNodeName();
+                unsigned int p_type     = RDK::atoi(serstorage->GetNodeAttribute("PType"));
+                unsigned int io_type    = RDK::atoi(serstorage->GetNodeAttribute("IoType"));
                 if(prop_type == "Parameters")
                 {
                     CreatorT::template CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet,p_type);
@@ -56,6 +57,34 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
                     // проверки на запрещенные имена
                     if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(), UBasePropCreatorTempl::GetForbiddenInputs().end(),serstorage->GetNodeName()) != UBasePropCreatorTempl::GetForbiddenInputs().end())
                     {
+                        serstorage->SelectUp();
+                        continue;
+                    }
+                    // UPropertyInputData
+                    if((io_type & (ipSingle | ipData)) == (ipSingle | ipData))
+                    {
+                        CreatorT::template CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet,p_type);
+                        serstorage->SelectUp();
+                        continue;
+                    }
+                    // UPropertyInput
+                    if((io_type & (ipSingle | ipComp)) == (ipSingle | ipComp))
+                    {
+                        CreatorT::template CreateProperty<UPropertyInput,ptPubInput>(serstorage,mock_unet,p_type);
+                        serstorage->SelectUp();
+                        continue;
+                    }
+                    // UPropertyInputCData
+                    if((io_type & (ipRange  | ipData)) == (ipRange  | ipData))
+                    {
+                        CreatorT::template CreateProperty<UPropertyInputCData,ptPubInput>(serstorage,mock_unet,p_type);
+                        serstorage->SelectUp();
+                        continue;
+                    }
+                    // UPropertyInputC
+                    if((io_type & (ipRange  | ipComp)) == (ipRange  | ipComp))
+                    {
+                        CreatorT::template CreateProperty<UPropertyInputC,ptPubInput>(serstorage,mock_unet,p_type);
                         serstorage->SelectUp();
                         continue;
                     }

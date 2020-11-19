@@ -423,7 +423,6 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
 
         if(second_type.find("MDVector",0) == 0)
         {
-
             // Удаление слова MDVector
             size_t pos = second_type.find("MDVector");
             if (pos != std::string::npos)
@@ -438,7 +437,7 @@ void UBasePropCreator::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::U
 
             if(matrix_type == typeid(int).name())
             {
-                CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
+                CreatorProperty<PropType, TypeInt, std::map<std::string, MDVector<int> > >::CreatePropertyByType(serstorage, mock_unet, ptype);
                 return;
             }
         }

@@ -224,7 +224,7 @@ void UBasePropCreatorVector::CreatePropertySimpleVector(RDK::USerStorageXML* ser
 
     if(type == typeid(bool).name())
     {
-        CreatorProperty<PropType, TypeInt, std::vector<char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
+        CreatorProperty<PropType, TypeInt, std::vector<bool> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(int).name())
