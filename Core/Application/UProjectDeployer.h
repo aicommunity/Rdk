@@ -65,6 +65,8 @@ virtual int PrepareProject(std::string &response);
 virtual int GetPreparationResult(std::string &response);
 ///Открыть подготовленный проект
 virtual int OpenPreparedProject(std::string &response);
+///Запустить подготовленный проект
+virtual int RunPreparedProject();
 
 ///Задать пар-ры конннекта к СУБД
 virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
@@ -84,6 +86,21 @@ virtual void SetFtpRemotePath(const std::string &path);
 virtual void SetTempProjectDeploymentPath(const std::string &path);
 
 virtual std::string GetTempProjectDeploymentPath();
+
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+virtual int GetCalculationState();
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата
+/// @frame_id - индекс текущего кадра
+virtual bool GetCaptureState(int &state, int& frame_id, int& max_frame_id);
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+virtual bool ProcessCalculationLog(std::string &error);
+///Возвращает true если обработка ролика/набора кадров по мнению деплоера
+/// на переданном кадре закончена и false если нет
+//virtual bool CaptureProcessingFinished(int frame_number);
 
 // --------------------------
 // Конструкторы и деструкторы

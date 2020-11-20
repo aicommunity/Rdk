@@ -107,6 +107,13 @@ int UProjectDeployer::GetPreparationResult(std::string &response)
     return -1;
 }
 
+///Запустить подготовленный проект
+int UProjectDeployer::RunPreparedProject()
+{
+    return -1;
+}
+
+
 std::string UProjectDeployer::GetLastError()
 {
     return std::string();
@@ -116,6 +123,39 @@ std::string UProjectDeployer::GetProjectFileName()
 {
     return std::string();
 }
+
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+int UProjectDeployer::GetCalculationState()
+{
+    return -1;
+}
+
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата
+/// @frame_id - индекс текущего кадра
+bool UProjectDeployer::GetCaptureState(int &state, int& frame_id, int &max_frame_id)
+{
+    state=-1;
+    frame_id=-1;
+    max_frame_id=-1;
+    return false;
+}
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+bool UProjectDeployer::ProcessCalculationLog(std::string &error)
+{
+    error="ProcessCalculationLog in base class called!";
+    return false;
+}
+
+///Возвращает true если обработка ролика/набора кадров по мнению деплоера
+/// на переданном кадре закончена и false если нет
+/*bool UProjectDeployer::CaptureProcessingFinished(int frame_number)
+{
+    return false;
+}*/
 
 /*
 void UProjectDeployer::SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id)

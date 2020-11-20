@@ -7,7 +7,7 @@
 #include "../UApplication.h"
 #include "UServerTransportTcpQt.h"
 #include <QDataStream>
-
+#include <QCoreApplication>
 
 /// Ёкзепл€р класса приложени€
 //extern RDK::UApplication RdkApplication;
@@ -82,10 +82,9 @@ UServerTransportTcpQt::UServerTransportTcpQt()
 {
     server=new QTcpServer();
     connect(server, SIGNAL(newConnection()), this, SLOT(ServerNewConnection()));
-
-
     commandQueueTimer = new QTimer(this);
     commandQueueTimer->setInterval(10);
+    commandQueueTimer->moveToThread(QCoreApplication::instance()->thread());
     commandQueueTimer->setSingleShot(false);
     commandQueueTimer->start();
     connect(commandQueueTimer, SIGNAL(timeout()), this, SLOT(CommandQueueTimerTimeout()));
@@ -293,7 +292,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
       QDataStream in;
       in.setDevice(socket);
       in.setVersion(QDataStream::Qt_5_0);
-      in.startTransaction();
+      //in.startTransaction();
       char *buffer;
       uint length=0;
       in.readBytes(buffer, length);
@@ -390,7 +389,7 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
        QDataStream out;
        out.setDevice(socket);
        out.setVersion(QDataStream::Qt_5_0);
-       out.startTransaction();
+       //out.startTransaction();
 
        char* buf;
        buf = new char[buffer.size()];

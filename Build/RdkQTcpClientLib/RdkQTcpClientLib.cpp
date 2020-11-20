@@ -619,10 +619,40 @@ int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, in
      return res;
 }
 
- int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout)
- {
+int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout)
+{
     RDK::USerStorageXML request,response;
     return ProcessSimpleCommand("OpenPreparedProject", server_index, -1, timeout, request, response);
+}
+
+int Rpc_RunPreparedProject(int server_index, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    return ProcessSimpleCommand("RunPreparedProject", server_index, -1, timeout, request, response);
+}
+
+int Rpc_GetCalculationState(int server_index,
+                            int& calculation_state,
+                            int& capture_state,
+                            int& capture_frid,
+                            int& capture_maxfrid,
+                            const char* &message,
+                            int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("GetCalculationState", server_index, -1, timeout, request, response);
+
+    std::string res_string = response.ReadString("Data", "").c_str();
+
+    QString qsl = res_string.c_str();
+    QStringList spl = qsl.split("|");
+    calculation_state = spl[0].toInt();
+    capture_state = spl[1].toInt();
+    capture_frid = spl[2].toInt();
+    capture_maxfrid = spl[3].toInt();
+    QString msg = spl[4];
+    message = msg.toUtf8().constData();
+    return res;
 }
 
 

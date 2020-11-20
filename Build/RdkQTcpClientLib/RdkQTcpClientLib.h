@@ -111,4 +111,14 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout);
 
  int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout);
 
+ int Rpc_RunPreparedProject(int server_index, int timeout);
+
+ int Rpc_GetCalculationState(int server_index,
+                            int& calculation_state,
+                            int& capture_state,
+                            int& capture_frid,
+                            int& capture_maxfrid,
+                            const char* &message,
+                            int timeout);
+
 #endif // RDKQTCPCLIENTLIB_H

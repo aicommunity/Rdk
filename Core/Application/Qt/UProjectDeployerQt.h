@@ -36,6 +36,20 @@ struct MLlibDescr
  }
 };
 
+struct CaptureLibDescr
+{
+ std::string LibName;
+ std::string LibFrameIdStateName;
+ std::string LibCaptureStateTagName;
+
+
+ CaptureLibDescr(){
+ LibName="";
+ LibFrameIdStateName="";
+ LibCaptureStateTagName="";
+ }
+};
+
 static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 {
   struct FtpFile *out = (struct FtpFile *)stream;
@@ -183,6 +197,9 @@ bool task_template_download_required;
 QString task_template_name;
 //Путь к шаблону (относительный)
 QString task_template_path;
+//Имя файла проекта (project.ini, project_full.ini и тп) для открытия,
+// выяснилось, что они могут гулять
+QString task_template_file_name;
 
 //Подготовка весов
 //Путь к весам
@@ -224,6 +241,9 @@ bool task_src_download_required;
 QString task_src_zip_url;
 //Временный путь для загрузки (пока что в {Database}/Temp по умолчанию)
 QString download_temp_path;
+//Количество кадров в источнике (по данным СУБД,
+// потому что там посчитано руками и обычно точнее)
+int task_src_frame_length;
 
 //Указатель на поток деплоя с FTP
 UProjectDeployProcessingThread *deployProcessingThread;
@@ -242,6 +262,14 @@ DeploymentState deploymentState;
 // от типа (заполняется в конструкторе)
 std::map<std::string, MLlibDescr> file_tags;
 std::vector<std::string> component_classes;
+
+std::map<std::string, CaptureLibDescr> capture_tags;
+//Это не точно нужно
+//std::vector<std::string> capture_classes;
+
+//Параметры класса и имени захвата для дальнейшей работы
+std::string capture_class_name;
+std::string capture_component_name;
 
 protected://Методы
 
@@ -262,6 +290,8 @@ virtual int PrepareProject(std::string &response);
 virtual int GetPreparationResult(std::string &response);
 ///Открыть подготовленный проект
 virtual int OpenPreparedProject(std::string &response);
+/// Запустить подготовленный проект
+virtual int RunPreparedProject();
 
 ///То место где реально идет коннект к базе
 /// попытка сделать аналог той структуры через А, А2
@@ -278,6 +308,18 @@ virtual int GetStageProgress();
 virtual std::string GetLastError();
 /// Получить имя файла проекта (кстати, зачем?)
 virtual std::string GetProjectFileName();
+
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+virtual int GetCalculationState();
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата
+/// @frame_id - индекс текущего кадра
+virtual bool GetCaptureState(int &state, int& frame_id, int& max_frame_id);
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+virtual bool ProcessCalculationLog(std::string &error);
 
 public: // Методы доступа к данным
 
