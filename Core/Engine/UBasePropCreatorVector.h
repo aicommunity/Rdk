@@ -85,59 +85,9 @@ void UBasePropCreatorVector::CreatePropertyVector(RDK::USerStorageXML* serstorag
     }
 
 
-    if(type == typeid(bool).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<bool> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(char).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
     if(type == typeid(unsigned char).name())
     {
         CreatorProperty<PropType, TypeInt, std::vector<unsigned char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(short).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<short> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned short).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<unsigned short> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(int).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned int).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<unsigned int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<unsigned long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<long long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<unsigned long long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == typeid(float).name())
@@ -148,11 +98,6 @@ void UBasePropCreatorVector::CreatePropertyVector(RDK::USerStorageXML* serstorag
     if(type == typeid(double).name())
     {
         CreatorProperty<PropType, TypeInt, std::vector<double> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long double).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::vector<long double> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
     if(type == "UColorT")

@@ -134,32 +134,17 @@ bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage,
         CreatorProperty<PropType, TypeInt, bool>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
-    if(type == typeid(char).name())
-    {
-        CreatorProperty<PropType, TypeInt, char>::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return true;
-    }
     if(type == typeid(unsigned char).name())
     {
         CreatorProperty<PropType, TypeInt, unsigned char>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
-    if(type == typeid(short).name())
+    if(type == typeid(unsigned int).name())
     {
-        CreatorProperty<PropType, TypeInt, short>::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return true;
-    }
-    if(type == typeid(unsigned short).name())
-    {
-        CreatorProperty<PropType, TypeInt, unsigned short>::CreatePropertyByType(serstorage, mock_unet, ptype);
+        CreatorProperty<PropType, TypeInt, unsigned int>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(int).name())
-    {
-        CreatorProperty<PropType, TypeInt, int>::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return true;
-    }
-    if(type == typeid(unsigned int).name())
     {
         CreatorProperty<PropType, TypeInt, unsigned int>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
@@ -194,11 +179,6 @@ bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage,
         CreatorProperty<PropType, TypeInt, double>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
-    if(type == typeid(long double).name())
-    {
-        CreatorProperty<PropType, TypeInt, long double>::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return true;
-    }
     //throw ParseException("can't handle simple type: " + type);
     return false;
 
@@ -224,75 +204,9 @@ void UBasePropCreator::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::
         serstorage->SelectUp();
     }
 
-
-    if(type == typeid(bool).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<bool> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(char).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned char).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned char> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(short).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<short> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned short).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned short> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
     if(type == typeid(int).name())
     {
         CreatorProperty<PropType, TypeInt, std::list<int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned int).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned int> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<long long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<unsigned long long> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(float).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<float> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(double).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<double> >::CreatePropertyByType(serstorage, mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long double).name())
-    {
-        CreatorProperty<PropType, TypeInt, std::list<long double> >::CreatePropertyByType(serstorage, mock_unet, ptype);
         return;
     }
 }
