@@ -82,12 +82,12 @@ UServerTransportTcpQt::UServerTransportTcpQt()
 {
     server=new QTcpServer();
     connect(server, SIGNAL(newConnection()), this, SLOT(ServerNewConnection()));
-    commandQueueTimer = new QTimer(this);
-    commandQueueTimer->setInterval(10);
-    commandQueueTimer->moveToThread(QCoreApplication::instance()->thread());
-    commandQueueTimer->setSingleShot(false);
-    commandQueueTimer->start();
-    connect(commandQueueTimer, SIGNAL(timeout()), this, SLOT(CommandQueueTimerTimeout()));
+    //commandQueueTimer = new QBasicTimer();
+    //commandQueueTimer->
+    //commandQueueTimer->moveToThread(QCoreApplication::instance()->thread());
+    //commandQueueTimer->setSingleShot(false);
+    //commandQueueTimer->start(10, this);
+    //connect(commandQueueTimer, SIGNAL(timeout()), this, SLOT(CommandQueueTimerTimeout()));
 
 }
 UServerTransportTcpQt::~UServerTransportTcpQt()
@@ -213,6 +213,23 @@ void UServerTransportTcpQt::CommandQueueTimerTimeout()
     {
      Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
     }
+}
+
+void UServerTransportTcpQt::timerEvent(QTimerEvent *event)
+{
+    try
+    {
+       Application->GetServerControl()->ProcessCommandQueue(Application->GetServerControl()->GetServerTransport());
+    }
+    catch(...)
+    {
+     Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+    }
+}
+
+void UServerTransportTcpQt::ProcessEventQueueExternally()
+{
+    CommandQueueTimerTimeout();
 }
 
 int UServerTransportTcpQt::GetSocketState(std::string bind)

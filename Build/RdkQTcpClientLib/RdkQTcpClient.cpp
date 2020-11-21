@@ -122,7 +122,7 @@ void RdkQTcpThread::run()
         }
 
        }
-       PacketReaderUnlockEvent->exclusive_unlock();
+       //PacketReaderUnlockEvent->exclusive_unlock();
 
        //in.commitTransaction();
 
@@ -156,7 +156,7 @@ void RdkQTcpThread::run()
      CalculationInProgress->set();
      //Sleep(1);
    //  Sleep(1);
-     this->msleep(1);
+     this->msleep(10);
     }
 }
 
@@ -383,7 +383,7 @@ int RdkQTcpClient::SendControlCommand(RDK::USerStorageXML &xml)
 int RdkQTcpClient::FindPacketById(int cmdId, RDK::USerStorageXML &xml, bool erase_found, std::list<RDK::UTransferPacket>::iterator &it)
 {
  //if(WaitForSingleObject(Thread->PacketReaderUnlockEvent,INFINITE) != WAIT_TIMEOUT)
- if(Thread->PacketReaderUnlockEvent->exclusive_lock())
+ if(Thread->PacketReaderUnlockEvent->shared_lock())
  {
 //  ResetEvent(Thread->PacketReaderUnlockEvent);
   std::list<RDK::UTransferPacket> &packetList=PacketReader.GetPacketList();
@@ -422,7 +422,7 @@ int RdkQTcpClient::FindPacketById(int cmdId, RDK::USerStorageXML &xml, bool eras
 int RdkQTcpClient::FindPacketById(int cmdId, RDK::USerStorageXML &xml, std::vector<RDK::UParamT> &binary_data, bool erase_found, std::list<RDK::UTransferPacket>::iterator &it)
 {
  //if(WaitForSingleObject(Thread->PacketReaderUnlockEvent,INFINITE) != WAIT_TIMEOUT)
- if(Thread->PacketReaderUnlockEvent->exclusive_lock())
+ if(Thread->PacketReaderUnlockEvent->shared_lock())
  {
 //  ResetEvent(Thread->PacketReaderUnlockEvent);
   std::list<RDK::UTransferPacket> &packetList=PacketReader.GetPacketList();

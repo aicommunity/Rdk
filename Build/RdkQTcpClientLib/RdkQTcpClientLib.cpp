@@ -634,24 +634,37 @@ int Rpc_RunPreparedProject(int server_index, int timeout)
 int Rpc_GetCalculationState(int server_index,
                             int& calculation_state,
                             int& capture_state,
-                            int& capture_frid,
-                            int& capture_maxfrid,
+                            unsigned long long& capture_frid,
+                            unsigned long long& capture_maxfrid,
                             const char* &message,
                             int timeout)
 {
     RDK::USerStorageXML request,response;
     int res = ProcessSimpleCommand("GetCalculationState", server_index, -1, timeout, request, response);
 
-    std::string res_string = response.ReadString("Data", "").c_str();
-
-    QString qsl = res_string.c_str();
-    QStringList spl = qsl.split("|");
-    calculation_state = spl[0].toInt();
-    capture_state = spl[1].toInt();
-    capture_frid = spl[2].toInt();
-    capture_maxfrid = spl[3].toInt();
-    QString msg = spl[4];
-    message = msg.toUtf8().constData();
+    if(res==0)
+    {
+        std::string res_string = response.ReadString("Data", "").c_str();
+        QString qsl = res_string.c_str();
+        if(qsl.length()>0)
+        {
+            QStringList spl = qsl.split("|");
+            if(spl.size()==5)
+            {
+                calculation_state = spl[0].toInt();
+                capture_state = spl[1].toInt();
+                capture_frid = spl[2].toInt();
+                capture_maxfrid = spl[3].toInt();
+                QString msg = spl[4];
+                message = msg.toUtf8().constData();
+            }
+            else
+            {
+                std::string s = "Wrong result: '" + res_string + "'";
+                message = s.c_str();
+            }
+        }
+    }
     return res;
 }
 

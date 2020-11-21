@@ -456,7 +456,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     int capture_maxfrid=-1;
     std::string message = "test state message";
 
-    /*
+
     //Проанализировать состояние расчета - а вдруг ошибка
     /// Состояние тредов расчета
     /// 0 - запущен
@@ -481,9 +481,10 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
             }
             else if(calc_state==1 || calc_state==0)
             {
-                int capture_frame_id=-1;
-                int capture_max_frame_id=-1;
-                bool res_capstate = GetApplication()->GetProjectDeployer()->GetCaptureState(capture_state, capture_frame_id, capture_max_frame_id);
+                unsigned long long capture_frame_id=0;
+                unsigned long long capture_max_frame_id=0;
+                int cap_state_out = -1;
+                bool res_capstate = GetApplication()->GetProjectDeployer()->GetCaptureState(cap_state_out, capture_frame_id, capture_max_frame_id);
                 if(!res_capstate)
                 {
                     std::string err="";
@@ -492,7 +493,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
                 }
                 else
                 {
-                    capture_state = res_capstate;
+                    capture_state = cap_state_out;
                     capture_frid = capture_frame_id;
                     capture_maxfrid = capture_max_frame_id;
                     message = "Calculation is active";
@@ -510,7 +511,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
         std::string err="";
         err = GetApplication()->GetProjectDeployer()->GetLastError();
         message = "GetCalculationState() error: "+err;
-    }*/
+    }
 
     std::stringstream res_ss;
     res_ss<<calculation_state<<"|"<<capture_state<<"|"<<capture_frid<<"|"<<capture_maxfrid<<"|"<<message.c_str();

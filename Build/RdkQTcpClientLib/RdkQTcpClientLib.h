@@ -116,8 +116,8 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout);
  int Rpc_GetCalculationState(int server_index,
                             int& calculation_state,
                             int& capture_state,
-                            int& capture_frid,
-                            int& capture_maxfrid,
+                            unsigned long long& capture_frid,
+                            unsigned long long& capture_maxfrid,
                             const char* &message,
                             int timeout);
 

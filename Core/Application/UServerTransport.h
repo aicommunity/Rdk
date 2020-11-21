@@ -80,6 +80,9 @@ virtual void ServerStart();
 void ConvertStringToVector(const std::string &source, UParamT &dest);
 void ConvertVectorToString(const UParamT &source, std::string &dest);
 
+
+virtual void ProcessEventQueueExternally(){};
+
 // --------------------------
 // Общие методы управления контроллером
 // --------------------------

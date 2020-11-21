@@ -90,6 +90,12 @@ enum DeploymentState
     DS_ProjectPrepared=13,
     DS_OpenProject=14,
     DS_ProjectOpened=15,
+    DS_Calculation=16,
+    DS_ProjectClosed=17,
+    DS_CopyResults=18,
+    DS_PackResults=19,
+    DS_UploadResults=20,
+    DS_UploadFinished=21,
     DS_Error=100
 };
 
@@ -170,6 +176,55 @@ private:
     CURLcode res;
 };
 
+class RDK_LIB_TYPE UProjectResultsUploadingThread: public QThread
+{
+Q_OBJECT
+
+public:
+     UProjectResultsUploadingThread();
+    ~UProjectResultsUploadingThread();
+
+    void run() override;
+
+    void SetProjectResultsDirPath(const QString& results_dir);
+    QString GetProjectResultsDirPath();
+
+    void SetStorageResultsDirPath(const QString& results_dir);
+    QString GetStorageResultsDirPath();
+
+    void SetDatabasePath(const QString& database_path);
+    QString GetDatabasePath();
+
+    void SetRemoteFtpPath(const QString& ftp_path);
+    QString GetRemoteFtpPath();
+
+    QString GetLastError();
+    DeploymentState GetUploadState();
+
+private:
+    bool CopyResultsToDestinationDir();
+    bool ZipResults();
+    bool UploadResultsViaFtp();
+
+    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dts_dir_path);
+
+private slots:
+    void processReadyReadStandardError();
+    void processReadyReadStandardOutput();
+
+private:
+    QString projectResultsDir;
+    QString storageResultsDir;
+    QString databasePath;
+    QString remoteFtpPath;
+
+    QString lastError;
+    DeploymentState uploadState;
+
+    QProcess zip_process;
+
+};
+
 
 class RDK_LIB_TYPE UProjectDeployerQt: public UProjectDeployer
 {
@@ -186,6 +241,7 @@ protected: // Данные
 
 //Параметры задачи
 QString task_name;     //Имя задачи
+int task_id;           //Индекс задачи (для копирования результатов/записи результатов в СУБД)
 int task_template_id;  //Индекс шаблона задачи
 int task_weights_id;   //Индекс весов
 int task_src_type;     //Тип источника изображений (0-видео, 1-набор изображений)
@@ -271,6 +327,12 @@ std::map<std::string, CaptureLibDescr> capture_tags;
 std::string capture_class_name;
 std::string capture_component_name;
 
+//Дата и время для добавления в таблицу
+QDateTime processing_start_datetime;
+QDateTime processing_end_datetime;
+
+UProjectResultsUploadingThread *projectResultsUploadingThread;
+
 protected://Методы
 
 //Удалить поток обработки или вернуть
@@ -279,7 +341,7 @@ bool DestroyProcessingThread();
 public: // Методы
 
 ///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
-virtual int StartProjectDeployment(int task_id);
+virtual int StartProjectDeployment(int deploy_task_id);
 
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
@@ -315,11 +377,19 @@ virtual int GetCalculationState();
 /// возвращает false при ошибке получение состояния
 /// @state - индекс состояния захвата
 /// @frame_id - индекс текущего кадра
-virtual bool GetCaptureState(int &state, int& frame_id, int& max_frame_id);
+virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
 ///Обрабатывает накопившийся с последнего вызова лог
 /// возвращает false если были фатальные ошибки, иначе true
 /// @error - текст ошибки из лога приложения
 virtual bool ProcessCalculationLog(std::string &error);
+///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+virtual bool FinishCalculation();
+///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
+/// запустить процесс упаковки и отправки данных в удаленное хранилище
+virtual bool UploadCalculationResults();
+///Аккуратное закрытие солвера, команда которая по идее должна инициировать
+/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+virtual bool CloseSolver();
 
 public: // Методы доступа к данным
 
@@ -353,6 +423,8 @@ int CloseMockProject();
 /// высокого уровня (0-2, Unknown, Fatal, Error)
 /// возвращает: -1 - нет ошибок, 0-2 - уровень ошибки
 int AnalyzeLogForErrors(std::string &problem_string);
+
+QString GetTimeStampInPSqlFormat(const QDateTime &now);
 
 
 /// Читает входящие байты из выбранного источника, контекст привязки

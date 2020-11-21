@@ -134,7 +134,7 @@ int UProjectDeployer::GetCalculationState()
 /// возвращает false при ошибке получение состояния
 /// @state - индекс состояния захвата
 /// @frame_id - индекс текущего кадра
-bool UProjectDeployer::GetCaptureState(int &state, int& frame_id, int &max_frame_id)
+bool UProjectDeployer::GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long &max_frame_id)
 {
     state=-1;
     frame_id=-1;

@@ -93,7 +93,7 @@ virtual int GetCalculationState();
 /// возвращает false при ошибке получение состояния
 /// @state - индекс состояния захвата
 /// @frame_id - индекс текущего кадра
-virtual bool GetCaptureState(int &state, int& frame_id, int& max_frame_id);
+virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
 ///Обрабатывает накопившийся с последнего вызова лог
 /// возвращает false если были фатальные ошибки, иначе true
 /// @error - текст ошибки из лога приложения
@@ -101,6 +101,15 @@ virtual bool ProcessCalculationLog(std::string &error);
 ///Возвращает true если обработка ролика/набора кадров по мнению деплоера
 /// на переданном кадре закончена и false если нет
 //virtual bool CaptureProcessingFinished(int frame_number);
+///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+virtual bool FinishCalculation() {return false;};
+///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
+/// запустить процесс упаковки и отправки данных в удаленное хранилище
+virtual bool UploadCalculationResults() {return false;};
+///Аккуратное закрытие солвера, команда которая по идее должна инициировать
+/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+virtual bool CloseSolver() {return false;};
+
 
 // --------------------------
 // Конструкторы и деструкторы
