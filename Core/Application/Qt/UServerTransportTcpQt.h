@@ -63,6 +63,10 @@ public:
 
     bool ServerIsActive();
 
+    virtual void timerEvent(QTimerEvent *event);
+
+    virtual void ProcessEventQueueExternally();
+
 public slots:
     void ServerNewConnection();
     void SocketReadyRead(std::string bind);
@@ -75,7 +79,7 @@ private:
     std::string server_address;
     int server_port;
 
-    QTimer *commandQueueTimer;
+    QBasicTimer *commandQueueTimer;
 
 };
 

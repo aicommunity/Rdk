@@ -7,7 +7,7 @@
 #include "../UApplication.h"
 #include "UServerTransportTcpQt.h"
 #include <QDataStream>
-
+#include <QCoreApplication>
 
 /// Ёкзепл€р класса приложени€
 //extern RDK::UApplication RdkApplication;
@@ -82,13 +82,12 @@ UServerTransportTcpQt::UServerTransportTcpQt()
 {
     server=new QTcpServer();
     connect(server, SIGNAL(newConnection()), this, SLOT(ServerNewConnection()));
-
-
-    commandQueueTimer = new QTimer(this);
-    commandQueueTimer->setInterval(10);
-    commandQueueTimer->setSingleShot(false);
-    commandQueueTimer->start();
-    connect(commandQueueTimer, SIGNAL(timeout()), this, SLOT(CommandQueueTimerTimeout()));
+    //commandQueueTimer = new QBasicTimer();
+    //commandQueueTimer->
+    //commandQueueTimer->moveToThread(QCoreApplication::instance()->thread());
+    //commandQueueTimer->setSingleShot(false);
+    //commandQueueTimer->start(10, this);
+    //connect(commandQueueTimer, SIGNAL(timeout()), this, SLOT(CommandQueueTimerTimeout()));
 
 }
 UServerTransportTcpQt::~UServerTransportTcpQt()
@@ -216,6 +215,23 @@ void UServerTransportTcpQt::CommandQueueTimerTimeout()
     }
 }
 
+void UServerTransportTcpQt::timerEvent(QTimerEvent *event)
+{
+    try
+    {
+       Application->GetServerControl()->ProcessCommandQueue(Application->GetServerControl()->GetServerTransport());
+    }
+    catch(...)
+    {
+     Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+    }
+}
+
+void UServerTransportTcpQt::ProcessEventQueueExternally()
+{
+    CommandQueueTimerTimeout();
+}
+
 int UServerTransportTcpQt::GetSocketState(std::string bind)
 {
     std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
@@ -293,7 +309,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
       QDataStream in;
       in.setDevice(socket);
       in.setVersion(QDataStream::Qt_5_0);
-      in.startTransaction();
+      //in.startTransaction();
       char *buffer;
       uint length=0;
       in.readBytes(buffer, length);
@@ -390,7 +406,7 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
        QDataStream out;
        out.setDevice(socket);
        out.setVersion(QDataStream::Qt_5_0);
-       out.startTransaction();
+       //out.startTransaction();
 
        char* buf;
        buf = new char[buffer.size()];

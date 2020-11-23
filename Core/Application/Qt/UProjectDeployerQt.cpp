@@ -764,13 +764,245 @@ bool UProjectDeployProcessingThread::VerifyData()
  return true;
 }
 
+//====================================================================
+UProjectResultsUploadingThread::UProjectResultsUploadingThread()
+{
+
+}
+
+UProjectResultsUploadingThread::~UProjectResultsUploadingThread()
+{
+
+}
+
+void UProjectResultsUploadingThread::SetProjectResultsDirPath(const QString& results_dir)
+{
+    projectResultsDir = results_dir;
+}
+
+QString UProjectResultsUploadingThread::GetProjectResultsDirPath()
+{
+    return projectResultsDir;
+}
+
+void UProjectResultsUploadingThread::SetStorageResultsDirPath(const QString& results_dir)
+{
+    storageResultsDir = results_dir;
+}
+
+QString UProjectResultsUploadingThread::GetStorageResultsDirPath()
+{
+    return storageResultsDir;
+}
+
+void UProjectResultsUploadingThread::SetDatabasePath(const QString& database_path)
+{
+    databasePath = database_path;
+}
+
+QString UProjectResultsUploadingThread::GetDatabasePath()
+{
+    return databasePath;
+}
+
+void UProjectResultsUploadingThread::SetRemoteFtpPath(const QString& ftp_path)
+{
+    remoteFtpPath = ftp_path;
+}
+
+QString UProjectResultsUploadingThread::GetRemoteFtpPath()
+{
+    return remoteFtpPath;
+}
+
+QString UProjectResultsUploadingThread::GetLastError()
+{
+    return lastError;
+}
+
+DeploymentState UProjectResultsUploadingThread::GetUploadState()
+{
+    return uploadState;
+}
+
+void UProjectResultsUploadingThread::run()
+{
+    if(!CopyResultsToDestinationDir())
+    {
+        uploadState = DS_Error;
+        return;
+    }
+
+    if(!ZipResults())
+    {
+        uploadState = DS_Error;
+        return;
+    }
+
+    if(!UploadResultsViaFtp())
+    {
+        uploadState = DS_Error;
+        return;
+    }
+}
+
+bool UProjectResultsUploadingThread::CopyResultsToDestinationDir()
+{
+    //Разберем куда надо копировать
+    if(projectResultsDir=="")
+    {
+        lastError = "projectResultsDir empty";
+        return false;
+    }
+
+    QDir project_results_dir(projectResultsDir);
+    if(!project_results_dir.exists())
+    {
+        lastError = "projectResultsDir not exists: "+projectResultsDir;
+        return false;
+    }
+
+    if(storageResultsDir=="")
+    {
+        lastError = "storageResultsDir empty";
+        return false;
+    }
+
+    if(databasePath=="")
+    {
+        lastError = "databasePath empty";
+        return false;
+    }
+
+    QDir db_path_dir(databasePath);
+    if(!db_path_dir.exists())
+    {
+        lastError = "databasePath not exists: "+databasePath;
+        return false;
+    }
+
+    QString storage_dest_dir_path = storageResultsDir;
+    storage_dest_dir_path.replace("{Database}", databasePath);
+
+    QDir storage_dest_dir(storage_dest_dir_path);
+
+    if(!storage_dest_dir.exists())
+    {
+        lastError = "storage_dest_dir not exists: "+storage_dest_dir.path();
+        return false;
+    }
+
+    bool copy_res = RecursiveCopyFiles(projectResultsDir, storage_dest_dir.path());
+
+    if(!copy_res)
+        return false;
+
+    return true;
+}
+
+bool UProjectResultsUploadingThread::RecursiveCopyFiles(const QString& src_dir_path, const QString& dts_dir_path)
+{
+    //Перечислить папки
+    QDir src_dir(src_dir_path);
+    QDir dst_dir(src_dir_path);
+
+    //Перепроверить наличие
+    if(!src_dir.exists())
+    {
+        lastError = "Copy err: source dir not exists "+src_dir_path;
+        return false;
+    }
+    if(!dst_dir.exists())
+    {
+        if(!dst_dir.mkpath(dst_dir.path()))
+        {
+            lastError = "Error create dst dir: "+dst_dir.path();
+            return false;
+        }
+    }
+
+    //Рекурсивно скопировать подпапки
+    QStringList src_dir_dirlist = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Dirs);
+    for(QString subdir_name: src_dir_dirlist)
+    {
+        QString src_subdir_path = src_dir_path+"/"+subdir_name;
+        QString dst_subdir_path = dts_dir_path+"/"+subdir_name;
+
+        QDir dst_subdir(dst_subdir_path);
+        if(!dst_subdir.exists())
+        {
+            if(!dst_subdir.mkpath(dst_subdir.path()))
+            {
+                lastError = "Error create dst subdir: "+dst_dir.path();
+                return false;
+            }
+        }
+        if(!RecursiveCopyFiles(src_subdir_path, dst_subdir_path))
+        {
+            return false;
+        }
+    }
+
+    //Скопировать файлы
+    //Перечислить файлы:
+    QStringList src_dir_filelist = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
+    for(QString src_file_name: src_dir_filelist)
+    {
+        QString src_file_path = src_dir_path+"/"+src_file_name;
+        QFile src_file(src_file_path);
+        if(!src_file.exists())
+        {
+            lastError = "Src file not exists: "+src_file_path;
+            return false;
+        }
+        QString dst_file_path = dts_dir_path+"/"+src_file_name;
+        if(!src_file.copy(dst_file_path))
+        {
+            lastError = "Error copy file "+src_file_path+" to "+dst_file_path;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool UProjectResultsUploadingThread::ZipResults()
+{
+    return true;
+}
+
+void UProjectResultsUploadingThread::processReadyReadStandardError()
+{
+
+}
+
+void UProjectResultsUploadingThread::processReadyReadStandardOutput()
+{
+
+}
+
+bool UProjectResultsUploadingThread::UploadResultsViaFtp()
+{
+    return true;
+}
+
+
+
+
+
+
+
+
+//====================================================================
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UProjectDeployerQt::UProjectDeployerQt(void):
     db(NULL),
     deployProcessingThread(NULL),
-    deploymentState(DS_NULL)
+    projectResultsUploadingThread(NULL),
+    deploymentState(DS_NULL),
+    preparationResult(-1)
 {
     //Инициализация curl, которую надо выполнить только один раз
     //Этот класс же тоочно не создается дважды?
@@ -781,6 +1013,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   classification.LibConfigFileTagName = "";
   classification.LibScriptFileTagName = "PythonScriptFileName";
   classification.LibWeightFileTagName = "WeightsPath";
+  classification.LibClassCountTagName = "NumClasses";
   file_tags["TPyUBitmapClassifier"] = classification;
   component_classes.push_back("TPyUBitmapClassifier");
   MLlibDescr sq_det;
@@ -788,6 +1021,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   sq_det.LibConfigFileTagName="ConfigPath";
   sq_det.LibScriptFileTagName="PythonScriptFileName";
   sq_det.LibWeightFileTagName="WeightsPath";
+  sq_det.LibClassCountTagName = "";
   file_tags["TPyObjectDetectorSqueezeDet"] = sq_det;
   component_classes.push_back("TPyObjectDetectorSqueezeDet");
   MLlibDescr det_yolo;
@@ -795,6 +1029,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   det_yolo.LibConfigFileTagName="ConfigPathYOLO";
   det_yolo.LibScriptFileTagName="PythonScriptFileName";
   det_yolo.LibWeightFileTagName="WeightsPathYOLO";
+  det_yolo.LibClassCountTagName = "";
   file_tags["TPyObjectDetector"] = det_yolo;
   component_classes.push_back("TPyObjectDetector");
   MLlibDescr protobuf;
@@ -802,6 +1037,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   protobuf.LibConfigFileTagName = "JSONPath";
   protobuf.LibScriptFileTagName = "PythonScriptFileName";
   protobuf.LibWeightFileTagName = "ProtobufPath";
+  protobuf.LibClassCountTagName = "";
   file_tags["TPySegmentatorProtobuf"] = protobuf;
   component_classes.push_back("TPySegmentatorProtobuf");
   MLlibDescr unet;
@@ -809,8 +1045,39 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   unet.LibConfigFileTagName = "";
   unet.LibScriptFileTagName = "PythonScriptFileName";
   unet.LibWeightFileTagName = "WeightsPath";
+  unet.LibClassCountTagName = "";
   file_tags["TPySegmentatorUNet"] = unet;
   component_classes.push_back("TPySegmentatorUNet");
+  MLlibDescr classifier_opencv;
+  classifier_opencv.LibName = "UOpenCvClassifier";
+  classifier_opencv.LibConfigFileTagName = "";
+  classifier_opencv.LibScriptFileTagName = "";
+  classifier_opencv.LibWeightFileTagName = "ModelPath";
+  classifier_opencv.LibClassCountTagName = "NumClasses";
+  file_tags["UOpenCvClassifier"] = classifier_opencv;
+  component_classes.push_back("UOpenCvClassifier");
+  MLlibDescr detector_opencv;
+  detector_opencv.LibName = "UOpenCvDetector";
+  detector_opencv.LibConfigFileTagName = "ConfigPath";
+  detector_opencv.LibScriptFileTagName = "";
+  detector_opencv.LibWeightFileTagName = "ModelPath";
+  detector_opencv.LibClassCountTagName = "";
+  file_tags["UOpenCvDetector"] = detector_opencv;
+  component_classes.push_back("UOpenCvDetector");
+
+
+  CaptureLibDescr opencv_videocapture;
+  opencv_videocapture.LibName = "TCaptureOpenCV";
+  opencv_videocapture.LibFrameIdStateName = "FramePosition";
+  opencv_videocapture.LibCaptureStateTagName = "CaptureState";
+  capture_tags["TCaptureOpenCV"] = opencv_videocapture;
+
+  CaptureLibDescr imseq_capture;
+  imseq_capture.LibName = "TCaptureImageSequence";
+  imseq_capture.LibFrameIdStateName = "FramePosition";
+  imseq_capture.LibCaptureStateTagName = "CaptureState";
+  capture_tags["TCaptureImageSequence"] = imseq_capture;
+
 }
 UProjectDeployerQt::~UProjectDeployerQt(void)
 {
@@ -855,8 +1122,9 @@ bool UProjectDeployerQt::DestroyProcessingThread()
     return false;
 }
 
-int UProjectDeployerQt::StartProjectDeployment(int task_id)
+int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
 {
+ task_id = deploy_task_id;
  int ds = GetDeploymentState();
  if(ds!=DeploymentState::DS_NULL)
  {
@@ -914,7 +1182,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  //Извлеаем последовательно данные о том, где должны располагаться распакованные файлы
  //Сначала проект
- q.prepare("SELECT project_name, project_file, project_model, project_params, project_interface FROM vid_an.projects WHERE project_id="+QString::number(task_template_id)+";");
+ q.prepare("SELECT project_name, project_file FROM vid_an.projects WHERE project_id="+QString::number(task_template_id)+";");
  q.exec();
  q.first();
  if(!q.isValid())
@@ -925,9 +1193,6 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  task_template_name = q.value(0).toString();
  task_template_path = q.value(1).toString();
- QString task_template_model = q.value(2).toString();
- QString task_template_params = q.value(3).toString();
- QString task_template_interface = q.value(4).toString();
 
  q.finish();
  q.clear();
@@ -936,16 +1201,12 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  QString abs_template_file = task_template_path;
  abs_template_file.replace("{Database}", database_path);
- QString abs_template_model = task_template_model;
- abs_template_model.replace("{Database}", database_path);
- QString abs_template_params = task_template_params;
- abs_template_params.replace("{Database}", database_path);
- QString abs_template_interface = task_template_interface;
- abs_template_interface.replace("{Database}", database_path);
 
- QFile t_file(abs_template_file), t_model(abs_template_model), t_params(abs_template_params), t_interf(abs_template_interface);
+ QFileInfo t_file(abs_template_file);
 
- if(!t_file.exists() || !t_model.exists() || !t_params.exists() || !t_interf.exists())
+ task_template_file_name = t_file.fileName();
+
+ if(!t_file.exists())
  {
      task_template_download_required = true;
  }
@@ -953,15 +1214,6 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
  {
      task_template_download_required = false;
  }
-
- QFileInfo qfi(abs_template_file);
-
- /*
- QString task_template_destination_directory = qfi.filePath();
-
- QString ftp_main_path = "";//Application->MainFtpPath().c_str();
- QString ftp_template_zip_path = QString(task_template_destination_directory+".zip").replace(database_path, ftp_main_path);*/
-
 
  q.prepare("SELECT weight_path, weight_confpath, weight_numcls, weight_in_W, weight_in_H, weight_out_format, weight_script FROM vid_an.weights WHERE weight_id="+QString::number(task_weights_id)+";");
  q.exec();
@@ -975,7 +1227,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
 
  task_weights_path = q.value(0).toString();
  QString weights_conf_path = q.value(1).toString();
- int weights_num_cls = q.value(2).toInt();
+ weights_classes_number = q.value(2).toInt();
  int weights_in_W = q.value(3).toInt();
  int weights_in_H = q.value(4).toInt();
  QString weights_out_format = q.value(5).toString();
@@ -1006,35 +1258,54 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      task_weights_download_required = false;
  }
 
- q.prepare("SELECT script_path FROM vid_an.scripts WHERE script_id="+QString::number(task_script_id)+";");
- q.exec();
- q.first();
- if(!q.isValid())
+ if(task_script_id==0 || task_script_id==-1)
  {
-    lastError = "Script query by script id invalid";
-     return 6;
- }
- task_script_path = q.value(0).toString();
- absolute_script_file = task_script_path;
- absolute_script_file.replace("{Database}", database_path);
- QFileInfo fi_script_path(absolute_script_file);
-
- q.finish();
- q.clear();
-
- if(!fi_script_path.exists())
- {
-     task_script_download_required=true;
-     //task_script_zip_url = QString(fi_script_path.filePath()+".zip").replace(database_path, ftp_main_path).toUtf8().constData();
+    task_script_download_required=false;
+    task_script_path="";
  }
  else
  {
-     task_script_download_required=false;
- }
+     q.prepare("SELECT script_path,script_name FROM vid_an.scripts WHERE script_id="+QString::number(task_script_id)+";");
+     q.exec();
+     q.first();
+     if(!q.isValid())
+     {
+        lastError = "Script query by script id invalid";
+        QString s = q.lastError().text();
+         return 6;
+     }
+     task_script_path = q.value(0).toString();
+     QString script_name = q.value(1).toString();
 
+     //TODO: Do something if dummy id change
+     if(task_script_id==2 && script_name=="NoScript")
+     {
+        task_script_download_required=false;
+        task_script_path="";
+     }
+     else
+     {
+         absolute_script_file = task_script_path;
+         absolute_script_file.replace("{Database}", database_path);
+         QFileInfo fi_script_path(absolute_script_file);
+
+         q.finish();
+         q.clear();
+
+         if(!fi_script_path.exists())
+         {
+             task_script_download_required=true;
+             //task_script_zip_url = QString(fi_script_path.filePath()+".zip").replace(database_path, ftp_main_path).toUtf8().constData();
+         }
+         else
+         {
+             task_script_download_required=false;
+         }
+     }
+ }
  if(task_src_type==0) //video file
  {
-     q.prepare("SELECT video_relpath FROM vid_an.videos WHERE video_id="+QString::number(task_src_id)+";");
+     q.prepare("SELECT video_relpath,video_frlen FROM vid_an.videos WHERE video_id="+QString::number(task_src_id)+";");
      q.exec();
      q.first();
      if(!q.isValid())
@@ -1043,6 +1314,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
          return 7;
      }
      task_src_path = q.value(0).toString();
+     task_src_frame_length = q.value(0).toInt();
      task_src_fullpath = task_src_path;
      task_src_fullpath.replace("{Database}", database_path);
      QFileInfo qfi_src_file(task_src_fullpath);
@@ -1067,7 +1339,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
          return 8;
      }
      task_src_path = q.value(0).toString();
-     int frame_length = q.value(1).toInt();
+     task_src_frame_length = q.value(1).toInt();
      task_src_fullpath = task_src_path;
      task_src_fullpath.replace("{Database}", database_path);
      //QFileInfo qfi_src_file(abs_src_path);
@@ -1075,7 +1347,7 @@ int UProjectDeployerQt::StartProjectDeployment(int task_id)
      if(seq_dir.exists())
      {
          QStringList ldr = seq_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
-         if(ldr.size()>=frame_length)
+         if(ldr.size()>=task_src_frame_length)
          {
              task_src_download_required = false;
          }
@@ -1281,6 +1553,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     {
         response = "Project deployment is not opened, can't start preparations";
         lastError=response;
+        preparationResult=1;
         return 1;
     }
     this->deploymentState = DS_CopyProject;
@@ -1289,6 +1562,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during copying";
         lastError=response;
+        preparationResult=1;
         return 1;
     }
     this->deploymentState=DS_PrepareProject;
@@ -1297,6 +1571,14 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during opening in mock mode";
         lastError=response;
+        preparationResult=1;
+        return 1;
+    }
+    std::string bug_string="";
+    if(AnalyzeLogForErrors(bug_string)>=0)
+    {
+        lastError="Mock open error: "+bug_string;
+        preparationResult=1;
         return 1;
     }
     if(SetupProjectMockParameters()!=0)
@@ -1304,6 +1586,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during mock parameters setup";
         lastError=response;
+        preparationResult=1;
         return 1;
     }
     if(CloseMockProject()!=0)
@@ -1311,12 +1594,67 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         this->deploymentState=DS_Error;
         response = "error during mocked project closing";
         lastError=response;
+        preparationResult=1;
+        return 1;
+    }
+    if(AnalyzeLogForErrors(bug_string)>=0)
+    {
+        lastError="Mock open error: "+bug_string;
+        preparationResult=1;
         return 1;
     }
     this->deploymentState=DS_ProjectPrepared;
     response = "project prepared successfully";
     lastError=response;
+    preparationResult=0;
     return 0;
+}
+
+int UProjectDeployerQt::AnalyzeLogForErrors(std::string &problem_string)
+{
+    std::list<std::string> gui_unsent_log = Application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
+
+    for(std::string log_entry: gui_unsent_log)
+    {
+        QString msg_line = log_entry.c_str();
+        //Take string and split into parts
+        int sys_info_end = msg_line.indexOf("] ", 0)+1;//index of first space of message
+
+        if(sys_info_end>=0)
+        {
+            //Process line taking into account lines saved previously
+            QString sys_info_line = msg_line.left(sys_info_end);
+            QString message_data = msg_line.right(msg_line.length()-sys_info_end);
+            QStringList str_parts = sys_info_line.split(" ");
+
+            //QString src_info = str_parts[0];
+            //src_info = src_info.replace(">", "").trimmed();
+            //QString date_info = str_parts[1];
+            //QString time_info = str_parts[2];
+            QString error_level_i = str_parts[3];
+            int error_level = error_level_i.replace(">", "").trimmed().toInt();
+            //QString error_level_s = str_parts[4];
+            //Unknown, Fatal, Error levels
+            if(error_level>=0 && error_level<=2)
+            {
+                //std::cerr<<message_data.toUtf8().constData()<<"\n\n";
+                problem_string = message_data.toUtf8().constData();
+                //Found fatal error, nothing needed to read any longer
+                return error_level;
+            }
+        }
+
+    }
+
+   //std::string log_path = Application->Get
+   problem_string = "No error occured";
+   return -1;
+}
+
+int UProjectDeployerQt::GetPreparationResult(std::string &response)
+{
+    response=lastError;
+    return preparationResult;
 }
 
 ///Открыть подготовленный проект
@@ -1333,10 +1671,17 @@ int UProjectDeployerQt::OpenPreparedProject(std::string &response)
     //RDK::Sleep(3);
     Application->SetStorageBuildMode(1);
     QString pdpath = GetTempProjectDeploymentPath().c_str();
-    QString project_path = pdpath+"/project_full.ini";
+    QString project_path = pdpath+"/"+task_template_file_name;
     if(!Application->OpenProject(project_path.toUtf8().constData()))
     {
         lastError="UApplication OpenProject normally error";
+        response = lastError;
+        return 1;
+    }
+
+    if(AnalyzeLogForErrors(response)>=0)
+    {
+        lastError=response;
         return 1;
     }
     ////
@@ -1389,7 +1734,7 @@ int UProjectDeployerQt::OpenProjectMockMode()
     //Это у нас заглушки вместо компонентов
     Application->SetStorageBuildMode(3);
     QString pdpath = GetTempProjectDeploymentPath().c_str();
-    QString project_path = pdpath+"/project_full.ini";
+    QString project_path = pdpath+"/"+task_template_file_name;
     if(!Application->OpenProject(project_path.toUtf8().constData()))
     {
         lastError="UApplication OpenProject Mock Components error";
@@ -1403,7 +1748,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
 {
     RDK::Sleep(3);
 
-    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(0);
+    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(0);
 
     if(!model) return 1;
 
@@ -1424,6 +1769,8 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             lastError="Model does not contain video data source, fix project file/task parameters";
             return 1;
         }
+        capture_class_name = "TCaptureOpenCV";
+        capture_component_name = vid_names[0];
         video_cont = model->GetComponentL(vid_names[0]);
         bool *video_Activity = video_cont->AccessPropertyData<bool>("Activity");
         bool *video_EnableCapture = video_cont->AccessPropertyData<bool>("EnableCapture");
@@ -1458,6 +1805,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             imseq_cont = model->GetComponentL(imseq_names[0]);
             bool *act = imseq_cont->AccessPropertyData<bool>("Activity");
             //TODO: Brake wrong link
+            model->BreakAllOutgoingLinks(imseq_names[0]);
             *act = false;
         }
     }
@@ -1470,6 +1818,8 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             return 1;
         }
 
+        capture_class_name = "TCaptureImageSequence";
+        capture_component_name = imseq_names[0];
         imseq_cont = model->GetComponentL(imseq_names[0]);
         bool *imseq_Activity = imseq_cont->AccessPropertyData<bool>("Activity");
         std::string *imseq_Path = imseq_cont->AccessPropertyData<std::string>("Path");
@@ -1495,6 +1845,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
             video_cont = model->GetComponentL(vid_names[0]);
             bool *act = video_cont->AccessPropertyData<bool>("Activity");
             //TODO: Brake wrong link
+            model->BreakAllOutgoingLinks(vid_names[0]);
             *act = false;
         }
     }
@@ -1540,17 +1891,25 @@ int UProjectDeployerQt::SetupProjectMockParameters()
     neural_cont = model->GetComponentL(components_names[0]);
 
     bool *nn_Activity = neural_cont->AccessPropertyData<bool>("Activity");
-    std::string *nn_ScriptFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibScriptFileTagName.c_str());
+    std::string *nn_ScriptFile;
+    if(file_tags[class_name].LibScriptFileTagName!="")
+        nn_ScriptFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibScriptFileTagName.c_str());
     std::string *nn_WeightsFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibWeightFileTagName.c_str());
     std::string *nn_ConfigFile;
+    int *nn_ClassCount;
     if(file_tags[class_name].LibConfigFileTagName!="")
         nn_ConfigFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibConfigFileTagName.c_str());
 
+    if(file_tags[class_name].LibClassCountTagName!="")
+        nn_ClassCount = neural_cont->AccessPropertyData<int>(file_tags[class_name].LibClassCountTagName.c_str());
     *nn_Activity = true;
-    *nn_ScriptFile = absolute_script_file.toUtf8().constData();
+    if(file_tags[class_name].LibScriptFileTagName!="")
+        *nn_ScriptFile = absolute_script_file.toUtf8().constData();
     *nn_WeightsFile = absolute_weights_file.toUtf8().constData();
     if(file_tags[class_name].LibConfigFileTagName!="")
         *nn_ConfigFile = absolute_config_file.toUtf8().constData();
+    if(file_tags[class_name].LibClassCountTagName!="")
+        *nn_ClassCount = weights_classes_number;
 
     return 0;
 }
@@ -1564,17 +1923,215 @@ int UProjectDeployerQt::CloseMockProject()
     return 0;
 }
 
+QString UProjectDeployerQt::GetTimeStampInPSqlFormat(const QDateTime &now)
+{
+    QString datetime = now.toString("yyyy-MM-dd hh:mm:ss");
+    int offset_secs = now.offsetFromUtc();
+    int offset_hours = offset_secs/3600;
+    QString offset = (offset_hours>0)?("+"+QString::number(offset_hours).rightJustified(2, '0')):(QString::number(offset_hours).rightJustified(2, '0'));
+    return (datetime+offset);
+}
+
+/// Запустить подготовленный проект
+int UProjectDeployerQt::RunPreparedProject()
+{
+    //Сюда еще пойдет всякая херня типа сохранения даты и прочего, но это потом
+    processing_start_datetime = QDateTime::currentDateTime();
+    Application->StartChannel(-1);
+    deploymentState = DS_Calculation;
+    return 0;
+}
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+int UProjectDeployerQt::GetCalculationState()
+{
+    std::vector<UEngineStateThread::UCalcState> thread_states = Application->GetEngineControl()->GetEngineStateThread()->ReadCalcThreadStates();
+    if(thread_states.empty())
+    {
+        lastError = "Calculation threads empty!";
+        return -1;
+    }
+    if(thread_states.size()>1)
+    {
+        lastError = "More than one calculation threads in solver!";
+        return -1;
+    }
+    UEngineStateThread::UCalcState &state = thread_states[0];
+    return state;
+}
+
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата (по состояниям, либо 10000 - захват закончил работу)
+///
+/// @frame_id - индекс текущего кадра
+bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id)
+{
+    if(capture_class_name=="")
+    {
+       state=-1;
+       frame_id=-1;
+       max_frame_id=-1;
+       lastError = "Capture class name indefined";
+       return false;
+    }
+
+    if(capture_component_name=="")
+    {
+       state=-1;
+       frame_id=-1;
+       max_frame_id=-1;
+       lastError = "Capture component name indefined";
+       return false;
+    }
+
+    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(0);
+
+    if(!model)
+    {
+       state=-1;
+       frame_id=-1;
+       max_frame_id=-1;
+       lastError = "RTVModel access error";
+       return false;
+    }
+
+    RDK::UEPtr<RDK::UContainer> capture_container;
+    capture_container = model->GetComponentL(capture_component_name);
+
+    CaptureLibDescr &lib_descr = capture_tags[capture_class_name];
+    if(lib_descr.LibName!=capture_class_name)
+    {
+       state=-1;
+       frame_id=-1;
+       lastError = "Capture class description access error";
+       return false;
+    }
+
+    int *capture_state = capture_container->AccessPropertyData<int>(lib_descr.LibCaptureStateTagName.c_str());
+    unsigned long long *fr_id = capture_container->AccessPropertyData<unsigned long long>(lib_descr.LibFrameIdStateName.c_str());
+
+    if(capture_state)
+        state=*capture_state;
+
+    if(lib_descr.LibFrameIdStateName!="")
+        frame_id=*fr_id;
+
+    max_frame_id = task_src_frame_length;
+    return true;
+}
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+bool UProjectDeployerQt::ProcessCalculationLog(std::string &error)
+{
+    int error_index = AnalyzeLogForErrors(error);
+    if(error_index>=0)
+    {
+        lastError = error;
+        return false;
+    }
+    error="No log errors";
+    return true;
+}
 
 
+///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+bool UProjectDeployerQt::FinishCalculation()
+{
+    //0. Зафиксировать время закрытия проекта
+    //Вообще говоря, не предполагается что мы будем делать это 10 раз, но
+    // потом возможно стоит как-то хранить время РЕАЛЬНОГО конца работы проекта
+    processing_end_datetime = QDateTime::currentDateTime();
+    //1. Закрыть проект
+    Application->CloseProject();
+    //2. Прочекать закрытие на ошибки
+    std::string err="";
+    int err_log_res = AnalyzeLogForErrors(err);
+    deploymentState = DS_ProjectClosed;
+    if(err_log_res>=0)
+    {
+        lastError = "Close project log error: "+err;
+        return false;
+    }
+    return true;
+}
 
+///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
+/// запустить процесс упаковки и отправки данных в удаленное хранилище
+bool UProjectDeployerQt::UploadCalculationResults()
+{
+    //Если расчет по нормальному завершить не получилось, то эта функция не вызовется
+    //не знаю, насколько это логично...
 
+    //Проект закрыт
+    //1. Проанализировать папку с результатами
+    QString pdpath = GetTempProjectDeploymentPath().c_str();
+    QString results_dir_path = pdpath+"/"+"Results";
+    QDir results_dir(results_dir_path);
+    QString results_path="";
 
-/// Читает входящие байты из выбранного источника, контекст привязки
-/// всегда определяется строкой вне зависимости от типа транспорта
-//int UProjectDeployerQt::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
-//{
+    if(results_dir.exists())
+    {
+        QStringList rd_contents = results_dir.entryList(QDir::Filter::NoDotAndDotDot);
+        if(rd_contents.size()>0)
+        {
+            //Сформируем путь
+            QString db_path = Application->GetDatabaseMainPath().c_str();
+            QString relative_database_res_path = "{Database}/Results";//Потенциально задавать извне?
+            QString main_database_res_path = relative_database_res_path;
+            main_database_res_path.replace("{Database}", db_path);
+            QDir main_database_res_dir(main_database_res_path);
+            if(!main_database_res_dir.exists())
+            {
+                main_database_res_dir.mkpath(main_database_res_dir.path());
+            }
+            QString task_dir_path = main_database_res_path+"/"+QString::number(task_id);
+            QDir task_dir(task_dir_path);
+            if(!task_dir.exists())
+            {
+                task_dir.mkpath(task_dir.path());
+            }
+            QString run_start_time_str = GetTimeStampInPSqlFormat(processing_start_datetime);
+            run_start_time_str.replace(":", "-");
+            run_start_time_str.replace("+", " ");
+            QString results_destination_dir_path = task_dir_path+"/"+run_start_time_str;
+            QDir results_destination_dir(results_destination_dir_path);
 
-//}
+            if(results_destination_dir.exists())
+            {
+                int index=1;
+                while(results_destination_dir.exists())
+                {
+                    QString new_dest_dir_path = results_destination_dir_path+"_"+QString::number(index);
+                    results_destination_dir.setPath(new_dest_dir_path);
+                    index+=1;
+                }
+                results_destination_dir_path = results_destination_dir_path+"_"+QString::number(index);
+            }
 
+            results_destination_dir.mkpath(results_destination_dir.path());
+            QString relative_results_destination_dir_path = results_destination_dir_path;
+            relative_results_destination_dir_path.replace(db_path, "{Database}");
+            //Задать параметры потока
+            //Переключить состояние (?)
+            //Стартовать поток
+        }
+        else
+        {
+            deploymentState = DS_UploadFinished;
+        }
+    }
+    else
+    {
+        deploymentState = DS_UploadFinished;
+    }
+}
+
+///Аккуратное закрытие солвера, команда которая по идее должна инициировать
+/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+bool UProjectDeployerQt::CloseSolver()
+{
+
+}
 
 }//namespace RDK

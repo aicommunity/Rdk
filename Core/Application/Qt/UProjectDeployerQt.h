@@ -26,11 +26,27 @@ struct MLlibDescr
  std::string LibScriptFileTagName;  //Тэг файла скрипта
  std::string LibWeightFileTagName;  //Тэг файла весов
  std::string LibConfigFileTagName;  //Тэг файла конфигурации
+ std::string LibClassCountTagName;  //Тэг количества классов в библиотеке
  MLlibDescr(){
  LibName="";
  LibScriptFileTagName="";
  LibWeightFileTagName="";
  LibConfigFileTagName="";
+ LibClassCountTagName="";
+ }
+};
+
+struct CaptureLibDescr
+{
+ std::string LibName;
+ std::string LibFrameIdStateName;
+ std::string LibCaptureStateTagName;
+
+
+ CaptureLibDescr(){
+ LibName="";
+ LibFrameIdStateName="";
+ LibCaptureStateTagName="";
  }
 };
 
@@ -74,6 +90,12 @@ enum DeploymentState
     DS_ProjectPrepared=13,
     DS_OpenProject=14,
     DS_ProjectOpened=15,
+    DS_Calculation=16,
+    DS_ProjectClosed=17,
+    DS_CopyResults=18,
+    DS_PackResults=19,
+    DS_UploadResults=20,
+    DS_UploadFinished=21,
     DS_Error=100
 };
 
@@ -154,6 +176,55 @@ private:
     CURLcode res;
 };
 
+class RDK_LIB_TYPE UProjectResultsUploadingThread: public QThread
+{
+Q_OBJECT
+
+public:
+     UProjectResultsUploadingThread();
+    ~UProjectResultsUploadingThread();
+
+    void run() override;
+
+    void SetProjectResultsDirPath(const QString& results_dir);
+    QString GetProjectResultsDirPath();
+
+    void SetStorageResultsDirPath(const QString& results_dir);
+    QString GetStorageResultsDirPath();
+
+    void SetDatabasePath(const QString& database_path);
+    QString GetDatabasePath();
+
+    void SetRemoteFtpPath(const QString& ftp_path);
+    QString GetRemoteFtpPath();
+
+    QString GetLastError();
+    DeploymentState GetUploadState();
+
+private:
+    bool CopyResultsToDestinationDir();
+    bool ZipResults();
+    bool UploadResultsViaFtp();
+
+    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dts_dir_path);
+
+private slots:
+    void processReadyReadStandardError();
+    void processReadyReadStandardOutput();
+
+private:
+    QString projectResultsDir;
+    QString storageResultsDir;
+    QString databasePath;
+    QString remoteFtpPath;
+
+    QString lastError;
+    DeploymentState uploadState;
+
+    QProcess zip_process;
+
+};
+
 
 class RDK_LIB_TYPE UProjectDeployerQt: public UProjectDeployer
 {
@@ -164,13 +235,13 @@ protected: // Данные
 /// Указатель на экземпляр приложения
 QSqlDatabase *db;
 
-
-protected: // Параметры
+//protected: // Параметры
 
 protected: // Данные
 
 //Параметры задачи
-QString task_name; //Имя задачи
+QString task_name;     //Имя задачи
+int task_id;           //Индекс задачи (для копирования результатов/записи результатов в СУБД)
 int task_template_id;  //Индекс шаблона задачи
 int task_weights_id;   //Индекс весов
 int task_src_type;     //Тип источника изображений (0-видео, 1-набор изображений)
@@ -182,8 +253,9 @@ bool task_template_download_required;
 QString task_template_name;
 //Путь к шаблону (относительный)
 QString task_template_path;
-//Путь к ZIP шаблона, пока не требуем
-//std::string task_template_zip_url;
+//Имя файла проекта (project.ini, project_full.ini и тп) для открытия,
+// выяснилось, что они могут гулять
+QString task_template_file_name;
 
 //Подготовка весов
 //Путь к весам
@@ -192,10 +264,13 @@ QString task_weights_path;
 bool task_weights_download_required;
 //Надо ли грузить конфиг (скорее всего не надо, так как полная корреляция с весами ДБ
 bool task_weights_conf_download_required;
+//Число классов для настройки весов
+int weights_classes_number;
 //Путь к конфигурации - возможно не нужен
 QString task_weights_config_path;
-
+//Абсолютный путь к файлу конфигурации (нужен для настройки проекте)
 QString absolute_config_file;
+//Абсолютный путь к файлу весов (нужен для настройки проекте)
 QString absolute_weights_file;
 //Уберем пока
 //std::string task_weights_zip_url;
@@ -208,43 +283,55 @@ int task_script_id;
 QString task_script_path;
 //Нужна ли загрузка скрипта
 bool task_script_download_required;
+//Абсолютный путь к файлу скрипта
 QString absolute_script_file;
-//Архив уберем пока
-//std::string task_script_zip_url;
 
 //Подготовка источника изображений
 //Путь к источнику (с учетом того что тип уже известен)
 QString task_src_path;
+//Полный путь к источнику (для настройки)
 QString task_src_fullpath;
 //Надо ли загружать
 bool task_src_download_required;
 //Путь к архиву (не факт что нужен именно тут)
 QString task_src_zip_url;
-
+//Временный путь для загрузки (пока что в {Database}/Temp по умолчанию)
 QString download_temp_path;
+//Количество кадров в источнике (по данным СУБД,
+// потому что там посчитано руками и обычно точнее)
+int task_src_frame_length;
 
+//Указатель на поток деплоя с FTP
 UProjectDeployProcessingThread *deployProcessingThread;
 
+//Последняя ошибка в режиме доставки/открытия/настройки/запуска/закрытия
 std::string lastError;
 
+//Результат подготовки проекта
+//альтернативный результат для получения через GetPreparationResult
+int preparationResult;
+
+//Состояние деплоймента
 DeploymentState deploymentState;
 
-//Что где куда искать/менять
+//Параметры настройки компонентов в зависимости
+// от типа (заполняется в конструкторе)
 std::map<std::string, MLlibDescr> file_tags;
 std::vector<std::string> component_classes;
 
-/*
-//Дубликация?
-//Пути к проекту (вар-т 1)
-std::string project_path;
-std::string project_url;
+std::map<std::string, CaptureLibDescr> capture_tags;
+//Это не точно нужно
+//std::vector<std::string> capture_classes;
 
-//Параметры проекта
-int project_gt_id;
-int project_sln_id;
-int project_weigts_id;
-int project_script_id;
-*/
+//Параметры класса и имени захвата для дальнейшей работы
+std::string capture_class_name;
+std::string capture_component_name;
+
+//Дата и время для добавления в таблицу
+QDateTime processing_start_datetime;
+QDateTime processing_end_datetime;
+
+UProjectResultsUploadingThread *projectResultsUploadingThread;
 
 protected://Методы
 
@@ -254,31 +341,59 @@ bool DestroyProcessingThread();
 public: // Методы
 
 ///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
-virtual int StartProjectDeployment(int task_id);
+virtual int StartProjectDeployment(int deploy_task_id);
 
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
 /// 2. Открыть в тестовом режиме и настроить пути и связи?
 /// 3. Закрыть
 virtual int PrepareProject(std::string &response);
+/// Получить результат подготовки проекта
+virtual int GetPreparationResult(std::string &response);
 ///Открыть подготовленный проект
 virtual int OpenPreparedProject(std::string &response);
+/// Запустить подготовленный проект
+virtual int RunPreparedProject();
 
-
-///Создать и настроить соединение с СУБД
-//virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
-//virtual void SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id);
-
+///То место где реально идет коннект к базе
+/// попытка сделать аналог той структуры через А, А2
+/// как в остальной либе (не оч удачная)
 virtual void AConnectToDatabase();
 
+/// Получить состояние деплоймента
 virtual int GetDeploymentState();
+/// Получить максимум прогресса
 virtual int GetStageCap();
+/// Получить текущее состояние прогресса
 virtual int GetStageProgress();
+/// Получить последнюю ошибку
 virtual std::string GetLastError();
+/// Получить имя файла проекта (кстати, зачем?)
 virtual std::string GetProjectFileName();
+
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+virtual int GetCalculationState();
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата
+/// @frame_id - индекс текущего кадра
+virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+virtual bool ProcessCalculationLog(std::string &error);
+///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+virtual bool FinishCalculation();
+///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
+/// запустить процесс упаковки и отправки данных в удаленное хранилище
+virtual bool UploadCalculationResults();
+///Аккуратное закрытие солвера, команда которая по идее должна инициировать
+/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+virtual bool CloseSolver();
 
 public: // Методы доступа к данным
 
+/// Получить ссылку на базу данных
 QSqlDatabase *GetDatabase() {return db;};
 
 // --------------------------
@@ -304,26 +419,18 @@ int CloseMockProject();
 /// (пока мб сразу в основной функции)
 //int OpenPreparedProject();
 
+/// Проанализировать лог на предмет наличия ошибок
+/// высокого уровня (0-2, Unknown, Fatal, Error)
+/// возвращает: -1 - нет ошибок, 0-2 - уровень ошибки
+int AnalyzeLogForErrors(std::string &problem_string);
+
+QString GetTimeStampInPSqlFormat(const QDateTime &now);
+
 
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта
 //virtual int ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }//namespace RDK
 #endif

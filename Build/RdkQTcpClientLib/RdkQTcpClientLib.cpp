@@ -601,10 +601,71 @@ int Rpc_PrepareProject(int server_index, const char* &verbose_response, int time
     return ProcessSimpleCommand("PrepareProject", server_index, -1, timeout, request, response);
 }
 
- int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout)
+int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, int timeout)
  {
     RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("GetPreparationResult", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    QString qs = res_string.c_str();
+    QStringList spl = qs.split("|");
+    int rs = spl[0].trimmed().toInt();
+    verbose_response = spl[1].toUtf8().constData();
+
+    if(res)
+     return res;
+}
+
+int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout)
+{
+    RDK::USerStorageXML request,response;
     return ProcessSimpleCommand("OpenPreparedProject", server_index, -1, timeout, request, response);
+}
+
+int Rpc_RunPreparedProject(int server_index, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    return ProcessSimpleCommand("RunPreparedProject", server_index, -1, timeout, request, response);
+}
+
+int Rpc_GetCalculationState(int server_index,
+                            int& calculation_state,
+                            int& capture_state,
+                            unsigned long long& capture_frid,
+                            unsigned long long& capture_maxfrid,
+                            const char* &message,
+                            int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("GetCalculationState", server_index, -1, timeout, request, response);
+
+    if(res==0)
+    {
+        std::string res_string = response.ReadString("Data", "").c_str();
+        QString qsl = res_string.c_str();
+        if(qsl.length()>0)
+        {
+            QStringList spl = qsl.split("|");
+            if(spl.size()==5)
+            {
+                calculation_state = spl[0].toInt();
+                capture_state = spl[1].toInt();
+                capture_frid = spl[2].toInt();
+                capture_maxfrid = spl[3].toInt();
+                QString msg = spl[4];
+                message = msg.toUtf8().constData();
+            }
+            else
+            {
+                std::string s = "Wrong result: '" + res_string + "'";
+                message = s.c_str();
+            }
+        }
+    }
+    return res;
 }
 
 

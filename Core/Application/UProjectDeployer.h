@@ -61,8 +61,12 @@ virtual int StartProjectDeployment(int task_id);
 /// 2. Открыть в тестовом режиме и настроить пути и связи?
 /// 3. Закрыть
 virtual int PrepareProject(std::string &response);
+/// Получить результат подготовки проекта
+virtual int GetPreparationResult(std::string &response);
 ///Открыть подготовленный проект
 virtual int OpenPreparedProject(std::string &response);
+///Запустить подготовленный проект
+virtual int RunPreparedProject();
 
 ///Задать пар-ры конннекта к СУБД
 virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
@@ -82,6 +86,30 @@ virtual void SetFtpRemotePath(const std::string &path);
 virtual void SetTempProjectDeploymentPath(const std::string &path);
 
 virtual std::string GetTempProjectDeploymentPath();
+
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+virtual int GetCalculationState();
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата
+/// @frame_id - индекс текущего кадра
+virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+virtual bool ProcessCalculationLog(std::string &error);
+///Возвращает true если обработка ролика/набора кадров по мнению деплоера
+/// на переданном кадре закончена и false если нет
+//virtual bool CaptureProcessingFinished(int frame_number);
+///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+virtual bool FinishCalculation() {return false;};
+///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
+/// запустить процесс упаковки и отправки данных в удаленное хранилище
+virtual bool UploadCalculationResults() {return false;};
+///Аккуратное закрытие солвера, команда которая по идее должна инициировать
+/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+virtual bool CloseSolver() {return false;};
+
 
 // --------------------------
 // Конструкторы и деструкторы
