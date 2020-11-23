@@ -2125,13 +2125,14 @@ bool UProjectDeployerQt::UploadCalculationResults()
     {
         deploymentState = DS_UploadFinished;
     }
+ return true;
 }
 
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 bool UProjectDeployerQt::CloseSolver()
 {
-
+ return true;
 }
 
 }//namespace RDK
