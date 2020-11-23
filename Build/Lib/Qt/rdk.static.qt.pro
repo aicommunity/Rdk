@@ -27,6 +27,7 @@ DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
     ../../../Core/Engine/UBasePropCreator.cpp \
+    ../../../Core/Engine/UBasePropCreatorStd.cpp \
     ../../../Core/Engine/UBasePropCreatorMatrix.cpp \
     ../../../Core/Engine/UBasePropCreatorTempl.cpp \
     ../../../Core/Engine/UBasePropCreatorVector.cpp \
@@ -161,6 +162,7 @@ SOURCES += \
 
 HEADERS +=\
     ../../../Core/Engine/UBasePropCreator.h \
+    ../../../Core/Engine/UBasePropCreatorStd.h \
     ../../../Core/Engine/UBasePropCreatorMatrix.h \
     ../../../Core/Engine/UBasePropCreatorTempl.h \
     ../../../Core/Engine/UBasePropCreatorVector.h \
