@@ -121,4 +121,13 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout);
                             const char* &message,
                             int timeout);
 
+ int Rpc_FinishCalculation(int server_index, bool& result, const char* &last_error, int timeout);
+
+ int Rpc_UploadCalculationResults(int server_index, bool& result, const char* &last_error, int timeout);
+
+ int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_error, int timeout);
+
+ int Rpc_CloseSolver(int server_index, bool& result, const char* &last_error, int timeout);
+
+
 #endif // RDKQTCPCLIENTLIB_H

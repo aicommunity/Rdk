@@ -827,23 +827,25 @@ DeploymentState UProjectResultsUploadingThread::GetUploadState()
 
 void UProjectResultsUploadingThread::run()
 {
+    uploadState = DS_CopyResults;
     if(!CopyResultsToDestinationDir())
     {
         uploadState = DS_Error;
         return;
     }
-
+    uploadState = DS_PackResults;
     if(!ZipResults())
     {
         uploadState = DS_Error;
         return;
     }
-
+    uploadState = DS_UploadResults;
     if(!UploadResultsViaFtp())
     {
         uploadState = DS_Error;
         return;
     }
+    uploadState = DS_UploadFinished;
 }
 
 bool UProjectResultsUploadingThread::CopyResultsToDestinationDir()
@@ -2070,6 +2072,12 @@ bool UProjectDeployerQt::UploadCalculationResults()
     QDir results_dir(results_dir_path);
     QString results_path="";
 
+    if(deploymentState>=DS_DeployFinished)
+    {
+        lastError = "Upload finished already";
+        return false;
+    }
+
     if(results_dir.exists())
     {
         QStringList rd_contents = results_dir.entryList(QDir::Filter::NoDotAndDotDot);
@@ -2115,23 +2123,61 @@ bool UProjectDeployerQt::UploadCalculationResults()
             //Задать параметры потока
             //Переключить состояние (?)
             //Стартовать поток
+            if(projectResultsUploadingThread!=NULL)
+            {
+                delete projectResultsUploadingThread;
+            }
+            projectResultsUploadingThread = new UProjectResultsUploadingThread();
+            projectResultsUploadingThread->SetDatabasePath(db_path);
+            projectResultsUploadingThread->SetRemoteFtpPath(QString(ftp_remote_path.c_str()));
+            projectResultsUploadingThread->SetStorageResultsDirPath(results_dir_path);
+            projectResultsUploadingThread->SetStorageResultsDirPath(relative_results_destination_dir_path);
+            projectResultsUploadingThread->start();
+            lastError = "Upload started";
         }
         else
         {
+            lastError = "Upload skipped";
             deploymentState = DS_UploadFinished;
         }
     }
     else
     {
+        lastError = "Upload skipped";
         deploymentState = DS_UploadFinished;
     }
+    return true;
 }
 
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 bool UProjectDeployerQt::CloseSolver()
 {
+    return true;
+}
 
+///Получить состояние загрузки
+int UProjectDeployerQt::GetUploadState()
+{
+    if(projectResultsUploadingThread!=NULL)
+    {
+        if(projectResultsUploadingThread->isRunning())
+        {
+            int upl_state = projectResultsUploadingThread->GetUploadState();
+            this->lastError = std::string("Upload thread LE: ")+projectResultsUploadingThread->GetLastError().toUtf8().constData();
+            return upl_state;
+        }
+        else if(projectResultsUploadingThread->isFinished())
+        {
+            return DS_UploadFinished;
+        }
+    }
+    else
+    {
+        //Пока что по умолчанию предположим что деплоймент нормально отработает
+        //по окончании работы тут тоже будет верное состояние
+        return deploymentState;
+    }
 }
 
 }//namespace RDK

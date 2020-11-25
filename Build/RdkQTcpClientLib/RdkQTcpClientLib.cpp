@@ -668,4 +668,95 @@ int Rpc_GetCalculationState(int server_index,
     return res;
 }
 
+int Rpc_FinishCalculation(int server_index, bool& result, const char* &last_error, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("FinishCalculation", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|");
+        if(spl.size()>=2)
+        {
+            result = spl[0].trimmed().toInt();
+            last_error = spl[1].toUtf8().constData();
+        }
+    }
+    return res;
+}
+
+int Rpc_UploadCalculationResults(int server_index, bool& result, const char* &last_error, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("UploadCalculationResults", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|");
+        if(spl.size()>=2)
+        {
+            result = spl[0].trimmed().toInt();
+            if(!result)
+                last_error = spl[1].toUtf8().constData();
+        }
+    }
+    return res;
+}
+
+int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_error, int timeout)
+ {
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("GetUploadState", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|");
+        if(spl.size()>=2)
+        {
+            upload_state = spl[0].trimmed().toInt();
+            last_error = spl[1].toUtf8().constData();
+        }
+    }
+
+    if(res)
+     return res;
+}
+
+int Rpc_CloseSolver(int server_index, bool& result, const char* &last_error, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("CloseSolver", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|");
+        if(spl.size()>=2)
+        {
+            result = spl[0].trimmed().toInt();
+            if(!result)
+                last_error = spl[1].toUtf8().constData();
+        }
+    }
+    return res;
+}
 
