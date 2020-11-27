@@ -492,6 +492,7 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
     if(serstorage->SelectNode(paramname))
     {
      serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     serstorage->SetNodeAttribute("IoType",sntoa(I->second.Property->GetIoType()));
      serstorage->SelectUp();
 	}
    }
@@ -544,6 +545,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 	if(serstorage->SelectNode(paramname))
 	{
 	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     serstorage->SetNodeAttribute("IoType",sntoa(I->second.Property->GetIoType()));
 	 if(descr)
 	 {
 	  serstorage->SetNodeAttribute("Header",descr->GetPropertyDescription(paramname).Header);

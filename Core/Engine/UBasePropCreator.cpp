@@ -10,6 +10,4 @@ bool UBasePropCreator::BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMoc
  return BaseCrPropMockTempl<UBasePropCreator>(serstorage,mock_unet);
 }
 
-
-
 }

@@ -202,74 +202,9 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML*
     type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 
-    if(type == typeid(bool).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<bool> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(char).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<char> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned char).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned char> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(short).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<short> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned short).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned short> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(int).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned int).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned int> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<long long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned long long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(float).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<float> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
     if(type == typeid(double).name())
     {
         CreatorProperty<PropType, TypeInt, MDVector<double> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long double).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<long double> >::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 }
@@ -293,74 +228,14 @@ void UBasePropCreatorMatrix::CreatePropertyMDMatrix(RDK::USerStorageXML* serstor
 
 	std::string matrix_type = type;
 
-	if(type == typeid(bool).name())
-	{
-        CreatorProperty<PropType, TypeInt, MDMatrix<bool> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-		return;
-	}
-	if(type == typeid(char).name())
-	{
-        CreatorProperty<PropType, TypeInt, MDMatrix<char> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-	}
-	if(type == typeid(unsigned char).name())
-	{
-        CreatorProperty<PropType, TypeInt, MDMatrix<unsigned char> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-		return;
-	}
-	if(type == typeid(short).name())
-	{
-        CreatorProperty<PropType, TypeInt, MDMatrix<short> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned short).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<unsigned short> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
     if(type == typeid(int).name())
     {
         CreatorProperty<PropType, TypeInt, MDMatrix<int> >::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
-    if(type == typeid(unsigned int).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<unsigned int> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<unsigned long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<long long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<unsigned long long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(float).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<float> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
     if(type == typeid(double).name())
     {
         CreatorProperty<PropType, TypeInt, MDMatrix<double> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long double).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDMatrix<long double> >::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 }
@@ -384,74 +259,14 @@ void UBasePropCreatorMatrix::CreatePropertyMDVector(RDK::USerStorageXML* serstor
 
     std::string matrix_type = type;
 
-    if(type == typeid(bool).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<bool> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(char).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<char> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned char).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned char> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(short).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<short> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned short).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned short> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
     if(type == typeid(int).name())
     {
         CreatorProperty<PropType, TypeInt, MDVector<int> >::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
-    if(type == typeid(unsigned int).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned int> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<long long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(unsigned long long).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<unsigned long long> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(float).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<float> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
     if(type == typeid(double).name())
     {
         CreatorProperty<PropType, TypeInt, MDVector<double> >::CreatePropertyByType(serstorage,mock_unet, ptype);
-        return;
-    }
-    if(type == typeid(long double).name())
-    {
-        CreatorProperty<PropType, TypeInt, MDVector<long double> >::CreatePropertyByType(serstorage,mock_unet, ptype);
         return;
     }
 }
