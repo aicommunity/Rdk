@@ -2072,7 +2072,7 @@ bool UProjectDeployerQt::UploadCalculationResults()
     QDir results_dir(results_dir_path);
     QString results_path="";
 
-    if(deploymentState>=DS_DeployFinished)
+    if(deploymentState>=DS_UploadFinished)
     {
         lastError = "Upload finished already";
         return false;

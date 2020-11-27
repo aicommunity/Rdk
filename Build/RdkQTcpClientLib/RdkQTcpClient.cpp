@@ -7,7 +7,7 @@ RdkQTcpThread::RdkQTcpThread()
 }
 
 RdkQTcpThread::RdkQTcpThread(QTcpSocket *socket, RDK::UTransferReader &packetReader, bool CreateSuspended, QObject *parent):
-_socket(socket), QThread(parent), PacketReader(&packetReader)
+_socket(socket), QThread(parent), PacketReader(&packetReader), Terminated(false)
 {
  CalcEnable = UCreateEvent(true);
  CalcStarted = UCreateEvent(true);
@@ -46,7 +46,7 @@ void RdkQTcpThread::AfterCalculate(void)
 
 void RdkQTcpThread::run()
 {
-    while(isRunning()) //???
+    while(!Terminated) //???
     {
      //if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
      // continue;
@@ -160,6 +160,12 @@ void RdkQTcpThread::run()
     }
 }
 
+void RdkQTcpThread::MarkForDeletion()
+{
+    //connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+    Terminated = true;
+}
+
 //=====================================================================================================
 
 
@@ -167,7 +173,9 @@ RdkQTcpClient::RdkQTcpClient()
 {
     //TODO: ѕроверить, действительно ли так должно быть?
     TcpSocket = new QTcpSocket();
-    Thread = new RdkQTcpThread(TcpSocket, PacketReader,false, this);
+    Thread = new RdkQTcpThread(TcpSocket, PacketReader,false, NULL);
+    connect(Thread, SIGNAL(finished()), this, SLOT(deleteLater()));
+
     Thread->PacketReceivedEvent = UCreateEvent(true);
     Thread->PacketReaderUnlockEvent = UCreateMutex();
     EraseTimer = new QTimer(this);
@@ -178,13 +186,16 @@ RdkQTcpClient::RdkQTcpClient()
 RdkQTcpClient::~RdkQTcpClient()
 {
     EraseTimer->stop();
+
     if(Thread!=NULL)
     {
-        Thread->terminate();
         Thread->CalculationInProgress->wait(-1);
         UDestroyEvent(Thread->PacketReceivedEvent);
         UDestroyMutex(Thread->PacketReaderUnlockEvent);
         Thread->CalculationNotInProgress->reset();
+        //Thread->MarkForDeletion();
+        //Thread->exit(0);
+        
         delete Thread;
     }
     if(EraseTimer!=NULL)

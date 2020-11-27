@@ -430,12 +430,16 @@ int Rpc_DelServer(int server_index)
  {
  if(ClientsArray[server_index]->SocketIsConnected())
   Rpc_Disconnect(server_index);
+  ClientsArray[server_index]->Thread->MarkForDeletion();
+  //ClientsArray[server_index]->Thread->exit(0);
+  //ClientsArray[server_index]->Thread->wait();
  }
  catch(QException &exception)
  {
   return RDK_RPC_CONNECTION_ERROR;
  }
- delete ClientsArray[server_index];
+ //26.11.2020 - предполагаем что удалится само через сигнал dele
+ //delete ClientsArray[server_index];
  ClientsArray.erase(ClientsArray.begin()+server_index);
 
  return 0;
@@ -514,7 +518,7 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout)
  return 0;
 }
 
-int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout)
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, const char* &last_error, int timeout)
 {
     RDK::USerStorageXML request,response;
     request.Create("Request");
@@ -525,12 +529,25 @@ int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, i
 
     static std::string res_string;
     res_string=response.ReadString("Data", "").c_str();
+    QString rs_str = res_string.c_str();
 
-    //int state=-1;
-    std::stringstream ss(res_string.c_str());
-    ss>>dp_state>>dp_progress>>dp_cap;
+    dp_state = -1;
+    dp_progress = -1;
+    dp_cap = -1;
+    last_error = "Wrong dep state data received";
 
-    //dp_state=state;
+    if(rs_str.size()>0)
+    {
+        QStringList rs_split = rs_str.split("|");
+        if(rs_split.size()>=4)
+        {
+            dp_state = rs_split[0].toInt();
+            dp_progress = rs_split[1].toInt();
+            dp_cap = rs_split[2].toInt();
+            last_error = rs_split[3].toUtf8().constData();
+        }
+    }
+
     return res;
 }
 
@@ -646,6 +663,7 @@ int Rpc_GetCalculationState(int server_index,
     {
         std::string res_string = response.ReadString("Data", "").c_str();
         QString qsl = res_string.c_str();
+        qDebug()<<qsl;
         if(qsl.length()>0)
         {
             QStringList spl = qsl.split("|");

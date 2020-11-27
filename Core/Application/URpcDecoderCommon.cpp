@@ -413,8 +413,10 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
    int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
 
+   std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
+
    std::stringstream ss;
-   ss<<d_state<<" "<<stage_pos<<" "<<stage_max;
+   ss<<d_state<<"|"<<stage_pos<<"|"<<stage_max<<"|"<<le;
    response=ss.str();
    return_value=0;//UServerControlForm->SaveProject();
   }
@@ -472,8 +474,8 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     //"<calculation_state>|<capture_state>|<capture_frid>|<capture_maxfrid>|<capture_finished>|<message>"
     int calculation_state=-1;
     int capture_state=-1;
-    int capture_frid=-1;
-    int capture_maxfrid=-1;
+    unsigned long long capture_frid=0;
+    unsigned long long capture_maxfrid=0;
     std::string message = "test state message";
 
 
@@ -576,6 +578,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::stringstream ss;
     ss<<rs<<"|"<<le;
     response = ss.str();
+    exit(0);
     return_value=0;
   }
  }
