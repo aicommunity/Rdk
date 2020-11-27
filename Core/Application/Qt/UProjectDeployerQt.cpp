@@ -1316,7 +1316,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
          return 7;
      }
      task_src_path = q.value(0).toString();
-     task_src_frame_length = q.value(0).toInt();
+     task_src_frame_length = q.value(1).toInt();
      task_src_fullpath = task_src_path;
      task_src_fullpath.replace("{Database}", database_path);
      QFileInfo qfi_src_file(task_src_fullpath);
@@ -1794,13 +1794,15 @@ int UProjectDeployerQt::SetupProjectMockParameters()
         *video_DllName = "VideoCaptureOpenCVDll";
         *video_OneShotRun = true;
         *video_ProcessEvenFrames = true;
-        *video_ProcessEveryXFrame = 1;
+        if(video_ProcessEveryXFrame)
+            *video_ProcessEveryXFrame = 1;
         if(video_UseRelativePathFromConfig!=NULL)
             *video_UseRelativePathFromConfig = false;
         if(video_UseRelativePathFromDir!=NULL)
             *video_UseRelativePathFromDir = false;
         //*video_RepeatFlag = false;
-        *video_RestartMode = 0;
+        if(video_RestartMode)
+            *video_RestartMode = 0;
 
         if(!imseq_names.empty())
         {
@@ -1832,12 +1834,15 @@ int UProjectDeployerQt::SetupProjectMockParameters()
         bool *imseq_UseRelativePathFromConfig = imseq_cont->AccessPropertyData<bool>("UseRelativePathFromConfig");
         bool *imseq_UseRelativePathFromDir = imseq_cont->AccessPropertyData<bool>("UseRelativePathFromDir");
 
+        int *test = imseq_cont->AccessPropertyData<int>("ReconnectTimeout");
+
         *imseq_Activity = true;
         *imseq_Path = task_src_fullpath.toUtf8().constData();
         *imseq_EnableCapture = true;
         *imseq_DesiredFps = 0;
         *imseq_RepeatFlag = false;
-        *imseq_RestartMode = 0;
+        if(imseq_RestartMode)
+            *imseq_RestartMode = 0;
         *imseq_UseRelativePathFromConfig = false;
         if(imseq_UseRelativePathFromDir)
             *imseq_UseRelativePathFromDir = false;
@@ -1911,7 +1916,10 @@ int UProjectDeployerQt::SetupProjectMockParameters()
     if(file_tags[class_name].LibConfigFileTagName!="")
         *nn_ConfigFile = absolute_config_file.toUtf8().constData();
     if(file_tags[class_name].LibClassCountTagName!="")
-        *nn_ClassCount = weights_classes_number;
+    {
+        if(nn_ClassCount)
+            *nn_ClassCount = weights_classes_number;
+    }
 
     return 0;
 }
