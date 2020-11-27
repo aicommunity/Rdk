@@ -112,7 +112,7 @@ bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage,
     }
     if(type == typeid(int).name())
     {
-        CreatorProperty<PropType, TypeInt, unsigned int>::CreatePropertyByType(serstorage, mock_unet, ptype);
+        CreatorProperty<PropType, TypeInt, int>::CreatePropertyByType(serstorage, mock_unet, ptype);
         return true;
     }
     if(type == typeid(long).name())
