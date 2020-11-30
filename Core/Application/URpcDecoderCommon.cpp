@@ -416,7 +416,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
 
    std::stringstream ss;
-   ss<<d_state<<"|"<<stage_pos<<"|"<<stage_max<<"|"<<le;
+   ss<<d_state<<"|-|"<<stage_pos<<"|-|"<<stage_max<<"|-|"<<le;
    response=ss.str();
    return_value=0;//UServerControlForm->SaveProject();
   }
@@ -441,7 +441,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::string resp="";
     int rs = GetApplication()->GetProjectDeployer()->GetPreparationResult(resp);
     std::stringstream ss;
-    ss<<rs<<"|"<<resp.c_str();
+    ss<<rs<<"|-|"<<resp.c_str();
     response=ss.str();
     return_value=0;
   }
@@ -468,7 +468,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     /*std::string resp="";
     int rs = GetApplication()->GetProjectDeployer()->GetPreparationResult(resp);
     std::stringstream ss;
-    ss<<rs<<"|"<<resp.c_str();
+    ss<<rs<<"|-|"<<resp.c_str();
     response=ss.str();*/
     //Формирует ответ такой:
     //"<calculation_state>|<capture_state>|<capture_frid>|<capture_maxfrid>|<capture_finished>|<message>"
@@ -481,9 +481,11 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
 
     //Проанализировать состояние расчета - а вдруг ошибка
     /// Состояние тредов расчета
+    /// -1 - пустое состояние
     /// 0 - запущен
     /// 1 - расчет остановлен
     /// 2 - расчет запущен, но не выполняется
+    /// 3 - ошибка найдена в логах
     int calc_state = GetApplication()->GetProjectDeployer()->GetCalculationState();
     if(calc_state>=0)
     {
@@ -494,6 +496,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
         if(!process_log_res)
         {
             message = "Log error: "+log_err;
+            calculation_state = 3;
         }
         else
         {
@@ -536,7 +539,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     }
 
     std::stringstream res_ss;
-    res_ss<<calculation_state<<"|"<<capture_state<<"|"<<capture_frid<<"|"<<capture_maxfrid<<"|"<<message.c_str();
+    res_ss<<calculation_state<<"|-|"<<capture_state<<"|-|"<<capture_frid<<"|-|"<<capture_maxfrid<<"|-|"<<message.c_str();
     response = res_ss.str();
     return_value=0;
   }
@@ -546,7 +549,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     bool rs = GetApplication()->GetProjectDeployer()->FinishCalculation();
     std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
     std::stringstream ss;
-    ss<<rs<<"|"<<le;
+    ss<<rs<<"|-|"<<le;
     response = ss.str();
     return_value=0;
   }
@@ -556,7 +559,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     bool rs = GetApplication()->GetProjectDeployer()->UploadCalculationResults();
     std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
     std::stringstream ss;
-    ss<<rs<<"|"<<le;
+    ss<<rs<<"|-|"<<le;
     response = ss.str();
     return_value=0;
   }
@@ -566,7 +569,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     int us = GetApplication()->GetProjectDeployer()->GetUploadState();
     std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
     std::stringstream ss;
-    ss<<us<<"|"<<le;
+    ss<<us<<"|-|"<<le;
     response = ss.str();
     return_value=0;
   }
@@ -576,7 +579,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     bool rs = GetApplication()->GetProjectDeployer()->CloseSolver();
     std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
     std::stringstream ss;
-    ss<<rs<<"|"<<le;
+    ss<<rs<<"|-|"<<le;
     response = ss.str();
     exit(0);
     return_value=0;

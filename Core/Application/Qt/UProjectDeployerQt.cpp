@@ -1416,7 +1416,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
     this->deploymentState = DS_DeployFinished;
  }
 
- lastError = "";
+ //lastError = "";
  return 0;
 }
 
@@ -1468,7 +1468,7 @@ enum DeploymentState
 
 std::string UProjectDeployerQt::GetLastError()
 {
-    std::string le = "";
+    std::string le = "zero le test";
     if(lastError!="")
     {
         le = std::string("UProjectDeployerQt lastError=")+lastError+std::string(" ");
@@ -1550,7 +1550,7 @@ int UProjectDeployerQt::GetStageProgress()
 /// 3. Закрыть
 int UProjectDeployerQt::PrepareProject(std::string &response)
 {
-    lastError="";
+    //lastError="";
     if(this->deploymentState!=DS_DeployFinished)
     {
         response = "Project deployment is not opened, can't start preparations";
@@ -1676,6 +1676,7 @@ int UProjectDeployerQt::OpenPreparedProject(std::string &response)
     QString project_path = pdpath+"/"+task_template_file_name;
     if(!Application->OpenProject(project_path.toUtf8().constData()))
     {
+        deploymentState = DS_Error;
         lastError="UApplication OpenProject normally error";
         response = lastError;
         return 1;
@@ -1684,6 +1685,7 @@ int UProjectDeployerQt::OpenPreparedProject(std::string &response)
     if(AnalyzeLogForErrors(response)>=0)
     {
         lastError=response;
+        deploymentState = DS_Error;
         return 1;
     }
     ////
@@ -1909,6 +1911,14 @@ int UProjectDeployerQt::SetupProjectMockParameters()
 
     if(file_tags[class_name].LibClassCountTagName!="")
         nn_ClassCount = neural_cont->AccessPropertyData<int>(file_tags[class_name].LibClassCountTagName.c_str());
+
+    bool *nn_UseFullPath=NULL;
+    if(file_tags[class_name].LibClassCountTagName!="")
+        nn_UseFullPath = neural_cont->AccessPropertyData<bool>(file_tags[class_name].LibUseFullPathTagName.c_str());
+
+    if(nn_UseFullPath!=NULL)
+        *nn_UseFullPath = true;
+
     *nn_Activity = true;
     if(file_tags[class_name].LibScriptFileTagName!="")
         *nn_ScriptFile = absolute_script_file.toUtf8().constData();

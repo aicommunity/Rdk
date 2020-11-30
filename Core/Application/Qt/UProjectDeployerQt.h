@@ -27,12 +27,14 @@ struct MLlibDescr
  std::string LibWeightFileTagName;  //Тэг файла весов
  std::string LibConfigFileTagName;  //Тэг файла конфигурации
  std::string LibClassCountTagName;  //Тэг количества классов в библиотеке
+ std::string LibUseFullPathTagName; //Тэг расположения значения поиска полного пути
  MLlibDescr(){
  LibName="";
  LibScriptFileTagName="";
  LibWeightFileTagName="";
  LibConfigFileTagName="";
  LibClassCountTagName="";
+ LibUseFullPathTagName = "UseFullPath";//Существует в родительском классе, задаем наименование по умолчанию
  }
 };
 

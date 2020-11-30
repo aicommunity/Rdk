@@ -536,15 +536,21 @@ int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, i
     dp_cap = -1;
     last_error = "Wrong dep state data received";
 
+    static std::string le_string;
+
+    // qDebug()<<"rs_str = "<<rs_str;
     if(rs_str.size()>0)
     {
-        QStringList rs_split = rs_str.split("|");
+        QStringList rs_split = rs_str.split("|-|");
         if(rs_split.size()>=4)
         {
             dp_state = rs_split[0].toInt();
             dp_progress = rs_split[1].toInt();
             dp_cap = rs_split[2].toInt();
-            last_error = rs_split[3].toUtf8().constData();
+            qDebug()<<"rs_split[3] = "<<rs_split[3];
+            qDebug()<<"rs_split[3].toUtf8().constData() = "<<rs_split[3].toUtf8().constData();
+            le_string = rs_split[3].toUtf8().constData();
+            last_error = le_string.c_str();
         }
     }
 
@@ -627,10 +633,13 @@ int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, in
 
     res_string=response.ReadString("Data", "").c_str();
 
+    static std::string msg="";
+
     QString qs = res_string.c_str();
-    QStringList spl = qs.split("|");
+    QStringList spl = qs.split("|-|");
     int rs = spl[0].trimmed().toInt();
-    verbose_response = spl[1].toUtf8().constData();
+    msg = spl[1].toUtf8().constData();
+    verbose_response = msg.c_str();
 
     if(res)
      return res;
@@ -658,6 +667,7 @@ int Rpc_GetCalculationState(int server_index,
 {
     RDK::USerStorageXML request,response;
     int res = ProcessSimpleCommand("GetCalculationState", server_index, -1, timeout, request, response);
+    static std::string s="";
 
     if(res==0)
     {
@@ -666,7 +676,7 @@ int Rpc_GetCalculationState(int server_index,
         qDebug()<<qsl;
         if(qsl.length()>0)
         {
-            QStringList spl = qsl.split("|");
+            QStringList spl = qsl.split("|-|");
             if(spl.size()==5)
             {
                 calculation_state = spl[0].toInt();
@@ -674,11 +684,12 @@ int Rpc_GetCalculationState(int server_index,
                 capture_frid = spl[2].toInt();
                 capture_maxfrid = spl[3].toInt();
                 QString msg = spl[4];
-                message = msg.toUtf8().constData();
+                s = msg.toUtf8().constData();
+                message = s.c_str();
             }
             else
             {
-                std::string s = "Wrong result: '" + res_string + "'";
+                s = "Wrong result: '" + res_string + "'";
                 message = s.c_str();
             }
         }
@@ -695,14 +706,17 @@ int Rpc_FinishCalculation(int server_index, bool& result, const char* &last_erro
 
     res_string=response.ReadString("Data", "").c_str();
 
+    static std::string le="";
+
     if(res_string!="")
     {
         QString qs = res_string.c_str();
-        QStringList spl = qs.split("|");
+        QStringList spl = qs.split("|-|");
         if(spl.size()>=2)
         {
             result = spl[0].trimmed().toInt();
-            last_error = spl[1].toUtf8().constData();
+            le = spl[1].toUtf8().constData();
+            last_error = le.c_str();
         }
     }
     return res;
@@ -720,7 +734,7 @@ int Rpc_UploadCalculationResults(int server_index, bool& result, const char* &la
     if(res_string!="")
     {
         QString qs = res_string.c_str();
-        QStringList spl = qs.split("|");
+        QStringList spl = qs.split("|-|");
         if(spl.size()>=2)
         {
             result = spl[0].trimmed().toInt();
@@ -743,7 +757,7 @@ int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_er
     if(res_string!="")
     {
         QString qs = res_string.c_str();
-        QStringList spl = qs.split("|");
+        QStringList spl = qs.split("|-|");
         if(spl.size()>=2)
         {
             upload_state = spl[0].trimmed().toInt();
@@ -767,7 +781,7 @@ int Rpc_CloseSolver(int server_index, bool& result, const char* &last_error, int
     if(res_string!="")
     {
         QString qs = res_string.c_str();
-        QStringList spl = qs.split("|");
+        QStringList spl = qs.split("|-|");
         if(spl.size()>=2)
         {
             result = spl[0].trimmed().toInt();
