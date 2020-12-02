@@ -1184,7 +1184,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
 
  //Извлеаем последовательно данные о том, где должны располагаться распакованные файлы
  //Сначала проект
- q.prepare("SELECT project_name, project_file FROM vid_an.projects WHERE project_id="+QString::number(task_template_id)+";");
+ q.prepare("SELECT template_name, template_file, template_script FROM vid_an.templates WHERE template_id="+QString::number(task_template_id)+";");
  q.exec();
  q.first();
  if(!q.isValid())
@@ -1195,6 +1195,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
 
  task_template_name = q.value(0).toString();
  task_template_path = q.value(1).toString();
+ task_script_id = q.value(2).toInt();
 
  q.finish();
  q.clear();
@@ -1217,7 +1218,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
      task_template_download_required = false;
  }
 
- q.prepare("SELECT weight_path, weight_confpath, weight_numcls, weight_in_W, weight_in_H, weight_out_format, weight_script FROM vid_an.weights WHERE weight_id="+QString::number(task_weights_id)+";");
+ q.prepare("SELECT weight_path, weight_confpath, weight_numcls FROM vid_an.weights WHERE weight_id="+QString::number(task_weights_id)+";");
  q.exec();
  q.first();
 
@@ -1230,10 +1231,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
  task_weights_path = q.value(0).toString();
  QString weights_conf_path = q.value(1).toString();
  weights_classes_number = q.value(2).toInt();
- int weights_in_W = q.value(3).toInt();
- int weights_in_H = q.value(4).toInt();
- QString weights_out_format = q.value(5).toString();
- task_script_id = q.value(6).toInt();
+ //task_script_id = q.value(3).toInt();
 
  q.finish();
  q.clear();
@@ -2096,6 +2094,8 @@ bool UProjectDeployerQt::UploadCalculationResults()
         return false;
     }
 
+    QString results_deploy_end_path="";
+
     if(results_dir.exists())
     {
         QStringList rd_contents = results_dir.entryList(QDir::Filter::NoDotAndDotDot);
@@ -2148,9 +2148,12 @@ bool UProjectDeployerQt::UploadCalculationResults()
             projectResultsUploadingThread = new UProjectResultsUploadingThread();
             projectResultsUploadingThread->SetDatabasePath(db_path);
             projectResultsUploadingThread->SetRemoteFtpPath(QString(ftp_remote_path.c_str()));
-            projectResultsUploadingThread->SetStorageResultsDirPath(results_dir_path);
+            projectResultsUploadingThread->SetProjectResultsDirPath(results_dir_path);
             projectResultsUploadingThread->SetStorageResultsDirPath(relative_results_destination_dir_path);
             projectResultsUploadingThread->start();
+
+            results_deploy_end_path = relative_results_destination_dir_path;
+
             lastError = "Upload started";
         }
         else
@@ -2164,6 +2167,24 @@ bool UProjectDeployerQt::UploadCalculationResults()
         lastError = "Upload skipped";
         deploymentState = DS_UploadFinished;
     }
+
+    //TODO: Вообще говоря, отправка результатов может сломаться, но от этого место,
+    //      куда результаты заливаются не изменится, поэтому запилим тему тут:
+
+    QString processing_start_time_str = GetTimeStampInPSqlFormat(processing_start_datetime);
+    QString processing_end_time_str = GetTimeStampInPSqlFormat(processing_end_datetime);
+    //task_id
+    //results_deploy_end_path
+    QSqlQuery q(*db);
+    q.prepare(QString("INSERT INTO vid_an.run_info(run_results,run_start,run_end,run_task_id) ")+
+                      "VALUES('"+results_deploy_end_path+"','"+processing_start_time_str+"','"+processing_end_time_str+"',"+QString::number(task_id)+");");
+    if(!q.exec())
+    {
+        lastError = (QString("Error add result record to database: ")+q.lastError().text()).toUtf8().constData();
+        deploymentState = DS_Error;
+        return false;
+    }
+
     return true;
 }
 
