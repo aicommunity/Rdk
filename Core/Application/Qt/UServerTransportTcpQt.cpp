@@ -80,6 +80,7 @@ void UServerSocketQt::disconnected()
 
 UServerTransportTcpQt::UServerTransportTcpQt()
 {
+ commandQueueTimer=0;
     server=new QTcpServer();
     connect(server, SIGNAL(newConnection()), this, SLOT(ServerNewConnection()));
     //commandQueueTimer = new QBasicTimer();
