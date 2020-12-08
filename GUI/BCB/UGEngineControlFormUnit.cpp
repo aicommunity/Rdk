@@ -2890,11 +2890,14 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
   need_update=true;
  }
 
+ try {
  if(StrToInt(app_ini->ReadString("Server","BindPort","")) != RdkApplication.GetProjectConfig().ServerInterfacePort)
  {
   app_ini->WriteInteger("Server","BindPort",RdkApplication.GetProjectConfig().ServerInterfacePort);
   need_update=true;
  }
+ }
+ catch(EConvertError &) {}
 
  if(app_ini->ReadString("Server","HttpBindAddress","") != RdkApplication.GetProjectConfig().HttpServerInterfaceAddress.c_str())
  {
@@ -2902,11 +2905,15 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
   need_update=true;
  }
 
+ try {
  if(StrToInt(app_ini->ReadString("Server","HttpBindPort","")) != RdkApplication.GetProjectConfig().HttpServerInterfacePort)
  {
   app_ini->WriteInteger("Server","HttpBindPort",RdkApplication.GetProjectConfig().HttpServerInterfacePort);
   need_update=true;
  }
+
+ }
+ catch(EConvertError &) {}
 
  if(app_ini->ReadString("Server","HttpServerLogin","") != RdkApplication.GetProjectConfig().HttpServerLogin.c_str())
  {

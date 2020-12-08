@@ -94,6 +94,8 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited PageControl1: TPageControl
             Width = 257
             Height = 233
+            ExplicitLeft = 1
+            ExplicitTop = 1
             ExplicitWidth = 257
             ExplicitHeight = 233
             inherited TabSheet6: TTabSheet
@@ -439,6 +441,10 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -637,27 +643,21 @@ object UGEngineControlForm: TUGEngineControlForm
                 Width = 235
                 Height = 368
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
+                ExplicitTop = 22
                 ExplicitWidth = 235
-                ExplicitHeight = 369
-                inherited NameTabSheet: TTabSheet
-                  ExplicitHeight = 494
-                  inherited StringGrid: TStringGrid
-                    ExplicitHeight = 494
-                  end
-                end
+                ExplicitHeight = 368
                 inherited LibsTabSheet: TTabSheet
                   ExplicitTop = 25
                   ExplicitWidth = 227
-                  ExplicitHeight = 340
+                  ExplicitHeight = 339
                   inherited TreeView: TTreeView
                     Width = 227
                     Height = 339
                     ExplicitWidth = 227
-                    ExplicitHeight = 340
+                    ExplicitHeight = 339
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
-                  ExplicitHeight = 373
                   inherited Splitter1: TSplitter
                     Top = 69
                     Height = 8
@@ -724,8 +724,6 @@ object UGEngineControlForm: TUGEngineControlForm
               inherited SearchEdit: TEdit
                 Width = 235
                 Height = 22
-                ExplicitLeft = 0
-                ExplicitTop = 0
                 ExplicitWidth = 235
                 ExplicitHeight = 22
               end
@@ -1328,7 +1326,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03B40410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03B80410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
