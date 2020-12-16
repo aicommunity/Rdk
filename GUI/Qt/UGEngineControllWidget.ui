@@ -401,7 +401,7 @@
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Add New</string>
@@ -409,7 +409,7 @@
   </action>
   <action name="actionInsert">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Insert</string>
@@ -417,7 +417,7 @@
   </action>
   <action name="actionDeleteLast">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Delete Last</string>
@@ -425,7 +425,7 @@
   </action>
   <action name="actionDeleteAll">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Delete All</string>
@@ -660,7 +660,7 @@
   </action>
   <action name="actionClone">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Clone</string>
