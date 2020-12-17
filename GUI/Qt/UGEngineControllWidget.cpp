@@ -850,9 +850,9 @@ void UGEngineControllWidget::showChannelsWidget (void)
 
 void UGEngineControllWidget::closeEvent(QCloseEvent *event)
 {
- application->PauseChannel(-1);
- application->CloseProject();
- application->UnInit();
+ //application->PauseChannel(-1);
+ //application->CloseProject();
+ //application->UnInit();
  event->accept();
  //   if (maybeSave()) {
  //       writeSettings();
