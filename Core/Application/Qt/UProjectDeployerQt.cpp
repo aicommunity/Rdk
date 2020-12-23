@@ -1083,6 +1083,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
 }
 UProjectDeployerQt::~UProjectDeployerQt(void)
 {
+    UnRegisterSolverFromDatabase();
     curl_global_cleanup();
     if(!DestroyProcessingThread())
     {
@@ -1445,6 +1446,8 @@ void UProjectDeployerQt::AConnectToDatabase()
         delete db;
         exit(1);
     }
+
+    RegisterSolverToDatabase();
 }
 
 /*
@@ -1556,6 +1559,9 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         preparationResult=1;
         return 1;
     }
+
+    UpdateTaskStateInDb(task_id, TS_Deployment, -1.0f);
+
     this->deploymentState = DS_CopyProject;
     if(CopyProjectToTempFolder()!=0)
     {
@@ -1563,6 +1569,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         response = "error during copying";
         lastError=response;
         preparationResult=1;
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         return 1;
     }
     this->deploymentState=DS_PrepareProject;
@@ -1570,6 +1577,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     {
         this->deploymentState=DS_Error;
         response = "error during opening in mock mode";
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         lastError=response;
         preparationResult=1;
         return 1;
@@ -1578,6 +1586,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     if(AnalyzeLogForErrors(bug_string)>=0)
     {
         lastError="Mock open error: "+bug_string;
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         preparationResult=1;
         return 1;
     }
@@ -1585,6 +1594,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     {
         this->deploymentState=DS_Error;
         response = "error during mock parameters setup";
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         lastError=response;
         preparationResult=1;
         return 1;
@@ -1593,6 +1603,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     {
         this->deploymentState=DS_Error;
         response = "error during mocked project closing";
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         lastError=response;
         preparationResult=1;
         return 1;
@@ -1600,6 +1611,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     if(AnalyzeLogForErrors(bug_string)>=0)
     {
         lastError="Mock open error: "+bug_string;
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         preparationResult=1;
         return 1;
     }
@@ -1957,6 +1969,7 @@ int UProjectDeployerQt::RunPreparedProject()
     processing_start_datetime = QDateTime::currentDateTime();
     Application->StartChannel(-1);
     deploymentState = DS_Calculation;
+    UpdateTaskStateInDb(task_id, TS_Calculation, -1.0f, GetTimeStampInPSqlFormat(processing_start_datetime));
     return 0;
 }
 ///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
@@ -1966,11 +1979,13 @@ int UProjectDeployerQt::GetCalculationState()
     if(thread_states.empty())
     {
         lastError = "Calculation threads empty!";
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         return -1;
     }
     if(thread_states.size()>1)
     {
         lastError = "More than one calculation threads in solver!";
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
         return -1;
     }
     UEngineStateThread::UCalcState &state = thread_states[0];
@@ -1990,6 +2005,7 @@ bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_i
        frame_id=-1;
        max_frame_id=-1;
        lastError = "Capture class name indefined";
+       UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
     }
 
@@ -1999,6 +2015,7 @@ bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_i
        frame_id=-1;
        max_frame_id=-1;
        lastError = "Capture component name indefined";
+       UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
     }
 
@@ -2010,6 +2027,7 @@ bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_i
        frame_id=-1;
        max_frame_id=-1;
        lastError = "RTVModel access error";
+       UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
     }
 
@@ -2022,6 +2040,7 @@ bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_i
        state=-1;
        frame_id=-1;
        lastError = "Capture class description access error";
+       UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
     }
 
@@ -2035,6 +2054,9 @@ bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_i
         frame_id=*fr_id;
 
     max_frame_id = task_src_frame_length;
+
+    UpdateTaskStateInDb(task_id, TS_Calculation, static_cast<float>(frame_id)/task_src_frame_length);
+
     return true;
 }
 ///Обрабатывает накопившийся с последнего вызова лог
@@ -2069,6 +2091,7 @@ bool UProjectDeployerQt::FinishCalculation()
     if(err_log_res>=0)
     {
         lastError = "Close project log error: "+err;
+        UpdateTaskStateInDb(task_id, TS_Error, -1.0f, "", GetTimeStampInPSqlFormat(processing_end_datetime));
         return false;
     }
     return true;
@@ -2176,14 +2199,21 @@ bool UProjectDeployerQt::UploadCalculationResults()
     //task_id
     //results_deploy_end_path
     QSqlQuery q(*db);
-    q.prepare(QString("INSERT INTO vid_an.run_info(run_results,run_start,run_end,run_task_id) ")+
-                      "VALUES('"+results_deploy_end_path+"','"+processing_start_time_str+"','"+processing_end_time_str+"',"+QString::number(task_id)+");");
+    QString query = "UPDATE vid_an.task_list SET task_start='"+processing_start_time_str+"',"+
+                                                    "task_progress="+QString::number(1.0f)+","+
+                                                    "task_end='"+processing_end_time_str+"',"+
+                                                    "task_results='"+results_deploy_end_path+"',"+
+                                                    "task_status='"+QString::number(static_cast<int>(TS_Finished))+"' "+
+                                                    "WHERE task_id="+QString::number(task_id)+";";
+    q.prepare(query);
     if(!q.exec())
     {
+        std::cerr<<query.toUtf8().constData();
         lastError = (QString("Error add result record to database: ")+q.lastError().text()).toUtf8().constData();
         deploymentState = DS_Error;
         return false;
     }
+
 
     return true;
 }
@@ -2192,6 +2222,8 @@ bool UProjectDeployerQt::UploadCalculationResults()
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 bool UProjectDeployerQt::CloseSolver()
 {
+    //TODO: For now its working only if everything is allright, that is wrong!
+    UnRegisterSolverFromDatabase();
     return true;
 }
 
@@ -2218,5 +2250,82 @@ int UProjectDeployerQt::GetUploadState()
         return deploymentState;
     }
 }
+
+///Обновить статус задачи в базе данных
+void UProjectDeployerQt::UpdateTaskStateInDb(int task_id, const DatabaseTaskStatus &status, float progress, const QString &start_time, const QString& end_time)
+{
+    QString preparation_request="";
+    preparation_request+="UPDATE vid_an.task_list ";
+    preparation_request+="SET task_status="+QString::number(static_cast<int>(status));
+    if(progress>=0)
+    {
+        preparation_request+=",task_progress="+QString::number(progress);
+    }
+    if(start_time!="")
+    {
+        preparation_request+=",task_start='"+start_time+"'";
+    }
+    if(end_time!="")
+    {
+        preparation_request+=",task_end='"+end_time+"'";
+    }
+    preparation_request+=" WHERE task_id="+QString::number(task_id)+";";
+
+    QSqlQuery q(*db);
+    q.prepare(preparation_request);
+    if(!q.exec())
+    {
+        lastError = QString("Database update error: "+q.lastError().text()).toUtf8().constData();
+        deploymentState = DS_Error;
+    }
+}
+
+void UProjectDeployerQt::RegisterSolverToDatabase()
+{
+    QString ip_addr = GetApplication()->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress().c_str();
+    int port = GetApplication()->GetServerControl()->GetServerTransport()->GetServerBindingPort();
+    if(ip_addr!="" && port>0)
+    {
+        QSqlQuery q(*db);
+
+        q.prepare("SELECT solver_id FROM vid_an.cloud_solvers WHERE solver_address='"+
+                                   ip_addr+"' AND solver_port="+QString::number(port)+";");
+        if(q.exec())
+        {
+            q.first();
+            if(q.isValid())
+            {
+                qDebug()<<"Record already exists, smth went wrong earlier";
+                return;
+            }
+        }
+
+        q.finish();
+        q.clear();
+        q.prepare("INSERT INTO vid_an.cloud_solvers(solver_address,solver_port) VALUES ('"+
+                             ip_addr+"',"+QString::number(port)+");");
+        if(!q.exec())
+        {
+            qDebug()<<"Error add record to Db: "<<q.lastError().text();
+        }
+    }
+}
+
+void UProjectDeployerQt::UnRegisterSolverFromDatabase()
+{
+    QString ip_addr = GetApplication()->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress().c_str();
+    int port = GetApplication()->GetServerControl()->GetServerTransport()->GetServerBindingPort();
+
+    QSqlQuery q(*db);
+
+    q.prepare("DELETE FROM vid_an.cloud_solvers WHERE solver_address='"+
+                                   ip_addr+"' AND csolver_port="+QString::number(port)+";");
+
+    if(!q.exec())
+    {
+        qDebug()<<"Record deletion error: "<<q.lastError().text();
+    }
+}
+
 
 }//namespace RDK

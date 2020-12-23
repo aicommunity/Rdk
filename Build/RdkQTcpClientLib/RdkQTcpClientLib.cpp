@@ -754,6 +754,8 @@ int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_er
 
     res_string=response.ReadString("Data", "").c_str();
 
+    static std::string le_str="";
+
     if(res_string!="")
     {
         QString qs = res_string.c_str();
@@ -761,7 +763,8 @@ int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_er
         if(spl.size()>=2)
         {
             upload_state = spl[0].trimmed().toInt();
-            last_error = spl[1].toUtf8().constData();
+            le_str = spl[1].toUtf8().constData();
+            last_error = le_str.c_str();
         }
     }
 
