@@ -27,12 +27,14 @@ struct MLlibDescr
  std::string LibWeightFileTagName;  //Тэг файла весов
  std::string LibConfigFileTagName;  //Тэг файла конфигурации
  std::string LibClassCountTagName;  //Тэг количества классов в библиотеке
+ std::string LibUseFullPathTagName; //Тэг расположения значения поиска полного пути
  MLlibDescr(){
  LibName="";
  LibScriptFileTagName="";
  LibWeightFileTagName="";
  LibConfigFileTagName="";
  LibClassCountTagName="";
+ LibUseFullPathTagName = "UseFullPath";//Существует в родительском классе, задаем наименование по умолчанию
  }
 };
 
@@ -97,6 +99,16 @@ enum DeploymentState
     DS_UploadResults=20,
     DS_UploadFinished=21,
     DS_Error=100
+};
+
+enum DatabaseTaskStatus
+{
+    TS_New=0,
+    TS_Accepted=1,
+    TS_Deployment=2,
+    TS_Calculation=3,
+    TS_Finished=4,
+    TS_Error=1000
 };
 
 class RDK_LIB_TYPE UProjectDeployProcessingThread: public QThread
@@ -390,6 +402,10 @@ virtual bool UploadCalculationResults();
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 virtual bool CloseSolver();
+///Получить состояние загрузки
+virtual int GetUploadState();
+///Обновить статус задачи в базе данных
+virtual void UpdateTaskStateInDb(int task_id, const DatabaseTaskStatus &status, float progress=-1.0f, const QString &start_time="", const QString& end_time="");
 
 public: // Методы доступа к данным
 
@@ -426,6 +442,10 @@ int AnalyzeLogForErrors(std::string &problem_string);
 
 QString GetTimeStampInPSqlFormat(const QDateTime &now);
 
+/// Зарегистрировать солвер в СУБД
+void RegisterSolverToDatabase();
+/// Исключить солвер из СУБД
+void UnRegisterSolverFromDatabase();
 
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта

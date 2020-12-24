@@ -109,6 +109,8 @@ virtual bool UploadCalculationResults() {return false;};
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 virtual bool CloseSolver() {return false;};
+///Получить состояние загрузки
+virtual int GetUploadState(){return -1;};
 
 
 // --------------------------
