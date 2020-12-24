@@ -72,8 +72,8 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   connect(ui->checkBoxChannelDebugMode, SIGNAL(toggled(bool)), this, SLOT(setDebugMode(bool)));
 
 
-  connect(ui->listViewPredefinedStructures, SIGNAL(itemActivated(QListWidgetItem*)),
-                      this, SLOT(selectPredefinedStructure(QListWidgetItem*)));
+  //connect(ui->listViewPredefinedStructures, SIGNAL(itemActivated(QListWidgetItem*)),
+  //                    this, SLOT(selectPredefinedStructure(QListWidgetItem*)));
 
  // connect(ui->checkBoxDebugSysEventsNone, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
   connect(ui->checkBoxDebugSysEventsCalc, SIGNAL(stateChanged(int)), this, SLOT(selectDebugEvents(int)));
