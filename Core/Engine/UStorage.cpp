@@ -640,11 +640,11 @@ void UStorage::FreeObjectsStorage(bool force)
    else
    {
 	++I;
-	if(!force)
-	{
-	 if(Logger)
-	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
-	}
+//	if(!force)
+//	{
+//	 if(Logger)
+//	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+//	}
    }
   }
 
@@ -723,8 +723,8 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
         else
         {
            ++I;
-           if(Logger)
-               Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+//           if(Logger)
+//               Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
         }
     }
 
