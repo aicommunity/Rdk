@@ -900,6 +900,9 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
    DrawEngineFrame->UpdateInterface(true);
   }
 //   DrawEngineFrame->SelectComponent(GetCurrentComponentName());
+
+  SelectedId=-1;
+  SetSelectedComponentName(SelectedComponentName);
   return;
  }
 
