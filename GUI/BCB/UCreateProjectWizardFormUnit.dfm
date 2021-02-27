@@ -61,16 +61,12 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Top = 0
     Width = 610
     Height = 678
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
     object TabSheet1: TTabSheet
       Caption = 'Name'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         602
         650)
@@ -118,7 +114,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         OnChange = ProjectDirectoryLabeledEditChange
       end
       object Button1: TButton
-        Left = 520
+        Left = 521
         Top = 60
         Width = 78
         Height = 26
@@ -196,10 +192,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet2: TTabSheet
       Caption = 'Type'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -274,10 +266,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet3: TTabSheet
       Caption = 'Model'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         602
         650)
@@ -487,10 +475,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               object DontChangeTabSheet: TTabSheet
                 Caption = 'Don'#39't Change'
                 ImageIndex = 3
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 object RichEdit1: TRichEdit
                   Left = 0
                   Top = 0
@@ -532,10 +516,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               end
               object PredefinedModelTabSheet: TTabSheet
                 Caption = 'Predefined Model'
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 DesignSize = (
                   538
                   353)
@@ -554,10 +534,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Caption = 'From File'
                 ImageIndex = 1
                 TabVisible = False
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 DesignSize = (
                   538
                   353)
@@ -586,10 +562,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               object ModelFromComponentTabSheet: TTabSheet
                 Caption = 'From Component'
                 ImageIndex = 2
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 object GroupBox2: TGroupBox
                   Left = 0
                   Top = 0
@@ -618,22 +590,14 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                     ExplicitWidth = 534
                     ExplicitHeight = 336
                     inherited PageControl: TPageControl
+                      Top = 22
                       Width = 534
-                      Height = 315
-                      ActivePage = UClassesListFrame1.LibsTabSheet
+                      Height = 314
                       ExplicitWidth = 534
-                      ExplicitHeight = 336
+                      ExplicitHeight = 315
                       inherited NameTabSheet: TTabSheet
-                        ExplicitLeft = 0
-                        ExplicitTop = 25
-                        ExplicitWidth = 526
-                        ExplicitHeight = 307
                         inherited StringGrid: TStringGrid
-                          Width = 526
-                          Height = 307
                           OnClick = UClassesListFrame1StringGridClick
-                          ExplicitWidth = 526
-                          ExplicitHeight = 307
                         end
                       end
                       inherited LibsTabSheet: TTabSheet
@@ -642,7 +606,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         ExplicitHeight = 286
                         inherited TreeView: TTreeView
                           Width = 526
-                          Height = 286
+                          Height = 285
                           OnChange = UClassesListFrame1TreeViewChange
                           ExplicitWidth = 526
                           ExplicitHeight = 286
@@ -650,7 +614,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                       end
                       inherited LibsControlTabSheet: TTabSheet
                         TabVisible = False
-                        ExplicitHeight = 515
                         inherited Splitter1: TSplitter
                           Top = 291
                           ExplicitTop = 188
@@ -668,21 +631,24 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         end
                         inherited GroupBox2: TGroupBox
                           Top = 298
-                          Height = 88
+                          Height = 196
                           ExplicitTop = 298
-                          ExplicitHeight = 88
+                          ExplicitHeight = 196
                           inherited LibComponentListStringGrid: TStringGrid
                             Top = 16
-                            Height = 70
+                            Height = 178
                             OnClick = UClassesListFrame1LibComponentListStringGridClick
                             ExplicitTop = 16
-                            ExplicitHeight = 70
+                            ExplicitHeight = 178
                           end
                         end
                       end
                     end
                     inherited SearchEdit: TEdit
                       Width = 534
+                      Height = 22
+                      ExplicitWidth = 534
+                      ExplicitHeight = 22
                     end
                   end
                 end

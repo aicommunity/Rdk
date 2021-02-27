@@ -94,8 +94,6 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited PageControl1: TPageControl
             Width = 257
             Height = 233
-            ExplicitLeft = 1
-            ExplicitTop = 1
             ExplicitWidth = 257
             ExplicitHeight = 233
             inherited TabSheet6: TTabSheet
@@ -638,7 +636,6 @@ object UGEngineControlForm: TUGEngineControlForm
                 Top = 22
                 Width = 235
                 Height = 368
-                ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
                 ExplicitTop = 22
                 ExplicitWidth = 235
                 ExplicitHeight = 368
@@ -646,6 +643,8 @@ object UGEngineControlForm: TUGEngineControlForm
                   inherited StringGrid: TStringGrid
                     Width = 227
                     Height = 339
+                    ExplicitWidth = 227
+                    ExplicitHeight = 339
                   end
                 end
                 inherited LibsTabSheet: TTabSheet
@@ -671,6 +670,7 @@ object UGEngineControlForm: TUGEngineControlForm
                   inherited GroupBox1: TGroupBox
                     Width = 227
                     Height = 69
+                    ExplicitWidth = 227
                     ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
@@ -687,6 +687,7 @@ object UGEngineControlForm: TUGEngineControlForm
                     Width = 227
                     Height = 262
                     ExplicitTop = 77
+                    ExplicitWidth = 227
                     ExplicitHeight = 296
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
@@ -1304,7 +1305,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03BC0410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03C00410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

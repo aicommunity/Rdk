@@ -294,7 +294,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
     //если модель не существует, спросить не создать ли ее
     if(!Model_Check())
     {
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model from this class?", QMessageBox::Yes|QMessageBox::Cancel);
         if (reply == QMessageBox::Yes)
         {
             //создать новую модель
@@ -310,52 +310,6 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
 
     if (event->mimeData()->hasFormat("Component"))
     {
-        /*QByteArray itemData = event->mimeData()->data("Component");
-        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
-        QString classname;
-        dataStream >> classname;*/
-        //qDebug() << event->pos() << "   " << classname;
-
-        /*bool ok;
-        QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"), tr("User name:"), QLineEdit::Normal, classname.toLocal8Bit(), &ok);
-        if (ok && !text.isEmpty())
-        {
-            QByteArray ba = text.toLocal8Bit();
-            //const char *c_text = ba.data();
-            //const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), text.toLocal8Bit());
-            const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());
-            if(pname)
-            {
-                std::string name=pname;
-                Engine_FreeBufString(pname);
-                reDrawScheme(true);
-                DrawEngine.MoveComponent(name, event->pos().x(), event->pos().y());
-                saveComponentPosition(name);
-                emit updateComponentsList();
-
-                selectedComponent = name;
-                DrawEngine.SelectSingleComponent(selectedComponent);
-                emit componentSelected(QString::fromStdString(selectedComponent));
-                reDrawScheme(false);
-
-                std::string new_name(text.toLocal8Bit());
-                Model_SetComponentPropertyData(myLongName().toLocal8Bit(),"Name", &new_name);
-
-                emit updateComponentsList();
-                reDrawScheme(true);
-                //выбрать компонент с новым именем
-                selectComponent(ComponentName.isEmpty()? QString::fromStdString(new_name)
-                                                       : ComponentName + "." + QString::fromStdString(new_name));
-                emit componentSelected(myLongName());
-
-                const char* a =Model_GetComponentParameterValue(myLongName().toLocal8Bit(),"Name");
-                //char* k= a;
-                if (new_name != a)
-                {
-                    QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Component with this name is exists. Continue by adding the next number?", QMessageBox::Yes|QMessageBox::Cancel);
-                    if (reply == QMessageBox::Cancel) componentRename();
-                }
-            }*/
         const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());
         if(pname)
         {

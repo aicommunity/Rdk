@@ -311,8 +311,8 @@ void __fastcall TUCreateProjectWizardForm::Button1Click(TObject *Sender)
 
  if(Win32MajorVersion >= 6)
  {
- // FileOpenDialog->FileName=chosenDir;
- // FileOpenDialog->DefaultFolder=chosenDir;
+  FileOpenDialog->FileName=chosenDir;
+  FileOpenDialog->DefaultFolder=chosenDir;
   if(FileOpenDialog->Execute())
   {
    ProjectDirectoryLabeledEdit->Text=FileOpenDialog->FileName;

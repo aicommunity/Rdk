@@ -17,6 +17,7 @@
 #include <Vcl.Menus.hpp>
 #include <Vcl.CustomizeDlg.hpp>
 #include "UComponentsLinksHintFormUnit.h"
+#include <Vcl.Dialogs.hpp>
 
 class TUComponentsListFrame;
 //---------------------------------------------------------------------------
@@ -68,6 +69,7 @@ __published:    // IDE-managed Components
 	TMenuItem *Clone1;
 	TMenuItem *N8;
 	TMenuItem *Droptoruntimelibrary1;
+	TFileOpenDialog *FileOpenDialog;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);

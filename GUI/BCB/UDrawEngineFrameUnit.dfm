@@ -45,15 +45,27 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 401
         inherited NameTabSheet: TTabSheet
+          ExplicitWidth = 219
+          ExplicitHeight = 373
           inherited StringGrid: TStringGrid
+            Width = 219
+            Height = 373
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
+            ExplicitWidth = 219
+            ExplicitHeight = 373
           end
         end
         inherited LibsTabSheet: TTabSheet
+          ExplicitWidth = 219
+          ExplicitHeight = 373
           inherited TreeView: TTreeView
+            Width = 219
+            Height = 373
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
+            ExplicitWidth = 219
+            ExplicitHeight = 373
           end
         end
         inherited LibsControlTabSheet: TTabSheet
@@ -83,11 +95,14 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
             Height = 283
             ExplicitTop = 90
             ExplicitWidth = 219
+            ExplicitHeight = 283
             inherited LibComponentListStringGrid: TStringGrid
               Width = 215
+              Height = 266
               OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
               OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
               ExplicitWidth = 215
+              ExplicitHeight = 266
             end
           end
         end
@@ -113,9 +128,10 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Align = alClient
       TabOrder = 0
       OnResize = ScrollBoxResize
+      ExplicitLeft = -4
       object Image: TImage
         Left = 20
-        Top = 14
+        Top = 19
         Width = 305
         Height = 241
         OnDragDrop = ImageDragDrop
@@ -324,5 +340,12 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object GUI1: TMenuItem
       Caption = 'GUI'
     end
+  end
+  object FileOpenDialog: TFileOpenDialog
+    FavoriteLinks = <>
+    FileTypes = <>
+    Options = [fdoPickFolders, fdoForceFileSystem, fdoPathMustExist]
+    Left = 396
+    Top = 44
   end
 end

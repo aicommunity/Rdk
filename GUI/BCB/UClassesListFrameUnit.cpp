@@ -144,6 +144,12 @@ void TUClassesListFrame::AUpdateInterface(void)
   }
   TreeView->Perform(WM_SETREDRAW, 1, (NativeInt)0);
   TreeView->Update();
+
+  if(!sel)
+  {
+   TTreeNode* node=TreeView->Items[0].Item[0];
+   node->MakeVisible();
+  }
  }
  else
  if(PageControl->ActivePage == NameTabSheet)

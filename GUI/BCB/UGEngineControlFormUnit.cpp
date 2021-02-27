@@ -542,7 +542,7 @@ void TUGEngineControlForm::AClearInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
-//
+ UDrawEngineFrame1->UClassesListFrame->UpdateInterface(true);
 }
 
 // Сохраняет параметры интерфейса в xml
