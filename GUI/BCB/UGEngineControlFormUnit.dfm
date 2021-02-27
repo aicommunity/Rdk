@@ -640,11 +640,13 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitWidth = 235
                 ExplicitHeight = 368
                 inherited NameTabSheet: TTabSheet
+                  ExplicitWidth = 499
+                  ExplicitHeight = 494
                   inherited StringGrid: TStringGrid
-                    Width = 227
-                    Height = 339
-                    ExplicitWidth = 227
-                    ExplicitHeight = 339
+                    Width = 499
+                    Height = 494
+                    ExplicitWidth = 499
+                    ExplicitHeight = 494
                   end
                 end
                 inherited LibsTabSheet: TTabSheet
@@ -661,41 +663,31 @@ object UGEngineControlForm: TUGEngineControlForm
                 inherited LibsControlTabSheet: TTabSheet
                   inherited Splitter1: TSplitter
                     Top = 69
-                    Width = 227
                     Height = 8
                     ExplicitTop = 11
                     ExplicitWidth = 175
                     ExplicitHeight = 8
                   end
                   inherited GroupBox1: TGroupBox
-                    Width = 227
                     Height = 69
-                    ExplicitWidth = 227
                     ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
-                      Width = 223
                       Height = 51
-                      ExplicitLeft = 1
-                      ExplicitTop = 20
-                      ExplicitWidth = 223
+                      ExplicitTop = 16
                       ExplicitHeight = 51
                     end
                   end
                   inherited GroupBox2: TGroupBox
                     Top = 77
-                    Width = 227
-                    Height = 262
+                    Height = 296
                     ExplicitTop = 77
-                    ExplicitWidth = 227
                     ExplicitHeight = 296
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
-                      Width = 223
-                      Height = 244
-                      ExplicitTop = 17
-                      ExplicitWidth = 223
-                      ExplicitHeight = 244
+                      Height = 278
+                      ExplicitTop = 16
+                      ExplicitHeight = 278
                     end
                   end
                 end
@@ -720,11 +712,11 @@ object UGEngineControlForm: TUGEngineControlForm
               ExplicitHeight = 390
               inherited Image: TImage
                 Left = -1
-                Top = -2
+                Top = -3
                 Width = 319
                 Height = 252
                 ExplicitLeft = -1
-                ExplicitTop = -2
+                ExplicitTop = -3
                 ExplicitWidth = 319
                 ExplicitHeight = 252
               end
@@ -902,16 +894,24 @@ object UGEngineControlForm: TUGEngineControlForm
     ParentDoubleBuffered = False
     ShowCaptions = True
     TabOrder = 3
-    object ToolButton17: TToolButton
+    object ToolButton4: TToolButton
       Left = 0
       Top = 0
       AutoSize = True
-      Caption = 'Create Project'
+      Caption = 'Create Simple'
+      ImageIndex = 21
+      MenuItem = CreateSimpleProject1
+    end
+    object ToolButton17: TToolButton
+      Left = 77
+      Top = 0
+      AutoSize = True
+      Caption = 'Create Wizard'
       ImageIndex = 21
       MenuItem = CreateProjectItem
     end
     object ToolButton1: TToolButton
-      Left = 81
+      Left = 157
       Top = 0
       AutoSize = True
       Caption = 'Load Project'
@@ -919,7 +919,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = LoadProjectItem
     end
     object ToolButton2: TToolButton
-      Left = 152
+      Left = 228
       Top = 0
       AutoSize = True
       Caption = 'Save Project'
@@ -927,7 +927,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = SaveProjectItem
     end
     object ToolButton3: TToolButton
-      Left = 224
+      Left = 300
       Top = 0
       Width = 8
       Caption = 'ToolButton3'
@@ -935,7 +935,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton19: TToolButton
-      Left = 232
+      Left = 308
       Top = 0
       AutoSize = True
       Caption = 'Reload Parameters'
@@ -943,7 +943,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = ReloadParameters1
     end
     object ToolButton14: TToolButton
-      Left = 334
+      Left = 410
       Top = 0
       Width = 8
       Caption = 'ToolButton14'
@@ -951,7 +951,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton10: TToolButton
-      Left = 342
+      Left = 418
       Top = 0
       AutoSize = True
       Caption = 'Start'
@@ -959,7 +959,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = Start1
     end
     object ToolButton12: TToolButton
-      Left = 377
+      Left = 453
       Top = 0
       AutoSize = True
       Caption = 'Pause'
@@ -967,7 +967,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = Pause1
     end
     object ToolButton13: TToolButton
-      Left = 417
+      Left = 493
       Top = 0
       AutoSize = True
       Caption = 'Reset'
@@ -975,7 +975,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = Reset1
     end
     object ToolButton16: TToolButton
-      Left = 456
+      Left = 532
       Top = 0
       AutoSize = True
       Caption = 'Step'
@@ -983,7 +983,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = Step1
     end
     object ToolButton21: TToolButton
-      Left = 489
+      Left = 565
       Top = 0
       Width = 8
       Caption = 'ToolButton21'
@@ -991,7 +991,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton15: TToolButton
-      Left = 497
+      Left = 573
       Top = 0
       AutoSize = True
       Caption = 'Window'
@@ -1084,8 +1084,13 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 608
     object File1: TMenuItem
       Caption = 'File'
+      object CreateSimpleProject1: TMenuItem
+        Caption = 'Create Simple'
+        ImageIndex = 21
+        OnClick = CreateSimpleProject1Click
+      end
       object CreateProjectItem: TMenuItem
-        Caption = 'Create Project'
+        Caption = 'Create Wizard'
         ImageIndex = 21
         OnClick = CreateProjectItemClick
       end
@@ -2245,8 +2250,7 @@ object UGEngineControlForm: TUGEngineControlForm
   object SaveDialog: TSaveDialog
     DefaultExt = 'ini'
     Filter = 'Project Ini File (*.ini)|*.ini'
-    Left = 176
-    Top = 65528
+    Left = 272
   end
   object HideTimer: TTimer
     Interval = 10
@@ -2358,5 +2362,12 @@ object UGEngineControlForm: TUGEngineControlForm
     OnException = ApplicationEventsException
     Left = 528
     Top = 320
+  end
+  object FileOpenDialog: TFileOpenDialog
+    FavoriteLinks = <>
+    FileTypes = <>
+    Options = [fdoPickFolders, fdoForceFileSystem, fdoPathMustExist]
+    Left = 388
+    Top = 84
   end
 end

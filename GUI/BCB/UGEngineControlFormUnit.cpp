@@ -3292,3 +3292,67 @@ void __fastcall TUGEngineControlForm::VideoSources21Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+void __fastcall TUGEngineControlForm::CreateSimpleProject1Click(TObject *Sender)
+{
+ std::string classname="Model";
+
+ if(RdkApplication.GetProjectOpenFlag())
+ {
+  if(Application->MessageBox(L"Close current config?",L"Info",MB_YESNO) != ID_YES)
+   return;
+  RdkApplication.CloseProject();
+ }
+  std::string file_name;
+
+  std::string default_path=RdkApplication.GetWorkDirectory()+"..\\..\\Configs";
+
+  if(!DirectoryExists(default_path.c_str()))
+  {
+   default_path=RdkApplication.GetWorkDirectory()+"..\\..\\..\\Configs";
+   if(!DirectoryExists(default_path.c_str()))
+   {
+	default_path=RdkApplication.GetWorkDirectory();
+   }
+  }
+
+  String path_dialog=default_path.c_str();
+  if(Application->MessageBox(L"Autocreate configuration folder?",L"Info",MB_YESNO) == ID_YES)
+  {
+   time_t curr_time;
+   time(&curr_time);
+  /// ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
+   std::string folder=RDK::get_text_time(curr_time, '.', '_');
+   path_dialog+=String("\\Autocreate ")+folder.c_str();
+   if(RDK::CreateNewDirectory(AnsiString(path_dialog).c_str()) != 0)
+    return;
+  }
+  else
+  {
+   if(Win32MajorVersion >= 6)
+   {
+	FileOpenDialog->DefaultFolder=default_path.c_str();
+	FileOpenDialog->FileName=default_path.c_str();
+	if(FileOpenDialog->Execute())
+	{
+	 path_dialog=FileOpenDialog->FileName;
+	}
+	else
+	 return;
+   }
+   else
+   if(!SelectDirectory("Select project directory", "", path_dialog,TSelectDirExtOpts() << sdNewFolder << sdNewUI << sdShowEdit << sdValidateDir, this))
+   {
+	return;
+   }
+  }
+  std::string result_path=AnsiString(path_dialog.c_str()).c_str();
+
+  result_path+="\\Project.ini";
+  file_name=result_path;
+
+  RdkApplication.CreateProject(file_name, classname);
+
+  RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
