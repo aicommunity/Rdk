@@ -572,7 +572,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
  if(index<0)
   return false;
 
- if(int(this->v.size())<=index)
+ if(int(this->v.size())<=index || (this->v.size() != Local.size()))
  {
   size_t new_size=index+1;
   this->v.resize(new_size);
@@ -586,6 +586,7 @@ bool SetPointer(int index, void* value, UIProperty* output)
    Local[i]=new T;
  }
  this->v[index]=reinterpret_cast<T*>(value);
+ ConnectedOutput.resize(this->v.size());
  ConnectedOutput[index]=output;
  return true;
 }
@@ -595,10 +596,14 @@ bool ResetPointer(int index, void* value)
 {
  if(int(this->v.size())>index && index >=0)
  {
-  delete Local[index];
-  Local.erase(Local.begin()+index);
   this->v.erase(this->v.begin()+index);
-  this->ConnectedOutput.erase(ConnectedOutput.begin()+index);
+  if(int(Local.size())>index)
+  {
+   delete Local[index];
+   Local.erase(Local.begin()+index);
+  }
+  if(int(this->ConnectedOutput.size())>index)
+   this->ConnectedOutput.erase(ConnectedOutput.begin()+index);
   return true;
  }
  return false;
@@ -607,10 +612,7 @@ bool ResetPointer(int index, void* value)
 /// Удаляет все указатели
 void ClearAllPointers(void)
 {
- if(this->v.empty())
-  return;
-
- for(size_t i=0;i<this->v.size();i++)
+ for(size_t i=0;i<Local.size();i++)
  {
   delete Local[i];
  }
@@ -654,7 +656,7 @@ const T* operator [] (int i) const
 /// Возвращает имя подключенного компонента
 virtual UItem* GetItem(int index)
 {
- if(int(this->v.size())>index && index >=0)
+ if(int(this->ConnectedOutput.size())>index && index >=0)
  {
   return static_cast<UItem*>(ConnectedOutput[index]->GetOwner());
  }
@@ -664,7 +666,7 @@ virtual UItem* GetItem(int index)
 /// Возвращает имя подключенного выхода
 virtual std::string GetItemOutputName(int index) const
 {
- if(int(this->v.size())>index && index >=0)
+ if(int(this->ConnectedOutput.size())>index && index >=0)
  {
   return ConnectedOutput[index]->GetName();
  }
@@ -674,7 +676,7 @@ virtual std::string GetItemOutputName(int index) const
 /// Возвращает имя подключенного компонента
 virtual std::string GetItemName(int index) const
 {
- if(int(this->v.size())>index && index >=0)
+ if(int(this->ConnectedOutput.size())>index && index >=0)
  {
   return ConnectedOutput[index]->GetOwner()->GetName();
  }
@@ -684,7 +686,7 @@ virtual std::string GetItemName(int index) const
 /// Возвращает полное имя подключенного компонента
 virtual std::string GetItemFullName(int index) const
 {
- if(int(this->v.size())>index && index >=0)
+ if(int(this->ConnectedOutput.size())>index && index >=0)
  {
   return ConnectedOutput[index]->GetOwner()->GetFullName();
  }

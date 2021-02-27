@@ -66,6 +66,8 @@ __published:    // IDE-managed Components
 	TMenuItem *FinishSwitching1;
 	TMenuItem *CancelSwitching1;
 	TMenuItem *Clone1;
+	TMenuItem *N8;
+	TMenuItem *Droptoruntimelibrary1;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -97,7 +99,6 @@ __published:    // IDE-managed Components
           TShiftState Shift, int X, int Y);
 	void __fastcall UClassesListFrameLibComponentListStringGridMouseUp(TObject *Sender,
           TMouseButton Button, TShiftState Shift, int X, int Y);
-	void __fastcall UClassesListFrameAddClassButtonClick(TObject *Sender);
 	void __fastcall StartMoving1Click(TObject *Sender);
 	void __fastcall Finishmoving1Click(TObject *Sender);
 	void __fastcall Cancelmoving1Click(TObject *Sender);
@@ -108,6 +109,7 @@ __published:    // IDE-managed Components
 	void __fastcall FinishSwitching1Click(TObject *Sender);
 	void __fastcall CancelSwitching1Click(TObject *Sender);
 	void __fastcall Clone1Click(TObject *Sender);
+	void __fastcall Droptoruntimelibrary1Click(TObject *Sender);
 
 
 private:    // User declarations

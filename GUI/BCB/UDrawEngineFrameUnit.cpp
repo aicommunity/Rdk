@@ -385,7 +385,7 @@ void __fastcall TUDrawEngineFrame::ImageMouseUp(TObject *Sender, TMouseButton Bu
   if(name != "")
   {
    if(ComponentsListFrame)
-    ComponentsListFrame->SetSelectedComponentName(name);
+	ComponentsListFrame->SetSelectedComponentName(name);
    SaveComponentPosition(name);
    UpdateInterface();
   }
@@ -683,14 +683,6 @@ void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMo
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineFrame::UClassesListFrameAddClassButtonClick(TObject *Sender)
-
-{
- UClassesListFrame->NewClassName="NewClass1";
- UClassesListFrame->NewComponentName=ComponentsListFrame->GetSelectedComponentName();
- UClassesListFrame->AddClassButtonClick(Sender);
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUDrawEngineFrame::StartMoving1Click(TObject *Sender)
 {
@@ -889,6 +881,21 @@ void __fastcall TUDrawEngineFrame::Clone1Click(TObject *Sender)
 {
  if(ComponentsListFrame)
   ComponentsListFrame->Clone1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::Droptoruntimelibrary1Click(TObject *Sender)
+{
+ std::string component_name=DrawEngine.FindComponent(PopupX,PopupY);
+ if(component_name.empty())
+  return;
+
+ if(Application->MessageBox(L"Are you sure to move selected component to runtime library",L"Error",MB_YESNO) != ID_YES)
+  return;
+
+ UClassesListFrame->NewComponentName=component_name;
+ UClassesListFrame->CreateNewClass1Click(Sender);
+ UClassesListFrame->NewComponentName="";
 }
 //---------------------------------------------------------------------------
 

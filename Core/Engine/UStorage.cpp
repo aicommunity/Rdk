@@ -1004,7 +1004,8 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         UEPtr<ULibrary> lib = CollectionList[i];
         if(lib && lib->GetName() == lib_name)
         {
-            library = dynamic_cast<URuntimeLibrary*>(lib.Get());
+			library = dynamic_cast<URuntimeLibrary*>(lib.Get());
+            break;
         }
     }
 

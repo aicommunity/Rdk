@@ -29,12 +29,37 @@ void TUClassesListFrame::AUpdateInterface(void)
 {
  std::string search=AnsiString(Trim(SearchEdit->Text)).c_str();
 
+ // Список RT библиотек
+ RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+ std::string buff;
+ storage->GetLibsNameListByType(buff,2);
+ std::vector<std::string> RTlibsNames;
+ RDK::separatestring(buff,RTlibsNames,',');
+
+ std::vector<std::string> RTclassesNames;
+
+ for(size_t i=0;i<RTlibsNames.size();i++)
+ {
+  const char * stringBuff;
+  stringBuff = Storage_GetLibraryClassNames(RTlibsNames[i].c_str());
+
+  // Если нет классов
+  if((stringBuff[0] == '\0'))
+  {
+   Engine_FreeBufString(stringBuff);
+   continue;
+  }
+
+  std::string buff2=stringBuff;
+
+  std::vector<std::string> libClasses;
+  RDK::separatestring(buff2,libClasses,',');
+  Engine_FreeBufString(stringBuff);
+  RTclassesNames.insert(RTclassesNames.end(),libClasses.begin(),libClasses.end());
+ }
+
  if(PageControl->ActivePage == LibsTabSheet)
  {
-// const char* lib_list=Storage_GetClassLibrariesList();
-// LibrariesListNames=lib_list;
-// std::ve
-
   RepaintNeeded=false;
   int num_classes=0;
   LibraryClassNames.clear();
@@ -132,6 +157,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   ids.resize(numclasses);
   Storage_GetClassesList(&ids[0]);
   ClassNames.resize(numclasses);
+
   for(int i=0;i<numclasses;i++)
   {
    const char* pclass_name=Storage_GetClassName(ids[i]);
@@ -172,21 +198,21 @@ void TUClassesListFrame::AUpdateInterface(void)
  else
  if(PageControl->ActivePage == LibsControlTabSheet)
  {
-  std::vector<std::string> library_names;
-  library_names.resize(Storage_GetNumClassLibraries());
-  LibsListStringGrid->RowCount=library_names.size()+1;
+//  std::vector<std::string> library_names;
+//  library_names.resize(Storage_GetNumClassLibraries());
+  LibsListStringGrid->RowCount=RTlibsNames.size()+1;
   LibsListStringGrid->ColCount=3;
-  if(LibsListStringGrid->RowCount>0)
+  if(LibsListStringGrid->RowCount>1)
    LibsListStringGrid->FixedRows=1;
-  for(size_t i=0;i<library_names.size();i++)
+  for(size_t i=0;i<RTlibsNames.size();i++)
   {
-   const char *p=Storage_GetClassLibraryNameByIndex(i);
-   if(p)
-    library_names[i]=p;
-   Engine_FreeBufString(p);
+//   const char *p=Storage_GetClassLibraryNameByIndex(i);
+//   if(p)
+//	library_names[i]=p;
+//   Engine_FreeBufString(p);
 
    LibsListStringGrid->Cells[0][i+1]=i+1;
-   LibsListStringGrid->Cells[1][i+1]=library_names[i].c_str();
+   LibsListStringGrid->Cells[1][i+1]=RTlibsNames[i].c_str();
 //   LibsListStringGrid->Cells[2][i+1]=library_names[i].c_str();
   }
   LibsListStringGrid->ColWidths[0]=20;
@@ -194,7 +220,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   LibsListStringGrid->Cells[0][0]="#";
   LibsListStringGrid->Cells[1][0]="Library Name";
 
-  DrawClassesList(LibsListStringGrid->Row-1, LibComponentListStringGrid);
+  DrawClassesList(AnsiString(LibsListStringGrid->Cells[1][LibsListStringGrid->Row]).c_str(), LibComponentListStringGrid);
  }
 }
 
@@ -208,7 +234,7 @@ void TUClassesListFrame::DrawClassesList(int library_index, TStringGrid *classes
    std::vector<std::string> classes_list;
    int num_classes=0;
    if(class_names)
-    num_classes=RDK::separatestring(std::string(class_names),classes_list, ',');
+	num_classes=RDK::separatestring(std::string(class_names),classes_list, ',');
    Engine_FreeBufString(class_names);
    sort(classes_list.begin(),classes_list.end());
 //   LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
@@ -233,6 +259,42 @@ void TUClassesListFrame::DrawClassesList(int library_index, TStringGrid *classes
   classes_string_grid->ColWidths[0]=20;
   classes_string_grid->ColWidths[1]=classes_string_grid->ClientWidth-classes_string_grid->ColWidths[0];
 }
+
+void TUClassesListFrame::DrawClassesList(const std::string &library_name, TStringGrid *classes_string_grid)
+{
+  if(!library_name.empty())
+  {
+   const char* class_names=Storage_GetLibraryClassNames(library_name.c_str());
+   std::vector<std::string> classes_list;
+   int num_classes=0;
+   if(class_names)
+	num_classes=RDK::separatestring(std::string(class_names),classes_list, ',');
+   Engine_FreeBufString(class_names);
+   sort(classes_list.begin(),classes_list.end());
+//   LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
+
+   classes_string_grid->RowCount=num_classes+1;
+   classes_string_grid->ColCount=2;
+   if(classes_string_grid->RowCount>1)
+	classes_string_grid->FixedRows=1;
+
+   for(size_t i=0;i<classes_list.size();i++)
+   {
+	classes_string_grid->Cells[0][i+1]=i+1;
+	classes_string_grid->Cells[1][i+1]=classes_list[i].c_str();
+   }
+  }
+  else
+  {
+   classes_string_grid->RowCount=0;
+  }
+  classes_string_grid->Cells[0][0]="#";
+  classes_string_grid->Cells[1][0]="Class Name";
+  classes_string_grid->ColWidths[0]=20;
+  classes_string_grid->ColWidths[1]=classes_string_grid->ClientWidth-classes_string_grid->ColWidths[0];
+}
+
+
 
 // Возврат интерфейса в исходное состояние
 void TUClassesListFrame::AClearInterface(void)
@@ -367,7 +429,7 @@ void __fastcall TUClassesListFrame::LibsListStringGridSelectCell(TObject *Sender
  if(UpdateInterfaceFlag)
   return;
 
- DrawClassesList(LibsListStringGrid->Row-1, LibComponentListStringGrid);
+ DrawClassesList(AnsiString(LibsListStringGrid->Cells[1][LibsListStringGrid->Row]).c_str(), LibComponentListStringGrid);
 }
 //---------------------------------------------------------------------------
 
@@ -385,27 +447,7 @@ void __fastcall TUClassesListFrame::LibComponentListStringGridMouseEnter(TObject
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUClassesListFrame::CreateRuntimeLibraryButtonClick(TObject *Sender)
 
-{
- Storage_CreateRuntimeCollection("RuntimeLibrary1");
- UpdateInterface();
- LibsListStringGrid->Row=LibsListStringGrid->RowCount-1;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TUClassesListFrame::AddClassButtonClick(TObject *Sender)
-{
- if(NewClassName.empty() || NewComponentName.empty())
-  return;
-
- AddClassToRuntimeLibrary(NewComponentName,NewClassName,AnsiString(GetSelectedLibraryName()).c_str());
-
- NewClassName.clear();
- NewComponentName.clear();
- UpdateInterface();
-}
-//---------------------------------------------------------------------------
 
 
 void __fastcall TUClassesListFrame::StringGridMouseMove(TObject *Sender, TShiftState Shift,
@@ -530,6 +572,96 @@ void __fastcall TUClassesListFrame::TreeViewMouseMove(TObject *Sender, TShiftSta
 void __fastcall TUClassesListFrame::SearchEditChange(TObject *Sender)
 {
  UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::CreateRuntimeLibrary1Click(TObject *Sender)
+{
+ // Storage
+ RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+ if(!storage)
+  return;
+
+ String lib_name = InputBox("Create Runtime Library", "Please enter library name", "");
+ if(lib_name.Length()==0)
+  return;
+
+ if(!storage->CreateRuntimeCollection(AnsiString(lib_name).c_str()))
+ {
+  Application->MessageBox((String("An error occurred while creating library ")+lib_name).c_str(),L"Error",MB_OK);
+ }
+
+ UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::DeleteRuntimeLibrary1Click(TObject *Sender)
+{
+ // Storage
+ RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
+ if(!storage)
+  return;
+
+  std::string lib_name=AnsiString(LibsListStringGrid->Cells[1][LibsListStringGrid->Row]).c_str();
+
+ if(Application->MessageBox((String("Are you sure to delete ")+lib_name.c_str()).c_str(),L"Error",MB_YESNO) != ID_YES)
+  return;
+ if(!storage->DeleteRuntimeCollection(lib_name.c_str()))
+ {
+  Application->MessageBox((String("An error occurred while creating library ")+lib_name.c_str()).c_str(),L"Error",MB_OK);
+ }
+
+ UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::CreateNewClass1Click(TObject *Sender)
+{
+ RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
+
+ // Если нет модели
+ if(!engine || !engine->GetModel() || !engine->GetModel()->GetStorage())
+  return;
+
+ // Выделенный компонент
+ RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
+								->GetComponentL(NewComponentName, true);
+ // Если компонент не выделен
+ if(!container)
+  return;
+
+ // Имя текущей выбранной библиотеки (если выбрана)
+ std::string lib_name=AnsiString(LibsListStringGrid->Cells[1][LibsListStringGrid->Row]).c_str();
+
+ String class_name = InputBox("Class name", "Please enter new class name", "");
+ if(class_name.Length()==0)
+  return;
+
+ String default_comp_name = InputBox("Default component name", "Please enter default component name", container->GetName().c_str());
+ if(default_comp_name.Length()==0)
+  return;
+
+
+// std::string buff;
+// engine->GetModel()->GetStorage()->GetLibsNameListByType(buff,2);
+// std::vector<std::string> libs_names;
+// RDK::separatestring(buff,libs_names,',');
+
+ if(!engine->GetEnvironment()->
+				GetStorage()->AddClassToCollection(AnsiString(class_name).c_str(), AnsiString(default_comp_name).c_str(),
+											   false, container, lib_name))
+ {
+  Application->MessageBox((String("An error occurred while adding new class ")+class_name+ String(" to library ")+lib_name.c_str()).c_str(),L"Error",MB_OK);
+  return;
+ }
+
+ UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::DeleteClass1Click(TObject *Sender)
+{
+ //
 }
 //---------------------------------------------------------------------------
 

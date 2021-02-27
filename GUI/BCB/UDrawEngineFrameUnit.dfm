@@ -42,18 +42,12 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       inherited PageControl: TPageControl
         Width = 227
         Height = 401
-        ActivePage = UClassesListFrame.LibsControlTabSheet
         ExplicitWidth = 227
         ExplicitHeight = 401
         inherited NameTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 494
           inherited StringGrid: TStringGrid
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
-            ExplicitHeight = 494
           end
         end
         inherited LibsTabSheet: TTabSheet
@@ -63,8 +57,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsControlTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 373
           inherited Splitter1: TSplitter
@@ -72,34 +64,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
             Width = 219
             ExplicitTop = 288
             ExplicitWidth = 219
-          end
-          inherited Panel1: TPanel
-            Top = 250
-            Width = 219
-            ExplicitTop = 250
-            ExplicitWidth = 219
-            inherited LoadLibraryButton: TButton
-              Width = 217
-              ExplicitWidth = 217
-            end
-            inherited CreateRuntimeLibraryButton: TButton
-              Width = 217
-              ExplicitWidth = 217
-            end
-            inherited DeleteLibraryButton: TButton
-              Width = 217
-              ExplicitTop = 70
-              ExplicitWidth = 217
-            end
-            inherited RenameRuntimeLibraryButton: TButton
-              Width = 217
-              ExplicitWidth = 217
-            end
-            inherited AddClassButton: TButton
-              Width = 217
-              OnClick = UClassesListFrameAddClassButtonClick
-              ExplicitWidth = 217
-            end
           end
           inherited GroupBox1: TGroupBox
             Width = 219
@@ -116,6 +80,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           inherited GroupBox2: TGroupBox
             Top = 90
             Width = 219
+            Height = 283
             ExplicitTop = 90
             ExplicitWidth = 219
             inherited LibComponentListStringGrid: TStringGrid
@@ -129,8 +94,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       end
       inherited SearchEdit: TEdit
         Width = 227
-        ExplicitLeft = 0
-        ExplicitTop = 0
         ExplicitWidth = 227
       end
     end
@@ -338,6 +301,13 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object CopyclasstoClipboard1: TMenuItem
       Caption = 'Copy class to Clipboard'
       OnClick = CopyclasstoClipboard1Click
+    end
+    object N8: TMenuItem
+      Caption = '-'
+    end
+    object Droptoruntimelibrary1: TMenuItem
+      Caption = 'Drop to runtime library'
+      OnClick = Droptoruntimelibrary1Click
     end
     object N5: TMenuItem
       Caption = '-'

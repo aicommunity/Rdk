@@ -441,10 +441,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -646,6 +642,12 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitTop = 22
                 ExplicitWidth = 235
                 ExplicitHeight = 368
+                inherited NameTabSheet: TTabSheet
+                  inherited StringGrid: TStringGrid
+                    Width = 227
+                    Height = 339
+                  end
+                end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitTop = 25
                   ExplicitWidth = 227
@@ -660,63 +662,39 @@ object UGEngineControlForm: TUGEngineControlForm
                 inherited LibsControlTabSheet: TTabSheet
                   inherited Splitter1: TSplitter
                     Top = 69
+                    Width = 227
                     Height = 8
                     ExplicitTop = 11
                     ExplicitWidth = 175
                     ExplicitHeight = 8
                   end
-                  inherited Panel1: TPanel
-                    Top = 244
-                    Height = 129
-                    ExplicitTop = 244
-                    ExplicitHeight = 129
-                    inherited LoadLibraryButton: TButton
-                      Height = 26
-                      ExplicitHeight = 26
-                    end
-                    inherited CreateRuntimeLibraryButton: TButton
-                      Top = 27
-                      Height = 27
-                      ExplicitTop = 27
-                      ExplicitHeight = 27
-                    end
-                    inherited DeleteLibraryButton: TButton
-                      Top = 54
-                      ExplicitTop = 54
-                    end
-                    inherited RenameRuntimeLibraryButton: TButton
-                      Top = 79
-                      Height = 27
-                      ExplicitTop = 79
-                      ExplicitHeight = 27
-                    end
-                    inherited AddClassButton: TButton
-                      Top = 106
-                      Height = 26
-                      ExplicitTop = 106
-                      ExplicitHeight = 26
-                    end
-                  end
                   inherited GroupBox1: TGroupBox
+                    Width = 227
                     Height = 69
                     ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
+                      Width = 223
                       Height = 51
-                      ExplicitTop = 16
+                      ExplicitLeft = 1
+                      ExplicitTop = 20
+                      ExplicitWidth = 223
                       ExplicitHeight = 51
                     end
                   end
                   inherited GroupBox2: TGroupBox
                     Top = 77
-                    Height = 167
+                    Width = 227
+                    Height = 262
                     ExplicitTop = 77
-                    ExplicitHeight = 167
+                    ExplicitHeight = 296
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
-                      Height = 149
-                      ExplicitTop = 16
-                      ExplicitHeight = 149
+                      Width = 223
+                      Height = 244
+                      ExplicitTop = 17
+                      ExplicitWidth = 223
+                      ExplicitHeight = 244
                     end
                   end
                 end
@@ -1326,7 +1304,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03B80410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03BC0410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

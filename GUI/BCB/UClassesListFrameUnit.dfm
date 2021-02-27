@@ -10,18 +10,12 @@ inherited UClassesListFrame: TUClassesListFrame
     Top = 21
     Width = 507
     Height = 522
-    ActivePage = NameTabSheet
+    ActivePage = LibsTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
-    ExplicitTop = 0
-    ExplicitHeight = 543
     object NameTabSheet: TTabSheet
       Caption = 'By Name'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 515
       object StringGrid: TStringGrid
         Left = 0
         Top = 0
@@ -37,16 +31,11 @@ inherited UClassesListFrame: TUClassesListFrame
         TabOrder = 0
         OnMouseEnter = StringGridMouseEnter
         OnMouseMove = StringGridMouseMove
-        ExplicitHeight = 515
       end
     end
     object LibsTabSheet: TTabSheet
       Caption = 'By Libs'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 515
       object TreeView: TTreeView
         Left = 0
         Top = 0
@@ -63,98 +52,40 @@ inherited UClassesListFrame: TUClassesListFrame
         TabOrder = 0
         OnMouseEnter = TreeViewMouseEnter
         OnMouseMove = TreeViewMouseMove
-        ExplicitHeight = 515
       end
     end
     object LibsControlTabSheet: TTabSheet
       Caption = 'Libs Control'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Splitter1: TSplitter
         Left = 0
-        Top = 225
+        Top = 177
         Width = 499
         Height = 7
         Cursor = crVSplit
-        Align = alBottom
-        ExplicitTop = 304
-      end
-      object Panel1: TPanel
-        Left = 0
-        Top = 392
-        Width = 499
-        Height = 123
-        Align = alBottom
-        TabOrder = 0
-        object LoadLibraryButton: TButton
-          Left = 1
-          Top = 1
-          Width = 497
-          Height = 25
-          Align = alTop
-          Caption = 'Load Library'
-          TabOrder = 0
-        end
-        object CreateRuntimeLibraryButton: TButton
-          Left = 1
-          Top = 26
-          Width = 497
-          Height = 25
-          Align = alTop
-          Caption = 'Create Runtime Library'
-          TabOrder = 1
-          OnClick = CreateRuntimeLibraryButtonClick
-        end
-        object DeleteLibraryButton: TButton
-          Left = 1
-          Top = 51
-          Width = 497
-          Height = 25
-          Align = alTop
-          Caption = 'Delete Library'
-          TabOrder = 2
-        end
-        object RenameRuntimeLibraryButton: TButton
-          Left = 1
-          Top = 76
-          Width = 497
-          Height = 25
-          Align = alTop
-          Caption = 'Rename Runtime Library'
-          TabOrder = 3
-        end
-        object AddClassButton: TButton
-          Left = 1
-          Top = 101
-          Width = 497
-          Height = 25
-          Align = alTop
-          Caption = 'Create New Class'
-          TabOrder = 4
-          OnClick = AddClassButtonClick
-        end
+        Align = alTop
+        ExplicitLeft = 3
+        ExplicitTop = 295
       end
       object GroupBox1: TGroupBox
         Left = 0
         Top = 0
         Width = 499
-        Height = 225
-        Align = alClient
+        Height = 177
+        Align = alTop
         Caption = ' Library list '
-        TabOrder = 1
+        TabOrder = 0
         object LibsListStringGrid: TStringGrid
           Left = 2
           Top = 15
           Width = 495
-          Height = 208
+          Height = 160
           Align = alClient
           ColCount = 2
           DefaultRowHeight = 18
           FixedCols = 0
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
+          PopupMenu = RTLibsPopupMenu
           TabOrder = 0
           OnMouseEnter = LibsListStringGridMouseEnter
           OnSelectCell = LibsListStringGridSelectCell
@@ -162,23 +93,24 @@ inherited UClassesListFrame: TUClassesListFrame
       end
       object GroupBox2: TGroupBox
         Left = 0
-        Top = 232
+        Top = 184
         Width = 499
-        Height = 160
-        Align = alBottom
+        Height = 310
+        Align = alClient
         Caption = ' Selected Library Components'
-        TabOrder = 2
+        TabOrder = 1
         object LibComponentListStringGrid: TStringGrid
           Left = 2
           Top = 15
           Width = 495
-          Height = 143
+          Height = 293
           Align = alClient
           ColCount = 2
           DefaultRowHeight = 18
           FixedCols = 0
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
           ParentShowHint = False
+          PopupMenu = RTClassesPopupMenu
           ShowHint = True
           TabOrder = 0
           OnMouseEnter = LibComponentListStringGridMouseEnter
@@ -195,8 +127,25 @@ inherited UClassesListFrame: TUClassesListFrame
     Align = alTop
     TabOrder = 1
     OnChange = SearchEditChange
-    ExplicitLeft = 240
-    ExplicitTop = 8
-    ExplicitWidth = 121
+  end
+  object RTLibsPopupMenu: TPopupMenu
+    Left = 356
+    Top = 109
+    object CreateRuntimeLibrary1: TMenuItem
+      Caption = 'Create Runtime Library'
+      OnClick = CreateRuntimeLibrary1Click
+    end
+    object DeleteRuntimeLibrary1: TMenuItem
+      Caption = 'Delete Runtime Library'
+      OnClick = DeleteRuntimeLibrary1Click
+    end
+  end
+  object RTClassesPopupMenu: TPopupMenu
+    Left = 356
+    Top = 317
+    object DeleteClass1: TMenuItem
+      Caption = 'Delete Class'
+      OnClick = DeleteClass1Click
+    end
   end
 end

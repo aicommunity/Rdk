@@ -498,9 +498,8 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
 
     // XML парсер ведет себ€ проблемно.
     // » если делать Destroy() не инициализоварованого, то ломаетс€. ѕоэтому сначала Create заглушки
-    CurrentComponentStruct.Create("stub");
-
-    CurrentComponentStruct.Destroy();
+	CurrentComponentStruct.Create("stub");
+	CurrentComponentStruct.Destroy();
 
     // —охранение XML и добавление нового пол€ RTname с именем
     if(!cont->SaveComponent(&CurrentComponentStruct, true, ptAny|pgPublic))
