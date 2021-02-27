@@ -30,8 +30,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       TabOrder = 0
       TabPosition = tpBottom
       OnChange = PageControl1Change
-      ExplicitLeft = -2
-      ExplicitTop = 2
       object TabSheet6: TTabSheet
         Caption = 'Parameters List'
         ImageIndex = 5

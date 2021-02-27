@@ -748,8 +748,11 @@ void TUComponentsListFrame::SelectComponentByName(const std::string& name)
 // Поднимается на уровень вверх
 void TUComponentsListFrame::SelectUp(void)
 {
+ std::string curr_name=CurrentComponentName;
  SetSelectedComponentName("");
  StringGridDblClick(this);
+ SelectedId=-1;
+ SetSelectedComponentName(curr_name);
 }
 
 // Длинный строковой id текущего компонента
