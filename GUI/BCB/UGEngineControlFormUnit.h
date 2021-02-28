@@ -183,6 +183,7 @@ __published:	// IDE-managed Components
 	TMenuItem *CreateSimpleProject1;
 	TToolButton *ToolButton4;
 	TFileOpenDialog *FileOpenDialog;
+	TMenuItem *AutocopyProject1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -270,6 +271,7 @@ __published:	// IDE-managed Components
 	void __fastcall ClonetoNewChannel1Click(TObject *Sender);
 	void __fastcall VideoSources21Click(TObject *Sender);
 	void __fastcall CreateSimpleProject1Click(TObject *Sender);
+	void __fastcall AutocopyProject1Click(TObject *Sender);
 	//void __fastcall UComponentsListFrame1StringGridClick(TObject *Sender);
 
 

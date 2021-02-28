@@ -1709,6 +1709,9 @@ bool UApplication::CopyProject(const std::string &new_path)
 
  SaveProject();
 
+ if(RDK::CreateNewDirectory(new_path.c_str()) != 0)
+  return false;
+
  RDK::CopyDir(ProjectPath, new_path, "*.*");
  return true;
 }

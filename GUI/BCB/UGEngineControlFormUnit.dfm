@@ -320,10 +320,6 @@ object UGEngineControlForm: TUGEngineControlForm
               end
             end
             inherited TabSheet3: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
               inherited Splitter2: TSplitter
                 Top = 250
                 ExplicitTop = 250
@@ -392,6 +388,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Height = 183
             DefaultRowHeight = 18
             OnMouseEnter = UComponentsListFrame1StringGridMouseEnter
+            ExplicitLeft = 1
             ExplicitTop = 22
             ExplicitWidth = 257
             ExplicitHeight = 183
@@ -640,6 +637,8 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitWidth = 235
                 ExplicitHeight = 368
                 inherited NameTabSheet: TTabSheet
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
                   ExplicitWidth = 499
                   ExplicitHeight = 494
                   inherited StringGrid: TStringGrid
@@ -661,33 +660,46 @@ object UGEngineControlForm: TUGEngineControlForm
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
+                  ExplicitWidth = 499
+                  ExplicitHeight = 494
                   inherited Splitter1: TSplitter
                     Top = 69
+                    Width = 499
                     Height = 8
                     ExplicitTop = 11
                     ExplicitWidth = 175
                     ExplicitHeight = 8
                   end
                   inherited GroupBox1: TGroupBox
+                    Width = 499
                     Height = 69
+                    ExplicitWidth = 499
                     ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
+                      Width = 495
                       Height = 51
                       ExplicitTop = 16
+                      ExplicitWidth = 495
                       ExplicitHeight = 51
                     end
                   end
                   inherited GroupBox2: TGroupBox
                     Top = 77
-                    Height = 296
+                    Width = 499
+                    Height = 417
                     ExplicitTop = 77
-                    ExplicitHeight = 296
+                    ExplicitWidth = 499
+                    ExplicitHeight = 417
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
-                      Height = 278
+                      Width = 495
+                      Height = 399
                       ExplicitTop = 16
-                      ExplicitHeight = 278
+                      ExplicitWidth = 495
+                      ExplicitHeight = 399
                     end
                   end
                 end
@@ -708,6 +720,7 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited ScrollBox: TScrollBox
               Width = 450
               Height = 390
+              ExplicitLeft = 1
               ExplicitWidth = 450
               ExplicitHeight = 390
               inherited Image: TImage
@@ -1108,6 +1121,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Copy Project'
         OnClick = CopyProject1Click
       end
+      object AutocopyProject1: TMenuItem
+        Caption = 'Autocopy Project'
+        OnClick = AutocopyProject1Click
+      end
       object N5: TMenuItem
         Caption = '-'
       end
@@ -1310,7 +1327,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03C00410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03C40410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

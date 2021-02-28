@@ -3356,3 +3356,35 @@ void __fastcall TUGEngineControlForm::CreateSimpleProject1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::AutocopyProject1Click(TObject *Sender)
+{
+ if(!RdkApplication.GetProjectOpenFlag())
+ {
+  Application->MessageBox(L"Please open configuration for copy first!", L"Error",MB_OK);
+  return;
+ }
+
+ if(Application->MessageBox(L"Are you sure to autocreate copy of current config?",L"Info",MB_YESNO) != ID_YES)
+  return;
+
+ std::string config_path=RdkApplication.GetProjectPath();
+ if(config_path.empty())
+  return;
+
+ time_t curr_time;
+ time(&curr_time);
+
+ size_t n=config_path.find_last_not_of("\\/");
+ if(config_path.find_last_of("\\/") == config_path.size()-1)
+  config_path.resize(n+1);
+ /// ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
+ std::string date_time_str=RDK::get_text_time(curr_time, '.', '_');
+ config_path+=std::string(" ")+date_time_str+"\\";
+
+// config_path=RdkApplication.GetWorkDirectory()+config_path;
+ RdkApplication.CopyProject(config_path);
+
+ OpenProject((config_path+RdkApplication.GetProjectFileName()).c_str());
+}
+//---------------------------------------------------------------------------
+
