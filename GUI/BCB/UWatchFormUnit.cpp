@@ -86,8 +86,10 @@ TUWatchForm* TUWatchForm::New(TComponent *owner)
 // Удаляет все лишние вкладки (оставляет 1 начальную)
 void TUWatchForm::ClearPages(void)
 {
- while(PageControl->PageCount > 1)
+ while(PageControl->PageCount > 0)
   delete PageControl->Pages[PageControl->PageCount-1];
+
+  AddPage();
 }
 
 // Добавляет страницу

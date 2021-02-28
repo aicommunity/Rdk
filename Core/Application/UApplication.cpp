@@ -835,11 +835,12 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  project_config.SetNumChannels(1);
  project_config.ProjectMode=0;
  project_config.ProjectName="Autocreated configuration";
- project_config.ProjectType=1;
+ project_config.ProjectType=0;
  project_config.EventsLogFlag=true;
  project_config.CalcSourceTimeMode=0;
  project_config.MultiThreadingMode=1;
  project_config.MTUpdateInterfaceInterval=100;
+ project_config.ChannelsConfig[0].CalculationMode=1;
  project_config.ChannelsConfig[0].ClassName=model_classname;
  project_config.ChannelsConfig[0].ModelMode=3;
  project_config.ChannelsConfig[0].InitAfterLoad=true;
@@ -1542,7 +1543,7 @@ bool UApplication::SaveProject(void)
  Project->WriteToXml(ProjectXml);
 try
 {
-
+ InterfaceXml.Create(std::string("Interfaces"));
  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
 
