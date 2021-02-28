@@ -237,6 +237,8 @@ void __fastcall TUSeriesControlForm::OutterCPanelDblClick(TObject *Sender)
   return;
 
  InnerCPanel->Color=ColorDialog1->Color;
+ InnerCPanel->Repaint();
+ InnerCPanel->Update();
  WatchList[StrToInt(StringGrid2->Cells[0][StringGrid2->Row])].Color
                    =ColorDialog1->Color;
  ColorsChanged=true;

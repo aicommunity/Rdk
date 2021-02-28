@@ -847,6 +847,7 @@ void __fastcall TUWatchFrame::ChangeColor(int seriesindex, TColor color)
 
  Chart1->Series[seriesindex]->ColorSource=color;
  Chart1->Series[seriesindex]->SeriesColor=color;
+ Chart1->Series[seriesindex]->Pen->Color=color;
  ModifyState=true;
  // ...Тут остальные обновления
 
