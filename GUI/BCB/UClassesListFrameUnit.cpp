@@ -35,7 +35,7 @@ void TUClassesListFrame::AUpdateInterface(void)
  storage->GetLibsNameListByType(buff,2);
  std::vector<std::string> RTlibsNames;
  RDK::separatestring(buff,RTlibsNames,',');
-
+ sort(RTlibsNames.begin(),RTlibsNames.end());
  std::vector<std::string> RTclassesNames;
 
  for(size_t i=0;i<RTlibsNames.size();i++)
@@ -598,6 +598,15 @@ void __fastcall TUClassesListFrame::CreateRuntimeLibrary1Click(TObject *Sender)
  }
 
  UpdateInterface(true);
+
+ for(int i=0;i<LibsListStringGrid->RowCount;i++)
+ {
+  if(LibsListStringGrid->Cells[1][i+1] == lib_name.c_str())
+  {
+   LibsListStringGrid->Row=i+1;
+   break;
+  }
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -657,7 +666,7 @@ void __fastcall TUClassesListFrame::CreateNewClass1Click(TObject *Sender)
 				GetStorage()->AddClassToCollection(AnsiString(class_name).c_str(), AnsiString(default_comp_name).c_str(),
 											   false, container, lib_name))
  {
-  Application->MessageBox((String("An error occurred while adding new class ")+class_name+ String(" to library ")+lib_name.c_str()).c_str(),L"Error",MB_OK);
+  Application->MessageBox((String("An error occurred while adding new class ")+class_name+ String(" to library ")+String(lib_name.c_str())+". Possible class name already exists.").c_str(),L"Error",MB_OK);
   return;
  }
 

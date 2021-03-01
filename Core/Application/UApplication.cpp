@@ -660,7 +660,6 @@ bool UApplication::UnInit(void)
   EngineControl->StopEngineStateThread();
  }
  Sleep(10);
- RDK::UIVisualControllerStorage::ClearInterface();
  CloseProject();
  EngineControl->UnInit();
  GetCoreLock()->Destroy();

@@ -1125,13 +1125,14 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     //Создание папки библиотеки
     std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
-    URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
+	URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
 
     if(AddCollection(lib))
-    {
+	{
         //Создание папки библиотеки
         if(RDK::CreateNewDirectory(lib->GetLibPath().c_str())==0)
-        {
+		{
+         lib->Upload(this);
             return true;
         }
         else
