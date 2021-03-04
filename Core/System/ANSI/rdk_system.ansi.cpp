@@ -65,7 +65,13 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  return 0;
 }
 
-int CopyFile(const std::string &source_file, const std::string &dest_file)
+int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
+{
+ return 1;
+}
+
+/// Перемещает файл
+int RdkMoveFile(const std::string &source_file, const std::string &dest_file)
 {
  return 1;
 }

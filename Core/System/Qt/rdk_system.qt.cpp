@@ -165,6 +165,19 @@ int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
  return 0;
 }
 
+/// Перемещает файл
+int RdkMoveFile(const std::string &source_file, const std::string &dest_file)
+{
+ QString src=QString::fromLocal8Bit(source_file.c_str());
+ QString dest=QString::fromLocal8Bit(dest_file.c_str());
+ QDir dir;
+ bool res=dir.rename(src, dest);
+ if(!res)
+  return 1;
+
+ return 0;
+}
+
 int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask)
 {
  std::vector<std::string> results;

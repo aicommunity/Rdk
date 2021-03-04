@@ -359,6 +359,9 @@ virtual bool CloseProject(void);
 /// Клонирует проект в новое расположение
 virtual bool CloneProject(const std::string &filename);
 
+/// Переименовывает папку проекта
+virtual bool RenameProject(const std::string &filename);
+
 virtual void ReloadParameters(void);
 
 virtual bool CopyProject(const std::string &new_path);

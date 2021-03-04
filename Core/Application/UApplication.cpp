@@ -1672,6 +1672,45 @@ bool UApplication::CloneProject(const std::string &filename)
  return true;
 }
 
+/// Переименовывает папку проекта
+bool UApplication::RenameProject(const std::string &filename)
+{
+ if(!ProjectOpenFlag)
+  return false;
+
+ if(filename.empty())
+  return false;
+
+ PauseChannel(-1);
+ bool events_log_mode=GetProjectConfig().EventsLogFlag;
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(false);
+
+ std::string resfilename=filename;
+ if(filename.find_last_of("\\/") != filename.size()-1)
+  resfilename+="/";
+ int res=RdkMoveFile(ProjectPath, resfilename);
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(events_log_mode);
+ if(res == 0)
+ {
+  SetProjectPath(resfilename);
+
+  std::list<std::string> last_list=LastProjectsList;
+  last_list.push_front(resfilename+ProjectFileName);
+  while(int(last_list.size())>LastProjectsListMaxSize
+   && !LastProjectsList.empty())
+  {
+   last_list.pop_back();
+  }
+
+  LastProjectsList=last_list;
+
+  SaveProjectsHistory();
+  return true;
+ }
+
+ return false;
+}
+
 void UApplication::ReloadParameters(void)
 {
  if(!ProjectOpenFlag)

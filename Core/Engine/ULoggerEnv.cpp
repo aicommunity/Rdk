@@ -106,6 +106,8 @@ bool ULoggerEnv::SetEventsLogMode(bool value)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
  EventsLogMode=value;
+ if(!EventsLogMode)
+  Clear();
  return true;
 }
 

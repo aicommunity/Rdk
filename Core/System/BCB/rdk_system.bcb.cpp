@@ -180,6 +180,19 @@ int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
  return 0;
 }
 
+/// Перемещает файл
+int RdkMoveFile(const std::string &source_file, const std::string &dest_file)
+{
+ DWORD error=0;
+ if(!MoveFileEx(source_file.c_str(), dest_file.c_str(),MOVEFILE_WRITE_THROUGH))
+ {
+  error=GetLastError();
+  return error;
+ }
+
+ return 0;
+}
+
 int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask)
 {
  std::vector<std::string> results;

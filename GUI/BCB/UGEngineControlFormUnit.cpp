@@ -2446,6 +2446,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
  AutoStartProjectFlag=app_ini->ReadBool("General", "AutoStartProjectFlag", false);
+ AutoexecLastProjectFlag=app_ini->ReadBool("General", "AutoexecLastProjectFlag", false);
  VideoGrabberLicenseString=app_ini->ReadString("General","VideoGrabberLicenseString","");
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
@@ -2595,6 +2596,21 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   OpenProject(AutoexecProjectFileName);
   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
   AutoexecProjectFileName="";
+ }
+ else
+ if(AutoexecLastProjectFlag)
+ {
+  const std::list<std::string> last_projects=RdkApplication.GetLastProjectsList();
+  if(!last_projects.empty())
+  {
+   std::string last_project_name=last_projects.front();
+   if(FileExists(last_project_name.c_str()))
+   {
+	MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+	OpenProject(last_project_name.c_str());
+	MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+   }
+  }
  }
 
  if(AutoStartProjectFlag)
@@ -3385,6 +3401,34 @@ void __fastcall TUGEngineControlForm::AutocopyProject1Click(TObject *Sender)
  RdkApplication.CopyProject(config_path);
 
  OpenProject((config_path+RdkApplication.GetProjectFileName()).c_str());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::RenameProject1Click(TObject *Sender)
+{
+ if(!RdkApplication.GetProjectOpenFlag())
+ {
+  Application->MessageBox(L"Please open configuration for copy first!", L"Error",MB_OK);
+  return;
+ }
+
+ std::string config_path=RdkApplication.GetProjectPath();
+ if(config_path.empty())
+  return;
+
+	 String project_name=ExtractFileName(ExcludeTrailingBackslash(config_path.c_str()));
+
+ size_t n=config_path.find_last_not_of("\\/");
+ if(config_path.find_last_of("\\/") == config_path.size()-1)
+  config_path.resize(n+1);
+
+ String project_path=ExtractFilePath(string(config_path).c_str());
+ String new_name = InputBox("Select new configuration name", "Please enter new name", project_name);
+ if(new_name.Length()==0)
+  return;
+
+ if(!RdkApplication.RenameProject(AnsiString(project_path+new_name).c_str()))
+  Application->MessageBox(L"Falied to rename configuration!", L"Error",MB_OK);
 }
 //---------------------------------------------------------------------------
 

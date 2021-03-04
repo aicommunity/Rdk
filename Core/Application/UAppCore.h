@@ -44,6 +44,7 @@ public:
 public:
  std::string startProjectName;
  int autoStartProjectFlag;
+ int autoexecLastProjectFlag;
  int hideAdminForm;
  int startMinimized;
 
@@ -126,7 +127,8 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  projectIniFile.LoadFromFile(ini_file_name);
  startProjectName = projectIniFile("General", "AutoexecProjectFileName", "");
- autoStartProjectFlag = RDK::atoi(projectIniFile("General", "autoStartProjectFlag", "0"));
+ autoStartProjectFlag = RDK::atoi(projectIniFile("General", "AutoStartProjectFlag", "0"));
+ autoexecLastProjectFlag = RDK::atoi(projectIniFile("General", "AutoexecLastProjectFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
 
@@ -245,6 +247,16 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  if(!startProjectName.empty())
   application.OpenProject(startProjectName);
+ else
+ if(autoexecLastProjectFlag)
+ {
+  const std::list<std::string> last_projects=application.GetLastProjectsList();
+  if(!last_projects.empty())
+  {
+   std::string last_project_name=last_projects.front();
+   application.OpenProject(last_project_name);
+  }
+ }
 
  if(autoStartProjectFlag)
  {

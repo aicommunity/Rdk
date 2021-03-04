@@ -320,6 +320,10 @@ object UGEngineControlForm: TUGEngineControlForm
               end
             end
             inherited TabSheet3: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
               inherited Splitter2: TSplitter
                 Top = 250
                 ExplicitTop = 250
@@ -1125,6 +1129,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Autocopy Project'
         OnClick = AutocopyProject1Click
       end
+      object RenameProject1: TMenuItem
+        Caption = 'Rename Project'
+        OnClick = RenameProject1Click
+      end
       object N5: TMenuItem
         Caption = '-'
       end
@@ -1327,7 +1335,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 728
     Top = 16
     Bitmap = {
-      494C01011B005C03C40410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03C80410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

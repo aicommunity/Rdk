@@ -282,6 +282,12 @@ int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
  return 0;
 }
 
+/// Перемещает файл
+int RdkMoveFile(const std::string &source_file, const std::string &dest_file)
+{
+ return 1;
+}
+
 int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask)
 {
  // TODO: rewrite it
