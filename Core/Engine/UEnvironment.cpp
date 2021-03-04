@@ -1008,6 +1008,7 @@ bool UEnvironment::AReset(void)
  ProcEndTime=StartupTime;
  LastDuration=1;
  LastStepStartTime=0;
+ Time.SetTime(0);
 
  if(Logger)
   Logger->Reset();
@@ -1036,7 +1037,6 @@ bool UEnvironment::AReset(void)
    return false;
  }
 
- Time.SetTime(0);
  return true;
 }
 
