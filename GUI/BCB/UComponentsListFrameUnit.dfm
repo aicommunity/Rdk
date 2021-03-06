@@ -542,8 +542,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OnKeyPress = StringGridKeyPress
       OnMouseEnter = StringGridMouseEnter
       OnSelectCell = StringGridSelectCell
-      ExplicitLeft = 4
-      ExplicitTop = 29
     end
     object HeaderControl: THeaderControl
       Left = 1
