@@ -45,18 +45,18 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 401
         inherited NameTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 373
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 494
           inherited StringGrid: TStringGrid
-            Width = 219
-            Height = 373
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
-            ExplicitWidth = 219
-            ExplicitHeight = 373
           end
         end
         inherited LibsTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 373
           inherited TreeView: TTreeView
@@ -69,40 +69,33 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsControlTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 373
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 494
           inherited Splitter1: TSplitter
             Top = 83
-            Width = 219
             ExplicitTop = 288
             ExplicitWidth = 219
           end
           inherited GroupBox1: TGroupBox
-            Width = 219
             Height = 83
-            ExplicitWidth = 219
             ExplicitHeight = 83
             inherited LibsListStringGrid: TStringGrid
-              Width = 215
               Height = 66
-              ExplicitWidth = 215
               ExplicitHeight = 66
             end
           end
           inherited GroupBox2: TGroupBox
             Top = 90
-            Width = 219
-            Height = 283
+            Height = 404
             ExplicitTop = 90
-            ExplicitWidth = 219
-            ExplicitHeight = 283
+            ExplicitHeight = 404
             inherited LibComponentListStringGrid: TStringGrid
-              Width = 215
-              Height = 266
+              Height = 387
               OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
               OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
-              ExplicitWidth = 215
-              ExplicitHeight = 266
+              ExplicitHeight = 387
             end
           end
         end
@@ -128,7 +121,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Align = alClient
       TabOrder = 0
       OnResize = ScrollBoxResize
-      ExplicitLeft = -4
       object Image: TImage
         Left = 20
         Top = 19
@@ -223,11 +215,20 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     end
     object ShowLinkDetailCheckBox: TCheckBox
       Left = 310
-      Top = 24
+      Top = 6
       Width = 107
       Height = 17
       Caption = 'Show links detail'
       TabOrder = 6
+    end
+    object ShowBGLinesCheckBox: TCheckBox
+      Left = 310
+      Top = 29
+      Width = 97
+      Height = 17
+      Caption = 'Show BG Lines'
+      TabOrder = 7
+      OnClick = ShowBGLinesCheckBoxClick
     end
   end
   object PopupMenu: TPopupMenu

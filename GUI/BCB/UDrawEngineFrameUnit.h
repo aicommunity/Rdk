@@ -70,6 +70,7 @@ __published:    // IDE-managed Components
 	TMenuItem *N8;
 	TMenuItem *Droptoruntimelibrary1;
 	TFileOpenDialog *FileOpenDialog;
+	TCheckBox *ShowBGLinesCheckBox;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -112,6 +113,7 @@ __published:    // IDE-managed Components
 	void __fastcall CancelSwitching1Click(TObject *Sender);
 	void __fastcall Clone1Click(TObject *Sender);
 	void __fastcall Droptoruntimelibrary1Click(TObject *Sender);
+	void __fastcall ShowBGLinesCheckBoxClick(TObject *Sender);
 
 
 private:    // User declarations

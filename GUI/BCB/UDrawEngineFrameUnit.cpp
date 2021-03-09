@@ -119,6 +119,8 @@ void TUDrawEngineFrame::AUpdateInterface(void)
  }
 
 
+ ShowBGLinesCheckBox->Checked=DrawEngine.GetShowBackgroundLines();
+
  int rec_width(0),rec_height(0);
  DrawEngine.CalcRecommendSize(rec_width,rec_height);
  //GraphCanvas.SetRes(new_bmp_width,new_bmp_height,RDK::ubmRGB24);
@@ -977,6 +979,14 @@ void __fastcall TUDrawEngineFrame::Droptoruntimelibrary1Click(TObject *Sender)
  UClassesListFrame->NewComponentName=component_name;
  UClassesListFrame->CreateNewClass1Click(Sender);
  UClassesListFrame->NewComponentName="";
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::ShowBGLinesCheckBoxClick(TObject *Sender)
+{
+ //
+ DrawEngine.SetShowBackgroundLines(ShowBGLinesCheckBox->Checked);
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

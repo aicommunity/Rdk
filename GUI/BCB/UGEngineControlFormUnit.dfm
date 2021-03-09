@@ -272,18 +272,6 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitTop = 22
                 ExplicitWidth = 235
                 ExplicitHeight = 368
-                inherited NameTabSheet: TTabSheet
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
-                  ExplicitWidth = 499
-                  ExplicitHeight = 494
-                  inherited StringGrid: TStringGrid
-                    Width = 499
-                    Height = 494
-                    ExplicitWidth = 499
-                    ExplicitHeight = 494
-                  end
-                end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitTop = 25
                   ExplicitWidth = 227
@@ -296,45 +284,32 @@ object UGEngineControlForm: TUGEngineControlForm
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
-                  ExplicitWidth = 499
-                  ExplicitHeight = 494
                   inherited Splitter1: TSplitter
                     Top = 69
-                    Width = 499
                     Height = 8
                     ExplicitTop = 11
                     ExplicitWidth = 175
                     ExplicitHeight = 8
                   end
                   inherited GroupBox1: TGroupBox
-                    Width = 499
                     Height = 69
-                    ExplicitWidth = 499
                     ExplicitHeight = 69
                     inherited LibsListStringGrid: TStringGrid
                       Top = 16
-                      Width = 495
                       Height = 51
                       ExplicitTop = 16
-                      ExplicitWidth = 495
                       ExplicitHeight = 51
                     end
                   end
                   inherited GroupBox2: TGroupBox
                     Top = 77
-                    Width = 499
                     Height = 417
                     ExplicitTop = 77
-                    ExplicitWidth = 499
                     ExplicitHeight = 417
                     inherited LibComponentListStringGrid: TStringGrid
                       Top = 16
-                      Width = 495
                       Height = 399
                       ExplicitTop = 16
-                      ExplicitWidth = 495
                       ExplicitHeight = 399
                     end
                   end
@@ -356,7 +331,6 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited ScrollBox: TScrollBox
               Width = 450
               Height = 390
-              ExplicitLeft = 1
               ExplicitWidth = 450
               ExplicitHeight = 390
               inherited Image: TImage
@@ -463,10 +437,16 @@ object UGEngineControlForm: TUGEngineControlForm
               ExplicitWidth = 79
             end
             inherited ShowLinkDetailCheckBox: TCheckBox
-              Left = 325
-              Top = 28
-              ExplicitLeft = 325
-              ExplicitTop = 28
+              Left = 326
+              Top = 10
+              ExplicitLeft = 326
+              ExplicitTop = 10
+            end
+            inherited ShowBGLinesCheckBox: TCheckBox
+              Left = 326
+              Top = 30
+              ExplicitLeft = 326
+              ExplicitTop = 30
             end
           end
           inherited PopupMenu: TPopupMenu

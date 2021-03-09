@@ -189,6 +189,9 @@ double ZoomCoeff;
 
 // Начало координат в канве
 MVector<double,3> Origin;
+
+/// Флаг включения показа линий сетки
+bool ShowBackgroundLines;
 // ---------------------------
 
 
@@ -215,6 +218,9 @@ int GetRectWidth(void) const;
 bool SetRectWidth(int value);
 int GetRectHeight(void) const;
 bool SetRectHeight(int value);
+
+bool SetShowBackgroundLines(bool value);
+bool GetShowBackgroundLines(void) const;
 // ---------------------------
 
 // ---------------------------
