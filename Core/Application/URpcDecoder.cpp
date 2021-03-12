@@ -91,6 +91,13 @@ void URpcDecoder::Process(void)
  }
 }
 
+/// Остановка треда
+void URpcDecoder::StopProcessThread(void)
+{
+    ThreadTerminated=true;
+    DecoderThread.join();
+}
+
 /// Осуществляет декодирование и вызов команды по текущим данным
 /// Возвращает false если команда не поддерживается
 bool URpcDecoder::ProcessCommand(const UEPtr<URpcCommand> &command)

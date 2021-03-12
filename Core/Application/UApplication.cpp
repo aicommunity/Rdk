@@ -2283,6 +2283,7 @@ void UApplication::InitCmdParser(void)
 #ifndef __BORLANDC__
  CmdLineDescription.add_options()
     ("help", "produce help message")
+    ("standalone", "standalone vesrion of server without network")
     ("conf", po::value<string>(), "Configuration file name")
     ("ctime", po::value<double>(), "Calculation time interval, in seconds")
     ("info", po::value<string>(), "Information about core, possible: CollectionsList, ClassesList, CollectionClassesList, ClassProperties")

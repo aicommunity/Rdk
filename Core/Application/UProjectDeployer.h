@@ -56,6 +56,9 @@ bool SetApplication(UEPtr<UApplication> value);
 /// заданной пользоватлем (на вход идет индекс в базе данных)
 virtual int StartProjectDeployment(int task_id);
 
+///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных) (без потока деплоя)
+virtual int StartProjectRun(int task_id);
+
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
 /// 2. Открыть в тестовом режиме и настроить пути и связи?
@@ -112,7 +115,9 @@ virtual bool CloseSolver() {return false;};
 ///Получить состояние загрузки
 virtual int GetUploadState(){return -1;};
 
-
+/// Задача для запуска без сети
+virtual void SetStandaloneTask(int task);
+virtual int GetStandaloneTask();
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

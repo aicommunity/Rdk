@@ -130,6 +130,22 @@ int UProjectDeployer::GetCalculationState()
     return -1;
 }
 
+int UProjectDeployer::StartProjectRun(int task_id)
+{
+
+}
+
+/// «адача дл€ запуска без сети
+void UProjectDeployer::SetStandaloneTask(int task)
+{
+
+}
+
+int UProjectDeployer::GetStandaloneTask()
+{
+    return -1;
+}
+
 ///¬озвращает состо€ние активного компонента захвата
 /// возвращает false при ошибке получение состо€ни€
 /// @state - индекс состо€ни€ захвата

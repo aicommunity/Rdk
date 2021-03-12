@@ -67,7 +67,7 @@ public:
  int serverPort;
  std::string serverAddress;
  int serverAutostartFlag;
-
+ int serverStandaloneTask;
 
 public:
  UAppCore(void);
@@ -104,6 +104,7 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  application.SetServerControl(&serverControl);
  application.SetEngineControl(&engineControl);
  application.SetProject(&project);
+
 }
 
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
@@ -165,6 +166,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  serverPort = atoi(projectIniFile("Server","BindPort","45545"));
  serverAddress = projectIniFile("Server","BindAddress","127.0.0.2");
  serverAutostartFlag = atoi(projectIniFile("Server","AutostartServer","0"));
+ serverStandaloneTask = atoi(projectIniFile("Server","StandaloneTask","-1"));
 
  std::string database_address = projectIniFile("PostgreSQL","DatabaseAddress","127.0.0.1");
  std::string database_name = projectIniFile("PostgreSQL","DatabaseName","videoanalytics");
@@ -232,6 +234,8 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
    std::cout<<"Start TCP server on "<<serverAddress.c_str()<<" "<<serverPort<<std::endl;
    application.GetServerControl()->GetServerTransport()->ServerStart();
  }
+
+ application.GetProjectDeployer()->SetStandaloneTask(serverStandaloneTask);
 
  if(remoteFtpDatabasePath!="")
  {

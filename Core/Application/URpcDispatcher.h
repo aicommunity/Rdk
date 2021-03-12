@@ -69,6 +69,9 @@ bool SetApplication(UEPtr<UApplication> application);
 /// Осуществляет диспетчеризацию текущей очереди команд
 virtual void Dispatch(void);
 
+/// Метод остановки треда
+virtual void StopDispatch(void);
+
 /// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
 virtual bool SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned timeout);
 // --------------------------

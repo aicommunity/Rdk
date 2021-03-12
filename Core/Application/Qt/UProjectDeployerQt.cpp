@@ -1419,6 +1419,175 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
  return 0;
 }
 
+int UProjectDeployerQt::StartProjectRun(int task_id)
+{
+    if(task_id<0)
+    {
+       std::stringstream ss;
+       ss<<"Wrong task_id sent by server controller "<<task_id;
+       lastError = ss.str();
+       return 1;
+    }
+
+    if(!db)
+    {
+       lastError = "Database pointer is NULL";
+        return 1;
+    }
+    if(!db->isOpen()&&db->isValid())
+    {
+       lastError = "Database connection is not opened or database connection is not valid";
+       return 2;
+    }
+
+    //ѕолучить данные из базы (по индексу)
+    QSqlQuery q(*db);
+    q.prepare("SELECT task_name, task_template, task_weights, task_src_type, task_src_id FROM vid_an.task_list WHERE task_id="+QString::number(task_id)+";");
+    q.exec();
+    q.first();
+    if(!q.isValid())
+    {
+        lastError = "Task query by task id invalid";
+        return 3;
+    }
+
+
+    task_name = q.value(0).toString();
+    task_template_id = q.value(1).toInt();
+    task_weights_id = q.value(2).toInt();
+    task_src_type = q.value(3).toInt();
+    task_src_id = q.value(4).toInt();
+
+    q.finish();
+    q.clear();
+
+    //»звлеаем последовательно данные о том, где должны располагатьс€ распакованные файлы
+    //—начала проект
+    q.prepare("SELECT template_name, template_file, template_script FROM vid_an.templates WHERE template_id="+QString::number(task_template_id)+";");
+    q.exec();
+    q.first();
+    if(!q.isValid())
+    {
+       lastError = "Project query by project id invalid";
+        return 4;
+    }
+
+    task_template_name = q.value(0).toString();
+    task_template_path = q.value(1).toString();
+    task_script_id = q.value(2).toInt();
+
+    q.finish();
+    q.clear();
+
+    QString database_path = Application->GetDatabaseMainPath().c_str();
+
+    QString abs_template_file = task_template_path;
+    abs_template_file.replace("{Database}", database_path);
+
+    QFileInfo t_file(abs_template_file);
+
+    task_template_file_name = t_file.fileName();
+
+    q.prepare("SELECT weight_path, weight_confpath, weight_numcls FROM vid_an.weights WHERE weight_id="+QString::number(task_weights_id)+";");
+    q.exec();
+    q.first();
+
+    if(!q.isValid())
+    {
+       lastError = "Weights query by weights id invalid";
+        return 5;
+    }
+
+    task_weights_path = q.value(0).toString();
+    QString weights_conf_path = q.value(1).toString();
+    weights_classes_number = q.value(2).toInt();
+    //task_script_id = q.value(3).toInt();
+
+    q.finish();
+    q.clear();
+
+    absolute_weights_file = task_weights_path;
+    absolute_weights_file.replace("{Database}", database_path);
+    absolute_config_file = weights_conf_path;
+    absolute_config_file.replace("{Database}", database_path);
+
+    QFileInfo fi_weights_path(absolute_weights_file), fi_weights_conf_path(absolute_config_file);
+
+
+    if(task_script_id==0 || task_script_id==-1)
+    {
+       task_script_path="";
+    }
+    else
+    {
+        q.prepare("SELECT script_path,script_name FROM vid_an.scripts WHERE script_id="+QString::number(task_script_id)+";");
+        q.exec();
+        q.first();
+        if(!q.isValid())
+        {
+           lastError = "Script query by script id invalid";
+           QString s = q.lastError().text();
+            return 6;
+        }
+        task_script_path = q.value(0).toString();
+        QString script_name = q.value(1).toString();
+
+        //TODO: Do something if dummy id change
+        if(task_script_id==2 && script_name=="NoScript")
+        {
+           task_script_path="";
+        }
+        else
+        {
+            absolute_script_file = task_script_path;
+            absolute_script_file.replace("{Database}", database_path);
+            QFileInfo fi_script_path(absolute_script_file);
+
+            q.finish();
+            q.clear();
+        }
+    }
+    if(task_src_type==0) //video file
+    {
+        q.prepare("SELECT video_relpath,video_frlen FROM vid_an.videos WHERE video_id="+QString::number(task_src_id)+";");
+        q.exec();
+        q.first();
+        if(!q.isValid())
+        {
+           lastError = "Video query by video id invalid";
+            return 7;
+        }
+        task_src_path = q.value(0).toString();
+        task_src_frame_length = q.value(1).toInt();
+        task_src_fullpath = task_src_path;
+        task_src_fullpath.replace("{Database}", database_path);
+        QFileInfo qfi_src_file(task_src_fullpath);
+    }
+    else if(task_src_type==1) //image sequence
+    {
+        q.prepare("SELECT seq_path,seq_frlen FROM vid_an.img_seqs WHERE seq_id="+QString::number(task_src_id)+";");
+        q.exec();
+        q.first();
+        if(!q.isValid())
+        {
+           lastError = "Image sequence query by imseq id invalid";
+            return 8;
+        }
+        task_src_path = q.value(0).toString();
+        task_src_frame_length = q.value(1).toInt();
+        task_src_fullpath = task_src_path;
+        task_src_fullpath.replace("{Database}", database_path);
+        //QFileInfo qfi_src_file(abs_src_path);
+    }
+    else
+    {
+        lastError = "Invalid video source type index";
+        return 10;
+    }
+
+    return 0;
+}
+
 void UProjectDeployerQt::AConnectToDatabase()
 {
     if(db==NULL)
@@ -2327,5 +2496,102 @@ void UProjectDeployerQt::UnRegisterSolverFromDatabase()
     }
 }
 
+
+/// «адача дл€ запуска без сети
+void UProjectDeployerQt::SetStandaloneTask(int task)
+{
+    serverStandaloneTask = task;
+}
+
+int UProjectDeployerQt::GetStandaloneTask()
+{
+    return serverStandaloneTask;
+}
+
+
+
+UProjectRunThread::UProjectRunThread(UProjectDeployer* deployer)
+{
+    Deployer = deployer;
+}
+
+UProjectRunThread::~UProjectRunThread()
+{
+
+}
+
+std::string UProjectRunThread::GetLastError()
+{
+    return error_string;
+}
+
+void UProjectRunThread::run()
+{
+
+    if(Deployer->StartProjectRun(Deployer->GetStandaloneTask()))
+    {
+        error_string = Deployer->GetLastError();
+        return;
+    }
+
+    if(PrepProject(error_string))
+    {
+        return;
+    }
+
+    if(OpenProject(error_string))
+    {
+        return;
+    }
+
+    if(RunProject())
+    {
+        error_string = Deployer->GetLastError();
+        return;
+    }
+
+    // выход из цикла по условию?
+    while(true)
+    {
+        if(!Deployer->ProcessCalculationLog(error_string))
+        {
+            FinishProject();
+            break;
+        }
+        calc_state = Deployer->GetCalculationState();
+    }
+
+    // завершение потока в каком случае?
+    if(false)
+    {
+        FinishProject();
+    }
+
+}
+
+int UProjectRunThread::PrepProject(std::string &response)
+{
+    return Deployer->PrepareProject(response);
+}
+
+int UProjectRunThread::OpenProject(std::string &response)
+{
+    return Deployer->OpenPreparedProject(response);
+}
+
+int UProjectRunThread::RunProject()
+{
+    return Deployer->RunPreparedProject();
+}
+
+int UProjectRunThread::FinishProject()
+{
+    return Deployer->FinishCalculation();
+}
+
+int UProjectRunThread::GetCalcState()
+{
+    return calc_state;
+}
 
 }//namespace RDK

@@ -144,6 +144,13 @@ void URpcDispatcher::Dispatch(void)
  }
 }
 
+/// Метод остановки треда
+void URpcDispatcher::StopDispatch(void)
+{
+    ThreadTerminated=true;
+    DispatcherThread.join();
+}
+
 /// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
 bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned timeout)
 {
