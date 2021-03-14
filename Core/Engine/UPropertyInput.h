@@ -656,7 +656,7 @@ virtual UItem* GetItem(int index)
 {
  if(int(this->v.size())>index && index >=0)
  {
-  return static_cast<UItem*>(ConnectedOutput[index]->GetOwner());
+  return reinterpret_cast<UItem*>(ConnectedOutput[index]->GetOwner());
  }
  return 0;
 }
