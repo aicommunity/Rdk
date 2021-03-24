@@ -111,6 +111,12 @@ enum DatabaseTaskStatus
     TS_Error=1000
 };
 
+enum TemplateType
+{
+    TT_VideoAnalytics=1,
+    TT_NeuralInterface=2
+};
+
 class RDK_LIB_TYPE UProjectDeployProcessingThread: public QThread
 {
 Q_OBJECT
@@ -124,6 +130,7 @@ public:
     void SetDatabasePath(const QString& path);
     void SetDownloadTempPath(const QString& path);
     void SetFtpRemoteBasePath(const QString& path);
+    void SetStorageMountPath(const QString& path);
     void SetDeploymentState(const DeploymentState& state);
     void SetDeploymentProgress(const int &progress);
     void SetDeploymentProgressCap(const int &value);
@@ -154,12 +161,19 @@ private:
     bool UnpackZipFolder(const QString &local_zip_folder, const QString& local_dst_folder);
     bool UnpackZipFile(const QString &local_zip_folder, const QString& local_dst_folder);
 
+    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dst_dir_path);
+
     void DeployTemplate();
+    void DeployTemplate2();
+    void DeployDirectory(const QString& file_with_template);
     bool VerifyTemplate();
+    void DeployScript2();
     void DeployScript();
     bool VerifyScript();
+    void DeployWeights2();
     void DeployWeights();
     bool VerifyWeights();
+    void DeployData2();
     void DeployData();
     bool VerifyData();
 
@@ -171,6 +185,7 @@ private:
     QString databasePath;
     QString ftpRemoteBasePath;
     QString downloadTempPath;
+    QString storageMountPath;
 
     bool template_dr, weights_dr, script_dr, videosource_dr;
     int videosource_type;
@@ -182,7 +197,7 @@ private:
 
     QProcess zip_process;
 
-    std::string lastError;
+    QString lastError;
 
     CURL *curl;
     CURLcode res;
@@ -210,15 +225,21 @@ public:
     void SetRemoteFtpPath(const QString& ftp_path);
     QString GetRemoteFtpPath();
 
+    void SetRemoteStoragePath(const QString& strg_path);
+    QString GetRemoteStoragePath();
+
     QString GetLastError();
     DeploymentState GetUploadState();
 
 private:
-    bool CopyResultsToDestinationDir();
     bool ZipResults();
     bool UploadResultsViaFtp();
 
-    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dts_dir_path);
+    bool CopyResultsToDestinationDir();
+    bool CopyResultsToRemoteStorageDir();
+
+
+    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dst_dir_path);
 
 private slots:
     void processReadyReadStandardError();
@@ -229,6 +250,7 @@ private:
     QString storageResultsDir;
     QString databasePath;
     QString remoteFtpPath;
+    QString remoteStoragePath;
 
     QString lastError;
     DeploymentState uploadState;
@@ -339,11 +361,16 @@ std::map<std::string, CaptureLibDescr> capture_tags;
 std::string capture_class_name;
 std::string capture_component_name;
 
+std::string predictor_class_name;
+std::string predictor_component_name;
+
 //Дата и время для добавления в таблицу
 QDateTime processing_start_datetime;
 QDateTime processing_end_datetime;
 
 UProjectResultsUploadingThread *projectResultsUploadingThread;
+
+TemplateType template_type;
 
 protected://Методы
 
@@ -390,6 +417,11 @@ virtual int GetCalculationState();
 /// @state - индекс состояния захвата
 /// @frame_id - индекс текущего кадра
 virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+
+bool GetCaptureStateVideoAnalysis(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+
+bool GetCaptureStateNeuralInterface(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+
 ///Обрабатывает накопившийся с последнего вызова лог
 /// возвращает false если были фатальные ошибки, иначе true
 /// @error - текст ошибки из лога приложения
@@ -429,6 +461,12 @@ int CopyProjectToTempFolder();
 int OpenProjectMockMode();
 /// Задать параметры проекта в заглушенном режиме
 int SetupProjectMockParameters();
+
+///Настроить параметры проекта в рамках видеоаналитики (видео, список кадров, вот это все)
+int SetupProjectMockParametersVideoAnalysis();
+
+///Настроить параметры проекта для нейроинтерфейса, т.к. работает оно по-другому.
+int SetupProjectMockParametersNeuralInterface();
 /// Закрыть заглушенный проект
 int CloseMockProject();
 /// Открыть проект в боевом режиме
