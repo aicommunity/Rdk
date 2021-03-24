@@ -152,6 +152,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
 
+
  if(startupDelay>0)
  {
   RDK::Sleep(startupDelay);
@@ -171,6 +172,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  std::string database_login = projectIniFile("PostgreSQL","DatabaseLogin","");
  std::string database_password = projectIniFile("PostgreSQL","DatabasePassword","");
 
+ std::string storageMountPoint = projectIniFile("Storage","StorageMountPoint","");
 
  application.SetApplicationFileName(application_file_name);
  application.SetLogCreationMode(logCreationMode);
@@ -213,6 +215,9 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
    if(closeAfterTests)
      return returnCode;
  }
+
+ if(storageMountPoint!="")
+     application.SetStorageMountPoint(storageMountPoint);
 
  if(databaseMainPath!="")
  {
