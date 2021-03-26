@@ -463,6 +463,12 @@ int Rpc_StopChannel(int server_index, int channel_index, int timeout)
  return ProcessSimpleCommand("StopChannel", server_index, channel_index, timeout, request, response);
 }
 
+int Rpc_StartTraining(int server_index, int channel_index, int timeout)
+{
+ RDK::USerStorageXML request, response;
+ return ProcessSimpleCommand("StartTraining", server_index, channel_index, timeout, request, response);
+}
+
 int Rpc_GetNumChannels(int server_index, int &results, int timeout)
 {
  RDK::USerStorageXML request,response;

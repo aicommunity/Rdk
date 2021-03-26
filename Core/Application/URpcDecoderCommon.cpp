@@ -115,6 +115,10 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  {
   return true;
  }
+ if(cmd == "StartTraining")
+ {
+  return true;
+ }
  else
  if(cmd == "RegisterMetadataReceiver")
  {
@@ -362,6 +366,12 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   if(cmd == "StopChannel")
   {
    GetApplication()->PauseChannel(channel_index);
+   return_value=0;
+  }
+  if(cmd == "StartTraining")
+  {
+   std::stringstream ss;
+   Model_SetComponentPropertyValue("TPyClassifierTrainer", "StartTraining", "1");
    return_value=0;
   }
   else
