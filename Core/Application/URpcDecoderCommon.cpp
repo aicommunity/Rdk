@@ -115,6 +115,7 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  {
   return true;
  }
+ else
  if(cmd == "StartTraining")
  {
   return true;
@@ -368,6 +369,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    GetApplication()->PauseChannel(channel_index);
    return_value=0;
   }
+  else
   if(cmd == "StartTraining")
   {
    std::stringstream ss;
