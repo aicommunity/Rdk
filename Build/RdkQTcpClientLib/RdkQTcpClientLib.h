@@ -85,6 +85,8 @@ int  Rpc_StartChannel(int server_index, int channel_index, int timeout);
 
 int  Rpc_StopChannel(int server_index, int channel_index, int timeout);
 
+int  Rpc_StartTraining(int server_index, int channel_index, int timeout);
+
 int  Rpc_ResetChannel(int server_index, int channel_index, int timeout);
 
 int  Rpc_GetNumChannels(int server_index, int &results, int timeout);

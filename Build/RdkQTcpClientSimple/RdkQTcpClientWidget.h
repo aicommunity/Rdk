@@ -40,6 +40,8 @@ private slots:
 
     void onPushButtonLoadConfigClick();
 
+    void on_pushButtonStartTraining_clicked();
+
 private:
     Ui::RdkQTcpClientWidget *ui;
     std::map<int, QString> Errors;
