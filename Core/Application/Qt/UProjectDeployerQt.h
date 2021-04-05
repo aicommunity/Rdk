@@ -259,6 +259,46 @@ private:
 
 };
 
+class RDK_LIB_TYPE UProjectRunThread: public QThread
+{
+Q_OBJECT
+
+public:
+     UProjectRunThread(UProjectDeployer* deployer);
+    ~UProjectRunThread();
+
+    void run() override;
+
+    std::string GetLastError();
+
+    int GetCalcState();
+
+private:
+    UProjectDeployer* Deployer;
+
+    std::string error_string;
+
+    int calc_state;
+private:
+
+    ///Подготовить к запуску проект:
+    /// 1. Скопировать во временное хранилище
+    /// 2. Открыть в тестовом режиме и настроить пути и связи?
+    /// 3. Закрыть
+    int PrepProject(std::string &response);
+
+    ///Открыть подготовленный проект
+    int OpenProject(std::string &response);
+
+    /// Запустить подготовленный проект
+    int RunProject();
+
+    /// Завершить расчет проекта
+    int FinishProject();
+
+
+};
+
 
 class RDK_LIB_TYPE UProjectDeployerQt: public UProjectDeployer
 {
@@ -370,6 +410,9 @@ QDateTime processing_end_datetime;
 
 UProjectResultsUploadingThread *projectResultsUploadingThread;
 
+//Задача для выполнения в режиме standalone (отсутствие сети)
+int serverStandaloneTask;
+
 TemplateType template_type;
 
 protected://Методы
@@ -381,6 +424,9 @@ public: // Методы
 
 ///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
 virtual int StartProjectDeployment(int deploy_task_id);
+
+///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных) (без потока деплоя)
+virtual int StartProjectRun(int task_id);
 
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
@@ -438,6 +484,11 @@ virtual bool CloseSolver();
 virtual int GetUploadState();
 ///Обновить статус задачи в базе данных
 virtual void UpdateTaskStateInDb(int task_id, const DatabaseTaskStatus &status, float progress=-1.0f, const QString &start_time="", const QString& end_time="");
+
+/// Задача для запуска без сети
+virtual void SetStandaloneTask(int task);
+virtual int GetStandaloneTask();
+
 
 public: // Методы доступа к данным
 
