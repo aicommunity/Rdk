@@ -31,7 +31,6 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 367
     object Panel4: TPanel
       Left = 0
       Top = 0
@@ -44,7 +43,6 @@ object USeriesControlForm: TUSeriesControlForm
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitWidth = 367
       object Panel5: TPanel
         Left = 298
         Top = 0
@@ -57,7 +55,6 @@ object USeriesControlForm: TUSeriesControlForm
         Align = alRight
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitLeft = 295
         object Button1: TButton
           Left = 12
           Top = 16
@@ -181,7 +178,6 @@ object USeriesControlForm: TUSeriesControlForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 1
       object GroupBox2: TGroupBox
         Left = 13
         Top = 0
@@ -411,7 +407,6 @@ object USeriesControlForm: TUSeriesControlForm
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 367
     object Panel6: TPanel
       Left = 0
       Top = 225

@@ -563,8 +563,32 @@ void __fastcall TUSeriesControlForm::Edit4Exit(TObject *Sender)
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   return;
 
- WatchList[StrToInt(StringGrid2->Cells[0][StringGrid2->Row])].YShift
-                   =StrToFloat(Edit4->Text);
+ int index=-1;
+
+ try
+ {
+  index=StrToInt(StringGrid2->Cells[0][StringGrid2->Row]);
+ }
+ catch(EConvertError &)
+ {
+  return;
+ }
+
+ if(index<0)
+  return;
+
+ double yshift=0.0;
+
+ try
+ {
+  yshift=StrToFloat(Edit4->Text);
+ }
+ catch(EConvertError &)
+ {
+  return;
+ }
+
+ WatchList[index].YShift=yshift;
  SeriesChanged=true;
 }
 //---------------------------------------------------------------------------
