@@ -435,12 +435,14 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	 ++I;
 	}
 
-   I=DelWatchList.begin();
-   while(I != DelWatchList.end())
+   I=DelWatchList.end();
+   if(I !=DelWatchList.begin())
+    do
 	{
+	 --I;
 	 GrSender->Del(I->first);
-	 ++I;
 	}
+	while(I != DelWatchList.begin());
 
   }
  else
@@ -588,7 +590,7 @@ void __fastcall TUSeriesControlForm::Edit4Exit(TObject *Sender)
   return;
  }
 
- if(index >= WatchList.size())
+ if(WatchList.find(index) == WatchList.end())
   return;
 
  WatchList[index].YShift=yshift;
@@ -656,7 +658,8 @@ void __fastcall TUSeriesControlForm::DelPointButtonClick(TObject *Sender)
 
  map<int,TUWatchInfo>::iterator I;
 
- I=WatchList.find(StrToInt(StringGrid2->Cells[0][StringGrid2->Row]));
+ int del_index=StrToInt(StringGrid2->Cells[0][StringGrid2->Row]);
+ I=WatchList.find(del_index);
  DelWatchList[I->first]=I->second;
  WatchList.erase(I);
  UpdateInfo();
