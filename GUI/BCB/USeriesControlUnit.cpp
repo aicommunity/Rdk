@@ -588,6 +588,9 @@ void __fastcall TUSeriesControlForm::Edit4Exit(TObject *Sender)
   return;
  }
 
+ if(index >= WatchList.size())
+  return;
+
  WatchList[index].YShift=yshift;
  SeriesChanged=true;
 }
