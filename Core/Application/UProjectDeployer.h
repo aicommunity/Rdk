@@ -54,10 +54,8 @@ bool SetApplication(UEPtr<UApplication> value);
 
 ///Выполнить загрузку данных для выполнения задачи,
 /// заданной пользоватлем (на вход идет индекс в базе данных)
-virtual int StartProjectDeployment(int task_id);
+virtual int StartProjectDeployment(int task_id, bool standalone=false);
 
-///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных) (без потока деплоя)
-virtual int StartProjectRun(int task_id);
 
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
@@ -108,7 +106,7 @@ virtual bool ProcessCalculationLog(std::string &error);
 virtual bool FinishCalculation() {return false;};
 ///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
 /// запустить процесс упаковки и отправки данных в удаленное хранилище
-virtual bool UploadCalculationResults() {return false;};
+virtual bool UploadCalculationResults(bool standalone=false) {return false;};
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 virtual bool CloseSolver() {return false;};

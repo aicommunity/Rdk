@@ -208,7 +208,7 @@ class RDK_LIB_TYPE UProjectResultsUploadingThread: public QThread
 Q_OBJECT
 
 public:
-     UProjectResultsUploadingThread();
+     UProjectResultsUploadingThread(bool standalone = false);
     ~UProjectResultsUploadingThread();
 
     void run() override;
@@ -246,6 +246,7 @@ private slots:
     void processReadyReadStandardOutput();
 
 private:
+    bool standalone;
     QString projectResultsDir;
     QString storageResultsDir;
     QString databasePath;
@@ -285,7 +286,6 @@ public:
 
     void run() override;
 
-    std::string GetLastError();
 
 
 private:
@@ -312,6 +312,8 @@ private:
 
     /// Завершить расчет проекта
     void FinishProject();
+
+    void UploadResults();
 
     std::string ParseDeploymentState(DeploymentState state);
 
@@ -448,10 +450,8 @@ bool DestroyProcessingThread();
 public: // Методы
 
 ///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
-virtual int StartProjectDeployment(int deploy_task_id);
-
-///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных) (без потока деплоя)
-virtual int StartProjectRun(int task_id);
+/// standalone - работа без сети
+virtual int StartProjectDeployment(int deploy_task_id, bool standalone);
 
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
@@ -501,7 +501,7 @@ virtual bool ProcessCalculationLog(std::string &error);
 virtual bool FinishCalculation();
 ///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
 /// запустить процесс упаковки и отправки данных в удаленное хранилище
-virtual bool UploadCalculationResults();
+virtual bool UploadCalculationResults(bool standalone);
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 virtual bool CloseSolver();

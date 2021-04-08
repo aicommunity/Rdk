@@ -64,7 +64,7 @@ int UProjectDeployer::GetStageProgress()
 return 0;
 }
 
-int UProjectDeployer::StartProjectDeployment(int task_id)
+int UProjectDeployer::StartProjectDeployment(int task_id, bool standalone)
 {
     return 0;
 }
@@ -128,11 +128,6 @@ std::string UProjectDeployer::GetProjectFileName()
 int UProjectDeployer::GetCalculationState()
 {
     return -1;
-}
-
-int UProjectDeployer::StartProjectRun(int task_id)
-{
-
 }
 
 /// Задача для запуска без сети

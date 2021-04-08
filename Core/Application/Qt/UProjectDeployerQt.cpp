@@ -948,9 +948,9 @@ bool UProjectDeployProcessingThread::VerifyData()
 }
 
 //====================================================================
-UProjectResultsUploadingThread::UProjectResultsUploadingThread()
+UProjectResultsUploadingThread::UProjectResultsUploadingThread(bool standalone)
 {
-
+    this->standalone = standalone;
 }
 
 UProjectResultsUploadingThread::~UProjectResultsUploadingThread()
@@ -1027,12 +1027,14 @@ void UProjectResultsUploadingThread::run()
         return;
     }
 
-    if(!CopyResultsToRemoteStorageDir())
+    if(!standalone)
     {
-        uploadState = DS_Error;
-        return;
+        if(!CopyResultsToRemoteStorageDir())
+        {
+            uploadState = DS_Error;
+            return;
+        }
     }
-
     /*
     uploadState = DS_PackResults;
     if(!ZipResults())
@@ -1364,7 +1366,7 @@ bool UProjectDeployerQt::DestroyProcessingThread()
     return false;
 }
 
-int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
+int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id, bool standalone)
 {
  task_id = deploy_task_id;
  int ds = GetDeploymentState();
@@ -1385,7 +1387,10 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
  if(task_id<0)
  {
     std::stringstream ss;
-    ss<<"Wrong task_id sent by server controller "<<task_id;
+    if(standalone)
+        ss<<"Wrong task_id "<<task_id;
+    else
+        ss<<"Wrong task_id sent by server controller "<<task_id;
     lastError = ss.str();
     return 1;
  }
@@ -1450,14 +1455,15 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
 
  task_template_file_name = t_file.fileName();
 
- if(!t_file.exists())
+ if(!standalone && !t_file.exists())
  {
-     task_template_download_required = true;
+    task_template_download_required = true;
  }
  else
  {
-     task_template_download_required = false;
+    task_template_download_required = false;
  }
+
 
  q.prepare("SELECT weight_path, weight_confpath, weight_numcls FROM vid_an.weights WHERE weight_id="+QString::number(task_weights_id)+";");
  q.exec();
@@ -1485,7 +1491,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
      absolute_config_file.replace("{Database}", database_path);
 
      QFileInfo fi_weights_path(absolute_weights_file), fi_weights_conf_path(absolute_config_file);
-     if(!fi_weights_path.exists() || ((weights_conf_path!="")&&(!fi_weights_conf_path.exists())))
+     if(!standalone && (!fi_weights_path.exists() || ((weights_conf_path!="")&&(!fi_weights_conf_path.exists()))))
      {
          task_weights_download_required = true;
          /*
@@ -1536,7 +1542,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
          q.finish();
          q.clear();
 
-         if(!fi_script_path.exists())
+         if(!standalone && !fi_script_path.exists())
          {
              task_script_download_required=true;
              //task_script_zip_url = QString(fi_script_path.filePath()+".zip").replace(database_path, ftp_main_path).toUtf8().constData();
@@ -1562,7 +1568,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
      task_src_fullpath = task_src_path;
      task_src_fullpath.replace("{Database}", database_path);
      QFileInfo qfi_src_file(task_src_fullpath);
-     if(!qfi_src_file.exists())
+     if(!standalone && !qfi_src_file.exists())
      {
          task_src_download_required = true;
          //task_src_zip_url = QString(qfi_src_file.filePath()+".zip").replace(database_path, ftp_main_path).toUtf8().constData();
@@ -1597,12 +1603,18 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
          }
          else
          {
-             task_src_download_required = true;
+             if(standalone)
+                task_src_download_required = false;
+             else
+                task_src_download_required = true;
          }
      }
      else
      {
-         task_src_download_required = true;
+         if(standalone)
+            task_src_download_required = false;
+         else
+            task_src_download_required = true;
      }
  }
  else
@@ -1616,7 +1628,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
  download_temp_path = database_path+"/Temp";
 
 
- if(deployProcessingThread)
+ if(!standalone && deployProcessingThread)
  {
      if(!DestroyProcessingThread())
      {
@@ -1625,8 +1637,8 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
      }
  }
 
- if(task_template_download_required||task_weights_download_required||
-    task_script_download_required||task_src_download_required)
+ if(!standalone && (task_template_download_required||task_weights_download_required||
+    task_script_download_required||task_src_download_required))
  {
      deployProcessingThread = new UProjectDeployProcessingThread();
 
@@ -1663,176 +1675,6 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id)
 
  //lastError = "";
  return 0;
-}
-
-int UProjectDeployerQt::StartProjectRun(int task_id)
-{
-    if(task_id<0)
-    {
-       std::stringstream ss;
-       ss<<"Wrong task_id sent by server controller "<<task_id;
-       lastError = ss.str();
-       return 1;
-    }
-
-    if(!db)
-    {
-       lastError = "Database pointer is NULL";
-        return 1;
-    }
-    if(!db->isOpen()&&db->isValid())
-    {
-       lastError = "Database connection is not opened or database connection is not valid";
-       return 2;
-    }
-
-    //Получить данные из базы (по индексу)
-    QSqlQuery q(*db);
-    q.prepare("SELECT task_name, task_template, task_weights, task_src_type, task_src_id FROM vid_an.task_list WHERE task_id="+QString::number(task_id)+";");
-    q.exec();
-    q.first();
-    if(!q.isValid())
-    {
-        lastError = "Task query by task id invalid";
-        return 3;
-    }
-
-
-    task_name = q.value(0).toString();
-    task_template_id = q.value(1).toInt();
-    task_weights_id = q.value(2).toInt();
-    task_src_type = q.value(3).toInt();
-    task_src_id = q.value(4).toInt();
-
-    q.finish();
-    q.clear();
-
-    //Извлеаем последовательно данные о том, где должны располагаться распакованные файлы
-    //Сначала проект
-    q.prepare("SELECT template_name, template_file, template_script FROM vid_an.templates WHERE template_id="+QString::number(task_template_id)+";");
-    q.exec();
-    q.first();
-    if(!q.isValid())
-    {
-       lastError = "Project query by project id invalid";
-        return 4;
-    }
-
-    task_template_name = q.value(0).toString();
-    task_template_path = q.value(1).toString();
-    task_script_id = q.value(2).toInt();
-
-    q.finish();
-    q.clear();
-
-    QString database_path = Application->GetDatabaseMainPath().c_str();
-
-    QString abs_template_file = task_template_path;
-    abs_template_file.replace("{Database}", database_path);
-
-    QFileInfo t_file(abs_template_file);
-
-    task_template_file_name = t_file.fileName();
-
-    q.prepare("SELECT weight_path, weight_confpath, weight_numcls FROM vid_an.weights WHERE weight_id="+QString::number(task_weights_id)+";");
-    q.exec();
-    q.first();
-
-    if(!q.isValid())
-    {
-       lastError = "Weights query by weights id invalid";
-        return 5;
-    }
-
-    task_weights_path = q.value(0).toString();
-    QString weights_conf_path = q.value(1).toString();
-    weights_classes_number = q.value(2).toInt();
-    //task_script_id = q.value(3).toInt();
-
-    q.finish();
-    q.clear();
-
-    absolute_weights_file = task_weights_path;
-    absolute_weights_file.replace("{Database}", database_path);
-    absolute_config_file = weights_conf_path;
-    absolute_config_file.replace("{Database}", database_path);
-
-    QFileInfo fi_weights_path(absolute_weights_file), fi_weights_conf_path(absolute_config_file);
-
-
-    if(task_script_id==0 || task_script_id==-1)
-    {
-       task_script_path="";
-    }
-    else
-    {
-        q.prepare("SELECT script_path,script_name FROM vid_an.scripts WHERE script_id="+QString::number(task_script_id)+";");
-        q.exec();
-        q.first();
-        if(!q.isValid())
-        {
-           lastError = "Script query by script id invalid";
-           QString s = q.lastError().text();
-            return 6;
-        }
-        task_script_path = q.value(0).toString();
-        QString script_name = q.value(1).toString();
-
-        //TODO: Do something if dummy id change
-        if(task_script_id==2 && script_name=="NoScript")
-        {
-           task_script_path="";
-        }
-        else
-        {
-            absolute_script_file = task_script_path;
-            absolute_script_file.replace("{Database}", database_path);
-            QFileInfo fi_script_path(absolute_script_file);
-
-            q.finish();
-            q.clear();
-        }
-    }
-    if(task_src_type==0) //video file
-    {
-        q.prepare("SELECT video_relpath,video_frlen FROM vid_an.videos WHERE video_id="+QString::number(task_src_id)+";");
-        q.exec();
-        q.first();
-        if(!q.isValid())
-        {
-           lastError = "Video query by video id invalid";
-            return 7;
-        }
-        task_src_path = q.value(0).toString();
-        task_src_frame_length = q.value(1).toInt();
-        task_src_fullpath = task_src_path;
-        task_src_fullpath.replace("{Database}", database_path);
-        QFileInfo qfi_src_file(task_src_fullpath);
-    }
-    else if(task_src_type==1) //image sequence
-    {
-        q.prepare("SELECT seq_path,seq_frlen FROM vid_an.img_seqs WHERE seq_id="+QString::number(task_src_id)+";");
-        q.exec();
-        q.first();
-        if(!q.isValid())
-        {
-           lastError = "Image sequence query by imseq id invalid";
-            return 8;
-        }
-        task_src_path = q.value(0).toString();
-        task_src_frame_length = q.value(1).toInt();
-        task_src_fullpath = task_src_path;
-        task_src_fullpath.replace("{Database}", database_path);
-        //QFileInfo qfi_src_file(abs_src_path);
-    }
-    else
-    {
-        lastError = "Invalid video source type index";
-        return 10;
-    }
-    this->deploymentState = DS_DeployFinished;
-
-    return 0;
 }
 
 void UProjectDeployerQt::AConnectToDatabase()
@@ -2715,7 +2557,7 @@ bool UProjectDeployerQt::FinishCalculation()
 
 ///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
 /// запустить процесс упаковки и отправки данных в удаленное хранилище
-bool UProjectDeployerQt::UploadCalculationResults()
+bool UProjectDeployerQt::UploadCalculationResults(bool standalone)
 {
     //Если расчет по нормальному завершить не получилось, то эта функция не вызовется
     //не знаю, насколько это логично...
@@ -2784,7 +2626,7 @@ bool UProjectDeployerQt::UploadCalculationResults()
             {
                 delete projectResultsUploadingThread;
             }
-            projectResultsUploadingThread = new UProjectResultsUploadingThread();
+            projectResultsUploadingThread = new UProjectResultsUploadingThread(standalone);
             projectResultsUploadingThread->SetDatabasePath(db_path);
             projectResultsUploadingThread->SetRemoteFtpPath(QString(ftp_remote_path.c_str()));
             projectResultsUploadingThread->SetProjectResultsDirPath(results_dir_path);
@@ -2970,10 +2812,6 @@ UProjectRunThread::~UProjectRunThread()
 
 }
 
-std::string UProjectRunThread::GetLastError()
-{
-    return error_string;
-}
 
 void UProjectRunThread::run()
 {
@@ -2998,6 +2836,7 @@ void UProjectRunThread::run()
                 break;
 
             case ProjectRunState::PS_Finalization:
+            case ProjectRunState::PS_ResultsUploading:
                 ProjectStateFinalization();
                 break;
 
@@ -3016,7 +2855,7 @@ void UProjectRunThread::run()
 
 void UProjectRunThread::ProjectStateInitialization()
 {
-    if(Deployer->StartProjectRun(Deployer->GetStandaloneTask()))
+    if(Deployer->StartProjectDeployment(Deployer->GetStandaloneTask(), true))
     {
         std::cout << Deployer->GetLastError() << std::endl;
         projectRunState = ProjectRunState::PS_Termination;
@@ -3299,7 +3138,7 @@ void UProjectRunThread::ProjectStateCalculation()
 
         if(capture_frame_id>0 && capture_max_frame_id>0)
         {
-            qDebug()<<"capture_frame_id="<<capture_frame_id<<" capture_max_frame_id="<<capture_max_frame_id;
+            //std::cout <<"capture_frame_id="<<capture_frame_id<<" capture_max_frame_id="<<capture_max_frame_id;
 
             //std::cout << capture_frame_id;
             //Мы докатились до конца, переключаемся на финализацию
@@ -3318,7 +3157,28 @@ void UProjectRunThread::ProjectStateCalculation()
 
 void UProjectRunThread::ProjectStateFinalization()
 {
-    projectRunState = ProjectRunState::PS_Finalization;
+    std::cout << "Project finalization: " << std::endl;
+
+    int upload_state = Deployer->GetUploadState();
+
+    DeploymentState state = static_cast<DeploymentState>(upload_state);
+    std::string state_str = ParseDeploymentState(state);
+    std::cout <<  "State: "+state_str << std::endl;
+
+    if(state == DS_ProjectClosed)
+    {
+        UploadResults();
+    }
+    else if(state == DS_UploadFinished)
+    {
+       projectRunState = ProjectRunState::PS_Termination;
+    }
+    else if(state == DS_Error)
+    {
+        std::cout <<"last_error = "<< Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
+    }
+
 }
 
 void UProjectRunThread::ProjectStateTermination()
@@ -3375,9 +3235,8 @@ void UProjectRunThread::RunProject()
 
 void UProjectRunThread::FinishProject()
 {   
-    if(Deployer->FinishCalculation())
+    if(!Deployer->FinishCalculation())
     {
-        std::string error = Deployer->GetLastError();
         std::cout << Deployer->GetLastError() << std::endl;
         projectRunState = ProjectRunState::PS_Termination;
         return;
@@ -3389,5 +3248,19 @@ void UProjectRunThread::FinishProject()
     }
 }
 
+void UProjectRunThread::UploadResults()
+{
+    if(!Deployer->UploadCalculationResults(true))
+    {
+        std::cout << Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
+        return;
+    }
+    else
+    {
+        std::cout << "Set state: PS_ResultsUploading" << std::endl;
+        projectRunState = ProjectRunState::PS_ResultsUploading;
+    }
+}
 
 }//namespace RDK
