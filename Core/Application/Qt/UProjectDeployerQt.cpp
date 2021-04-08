@@ -1830,6 +1830,7 @@ int UProjectDeployerQt::StartProjectRun(int task_id)
         lastError = "Invalid video source type index";
         return 10;
     }
+    this->deploymentState = DS_DeployFinished;
 
     return 0;
 }
@@ -2957,8 +2958,10 @@ int UProjectDeployerQt::GetStandaloneTask()
 
 
 
-UProjectRunThread::UProjectRunThread(UProjectDeployer* deployer)
+UProjectRunThread::UProjectRunThread(UProjectDeployer* deployer):
+    last_frame_count(0)
 {
+    projectRunState = ProjectRunState::PS_Initialization;
     Deployer = deployer;
 }
 
@@ -2974,71 +2977,417 @@ std::string UProjectRunThread::GetLastError()
 
 void UProjectRunThread::run()
 {
+    bool stop_thread = false;
+    while(!stop_thread)
+    {
+        switch(projectRunState)
+        {
+            case ProjectRunState::PS_Initialization:
+                ProjectStateInitialization();
+                break;
 
+            case ProjectRunState::PS_Deployment:
+            case ProjectRunState::PS_ProjectPreparation:
+            case ProjectRunState::PS_ProjectOpening:
+                ProjectStateDeployment();
+                break;
+
+
+            case ProjectRunState::PS_Calculation:
+                ProjectStateCalculation();
+                break;
+
+            case ProjectRunState::PS_Finalization:
+                ProjectStateFinalization();
+                break;
+
+            case ProjectRunState::PS_Termination:
+                stop_thread = true;
+                break;
+
+            default:
+                std::cout << "Current project run state is undefined";
+                break;
+        }
+    }
+
+    std::cout << "Project Run Thread stopped" << std::endl;
+}
+
+void UProjectRunThread::ProjectStateInitialization()
+{
     if(Deployer->StartProjectRun(Deployer->GetStandaloneTask()))
     {
-        error_string = Deployer->GetLastError();
+        std::cout << Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
         return;
     }
-
-    if(PrepProject(error_string))
+    else
     {
-        return;
+        std::cout << "Set state: PS_Deployment" << std::endl;
+        projectRunState = ProjectRunState::PS_Deployment;
     }
+}
 
-    if(OpenProject(error_string))
-    {
-        return;
-    }
+void UProjectRunThread::ProjectStateDeployment()
+{
+    //SetConnectionState("connected, ping OK");
+    //int state=0;
 
-    if(RunProject())
+    std::string last_error = "";
+    int state = Deployer->GetDeploymentState();
+    int cap = Deployer->GetStageCap();
+    int progress =Deployer->GetStageProgress();
+    last_error = Deployer->GetLastError();
+    if(!last_error.empty())
     {
-        error_string = Deployer->GetLastError();
-        return;
-    }
-
-    // выход из цикла по условию?
-    while(true)
-    {
-        if(!Deployer->ProcessCalculationLog(error_string))
+        if(state<0 || cap<0 || progress<0)
         {
-            FinishProject();
+            //WriteLog("Rpc_GetDeploymentState returned wrong string");
+        }
+        DeploymentState ds = static_cast<DeploymentState>(state);
+
+        //TODO: ѕроверка состо€ни€ на попадание в правильный диапазон
+
+        std::cout << "Deployment state: "+ ParseDeploymentState(ds) << std::endl;
+
+        if(ds==DS_DeployFinished)
+        {
+            PrepProject();
+        }
+        else if(ds==DS_ProjectPrepared)
+        {
+            OpenProject();
+        }
+        else if(ds==DS_ProjectOpened)
+        {
+            RunProject();
+        }
+
+        if(ds==DS_Error)
+        {
+            std::cout << "last_error = " << last_error;
+            projectRunState = ProjectRunState::PS_Termination;
+        }
+        //ui->labelLastError->setText("LE: "+QString(last_error));
+    }
+}
+
+std::string UProjectRunThread::ParseDeploymentState(DeploymentState state)
+{
+    //“ут место дл€ анализа состо€ни€
+    std::string r="";
+    switch(state)
+    {
+    case DeploymentState::DS_NULL:
+        r = "deployment conponent not exists";
+        break;
+    case DeploymentState::DS_Error:
+        r = "deployment error occured";
+        break;
+    case DeploymentState::DS_Unknown:
+        r = "deployment state unknown";
+        break;
+    case DeploymentState::DS_DownloadTemplate:
+        r = "downloading config template";
+        break;
+    case DeploymentState::DS_UnpackTemplate:
+        r = "unpacking config template";
+        break;
+    case DeploymentState::DS_DownloadWeights:
+        r = "downloading weights";
+        break;
+    case DeploymentState::DS_UnpackWeights:
+        r = "unpacking weights";
+        break;
+    case DeploymentState::DS_DownloadScripts:
+        r = "downloading script files";
+        break;
+    case DeploymentState::DS_UnpackScripts:
+        r = "unpacking script files";
+        break;
+    case DeploymentState::DS_DownloadData:
+        r = "downloading video/image source";
+        break;
+    case DeploymentState::DS_UnpackData:
+        r = "unpacking video/image source";
+        break;
+    case DeploymentState::DS_DeployFinished:
+        r = "resources deployment finished";
+        break;
+    case DeploymentState::DS_CopyProject:
+        r = "copying project to temporary location";
+        break;
+    case DeploymentState::DS_PrepareProject:
+        r = "solver preparing project";
+        break;
+    case DeploymentState::DS_ProjectPrepared:
+        r = "project preparation finished";
+        break;
+    case DeploymentState::DS_OpenProject:
+        r = "solver opening prepared project";
+        break;
+    case DeploymentState::DS_ProjectOpened:
+        r = "project opened successfully";
+        break;
+    case DeploymentState::DS_ProjectClosed:
+        r = "project closed";
+        break;
+
+    case DeploymentState::DS_CopyResults:
+        r = "copying results";
+        break;
+
+    case DeploymentState::DS_PackResults:
+        r = "packing results";
+        break;
+
+    case DeploymentState::DS_UploadResults:
+        r = "uploading results";
+        break;
+
+    case DeploymentState::DS_UploadFinished:
+        r = "upload finished";
+        break;
+
+    default:
+        r = "ERROR - unknown value";
+        break;
+    }
+
+    return r;
+}
+
+void UProjectRunThread::ProjectStateCalculation()
+{
+    std::cout << "Calculation in progress: " << std::endl;
+    int calculation_state=-1;
+    int capture_state=-1;
+    static unsigned long long capture_frame_id=0;
+    static unsigned long long capture_max_frame_id=0;
+    unsigned long long capture_frid=0;
+    unsigned long long capture_maxfrid=0;
+    std::string message="";
+
+    int calc_state = Deployer->GetCalculationState();
+    if(calc_state>=0)
+    {
+        calculation_state = calc_state;
+        //¬ыгребаем логи, провер€ем нет ли ошибок там:
+        std::string log_err="";
+        bool process_log_res = Deployer->ProcessCalculationLog(log_err);
+        if(!process_log_res)
+        {
+            message = std::string("Log error: ") + log_err;
+            calculation_state = 3;
+        }
+        else
+        {
+            if(calc_state==2)
+            {
+                message = "Calculation started but not active (2).";
+            }
+            else if(calc_state==1 || calc_state==0)
+            {
+                int cap_state_out = -1;
+                bool res_capstate = Deployer->GetCaptureState(cap_state_out, capture_frame_id, capture_max_frame_id);
+                if(!res_capstate)
+                {
+                    std::string err="";
+                    err = Deployer->GetLastError();
+                    message = "Get capture state error: "+err;
+                }
+                else
+                {
+                    capture_state = cap_state_out;
+                    capture_frid = capture_frame_id;
+                    capture_maxfrid = capture_max_frame_id;
+                    message = "Calculation is active";
+                }
+            }
+            else
+            {
+                message = "Error: Wrong calculation state number";
+            }
+        }
+
+    }
+    else
+    {
+        std::string err="";
+        err = Deployer->GetLastError();
+        message = "GetCalculationState() error: "+err;
+    }
+
+        //if(message!=NULL)
+            //std::cout << "Capture state: "+ message << std::endl;
+
+        /// —осто€ние тредов расчета
+        /// 0 - запущен
+        /// 1 - расчет остановлен
+        /// 2 - расчет запущен, но не выполн€етс€
+        /// 3 - ошибка найдена в логах
+        std::string cstate_str = "";
+        switch (calculation_state) {
+            case -1:
+                cstate_str = "Error get calc_state (-1)";
+            break;
+            case 0:
+                cstate_str = "Calc thread active (0)";
+            break;
+            case 1:
+                cstate_str = "Calc thread paused (1)";
+            break;
+            case 2:
+                cstate_str = "Calc thread started but inactive (2)";
+            break;
+            case 3:
+                std::cout << "Fatal error occured during calculation: "+std::string(message);
+                projectRunState = ProjectRunState::PS_Termination;
+            break;
+            default:
+                cstate_str = "Calc thread result default ("+std::to_string(calculation_state)+")";
             break;
         }
-        calc_state = Deployer->GetCalculationState();
-    }
+        //—осто€ни€
+        #define RDK_CAPTURE_EMPTY 0
+        #define RDK_CAPTURE_CREATED 64
+        #define RDK_CAPTURE_INITIALIZATION 1
+        #define RDK_CAPTURE_CONNECTED 2
+        #define RDK_CAPTURE_PAUSED 4
+        #define RDK_CAPTURE_ACTIVE 8
+        #define RDK_CAPTURE_DISCONNECTED 16
+        #define RDK_CAPTURE_RECONNECT 32
+        std::string capstate_str="Cap state: ";
 
-    // завершение потока в каком случае?
-    if(false)
+        if(capture_state&RDK_CAPTURE_EMPTY)
+        {
+            capstate_str+="(RDK_CAPTURE_EMPTY)";
+        }
+        if(capture_state&RDK_CAPTURE_CREATED)
+        {
+            capstate_str+="(RDK_CAPTURE_CREATED)";
+        }
+        if(capture_state&RDK_CAPTURE_INITIALIZATION)
+        {
+            capstate_str+="(RDK_CAPTURE_INITIALIZATION)";
+        }
+        if(capture_state&RDK_CAPTURE_CONNECTED)
+        {
+            capstate_str+="(RDK_CAPTURE_CONNECTED)";
+        }
+        if(capture_state&RDK_CAPTURE_PAUSED)
+        {
+            capstate_str+="(RDK_CAPTURE_PAUSED)";
+        }
+        if(capture_state&RDK_CAPTURE_ACTIVE)
+        {
+            capstate_str+="(RDK_CAPTURE_ACTIVE)";
+        }
+        if(capture_state&RDK_CAPTURE_DISCONNECTED)
+        {
+            capstate_str+="(RDK_CAPTURE_DISCONNECTED)";
+        }
+        if(capture_state&RDK_CAPTURE_RECONNECT)
+        {
+            capstate_str+="(RDK_CAPTURE_RECONNECT)";
+        }
+
+        //std::cout <<  cstate_str+"\n"+capstate_str;
+
+
+
+        if(capture_frame_id>0 && capture_max_frame_id>0)
+        {
+            qDebug()<<"capture_frame_id="<<capture_frame_id<<" capture_max_frame_id="<<capture_max_frame_id;
+
+            //std::cout << capture_frame_id;
+            //ћы докатились до конца, переключаемс€ на финализацию
+            if(capture_frame_id>=capture_max_frame_id || last_frame_count>capture_frame_id)
+            {
+                FinishProject();
+            }
+
+            last_frame_count = capture_frame_id;
+        }
+
+        //TODO: ќбработка фатальных ошибок на этапе расчета
+
+
+}
+
+void UProjectRunThread::ProjectStateFinalization()
+{
+    projectRunState = ProjectRunState::PS_Finalization;
+}
+
+void UProjectRunThread::ProjectStateTermination()
+{
+
+}
+
+void UProjectRunThread::PrepProject()
+{
+    std::string response;
+    if(Deployer->PrepareProject(response))
     {
-        FinishProject();
+        std::cout << Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
+        return;
     }
-
+    else
+    {
+        std::cout << "Set state: PS_ProjectPreparation" << std::endl;
+        projectRunState = ProjectRunState::PS_ProjectPreparation;
+    }
 }
 
-int UProjectRunThread::PrepProject(std::string &response)
+void UProjectRunThread::OpenProject()
 {
-    return Deployer->PrepareProject(response);
+    std::string response;
+    if(Deployer->OpenPreparedProject(response))
+    {
+        std::cout << Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
+        return;
+    }
+    else
+    {
+        std::cout << "Set state: PS_ProjectOpening" << std::endl;
+        projectRunState = ProjectRunState::PS_ProjectOpening;
+    }
 }
 
-int UProjectRunThread::OpenProject(std::string &response)
+void UProjectRunThread::RunProject()
 {
-    return Deployer->OpenPreparedProject(response);
+    if(Deployer->RunPreparedProject())
+    {
+        std::cout << Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
+        return;
+    }
+    else
+    {
+        std::cout << "Set state: PS_Calculation" << std::endl;
+        projectRunState = ProjectRunState::PS_Calculation;
+    }
 }
 
-int UProjectRunThread::RunProject()
-{
-    return Deployer->RunPreparedProject();
+void UProjectRunThread::FinishProject()
+{   
+    if(Deployer->FinishCalculation())
+    {
+        std::string error = Deployer->GetLastError();
+        std::cout << Deployer->GetLastError() << std::endl;
+        projectRunState = ProjectRunState::PS_Termination;
+        return;
+    }
+    else
+    {
+        std::cout << "Set state: PS_Finalization" << std::endl;
+        projectRunState = ProjectRunState::PS_Finalization;
+    }
 }
 
-int UProjectRunThread::FinishProject()
-{
-    return Deployer->FinishCalculation();
-}
-
-int UProjectRunThread::GetCalcState()
-{
-    return calc_state;
-}
 
 }//namespace RDK

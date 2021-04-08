@@ -259,6 +259,22 @@ private:
 
 };
 
+//Состояния сервера, которые напрямую отвечают за то,
+//какая ветка основного цикла (процедура) будет выполняться прямо на этой итерации
+//Переход между состояниями - это вызов соответствующих функций, которые аналогичны
+//текущему нажиманию на кнопки
+enum ProjectRunState {
+    PS_Undefined = 0,               //Задается при инициализации, означает что работа еще не началась
+    PS_Initialization = 100,        //Запуск только-только производится, пробуем подконнектиться и пингуем соединение
+    PS_Deployment = 101,            //Как только запуск состоялся и сеть перешла в состояние NS_Connected переходим в режим деплоймента
+    PS_ProjectPreparation = 102,    //Как только процесс деплоймента вернул соответствующее значение, переходим в режим подготовки
+    PS_ProjectOpening = 103,        //Открываем загруженный проект
+    PS_Calculation = 104,           //Производится расчет проекта
+    PS_Finalization = 105,          //Расчет проекта завершился, завершаем работу
+    PS_ResultsUploading = 106,      //Загрузка результатов
+    PS_Termination = 107,           //Удаление солвера из процессов, может время занимать
+};
+
 class RDK_LIB_TYPE UProjectRunThread: public QThread
 {
 Q_OBJECT
@@ -271,30 +287,39 @@ public:
 
     std::string GetLastError();
 
-    int GetCalcState();
 
 private:
     UProjectDeployer* Deployer;
 
     std::string error_string;
 
-    int calc_state;
+    unsigned long long last_frame_count;
+
+    ProjectRunState projectRunState;
 private:
 
     ///Подготовить к запуску проект:
     /// 1. Скопировать во временное хранилище
     /// 2. Открыть в тестовом режиме и настроить пути и связи?
     /// 3. Закрыть
-    int PrepProject(std::string &response);
+    void PrepProject();
 
     ///Открыть подготовленный проект
-    int OpenProject(std::string &response);
+    void OpenProject();
 
     /// Запустить подготовленный проект
-    int RunProject();
+    void RunProject();
 
     /// Завершить расчет проекта
-    int FinishProject();
+    void FinishProject();
+
+    std::string ParseDeploymentState(DeploymentState state);
+
+    void ProjectStateInitialization();
+    void ProjectStateDeployment();
+    void ProjectStateCalculation();
+    void ProjectStateFinalization();
+    void ProjectStateTermination();
 
 
 };
