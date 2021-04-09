@@ -260,7 +260,7 @@ private:
 
 };
 
-//Состояния сервера, которые напрямую отвечают за то,
+//Состояния проекта, которые напрямую отвечают за то,
 //какая ветка основного цикла (процедура) будет выполняться прямо на этой итерации
 //Переход между состояниями - это вызов соответствующих функций, которые аналогичны
 //текущему нажиманию на кнопки
@@ -286,21 +286,24 @@ public:
 
     void run() override;
 
-
-
 private:
     UProjectDeployer* Deployer;
-
-    std::string error_string;
 
     unsigned long long last_frame_count;
 
     ProjectRunState projectRunState;
+
+    std::string logFileName;
+
 private:
+
+    void WriteLog(const string& s);
+
+    std::string ParseDeploymentState(DeploymentState state);
 
     ///Подготовить к запуску проект:
     /// 1. Скопировать во временное хранилище
-    /// 2. Открыть в тестовом режиме и настроить пути и связи?
+    /// 2. Открыть в тестовом режиме и настроить пути и связи
     /// 3. Закрыть
     void PrepProject();
 
@@ -313,17 +316,13 @@ private:
     /// Завершить расчет проекта
     void FinishProject();
 
+    /// Отправить результаты расчета
     void UploadResults();
-
-    std::string ParseDeploymentState(DeploymentState state);
 
     void ProjectStateInitialization();
     void ProjectStateDeployment();
     void ProjectStateCalculation();
     void ProjectStateFinalization();
-    void ProjectStateTermination();
-
-
 };
 
 
