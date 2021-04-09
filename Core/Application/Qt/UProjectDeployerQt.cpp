@@ -2950,6 +2950,7 @@ void UProjectRunThread::run()
                 WriteLog("Current project run state is undefined");
                 break;
         }
+        RDK::Sleep(1000);
     }
 
      WriteLog("Project Run Thread stopped");
@@ -3164,6 +3165,7 @@ void UProjectRunThread::ProjectStateFinalization()
     }
     else if(state == DS_UploadFinished)
     {
+       WriteLog("Upload finished");
        projectRunState = ProjectRunState::PS_Termination;
     }
     else if(state == DS_Error)
