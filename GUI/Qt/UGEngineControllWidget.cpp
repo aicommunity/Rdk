@@ -41,7 +41,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
     statusPanel = NULL;
-    //videoAnalyticsSimpleWidget=NULL;
+    videoAnalyticsSimpleWidget=NULL;
     graphWindowWidget=NULL;
     graphWindow=NULL;
     profilingWindow=NULL;
@@ -186,7 +186,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
-    //connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
+    connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
     connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
     connect(ui->actionFtpTest, SIGNAL(triggered(bool)), this, SLOT(actionFtpTest()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
@@ -202,13 +202,13 @@ UGEngineControllWidget::~UGEngineControllWidget()
     delete ui;
 }
 
-/*void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
+void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
 {
     if(externalWidget!=NULL)
     {
         videoAnalyticsSimpleWidget = externalWidget;
     }
-}*/
+}
 
 void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
 {
@@ -669,13 +669,13 @@ void UGEngineControllWidget::actionNewWatches()
 }
 
 
-/*void UGEngineControllWidget::actionVASimpleSettings()
+void UGEngineControllWidget::actionVASimpleSettings()
 {
     if(videoAnalyticsSimpleWidget)
     {
         videoAnalyticsSimpleWidget->show();
     }
-}*/
+}
 
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {
@@ -850,9 +850,9 @@ void UGEngineControllWidget::showChannelsWidget (void)
 
 void UGEngineControllWidget::closeEvent(QCloseEvent *event)
 {
- application->PauseChannel(-1);
- application->CloseProject();
- application->UnInit();
+ //application->PauseChannel(-1);
+ //application->CloseProject();
+ //application->UnInit();
  event->accept();
  //   if (maybeSave()) {
  //       writeSettings();

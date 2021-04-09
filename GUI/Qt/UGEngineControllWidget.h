@@ -27,7 +27,7 @@
 #include "UTcpServerControlWidget.h"
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
-//#include "UVideoAnalyticsSimpleSettingsWidget.h"
+#include "UVideoAnalyticsSimpleSettingsWidget.h"
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -82,7 +82,7 @@ public:
     ///Загрузить проект из внешнего источника (пока только из конфигуратора на основе СУБД)
     void loadProjectExternal(const QString &config_path);
 
-    //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
+    void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 
 signals:
     void showSimpleSettings();
@@ -139,7 +139,7 @@ public slots:
     void actionNewWatches();
     void actionProfiling();
     void actionTcpServer();
-    //void actionVASimpleSettings();
+    void actionVASimpleSettings();
     void actionFtpTest();
 
 private slots:
@@ -171,7 +171,7 @@ private:
     UWatch *watchWindow;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
-    //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+    UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
     UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
     /// Массив виджетов отображения картинок

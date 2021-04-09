@@ -135,6 +135,21 @@ bool UApplication::SetDatabaseMainPath(const std::string &value)
  return true;
 }
 
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& UApplication::GetStorageMountPoint(void) const
+{
+ return StorageMountPoint;
+}
+
+bool UApplication::SetStorageMountPoint(const std::string &value)
+{
+ if(StorageMountPoint == value)
+  return true;
+ StorageMountPoint=value;
+ return true;
+}
+
+
 /// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
 {
@@ -1350,7 +1365,7 @@ bool UApplication::OpenProject(const std::string &filename)
  bool is_loaded(false);
  if(!ProjectXml.LoadFromFile(filename,""))
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, (std::string("Can't read project file ")+filename).c_str());
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_WARNING, (std::string("Can't read project file ")+filename).c_str());
   return false;
  }
 
@@ -2325,6 +2340,7 @@ void UApplication::InitCmdParser(void)
 #ifndef __BORLANDC__
  CmdLineDescription.add_options()
     ("help", "produce help message")
+    ("standalone", "standalone vesrion of server without network")
     ("conf", po::value<string>(), "Configuration file name")
     ("ctime", po::value<double>(), "Calculation time interval, in seconds")
     ("info", po::value<string>(), "Information about core, possible: CollectionsList, ClassesList, CollectionClassesList, ClassProperties")

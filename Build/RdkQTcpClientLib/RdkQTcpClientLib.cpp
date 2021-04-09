@@ -430,12 +430,16 @@ int Rpc_DelServer(int server_index)
  {
  if(ClientsArray[server_index]->SocketIsConnected())
   Rpc_Disconnect(server_index);
+  ClientsArray[server_index]->Thread->MarkForDeletion();
+  //ClientsArray[server_index]->Thread->exit(0);
+  //ClientsArray[server_index]->Thread->wait();
  }
  catch(QException &exception)
  {
   return RDK_RPC_CONNECTION_ERROR;
  }
- delete ClientsArray[server_index];
+ //26.11.2020 - предполагаем что удалится само через сигнал dele
+ //delete ClientsArray[server_index];
  ClientsArray.erase(ClientsArray.begin()+server_index);
 
  return 0;
@@ -457,6 +461,12 @@ int Rpc_StopChannel(int server_index, int channel_index, int timeout)
 {
  RDK::USerStorageXML request, response;
  return ProcessSimpleCommand("StopChannel", server_index, channel_index, timeout, request, response);
+}
+
+int Rpc_StartTraining(int server_index, int channel_index, int timeout)
+{
+ RDK::USerStorageXML request, response;
+ return ProcessSimpleCommand("StartTraining", server_index, channel_index, timeout, request, response);
 }
 
 int Rpc_GetNumChannels(int server_index, int &results, int timeout)
@@ -514,7 +524,7 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout)
  return 0;
 }
 
-int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout)
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, const char* &last_error, int timeout)
 {
     RDK::USerStorageXML request,response;
     request.Create("Request");
@@ -525,12 +535,31 @@ int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, i
 
     static std::string res_string;
     res_string=response.ReadString("Data", "").c_str();
+    QString rs_str = res_string.c_str();
 
-    //int state=-1;
-    std::stringstream ss(res_string.c_str());
-    ss>>dp_state>>dp_progress>>dp_cap;
+    dp_state = -1;
+    dp_progress = -1;
+    dp_cap = -1;
+    last_error = "Wrong dep state data received";
 
-    //dp_state=state;
+    static std::string le_string;
+
+    // qDebug()<<"rs_str = "<<rs_str;
+    if(rs_str.size()>0)
+    {
+        QStringList rs_split = rs_str.split("|-|");
+        if(rs_split.size()>=4)
+        {
+            dp_state = rs_split[0].toInt();
+            dp_progress = rs_split[1].toInt();
+            dp_cap = rs_split[2].toInt();
+            qDebug()<<"rs_split[3] = "<<rs_split[3];
+            qDebug()<<"rs_split[3].toUtf8().constData() = "<<rs_split[3].toUtf8().constData();
+            le_string = rs_split[3].toUtf8().constData();
+            last_error = le_string.c_str();
+        }
+    }
+
     return res;
 }
 
@@ -610,10 +639,13 @@ int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, in
 
     res_string=response.ReadString("Data", "").c_str();
 
+    static std::string msg="";
+
     QString qs = res_string.c_str();
-    QStringList spl = qs.split("|");
+    QStringList spl = qs.split("|-|");
     int rs = spl[0].trimmed().toInt();
-    verbose_response = spl[1].toUtf8().constData();
+    msg = spl[1].toUtf8().constData();
+    verbose_response = msg.c_str();
 
     if(res)
      return res;
@@ -641,14 +673,16 @@ int Rpc_GetCalculationState(int server_index,
 {
     RDK::USerStorageXML request,response;
     int res = ProcessSimpleCommand("GetCalculationState", server_index, -1, timeout, request, response);
+    static std::string s="";
 
     if(res==0)
     {
         std::string res_string = response.ReadString("Data", "").c_str();
         QString qsl = res_string.c_str();
+        qDebug()<<qsl;
         if(qsl.length()>0)
         {
-            QStringList spl = qsl.split("|");
+            QStringList spl = qsl.split("|-|");
             if(spl.size()==5)
             {
                 calculation_state = spl[0].toInt();
@@ -656,11 +690,12 @@ int Rpc_GetCalculationState(int server_index,
                 capture_frid = spl[2].toInt();
                 capture_maxfrid = spl[3].toInt();
                 QString msg = spl[4];
-                message = msg.toUtf8().constData();
+                s = msg.toUtf8().constData();
+                message = s.c_str();
             }
             else
             {
-                std::string s = "Wrong result: '" + res_string + "'";
+                s = "Wrong result: '" + res_string + "'";
                 message = s.c_str();
             }
         }
@@ -668,4 +703,101 @@ int Rpc_GetCalculationState(int server_index,
     return res;
 }
 
+int Rpc_FinishCalculation(int server_index, bool& result, const char* &last_error, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("FinishCalculation", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    static std::string le="";
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|-|");
+        if(spl.size()>=2)
+        {
+            result = spl[0].trimmed().toInt();
+            le = spl[1].toUtf8().constData();
+            last_error = le.c_str();
+        }
+    }
+    return res;
+}
+
+int Rpc_UploadCalculationResults(int server_index, bool& result, const char* &last_error, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("UploadCalculationResults", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|-|");
+        if(spl.size()>=2)
+        {
+            result = spl[0].trimmed().toInt();
+            if(!result)
+                last_error = spl[1].toUtf8().constData();
+        }
+    }
+    return res;
+}
+
+int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_error, int timeout)
+ {
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("GetUploadState", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    static std::string le_str="";
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|-|");
+        if(spl.size()>=2)
+        {
+            upload_state = spl[0].trimmed().toInt();
+            le_str = spl[1].toUtf8().constData();
+            last_error = le_str.c_str();
+        }
+    }
+
+    if(res)
+     return res;
+}
+
+int Rpc_CloseSolver(int server_index, bool& result, const char* &last_error, int timeout)
+{
+    RDK::USerStorageXML request,response;
+    int res = ProcessSimpleCommand("CloseSolver", server_index, -1, timeout, request, response);
+
+    std::string res_string;
+
+    res_string=response.ReadString("Data", "").c_str();
+
+    if(res_string!="")
+    {
+        QString qs = res_string.c_str();
+        QStringList spl = qs.split("|-|");
+        if(spl.size()>=2)
+        {
+            result = spl[0].trimmed().toInt();
+            if(!result)
+                last_error = spl[1].toUtf8().constData();
+        }
+    }
+    return res;
+}
 

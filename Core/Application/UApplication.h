@@ -56,6 +56,9 @@ std::string LibrariesPath;
 /// Относительный путь до папки с хранилищем проектов (пока обычно /Database)
 std::string DatabaseMainPath;
 
+/// Абсолютный путь до папки монтирования хранилища
+std::string StorageMountPoint;
+
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 std::string ModelsMainPath;
 
@@ -172,6 +175,9 @@ bool SetConfigsMainPath(const std::string &value);
 
 const std::string& GetDatabaseMainPath(void) const;
 bool SetDatabaseMainPath(const std::string &value);
+
+const std::string& GetStorageMountPoint(void) const;
+bool SetStorageMountPoint(const std::string &value);
 
 /// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTLibs)
 const std::string& GetLibrariesPath(void) const;

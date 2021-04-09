@@ -85,6 +85,8 @@ int  Rpc_StartChannel(int server_index, int channel_index, int timeout);
 
 int  Rpc_StopChannel(int server_index, int channel_index, int timeout);
 
+int  Rpc_StartTraining(int server_index, int channel_index, int timeout);
+
 int  Rpc_ResetChannel(int server_index, int channel_index, int timeout);
 
 int  Rpc_GetNumChannels(int server_index, int &results, int timeout);
@@ -93,7 +95,7 @@ int  Rpc_SetNumChannels(int server_index, int num_channels, int timeout);
 
 int  Rpc_GetChannelName(int server_index, int channel_index, const char* &result, int timeout);
 
-int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, int timeout);
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, const char *&last_error, int timeout);
 
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout);
 
@@ -120,5 +122,14 @@ int Rpc_GetLastError(int server_index, const char* &result, int timeout);
                             unsigned long long& capture_maxfrid,
                             const char* &message,
                             int timeout);
+
+ int Rpc_FinishCalculation(int server_index, bool& result, const char* &last_error, int timeout);
+
+ int Rpc_UploadCalculationResults(int server_index, bool& result, const char* &last_error, int timeout);
+
+ int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_error, int timeout);
+
+ int Rpc_CloseSolver(int server_index, bool& result, const char* &last_error, int timeout);
+
 
 #endif // RDKQTCPCLIENTLIB_H

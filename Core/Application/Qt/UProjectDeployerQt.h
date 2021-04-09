@@ -27,12 +27,14 @@ struct MLlibDescr
  std::string LibWeightFileTagName;  //Тэг файла весов
  std::string LibConfigFileTagName;  //Тэг файла конфигурации
  std::string LibClassCountTagName;  //Тэг количества классов в библиотеке
+ std::string LibUseFullPathTagName; //Тэг расположения значения поиска полного пути
  MLlibDescr(){
  LibName="";
  LibScriptFileTagName="";
  LibWeightFileTagName="";
  LibConfigFileTagName="";
  LibClassCountTagName="";
+ LibUseFullPathTagName = "UseFullPath";//Существует в родительском классе, задаем наименование по умолчанию
  }
 };
 
@@ -99,6 +101,22 @@ enum DeploymentState
     DS_Error=100
 };
 
+enum DatabaseTaskStatus
+{
+    TS_New=0,
+    TS_Accepted=1,
+    TS_Deployment=2,
+    TS_Calculation=3,
+    TS_Finished=4,
+    TS_Error=1000
+};
+
+enum TemplateType
+{
+    TT_VideoAnalytics=1,
+    TT_NeuralInterface=2
+};
+
 class RDK_LIB_TYPE UProjectDeployProcessingThread: public QThread
 {
 Q_OBJECT
@@ -112,6 +130,7 @@ public:
     void SetDatabasePath(const QString& path);
     void SetDownloadTempPath(const QString& path);
     void SetFtpRemoteBasePath(const QString& path);
+    void SetStorageMountPath(const QString& path);
     void SetDeploymentState(const DeploymentState& state);
     void SetDeploymentProgress(const int &progress);
     void SetDeploymentProgressCap(const int &value);
@@ -142,12 +161,19 @@ private:
     bool UnpackZipFolder(const QString &local_zip_folder, const QString& local_dst_folder);
     bool UnpackZipFile(const QString &local_zip_folder, const QString& local_dst_folder);
 
+    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dst_dir_path);
+
     void DeployTemplate();
+    void DeployTemplate2();
+    void DeployDirectory(const QString& file_with_template);
     bool VerifyTemplate();
+    void DeployScript2();
     void DeployScript();
     bool VerifyScript();
+    void DeployWeights2();
     void DeployWeights();
     bool VerifyWeights();
+    void DeployData2();
     void DeployData();
     bool VerifyData();
 
@@ -159,6 +185,7 @@ private:
     QString databasePath;
     QString ftpRemoteBasePath;
     QString downloadTempPath;
+    QString storageMountPath;
 
     bool template_dr, weights_dr, script_dr, videosource_dr;
     int videosource_type;
@@ -170,7 +197,7 @@ private:
 
     QProcess zip_process;
 
-    std::string lastError;
+    QString lastError;
 
     CURL *curl;
     CURLcode res;
@@ -181,7 +208,7 @@ class RDK_LIB_TYPE UProjectResultsUploadingThread: public QThread
 Q_OBJECT
 
 public:
-     UProjectResultsUploadingThread();
+     UProjectResultsUploadingThread(bool standalone = false);
     ~UProjectResultsUploadingThread();
 
     void run() override;
@@ -198,30 +225,104 @@ public:
     void SetRemoteFtpPath(const QString& ftp_path);
     QString GetRemoteFtpPath();
 
+    void SetRemoteStoragePath(const QString& strg_path);
+    QString GetRemoteStoragePath();
+
     QString GetLastError();
     DeploymentState GetUploadState();
 
 private:
-    bool CopyResultsToDestinationDir();
     bool ZipResults();
     bool UploadResultsViaFtp();
 
-    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dts_dir_path);
+    bool CopyResultsToDestinationDir();
+    bool CopyResultsToRemoteStorageDir();
+
+
+    bool RecursiveCopyFiles(const QString& src_dir_path, const QString& dst_dir_path);
 
 private slots:
     void processReadyReadStandardError();
     void processReadyReadStandardOutput();
 
 private:
+    bool standalone;
     QString projectResultsDir;
     QString storageResultsDir;
     QString databasePath;
     QString remoteFtpPath;
+    QString remoteStoragePath;
 
     QString lastError;
     DeploymentState uploadState;
 
     QProcess zip_process;
+
+};
+
+//Состояния сервера, которые напрямую отвечают за то,
+//какая ветка основного цикла (процедура) будет выполняться прямо на этой итерации
+//Переход между состояниями - это вызов соответствующих функций, которые аналогичны
+//текущему нажиманию на кнопки
+enum ProjectRunState {
+    PS_Undefined = 0,               //Задается при инициализации, означает что работа еще не началась
+    PS_Initialization = 100,        //Запуск только-только производится, пробуем подконнектиться и пингуем соединение
+    PS_Deployment = 101,            //Как только запуск состоялся и сеть перешла в состояние NS_Connected переходим в режим деплоймента
+    PS_ProjectPreparation = 102,    //Как только процесс деплоймента вернул соответствующее значение, переходим в режим подготовки
+    PS_ProjectOpening = 103,        //Открываем загруженный проект
+    PS_Calculation = 104,           //Производится расчет проекта
+    PS_Finalization = 105,          //Расчет проекта завершился, завершаем работу
+    PS_ResultsUploading = 106,      //Загрузка результатов
+    PS_Termination = 107,           //Удаление солвера из процессов, может время занимать
+};
+
+class RDK_LIB_TYPE UProjectRunThread: public QThread
+{
+Q_OBJECT
+
+public:
+     UProjectRunThread(UProjectDeployer* deployer);
+    ~UProjectRunThread();
+
+    void run() override;
+
+
+
+private:
+    UProjectDeployer* Deployer;
+
+    std::string error_string;
+
+    unsigned long long last_frame_count;
+
+    ProjectRunState projectRunState;
+private:
+
+    ///Подготовить к запуску проект:
+    /// 1. Скопировать во временное хранилище
+    /// 2. Открыть в тестовом режиме и настроить пути и связи?
+    /// 3. Закрыть
+    void PrepProject();
+
+    ///Открыть подготовленный проект
+    void OpenProject();
+
+    /// Запустить подготовленный проект
+    void RunProject();
+
+    /// Завершить расчет проекта
+    void FinishProject();
+
+    void UploadResults();
+
+    std::string ParseDeploymentState(DeploymentState state);
+
+    void ProjectStateInitialization();
+    void ProjectStateDeployment();
+    void ProjectStateCalculation();
+    void ProjectStateFinalization();
+    void ProjectStateTermination();
+
 
 };
 
@@ -327,11 +428,19 @@ std::map<std::string, CaptureLibDescr> capture_tags;
 std::string capture_class_name;
 std::string capture_component_name;
 
+std::string predictor_class_name;
+std::string predictor_component_name;
+
 //Дата и время для добавления в таблицу
 QDateTime processing_start_datetime;
 QDateTime processing_end_datetime;
 
 UProjectResultsUploadingThread *projectResultsUploadingThread;
+
+//Задача для выполнения в режиме standalone (отсутствие сети)
+int serverStandaloneTask;
+
+TemplateType template_type;
 
 protected://Методы
 
@@ -341,7 +450,8 @@ bool DestroyProcessingThread();
 public: // Методы
 
 ///Запустить подготовку выполнения задачи,заданной пользоватлем (на вход идет индекс в базе данных)
-virtual int StartProjectDeployment(int deploy_task_id);
+/// standalone - работа без сети
+virtual int StartProjectDeployment(int deploy_task_id, bool standalone);
 
 ///Подготовить к запуску проект:
 /// 1. Скопировать во временное хранилище
@@ -378,6 +488,11 @@ virtual int GetCalculationState();
 /// @state - индекс состояния захвата
 /// @frame_id - индекс текущего кадра
 virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+
+bool GetCaptureStateVideoAnalysis(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+
+bool GetCaptureStateNeuralInterface(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+
 ///Обрабатывает накопившийся с последнего вызова лог
 /// возвращает false если были фатальные ошибки, иначе true
 /// @error - текст ошибки из лога приложения
@@ -386,10 +501,19 @@ virtual bool ProcessCalculationLog(std::string &error);
 virtual bool FinishCalculation();
 ///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
 /// запустить процесс упаковки и отправки данных в удаленное хранилище
-virtual bool UploadCalculationResults();
+virtual bool UploadCalculationResults(bool standalone);
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 virtual bool CloseSolver();
+///Получить состояние загрузки
+virtual int GetUploadState();
+///Обновить статус задачи в базе данных
+virtual void UpdateTaskStateInDb(int task_id, const DatabaseTaskStatus &status, float progress=-1.0f, const QString &start_time="", const QString& end_time="");
+
+/// Задача для запуска без сети
+virtual void SetStandaloneTask(int task);
+virtual int GetStandaloneTask();
+
 
 public: // Методы доступа к данным
 
@@ -413,6 +537,12 @@ int CopyProjectToTempFolder();
 int OpenProjectMockMode();
 /// Задать параметры проекта в заглушенном режиме
 int SetupProjectMockParameters();
+
+///Настроить параметры проекта в рамках видеоаналитики (видео, список кадров, вот это все)
+int SetupProjectMockParametersVideoAnalysis();
+
+///Настроить параметры проекта для нейроинтерфейса, т.к. работает оно по-другому.
+int SetupProjectMockParametersNeuralInterface();
 /// Закрыть заглушенный проект
 int CloseMockProject();
 /// Открыть проект в боевом режиме
@@ -426,6 +556,10 @@ int AnalyzeLogForErrors(std::string &problem_string);
 
 QString GetTimeStampInPSqlFormat(const QDateTime &now);
 
+/// Зарегистрировать солвер в СУБД
+void RegisterSolverToDatabase();
+/// Исключить солвер из СУБД
+void UnRegisterSolverFromDatabase();
 
 /// Читает входящие байты из выбранного источника, контекст привязки
 /// всегда определяется строкой вне зависимости от типа транспорта
