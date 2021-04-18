@@ -2769,6 +2769,9 @@ void UProjectDeployerQt::UnRegisterSolverFromDatabase()
     QString ip_addr = GetApplication()->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress().c_str();
     int port = GetApplication()->GetServerControl()->GetServerTransport()->GetServerBindingPort();
 
+    if(!db)
+     return;
+
     QSqlQuery q(*db);
 
     q.prepare("DELETE FROM vid_an.cloud_solvers WHERE solver_address='"+
