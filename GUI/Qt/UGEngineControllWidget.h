@@ -27,7 +27,10 @@
 #include "UTcpServerControlWidget.h"
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
+
+#ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
+#endif
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -82,8 +85,9 @@ public:
     ///Загрузить проект из внешнего источника (пока только из конфигуратора на основе СУБД)
     void loadProjectExternal(const QString &config_path);
 
+#ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
-
+#endif
 signals:
     void showSimpleSettings();
 
@@ -139,7 +143,9 @@ public slots:
     void actionNewWatches();
     void actionProfiling();
     void actionTcpServer();
+#ifndef RDK_DISABLE_EXT_GUI
     void actionVASimpleSettings();
+#endif
     void actionFtpTest();
 
 private slots:
@@ -171,7 +177,9 @@ private:
     UWatch *watchWindow;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
+#ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+#endif
     UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
     /// Массив виджетов отображения картинок

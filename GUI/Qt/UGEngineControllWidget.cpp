@@ -41,7 +41,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
     statusPanel = NULL;
+#ifndef RDK_DISABLE_EXT_GUI
     videoAnalyticsSimpleWidget=NULL;
+#endif
     graphWindowWidget=NULL;
     graphWindow=NULL;
     profilingWindow=NULL;
@@ -186,7 +188,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
+#ifndef RDK_DISABLE_EXT_GUI
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
+#endif
     connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
     connect(ui->actionFtpTest, SIGNAL(triggered(bool)), this, SLOT(actionFtpTest()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
@@ -202,6 +206,7 @@ UGEngineControllWidget::~UGEngineControllWidget()
     delete ui;
 }
 
+#ifndef RDK_DISABLE_EXT_GUI
 void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
 {
     if(externalWidget!=NULL)
@@ -209,6 +214,7 @@ void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalytics
         videoAnalyticsSimpleWidget = externalWidget;
     }
 }
+#endif
 
 void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
 {
@@ -668,7 +674,7 @@ void UGEngineControllWidget::actionNewWatches()
     addWatchesWidged();
 }
 
-
+#ifndef RDK_DISABLE_EXT_GUI
 void UGEngineControllWidget::actionVASimpleSettings()
 {
     if(videoAnalyticsSimpleWidget)
@@ -676,6 +682,7 @@ void UGEngineControllWidget::actionVASimpleSettings()
         videoAnalyticsSimpleWidget->show();
     }
 }
+#endif
 
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {
