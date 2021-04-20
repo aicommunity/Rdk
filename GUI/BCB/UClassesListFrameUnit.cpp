@@ -147,8 +147,11 @@ void TUClassesListFrame::AUpdateInterface(void)
 
   if(!sel)
   {
-   TTreeNode* node=TreeView->Items[0].Item[0];
-   node->MakeVisible();
+   if(TreeView->Items->Count>0)
+   {
+	TTreeNode* node=TreeView->Items[0].Item[0];
+    node->MakeVisible();
+   }
   }
  }
  else
