@@ -208,7 +208,7 @@ class RDK_LIB_TYPE UProjectResultsUploadingThread: public QThread
 Q_OBJECT
 
 public:
-     UProjectResultsUploadingThread(bool standalone = false);
+     UProjectResultsUploadingThread();
     ~UProjectResultsUploadingThread();
 
     void run() override;
@@ -246,7 +246,6 @@ private slots:
     void processReadyReadStandardOutput();
 
 private:
-    bool standalone;
     QString projectResultsDir;
     QString storageResultsDir;
     QString databasePath;
@@ -500,7 +499,7 @@ virtual bool ProcessCalculationLog(std::string &error);
 virtual bool FinishCalculation();
 ///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
 /// запустить процесс упаковки и отправки данных в удаленное хранилище
-virtual bool UploadCalculationResults(bool standalone);
+virtual bool UploadCalculationResults();
 ///Аккуратное закрытие солвера, команда которая по идее должна инициировать
 /// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
 virtual bool CloseSolver();

@@ -948,9 +948,9 @@ bool UProjectDeployProcessingThread::VerifyData()
 }
 
 //====================================================================
-UProjectResultsUploadingThread::UProjectResultsUploadingThread(bool standalone)
+UProjectResultsUploadingThread::UProjectResultsUploadingThread()
 {
-    this->standalone = standalone;
+
 }
 
 UProjectResultsUploadingThread::~UProjectResultsUploadingThread()
@@ -1027,14 +1027,12 @@ void UProjectResultsUploadingThread::run()
         return;
     }
 
-    if(!standalone)
+    if(!CopyResultsToRemoteStorageDir())
     {
-        if(!CopyResultsToRemoteStorageDir())
-        {
-            uploadState = DS_Error;
-            return;
-        }
+        uploadState = DS_Error;
+        return;
     }
+
     /*
     uploadState = DS_PackResults;
     if(!ZipResults())
@@ -2551,7 +2549,7 @@ bool UProjectDeployerQt::FinishCalculation()
 
 ///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
 /// запустить процесс упаковки и отправки данных в удаленное хранилище
-bool UProjectDeployerQt::UploadCalculationResults(bool standalone)
+bool UProjectDeployerQt::UploadCalculationResults()
 {
     //Если расчет по нормальному завершить не получилось, то эта функция не вызовется
     //не знаю, насколько это логично...
@@ -2620,7 +2618,7 @@ bool UProjectDeployerQt::UploadCalculationResults(bool standalone)
             {
                 delete projectResultsUploadingThread;
             }
-            projectResultsUploadingThread = new UProjectResultsUploadingThread(standalone);
+            projectResultsUploadingThread = new UProjectResultsUploadingThread();
             projectResultsUploadingThread->SetDatabasePath(db_path);
             projectResultsUploadingThread->SetRemoteFtpPath(QString(ftp_remote_path.c_str()));
             projectResultsUploadingThread->SetProjectResultsDirPath(results_dir_path);
@@ -3240,7 +3238,7 @@ void UProjectRunThread::FinishProject()
 
 void UProjectRunThread::UploadResults()
 {
-    if(!Deployer->UploadCalculationResults(true))
+    if(!Deployer->UploadCalculationResults())
     {
         WriteLog(Deployer->GetLastError());
         projectRunState = ProjectRunState::PS_Termination;
