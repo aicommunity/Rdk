@@ -1248,6 +1248,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   classification.LibClassCountTagName = "NumClasses";
   file_tags["TPyUBitmapClassifier"] = classification;
   component_classes.push_back("TPyUBitmapClassifier");
+
   MLlibDescr sq_det;
   sq_det.LibName = "TPyObjectDetectorSqueezeDet";
   sq_det.LibConfigFileTagName="ConfigPath";
@@ -1256,6 +1257,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   sq_det.LibClassCountTagName = "";
   file_tags["TPyObjectDetectorSqueezeDet"] = sq_det;
   component_classes.push_back("TPyObjectDetectorSqueezeDet");
+
   MLlibDescr det_yolo;
   det_yolo.LibName="TPyObjectDetector";
   det_yolo.LibConfigFileTagName="ConfigPathYOLO";
@@ -1264,6 +1266,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   det_yolo.LibClassCountTagName = "";
   file_tags["TPyObjectDetector"] = det_yolo;
   component_classes.push_back("TPyObjectDetector");
+
   MLlibDescr protobuf;
   protobuf.LibName = "TPySegmentatorProtobuf";
   protobuf.LibConfigFileTagName = "JSONPath";
@@ -1272,6 +1275,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   protobuf.LibClassCountTagName = "";
   file_tags["TPySegmentatorProtobuf"] = protobuf;
   component_classes.push_back("TPySegmentatorProtobuf");
+
   MLlibDescr unet;
   unet.LibName = "TPySegmentatorUNet";
   unet.LibConfigFileTagName = "";
@@ -1280,6 +1284,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   unet.LibClassCountTagName = "";
   file_tags["TPySegmentatorUNet"] = unet;
   component_classes.push_back("TPySegmentatorUNet");
+
   MLlibDescr classifier_opencv;
   classifier_opencv.LibName = "UOpenCvClassifier";
   classifier_opencv.LibConfigFileTagName = "";
@@ -1288,6 +1293,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   classifier_opencv.LibClassCountTagName = "NumClasses";
   file_tags["UOpenCvClassifier"] = classifier_opencv;
   component_classes.push_back("UOpenCvClassifier");
+
   MLlibDescr detector_opencv;
   detector_opencv.LibName = "UOpenCvDetector";
   detector_opencv.LibConfigFileTagName = "ConfigPath";
@@ -1295,8 +1301,8 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   detector_opencv.LibWeightFileTagName = "ModelPath";
   detector_opencv.LibClassCountTagName = "";
   file_tags["UOpenCvDetector"] = detector_opencv;
-  /*
   component_classes.push_back("UOpenCvDetector");
+
   MLlibDescr classification_tester;
   detector_opencv.LibName = "TPyPredictSort";
   detector_opencv.LibConfigFileTagName = "ConfigPath";
@@ -1305,7 +1311,7 @@ UProjectDeployerQt::UProjectDeployerQt(void):
   detector_opencv.LibClassCountTagName = "";
   file_tags["TPyPredictSort"] = classification_tester;
   component_classes.push_back("TPyPredictSort");
-  */
+
 
   CaptureLibDescr opencv_videocapture;
   opencv_videocapture.LibName = "TCaptureOpenCV";
@@ -1998,6 +2004,10 @@ int UProjectDeployerQt::CopyProjectToTempFolder()
     abs_ttp.replace("{Database}", db_p);
 
     qDebug()<<"abs_ttp = "<<abs_ttp;
+
+    QDir(pdpath).removeRecursively();
+    QDir().mkdir(pdpath);
+
 
     QFileInfo fi(abs_ttp);
     QDir src_dir(fi.absoluteDir());
