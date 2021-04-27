@@ -1635,8 +1635,8 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id, bool standalo
      }
  }
 
- if(!standalone && (task_template_download_required||task_weights_download_required||
-    task_script_download_required||task_src_download_required))
+ if(task_template_download_required||task_weights_download_required||
+    task_script_download_required||task_src_download_required)
  {
      deployProcessingThread = new UProjectDeployProcessingThread();
 
@@ -2344,6 +2344,22 @@ QString UProjectDeployerQt::GetTimeStampInPSqlFormat(const QDateTime &now)
 /// Запустить подготовленный проект
 int UProjectDeployerQt::RunPreparedProject()
 {
+    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(0);
+
+    if(!model) return 1;
+
+    //Если есть компонент обучения/предсказания
+    std::vector<std::string> predictor_names;
+    predictor_names = model->GetComponentsNameByClassName("TPyPredictSort", predictor_names);
+
+    if(!predictor_names.empty())
+    {
+        RDK::UEPtr<RDK::UContainer> predictor_container;
+        predictor_container = model->GetComponentL(predictor_names[0]);
+        bool *start_prediction = predictor_container->AccessPropertyData<bool>("StartPredict");
+        *start_prediction = true;
+    }
+
     //Сюда еще пойдет всякая херня типа сохранения даты и прочего, но это потом
     processing_start_datetime = QDateTime::currentDateTime();
     Application->StartChannel(-1);
@@ -3008,155 +3024,176 @@ void UProjectRunThread::ProjectStateDeployment()
 
 void UProjectRunThread::ProjectStateCalculation()
 {
-    WriteLog("Calculation in progress: ");
-    int calculation_state=-1;
-    int capture_state=-1;
-    static unsigned long long capture_frame_id=0;
-    static unsigned long long capture_max_frame_id=0;
-    unsigned long long capture_frid=0;
-    unsigned long long capture_maxfrid=0;
-    std::string message="";
+    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(0);
 
-    int calc_state = Deployer->GetCalculationState();
-    if(calc_state>=0)
+    if(!model) return;
+
+    //Если есть компонент обучения/предсказания
+    std::vector<std::string> predictor_names;
+    predictor_names = model->GetComponentsNameByClassName("TPyPredictSort", predictor_names);
+
+    if(!predictor_names.empty())
     {
-        calculation_state = calc_state;
-        //Выгребаем логи, проверяем нет ли ошибок там:
-        std::string log_err="";
-        bool process_log_res = Deployer->ProcessCalculationLog(log_err);
-        if(!process_log_res)
+        RDK::UEPtr<RDK::UContainer> predictor_container;
+        predictor_container = model->GetComponentL(predictor_names[0]);
+        bool *prediction_ended = predictor_container->AccessPropertyData<bool>("PredictionEnded");
+        if(*prediction_ended)
         {
-            message = std::string("Log error: ") + log_err;
-            calculation_state = 3;
+             FinishProject();
         }
-        else
-        {
-            if(calc_state==2)
-            {
-                message = "Calculation started but not active (2).";
-            }
-            else if(calc_state==1 || calc_state==0)
-            {
-                int cap_state_out = -1;
-                bool res_capstate = Deployer->GetCaptureState(cap_state_out, capture_frame_id, capture_max_frame_id);
-                if(!res_capstate)
-                {
-                    std::string err="";
-                    err = Deployer->GetLastError();
-                    message = "Get capture state error: "+err;
-                }
-                else
-                {
-                    capture_state = cap_state_out;
-                    capture_frid = capture_frame_id;
-                    capture_maxfrid = capture_max_frame_id;
-                    message = "Calculation is active";
-                }
-            }
-            else
-            {
-                message = "Error: Wrong calculation state number";
-            }
-        }
-
     }
     else
     {
-        message = "GetCalculationState() error: "+Deployer->GetLastError();;
-    }
+        WriteLog("Calculation in progress: ");
+        int calculation_state=-1;
+        int capture_state=-1;
+        static unsigned long long capture_frame_id=0;
+        static unsigned long long capture_max_frame_id=0;
+        unsigned long long capture_frid=0;
+        unsigned long long capture_maxfrid=0;
+        std::string message="";
 
-    std::stringstream res_ss;
-    res_ss<<calculation_state<<"|-|"<<capture_state<<"|-|"<<capture_frid<<"|-|"<<capture_maxfrid<<"|-|"<<message.c_str();
-    message = res_ss.str();
-
-    if(!message.empty())
-        WriteLog("Capture state: "+ message);
-
-    /// Состояние тредов расчета
-    /// 0 - запущен
-    /// 1 - расчет остановлен
-    /// 2 - расчет запущен, но не выполняется
-    /// 3 - ошибка найдена в логах
-    std::string cstate_str = "";
-    switch (calculation_state) {
-        case -1:
-            cstate_str = "Error get calc_state (-1)";
-        break;
-        case 0:
-            cstate_str = "Calc thread active (0)";
-        break;
-        case 1:
-            cstate_str = "Calc thread paused (1)";
-        break;
-        case 2:
-            cstate_str = "Calc thread started but inactive (2)";
-        break;
-        case 3:
-            WriteLog("Fatal error occured during calculation: "+message);
-            projectRunState = ProjectRunState::PS_Termination;
-        break;
-        default:
-            cstate_str = "Calc thread result default ("+std::to_string(calculation_state)+")";
-        break;
-    }
-    //Состояния
-    #define RDK_CAPTURE_EMPTY 0
-    #define RDK_CAPTURE_CREATED 64
-    #define RDK_CAPTURE_INITIALIZATION 1
-    #define RDK_CAPTURE_CONNECTED 2
-    #define RDK_CAPTURE_PAUSED 4
-    #define RDK_CAPTURE_ACTIVE 8
-    #define RDK_CAPTURE_DISCONNECTED 16
-    #define RDK_CAPTURE_RECONNECT 32
-    std::string capstate_str="Cap state: ";
-
-    if(capture_state&RDK_CAPTURE_EMPTY)
-    {
-        capstate_str+="(RDK_CAPTURE_EMPTY)";
-    }
-    if(capture_state&RDK_CAPTURE_CREATED)
-    {
-        capstate_str+="(RDK_CAPTURE_CREATED)";
-    }
-    if(capture_state&RDK_CAPTURE_INITIALIZATION)
-    {
-        capstate_str+="(RDK_CAPTURE_INITIALIZATION)";
-    }
-    if(capture_state&RDK_CAPTURE_CONNECTED)
-    {
-        capstate_str+="(RDK_CAPTURE_CONNECTED)";
-    }
-    if(capture_state&RDK_CAPTURE_PAUSED)
-    {
-        capstate_str+="(RDK_CAPTURE_PAUSED)";
-    }
-    if(capture_state&RDK_CAPTURE_ACTIVE)
-    {
-        capstate_str+="(RDK_CAPTURE_ACTIVE)";
-    }
-    if(capture_state&RDK_CAPTURE_DISCONNECTED)
-    {
-        capstate_str+="(RDK_CAPTURE_DISCONNECTED)";
-    }
-    if(capture_state&RDK_CAPTURE_RECONNECT)
-    {
-        capstate_str+="(RDK_CAPTURE_RECONNECT)";
-    }
-
-    WriteLog(cstate_str+"\n"+capstate_str);
-
-
-    if(capture_frame_id>0 && capture_max_frame_id>0)
-    {
-        message = std::string("capture_frame_id=") + std::to_string(capture_frame_id) + std::string(" capture_max_frame_id=") + std::to_string(capture_max_frame_id);
-        WriteLog(message);
-        //Мы докатились до конца, переключаемся на финализацию
-        if(capture_frame_id>=capture_max_frame_id || last_frame_count>capture_frame_id)
+        int calc_state = Deployer->GetCalculationState();
+        if(calc_state>=0)
         {
-            FinishProject();
+            calculation_state = calc_state;
+            //Выгребаем логи, проверяем нет ли ошибок там:
+            std::string log_err="";
+            bool process_log_res = Deployer->ProcessCalculationLog(log_err);
+            if(!process_log_res)
+            {
+                message = std::string("Log error: ") + log_err;
+                calculation_state = 3;
+            }
+            else
+            {
+                if(calc_state==2)
+                {
+                    message = "Calculation started but not active (2).";
+                }
+                else if(calc_state==1 || calc_state==0)
+                {
+                    int cap_state_out = -1;
+                    bool res_capstate = Deployer->GetCaptureState(cap_state_out, capture_frame_id, capture_max_frame_id);
+                    if(!res_capstate)
+                    {
+                        std::string err="";
+                        err = Deployer->GetLastError();
+                        message = "Get capture state error: "+err;
+                    }
+                    else
+                    {
+                        capture_state = cap_state_out;
+                        capture_frid = capture_frame_id;
+                        capture_maxfrid = capture_max_frame_id;
+                        message = "Calculation is active";
+                    }
+                }
+                else
+                {
+                    message = "Error: Wrong calculation state number";
+                }
+            }
+
+        }
+        else
+        {
+            message = "GetCalculationState() error: "+Deployer->GetLastError();;
         }
 
-        last_frame_count = capture_frame_id;
+        std::stringstream res_ss;
+        res_ss<<calculation_state<<"|-|"<<capture_state<<"|-|"<<capture_frid<<"|-|"<<capture_maxfrid<<"|-|"<<message.c_str();
+        message = res_ss.str();
+
+        if(!message.empty())
+            WriteLog("Capture state: "+ message);
+
+        /// Состояние тредов расчета
+        /// 0 - запущен
+        /// 1 - расчет остановлен
+        /// 2 - расчет запущен, но не выполняется
+        /// 3 - ошибка найдена в логах
+        std::string cstate_str = "";
+        switch (calculation_state) {
+            case -1:
+                cstate_str = "Error get calc_state (-1)";
+            break;
+            case 0:
+                cstate_str = "Calc thread active (0)";
+            break;
+            case 1:
+                cstate_str = "Calc thread paused (1)";
+            break;
+            case 2:
+                cstate_str = "Calc thread started but inactive (2)";
+            break;
+            case 3:
+                WriteLog("Fatal error occured during calculation: "+message);
+                projectRunState = ProjectRunState::PS_Termination;
+            break;
+            default:
+                cstate_str = "Calc thread result default ("+std::to_string(calculation_state)+")";
+            break;
+        }
+        //Состояния
+        #define RDK_CAPTURE_EMPTY 0
+        #define RDK_CAPTURE_CREATED 64
+        #define RDK_CAPTURE_INITIALIZATION 1
+        #define RDK_CAPTURE_CONNECTED 2
+        #define RDK_CAPTURE_PAUSED 4
+        #define RDK_CAPTURE_ACTIVE 8
+        #define RDK_CAPTURE_DISCONNECTED 16
+        #define RDK_CAPTURE_RECONNECT 32
+        std::string capstate_str="Cap state: ";
+
+        if(capture_state&RDK_CAPTURE_EMPTY)
+        {
+            capstate_str+="(RDK_CAPTURE_EMPTY)";
+        }
+        if(capture_state&RDK_CAPTURE_CREATED)
+        {
+            capstate_str+="(RDK_CAPTURE_CREATED)";
+        }
+        if(capture_state&RDK_CAPTURE_INITIALIZATION)
+        {
+            capstate_str+="(RDK_CAPTURE_INITIALIZATION)";
+        }
+        if(capture_state&RDK_CAPTURE_CONNECTED)
+        {
+            capstate_str+="(RDK_CAPTURE_CONNECTED)";
+        }
+        if(capture_state&RDK_CAPTURE_PAUSED)
+        {
+            capstate_str+="(RDK_CAPTURE_PAUSED)";
+        }
+        if(capture_state&RDK_CAPTURE_ACTIVE)
+        {
+            capstate_str+="(RDK_CAPTURE_ACTIVE)";
+        }
+        if(capture_state&RDK_CAPTURE_DISCONNECTED)
+        {
+            capstate_str+="(RDK_CAPTURE_DISCONNECTED)";
+        }
+        if(capture_state&RDK_CAPTURE_RECONNECT)
+        {
+            capstate_str+="(RDK_CAPTURE_RECONNECT)";
+        }
+
+        WriteLog(cstate_str+"\n"+capstate_str);
+
+
+        if(capture_frame_id>0 && capture_max_frame_id>0)
+        {
+            message = std::string("capture_frame_id=") + std::to_string(capture_frame_id) + std::string(" capture_max_frame_id=") + std::to_string(capture_max_frame_id);
+            WriteLog(message);
+            //Мы докатились до конца, переключаемся на финализацию
+            if(capture_frame_id>=capture_max_frame_id || last_frame_count>capture_frame_id)
+            {
+                FinishProject();
+            }
+
+            last_frame_count = capture_frame_id;
+        }
     }
     //TODO: Обработка фатальных ошибок на этапе расчета
 }
