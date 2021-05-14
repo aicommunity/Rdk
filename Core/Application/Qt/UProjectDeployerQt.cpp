@@ -1702,8 +1702,7 @@ void UProjectDeployerQt::AConnectToDatabase()
         delete db;
         exit(1);
     }
-
-    RegisterSolverToDatabase();
+    //RegisterSolverToDatabase();
 }
 
 /*
@@ -2691,6 +2690,29 @@ bool UProjectDeployerQt::UploadCalculationResults()
         return false;
     }
 
+    // Добавление данных в таблицу результатов vid_an.results
+    QDateTime result_add_time = QDateTime::currentDateTime();
+    QString result_add_time_str = GetTimeStampInPSqlFormat(result_add_time);
+
+    QSqlQuery res_q(*db);
+    QString res_query = "INSERT INTO vid_an.results(result_task_id, result_path, result_imseq, result_anno, result_metrics, result_add_time) "
+                                                   "VALUES(" +
+                                                    QString::number(task_id)+ "," +
+                                                    "'" + results_deploy_end_path+ "'," +
+                                                    QString::number(task_src_id) + "," +
+                                                    "0" + "," +
+                                                    "'metrics'"+ "," +
+                                                    "'"+ result_add_time_str +"');";
+
+
+    res_q.prepare(res_query);
+    if(!res_q.exec())
+    {
+        std::cerr<<res_query.toUtf8().constData();
+        lastError = (QString("Error add result record to database: ")+res_q.lastError().text()).toUtf8().constData();
+        deploymentState = DS_Error;
+        return false;
+    }
 
     return true;
 }
