@@ -153,6 +153,8 @@ private slots:
 
     void closeEvent(QCloseEvent *event);
 
+    void updateChannelsVisibility();
+
 private:
     // data
     Ui::UGEngineControllWidget *ui;

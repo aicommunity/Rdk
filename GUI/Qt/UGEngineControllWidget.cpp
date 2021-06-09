@@ -108,6 +108,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     rect.setWidth(50);
     channels->setGeometry(rect);
     ui->dockWidgetChannels->setWidget(channels);
+    ui->dockWidgetChannels->hide();
+    connect(channels, SIGNAL(updateVisibility()), this, SLOT(updateChannelsVisibility()));
 
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
@@ -122,9 +124,11 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     watchFormWidget->setWindowTitle("Watches");
     watchFormWidget->hide();
 
+    // hide profiling widget by default
     profilingWindowWidget = new UTableInfo(this, application);
     ui->dockWidgetProfiling->setWidget(profilingWindowWidget);
     profilingWindowWidget->setWindowTitle("Profiling");
+    ui->dockWidgetProfiling->hide();
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
 
@@ -449,6 +453,7 @@ void UGEngineControllWidget::actionAddNew()
     pauseChannel(-1);
     application->SetNumChannels(application->GetNumChannels()+1);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
+    updateChannelsVisibility();
 }
 
 void UGEngineControllWidget::actionInsert()
@@ -461,6 +466,7 @@ void UGEngineControllWidget::actionInsert()
     //application->AddChannel(ChannelsStringGrid->Row);
     //RDK::UIVisualControllerStorage::UpdateInterface(true);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
+    updateChannelsVisibility();
 }
 
 void UGEngineControllWidget::actionDeleteLast()
@@ -472,7 +478,7 @@ void UGEngineControllWidget::actionDeleteLast()
     pauseChannel(-1);
     application->DeleteChannel(application->GetNumChannels()-1);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
-
+    updateChannelsVisibility();
 }
 
 void UGEngineControllWidget::actionDeleteAll()
@@ -482,6 +488,7 @@ void UGEngineControllWidget::actionDeleteAll()
     pauseChannel(-1);
     application->SetNumChannels(1);
     //RDK::UIVisualControllerStorage::UpdateInterface(true);
+    updateChannelsVisibility();
 }
 
 void UGEngineControllWidget::actionClone()
@@ -490,7 +497,7 @@ void UGEngineControllWidget::actionClone()
     int cloned_id=application->GetNumChannels();
     application->CloneChannel(Core_GetSelectedChannelIndex(), cloned_id);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
-
+    updateChannelsVisibility();
 }
 
 // calculate menu actions
@@ -867,4 +874,23 @@ void UGEngineControllWidget::closeEvent(QCloseEvent *event)
  //   } else {
  //       event->ignore();
  //   }
+}
+
+void UGEngineControllWidget::updateChannelsVisibility()
+{
+    if(application->GetNumChannels()>1)
+    {
+        if(!ui->dockWidgetChannels->isVisible())
+        {
+            ui->dockWidgetChannels->show();
+        }
+    }
+
+    if(application->GetNumChannels()==1)
+    {
+        if(ui->dockWidgetChannels->isVisible())
+        {
+            ui->dockWidgetChannels->hide();
+        }
+    }
 }

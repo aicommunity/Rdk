@@ -32,6 +32,8 @@ public slots:
 
 signals:
     void updateModel();
+    void updateVisibility();
+
 
 private:
     Ui::UCalculationChannelsWidget *ui;
