@@ -114,11 +114,13 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
 
+    /*
     graphWindowWidget = new UGraphWidget(this, application);
 //    ui->dockWidgetGraph->setWidget(graphWindowWidget);
     graphWindowWidget->setWindowTitle("Graph");
        graphWindowWidget->hide();
     ui->dockWidgetGraph->hide();
+    */
 
     watchFormWidget= new UWatchFormWidget(this, application);
     watchFormWidget->setWindowTitle("Watches");
