@@ -57,7 +57,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
  ServerTimeStamp=0.0;
  CalculationTimeSource=0;
  CalculateMode=0;
- MinInterstepsInterval=0;
+ MinInterstepsInterval=1;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
  Profiler=new UChannelProfiler;
  Profiler->SetChannelIndex(channel_index);
@@ -241,19 +241,20 @@ void UEngineControlThread::Calculate(void)
 
 
   double diff=(RDK::GetVariantLocalTime()-RealLastCalculationTime)*86400*1000.0;
-  if(diff<MinInterstepsInterval)
+  int wait_diff=(MinInterstepsInterval>1)?MinInterstepsInterval:1;
+  if(diff<wait_diff)
   {
    CalculationNotInProgress->set();
-   Sleep(int(static_cast<int>(MinInterstepsInterval)-diff));
+   Sleep(int(static_cast<int>(wait_diff)-diff));
    return;
   }
-
+/*
   if(CalculateMode == 3 && MinInterstepsInterval == UTime(0) && diff<1)
   {
    CalculationNotInProgress->set();
    Sleep(1);
    return;
-  }
+  }*/
 
   // Взяли блокировку канала т.к. дальше будет много обращений в ядро
   UELockPtr<UContainer> model=GetModelLock(EngineIndex);

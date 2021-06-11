@@ -5,6 +5,24 @@
 
 namespace RDK {
 
+UPerformanceElement::UPerformanceElement(void)
+ : Duration(0), RegTime(0), Interval(0)
+{
+
+}
+
+UPerformanceElement::UPerformanceElement(const UPerformanceElement &copy)
+ : Duration(copy.Duration), RegTime(copy.RegTime), Interval(copy.Interval)
+{
+
+}
+
+UPerformanceElement::UPerformanceElement(long long duration, unsigned long long reg_time, long long interval)
+    : Duration(duration), RegTime(reg_time), Interval(interval)
+{
+
+}
+
 UIntegralPerfomanceResults::UIntegralPerfomanceResults(void)
 {
  ModelTime=0.0;
@@ -18,33 +36,65 @@ UIntegralPerfomanceResults::UIntegralPerfomanceResults(void)
 
 
 UPerfomanceResults::UPerfomanceResults(void)
- : AvgDuration(0.0), Percentage(0.0)
+ : AvgDuration(0.0), Percentage(0.0), MinDuration(0.0), MaxDuration(0.0),
+   MinInterval(0.0), MaxInterval(0.0), AvgInterval(0.0)
 {
 }
 
 
 
 /// Добавляет данные в историю
-void UPerfomanceData::AddHistory(long long value, int max_values)
+void UPerfomanceData::AddHistory(long long value, long long interval, int max_values)
 {
- CalcDurationHistory.push_back(value);
+ unsigned long long reg_time(0);
+ if(!CalcDurationHistory.empty())
+  reg_time=GetCurrentStartupTime()-CalcDurationHistory.back().RegTime;
+ UPerformanceElement hist(value,reg_time,interval);
+ CalcDurationHistory.push_back(hist);
  while(int(CalcDurationHistory.size())>max_values)
   CalcDurationHistory.erase(CalcDurationHistory.begin());
 }
 
 /// История производительности компонента или элемента интерфейса
 //struct RDK_LIB_TYPE UPerfomanceData: public UPerfomanceResults
-/// Расчет среднего
-void UPerfomanceData::CalcAverage(void)
+/// Расчет метрик
+void UPerfomanceData::CalcMetrics(void)
 {
  AvgDuration=0;
+ MinDuration=10e6;
+ MaxDuration=0;
+ MinInterval=10e6;
+ MaxInterval=0;
 
- std::list<long long>::iterator I=CalcDurationHistory.begin();
+ std::list<UPerformanceElement>::iterator I=CalcDurationHistory.begin();
  for(;I!=CalcDurationHistory.end();I++)
-  AvgDuration+=double(*I);
+ {
+  UPerformanceElement &curr=*I;
+  AvgDuration+=double(curr.Duration);
 
+  AvgInterval+=double(curr.Interval);
+
+  if(MinDuration>curr.Duration)
+   MinDuration=curr.Duration;
+
+  if(MaxDuration<curr.Duration)
+   MaxDuration=curr.Duration;
+
+  if(MinInterval>curr.Interval)
+   MinInterval=curr.Interval;
+
+  if(MaxInterval<curr.Interval)
+   MaxInterval=curr.Interval;
+ }
  if(!CalcDurationHistory.empty())
+ {
   AvgDuration/=double(CalcDurationHistory.size())*1000.0;
+  AvgInterval/=double(CalcDurationHistory.size())*1000.0;
+ }
+ MinInterval/=1000.0;
+ MaxInterval/=1000.0;
+ MaxDuration/=1000.0;
+ MinDuration/=1000.0;
 }
 
 /// Расчет процента от общего времений
@@ -278,28 +328,28 @@ void UChannelProfiler::ClearPerfomanceData(void)
 }
 
 /// Добавляет данные для выбранного компонента
-void UChannelProfiler::AddComponentPerfomanceData(int index, long long value)
+void UChannelProfiler::AddComponentPerfomanceData(int index, long long value, long long interval)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
  if(index<0 || index>=int(ComponentsPerfomance.size()))
   return;
 
- ComponentsPerfomance[index].AddHistory(value,AverageIterations);
+ ComponentsPerfomance[index].AddHistory(value,interval,AverageIterations);
 }
 
-void UChannelProfiler::AddComponentPerfomanceData(const std::string &name, long long value)
+void UChannelProfiler::AddComponentPerfomanceData(const std::string &name, long long value, long long interval)
 {
- AddComponentPerfomanceData(FindComponentIndex(name), value);
+ AddComponentPerfomanceData(FindComponentIndex(name), value,interval);
 }
 
 /// Добавляет данные для выбранного gui
-void UChannelProfiler::AddGuiPerfomanceData(int index, long long value)
+void UChannelProfiler::AddGuiPerfomanceData(int index, long long value, long long interval)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
  if(index<0 || index>=int(GuiPerfomance.size()))
   return;
 
- GuiPerfomance[index].AddHistory(value,AverageIterations);
+ GuiPerfomance[index].AddHistory(value,interval,AverageIterations);
 }
 
 /// Выполняет считывание сырых данных ядра о производительности
@@ -318,12 +368,12 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
    {
 	UEPtr<UNet> component=model->GetComponentL<UNet>(ComponentsName[i],true);
 	if(component)
-     AddComponentPerfomanceData(int(i), component->GetFullStepDuration());
+     AddComponentPerfomanceData(int(i), component->GetFullStepDuration(), component->GetInterstepsInterval());
    }
    long long full_step=model->GetFullStepDuration();
    long long interstep_interval=model->GetInterstepsInterval();
-   ModelPerfomance.AddHistory(full_step,AverageIterations);
-   OtherPerfomance.AddHistory(interstep_interval,AverageIterations);
+   ModelPerfomance.AddHistory(full_step,0,AverageIterations);
+   OtherPerfomance.AddHistory(interstep_interval,0,AverageIterations);
 
    UEPtr<UEnvironment> env=GetEnvironment(ChannelIndex);
    IntegralPerfomanceResults.ModelTime=env->GetTime().GetDoubleTime();
@@ -359,18 +409,21 @@ void UChannelProfiler::LoadGuiPerfomanceData(void)
 
  for(size_t i=0;i<GuiPerfomance.size();i++)
  {
-  AddGuiPerfomanceData(int(i), interfaces[i]->GetUpdateTime());
+  if(interfaces[i]->GetUpdateInterval()>0)
+   AddGuiPerfomanceData(int(i), interfaces[i]->GetUpdateTime(), interfaces[i]->GetUpdateInterval());
+  else
+   AddGuiPerfomanceData(int(i), interfaces[i]->GetUpdateTime(), 0);
  }
  UGenericMutexExclusiveLocker locker(Mutex);
- SummaryGuiPerfomance.AddHistory(RDK::UIVisualControllerStorage::GetUpdateTime(),AverageIterations);
+ SummaryGuiPerfomance.AddHistory(RDK::UIVisualControllerStorage::GetUpdateTime(),0,AverageIterations);
 }
 
 /// Производит расчет оценкок производительности ядра из сырых данных
 void UChannelProfiler::CalcCorePerfomance(void)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- ModelPerfomance.CalcAverage();
- OtherPerfomance.CalcAverage();
+ ModelPerfomance.CalcMetrics();
+ OtherPerfomance.CalcMetrics();
  double avg_full_step=ModelPerfomance.AvgDuration+OtherPerfomance.AvgDuration;
  ModelPerfomance.CalcPercentage(avg_full_step);
  OtherPerfomance.CalcPercentage(avg_full_step);
@@ -387,7 +440,7 @@ void UChannelProfiler::CalcCorePerfomance(void)
 
  for(size_t i=0;i<ComponentsPerfomance.size();i++)
  {
-  ComponentsPerfomance[i].CalcAverage();
+  ComponentsPerfomance[i].CalcMetrics();
   ComponentsPerfomance[i].CalcPercentage(ModelPerfomance.AvgDuration);
  }
 }
@@ -397,12 +450,12 @@ void UChannelProfiler::CalcGuiPerfomance(void)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
 
- SummaryGuiPerfomance.CalcAverage();
+ SummaryGuiPerfomance.CalcMetrics();
  SummaryGuiPerfomance.CalcPercentage(SummaryGuiPerfomance.AvgDuration);
 
  for(size_t i=0;i<GuiPerfomance.size();i++)
  {
-  GuiPerfomance[i].CalcAverage();
+  GuiPerfomance[i].CalcMetrics();
   GuiPerfomance[i].CalcPercentage(SummaryGuiPerfomance.AvgDuration);
  }
 }

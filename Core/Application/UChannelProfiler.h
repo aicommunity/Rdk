@@ -5,6 +5,23 @@
 
 namespace RDK {
 
+/// Элемент данных производительности
+struct RDK_LIB_TYPE UPerformanceElement
+{
+/// Длительность расчета
+long long Duration;
+
+/// Момент времени регистрации
+unsigned long long RegTime;
+
+/// Интервал между итерациями расчета
+long long Interval;
+
+UPerformanceElement(void);
+UPerformanceElement(const UPerformanceElement &copy);
+UPerformanceElement(long long duration, unsigned long long reg_time, long long interval);
+};
+
 /// Содержит интегральные данные о производительности движка
 struct RDK_LIB_TYPE UIntegralPerfomanceResults
 {
@@ -35,6 +52,21 @@ UIntegralPerfomanceResults(void);
 /// Результаты расчетов производительности для компонента или элемента интерфейса
 struct RDK_LIB_TYPE UPerfomanceResults
 {
+/// Минимальное время расчета, с
+double MinDuration;
+
+/// Максимальное время расчета, с
+double MaxDuration;
+
+/// Минимальный интервал между расчетом, с
+double MinInterval;
+
+/// Максимальный интервал между расчетом, с
+double MaxInterval;
+
+/// Средний интервал между расчетом, с
+double AvgInterval;
+
 /// Среднее время расчета, с
 double AvgDuration;
 
@@ -47,14 +79,16 @@ UPerfomanceResults(void);
 /// История производительности компонента или элемента интерфейса
 struct RDK_LIB_TYPE UPerfomanceData: public UPerfomanceResults
 {
-/// Данные производительности, мс
-std::list<long long> CalcDurationHistory;
+/// Данные производительности: <длительность расчета (мс),момент времени фиксации результата (мс)>
+std::list<UPerformanceElement> CalcDurationHistory;
 
 /// Добавляет данные в историю
-void AddHistory(long long value, int max_values);
+/// value - время, затраченное на обработку компонента
+/// interval - интервал между последним расчетом и предпоследним
+void AddHistory(long long value, long long interval, int max_values);
 
-/// Расчет среднего
-void CalcAverage(void);
+/// Расчет метрик
+void CalcMetrics(void);
 
 /// Расчет процента от общего времений
 void CalcPercentage(double full_time);
@@ -183,11 +217,11 @@ std::string GetGuiName(int index) const;
 void ClearPerfomanceData(void);
 
 /// Добавляет данные для выбранного компонента
-void AddComponentPerfomanceData(int index, long long value);
-void AddComponentPerfomanceData(const std::string &name, long long value);
+void AddComponentPerfomanceData(int index, long long value, long long interval);
+void AddComponentPerfomanceData(const std::string &name, long long value, long long interval);
 
 /// Добавляет данные для выбранного gui
-void AddGuiPerfomanceData(int index, long long value);
+void AddGuiPerfomanceData(int index, long long value, long long interval);
 
 /// Выполняет считывание сырых данных ядра о производительности
 void LoadCorePerfomanceData(void);
