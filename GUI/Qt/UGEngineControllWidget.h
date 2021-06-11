@@ -106,9 +106,11 @@ public slots:
     // file menu
     void actionLoadConfig();
     void actionCreateConfig();
+    void actionCreateSimple();
     void actionSaveConfig();
     void actionCloseConfig();
     void actionCopyConfig();
+    void actionAutoCopyConfig();
     void actionExit();
     void actionConfigOptions();
     void actionCreateSaveMockLibs();

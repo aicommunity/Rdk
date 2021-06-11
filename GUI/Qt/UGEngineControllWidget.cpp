@@ -154,10 +154,12 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     // file menu actions:
     connect(ui->actionCreateConfig, SIGNAL(triggered(bool)), this, SLOT(actionCreateConfig()));
+    connect(ui->actionCreateSimple, SIGNAL(triggered(bool)), this, SLOT(actionCreateSimple()));
     connect(ui->actionLoadConfig, SIGNAL(triggered(bool)), this, SLOT(actionLoadConfig()));
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
+    connect(ui->actionAutocopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionAutoCopyConfig()));
 
     connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
 
@@ -328,6 +330,71 @@ void UGEngineControllWidget::actionCreateConfig()
  createConfigurationWizardWidget->show();
 }
 
+void UGEngineControllWidget::actionCreateSimple()
+{
+  try
+  {
+    // Закрытие проекта
+    if(application->GetProjectOpenFlag())
+    {
+        if(QMessageBox::question(this, "Info", "Close current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+        {
+            return;
+        }
+        application->PauseChannel(-1);
+        application->CloseProject();
+    }
+
+    // Директория проектов
+    QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
+    QDir path1(default_path);
+    if(!path1.exists(default_path))
+    {
+        default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
+        QDir path2(default_path);
+        if(!path2.exists(default_path))
+        {
+            default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
+        }
+    }
+
+    std::string path_dialog=default_path.toUtf8().data();
+
+    // Создание папки проекта автоматическое либо выбор существующей
+    if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+    {
+        time_t curr_time;
+        time(&curr_time);
+
+        // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+        std::string folder=RDK::get_text_time(curr_time, '.', '_');
+        path_dialog+=std::string("/Autocreate")+folder.c_str();
+
+        if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
+            return;
+    }
+    else
+    {
+        path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
+    }
+
+    std::string file_name = path_dialog +"/project.ini";
+    std::string classname="Model";
+
+    application->CreateProject(file_name, classname);
+
+    RDK::UIVisualControllerStorage::UpdateInterface();
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"Error at creatng simple project", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at creatng simple project", QString(e.what()), QMessageBox::Ok);
+  }
+}
+
 void UGEngineControllWidget::actionSaveConfig()
 {
     application->SaveProject();
@@ -392,6 +459,50 @@ void UGEngineControllWidget::actionCopyConfig()
  {
    QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
  }
+}
+
+void UGEngineControllWidget::actionAutoCopyConfig()
+{
+  try
+  {
+    if(!application->GetProjectOpenFlag())
+    {
+        QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
+        return;
+    }
+
+    if(QMessageBox::question(this, "Info", "Are you sure to autocreate copy of current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+    {
+        return;
+    }
+
+    std::string config_path=application->GetProjectPath();
+    if(config_path.empty())
+        return;
+
+    time_t curr_time;
+    time(&curr_time);
+
+    size_t n=config_path.find_last_not_of("\\/");
+    if(config_path.find_last_of("\\/") == config_path.size()-1)
+        config_path.resize(n+1);
+
+    // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+    std::string date_time_str=RDK::get_text_time(curr_time, '.', '_');
+    config_path+=std::string(" ")+date_time_str+"/";
+
+    application->CopyProject(config_path);
+    std::string name = application->GetProjectFileName();
+    application->OpenProject(config_path+application->GetProjectFileName());
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"Error at auto copying project", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at auto copying project", QString(e.what()), QMessageBox::Ok);
+  }
 }
 
 void UGEngineControllWidget::actionExit()
