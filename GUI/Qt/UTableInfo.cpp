@@ -20,7 +20,7 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     // Разрешаем выделение построчно
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     // Разрешаем изменять ширину колонок
-    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableWidget->horizontalHeader()->setStretchFirstSection(true);
   //  ui->tableWidget->setColumnWidth(0, 200);
   //  ui->tableWidget->setColumnWidth(1, 40);
 
@@ -30,6 +30,7 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     ui->tableWidget->setHorizontalHeaderLabels(headers);
     //ui->tableWidget->setItem(0,0, new QTableWidgetItem("Full step"));
     //ui->tableWidget->setItem(1,0, new QTableWidgetItem("Model"));
+    ui->tableWidget->setColumnWidth(0, 200);
 
     //Добавление действий по правой кнопке
     addAction(ui->actionSelectComponent);
@@ -53,13 +54,14 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     // Разрешаем выделение построчно
     ui->tableWidget_2->setSelectionBehavior(QAbstractItemView::SelectRows);
     // Разрешаем изменять ширину колонок
-    ui->tableWidget_2->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableWidget_2->horizontalHeader()->setStretchFirstSection(true);
 //    ui->tableWidget_2->setColumnWidth(0, 200);
 //    ui->tableWidget_2->setColumnWidth(1, 40);
 
     QStringList headers_gui;
     headers<<"Gui Widget name"<<"Min, ms"<<"Max, ms"<<"Avg, ms"<<"Interval, ms";
     ui->tableWidget_2->setHorizontalHeaderLabels(headers_gui);
+    ui->tableWidget_2->setColumnWidth(0, 200);
 
 }
 
