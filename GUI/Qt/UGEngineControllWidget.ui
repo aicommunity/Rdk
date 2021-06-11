@@ -81,9 +81,11 @@
      <addaction name="actionBuildMode2"/>
      <addaction name="actionBuildMode3"/>
     </widget>
+    <addaction name="actionCreateSimple"/>
     <addaction name="actionCreateConfig"/>
     <addaction name="actionLoadConfig"/>
     <addaction name="actionSaveConfig"/>
+    <addaction name="actionAutocopyConfig"/>
     <addaction name="actionCopyConfig"/>
     <addaction name="actionCloseConfig"/>
     <addaction name="separator"/>
@@ -580,7 +582,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Create Config</string>
+    <string>Create Wizard</string>
    </property>
   </action>
   <action name="actionDevLineHttpBroadcaster">
@@ -701,6 +703,16 @@
   <action name="actionFtpTest">
    <property name="text">
     <string>Ftp Test</string>
+   </property>
+  </action>
+  <action name="actionCreateSimple">
+   <property name="text">
+    <string>Create Simple</string>
+   </property>
+  </action>
+  <action name="actionAutocopyConfig">
+   <property name="text">
+    <string>Autocopy Config</string>
    </property>
   </action>
  </widget>
