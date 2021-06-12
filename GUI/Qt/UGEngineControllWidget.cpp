@@ -406,6 +406,7 @@ void UGEngineControllWidget::actionCloseConfig()
  {
   application->PauseChannel(-1);
   application->CloseProject();
+  RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
  catch(RDK::UException& e)
  {

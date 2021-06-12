@@ -161,7 +161,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   RDK::Sleep(startupDelay);
  }
 
- logDebugMode=atoi(projectIniFile("Log","DebugMode","1"));
+ logDebugMode=atoi(projectIniFile("Log","DebugMode","0"));
 
  disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
  std::string temp_proj_path = projectIniFile("General", "TemporaryProjectPath", "");

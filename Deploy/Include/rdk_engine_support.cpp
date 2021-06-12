@@ -28,12 +28,12 @@ URdkCoreManager::URdkCoreManager(void)
  DebugMode=false;
  BufObjectsMode=1;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
- GlobalLogger.SetDebugMode(true);
+ GlobalLogger.SetDebugMode(DebugMode);
  GlobalLogger.SetDebuggerMessageFlag(false);
  GlobalLogger.SetEventsLogMode(true);
  SystemLogger.RegisterGlobalLogger(&GlobalLogger);
  SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
- SystemLogger.SetDebugMode(true);
+ SystemLogger.SetDebugMode(DebugMode);
  SystemLogger.SetDebuggerMessageFlag(false);
 
  StorageBuildMode = 1;

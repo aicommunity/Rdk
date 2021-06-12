@@ -1369,7 +1369,7 @@ bool UApplication::OpenProject(const std::string &filename)
   return false;
  }
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Open project ")+filename+"...").c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Open configuration ")+filename+"...").c_str());
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
@@ -1540,7 +1540,7 @@ catch(RDK::UException &exception)
 
  SaveProjectsHistory();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Project ")+filename+" has been opened successfully.").c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been opened.").c_str());
  return true;
 }
 
@@ -1626,7 +1626,12 @@ try
  is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save project config file: ")+ProjectFileName).c_str());
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save configuration: ")+ProjectFileName).c_str());
+ else
+ {
+  std::string filename=ProjectPath+ProjectFileName;
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been saved.").c_str());
+ }
 }
 catch(RDK::UException &exception)
 {
@@ -1654,6 +1659,9 @@ bool UApplication::CloseProject(void)
  if(config.ProjectAutoSaveFlag)
   SaveProject();
 
+ std::string filename=ProjectPath+ProjectFileName;
+
+
  RDK::UIVisualControllerStorage::ClearInterface();
 // if(UServerControlForm)
 //  UServerControlForm->ServerRestartTimer->Enabled=false;
@@ -1678,6 +1686,7 @@ bool UApplication::CloseProject(void)
   Storage_FreeObjectsStorage();
  }
 
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been closed.").c_str());
  return true;
 }
 
