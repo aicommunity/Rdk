@@ -25,6 +25,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 {
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
+    this->setWindowTitle("Neuro Modeler");
 
     application = app;
 
@@ -266,7 +267,7 @@ void UGEngineControllWidget::actionLoadConfig()
     {
       application->OpenProject(fileName.toLocal8Bit().constData());
 
-      this->setWindowTitle("project: " + fileName);
+      this->setWindowTitle("Neuro Modeler [Configuration: " + fileName+"]");
 
       /*QStringList list = configFileName.split("/");
       list.pop_back();*/
@@ -290,7 +291,7 @@ void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
  {
   application->OpenProject(config_path.toLocal8Bit().constData());
 
-  this->setWindowTitle("project: " + config_path);
+  this->setWindowTitle("Neuro Modeler [Configuration: " + config_path+"]");
 
   /*QStringList list = configFileName.split("/");
   list.pop_back();*/
@@ -328,6 +329,8 @@ void UGEngineControllWidget::actionCreateConfig()
  }
 
  createConfigurationWizardWidget->show();
+ if(application->GetProjectOpenFlag())
+  this->setWindowTitle(("Neuro Modeler [Configuration: " + application->GetProjectPath()+application->GetProjectFileName()+"]").c_str());
 }
 
 void UGEngineControllWidget::actionCreateSimple()
@@ -383,6 +386,7 @@ void UGEngineControllWidget::actionCreateSimple()
 
     application->CreateProject(file_name, classname);
 
+    this->setWindowTitle(("Neuro Modeler [Configuration: " + file_name+"]").c_str());
     RDK::UIVisualControllerStorage::UpdateInterface();
   }
   catch(RDK::UException& e)
@@ -406,6 +410,7 @@ void UGEngineControllWidget::actionCloseConfig()
  {
   application->PauseChannel(-1);
   application->CloseProject();
+  this->setWindowTitle("Neuro Modeler");
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
  catch(RDK::UException& e)
@@ -447,7 +452,7 @@ void UGEngineControllWidget::actionCopyConfig()
   std::string open_file_name=res_path.toLocal8Bit().constData();
   open_file_name+=project_file_name;
   application->OpenProject(open_file_name);
-  this->setWindowTitle(QString("project: ") + open_file_name.c_str());
+  this->setWindowTitle(QString("Neuro Modeler [Configuration: ") + open_file_name.c_str()+"]");
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
 
