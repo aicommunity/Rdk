@@ -99,35 +99,35 @@ class RDK_LIB_TYPE UChannelProfiler
 {
 protected: // Параметры
 /// Индекс канала
-int ChannelIndex;
+UELockVar<int> ChannelIndex;
 
 /// Число усреднений
-int AverageIterations;
+UELockVar<int> AverageIterations;
 
 /// Массив длинных имен наблюдаемых компонент
-std::vector<std::string> ComponentsName;
+UELockVar<std::vector<std::string> > ComponentsName;
 
 /// Массив имен наблюдаемых интерфейсов
-std::vector<std::string> GuiNames;
+UELockVar<std::vector<std::string> > GuiNames;
 
 protected: // Данные
 /// Производительность компонент
-std::vector<UPerfomanceData> ComponentsPerfomance;
+UELockVar<std::vector<UPerfomanceData> > ComponentsPerfomance;
 
 /// Производительность интерфейсов
-std::vector<UPerfomanceData> GuiPerfomance;
+UELockVar<std::vector<UPerfomanceData> > GuiPerfomance;
 
 /// Производительность всей модели
-UPerfomanceData ModelPerfomance;
+UELockVar<UPerfomanceData> ModelPerfomance;
 
 /// Производительность всего кроме модели
-UPerfomanceData OtherPerfomance;
+UELockVar<UPerfomanceData> OtherPerfomance;
 
 /// Суммарная производительность Gui
-UPerfomanceData SummaryGuiPerfomance;
+UELockVar<UPerfomanceData> SummaryGuiPerfomance;
 
 /// Интегральные данные о производительности
-UIntegralPerfomanceResults IntegralPerfomanceResults;
+UELockVar<UIntegralPerfomanceResults> IntegralPerfomanceResults;
 
 protected: // Выходные данные расчета
 /// Список легенда-время в секундах для компонент и модели в целом
@@ -147,15 +147,15 @@ protected: // Выходные данные расчета
 /// 4: полное время цикла
 /// В обоих случаях разность между 5-(2+3+4), или 4-(1+2+3) может быть не равна
 /// нулю, т.к. используются усредненные данные по каждой величине
-std::list<pair<std::string, UPerfomanceResults> > ComponentsProfilerOutputData;
+UELockVar<std::list<pair<std::string, UPerfomanceResults> > > ComponentsProfilerOutputData;
 
 /// Список легенда-время в секундах обновления Gui
 /// элементы расположены подряд в соответствии с GuiNames
-std::list<pair<std::string, UPerfomanceResults> > GuiProfilerOutputData;
+UELockVar<std::list<pair<std::string, UPerfomanceResults> > > GuiProfilerOutputData;
 
 protected: // Временные переменные
 /// Мьютекс блокировки доступа к данным
-UGenericMutex* Mutex;
+//UGenericMutex* Mutex;
 
 public: // Методы
 /// --------------------------
