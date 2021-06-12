@@ -494,12 +494,12 @@ void UServerControl::ConvertVectorToString(const UParamT &source, std::string &d
 void UServerControl::SendCommandResponse(UServerTransport *transport, std::string &client_address, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
- packet.SetNumParams(1+binary_data.size());
- packet.SetParamSize(0,dest.size());
+ packet.SetNumParams(1+int(binary_data.size()));
+ packet.SetParamSize(0,int(dest.size()));
  packet.SetParam(0,dest);
  for(size_t i=0;i<binary_data.size();i++)
  {
-  packet.SetParamSize(i+1,binary_data[i].size());
+  packet.SetParamSize(i+1,int(binary_data[i].size()));
   packet.SetParam(i+1,binary_data[i]);
  }
  RDK::UParamT buffer;

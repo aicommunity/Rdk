@@ -1271,7 +1271,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 
  const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
- if(time_step_prop_type & ptPubParameter == ptPubParameter)
+ if((time_step_prop_type & ptPubParameter) == ptPubParameter)
   comp->ChangeUseIndTimeStepMode(true);
  else
   comp->ChangeUseIndTimeStepMode(false);
@@ -1348,7 +1348,7 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
 
  const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
- if(time_step_prop_type & ptPubParameter == ptPubParameter)
+ if((time_step_prop_type & ptPubParameter) == ptPubParameter)
   comp->ChangeUseIndTimeStepMode(true);
  else
   comp->ChangeUseIndTimeStepMode(false);

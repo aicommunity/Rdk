@@ -297,7 +297,7 @@ void UEngineControlThread::Calculate(void)
    RDK::UIControllerStorage::AfterCalculate(EngineIndex);
   CalculationNotInProgress->set();
   Profiler->CalculateCore();
-  LastFullStepDuration=MModel_GetFullStepDuration(EngineIndex,0);
+  LastFullStepDuration=int(MModel_GetFullStepDuration(EngineIndex,0));
 }
 
 void UEngineControlThread::Execute(void)

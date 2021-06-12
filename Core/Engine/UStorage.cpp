@@ -1161,7 +1161,7 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
         UEPtr<ULibrary> lib=CollectionList[i];
         if(lib && lib->GetName() == lib_name)
         {
-           index = i;
+           index = int(i);
            break;
         }
     }

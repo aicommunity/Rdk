@@ -144,8 +144,8 @@ void UGraphWidget::setCurrentItem(int myCurrentItem)
 
 void UGraphWidget::AUpdateInterface()
 {
-    size_t n=graphPainter->getSize();
-    for(size_t i=0; i<n; i++)
+    int n=graphPainter->getSize();
+    for(int i=0; i<n; i++)
     {
         const TSingleGraph& current_graph=graphPainter->getGraph(i);
 

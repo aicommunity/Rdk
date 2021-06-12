@@ -207,6 +207,10 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::pair<T1,T2> &data)
 }
 
 // Map-ы
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning (disable: 4700)
+#endif
 template<typename T1, typename T2>
 USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &data)
 {
@@ -246,6 +250,9 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
 
  return storage;
 }
+#ifdef _MSC_VER
+#pragma warning ( pop )
+#endif
 
 template<typename T1, typename T2>
 USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
@@ -280,6 +287,10 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
  return storage;
 }
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning (disable: 4700)
+#endif
 // Списки
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
@@ -313,6 +324,9 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
 
  return storage;
 }
+#ifdef _MSC_VER
+#pragma warning ( pop )
+#endif
 
 template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
@@ -357,10 +371,13 @@ RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<d
 RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<int> &data);
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data);
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning (disable: 4700)
+#endif
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
 { 
-
  storage.SetNodeAttribute("Type","std::vector");
 
  // Исключительный случай для конкретного свойства сложного типа
@@ -443,6 +460,9 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
 
  return storage;
 }
+#ifdef _MSC_VER
+#pragma warning ( pop )
+#endif
 
 template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)

@@ -773,8 +773,8 @@ void UEnvironment::RTCalculate(void)
  int i=0;
  if(LastDuration < timer_interval)
   LastDuration=timer_interval;
- double realtime=Time.GetSourceCurrentLocalTime();
- double doubletime=Time.GetDoubleTime();
+ //double realtime=Time.GetSourceCurrentLocalTime();
+ //double doubletime=Time.GetDoubleTime();
  double model_duration=Time.GetSourceCurrentLocalTime()-Time.GetDoubleTime();
  double model_start_calc_time=Time.GetDoubleTime();
 

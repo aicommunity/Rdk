@@ -116,7 +116,6 @@ void UServerTransportTcpQt::SetServerBinding(std::string &interface_address, int
  server->listen(ha, port);
  server->close();
  QString s = server->serverAddress().toString();
- int i=0;
 }
 
 //Получение адреса интерфейса управления сервером
@@ -413,7 +412,7 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
        buf = new char[buffer.size()];
        memcpy(buf,&buffer[0],buffer.size());
 
-       out.writeBytes(buf, buffer.size());
+       out.writeBytes(buf, uint(buffer.size()));
        return;
       }
      }

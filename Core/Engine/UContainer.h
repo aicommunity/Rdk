@@ -1099,7 +1099,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
 template<class T>
 const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, UEPtr<UContainer> net, bool find_all)
 {
- size_t numComp=GetNumComponents();
+ int numComp=int(GetNumComponents());
  UEPtr<UContainer> comp;
  UEPtr<UContainer> root(net);
  string compName;
@@ -1110,7 +1110,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
  switch(find_all)
  {
   case false:
-   for(size_t i=0; i<numComp; i++)
+   for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
 	if(dynamic_pointer_cast<T>(comp))
@@ -1122,7 +1122,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
    break;
 
   case true:
-   for(size_t i=0; i<numComp; i++)
+   for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
 	comp->GetComponentsNameByClassType<T>(buffer, root, true);

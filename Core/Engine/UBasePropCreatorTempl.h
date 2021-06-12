@@ -101,7 +101,7 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
                     CreatorT::template CreateProperty<UPropertyOutputData,ptPubOutput>(serstorage,mock_unet,p_type);
                 }
             }
-            catch(UComponent::EPropertyNameAlreadyExist& e)
+            catch(UComponent::EPropertyNameAlreadyExist& )
             {
 
             }

@@ -411,7 +411,7 @@ void UCreateConfigurationWizardWidget::onMSLoadModelFromModelsCollection(bool ch
     {
           QString tmp=QString::fromStdString(n.XMLName);
           QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
-          QByteArray byteArray(n.XMLDescription.c_str(), n.XMLDescription.length());
+          QByteArray byteArray(n.XMLDescription.c_str(), int(n.XMLDescription.length()));
           QString utf8Str = codec->toUnicode(byteArray);
           tmp = tmp + "   " + utf8Str;
           ModelsFromFileData.push_back(tmp);

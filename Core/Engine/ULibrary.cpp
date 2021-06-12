@@ -604,9 +604,9 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
 // Не требуется предварительная очистка массива и уборка памяти.
 void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 {
-    int num_classes = ClassesStructures.size();
+    size_t num_classes = ClassesStructures.size();
 
-    for(int i=0;i<num_classes;i++)
+    for(size_t i=0;i<num_classes;i++)
     {
         try
         {
@@ -735,7 +735,7 @@ UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage 
 // Не требуется предварительная очистка массива и уборка памяти.
 void UMockLibrary::CreateClassSamples(UStorage *storage)
 {
-    int num_classes = ClassesStructures.size();
+    int num_classes = int(ClassesStructures.size());
 
     for(int i=0;i<num_classes;i++)
     {
