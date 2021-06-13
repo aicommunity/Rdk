@@ -5903,9 +5903,9 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
   else
   {
    res.Data[i].Int=abs(int(value1.Data[i].Int-value2.Data[i].Int));
-   if(res.Data[i].Int<int(h_min))
+   if(res.Data[i].Int<unsigned(h_min))
 	h_min=float(res.Data[i].Int);
-   if(res.Data[i].Int>int(h_max))
+   if(res.Data[i].Int>unsigned(h_max))
 	h_max=float(res.Data[i].Int);
   }
  }

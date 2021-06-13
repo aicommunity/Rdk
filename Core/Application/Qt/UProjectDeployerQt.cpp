@@ -16,8 +16,8 @@ namespace RDK{
 static
 size_t write_response(void *ptr, size_t size, size_t nmemb, void *data)
 {
-  FILE *writehere = (FILE *)data;
-  char* str = static_cast<char*>(ptr);
+//  FILE *writehere = (FILE *)data;
+//  char* str = static_cast<char*>(ptr);
   //std::string s(str);
   //std::cout<<str<<std::endl;
   return nmemb;
@@ -1751,7 +1751,7 @@ int UProjectDeployerQt::GetDeploymentState()
     }
     else
     {
-        bool t = deployProcessingThread->isRunning();
+//        bool t = deployProcessingThread->isRunning();
         return deployProcessingThread->GetDeploymentState();
     }
 }
@@ -2220,7 +2220,7 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
         bool *imseq_UseRelativePathFromConfig = imseq_cont->AccessPropertyData<bool>("UseRelativePathFromConfig");
         bool *imseq_UseRelativePathFromDir = imseq_cont->AccessPropertyData<bool>("UseRelativePathFromDir");
 
-        int *test = imseq_cont->AccessPropertyData<int>("ReconnectTimeout");
+ //       int *test = imseq_cont->AccessPropertyData<int>("ReconnectTimeout");
 
         *imseq_Activity = true;
         *imseq_Path = task_src_fullpath.toUtf8().constData();

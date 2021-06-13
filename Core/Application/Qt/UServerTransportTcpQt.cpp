@@ -139,7 +139,7 @@ int UServerTransportTcpQt::GetServerBindingPort(void) const
  if(server->isListening())
  {
   int p = server->serverPort();
-  return server->serverPort();
+  return p;
  }
  else
  {
@@ -163,9 +163,9 @@ void UServerTransportTcpQt::ServerNewConnection()
       QString b = peer_name+":"+peer_port;
       std::string bnd = b.toUtf8().constData();
 
-      bool b3 = Application!=NULL;
-      bool b1 = Application->GetServerControl()!=NULL;
-      bool b2 = Application->GetServerControl()->GetServerTransport()!=NULL;
+//      bool b3 = Application!=NULL;
+//      bool b1 = Application->GetServerControl()!=NULL;
+//      bool b2 = Application->GetServerControl()->GetServerTransport()!=NULL;
 
       std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bnd);
 
@@ -536,11 +536,11 @@ int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int
 // --------------------------
 bool UServerControlQt::ASetNumChannels(int old_num)
 {
+#ifdef RDK_VIDEO
  int num=Core_GetNumChannels();
  //if(num<=0)
  // return false;
 
-#ifdef RDK_VIDEO
  if(RdkApplication.GetProjectConfig().ProjectMode == 1 && VideoOutputForm)
  {
   if(VideoOutputForm->GetNumSources()<num)
@@ -731,7 +731,7 @@ std::string URpcDecoderCommonQt::ARemoteCall(const std::string &cmd, RDK::USerSt
  else
  if(cmd == "GetChannelBroacaster")
  {
-  int type=xml.ReadInteger("BroadcasterType",0);
+//  int type=xml.ReadInteger("BroadcasterType",0);
   result.SelectNodeForce("Data");
   result.SelectUp();
   return_value=0;

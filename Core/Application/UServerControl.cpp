@@ -499,8 +499,8 @@ void UServerControl::SendCommandResponse(UServerTransport *transport, std::strin
  packet.SetParam(0,dest);
  for(size_t i=0;i<binary_data.size();i++)
  {
-  packet.SetParamSize(i+1,int(binary_data[i].size()));
-  packet.SetParam(i+1,binary_data[i]);
+  packet.SetParamSize(int(i+1),int(binary_data[i].size()));
+  packet.SetParam(int(i+1),binary_data[i]);
  }
  RDK::UParamT buffer;
  packet.Save(buffer);

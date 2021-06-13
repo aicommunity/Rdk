@@ -443,7 +443,8 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   if(cmd == "PrepareProject")
   {
     std::string resp="";
-    int rs = GetApplication()->GetProjectDeployer()->PrepareProject(resp);
+//    int rs = GetApplication()->GetProjectDeployer()->PrepareProject(resp);
+    GetApplication()->GetProjectDeployer()->PrepareProject(resp);
     response=resp;
     return_value=0;
   }
@@ -462,7 +463,8 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
   {
     std::string resp="";
     std::cerr<<"Open prepared project!\n";
-    int rs = GetApplication()->GetProjectDeployer()->OpenPreparedProject(resp);
+//    int rs = GetApplication()->GetProjectDeployer()->OpenPreparedProject(resp);
+    GetApplication()->GetProjectDeployer()->OpenPreparedProject(resp);
     std::cerr<<"Project opened successful!\n";
     response=resp;
     return_value=0;

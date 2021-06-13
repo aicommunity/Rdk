@@ -118,7 +118,7 @@ void UTcpServerControlWidget::AUpdateInterface()
 
  if(application->GetServerControl()->GetServerTransport().Get()!=nullptr)
  {
-     bool state = application->GetServerControl()->GetServerTransport()->GetSocketState(bnd);
+//     bool state = application->GetServerControl()->GetServerTransport()->GetSocketState(bnd);
      if(!application->GetServerControl()->GetServerTransport()->ServerIsActive())
      {
          ui->labelServerState->setText("Server is disabled");

@@ -390,7 +390,7 @@ static CURLcode file_upload(struct connectdata *conn)
       buf2 = buf;
 
     /* write the data to the target */
-    nwrite = write(fd, buf2, nread);
+    nwrite = write(fd, buf2, (unsigned int)nread);
     if(nwrite != nread) {
       res = CURLE_SEND_ERROR;
       break;
@@ -560,7 +560,7 @@ static CURLcode file_do(struct connectdata *conn, bool *done)
       (expected_size < CURL_OFF_T_C(BUFSIZE) - CURL_OFF_T_C(1)) ?
       curlx_sotouz(expected_size) : BUFSIZE - 1;
 
-    nread = read(fd, buf, bytestoread);
+    nread = read(fd, buf, (unsigned int)bytestoread);
 
     if(nread > 0)
       buf[nread] = 0;

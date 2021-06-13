@@ -90,10 +90,10 @@ void UGraphWidget::addDataToGraph(size_t id, std::vector<double>  X1, std::vecto
    //Заполнить появившеся место
     for (size_t j=startSizeElem; j<startSizeElem+addSizeElem-1; j++)
     {
-        masX[id][j]=X1[j-startSizeElem];
-        masY[id][j]=Y1[j-startSizeElem];
+        masX[id][int(j)]=X1[j-startSizeElem];
+        masY[id][int(j)]=Y1[j-startSizeElem];
     }
-    emit transferDataSignal(id, masX[id], masY[id]);
+    emit transferDataSignal(int(id), masX[id], masY[id]);
 }
 
 void UGraphWidget::addDataToGraph(size_t id, double X1, double Y1)
@@ -110,7 +110,7 @@ void UGraphWidget::addDataToGraph(size_t id, double X1, double Y1)
     masX[id].push_back(X1);
     masY[id].push_back(Y1);
 
-    emit transferDataSignal(id, masX[id], masY[id]);
+    emit transferDataSignal(int(id), masX[id], masY[id]);
 }
 
 void UGraphWidget::mainGraphSettings(double leftLimit, double rightLimit, double lowerLimit, double upperLimit, const QString &nameX, const QString &nameY)

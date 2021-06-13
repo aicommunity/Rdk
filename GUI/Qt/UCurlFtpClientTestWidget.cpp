@@ -32,7 +32,7 @@ static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 static
 size_t write_response(void *ptr, size_t size, size_t nmemb, void *data)
 {
-  FILE *writehere = (FILE *)data;
+//  FILE *writehere = (FILE *)data;
   char* str = static_cast<char*>(ptr);
   //std::string s(str);
   qDebug()<<str;
@@ -96,7 +96,7 @@ void UCurlFtpClientTestWidget::onPushButtonSendFileClick()
     }
 
     FILE *hd_src;
-    struct stat file_info;
+//    struct stat file_info;
     struct curl_slist *headerlist = NULL;
 
     //Если понадобится - переименовать на удаленной машине.

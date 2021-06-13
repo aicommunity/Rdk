@@ -844,6 +844,12 @@ bool UEngineControl::DeleteChannel(int index)
  }
 
  int del_res=Core_DelChannel(index);
+
+ if(del_res != RDK_SUCCESS)
+ {
+  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::DeleteChannel FAILED: ChNum=")+sntoa(index)).c_str());
+  return false;
+ }
  int new_num=Core_GetNumChannels();
 
  if(new_num == old_num)

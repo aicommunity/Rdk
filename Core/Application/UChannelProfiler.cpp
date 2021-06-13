@@ -75,16 +75,16 @@ void UPerfomanceData::CalcMetrics(void)
   AvgInterval+=double(curr.Interval);
 
   if(MinDuration>curr.Duration)
-   MinDuration=curr.Duration;
+   MinDuration=double(curr.Duration);
 
   if(MaxDuration<curr.Duration)
-   MaxDuration=curr.Duration;
+   MaxDuration=double(curr.Duration);
 
   if(MinInterval>curr.Interval)
-   MinInterval=curr.Interval;
+   MinInterval=double(curr.Interval);
 
   if(MaxInterval<curr.Interval)
-   MaxInterval=curr.Interval;
+   MaxInterval=double(curr.Interval);
  }
  if(!CalcDurationHistory.empty())
  {
