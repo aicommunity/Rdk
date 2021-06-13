@@ -1,4 +1,6 @@
+unix {
 QMAKE_CXXFLAGS += -Wno-misleading-indentation
+}
 
 DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN

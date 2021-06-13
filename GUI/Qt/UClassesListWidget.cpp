@@ -148,6 +148,7 @@ QString UClassesListWidget::selctedClass() const
     default:
       return QString();
   }
+  return QString();
 }
 
 void UClassesListWidget::AUpdateLibsView(QString lib_name)

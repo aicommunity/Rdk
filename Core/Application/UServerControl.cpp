@@ -540,7 +540,7 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
 
  if(!commands.empty())
  {
-  for(int i=0; i<commands.size(); i++)
+  for(int i=0; i<int(commands.size()); i++)
   {
 			/*
 	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
