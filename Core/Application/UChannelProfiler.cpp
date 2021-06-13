@@ -36,8 +36,8 @@ UIntegralPerfomanceResults::UIntegralPerfomanceResults(void)
 
 
 UPerfomanceResults::UPerfomanceResults(void)
- : AvgDuration(0.0), Percentage(0.0), MinDuration(0.0), MaxDuration(0.0),
-   MinInterval(0.0), MaxInterval(0.0), AvgInterval(0.0)
+ : MinDuration(0.0), MaxDuration(0.0),
+   MinInterval(0.0), MaxInterval(0.0), AvgInterval(0.0), AvgDuration(0.0), Percentage(0.0)
 {
 }
 

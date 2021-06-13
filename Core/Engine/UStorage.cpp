@@ -119,7 +119,7 @@ UStorage::~UStorage(void)
   ClearClassesStorage(true);
 
   // Удаление всех библиотек
-  for(int i =0; i < CollectionList.size();i++)
+  for(int i =0; i < int(CollectionList.size());i++)
   {
       DelCollection(i);
   }

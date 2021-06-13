@@ -607,7 +607,7 @@ bool UApplication::SetStandartXMLInCatalog(void)
     std::vector<std::string> results;
     //int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
     int a = FindFilesList(path, mask, true, results);
-    for (int i=0; i< results.size(); i++)
+    for (size_t i=0; i< results.size(); i++)
     {
         StandartXMLInCatalog newXMLType;
         RDK::USerStorageXML XmlStorage;

@@ -365,7 +365,7 @@ bool UADItem::SetOutputDataAsPointer(int index, void *pointer)
 // Возвращает данные выхода как указателя на объект
 void* UADItem::GetOutputDataAsPointer(int index)
 {
- if(index<NumOutputs && GetOutputDataSize(index)[1]>0 && POutputData[index].GetElementByteSize() >= sizeof(void*))
+ if(index<NumOutputs && GetOutputDataSize(index)[1]>0 && POutputData[index].GetElementByteSize() >= int(sizeof(void*)))
  {
   return POutputData[index].PVoid[0];
  }
@@ -441,7 +441,7 @@ vector<size_t> UADItem::GetOutputDataElementSize(void) const
 
  return result;
 }
-/*
+
 bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
 {
 // if(OutputData.size() != value.size())
@@ -715,7 +715,7 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_pr
 {
  return UItem::CheckLink(connector, item_property_name);
 }
-   /*
+
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
 {

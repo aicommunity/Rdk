@@ -39,7 +39,7 @@ const char* BoostVersion(void)
 // Конструкторы и деструкторы
 // --------------------------
 UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
-: EngineControl(engine_control), EngineIndex(channel_index), Terminated(false)
+: EngineIndex(channel_index), EngineControl(engine_control), Terminated(false)
 {
  ThreadTimeout=1000;
  CalcState=UCreateEvent(false);

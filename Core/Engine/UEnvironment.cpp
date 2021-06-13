@@ -136,12 +136,12 @@ void UEnvironment::SetSystemDir(const std::string& dir)
 }
 
 /// Минимальный интервал времени между итерациями счета (мс)
-long long UEnvironment::GetMinInterstepsInterval(void) const
+unsigned long long UEnvironment::GetMinInterstepsInterval(void) const
 {
  return MinInterstepsInterval;
 }
 
-bool UEnvironment::SetMinInterstepsInterval(long long value)
+bool UEnvironment::SetMinInterstepsInterval(unsigned long long value)
 {
  if(MinInterstepsInterval == value)
   return true;
@@ -850,7 +850,7 @@ void UEnvironment::FastCalculate(double calc_interval)
  ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
  Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
- unsigned long long curtime;
+ //unsigned long long curtime;
  unsigned long long timer_interval=0;
  //double devicemodeltime=0;
 
@@ -890,7 +890,7 @@ void UEnvironment::FastCalculate(double calc_interval)
    break;
   }
  }
- curtime=GetCurrentStartupTime();
+// curtime=GetCurrentStartupTime();
 
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {

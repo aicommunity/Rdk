@@ -264,7 +264,7 @@ int URdkCoreManager::LoadFonts(void)
 // Загружает новый глобальный шрифт
 bool URdkCoreManager::AddFont(const std::string &font_file_name)
 {
- int res=RDK_SUCCESS;
+ //int res=RDK_SUCCESS;
  RDK_SYS_TRY
  {
   try
@@ -290,18 +290,15 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
   catch (RDK::UException &exception)
   {
    SystemLogger.ProcessException(exception);
-   res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
    SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
-   res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
   SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
-  res=RDK_EXCEPTION_CATCHED;
  }
 
  return false;

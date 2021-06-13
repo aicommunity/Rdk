@@ -118,7 +118,7 @@ public:
     const std::string GetClassName() const;
     const std::string GetCompName() const;
     const std::string GetLibName() const;
-    const bool GetReplace() const;
+    bool GetReplace() const;
 public slots:
     void ReplaceClicked();
     void ProcessInput();

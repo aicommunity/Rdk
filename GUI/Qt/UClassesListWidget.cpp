@@ -140,9 +140,11 @@ QString UClassesListWidget::selctedClass() const
   {
     case 0:
       return ui->listWidgetStorageByName->currentItem()->text();
+    break;
     case 1:
       if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
         return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    break;
     default:
       return QString();
   }
@@ -840,7 +842,7 @@ void CrClassDialog::ReplaceClicked()
 
 }
 
-const bool CrClassDialog::GetReplace() const
+bool CrClassDialog::GetReplace() const
 {
     return Replace;
 }

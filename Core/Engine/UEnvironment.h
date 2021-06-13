@@ -160,8 +160,8 @@ const std::string& GetSystemDir(void) const;
 void SetSystemDir(const std::string& dir);
 
 /// Минимальный интервал времени между итерациями счета (мс)
-long long GetMinInterstepsInterval(void) const;
-bool SetMinInterstepsInterval(long long value);
+unsigned long long GetMinInterstepsInterval(void) const;
+bool SetMinInterstepsInterval(unsigned long long value);
 
 /// Максимальное время расчета модели (сек)
 /// если 0 - то не ограничено

@@ -30,7 +30,7 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
 
 void UComponentLinksWidget::output1ItemSelectionChanged()
 {
-    QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
+    //QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
 }
 
 UComponentLinksWidget::~UComponentLinksWidget()
@@ -233,7 +233,7 @@ void UComponentLinksWidget::unInit()
 void UComponentLinksWidget::switchLink()
 {
     QString output1Component, outputName1, output2Component, outputName2;
-    QModelIndex id = ui->treeWidgetOutputs->currentIndex();
+    //QModelIndex id = ui->treeWidgetOutputs->currentIndex();
     QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
     QTreeWidgetItem *outputItem2 = ui->treeWidgetInputs->currentItem();
 
@@ -341,7 +341,7 @@ void UComponentLinksWidget::createLink()
     else if(mode==3)
     {
         QString output1Component, outputName1, output2Component, outputName2;
-        QModelIndex id = ui->treeWidgetOutputs->currentIndex();
+        //QModelIndex id = ui->treeWidgetOutputs->currentIndex();
         QTreeWidgetItem *outputItem1 = ui->treeWidgetOutputs->currentItem();
         QTreeWidgetItem *outputItem2 = ui->treeWidgetInputs->currentItem();
 

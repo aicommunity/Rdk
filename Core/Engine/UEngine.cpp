@@ -458,7 +458,7 @@ void UEngine::UnInit(void)
 // Возвращает число классов в хранилище
 int UEngine::Storage_GetNumClasses(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -467,16 +467,16 @@ int UEngine::Storage_GetNumClasses(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -515,7 +515,7 @@ int UEngine::Storage_GetClassesList(int *buffer) const
 // Возвращает имена классов в хранилище в виде строки, разделенной запятыми
 const char* UEngine::Storage_GetClassesNameList(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  std::string& TempString=CreateTempString();
  RDK_SYS_TRY
  {
@@ -534,18 +534,18 @@ const char* UEngine::Storage_GetClassesNameList(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
    DestroyTempString(TempString);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
    DestroyTempString(TempString);
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   DestroyTempString(TempString);
  }
  return 0;
@@ -554,7 +554,7 @@ const char* UEngine::Storage_GetClassesNameList(void) const
  // Возвращает имя класса по его id.
 const char * UEngine::Storage_GetClassName(int id) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  std::string& TempString=CreateTempString();
  RDK_SYS_TRY
  {
@@ -565,18 +565,18 @@ const char * UEngine::Storage_GetClassName(int id) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
    DestroyTempString(TempString);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
    DestroyTempString(TempString);
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   DestroyTempString(TempString);
  }
  return 0;
@@ -585,7 +585,7 @@ const char * UEngine::Storage_GetClassName(int id) const
 // Возвращает Id класса по его имени
 int UEngine::Storage_GetClassId(const char *name) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -594,16 +594,16 @@ int UEngine::Storage_GetClassId(const char *name) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return ForbiddenId;
 }
@@ -697,7 +697,7 @@ int UEngine::Storage_ClearObjectsStorage(void)
 // Вычисляет суммарное число объектов в хранилище
 int UEngine::Storage_CalcNumObjects(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -706,23 +706,23 @@ int UEngine::Storage_CalcNumObjects(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 int UEngine::Storage_CalcNumObjectsById(int classid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -731,23 +731,23 @@ int UEngine::Storage_CalcNumObjectsById(int classid) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -756,16 +756,16 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -774,7 +774,7 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 const char* UEngine::Storage_GetClassDescription(const char* classname)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -787,16 +787,16 @@ const char* UEngine::Storage_GetClassDescription(const char* classname)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -834,7 +834,7 @@ int UEngine::Storage_SetClassDescription(const char* classname, const char* desc
 const char* UEngine::Storage_SaveClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -845,20 +845,19 @@ const char* UEngine::Storage_SaveClassesDescription(void)
    Storage->SaveClassesDescription(xml);
    xml.SelectRoot();
    xml.Save(TempString);
-   res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 ;
@@ -902,7 +901,7 @@ int UEngine::Storage_LoadClassesDescription(const char* xmltext)
 const char* UEngine::Storage_SaveCommonClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -916,16 +915,16 @@ const char* UEngine::Storage_SaveCommonClassesDescription(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -970,7 +969,7 @@ int UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
 const char* UEngine::Storage_SaveAllClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -987,16 +986,16 @@ const char* UEngine::Storage_SaveAllClassesDescription(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1052,7 +1051,7 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1083,16 +1082,16 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -1104,7 +1103,7 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  UEPtr<RDK::UNet> cont;
  RDK_SYS_TRY
  {
@@ -1132,18 +1131,18 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
   catch (RDK::UException &exception)
   {
    delete cont;
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
    delete cont;
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
   delete cont;
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -1156,7 +1155,7 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
 // Возвращает число библиотек
 int UEngine::Storage_GetNumClassLibraries(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1165,16 +1164,16 @@ int UEngine::Storage_GetNumClassLibraries(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -1184,7 +1183,7 @@ int UEngine::Storage_GetNumClassLibraries(void) const
 const char * UEngine::Storage_GetClassLibrariesList(void) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1199,16 +1198,16 @@ const char * UEngine::Storage_GetClassLibrariesList(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1218,7 +1217,7 @@ const char * UEngine::Storage_GetClassLibrariesList(void) const
 const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1238,16 +1237,16 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1257,7 +1256,7 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
 const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1277,16 +1276,16 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1296,7 +1295,7 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1305,16 +1304,16 @@ const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1323,7 +1322,7 @@ const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -1332,16 +1331,16 @@ const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2350,7 +2349,7 @@ int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
 /// последней итерации не станет больше чем эта величина
 unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2359,16 +2358,16 @@ unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -2376,7 +2375,7 @@ unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
 // Время, потраченное на последний RT-расчет
 double UEngine::Env_GetRTLastDuration(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2385,16 +2384,16 @@ double UEngine::Env_GetRTLastDuration(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0.0;
 }
@@ -2402,7 +2401,7 @@ double UEngine::Env_GetRTLastDuration(void) const
 /// Время, расчитанное в модели за один вызов RTCalculate;
 double UEngine::Env_GetRTModelCalcTime(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2411,16 +2410,16 @@ double UEngine::Env_GetRTModelCalcTime(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0.0;
 }
@@ -2428,7 +2427,7 @@ double UEngine::Env_GetRTModelCalcTime(void) const
 /// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
 double UEngine::Env_CalcRTPerformance(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2437,16 +2436,16 @@ double UEngine::Env_CalcRTPerformance(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0.0;
 }
@@ -2589,26 +2588,25 @@ int UEngine::Env_DownCurrentComponent(const char *stringid)
 const char* UEngine::Env_GetCurrentComponentName(void) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
    Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
-   res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2617,7 +2615,7 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
 const char* UEngine::Env_GetCurrentComponentId(void) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2625,20 +2623,19 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
    ULongId longid;
    Environment->GetCurrentComponent()->GetLongId(Environment->GetModel(),longid);
    longid.EncodeToString(TempString);
-   res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2647,7 +2644,7 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
 const char* UEngine::Env_GetCurrentDataDir(void) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2657,16 +2654,16 @@ const char* UEngine::Env_GetCurrentDataDir(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2703,7 +2700,7 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
 const char* UEngine::Env_GetSystemDir(void) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2713,16 +2710,16 @@ const char* UEngine::Env_GetSystemDir(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2757,7 +2754,7 @@ int UEngine::Env_SetSystemDir(const char *dir)
 /// Возвращает состояние флага отладочного режима среды
 bool UEngine::Env_GetDebugMode(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2766,16 +2763,16 @@ bool UEngine::Env_GetDebugMode(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -2813,7 +2810,7 @@ int UEngine::Env_SetDebugMode(bool value)
 /// Возвращает маску системных событий для логирования
 unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2822,16 +2819,16 @@ unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -2870,7 +2867,7 @@ int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
 /// Возвращает флаг включения вывода лога в отладчик
 bool UEngine::Env_GetDebuggerMessageFlag(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -2879,16 +2876,16 @@ bool UEngine::Env_GetDebuggerMessageFlag(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -3145,7 +3142,7 @@ int UEngine::Model_Clear(void)
 // Проверяет, существует ли модель
 bool UEngine::Model_Check(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3154,16 +3151,16 @@ bool UEngine::Model_Check(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -3171,7 +3168,7 @@ bool UEngine::Model_Check(void)
 // Проверяет, существует ли в модели компонент с именем stringid)
 bool UEngine::Model_CheckComponent(const char* stringid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3186,16 +3183,16 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -3207,7 +3204,7 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
 const char* UEngine::Model_AddComponent(const char* stringid, const char *classname)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3242,16 +3239,16 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3402,7 +3399,7 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int UEngine::Model_GetNumComponents(const char* stringid)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3416,16 +3413,16 @@ int UEngine::Model_GetNumComponents(const char* stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3472,7 +3469,7 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3496,16 +3493,16 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  DestroyTempString(TempString);
@@ -3518,7 +3515,7 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3553,16 +3550,16 @@ const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -3628,7 +3625,7 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3652,16 +3649,16 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3680,7 +3677,7 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3703,16 +3700,16 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3731,7 +3728,7 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3753,16 +3750,16 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3774,7 +3771,7 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 const char* UEngine::Model_GetComponentName(const char* stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3789,16 +3786,16 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3812,7 +3809,7 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
 const char* UEngine::Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3827,16 +3824,16 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3849,7 +3846,7 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
 const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3868,16 +3865,16 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3887,7 +3884,7 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
 const char* UEngine::Model_GetComponentClassName(const char* stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3903,16 +3900,16 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3921,7 +3918,7 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
 const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -3952,16 +3949,16 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -3970,7 +3967,7 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
 const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4003,16 +4000,16 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -4024,7 +4021,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4049,16 +4046,16 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -4068,7 +4065,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
 const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4078,16 +4075,16 @@ const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -4097,7 +4094,7 @@ const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4122,16 +4119,16 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -4141,7 +4138,7 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
 const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4156,16 +4153,16 @@ const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, cons
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -4323,7 +4320,7 @@ int UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, co
 // Возвращает указатель void* на данные свойства компонента
 const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const char *property_name)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4334,16 +4331,16 @@ const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const 
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return 0;
@@ -4837,7 +4834,7 @@ int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
 // Проверяет, существует ли заданна связь
 bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4860,23 +4857,23 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
 
 bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4899,16 +4896,16 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -4962,7 +4959,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -4985,16 +4982,16 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5052,7 +5049,7 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5079,16 +5076,16 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5105,7 +5102,7 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5132,16 +5129,16 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5154,7 +5151,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5178,16 +5175,16 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5195,7 +5192,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 // Возвращает число входов у компонента
 int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5209,16 +5206,16 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5226,7 +5223,7 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 // Возвращает размер входа компонента в числе элементов
 int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5240,16 +5237,16 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5257,7 +5254,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 // Возвращает размер элемента входа в байтах
 int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5266,16 +5263,16 @@ int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5283,7 +5280,7 @@ int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
 // Возвращает размер входа компонента в байтах элементов
 int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5292,16 +5289,16 @@ int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5310,7 +5307,7 @@ int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5319,16 +5316,16 @@ unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int in
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5336,7 +5333,7 @@ unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int in
 // Возвращает число выходов у компонента
 int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5350,16 +5347,16 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5367,7 +5364,7 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 // Возвращает размер выхода компонента в числе элементов
 int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5381,16 +5378,16 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5398,7 +5395,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 // Возвращает размер выхода компонента в байтах элементов
 int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5407,16 +5404,16 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5425,7 +5422,7 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5439,16 +5436,16 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5459,7 +5456,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5483,16 +5480,16 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5619,7 +5616,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5644,20 +5641,19 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
 
    TempString="";
    XmlStorage.Save(TempString);
-   res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5760,7 +5756,7 @@ int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const c
 const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5787,16 +5783,16 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -5816,7 +5812,7 @@ int UEngine::Model_SetDefaultTimeStep(unsigned int value)
 // Управляет шагом счета компонента
 unsigned int UEngine::Model_GetTimeStep(const char *stringid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5827,16 +5823,16 @@ unsigned int UEngine::Model_GetTimeStep(const char *stringid) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5901,7 +5897,7 @@ int UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 // Возвращает текущее время модели
 unsigned long long UEngine::Model_GetTime(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5910,23 +5906,23 @@ unsigned long long UEngine::Model_GetTime(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 double UEngine::Model_GetDoubleTime(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5935,16 +5931,16 @@ double UEngine::Model_GetDoubleTime(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5981,7 +5977,7 @@ int UEngine::Model_SetTime(unsigned long long value)
 // Возвращает реальное время
 unsigned long long UEngine::Model_GetRealTime(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -5990,23 +5986,23 @@ unsigned long long UEngine::Model_GetRealTime(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 double UEngine::Model_GetDoubleRealTime(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6015,16 +6011,16 @@ double UEngine::Model_GetDoubleRealTime(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6032,27 +6028,26 @@ double UEngine::Model_GetDoubleRealTime(void)
 // Устанавливает реальное время
 int UEngine::Model_SetRealTime(unsigned long long value)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
    if(!Environment->GetTime().SetRealTime(value))
 	return RDK_E_ENV_SET_TIME_FAIL;
-   res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6088,7 +6083,7 @@ int UEngine::Model_IncreaseRealTime(unsigned long long value)
 // Возвращает мгновенный шаг в реальном времени
 unsigned long long UEngine::Model_GetRealTimeStep(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6097,23 +6092,23 @@ unsigned long long UEngine::Model_GetRealTimeStep(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 double UEngine::Model_GetDoubleRealTimeStep(void)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6122,23 +6117,23 @@ double UEngine::Model_GetDoubleRealTimeStep(void)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0.0;
 }
 
 double UEngine::Model_GetDoubleSourceTime(void) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6147,16 +6142,16 @@ double UEngine::Model_GetDoubleSourceTime(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0.0;
 }
@@ -6190,7 +6185,7 @@ int UEngine::Model_SetDoubleSourceTime(double value)
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
 unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6201,16 +6196,16 @@ unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6219,7 +6214,7 @@ unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 // (вместе со времени обсчета дочерних объектов) (мс)
 unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6230,16 +6225,16 @@ unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) cons
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6249,7 +6244,7 @@ unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) cons
 // полного затраченного времени к ожидаемому времени шага счета
 double UEngine::Model_GetInstantPerformance(const char *stringid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6260,16 +6255,16 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0.0;
 }
@@ -6277,7 +6272,7 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
 // Время, прошедшее между двумя последними итерациями счета
 unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6288,16 +6283,16 @@ unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) co
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6308,7 +6303,7 @@ unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) co
 // если выход не содержит данных такого типа, то возвращает 0
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6334,23 +6329,23 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6376,16 +6371,16 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6393,7 +6388,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6410,16 +6405,16 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, cons
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return 0;
@@ -6427,7 +6422,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, cons
 
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6449,16 +6444,16 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int 
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6471,7 +6466,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6493,16 +6488,16 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6660,7 +6655,7 @@ int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, int index, RD
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6677,23 +6672,23 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
 {
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6715,16 +6710,16 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -6911,7 +6906,7 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, cons
 const char* UEngine::GetLog(int &error_level) const
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6920,16 +6915,16 @@ const char* UEngine::GetLog(int &error_level) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -6939,7 +6934,7 @@ const char* UEngine::GetLog(int &error_level) const
 const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
 {
  std::string& TempString=CreateTempString();
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -6948,16 +6943,16 @@ const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -7085,7 +7080,7 @@ ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
  if(!Logger)
   return 0;
 
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -7094,16 +7089,16 @@ ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -7204,7 +7199,7 @@ int UEngine::GetNumUnreadLogLines(void) const
  if(!Logger)
   return 0;
 
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -7213,16 +7208,16 @@ int UEngine::GetNumUnreadLogLines(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -7233,7 +7228,7 @@ int UEngine::GetNumLogLines(void) const
  if(!Logger)
   return 0;
 
- int res=RDK_UNHANDLED_EXCEPTION;
+ //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -7242,16 +7237,16 @@ int UEngine::GetNumLogLines(void) const
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(exception);
+   ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }

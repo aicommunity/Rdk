@@ -149,7 +149,7 @@ void UGraphPaintWidget::changeCurrentItem(void)
             //std::cout<<"changeCurrentItem2"<<currentItem<<std::endl;
             ui->widget->graph(currentItem)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 1));
             currentItem++;
-            if (currentItem>=(vectorGraph.size()))
+            if (currentItem>=int(vectorGraph.size()))
                 currentItem=-2;
             if (currentItem!=-2)
             {

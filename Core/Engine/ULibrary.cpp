@@ -474,7 +474,7 @@ bool URuntimeLibrary::LoadCompDescriptions()
         return false;
 
     ClassesStructures.resize(comp_descriptions.size());
-    for(int i = 0 ; i < comp_descriptions.size(); i++)
+    for(size_t i = 0 ; i < comp_descriptions.size(); i++)
     {
         // Парсинг текущего файла
         CurrentComponentStruct.LoadFromFile(LibPath+"/"+comp_descriptions[i],"");

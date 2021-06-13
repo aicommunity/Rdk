@@ -17,7 +17,7 @@ URpcCommandInternal::URpcCommandInternal(void)
 }
 
 URpcCommandInternal::URpcCommandInternal(const std::string &request)
- : ResponseStatus(0), Request(request)
+ : Request(request), ResponseStatus(0)
 {
 }
 

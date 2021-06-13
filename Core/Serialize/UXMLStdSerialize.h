@@ -211,6 +211,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::pair<T1,T2> &data)
 #pragma warning( push )
 #pragma warning (disable: 4700)
 #endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 template<typename T1, typename T2>
 USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &data)
 {
@@ -250,6 +255,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
 
  return storage;
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #ifdef _MSC_VER
 #pragma warning ( pop )
 #endif
@@ -291,6 +300,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
 #pragma warning( push )
 #pragma warning (disable: 4700)
 #endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 // Списки
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
@@ -324,6 +338,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
 
  return storage;
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #ifdef _MSC_VER
 #pragma warning ( pop )
 #endif
@@ -374,6 +392,11 @@ RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<i
 #ifdef _MSC_VER
 #pragma warning( push )
 #pragma warning (disable: 4700)
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
@@ -460,6 +483,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
 
  return storage;
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #ifdef _MSC_VER
 #pragma warning ( pop )
 #endif
