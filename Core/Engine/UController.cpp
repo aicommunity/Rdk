@@ -168,7 +168,7 @@ const type_info& UControllerData::GetDataType(void) const
 // *****************************************************************
 
 UControllerDataReader::UControllerDataReader(void)
- : MRow(0), MCol(0), PropertyType(0)
+ : PropertyType(0), MRow(0), MCol(0)
 {
 }
 

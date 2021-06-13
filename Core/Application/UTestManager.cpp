@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
-
-#pragma hdrstop
+#ifndef UTESTMANAGER_CPP
+#define UTESTMANAGER_CPP
 
 #include "UTestManager.h"
 #include "UApplication.h"
@@ -497,3 +497,5 @@ int UTestManager::DecodeTestFile(const std::string &test_file_name, UTest &test)
 // --------------------
 
 }
+
+#endif

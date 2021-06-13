@@ -804,7 +804,7 @@ std::string URpcDecoderCommonQt::ARemoteCall(const std::string &cmd, RDK::USerSt
  else
   return_value=2001;
 
- if(return_value=2001)
+ if(return_value == 2001)
  {
     return URpcDecoderCommon::ARemoteCall(cmd, xml, component_name, channel_index, return_value);
  }

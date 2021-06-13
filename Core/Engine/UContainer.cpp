@@ -59,8 +59,9 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
- : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0),
-   MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor)
+ : Id(0), Activity(false), MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor),
+   Coord(0), PComponents(0), NumComponents(0), LastId(0)
+
 {
  AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UContainer>(this,&UContainer::SetId,&UContainer::GetId));
  AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UContainer>(this,&UContainer::SetName,&UContainer::GetName));
@@ -2608,7 +2609,7 @@ void UContainer::DelAllControllers(bool forchilds)
 void UContainer::UnLinkAllControllers(bool forchilds)
 {
  while(Controllers.begin() != Controllers.end())
-  Controllers.front()->UnLink(this);
+  Controllers.front()->UnLink(forchilds);
 
  if(forchilds)
  {

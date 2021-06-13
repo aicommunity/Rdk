@@ -1232,9 +1232,9 @@ bool UProjectResultsUploadingThread::UploadResultsViaFtp()
 UProjectDeployerQt::UProjectDeployerQt(void):
     db(NULL),
     deployProcessingThread(NULL),
-    projectResultsUploadingThread(NULL),
+    preparationResult(-1),
     deploymentState(DS_NULL),
-    preparationResult(-1)
+    projectResultsUploadingThread(NULL)
 {
     //Инициализация curl, которую надо выполнить только один раз
     //Этот класс же тоочно не создается дважды?

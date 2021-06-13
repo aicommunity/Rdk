@@ -1680,7 +1680,8 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
  UInstancesStorage &instances=ObjectsStorage[classid];
 
  UInstancesStorageElement element(object,true);
- list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
+ instances.insert(instances.end(),element);
+ //list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
  //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
 
