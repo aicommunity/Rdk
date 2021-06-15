@@ -4,12 +4,12 @@
 
 UImageLoader::UImageLoader(QObject *parent, int channel, bool showLegend, bool indChannels, int imagesSizeMod) :
   QObject(parent),
+  mutex(QMutex::Recursive),
+  connected(false),
   calcChannel(channel),
-  sizeMode(imagesSizeMod),
   showLegend(showLegend),
   indChannels(indChannels),
-  mutex(QMutex::Recursive),
-  connected(false)
+  sizeMode(imagesSizeMod)
 {
 
 }

@@ -12,7 +12,7 @@ void RdkDummyFunc(void);
 extern RDK::UStorage* CreateNewStorage(void)
 {
 #ifdef __GNUC__
- RDK::RdkDummyFunc();
+// RDK::RdkDummyFunc();
 #endif
  return new RDK::UStorage;
 }

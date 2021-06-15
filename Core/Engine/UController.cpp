@@ -168,7 +168,7 @@ const type_info& UControllerData::GetDataType(void) const
 // *****************************************************************
 
 UControllerDataReader::UControllerDataReader(void)
- : MRow(0), MCol(0), PropertyType(0)
+ : PropertyType(0), MRow(0), MCol(0)
 {
 }
 
@@ -177,7 +177,7 @@ void UControllerDataReader::SetTimeInterval(double value)
 {
  TimeInterval=value;
  if(value>0)
-  SetNumPoints(value*Component->GetTimeStep());
+  SetNumPoints(int(value*Component->GetTimeStep()));
  else
   SetNumPoints(100000);
 }
@@ -339,7 +339,7 @@ bool UControllerDataReaderTimeEvents::AUpdate(void)
  if(PropertyType != 3)
   return false;
 
- double x(0.0), y(0.0);
+ double x(0.0);
 
  const MDMatrix<double> *data=reinterpret_cast<const MDMatrix<double>*>(Property->GetMemoryArea());
  if(!data)

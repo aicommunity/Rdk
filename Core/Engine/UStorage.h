@@ -21,6 +21,7 @@ See file license.txt for more information
 
 #include "UComponentFactory.h"
 
+
 namespace RDK {
 
 /* *********************************************************************** */
@@ -84,7 +85,14 @@ typedef pair<UId,UInstancesStorage> UObjectStorageElement;
 typedef map<UId, UInstancesStorage> UObjectsStorage;
 typedef map<UId, UInstancesStorage>::iterator UObjectsStorageIterator;
 typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
+
+class UMockUNet;
+// Указатель на функцию, которая создает все возможные свойства
+// согласно описанию USerStorageXML для UMockUNet
+typedef bool (*funcCrPropMock)(USerStorageXML*, UMockUNet*);
+
 /* *********************************************************************** */
+
 
 class RDK_LIB_TYPE UStorage
 {
@@ -128,10 +136,25 @@ UObjectsStorage ObjectsStorage;
 // Последний использованный Id образцов классов
 UId LastClassId;
 
+// Способ сборки хранилища:
+// 1 -  обычная сборка. Сборка статических библиотек, затем динамических. Все компоненты рабочие (не заглушки)
+// 2 -  поочередная сборка. Сборка статических, библиотек-заглушек, затем динамических.
+//      Все компоненты, которые смогли собраться рабочими - рабочие.
+//      Остальные (которые есть в библиотеках-заглушка, но нет сейчас в хранилище) - заглушки.
+// 3 -  сборка только заглушек. Сборка библиотек-заглушек, затем динамических. Все компоненты заглушки (не рабочие)
+int BuildMode;
+
+// Массив функций-создателей Property для MockUNet
+std::list<funcCrPropMock> FunctionsCrPropMock;
+
+// Путь к папкам библиотек (в данной директории будут две папки MockLibs RTlibs)
+std::string LibrariesPath;
+
 protected: // Временные переменные
 
 
 public: // Методы
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -300,19 +323,29 @@ const string& GetCollectionName(int index);
 // Возвращает версию библиотеки по индексу
 const string& GetCollectionVersion(int index);
 
-// Возвращается строку runtime-библиотек, разделенных запятой
+// Очищает списки Complete и Incomplete во всех библиотеках
+// Нужно перед сборкой
+void ClearAllLibsClassesNameArrays(void);
+
+// Возвращается строку имен библиотек конкретного типа, разделенных запятой
 // Буфер 'buffer' будет очищен от предыдущих значений
-void GetRTlibsNameList(std::string &buffer) const;
+void GetLibsNameListByType(std::string &buffer, int type) const;
 
 // Непосредственно добавялет новый образец класса в хранилище
 //virtual bool AddClass(UContainer *newclass);
 
+// Установка пути к папкам библиотек
+void SetLibrariesPath(const std::string& value);
+
+// Получение пути к папкам библиотек
+const std::string GetLibrariesPath() const;
+
 //Работа с RT-библиотеками
 /// Инициализация существующих динамических библиотек
-/// Вызывается в Engine один раз. Добавляет библиотеки в CollectionList
+/// Вызывается в Engine один раз. Добавляет библиотеки в CollectionList (сборки компонентов нет)
 void InitRTlibs(void);
 
-/// Загружает runtime-библиотеку по её имени
+/// Загружает runtime-библиотеку по её имени (без загрузки компонентов)
 virtual bool LoadRuntimeCollection(const std::string &lib_name);
 
 /// Добавляет новый образец класса в коллекцию (сразу соранение в файл)
@@ -339,6 +372,18 @@ virtual bool AddCollection(ULibrary *library, bool force_build=false);
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 virtual bool DelCollection(int index);
 
+// Добавляет все доступные в папке MockLibs библиотеки в CollectionList
+// В правильном порядке (порядок опредлен в конкретном файле)
+bool InitMockLibs(void);
+
+// Создание всех библиотек-заглушек (которых не существует)
+// из статических библиотек
+bool CreateMockLibs(void);
+
+// Сохраняет все библиотеки-заглушки в папку Rtv-VideoAnalytics/Bin/MockLibs в виде XML файлов
+// Также сохраняет порядок библиотек в виде отдельного файла
+bool SaveMockLibs(void);
+
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool DelCollection(const string &name);
@@ -347,8 +392,22 @@ bool DelCollection(const string &name);
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 virtual bool DelAllCollections(void);
 
+// Установка необходимого режима сборки
+void SetBuildMode(int mode);
+
+// Получение текущего режима сборки
+int GetBuildMode();
+
 // Заполняет хранилище данными библиотек
 virtual bool BuildStorage(void);
+
+// Заполняет хранилище данными библиотек конктретного типа
+// Тип библиотеки:
+// 0 - Внутренняя библиотека (собрана вместе с ядром)
+// 1 - Внешняя библиотека (загружена из внешней dll)
+// 2 - Библиотека, созданная во время выполнения
+// 3 - Библиотека-заглушка (все компоненты-заглушки)
+virtual bool BuildStorage(int lib_type);
 
 /// Удаляет все образцы классов, для которых нет библиотек
 /// а также все связанные образцы
@@ -362,6 +421,15 @@ virtual UEPtr<ULibrary> FindCollection(const UId &classid);
 /// Метод не очищает переданный список библиотек, а только пополняет его
 virtual void FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
 // --------------------------
+
+// --------------------------
+// Методы для работы с компонентами-заглушками (UMockUnet)
+// --------------------------
+// Добавление функции-создателя свойств для UMockUnet в массив в Storage
+bool AddCrPropMockFunc(funcCrPropMock func_ptr);
+
+// Получение массива функций-создателей свойств для UMockUnet
+const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 
 // --------------------------
 // Скрытые методы управления хранилищем объектов

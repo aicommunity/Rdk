@@ -26,6 +26,14 @@ extern RDK::UApplication RdkApplication;
 
 //---------------------------------------------------------------------------
 
+void AddColorText(TRichEdit* richedit, const String &text, TColor color)
+{
+ //richedit->SelStart=richedit->Text.Length();
+ richedit->SelAttributes->Color = color;
+ //richedit->SelText= text+"\r\n";
+ richedit->Lines->Add(text);
+}
+
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
@@ -66,7 +74,53 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 
   for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)
   {
-   EngineMonitorFrame->RichEdit->Lines->Add(I->c_str());
+   int log_level=-1;
+   std::string::size_type pos1=I->find_first_of('>');
+   if(pos1 != std::string::npos)
+   {
+	std::string::size_type pos2=I->find_first_of('>',pos1+1);
+	if(pos2 != std::string::npos && pos2 > 0)
+	{
+	 log_level=RDK::atoi(I->substr(pos2-1,1));
+	}
+   }
+
+   TColor color;
+   switch(log_level)
+   {
+   case RDK_EX_APP:
+	color=clBlue;
+   break;
+
+   case RDK_EX_INFO:
+	color=clGreen;
+   break;
+
+   case RDK_EX_DEBUG:
+	color=clNavy;
+   break;
+
+   case RDK_EX_WARNING:
+	color=clOlive;
+   break;
+
+   case RDK_EX_ERROR:
+	color=clMaroon;
+   break;
+
+   case RDK_EX_FATAL:
+	color=clRed;
+   break;
+
+   case RDK_EX_UNKNOWN:
+	color=clFuchsia;
+   break;
+
+   default:
+    color=clBlack;
+   }
+
+   AddColorText(EngineMonitorFrame->RichEdit, I->c_str(), color);
   }
   while(EngineMonitorFrame->RichEdit->Lines->Count>1000)
   {

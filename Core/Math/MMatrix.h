@@ -737,7 +737,7 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator /= (T v)
 {
  T* pm1=&Data[0][0];
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned int i=0;i<Cols*Rows;i++)
   *pm1++ /= v;
 
  return *this;

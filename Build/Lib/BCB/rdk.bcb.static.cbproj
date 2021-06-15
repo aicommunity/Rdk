@@ -58,6 +58,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <BCC_wpch>false</BCC_wpch>
         <TLIB_PageSize>8192</TLIB_PageSize>
         <_TCHARMapping>char</_TCHARMapping>
         <SanitizedProjectName>rdk_bcb_static</SanitizedProjectName>
@@ -173,6 +174,10 @@
         <CppCompile Include="..\..\..\Core\Application\UProject.cpp">
             <BuildOrder>94</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UProjectDeployer.cpp">
+            <DependentOn>..\..\..\Core\Application\UProjectDeployer.h</DependentOn>
+            <BuildOrder>127</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\URpcCommand.cpp">
             <BuildOrder>95</BuildOrder>
         </CppCompile>
@@ -225,6 +230,21 @@
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UAModel.cpp">
             <BuildOrder>62</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreator.cpp">
+            <BuildOrder>125</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorMatrix.cpp">
+            <BuildOrder>130</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorStd.cpp">
+            <BuildOrder>131</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorTempl.cpp">
+            <BuildOrder>129</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UBasePropCreatorVector.cpp">
+            <BuildOrder>128</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UBinaryEnvSerialize.cpp">
             <DependentOn>..\..\..\Core\Engine\UBinaryEnvSerialize.h</DependentOn>
@@ -295,6 +315,9 @@
         <CppCompile Include="..\..\..\Core\Engine\ULoggerEnv.cpp">
             <DependentOn>..\..\..\Core\Engine\ULoggerEnv.h</DependentOn>
             <BuildOrder>119</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UMockUNet.cpp">
+            <BuildOrder>126</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UModule.cpp">
             <BuildOrder>80</BuildOrder>
@@ -1005,13 +1028,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

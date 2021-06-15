@@ -6,13 +6,14 @@
 
 USingleImageWidget::USingleImageWidget(QWidget *parent, int row, int column, int channel, bool showLegend, bool indChannels, int imagesSizeMod) :
     UVisualControllerWidget(parent),
+    ui(new Ui::USingleImageWidget),
     column(column),
-    row(row),
+    row(row)
     /*calcChannel(channel),
     sizeMode(imagesSizeMod),
     selected(false),
     connected(false),*/
-    ui(new Ui::USingleImageWidget)
+
 {
     ui->setupUi(this);
     painter = new USingleImagePainter(this);

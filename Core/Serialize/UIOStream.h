@@ -257,6 +257,8 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, T dat
  return stream;
 }
    */
+
+
 }
 #endif
 

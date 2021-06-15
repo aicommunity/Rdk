@@ -51,6 +51,9 @@ virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const=0;
 /// Метод треда
 virtual void Process(void);
 
+/// Остановка треда
+virtual void StopProcessThread(void);
+
 /// Осуществляет декодирование и вызов команды по текущим данным
 /// Возвращает false если команда не поддерживается
 virtual bool ProcessCommand(const UEPtr<URpcCommand> &command);

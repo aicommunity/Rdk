@@ -213,3 +213,15 @@ void RdkQTcpClientWidget::onPushButtonPingClick()
  std::cerr<<"onPushButtonTestClick sum: "<<sum;
 }
 */
+
+void RdkQTcpClientWidget::on_pushButtonStartTraining_clicked()
+{
+    const char* serverAnswer=NULL;
+    int res=Rpc_StartTraining(0, ui->lineEditChannelIndex->text().toInt(), 60000);
+    if(WriteLogError(res))
+    {
+     serverAnswer=Rpc_GetServerAnswerDebug(0);
+     if(serverAnswer != NULL && ui->checkBoxWriteServerResponse->isChecked())
+         ui->plainTextEditLog->appendPlainText(QString(serverAnswer));
+    }
+}

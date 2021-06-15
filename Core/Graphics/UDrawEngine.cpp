@@ -151,6 +151,8 @@ UDrawEngine::UDrawEngine(void)
 
  ElementsXRes=1;
  ElementsYRes=1;
+
+ ShowBackgroundLines=true;
 }
 
 UDrawEngine::~UDrawEngine(void)
@@ -195,6 +197,17 @@ bool UDrawEngine::SetRectHeight(int value)
 {
  RectHeight=value;
  return true;
+}
+
+bool UDrawEngine::SetShowBackgroundLines(bool value)
+{
+ ShowBackgroundLines=value;
+ return true;
+}
+
+bool UDrawEngine::GetShowBackgroundLines(void) const
+{
+ return ShowBackgroundLines;
 }
 // ---------------------------
 
@@ -568,11 +581,14 @@ bool UDrawEngine::DrawBackground(void)
  GEngine->SetPenColor(BackgroundLineColor);
  GEngine->SetPenWidth(1);
 
- for(int i=0;i<CanvasWidth;i+=BackgroundLineStep)
-  GEngine->Line(i,0,i,CanvasHeight-1);
+ if(ShowBackgroundLines)
+ {
+  for(int i=0;i<CanvasWidth;i+=BackgroundLineStep)
+   GEngine->Line(i,0,i,CanvasHeight-1);
 
- for(int i=0;i<CanvasHeight;i+=BackgroundLineStep)
-  GEngine->Line(0,i,CanvasWidth-1,i);
+  for(int i=0;i<CanvasHeight;i+=BackgroundLineStep)
+   GEngine->Line(0,i,CanvasWidth-1,i);
+ }
 
  GEngine->SetPenColor(BackgroundLineColor);
  GEngine->Rect(0, 0, BackgroundLineStep, CanvasHeight, true);

@@ -71,6 +71,23 @@ std::string ClassesDescriptionFileName;
 // Имя файла описаний общих параметров классов
 std::string CommonClassesDescriptionFileName;
 
+// Способ сборки хранилища
+int StorageBuildMode;
+
+// Установка необходимого режима сборки
+void SetStorageBuildMode(int mode);
+
+// Получение текущего режима сборки
+int GetStorageBuildMode();
+
+// Путь к папкам библиотек
+std::string LibrariesPath;
+
+// Установка пути к папкам библиотек
+void SetLibrariesPath(const std::string& value);
+
+// Получение пути к папкам библиотек
+const std::string GetLibrariesPath() const;
 
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды

@@ -64,6 +64,8 @@ int  Rpc_Init(int num_serverPtz_MoveZoom);
 
 int  Rpc_UnInit(void);
 
+bool Rpc_IsInit();
+
 /// Коммуникация с сервером
 int  Rpc_Ping(int server_index, int timeout);
 
@@ -75,11 +77,15 @@ int  Rpc_AddServer(void);
 
 int  Rpc_DelServer(int server_index);
 
+int  Rpc_LastServerId();
+
 ///////////////
 
 int  Rpc_StartChannel(int server_index, int channel_index, int timeout);
 
 int  Rpc_StopChannel(int server_index, int channel_index, int timeout);
+
+int  Rpc_StartTraining(int server_index, int channel_index, int timeout);
 
 int  Rpc_ResetChannel(int server_index, int channel_index, int timeout);
 
@@ -89,10 +95,41 @@ int  Rpc_SetNumChannels(int server_index, int num_channels, int timeout);
 
 int  Rpc_GetChannelName(int server_index, int channel_index, const char* &result, int timeout);
 
+int  Rpc_GetDeploymentState(int server_index, int &dp_state, int& dp_progress, int& dp_cap, const char *&last_error, int timeout);
+
 int Rpc_SetChannelName(int server_index, int channel_index, const char* channel_name, int timeout);
+
+int Rpc_GetLastError(int server_index, const char* &result, int timeout);
 
  int Rpc_SaveProject(int server_index, int timeout);
 
  int Rpc_LoadProject(int server_index, const char* project_path, int timeout);
+
+ int Rpc_DeployProject(int server_index, int task_index, int &resp, int timeout=-1);
+
+ int Rpc_PrepareProject(int server_index, const char* &verbose_response, int timeout);
+
+ int Rpc_GetPreparationResult(int server_index, const char* &verbose_response, int timeout);
+
+ int Rpc_OpenPreparedProject(int server_index, const char* &verbose_response, int timeout);
+
+ int Rpc_RunPreparedProject(int server_index, int timeout);
+
+ int Rpc_GetCalculationState(int server_index,
+                            int& calculation_state,
+                            int& capture_state,
+                            unsigned long long& capture_frid,
+                            unsigned long long& capture_maxfrid,
+                            const char* &message,
+                            int timeout);
+
+ int Rpc_FinishCalculation(int server_index, bool& result, const char* &last_error, int timeout);
+
+ int Rpc_UploadCalculationResults(int server_index, bool& result, const char* &last_error, int timeout);
+
+ int Rpc_GetUploadState(int server_index, int& upload_state, const char* &last_error, int timeout);
+
+ int Rpc_CloseSolver(int server_index, bool& result, const char* &last_error, int timeout);
+
 
 #endif // RDKQTCPCLIENTLIB_H

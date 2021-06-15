@@ -1,7 +1,8 @@
 #ifndef UProjectDeployerH
 #define UProjectDeployerH
 
-#include "../../Deploy/Include/rdk.h"
+//#include "../../Deploy/Include/rdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "UIVisualController.h"
 
 namespace RDK{
@@ -18,21 +19,28 @@ UEPtr<UApplication> Application;
 protected: // Параметры
 
 protected: // Данные
-//Пути к проекту (вар-т 1)
-std::string project_path;
-std::string project_url;
 
 //Данные для входа:
 std::string database_address;
-std::string database_port;
+std::string database_name;
 std::string database_login;
 std::string database_password;
 
+std::string ftp_remote_path;
+
+std::string temp_project_deployment_path;
+
+/*
+//Отпилили предварительно (не появится ранее дочернего класса!)
+//Пути к проекту (вар-т 1)
+std::string project_path;
+std::string project_url;
 //Параметры проекта
 int project_gt_id;
 int project_sln_id;
 int project_weigts_id;
 int project_script_id;
+*/
 
 public: // Методы
 
@@ -44,10 +52,70 @@ UEPtr<UApplication> GetApplication(void);
 bool SetApplication(UEPtr<UApplication> value);
 // --------------------------
 
-virtual int StartProjectDeployment(const std::string &project_path, const std::string &project_url) {return 0;};
-virtual void SetDatabaseCredentials(const std::string &db_address, const std::string &db_port, const std::string &db_login, const std::string &db_password);
-virtual void SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id);
+///Выполнить загрузку данных для выполнения задачи,
+/// заданной пользоватлем (на вход идет индекс в базе данных)
+virtual int StartProjectDeployment(int task_id, bool standalone=false);
 
+
+///Подготовить к запуску проект:
+/// 1. Скопировать во временное хранилище
+/// 2. Открыть в тестовом режиме и настроить пути и связи?
+/// 3. Закрыть
+virtual int PrepareProject(std::string &response);
+/// Получить результат подготовки проекта
+virtual int GetPreparationResult(std::string &response);
+///Открыть подготовленный проект
+virtual int OpenPreparedProject(std::string &response);
+///Запустить подготовленный проект
+virtual int RunPreparedProject();
+
+///Задать пар-ры конннекта к СУБД
+virtual void SetDatabaseAccess(const std::string &db_address, const std::string &db_name, const std::string &db_login, const std::string &db_password);
+/// Осуществить соединение
+virtual void AConnectToDatabase();
+///
+//virtual void SetProjectIndices(int gt_id, int sln_id, int weights_id, int script_id);
+
+virtual int GetDeploymentState();
+virtual int GetStageCap();
+virtual int GetStageProgress();
+
+virtual std::string GetLastError();
+virtual std::string GetProjectFileName();
+
+virtual void SetFtpRemotePath(const std::string &path);
+virtual void SetTempProjectDeploymentPath(const std::string &path);
+
+virtual std::string GetTempProjectDeploymentPath();
+
+///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+virtual int GetCalculationState();
+///Возвращает состояние активного компонента захвата
+/// возвращает false при ошибке получение состояния
+/// @state - индекс состояния захвата
+/// @frame_id - индекс текущего кадра
+virtual bool GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id);
+///Обрабатывает накопившийся с последнего вызова лог
+/// возвращает false если были фатальные ошибки, иначе true
+/// @error - текст ошибки из лога приложения
+virtual bool ProcessCalculationLog(std::string &error);
+///Возвращает true если обработка ролика/набора кадров по мнению деплоера
+/// на переданном кадре закончена и false если нет
+//virtual bool CaptureProcessingFinished(int frame_number);
+///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+virtual bool FinishCalculation() {return false;};
+///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
+/// запустить процесс упаковки и отправки данных в удаленное хранилище
+virtual bool UploadCalculationResults() {return false;};
+///Аккуратное закрытие солвера, команда которая по идее должна инициировать
+/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+virtual bool CloseSolver() {return false;};
+///Получить состояние загрузки
+virtual int GetUploadState(){return -1;};
+
+/// Задача для запуска без сети
+virtual void SetStandaloneTask(int task);
+virtual int GetStandaloneTask();
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

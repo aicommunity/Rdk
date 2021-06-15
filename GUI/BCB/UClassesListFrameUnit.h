@@ -13,6 +13,7 @@
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
 #include <Vcl.ExtCtrls.hpp>
+#include <Vcl.Menus.hpp>
 //---------------------------------------------------------------------------
 class TUClassesListFrame : public TUVisualControllerFrame
 {
@@ -23,18 +24,17 @@ __published:	// IDE-managed Components
 	TStringGrid *StringGrid;
 	TTreeView *TreeView;
 	TTabSheet *LibsControlTabSheet;
-	TPanel *Panel1;
-	TButton *LoadLibraryButton;
-	TButton *CreateRuntimeLibraryButton;
-	TButton *DeleteLibraryButton;
-	TButton *RenameRuntimeLibraryButton;
 	TSplitter *Splitter1;
 	TGroupBox *GroupBox1;
 	TStringGrid *LibsListStringGrid;
 	TGroupBox *GroupBox2;
 	TStringGrid *LibComponentListStringGrid;
-	TButton *AddClassButton;
 	TEdit *SearchEdit;
+	TPopupMenu *RTLibsPopupMenu;
+	TPopupMenu *RTClassesPopupMenu;
+	TMenuItem *CreateRuntimeLibrary1;
+	TMenuItem *DeleteRuntimeLibrary1;
+	TMenuItem *DeleteClass1;
 	void __fastcall PageControlChange(TObject *Sender);
 	void __fastcall StringGridMouseEnter(TObject *Sender);
 	void __fastcall TreeViewMouseEnter(TObject *Sender);
@@ -42,13 +42,15 @@ __published:	// IDE-managed Components
           bool &CanSelect);
 	void __fastcall LibsListStringGridMouseEnter(TObject *Sender);
 	void __fastcall LibComponentListStringGridMouseEnter(TObject *Sender);
-	void __fastcall CreateRuntimeLibraryButtonClick(TObject *Sender);
-	void __fastcall AddClassButtonClick(TObject *Sender);
 	void __fastcall StringGridMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
 	void __fastcall LibComponentListStringGridMouseMove(TObject *Sender, TShiftState Shift,
           int X, int Y);
 	void __fastcall TreeViewMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
 	void __fastcall SearchEditChange(TObject *Sender);
+	void __fastcall CreateRuntimeLibrary1Click(TObject *Sender);
+	void __fastcall DeleteRuntimeLibrary1Click(TObject *Sender);
+	void __fastcall CreateNewClass1Click(TObject *Sender);
+	void __fastcall DeleteClass1Click(TObject *Sender);
 
 
 private:	// User declarations
@@ -65,10 +67,7 @@ std::vector<std::string> ClassNames;
 bool RepaintNeeded;
 
 public:
-/// Имя класса для добавления в выбранную библиотеку
-std::string NewClassName;
-
-/// Имя компонента для добавления в выбранную библиотеку
+/// Имя компонента на схеме для добавления в выбранную библиотеку
 std::string NewComponentName;
 
 public:
@@ -93,6 +92,7 @@ String GetSelectedLibraryName(void);
 
 /// Отрисовывает список классов в выбранной библиотеке
 void DrawClassesList(int library_index, TStringGrid *classes_string_grid);
+void DrawClassesList(const std::string &library_name, TStringGrid *classes_string_grid);
 
 /// Создает новый класс в выбранной Runtime library
 bool AddClassToRuntimeLibrary(const std::string &object_prototype_name, const std::string &class_name, const std::string &library_name);

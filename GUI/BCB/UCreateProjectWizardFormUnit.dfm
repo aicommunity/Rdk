@@ -61,7 +61,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Top = 0
     Width = 610
     Height = 678
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
@@ -114,7 +114,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         OnChange = ProjectDirectoryLabeledEditChange
       end
       object Button1: TButton
-        Left = 520
+        Left = 521
         Top = 60
         Width = 78
         Height = 26
@@ -590,78 +590,34 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                     ExplicitWidth = 534
                     ExplicitHeight = 336
                     inherited PageControl: TPageControl
+                      Top = 22
                       Width = 534
-                      Height = 336
-                      ActivePage = UClassesListFrame1.LibsTabSheet
+                      Height = 314
                       ExplicitWidth = 534
-                      ExplicitHeight = 336
+                      ExplicitHeight = 315
                       inherited NameTabSheet: TTabSheet
-                        ExplicitTop = 25
-                        ExplicitWidth = 526
-                        ExplicitHeight = 307
                         inherited StringGrid: TStringGrid
-                          Width = 526
-                          Height = 307
                           OnClick = UClassesListFrame1StringGridClick
-                          ExplicitWidth = 526
-                          ExplicitHeight = 307
                         end
                       end
                       inherited LibsTabSheet: TTabSheet
                         ExplicitTop = 25
                         ExplicitWidth = 526
-                        ExplicitHeight = 307
+                        ExplicitHeight = 286
                         inherited TreeView: TTreeView
                           Width = 526
-                          Height = 307
+                          Height = 285
                           OnChange = UClassesListFrame1TreeViewChange
                           ExplicitWidth = 526
-                          ExplicitHeight = 307
+                          ExplicitHeight = 286
                         end
                       end
                       inherited LibsControlTabSheet: TTabSheet
                         TabVisible = False
-                        ExplicitLeft = 4
-                        ExplicitTop = 24
-                        ExplicitWidth = 499
-                        ExplicitHeight = 515
                         inherited Splitter1: TSplitter
                           Top = 291
                           ExplicitTop = 188
                           ExplicitWidth = 399
-                        end
-                        inherited Panel1: TPanel
-                          Top = 386
-                          Height = 129
-                          Visible = False
-                          ExplicitTop = 386
-                          ExplicitHeight = 129
-                          inherited LoadLibraryButton: TButton
-                            Height = 26
-                            ExplicitHeight = 26
-                          end
-                          inherited CreateRuntimeLibraryButton: TButton
-                            Top = 27
-                            Height = 27
-                            ExplicitTop = 27
-                            ExplicitHeight = 27
-                          end
-                          inherited DeleteLibraryButton: TButton
-                            Top = 54
-                            ExplicitTop = 54
-                          end
-                          inherited RenameRuntimeLibraryButton: TButton
-                            Top = 79
-                            Height = 27
-                            ExplicitTop = 79
-                            ExplicitHeight = 27
-                          end
-                          inherited AddClassButton: TButton
-                            Top = 106
-                            Height = 26
-                            ExplicitTop = 106
-                            ExplicitHeight = 26
-                          end
                         end
                         inherited GroupBox1: TGroupBox
                           Height = 291
@@ -675,18 +631,24 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         end
                         inherited GroupBox2: TGroupBox
                           Top = 298
-                          Height = 88
+                          Height = 196
                           ExplicitTop = 298
-                          ExplicitHeight = 88
+                          ExplicitHeight = 196
                           inherited LibComponentListStringGrid: TStringGrid
                             Top = 16
-                            Height = 70
+                            Height = 178
                             OnClick = UClassesListFrame1LibComponentListStringGridClick
                             ExplicitTop = 16
-                            ExplicitHeight = 70
+                            ExplicitHeight = 178
                           end
                         end
                       end
+                    end
+                    inherited SearchEdit: TEdit
+                      Width = 534
+                      Height = 22
+                      ExplicitWidth = 534
+                      ExplicitHeight = 22
                     end
                   end
                 end

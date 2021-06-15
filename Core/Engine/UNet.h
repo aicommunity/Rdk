@@ -532,10 +532,17 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
  UEPtr<UComponent> proto=Storage->TakeObject(class_name);
  if(!proto)
  {
-  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in storage. ClassName=")+class_name);
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in the storage. ClassName=")+class_name);
   return comp;
  }
+
  comp=dynamic_pointer_cast<T>(proto);
+ if(!comp)
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - component found in the storage but cannot convert to ")+std::string(typeid(T).name())+std::string(". ClassName=")+class_name);
+  return comp;
+ }
+
  comp->SetName(component_name);
  comp->SetTimeStep(TimeStep);
  if(!AddComponent(comp, pointer))

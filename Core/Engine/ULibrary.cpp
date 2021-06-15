@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include "ULibrary.h"
 #include "UNet.h"
+#include "UMockUNet.h"
 #include "UComponentFactory.h"
 
 namespace RDK {
@@ -179,6 +180,13 @@ const vector<string>& ULibrary::GetIncomplete(void) const
 {
  return Incomplete;
 }
+
+// Очищает оба списка Complete и Incomplete
+void ULibrary::ClearIncompleteAndComplete(void)
+{
+    Incomplete.clear();
+    Complete.clear();
+}
 // --------------------------
 
 // --------------------------
@@ -206,8 +214,8 @@ int ULibrary::Upload(UStorage *storage)
  count=int(Complete.size());
 
  //Оставление ссылки на Storage для RunTime библиотек
- if(Type != 2)
-    Storage=0;
+// if(Type != 2)
+//    Storage=0;
  return count;
 }
 // --------------------------
@@ -379,10 +387,56 @@ void ULibrary::RemoveClassFromCompletedList(const string &name)
  if(I == Incomplete.end())
   Incomplete.push_back(name);
 }
+
+/// Заполняет библиотеку-заглушку всеми XML описаниями собственных компонентов
+void ULibrary::FillMockLibrary(UMockLibrary* lib)
+{
+    USerStorageXML ComponentStruct;
+    ComponentStruct.Create("stub");
+
+    // Проход по всем успешно созданным классам
+    for(vector<string>::iterator it = Complete.begin(); it !=  Complete.end(); ++it)
+    {
+        UEPtr<UComponent> obj;
+        try{
+        obj = Storage->TakeObject(*it);
+        }
+        catch(UException &ex)
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+            continue;
+        }
+
+        UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(obj);
+
+        if(!cont)
+            continue;
+
+        if(!ComponentStruct.Destroy())
+        {
+            Storage->ReturnObject(cont);
+            continue;
+        }
+
+        // Сохранение XML всего описания компонента
+        if(!cont->SaveComponent(&ComponentStruct, true, ptAny|pgPublic))
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while saving XML description of class " + *it);
+            Storage->ReturnObject(cont);
+            continue;
+        }
+
+        lib->AddNewCompDescription(ComponentStruct);
+        Storage->ReturnObject(cont);
+    }
+
+    Storage->FreeObjectsStorage();
+
+    return;
+}
 // --------------------------
-
-
-
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -403,7 +457,6 @@ URuntimeLibrary::~URuntimeLibrary(void)
 // Методы управления данными
 // --------------------------
 
-
 /// Возращает путь библиотеки
 const std::string& URuntimeLibrary::GetLibPath() const
 {
@@ -421,7 +474,7 @@ bool URuntimeLibrary::LoadCompDescriptions()
         return false;
 
     ClassesStructures.resize(comp_descriptions.size());
-    for(int i = 0 ; i < comp_descriptions.size(); i++)
+    for(size_t i = 0 ; i < comp_descriptions.size(); i++)
     {
         // Парсинг текущего файла
         CurrentComponentStruct.LoadFromFile(LibPath+"/"+comp_descriptions[i],"");
@@ -445,12 +498,11 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
 
     // XML парсер ведет себя проблемно.
     // И если делать Destroy() не инициализоварованого, то ломается. Поэтому сначала Create заглушки
-    CurrentComponentStruct.Create("stub");
-
-    CurrentComponentStruct.Destroy();
+	CurrentComponentStruct.Create("stub");
+	CurrentComponentStruct.Destroy();
 
     // Сохранение XML и добавление нового поля RTname с именем
-    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptPubParameter))
+    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptAny|pgPublic))
         return false;
 
     CurrentComponentStruct.SelectNode(cont->GetName());
@@ -513,6 +565,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
     return true;
 }
 
+/// Удаляет директорию библиотеки вместе со всеми файлами
 bool URuntimeLibrary::DeleteOwnDirectory(void)
 {
     return (!RDK::DeleteDirectory(LibPath.c_str()));
@@ -551,9 +604,9 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
 // Не требуется предварительная очистка массива и уборка памяти.
 void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 {
-    int num_classes = ClassesStructures.size();
+    size_t num_classes = ClassesStructures.size();
 
-    for(int i=0;i<num_classes;i++)
+    for(size_t i=0;i<num_classes;i++)
     {
         try
         {
@@ -577,6 +630,136 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 }
 // --------------------------
 
+
+
+// Библиотеки-заглушки
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UMockLibrary::UMockLibrary(const string &name, const string &version, const string& path)
+ : ULibrary(name,version,3), LibPath(path)
+{
+
+}
+
+UMockLibrary::~UMockLibrary(void)
+{
+
+}
+
+// Добавляет описание компонента в ClassesStructures
+bool UMockLibrary::AddNewCompDescription(USerStorageXML& descript)
+{
+    std::string added;
+    if(!descript.Save(added))
+        return false;
+    ClassesStructures.push_back(added);
+    return true;
+}
+
+bool UMockLibrary::SaveLibraryToFile()
+{
+    std::string all_comps;
+
+    // Сложение всех строчек
+    for(std::vector<std::string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
+    {
+        all_comps += (*it)+"\n";
+    }
+
+    CurrentComponentStruct.Create("a");
+    CurrentComponentStruct.Destroy();
+
+    CurrentComponentStruct.Create("MockLib");
+    CurrentComponentStruct.SelectRoot();
+
+    CurrentComponentStruct.SetNodeAttribute("Name", Name);
+    CurrentComponentStruct.SetNodeAttribute("Version", Version);
+    CurrentComponentStruct.SetNodeAttribute("Revision", sntoa(Revision));
+    CurrentComponentStruct.SetNodeAttribute("CoreVersion",GetGlobalVersion().ToStringFull());
+
+    // XML со всеми компонентами
+    USerStorageXML CompStruct;
+    CompStruct.Load(all_comps,"");
+
+    // Добавление компонентов в XML библиотеки
+    CurrentComponentStruct.LoadToNode(CompStruct,true);
+
+    std::string file_name = LibPath + "/" + Name + ".xml";
+    CurrentComponentStruct.SaveToFile(file_name);
+
+    return true;
+}
+
+void UMockLibrary::LoadFromXML(USerStorageXML& xml)
+{
+    xml.SelectRoot();
+
+    // Создание описаний компонентов поочередно
+    for(int i = 0, size = xml.GetNumNodes() ; i < size; i++)
+    {
+        if(!xml.SelectNode(i))
+            continue;
+
+        std::string add;
+
+        if(!xml.SaveFromNode(add))
+            continue;
+
+        ClassesStructures.push_back(add);
+        xml.SelectUp();
+    }
+
+}
+
+/// Создает компонент из описания xml
+UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage *storage)
+{
+    std::string class_name=xml.GetNodeAttribute("Class");
+
+    UEPtr<UMockUNet> mock = new UMockUNet(&xml,storage);
+
+    UEPtr<UNet> cont =dynamic_pointer_cast<UNet>(mock);
+
+    if(!cont)
+    {
+        delete mock;
+        return 0;
+    }
+
+    return cont;
+}
+
+// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+// Не требуется предварительная очистка массива и уборка памяти.
+void UMockLibrary::CreateClassSamples(UStorage *storage)
+{
+    int num_classes = int(ClassesStructures.size());
+
+    for(int i=0;i<num_classes;i++)
+    {
+        try
+        {
+            CurrentComponentStruct.Load(ClassesStructures[i],"");
+
+            UEPtr<UContainer> cont=CreateClassSample(CurrentComponentStruct,Storage);
+
+            if(!cont)
+                return;
+            CurrentComponentStruct.Load(ClassesStructures[i],"");
+
+            std::string class_name=CurrentComponentStruct.GetNodeAttribute("Class");
+
+            UploadClass(class_name,cont);
+        }
+        catch(UException &ex)
+        {
+            if(Storage->GetLogger())
+                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+        }
+    }
+}
 
 }
 

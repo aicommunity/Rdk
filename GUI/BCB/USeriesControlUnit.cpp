@@ -237,6 +237,8 @@ void __fastcall TUSeriesControlForm::OutterCPanelDblClick(TObject *Sender)
   return;
 
  InnerCPanel->Color=ColorDialog1->Color;
+ InnerCPanel->Repaint();
+ InnerCPanel->Update();
  WatchList[StrToInt(StringGrid2->Cells[0][StringGrid2->Row])].Color
                    =ColorDialog1->Color;
  ColorsChanged=true;
@@ -433,12 +435,14 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	 ++I;
 	}
 
-   I=DelWatchList.begin();
-   while(I != DelWatchList.end())
+   I=DelWatchList.end();
+   if(I !=DelWatchList.begin())
+    do
 	{
+	 --I;
 	 GrSender->Del(I->first);
-	 ++I;
 	}
+	while(I != DelWatchList.begin());
 
   }
  else
@@ -561,8 +565,35 @@ void __fastcall TUSeriesControlForm::Edit4Exit(TObject *Sender)
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   return;
 
- WatchList[StrToInt(StringGrid2->Cells[0][StringGrid2->Row])].YShift
-                   =StrToFloat(Edit4->Text);
+ int index=-1;
+
+ try
+ {
+  index=StrToInt(StringGrid2->Cells[0][StringGrid2->Row]);
+ }
+ catch(EConvertError &)
+ {
+  return;
+ }
+
+ if(index<0)
+  return;
+
+ double yshift=0.0;
+
+ try
+ {
+  yshift=StrToFloat(Edit4->Text);
+ }
+ catch(EConvertError &)
+ {
+  return;
+ }
+
+ if(WatchList.find(index) == WatchList.end())
+  return;
+
+ WatchList[index].YShift=yshift;
  SeriesChanged=true;
 }
 //---------------------------------------------------------------------------
@@ -627,7 +658,8 @@ void __fastcall TUSeriesControlForm::DelPointButtonClick(TObject *Sender)
 
  map<int,TUWatchInfo>::iterator I;
 
- I=WatchList.find(StrToInt(StringGrid2->Cells[0][StringGrid2->Row]));
+ int del_index=StrToInt(StringGrid2->Cells[0][StringGrid2->Row]);
+ I=WatchList.find(del_index);
  DelWatchList[I->first]=I->second;
  WatchList.erase(I);
  UpdateInfo();

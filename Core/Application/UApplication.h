@@ -21,7 +21,6 @@
 #include "UChannelProfiler.h"
 #include "UTestManager.h"
 
-
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"
 #endif
@@ -51,8 +50,14 @@ std::string WorkDirectory;
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 std::string ConfigsMainPath;
 
+/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+std::string LibrariesPath;
+
 /// Относительный путь до папки с хранилищем проектов (пока обычно /Database)
 std::string DatabaseMainPath;
+
+/// Абсолютный путь до папки монтирования хранилища
+std::string StorageMountPoint;
 
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 std::string ModelsMainPath;
@@ -94,6 +99,14 @@ bool AppIsInit;
 ///Список имен и описаний xml файлов из папки с хранилищем моделей (обычно /Bin/Models)
 std::list<StandartXMLInCatalog> xmlInCatalog;
 
+/// Способ сборки хранилища:
+// 1 -  обычная сборка. Сборка статических библиотек, затем динамических. Все компоненты рабочие (не заглушки)
+// 2 -  поочередная сборка. Сборка статических, далее библиотек-заглушек, затем динамических.
+//      Все компоненты, которые смогли собраться рабочими - рабочие.
+//      Остальные (которые есть в библиотеках-заглушка, но нет сейчас в хранилище) - заглушки.
+// 3 -  сборка только заглушек. Сборка библиотек-заглушек, затем динамических. Все компоненты заглушки (не рабочие)
+int StorageBuildMode;
+
 /// Фиксированный путь до логов
 /// Используется вместо системного пути если задан
 std::string FixedLogPath;
@@ -120,6 +133,9 @@ UEPtr<UServerControl> ServerControl;
 
 /// Менеджер тестов
 UEPtr<UTestManager> TestManager;
+
+/// Деплоер проекта
+UEPtr<UProjectDeployer> ProjectDeployer;
 
 protected: // Временные переменные
 /// Заголовок приложения
@@ -159,6 +175,13 @@ bool SetConfigsMainPath(const std::string &value);
 
 const std::string& GetDatabaseMainPath(void) const;
 bool SetDatabaseMainPath(const std::string &value);
+
+const std::string& GetStorageMountPoint(void) const;
+bool SetStorageMountPoint(const std::string &value);
+
+/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTLibs)
+const std::string& GetLibrariesPath(void) const;
+bool SetLibrariesPath(const std::string &value);
 
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 const std::string& GetModelsMainPath(void) const;
@@ -241,7 +264,15 @@ bool IsCloseAfterTest(void) const;
 
 /// Приложение инициализированно
 bool IsInit(void) const;
+
+/// Установка необходимого режима сборки
+void SetStorageBuildMode(int mode);
+
+/// Получение текущего режима сборки
+int GetStorageBuildMode();
 // --------------------------
+/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+void CreateSaveMockLibs();
 
 // --------------------------
 // Методы инициализации
@@ -284,6 +315,10 @@ virtual bool SetServerControl(const UEPtr<UServerControl> &value);
 /// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
 UEPtr<UTestManager> GetTestManager(void);
 virtual bool SetTestManager(const UEPtr<UTestManager> &value);
+
+/// Деплоер проекта (под кончретную задачу)
+UEPtr<UProjectDeployer> GetProjectDeployer(void);
+virtual bool SetProjectDeployer(const UEPtr<UProjectDeployer> &value);
 
 /// Инициализирует приложение
 virtual bool Init(void);
@@ -329,6 +364,9 @@ virtual bool CloseProject(void);
 
 /// Клонирует проект в новое расположение
 virtual bool CloneProject(const std::string &filename);
+
+/// Переименовывает папку проекта
+virtual bool RenameProject(const std::string &filename);
 
 virtual void ReloadParameters(void);
 

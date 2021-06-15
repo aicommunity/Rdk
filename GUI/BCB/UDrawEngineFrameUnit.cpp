@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
+#include <Vcl.FileCtrl.hpp>
 #pragma hdrstop
 
 //#include "UComponentsControlFormUnit.h"
@@ -11,6 +12,10 @@
 #include "UComponentLinksFormUnit.h"
 #include "UComponentsListFrameUnit.h"
 #include "UComponentsLinksHintFormUnit.h"
+
+
+/// Экзепляр класса приложения
+extern RDK::UApplication RdkApplication;
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -113,6 +118,8 @@ void TUDrawEngineFrame::AUpdateInterface(void)
   new_bmp_height=new_img_height=ScrollBox->ClientHeight-horz_sb_size;
  }
 
+
+ ShowBGLinesCheckBox->Checked=DrawEngine.GetShowBackgroundLines();
 
  int rec_width(0),rec_height(0);
  DrawEngine.CalcRecommendSize(rec_width,rec_height);
@@ -385,7 +392,7 @@ void __fastcall TUDrawEngineFrame::ImageMouseUp(TObject *Sender, TMouseButton Bu
   if(name != "")
   {
    if(ComponentsListFrame)
-    ComponentsListFrame->SetSelectedComponentName(name);
+	ComponentsListFrame->SetSelectedComponentName(name);
    SaveComponentPosition(name);
    UpdateInterface();
   }
@@ -453,6 +460,82 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
  std::string classname=AnsiString(UClassesListFrame->GetSelectedName()).c_str();
  if(classname.empty())
   return;
+
+ if(!RdkApplication.GetProjectOpenFlag())
+ {
+  if(Application->MessageBox(L"Config not created. Auto-create one-channel configuration and model from this component?",L"Info",MB_YESNO) != ID_YES)
+   return;
+
+  std::string file_name;
+
+  std::string default_path=RdkApplication.GetWorkDirectory()+"..\\..\\Configs";
+
+  if(!DirectoryExists(default_path.c_str()))
+  {
+   default_path=RdkApplication.GetWorkDirectory()+"..\\..\\..\\Configs";
+   if(!DirectoryExists(default_path.c_str()))
+   {
+	default_path=RdkApplication.GetWorkDirectory();
+   }
+  }
+
+  String path_dialog=default_path.c_str();
+  if(Application->MessageBox(L"Autocreate configuration folder?",L"Info",MB_YESNO) == ID_YES)
+  {
+   time_t curr_time;
+   time(&curr_time);
+  /// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+   std::string folder=RDK::get_text_time(curr_time, '.', '_');
+   path_dialog+=String("\\Autocreate ")+folder.c_str();
+   if(RDK::CreateNewDirectory(AnsiString(path_dialog).c_str()) != 0)
+    return;
+  }
+  else
+  {
+   if(Win32MajorVersion >= 6)
+   {
+	FileOpenDialog->DefaultFolder=default_path.c_str();
+	FileOpenDialog->FileName=default_path.c_str();
+	if(FileOpenDialog->Execute())
+	{
+	 path_dialog=FileOpenDialog->FileName;
+	}
+	else
+	 return;
+   }
+   else
+   if(!SelectDirectory("Select project directory", "", path_dialog,TSelectDirExtOpts() << sdNewFolder << sdNewUI << sdShowEdit << sdValidateDir, this))
+   {
+	return;
+   }
+  }
+  std::string result_path=AnsiString(path_dialog.c_str()).c_str();
+
+  result_path+="\\Project.ini";
+  file_name=result_path;
+
+  RdkApplication.CreateProject(file_name, classname);
+
+  if(ComponentsListFrame)
+   ComponentsListFrame->UpdateInterface();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+
+  return;
+ }
+
+ //если модель не существует, спросить не создать ли ее
+ if(!Model_Check())
+ {
+  if(Application->MessageBox(L"Model not exist. Create new model from this class?",L"Info",MB_YESNO) == ID_YES)
+  {
+   //создать новую модель
+   Model_Create(classname.c_str());
+   if(ComponentsListFrame)
+	ComponentsListFrame->UpdateInterface();
+   RDK::UIVisualControllerStorage::UpdateInterface();
+  }
+  return;
+ }
 
  const char* pname=Model_AddComponent(ComponentName.c_str(), classname.c_str());
  if(pname)
@@ -683,14 +766,6 @@ void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMo
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineFrame::UClassesListFrameAddClassButtonClick(TObject *Sender)
-
-{
- UClassesListFrame->NewClassName="NewClass1";
- UClassesListFrame->NewComponentName=ComponentsListFrame->GetSelectedComponentName();
- UClassesListFrame->AddClassButtonClick(Sender);
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUDrawEngineFrame::StartMoving1Click(TObject *Sender)
 {
@@ -889,6 +964,29 @@ void __fastcall TUDrawEngineFrame::Clone1Click(TObject *Sender)
 {
  if(ComponentsListFrame)
   ComponentsListFrame->Clone1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::Droptoruntimelibrary1Click(TObject *Sender)
+{
+ std::string component_name=DrawEngine.FindComponent(PopupX,PopupY);
+ if(component_name.empty())
+  return;
+
+ if(Application->MessageBox(L"Are you sure to move selected component to runtime library",L"Error",MB_YESNO) != ID_YES)
+  return;
+
+ UClassesListFrame->NewComponentName=component_name;
+ UClassesListFrame->CreateNewClass1Click(Sender);
+ UClassesListFrame->NewComponentName="";
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::ShowBGLinesCheckBoxClick(TObject *Sender)
+{
+ //
+ DrawEngine.SetShowBackgroundLines(ShowBGLinesCheckBox->Checked);
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

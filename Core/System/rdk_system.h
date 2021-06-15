@@ -51,6 +51,9 @@ RDK_LIB_TYPE int FindFilesList(const std::string &path, const std::string &mask,
 /// Копирует файл
 RDK_LIB_TYPE int RdkCopyFile(const std::string &source_file, const std::string &dest_file);
 
+/// Перемещает файл
+RDK_LIB_TYPE int RdkMoveFile(const std::string &source_file, const std::string &dest_file);
+
 /// Копирует каталог с содержимым
 RDK_LIB_TYPE int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask);
 

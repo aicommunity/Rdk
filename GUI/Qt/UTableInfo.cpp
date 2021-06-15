@@ -12,7 +12,7 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     setAccessibleName("UTableInfo");
     ui->setupUi(this);
     //столбцы
-    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setColumnCount(6);
     //строки
     ui->tableWidget->setRowCount(0);
     // Разрешаем выделение только одного элемента
@@ -20,16 +20,17 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     // Разрешаем выделение построчно
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     // Разрешаем изменять ширину колонок
-    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableWidget->horizontalHeader()->setStretchFirstSection(true);
   //  ui->tableWidget->setColumnWidth(0, 200);
   //  ui->tableWidget->setColumnWidth(1, 40);
 
     //Заголовки
     QStringList headers;
-    headers<<"Component name"<<"Time, ms";
+    headers<<"Component name"<<"Min, ms"<<"Max, ms"<<"Avg, ms"<<"Min Int., ms"<<"Max Int., ms"<<"Avg Int., ms";
     ui->tableWidget->setHorizontalHeaderLabels(headers);
     //ui->tableWidget->setItem(0,0, new QTableWidgetItem("Full step"));
     //ui->tableWidget->setItem(1,0, new QTableWidgetItem("Model"));
+    ui->tableWidget->setColumnWidth(0, 200);
 
     //Добавление действий по правой кнопке
     addAction(ui->actionSelectComponent);
@@ -45,7 +46,7 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     connect(ui->actionAddGroupComponents, SIGNAL(triggered()), this, SLOT(slotAddGroupComponents()));
 
     //столбцы
-    ui->tableWidget_2->setColumnCount(2);
+    ui->tableWidget_2->setColumnCount(5);
     //строки
     ui->tableWidget_2->setRowCount(0);
     // Разрешаем выделение только одного элемента
@@ -53,13 +54,14 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     // Разрешаем выделение построчно
     ui->tableWidget_2->setSelectionBehavior(QAbstractItemView::SelectRows);
     // Разрешаем изменять ширину колонок
-    ui->tableWidget_2->horizontalHeader()->setStretchLastSection(true);
-    ui->tableWidget_2->setColumnWidth(0, 200);
-    ui->tableWidget_2->setColumnWidth(1, 40);
+//    ui->tableWidget_2->horizontalHeader()->setStretchFirstSection(true);
+//    ui->tableWidget_2->setColumnWidth(0, 200);
+//    ui->tableWidget_2->setColumnWidth(1, 40);
 
     QStringList headers_gui;
-    headers<<"Gui Widget name"<<"Time, ms";
+    headers<<"Gui Widget name"<<"Min, ms"<<"Max, ms"<<"Avg, ms"<<"Interval, ms";
     ui->tableWidget_2->setHorizontalHeaderLabels(headers_gui);
+    ui->tableWidget_2->setColumnWidth(0, 200);
 
 }
 
@@ -99,7 +101,12 @@ void UTableInfo::AUpdateInterface()
         ui->tableWidget->setItem(i,0, new QTableWidgetItem(a));
 
         //ui->tableWidget->setItem(i,0, new QTableWidgetItem(cI->first.c_str()));
-        ui->tableWidget->setItem(i,1, new QTableWidgetItem(QString::number(cI->second.AvgDuration*1000)));
+        ui->tableWidget->setItem(i,1, new QTableWidgetItem(QString::number(cI->second.MinDuration*1000)));
+        ui->tableWidget->setItem(i,2, new QTableWidgetItem(QString::number(cI->second.MaxDuration*1000)));
+        ui->tableWidget->setItem(i,3, new QTableWidgetItem(QString::number(cI->second.AvgDuration*1000)));
+        ui->tableWidget->setItem(i,4, new QTableWidgetItem(QString::number(cI->second.MinInterval*1000)));
+        ui->tableWidget->setItem(i,5, new QTableWidgetItem(QString::number(cI->second.MaxInterval*1000)));
+        ui->tableWidget->setItem(i,6, new QTableWidgetItem(QString::number(cI->second.AvgInterval*1000)));
     }
 
     // Обновляем список производительности Gui
@@ -122,8 +129,10 @@ void UTableInfo::AUpdateInterface()
         a.remove("\r\n");
         ui->tableWidget_2->setItem(i,0, new QTableWidgetItem(a));
 
-        //ui->tableWidget->setItem(i,0, new QTableWidgetItem(cI->first.c_str()));
-        ui->tableWidget_2->setItem(i,1, new QTableWidgetItem(QString::number(gI->second.AvgDuration*1000)));
+        ui->tableWidget_2->setItem(i,1, new QTableWidgetItem(QString::number(gI->second.MinDuration*1000)));
+        ui->tableWidget_2->setItem(i,2, new QTableWidgetItem(QString::number(gI->second.MaxDuration*1000)));
+        ui->tableWidget_2->setItem(i,3, new QTableWidgetItem(QString::number(gI->second.AvgDuration*1000)));
+        ui->tableWidget_2->setItem(i,4, new QTableWidgetItem(QString::number(gI->second.AvgInterval*1000)));
     }
 
 }

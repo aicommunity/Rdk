@@ -1286,7 +1286,7 @@ ULProperty<T,OwnerT,type>& operator = (const T &value)
 
 
 };
-                               /*
+
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
 class UPropertyParam: public UPropertyLocal<T,OwnerT,type>
 {

@@ -24,8 +24,13 @@
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
 #include"UWatch.h"
+#include "UTcpServerControlWidget.h"
 //////////////////////////
-//#include "UVideoAnalyticsSimpleSettingsWidget.h"
+#include "UCurlFtpClientTestWidget.h"
+
+#ifndef RDK_DISABLE_EXT_GUI
+#include "UVideoAnalyticsSimpleSettingsWidget.h"
+#endif
 
 namespace Ui {
 class UGEngineControllWidget;
@@ -77,8 +82,12 @@ public:
     ///Показывает виджет с переключением каналов
     void showChannelsWidget(void);
 
-    //void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
+    ///Загрузить проект из внешнего источника (пока только из конфигуратора на основе СУБД)
+    void loadProjectExternal(const QString &config_path);
 
+#ifndef RDK_DISABLE_EXT_GUI
+    void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
+#endif
 signals:
     void showSimpleSettings();
 
@@ -97,18 +106,18 @@ public slots:
     // file menu
     void actionLoadConfig();
     void actionCreateConfig();
+    void actionCreateSimple();
     void actionSaveConfig();
     void actionCloseConfig();
     void actionCopyConfig();
+    void actionAutoCopyConfig();
+    void actionRenameConfig();
     void actionExit();
     void actionConfigOptions();
-
-    //chanels menu
-    void actionAddNew();
-    void actionInsert();
-    void actionDeleteLast();
-    void actionDeleteAll();
-    void actionClone();
+    void actionCreateSaveMockLibs();
+    void actionBuildMode1();
+    void actionBuildMode2();
+    void actionBuildMode3();
 
 
     // calculate menu
@@ -126,15 +135,21 @@ public slots:
     void actionChannelsControl();
     void actionLogger();
     void actionTestCreator();
-    void actionWatchWindow();///<-----------
+    void actionWatchWindow();
     void actionNewWatches();
     void actionProfiling();
-    //void actionVASimpleSettings();
+    void actionTcpServer();
+#ifndef RDK_DISABLE_EXT_GUI
+    void actionVASimpleSettings();
+#endif
+    void actionFtpTest();
 
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
 
     void closeEvent(QCloseEvent *event);
+
+    void updateChannelsVisibility();
 
 private:
     // data
@@ -158,7 +173,12 @@ private:
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
-    //UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+    QMainWindow *tcpServerControlWindow;
+    UTcpServerControlWidget *tcpServerControlWidget;
+#ifndef RDK_DISABLE_EXT_GUI
+    UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
+#endif
+    UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
     /// Массив виджетов отображения картинок
     std::vector<USubTabDescriptionImages> imagesVector;
@@ -198,6 +218,11 @@ private:
 
     /// Удаляет виджет отображения графиков
     void delWatchesWidged(size_t index);
+
+    /// Обновляет схему модели, список классов
+    /// и текст в меню Choose Storage Build Mode [N]
+    /// Вызов после смены режима сборки (пересборки)
+    void updateShemeClassesList();
 
 };
 

@@ -14,7 +14,14 @@ DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
 DEFINES += CURL_STATICLIB
+
+windows {
+DEFINES += _MBCS
+DEFINES -= _MBCS
+DEFINES -= _UNICODE
+DEFINES -= UNICODE
 INCLUDEPATH += $$PWD/../../include
+}
 
 unix {
     DESTDIR = $$PWD/../../../../../Bin/Platform/Unix/Lib.Qt
@@ -23,7 +30,7 @@ unix {
 windows {
     DESTDIR = $$PWD/../../../../../Bin/Platform/Win/Lib.Qt
 
-#LIBS +=   -lWldap32
+ LIBS +=   -lWldap32 -lWs2_32 -lCrypt32
 }
 
 HEADERS += \

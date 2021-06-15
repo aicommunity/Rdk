@@ -5,12 +5,18 @@
 #-------------------------------------------------
 
 QT       -= gui
+QT       += network
 
 TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
 
 include(RdkDefines.pri)
+
+contains(DEFINES, RDK_USE_SQL)
+{
+ QT += sql
+}
 
 #DEFINES += LIBRDK_LIBRARY_EXPORT
 #DEFINES += RDK_UNICODE_RUN
@@ -20,38 +26,34 @@ VERSION = $$system(hg parents --template '{rev}')
 DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \
+    ../../../Core/Engine/UBasePropCreator.cpp \
+    ../../../Core/Engine/UBasePropCreatorStd.cpp \
+    ../../../Core/Engine/UBasePropCreatorMatrix.cpp \
+    ../../../Core/Engine/UBasePropCreatorTempl.cpp \
+    ../../../Core/Engine/UBasePropCreatorVector.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
     ../../../Core/Engine/UADItem.cpp \
     ../../../Core/Engine/UAModel.cpp \
-    ../../../Core/Engine/UBinaryEnvSerialize.cpp \
     ../../../Core/Engine/UComponent.cpp \
     ../../../Core/Engine/UComponentDescription.cpp \
     ../../../Core/Engine/UConnector.cpp \
     ../../../Core/Engine/UContainer.cpp \
     ../../../Core/Engine/UContainerDescription.cpp \
     ../../../Core/Engine/UController.cpp \
-    ../../../Core/Engine/UELockPtr.cpp \
-    ../../../Core/Engine/UELockVar.cpp \
     ../../../Core/Engine/UEngine.cpp \
     ../../../Core/Engine/UEnvException.cpp \
     ../../../Core/Engine/UEnvironment.cpp \
     ../../../Core/Engine/UEnvSupport.cpp \
     ../../../Core/Engine/UEPtr.cpp \
     ../../../Core/Engine/UItem.cpp \
-    ../../../Core/Engine/UItemData.cpp \
     ../../../Core/Engine/ULibrary.cpp \
-    ../../../Core/Engine/ULocalProperty.cpp \
     ../../../Core/Engine/ULogger.cpp \
     ../../../Core/Engine/UModule.cpp \
     ../../../Core/Engine/UNet.cpp \
-    ../../../Core/Engine/UPointer.cpp \
+    ../../../Core/Engine/UMockUNet.cpp \
     ../../../Core/Engine/UProperty.cpp \
-    ../../../Core/Engine/UPropertyInput.cpp \
-    ../../../Core/Engine/UPropertyIO.cpp \
-    ../../../Core/Engine/UPropertyOutput.cpp \
-    ../../../Core/Engine/UShare.cpp \
     ../../../Core/Engine/UComponentFactory.cpp \
     ../../../Core/Engine/UStorage.cpp \
     ../../../Core/Engine/UTime.cpp \
@@ -68,24 +70,15 @@ SOURCES += \
     ../../../Core/Graphics/UGraphicsBinarySerialize.cpp \
     ../../../Core/Graphics/UGraphicsIO.cpp \
     ../../../Core/Graphics/UGraphicsXMLSerialize.cpp \
-    ../../../Core/Math/MCamera.cpp \
     ../../../Core/Math/MCorrelation.cpp \
-    ../../../Core/Math/MDKalmanFilter.cpp \
-    ../../../Core/Math/MGeometry.cpp \
-    ../../../Core/Math/MGraphics.cpp \
-    ../../../Core/Math/MKalmanFilter.cpp \
     ../../../Core/Math/MMatrix.cpp \
     ../../../Core/Math/MMatrixBase.cpp \
-    ../../../Core/Math/MUBinarySerialize.cpp \
-    ../../../Core/Math/MUIOStream.cpp \
     ../../../Core/Math/MUXMLSerialize.cpp \
-    ../../../Core/Math/MVector.cpp \
     ../../../Core/Math/UMath.cpp \
     ../../../Core/Math/UMath_lite.cpp \
     ../../../Core/Serialize/Serialize.cpp \
     ../../../Core/Serialize/Serialize_lite.cpp \
     ../../../Core/Serialize/UBinaryStdSerialize.cpp \
-    ../../../Core/Serialize/UIOStream.cpp \
     ../../../Core/Serialize/USerStorage.cpp \
     ../../../Core/Serialize/USerStorageBinary.cpp \
     ../../../Core/Serialize/USerStorageXML.cpp \
@@ -96,23 +89,18 @@ SOURCES += \
     ../../../Core/System/Qt/UGenericMutex.qt.cpp \
     ../../../Core/System/Qt/USharedMemoryLoader.qt.cpp \
     ../../../Core/Utilities/UException.cpp \
-    ../../../Core/Utilities/UIniFile.cpp \
     ../../../Core/Utilities/UPtr.cpp \
-    ../../../Core/Utilities/URegistry.cpp \
     ../../../Core/Utilities/USupport.cpp \
     ../../../Core/Utilities/Utilities.cpp \
     ../../../Core/Utilities/Utilities_lite.cpp \
     ../../../Core/Utilities/UTimeStamp.cpp \
     ../../../Core/Utilities/UTransferPacket.cpp \
-    ../../../Core/Utilities/UTree.cpp \
     ../../../ThirdParty/ThirdParty.cpp \
     ../../../ThirdParty/xmlParser/xmlParser.cpp \
     ../../../ThirdParty/jpeg/JpegIntegration.cpp \
     ../../../ThirdParty/jpeg/jpgd.cpp \
     ../../../ThirdParty/jpeg/jpge.cpp \
     ../../../Deploy/Include/rdk_rpc.cpp \
-    ../../../Deploy/Include/myrdk.cpp \
-    ../../../Deploy/Include/rdk.cpp \
     ../../../Deploy/Include/rdk_cpp_initdll.cpp \
     ../../../Deploy/Include/rdk_engine_support.cpp \
     ../../../Deploy/Include/rdk_exceptions.ansi.cpp \
@@ -122,9 +110,7 @@ SOURCES += \
     ../../../Deploy/Include/rdk_new.cpp \
     ../../../Core/Application/UIVisualController.cpp \
     ../../../Core/Engine/ULoggerEnv.cpp \
-    ../../../Core/Application/UAppCore.cpp \
     ../../../Core/Application/UApplication.cpp \
-    ../../../Core/Application/UBroadcasterInterface.cpp \
     ../../../Core/Application/UChannelProfiler.cpp \
     ../../../Core/Application/UEngineControl.cpp \
     ../../../Core/Application/UEngineControlThread.cpp \
@@ -140,16 +126,21 @@ SOURCES += \
     ../../../Core/Application/UServerControl.cpp \
     ../../../Core/Application/UServerTransport.cpp \
     ../../../Core/Application/UServerTransportTcp.cpp \
+    ../../../Core/Application/Qt/UServerTransportTcpQt.cpp \
     ../../../Core/Application/UTestManager.cpp \
     ../../../Core/System/Gcc/pevents.cpp \
     ../../../Core/Engine/UComponentFactory.cpp \
     ../../../Deploy/Include/rdk_version.cpp \
     ../../../Core/Application/UProjectDeployer.cpp \
-    ../../../Core/Application/Qt/UProjectDeployerQt.cpp \
-    ../../../Core/Application/UServerTransportHttp.cpp \
     ../../../Core/Application/UServerTransportHttp.cpp
 
 HEADERS +=\
+    ../../../Core/Engine/UBasePropCreator.h \
+    ../../../Core/Engine/UBasePropCreatorStd.h \
+    ../../../Core/Engine/UBasePropCreatorMatrix.h \
+    ../../../Core/Engine/UBasePropCreatorTempl.h \
+    ../../../Core/Engine/UBasePropCreatorVector.h \
+    ../../../Core/Engine/UCreatorPropTemplate.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
@@ -176,6 +167,7 @@ HEADERS +=\
     ../../../Core/Engine/ULogger.h \
     ../../../Core/Engine/UModule.h \
     ../../../Core/Engine/UNet.h \
+    ../../../Core/Engine/UMockUNet.h \
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
     ../../../Core/Engine/UPropertyInput.h \
@@ -267,14 +259,22 @@ HEADERS +=\
     ../../../Core/Application/UServerControl.h \
     ../../../Core/Application/UServerTransport.h \
     ../../../Core/Application/UServerTransportTcp.h \
+    ../../../Core/Application/Qt/UServerTransportTcpQt.h \
     ../../../Core/Application/UTestManager.h \
     ../../../Core/System/Gcc/pevents.h \
     ../../../Core/Engine/UComponentFactory.h \
     ../../../Deploy/Include/rdk_version.h \
     ../../../Core/Application/UProjectDeployer.h \
-    ../../../Core/Application/Qt/UProjectDeployerQt.h \
-    ../../../Core/Application/UServerTransportHttp.h \
     ../../../Core/Application/UServerTransportHttp.h
+
+contains(DEFINES, RDK_USE_SQL)
+{
+SOURCES += \
+    ../../../Core/Application/Qt/UProjectDeployerQt.cpp # \
+
+HEADERS +=\
+    ../../../Core/Application/Qt/UProjectDeployerQt.h # \
+}
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
@@ -282,5 +282,6 @@ unix {
 
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
+    QMAKE_CXXFLAGS += /bigobj
 }
 

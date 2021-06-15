@@ -1,3 +1,6 @@
+#ifndef UCOMPONENT_FACTORY_CPP
+#define UCOMPONENT_FACTORY_CPP
+
 #include "UComponentFactory.h"
 
 namespace RDK
@@ -147,3 +150,5 @@ UComponentAbstractFactory::UComponentAbstractFactory(UStorage* storage)
 
 
 }
+
+#endif

@@ -25,6 +25,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 {
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
+    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
 
     application = app;
 
@@ -41,13 +42,18 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     createConfigurationWizardWidget = NULL;
     createTestWidget = NULL;
     statusPanel = NULL;
-    //videoAnalyticsSimpleWidget=NULL;
+#ifndef RDK_DISABLE_EXT_GUI
+    videoAnalyticsSimpleWidget=NULL;
+#endif
     graphWindowWidget=NULL;
     graphWindow=NULL;
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
     watchFormWidget=NULL;
     watchWindow = NULL;
+    tcpServerControlWindow=NULL;
+    tcpServerControlWidget=0;
+    curlFtpClientTestWidget=NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -103,31 +109,55 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     rect.setWidth(50);
     channels->setGeometry(rect);
     ui->dockWidgetChannels->setWidget(channels);
+    ui->dockWidgetChannels->hide();
+
+    //channels menu actions:
+    connect(ui->actionAddCh, SIGNAL(triggered(bool)), channels, SLOT(actionAddChannel()));
+    connect(ui->actionInsertCh, SIGNAL(triggered(bool)), channels, SLOT(actionInsertChannel()));
+    connect(ui->actionDeleteSelectedCh, SIGNAL(triggered(bool)), channels, SLOT(actionDeleteSelectedChannel()));
+    connect(ui->actionCloneCh, SIGNAL(triggered(bool)), channels, SLOT(actionCloneChannel()));
+    connect(ui->actionStartCh, SIGNAL(triggered(bool)), channels, SLOT(actionStartChannel()));
+    connect(ui->actionPauseCh, SIGNAL(triggered(bool)), channels, SLOT(actionPauseChannel()));
+    connect(ui->actionResetCh, SIGNAL(triggered(bool)), channels, SLOT(actionResetChannel()));
+
+    connect(channels, SIGNAL(updateVisibility()), this, SLOT(updateChannelsVisibility()));
+
 
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
 
+    /*
     graphWindowWidget = new UGraphWidget(this, application);
 //    ui->dockWidgetGraph->setWidget(graphWindowWidget);
     graphWindowWidget->setWindowTitle("Graph");
        graphWindowWidget->hide();
     ui->dockWidgetGraph->hide();
+    */
 
     watchFormWidget= new UWatchFormWidget(this, application);
     watchFormWidget->setWindowTitle("Watches");
     watchFormWidget->hide();
 
+    // hide profiling widget by default
     profilingWindowWidget = new UTableInfo(this, application);
     ui->dockWidgetProfiling->setWidget(profilingWindowWidget);
     profilingWindowWidget->setWindowTitle("Profiling");
+    ui->dockWidgetProfiling->hide();
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
 
     createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
 
+    tcpServerControlWidget = new UTcpServerControlWidget(this, application);
+    tcpServerControlWidget->hide();
+
     statusPanel = new UStatusPanel(this, application);
     ui->statusBar->addWidget(statusPanel, 1);
+
+    curlFtpClientTestWidget = new UCurlFtpClientTestWidget(NULL, application);
+    curlFtpClientTestWidget->hide();
+
     connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
     connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
             propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
@@ -136,22 +166,24 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     // file menu actions:
     connect(ui->actionCreateConfig, SIGNAL(triggered(bool)), this, SLOT(actionCreateConfig()));
+    connect(ui->actionCreateSimple, SIGNAL(triggered(bool)), this, SLOT(actionCreateSimple()));
     connect(ui->actionLoadConfig, SIGNAL(triggered(bool)), this, SLOT(actionLoadConfig()));
     connect(ui->actionSaveConfig, SIGNAL(triggered(bool)), this, SLOT(actionSaveConfig()));
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
+    connect(ui->actionAutocopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionAutoCopyConfig()));
+    connect(ui->actionRenameConfig, SIGNAL(triggered(bool)), this, SLOT(actionRenameConfig()));
 
     connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
 
+    updateShemeClassesList();
+    connect(ui->actionBuildMode1,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode1()));
+    connect(ui->actionBuildMode2,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode2()));
+    connect(ui->actionBuildMode3,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode3()));
+
+    connect(ui->actionCreateSaveMockLibs,  SIGNAL(triggered(bool)), this, SLOT(actionCreateSaveMockLibs()));
 
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
-
-    //chanels menu actions:
-    connect(ui->actionAddNew, SIGNAL(triggered(bool)), this, SLOT(actionAddNew()));
-    connect(ui->actionInsert, SIGNAL(triggered(bool)), this, SLOT(actionInsert()));
-    connect(ui->actionDeleteLast, SIGNAL(triggered(bool)), this, SLOT(actionDeleteLast()));
-    connect(ui->actionDeleteAll, SIGNAL(triggered(bool)), this, SLOT(actionDeleteAll()));
-    connect(ui->actionClone, SIGNAL(triggered(bool)), this, SLOT(actionClone()));
 
     // calculate menu actions:
     connect(ui->actionStart, SIGNAL(triggered(bool)), this, SLOT(actionStart()));
@@ -170,7 +202,11 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
     connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
+#ifndef RDK_DISABLE_EXT_GUI
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
+#endif
+    connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
+    connect(ui->actionFtpTest, SIGNAL(triggered(bool)), this, SLOT(actionFtpTest()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
     readSettings();
@@ -184,13 +220,15 @@ UGEngineControllWidget::~UGEngineControllWidget()
     delete ui;
 }
 
-/*void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
+#ifndef RDK_DISABLE_EXT_GUI
+void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget)
 {
     if(externalWidget!=NULL)
     {
         videoAnalyticsSimpleWidget = externalWidget;
     }
-}*/
+}
+#endif
 
 void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
 {
@@ -234,7 +272,7 @@ void UGEngineControllWidget::actionLoadConfig()
     {
       application->OpenProject(fileName.toLocal8Bit().constData());
 
-      this->setWindowTitle("project: " + fileName);
+      this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + fileName+"]");
 
       /*QStringList list = configFileName.split("/");
       list.pop_back();*/
@@ -250,6 +288,30 @@ void UGEngineControllWidget::actionLoadConfig()
     {
       QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
     }
+}
+
+void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
+{
+ try
+ {
+  application->OpenProject(config_path.toLocal8Bit().constData());
+
+  this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + config_path+"]");
+
+  /*QStringList list = configFileName.split("/");
+  list.pop_back();*/
+
+  //RDK::UIVisualControllerStorage::UpdateInterface(true);
+  //drawEngine->updateScheme(true);
+ }
+ catch(RDK::UException& e)
+ {
+  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+ }
+ catch(std::exception& e)
+ {
+  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
+ }
 }
 
 void UGEngineControllWidget::actionCreateConfig()
@@ -272,6 +334,74 @@ void UGEngineControllWidget::actionCreateConfig()
  }
 
  createConfigurationWizardWidget->show();
+ if(application->GetProjectOpenFlag())
+  this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + application->GetProjectPath().c_str()+application->GetProjectFileName().c_str()+"]");
+}
+
+void UGEngineControllWidget::actionCreateSimple()
+{
+  try
+  {
+    // Закрытие проекта
+    if(application->GetProjectOpenFlag())
+    {
+        if(QMessageBox::question(this, "Info", "Close current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+        {
+            return;
+        }
+        application->PauseChannel(-1);
+        application->CloseProject();
+    }
+
+    // Директория проектов
+    QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
+    QDir path1(default_path);
+    if(!path1.exists(default_path))
+    {
+        default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
+        QDir path2(default_path);
+        if(!path2.exists(default_path))
+        {
+            default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
+        }
+    }
+
+    std::string path_dialog=default_path.toUtf8().data();
+
+    // Создание папки проекта автоматическое либо выбор существующей
+    if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+    {
+        time_t curr_time;
+        time(&curr_time);
+
+        // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+        std::string folder=RDK::get_text_time(curr_time, '.', '_');
+        path_dialog+=std::string("/Autocreate")+folder.c_str();
+
+        if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
+            return;
+    }
+    else
+    {
+        path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
+    }
+
+    std::string file_name = path_dialog +"/project.ini";
+    std::string classname="Model";
+
+    application->CreateProject(file_name, classname);
+
+    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + file_name.c_str()+"]");
+    RDK::UIVisualControllerStorage::UpdateInterface();
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"Error at creatng simple project", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at creatng simple project", QString(e.what()), QMessageBox::Ok);
+  }
 }
 
 void UGEngineControllWidget::actionSaveConfig()
@@ -285,6 +415,8 @@ void UGEngineControllWidget::actionCloseConfig()
  {
   application->PauseChannel(-1);
   application->CloseProject();
+  this->setWindowTitle("Neuro Modeler"+QCoreApplication::applicationVersion());
+  RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
  catch(RDK::UException& e)
  {
@@ -325,7 +457,7 @@ void UGEngineControllWidget::actionCopyConfig()
   std::string open_file_name=res_path.toLocal8Bit().constData();
   open_file_name+=project_file_name;
   application->OpenProject(open_file_name);
-  this->setWindowTitle(QString("project: ") + open_file_name.c_str());
+  this->setWindowTitle(QString("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: ") + open_file_name.c_str()+"]");
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
 
@@ -340,6 +472,95 @@ void UGEngineControllWidget::actionCopyConfig()
  }
 }
 
+void UGEngineControllWidget::actionAutoCopyConfig()
+{
+  try
+  {
+    if(!application->GetProjectOpenFlag())
+    {
+        QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
+        return;
+    }
+
+    if(QMessageBox::question(this, "Info", "Are you sure to autocreate copy of current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+    {
+        return;
+    }
+
+    std::string config_path=application->GetProjectPath();
+    if(config_path.empty())
+        return;
+
+    time_t curr_time;
+    time(&curr_time);
+
+    size_t n=config_path.find_last_not_of("\\/");
+    if(config_path.find_last_of("\\/") == config_path.size()-1)
+        config_path.resize(n+1);
+
+    // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+    std::string date_time_str=RDK::get_text_time(curr_time, '.', '_');
+    config_path+=std::string(" ")+date_time_str+"/";
+
+    application->CopyProject(config_path);
+    std::string name = application->GetProjectFileName();
+    application->OpenProject(config_path+application->GetProjectFileName());
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"Error at auto copying project", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at auto copying project", QString(e.what()), QMessageBox::Ok);
+  }
+}
+
+void UGEngineControllWidget::actionRenameConfig()
+{
+  try
+  {
+    if(!application->GetProjectOpenFlag())
+    {
+        QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
+        return;
+    }
+
+
+    std::string config_path=application->GetProjectPath();
+    if(config_path.empty())
+        return;
+
+    size_t n=config_path.find_last_not_of("\\/");
+    if(config_path.find_last_of("\\/") == config_path.size()-1)
+       config_path.resize(n+1);
+
+    std::string project_name=RDK::extract_file_name(config_path.c_str());
+
+    std::string project_path = RDK::extract_file_path(config_path);
+
+
+    bool ok;
+    std::string new_name = QInputDialog::getText(this, tr("Select new configuration name"),
+                                         tr("Please enter new name: "), QLineEdit::Normal,
+                                         QString::fromStdString(project_name), &ok).toStdString();
+
+    if (ok && !new_name.empty())
+    {
+        if(!application->RenameProject(project_path+new_name))
+            QMessageBox::question(this, "Error", "Falied to rename configuration!", QMessageBox::Ok);
+    }
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"Error at renaming project", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at renaming project", QString(e.what()), QMessageBox::Ok);
+  }
+}
+
 void UGEngineControllWidget::actionExit()
 {
   QApplication::quit();
@@ -350,58 +571,47 @@ void UGEngineControllWidget::actionConfigOptions()
  createConfigurationWizardWidget->show();
 }
 
-//chanels menu actions:
-void UGEngineControllWidget::actionAddNew()
+void UGEngineControllWidget::actionCreateSaveMockLibs()
 {
-    if(!application->GetProjectOpenFlag())
-     return;
-
-    pauseChannel(-1);
-    application->SetNumChannels(application->GetNumChannels()+1);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
+ if(application)
+  application->CreateSaveMockLibs();
 }
 
-void UGEngineControllWidget::actionInsert()
+void UGEngineControllWidget::updateShemeClassesList()
 {
-    if(!application->GetProjectOpenFlag())
-     return;
-    pauseChannel(-1);
-    int i=Core_GetSelectedChannelIndex();
-    application->InsertChannel(i);
-    //application->AddChannel(ChannelsStringGrid->Row);
-    //RDK::UIVisualControllerStorage::UpdateInterface(true);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
+ drawEngine->updateScheme(true);
+ drawEngine->updateClassesList();
+ int build_mode = application->GetStorageBuildMode();
+ ui->menuChooseBuildStorageMode->setTitle("Choose Build Storage Mode [" + QString::number(build_mode) +"]");
 }
 
-void UGEngineControllWidget::actionDeleteLast()
+void UGEngineControllWidget::actionBuildMode1()
 {
-    /*if(!application->GetProjectOpenFlag())
-     return;
-    application->SetNumChannels(Core_GetNumChannels()-1);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);*/
-    pauseChannel(-1);
-    application->DeleteChannel(application->GetNumChannels()-1);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
-
+ if(application)
+ {
+  application->SetStorageBuildMode(1);
+  updateShemeClassesList();
+ }
 }
 
-void UGEngineControllWidget::actionDeleteAll()
+void UGEngineControllWidget::actionBuildMode2()
 {
-    if(!application->GetProjectOpenFlag())
-     return;
-    pauseChannel(-1);
-    application->SetNumChannels(1);
-    //RDK::UIVisualControllerStorage::UpdateInterface(true);
+ if(application)
+ {
+  application->SetStorageBuildMode(2);
+  updateShemeClassesList();
+ }
 }
 
-void UGEngineControllWidget::actionClone()
+void UGEngineControllWidget:: actionBuildMode3()
 {
-    pauseChannel(-1);
-    int cloned_id=application->GetNumChannels();
-    application->CloneChannel(Core_GetSelectedChannelIndex(), cloned_id);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
-
+ if(application)
+ {
+  application->SetStorageBuildMode(3);
+  updateShemeClassesList();
+ }
 }
+
 
 // calculate menu actions
 
@@ -555,19 +765,44 @@ void UGEngineControllWidget::actionProfiling()
 //    ui->dockWidgetGraph->show();
 }
 
+void UGEngineControllWidget::actionTcpServer()
+{
+    if(!tcpServerControlWindow )
+    {
+        tcpServerControlWindow = new QMainWindow(this);
+        tcpServerControlWindow->setWindowTitle("TcpServerControl");
+        //graphWindow->setCentralWidget(graphWindowWidget);
+        //graphWindowWidget->show();
+        tcpServerControlWindow->setCentralWidget(tcpServerControlWidget);
+    }
+
+    tcpServerControlWindow->resize(tcpServerControlWidget->size());
+    tcpServerControlWidget->show();
+    tcpServerControlWindow->show();
+    tcpServerControlWindow->showNormal();
+    tcpServerControlWindow->activateWindow();
+}
+
+void UGEngineControllWidget::actionFtpTest()
+{
+    curlFtpClientTestWidget->show();
+    curlFtpClientTestWidget->activateWindow();
+}
+
 void UGEngineControllWidget::actionNewWatches()
 {
     addWatchesWidged();
 }
 
-
-/*void UGEngineControllWidget::actionVASimpleSettings()
+#ifndef RDK_DISABLE_EXT_GUI
+void UGEngineControllWidget::actionVASimpleSettings()
 {
     if(videoAnalyticsSimpleWidget)
     {
         videoAnalyticsSimpleWidget->show();
     }
-}*/
+}
+#endif
 
 void UGEngineControllWidget::startChannel(int chanelIndex)
 {
@@ -742,9 +977,9 @@ void UGEngineControllWidget::showChannelsWidget (void)
 
 void UGEngineControllWidget::closeEvent(QCloseEvent *event)
 {
- application->PauseChannel(-1);
- application->CloseProject();
- application->UnInit();
+ //application->PauseChannel(-1);
+ //application->CloseProject();
+ //application->UnInit();
  event->accept();
  //   if (maybeSave()) {
  //       writeSettings();
@@ -752,4 +987,23 @@ void UGEngineControllWidget::closeEvent(QCloseEvent *event)
  //   } else {
  //       event->ignore();
  //   }
+}
+
+void UGEngineControllWidget::updateChannelsVisibility()
+{
+    if(application->GetNumChannels()>1)
+    {
+        if(!ui->dockWidgetChannels->isVisible())
+        {
+            ui->dockWidgetChannels->show();
+        }
+    }
+
+    if(application->GetNumChannels()==1)
+    {
+        if(ui->dockWidgetChannels->isVisible())
+        {
+            ui->dockWidgetChannels->hide();
+        }
+    }
 }

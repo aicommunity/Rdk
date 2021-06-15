@@ -237,7 +237,7 @@ template<class T, unsigned Rows>
 double operator * (const MVector<T,Rows> &M1, const MVector<T,Rows> &M2)
 {
  double res=0;
- for(int k=0;k<Rows;k++)
+ for(unsigned int k=0;k<Rows;k++)
  {
   res+=M1.Data[k][0]*M2.Data[k][0];
  }

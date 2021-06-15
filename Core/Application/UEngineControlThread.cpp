@@ -39,7 +39,7 @@ const char* BoostVersion(void)
 //  онструкторы и деструкторы
 // --------------------------
 UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
-: EngineControl(engine_control), EngineIndex(channel_index), Terminated(false)
+: EngineIndex(channel_index), EngineControl(engine_control), Terminated(false)
 {
  ThreadTimeout=1000;
  CalcState=UCreateEvent(false);
@@ -57,7 +57,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
  ServerTimeStamp=0.0;
  CalculationTimeSource=0;
  CalculateMode=0;
- MinInterstepsInterval=0;
+ MinInterstepsInterval=1;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
  Profiler=new UChannelProfiler;
  Profiler->SetChannelIndex(channel_index);
@@ -241,19 +241,20 @@ void UEngineControlThread::Calculate(void)
 
 
   double diff=(RDK::GetVariantLocalTime()-RealLastCalculationTime)*86400*1000.0;
-  if(diff<MinInterstepsInterval)
+  int wait_diff=(MinInterstepsInterval>1)?MinInterstepsInterval:1;
+  if(diff<wait_diff)
   {
    CalculationNotInProgress->set();
-   Sleep(int(static_cast<int>(MinInterstepsInterval)-diff));
+   Sleep(int(static_cast<int>(wait_diff)-diff));
    return;
   }
-
+/*
   if(CalculateMode == 3 && MinInterstepsInterval == UTime(0) && diff<1)
   {
    CalculationNotInProgress->set();
    Sleep(1);
    return;
-  }
+  }*/
 
   // ¬з€ли блокировку канала т.к. дальше будет много обращений в €дро
   UELockPtr<UContainer> model=GetModelLock(EngineIndex);
@@ -296,7 +297,7 @@ void UEngineControlThread::Calculate(void)
    RDK::UIControllerStorage::AfterCalculate(EngineIndex);
   CalculationNotInProgress->set();
   Profiler->CalculateCore();
-  LastFullStepDuration=MModel_GetFullStepDuration(EngineIndex,0);
+  LastFullStepDuration=int(MModel_GetFullStepDuration(EngineIndex,0));
 }
 
 void UEngineControlThread::Execute(void)

@@ -46,6 +46,7 @@ UApplication::UApplication(void)
  ModelsMainPath="../../../Models/";
  ChangeUseNewXmlFormatProjectFile(false);
  ChangeUseNewProjectFilesStructure(false);
+ StorageBuildMode = 1;
  LogCreationMode=0;
  //SetStandartXMLInCatalog();
 
@@ -106,6 +107,20 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
+/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+const std::string& UApplication::GetLibrariesPath(void) const
+{
+ return LibrariesPath;
+}
+
+bool UApplication::SetLibrariesPath(const std::string &value)
+{
+ if(LibrariesPath == value)
+  return true;
+ LibrariesPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
@@ -119,6 +134,21 @@ bool UApplication::SetDatabaseMainPath(const std::string &value)
  DatabaseMainPath=value;
  return true;
 }
+
+/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+const std::string& UApplication::GetStorageMountPoint(void) const
+{
+ return StorageMountPoint;
+}
+
+bool UApplication::SetStorageMountPoint(const std::string &value)
+{
+ if(StorageMountPoint == value)
+  return true;
+ StorageMountPoint=value;
+ return true;
+}
+
 
 /// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
@@ -384,8 +414,40 @@ bool UApplication::SetLogCreationMode(int mode)
  LogCreationMode=mode;
  return true;
 }
-// --------------------------
 
+/// Установка необходимого режима сборки
+void UApplication::SetStorageBuildMode(int mode)
+{
+ // пересборка не нужна
+ if(StorageBuildMode == mode)
+     return;
+
+ StorageBuildMode = mode;
+ CloseProject();
+ RDK::GetCoreLock()->SetStorageBuildMode(StorageBuildMode);
+
+ int size = GetNumChannels();
+
+ for(int i = 0; i<size;i++)
+ {
+     MCore_ChannelInit(i,0,(void*)ExceptionHandler);
+ }
+}
+
+/// Получение текущего режима сборки
+int UApplication::GetStorageBuildMode()
+{
+ return StorageBuildMode;
+}
+// --------------------------
+/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+void UApplication::CreateSaveMockLibs()
+{
+    RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+    if(!storage->CreateMockLibs())
+        return;
+    storage->SaveMockLibs();
+}
 // --------------------------
 // Методы инициализации
 // --------------------------
@@ -512,6 +574,26 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
  return true;
 }
 
+/// Деплоер проекта (под кончретную задачу)
+UEPtr<UProjectDeployer> UApplication::GetProjectDeployer(void)
+{
+ return ProjectDeployer;
+}
+
+ bool UApplication::SetProjectDeployer(const UEPtr<UProjectDeployer> &value)
+{
+     if(ProjectDeployer == value)
+      return true;
+
+     if(ProjectDeployer)
+      ProjectDeployer->SetApplication(0);
+
+     ProjectDeployer=value;
+     ProjectDeployer->SetApplication(this);
+
+     return true;
+}
+
 const std::list<StandartXMLInCatalog>&  UApplication::GetStandartXMLInCatalog(void) const
 {
     return xmlInCatalog;
@@ -525,7 +607,7 @@ bool UApplication::SetStandartXMLInCatalog(void)
     std::vector<std::string> results;
     //int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
     int a = FindFilesList(path, mask, true, results);
-    for (int i=0; i< results.size(); i++)
+    for (size_t i=0; i< results.size(); i++)
     {
         StandartXMLInCatalog newXMLType;
         RDK::USerStorageXML XmlStorage;
@@ -562,6 +644,7 @@ bool UApplication::Init(void)
  Core_LoadFonts();
 
  EngineControl->Init();
+ RDK::GetCoreLock()->SetLibrariesPath(LibrariesPath);
  UApplication::SetNumChannels(1);
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
@@ -578,8 +661,6 @@ bool UApplication::Init(void)
  }*/
  SetStandartXMLInCatalog();
 
-
-
  AppIsInit = true;
  return true;
 }
@@ -594,7 +675,6 @@ bool UApplication::UnInit(void)
   EngineControl->StopEngineStateThread();
  }
  Sleep(10);
- RDK::UIVisualControllerStorage::ClearInterface();
  CloseProject();
  EngineControl->UnInit();
  GetCoreLock()->Destroy();
@@ -683,6 +763,7 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
   catch(po::unknown_option &ex)
   {
    MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_WARNING,ex.what());
+   throw ex;
    return;
   }
 
@@ -768,11 +849,12 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  project_config.SetNumChannels(1);
  project_config.ProjectMode=0;
  project_config.ProjectName="Autocreated configuration";
- project_config.ProjectType=1;
+ project_config.ProjectType=0;
  project_config.EventsLogFlag=true;
  project_config.CalcSourceTimeMode=0;
  project_config.MultiThreadingMode=1;
  project_config.MTUpdateInterfaceInterval=100;
+ project_config.ChannelsConfig[0].CalculationMode=1;
  project_config.ChannelsConfig[0].ClassName=model_classname;
  project_config.ChannelsConfig[0].ModelMode=3;
  project_config.ChannelsConfig[0].InitAfterLoad=true;
@@ -1283,11 +1365,11 @@ bool UApplication::OpenProject(const std::string &filename)
  bool is_loaded(false);
  if(!ProjectXml.LoadFromFile(filename,""))
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, (std::string("Can't read project file ")+filename).c_str());
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_WARNING, (std::string("Can't read project file ")+filename).c_str());
   return false;
  }
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Open project ")+filename+"...").c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Open configuration ")+filename+"...").c_str());
  ProjectPath=extract_file_path(filename);
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
@@ -1458,7 +1540,7 @@ catch(RDK::UException &exception)
 
  SaveProjectsHistory();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Project ")+filename+" has been opened successfully.").c_str());
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been opened.").c_str());
  return true;
 }
 
@@ -1475,7 +1557,7 @@ bool UApplication::SaveProject(void)
  Project->WriteToXml(ProjectXml);
 try
 {
-
+ InterfaceXml.Create(std::string("Interfaces"));
  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
 
@@ -1544,7 +1626,12 @@ try
  is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save project config file: ")+ProjectFileName).c_str());
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save configuration: ")+ProjectFileName).c_str());
+ else
+ {
+  std::string filename=ProjectPath+ProjectFileName;
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been saved.").c_str());
+ }
 }
 catch(RDK::UException &exception)
 {
@@ -1572,6 +1659,9 @@ bool UApplication::CloseProject(void)
  if(config.ProjectAutoSaveFlag)
   SaveProject();
 
+ std::string filename=ProjectPath+ProjectFileName;
+
+
  RDK::UIVisualControllerStorage::ClearInterface();
 // if(UServerControlForm)
 //  UServerControlForm->ServerRestartTimer->Enabled=false;
@@ -1596,6 +1686,7 @@ bool UApplication::CloseProject(void)
   Storage_FreeObjectsStorage();
  }
 
+ MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been closed.").c_str());
  return true;
 }
 
@@ -1603,6 +1694,48 @@ bool UApplication::CloseProject(void)
 bool UApplication::CloneProject(const std::string &filename)
 {
  return true;
+}
+
+/// Переименовывает папку проекта
+bool UApplication::RenameProject(const std::string &filename)
+{
+ if(!ProjectOpenFlag)
+  return false;
+
+ if(filename.empty())
+  return false;
+
+ PauseChannel(-1);
+ bool events_log_mode=GetProjectConfig().EventsLogFlag;
+  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(false);
+
+ std::string resfilename=filename;
+
+ int res=RdkMoveFile(ProjectPath, resfilename);
+
+ if(filename.find_last_of("\\/") != filename.size()-1)
+  resfilename+="/";
+
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(events_log_mode);
+ if(res == 0)
+ {
+  SetProjectPath(resfilename);
+
+  std::list<std::string> last_list=LastProjectsList;
+  last_list.push_front(resfilename+ProjectFileName);
+  while(int(last_list.size())>LastProjectsListMaxSize
+   && !LastProjectsList.empty())
+  {
+   last_list.pop_back();
+  }
+
+  LastProjectsList=last_list;
+
+  SaveProjectsHistory();
+  return true;
+ }
+
+ return false;
 }
 
 void UApplication::ReloadParameters(void)
@@ -1641,6 +1774,9 @@ bool UApplication::CopyProject(const std::string &new_path)
   return true;
 
  SaveProject();
+
+ if(RDK::CreateNewDirectory(new_path.c_str()) != 0)
+  return false;
 
  RDK::CopyDir(ProjectPath, new_path, "*.*");
  return true;
@@ -2216,6 +2352,7 @@ void UApplication::InitCmdParser(void)
 #ifndef __BORLANDC__
  CmdLineDescription.add_options()
     ("help", "produce help message")
+    ("standalone", "standalone vesrion of server without network")
     ("conf", po::value<string>(), "Configuration file name")
     ("ctime", po::value<double>(), "Calculation time interval, in seconds")
     ("info", po::value<string>(), "Information about core, possible: CollectionsList, ClassesList, CollectionClassesList, ClassProperties")

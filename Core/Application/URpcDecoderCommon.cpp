@@ -116,6 +116,11 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
   return true;
  }
  else
+ if(cmd == "StartTraining")
+ {
+  return true;
+ }
+ else
  if(cmd == "RegisterMetadataReceiver")
  {
   return true;
@@ -142,6 +147,66 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  }
  else
  if(cmd == "StartVideoSource")
+ {
+  return true;
+ }
+ else
+ if(cmd == "DeployProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetDeploymentState")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetLastError")
+ {
+  return true;
+ }
+ else
+ if(cmd == "PrepareProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetPreparationResult")
+ {
+  return true;
+ }
+ else
+ if(cmd == "OpenPreparedProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "RunPreparedProject")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetCalculationState")
+ {
+  return true;
+ } 
+ else
+ if(cmd == "FinishCalculation")
+ {
+  return true;
+ }
+ else
+ if(cmd == "UploadCalculationResults")
+ {
+  return true;
+ }
+ else
+ if(cmd == "GetUploadState")
+ {
+  return true;
+ }
+ else
+ if(cmd == "CloseSolver")
  {
   return true;
  }
@@ -305,6 +370,13 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    return_value=0;
   }
   else
+  if(cmd == "StartTraining")
+  {
+   std::stringstream ss;
+   Model_SetComponentPropertyValue("TPyClassifierTrainer", "StartTraining", "1");
+   return_value=0;
+  }
+  else
   if(cmd == "RegisterMetadataReceiver")
   {
    string address=xml.ReadString("Address","");
@@ -335,8 +407,200 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
    GetApplication()->SaveProject();
    return_value=0;//UServerControlForm->SaveProject();
   }
+  else
+  if(cmd == "DeployProject")
+  {
+   int task_id=xml.ReadInteger("TaskId",-1);
+   int resp = GetApplication()->GetProjectDeployer()->StartProjectDeployment(task_id);
+   std::stringstream ss;
+   ss<<resp;
+   response = ss.str();
+   return_value=0;
+  }
+  else
+  if(cmd == "GetDeploymentState")
+  {
+   //GetApplication()->SaveProject();
+   int d_state = GetApplication()->GetProjectDeployer()->GetDeploymentState();
+   int stage_max = GetApplication()->GetProjectDeployer()->GetStageCap();
+   int stage_pos = GetApplication()->GetProjectDeployer()->GetStageProgress();
+
+   std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
+
+   std::stringstream ss;
+   ss<<d_state<<"|-|"<<stage_pos<<"|-|"<<stage_max<<"|-|"<<le;
+   response=ss.str();
+   return_value=0;//UServerControlForm->SaveProject();
+  }
+  else
+  if(cmd == "GetLastError")
+  {
+   std::string last_error=GetApplication()->GetProjectDeployer()->GetLastError();
+   response=last_error;
+   return_value=0;
+  }
+  else
+  if(cmd == "PrepareProject")
+  {
+    std::string resp="";
+//    int rs = GetApplication()->GetProjectDeployer()->PrepareProject(resp);
+    GetApplication()->GetProjectDeployer()->PrepareProject(resp);
+    response=resp;
+    return_value=0;
+  }
+  else
+  if(cmd == "GetPreparationResult")
+  {
+    std::string resp="";
+    int rs = GetApplication()->GetProjectDeployer()->GetPreparationResult(resp);
+    std::stringstream ss;
+    ss<<rs<<"|-|"<<resp.c_str();
+    response=ss.str();
+    return_value=0;
+  }
+  else
+  if(cmd=="OpenPreparedProject")
+  {
+    std::string resp="";
+    std::cerr<<"Open prepared project!\n";
+//    int rs = GetApplication()->GetProjectDeployer()->OpenPreparedProject(resp);
+    GetApplication()->GetProjectDeployer()->OpenPreparedProject(resp);
+    std::cerr<<"Project opened successful!\n";
+    response=resp;
+    return_value=0;
+  }
+  else
+  if(cmd=="RunPreparedProject")
+  {
+    int rs = GetApplication()->GetProjectDeployer()->RunPreparedProject();
+    std::stringstream ss;
+    ss<<rs;
+    response = ss.str();
+    return_value=0;
+  }
+  else
+  if(cmd == "GetCalculationState")
+  {
+    /*std::string resp="";
+    int rs = GetApplication()->GetProjectDeployer()->GetPreparationResult(resp);
+    std::stringstream ss;
+    ss<<rs<<"|-|"<<resp.c_str();
+    response=ss.str();*/
+    //Формирует ответ такой:
+    //"<calculation_state>|<capture_state>|<capture_frid>|<capture_maxfrid>|<capture_finished>|<message>"
+    int calculation_state=-1;
+    int capture_state=-1;
+    unsigned long long capture_frid=0;
+    unsigned long long capture_maxfrid=0;
+    std::string message = "test state message";
+
+
+    //Проанализировать состояние расчета - а вдруг ошибка
+    /// Состояние тредов расчета
+    /// -1 - пустое состояние
+    /// 0 - запущен
+    /// 1 - расчет остановлен
+    /// 2 - расчет запущен, но не выполняется
+    /// 3 - ошибка найдена в логах
+    int calc_state = GetApplication()->GetProjectDeployer()->GetCalculationState();
+    if(calc_state>=0)
+    {
+        calculation_state = calc_state;
+        //Выгребаем логи, проверяем нет ли ошибок там:
+        std::string log_err="";
+        bool process_log_res = GetApplication()->GetProjectDeployer()->ProcessCalculationLog(log_err);
+        if(!process_log_res)
+        {
+            message = "Log error: "+log_err;
+            calculation_state = 3;
+        }
+        else
+        {
+            if(calc_state==2)
+            {
+                message = "Calculation started but not active (2).";
+            }
+            else if(calc_state==1 || calc_state==0)
+            {
+                unsigned long long capture_frame_id=0;
+                unsigned long long capture_max_frame_id=0;
+                int cap_state_out = -1;
+                bool res_capstate = GetApplication()->GetProjectDeployer()->GetCaptureState(cap_state_out, capture_frame_id, capture_max_frame_id);
+                if(!res_capstate)
+                {
+                    std::string err="";
+                    err = GetApplication()->GetProjectDeployer()->GetLastError();
+                    message = "Get capture state error: "+err;
+                }
+                else
+                {
+                    capture_state = cap_state_out;
+                    capture_frid = capture_frame_id;
+                    capture_maxfrid = capture_max_frame_id;
+                    message = "Calculation is active";
+                }
+            }
+            else
+            {
+                message = "Error: Wrong calculation state number";
+            }
+        }
+
+    }
+    else
+    {
+        std::string err="";
+        err = GetApplication()->GetProjectDeployer()->GetLastError();
+        message = "GetCalculationState() error: "+err;
+    }
+
+    std::stringstream res_ss;
+    res_ss<<calculation_state<<"|-|"<<capture_state<<"|-|"<<capture_frid<<"|-|"<<capture_maxfrid<<"|-|"<<message.c_str();
+    response = res_ss.str();
+    return_value=0;
+  }
+  else
+  if(cmd=="FinishCalculation")
+  {
+    bool rs = GetApplication()->GetProjectDeployer()->FinishCalculation();
+    std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
+    std::stringstream ss;
+    ss<<rs<<"|-|"<<le;
+    response = ss.str();
+    return_value=0;
+  }
+  else
+  if(cmd=="UploadCalculationResults")
+  {
+    bool rs = GetApplication()->GetProjectDeployer()->UploadCalculationResults();
+    std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
+    std::stringstream ss;
+    ss<<rs<<"|-|"<<le;
+    response = ss.str();
+    return_value=0;
+  }
+  else
+  if(cmd=="GetUploadState")
+  {
+    int us = GetApplication()->GetProjectDeployer()->GetUploadState();
+    std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
+    std::stringstream ss;
+    ss<<us<<"|-|"<<le;
+    response = ss.str();
+    return_value=0;
+  }
+  else
+  if(cmd=="CloseSolver")
+  {
+    bool rs = GetApplication()->GetProjectDeployer()->CloseSolver();
+    std::string le = GetApplication()->GetProjectDeployer()->GetLastError();
+    std::stringstream ss;
+    ss<<rs<<"|-|"<<le;
+    response = ss.str();
+    exit(0);
+    return_value=0;
+  }
  }
-// }
 
  result.SelectRoot();
  if(!response.empty())

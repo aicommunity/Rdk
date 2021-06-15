@@ -42,7 +42,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       inherited PageControl: TPageControl
         Width = 227
         Height = 401
-        ActivePage = UClassesListFrame.LibsControlTabSheet
         ExplicitWidth = 227
         ExplicitHeight = 401
         inherited NameTabSheet: TTabSheet
@@ -53,84 +52,56 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           inherited StringGrid: TStringGrid
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
-            ExplicitHeight = 494
           end
         end
         inherited LibsTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 219
+          ExplicitHeight = 373
           inherited TreeView: TTreeView
+            Width = 219
+            Height = 373
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
+            ExplicitWidth = 219
+            ExplicitHeight = 373
           end
         end
         inherited LibsControlTabSheet: TTabSheet
           ExplicitLeft = 4
           ExplicitTop = 24
-          ExplicitWidth = 219
-          ExplicitHeight = 373
+          ExplicitWidth = 499
+          ExplicitHeight = 494
           inherited Splitter1: TSplitter
             Top = 83
-            Width = 219
             ExplicitTop = 288
             ExplicitWidth = 219
           end
-          inherited Panel1: TPanel
-            Top = 250
-            Width = 219
-            ExplicitTop = 250
-            ExplicitWidth = 219
-            inherited LoadLibraryButton: TButton
-              Width = 217
-              ExplicitWidth = 217
-            end
-            inherited CreateRuntimeLibraryButton: TButton
-              Width = 217
-              ExplicitWidth = 217
-            end
-            inherited DeleteLibraryButton: TButton
-              Width = 217
-              ExplicitTop = 70
-              ExplicitWidth = 217
-            end
-            inherited RenameRuntimeLibraryButton: TButton
-              Width = 217
-              ExplicitWidth = 217
-            end
-            inherited AddClassButton: TButton
-              Width = 217
-              OnClick = UClassesListFrameAddClassButtonClick
-              ExplicitWidth = 217
-            end
-          end
           inherited GroupBox1: TGroupBox
-            Width = 219
             Height = 83
-            ExplicitWidth = 219
             ExplicitHeight = 83
             inherited LibsListStringGrid: TStringGrid
-              Width = 215
               Height = 66
-              ExplicitWidth = 215
               ExplicitHeight = 66
             end
           end
           inherited GroupBox2: TGroupBox
             Top = 90
-            Width = 219
+            Height = 404
             ExplicitTop = 90
-            ExplicitWidth = 219
+            ExplicitHeight = 404
             inherited LibComponentListStringGrid: TStringGrid
-              Width = 215
+              Height = 387
               OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
               OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
-              ExplicitWidth = 215
+              ExplicitHeight = 387
             end
           end
         end
       end
       inherited SearchEdit: TEdit
         Width = 227
-        ExplicitLeft = 0
-        ExplicitTop = 0
         ExplicitWidth = 227
       end
     end
@@ -152,7 +123,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       OnResize = ScrollBoxResize
       object Image: TImage
         Left = 20
-        Top = 14
+        Top = 19
         Width = 305
         Height = 241
         OnDragDrop = ImageDragDrop
@@ -244,11 +215,20 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     end
     object ShowLinkDetailCheckBox: TCheckBox
       Left = 310
-      Top = 24
+      Top = 6
       Width = 107
       Height = 17
       Caption = 'Show links detail'
       TabOrder = 6
+    end
+    object ShowBGLinesCheckBox: TCheckBox
+      Left = 310
+      Top = 29
+      Width = 97
+      Height = 17
+      Caption = 'Show BG Lines'
+      TabOrder = 7
+      OnClick = ShowBGLinesCheckBoxClick
     end
   end
   object PopupMenu: TPopupMenu
@@ -339,6 +319,13 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Caption = 'Copy class to Clipboard'
       OnClick = CopyclasstoClipboard1Click
     end
+    object N8: TMenuItem
+      Caption = '-'
+    end
+    object Droptoruntimelibrary1: TMenuItem
+      Caption = 'Drop to runtime library'
+      OnClick = Droptoruntimelibrary1Click
+    end
     object N5: TMenuItem
       Caption = '-'
     end
@@ -354,5 +341,12 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object GUI1: TMenuItem
       Caption = 'GUI'
     end
+  end
+  object FileOpenDialog: TFileOpenDialog
+    FavoriteLinks = <>
+    FileTypes = <>
+    Options = [fdoPickFolders, fdoForceFileSystem, fdoPathMustExist]
+    Left = 396
+    Top = 44
   end
 end

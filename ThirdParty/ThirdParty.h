@@ -17,7 +17,11 @@
 //#undef RDK_UNICODE_RUN
 #endif             
 
+#ifdef __unix__
+#include <curl/curl.h>
+#else
 #define CURL_STATICLIB
 #include "curl/include/curl/curl.h"
+#endif
 
 #include "jpeg/JpegIntegration.h"

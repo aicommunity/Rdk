@@ -3,9 +3,9 @@ object USeriesControlForm: TUSeriesControlForm
   Top = 248
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077'/'#1091#1076#1072#1083#1077#1085#1080#1077'/'#1085#1072#1089#1090#1088#1086#1081#1082#1072' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1081
+  Caption = 'Watch series control'
   ClientHeight = 549
-  ClientWidth = 651
+  ClientWidth = 654
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +22,7 @@ object USeriesControlForm: TUSeriesControlForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 367
+    Width = 370
     Height = 549
     Margins.Left = 4
     Margins.Top = 4
@@ -34,7 +34,7 @@ object USeriesControlForm: TUSeriesControlForm
     object Panel4: TPanel
       Left = 0
       Top = 0
-      Width = 367
+      Width = 370
       Height = 225
       Margins.Left = 4
       Margins.Top = 4
@@ -44,7 +44,7 @@ object USeriesControlForm: TUSeriesControlForm
       BevelOuter = bvNone
       TabOrder = 0
       object Panel5: TPanel
-        Left = 295
+        Left = 298
         Top = 0
         Width = 72
         Height = 225
@@ -137,7 +137,7 @@ object USeriesControlForm: TUSeriesControlForm
         end
       end
       object GroupBox3: TGroupBox
-        Left = 0
+        Left = -4
         Top = 7
         Width = 294
         Height = 210
@@ -145,7 +145,7 @@ object USeriesControlForm: TUSeriesControlForm
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        Caption = ' '#1044#1086#1089#1090#1091#1087#1085#1099#1077' '#1090#1086#1095#1082#1080' '
+        Caption = ' Accessible series '
         TabOrder = 1
         object StringGrid1: TStringGrid
           Left = 2
@@ -169,7 +169,7 @@ object USeriesControlForm: TUSeriesControlForm
     object Panel1: TPanel
       Left = 0
       Top = 225
-      Width = 367
+      Width = 370
       Height = 324
       Margins.Left = 4
       Margins.Top = 4
@@ -178,7 +178,6 @@ object USeriesControlForm: TUSeriesControlForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 1
       object GroupBox2: TGroupBox
         Left = 13
         Top = 0
@@ -188,22 +187,22 @@ object USeriesControlForm: TUSeriesControlForm
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        Caption = ' '#1055#1072#1088#1072#1084#1077#1090#1088#1099' '#1086#1082#1085#1072' '
+        Caption = ' Watch parameters '
         TabOrder = 0
         DesignSize = (
           281
           313)
         object Label7: TLabel
-          Left = 9
+          Left = 11
           Top = 194
-          Width = 46
+          Width = 78
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Alignment = taRightJustify
-          Caption = #1051#1077#1075#1077#1085#1076#1072':'
+          Caption = 'Legend position:'
         end
         object Label8: TLabel
           Left = 57
@@ -238,8 +237,9 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
-          Caption = #1055#1086#1076#1087#1080#1089#1100' '#1086#1089#1080' Y:'
+          Caption = 'Y-axis legend:'
           TabOrder = 0
+          WordWrap = True
           OnClick = CheckBox2Click
         end
         object Edit2: TEdit
@@ -266,10 +266,11 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
-          Caption = #1064#1082#1072#1083#1072' '#1087#1086' '#1086#1089#1080' Y'
+          Caption = 'Show Y-axis'
           Checked = True
           State = cbChecked
           TabOrder = 2
+          WordWrap = True
           OnClick = CheckBox4Click
         end
         object Edit1: TEdit
@@ -296,8 +297,9 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
-          Caption = #1055#1086#1076#1087#1080#1089#1100' '#1086#1089#1080' X:'
+          Caption = 'X-axis legend:'
           TabOrder = 4
+          WordWrap = True
           OnClick = CheckBox1Click
         end
         object CheckBox3: TCheckBox
@@ -309,10 +311,11 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
-          Caption = #1064#1082#1072#1083#1072' '#1087#1086' '#1086#1089#1080' X'
+          Caption = 'Show X-axis '
           Checked = True
           State = cbChecked
           TabOrder = 5
+          WordWrap = True
           OnClick = CheckBox3Click
         end
         object ComboBox3: TComboBox
@@ -327,15 +330,15 @@ object USeriesControlForm: TUSeriesControlForm
           Style = csDropDownList
           ItemIndex = 5
           TabOrder = 6
-          Text = #1057#1085#1080#1079#1091
+          Text = 'Bottom'
           OnSelect = ComboBox3Select
           Items.Strings = (
-            #1057#1083#1077#1074#1072
-            #1057#1083#1077#1074#1072' ('#1085#1072' '#1075#1088#1072#1092#1080#1082#1077')'
-            #1057#1087#1088#1072#1074#1072
-            #1057#1087#1088#1072#1074#1072' ('#1085#1072' '#1075#1088#1072#1092#1080#1082#1077')'
-            #1057#1074#1077#1088#1093#1091
-            #1057#1085#1080#1079#1091)
+            'Left'
+            'Left (on graph)'
+            'Right'
+            'Right (on graph)'
+            'Top'
+            'Bottom')
         end
         object WatchIntervalEdit: TEdit
           Left = 198
@@ -370,28 +373,30 @@ object USeriesControlForm: TUSeriesControlForm
           OnKeyDown = Edit4KeyDown
         end
         object AutoMinYValueCheckBox: TCheckBox
-          Left = 16
-          Top = 168
+          Left = 11
+          Top = 166
           Width = 97
           Height = 17
-          Caption = #1040#1074#1090#1086' min(Y)'
+          Caption = 'Auto min (Y)'
           TabOrder = 9
+          WordWrap = True
           OnClick = AutoMinYValueCheckBoxClick
         end
         object AutoMaxYValueCheckBox: TCheckBox
           Left = 136
-          Top = 168
+          Top = 166
           Width = 97
           Height = 17
-          Caption = #1040#1074#1090#1086' max(Y)'
+          Caption = 'Auto max (Y)'
           TabOrder = 10
+          WordWrap = True
           OnClick = AutoMaxYValueCheckBoxClick
         end
       end
     end
   end
   object Panel3: TPanel
-    Left = 367
+    Left = 370
     Top = 0
     Width = 284
     Height = 549
@@ -437,7 +442,8 @@ object USeriesControlForm: TUSeriesControlForm
         Margins.Right = 4
         Margins.Bottom = 4
         Anchors = [akRight, akBottom]
-        Caption = #1055#1088#1080#1084#1077#1085#1080#1090#1100
+        Caption = 'Apply'
+        Default = True
         Glyph.Data = {
           DE010000424DDE01000000000000760000002800000024000000120000000100
           0400000000006801000000000000000000001000000000000000000000000000
@@ -469,69 +475,76 @@ object USeriesControlForm: TUSeriesControlForm
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        Caption = ' '#1055#1072#1088#1072#1084#1077#1090#1088#1099' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1103' '
+        Caption = ' Series parameters  '
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -10
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
         TabOrder = 1
         DesignSize = (
           281
           277)
         object Label2: TLabel
-          Left = 32
-          Top = 27
-          Width = 50
+          Left = 39
+          Top = 23
+          Width = 42
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
-          Caption = #1055#1086#1076#1087#1080#1089#1100': '
+          Alignment = taRightJustify
+          Caption = 'Legend: '
         end
         object Label3: TLabel
-          Left = 54
-          Top = 89
-          Width = 28
+          Left = 55
+          Top = 91
+          Width = 27
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Alignment = taRightJustify
-          Caption = #1062#1074#1077#1090':'
+          Caption = 'Color:'
         end
         object Label4: TLabel
-          Left = 25
+          Left = 50
           Top = 57
-          Width = 57
+          Width = 32
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Alignment = taRightJustify
-          Caption = #1057#1084#1077#1097#1077#1085#1080#1077':'
+          Caption = 'Y-shift:'
         end
         object Label5: TLabel
-          Left = 27
-          Top = 121
-          Width = 55
+          Left = 35
+          Top = 119
+          Width = 47
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Alignment = taRightJustify
-          Caption = #1058#1080#1087' '#1083#1080#1085#1080#1080':'
+          Caption = 'Line style:'
         end
         object Label6: TLabel
-          Left = 33
+          Left = 31
           Top = 156
-          Width = 49
+          Width = 51
           Height = 13
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Alignment = taRightJustify
-          Caption = #1058#1086#1083#1097#1080#1085#1072':'
+          Caption = 'Line width:'
         end
         object Edit3: TEdit
           Left = 89
@@ -539,7 +552,7 @@ object USeriesControlForm: TUSeriesControlForm
           Width = 184
           Height = 21
           Cursor = crHandPoint
-          Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100
+          Hint = 'Double clock for change series legend'
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -568,12 +581,12 @@ object USeriesControlForm: TUSeriesControlForm
           OnKeyDown = Edit4KeyDown
         end
         object OutterCPanel: TPanel
-          Left = 89
+          Left = 90
           Top = 84
           Width = 184
           Height = 24
           Cursor = crHandPoint
-          Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1094#1074#1077#1090
+          Hint = 'Double clock for change series color'
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
@@ -590,12 +603,12 @@ object USeriesControlForm: TUSeriesControlForm
             184
             24)
           object InnerCPanel: TPanel
-            Left = 9
-            Top = 9
-            Width = 168
-            Height = 8
+            Left = 8
+            Top = 7
+            Width = 169
+            Height = 12
             Cursor = crHandPoint
-            Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1094#1074#1077#1090
+            Hint = 'Double clock for change series color'
             Margins.Left = 4
             Margins.Top = 4
             Margins.Right = 4
@@ -603,6 +616,9 @@ object USeriesControlForm: TUSeriesControlForm
             Anchors = [akLeft, akTop, akRight]
             BevelOuter = bvNone
             Color = clBlack
+            DoubleBuffered = False
+            ParentBackground = False
+            ParentDoubleBuffered = False
             ParentShowHint = False
             ShowHint = True
             TabOrder = 0
@@ -611,7 +627,7 @@ object USeriesControlForm: TUSeriesControlForm
         end
         object CheckBox5: TCheckBox
           Left = 92
-          Top = 191
+          Top = 182
           Width = 185
           Height = 16
           Margins.Left = 4
@@ -619,15 +635,17 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Right = 4
           Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
-          Caption = #1054#1090#1082#1083#1102#1095#1080#1090#1100' '#1074#1089#1077' '#1087#1086#1076#1087#1080#1089#1080
+          Caption = 'Disable all legends'
           Checked = True
           State = cbChecked
           TabOrder = 3
+          WordWrap = True
           OnClick = CheckBox5Click
         end
         object ComboBox1: TComboBox
-          Left = 89
-          Top = 117
+          AlignWithMargins = True
+          Left = 90
+          Top = 116
           Width = 184
           Height = 21
           Margins.Left = 4
@@ -635,17 +653,19 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Right = 4
           Margins.Bottom = 4
           Style = csDropDownList
+          ItemIndex = 0
           TabOrder = 4
+          Text = 'Solid'
           OnSelect = ComboBox1Select
           Items.Strings = (
-            #1057#1087#1083#1086#1096#1085#1072#1103
-            #1064#1090#1088#1080#1093#1080
-            #1055#1091#1085#1082#1090#1080#1088
-            #1064#1090#1088#1080#1093'-'#1087#1091#1085#1082#1090#1080#1088
-            '2 '#1064#1090#1088#1080#1093'-'#1087#1091#1085#1082#1090#1080#1088)
+            'Solid'
+            'Dash'
+            'Dot'
+            'Dash dot'
+            'Dash dot 2')
         end
         object ComboBox2: TComboBox
-          Left = 89
+          Left = 90
           Top = 153
           Width = 184
           Height = 21
@@ -656,19 +676,19 @@ object USeriesControlForm: TUSeriesControlForm
           Style = csDropDownList
           ItemIndex = 0
           TabOrder = 5
-          Text = '1 '#1087#1080#1082#1089#1077#1083
+          Text = '1 pixel'
           OnSelect = ComboBox2Select
           Items.Strings = (
-            '1 '#1087#1080#1082#1089#1077#1083
-            '2 '#1087#1080#1082#1089#1077#1083#1103
-            '3 '#1087#1080#1082#1089#1077#1083#1103
-            '4 '#1087#1080#1082#1089#1077#1083#1103
-            '5 '#1087#1080#1082#1089#1077#1083#1077#1081
-            '6 '#1087#1080#1082#1089#1077#1083#1077#1081
-            '7 '#1087#1080#1082#1089#1077#1083#1077#1081
-            '8 '#1087#1080#1082#1089#1077#1083#1077#1081
-            '9 '#1087#1080#1082#1089#1077#1083#1077#1081
-            '10 '#1087#1080#1082#1089#1077#1083#1077#1081)
+            '1 pixel'
+            '2 pixels'
+            '3 pixels'
+            '4 pixels'
+            '5 pixels'
+            '6 pixels'
+            '7 pixels'
+            '8 pixels'
+            '9 pixels'
+            '10 pixels')
         end
       end
       object BitBtn2: TBitBtn
@@ -681,7 +701,6 @@ object USeriesControlForm: TUSeriesControlForm
         Margins.Right = 4
         Margins.Bottom = 4
         Anchors = [akLeft, akBottom]
-        Caption = #1054#1090#1084#1077#1085#1072
         Kind = bkCancel
         NumGlyphs = 2
         TabOrder = 2
@@ -689,7 +708,7 @@ object USeriesControlForm: TUSeriesControlForm
       end
     end
     object GroupBox4: TGroupBox
-      Left = 0
+      Left = -1
       Top = 7
       Width = 281
       Height = 210
@@ -697,7 +716,7 @@ object USeriesControlForm: TUSeriesControlForm
       Margins.Top = 4
       Margins.Right = 4
       Margins.Bottom = 4
-      Caption = ' '#1053#1072#1073#1083#1102#1076#1072#1077#1084#1099#1077' '#1090#1086#1095#1082#1080' '
+      Caption = ' Visible series '
       TabOrder = 1
       object StringGrid2: TStringGrid
         Left = 2

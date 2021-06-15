@@ -494,13 +494,13 @@ void UServerControl::ConvertVectorToString(const UParamT &source, std::string &d
 void UServerControl::SendCommandResponse(UServerTransport *transport, std::string &client_address, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
- packet.SetNumParams(1+binary_data.size());
- packet.SetParamSize(0,dest.size());
+ packet.SetNumParams(1+int(binary_data.size()));
+ packet.SetParamSize(0,int(dest.size()));
  packet.SetParam(0,dest);
  for(size_t i=0;i<binary_data.size();i++)
  {
-  packet.SetParamSize(i+1,binary_data[i].size());
-  packet.SetParam(i+1,binary_data[i]);
+  packet.SetParamSize(int(i+1),int(binary_data[i].size()));
+  packet.SetParam(int(i+1),binary_data[i]);
  }
  RDK::UParamT buffer;
  packet.Save(buffer);
@@ -540,7 +540,7 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
 
  if(!commands.empty())
  {
-  for(int i=0; i<commands.size(); i++)
+  for(int i=0; i<int(commands.size()); i++)
   {
 			/*
 	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
@@ -562,7 +562,7 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
 	   GetRpcDispatcher()->PushCommand(pcmd);
 //	   else
 //	    delete pcmd;
-	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
+       //Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
   }
  }
  //02.04.2020 - Это мб неверно

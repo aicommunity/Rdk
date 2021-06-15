@@ -93,7 +93,6 @@ UEPtr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
  UEPtr<URpcCommand> result;
- std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
 
  if(ProcessedCommandQueue.begin() != ProcessedCommandQueue.end())
  {

@@ -124,6 +124,8 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
           inherited PageControl1: TPageControl
             Width = 235
             Height = 467
+            ExplicitLeft = 1
+            ExplicitTop = 1
             ExplicitWidth = 235
             ExplicitHeight = 467
             inherited TabSheet6: TTabSheet
@@ -204,10 +206,14 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
         ExplicitHeight = 469
         inherited PageControl: TPageControl
           Width = 300
-          Height = 469
+          Height = 448
           ExplicitWidth = 300
-          ExplicitHeight = 469
+          ExplicitHeight = 448
           inherited NameTabSheet: TTabSheet
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             inherited StringGrid: TStringGrid
               Width = 300
               Height = 469
@@ -217,15 +223,7 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               ExplicitHeight = 469
             end
           end
-          inherited LibsTabSheet: TTabSheet
-            ExplicitLeft = 4
-            ExplicitTop = 24
-            ExplicitWidth = 499
-            ExplicitHeight = 515
-          end
           inherited LibsControlTabSheet: TTabSheet
-            ExplicitLeft = 4
-            ExplicitTop = 24
             ExplicitWidth = 292
             ExplicitHeight = 441
             inherited Splitter1: TSplitter
@@ -233,32 +231,6 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               Width = 292
               ExplicitTop = 151
               ExplicitWidth = 292
-            end
-            inherited Panel1: TPanel
-              Top = 318
-              Width = 292
-              ExplicitTop = 318
-              ExplicitWidth = 292
-              inherited LoadLibraryButton: TButton
-                Width = 290
-                ExplicitWidth = 290
-              end
-              inherited CreateRuntimeLibraryButton: TButton
-                Width = 290
-                ExplicitWidth = 290
-              end
-              inherited DeleteLibraryButton: TButton
-                Width = 290
-                ExplicitWidth = 290
-              end
-              inherited RenameRuntimeLibraryButton: TButton
-                Width = 290
-                ExplicitWidth = 290
-              end
-              inherited AddClassButton: TButton
-                Width = 290
-                ExplicitWidth = 290
-              end
             end
             inherited GroupBox1: TGroupBox
               Width = 292
@@ -283,6 +255,9 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               end
             end
           end
+        end
+        inherited SearchEdit: TEdit
+          Width = 300
         end
       end
     end

@@ -73,15 +73,28 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuChooseBuildStorageMode">
+     <property name="title">
+      <string>Choose Build Storage Mode</string>
+     </property>
+     <addaction name="actionBuildMode1"/>
+     <addaction name="actionBuildMode2"/>
+     <addaction name="actionBuildMode3"/>
+    </widget>
+    <addaction name="actionCreateSimple"/>
     <addaction name="actionCreateConfig"/>
     <addaction name="actionLoadConfig"/>
     <addaction name="actionSaveConfig"/>
+    <addaction name="actionAutocopyConfig"/>
     <addaction name="actionCopyConfig"/>
     <addaction name="actionCloseConfig"/>
+    <addaction name="actionRenameConfig"/>
     <addaction name="separator"/>
     <addaction name="actionConfigOptions"/>
     <addaction name="actionApplicationOptions"/>
     <addaction name="actionClassesDescriptio"/>
+    <addaction name="separator"/>
+    <addaction name="menuChooseBuildStorageMode"/>
     <addaction name="separator"/>
     <addaction name="actionCreateModel"/>
     <addaction name="actionLoadModel"/>
@@ -96,17 +109,22 @@
     <addaction name="actionSaveCommonDescriptions"/>
     <addaction name="actionSaveClassesDescriptions"/>
     <addaction name="separator"/>
+    <addaction name="actionCreateSaveMockLibs"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuChannels">
     <property name="title">
      <string>Channels</string>
     </property>
-    <addaction name="actionAddNew"/>
-    <addaction name="actionInsert"/>
-    <addaction name="actionDeleteLast"/>
-    <addaction name="actionDeleteAll"/>
-    <addaction name="actionClone"/>
+    <addaction name="actionAddCh"/>
+    <addaction name="actionInsertCh"/>
+    <addaction name="actionCloneCh"/>
+    <addaction name="actionDeleteSelectedCh"/>
+    <addaction name="separator"/>
+    <addaction name="actionStartCh"/>
+    <addaction name="actionPauseCh"/>
+    <addaction name="actionResetCh"/>
    </widget>
    <widget class="QMenu" name="menuCalculate">
     <property name="title">
@@ -151,6 +169,7 @@
     <addaction name="menuBroadcasters"/>
     <addaction name="actionServerControl"/>
     <addaction name="actionTcpServer"/>
+    <addaction name="actionFtpTest"/>
    </widget>
    <widget class="QMenu" name="menuNewWindow">
     <property name="title">
@@ -244,15 +263,6 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents"/>
-  </widget>
-  <widget class="QDockWidget" name="dockWidgetGraph">
-   <property name="windowTitle">
-    <string>Graph</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetProfiling">
    <property name="windowTitle">
@@ -383,20 +393,20 @@
     <string>Save Classes Descriptions</string>
    </property>
   </action>
-  <action name="actionAddNew">
+  <action name="actionAddCh">
    <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
     <bool>true</bool>
    </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
-    <string>Add New</string>
+    <string>Add</string>
    </property>
   </action>
-  <action name="actionInsert">
+  <action name="actionInsertCh">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Insert</string>
@@ -404,7 +414,7 @@
   </action>
   <action name="actionDeleteLast">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Delete Last</string>
@@ -412,7 +422,7 @@
   </action>
   <action name="actionDeleteAll">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Delete All</string>
@@ -576,7 +586,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Create Config</string>
+    <string>Create Wizard</string>
    </property>
   </action>
   <action name="actionDevLineHttpBroadcaster">
@@ -645,9 +655,9 @@
     <string>Run N Steps</string>
    </property>
   </action>
-  <action name="actionClone">
+  <action name="actionCloneCh">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Clone</string>
@@ -669,6 +679,69 @@
    </property>
    <property name="text">
     <string>TcpServer</string>
+   </property>
+  </action>
+  <action name="actionCreateSaveMockLibs">
+   <property name="text">
+    <string>Create and Save Mock Libs</string>
+   </property>
+   <property name="toolTip">
+    <string>Create and Save Mock Libs</string>
+   </property>
+  </action>
+  <action name="actionBuildMode1">
+   <property name="text">
+    <string>Build Mode 1 (Static -&gt; RT)</string>
+   </property>
+  </action>
+  <action name="actionBuildMode2">
+   <property name="text">
+    <string>Build Mode 2 (Static -&gt; Mock -&gt; RT)</string>
+   </property>
+  </action>
+  <action name="actionBuildMode3">
+   <property name="text">
+    <string>Build Mode 3 (Mock -&gt; RT)</string>
+   </property>
+  </action>
+  <action name="actionFtpTest">
+   <property name="text">
+    <string>Ftp Test</string>
+   </property>
+  </action>
+  <action name="actionCreateSimple">
+   <property name="text">
+    <string>Create Simple</string>
+   </property>
+  </action>
+  <action name="actionAutocopyConfig">
+   <property name="text">
+    <string>Autocopy Config</string>
+   </property>
+  </action>
+  <action name="actionDeleteSelectedCh">
+   <property name="text">
+    <string>Delete Selected</string>
+   </property>
+  </action>
+  <action name="actionStartCh">
+   <property name="text">
+    <string>Start</string>
+   </property>
+  </action>
+  <action name="actionPauseCh">
+   <property name="text">
+    <string>Pause</string>
+   </property>
+  </action>
+  <action name="actionResetCh">
+   <property name="text">
+    <string>Reset</string>
+   </property>
+  </action>
+  <action name="actionRenameConfig">
+   <property name="text">
+    <string>Rename Config</string>
    </property>
   </action>
  </widget>

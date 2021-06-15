@@ -59,8 +59,9 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
- : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0),
-   MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor)
+ : Id(0), Activity(false), MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor),
+   Coord(0), PComponents(0), NumComponents(0), LastId(0)
+
 {
  AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UContainer>(this,&UContainer::SetId,&UContainer::GetId));
  AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UContainer>(this,&UContainer::SetName,&UContainer::GetName));
@@ -706,13 +707,17 @@ NameT UContainer::GetLongName(const UEPtr<UContainer> &mainowner) const
 // Возвращает имя дочернего компонента по его Id
 const NameT& UContainer::GetComponentName(const UId &id) const
 {
- for(std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
-								 J=CompsLookupTable.end(); I!=J; ++I)
+ std::map<NameT,UId>::const_iterator I,J;
+ for(I=CompsLookupTable.begin(), J=CompsLookupTable.end(); I!=J; ++I)
  {
   if(I->second == id)
-   return I->first;
+   break;
  }
- RDK_THROW(EComponentIdNotExist(id));
+
+ if(I ==J)
+  RDK_THROW(EComponentIdNotExist(id));
+
+ return I->first;
 }
 
 // Возвращает Id дочернего компонента по его имени
@@ -732,13 +737,17 @@ const UId& UContainer::GetComponentId(const NameT &name, bool nothrow) const
 // Возвращает имя локального указателя по его Id
 const NameT& UContainer::GetPointerName(const UId &id) const
 {
- for(PointerMapCIteratorT I=PointerLookupTable.begin(),
-                                 J=PointerLookupTable.end(); I!=J; ++I)
+ PointerMapCIteratorT I,J;
+ for(I=PointerLookupTable.begin(), J=PointerLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
-   return I->first;
+   break;
  }
- RDK_THROW(EPointerIdNotExist(id));
+
+ if(I == J)
+  RDK_THROW(EPointerIdNotExist(id));
+
+ return I->first;
 }
 
 // Возвращает Id локального указателя по его имени
@@ -1141,9 +1150,9 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
   if(id == (*comps)->Id)
    return *comps;
 
- if(nothrow)
-  return 0;
- RDK_THROW(EComponentIdNotExist(id));
+ if(!nothrow)
+  RDK_THROW(EComponentIdNotExist(id));
+ return 0;
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
@@ -1271,7 +1280,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 
  const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
- if(time_step_prop_type & ptPubParameter == ptPubParameter)
+ if((time_step_prop_type & ptPubParameter) == ptPubParameter)
   comp->ChangeUseIndTimeStepMode(true);
  else
   comp->ChangeUseIndTimeStepMode(false);
@@ -1348,7 +1357,7 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
 
  const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
- if(time_step_prop_type & ptPubParameter == ptPubParameter)
+ if((time_step_prop_type & ptPubParameter) == ptPubParameter)
   comp->ChangeUseIndTimeStepMode(true);
  else
   comp->ChangeUseIndTimeStepMode(false);
@@ -2600,7 +2609,7 @@ void UContainer::DelAllControllers(bool forchilds)
 void UContainer::UnLinkAllControllers(bool forchilds)
 {
  while(Controllers.begin() != Controllers.end())
-  Controllers.front()->UnLink(this);
+  Controllers.front()->UnLink(forchilds);
 
  if(forchilds)
  {

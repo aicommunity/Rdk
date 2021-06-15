@@ -55,6 +55,7 @@ void UCalculationChannelsWidget::AUpdateInterface()
     item->setData(Qt::UserRole, i);
     if(i == currentChannel) ui->listWidgetChannels->setCurrentItem(item);
   }
+  emit updateVisibility();
 }
 
 void UCalculationChannelsWidget::channelSelectionChanged()

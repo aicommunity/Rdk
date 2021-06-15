@@ -18,7 +18,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из RT библиотек
@@ -140,12 +140,15 @@ QString UClassesListWidget::selctedClass() const
   {
     case 0:
       return ui->listWidgetStorageByName->currentItem()->text();
+    break;
     case 1:
       if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
         return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    break;
     default:
       return QString();
   }
+  return QString();
 }
 
 void UClassesListWidget::AUpdateLibsView(QString lib_name)
@@ -157,7 +160,7 @@ void UClassesListWidget::AUpdateLibsView(QString lib_name)
         return;
 
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     ui->listWidgetRTlibs->clear();
@@ -272,7 +275,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из RT библиотек
@@ -293,6 +296,28 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
         RTclassesNames += libClasses;
     }
 
+    // Список Mock библиотек
+    storage->GetLibsNameListByType(buff,3);
+    QStringList MockLibsNames = QString(buff.c_str()).split(",");
+
+    // Список всех компонентов из Mock библиотек
+    QStringList MockClassesNames;
+
+    foreach(str, MockLibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        // Если нет классов
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        MockClassesNames += libClasses;
+    }
+
 
     // список всех классов
     const char * stringBuff = Storage_GetClassesNameList();
@@ -306,6 +331,10 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
             if (str.contains(arg1, Qt::CaseInsensitive))
             {
                 QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
+
+                if(MockClassesNames.indexOf(str)!=-1)
+                    item->setTextColor(Qt::darkYellow);
+
                 if(RTclassesNames.indexOf(str)!=-1)
                     item->setTextColor(Qt::darkCyan);
                 item->setText(str);
@@ -323,7 +352,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
     // Список всех компонентов из RT библиотек
@@ -344,17 +373,48 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
         RTclassesNames += libClasses;
     }
 
-    //нициализация древовидного списка по библиотекам
+
+    // Список Mock библиотек
+    storage->GetLibsNameListByType(buff,3);
+    QStringList MockLibsNames = QString(buff.c_str()).split(",");
+
+    // Список всех компонентов из Mock библиотек
+    QStringList MockClassesNames;
+
+    foreach(str, MockLibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        // Если нет классов
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        MockClassesNames += libClasses;
+    }
+
+
+    //инициализация древовидного списка по библиотекам
     const char * stringBuff = Storage_GetClassLibrariesList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
 
     bool isRTlib = false;
+    bool isMocklib = false;
     foreach(str, componentNames)
     {
         if(str != "")
         {
+            isMocklib = false;
             isRTlib = false;
+
+            // Если это Mock библиотека
+            if(MockLibsNames.indexOf(str)!=-1)
+                isMocklib = true;
+
             // Если это RT библиотека
             if(RTlibsNames.indexOf(str)!=-1)
                 isRTlib = true;
@@ -364,6 +424,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
                 item->setExpanded(true);
                 item->setText(0, str);
+                if(isMocklib)
+                    item->setTextColor(0,Qt::darkMagenta);
                 if(isRTlib)
                     item->setTextColor(0,Qt::darkBlue);
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
@@ -376,6 +438,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                     {
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
+                         if(isMocklib)
+                             classItem->setTextColor(0,Qt::darkYellow);
                          if(isRTlib)
                              classItem->setTextColor(0,Qt::darkCyan);
                     }
@@ -388,6 +452,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 bool isLibFind = false;
                 item->setExpanded(true);
                 item->setText(0, str);
+                if(isMocklib)
+                    item->setTextColor(0,Qt::darkMagenta);
                 if(isRTlib)
                     item->setTextColor(0,Qt::darkBlue);
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
@@ -401,6 +467,8 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                          isLibFind = true;
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
+                         if(isMocklib)
+                             classItem->setTextColor(0,Qt::darkYellow);
                          if(isRTlib)
                              classItem->setTextColor(0,Qt::darkCyan);
                     }
@@ -424,7 +492,7 @@ void UClassesListWidget::tab2_textChanged(const QString &arg1)
     // поиск имен runtime-библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
-    storage->GetRTlibsNameList(buff);
+    storage->GetLibsNameListByType(buff,2);
     QStringList componentNames = QString(buff.c_str()).split(",");
 
     QString str;
@@ -545,7 +613,7 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
         lib_name  = ui->listWidgetRTlibs->currentItem()->text();
 
     std::string buff;
-    engine->GetModel()->GetStorage()->GetRTlibsNameList(buff);
+    engine->GetModel()->GetStorage()->GetLibsNameListByType(buff,2);
     QStringList libs_names = QString(buff.c_str()).split(",");
 
     CrClassDialog* dialog = new CrClassDialog(libs_names, lib_name, QString::fromStdString(container->GetName()));
@@ -775,7 +843,7 @@ void CrClassDialog::ReplaceClicked()
 
 }
 
-const bool CrClassDialog::GetReplace() const
+bool CrClassDialog::GetReplace() const
 {
     return Replace;
 }
@@ -816,4 +884,9 @@ DeleteDialog::DeleteDialog(QString title, QString message, QWidget* pwgt)
     vbox_layout->addWidget(info_message);
     vbox_layout->addLayout(hbox_layout);
     setLayout(vbox_layout);
+}
+
+void UClassesListWidget::on_tabWidget_currentChanged(int index)
+{
+    on_lineEditSearch_textChanged("");
 }

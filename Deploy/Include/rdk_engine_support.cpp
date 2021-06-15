@@ -28,13 +28,15 @@ URdkCoreManager::URdkCoreManager(void)
  DebugMode=false;
  BufObjectsMode=1;
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
- GlobalLogger.SetDebugMode(true);
+ GlobalLogger.SetDebugMode(DebugMode);
  GlobalLogger.SetDebuggerMessageFlag(false);
  GlobalLogger.SetEventsLogMode(true);
  SystemLogger.RegisterGlobalLogger(&GlobalLogger);
  SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
- SystemLogger.SetDebugMode(true);
+ SystemLogger.SetDebugMode(DebugMode);
  SystemLogger.SetDebuggerMessageFlag(false);
+
+ StorageBuildMode = 1;
 }
 
 URdkCoreManager::~URdkCoreManager(void)
@@ -51,6 +53,31 @@ URdkCoreManager::~URdkCoreManager(void)
 // --------------------------
 // Методы управления данными
 // --------------------------
+
+// Установка необходимого режима сборки
+void URdkCoreManager::SetStorageBuildMode(int mode)
+{
+    StorageBuildMode = mode;
+}
+
+// Получение текущего режима сборки
+int URdkCoreManager::GetStorageBuildMode()
+{
+    return StorageBuildMode;
+}
+
+// Установка пути к папкам библиотек
+void URdkCoreManager::SetLibrariesPath(const std::string& value)
+{
+    LibrariesPath = value;
+}
+
+// Получение пути к папкам библиотек
+const std::string URdkCoreManager::GetLibrariesPath(void) const
+{
+ return LibrariesPath;
+}
+
 // Возвращает имя каталога бинарных файлов
 const char* URdkCoreManager::GetSystemDir(void)
 {
@@ -237,7 +264,7 @@ int URdkCoreManager::LoadFonts(void)
 // Загружает новый глобальный шрифт
 bool URdkCoreManager::AddFont(const std::string &font_file_name)
 {
- int res=RDK_SUCCESS;
+ //int res=RDK_SUCCESS;
  RDK_SYS_TRY
  {
   try
@@ -263,18 +290,15 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
   catch (RDK::UException &exception)
   {
    SystemLogger.ProcessException(exception);
-   res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
    SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
-   res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
   SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
-  res=RDK_EXCEPTION_CATCHED;
  }
 
  return false;
@@ -616,6 +640,9 @@ int URdkCoreManager::ChannelCreate(int index)
     ChannelDestroy(index);
     return RDK_E_CORE_STORAGE_CREATE_FAIL;
    }
+   //
+   StorageList[index]->SetBuildMode(StorageBuildMode);
+   StorageList[index]->SetLibrariesPath(LibrariesPath);
 
    EnvironmentList[index]=FuncCreateNewEnvironment();
    if(!EnvironmentList[index])

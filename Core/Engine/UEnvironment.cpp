@@ -136,12 +136,12 @@ void UEnvironment::SetSystemDir(const std::string& dir)
 }
 
 /// Минимальный интервал времени между итерациями счета (мс)
-long long UEnvironment::GetMinInterstepsInterval(void) const
+unsigned long long UEnvironment::GetMinInterstepsInterval(void) const
 {
  return MinInterstepsInterval;
 }
 
-bool UEnvironment::SetMinInterstepsInterval(long long value)
+bool UEnvironment::SetMinInterstepsInterval(unsigned long long value)
 {
  if(MinInterstepsInterval == value)
   return true;
@@ -773,8 +773,8 @@ void UEnvironment::RTCalculate(void)
  int i=0;
  if(LastDuration < timer_interval)
   LastDuration=timer_interval;
- double realtime=Time.GetSourceCurrentLocalTime();
- double doubletime=Time.GetDoubleTime();
+ //double realtime=Time.GetSourceCurrentLocalTime();
+ //double doubletime=Time.GetDoubleTime();
  double model_duration=Time.GetSourceCurrentLocalTime()-Time.GetDoubleTime();
  double model_start_calc_time=Time.GetDoubleTime();
 
@@ -850,7 +850,7 @@ void UEnvironment::FastCalculate(double calc_interval)
  ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
  Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
- unsigned long long curtime;
+ //unsigned long long curtime;
  unsigned long long timer_interval=0;
  //double devicemodeltime=0;
 
@@ -890,7 +890,7 @@ void UEnvironment::FastCalculate(double calc_interval)
    break;
   }
  }
- curtime=GetCurrentStartupTime();
+// curtime=GetCurrentStartupTime();
 
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {
@@ -1008,6 +1008,7 @@ bool UEnvironment::AReset(void)
  ProcEndTime=StartupTime;
  LastDuration=1;
  LastStepStartTime=0;
+ Time.SetTime(0);
 
  if(Logger)
   Logger->Reset();
@@ -1036,7 +1037,6 @@ bool UEnvironment::AReset(void)
    return false;
  }
 
- Time.SetTime(0);
  return true;
 }
 

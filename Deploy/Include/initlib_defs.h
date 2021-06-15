@@ -8,11 +8,15 @@
 #define RDK_CALL
 #else
     #ifdef QT_VERSION
-    #define RDK_LIB_TYPE
-    #define RDK_CALL
+        #ifndef RDK_LIB_TYPE
+            #define RDK_LIB_TYPE
+            #define RDK_CALL
+        #endif
     #else
-    #define RDK_LIB_TYPE
-    #define RDK_CALL
+        #ifndef RDK_LIB_TYPE
+            #define RDK_LIB_TYPE
+            #define RDK_CALL
+        #endif
     #endif
 #endif
 

@@ -10,8 +10,12 @@ DEFINES += RDK_QT
 CONFIG += c++11
 
 INCLUDEPATH += ../RdkQTcpClientLib
-LIBS+= -L../../../Bin/Platform/Linux/RdkQTcpClientLib -lRdkQTcpClientLib
 
+linux {
+    LIBS+= -L../../../Bin/Platform/Linux/RdkQTcpClientLib -lRdkQTcpClientLib
+} else:windows {
+    LIBS+= -L../../../Bin/Platform/Win/RdkQTcpClientLib -lRdkQTcpClientLib
+}
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings

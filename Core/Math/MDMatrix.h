@@ -149,6 +149,8 @@ int GetRows(void) const;
 // Доступ к элементу
 T& operator [] (int i);
 const T& operator [] (int i) const;
+T& operator [] (size_t i);
+const T& operator [] (size_t i) const;
 
 T& operator () (int i, int j);
 const T& operator () (int i, int j) const;
@@ -741,6 +743,18 @@ T& MDMatrix<T>::operator [] (int i)
 
 template<class T>
 const T& MDMatrix<T>::operator [] (int i) const
+{
+ return Data[i];
+}
+
+template<class T>
+T& MDMatrix<T>::operator [] (size_t i)
+{
+ return Data[i];
+}
+
+template<class T>
+const T& MDMatrix<T>::operator [] (size_t i) const
 {
  return Data[i];
 }

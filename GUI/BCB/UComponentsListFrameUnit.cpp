@@ -328,8 +328,31 @@ void TUComponentsListFrame::UpdateIO(void)
  RDK::separatestring(output_names,outputs,',');
  RDK::separatestring(input_names,inputs,',');
 
+ std::vector<std::string>::iterator I=outputs.begin(),J;
+ while(I != outputs.end())
+ {
+  if(I->find("DataOutput") == 0)
+  {
+   outputs.erase(I);
+  }
+  else
+   ++I;
+ }
+
+ I=inputs.begin();
+ while(I != inputs.end())
+ {
+  if(I->find("DataInput") == 0)
+  {
+   inputs.erase(I);
+  }
+  else
+   ++I;
+ }
+
  InputsStringGrid->Perform(WM_SETREDRAW, 0, (NativeInt)0);
  OutputsStringGrid->Perform(WM_SETREDRAW, 0, (NativeInt)0);
+
 try
 {
 
@@ -339,6 +362,8 @@ try
   OutputsStringGrid->RowCount=1+outputs.size();
   OutputsStringGrid->ColCount=2;
 
+  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->ClientWidth-OutputsStringGrid->ColWidths[1]-30;
+
   OutputsStringGrid->Cells[0][0]="Name";
   OutputsStringGrid->Cells[1][0]="Type";
 
@@ -347,8 +372,6 @@ try
    OutputsStringGrid->Cells[0][i+1]=outputs[i].c_str();
    OutputsStringGrid->Cells[1][i+1]="";
   }
-
-  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-25;
  }
  else
  {
@@ -358,6 +381,8 @@ try
    OutputsStringGrid->RowCount=1+num;
    OutputsStringGrid->ColCount=2;
 
+   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->ClientWidth-OutputsStringGrid->ColWidths[1]-30;
+
    OutputsStringGrid->Cells[0][0]="Name";
    OutputsStringGrid->Cells[1][0]="Type";
 
@@ -366,8 +391,6 @@ try
 	OutputsStringGrid->Cells[0][i+1]=IntToStr(i);
 	OutputsStringGrid->Cells[1][i+1]="";
    }
-
-   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-25;
   }
  }
 
@@ -377,6 +400,8 @@ try
  InputsStringGrid->RowCount=1+inputs.size();
  InputsStringGrid->ColCount=2;
 
+ InputsStringGrid->ColWidths[0]=InputsStringGrid->ClientWidth-InputsStringGrid->ColWidths[1]-30;
+
  InputsStringGrid->Cells[0][0]="Name";
  InputsStringGrid->Cells[1][0]="Type";
 
@@ -385,8 +410,6 @@ try
   InputsStringGrid->Cells[0][i+1]=inputs[i].c_str();
   InputsStringGrid->Cells[1][i+1]="";
  }
-
- InputsStringGrid->ColWidths[0]=InputsStringGrid->Width-InputsStringGrid->ColWidths[0]-25;
 
  if(InputsStringGrid->RowCount>1)
   InputsStringGrid->FixedRows=1;
@@ -748,8 +771,11 @@ void TUComponentsListFrame::SelectComponentByName(const std::string& name)
 // Поднимается на уровень вверх
 void TUComponentsListFrame::SelectUp(void)
 {
+ std::string curr_name=CurrentComponentName;
  SetSelectedComponentName("");
  StringGridDblClick(this);
+ SelectedId=-1;
+ SetSelectedComponentName(curr_name);
 }
 
 // Длинный строковой id текущего компонента
@@ -897,6 +923,9 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
    DrawEngineFrame->UpdateInterface(true);
   }
 //   DrawEngineFrame->SelectComponent(GetCurrentComponentName());
+
+  SelectedId=-1;
+  SetSelectedComponentName(SelectedComponentName);
   return;
  }
 

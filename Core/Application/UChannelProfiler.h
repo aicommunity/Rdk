@@ -5,6 +5,23 @@
 
 namespace RDK {
 
+/// Элемент данных производительности
+struct RDK_LIB_TYPE UPerformanceElement
+{
+/// Длительность расчета
+long long Duration;
+
+/// Момент времени регистрации
+unsigned long long RegTime;
+
+/// Интервал между итерациями расчета
+long long Interval;
+
+UPerformanceElement(void);
+UPerformanceElement(const UPerformanceElement &copy);
+UPerformanceElement(long long duration, unsigned long long reg_time, long long interval);
+};
+
 /// Содержит интегральные данные о производительности движка
 struct RDK_LIB_TYPE UIntegralPerfomanceResults
 {
@@ -35,6 +52,21 @@ UIntegralPerfomanceResults(void);
 /// Результаты расчетов производительности для компонента или элемента интерфейса
 struct RDK_LIB_TYPE UPerfomanceResults
 {
+/// Минимальное время расчета, с
+double MinDuration;
+
+/// Максимальное время расчета, с
+double MaxDuration;
+
+/// Минимальный интервал между расчетом, с
+double MinInterval;
+
+/// Максимальный интервал между расчетом, с
+double MaxInterval;
+
+/// Средний интервал между расчетом, с
+double AvgInterval;
+
 /// Среднее время расчета, с
 double AvgDuration;
 
@@ -47,14 +79,16 @@ UPerfomanceResults(void);
 /// История производительности компонента или элемента интерфейса
 struct RDK_LIB_TYPE UPerfomanceData: public UPerfomanceResults
 {
-/// Данные производительности, мс
-std::list<long long> CalcDurationHistory;
+/// Данные производительности: <длительность расчета (мс),момент времени фиксации результата (мс)>
+std::list<UPerformanceElement> CalcDurationHistory;
 
 /// Добавляет данные в историю
-void AddHistory(long long value, int max_values);
+/// value - время, затраченное на обработку компонента
+/// interval - интервал между последним расчетом и предпоследним
+void AddHistory(long long value, long long interval, int max_values);
 
-/// Расчет среднего
-void CalcAverage(void);
+/// Расчет метрик
+void CalcMetrics(void);
 
 /// Расчет процента от общего времений
 void CalcPercentage(double full_time);
@@ -65,35 +99,35 @@ class RDK_LIB_TYPE UChannelProfiler
 {
 protected: // Параметры
 /// Индекс канала
-int ChannelIndex;
+UELockVar<int> ChannelIndex;
 
 /// Число усреднений
-int AverageIterations;
+UELockVar<int> AverageIterations;
 
 /// Массив длинных имен наблюдаемых компонент
-std::vector<std::string> ComponentsName;
+UELockVar<std::vector<std::string> > ComponentsName;
 
 /// Массив имен наблюдаемых интерфейсов
-std::vector<std::string> GuiNames;
+UELockVar<std::vector<std::string> > GuiNames;
 
 protected: // Данные
 /// Производительность компонент
-std::vector<UPerfomanceData> ComponentsPerfomance;
+UELockVar<std::vector<UPerfomanceData> > ComponentsPerfomance;
 
 /// Производительность интерфейсов
-std::vector<UPerfomanceData> GuiPerfomance;
+UELockVar<std::vector<UPerfomanceData> > GuiPerfomance;
 
 /// Производительность всей модели
-UPerfomanceData ModelPerfomance;
+UELockVar<UPerfomanceData> ModelPerfomance;
 
 /// Производительность всего кроме модели
-UPerfomanceData OtherPerfomance;
+UELockVar<UPerfomanceData> OtherPerfomance;
 
 /// Суммарная производительность Gui
-UPerfomanceData SummaryGuiPerfomance;
+UELockVar<UPerfomanceData> SummaryGuiPerfomance;
 
 /// Интегральные данные о производительности
-UIntegralPerfomanceResults IntegralPerfomanceResults;
+UELockVar<UIntegralPerfomanceResults> IntegralPerfomanceResults;
 
 protected: // Выходные данные расчета
 /// Список легенда-время в секундах для компонент и модели в целом
@@ -113,15 +147,15 @@ protected: // Выходные данные расчета
 /// 4: полное время цикла
 /// В обоих случаях разность между 5-(2+3+4), или 4-(1+2+3) может быть не равна
 /// нулю, т.к. используются усредненные данные по каждой величине
-std::list<pair<std::string, UPerfomanceResults> > ComponentsProfilerOutputData;
+UELockVar<std::list<pair<std::string, UPerfomanceResults> > > ComponentsProfilerOutputData;
 
 /// Список легенда-время в секундах обновления Gui
 /// элементы расположены подряд в соответствии с GuiNames
-std::list<pair<std::string, UPerfomanceResults> > GuiProfilerOutputData;
+UELockVar<std::list<pair<std::string, UPerfomanceResults> > > GuiProfilerOutputData;
 
 protected: // Временные переменные
 /// Мьютекс блокировки доступа к данным
-UGenericMutex* Mutex;
+//UGenericMutex* Mutex;
 
 public: // Методы
 /// --------------------------
@@ -183,11 +217,11 @@ std::string GetGuiName(int index) const;
 void ClearPerfomanceData(void);
 
 /// Добавляет данные для выбранного компонента
-void AddComponentPerfomanceData(int index, long long value);
-void AddComponentPerfomanceData(const std::string &name, long long value);
+void AddComponentPerfomanceData(int index, long long value, long long interval);
+void AddComponentPerfomanceData(const std::string &name, long long value, long long interval);
 
 /// Добавляет данные для выбранного gui
-void AddGuiPerfomanceData(int index, long long value);
+void AddGuiPerfomanceData(int index, long long value, long long interval);
 
 /// Выполняет считывание сырых данных ядра о производительности
 void LoadCorePerfomanceData(void);
