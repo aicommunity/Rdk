@@ -1710,9 +1710,12 @@ bool UApplication::RenameProject(const std::string &filename)
   GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(false);
 
  std::string resfilename=filename;
+
+ int res=RdkMoveFile(ProjectPath, resfilename);
+
  if(filename.find_last_of("\\/") != filename.size()-1)
   resfilename+="/";
- int res=RdkMoveFile(ProjectPath, resfilename);
+
  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(events_log_mode);
  if(res == 0)
  {
