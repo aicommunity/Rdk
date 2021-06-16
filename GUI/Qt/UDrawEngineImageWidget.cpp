@@ -257,38 +257,57 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
     // ≈сли конфигураци€ не открыта, то создать новую
     if(!Application->GetProjectOpenFlag())
     {
-     QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Config not created. Auto-create one-channel configuration and model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
-     if (reply == QMessageBox::Yes)
-     {
-      std::string file_name;
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Config not created. Auto-create one-channel configuration and model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
+        if (reply == QMessageBox::Yes)
+        {
+            std::string file_name;
 
-      QString default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../Configs/").c_str());
-      QDir path1(default_path);
-      if(!path1.exists(default_path))
-      {
-       default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../../Configs/").c_str());
-       QDir path2(default_path);
-       if(!path2.exists(default_path))
-       {
-        default_path=QString::fromLocal8Bit(Application->GetWorkDirectory().c_str());
-       }
-      }
+            QString default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../Configs/").c_str());
+            QDir path1(default_path);
+            if(!path1.exists(default_path))
+            {
+                default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../../Configs/").c_str());
+                QDir path2(default_path);
+                if(!path2.exists(default_path))
+                {
+                    default_path=QString::fromLocal8Bit(Application->GetWorkDirectory().c_str());
+                }
+            }
 
-      QString result_path=QFileDialog::getExistingDirectory(this, tr("Create project directory"), default_path, QFileDialog::ShowDirsOnly);
+            std::string path_dialog=default_path.toUtf8().data();
 
-      result_path+="/Project.ini";
-      file_name=result_path.toLocal8Bit().constData();
+            // —оздание папки проекта автоматическое либо выбор существующей
+            if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+            {
+                time_t curr_time;
+                time(&curr_time);
+
+                // ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
+                std::string folder=RDK::get_text_time(curr_time, '.', '_');
+                path_dialog+=std::string("/Autocreate")+folder.c_str();
+
+                if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
+                    return;
+            }
+            else
+            {
+                path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
+            }
+
+            if(path_dialog.empty())
+                return;
+
+            file_name=path_dialog + "/Project.ini";
 
 
-      Application->CreateProject(file_name, classname.toLocal8Bit().constData());
+            Application->CreateProject(file_name, classname.toLocal8Bit().constData());
 
-      selectedComponent = "";
-      DrawEngine.SelectSingleComponent(selectedComponent);
-      emit componentSelected(QString::fromStdString(selectedComponent));
-      reDrawScheme(true);
-
-     }
-     return;
+            selectedComponent = "";
+            DrawEngine.SelectSingleComponent(selectedComponent);
+            emit componentSelected(QString::fromStdString(selectedComponent));
+            reDrawScheme(true);
+        }
+        return;
     }
 
     //если модель не существует, спросить не создать ли ее

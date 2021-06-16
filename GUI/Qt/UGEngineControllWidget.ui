@@ -88,6 +88,7 @@
     <addaction name="actionAutocopyConfig"/>
     <addaction name="actionCopyConfig"/>
     <addaction name="actionCloseConfig"/>
+    <addaction name="actionRenameConfig"/>
     <addaction name="separator"/>
     <addaction name="actionConfigOptions"/>
     <addaction name="actionApplicationOptions"/>
@@ -116,11 +117,14 @@
     <property name="title">
      <string>Channels</string>
     </property>
-    <addaction name="actionAddNew"/>
-    <addaction name="actionInsert"/>
-    <addaction name="actionDeleteLast"/>
-    <addaction name="actionDeleteAll"/>
-    <addaction name="actionClone"/>
+    <addaction name="actionAddCh"/>
+    <addaction name="actionInsertCh"/>
+    <addaction name="actionCloneCh"/>
+    <addaction name="actionDeleteSelectedCh"/>
+    <addaction name="separator"/>
+    <addaction name="actionStartCh"/>
+    <addaction name="actionPauseCh"/>
+    <addaction name="actionResetCh"/>
    </widget>
    <widget class="QMenu" name="menuCalculate">
     <property name="title">
@@ -389,7 +393,7 @@
     <string>Save Classes Descriptions</string>
    </property>
   </action>
-  <action name="actionAddNew">
+  <action name="actionAddCh">
    <property name="checkable">
     <bool>false</bool>
    </property>
@@ -397,10 +401,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Add New</string>
+    <string>Add</string>
    </property>
   </action>
-  <action name="actionInsert">
+  <action name="actionInsertCh">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -651,7 +655,7 @@
     <string>Run N Steps</string>
    </property>
   </action>
-  <action name="actionClone">
+  <action name="actionCloneCh">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -713,6 +717,31 @@
   <action name="actionAutocopyConfig">
    <property name="text">
     <string>Autocopy Config</string>
+   </property>
+  </action>
+  <action name="actionDeleteSelectedCh">
+   <property name="text">
+    <string>Delete Selected</string>
+   </property>
+  </action>
+  <action name="actionStartCh">
+   <property name="text">
+    <string>Start</string>
+   </property>
+  </action>
+  <action name="actionPauseCh">
+   <property name="text">
+    <string>Pause</string>
+   </property>
+  </action>
+  <action name="actionResetCh">
+   <property name="text">
+    <string>Reset</string>
+   </property>
+  </action>
+  <action name="actionRenameConfig">
+   <property name="text">
+    <string>Rename Config</string>
    </property>
   </action>
  </widget>

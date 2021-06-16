@@ -111,19 +111,13 @@ public slots:
     void actionCloseConfig();
     void actionCopyConfig();
     void actionAutoCopyConfig();
+    void actionRenameConfig();
     void actionExit();
     void actionConfigOptions();
     void actionCreateSaveMockLibs();
     void actionBuildMode1();
     void actionBuildMode2();
     void actionBuildMode3();
-
-    //chanels menu
-    void actionAddNew();
-    void actionInsert();
-    void actionDeleteLast();
-    void actionDeleteAll();
-    void actionClone();
 
 
     // calculate menu

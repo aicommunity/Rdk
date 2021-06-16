@@ -110,7 +110,18 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     channels->setGeometry(rect);
     ui->dockWidgetChannels->setWidget(channels);
     ui->dockWidgetChannels->hide();
+
+    //channels menu actions:
+    connect(ui->actionAddCh, SIGNAL(triggered(bool)), channels, SLOT(actionAddChannel()));
+    connect(ui->actionInsertCh, SIGNAL(triggered(bool)), channels, SLOT(actionInsertChannel()));
+    connect(ui->actionDeleteSelectedCh, SIGNAL(triggered(bool)), channels, SLOT(actionDeleteSelectedChannel()));
+    connect(ui->actionCloneCh, SIGNAL(triggered(bool)), channels, SLOT(actionCloneChannel()));
+    connect(ui->actionStartCh, SIGNAL(triggered(bool)), channels, SLOT(actionStartChannel()));
+    connect(ui->actionPauseCh, SIGNAL(triggered(bool)), channels, SLOT(actionPauseChannel()));
+    connect(ui->actionResetCh, SIGNAL(triggered(bool)), channels, SLOT(actionResetChannel()));
+
     connect(channels, SIGNAL(updateVisibility()), this, SLOT(updateChannelsVisibility()));
+
 
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
@@ -161,6 +172,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionCloseConfig, SIGNAL(triggered(bool)), this, SLOT(actionCloseConfig()));
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
     connect(ui->actionAutocopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionAutoCopyConfig()));
+    connect(ui->actionRenameConfig, SIGNAL(triggered(bool)), this, SLOT(actionRenameConfig()));
 
     connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
 
@@ -172,13 +184,6 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionCreateSaveMockLibs,  SIGNAL(triggered(bool)), this, SLOT(actionCreateSaveMockLibs()));
 
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(actionExit()));
-
-    //chanels menu actions:
-    connect(ui->actionAddNew, SIGNAL(triggered(bool)), this, SLOT(actionAddNew()));
-    connect(ui->actionInsert, SIGNAL(triggered(bool)), this, SLOT(actionInsert()));
-    connect(ui->actionDeleteLast, SIGNAL(triggered(bool)), this, SLOT(actionDeleteLast()));
-    connect(ui->actionDeleteAll, SIGNAL(triggered(bool)), this, SLOT(actionDeleteAll()));
-    connect(ui->actionClone, SIGNAL(triggered(bool)), this, SLOT(actionClone()));
 
     // calculate menu actions:
     connect(ui->actionStart, SIGNAL(triggered(bool)), this, SLOT(actionStart()));
@@ -511,6 +516,51 @@ void UGEngineControllWidget::actionAutoCopyConfig()
   }
 }
 
+void UGEngineControllWidget::actionRenameConfig()
+{
+  try
+  {
+    if(!application->GetProjectOpenFlag())
+    {
+        QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
+        return;
+    }
+
+
+    std::string config_path=application->GetProjectPath();
+    if(config_path.empty())
+        return;
+
+    size_t n=config_path.find_last_not_of("\\/");
+    if(config_path.find_last_of("\\/") == config_path.size()-1)
+       config_path.resize(n+1);
+
+    std::string project_name=RDK::extract_file_name(config_path.c_str());
+
+    std::string project_path = RDK::extract_file_path(config_path);
+
+
+    bool ok;
+    std::string new_name = QInputDialog::getText(this, tr("Select new configuration name"),
+                                         tr("Please enter new name: "), QLineEdit::Normal,
+                                         QString::fromStdString(project_name), &ok).toStdString();
+
+    if (ok && !new_name.empty())
+    {
+        if(!application->RenameProject(project_path+new_name))
+            QMessageBox::question(this, "Error", "Falied to rename configuration!", QMessageBox::Ok);
+    }
+  }
+  catch(RDK::UException& e)
+  {
+    QMessageBox::critical(this,"Error at renaming project", QString(e.what()), QMessageBox::Ok);
+  }
+  catch(std::exception& e)
+  {
+    QMessageBox::critical(this,"Error at renaming project", QString(e.what()), QMessageBox::Ok);
+  }
+}
+
 void UGEngineControllWidget::actionExit()
 {
   QApplication::quit();
@@ -562,62 +612,6 @@ void UGEngineControllWidget:: actionBuildMode3()
  }
 }
 
-
-//chanels menu actions:
-void UGEngineControllWidget::actionAddNew()
-{
-    if(!application->GetProjectOpenFlag())
-     return;
-
-    pauseChannel(-1);
-    application->SetNumChannels(application->GetNumChannels()+1);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
-    updateChannelsVisibility();
-}
-
-void UGEngineControllWidget::actionInsert()
-{
-    if(!application->GetProjectOpenFlag())
-     return;
-    pauseChannel(-1);
-    int i=Core_GetSelectedChannelIndex();
-    application->InsertChannel(i);
-    //application->AddChannel(ChannelsStringGrid->Row);
-    //RDK::UIVisualControllerStorage::UpdateInterface(true);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
-    updateChannelsVisibility();
-}
-
-void UGEngineControllWidget::actionDeleteLast()
-{
-    /*if(!application->GetProjectOpenFlag())
-     return;
-    application->SetNumChannels(Core_GetNumChannels()-1);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);*/
-    pauseChannel(-1);
-    application->DeleteChannel(application->GetNumChannels()-1);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
-    updateChannelsVisibility();
-}
-
-void UGEngineControllWidget::actionDeleteAll()
-{
-    if(!application->GetProjectOpenFlag())
-     return;
-    pauseChannel(-1);
-    application->SetNumChannels(1);
-    //RDK::UIVisualControllerStorage::UpdateInterface(true);
-    updateChannelsVisibility();
-}
-
-void UGEngineControllWidget::actionClone()
-{
-    pauseChannel(-1);
-    int cloned_id=application->GetNumChannels();
-    application->CloneChannel(Core_GetSelectedChannelIndex(), cloned_id);
-    RDK::UIVisualControllerStorage::UpdateInterface(true);
-    updateChannelsVisibility();
-}
 
 // calculate menu actions
 

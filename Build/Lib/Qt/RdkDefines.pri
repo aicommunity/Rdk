@@ -1,5 +1,5 @@
 unix {
-QMAKE_CXXFLAGS += -Wno-misleading-indentation
+QMAKE_CXXFLAGS += -Wno-misleading-indentation -Wno-deprecated-copy
 }
 
 DEFINES += LIBRDK_LIBRARY_EXPORT
