@@ -270,6 +270,13 @@ void UGEngineControllWidget::actionLoadConfig()
       return;
     try
     {
+      if(watchWindow == NULL)
+      {
+          watchWindow = new UWatch(this);
+          watchWindow->setWindowTitle("Watch window");
+      }
+
+
       application->OpenProject(fileName.toLocal8Bit().constData());
 
       this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + fileName+"]");

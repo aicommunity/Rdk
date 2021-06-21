@@ -350,21 +350,21 @@ bool UVisualControllerWidget::GetAlwaysUpdateFlag(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &)
+void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        /*if(!Owner)
-            return;
-        xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
-        xml.SelectNodeForce(GetName());*/
-        ASaveParameters();
-        /*xml.WriteInteger("UpdateInterval",UpdateInterval);
+        //if(!Owner)
+        //    return;
+        //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
+        xml.SelectNodeForce(GetName());
+        ASaveParameters(xml);
+        //xml.WriteInteger("UpdateInterval",UpdateInterval);
         //xml.WriteString("ComponentControlName",ComponentControlName);
-        xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
+        //xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
 
+        //xml.SelectUp();
         xml.SelectUp();
-        xml.SelectUp();*/
     }
     catch (RDK::UException &exception)
     {
@@ -380,26 +380,26 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &)
     }*/
 }
 
-void UVisualControllerWidget::ASaveParameters()
+void UVisualControllerWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
 // Загружает параметры интерфейса из xml
-void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &)
+void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        /*if(!Owner)
-            return;
-        xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
+        //if(!Owner)
+        //    return;
+        //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
         xml.SelectNodeForce(GetName());
-        ComponentControlName=xml.ReadString("ComponentControlName","");
-        UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
-        AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);*/
-        ALoadParameters();
-        /*xml.SelectUp();
-        xml.SelectUp();*/
+        //ComponentControlName=xml.ReadString("ComponentControlName","");
+        //UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
+        //AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);*/
+        ALoadParameters(xml);
+        //xml.SelectUp();
+        xml.SelectUp();
     }
     catch (RDK::UException &exception)
     {
@@ -415,7 +415,7 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &)
     }*/
 }
 
-void UVisualControllerWidget::ALoadParameters()
+void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 

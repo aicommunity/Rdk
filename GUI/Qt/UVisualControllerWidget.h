@@ -122,13 +122,13 @@ protected:
 
     /// Сохраняет параметры интерфейса в xml
     /// \details Вызывает метод ASaveParameters() в блоке обработки исключений
-    virtual void SaveParameters(RDK::USerStorageXML &);
-    virtual void ASaveParameters();
+    virtual void SaveParameters(RDK::USerStorageXML &xml);
+    virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
     /// Загружает параметры интерфейса из xml
     /// \details Вызывает метод ALoadParameters() в блоке обработки исключений
-    virtual void LoadParameters(RDK::USerStorageXML &);
-    virtual void ALoadParameters();
+    virtual void LoadParameters(RDK::USerStorageXML &xml);
+    virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
     // Служебные методы управления интерфейсом
     /// Сбрасывает флаг прошедшей перерисовки в этой итерации счета

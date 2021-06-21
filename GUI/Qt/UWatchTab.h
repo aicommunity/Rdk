@@ -58,6 +58,14 @@ public:
     int getColNumber();
     int getRowNumber();
 
+    // Сохраняет параметры интерфейса в xml
+    virtual void ASaveParameters(RDK::USerStorageXML &xml);
+
+    // Загружает параметры интерфейса из xml
+    virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+
+
 private:
     void createGraph();
     void createSplitterGrid(int rowNumber);

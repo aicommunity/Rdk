@@ -43,37 +43,40 @@ void UWatchTab::AUpdateInterface()
     {
         double y;
         double x;
+        double x_min;
+        double x_max;
+        RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
         for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
-            // обратимся к ядру, возьмем матрицу, компонент и имя свойства
-            RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
 
-            RDK::UEPtr<RDK::UContainer> component=model->GetComponentL(graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString(),true);
-            if(!component)
-                continue;
+            std::list<double>::iterator buffIX, buffIY;
+            RDK::UControllerDataReader* data=env->GetDataReader(graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString(),
+                                                                graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString(),
+                                                                graph[graphIndex]->getSerie(serieIndex)->Jx,
+                                                                graph[graphIndex]->getSerie(serieIndex)->Jy);
+            if(!data)
+             continue;
 
-            RDK::MDMatrix<double>* m=component->AccessPropertyData<RDK::MDMatrix<double> >(graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString());
-            if(!m)
-                continue;
+            int data_size=data->XData.size();
 
-            if(m->GetCols()<=graph[graphIndex]->getSerie(serieIndex)->Jx || graph[graphIndex]->getSerie(serieIndex)->Jy)
-                continue;
+            std::vector<double> X, Y;
 
-            //вычисляем координаты точки
-            y=(*m)(graph[graphIndex]->getSerie(serieIndex)->Jy,graph[graphIndex]->getSerie(serieIndex)->Jx);
-            x=Model_GetDoubleRealTime();
+            graph[graphIndex]->getSerie(serieIndex)->clear();
 
-            // и добавим ее в график
-            graph[graphIndex]->addDataToSerie(serieIndex, x, y);
+            std::list<double>::iterator itx, ity;
+            QList<QPointF> points;
+            for (itx = data->XData.begin(), ity = data->YData.begin(); itx != data->XData.end(); ++itx, ++ity)
+            {
+                points.push_back(QPointF(*itx,*ity));
+            }
+
+            graph[graphIndex]->getSerie(serieIndex)->replace(points);
+
+            x_max = data->XData.back();
+            x_min = data->XData.front();
         }
-        //смещаем max оси Х вслед за временем
-        if (x > graph[graphIndex]->axisXrange)
-        {
-            graph[graphIndex]->setAxisXmax(x+0.1);
-            //и min если позволено
-            if(graph[graphIndex]->isAxisXtrackable)graph[graphIndex]->setAxisXmin(x-graph[graphIndex]->axisXrange);
-        }
-
+        graph[graphIndex]->setAxisXmax(x_max);
+        graph[graphIndex]->setAxisXmin(x_min);
     }
 }
 
@@ -241,4 +244,75 @@ int UWatchTab::getColNumber()
 int UWatchTab::getRowNumber()
 {
     return tabRowNumber;
+}
+
+
+// Сохраняет параметры интерфейса в xml
+void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
+{
+    xml.DelNodeInternalContent();
+    xml.WriteInteger("GraphCount", countGraphs());
+    // Пробегаем по списку всех открытых серий
+    for (int graphIndex=0; graphIndex < countGraphs(); graphIndex++)
+    {
+        xml.WriteString ("ChartTitle",      graph[graphIndex]->getChartTitle().toStdString());
+        xml.WriteString ("AxisXName",       graph[graphIndex]->getAxisXName().toStdString());
+        xml.WriteString ("AxisYName",       graph[graphIndex]->getAxisYName().toStdString());
+        xml.WriteFloat  ("AxisXmin",        graph[graphIndex]->getAxisXmin());
+        xml.WriteFloat  ("AxisXmax",        graph[graphIndex]->getAxisXmax());
+        xml.WriteFloat  ("AxisYmin",        graph[graphIndex]->getAxisYmin());
+        xml.WriteFloat  ("AxisYmax",        graph[graphIndex]->getAxisYmax());
+        xml.WriteInteger("SeriesCount", graph[graphIndex]->countSeries());
+        for(int serieIndex=0; serieIndex<graph[graphIndex]->countSeries(); serieIndex++)
+        {
+            xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
+            xml.WriteString ("SerieName",       graph[graphIndex]->getSerieName(serieIndex).toStdString());
+            xml.WriteInteger("SerieWidth",      graph[graphIndex]->getSerieWidth(serieIndex));
+            xml.WriteInteger("SerieLineType",   graph[graphIndex]->getSerieLineType(serieIndex));
+            xml.WriteInteger("SerieColor",      graph[graphIndex]->getSerieColor(serieIndex).rgb());
+
+            xml.WriteString ("SerieNameComponent", graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString());
+            xml.WriteString ("SerieNameProperty", graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString());
+
+            xml.SelectUp();
+        }
+    }
+}
+
+// Загружает параметры интерфейса из xml
+void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
+{
+    int graph_count = xml.ReadInteger("GraphCount", 0);
+    //createGraph();
+
+    graph.last()->setChartTitle (xml.ReadString ("ChartTitle",  "").c_str());
+    graph.last()->setAxisXname  (xml.ReadString ("AxisXName",   "").c_str());
+    graph.last()->setAxisYname  (xml.ReadString ("AxisYName",   "").c_str());
+    graph.last()->setAxisXmin   (xml.ReadFloat  ("AxisXmin",    0));
+    graph.last()->setAxisXmax   (xml.ReadFloat  ("AxisXmax",    0));
+    graph.last()->setAxisYmin   (xml.ReadFloat  ("AxisYmin",    0));
+    graph.last()->setAxisYmax   (xml.ReadFloat  ("AxisYmax",    0));
+
+
+    int series_count = graph.last()->countSeries();
+    for(int i = 0; i < series_count; i++)
+        graph.last()->deleteSerie(0);
+
+    series_count = xml.ReadInteger("SeriesCount", 0);
+
+    for(int serieIndex=0; serieIndex < series_count; serieIndex++)
+    {
+        xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
+
+        QString name_comp = xml.ReadString("SerieNameComponent", "").c_str();
+        QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
+
+        graph.last()->createSerie(0, name_comp, name_prop, "type", 0, 0);
+
+        graph.last()->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
+        graph.last()->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
+        graph.last()->setSerieLineType  (serieIndex, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
+        graph.last()->getSerie(serieIndex)->setColor(xml.ReadInteger("SerieColor", 0));
+        xml.SelectUp();
+    }
 }

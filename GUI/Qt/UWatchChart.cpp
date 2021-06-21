@@ -117,12 +117,31 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     series.last()->typeProperty = type;
     series.last()->Jx = jx;
     series.last()->Jy = jy;
+
+    RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
+
+    RDK::UControllerDataReader * data=env->RegisterDataReader(componentName.toStdString(),
+                                                              propertyName.toStdString(),
+                                                              jx,
+                                                              jy);
+    if(data)
+    {
+        data->SetTimeInterval(5);
+    }
 }
 
 void UWatchChart::deleteSerie(int serieIndex)
 {
+
+    RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
+    env->UnRegisterDataReader(series[serieIndex]->nameComponent.toStdString(),
+                              series[serieIndex]->nameProperty.toStdString(),
+                              series[serieIndex]->Jx,
+                              series[serieIndex]->Jy);
+
     delete series[serieIndex];
     series.remove(serieIndex);
+
 }
 
 void UWatchChart::addDataToSerie(int serieIndex, double x, double y)
