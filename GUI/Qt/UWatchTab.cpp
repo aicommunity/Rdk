@@ -70,8 +70,15 @@ void UWatchTab::AUpdateInterface()
             x_max = data->XData.back();
             x_min = data->XData.front();
         }
-        graph[graphIndex]->setAxisXmax(x_max);
-        graph[graphIndex]->setAxisXmin(x_min);
+        if(x_max-x_min > 0.001)
+        {
+            graph[graphIndex]->setAxisXmax(x_max);
+            graph[graphIndex]->setAxisXmin(x_min);
+        }
+        else
+        {
+            graph[graphIndex]->updateTimeIntervals(1);
+        }
     }
 }
 

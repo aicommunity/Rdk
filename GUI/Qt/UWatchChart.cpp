@@ -127,7 +127,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
                                                               jy);
     if(data)
     {
-        data_readers.push_back(data);
+        series.last()->data_reader = data;
         data->SetTimeInterval(time_interval);
     }
 }
@@ -183,9 +183,9 @@ void UWatchChart::setAxisYmin(double value)
 
 void UWatchChart::updateTimeIntervals(double value)
 {
-    for(int i = 0; i < data_readers.size(); i++)
+    for(int i = 0; i < series.size(); i++)
     {
-        data_readers.at(i)->SetTimeInterval(value);
+        series[i]->data_reader->SetTimeInterval(value);
     }
 }
 

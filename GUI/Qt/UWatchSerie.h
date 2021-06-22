@@ -4,6 +4,11 @@
 #include <QLineSeries>
 #include <QString>
 
+namespace RDK
+{
+class UControllerDataReader;
+}
+
 class UWatchSerie: public QtCharts::QLineSeries
 {
 public:
@@ -15,6 +20,8 @@ public:
     QString nameComponent; //Имя компонента
     QString nameProperty;  //Имя свойства
     QString typeProperty;  //Тип компонента
+    // вектор DataReader-ов
+    RDK::UControllerDataReader * data_reader;
     //координаты элемента матрицы
     int Jx;
     int Jy;

@@ -111,7 +111,7 @@ std::string SourceControllerProperty;
 std::map<int, UEnvPredefinedStructDescription> PredefinedStructures;
 
 /// Набор источников данных
-std::vector<UControllerDataReader*> DataReaders;
+std::vector< std::pair<UControllerDataReader*, int> >DataReaders;
 
 protected: // Переменные быстрого доступа
 // Текущий компонент модели

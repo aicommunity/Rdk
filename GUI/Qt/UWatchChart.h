@@ -21,11 +21,6 @@
 #include <QChartView>
 //#include <UWatchTab.h>
 
-namespace RDK
-{
-class UControllerDataReader;
-}
-
 
 namespace Ui {
 class UWatchChart;
@@ -113,9 +108,6 @@ private:
 
     //серии + данные об источнике данных
     QVector <UWatchSerie*> series;
-
-    // вектор DataReader-ов
-    QVector <RDK::UControllerDataReader *> data_readers;
 
     bool isCtrlPressed = false;
     int chartIndex; //что бы график знал какой он по счету в векторе графиков

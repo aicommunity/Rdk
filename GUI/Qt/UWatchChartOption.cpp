@@ -87,7 +87,7 @@ void UWatchChartOption::updateParameters(int chartIndex)
 
     ui->axisYmaxSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYmax());
     ui->axisYminSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYmin());
-    ui->axisXrangeSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->axisXrange);
+    ui->axisXrangeSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisXmax() - Watch->getCurrentTab()->getChart(chartIndex)->getAxisXmin());
 }
 
 void UWatchChartOption::createLayout()

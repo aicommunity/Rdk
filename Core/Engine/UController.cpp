@@ -176,7 +176,7 @@ UControllerDataReader::UControllerDataReader(void)
 void UControllerDataReader::SetTimeInterval(double value)
 {
  TimeInterval=value;
- if(value>0)
+ if(value>0.001)
   SetNumPoints(int(value*Component->GetTimeStep()));
  else
   SetNumPoints(100000);

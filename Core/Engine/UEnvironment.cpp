@@ -589,9 +589,12 @@ bool UEnvironment::CallSourceController(void)
 UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
  for(size_t i=0;i<DataReaders.size();i++)
-  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
-	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
-   return DataReaders[i];
+  if(DataReaders[i].first && DataReaders[i].first ->GetComponentName() == component_name && DataReaders[i].first ->GetPropertyName() == property_name &&
+     DataReaders[i].first ->MRow == row && DataReaders[i].first ->MCol == col)
+  {
+   DataReaders[i].second++;
+   return DataReaders[i].first;
+  }
 
  if(!Model)
   return 0;
@@ -613,7 +616,7 @@ UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &compo
 
  data->SetMatrixCoord(row,col);
 
- DataReaders.push_back(data);
+ DataReaders.push_back(std::make_pair(data,1));
  return data;
 }
 
@@ -622,11 +625,15 @@ void UEnvironment::UnRegisterDataReader(const std::string &component_name, const
 {
  for(size_t i=0;i<DataReaders.size();i++)
  {
-  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
-	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+  if(DataReaders[i].first && DataReaders[i].first->GetComponentName() == component_name && DataReaders[i].first->GetPropertyName() == property_name &&
+     DataReaders[i].first->MRow == row && DataReaders[i].first->MCol == col)
   {
-   delete DataReaders[i];
-   DataReaders.erase(DataReaders.begin()+i);
+   DataReaders[i].second--;
+   if(DataReaders[i].second==0)
+   {
+    delete DataReaders[i].first;
+    DataReaders.erase(DataReaders.begin()+i);
+   }
    return;
   }
  }
@@ -636,7 +643,7 @@ void UEnvironment::UnRegisterDataReader(const std::string &component_name, const
 void UEnvironment::UnRegisterAllDataReaders(void)
 {
  for(size_t i=0;i<DataReaders.size();i++)
-  delete DataReaders[i];
+  delete DataReaders[i].first;
  DataReaders.clear();
 }
 
@@ -645,10 +652,10 @@ UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_
 {
  for(size_t i=0;i<DataReaders.size();i++)
  {
-  if(DataReaders[i] && DataReaders[i]->GetComponentName() == component_name && DataReaders[i]->GetPropertyName() == property_name &&
-	 DataReaders[i]->MRow == row && DataReaders[i]->MCol == col)
+  if(DataReaders[i].first && DataReaders[i].first->GetComponentName() == component_name && DataReaders[i].first->GetPropertyName() == property_name &&
+     DataReaders[i].first->MRow == row && DataReaders[i].first->MCol == col)
   {
-   return DataReaders[i];
+   return DataReaders[i].first;
   }
  }
  return 0;
@@ -1015,7 +1022,7 @@ bool UEnvironment::AReset(void)
  RTModelCalcTime=0;
 
  for(size_t i=0;i<DataReaders.size();i++)
-  DataReaders[i]->Clear();
+  DataReaders[i].first->Clear();
 
  if(!Model)
   return true;
