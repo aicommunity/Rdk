@@ -146,13 +146,13 @@ void UWatch::UpdateInterface(bool force_update){}
 void UWatch::ClearInterface(void){}
 
 // Возвращает интервал обновления интерфейса
-long UWatch::GetUpdateInterval(void){}
+long UWatch::GetUpdateInterval(void){return 0;}
 
 // Задает интервал обновления интерфейса
-bool UWatch::SetUpdateInterval(long value){}
+bool UWatch::SetUpdateInterval(long value){return true;}
 
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
-bool UWatch::GetAlwaysUpdateFlag(void){}
+bool UWatch::GetAlwaysUpdateFlag(void){return true;}
 
 // Служебные методы управления интерфейсом
 /// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
@@ -162,10 +162,10 @@ void UWatch::ResetCalculationStepUpdatedFlag(void){}
 void UWatch::SetCalculationStepUpdatedFlag(void){}
 
 /// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
-bool UWatch::GetCalculationStepUpdatedFlag(void){}
+bool UWatch::GetCalculationStepUpdatedFlag(void){return true;}
 
 /// Возвращает время обновления интерфейса (мс)
-unsigned long long UWatch::GetUpdateTime(void){}
+unsigned long long UWatch::GetUpdateTime(void){return 0;}
 
 // Метод, вызываемый после загрузки проекта
 void UWatch::AfterLoadProject(void){}
@@ -186,13 +186,13 @@ void UWatch::BeforeCalculate(void){}
 void UWatch::AfterCalculate(void){}
 
 // Возвращает уникальное имя интерфейса
-std::string UWatch::GetName(void){}
+std::string UWatch::GetName(void){return "";}
 
 // Возвращает полное уникальное имя интерфейса
-std::string UWatch::CalcFullName(void){}
+std::string UWatch::CalcFullName(void){return "";}
 
 // Возвращает имя класса интерфейса
-std::string UWatch::GetClassName(void){}
+std::string UWatch::GetClassName(void){return "";}
 
 // Сохраняет параметры интерфейса в xml
 void UWatch::SaveParameters(RDK::USerStorageXML &xml)
