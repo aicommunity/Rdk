@@ -251,9 +251,9 @@ bool UControllerDataReader::AUpdate(void)
  x=Component->GetTime().GetDoubleTime();
  XData.push_back(x);
  YData.push_back(y);
- if(int(XData.size())>NumPoints)
+ while(int(XData.size())>NumPoints)
   XData.erase(XData.begin());
- if(int(YData.size())>NumPoints)
+ while(int(YData.size())>NumPoints)
   YData.erase(YData.begin());
  return true;
 }
