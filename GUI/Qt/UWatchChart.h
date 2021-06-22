@@ -21,6 +21,11 @@
 #include <QChartView>
 //#include <UWatchTab.h>
 
+namespace RDK
+{
+class UControllerDataReader;
+}
+
 
 namespace Ui {
 class UWatchChart;
@@ -69,6 +74,7 @@ public:
     void setAxisXmax(double value);
     void setAxisYmin(double value);
     void setAxisYmax(double value);
+    void updateTimeIntervals(double value);
 
     void setSerieName(int serieIndex, QString name);
     void setSerieColor(int serieIndex, int colorIndex);
@@ -78,13 +84,13 @@ public:
 
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName,
-                     const QString propertyName, const QString type, int jx, int jy);
+                     const QString propertyName, const QString type, int jx, int jy, double time_interval);
     void deleteSerie(int serieIndex);
     void addDataToSerie(int serieIndex, double x, double y);
     int  countSeries();
 
     //работа с динамикой осей
-    int axisXrange = 5;
+    int axisXrange;
     bool isAxisXtrackable = true;   //будет ли "поле зрения" бежать за временем
     bool isAxisYzoomable = true;    //зум по оси У (ctrl+крокрутка)
     bool isAxisYscrollable = true;  //скролл оси У
@@ -107,6 +113,9 @@ private:
 
     //серии + данные об источнике данных
     QVector <UWatchSerie*> series;
+
+    // вектор DataReader-ов
+    QVector <RDK::UControllerDataReader *> data_readers;
 
     bool isCtrlPressed = false;
     int chartIndex; //что бы график знал какой он по счету в векторе графиков

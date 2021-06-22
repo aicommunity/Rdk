@@ -31,6 +31,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     ///Дефолтные подписи осей и их макс и мин
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
+    axisXrange = 5;
     axisX->setRange(0, axisXrange);
     axisY->setRange(-5, 5);
 
@@ -98,7 +99,7 @@ void UWatchChart::setSerieStyle(int serieIndex, QColor color, int width, Qt::Pen
     series[serieIndex]->setPen(pen);
 }
 
-void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName, const QString type, int jx, int jy)
+void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName, const QString type, int jx, int jy, double time_interval)
 {
     //создаем новый график и привязываем его к осям
     series.push_back(new UWatchSerie());
@@ -126,7 +127,8 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
                                                               jy);
     if(data)
     {
-        data->SetTimeInterval(5);
+        data_readers.push_back(data);
+        data->SetTimeInterval(time_interval);
     }
 }
 
@@ -178,6 +180,21 @@ void UWatchChart::setAxisYmin(double value)
 {
     axisY->setMin(value);
 }
+
+void UWatchChart::updateTimeIntervals(double value)
+{
+    for(int i = 0; i < data_readers.size(); i++)
+    {
+        data_readers.at(i)->SetTimeInterval(value);
+    }
+}
+
+/*
+void UWatchChart::setAxisYmin(double value)
+{
+    axisY->setMin(value);
+}
+*/
 
 void UWatchChart::setAxisYmax(double value)
 {

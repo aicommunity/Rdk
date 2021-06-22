@@ -41,8 +41,6 @@ void UWatchTab::AUpdateInterface()
 {
     for (int graphIndex=0; graphIndex < graph.count(); graphIndex++)
     {
-        double y;
-        double x;
         double x_min;
         double x_max;
         RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
@@ -55,11 +53,8 @@ void UWatchTab::AUpdateInterface()
                                                                 graph[graphIndex]->getSerie(serieIndex)->Jx,
                                                                 graph[graphIndex]->getSerie(serieIndex)->Jy);
             if(!data)
-             continue;
+                continue;
 
-            int data_size=data->XData.size();
-
-            std::vector<double> X, Y;
 
             graph[graphIndex]->getSerie(serieIndex)->clear();
 
@@ -226,7 +221,8 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
         //создаем серию для выбранного источника
-        graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0);
+        double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
+        graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval);
     }
 }
 
@@ -307,7 +303,8 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
         QString name_comp = xml.ReadString("SerieNameComponent", "").c_str();
         QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
 
-        graph.last()->createSerie(0, name_comp, name_prop, "type", 0, 0);
+        double time_interval = graph.last()->getAxisXmax() - graph.last()->getAxisXmin();
+        graph.last()->createSerie(0, name_comp, name_prop, "type", 0, 0, time_interval);
 
         graph.last()->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
         graph.last()->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));

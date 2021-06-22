@@ -132,6 +132,7 @@ void UWatchChartOption::saveParameters()
    Watch->getCurrentTab()->getChart(index)->setAxisYmax(ui->axisYmaxSB->value());
    Watch->getCurrentTab()->getChart(index)->setAxisYmin(ui->axisYminSB->value());
    Watch->getCurrentTab()->getChart(index)->axisXrange = ui->axisXrangeSB->value();
+   Watch->getCurrentTab()->getChart(index)->updateTimeIntervals(ui->axisXrangeSB->value());
    Watch->getCurrentTab()->getChart(index)->isAxisYzoomable = ui->axisYzoomCB->isChecked();
    Watch->getCurrentTab()->getChart(index)->isAxisYscrollable= ui->axisYscrollCB->isChecked();
    Watch->getCurrentTab()->getChart(index)->isAxisXtrackable= ui->axisXtrackCB->isChecked();
