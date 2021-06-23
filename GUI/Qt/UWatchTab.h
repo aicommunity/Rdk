@@ -9,6 +9,7 @@
 #include <QSplitter>
 
 #include "UWatchChart.h"
+#include "UMatrixForm.h"
 #include "UVisualControllerWidget.h"
 #include "UComponentPropertySelectionWidget.h"
 

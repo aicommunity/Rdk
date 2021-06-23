@@ -234,6 +234,10 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     //проверяем что у выбран не пустой элемент (если нет модели)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
+        UMatrixForm* form = new UMatrixForm();
+        form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
+        form->show();
+
         //создаем серию для выбранного источника
         double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
         graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval);

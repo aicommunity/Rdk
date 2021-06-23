@@ -207,7 +207,7 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
                 return;
             }
             //не обновляется если отец невидим и е проставлен AlwaysUpdateFlag
-            if(!parentWidget() || (!AlwaysUpdateFlag && !(parentWidget()->isVisible())) || (UpdateInterval<0 && CalculationModeFlag))
+            if((!parentWidget() && !AlwaysUpdateFlag) || (!AlwaysUpdateFlag && !(parentWidget()->isVisible())) || (UpdateInterval<0 && CalculationModeFlag))
             {
                 //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                 return;
