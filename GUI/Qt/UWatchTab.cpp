@@ -55,7 +55,6 @@ void UWatchTab::AUpdateInterface()
             if(!data)
                 continue;
 
-
             graph[graphIndex]->getSerie(serieIndex)->clear();
 
             std::list<double>::iterator itx, ity;
@@ -67,8 +66,16 @@ void UWatchTab::AUpdateInterface()
 
             graph[graphIndex]->getSerie(serieIndex)->replace(points);
 
-            x_max = data->XData.back();
-            x_min = data->XData.front();
+            if(data->XData.empty())
+            {
+             x_max = 0;
+             x_min = 0;
+            }
+            else
+            {
+             x_max = data->XData.back();
+             x_min = data->XData.front();
+            }
         }
         if(x_max-x_min > 0.001)
         {
