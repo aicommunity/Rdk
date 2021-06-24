@@ -78,7 +78,9 @@ private:
 
     ///вектор графиков на одной вкладке
     QVector <UWatchChart*> graph;
-
+    std::list<double> XData;
+    std::list<double> YData;
+    QVector<QPointF> points;
 
     QSplitter *colSplitter;              //colSplitter
     QVector <QSplitter*> rowSplitter;    // |----..---rowSplitter[0]
@@ -93,6 +95,9 @@ private:
     ///Для каждого графика - обращаемся к ядру, берем матрицу по заданному источнику данных
     ///Ее данные положим на этот график
     virtual void AUpdateInterface();
+
+    /// Безопасно считывает данные серии из ядра
+    virtual void ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata);
 
 public slots:
     void createSelectionDialogSlot(int index);

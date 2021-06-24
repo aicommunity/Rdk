@@ -100,6 +100,7 @@ private:
     //все график, оси, скороллбар и их расположение
     QVBoxLayout *verticalLayout;
     QScrollBar *horizontalScrolBar;
+ public:
     QChartView *chartView;
     QChart *chart;
     QValueAxis *axisX;

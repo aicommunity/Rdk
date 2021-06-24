@@ -41,27 +41,20 @@ void UWatchTab::AUpdateInterface()
 {
     for (int graphIndex=0; graphIndex < graph.count(); graphIndex++)
     {
+        graph[graphIndex]->chartView->setUpdatesEnabled(false);
         double x_min;
         double x_max;
-        RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
         for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
 
             std::list<double>::iterator buffIX, buffIY;
-            RDK::UControllerDataReader* data=env->GetDataReader(graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString(),
-                                                                graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString(),
-                                                                graph[graphIndex]->getSerie(serieIndex)->Jx,
-                                                                graph[graphIndex]->getSerie(serieIndex)->Jy);
-            if(!data)
-                continue;
-
-            graph[graphIndex]->getSerie(serieIndex)->clear();
+            ReadSeriesDataSafe(graphIndex,serieIndex,XData,YData);
 
             std::list<double>::iterator itx, ity;
-            QVector<QPointF> points(data->XData.size());
+            points.resize(XData.size());
 
             int i = 0;
-            for (itx = data->XData.begin(), ity = data->YData.begin(); itx != data->XData.end(); ++itx, ++ity)
+            for (itx = XData.begin(), ity = YData.begin(); itx != XData.end(); ++itx, ++ity)
             {
                 points[i] = QPointF(*itx,*ity);
                 i++;
@@ -69,15 +62,15 @@ void UWatchTab::AUpdateInterface()
 
             graph[graphIndex]->getSerie(serieIndex)->replace(points);
 
-            if(data->XData.empty())
+            if(XData.empty())
             {
              x_max = 0;
              x_min = 0;
             }
             else
             {
-             x_max = data->XData.back();
-             x_min = data->XData.front();
+             x_max = XData.back();
+             x_min = XData.front();
             }
         }
         if(x_max-x_min > 0.001)
@@ -89,7 +82,26 @@ void UWatchTab::AUpdateInterface()
         {
             graph[graphIndex]->updateTimeIntervals(1);
         }
+        graph[graphIndex]->chartView->setUpdatesEnabled(true);
     }
+}
+
+/// Ѕезопасно считывает данные серии из €дра
+void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata)
+{
+    RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
+    RDK::UControllerDataReader* data=env->GetDataReader(graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString(),
+                                                        graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString(),
+                                                        graph[graphIndex]->getSerie(serieIndex)->Jx,
+                                                        graph[graphIndex]->getSerie(serieIndex)->Jy);
+    if(!data)
+    {
+     xdata.clear();
+     ydata.clear();
+     return;
+    }
+    xdata=data->XData;
+    ydata=data->YData;
 }
 
 void UWatchTab::createSelectionDialogSlot(int index)
