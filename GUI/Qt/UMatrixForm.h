@@ -45,6 +45,11 @@ public:
     bool SelectMatrix(const std::string &comp_name, const std::string &prop_name);
 
 
+private slots:
+    void on_buttonBox_accepted();
+
+    void on_buttonBox_rejected();
+
 private:
     Ui::UMatrixForm *ui;
 };

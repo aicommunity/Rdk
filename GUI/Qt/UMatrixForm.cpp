@@ -9,12 +9,13 @@ UMatrixForm::UMatrixForm(QWidget *parent, RDK::UApplication* app) :
 
     connect(ui->tableWidget->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onItemSelected()));
 
-
     AlwaysUpdateFlag = true;
     UpdateInterval=30;
     CheckModelFlag=true;
     SelectedRow=SelectedCol=-1;
     PropertyType=0;
+
+
 }
 
 UMatrixForm::~UMatrixForm()
@@ -236,4 +237,39 @@ bool UMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &
 
     UpdateInterface(true);
     return true;
+}
+
+void UMatrixForm::on_buttonBox_accepted()
+{
+    QItemSelectionModel *sel_m = ui->tableWidget->selectionModel();
+
+    int row_id=-1;
+    int col_id=-1;
+
+    if(sel_m->hasSelection())
+    {
+        QModelIndexList ids = sel_m->selectedIndexes();
+        if(ids.size()>0)
+        {
+            row_id = ids.first().row();
+            col_id = ids.first().column();
+        }
+    }
+
+    SelectedRow = row_id;
+    SelectedCol = col_id;
+
+    close();
+    destroy();
+    delete this;
+}
+
+void UMatrixForm::on_buttonBox_rejected()
+{
+    SelectedRow = -1;
+    SelectedCol = -1;
+
+    close();
+    destroy();
+    delete this;
 }

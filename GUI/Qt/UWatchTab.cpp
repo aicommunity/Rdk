@@ -238,9 +238,17 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
         form->show();
 
+        // Из-за того, что это QWidget, а не QDialog, ждем закрытия окна самостоятелььно
+        QEventLoop loop;
+        connect(form, SIGNAL(destroyed()), &loop, SLOT(quit()));
+        loop.exec();
+
+        if(form->SelectedRow == -1 || form->SelectedCol == -1)
+            return;
+
         //создаем серию для выбранного источника
         double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
-        graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval);
+        graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval);
     }
 }
 
@@ -287,6 +295,9 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
 
             xml.WriteString ("SerieNameComponent", graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString());
             xml.WriteString ("SerieNameProperty", graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString());
+            xml.WriteInteger("SerieJx", graph[graphIndex]->getSerie(serieIndex)->Jx);
+            xml.WriteInteger("SerieJy", graph[graphIndex]->getSerie(serieIndex)->Jy);
+
 
             xml.SelectUp();
         }
@@ -320,9 +331,11 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 
         QString name_comp = xml.ReadString("SerieNameComponent", "").c_str();
         QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
+        int jx = xml.ReadInteger("SerieJx", -1);
+        int jy = xml.ReadInteger("SerieJy", -1);
 
         double time_interval = graph.last()->getAxisXmax() - graph.last()->getAxisXmin();
-        graph.last()->createSerie(0, name_comp, name_prop, "type", 0, 0, time_interval);
+        graph.last()->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval);
 
         graph.last()->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
         graph.last()->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
