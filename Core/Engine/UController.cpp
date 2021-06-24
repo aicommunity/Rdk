@@ -246,6 +246,26 @@ bool UControllerDataReader::AUpdate(void)
   y=(*data)(MRow,MCol);
  }
  else
+ if(PropertyType == 5)
+ {
+  const MDVector<double> *data=reinterpret_cast<const MDVector<double>*>(Property->GetMemoryArea());
+  if(!data)
+   return false;
+  if(data->GetRows()<=MRow)
+   return false;
+  y=(*data)(MRow);
+ }
+ else
+ if(PropertyType == 6)
+ {
+  const MDVector<int> *data=reinterpret_cast<const MDVector<int>*>(Property->GetMemoryArea());
+  if(!data)
+   return false;
+  if(data->GetRows()<=MRow)
+   return false;
+  y=(*data)(MRow);
+ }
+ else
   return false;
 
  x=Component->GetTime().GetDoubleTime();
@@ -288,7 +308,7 @@ bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> p
   PropertyType=1;
  }
  else
- if(property->GetLanguageType() == typeid(double))
+ if(property->GetLanguageType() == typeid(int))
  {
   PropertyType=2;
  }
@@ -301,6 +321,16 @@ bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> p
  if(property->GetLanguageType() == typeid(MDMatrix<int>))
  {
   PropertyType=4;
+ }
+ else
+ if(property->GetLanguageType() == typeid(MDVector<double>))
+ {
+  PropertyType=5;
+ }
+ else
+ if(property->GetLanguageType() == typeid(MDVector<int>))
+ {
+  PropertyType=6;
  }
  else
  {

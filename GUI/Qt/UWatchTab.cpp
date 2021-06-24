@@ -249,6 +249,27 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     //провер€ем что у выбран не пустой элемент (если нет модели)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
+        RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
+
+        RDK::UContainer *cont = model->GetComponentL(componentName.toStdString());
+        if(!cont)
+            return;
+
+        RDK::UEPtr<RDK::UIProperty> prop=cont->FindProperty(componentProperty.toStdString());
+        if(!prop)
+            return;
+
+        // ≈сли тип double или int
+        if(prop->GetLanguageType() == typeid(double) || prop->GetLanguageType() == typeid(int))
+        {
+            //создаем серию дл€ выбранного источника
+            double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
+            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval);
+            return;
+        }
+
+        // ≈сли тип, где надо выбрать €чейку (р€д и колонку)
+        // MDMatrix<double>   MDMatrix<int>   MDVector<double>   MDVector<int>
         UMatrixFormDialog* form = new UMatrixFormDialog();
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
 

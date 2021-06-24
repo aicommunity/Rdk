@@ -130,6 +130,8 @@ double TimeInterval;
 /// 2 - простое свйоство типа int
 /// 3 - свойство типа MDMatrix<double>
 /// 4 - свойство типа MDMatrix<int>
+/// 5 - свойство типа MDVector<double>
+/// 6 - свойство типа MDVector<int>
 int PropertyType;
 
 ///  оординаты матрицы по которым берутс€ данные

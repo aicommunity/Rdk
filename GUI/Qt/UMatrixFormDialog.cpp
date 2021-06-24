@@ -124,7 +124,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
         }
     }
     break;
-    /*
+
     case 3:
     {
         RDK::MDVector<double> m;
@@ -132,15 +132,26 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
             m=engine->Model_GetComponentPropertyData<RDK::MDVector<double> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
-        //ReadParameterValue(ComponentMatrixName, PropertyMatrixName, m);
 
-        StringGrid->ColCount=m.GetCols()+1;
-        StringGrid->RowCount=2;
-        StringGrid->Cells[0][1]="0";
-        for(int j=0;j<m.GetCols();j++)
+        ui->tableWidget->clear();
+        ui->tableWidget->setColumnCount(m.GetCols());
+        ui->tableWidget->setRowCount(m.GetRows());
+
+        QStringList labels;
+
+        for(int k=0; k<m.GetRows();k++)
+            labels << QString::number(k);
+        ui->tableWidget->setVerticalHeaderLabels(labels);
+
+        labels.clear();
+
+        for(int k=0; k<m.GetCols();k++)
+            labels << QString::number(k);
+        ui->tableWidget->setHorizontalHeaderLabels(labels);
+
+        for(int j=0;j<m.GetRows();j++)
         {
-            StringGrid->Cells[j+1][0]=IntToStr(j);
-            StringGrid->Cells[j+1][1]=FloatToStr(m(j));
+            ui->tableWidget->setItem(j, 0, new QTableWidgetItem(QString::number(m(j))));
         }
     }
     break;
@@ -152,18 +163,29 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
             m=engine->Model_GetComponentPropertyData<RDK::MDVector<int> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
-        //ReadParameterValue(ComponentMatrixName, PropertyMatrixName, m);
 
-        StringGrid->ColCount=m.GetCols()+1;
-        StringGrid->RowCount=2;
-        StringGrid->Cells[0][1]="0";
-        for(int j=0;j<m.GetCols();j++)
+        ui->tableWidget->clear();
+        ui->tableWidget->setColumnCount(m.GetCols());
+        ui->tableWidget->setRowCount(m.GetRows());
+
+        QStringList labels;
+
+        for(int k=0; k<m.GetRows();k++)
+            labels << QString::number(k);
+        ui->tableWidget->setVerticalHeaderLabels(labels);
+
+        labels.clear();
+
+        for(int k=0; k<m.GetCols();k++)
+            labels << QString::number(k);
+        ui->tableWidget->setHorizontalHeaderLabels(labels);
+
+        for(int j=0;j<m.GetRows();j++)
         {
-            StringGrid->Cells[j+1][0]=IntToStr(j);
-            StringGrid->Cells[j+1][1]=FloatToStr(m(j));
+            ui->tableWidget->setItem(j, 0, new QTableWidgetItem(QString::number(m(j))));
         }
     }
-    break;*/
+    break;
     }
 
 
