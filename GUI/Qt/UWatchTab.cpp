@@ -234,21 +234,18 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     //проверяем что у выбран не пустой элемент (если нет модели)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
-        UMatrixForm* form = new UMatrixForm();
+        UMatrixFormDialog* form = new UMatrixFormDialog();
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
-        form->show();
 
-        // Из-за того, что это QWidget, а не QDialog, ждем закрытия окна самостоятелььно
-        QEventLoop loop;
-        connect(form, SIGNAL(destroyed()), &loop, SLOT(quit()));
-        loop.exec();
+        if(form->exec()== QDialog::Accepted)
+        {
+            if(form->SelectedRow == -1 || form->SelectedCol == -1)
+                return;
 
-        if(form->SelectedRow == -1 || form->SelectedCol == -1)
-            return;
-
-        //создаем серию для выбранного источника
-        double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
-        graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval);
+            //создаем серию для выбранного источника
+            double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
+            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval);
+        }
     }
 }
 

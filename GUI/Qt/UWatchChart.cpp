@@ -284,9 +284,9 @@ void UWatchChart::wheelEvent(QWheelEvent *event)
     else if(isAxisYscrollable)
     {
         if(degrees>0)
-           axisY->setRange(axisY->min()+0.2,axisY->max()+0.2);
+           axisY->setRange(axisY->min()+0.001*axisY->min(), axisY->max()+0.001*axisY->max());
         else
-           axisY->setRange(axisY->min()-0.2,axisY->max()-0.2);
+           axisY->setRange(axisY->min()-0.001*axisY->min(), axisY->max()-0.001*axisY->max());
     }
 }
 

@@ -1,31 +1,31 @@
-#include "UMatrixForm.h"
-#include "ui_UMatrixForm.h"
+#include "UMatrixFormDialog.h"
+#include "ui_UMatrixFormDialog.h"
 
-UMatrixForm::UMatrixForm(QWidget *parent, RDK::UApplication* app) :
-    UVisualControllerWidget(parent, app),
-    ui(new Ui::UMatrixForm)
+UMatrixFormDialog::UMatrixFormDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::UMatrixFormDialog)
 {
     ui->setupUi(this);
 
-    connect(ui->tableWidget->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(onItemSelected()));
-
-    AlwaysUpdateFlag = true;
-    UpdateInterval=30;
-    CheckModelFlag=true;
     SelectedRow=SelectedCol=-1;
     PropertyType=0;
 
+  //  connect(ui->buttonBox->Ok,SIGNAL(clicked()),this,SLOT(accept()));
+ //   connect(cancel_button,SIGNAL(clicked()),this, SLOT(reject()));
 
+    // Таймер обновления отображаемых данных (каждые 300 мс)
+    updateMatrixDataTimer.setInterval(300);
+    updateMatrixDataTimer.setSingleShot(false);
+    connect(&updateMatrixDataTimer, SIGNAL(timeout()), this, SLOT(UpdateMatrixData()));
+    updateMatrixDataTimer.start();
 }
 
-UMatrixForm::~UMatrixForm()
+UMatrixFormDialog::~UMatrixFormDialog()
 {
     delete ui;
 }
 
-// Если force_update == true, то интерфейс обновляется
-// вне зависимости от UpdateInterval
-void UMatrixForm::AUpdateInterface(void)
+void UMatrixFormDialog::UpdateMatrixData(void)
 {
     if(ComponentMatrixName.empty())
         return;
@@ -174,17 +174,8 @@ void UMatrixForm::AUpdateInterface(void)
     }
 }
 
-// Возврат интерфейса в исходное состояние
-void UMatrixForm::AClearInterface(void)
-{
-    ComponentMatrixName="";
-    PropertyMatrixName="";
-    SelectedRow=SelectedCol=-1;
-    PropertyType=0;
-}
-
 /// Выбирает матрицу для наблюдения
-bool UMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &prop_name)
+bool UMatrixFormDialog::SelectMatrix(const std::string &comp_name, const std::string &prop_name)
 {
     RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
     if(!model)
@@ -235,11 +226,12 @@ bool UMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &
     PropertyMatrixName=prop_name;
     SelectedRow=SelectedCol=0;
 
-    UpdateInterface(true);
+    emit UpdateMatrixData();
+
     return true;
 }
 
-void UMatrixForm::on_buttonBox_accepted()
+void UMatrixFormDialog::on_buttonBox_accepted()
 {
     QItemSelectionModel *sel_m = ui->tableWidget->selectionModel();
 
@@ -258,18 +250,4 @@ void UMatrixForm::on_buttonBox_accepted()
 
     SelectedRow = row_id;
     SelectedCol = col_id;
-
-    close();
-    destroy();
-    delete this;
-}
-
-void UMatrixForm::on_buttonBox_rejected()
-{
-    SelectedRow = -1;
-    SelectedCol = -1;
-
-    close();
-    destroy();
-    delete this;
 }
