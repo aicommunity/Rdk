@@ -58,10 +58,13 @@ void UWatchTab::AUpdateInterface()
             graph[graphIndex]->getSerie(serieIndex)->clear();
 
             std::list<double>::iterator itx, ity;
-            QList<QPointF> points;
+            QVector<QPointF> points(data->XData.size());
+
+            int i = 0;
             for (itx = data->XData.begin(), ity = data->YData.begin(); itx != data->XData.end(); ++itx, ++ity)
             {
-                points.push_back(QPointF(*itx,*ity));
+                points[i] = QPointF(*itx,*ity);
+                i++;
             }
 
             graph[graphIndex]->getSerie(serieIndex)->replace(points);
