@@ -7,7 +7,7 @@
 
 #include <rdk_application.h>
 
-#include "UVisualControllerWidget.h"
+#include "UVisualControllerMainWidget.h"
 #include "UComponentsListWidget.h"
 #include "UDrawEngineWidget.h"
 #include "UComponentLinksWidget.h"
@@ -71,7 +71,7 @@ USubTabDescriptionWatches(void)
 ///
 /// Содержит указатели на все другие окна и связывает их с помощью сигналов и слотов.
 
-class UGEngineControllWidget : public QMainWindow
+class UGEngineControllWidget : public UVisualControllerMainWidget
 {
     Q_OBJECT
 

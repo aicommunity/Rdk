@@ -6,7 +6,7 @@
 
 namespace RDK
 {
-class UControllerDataReader;
+struct UControllerDataReader;
 }
 
 class UWatchSerie: public QtCharts::QLineSeries

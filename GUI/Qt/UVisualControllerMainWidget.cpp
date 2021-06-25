@@ -1,9 +1,9 @@
-#include "UVisualControllerWidget.h"
+#include "UVisualControllerMainWidget.h"
 
 // Флаг, сообщающий что идет расчет
-RDK::UELockVar<bool> UVisualControllerWidget::CalculationModeFlag(false);
+RDK::UELockVar<bool> UVisualControllerMainWidget::CalculationModeFlag(false);
 
-UVisualControllerWidget::UVisualControllerWidget(QWidget *parent, RDK::UApplication *app):QWidget(parent)
+UVisualControllerMainWidget::UVisualControllerMainWidget(QWidget *parent, RDK::UApplication *app): QMainWindow(parent)
 {
     application = app;
     UpdateInterfaceFlag=false;
@@ -21,7 +21,7 @@ UVisualControllerWidget::UVisualControllerWidget(QWidget *parent, RDK::UApplicat
     RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
-UVisualControllerWidget::~UVisualControllerWidget()
+UVisualControllerMainWidget::~UVisualControllerMainWidget()
 {
     RDK::UIVisualControllerStorage::DelInterface(this);
 }
@@ -30,7 +30,7 @@ UVisualControllerWidget::~UVisualControllerWidget()
 // Методы управления визуальным интерфейсом
 // -----------------------------
 // Метод, вызываемый после загрузки проекта
-void UVisualControllerWidget::AfterLoadProject(void)
+void UVisualControllerMainWidget::AfterLoadProject(void)
 {
     try
     {
@@ -50,14 +50,14 @@ void UVisualControllerWidget::AfterLoadProject(void)
     }*/
 }
 
-void UVisualControllerWidget::AAfterLoadProject(void)
+void UVisualControllerMainWidget::AAfterLoadProject(void)
 {
 //  throw RDK::UException();
 }
 
 /// Метод, вызываемый перед закрытием проекта
 /// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
-void UVisualControllerWidget::BeforeCloseProject(void)
+void UVisualControllerMainWidget::BeforeCloseProject(void)
 {
  try
  {
@@ -77,13 +77,13 @@ void UVisualControllerWidget::BeforeCloseProject(void)
  }*/
 }
 
-void UVisualControllerWidget::ABeforeCloseProject(void)
+void UVisualControllerMainWidget::ABeforeCloseProject(void)
 {
 
 }
 
 // Метод, вызываемый перед сбросом модели
-void UVisualControllerWidget::BeforeReset(void)
+void UVisualControllerMainWidget::BeforeReset(void)
 {
     try
     {
@@ -103,13 +103,13 @@ void UVisualControllerWidget::BeforeReset(void)
     }*/
 }
 
-void UVisualControllerWidget::ABeforeReset(void)
+void UVisualControllerMainWidget::ABeforeReset(void)
 {
 
 }
 
 // Метод, вызываемый после сброса модели
-void UVisualControllerWidget::AfterReset(void)
+void UVisualControllerMainWidget::AfterReset(void)
 {
     try
     {
@@ -131,13 +131,13 @@ void UVisualControllerWidget::AfterReset(void)
     }*/
 }
 
-void UVisualControllerWidget::AAfterReset(void)
+void UVisualControllerMainWidget::AAfterReset(void)
 {
 
 }
 
 // Метод, вызываемый перед шагом расчета
-void UVisualControllerWidget::BeforeCalculate(void)
+void UVisualControllerMainWidget::BeforeCalculate(void)
 {
     try
     {
@@ -158,12 +158,12 @@ void UVisualControllerWidget::BeforeCalculate(void)
     }*/
 }
 
-void UVisualControllerWidget::ABeforeCalculate(void)
+void UVisualControllerMainWidget::ABeforeCalculate(void)
 {
 }
 
 // Метод, вызываемый после шага расчета
-void UVisualControllerWidget::AfterCalculate(void)
+void UVisualControllerMainWidget::AfterCalculate(void)
 {
     try
     {
@@ -183,12 +183,12 @@ void UVisualControllerWidget::AfterCalculate(void)
     }*/
 }
 
-void UVisualControllerWidget::AAfterCalculate(void)
+void UVisualControllerMainWidget::AAfterCalculate(void)
 {
 }
 
 // Обновление интерфейса
-void UVisualControllerWidget::UpdateInterface(bool force_update)
+void UVisualControllerMainWidget::UpdateInterface(bool force_update)
 {
     if(UpdateInterval.Get() == 0 && !force_update) return;
     unsigned long long current_time=RDK::GetCurrentStartupTime();
@@ -276,13 +276,13 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
         UpdateInterfaceFlag=false;
 }
 
-void UVisualControllerWidget::AUpdateInterface(void)
+void UVisualControllerMainWidget::AUpdateInterface(void)
 {
 
 }
 
 // Возврат интерфейса в исходное состояние
-void UVisualControllerWidget::ClearInterface(void)
+void UVisualControllerMainWidget::ClearInterface(void)
 {
     try
     {
@@ -306,37 +306,37 @@ void UVisualControllerWidget::ClearInterface(void)
     }*/
 }
 
-void UVisualControllerWidget::AClearInterface(void)
+void UVisualControllerMainWidget::AClearInterface(void)
 {
 
 }
 
 // Возвращает уникальное имя интерфейса
-std::string UVisualControllerWidget::GetName(void)
+std::string UVisualControllerMainWidget::GetName(void)
 {
     return accessibleName().toLocal8Bit().constData();
 }
 
 // Возвращает имя класса интерфейса
-std::string UVisualControllerWidget::GetClassName(void)
+std::string UVisualControllerMainWidget::GetClassName(void)
 {
     return typeid(this).name();
 }
 
-std::string UVisualControllerWidget::CalcFullName(void)
+std::string UVisualControllerMainWidget::CalcFullName(void)
 {
  return GetName(); // TODO: тут надо сгенерить имя со всеми владельцами
 }
 
 
 // Возвращает интервал обновления интерфейса
-long UVisualControllerWidget::GetUpdateInterval(void)
+long UVisualControllerMainWidget::GetUpdateInterval(void)
 {
     return UpdateInterval;
 }
 
 // Задает интервал обновления интерфейса
-bool UVisualControllerWidget::SetUpdateInterval(long value)
+bool UVisualControllerMainWidget::SetUpdateInterval(long value)
 {
     if(value<0)
         return false;
@@ -347,13 +347,13 @@ bool UVisualControllerWidget::SetUpdateInterval(long value)
 
 
 // Возвращает флаг разрешения обновления интерфейса даже если он не виден
-bool UVisualControllerWidget::GetAlwaysUpdateFlag(void)
+bool UVisualControllerMainWidget::GetAlwaysUpdateFlag(void)
 {
     return AlwaysUpdateFlag;
 }
 
 // Сохраняет параметры интерфейса в xml
-void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
+void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
     {
@@ -383,13 +383,13 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
     }*/
 }
 
-void UVisualControllerWidget::ASaveParameters(RDK::USerStorageXML &xml)
+void UVisualControllerMainWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
 // Загружает параметры интерфейса из xml
-void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
+void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
     {
@@ -418,18 +418,18 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
     }*/
 }
 
-void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)
+void UVisualControllerMainWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 
 // Управление длинным именем управляемого компонента
 // Длинное имя управляемого компонента модели (опционально)
-/*const std::string& UVisualControllerWidget::GetComponentControlName(void) const
+/*const std::string& UVisualControllerMainWidget::GetComponentControlName(void) const
 {
     return ComponentControlName;
 }*/
 
-/*bool UVisualControllerWidget::SetComponentControlName(const std::string& name)
+/*bool UVisualControllerMainWidget::SetComponentControlName(const std::string& name)
 {
     if(ComponentControlName == name)
         return true;
@@ -441,30 +441,30 @@ void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)
 
 // Служебные методы управления интерфейсом
 /// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
-void UVisualControllerWidget::ResetCalculationStepUpdatedFlag(void)
+void UVisualControllerMainWidget::ResetCalculationStepUpdatedFlag(void)
 {
     CalculationStepUpdatedFlag=false;
 }
 
 /// Выставляет флаг прошедшей перерисовки в этой итерации счета
-void UVisualControllerWidget::SetCalculationStepUpdatedFlag(void)
+void UVisualControllerMainWidget::SetCalculationStepUpdatedFlag(void)
 {
     CalculationStepUpdatedFlag=true;
 }
 
 /// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
-bool UVisualControllerWidget::GetCalculationStepUpdatedFlag(void)
+bool UVisualControllerMainWidget::GetCalculationStepUpdatedFlag(void)
 {
     return CalculationStepUpdatedFlag;
 }
 
 /// Возвращает время обновления интерфейса (мс)
-unsigned long long UVisualControllerWidget::GetUpdateTime(void)
+unsigned long long UVisualControllerMainWidget::GetUpdateTime(void)
 {
     return UpdateTime;
 }
 
-void UVisualControllerWidget::unInit()
+void UVisualControllerMainWidget::unInit()
 {
 
 }

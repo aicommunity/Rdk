@@ -20,7 +20,7 @@
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
 
 UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplication *app) :
-    QMainWindow(parent),
+    UVisualControllerMainWidget(parent,app),
     ui(new Ui::UGEngineControllWidget)
 {
     ui->setupUi(this);

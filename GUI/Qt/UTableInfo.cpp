@@ -59,7 +59,7 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
 //    ui->tableWidget_2->setColumnWidth(1, 40);
 
     QStringList headers_gui;
-    headers<<"Gui Widget name"<<"Min, ms"<<"Max, ms"<<"Avg, ms"<<"Interval, ms";
+    headers_gui<<"Gui Widget name"<<"Min, ms"<<"Max, ms"<<"Avg, ms"<<"Interval, ms";
     ui->tableWidget_2->setHorizontalHeaderLabels(headers_gui);
     ui->tableWidget_2->setColumnWidth(0, 200);
 
