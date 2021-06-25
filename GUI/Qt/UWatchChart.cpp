@@ -9,6 +9,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::UWatchChart)
 {
+    setAccessibleName("UWatchChart");
     ui->setupUi(this);
 
     //создаем график, скроллбар и располагаем вертикально

@@ -325,7 +325,16 @@ std::string UVisualControllerMainWidget::GetClassName(void)
 
 std::string UVisualControllerMainWidget::CalcFullName(void)
 {
- return GetName(); // TODO: тут надо сгенерить имя со всеми владельцами
+    std::string full_name(GetName());
+    QWidget* own=dynamic_cast<QWidget*>(parent());
+    while(own != NULL)
+    {
+        std::string own_name=own->accessibleName().toLocal8Bit().constData();
+        if(!own_name.empty())
+         full_name=own_name+"."+full_name;
+        own=dynamic_cast<QWidget*>(own->parent());
+    }
+    return full_name;
 }
 
 
@@ -360,7 +369,7 @@ void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
         //if(!Owner)
         //    return;
         //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
-        xml.SelectNodeForce(GetName());
+        xml.SelectNodeForce(CalcFullName());
         ASaveParameters(xml);
         //xml.WriteInteger("UpdateInterval",UpdateInterval);
         //xml.WriteString("ComponentControlName",ComponentControlName);
@@ -396,7 +405,7 @@ void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
         //if(!Owner)
         //    return;
         //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
-        xml.SelectNodeForce(GetName());
+        xml.SelectNodeForce(CalcFullName());
         //ComponentControlName=xml.ReadString("ComponentControlName","");
         //UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
         //AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);*/

@@ -282,7 +282,7 @@ bool UChannelProfiler::AddAllGui(void)
  std::vector<std::string> gui_names;
  for(size_t i=0;i<interfaces.size();i++)
  {
-  gui_names.push_back(interfaces[i]->GetName());
+  gui_names.push_back(interfaces[i]->CalcFullName());
  }
  GuiNames=gui_names;
  ClearPerfomanceData();

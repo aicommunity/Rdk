@@ -325,7 +325,18 @@ std::string UVisualControllerWidget::GetClassName(void)
 
 std::string UVisualControllerWidget::CalcFullName(void)
 {
- return GetName(); // TODO: тут надо сгенерить имя со всеми владельцами
+ std::string full_name(GetName());
+ if(full_name.empty())
+  full_name="NoName";
+ QWidget* own=dynamic_cast<QWidget*>(parent());
+ while(own != NULL)
+ {
+  std::string own_name=own->accessibleName().toLocal8Bit().constData();
+  if(!own_name.empty())
+   full_name=own_name+"."+full_name;
+  own=dynamic_cast<QWidget*>(own->parent());
+ }
+ return full_name;
 }
 
 

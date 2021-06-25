@@ -8,7 +8,7 @@ UWatchFormWidget::UWatchFormWidget(QWidget *parent,RDK::UApplication* app) :
     ui(new Ui::UWatchFormWidget)
 {
  ui->setupUi(this);
-
+ setAccessibleName("UWatchFormWidget");
  contextMenu = new QMenu(this);
 
 

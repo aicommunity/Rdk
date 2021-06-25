@@ -14,6 +14,7 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
 
     //время обновления графика
     UpdateInterval = UpdateIntervalMs;
+    setAccessibleName("UWatchTab");
 }
 
 UWatchTab::~UWatchTab()
