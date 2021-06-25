@@ -184,6 +184,8 @@ void UWatchChart::setAxisYmin(double value)
 
 void UWatchChart::updateTimeIntervals(double value)
 {
+    axisXrange = value;
+    setAxisXmax(getAxisXmin()+axisXrange);
     for(int i = 0; i < series.size(); i++)
     {
         series[i]->data_reader->SetTimeInterval(value);

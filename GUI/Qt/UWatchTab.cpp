@@ -65,13 +65,15 @@ void UWatchTab::AUpdateInterface()
 
             if(XData.empty())
             {
-             x_max = 0;
-             x_min = 0;
+                x_min = 0;
+                x_max = graph[graphIndex]->axisXrange;
             }
             else
             {
-             x_max = XData.back();
-             x_min = XData.front();
+                x_min = XData.front();
+                x_max = graph[graphIndex]->axisXrange + x_min;
+                if(XData.back()-XData.front() > graph[graphIndex]->axisXrange)
+                    graph[graphIndex]->axisXrange = XData.back()-XData.front();
             }
         }
         if(x_max-x_min > 0.001)
@@ -82,6 +84,7 @@ void UWatchTab::AUpdateInterface()
         else
         {
             graph[graphIndex]->updateTimeIntervals(1);
+            graph[graphIndex]->axisXrange = 1;
         }
         graph[graphIndex]->chartView->setUpdatesEnabled(true);
     }
@@ -347,11 +350,14 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
     graph.last()->setChartTitle (xml.ReadString ("ChartTitle",  "").c_str());
     graph.last()->setAxisXname  (xml.ReadString ("AxisXName",   "").c_str());
     graph.last()->setAxisYname  (xml.ReadString ("AxisYName",   "").c_str());
-    graph.last()->setAxisXmin   (xml.ReadFloat  ("AxisXmin",    0));
-    graph.last()->setAxisXmax   (xml.ReadFloat  ("AxisXmax",    0));
+
     graph.last()->setAxisYmin   (xml.ReadFloat  ("AxisYmin",    0));
     graph.last()->setAxisYmax   (xml.ReadFloat  ("AxisYmax",    0));
 
+
+    graph.last()->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
+    graph.last()->setAxisXmin   (0.0);
+    graph.last()->setAxisXmax   (graph.last()->axisXrange);
 
     int series_count = graph.last()->countSeries();
     for(int i = 0; i < series_count; i++)
@@ -370,7 +376,6 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 
         double time_interval = graph.last()->getAxisXmax() - graph.last()->getAxisXmin();
         graph.last()->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval);
-
         graph.last()->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
         graph.last()->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
         graph.last()->setSerieLineType  (serieIndex, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
