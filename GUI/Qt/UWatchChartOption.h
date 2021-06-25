@@ -24,7 +24,6 @@ public:
     ~UWatchChartOption();
 
 private slots:
-    void on_chartLayot_CB_currentIndexChanged(int index);
     void on_createLayot_button_clicked();
     void on_allChartsList_currentRowChanged(int currentRow);
     void on_okButton_clicked();

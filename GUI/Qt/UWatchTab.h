@@ -33,16 +33,7 @@ public:
     ~UWatchTab();
 
     ///создание расположений графиков
-    void createSingleLayout();
-    void createRowLayout(int rowNumber);
-    void createColLayout(int colNumber);
     void createGridLayout(int rowNumber, int colNumber);
-
-    /// 0 - SingleLayout
-    /// 1 - ColLayout
-    /// 2 - RowLayout
-    /// 3 - GridLayout
-    int layoutMode;
 
 
     UWatchChart *getChart(int index);

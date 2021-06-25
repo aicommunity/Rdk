@@ -20,14 +20,6 @@ UWatchChartOption::~UWatchChartOption()
     delete ui;
 }
 
-void UWatchChartOption::on_chartLayot_CB_currentIndexChanged(int index)
-{
-    //настройка spin box'ов в зависимости от типа расположения
-    if (index == 0) {ui->chartRowNumber_spin->setDisabled(true);ui->chartColNumber_spin->setDisabled(true);}
-    else if (index == 1) {ui->chartColNumber_spin->setEnabled(true);ui->chartRowNumber_spin->setDisabled(true);}
-    else if (index == 2) {ui->chartRowNumber_spin->setEnabled(true);ui->chartColNumber_spin->setDisabled(true);}
-    else if (index == 3) {ui->chartRowNumber_spin->setEnabled(true);ui->chartColNumber_spin->setEnabled(true);}
-}
 
 void UWatchChartOption::on_createLayot_button_clicked()
 {
@@ -51,10 +43,7 @@ void UWatchChartOption::updateChartList()
 
 void UWatchChartOption::updateLayoutBox()
 {
-    //настраиваем поля выбора layout в соотвествии с текущим layout
-    int currentLayoutMode = Watch->getCurrentTab()->layoutMode;
-    ui->chartLayot_CB->setCurrentIndex(currentLayoutMode);
-
+    //настраиваем поля выбора кол-ва колонок и строк
     int colNumber = Watch->getCurrentTab()->getColNumber();
     int rowNumber = Watch->getCurrentTab()->getRowNumber();
     if (colNumber && rowNumber)
@@ -92,16 +81,16 @@ void UWatchChartOption::updateParameters(int chartIndex)
 
 void UWatchChartOption::createLayout()
 {
-    //спрашиваем юзера, точно ли он хочет поменять layout
-    //но не спрашиваем если single layout и там нет серий
-    if (Watch->getCurrentTab()->layoutMode == 0 && Watch->getCurrentTab()->getChart(0)->countSeries() == 0);
+    //спрашиваем юзера, точно ли он хочет изменить параметры сетки
+    //но не спрашиваем если там нет серий
+    if (Watch->getCurrentTab()->getChart(0)->countSeries() == 0);
     else
     {
         //спрашиваем юзера точно ли он уверен в закрытие
         QMessageBox messageBox;
-        messageBox.setText("Are you sure you want to change layout?");
+        messageBox.setText("Are you sure you want to Grid layout params?");
         messageBox.setInformativeText("All data about current charts will be lost");
-        messageBox.setWindowTitle("Change layout");
+        messageBox.setWindowTitle("Change Grid layout params");
         messageBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
         messageBox.setIcon(QMessageBox::Question);
 
@@ -109,14 +98,10 @@ void UWatchChartOption::createLayout()
     }
 
     //создание нового расположения
-    int currentMethod =ui->chartLayot_CB->currentIndex();
     int colNumber = ui->chartColNumber_spin->value();
     int rowNumber = ui->chartRowNumber_spin->value();
 
-    if(currentMethod == 0) Watch->getCurrentTab()->createSingleLayout();
-    else if(currentMethod == 1) Watch->getCurrentTab()->createColLayout(colNumber);
-    else if(currentMethod == 2) Watch->getCurrentTab()->createRowLayout(rowNumber);
-    else if(currentMethod == 3) Watch->getCurrentTab()->createGridLayout(rowNumber,colNumber);
+    Watch->getCurrentTab()->createGridLayout(rowNumber,colNumber);
 }
 
 void UWatchChartOption::saveParameters()

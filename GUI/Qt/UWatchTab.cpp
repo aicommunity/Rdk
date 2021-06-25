@@ -10,7 +10,7 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
     ui->setupUi(this);
     colSplitter = nullptr;
     //создаем один график на вкладке
-    createSingleLayout();
+    createGridLayout(1,1);
 
     //время обновления графика
     UpdateInterval = UpdateIntervalMs;
@@ -149,53 +149,6 @@ void UWatchTab::deleteAllGraph()
 }
 
 
-void UWatchTab::createSingleLayout()
-{
-   deleteAllGraph();
-   tabColNumber=1;
-   tabRowNumber=1;
-
-   createGraph();
-   graph.last()->setChartTitle("Single graph");
-
-   createSplitterGrid(1);
-   rowSplitter.last()->addWidget(graph.last());
-   layoutMode = 0;
-}
-
-void UWatchTab::createRowLayout(int rowNumber)
-{
-    deleteAllGraph();
-    tabColNumber=1;
-    tabRowNumber=rowNumber;
-
-    createSplitterGrid(rowNumber);
-    for(int i=0; i < rowNumber;i++)
-    {
-        createGraph();
-        graph.last()->setChartTitle(QString("Horizontal graph %1").arg(QString::number(i)));
-        rowSplitter[i]->addWidget(graph.last());
-    }
-    layoutMode = 2;
-}
-
-void UWatchTab::createColLayout(int colNumber)
-{
-    deleteAllGraph();
-
-    tabColNumber=colNumber;
-    tabRowNumber=1;
-
-    createSplitterGrid(1);
-
-    for(int i=0; i < colNumber;i++)
-    {
-        createGraph();
-        graph.last()->setChartTitle(QString("Vertical graph %1").arg(QString::number(i)));
-        rowSplitter[0]->addWidget(graph.last());
-    }
-    layoutMode = 1;
-}
 
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
@@ -216,7 +169,6 @@ void UWatchTab::createGridLayout(int rowNumber, int colNumber)
             rowSplitter[i]->addWidget(graph.last());
         }
     }
-    layoutMode = 3;
 }
 
 UWatchChart *UWatchTab::getChart(int index)
@@ -310,10 +262,15 @@ int UWatchTab::getRowNumber()
 void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.DelNodeInternalContent();
+    xml.WriteInteger("GridColCount", tabColNumber);
+    xml.WriteInteger("GridRowCount", tabRowNumber);
     xml.WriteInteger("GraphCount", countGraphs());
-    // Пробегаем по списку всех открытых серий
+
+    // Пробегаем по списку всех открытых графов и серий в них
     for (int graphIndex=0; graphIndex < countGraphs(); graphIndex++)
     {
+        xml.SelectNodeForce("graph_"+RDK::sntoa(graphIndex));
+
         xml.WriteString ("ChartTitle",      graph[graphIndex]->getChartTitle().toStdString());
         xml.WriteString ("AxisXName",       graph[graphIndex]->getAxisXName().toStdString());
         xml.WriteString ("AxisYName",       graph[graphIndex]->getAxisYName().toStdString());
@@ -321,7 +278,9 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
         xml.WriteFloat  ("AxisXmax",        graph[graphIndex]->getAxisXmax());
         xml.WriteFloat  ("AxisYmin",        graph[graphIndex]->getAxisYmin());
         xml.WriteFloat  ("AxisYmax",        graph[graphIndex]->getAxisYmax());
-        xml.WriteInteger("SeriesCount", graph[graphIndex]->countSeries());
+
+        xml.WriteInteger("SeriesCount",     graph[graphIndex]->countSeries());
+
         for(int serieIndex=0; serieIndex<graph[graphIndex]->countSeries(); serieIndex++)
         {
             xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
@@ -335,51 +294,64 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
             xml.WriteInteger("SerieJx", graph[graphIndex]->getSerie(serieIndex)->Jx);
             xml.WriteInteger("SerieJy", graph[graphIndex]->getSerie(serieIndex)->Jy);
 
-
             xml.SelectUp();
         }
+        xml.SelectUp();
     }
 }
 
 // Загружает параметры интерфейса из xml
 void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 {
+    int grid_cols = xml.ReadInteger("GridColCount", 1);
+    int grid_rows = xml.ReadInteger("GridRowCount", 1);
+
+    createGridLayout(grid_rows, grid_cols);
+
     int graph_count = xml.ReadInteger("GraphCount", 0);
-    //createGraph();
 
-    graph.last()->setChartTitle (xml.ReadString ("ChartTitle",  "").c_str());
-    graph.last()->setAxisXname  (xml.ReadString ("AxisXName",   "").c_str());
-    graph.last()->setAxisYname  (xml.ReadString ("AxisYName",   "").c_str());
+    // ошибка в кол-ве созданных графов и указанных в xml-файле
+    if(graph_count != countGraphs())
+        return;
 
-    graph.last()->setAxisYmin   (xml.ReadFloat  ("AxisYmin",    0));
-    graph.last()->setAxisYmax   (xml.ReadFloat  ("AxisYmax",    0));
-
-
-    graph.last()->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
-    graph.last()->setAxisXmin   (0.0);
-    graph.last()->setAxisXmax   (graph.last()->axisXrange);
-
-    int series_count = graph.last()->countSeries();
-    for(int i = 0; i < series_count; i++)
-        graph.last()->deleteSerie(0);
-
-    series_count = xml.ReadInteger("SeriesCount", 0);
-
-    for(int serieIndex=0; serieIndex < series_count; serieIndex++)
+    for (int graphIndex=0; graphIndex < graph_count; graphIndex++)
     {
-        xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
+        xml.SelectNodeForce("graph_"+RDK::sntoa(graphIndex));
 
-        QString name_comp = xml.ReadString("SerieNameComponent", "").c_str();
-        QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
-        int jx = xml.ReadInteger("SerieJx", -1);
-        int jy = xml.ReadInteger("SerieJy", -1);
+        graph[graphIndex]->setChartTitle (xml.ReadString ("ChartTitle",  "").c_str());
+        graph[graphIndex]->setAxisXname  (xml.ReadString ("AxisXName",   "").c_str());
+        graph[graphIndex]->setAxisYname  (xml.ReadString ("AxisYName",   "").c_str());
 
-        double time_interval = graph.last()->getAxisXmax() - graph.last()->getAxisXmin();
-        graph.last()->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval);
-        graph.last()->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
-        graph.last()->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
-        graph.last()->setSerieLineType  (serieIndex, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
-        graph.last()->getSerie(serieIndex)->setColor(xml.ReadInteger("SerieColor", 0));
+        graph[graphIndex]->setAxisYmin   (xml.ReadFloat  ("AxisYmin",    0));
+        graph[graphIndex]->setAxisYmax   (xml.ReadFloat  ("AxisYmax",    0));
+
+        graph[graphIndex]->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
+        graph[graphIndex]->setAxisXmin   (0.0);
+        graph[graphIndex]->setAxisXmax   (graph[graphIndex]->axisXrange);
+
+        int series_count = graph[graphIndex]->countSeries();
+        for(int i = 0; i < series_count; i++)
+            graph[graphIndex]->deleteSerie(0);
+
+        series_count = xml.ReadInteger("SeriesCount", 0);
+
+        for(int serieIndex=0; serieIndex < series_count; serieIndex++)
+        {
+            xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
+
+            QString name_comp = xml.ReadString("SerieNameComponent", "").c_str();
+            QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
+            int jx = xml.ReadInteger("SerieJx", -1);
+            int jy = xml.ReadInteger("SerieJy", -1);
+
+            double time_interval = graph[graphIndex]->getAxisXmax() - graph[graphIndex]->getAxisXmin();
+            graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval);
+            graph[graphIndex]->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
+            graph[graphIndex]->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
+            graph[graphIndex]->setSerieLineType  (serieIndex, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
+            graph[graphIndex]->getSerie(serieIndex)->setColor(xml.ReadInteger("SerieColor", 0));
+            xml.SelectUp();
+        }
         xml.SelectUp();
     }
 }
