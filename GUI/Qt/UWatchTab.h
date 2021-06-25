@@ -52,7 +52,7 @@ public:
     void createSelectionDialog(int chartIndex);
 
     ///частота обновления графика, мс
-    int UpdateIntervalMs = 30;
+    int UpdateIntervalMs = 200;
     void saveUpdateInterval(int newInterval);
 
     //узнать количество строк и столбцов
