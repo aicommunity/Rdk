@@ -10,6 +10,7 @@
 #include "UWatchTab.h"
 #include "UWatchChartOption.h"
 #include "UWatchSeriesOption.h"
+#include "UVisualControllerMainWidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -23,7 +24,7 @@ using namespace QtCharts;
 //////////////////////////////////////////////////////////////////////////////
 
 
-class UWatch : public QMainWindow, public RDK::UIVisualController
+class UWatch : public UVisualControllerMainWidget
 {
     Q_OBJECT
 
@@ -33,65 +34,34 @@ public:
     UWatchTab *getCurrentTab();
 
     // Обновление интерфейса
-    virtual void UpdateInterface(bool force_update=false);
+    virtual void AUpdateInterface(void);
 
     // Возврат интерфейса в исходное состояние
-    virtual void ClearInterface(void);
-
-    // Возвращает интервал обновления интерфейса
-    virtual long GetUpdateInterval(void);
-
-    // Задает интервал обновления интерфейса
-    virtual bool SetUpdateInterval(long value);
-
-    // Возвращает флаг разрешения обновления интерфейса даже если он не виден
-    virtual bool GetAlwaysUpdateFlag(void);
-
-    // Служебные методы управления интерфейсом
-    /// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
-    virtual void ResetCalculationStepUpdatedFlag(void);
-
-    /// Выставляет флаг прошедшей перерисовки в этой итерации счета
-    virtual void SetCalculationStepUpdatedFlag(void);
-
-    /// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
-    virtual bool GetCalculationStepUpdatedFlag(void);
-
-    /// Возвращает время обновления интерфейса (мс)
-    virtual unsigned long long GetUpdateTime(void);
+    virtual void AClearInterface(void);
 
     // Метод, вызываемый после загрузки проекта
-    virtual void AfterLoadProject(void);
+    virtual void AAfterLoadProject(void);
 
     // Метод, вызываемый перед закрытием проекта
-    virtual void BeforeCloseProject(void);
+    virtual void ABeforeCloseProject(void);
 
     // Метод, вызываемый перед сбросом модели
-    virtual void BeforeReset(void);
+    virtual void ABeforeReset(void);
 
     // Метод, вызываемый после сброса модели
-    virtual void AfterReset(void);
+    virtual void AAfterReset(void);
 
     // Метод, вызываемый перед шагом расчета
-    virtual void BeforeCalculate(void);
+    virtual void ABeforeCalculate(void);
 
     // Метод, вызываемый после шага расчета
-    virtual void AfterCalculate(void);
-
-    // Возвращает уникальное имя интерфейса
-    virtual std::string GetName(void);
-
-    // Возвращает полное уникальное имя интерфейса
-    virtual std::string CalcFullName(void);
-
-    // Возвращает имя класса интерфейса
-    virtual std::string GetClassName(void);
+    virtual void AAfterCalculate(void);
 
     // Сохраняет параметры интерфейса в xml
-    virtual void SaveParameters(RDK::USerStorageXML &xml);
+    virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
     // Загружает параметры интерфейса из xml
-    virtual void LoadParameters(RDK::USerStorageXML &xml);
+    virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 private slots:
     void on_actionCreate_tab_triggered();

@@ -2,11 +2,10 @@
 #include "ui_UWatch.h"
 
 UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
-    : ui(new Ui::UWatch)
+    : UVisualControllerMainWidget(parent, app), ui(new Ui::UWatch)
 {
     ui->setupUi(this);
     setAccessibleName("UWatch");
-    RDK::UIVisualControllerStorage::AddInterface(this);
     //создаем первую вкладку
     //createTab();
 }
@@ -140,62 +139,31 @@ void UWatch::on_actionTake_screenshot_triggered()
 }
 
 // Обновление интерфейса
-void UWatch::UpdateInterface(bool force_update){}
+void UWatch::AUpdateInterface(void){}
 
 // Возврат интерфейса в исходное состояние
-void UWatch::ClearInterface(void){}
-
-// Возвращает интервал обновления интерфейса
-long UWatch::GetUpdateInterval(void){return 0;}
-
-// Задает интервал обновления интерфейса
-bool UWatch::SetUpdateInterval(long value){return true;}
-
-// Возвращает флаг разрешения обновления интерфейса даже если он не виден
-bool UWatch::GetAlwaysUpdateFlag(void){return true;}
-
-// Служебные методы управления интерфейсом
-/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
-void UWatch::ResetCalculationStepUpdatedFlag(void){}
-
-/// Выставляет флаг прошедшей перерисовки в этой итерации счета
-void UWatch::SetCalculationStepUpdatedFlag(void){}
-
-/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
-bool UWatch::GetCalculationStepUpdatedFlag(void){return true;}
-
-/// Возвращает время обновления интерфейса (мс)
-unsigned long long UWatch::GetUpdateTime(void){return 0;}
+void UWatch::AClearInterface(void){}
 
 // Метод, вызываемый после загрузки проекта
-void UWatch::AfterLoadProject(void){}
+void UWatch::AAfterLoadProject(void){}
 
 // Метод, вызываемый перед закрытием проекта
-void UWatch::BeforeCloseProject(void){}
+void UWatch::ABeforeCloseProject(void){}
 
 // Метод, вызываемый перед сбросом модели
-void UWatch::BeforeReset(void){}
+void UWatch::ABeforeReset(void){}
 
 // Метод, вызываемый после сброса модели
-void UWatch::AfterReset(void){}
+void UWatch::AAfterReset(void){}
 
 // Метод, вызываемый перед шагом расчета
-void UWatch::BeforeCalculate(void){}
+void UWatch::ABeforeCalculate(void){}
 
 // Метод, вызываемый после шага расчета
-void UWatch::AfterCalculate(void){}
-
-// Возвращает уникальное имя интерфейса
-std::string UWatch::GetName(void){return "";}
-
-// Возвращает полное уникальное имя интерфейса
-std::string UWatch::CalcFullName(void){return "";}
-
-// Возвращает имя класса интерфейса
-std::string UWatch::GetClassName(void){return "";}
+void UWatch::AAfterCalculate(void){}
 
 // Сохраняет параметры интерфейса в xml
-void UWatch::SaveParameters(RDK::USerStorageXML &xml)
+void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.WriteInteger("TabCount", tab.count());
     xml.SelectNodeForce("Tabs");
@@ -211,7 +179,7 @@ void UWatch::SaveParameters(RDK::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void UWatch::LoadParameters(RDK::USerStorageXML &xml)
+void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 {
     // Очистка существующих табов
     int tab_size = tab.size();
