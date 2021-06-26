@@ -1958,36 +1958,42 @@ bool UContainer::Default(void)
 	return false;
    AfterDefault();
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
 }
@@ -2013,36 +2019,42 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
 	 res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
    }
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
 }
@@ -2074,36 +2086,42 @@ bool UContainer::Build(void)
 
    AfterBuild();
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
 }
@@ -2147,36 +2165,42 @@ bool UContainer::Reset(void)
    AfterReset();
    LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_EXIT_OK);
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+ //  RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
 }
@@ -2332,36 +2356,42 @@ bool UContainer::Calculate(void)
    }
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return true;
@@ -2388,36 +2418,42 @@ void UContainer::Init(void)
    InitFlag=true;
    Reset();
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 }
 
@@ -2436,36 +2472,42 @@ void UContainer::UnInit(void)
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->UnInit();
   }
-  catch(UException &)
+  catch(UException &exception)
   {
-   throw;
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   throw;
   }
   catch(std::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperStd(exception));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
+//   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+//   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+//  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  InitFlag=false;
 }
