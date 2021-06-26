@@ -7,6 +7,9 @@
 
 namespace RDK {
 
+typedef void (*ProgressBarCallback)(int complete_percent);
+
+
 /// Класс начальной инициализации
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class UProjectDeployerT>
 class RDK_LIB_TYPE UAppCore
@@ -70,8 +73,11 @@ public:
  int serverAutostartFlag;
  int serverStandaloneTask;
 
+ ProgressBarCallback FuncProgressBarCallback;
+
 public:
  UAppCore(void);
+ UAppCore(ProgressBarCallback func);
  ~UAppCore(void);
 
  /// Инициализация
@@ -81,6 +87,7 @@ public:
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::UAppCore(void)
 {
+ FuncProgressBarCallback=0;
  rdkTestManager.SetApplication(&application);
  rpcDispatcher.SetApplication(&application);
 
@@ -107,6 +114,14 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  application.SetProject(&project);
 
 }
+
+template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
+UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::UAppCore(ProgressBarCallback func)
+ : UAppCore()
+{
+FuncProgressBarCallback=func;
+}
+
 
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::~UAppCore(void)
@@ -212,7 +227,13 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   return 11711;
  }
 
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(15);
+
  application.Init();
+
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(20);
 
  if(application.IsTestMode())
  {
@@ -221,6 +242,9 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
    if(closeAfterTests)
      return returnCode;
  }
+
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(30);
 
  if(storageMountPoint!="")
      application.SetStorageMountPoint(storageMountPoint);
@@ -251,10 +275,16 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
      application.GetProjectDeployer()->SetFtpRemotePath(remoteFtpDatabasePath);
  }
 
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(40);
+
  if(database_login!="" && database_password!="")
  {
      application.GetProjectDeployer()->SetDatabaseAccess(database_address, database_name, database_login, database_password);
  }
+
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(50);
 
  if(!startProjectName.empty())
   application.OpenProject(startProjectName);
@@ -269,12 +299,19 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   }
  }
 
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(80);
+
  if(autoStartProjectFlag)
  {
   if(!application.GetProjectOpenFlag())
    return -1;
   application.StartChannel(-1);
  }
+
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(90);
+
  return 0;
 }
 
