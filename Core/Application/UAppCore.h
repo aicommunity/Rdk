@@ -142,6 +142,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  if(logDir.empty())
   logDir=projectIniFile("Log","FixedLogPath",""); // TODO: Аналог Log/Dir
  int logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
+ int calcStopLogLevel=atoi(projectIniFile("Log","CalcStopLogLevel","1"));
 
 // bool SetFixedLogPath(const std::string& value);
 
@@ -180,6 +181,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  application.SetApplicationFileName(application_file_name);
  application.SetLogCreationMode(logCreationMode);
+ application.SetCalcStopLogLevel(calcStopLogLevel);
 
  if(logDir.empty())
  {

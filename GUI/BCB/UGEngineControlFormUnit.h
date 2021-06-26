@@ -301,6 +301,7 @@ String ProgramName;
 String LogDir;
 bool LogDebugMode;
 int StartupDelay;
+int calcStopLogLevel;
 
 ///Путь к папке, откуда открывался проект последний раз
 String LastProjectPath;

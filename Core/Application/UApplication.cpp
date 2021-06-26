@@ -48,6 +48,7 @@ UApplication::UApplication(void)
  ChangeUseNewProjectFilesStructure(false);
  StorageBuildMode = 1;
  LogCreationMode=0;
+ CalcStopLogLevel=RDK_EX_FATAL;
  //SetStandartXMLInCatalog();
 
 
@@ -414,6 +415,25 @@ bool UApplication::SetLogCreationMode(int mode)
  LogCreationMode=mode;
  return true;
 }
+
+/// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
+int UApplication::GetCalcStopLogLevel(void) const
+{
+ return CalcStopLogLevel;
+}
+
+bool UApplication::SetCalcStopLogLevel(int log_level)
+{
+    if(CalcStopLogLevel == log_level)
+     return true;
+
+    if(CalcStopLogLevel<-1)
+     return false;
+
+    CalcStopLogLevel=log_level;
+    return true;
+}
+
 
 /// Установка необходимого режима сборки
 void UApplication::SetStorageBuildMode(int mode)

@@ -2454,6 +2454,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  ConfigsMainPath=app_ini->ReadString("General", "ConfigsMainPath", "../../../Configs/");
  NeverSleepOnMMThreadContention=app_ini->ReadBool("General","NeverSleepOnMMThreadContention",false);
  LogDir=app_ini->ReadString("Log","Dir","");
+ calcStopLogLevel=app_ini->ReadInteger("Log","CalcStopLogLevel",1);
  StartupDelay=app_ini->ReadInteger("General","StartupDelay",0);
 
  UseNewXmlFormatProjectFile=app_ini->ReadBool("General","UseNewXmlFormatProjectFile",false);
@@ -2494,6 +2495,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.ChangeUseNewXmlFormatProjectFile(UseNewXmlFormatProjectFile);
  RdkApplication.ChangeUseNewProjectFilesStructure(UseNewProjectFilesStructure);
  RdkApplication.SetDebugMode(LogDebugMode);
+ RdkApplication.SetCalcStopLogLevel(calcStopLogLevel);
 
  std::vector<std::string> args;
  for(int i=0;i<ParamCount();i++)

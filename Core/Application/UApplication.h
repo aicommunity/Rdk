@@ -118,6 +118,9 @@ std::string FixedLogPath;
 /// 3 - файл лога создается единожды на весь период работы приложения в системной папке
 int LogCreationMode;
 
+/// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
+int CalcStopLogLevel;
+
 protected: // Модули приложения
 /// Диспетчер команд
 UEPtr<URpcDispatcher> RpcDispatcher;
@@ -231,6 +234,10 @@ bool SetFixedLogPath(const std::string& value);
 /// 3 - файл лога создается единожды на весь период работы приложения в системной папке
 int GetLogCreationMode(void) const;
 bool SetLogCreationMode(int mode);
+
+/// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
+int GetCalcStopLogLevel(void) const;
+bool SetCalcStopLogLevel(int log_level);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;
