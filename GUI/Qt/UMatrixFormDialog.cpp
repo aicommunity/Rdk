@@ -22,6 +22,7 @@ UMatrixFormDialog::UMatrixFormDialog(QWidget *parent) :
 
 UMatrixFormDialog::~UMatrixFormDialog()
 {
+    updateMatrixDataTimer.stop();
     delete ui;
 }
 

@@ -232,12 +232,15 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         if(form->exec()== QDialog::Accepted)
         {
             if(form->SelectedRow == -1 || form->SelectedCol == -1)
+            {
+                delete form;
                 return;
-
+            }
             //создаем серию для выбранного источника
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
             graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval);
         }
+        delete form;
     }
 }
 
