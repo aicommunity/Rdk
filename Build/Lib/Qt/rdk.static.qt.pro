@@ -103,7 +103,6 @@ SOURCES += \
     ../../../Deploy/Include/rdk_rpc.cpp \
     ../../../Deploy/Include/rdk_cpp_initdll.cpp \
     ../../../Deploy/Include/rdk_engine_support.cpp \
-    ../../../Deploy/Include/rdk_exceptions.ansi.cpp \
     ../../../Deploy/Include/rdk_initdll.cpp \
     ../../../Deploy/Include/rdk_cpp_init.cpp \
     ../../../Deploy/Include/rdk_init.cpp \
@@ -278,6 +277,11 @@ HEADERS +=\
 
 unix {
     DESTDIR = $$PWD/../../../../Bin/Platform/Linux/Lib.Qt
+    SOURCES +=     ../../../Deploy/Include/rdk_exceptions.ansi.cpp
+}
+
+windows:!windows-g++ { # visual studio spec filter
+SOURCES +=     ../../../Deploy/Include/rdk_exceptions.win.cpp
 }
 
 windows {

@@ -4,7 +4,7 @@
 #ifdef __BORLANDC__
 #include "rdk_exceptions.bcb.h"
 #else
-    #ifdef QT_VERSION
+    #ifdef WIN32
            #include "rdk_exceptions.win.h"
     #else
         #ifdef __GNUC__

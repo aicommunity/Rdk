@@ -6,7 +6,7 @@ namespace RDK {
 // Формирует строку с описанием возникшего системного исключения
 std::string GetSystemExceptionData(void)
 {
- return std::string("information isn't available");
+ return std::string("additional information about SEH exception isn't available");
 }
 
 }

@@ -2,6 +2,11 @@ unix {
 QMAKE_CXXFLAGS += -Wno-misleading-indentation -Wno-deprecated-copy
 }
 
+windows:!windows-g++ { # visual studio spec filter
+    QMAKE_CXXFLAGS_EXCEPTIONS_ON = /EHa
+    QMAKE_CXXFLAGS_STL_ON = /EHa
+}
+
 DEFINES += LIBRDK_LIBRARY_EXPORT
 DEFINES += RDK_UNICODE_RUN
 DEFINES += RDK_QT
