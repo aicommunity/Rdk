@@ -100,6 +100,7 @@ void UWatchSeriesOption::updateSeriesProperties(int currentSerieIndex)
     updateSeriesColorProp(currentChartIndex, currentSerieIndex);
     updateSeriesWidthProp(currentChartIndex, currentSerieIndex);
     updateSeriesLineTypeProp(currentChartIndex, currentSerieIndex);
+    updateSeriesYShift(currentChartIndex, currentSerieIndex);
 }
 
 void UWatchSeriesOption::updateSeriesNameProp(int currentChartIndex, int currentSerieIndex)
@@ -134,6 +135,12 @@ void UWatchSeriesOption::updateSeriesLineTypeProp(int currentChartIndex, int cur
         if (lineStyle == defaultLineStyle[i]) ui->serieLineType->setCurrentIndex(i);
 }
 
+void UWatchSeriesOption::updateSeriesYShift(int currentChartIndex,int currentSerieIndex)
+{
+    double y_shift = Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieYShift(currentSerieIndex);
+    ui->serieYshift->setValue(y_shift);
+}
+
 void UWatchSeriesOption::saveParemeters()
 {
     //сохранение параметров
@@ -147,8 +154,9 @@ void UWatchSeriesOption::saveParemeters()
     int colorIndex = ui->serieColor->currentIndex();
     int width = ui->serieLneWidth->currentIndex();
     int lineTypeIndex = ui->serieLineType->currentIndex();
+    double y_shift = ui->serieYshift->value();
 
     Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieName(currentSerieIndex, name);
     Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieStyle(currentSerieIndex, defaultColors[colorIndex], width+1, defaultLineStyle[lineTypeIndex]);
-
+    Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieYshift(currentSerieIndex, y_shift);
 }

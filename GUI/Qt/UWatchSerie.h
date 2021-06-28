@@ -20,6 +20,7 @@ public:
     QString nameComponent; //Имя компонента
     QString nameProperty;  //Имя свойства
     QString typeProperty;  //Тип компонента
+    double YShift;
     // вектор DataReader-ов
     RDK::UControllerDataReader * data_reader;
     //координаты элемента матрицы

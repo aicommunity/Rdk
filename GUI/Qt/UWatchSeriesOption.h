@@ -52,6 +52,7 @@ private:
     void updateSeriesColorProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesWidthProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesLineTypeProp(int currentChartIndex,int currentSerieIndex);
+    void updateSeriesYShift(int currentChartIndex,int currentSerieIndex);
 
     //сохранить параметры
     void saveParemeters();

@@ -56,6 +56,7 @@ public:
     QColor       getSerieColor(int serieIndex);
     int          getSerieWidth(int serieIndex);
     Qt::PenStyle getSerieLineType(int serieIndex);
+    double       getSerieYShift(int serieIndex);
 
 
 
@@ -76,10 +77,12 @@ public:
     void setSerieLineType(int serieIndex, Qt::PenStyle lineType);
     void setSerieWidth(int serieIndex, int width);
     void setSerieStyle(int serieIndex, QColor color, int width, Qt::PenStyle lineType);
+    void setSerieYshift(int serieIndex, int y_shift);
+
 
     //действия с сериями
-    void createSerie(int channelIndex, const QString componentName,
-                     const QString propertyName, const QString type, int jx, int jy, double time_interval);
+    void createSerie(int channelIndex, const QString componentName, const QString propertyName,
+                     const QString type, int jx, int jy, double time_interval, double y_shift);
     void deleteSerie(int serieIndex);
     void addDataToSerie(int serieIndex, double x, double y);
     int  countSeries();

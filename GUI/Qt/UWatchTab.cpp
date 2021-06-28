@@ -54,14 +54,16 @@ void UWatchTab::AUpdateInterface()
             std::list<double>::iterator itx, ity;
             points.resize(XData.size());
 
+            UWatchSerie * current_serie = graph[graphIndex]->getSerie(serieIndex);
+
             int i = 0;
             for (itx = XData.begin(), ity = YData.begin(); itx != XData.end(); ++itx, ++ity)
             {
-                points[i] = QPointF(*itx,*ity);
+                points[i] = QPointF(*itx,*ity + current_serie->YShift);
                 i++;
             }
 
-            graph[graphIndex]->getSerie(serieIndex)->replace(points);
+            current_serie->replace(points);
 
             if(XData.empty())
             {
@@ -220,7 +222,7 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         {
             //создаем серию для выбранного источника
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
-            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval);
+            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval, 0.0);
             return;
         }
 
@@ -232,15 +234,15 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         if(form->exec()== QDialog::Accepted)
         {
             if(form->SelectedRow == -1 || form->SelectedCol == -1)
-            {
-                delete form;
-                return;
+             {
+                form->SelectedRow = 0;
+                form->SelectedCol = 0;
             }
+
             //создаем серию для выбранного источника
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
-            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval);
+            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval, 0.0);
         }
-        delete form;
     }
 }
 
@@ -292,10 +294,11 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
             xml.WriteInteger("SerieLineType",   graph[graphIndex]->getSerieLineType(serieIndex));
             xml.WriteInteger("SerieColor",      graph[graphIndex]->getSerieColor(serieIndex).rgb());
 
-            xml.WriteString ("SerieNameComponent", graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString());
-            xml.WriteString ("SerieNameProperty", graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString());
-            xml.WriteInteger("SerieJx", graph[graphIndex]->getSerie(serieIndex)->Jx);
-            xml.WriteInteger("SerieJy", graph[graphIndex]->getSerie(serieIndex)->Jy);
+            xml.WriteString ("SerieNameComponent",  graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString());
+            xml.WriteString ("SerieNameProperty",   graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString());
+            xml.WriteInteger("SerieJx",             graph[graphIndex]->getSerie(serieIndex)->Jx);
+            xml.WriteInteger("SerieJy",             graph[graphIndex]->getSerie(serieIndex)->Jy);
+            xml.WriteFloat  ("SerieYShift",         graph[graphIndex]->getSerie(serieIndex)->YShift);
 
             xml.SelectUp();
         }
@@ -346,9 +349,10 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
             QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
             int jx = xml.ReadInteger("SerieJx", -1);
             int jy = xml.ReadInteger("SerieJy", -1);
+            double y_shift = xml.ReadFloat("SerieYShift", 0.0);
 
             double time_interval = graph[graphIndex]->getAxisXmax() - graph[graphIndex]->getAxisXmin();
-            graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval);
+            graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval, y_shift);
             graph[graphIndex]->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
             graph[graphIndex]->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
             graph[graphIndex]->setSerieLineType  (serieIndex, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));

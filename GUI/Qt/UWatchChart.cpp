@@ -100,7 +100,13 @@ void UWatchChart::setSerieStyle(int serieIndex, QColor color, int width, Qt::Pen
     series[serieIndex]->setPen(pen);
 }
 
-void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName, const QString type, int jx, int jy, double time_interval)
+void UWatchChart::setSerieYshift(int serieIndex, int y_shift)
+{
+    series[serieIndex]->YShift = y_shift;
+}
+
+void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName,
+                              const QString type, int jx, int jy, double time_interval, double y_shift)
 {
     //создаем новый график и привязываем его к осям
     series.push_back(new UWatchSerie());
@@ -119,6 +125,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     series.last()->typeProperty = type;
     series.last()->Jx = jx;
     series.last()->Jy = jy;
+    series.last()->YShift = y_shift;
 
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
@@ -242,6 +249,11 @@ int UWatchChart::getSerieWidth(int serieIndex)
 Qt::PenStyle UWatchChart::getSerieLineType(int serieIndex)
 {
     return series[serieIndex]->pen().style();
+}
+
+double UWatchChart::getSerieYShift(int serieIndex)
+{
+    return series[serieIndex]->YShift;
 }
 
 double UWatchChart::getAxisXmin()
