@@ -72,6 +72,19 @@ public:
  std::string serverAddress;
  int serverAutostartFlag;
  int serverStandaloneTask;
+ int logCreationMode;
+ int calcStopLogLevel;
+
+ std::string librariesPath;
+
+ std::string temp_proj_path;
+
+ std::string database_address;
+ std::string database_name;
+ std::string database_login;
+ std::string database_password;
+
+ std::string storageMountPoint;
 
  ProgressBarCallback FuncProgressBarCallback;
 
@@ -82,6 +95,9 @@ public:
 
  /// Инициализация
  int Init(const std::string &application_file_name, const std::string &ini_file_name, const std::string &log_dir, int argc, char *argv[]);
+
+ /// Пост-инициализация
+ int PostInit(void);
 };
 
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
@@ -156,8 +172,8 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
  if(logDir.empty())
   logDir=projectIniFile("Log","FixedLogPath",""); // TODO: Аналог Log/Dir
- int logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
- int calcStopLogLevel=atoi(projectIniFile("Log","CalcStopLogLevel","1"));
+ logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
+ calcStopLogLevel=atoi(projectIniFile("Log","CalcStopLogLevel","1"));
 
 // bool SetFixedLogPath(const std::string& value);
 
@@ -166,33 +182,32 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
  useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
 
- std::string librariesPath=projectIniFile("General", "LibrariesPath", "../../../");
+ librariesPath=projectIniFile("General", "LibrariesPath", "../../../");
 
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
 
-
- if(startupDelay>0)
- {
-  RDK::Sleep(startupDelay);
- }
-
  logDebugMode=atoi(projectIniFile("Log","DebugMode","0"));
 
  disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
- std::string temp_proj_path = projectIniFile("General", "TemporaryProjectPath", "");
+ temp_proj_path = projectIniFile("General", "TemporaryProjectPath", "");
 
  serverPort = atoi(projectIniFile("Server","BindPort","45545"));
  serverAddress = projectIniFile("Server","BindAddress","127.0.0.2");
  serverAutostartFlag = atoi(projectIniFile("Server","AutostartServer","0"));
  serverStandaloneTask = atoi(projectIniFile("Server","StandaloneTask","-1"));
 
- std::string database_address = projectIniFile("PostgreSQL","DatabaseAddress","127.0.0.1");
- std::string database_name = projectIniFile("PostgreSQL","DatabaseName","videoanalytics");
- std::string database_login = projectIniFile("PostgreSQL","DatabaseLogin","");
- std::string database_password = projectIniFile("PostgreSQL","DatabasePassword","");
+ database_address = projectIniFile("PostgreSQL","DatabaseAddress","127.0.0.1");
+ database_name = projectIniFile("PostgreSQL","DatabaseName","videoanalytics");
+ database_login = projectIniFile("PostgreSQL","DatabaseLogin","");
+ database_password = projectIniFile("PostgreSQL","DatabasePassword","");
 
- std::string storageMountPoint = projectIniFile("Storage","StorageMountPoint","");
+ storageMountPoint = projectIniFile("Storage","StorageMountPoint","");
+
+ if(startupDelay>0)
+ {
+  RDK::Sleep(startupDelay);
+ }
 
  application.SetApplicationFileName(application_file_name);
  application.SetLogCreationMode(logCreationMode);
@@ -235,6 +250,13 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(20);
 
+ return 0;
+}
+
+/// Пост-инициализация
+template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
+int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::PostInit(void)
+{
  if(application.IsTestMode())
  {
    bool closeAfterTests = false;
@@ -314,6 +336,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  return 0;
 }
+
 
 }
 

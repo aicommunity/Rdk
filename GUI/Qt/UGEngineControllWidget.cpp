@@ -138,6 +138,10 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     watchFormWidget->setWindowTitle("Watches");
     watchFormWidget->hide();
 
+    watchWindow = new UWatch(this);
+    watchWindow->setWindowTitle("Watch window");
+    watchWindow->hide();
+
     // hide profiling widget by default
     profilingWindowWidget = new UTableInfo(this, application);
     ui->dockWidgetProfiling->setWidget(profilingWindowWidget);
@@ -1013,4 +1017,65 @@ void UGEngineControllWidget::updateChannelsVisibility()
             ui->dockWidgetChannels->hide();
         }
     }
+}
+
+// Обновление интерфейса
+void UGEngineControllWidget::AUpdateInterface(void)
+{
+
+}
+
+// Возврат интерфейса в исходное состояние
+void UGEngineControllWidget::AClearInterface(void)
+{
+    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
+}
+
+// Метод, вызываемый после загрузки проекта
+void UGEngineControllWidget::AAfterLoadProject(void)
+{
+ this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]");
+
+}
+
+// Метод, вызываемый перед закрытием проекта
+void UGEngineControllWidget::ABeforeCloseProject(void)
+{
+
+}
+
+// Метод, вызываемый перед сбросом модели
+void UGEngineControllWidget::ABeforeReset(void)
+{
+
+}
+
+// Метод, вызываемый после сброса модели
+void UGEngineControllWidget::AAfterReset(void)
+{
+
+}
+
+// Метод, вызываемый перед шагом расчета
+void UGEngineControllWidget::ABeforeCalculate(void)
+{
+
+}
+
+// Метод, вызываемый после шага расчета
+void UGEngineControllWidget::AAfterCalculate(void)
+{
+
+}
+
+// Сохраняет параметры интерфейса в xml
+void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
+{
+
+}
+
+// Загружает параметры интерфейса из xml
+void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
+{
+
 }

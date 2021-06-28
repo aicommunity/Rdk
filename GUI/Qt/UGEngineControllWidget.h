@@ -224,6 +224,38 @@ private:
     /// Вызов после смены режима сборки (пересборки)
     void updateShemeClassesList();
 
+    // Обновление интерфейса
+    virtual void AUpdateInterface(void);
+
+    // Возврат интерфейса в исходное состояние
+    virtual void AClearInterface(void);
+
+    // Метод, вызываемый после загрузки проекта
+    virtual void AAfterLoadProject(void);
+
+    // Метод, вызываемый перед закрытием проекта
+    virtual void ABeforeCloseProject(void);
+
+    // Метод, вызываемый перед сбросом модели
+    virtual void ABeforeReset(void);
+
+    // Метод, вызываемый после сброса модели
+    virtual void AAfterReset(void);
+
+    // Метод, вызываемый перед шагом расчета
+    virtual void ABeforeCalculate(void);
+
+    // Метод, вызываемый после шага расчета
+    virtual void AAfterCalculate(void);
+
+    // Сохраняет параметры интерфейса в xml
+    virtual void ASaveParameters(RDK::USerStorageXML &xml);
+
+    // Загружает параметры интерфейса из xml
+    virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+
+
 };
 
 /// Не закрывающийся QMdiSubwindow для отображения схемы модели

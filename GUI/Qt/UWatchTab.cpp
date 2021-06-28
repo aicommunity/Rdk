@@ -52,7 +52,7 @@ void UWatchTab::AUpdateInterface()
             ReadSeriesDataSafe(graphIndex,serieIndex,XData,YData);
 
             std::list<double>::iterator itx, ity;
-            points.resize(XData.size());
+            points.resize(int(XData.size()));
 
             UWatchSerie * current_serie = graph[graphIndex]->getSerie(serieIndex);
 
