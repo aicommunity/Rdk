@@ -131,17 +131,31 @@ void UWatchTab::createSplitterGrid(int rowNumber)
     ui->horizontalLayout->addWidget(colSplitter);
 }
 
-void UWatchTab::deleteAllGraph()
+void UWatchTab::deleteGraphs(int new_graph_count)
 {
+    int graphs_to_remove = countGraphs() - new_graph_count;
+
+    if(graphs_to_remove < 0)
+    {
+        graphs_to_remove = 0;
+    }
+
+    // deleting unnecessary graphs
+    for(int i=0; i < graphs_to_remove; i++)
+        delete graph.takeLast();
+
+
     //удаляем все графики
     for (int i = tabRowNumber-1; i >= 0; --i)
     {
-        for (int j = tabColNumber-1; j >= 0; --j)
-        {
-            delete graph.takeLast();
-        }
+        int widget_count = rowSplitter[i]->count();
+        // clear children in rowSplitter, so while it is deleted, graphs won't be deleted
+        for(int j = 0; j < widget_count; j++)
+            rowSplitter[i]->widget(0)->setParent(nullptr);
+
         delete rowSplitter.takeLast();
     }
+
     //удаляем расположение
     if (colSplitter !=nullptr)
     {
@@ -155,20 +169,31 @@ void UWatchTab::deleteAllGraph()
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
 
-    deleteAllGraph();
+    deleteGraphs(rowNumber*colNumber);
 
     tabColNumber=colNumber;
     tabRowNumber=rowNumber;
 
     createSplitterGrid(rowNumber);
+
+
+    // create graphs if needed
+    while(countGraphs() < tabColNumber*tabRowNumber)
+    {
+        createGraph();
+    }
+
+    int k = 0;
     for(int i=0; i < rowNumber;i++)
     {
         for(int j=0; j < colNumber; j++)
         {
-            createGraph();
-            graph.last()->setChartTitle(QString("Grid graph %1").arg(QString::number((i)*colNumber+j+1)));
 
-            rowSplitter[i]->addWidget(graph.last());
+            //createGraph();
+            graph[k]->setChartTitle(QString("Grid graph %1").arg(QString::number((i)*colNumber+j+1)));
+
+            rowSplitter[i]->addWidget(graph[k]);
+            k++;
         }
     }
 }

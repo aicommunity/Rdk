@@ -62,7 +62,7 @@ private:
     void createGraph();
     void createSplitterGrid(int rowNumber);
     void deleteGraph(int index);
-    void deleteAllGraph();
+    void deleteGraphs(int new_graph_count);
 
     int tabColNumber=0;
     int tabRowNumber=0;
