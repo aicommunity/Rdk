@@ -12,7 +12,8 @@ UWatchChartOption::UWatchChartOption(QWidget *parent) :
     Watch = dynamic_cast<UWatch*>(parent);
     updateChartList();
     updateLayoutBox();
-    ui->updateIntervalMs->setText(QString::number(Watch->getCurrentTab()->UpdateIntervalMs));
+    if(Watch->getCurrentTab())
+     ui->updateIntervalMs->setText(QString::number(Watch->getCurrentTab()->UpdateIntervalMs));
 }
 
 UWatchChartOption::~UWatchChartOption()
@@ -29,6 +30,8 @@ void UWatchChartOption::on_createLayot_button_clicked()
 
 void UWatchChartOption::updateChartList()
 {
+ if(!Watch->getCurrentTab())
+  return;
     //обновл€ем имена в списке графиков
     ui->allChartsList->clear();
     int chartsAmount = Watch->getCurrentTab()->countGraphs();
@@ -43,6 +46,8 @@ void UWatchChartOption::updateChartList()
 
 void UWatchChartOption::updateLayoutBox()
 {
+    if(!Watch->getCurrentTab())
+     return;
     //настраиваем пол€ выбора кол-ва колонок и строк
     int colNumber = Watch->getCurrentTab()->getColNumber();
     int rowNumber = Watch->getCurrentTab()->getRowNumber();
@@ -55,6 +60,8 @@ void UWatchChartOption::updateLayoutBox()
 
 void UWatchChartOption::updateParameters(int chartIndex)
 {
+    if(!Watch->getCurrentTab())
+     return;
     ui->graphNameEditor->setText(Watch->getCurrentTab()->getChart(chartIndex)->getChartTitle());
 
     /*ƒќƒ≈Ћј“№*/
@@ -81,6 +88,9 @@ void UWatchChartOption::updateParameters(int chartIndex)
 
 void UWatchChartOption::createLayout()
 {
+    if(!Watch->getCurrentTab())
+     return;
+
     //спрашиваем юзера, точно ли он хочет изменить параметры сетки
     //но не спрашиваем если там нет серий
     if (Watch->getCurrentTab()->getChart(0)->countSeries() == 0);
@@ -106,6 +116,9 @@ void UWatchChartOption::createLayout()
 
 void UWatchChartOption::saveParameters()
 {
+    if(!Watch->getCurrentTab())
+     return;
+
     //сохранение всех параметров
    int index = ui->allChartsList->currentRow();
    if (index == -1) return;

@@ -17,7 +17,9 @@ UWatch::~UWatch()
 
 UWatchTab *UWatch::getCurrentTab()
 {
-    return tab[ui->tabWidget->currentIndex()];
+ if(ui->tabWidget->currentIndex()<0 || ui->tabWidget->currentIndex()>=tab.size())
+  return 0;
+ return tab[ui->tabWidget->currentIndex()];
 }
 
 
@@ -28,7 +30,8 @@ void UWatch::on_actionCreate_tab_triggered()
 
 void UWatch::on_actionSeries_option_triggered()
 {
-
+    if(!getCurrentTab())
+     return;
     seriesOption = new UWatchSeriesOption(this);
     seriesOption->setWindowTitle("Series option");
     //seriesOption->setModal(true);
@@ -42,6 +45,9 @@ void UWatch::on_actionSeries_option_triggered()
 
 void UWatch::on_actionCharts_option_triggered()
 {
+    if(!getCurrentTab())
+     return;
+
     chartOption = new UWatchChartOption(this);
     chartOption->setModal(true);
     chartOption->setWindowTitle("Charts option");
@@ -85,6 +91,8 @@ void UWatch::on_tabWidget_tabCloseRequested(int index)
 
 void UWatch::on_actionTake_screenshot_triggered()
 {
+ if(!getCurrentTab())
+  return;
     QPixmap screenShot;
     screenShot = getCurrentTab()->grab(); //захватываем только текущую вкладку
     QString currentDate = QDateTime::currentDateTime().toString("dd-MM-yy HH-mm"); //текущая дата
