@@ -61,6 +61,8 @@ void UWatchSeriesOption::on_removeSerieButton_clicked()
     //удаляем в выбранном графике выбранную среию
     int currentChartIndex = ui->graphsList->currentRow();
     int currentSerieIndex = ui->graphsSeriesList->currentRow();
+    if(currentSerieIndex<0)
+     return;
     Watch->getCurrentTab()->getChart(currentChartIndex)->deleteSerie(currentSerieIndex);
     updateGraphsSeries(currentChartIndex);
 }
