@@ -18,9 +18,12 @@ UWatchChartView::~UWatchChartView()
 
 void UWatchChartView::mousePressEvent(QMouseEvent *event)
 {
-    origin = event->pos();
-    rubberBand->setGeometry(QRect(origin, QSize()));
-    rubberBand->show();
+    if(event->button() == Qt::LeftButton)
+    {
+        origin = event->pos();
+        rubberBand->setGeometry(QRect(origin, QSize()));
+        rubberBand->show();
+    }
 }
 
 void UWatchChartView::mouseMoveEvent(QMouseEvent *event)
@@ -30,22 +33,24 @@ void UWatchChartView::mouseMoveEvent(QMouseEvent *event)
 
 void UWatchChartView::mouseReleaseEvent(QMouseEvent *event)
 {
-    QPointF start, finish;
-    start = chart()->mapToValue(origin);
-    finish = chart()->mapToValue(event->pos());
+    if(event->button() == Qt::LeftButton)
+    {
+        QPointF start, finish;
+        start = chart()->mapToValue(origin);
+        finish = chart()->mapToValue(event->pos());
 
-    double x_range = std::abs(start.x() - finish.x());
+        double x_range = std::abs(start.x() - finish.x());
 
-    double y_min = start.y();
-    double y_max = finish.y();
+        double y_min = start.y();
+        double y_max = finish.y();
 
-    if(y_min > y_max)
-        std::swap(y_min, y_max);
+        if(y_min > y_max)
+            std::swap(y_min, y_max);
 
+        rubberBand->hide();
 
-    rubberBand->hide();
-
-    emit updateChartAxes(x_range, y_min, y_max);
+        emit updateChartAxes(x_range, y_min, y_max);
+    }
 }
 
 
