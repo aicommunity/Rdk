@@ -69,7 +69,6 @@ private slots:
     void on_actionCharts_option_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
-    void on_actionTake_screenshot_triggered();
 
 private:
     QVector <UWatchTab*> tab;

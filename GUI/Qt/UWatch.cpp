@@ -89,62 +89,6 @@ void UWatch::on_tabWidget_tabCloseRequested(int index)
     deleteTab(index);
 }
 
-void UWatch::on_actionTake_screenshot_triggered()
-{
- if(!getCurrentTab())
-  return;
-    QPixmap screenShot;
-    screenShot = getCurrentTab()->grab(); //захватываем только текущую вкладку
-    QString currentDate = QDateTime::currentDateTime().toString("dd-MM-yy HH-mm"); //текущая дата
-
-    //работа с путем к папке screenshot
-    QDir dir = QDir::current();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-
-    if(!tab.count())
-    {
-        //если нет вкладок, вежливо просим ее слздать
-        QMessageBox messageBox;
-        messageBox.setText("Ohhh, smth goes wrong...");
-        messageBox.setInformativeText("Create tab and try again");
-        messageBox.setWindowTitle("Screenshot");
-        messageBox.setIcon(QMessageBox::Warning);
-        messageBox.setStandardButtons(QMessageBox::Cancel);
-        messageBox.exec();
-        return;
-    }
-
-    //проверяем, есть ли папка screenshots
-    //если нет, то создаем
-    if(dir.cd("screenshots"))
-    {
-        std::cout<<"screenshot folder is exist"<<std::endl;
-    }
-    else {
-         std::cout<<"screenshot folder is not exist"<<std::endl;
-         std::cout<<"screenshot folder creating"<<std::endl;
-         dir.mkdir("screenshots");
-         dir.cd("screenshots");
-    }
-
-    if(screenShot.save((dir.path()+"/screenshots/screenshot " + currentDate + ".jpeg")))
-    {
-        //говорим что все хорошо и где натйи скриншот
-        //std::cout<<(dir.path()+"/screenshots/screenshot " + currentDate + ".jpeg").toStdString()<<std::endl;
-        std::cout<<"screenshot taken succes"<<std::endl;
-        QMessageBox messageBox;
-        messageBox.setText("Screenshot taken successfully!");
-        messageBox.setInformativeText("saved in folder \"screenshots\"");
-        messageBox.setWindowTitle("Screenshot");
-        messageBox.setIcon(QMessageBox::Information);
-        messageBox.setStandardButtons(QMessageBox::Cancel);
-        messageBox.exec();
-    }
-    else std::cout<<"screenshot taken not succes"<<std::endl;  //что-то пошло не так
-
-}
 
 // Обновление интерфейса
 void UWatch::AUpdateInterface(void){}

@@ -133,6 +133,7 @@ private slots:
     void keyReleaseEvent(QKeyEvent *event);
     void slotCustomMenuRequested(QPoint pos);
     void addSeriesSlot();
+    void seriesOptionSlot();
     void chartOptionSlot();
     void saveToJpegSlot();
     void updateAxes(double x_range, double y_min, double y_max);

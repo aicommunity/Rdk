@@ -327,20 +327,22 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     QMenu * menu = new QMenu(this);
 
     // Создаём действия для контекстного меню
-    QAction * addSeiesAction = new QAction("Add series", this);
-    QAction * chartOptionAction = new QAction("Chart's option", this);
-    QAction * saveJpegAction = new QAction("Save chart to JPEG", this);
+    QAction * addSeiesAction =      new QAction("Add series", this);
+    QAction * seriesOptionAction =  new QAction("Series option", this);
+    QAction * chartOptionAction =   new QAction("Chart's option", this);
+    QAction * saveJpegAction =      new QAction("Save chart to JPEG", this);
 
-    //пока еще не реализованно
-    chartOptionAction->setDisabled(true);
+
 
     /* Подключаем СЛОТы обработчики для действий контекстного меню */
     connect(addSeiesAction, SIGNAL(triggered()), this, SLOT(addSeriesSlot()));
+    connect(seriesOptionAction, SIGNAL(triggered()), this, SLOT(seriesOptionSlot()));
     connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
     connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
 
     /* Устанавливаем действия в меню */
     menu->addAction(addSeiesAction);
+    menu->addAction(seriesOptionAction);
     menu->addAction(chartOptionAction);
     menu->addAction(saveJpegAction);
 
@@ -354,9 +356,14 @@ void UWatchChart::addSeriesSlot()
     emit addSerieSignal(chartIndex);
 }
 
+void UWatchChart::seriesOptionSlot()
+{
+
+}
+
 void UWatchChart::chartOptionSlot()
 {
-    ;//пока сложна
+    ;
 }
 
 void UWatchChart::saveToJpegSlot()

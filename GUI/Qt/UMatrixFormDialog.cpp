@@ -7,7 +7,6 @@ UMatrixFormDialog::UMatrixFormDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    SelectedRow=SelectedCol=-1;
     PropertyType=0;
 
   //  connect(ui->buttonBox->Ok,SIGNAL(clicked()),this,SLOT(accept()));
@@ -39,21 +38,21 @@ void UMatrixFormDialog::UpdateMatrixData(void)
 
     ui->label->setText((ComponentMatrixName+std::string(":")+PropertyMatrixName).c_str());
 
+    // Уже выделенные ячейки
     QItemSelectionModel *sel_m = ui->tableWidget->selectionModel();
 
-    int row_id=-1;
-    int col_id=-1;
+    std::vector<int> row_ids;
+    std::vector<int> col_ids;
 
     if(sel_m->hasSelection())
     {
         QModelIndexList ids = sel_m->selectedIndexes();
-        if(ids.size()>0)
+        for(int i = 0; i < ids.size(); i++)
         {
-            row_id = ids.first().row();
-            col_id = ids.first().column();
+            row_ids.push_back(ids[i].row());
+            col_ids.push_back(ids[i].column());
         }
     }
-
 
     switch(PropertyType)
     {
@@ -65,7 +64,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDMatrix<double> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        ui->tableWidget->clear();
+        //ui->tableWidget->clear();
         ui->tableWidget->setRowCount(m.GetRows());
         ui->tableWidget->setColumnCount(m.GetCols());
 
@@ -99,7 +98,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDMatrix<int> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        ui->tableWidget->clear();
+        //ui->tableWidget->clear();
         ui->tableWidget->setColumnCount(m.GetCols());
         ui->tableWidget->setRowCount(m.GetRows());
 
@@ -134,7 +133,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDVector<double> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        ui->tableWidget->clear();
+        //ui->tableWidget->clear();
         ui->tableWidget->setColumnCount(m.GetCols());
         ui->tableWidget->setRowCount(m.GetRows());
 
@@ -165,7 +164,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDVector<int> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        ui->tableWidget->clear();
+        //ui->tableWidget->clear();
         ui->tableWidget->setColumnCount(m.GetCols());
         ui->tableWidget->setRowCount(m.GetRows());
 
@@ -189,10 +188,10 @@ void UMatrixFormDialog::UpdateMatrixData(void)
     break;
     }
 
-
-    if(row_id>=0 && col_id >=0)
+    // Выделение уже выделенных
+    for(int i = 0; i<row_ids.size(); i++)
     {
-        QModelIndex temp = ui->tableWidget->model()->index(row_id, col_id);
+        QModelIndex temp = ui->tableWidget->model()->index(row_ids[i], col_ids[i]);
         sel_m->select(temp, QItemSelectionModel::Select);
     }
 }
@@ -247,7 +246,6 @@ bool UMatrixFormDialog::SelectMatrix(const std::string &comp_name, const std::st
 
     ComponentMatrixName=comp_name;
     PropertyMatrixName=prop_name;
-    SelectedRow=SelectedCol=0;
 
     emit UpdateMatrixData();
 
@@ -258,19 +256,16 @@ void UMatrixFormDialog::on_buttonBox_accepted()
 {
     QItemSelectionModel *sel_m = ui->tableWidget->selectionModel();
 
-    int row_id=-1;
-    int col_id=-1;
+    SelectedRows.clear();
+    SelectedCols.clear();
 
     if(sel_m->hasSelection())
     {
         QModelIndexList ids = sel_m->selectedIndexes();
-        if(ids.size()>0)
+        for(int i = 0; i < ids.size(); i++)
         {
-            row_id = ids.first().row();
-            col_id = ids.first().column();
+            SelectedRows.push_back(ids[i].row());
+            SelectedCols.push_back(ids[i].column());
         }
     }
-
-    SelectedRow = row_id;
-    SelectedCol = col_id;
 }
