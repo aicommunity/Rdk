@@ -30,30 +30,20 @@ void UWatch::on_actionCreate_tab_triggered()
 
 void UWatch::on_actionSeries_option_triggered()
 {
-    if(!getCurrentTab())
+    UWatchTab* current_tab = getCurrentTab();
+    if(!current_tab)
      return;
-    seriesOption = new UWatchSeriesOption(this);
-    seriesOption->setWindowTitle("Series option");
-    //seriesOption->setModal(true);
-    seriesOption->show();
 
-    //UWatchSeriesOption seriesOption(this);
-    //seriesOption.setModal(true);
-    //seriesOption.show();
-    //seriesOption.exec();
+    current_tab->seriesOptionTriggered();
 }
 
 void UWatch::on_actionCharts_option_triggered()
 {
-    if(!getCurrentTab())
+    UWatchTab* current_tab = getCurrentTab();
+    if(!current_tab)
      return;
 
-    chartOption = new UWatchChartOption(this);
-    chartOption->setModal(true);
-    chartOption->setWindowTitle("Charts option");
-    chartOption->show();
-    //chartOption->exec();
-
+    current_tab->chartsOptionTriggered();
 }
 
 void UWatch::createTab()

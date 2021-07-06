@@ -12,6 +12,8 @@
 #include "UMatrixFormDialog.h"
 #include "UVisualControllerWidget.h"
 #include "UComponentPropertySelectionWidget.h"
+#include "UWatchChartOption.h"
+#include "UWatchSeriesOption.h"
 
 using namespace QtCharts;
 
@@ -82,6 +84,9 @@ private:
 
     Ui::UWatchTab *ui;
 
+    UWatchChartOption *chartOption;
+    UWatchSeriesOption *seriesOption;
+
     ///Обновляет графики
     ///Для каждого графика - обращаемся к ядру, берем матрицу по заданному источнику данных
     ///Ее данные положим на этот график
@@ -92,6 +97,8 @@ private:
 
 public slots:
     void createSelectionDialogSlot(int index);
+    void seriesOptionTriggered();
+    void chartsOptionTriggered();
 
 };
 

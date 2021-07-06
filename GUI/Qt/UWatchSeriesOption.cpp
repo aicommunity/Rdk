@@ -9,7 +9,7 @@ UWatchSeriesOption::UWatchSeriesOption(QWidget *parent) :
     ui(new Ui::UWatchSeriesOption)
 {
     ui->setupUi(this);
-    Watch = dynamic_cast<UWatch*>(parent);
+    WatchTab = dynamic_cast<UWatchTab*>(parent);
 
     loadGraphsName();
 }
@@ -43,27 +43,24 @@ void UWatchSeriesOption::on_closeButton_clicked()
 
 void UWatchSeriesOption::on_addSerieButton_clicked()
 {
+    if(!WatchTab)
+     return;
     int currentChartIndex = ui->graphsList->currentRow();
 
-    //вызываем окно для добавления новой серии и обновляем лист серий для данного графика
-    if(!Watch->getCurrentTab())
-     return;
-
-    Watch->getCurrentTab()->createSelectionDialog(currentChartIndex);
+    WatchTab->createSelectionDialog(currentChartIndex);
     updateGraphsSeries(currentChartIndex);
 }
 
 void UWatchSeriesOption::on_removeSerieButton_clicked()
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
-
     //удаляем в выбранном графике выбранную среию
     int currentChartIndex = ui->graphsList->currentRow();
     int currentSerieIndex = ui->graphsSeriesList->currentRow();
     if(currentSerieIndex<0)
      return;
-    Watch->getCurrentTab()->getChart(currentChartIndex)->deleteSerie(currentSerieIndex);
+    WatchTab->getChart(currentChartIndex)->deleteSerie(currentSerieIndex);
     updateGraphsSeries(currentChartIndex);
 }
 
@@ -79,26 +76,25 @@ void UWatchSeriesOption::on_graphsSeriesList_currentRowChanged(int currentRow)
 
 void UWatchSeriesOption::loadGraphsName()
 {
- if(!Watch->getCurrentTab())
-  return;
+    if(!WatchTab)
+     return;
     //загружаем имена графиков
-    for (int i = 0; i < Watch->getCurrentTab()->countGraphs(); i++)
+    for (int i = 0; i < WatchTab->countGraphs(); i++)
     {
-        ui->graphsList->addItem(Watch->getCurrentTab()->getChart(i)->getChartTitle());
+        ui->graphsList->addItem(WatchTab->getChart(i)->getChartTitle());
     }
     if (ui->graphsList->count()) ui->graphsList->setCurrentRow(0);
 }
 
 void UWatchSeriesOption::updateGraphsSeries(int currentChartIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
-
     //загружаем имена серий выбранного графика
     ui->graphsSeriesList->clear();
-    for (int i = 0; i < Watch->getCurrentTab()->getChart(currentChartIndex)->countSeries(); i++)
+    for (int i = 0; i < WatchTab->getChart(currentChartIndex)->countSeries(); i++)
     {
-        ui->graphsSeriesList->addItem(Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieName(i));
+        ui->graphsSeriesList->addItem(WatchTab->getChart(currentChartIndex)->getSerieName(i));
     }
     if (ui->graphsSeriesList->count())  ui->graphsSeriesList->setCurrentRow(0);
 }
@@ -118,19 +114,18 @@ void UWatchSeriesOption::updateSeriesProperties(int currentSerieIndex)
 
 void UWatchSeriesOption::updateSeriesNameProp(int currentChartIndex, int currentSerieIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
-
-    QString name = Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieName(currentSerieIndex);
+    QString name = WatchTab->getChart(currentChartIndex)->getSerieName(currentSerieIndex);
     ui->serieName->setText(name);
 }
 
 void UWatchSeriesOption::updateSeriesColorProp(int currentChartIndex, int currentSerieIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
 
-    const QColor color = Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieColor(currentSerieIndex);
+    const QColor color = WatchTab->getChart(currentChartIndex)->getSerieColor(currentSerieIndex);
     for (int i = 0; i < 15; ++i)
         if (color == defaultColors[i])
         {
@@ -142,30 +137,30 @@ void UWatchSeriesOption::updateSeriesColorProp(int currentChartIndex, int curren
 
 void UWatchSeriesOption::updateSeriesWidthProp(int currentChartIndex, int currentSerieIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
 
-    int width = Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieWidth(currentSerieIndex);
+    int width = WatchTab->getChart(currentChartIndex)->getSerieWidth(currentSerieIndex);
     if (width<=6) ui->serieLneWidth->setCurrentIndex(width-1);
     else ui->serieLneWidth->setCurrentIndex(5); //6+
 }
 
 void UWatchSeriesOption::updateSeriesLineTypeProp(int currentChartIndex, int currentSerieIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
 
-    Qt::PenStyle lineStyle =  Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieLineType(currentSerieIndex);
+    Qt::PenStyle lineStyle =  WatchTab->getChart(currentChartIndex)->getSerieLineType(currentSerieIndex);
      for (int i = 0; i < 4; ++i)
         if (lineStyle == defaultLineStyle[i]) ui->serieLineType->setCurrentIndex(i);
 }
 
 void UWatchSeriesOption::updateSeriesYShift(int currentChartIndex,int currentSerieIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
 
-    double y_shift = Watch->getCurrentTab()->getChart(currentChartIndex)->getSerieYShift(currentSerieIndex);
+    double y_shift = WatchTab->getChart(currentChartIndex)->getSerieYShift(currentSerieIndex);
     ui->serieYshift->setValue(y_shift);
 }
 
@@ -184,11 +179,11 @@ void UWatchSeriesOption::saveParemeters()
     int lineTypeIndex = ui->serieLineType->currentIndex();
     double y_shift = ui->serieYshift->value();
 
-    if(Watch->getCurrentTab())
+    if(WatchTab)
     {
-        Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieName(currentSerieIndex, name);
-        Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieStyle(currentSerieIndex, defaultColors[colorIndex], width+1, defaultLineStyle[lineTypeIndex]);
-        Watch->getCurrentTab()->getChart(currentChartIndex)->setSerieYshift(currentSerieIndex, y_shift);
+        WatchTab->getChart(currentChartIndex)->setSerieName(currentSerieIndex, name);
+        WatchTab->getChart(currentChartIndex)->setSerieStyle(currentSerieIndex, defaultColors[colorIndex], width+1, defaultLineStyle[lineTypeIndex]);
+        WatchTab->getChart(currentChartIndex)->setSerieYshift(currentSerieIndex, y_shift);
     }
 }
 

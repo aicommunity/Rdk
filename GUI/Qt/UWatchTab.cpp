@@ -116,6 +116,22 @@ void UWatchTab::createSelectionDialogSlot(int index)
     createSelectionDialog(index);
 }
 
+void UWatchTab::seriesOptionTriggered()
+{
+    seriesOption = new UWatchSeriesOption(this);
+    seriesOption->setWindowTitle("Series option");
+    //seriesOption->setModal(true);
+    seriesOption->show();
+}
+
+void UWatchTab::chartsOptionTriggered()
+{
+    chartOption = new UWatchChartOption(this);
+    chartOption->setModal(true);
+    chartOption->setWindowTitle("Charts option");
+    chartOption->show();
+}
+
 void UWatchTab::createSplitterGrid(int rowNumber)
 {
     //создаем вертикальный контейнер, в котором располагаются горизонтальные

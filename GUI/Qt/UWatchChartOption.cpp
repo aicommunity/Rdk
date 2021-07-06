@@ -9,11 +9,11 @@ UWatchChartOption::UWatchChartOption(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    Watch = dynamic_cast<UWatch*>(parent);
+    WatchTab = dynamic_cast<UWatchTab*>(parent);
     updateChartList();
     updateLayoutBox();
-    if(Watch->getCurrentTab())
-     ui->updateIntervalMs->setText(QString::number(Watch->getCurrentTab()->UpdateIntervalMs));
+    if(WatchTab)
+     ui->updateIntervalMs->setText(QString::number(WatchTab->UpdateIntervalMs));
 }
 
 UWatchChartOption::~UWatchChartOption()
@@ -30,15 +30,15 @@ void UWatchChartOption::on_createLayot_button_clicked()
 
 void UWatchChartOption::updateChartList()
 {
- if(!Watch->getCurrentTab())
+ if(!WatchTab)
   return;
     //обновл€ем имена в списке графиков
     ui->allChartsList->clear();
-    int chartsAmount = Watch->getCurrentTab()->countGraphs();
+    int chartsAmount = WatchTab->countGraphs();
 
     for (int i = 0; i < chartsAmount; i++)
     {
-        QString title = Watch->getCurrentTab()->getChart(i)->getChartTitle();
+        QString title = WatchTab->getChart(i)->getChartTitle();
         ui->allChartsList->addItem(title);
     }
     ui->allChartsList->setCurrentRow(0);
@@ -46,11 +46,11 @@ void UWatchChartOption::updateChartList()
 
 void UWatchChartOption::updateLayoutBox()
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
     //настраиваем пол€ выбора кол-ва колонок и строк
-    int colNumber = Watch->getCurrentTab()->getColNumber();
-    int rowNumber = Watch->getCurrentTab()->getRowNumber();
+    int colNumber = WatchTab->getColNumber();
+    int rowNumber = WatchTab->getRowNumber();
     if (colNumber && rowNumber)
     {
         ui->chartColNumber_spin->setValue(colNumber);
@@ -60,40 +60,40 @@ void UWatchChartOption::updateLayoutBox()
 
 void UWatchChartOption::updateParameters(int chartIndex)
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
-    ui->graphNameEditor->setText(Watch->getCurrentTab()->getChart(chartIndex)->getChartTitle());
+    ui->graphNameEditor->setText(WatchTab->getChart(chartIndex)->getChartTitle());
 
     /*ƒќƒ≈Ћј“№*/
     ui->legendVisibilitSB->setDisabled(true);
     ui->tittleVisibilityCB->setDisabled(true);
-    //ui->legendVisibilitSB->setTristate(Watch->getCurrentTab()->getChart(currentRow)->)
+    //ui->legendVisibilitSB->setTristate(WatchTab->getChart(currentRow)->)
     //добавить видимость легенды и названи€
 
     //загрузка параметров графика и его осей
-    ui->axisXNameEditor->setText(Watch->getCurrentTab()->getChart(chartIndex)->getAxisXName());
-    ui->axisYNameEditor->setText(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYName());
+    ui->axisXNameEditor->setText(WatchTab->getChart(chartIndex)->getAxisXName());
+    ui->axisYNameEditor->setText(WatchTab->getChart(chartIndex)->getAxisYName());
 
-    ui->axisYzoomCB->setChecked(Watch->getCurrentTab()->getChart(chartIndex)->isAxisYzoomable);
-    ui->axisYscrollCB->setChecked(Watch->getCurrentTab()->getChart(chartIndex)->isAxisYscrollable);
-    ui->axisXtrackCB->setChecked(Watch->getCurrentTab()->getChart(chartIndex)->isAxisXtrackable);
+    ui->axisYzoomCB->setChecked(WatchTab->getChart(chartIndex)->isAxisYzoomable);
+    ui->axisYscrollCB->setChecked(WatchTab->getChart(chartIndex)->isAxisYscrollable);
+    ui->axisXtrackCB->setChecked(WatchTab->getChart(chartIndex)->isAxisXtrackable);
 
     if(ui->axisXtrackCB->isChecked()) ui->axisXrangeSB->setEnabled(true);
     else ui->axisXrangeSB->setDisabled(true);
 
-    ui->axisYmaxSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYmax());
-    ui->axisYminSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisYmin());
-    ui->axisXrangeSB->setValue(Watch->getCurrentTab()->getChart(chartIndex)->getAxisXmax() - Watch->getCurrentTab()->getChart(chartIndex)->getAxisXmin());
+    ui->axisYmaxSB->setValue(WatchTab->getChart(chartIndex)->getAxisYmax());
+    ui->axisYminSB->setValue(WatchTab->getChart(chartIndex)->getAxisYmin());
+    ui->axisXrangeSB->setValue(WatchTab->getChart(chartIndex)->getAxisXmax() - WatchTab->getChart(chartIndex)->getAxisXmin());
 }
 
 void UWatchChartOption::createLayout()
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
 
     //спрашиваем юзера, точно ли он хочет изменить параметры сетки
     //но не спрашиваем если там нет серий
-    if (Watch->getCurrentTab()->getChart(0)->countSeries() == 0);
+    if (WatchTab->getChart(0)->countSeries() == 0);
     else
     {
         //спрашиваем юзера точно ли он уверен в закрытие
@@ -111,31 +111,31 @@ void UWatchChartOption::createLayout()
     int colNumber = ui->chartColNumber_spin->value();
     int rowNumber = ui->chartRowNumber_spin->value();
 
-    Watch->getCurrentTab()->createGridLayout(rowNumber,colNumber);
+    WatchTab->createGridLayout(rowNumber,colNumber);
 }
 
 void UWatchChartOption::saveParameters()
 {
-    if(!Watch->getCurrentTab())
+    if(!WatchTab)
      return;
 
     //сохранение всех параметров
    int index = ui->allChartsList->currentRow();
    if (index == -1) return;
 
-   Watch->getCurrentTab()->getChart(index)->setChartTitle(ui->graphNameEditor->text());
-   Watch->getCurrentTab()->getChart(index)->setAxisXname(ui->axisXNameEditor->text());
-   Watch->getCurrentTab()->getChart(index)->setAxisYname(ui->axisYNameEditor->text());
+   WatchTab->getChart(index)->setChartTitle(ui->graphNameEditor->text());
+   WatchTab->getChart(index)->setAxisXname(ui->axisXNameEditor->text());
+   WatchTab->getChart(index)->setAxisYname(ui->axisYNameEditor->text());
 
-   Watch->getCurrentTab()->getChart(index)->setAxisYmax(ui->axisYmaxSB->value());
-   Watch->getCurrentTab()->getChart(index)->setAxisYmin(ui->axisYminSB->value());
-   Watch->getCurrentTab()->getChart(index)->axisXrange = ui->axisXrangeSB->value();
-   Watch->getCurrentTab()->getChart(index)->updateTimeIntervals(ui->axisXrangeSB->value());
-   Watch->getCurrentTab()->getChart(index)->isAxisYzoomable = ui->axisYzoomCB->isChecked();
-   Watch->getCurrentTab()->getChart(index)->isAxisYscrollable= ui->axisYscrollCB->isChecked();
-   Watch->getCurrentTab()->getChart(index)->isAxisXtrackable= ui->axisXtrackCB->isChecked();
+   WatchTab->getChart(index)->setAxisYmax(ui->axisYmaxSB->value());
+   WatchTab->getChart(index)->setAxisYmin(ui->axisYminSB->value());
+   WatchTab->getChart(index)->axisXrange = ui->axisXrangeSB->value();
+   WatchTab->getChart(index)->updateTimeIntervals(ui->axisXrangeSB->value());
+   WatchTab->getChart(index)->isAxisYzoomable = ui->axisYzoomCB->isChecked();
+   WatchTab->getChart(index)->isAxisYscrollable= ui->axisYscrollCB->isChecked();
+   WatchTab->getChart(index)->isAxisXtrackable= ui->axisXtrackCB->isChecked();
 
-   Watch->getCurrentTab()->saveUpdateInterval(ui->updateIntervalMs->text().toInt());
+   WatchTab->saveUpdateInterval(ui->updateIntervalMs->text().toInt());
 }
 void UWatchChartOption::on_allChartsList_currentRowChanged(int currentRow)
 {

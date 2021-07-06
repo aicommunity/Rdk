@@ -8,8 +8,6 @@
 #include <QDateTime>
 
 #include "UWatchTab.h"
-#include "UWatchChartOption.h"
-#include "UWatchSeriesOption.h"
 #include "UVisualControllerMainWidget.h"
 
 
@@ -72,8 +70,6 @@ private slots:
 
 private:
     QVector <UWatchTab*> tab;
-    UWatchChartOption *chartOption;
-    UWatchSeriesOption *seriesOption;
 
     void createTab();
     void deleteTab(int index);

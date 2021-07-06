@@ -16,7 +16,7 @@ class UWatchSeriesOption;
 }
 using namespace QtCharts;
 
-class UWatch;
+class UWatchTab;
 
 //////////////////////////////////////////////////////////////////////
 // Один отдельно взятый график с одной или несколькими сериями данных
@@ -42,7 +42,7 @@ private slots:
 
 private:
     Ui::UWatchSeriesOption *ui;
-    UWatch *Watch;
+    UWatchTab *WatchTab;
 
     void loadGraphsName();//загрузить имена графиков
     void updateGraphsSeries(int currentChartIndex); //обновить имена серий выбранного графика в листе серий

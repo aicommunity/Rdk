@@ -9,7 +9,7 @@ namespace Ui {
 class UWatchChartOption;
 }
 
-class UWatch;
+class UWatchTab;
 
 //////////////////////////////////////////////////////////////////////////////
 // Диалоговое окно для  настройки расположения графиков и их параметров
@@ -34,7 +34,7 @@ private slots:
 
 private:
     Ui::UWatchChartOption *ui;
-    UWatch *Watch;
+    UWatchTab *WatchTab;
 
     void updateChartList(); //обновить имена в лист графиков
     void updateLayoutBox();
