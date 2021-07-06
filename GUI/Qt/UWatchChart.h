@@ -17,9 +17,9 @@
 
 #include <QValueAxis>
 #include "UWatchSerie.h"
+#include "UWatchChartView.h"
 #include <QChart>
 #include <QChartView>
-//#include <UWatchTab.h>
 
 
 namespace Ui {
@@ -97,14 +97,22 @@ public:
     const QColor defaultColors[15]={Qt::red, Qt::darkRed, Qt::yellow, Qt::darkYellow, Qt::green, Qt::darkGreen, Qt::cyan, Qt::darkCyan,
                                    Qt::blue, Qt::darkBlue, Qt::magenta,Qt::darkMagenta, Qt::gray, Qt::darkGray, Qt::black};
 
+
 private:
     Ui::UWatchChart *ui;
 
     //все график, оси, скороллбар и их расположение
     QVBoxLayout *verticalLayout;
     QScrollBar *horizontalScrolBar;
+
+    QPoint m_lastPoint;
+    bool m_isPress;
+    bool m_alreadySaveRange;
+    double m_xMin, m_xMax, m_yMin, m_yMax;
+    QGraphicsSimpleTextItem* m_coordItem;
+
  public:
-    QChartView *chartView;
+    UWatchChartView *chartView;
     QChart *chart;
     QValueAxis *axisX;
     QValueAxis *axisY;
@@ -117,6 +125,7 @@ private:
     int chartIndex; //что бы график знал какой он по счету в векторе графиков
 
 
+
 private slots:
     //скролл и зум по оси Y
     void wheelEvent(QWheelEvent * event);
@@ -126,6 +135,7 @@ private slots:
     void addSeriesSlot();
     void chartOptionSlot();
     void saveToJpegSlot();
+    void updateAxes(double x_range, double y_min, double y_max);
 signals:
     void addSerieSignal(int someIndex);
 };

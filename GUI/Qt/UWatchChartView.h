@@ -1,0 +1,50 @@
+#ifndef UWATCHCHARTVIEW_H
+#define UWATCHCHARTVIEW_H
+
+#include <QWidget>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QMenu>
+#include <QDir>
+#include <QDateTime>
+#include <QMessageBox>
+
+#include <QWheelEvent>
+#include <QKeyEvent>
+
+#include <QString>
+#include <QVector>
+
+#include <QValueAxis>
+#include <QChart>
+#include <QChartView>
+#include <QRubberBand>
+
+
+using namespace QtCharts;
+
+
+class UWatchChartView : public QChartView
+{
+    Q_OBJECT
+
+public:
+    explicit UWatchChartView(QWidget *parent = nullptr);
+    ~UWatchChartView();
+
+private:
+    QRubberBand* rubberBand;
+    QPoint origin;
+
+protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+
+private:
+signals:
+    void updateChartAxes(double x_range, double y_min, double y_max);
+
+};
+
+#endif // UWATCHCHARTVIEW_H

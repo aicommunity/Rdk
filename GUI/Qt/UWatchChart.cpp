@@ -15,7 +15,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     //создаем график, скроллбар и располагаем вертикально
     verticalLayout = new QVBoxLayout(this);
     chart = new QChart();
-    chartView = new QChartView(this);
+    chartView = new UWatchChartView(this);
     horizontalScrolBar = new QScrollBar(Qt::Horizontal,this);
 
     setLayout(verticalLayout);
@@ -48,6 +48,8 @@ UWatchChart::UWatchChart(QWidget *parent) :
 
     chartView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(chartView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
+    connect(chartView, SIGNAL(updateChartAxes(double, double, double)), this, SLOT(updateAxes(double, double, double)));
+
 
     //UWatchTab *WatchTab = dynamic_cast<UWatchTab>(parent) ;
 }
@@ -56,6 +58,7 @@ UWatchChart::~UWatchChart()
 {
     delete ui;
 }
+
 
 void UWatchChart::setChartTitle(QString title)
 {
@@ -184,11 +187,6 @@ void UWatchChart::setAxisXmax(double value)
     axisX->setMax(value);
 }
 
-void UWatchChart::setAxisYmin(double value)
-{
-    axisY->setMin(value);
-}
-
 void UWatchChart::updateTimeIntervals(double value)
 {
     axisXrange = value;
@@ -199,17 +197,23 @@ void UWatchChart::updateTimeIntervals(double value)
     }
 }
 
-/*
 void UWatchChart::setAxisYmin(double value)
 {
     axisY->setMin(value);
 }
-*/
 
 void UWatchChart::setAxisYmax(double value)
 {
     axisY->setMax(value);
 }
+
+void UWatchChart::updateAxes(double x_range, double y_min, double y_max)
+{
+    updateTimeIntervals(x_range);
+    setAxisYmin(y_min);
+    setAxisYmax(y_max);
+}
+
 
 QString UWatchChart::getChartTitle()
 {
@@ -275,6 +279,7 @@ double UWatchChart::getAxisYmax()
 {
     return axisY->max();
 }
+
 void UWatchChart::wheelEvent(QWheelEvent *event)
 {
     //обработка прокрутки колеса мыши
