@@ -50,8 +50,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     connect(chartView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
     connect(chartView, SIGNAL(updateChartAxes(double, double, double)), this, SLOT(updateAxes(double, double, double)));
 
-
-    //UWatchTab *WatchTab = dynamic_cast<UWatchTab>(parent) ;
+    WatchTab = dynamic_cast<UWatchTab*>(parent);
 }
 
 UWatchChart::~UWatchChart()
@@ -358,12 +357,18 @@ void UWatchChart::addSeriesSlot()
 
 void UWatchChart::seriesOptionSlot()
 {
+    if(!WatchTab)
+        return;
 
+    WatchTab->seriesOptionTriggered();
 }
 
 void UWatchChart::chartOptionSlot()
 {
-    ;
+    if(!WatchTab)
+        return;
+
+    WatchTab->chartsOptionTriggered();
 }
 
 void UWatchChart::saveToJpegSlot()

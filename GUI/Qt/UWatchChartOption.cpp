@@ -93,13 +93,29 @@ void UWatchChartOption::createLayout()
 
     //спрашиваем юзера, точно ли он хочет изменить параметры сетки
     //но не спрашиваем если там нет серий
-    if (WatchTab->getChart(0)->countSeries() == 0);
+    if (WatchTab->getChart(0)->countSeries() == 0)
+    {
+        ;
+    }
     else
     {
-        //спрашиваем юзера точно ли он уверен в закрытие
+        // ≈сли сетка графиков уменьшаетс€ (прозойдет удаление графиков)
+        QString grid_reduce = "";
+        if(ui->chartColNumber_spin->value()*ui->chartRowNumber_spin->value() < WatchTab->getRowNumber()*WatchTab->getColNumber())
+            grid_reduce =   "New layout contains fewer charts than it was, so "
+                            + QString::number(WatchTab->getRowNumber()*WatchTab->getColNumber() - ui->chartColNumber_spin->value()*ui->chartRowNumber_spin->value()) +
+                            " charts will be deleted";
+
+        //спрашиваем юзера точно ли он уверен
         QMessageBox messageBox;
-        messageBox.setText("Are you sure you want to Grid layout params?");
-        messageBox.setInformativeText("All data about current charts will be lost");
+        messageBox.setText("Are you sure you want to change Grid layout params?");
+        messageBox.setInformativeText
+                    ("Current layout is: " + QString::number(WatchTab->getRowNumber())
+                    + " by " + QString::number(WatchTab->getColNumber())
+                    + "\nWill be changed to layout: "
+                    + QString::number(ui->chartRowNumber_spin->value()) + " by " + QString::number(ui->chartColNumber_spin->value())
+                    + "\n" +grid_reduce
+                    );
         messageBox.setWindowTitle("Change Grid layout params");
         messageBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
         messageBox.setIcon(QMessageBox::Question);

@@ -111,6 +111,9 @@ private:
     double m_xMin, m_xMax, m_yMin, m_yMax;
     QGraphicsSimpleTextItem* m_coordItem;
 
+    // parent UWatchTab
+    UWatchTab* WatchTab;
+
  public:
     UWatchChartView *chartView;
     QChart *chart;
