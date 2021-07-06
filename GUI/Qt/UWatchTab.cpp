@@ -43,8 +43,8 @@ void UWatchTab::AUpdateInterface()
     for (int graphIndex=0; graphIndex < graph.count(); graphIndex++)
     {
         graph[graphIndex]->chartView->setUpdatesEnabled(false);
-        double x_min;
-        double x_max;
+        double x_min=0.0;
+        double x_max=0.0;
         for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
 
@@ -85,8 +85,9 @@ void UWatchTab::AUpdateInterface()
         }
         else
         {
-            graph[graphIndex]->updateTimeIntervals(1);
-            graph[graphIndex]->axisXrange = 1;
+            // Если есть серии
+            if(graph[graphIndex]->countSeries())
+                graph[graphIndex]->updateTimeIntervals(1);
         }
         graph[graphIndex]->chartView->setUpdatesEnabled(true);
     }
@@ -258,15 +259,16 @@ void UWatchTab::createSelectionDialog(int chartIndex)
 
         if(form->exec()== QDialog::Accepted)
         {
-            if(form->SelectedRow == -1 || form->SelectedCol == -1)
+            if(form->SelectedRows.empty() || form->SelectedCols.empty())
              {
-                form->SelectedRow = 0;
-                form->SelectedCol = 0;
+                form->SelectedRows = {0};
+                form->SelectedCols = {0};
             }
 
-            //создаем серию для выбранного источника
+            //создаем серии для выбранного источника
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
-            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRow, form->SelectedCol, time_interval, 0.0);
+            for(int i = 0; i < form->SelectedRows.size(); i++)
+                graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRows[i], form->SelectedCols[i], time_interval, 0.0);
         }
     }
 }

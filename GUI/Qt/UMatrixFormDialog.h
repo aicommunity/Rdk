@@ -19,7 +19,7 @@ public:
     ~UMatrixFormDialog();
 
     /// Строка и столбец выбранные в матрице
-    int SelectedRow, SelectedCol;
+    std::vector<int> SelectedRows, SelectedCols;
 
     /// Имя компонента
     std::string ComponentMatrixName;
