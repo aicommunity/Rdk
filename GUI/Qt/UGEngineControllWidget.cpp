@@ -879,21 +879,16 @@ void UGEngineControllWidget::delImagesWidged(size_t index)
 /// Добавляет новый виджет отображения графиков
 void UGEngineControllWidget::addWatchesWidged()
 {
-    USubTabDescriptionWatches descr;
-    UGraphWidget *new_watches = new UGraphWidget(this, application);
-    descr.Name=QString("Watches ")+RDK::sntoa(int(imagesVector.size()+1)).c_str();
-    descr.Watches=new_watches;
-
-    new_watches->setWindowTitle(descr.Name);
+    //создаем каждую новый виджет с именем Watches + номер
+    watchesVector.push_back(new UWatchTab(this));
+    watchesVector.back()->setAccessibleName(QString("Watches ")+RDK::sntoa(int(watchesVector.size())).c_str());
+    watchesVector.back()->setWindowTitle(QString("Watches ")+RDK::sntoa(int(watchesVector.size())).c_str());
 
     QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
-    imagesSbWindow->setWidget(new_watches);
+    imagesSbWindow->setWidget(watchesVector.back());
     imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
     imagesSbWindow->show();
     imagesSbWindow->showMaximized();
-    descr.SubWindow=imagesSbWindow;
-
-    watchesVector.push_back(descr);
 }
 
 /// Удаляет виджет отображения графиков
@@ -901,7 +896,21 @@ void UGEngineControllWidget::delWatchesWidged(size_t index)
 {
     if(index>=watchesVector.size())
      return;
-    watchesVector.erase(watchesVector.begin()+index);
+
+    //спрашиваем юзера точно ли он уверен в закрытие вкладки
+    QMessageBox messageBox;
+    messageBox.setText("Are you sure you want to close the Watches window?");
+    messageBox.setInformativeText("All data will be lost");
+    messageBox.setWindowTitle("Closing Watches");
+    messageBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+    messageBox.setIcon(QMessageBox::Question);
+
+    if(messageBox.exec() == QMessageBox::Yes)
+    {
+        delete watchesVector[index];
+        watchesVector.erase(watchesVector.begin()+index);
+    }
+    else return;
 }
 
 

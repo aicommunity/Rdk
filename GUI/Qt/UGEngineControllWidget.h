@@ -184,7 +184,7 @@ private:
     std::vector<USubTabDescriptionImages> imagesVector;
 
     /// Массив виджетов отображения графиков
-    std::vector<USubTabDescriptionWatches> watchesVector;
+    std::vector<UWatchTab*> watchesVector;
 
 
     /// Экзепляр класса приложения
