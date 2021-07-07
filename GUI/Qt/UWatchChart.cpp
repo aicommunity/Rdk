@@ -208,9 +208,31 @@ void UWatchChart::setAxisYmax(double value)
 
 void UWatchChart::updateAxes(double x_range, double y_min, double y_max)
 {
+    // Если зум по Х обратный, увеличиваем x_range пропорционально выделенной области относительно текущего диапазона оси Х
+    if(x_range < 0)
+    {
+        x_range = std::abs(axisXrange/x_range)*axisXrange;
+    }
+
     updateTimeIntervals(x_range);
-    setAxisYmin(y_min);
-    setAxisYmax(y_max);
+
+    double y_max_new = 0.0, y_min_new = 0.0;
+    double y_range = getAxisYmax() - getAxisYmin();
+
+    // Если зум по Y обратный, рассчитываем новые значения оси
+    if(y_max<y_min)
+    {
+        y_max_new = getAxisYmax()+((getAxisYmax()-y_min)/y_range+1.0)*(getAxisYmax()-y_min);
+        y_min_new = getAxisYmin()-((y_max-getAxisYmin())/y_range+1.0)*(y_max-getAxisYmin());
+    }
+    else
+    {
+        y_max_new = y_max;
+        y_min_new = y_min;
+    }
+
+    setAxisYmin(y_min_new);
+    setAxisYmax(y_max_new);
 }
 
 
