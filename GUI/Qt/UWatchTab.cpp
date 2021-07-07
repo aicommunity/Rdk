@@ -377,7 +377,7 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
         graph[graphIndex]->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
         graph[graphIndex]->setAxisXmin   (0.0);
         graph[graphIndex]->setAxisXmax   (graph[graphIndex]->axisXrange);
-
+        graph[graphIndex]->fixInitialAxesState();
         int series_count = graph[graphIndex]->countSeries();
         for(int i = 0; i < series_count; i++)
             graph[graphIndex]->deleteSerie(0);

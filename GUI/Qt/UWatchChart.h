@@ -79,6 +79,8 @@ public:
     void setSerieStyle(int serieIndex, QColor color, int width, Qt::PenStyle lineType);
     void setSerieYshift(int serieIndex, int y_shift);
 
+    void fixInitialAxesState();
+    void restoreInitialAxesState();
 
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
@@ -114,6 +116,10 @@ private:
     // parent UWatchTab
     UWatchTab* WatchTab;
 
+    // array with initital values for axes
+    // {x_range, y_max, y_min}
+    std::vector<double> InitialAxesState;
+
  public:
     UWatchChartView *chartView;
     QChart *chart;
@@ -139,6 +145,7 @@ private slots:
     void seriesOptionSlot();
     void chartOptionSlot();
     void saveToJpegSlot();
+    void restoreAxes();
     void updateAxes(double x_range, double y_min, double y_max);
 signals:
     void addSerieSignal(int someIndex);

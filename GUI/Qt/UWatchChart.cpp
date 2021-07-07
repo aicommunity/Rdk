@@ -51,6 +51,8 @@ UWatchChart::UWatchChart(QWidget *parent) :
     connect(chartView, SIGNAL(updateChartAxes(double, double, double)), this, SLOT(updateAxes(double, double, double)));
 
     WatchTab = dynamic_cast<UWatchTab*>(parent);
+
+    fixInitialAxesState();
 }
 
 UWatchChart::~UWatchChart()
@@ -105,6 +107,18 @@ void UWatchChart::setSerieStyle(int serieIndex, QColor color, int width, Qt::Pen
 void UWatchChart::setSerieYshift(int serieIndex, int y_shift)
 {
     series[serieIndex]->YShift = y_shift;
+}
+
+void UWatchChart::fixInitialAxesState()
+{
+    InitialAxesState = {double(axisXrange), getAxisYmin(), getAxisYmax()};
+}
+
+void UWatchChart::restoreInitialAxesState()
+{
+    updateTimeIntervals(InitialAxesState[0]);
+    setAxisYmin(InitialAxesState[1]);
+    setAxisYmax(InitialAxesState[2]);
 }
 
 void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName,
@@ -208,31 +222,18 @@ void UWatchChart::setAxisYmax(double value)
 
 void UWatchChart::updateAxes(double x_range, double y_min, double y_max)
 {
-    // Если зум по Х обратный, увеличиваем x_range пропорционально выделенной области относительно текущего диапазона оси Х
-    if(x_range < 0)
+    // Если зум обратный, то восстанавливаем начальные значения
+    if(x_range < 0 && y_max<y_min)
     {
-        x_range = std::abs(axisXrange/x_range)*axisXrange;
+        restoreInitialAxesState();
     }
-
-    updateTimeIntervals(x_range);
-
-    double y_max_new = 0.0, y_min_new = 0.0;
-    double y_range = getAxisYmax() - getAxisYmin();
-
-    // Если зум по Y обратный, рассчитываем новые значения оси
-    if(y_max<y_min)
-    {
-        y_max_new = getAxisYmax()+((getAxisYmax()-y_min)/y_range+1.0)*(getAxisYmax()-y_min);
-        y_min_new = getAxisYmin()-((y_max-getAxisYmin())/y_range+1.0)*(y_max-getAxisYmin());
-    }
+    // В другом случае - зум
     else
     {
-        y_max_new = y_max;
-        y_min_new = y_min;
+        updateTimeIntervals(x_range);
+        setAxisYmin(y_min);
+        setAxisYmax(y_max);
     }
-
-    setAxisYmin(y_min_new);
-    setAxisYmax(y_max_new);
 }
 
 
@@ -321,6 +322,7 @@ void UWatchChart::wheelEvent(QWheelEvent *event)
            else if(axisY->min()<0 && axisY->max()>0)axisY->setRange(axisY->min()*0.9,axisY->max()*0.9);
            else if(axisY->min()<0 && axisY->max()<0)axisY->setRange(axisY->min()*0.9,axisY->max()*1.1);
         }
+        fixInitialAxesState();
     }
     else if(isAxisYscrollable)
     {
@@ -352,7 +354,7 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     QAction * seriesOptionAction =  new QAction("Series option", this);
     QAction * chartOptionAction =   new QAction("Chart's option", this);
     QAction * saveJpegAction =      new QAction("Save chart to JPEG", this);
-
+    QAction * restoreAxesAction =   new QAction("Restore Axes", this);
 
 
     /* Подключаем СЛОТы обработчики для действий контекстного меню */
@@ -360,12 +362,14 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     connect(seriesOptionAction, SIGNAL(triggered()), this, SLOT(seriesOptionSlot()));
     connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
     connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
+    connect(restoreAxesAction, SIGNAL(triggered()), this, SLOT(restoreAxes()));
 
     /* Устанавливаем действия в меню */
     menu->addAction(addSeiesAction);
     menu->addAction(seriesOptionAction);
     menu->addAction(chartOptionAction);
     menu->addAction(saveJpegAction);
+    menu->addAction(restoreAxesAction);
 
     /* Вызываем контекстное меню */
     menu->popup(mapToGlobal(pos));
@@ -432,3 +436,10 @@ void UWatchChart::saveToJpegSlot()
     }
     else std::cout<<"chart save not succes"<<std::endl;  //что-то не так
 }
+
+ void UWatchChart::restoreAxes()
+ {
+     restoreInitialAxesState();
+ }
+
+
