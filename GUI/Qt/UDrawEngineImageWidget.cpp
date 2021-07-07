@@ -214,6 +214,7 @@ void UDrawEngineImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
         {
             emit componentDoubleClick(myLongName());
             setComponentName(myLongName());
+            selectedComponent="";
         }
     }
     else
@@ -221,6 +222,7 @@ void UDrawEngineImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
         {
             QString rootWay = "root."+ComponentName;
             QStringList stapBackWay = rootWay.split(".");
+            std::string sel_comp=stapBackWay.back().toLocal8Bit().constData();
             stapBackWay.pop_back();
             QString remains = stapBackWay.join(".");
             if(!remains.isEmpty() /*&& remains!="root"*/)
@@ -229,6 +231,10 @@ void UDrawEngineImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
                 remains = stapBackWay.join(".");
                 setComponentName(remains);
                 emit componentStapBack();
+
+                selectedComponent=sel_comp;
+                DrawEngine.SelectSingleComponent(sel_comp);
+                reDrawScheme(false);
             }
         }
 }
@@ -685,8 +691,9 @@ void UDrawEngineImageWidget::saveComponentPosition(std::string name)
         RDK::operator << (xml,pos);
         xml.Save(buffer);
 
-        if(!ComponentName.isEmpty())
-        Model_SetComponentParameterValue((ComponentName.toLocal8Bit().constData()+std::string(".")+name).c_str(), "Coord", buffer.c_str());
+        std::string comp_name=ComponentName.toLocal8Bit().constData();
+        if(!comp_name.empty() && comp_name != name)
+        Model_SetComponentParameterValue((comp_name+std::string(".")+name).c_str(), "Coord", buffer.c_str());
         else
         Model_SetComponentParameterValue(name.c_str(), "Coord", buffer.c_str());
     }
