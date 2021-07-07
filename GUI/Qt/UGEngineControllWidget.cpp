@@ -881,14 +881,15 @@ void UGEngineControllWidget::addWatchesWidged()
 {
     //создаем каждую новый виджет с именем Watches + номер
     watchesVector.push_back(new UWatchTab(this));
-    watchesVector.back()->setAccessibleName(QString("Watches ")+RDK::sntoa(int(watchesVector.size())).c_str());
-    watchesVector.back()->setWindowTitle(QString("Watches ")+RDK::sntoa(int(watchesVector.size())).c_str());
+    watchesVector.back()->setAccessibleName(QString("Watches_")+RDK::sntoa(int(watchesVector.size())).c_str());
+    watchesVector.back()->setWindowTitle(QString("Watches_")+RDK::sntoa(int(watchesVector.size())).c_str());
 
     QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
     imagesSbWindow->setWidget(watchesVector.back());
     imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
     imagesSbWindow->show();
     imagesSbWindow->showMaximized();
+    connect(imagesSbWindow, SIGNAL(destroyed),this, SLOT(on_mdiArea_destroyed));
 }
 
 /// Удаляет виджет отображения графиков
@@ -1080,11 +1081,39 @@ void UGEngineControllWidget::AAfterCalculate(void)
 // Сохраняет параметры интерфейса в xml
 void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
+    xml.WriteInteger("WatchesCount", watchesVector.size());
+    xml.SelectNodeForce("Watches");
 
+    for(int i=0; i < watchesVector.size(); i++)
+    {
+        QString watches_name = watchesVector[i]->accessibleName();
+        xml.WriteString("name_"+RDK::sntoa(i+1), watches_name.toStdString().c_str());
+    }
+    xml.SelectUp();
 }
 
 // Загружает параметры интерфейса из xml
 void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
+    // Очистка существующих табов
+    int watches_size = watchesVector.size();
+    for(int i=0; i < watches_size; i++)
+    {
+        delete watchesVector[0];
+        watchesVector.erase(watchesVector.begin());
+    }
 
+    int count=xml.ReadInteger("WatchesCount", 0);
+
+    for(int i=0; i < count; i++)
+        addWatchesWidged();
+
+    xml.SelectNodeForce("Watches");
+    for(int i=0; i < watchesVector.size(); i++)
+    {
+        QString watches_name = xml.ReadString("name_"+RDK::sntoa(i+1), "Wacthes_" + RDK::sntoa(i+1)).c_str();
+        watchesVector.at(i)->setAccessibleName(watches_name);
+        watchesVector.at(i)->setWindowTitle(watches_name);
+    }
+    xml.SelectUp();
 }

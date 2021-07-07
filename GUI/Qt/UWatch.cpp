@@ -140,7 +140,7 @@ void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
     xml.SelectNodeForce("Tabs");
     for(int i=0; i < tab.count(); i++)
     {
-        QString tab_name = xml.ReadString("tab_"+RDK::sntoa(i+1), "tab_" + RDK::sntoa(i+1)).c_str();
+        QString tab_name = xml.ReadString("name_"+RDK::sntoa(i+1), "tab_" + RDK::sntoa(i+1)).c_str();
         ui->tabWidget->setTabText(i, tab_name);
         tab.at(i)->setAccessibleName(tab_name);
     }
