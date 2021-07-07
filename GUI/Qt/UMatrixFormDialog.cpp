@@ -64,7 +64,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDMatrix<double> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        //ui->tableWidget->clear();
+        ui->tableWidget->clear();
         ui->tableWidget->setRowCount(m.GetRows());
         ui->tableWidget->setColumnCount(m.GetCols());
 
@@ -98,7 +98,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDMatrix<int> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        //ui->tableWidget->clear();
+        ui->tableWidget->clear();
         ui->tableWidget->setColumnCount(m.GetCols());
         ui->tableWidget->setRowCount(m.GetRows());
 
@@ -133,7 +133,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDVector<double> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        //ui->tableWidget->clear();
+        ui->tableWidget->clear();
         ui->tableWidget->setColumnCount(m.GetCols());
         ui->tableWidget->setRowCount(m.GetRows());
 
@@ -164,7 +164,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
             m=engine->Model_GetComponentPropertyData<RDK::MDVector<int> >(ComponentMatrixName.c_str(), PropertyMatrixName.c_str());
         }
 
-        //ui->tableWidget->clear();
+        ui->tableWidget->clear();
         ui->tableWidget->setColumnCount(m.GetCols());
         ui->tableWidget->setRowCount(m.GetRows());
 

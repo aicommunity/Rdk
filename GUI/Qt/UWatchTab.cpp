@@ -249,18 +249,28 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     //провер€ем что у выбран не пустой элемент (если нет модели)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
-        RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
+        bool is_int_or_double = false;
 
-        RDK::UContainer *cont = model->GetComponentL(componentName.toStdString());
-        if(!cont)
-            return;
+        {
+            RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
 
-        RDK::UEPtr<RDK::UIProperty> prop=cont->FindProperty(componentProperty.toStdString());
-        if(!prop)
-            return;
+            RDK::UContainer *cont = model->GetComponentL(componentName.toStdString());
+            if(!cont)
+                return;
+
+            RDK::UEPtr<RDK::UIProperty> prop=cont->FindProperty(componentProperty.toStdString());
+            if(!prop)
+                return;
+
+            // ≈сли тип double или int
+            if(prop->GetLanguageType() == typeid(double) || prop->GetLanguageType() == typeid(int))
+            {
+                is_int_or_double = true;
+            }
+        }
 
         // ≈сли тип double или int
-        if(prop->GetLanguageType() == typeid(double) || prop->GetLanguageType() == typeid(int))
+        if(is_int_or_double)
         {
             //создаем серию дл€ выбранного источника
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
