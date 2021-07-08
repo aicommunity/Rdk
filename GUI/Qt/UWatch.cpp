@@ -48,11 +48,18 @@ void UWatch::on_actionCharts_option_triggered()
 
 void UWatch::createTab()
 {
+    // пока что так
+    int index = 1;
+    if(!tab.empty())
+        index = tab.last()->accessibleName().replace("tab_","").toInt()+1;
+
     //создаем каждую новую вкладку с именем tab + номер
     tab.push_back(new UWatchTab(this));
-    ui->tabWidget->addTab(tab.last(), QString("tab_%0").arg(ui->tabWidget->count()+1));
+
+
+    ui->tabWidget->addTab(tab.last(), QString("tab_%0").arg(index));
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    tab.last()->setAccessibleName(QString("tab_%0").arg(ui->tabWidget->count()));
+    tab.last()->setAccessibleName(QString("tab_%0").arg(index));
 }
 
 void UWatch::deleteTab(int index)

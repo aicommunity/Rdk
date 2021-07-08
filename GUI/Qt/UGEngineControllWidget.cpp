@@ -850,28 +850,48 @@ void UGEngineControllWidget::calcOneStepChannel(int chanelIndex)
 /// Добавляет новый виджет в imagesVector
 void UGEngineControllWidget::addImagesWidged()
 {
- USubTabDescriptionImages descr;
- UImagesWidget *new_images = new UImagesWidget(this, application);
- descr.Name=QString("Images ")+RDK::sntoa(int(imagesVector.size()+1)).c_str();
- descr.Images=new_images;
+    int index = 1;
+    if(!imagesVector.empty())
+        index = imagesVector.back()->accessibleName().replace("Images_","").toInt()+1;
 
- new_images->setWindowTitle(descr.Name);
+    //создаем каждую новый виджет с именем Images + номер
+    imagesVector.push_back(new UImagesWidget(this));
+    imagesVector.back()->setAccessibleName(QString("Images_")+RDK::sntoa(index).c_str());
+    imagesVector.back()->setWindowTitle(QString("Images_")+RDK::sntoa(index).c_str());
 
- QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
- imagesSbWindow->setWidget(new_images);
- imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
- imagesSbWindow->show();
- imagesSbWindow->showMaximized();
- descr.SubWindow=imagesSbWindow;
+    QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
+    imagesSbWindow->setWidget(imagesVector.back());
+    imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
+    imagesSbWindow->show();
+    imagesSbWindow->showMaximized();
 
- imagesVector.push_back(descr);
+    // когда закрывается вкладка Watches, необходиом грамотно очистить вектор
+    connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delImagesWidgetSlot(QObject*)) );
+}
+
+void UGEngineControllWidget::delImagesWidgetSlot(QObject* obj)
+{
+    // Виджет Watches уже удален на данный момент
+    // он не виден в отличие от других, необходиом его вычислить и удалить из массива
+    int index = -1;
+    for(int i=0;i<imagesVector.size(); i++)
+    {
+        if(!imagesVector[i]->isVisible())
+        {
+            index = i;
+            break;
+        }
+    }
+    delImagesWidged(index);
 }
 
 /// Удаляет виджет из imagesVector по имени
 void UGEngineControllWidget::delImagesWidged(size_t index)
 {
  if(index>=imagesVector.size())
-  return;
+     return;
+
+ delete imagesVector[index];
  imagesVector.erase(imagesVector.begin()+index);
 }
 
@@ -879,10 +899,14 @@ void UGEngineControllWidget::delImagesWidged(size_t index)
 /// Добавляет новый виджет отображения графиков
 void UGEngineControllWidget::addWatchesWidged()
 {
+    int index = 1;
+    if(!watchesVector.empty())
+        index = watchesVector.back()->accessibleName().replace("Watches_","").toInt()+1;
+
     //создаем каждую новый виджет с именем Watches + номер
     watchesVector.push_back(new UWatchTab(this));
-    watchesVector.back()->setAccessibleName(QString("Watches_")+RDK::sntoa(int(watchesVector.size())).c_str());
-    watchesVector.back()->setWindowTitle(QString("Watches_")+RDK::sntoa(int(watchesVector.size())).c_str());
+    watchesVector.back()->setAccessibleName(QString("Watches_")+RDK::sntoa(index).c_str());
+    watchesVector.back()->setWindowTitle(QString("Watches_")+RDK::sntoa(index).c_str());
 
     QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
     imagesSbWindow->setWidget(watchesVector.back());
@@ -987,6 +1011,7 @@ void UGEngineControllWidget::readSettings()
 
 void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
 {
+    /*
  for(size_t i=0;i<imagesVector.size();i++)
  {
   if(imagesVector[i].SubWindow == arg1)
@@ -994,7 +1019,7 @@ void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
    delImagesWidged(i);
    break;
   }
- }
+ }*/
 }
 
 void UGEngineControllWidget::showChannelsWidget (void)
@@ -1096,12 +1121,22 @@ void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
         xml.WriteString("name_"+RDK::sntoa(i+1), watches_name.toStdString().c_str());
     }
     xml.SelectUp();
+
+    xml.WriteInteger("ImagesCount", imagesVector.size());
+    xml.SelectNodeForce("Images");
+
+    for(int i=0; i < imagesVector.size(); i++)
+    {
+        QString images_name = imagesVector[i]->accessibleName();
+        xml.WriteString("name_"+RDK::sntoa(i+1), images_name.toStdString().c_str());
+    }
+    xml.SelectUp();
 }
 
 // Загружает параметры интерфейса из xml
 void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих табов
+    // Очистка существующих Watches
     int watches_size = watchesVector.size();
     for(int i=0; i < watches_size; i++)
     {
@@ -1117,9 +1152,32 @@ void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
     xml.SelectNodeForce("Watches");
     for(int i=0; i < watchesVector.size(); i++)
     {
-        QString watches_name = xml.ReadString("name_"+RDK::sntoa(i+1), "Wacthes_" + RDK::sntoa(i+1)).c_str();
+        QString watches_name = xml.ReadString("name_"+RDK::sntoa(i+1), "Watches_" + RDK::sntoa(i+1)).c_str();
         watchesVector.at(i)->setAccessibleName(watches_name);
         watchesVector.at(i)->setWindowTitle(watches_name);
+    }
+    xml.SelectUp();
+
+
+    // Очистка существующих Images
+    int images_size = imagesVector.size();
+    for(int i=0; i < images_size; i++)
+    {
+        delete imagesVector[0];
+        imagesVector.erase(imagesVector.begin());
+    }
+
+    count=xml.ReadInteger("ImagesCount", 0);
+
+    for(int i=0; i < count; i++)
+        addImagesWidged();
+
+    xml.SelectNodeForce("Images");
+    for(int i=0; i < imagesVector.size(); i++)
+    {
+        QString images_name = xml.ReadString("name_"+RDK::sntoa(i+1), "Images_" + RDK::sntoa(i+1)).c_str();
+        imagesVector.at(i)->setAccessibleName(images_name);
+        imagesVector.at(i)->setWindowTitle(images_name);
     }
     xml.SelectUp();
 }

@@ -152,6 +152,9 @@ private slots:
     void updateChannelsVisibility();
 
 
+    /// Удаляет виджет отображения картинок
+    void delImagesWidged(size_t index);
+    void delImagesWidgetSlot(QObject* obj);
 
     /// Удаляет виджет отображения графиков
     void delWatchesWidgetSlot(QObject* obj);
@@ -187,7 +190,7 @@ private:
     UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
     /// Массив виджетов отображения картинок
-    std::vector<USubTabDescriptionImages> imagesVector;
+    std::vector<UImagesWidget*> imagesVector;
 
     /// Массив виджетов отображения графиков
     std::vector<UWatchTab*> watchesVector;
@@ -215,9 +218,6 @@ private:
 
     /// Добавляет новый виджет отображения картинок
     void addImagesWidged();
-
-    /// Удаляет виджет отображения картинок
-    void delImagesWidged(size_t index);
 
     /// Добавляет новый виджет отображения графиков
     void addWatchesWidged();
