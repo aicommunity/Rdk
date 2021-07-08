@@ -222,8 +222,13 @@ void UWatchChart::setAxisYmax(double value)
 
 void UWatchChart::updateAxes(double x_range, double y_min, double y_max)
 {
+    // Если зум в зоне не чувствительности:
+    // изменение по любой из осей меньше 10% от текущего диапазона
+    if(std::abs(x_range) < 0.1*axisXrange || std::abs(y_max-y_min) < 0.1*(getAxisYmax()-getAxisYmin()))
+        return;
+
     // Если зум обратный, то восстанавливаем начальные значения
-    if(x_range < 0 && y_max<y_min)
+    if(x_range < 0 || y_max<y_min)
     {
         restoreInitialAxesState();
     }
