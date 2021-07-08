@@ -151,6 +151,12 @@ private slots:
 
     void updateChannelsVisibility();
 
+
+
+    /// Удаляет виджет отображения графиков
+    void delWatchesWidgetSlot(QObject* obj);
+    void delWatchesWidged(size_t index);
+
 private:
     // data
     Ui::UGEngineControllWidget *ui;
@@ -215,9 +221,6 @@ private:
 
     /// Добавляет новый виджет отображения графиков
     void addWatchesWidged();
-
-    /// Удаляет виджет отображения графиков
-    void delWatchesWidged(size_t index);
 
     /// Обновляет схему модели, список классов
     /// и текст в меню Choose Storage Build Mode [N]

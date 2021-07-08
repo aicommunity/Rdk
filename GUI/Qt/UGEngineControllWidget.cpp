@@ -889,29 +889,35 @@ void UGEngineControllWidget::addWatchesWidged()
     imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
     imagesSbWindow->show();
     imagesSbWindow->showMaximized();
-    connect(imagesSbWindow, SIGNAL(destroyed),this, SLOT(on_mdiArea_destroyed));
+
+    // когда закрывается вкладка Watches, необходиом грамотно очистить вектор
+    connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delWatchesWidgetSlot(QObject*)) );
+}
+
+void UGEngineControllWidget::delWatchesWidgetSlot(QObject* obj)
+{
+    // Виджет Watches уже удален на данный момент
+    // он не виден в отличие от других, необходиом его вычислить и удалить из массива
+    int index = -1;
+    for(int i=0;i<watchesVector.size(); i++)
+    {
+        if(!watchesVector[i]->isVisible())
+        {
+            index = i;
+            break;
+        }
+    }
+    delWatchesWidged(index);
 }
 
 /// Удаляет виджет отображения графиков
 void UGEngineControllWidget::delWatchesWidged(size_t index)
 {
     if(index>=watchesVector.size())
-     return;
+        return;
 
-    //спрашиваем юзера точно ли он уверен в закрытие вкладки
-    QMessageBox messageBox;
-    messageBox.setText("Are you sure you want to close the Watches window?");
-    messageBox.setInformativeText("All data will be lost");
-    messageBox.setWindowTitle("Closing Watches");
-    messageBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
-    messageBox.setIcon(QMessageBox::Question);
-
-    if(messageBox.exec() == QMessageBox::Yes)
-    {
-        delete watchesVector[index];
-        watchesVector.erase(watchesVector.begin()+index);
-    }
-    else return;
+    delete watchesVector[index];
+    watchesVector.erase(watchesVector.begin()+index);
 }
 
 
