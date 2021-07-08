@@ -46,7 +46,9 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
 
     ui->setupUi(this);
 
-    USingleImageWidget *item = addSingleItem(0, 0);
+    columnsCounter = 1;
+    rowsCounter = 1;
+    addSingleItem(0, 0);
 
     //главное контекстное меню
     QAction *actionSeparator1 = new QAction(this);
@@ -349,12 +351,13 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
   //зачистка
   clearImagesWidget();
 
-  columnsCounter = xml.ReadInteger("columnsCounter",1);
-  rowsCounter = xml.ReadInteger("rowsCounter",1);
-  if(rowsCounter == 0 || columnsCounter == 0)
+  columnsCounter = xml.ReadInteger("columnsCounter",0);
+  rowsCounter = xml.ReadInteger("rowsCounter",0);
+  if(rowsCounter <= 0 || columnsCounter <= 0)
   {
       rowsCounter = 1;
       columnsCounter = 1;
+      addSingleItem(0, 0);
   }
 
   //заполнение
@@ -382,6 +385,9 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
 void UImagesWidget::AClearInterface(void)
 {
   clearImagesWidget();
+  columnsCounter = 1;
+  rowsCounter = 1;
+  addSingleItem(0, 0);
 }
 
 void UImagesWidget::actionSaveToBMP()
@@ -468,6 +474,11 @@ void UImagesWidget::actionDeleteColumn()
         }
         else ++i;
     }
+
+ if(columnsCounter == 0 || rowsCounter == 0)
+ {
+  AClearInterface();
+ }
 }
 
 void UImagesWidget::actionDeleteRow()
@@ -484,6 +495,10 @@ void UImagesWidget::actionDeleteRow()
             delete forDelete;
         }
         else ++i;
+    }
+    if(columnsCounter == 0 || rowsCounter == 0)
+    {
+     AClearInterface();
     }
 }
 
