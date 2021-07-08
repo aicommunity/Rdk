@@ -298,7 +298,7 @@ void UImagesWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
   if(!application) return;
 
-  xml.WriteString("geometry", saveGeometry().toStdString());
+//  xml.WriteString("geometry", saveGeometry().toStdString());
   xml.WriteBool("showLegend", ui->checkBoxShowLegend->isChecked());
   xml.WriteBool("IndChannels", ui->checkBoxIndChannels->isChecked());
   xml.WriteInteger("imagesSizeMod", imagesSizeMod);
@@ -309,7 +309,7 @@ void UImagesWidget::ASaveParameters(RDK::USerStorageXML &xml)
   int index=0;
   for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
   {
-      xml.AddNode(RDK::sntoa(index++));
+      xml.AddNode("Image"+RDK::sntoa(index++));
       if((*i)->getConnected())
       {
        xml.WriteInteger("Channel", (*i)->getCalcChannel());
@@ -328,7 +328,7 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
   if(!application) return;
 
-  restoreGeometry(xml.ReadString("geometry","").c_str());
+//  restoreGeometry(xml.ReadString("geometry","").c_str());
 
   ui->checkBoxShowLegend->setChecked(xml.ReadBool("showLegend",true));
   ui->checkBoxIndChannels->setChecked(xml.ReadBool("IndChannels",false));
@@ -368,7 +368,7 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
       for(int j = 0; j < columnsCounter; j++)
       {
        USingleImageWidget *item = addSingleItem(i, j);
-       if(xml.SelectNode(RDK::sntoa(index++)))
+       if(xml.SelectNode("Image"+RDK::sntoa(index++)))
        {
           item->setCalcChannel(xml.ReadInteger("Channel",0));
           item->setComponentName( xml.ReadString("Component","").c_str());
