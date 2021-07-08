@@ -75,9 +75,13 @@ public:
     // ------------------------------
 
     /// запись файла настроек
-    virtual void ASaveParameters();
+    virtual void ASaveParameters(RDK::USerStorageXML &xml);
     /// считывание файла настроек
-    virtual void ALoadParameters();
+    virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+    // Возврат интерфейса в исходное состояние
+    virtual void AClearInterface(void);
+
 signals:
     /// Сигнал отправляет канал текущего выбранного изображения, при смене selectedImage
     void selectedImageChannel(int channel);

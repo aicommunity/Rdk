@@ -46,7 +46,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
 
     ui->setupUi(this);
 
-    ALoadParameters();
+    USingleImageWidget *item = addSingleItem(0, 0);
 
     //главное контекстное меню
     QAction *actionSeparator1 = new QAction(this);
@@ -292,46 +292,46 @@ int UImagesWidget::GetImageHeight(int imageNum)
  return 0;
 }
 
-void UImagesWidget::ASaveParameters()
+void UImagesWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
   if(!application) return;
 
-  QSettings settings(QString::fromLocal8Bit(
-                       application->GetProjectPath().c_str())+"settings.qt", QSettings::IniFormat);
-  settings.beginGroup(accessibleName());
-  settings.setValue("geometry", saveGeometry());
-  settings.setValue("showLegend", ui->checkBoxShowLegend->isChecked());
-  settings.setValue("IndChannels", ui->checkBoxIndChannels->isChecked());
-  settings.setValue("imagesSizeMod", imagesSizeMod);
-  settings.setValue("columnsCounter", columnsCounter);
-  settings.setValue("rowsCounter", rowsCounter);
+  xml.WriteString("geometry", saveGeometry().toStdString());
+  xml.WriteBool("showLegend", ui->checkBoxShowLegend->isChecked());
+  xml.WriteBool("IndChannels", ui->checkBoxIndChannels->isChecked());
+  xml.WriteInteger("imagesSizeMod", imagesSizeMod);
+  xml.WriteInteger("columnsCounter", columnsCounter);
+  xml.WriteInteger("rowsCounter", rowsCounter);
 
+  xml.AddNode("ImgData");
+  int index=0;
   for(QList<USingleImageWidget*>::iterator i = imagesList.begin(); i!=imagesList.end(); i++)
   {
+      xml.AddNode(RDK::sntoa(index++));
       if((*i)->getConnected())
-      settings.setValue(
-                  QString::number((*i)->getRow())+"x"+QString::number((*i)->getColumn()),
-                  QString::number((*i)->getCalcChannel())+"*"+(*i)->getComponentName()+"*"+(*i)->getComponentPropertyName());
+      {
+       xml.WriteInteger("Channel", (*i)->getCalcChannel());
+       xml.WriteString("Component", (*i)->getComponentName().toLocal8Bit().constData());
+       xml.WriteString("Property", (*i)->getComponentPropertyName().toLocal8Bit().constData());
+      }
+      xml.SelectUp();
+ //     settings.setValue(
+ //                 QString::number((*i)->getRow())+"x"+QString::number((*i)->getColumn()),
+ //                 QString::number((*i)->getCalcChannel())+"*"+(*i)->getComponentName()+"*"+(*i)->getComponentPropertyName());
   }
-
-  settings.endGroup();
+  xml.SelectUp();
 }
 
-void UImagesWidget::ALoadParameters()
+void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
   if(!application) return;
 
-  QSettings settings(QString::fromLocal8Bit(
-                       application->GetProjectPath().c_str())+"settings.qt",
-                     QSettings::IniFormat);
-  settings.beginGroup(accessibleName());
+  restoreGeometry(xml.ReadString("geometry","").c_str());
 
-  restoreGeometry(settings.value("geometry").toByteArray());
+  ui->checkBoxShowLegend->setChecked(xml.ReadBool("showLegend",true));
+  ui->checkBoxIndChannels->setChecked(xml.ReadBool("IndChannels",false));
 
-  ui->checkBoxShowLegend->setChecked(settings.value("showLegend").toBool());
-  ui->checkBoxIndChannels->setChecked(settings.value("IndChannels").toBool());
-
-  imagesSizeMod = settings.value("imagesSizeMod").toInt();
+  imagesSizeMod = xml.ReadInteger("imagesSizeMod",2);
   switch(imagesSizeMod)
   {
   case 0:
@@ -349,8 +349,8 @@ void UImagesWidget::ALoadParameters()
   //зачистка
   clearImagesWidget();
 
-  columnsCounter = settings.value("columnsCounter").toInt();
-  rowsCounter = settings.value("rowsCounter").toInt();
+  columnsCounter = xml.ReadInteger("columnsCounter",1);
+  rowsCounter = xml.ReadInteger("rowsCounter",1);
   if(rowsCounter == 0 || columnsCounter == 0)
   {
       rowsCounter = 1;
@@ -358,24 +358,30 @@ void UImagesWidget::ALoadParameters()
   }
 
   //заполнение
-  for(int i = 0; i < rowsCounter; i++)
+  if(xml.SelectNode("ImgData"))
+  {
+   int index=0;
+   for(int i = 0; i < rowsCounter; i++)
       for(int j = 0; j < columnsCounter; j++)
       {
-          USingleImageWidget *item = addSingleItem(i, j);
-          QString source = settings.value(QString::number(i)+"x"+QString::number(j)).toString();
-          if(!source.isEmpty())
-          {
-              QStringList list = source.split("*");
-              if (list.size() == 3)
-              {
-                  item->setCalcChannel(list.at(0).toInt());
-                  item->setComponentName(list.at(1));
-                  item->setComponentPropertyName(list.at(2));
-              }
-          }
+       USingleImageWidget *item = addSingleItem(i, j);
+       if(xml.SelectNode(RDK::sntoa(index++)))
+       {
+          item->setCalcChannel(xml.ReadInteger("Channel",0));
+          item->setComponentName( xml.ReadString("Component","").c_str());
+          item->setComponentPropertyName(xml.ReadString("Property","").c_str());
+         xml.SelectUp();
+        }
       }
 
-  settings.endGroup();
+   xml.SelectUp();
+  }
+}
+
+// ¬озврат интерфейса в исходное состо€ние
+void UImagesWidget::AClearInterface(void)
+{
+  clearImagesWidget();
 }
 
 void UImagesWidget::actionSaveToBMP()
