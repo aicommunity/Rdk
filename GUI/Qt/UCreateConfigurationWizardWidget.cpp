@@ -183,18 +183,8 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  break;
  }
 
- switch (ProjectConfig.MultiThreadingMode)
- {
- case 0:
-  ui->radioButtonSystemTime->setChecked(true);
-  ui->radioButtonExternalDataTime->setChecked(false);
- break;
-
- case 1:
-  ui->radioButtonSystemTime->setChecked(false);
-  ui->radioButtonExternalDataTime->setChecked(true);
- break;
- }
+ ui->radioButtonSystemTime->setChecked(true);
+ ui->radioButtonExternalDataTime->setChecked(false);
 
  ui->checkBoxSDiasbleStopVS->setChecked(ProjectConfig.DisableStopVideoSources);
 

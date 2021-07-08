@@ -599,7 +599,7 @@ UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &compo
  if(!Model)
   return 0;
 
- UContainer *cont=Model->GetComponentL(component_name);
+ UContainer *cont=Model->GetComponentL(component_name,true);
  if(!cont)
   return 0;
 

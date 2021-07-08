@@ -709,16 +709,16 @@
                 </widget>
                </item>
                <item>
-                <widget class="QRadioButton" name="radioButtonCMBySignal">
+                <widget class="QRadioButton" name="radioButtonCMRealTime">
                  <property name="text">
-                  <string>By Signal</string>
+                  <string>Real-Time</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QRadioButton" name="radioButtonCMRealTime">
+                <widget class="QRadioButton" name="radioButtonCMBySignal">
                  <property name="text">
-                  <string>Real-Time</string>
+                  <string>By Signal</string>
                  </property>
                 </widget>
                </item>

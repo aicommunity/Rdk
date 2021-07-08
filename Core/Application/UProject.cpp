@@ -21,7 +21,7 @@ TProjectChannelConfig::TProjectChannelConfig(void)
 
  DefaultTimeStep=30;
 
- CalculationMode=2;
+ CalculationMode=1;
 
  MinInterstepsInterval=0;
 
@@ -527,7 +527,7 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
  Config.ChannelsConfig[0].PredefinedStructure=xml.ReadInteger("PredefinedStructure",0);
  Config.ChannelsConfig[0].DefaultTimeStep=xml.ReadInteger("DefaultTimeStep",30);
  Config.ChannelsConfig[0].GlobalTimeStep=xml.ReadInteger("GlobalTimeStep",30);
- Config.ChannelsConfig[0].CalculationMode=xml.ReadInteger("CalculationMode",2);
+ Config.ChannelsConfig[0].CalculationMode=xml.ReadInteger("CalculationMode",1);
  Config.ChannelsConfig[0].InitAfterLoad=xml.ReadBool("InitAfterLoadFlag",1);
  Config.ChannelsConfig[0].ResetAfterLoad=xml.ReadBool("ResetAfterLoadFlag",true);
  Config.ChannelsConfig[0].DebugMode=xml.ReadBool("DebugModeFlag",false);
@@ -550,7 +550,7 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
   Config.ChannelsConfig[i].PredefinedStructure=xml.ReadInteger(std::string("PredefinedStructure_")+RDK::sntoa(i),0);
   Config.ChannelsConfig[i].DefaultTimeStep=xml.ReadInteger(std::string("DefaultTimeStep_")+RDK::sntoa(i),30);
   Config.ChannelsConfig[i].GlobalTimeStep=xml.ReadInteger(std::string("GlobalTimeStep_")+RDK::sntoa(i),30);
-  Config.ChannelsConfig[i].CalculationMode=xml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),2);
+  Config.ChannelsConfig[i].CalculationMode=xml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),1);
   Config.ChannelsConfig[i].InitAfterLoad=xml.ReadBool(std::string("InitAfterLoadFlag_")+RDK::sntoa(i),1);
   Config.ChannelsConfig[i].ResetAfterLoad=xml.ReadBool(std::string("ResetAfterLoadFlag_")+RDK::sntoa(i),true);
   Config.ChannelsConfig[i].DebugMode=xml.ReadBool(std::string("DebugModeFlag_")+RDK::sntoa(i),false);
@@ -642,7 +642,7 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
   Config.ChannelsConfig[0].PredefinedStructure=0;
   Config.ChannelsConfig[0].DefaultTimeStep=30;
   Config.ChannelsConfig[0].GlobalTimeStep=30;
-  Config.ChannelsConfig[0].CalculationMode=2;
+  Config.ChannelsConfig[0].CalculationMode=1;
   Config.ChannelsConfig[0].InitAfterLoad=1;
   Config.ChannelsConfig[0].ResetAfterLoad=true;
   Config.ChannelsConfig[0].DebugMode=false;
@@ -665,7 +665,7 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
   Config.ChannelsConfig[i].PredefinedStructure=xml.ReadInteger("PredefinedStructure",0);
   Config.ChannelsConfig[i].DefaultTimeStep=xml.ReadInteger("DefaultTimeStep",30);
   Config.ChannelsConfig[i].GlobalTimeStep=xml.ReadInteger("GlobalTimeStep",30);
-  Config.ChannelsConfig[i].CalculationMode=xml.ReadInteger("CalculationMode",2);
+  Config.ChannelsConfig[i].CalculationMode=xml.ReadInteger("CalculationMode",1);
   Config.ChannelsConfig[i].InitAfterLoad=xml.ReadBool("InitAfterLoadFlag",1);
   Config.ChannelsConfig[i].ResetAfterLoad=xml.ReadBool("ResetAfterLoadFlag",true);
   Config.ChannelsConfig[i].DebugMode=xml.ReadBool("DebugModeFlag",false);

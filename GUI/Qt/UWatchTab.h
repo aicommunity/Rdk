@@ -92,6 +92,9 @@ private:
     ///Ее данные положим на этот график
     virtual void AUpdateInterface();
 
+    ///Очищает интерфейс
+    virtual void AClearInterface();
+
     /// Безопасно считывает данные серии из ядра
     virtual void ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata);
 

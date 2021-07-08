@@ -133,8 +133,8 @@ UClassesListWidget::~UClassesListWidget()
 
 QString UClassesListWidget::selctedClass() const
 {
-  if(ui->listWidgetStorageByName->selectedItems().size() ==0)
-      return QString();
+//  if(ui->listWidgetStorageByName->selectedItems().size() ==0)
+//      return QString();
 
   switch(ui->tabWidget->currentIndex())
   {
@@ -144,6 +144,9 @@ QString UClassesListWidget::selctedClass() const
     case 1:
       if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
         return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    break;
+    case 2:
+      return ui->listWidgetRTlibClasses->currentItem()->text();
     break;
     default:
       return QString();

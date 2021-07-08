@@ -93,6 +93,16 @@ void UWatchTab::AUpdateInterface()
     }
 }
 
+
+///Очищает интерфейс
+void UWatchTab::AClearInterface()
+{
+ int count=graph.count();
+ for(int i=count-1;i>=0;i--)
+  deleteGraph(i);
+}
+
+
 /// Безопасно считывает данные серии из ядра
 void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata)
 {

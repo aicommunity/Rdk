@@ -84,7 +84,16 @@ void UWatch::on_tabWidget_tabCloseRequested(int index)
 void UWatch::AUpdateInterface(void){}
 
 // Возврат интерфейса в исходное состояние
-void UWatch::AClearInterface(void){}
+void UWatch::AClearInterface(void)
+{
+    int count=tab.count();
+    for(int i=count-1;i>=0;i--)
+    {
+        ui->tabWidget->removeTab(i);
+        delete tab[i];
+        tab.remove(i);
+    }
+}
 
 // Метод, вызываемый после загрузки проекта
 void UWatch::AAfterLoadProject(void){}
