@@ -1011,7 +1011,7 @@ void UGEngineControllWidget::readSettings()
 
 void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
 {
-    /*
+ /*
  for(size_t i=0;i<imagesVector.size();i++)
  {
   if(imagesVector[i].SubWindow == arg1)
@@ -1070,6 +1070,32 @@ void UGEngineControllWidget::AUpdateInterface(void)
 void UGEngineControllWidget::AClearInterface(void)
 {
     this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
+
+    //Очистка Watches окон и Images окон
+    int count=watchesVector.size();
+    for(int i=count-1;i>=0;i--)
+        delete watchesVector[i];
+
+    watchesVector.clear();
+
+    count=imagesVector.size();
+    for(int i=count-1;i>=0;i--)
+        delete imagesVector[i];
+
+    imagesVector.clear();
+
+    QList<QMdiSubWindow *> SubWindows = ui->mdiArea->findChildren<QMdiSubWindow *>();
+    foreach(QWidget * widget, SubWindows)
+    {
+        // Игнорируем UDrawEngineWidget
+        if(dynamic_cast<SubWindowCloseIgnore*>(widget))
+            continue;
+
+        // Остальные удаляем (Images, Watches)
+        QMdiSubWindow* wid = dynamic_cast<QMdiSubWindow*>(widget);
+        if(wid!=nullptr)
+            delete widget;
+    }
 }
 
 // Метод, вызываемый после загрузки проекта
