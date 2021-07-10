@@ -131,3 +131,18 @@ contains(DEFINES, RDK_USE_TENSORFLOW) {
     DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
 }
 
+contains(DEFINES,RDK_USE_MATLAB) {
+
+windows {
+
+INCLUDEPATH += $$(MATLAB_PATH)/extern/include/
+
+RDK_MATLAB_LIBS = -llibeng -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+-llibmx -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+-llibMatlabEngine -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+-llibMatlabCppSharedLib -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+-llibMatlabDataArray -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/
+
+}
+
+}
