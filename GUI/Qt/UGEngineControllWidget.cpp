@@ -874,15 +874,15 @@ void UGEngineControllWidget::delImagesWidgetSlot(QObject* obj)
     // Виджет Watches уже удален на данный момент
     // он не виден в отличие от других, необходиом его вычислить и удалить из массива
     int index = -1;
-    for(int i=0;i<imagesVector.size(); i++)
+    for(size_t i=0;i<imagesVector.size(); i++)
     {
         if(!imagesVector[i]->isVisible())
         {
-            index = i;
+            index = int(i);
             break;
         }
     }
-    delImagesWidged(index);
+    delImagesWidged(size_t(index));
 }
 
 /// Удаляет виджет из imagesVector по имени
@@ -892,7 +892,7 @@ void UGEngineControllWidget::delImagesWidged(size_t index)
      return;
 
  delete imagesVector[index];
- imagesVector.erase(imagesVector.begin()+index);
+ imagesVector.erase(imagesVector.begin()+int(index));
 }
 
 
@@ -923,15 +923,15 @@ void UGEngineControllWidget::delWatchesWidgetSlot(QObject* obj)
     // Виджет Watches уже удален на данный момент
     // он не виден в отличие от других, необходиом его вычислить и удалить из массива
     int index = -1;
-    for(int i=0;i<watchesVector.size(); i++)
+    for(size_t i=0;i<watchesVector.size(); i++)
     {
         if(!watchesVector[i]->isVisible())
         {
-            index = i;
+            index = int(i);
             break;
         }
     }
-    delWatchesWidged(index);
+    delWatchesWidged(size_t(index));
 }
 
 /// Удаляет виджет отображения графиков
@@ -941,7 +941,7 @@ void UGEngineControllWidget::delWatchesWidged(size_t index)
         return;
 
     delete watchesVector[index];
-    watchesVector.erase(watchesVector.begin()+index);
+    watchesVector.erase(watchesVector.begin()+int(index));
 }
 
 
@@ -1072,13 +1072,13 @@ void UGEngineControllWidget::AClearInterface(void)
     this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
 
     //Очистка Watches окон и Images окон
-    int count=watchesVector.size();
+    int count=int(watchesVector.size());
     for(int i=count-1;i>=0;i--)
         delete watchesVector[i];
 
     watchesVector.clear();
 
-    count=imagesVector.size();
+    count=int(imagesVector.size());
     for(int i=count-1;i>=0;i--)
         delete imagesVector[i];
 
@@ -1138,20 +1138,20 @@ void UGEngineControllWidget::AAfterCalculate(void)
 // Сохраняет параметры интерфейса в xml
 void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
-    xml.WriteInteger("WatchesCount", watchesVector.size());
+    xml.WriteInteger("WatchesCount", int(watchesVector.size()));
     xml.SelectNodeForce("Watches");
 
-    for(int i=0; i < watchesVector.size(); i++)
+    for(size_t i=0; i < watchesVector.size(); i++)
     {
         QString watches_name = watchesVector[i]->accessibleName();
         xml.WriteString("name_"+RDK::sntoa(i+1), watches_name.toStdString().c_str());
     }
     xml.SelectUp();
 
-    xml.WriteInteger("ImagesCount", imagesVector.size());
+    xml.WriteInteger("ImagesCount", int(imagesVector.size()));
     xml.SelectNodeForce("Images");
 
-    for(int i=0; i < imagesVector.size(); i++)
+    for(size_t i=0; i < imagesVector.size(); i++)
     {
         QString images_name = imagesVector[i]->accessibleName();
         xml.WriteString("name_"+RDK::sntoa(i+1), images_name.toStdString().c_str());
@@ -1163,8 +1163,8 @@ void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
 void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
     // Очистка существующих Watches
-    int watches_size = watchesVector.size();
-    for(int i=0; i < watches_size; i++)
+    size_t watches_size = watchesVector.size();
+    for(size_t i=0; i < watches_size; i++)
     {
         delete watchesVector[0];
         watchesVector.erase(watchesVector.begin());
@@ -1176,7 +1176,7 @@ void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
         addWatchesWidged();
 
     xml.SelectNodeForce("Watches");
-    for(int i=0; i < watchesVector.size(); i++)
+    for(size_t i=0; i < watchesVector.size(); i++)
     {
         QString watches_name = xml.ReadString("name_"+RDK::sntoa(i+1), "Watches_" + RDK::sntoa(i+1)).c_str();
         watchesVector.at(i)->setAccessibleName(watches_name);
@@ -1186,8 +1186,8 @@ void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
 
 
     // Очистка существующих Images
-    int images_size = imagesVector.size();
-    for(int i=0; i < images_size; i++)
+    size_t images_size = imagesVector.size();
+    for(size_t i=0; i < images_size; i++)
     {
         delete imagesVector[0];
         imagesVector.erase(imagesVector.begin());
@@ -1199,7 +1199,7 @@ void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
         addImagesWidged();
 
     xml.SelectNodeForce("Images");
-    for(int i=0; i < imagesVector.size(); i++)
+    for(size_t i=0; i < imagesVector.size(); i++)
     {
         QString images_name = xml.ReadString("name_"+RDK::sntoa(i+1), "Images_" + RDK::sntoa(i+1)).c_str();
         imagesVector.at(i)->setAccessibleName(images_name);
