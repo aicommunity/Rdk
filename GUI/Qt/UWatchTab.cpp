@@ -149,12 +149,17 @@ void UWatchTab::createSplitterGrid(int rowNumber)
     colSplitter = new QSplitter(this);
     colSplitter->setOrientation(Qt::Vertical);
 
+
+    QList<int> sizes;
+    int height = this->height();
     for (int i = 0; i < rowNumber; ++i)
     {
         rowSplitter.push_back(new QSplitter(this));
         rowSplitter.last()->setOrientation(Qt::Horizontal);
         colSplitter->addWidget(rowSplitter.last());
+        sizes.push_back(height/rowNumber);
     }
+    colSplitter->setSizes(sizes);
     ui->horizontalLayout->addWidget(colSplitter);
 }
 
@@ -209,19 +214,21 @@ void UWatchTab::createGridLayout(int rowNumber, int colNumber)
     {
         createGraph();
     }
-
+    int width = this->width();
     int k = 0;
     for(int i=0; i < rowNumber;i++)
     {
+        QList<int> sizes;
         for(int j=0; j < colNumber; j++)
         {
-
             //createGraph();
             graph[k]->setChartTitle(QString("Grid graph %1").arg(QString::number((i)*colNumber+j+1)));
 
             rowSplitter[i]->addWidget(graph[k]);
+            sizes.push_back(width/colNumber);
             k++;
         }
+        rowSplitter[i]->setSizes(sizes);
     }
 }
 
