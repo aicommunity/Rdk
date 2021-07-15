@@ -366,14 +366,12 @@ void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        //if(!Owner)
-        //    return;
-        //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
         xml.SelectNodeForce(CalcFullName());
         ASaveParameters(xml);
-        //xml.WriteInteger("UpdateInterval",UpdateInterval);
+        SaveFormPosition(xml);
         //xml.WriteString("ComponentControlName",ComponentControlName);
-        //xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
+        xml.WriteInteger("UpdateInterval",UpdateInterval);
+        xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
 
         //xml.SelectUp();
         xml.SelectUp();
@@ -397,18 +395,27 @@ void UVisualControllerMainWidget::ASaveParameters(RDK::USerStorageXML &xml)
 
 }
 
+void UVisualControllerMainWidget::SaveFormPosition(RDK::USerStorageXML &xml)
+{
+    xml.SelectNodeForce("FormPosition");
+    xml.WriteInteger("Left",x());
+    xml.WriteInteger("Top",y());
+    xml.WriteInteger("Width",width());
+    xml.WriteInteger("Height",height());
+    xml.WriteBool("Visible",isVisible());
+    xml.WriteInteger("WindowState",(int)windowState());
+    xml.SelectUp();
+}
+
 // Загружает параметры интерфейса из xml
 void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        //if(!Owner)
-        //    return;
-        //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
         xml.SelectNodeForce(CalcFullName());
-        //ComponentControlName=xml.ReadString("ComponentControlName","");
-        //UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
-        //AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);*/
+        UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
+        AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
+        LoadFormPosition(xml);
         ALoadParameters(xml);
         //xml.SelectUp();
         xml.SelectUp();
@@ -429,6 +436,36 @@ void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
 
 void UVisualControllerMainWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
+}
+
+void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
+{
+    xml.SelectNodeForce("FormPosition");
+    QRect Screen = QApplication::desktop()->screenGeometry();
+
+    int value_x=0, value_y=0;
+
+    value_x=xml.ReadInteger("Left",x());
+    if(value_x<Screen.left() || value_x>= Screen.left()+Screen.width())
+        value_x=Screen.left();
+
+    value_y=xml.ReadInteger("Top",y());
+    if(value_y<Screen.top() || value_y>= Screen.top()+Screen.height())
+        value_y=Screen.top();
+
+    int width   = xml.ReadInteger("Width", this->width());
+    int height  = xml.ReadInteger("Height", this->height());
+
+    setGeometry(value_x, value_y, width, height);
+
+    // Если это не основная форма (основная форма всегда видна)
+    if(!(accessibleName()=="UGEngineControllWidget"))
+    {
+        setVisible(xml.ReadBool("Visible", isVisible()));
+        setWindowState((Qt::WindowState)xml.ReadInteger("WindowState",(int)windowState()));
+    }
+
+    xml.SelectUp();
 }
 
 // Управление длинным именем управляемого компонента

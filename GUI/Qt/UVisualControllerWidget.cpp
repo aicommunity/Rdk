@@ -373,10 +373,9 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
         //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
         xml.SelectNodeForce(CalcFullName());
         ASaveParameters(xml);
-        //xml.WriteInteger("UpdateInterval",UpdateInterval);
+        xml.WriteInteger("UpdateInterval",UpdateInterval);
+        xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
         //xml.WriteString("ComponentControlName",ComponentControlName);
-        //xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
-
         //xml.SelectUp();
         xml.SelectUp();
     }
@@ -409,8 +408,8 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
         //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
         xml.SelectNodeForce(CalcFullName());
         //ComponentControlName=xml.ReadString("ComponentControlName","");
-        //UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
-        //AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);*/
+        UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
+        AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
         ALoadParameters(xml);
         //xml.SelectUp();
         xml.SelectUp();
