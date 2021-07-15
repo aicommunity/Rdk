@@ -60,6 +60,8 @@ public:
  int neverSleepOnMMThreadContention;
  std::string logDir;
  int startupDelay;
+ std::string userName;
+ int userId;
 
  int useNewXmlFormatProjectFile;
  int useNewProjectFilesStructure;
@@ -163,6 +165,9 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  autoexecLastProjectFlag = RDK::atoi(projectIniFile("General", "AutoexecLastProjectFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
+ userName             = projectIniFile("General", "UserName", "");
+ userId               = RDK::atoi(projectIniFile("General", "UserId", "-1"));
+
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
@@ -244,6 +249,13 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(15);
+
+ if(!userName.empty())
+  application.SetUserName(userName);
+
+ if(userId>=0)
+  application.SetUserId(userId);
+
 
  application.Init();
 

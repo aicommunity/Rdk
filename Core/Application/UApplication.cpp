@@ -49,6 +49,8 @@ UApplication::UApplication(void)
  StorageBuildMode = 1;
  LogCreationMode=0;
  CalcStopLogLevel=RDK_EX_FATAL;
+ UserName="";
+ UserId=-1;
  //SetStandartXMLInCatalog();
 
 
@@ -164,6 +166,33 @@ bool UApplication::SetModelsMainPath(const std::string &value)
  ModelsMainPath=value;
  return true;
 }
+
+const std::string& UApplication::GetUserName(void) const
+{
+    return UserName;
+}
+
+bool UApplication::SetUserName(const std::string &value)
+{
+    if(UserName == value)
+     return true;
+    UserName=value;
+    return true;
+}
+
+int UApplication::GetUserId(void) const
+{
+    return UserId;
+}
+
+bool UApplication::SetUserId(int value)
+{
+    if(UserId == value)
+     return true;
+    UserId=value;
+    return true;
+}
+
 
 // Признак наличия открытого проекта
 bool UApplication::GetProjectOpenFlag(void) const

@@ -25,7 +25,24 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 {
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
-    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
+
+    QString win_title = "Neuro Modeler "+QCoreApplication::applicationVersion() +"[ ";
+
+    if(app->GetUserName().empty() && app->GetUserId()<0)
+    {
+        win_title += "User unknown";
+    }
+    else
+    {
+        if(!app->GetUserName().empty())
+            win_title += "User: "+ QString::fromStdString(app->GetUserName()) + " ";
+
+        if(app->GetUserId()>=0)
+            win_title += "Id: " + QString::number(app->GetUserId()) + " ";
+    }
+    win_title += "]";
+
+    this->setWindowTitle(win_title);
 
     application = app;
 

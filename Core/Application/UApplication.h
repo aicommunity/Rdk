@@ -62,6 +62,12 @@ std::string StorageMountPoint;
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 std::string ModelsMainPath;
 
+/// Имя пользователя
+std::string UserName;
+
+/// Id пользователя
+int UserId;
+
 /// Признак наличия открытого проекта
 bool ProjectOpenFlag;
 
@@ -189,6 +195,15 @@ bool SetLibrariesPath(const std::string &value);
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 const std::string& GetModelsMainPath(void) const;
 bool SetModelsMainPath(const std::string &value);
+
+/// Имя пользователя
+const std::string& GetUserName(void) const;
+bool SetUserName(const std::string &value);
+
+/// Id пользователя
+int GetUserId(void) const;
+bool SetUserId(int value);
+
 
 // Признак наличия открытого проекта
 bool GetProjectOpenFlag(void) const;
