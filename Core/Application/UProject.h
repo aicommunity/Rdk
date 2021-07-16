@@ -91,6 +91,15 @@ std::string ProjectDescription;
 /// Имя файла описания проекта
 std::string DescriptionFileName;
 
+/// Имя пользователя
+std::string UserName;
+
+/// Id пользователя
+int UserId;
+
+/// Время добавления
+std::string CreationTime;
+
 /// Флаг автоматического сохранения проекта при закрытии
 bool ProjectAutoSaveFlag;
 

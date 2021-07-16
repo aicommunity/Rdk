@@ -898,6 +898,11 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  project_config.SetNumChannels(1);
  project_config.ProjectMode=0;
  project_config.ProjectName="Autocreated configuration";
+ project_config.UserId = UserId;
+ project_config.UserName = UserName;
+ time_t time_data;
+ time(&time_data);
+ project_config.CreationTime = RDK::get_text_time(time_data, '.', '_');
  project_config.ProjectType=0;
  project_config.EventsLogFlag=true;
  project_config.CalcSourceTimeMode=0;

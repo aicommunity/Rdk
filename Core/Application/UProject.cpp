@@ -155,6 +155,9 @@ TProjectConfig::TProjectConfig(void)
 TProjectConfig::TProjectConfig(const TProjectConfig& copy)
 {
  ProjectName=copy.ProjectName;
+ UserName=copy.UserName;
+ UserId=copy.UserId;
+ CreationTime=copy.CreationTime;
 
  ProjectDescription=copy.ProjectDescription;
  ProjectAutoSaveFlag=copy.ProjectAutoSaveFlag;
@@ -619,6 +622,9 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
  xml.SelectNodeRoot("Project/General");
 
  Config.ProjectName=xml.ReadString("ProjectName","NoName").c_str();
+ Config.UserName = xml.ReadString("UserName","");
+ Config.UserId = xml.ReadInteger("UserId", -1);
+ Config.CreationTime = xml.ReadString("CreationTime","");
 
  // Флаг автоматического сохранения проекта
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
@@ -897,6 +903,10 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
  xml.WriteInteger("ProjectMode",Config.ProjectMode);
 
  xml.WriteString("ProjectName",Config.ProjectName);
+
+ xml.WriteString("UserName",Config.UserName);
+ xml.WriteInteger("UserId", Config.UserId);
+ xml.WriteString("CreationTime",Config.CreationTime);
 
  xml.SelectNodeRoot("Project/MultiGeneral");
  xml.WriteInteger("EnginesMode",Config.MultiThreadingMode);
