@@ -153,6 +153,9 @@ std::string AppCaption;
 /// Файл настроек проекта
 RDK::USerStorageXML ProjectXml;
 
+/// Файл истории проекта
+RDK::USerStorageXML HistoryXml;
+
 /// Файл настроек интефрейса
 RDK::USerStorageXML InterfaceXml;
 

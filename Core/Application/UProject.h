@@ -285,11 +285,15 @@ bool ReadFromXml(USerStorageXML &xml);
 /// Сохраняет конфигурацию проекта в xml
 bool WriteToXml(USerStorageXML &xml);
 
+/// Сохранение данных о сохранении в файл истории проекта
+bool FixSavePoint(USerStorageXML &xml);
+
 protected:
 bool ReadFromXmlOld(USerStorageXML &xml);
 bool ReadFromXmlNew(USerStorageXML &xml);
 bool WriteToXmlOld(USerStorageXML &xml);
 bool WriteToXmlNew(USerStorageXML &xml);
+
 // --------------------------
 
 // --------------------------

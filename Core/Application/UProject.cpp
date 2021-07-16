@@ -40,6 +40,7 @@ TProjectChannelConfig::TProjectChannelConfig(void)
  MaxCalculationModelTime=0;
 
  UseIndTimeStepFlag=false;
+
 }
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
@@ -979,6 +980,31 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
  }
 
  return true;
+}
+
+bool UProject::FixSavePoint(USerStorageXML &xml)
+{
+    xml.SelectNodeRoot("History");
+
+    int size = 0;
+
+    std::string size_str = xml.GetNodeAttribute("Size");
+    if(!size_str.empty())
+        size = RDK::atoi(size_str);
+
+    size++;
+
+    xml.SetNodeAttribute("Size",RDK::sntoa(size));
+
+    xml.SelectNodeForce("save_point_"+RDK::sntoa(size));
+    xml.SetNodeAttribute("UserName",Config.UserName);
+    xml.SetNodeAttribute("UserId",  RDK::sntoa(Config.UserId));
+
+    time_t time_data;
+    time(&time_data);
+    xml.SetNodeAttribute("Time",  RDK::get_text_time(time_data, '.', '_'));
+
+    xml.SelectRoot();
 }
 // --------------------------
 

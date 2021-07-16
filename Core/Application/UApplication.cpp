@@ -1609,6 +1609,9 @@ bool UApplication::SaveProject(void)
 
  ProjectXml.Create("Project");
  Project->WriteToXml(ProjectXml);
+
+ HistoryXml.LoadFromFile(ProjectPath+"history.xml", "History");
+ Project->FixSavePoint(HistoryXml);
 try
 {
  InterfaceXml.Create(std::string("Interfaces"));
@@ -1686,6 +1689,17 @@ try
   std::string filename=ProjectPath+ProjectFileName;
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been saved.").c_str());
  }
+
+ is_saved=HistoryXml.SaveToFile(ProjectPath+"history.xml");
+
+ if(!is_saved)
+  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save history file: ")+ProjectFileName).c_str());
+ else
+ {
+  std::string filename=ProjectPath+"history.xml";
+  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("History file ")+filename+" has been saved.").c_str());
+ }
+
 }
 catch(RDK::UException &exception)
 {
