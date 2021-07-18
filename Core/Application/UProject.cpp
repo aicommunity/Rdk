@@ -1005,6 +1005,7 @@ bool UProject::FixSavePoint(USerStorageXML &xml)
     xml.SetNodeAttribute("Time",  RDK::get_text_time(time_data, '.', '_'));
 
     xml.SelectRoot();
+    return true;
 }
 // --------------------------
 
