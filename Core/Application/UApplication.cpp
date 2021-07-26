@@ -917,7 +917,7 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
 // project_config.ChannelsConfig[0].CalculationMode
  project_config.ChannelsConfig[0].DefaultTimeStep=2000;
  project_config.ChannelsConfig[0].MinInterstepsInterval=1;
- project_config.ChannelsConfig[0].MaxCalculationModelTime=1000;
+ project_config.ChannelsConfig[0].MaxCalculationModelTime=0;
 
  return CreateProject(file_name,project_config);
 }
