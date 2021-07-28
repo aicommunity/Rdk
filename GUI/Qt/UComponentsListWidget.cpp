@@ -146,7 +146,7 @@ void UComponentsListWidget::AUpdateInterface()
     //«аполнение списка
     QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
     rootItem->setText(0, "Model");
-    rootItem->setExpanded(true);
+    rootItem->setExpanded(false);
     addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
 
     // чтоб не бегали скролы на treeWidget'ах
@@ -789,7 +789,7 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
-        if(treeWidgetFather) treeWidgetFather->setExpanded(true);
+        if(treeWidgetFather) treeWidgetFather->setExpanded(false);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
@@ -799,12 +799,12 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
             if(oldRootItem == father+str)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(true);
+                childItem->setExpanded(false);
             }
             if(oldSelectedItem == father+str)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(true);
+                childItem->setExpanded(false);
             }
 
             addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
