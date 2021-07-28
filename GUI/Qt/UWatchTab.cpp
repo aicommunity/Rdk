@@ -299,6 +299,7 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         // MDMatrix<double>   MDMatrix<int>   MDVector<double>   MDVector<int>
         UMatrixFormDialog* form = new UMatrixFormDialog();
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
+        form->setAttribute(Qt::WA_DeleteOnClose);
 
         if(form->exec()== QDialog::Accepted)
         {
