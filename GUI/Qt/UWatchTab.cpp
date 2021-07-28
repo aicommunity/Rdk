@@ -299,7 +299,6 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         // MDMatrix<double>   MDMatrix<int>   MDVector<double>   MDVector<int>
         UMatrixFormDialog* form = new UMatrixFormDialog();
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
-        form->setAttribute(Qt::WA_DeleteOnClose);
 
         if(form->exec()== QDialog::Accepted)
         {
@@ -314,6 +313,7 @@ void UWatchTab::createSelectionDialog(int chartIndex)
             for(int i = 0; i < form->SelectedRows.size(); i++)
                 graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRows[i], form->SelectedCols[i], time_interval, 0.0);
         }
+        delete form;
     }
 }
 
