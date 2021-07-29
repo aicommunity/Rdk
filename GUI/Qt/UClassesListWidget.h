@@ -62,6 +62,10 @@ private slots:
     void tab1_textChanged(const QString &arg1);
     void tab2_textChanged(const QString &arg1);
 
+    void on_treeWidgetStorageByLibs_itemDoubleClicked(QTreeWidgetItem *item, int column);
+
+    void on_listWidgetStorageByName_itemDoubleClicked(QListWidgetItem *item);
+
 public slots:
     //События контекстного меню
     // создание/удаление библиотеки

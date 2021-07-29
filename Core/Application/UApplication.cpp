@@ -124,6 +124,20 @@ bool UApplication::SetLibrariesPath(const std::string &value)
  return true;
 }
 
+/// Относительный путь до папки с описаниями классов
+const std::string& UApplication::GetClDescPath(void) const
+{
+ return ClDescPath;
+}
+
+bool UApplication::SetClDescPath(const std::string &value)
+{
+ if(ClDescPath == value)
+  return true;
+ ClDescPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
@@ -694,6 +708,8 @@ bool UApplication::Init(void)
 
  EngineControl->Init();
  RDK::GetCoreLock()->SetLibrariesPath(LibrariesPath);
+ RDK::GetCoreLock()->SetClDescPath(ClDescPath);
+
  UApplication::SetNumChannels(1);
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 

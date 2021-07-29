@@ -3,6 +3,7 @@
 
 #include "rdk_application.h"
 #include "UComponentsListWidget.h"
+#include "UClassDescriptionDisplay.h"
 
 #include <QLabel>
 #include <QMouseEvent>
@@ -61,6 +62,8 @@ public:
     /// Возвращается имя выбрано компонента
     const std::string GetLongName();
 
+    void classDescription(const std::string& class_name);
+
 public slots:
     //Контекстное меню
     void componentViewOrBreakLink();
@@ -74,6 +77,7 @@ public slots:
     void componentFinishSwitching();
     void componentCancelSwitching();
     void componentRename();
+    void actionClassDescriptionTriggered();
     void componentDelete();
     void componentCopyNameToClipboard();
     void componentCopyLongNameToClipboard();

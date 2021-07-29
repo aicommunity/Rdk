@@ -78,6 +78,18 @@ const std::string URdkCoreManager::GetLibrariesPath(void) const
  return LibrariesPath;
 }
 
+// Установка пути к папке с описаниями классов
+void URdkCoreManager::SetClDescPath(const std::string &value)
+{
+    ClDescPath = value;
+}
+
+// Получение пути к папке с описаниями классов
+const std::string URdkCoreManager::GetClDescPath(void) const
+{
+ return ClDescPath;
+}
+
 // Возвращает имя каталога бинарных файлов
 const char* URdkCoreManager::GetSystemDir(void)
 {
@@ -643,6 +655,7 @@ int URdkCoreManager::ChannelCreate(int index)
    //
    StorageList[index]->SetBuildMode(StorageBuildMode);
    StorageList[index]->SetLibrariesPath(LibrariesPath);
+   StorageList[index]->SetClDescPath(ClDescPath);
 
    EnvironmentList[index]=FuncCreateNewEnvironment();
    if(!EnvironmentList[index])

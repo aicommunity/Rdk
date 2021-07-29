@@ -774,6 +774,47 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
 // --------------------------
 // Методы управления описанием классов
 // --------------------------
+
+// Установка пути к папке с описаниями классов
+void UStorage::SetClDescPath(const std::string& value)
+{
+    ClDesc = value;
+}
+
+// Получение пути к папке с описаниями классов
+const std::string UStorage::GetClDescPath() const
+{
+    return ClDesc;
+}
+
+// Получение пути к папке с описанием конкретного класса
+// Также создаёт необходимые папки
+const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
+{
+    std::string path = "";
+
+    UEPtr<ULibrary> lib = FindCollection(class_name);
+    if(lib)
+    {
+        path = ClDesc;
+        // т.к. RDK::CreateNewDirectory делает mkdir, а не mkpath, необходимо по очереди создавать папки
+        if(RDK::CreateNewDirectory(path.c_str())==0)
+        {
+            path += lib->GetName()+"/";
+            if(RDK::CreateNewDirectory(path.c_str())==0)
+            {
+                path += "ru-RU/";
+                if(RDK::CreateNewDirectory(path.c_str())==0)
+                {
+                    return path;
+                }
+            }
+        }
+    }
+
+    return "";
+}
+
 // Возвращает XML описание класса
 const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
 {
@@ -800,6 +841,52 @@ void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UCo
   throw EClassNameNotExist(classname);
 
  ClassesDescription[classname]=description;
+}
+
+// Загрузка описаний классов из xml-описаний
+void UStorage::LoadClassesDescription()
+{
+    std::vector<string> lib_names;
+    RDK::FindFilesList(ClDesc, "*", false, lib_names);
+    for(std::vector<string>::iterator lib_name = lib_names.begin(); lib_name != lib_names.end(); ++lib_name)
+    {
+        std::string lib_cl_desc_path = ClDesc + *lib_name +"/ru-RU/";
+
+        std::vector<string> cl_desc_files;
+        RDK::FindFilesList(lib_cl_desc_path, "*.xml", true, cl_desc_files);
+
+        for(std::vector<string>::iterator cl_decs = cl_desc_files.begin(); cl_decs != cl_desc_files.end(); ++cl_decs)
+        {
+            USerStorageXML cl_desc_xml;
+            cl_desc_xml.LoadFromFile(lib_cl_desc_path+*cl_decs,"ClassDescription");
+
+            cl_desc_xml.SelectNodeForce("ClassName");
+            std::string class_name = cl_desc_xml.GetNodeText();
+            cl_desc_xml.SelectRoot();
+
+            SetClassDescription(class_name, new RDK::UContainerDescription());
+
+            LoadClassDescription(class_name,cl_desc_xml);
+        }
+    }
+}
+
+// Сохраняет описание класса в файл на диск
+void UStorage::SaveClassDescriptionToFile(const std::string &classname)
+{
+    UEPtr<UContainerDescription> cl_desc = GetClassDescription(classname);
+
+    if(cl_desc)
+    {
+        RDK::USerStorageXML xml;
+        xml.Create("ClassDescription");
+        cl_desc->Save(xml);
+
+        std::string save_path = GetCreateClDescPath(classname);
+
+        save_path+=classname+".xml";
+        xml.SaveToFile(save_path);
+    }
 }
 
 // Сохраняет описание класса в xml

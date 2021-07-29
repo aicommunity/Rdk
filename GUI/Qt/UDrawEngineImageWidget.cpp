@@ -75,6 +75,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
 
     QAction *actionRenameComponent = new QAction(contextMenu);
     actionRenameComponent->setText("Rename");
+    QAction *actionClassDescription = new QAction(contextMenu);
+    actionClassDescription->setText("Class Description");
     QAction *actionDeleteComponent = new QAction(contextMenu);
     actionDeleteComponent->setText("Delete");
     QAction *actionCopyNameToClipboard = new QAction(contextMenu);
@@ -109,6 +111,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionCancelMoving);
     contextMenu->addAction(actionSeparator3);
     contextMenu->addAction(actionRenameComponent);
+    contextMenu->addAction(actionClassDescription);
     contextMenu->addAction(actionDeleteComponent);
     contextMenu->addAction(actionSeparator4);
     contextMenu->addAction(actionCopyNameToClipboard);
@@ -135,7 +138,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionFinishSwitching, SIGNAL(triggered(bool)), this, SLOT(componentFinishSwitching()));
     connect(actionCancelSwitching, SIGNAL(triggered(bool)), this, SLOT(componentCancelSwitching()));
     connect(actionRenameComponent, SIGNAL(triggered(bool)), this, SLOT(componentRename()));
-    connect(actionDeleteComponent, SIGNAL(triggered(bool)), this, SLOT(componentDelete()));
+    connect(actionClassDescription, SIGNAL(triggered(bool)), this, SLOT(actionClassDescriptionTriggered()));
+    connect(actionDeleteComponent, SIGNAL(triggered(bool)), this, SLOT(componentDescription()));
     connect(actionCopyNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyNameToClipboard()));
     connect(actionCopyLongNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyLongNameToClipboard()));
     connect(actionCopyClassNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyClassNameToClipboard()));
@@ -596,6 +600,26 @@ void UDrawEngineImageWidget::componentRename()
         selectComponent(ComponentName.isEmpty()? QString::fromStdString(new_name)
                                                : ComponentName + "." + QString::fromStdString(new_name));
         emit componentSelected(myLongName());
+    }
+}
+
+void UDrawEngineImageWidget::actionClassDescriptionTriggered()
+{
+    std::string class_name = Model_GetComponentClassName(myLongName().toLocal8Bit());
+    classDescription(class_name);
+}
+
+void UDrawEngineImageWidget::classDescription(const std::string& class_name)
+{
+    if(!class_name.empty())
+    {
+        UClassDescriptionDisplay* display = new UClassDescriptionDisplay(class_name);
+
+        if(display->exec()== QDialog::Accepted)
+        {
+            display->SaveDescription();
+        }
+        delete display;
     }
 }
 

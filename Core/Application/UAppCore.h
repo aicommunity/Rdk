@@ -78,6 +78,7 @@ public:
  int calcStopLogLevel;
 
  std::string librariesPath;
+ std::string clDescPath;
 
  std::string temp_proj_path;
 
@@ -188,6 +189,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
 
  librariesPath=projectIniFile("General", "LibrariesPath", "../../../");
+ clDescPath=projectIniFile("General", "ClDescPath", "../../../ClDesc/");
 
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
@@ -232,6 +234,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  application.SetDebugMode(logDebugMode);
 
  application.SetLibrariesPath(librariesPath);
+ application.SetClDescPath(clDescPath);
  application.SetConfigsMainPath(configsMainPath);
  application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
  application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);

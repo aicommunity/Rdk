@@ -150,6 +150,9 @@ std::list<funcCrPropMock> FunctionsCrPropMock;
 // Путь к папкам библиотек (в данной директории будут две папки MockLibs RTlibs)
 std::string LibrariesPath;
 
+// Путь к папке с описаниями классов (в данной директории папки вида: Библиотека\локаль (en, ru итп)\ИмяКомпонента.xml)
+std::string ClDesc;
+
 protected: // Временные переменные
 
 
@@ -273,12 +276,28 @@ virtual void ClearObjectsStorageByClass(const UId &classid);
 // --------------------------
 // Методы управления описанием классов
 // --------------------------
+// Установка пути к папке с описаниями классов
+void SetClDescPath(const std::string& value);
+
+// Получение пути к папке с описаниями классов
+const std::string GetClDescPath() const;
+
+// Получение пути к папке с описанием конкретного класса
+// Также создаёт необходимые папки
+const std::string GetCreateClDescPath(const std::string& class_name);
+
 // Возвращает XML описание класса
 const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
 void SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description);
+
+// Загрузка описаний классов из xml-описаний
+virtual void LoadClassesDescription();
+
+// Сохраняет описание класса в файл на диск
+virtual void SaveClassDescriptionToFile(const std::string &classname);
 
 // Сохраняет описание класса в xml
 virtual void SaveClassDescription(const std::string &classname,

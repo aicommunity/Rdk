@@ -893,3 +893,16 @@ void UClassesListWidget::on_tabWidget_currentChanged(int index)
 {
     on_lineEditSearch_textChanged("");
 }
+
+void UClassesListWidget::on_treeWidgetStorageByLibs_itemDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    // Если есть родитель - значит элемент класса (т.к. у элемента класса - родитель элемент бибилотеки)
+    // у элемента библиотеки отсутствует родительский элемент
+    if(item->parent())
+        ModelScheme->classDescription(item->text(0).toStdString());
+}
+
+void UClassesListWidget::on_listWidgetStorageByName_itemDoubleClicked(QListWidgetItem *item)
+{
+    ModelScheme->classDescription(item->text().toStdString());
+}

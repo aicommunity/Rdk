@@ -7365,7 +7365,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
    Storage->InitRTlibs();
 
    Storage->BuildStorage();
-
+   Storage->LoadClassesDescription();
    /*
    Storage->CreateMockLibs();
    Storage->SaveMockLibs();

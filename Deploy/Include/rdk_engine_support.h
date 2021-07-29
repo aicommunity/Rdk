@@ -83,11 +83,20 @@ int GetStorageBuildMode();
 // Путь к папкам библиотек
 std::string LibrariesPath;
 
+// Путь к папке с описаниями классов
+std::string ClDescPath;
+
 // Установка пути к папкам библиотек
 void SetLibrariesPath(const std::string& value);
 
 // Получение пути к папкам библиотек
 const std::string GetLibrariesPath() const;
+
+// Установка пути к папке с описаниями классов
+void SetClDescPath(const std::string& value);
+
+// Получение пути к папке с описаниями классов
+const std::string GetClDescPath() const;
 
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
