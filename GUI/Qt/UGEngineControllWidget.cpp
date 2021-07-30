@@ -68,6 +68,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     profilingWindowWidget=NULL;
     watchFormWidget=NULL;
     watchWindow = NULL;
+    clDescWindow = NULL;
     tcpServerControlWindow=NULL;
     tcpServerControlWidget=0;
     curlFtpClientTestWidget=NULL;
@@ -229,6 +230,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionTcpServer, SIGNAL(triggered(bool)), this, SLOT(actionTcpServer()));
     connect(ui->actionFtpTest, SIGNAL(triggered(bool)), this, SLOT(actionFtpTest()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
+
+    connect(ui->actionClDesc, SIGNAL(triggered(bool)), this, SLOT(actionClDesc()));
 
     readSettings();
 }
@@ -815,6 +818,17 @@ void UGEngineControllWidget::actionFtpTest()
 {
     curlFtpClientTestWidget->show();
     curlFtpClientTestWidget->activateWindow();
+}
+
+void UGEngineControllWidget::actionClDesc()
+{
+    if(clDescWindow != NULL) clDescWindow->show();
+    else
+    {
+        clDescWindow = new UClDescEditor();
+        clDescWindow->setWindowTitle("Classes Description Editor");
+        clDescWindow->show();
+    }
 }
 
 void UGEngineControllWidget::actionNewWatches()

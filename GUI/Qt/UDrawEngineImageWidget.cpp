@@ -139,7 +139,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionCancelSwitching, SIGNAL(triggered(bool)), this, SLOT(componentCancelSwitching()));
     connect(actionRenameComponent, SIGNAL(triggered(bool)), this, SLOT(componentRename()));
     connect(actionClassDescription, SIGNAL(triggered(bool)), this, SLOT(actionClassDescriptionTriggered()));
-    connect(actionDeleteComponent, SIGNAL(triggered(bool)), this, SLOT(componentDescription()));
+    connect(actionDeleteComponent, SIGNAL(triggered(bool)), this, SLOT(componentDelete()));
     connect(actionCopyNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyNameToClipboard()));
     connect(actionCopyLongNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyLongNameToClipboard()));
     connect(actionCopyClassNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyClassNameToClipboard()));
@@ -614,12 +614,8 @@ void UDrawEngineImageWidget::classDescription(const std::string& class_name)
     if(!class_name.empty())
     {
         UClassDescriptionDisplay* display = new UClassDescriptionDisplay(class_name);
-
-        if(display->exec()== QDialog::Accepted)
-        {
-            display->SaveDescription();
-        }
-        delete display;
+        display->setAttribute(Qt::WA_DeleteOnClose);
+        display->show();
     }
 }
 

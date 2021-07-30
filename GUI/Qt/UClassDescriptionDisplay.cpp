@@ -2,13 +2,36 @@
 #include "ui_UClassDescriptionDisplay.h"
 
 
-UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidget *parent) :
+UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidget *parent, RDK::UApplication *app):
+    UVisualControllerWidget(parent, app),
     ClassName(class_name),
-    QDialog(parent),
     ui(new Ui::UClassDescriptionDisplay)
 {
     ui->setupUi(this);
-    ui->labelClassName->setText(ClassName.c_str());
+    ui->labelClassName->setText(QString("Class Name: ") + ClassName.c_str());
+
+    ChangeClassDescription(class_name);
+
+    connect(ui->pushButtonCancel, &QPushButton::clicked, this, &QWidget::close);
+    connect(ui->pushButtonSave,   &QPushButton::clicked, this, &UClassDescriptionDisplay::SaveDescription);
+}
+
+void UClassDescriptionDisplay::SaveDescription()
+{
+    ClassDescription->SetHeader(ui->textEditHeader->toPlainText().toStdString());
+    ClassDescription->SetDescription(ui->textEditDescription->toPlainText().toStdString());
+
+    auto storage = RDK::GetStorageLock();
+    storage->SaveClassDescriptionToFile(ClassName);
+}
+
+void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_name)
+{
+    ClassName = class_name;
+
+    ui->labelClassName->setText(QString("Class Name: ") + ClassName.c_str());
+    ui->textEditHeader->setText("");
+    ui->textEditDescription->setText("");
 
     auto storage = RDK::GetStorageLock();
     ClassDescription = storage->GetClassDescription(ClassName, true);
@@ -33,13 +56,9 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
     }
 }
 
-void UClassDescriptionDisplay::SaveDescription()
+const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
 {
-    ClassDescription->SetHeader(ui->textEditHeader->toPlainText().toStdString());
-    ClassDescription->SetDescription(ui->textEditDescription->toPlainText().toStdString());
-
-    auto storage = RDK::GetStorageLock();
-    storage->SaveClassDescriptionToFile(ClassName);
+    return ui;
 }
 
 UClassDescriptionDisplay::~UClassDescriptionDisplay()

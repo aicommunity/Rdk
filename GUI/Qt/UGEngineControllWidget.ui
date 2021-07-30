@@ -208,7 +208,10 @@
    <addaction name="actionReset"/>
    <addaction name="actionStep"/>
    <addaction name="separator"/>
+   <addaction name="actionClDesc"/>
+   <addaction name="separator"/>
    <addaction name="actionUpdateFromOtherthread"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="sizeGripEnabled">
@@ -742,6 +745,14 @@
   <action name="actionRenameConfig">
    <property name="text">
     <string>Rename Config</string>
+   </property>
+  </action>
+  <action name="actionClDesc">
+   <property name="text">
+    <string>Classes Description</string>
+   </property>
+   <property name="toolTip">
+    <string>Classes Description</string>
    </property>
   </action>
  </widget>

@@ -122,6 +122,17 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 
     ui->listWidgetRTlibClasses->setContextMenuPolicy(Qt::ActionsContextMenu);
 
+    // Class description menu and action
+    QAction *action_display_class_description =  new QAction("Class description", this);
+
+    ui->listWidgetStorageByName->addAction(action_display_class_description);
+    ui->treeWidgetStorageByLibs->addAction(action_display_class_description);
+
+    ui->listWidgetStorageByName->setContextMenuPolicy(Qt::ActionsContextMenu);
+    ui->treeWidgetStorageByLibs->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    connect(action_display_class_description, SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
+
     setAcceptDrops(true);
 }
 
@@ -139,7 +150,8 @@ QString UClassesListWidget::selctedClass() const
   switch(ui->tabWidget->currentIndex())
   {
     case 0:
-      return ui->listWidgetStorageByName->currentItem()->text();
+      if(ui->listWidgetStorageByName->currentItem())
+        return ui->listWidgetStorageByName->currentItem()->text();
     break;
     case 1:
       if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
@@ -894,15 +906,49 @@ void UClassesListWidget::on_tabWidget_currentChanged(int index)
     on_lineEditSearch_textChanged("");
 }
 
-void UClassesListWidget::on_treeWidgetStorageByLibs_itemDoubleClicked(QTreeWidgetItem *item, int column)
+void UClassesListWidget::on_action_cl_desc_triggered()
 {
-    // Если есть родитель - значит элемент класса (т.к. у элемента класса - родитель элемент бибилотеки)
-    // у элемента библиотеки отсутствует родительский элемент
-    if(item->parent())
-        ModelScheme->classDescription(item->text(0).toStdString());
+    switch(ui->tabWidget->currentIndex())
+    {
+    case 0:
+        {
+            QListWidgetItem* item = ui->listWidgetStorageByName->currentItem();
+            if(!item)
+                return;
+            ModelScheme->classDescription(item->text().toStdString());
+            break;
+        }
+    case 1:
+        {
+            QTreeWidgetItem* item = ui->treeWidgetStorageByLibs->currentItem();
+            if(!item)
+                return;
+            // Если есть родитель - значит элемент класса (т.к. у элемента класса - родитель элемент бибилотеки)
+            // у элемента библиотеки отсутствует родительский элемент
+            if(item->parent())
+                ModelScheme->classDescription(item->text(0).toStdString());
+            break;
+        }
+    }
 }
 
-void UClassesListWidget::on_listWidgetStorageByName_itemDoubleClicked(QListWidgetItem *item)
+void UClassesListWidget::disable_cl_desc_popup_menu()
 {
-    ModelScheme->classDescription(item->text().toStdString());
+    QList<QAction*> actions = ui->listWidgetStorageByName->actions();
+    if(actions.size()>0 && actions.at(0)->text() == "Class description")
+    {
+        disconnect(actions.at(0), SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
+        disconnect(actions.at(0), SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
+        ui->listWidgetStorageByName->removeAction(actions.at(0));
+        ui->treeWidgetStorageByLibs->removeAction(actions.at(0));
+        delete actions.at(0);
+    }
+    ui->listWidgetStorageByName->setContextMenuPolicy(Qt::NoContextMenu);
+    ui->treeWidgetStorageByLibs->setContextMenuPolicy(Qt::NoContextMenu);
 }
+
+void UClassesListWidget::removeTab(int index)
+{
+    ui->tabWidget->removeTab(index);
+}
+

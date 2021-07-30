@@ -43,6 +43,10 @@ public:
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
+
+    void disable_cl_desc_popup_menu();
+
+    void removeTab(int index);
 public slots:
     void dragEvent(QModelIndex index);
 
@@ -62,10 +66,6 @@ private slots:
     void tab1_textChanged(const QString &arg1);
     void tab2_textChanged(const QString &arg1);
 
-    void on_treeWidgetStorageByLibs_itemDoubleClicked(QTreeWidgetItem *item, int column);
-
-    void on_listWidgetStorageByName_itemDoubleClicked(QListWidgetItem *item);
-
 public slots:
     //События контекстного меню
     // создание/удаление библиотеки
@@ -77,6 +77,8 @@ public slots:
     void DeleteClass();
 
     void on_tabWidget_currentChanged(int index);
+
+    void on_action_cl_desc_triggered();
 
 private:
     UDrawEngineImageWidget* ModelScheme;

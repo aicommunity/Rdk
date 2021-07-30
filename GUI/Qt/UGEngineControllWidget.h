@@ -23,7 +23,8 @@
 #include "UGraphWidget.h"
 #include "UTableInfo.h"
 #include "UWatchFormWidget.h"
-#include"UWatch.h"
+#include "UWatch.h"
+#include "UClDescEditor.h"
 #include "UTcpServerControlWidget.h"
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
@@ -143,6 +144,7 @@ public slots:
     void actionVASimpleSettings();
 #endif
     void actionFtpTest();
+    void actionClDesc();
 
 private slots:
     void on_mdiArea_destroyed(QObject *arg1);
@@ -182,6 +184,7 @@ private:
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
+    UClDescEditor *clDescWindow;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
 #ifndef RDK_DISABLE_EXT_GUI
