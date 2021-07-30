@@ -2,6 +2,7 @@
 #define UCLASSDESCRIPTIONDISPLAY_H
 
 #include <QWidget>
+#include <QMessageBox>
 #include <rdk_application.h>
 #include "../../Core/Engine/UContainerDescription.h"
 #include <UVisualControllerWidget.h>

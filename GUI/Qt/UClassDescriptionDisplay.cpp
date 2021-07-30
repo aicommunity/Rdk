@@ -5,6 +5,7 @@
 UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidget *parent, RDK::UApplication *app):
     UVisualControllerWidget(parent, app),
     ClassName(class_name),
+    ClassDescription(NULL),
     ui(new Ui::UClassDescriptionDisplay)
 {
     ui->setupUi(this);
@@ -22,16 +23,38 @@ void UClassDescriptionDisplay::SaveDescription()
     ClassDescription->SetDescription(ui->textEditDescription->toPlainText().toStdString());
 
     auto storage = RDK::GetStorageLock();
-    storage->SaveClassDescriptionToFile(ClassName);
+
+    // Если описания не существовало
+    if(!storage->GetClassDescription(ClassName, true))
+    {
+        if(QMessageBox::question(this, "Information",
+                                 "There is no description for this class. \n Create a description?",
+                                 QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+        {
+            storage->SetClassDescription(ClassName, ClassDescription);
+            storage->SaveClassDescriptionToFile(ClassName);
+        }
+    }
+    // Если существовало, просто сохраняем
+    else
+    {
+        storage->SaveClassDescriptionToFile(ClassName);
+    }
 }
 
 void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_name)
 {
+    if(ClassName == class_name)
+        return;
+
     ClassName = class_name;
 
     ui->labelClassName->setText(QString("Class Name: ") + ClassName.c_str());
     ui->textEditHeader->setText("");
     ui->textEditDescription->setText("");
+
+    if(ClassName.empty())
+        return;
 
     auto storage = RDK::GetStorageLock();
     ClassDescription = storage->GetClassDescription(ClassName, true);
@@ -43,16 +66,14 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
     }
     else
     {
-        ClassDescription = new RDK::UContainerDescription();
-        ClassDescription->SetClassNameValue(ClassName);
-        try
-        {
-            storage->SetClassDescription(ClassName, ClassDescription);
-        }
-        catch(RDK::UException &ex)
+
+        if(ClassDescription!=NULL)
         {
             delete ClassDescription;
+            ClassDescription = NULL;
         }
+        ClassDescription = new RDK::UContainerDescription();
+        ClassDescription->SetClassNameValue(ClassName);
     }
 }
 
