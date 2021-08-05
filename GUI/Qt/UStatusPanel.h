@@ -24,6 +24,8 @@ public:
   void AUpdateInterface();
   void AAfterLoadProject();
 
+  void ChangeAutoupdateProperties(bool value);
+
 public slots:
   void setShowDebugMessages(bool checked);
   void setDetailedLog(bool checked);

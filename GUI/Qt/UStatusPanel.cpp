@@ -78,6 +78,11 @@ void UStatusPanel::AAfterLoadProject()
     ui->radioButtonSingleThreaded->setChecked(true);
 }
 
+void UStatusPanel::ChangeAutoupdateProperties(bool value)
+{
+ ui->checkBoxAutoupdateProperties->setChecked(value);
+}
+
 void UStatusPanel::setShowDebugMessages(bool checked)
 {
   if(!application) return;

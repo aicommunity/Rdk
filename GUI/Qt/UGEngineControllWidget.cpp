@@ -1133,7 +1133,10 @@ void UGEngineControllWidget::AClearInterface(void)
 void UGEngineControllWidget::AAfterLoadProject(void)
 {
  this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]");
-
+ if(propertyChanger->componentsList->GetUpdateInterval()>0)
+  statusPanel->ChangeAutoupdateProperties(true);
+ else
+  statusPanel->ChangeAutoupdateProperties(false);
 }
 
 // Метод, вызываемый перед закрытием проекта
