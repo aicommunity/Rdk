@@ -782,6 +782,7 @@ void UComponentsListWidget::setUpdateInterval(long value)
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
 {
+ RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock<RDK::UEngine>(getWorkChannelIndex());
     const char * stringBuff = MModel_GetComponentsNameList(getWorkChannelIndex(), componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
