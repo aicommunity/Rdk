@@ -26,6 +26,8 @@ public:
 public slots:
     void SaveDescription();
     void ChangeClassDescription(const std::string& class_name);
+    void UpdateProperties();
+    void UpdateProperty(const QString& prop_name);
 
 private:
     Ui::UClassDescriptionDisplay *ui;

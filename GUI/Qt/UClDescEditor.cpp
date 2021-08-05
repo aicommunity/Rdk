@@ -1,6 +1,6 @@
 #include "UClDescEditor.h"
-#include "ui_UClDescEditor.h"
 #include "ui_UClassDescriptionDisplay.h"
+#include "ui_UClDescEditor.h"
 
 
 UClDescEditor::UClDescEditor(QWidget *parent, RDK::UApplication *app):

@@ -72,6 +72,11 @@ bool RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDesc
 
 // Удаляет все свойства из этого описания, если они есть в общих описаниях
 bool RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions);
+
+// Создание описаний свойств единожды (вызов к хранилищу)
+virtual void CreateProperties();
+
+std::map<std::string, UPropertyDescription>& GetProperties();
 // --------------------------
 
 // --------------------------

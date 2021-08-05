@@ -874,7 +874,7 @@ void UStorage::LoadClassesDescription()
 // Сохраняет описание класса в файл на диск
 void UStorage::SaveClassDescriptionToFile(const std::string &classname)
 {
-    UEPtr<UContainerDescription> cl_desc = GetClassDescription(classname);
+    UEPtr<UContainerDescription> cl_desc = GetClassDescription(classname, true);
 
     if(cl_desc)
     {

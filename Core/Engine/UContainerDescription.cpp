@@ -5,6 +5,7 @@
 #include <string>
 #include "UContainerDescription.h"
 #include "UXMLEnvSerialize.h"
+#include "UStorage.h"
 
 namespace RDK {
 
@@ -127,6 +128,57 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<st
    ++J;
  }
  return true;
+}
+
+// Обновление данных свойств (вызов к хранилищу)
+void UContainerDescription::CreateProperties()
+{
+    RDK::UEPtr<RDK::UContainer> cont;
+    cont = dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(ClassName));
+
+    if(cont)
+    {
+        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+
+        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        {
+            UPropertyDescription prop_desc;
+            prop_desc.Header = "";
+            prop_desc.Description = "";
+            prop_desc.DataSelectionType = 0;
+            prop_desc.Step = "";
+            prop_desc.ValueList = {"",""};
+
+            prop_desc.PropertyType = i->second.GetPropertyType();
+            prop_desc.Type = "";
+
+            if (i->second.CheckMask(ptPubParameter))
+            {
+                prop_desc.Type += "| ptPubParameter | ";
+            }
+            if (i->second.CheckMask(ptPubOutput))
+            {
+                prop_desc.Type += "| ptPubOutput | ";
+            }
+            if (i->second.CheckMask(ptPubInput))
+            {
+                prop_desc.Type += "| ptPubInput | ";
+            }
+            if (i->second.CheckMask(ptPubState))
+            {
+                prop_desc.Type +="| ptPubState | ";
+            }
+
+            SetPropertyDescription(i->first, prop_desc);
+        }
+
+        Storage->ReturnObject(cont);
+    }
+}
+
+std::map<std::string, UPropertyDescription>& UContainerDescription::GetProperties()
+{
+    return Properties;
 }
 // --------------------------
 

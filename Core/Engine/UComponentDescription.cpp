@@ -4,7 +4,7 @@
 #include "UComponentDescription.h"
 //#include "UComponent.h"
 #include "../Utilities/USupport.h"
-
+#include "UStorage.h"
 namespace RDK {
 
 /* Базовый класс описания исключений */
@@ -32,6 +32,7 @@ UComponentDescription::IException::~IException(void)
 // Конструкторы и деструкторы
 // --------------------------
 UComponentDescription::UComponentDescription(void)
+    : Storage(NULL)
 {
 
 }
@@ -39,7 +40,8 @@ UComponentDescription::UComponentDescription(void)
 UComponentDescription::UComponentDescription(const UComponentDescription &copy)
  : 	ClassName(copy.ClassName),
 	Header(copy.Header),
-	Description(copy.Description)
+    Description(copy.Description),
+    Storage(copy.Storage)
 {
 
 }
@@ -76,6 +78,7 @@ void UComponentDescription::SetClassNameValue(const std::string& value)
   return;
 
  ClassName=value;
+ CreateProperties();
 }
 
 // Заголовок класса
@@ -105,6 +108,19 @@ void UComponentDescription::SetDescription(const std::string& value)
 
  Description=value;
 }
+
+// Установка указателя на хранилище
+void UComponentDescription::SetStorage(UEPtr<UStorage> storage)
+{
+    Storage = storage;
+}
+
+// Создание описаний свойств единожды (вызов к хранилищу)
+void UComponentDescription::CreateProperties()
+{
+
+}
+
 // --------------------------
 
 // --------------------------
