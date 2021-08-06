@@ -74,9 +74,9 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 // Методы управления данными
 // --------------------------
 // Описание свойства
-const UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
+UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
 {
- std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
+ std::map<std::string, UPropertyDescription>::iterator I=Properties.find(name);
 
  if(I == Properties.end())
  {
@@ -133,6 +133,7 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<st
 // Обновление данных свойств (вызов к хранилищу)
 void UContainerDescription::CreateProperties()
 {
+    Properties.clear();
     RDK::UEPtr<RDK::UContainer> cont;
     cont = dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(ClassName));
 
@@ -142,6 +143,9 @@ void UContainerDescription::CreateProperties()
 
         for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
         {
+            if(i->first.empty())
+                continue;
+
             UPropertyDescription prop_desc;
             prop_desc.Header = "";
             prop_desc.Description = "";
@@ -198,6 +202,7 @@ bool UContainerDescription::Save(USerStorageXML &xml)
   xml.AddNode(I->first);
 
   xml.WriteString("Header",I->second.Header);
+  xml.WriteString("Description",I->second.Description);
   xml.WriteString("Type",I->second.Type);
   xml.WriteInteger("DataSelectionType",I->second.DataSelectionType);
   xml.WriteData("ValueList",I->second.ValueList);
@@ -235,6 +240,7 @@ bool UContainerDescription::Load(USerStorageXML &xml)
 
   std::string nodename=xml.GetNodeName();
   Properties[nodename].Header=xml.ReadString("Header",Properties[nodename].Header);
+  Properties[nodename].Description=xml.ReadString("Description",Properties[nodename].Description);
   Properties[nodename].Type=xml.ReadString("Type",Properties[nodename].Type);
   Properties[nodename].DataSelectionType=xml.ReadInteger("DataSelectionType",Properties[nodename].DataSelectionType);
   Properties[nodename].PropertyType=xml.ReadData("PropertyType",Properties[nodename].PropertyType);

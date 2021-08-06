@@ -4,19 +4,20 @@
 
 UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidget *parent, RDK::UApplication *app):
     UVisualControllerWidget(parent, app),
-    ClassName(class_name),
     ClassDescription(NULL),
     ui(new Ui::UClassDescriptionDisplay)
 {
     ui->setupUi(this);
-    ui->labelClassName->setText(QString("Class Name: ") + ClassName.c_str());
 
     ChangeClassDescription(class_name);
 
     connect(ui->pushButtonCancel, &QPushButton::clicked, this, &QWidget::close);
     connect(ui->pushButtonSave,   &QPushButton::clicked, this, &UClassDescriptionDisplay::SaveDescription);
+}
 
-    connect(ui->comboBoxProperties, SIGNAL(currentTextChanged(const QString&)), this, SLOT(UpdateProperty(const QString&)));
+UClassDescriptionDisplay::~UClassDescriptionDisplay()
+{
+    delete ui;
 }
 
 void UClassDescriptionDisplay::SaveDescription()
@@ -49,11 +50,11 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
     if(ClassName == class_name)
         return;
 
+    DefaultGUIState();
+
     ClassName = class_name;
 
-    ui->labelClassName->setText(QString("Class Name: ") + ClassName.c_str());
-    ui->textEditHeader->setText("");
-    ui->textEditDescription->setText("");
+    ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
 
     if(ClassName.empty())
         return;
@@ -65,7 +66,7 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
     {
         ui->textEditHeader->setText(ClassDescription->GetHeader().c_str());
         ui->textEditDescription->setText(ClassDescription->GetDescription().c_str());
-        UpdateProperties();
+        FillProperties();
     }
     else
     {
@@ -77,44 +78,148 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
         ClassDescription = new RDK::UContainerDescription();
         ClassDescription->SetStorage(storage.Get());
         ClassDescription->SetClassNameValue(ClassName);
-        UpdateProperties();
+        FillProperties();
     }
 }
 
-void UClassDescriptionDisplay::UpdateProperties()
+void UClassDescriptionDisplay::FillProperties()
 {
+    ui->listWidgetProperties->clear();
     std::map<std::string, RDK::UPropertyDescription> props = ClassDescription->GetProperties();
-    ui->comboBoxProperties->clear();
+
     for (auto i = props.begin(); i != props.end(); i++)
     {
-        ui->comboBoxProperties->addItem(QString::fromStdString(i->first));
+        ui->listWidgetProperties->addItem(QString::fromStdString(i->first));
     }
 }
 
-void UClassDescriptionDisplay::UpdateProperty(const QString& prop_name)
+const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
 {
-    RDK::UPropertyDescription prop_desc = ClassDescription->GetPropertyDescription(prop_name.toStdString());
+    return ui;
+}
 
-    ui->textEditHeaderProp->setText(QString::fromStdString(prop_desc.Header));
-    ui->textEditDescProp->setText(QString::fromStdString(prop_desc.Description));
+void UClassDescriptionDisplay::DefaultGUIState()
+{
+    ui->labelClassNamVal->clear();
 
+    ui->textEditHeader->clear();
+    ui->textEditDescription->clear();
+
+    ui->textEditHeaderProp->clear();
+    ui->textEditDescProp->clear();
+
+    ui->listWidgetProperties->clear();
+
+    ui->spinBoxDataSelecType->setValue(0);
+    ui->labelDataSelecTypeDesc->clear();
+    ui->labelPropTypeVal->clear();
+
+    ui->lineEditValList->setEnabled(false);
+    ui->lineEditStep->setEnabled(false);
+}
+
+void UClassDescriptionDisplay::UpdateDataSelectionType(int type)
+{
     // 0 - произвольные данные
     // 1 - Checkbox
     // 2 - Диапазон
     // 3 - Список вариантов
     // 4 - Диапазон с заданным шагом
-    ui->spinBoxDataSelecType->setValue(prop_desc.DataSelectionType);
-    if(prop_desc.DataSelectionType==0)
-        ui->labelDataSelecTypeDesc->setText("Arbitrary data");
-    if(prop_desc.DataSelectionType==1)
-        ui->labelDataSelecTypeDesc->setText("Checkbox");
-    if(prop_desc.DataSelectionType==2)
-        ui->labelDataSelecTypeDesc->setText("Range");
-    if(prop_desc.DataSelectionType==3)
-        ui->labelDataSelecTypeDesc->setText("List of options");
-    if(prop_desc.DataSelectionType==4)
-        ui->labelDataSelecTypeDesc->setText("Range with a given step");
+    ui->spinBoxDataSelecType->setValue(type);
 
+    // Отключаем ввод в switch включаем необходимое
+    ui->lineEditValList->setEnabled(false);
+    ui->lineEditStep->setEnabled(false);
+
+    switch (type)
+    {
+        case 0:
+            ui->labelDataSelecTypeDesc->setText("Arbitrary data");
+            ui->lineEditValList->setEnabled(true);
+            break;
+        case 1:
+            ui->labelDataSelecTypeDesc->setText("Checkbox");
+            break;
+        case 2:
+            ui->labelDataSelecTypeDesc->setText("Range");
+            ui->lineEditValList->setEnabled(true);
+            break;
+        case 3:
+            ui->labelDataSelecTypeDesc->setText("List of options");
+            ui->lineEditValList->setEnabled(true);
+            break;
+        case 4:
+            ui->labelDataSelecTypeDesc->setText("Range with a given step");
+            ui->lineEditValList->setEnabled(true);
+            ui->lineEditStep->setEnabled(true);
+            break;
+        default:
+            ui->labelDataSelecTypeDesc->setText("Unknown type");
+            break;
+    }
+}
+
+void UClassDescriptionDisplay::on_spinBoxDataSelecType_valueChanged(int arg1)
+{
+    UpdateDataSelectionType(arg1);
+}
+
+void UClassDescriptionDisplay::on_textEditHeaderProp_textChanged()
+{
+    if(ClassDescription)
+    {
+        if(ui->listWidgetProperties->currentItem())
+        {
+            RDK::UPropertyDescription& prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
+            prop_desc.Header = ui->textEditHeaderProp->toPlainText().toStdString();
+        }
+    }
+}
+
+void UClassDescriptionDisplay::on_textEditDescProp_textChanged()
+{
+    if(ClassDescription)
+    {
+        if(ui->listWidgetProperties->currentItem())
+        {
+            RDK::UPropertyDescription& prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
+            prop_desc.Description = ui->textEditDescProp->toPlainText().toStdString();
+        }
+    }
+}
+
+void UClassDescriptionDisplay::on_lineEditValList_textChanged(const QString &arg1)
+{
+    if(ClassDescription)
+    {
+        if(ui->listWidgetProperties->currentItem())
+        {
+            RDK::UPropertyDescription prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
+        }
+        //prop_desc.ValueList = ui->lineEditValList->toPlainText().toStdString();
+    }
+}
+
+void UClassDescriptionDisplay::on_lineEditStep_textChanged(const QString &arg1)
+{
+    if(ClassDescription)
+    {
+        if(ui->listWidgetProperties->currentItem())
+        {
+            RDK::UPropertyDescription& prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
+            prop_desc.Step = ui->lineEditStep->text().toStdString();
+        }
+    }
+}
+
+void UClassDescriptionDisplay::on_listWidgetProperties_currentTextChanged(const QString &currentText)
+{
+    RDK::UPropertyDescription prop_desc = ClassDescription->GetPropertyDescription(currentText.toStdString());
+
+    ui->textEditHeaderProp->setText(QString::fromStdString(prop_desc.Header));
+    ui->textEditDescProp->setText(QString::fromStdString(prop_desc.Description));
+
+    UpdateDataSelectionType(prop_desc.DataSelectionType);
 
     QString val_list;
     for(auto i = prop_desc.ValueList.begin(); i != prop_desc.ValueList.end(); ++i)
@@ -126,15 +231,5 @@ void UClassDescriptionDisplay::UpdateProperty(const QString& prop_name)
     ui->lineEditValList->setText(val_list);
 
     ui->lineEditStep->setText(QString::fromStdString(prop_desc.Step));
-    ui->labelPropType->setText("Property Type: " + QString::fromStdString(prop_desc.Type));
-}
-
-const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
-{
-    return ui;
-}
-
-UClassDescriptionDisplay::~UClassDescriptionDisplay()
-{
-    delete ui;
+    ui->labelPropTypeVal->setText(QString::fromStdString(prop_desc.Type));
 }

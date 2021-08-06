@@ -6,133 +6,204 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>391</width>
-    <height>641</height>
+    <width>796</width>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,4,0,0,0,0,0,0,0,0,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
    <item>
-    <widget class="QLabel" name="labelClassName">
-     <property name="text">
-      <string>Class Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelHeader">
-     <property name="text">
-      <string>Header (brief description)</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTextEdit" name="textEditHeader"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelDescription">
-     <property name="text">
-      <string>Description (detailed description)</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTextEdit" name="textEditDescription"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelProperties">
-     <property name="text">
-      <string>Properties</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QComboBox" name="comboBoxProperties"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelHeaderProp">
-     <property name="text">
-      <string>Header</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTextEdit" name="textEditHeaderProp"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelDescriptionProp">
-     <property name="text">
-      <string>Description</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTextEdit" name="textEditDescProp"/>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayoutDataSelType" stretch="0,1,0">
+    <layout class="QHBoxLayout" name="horizontalLayoutClassName" stretch="10">
      <item>
-      <widget class="QLabel" name="labelDataSelecType">
-       <property name="text">
-        <string>Data Selection Type: </string>
+      <widget class="QLabel" name="labelClassNamVal">
+       <property name="styleSheet">
+        <string notr="true">font-weight: bold;</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="labelDataSelecTypeDesc">
        <property name="text">
         <string/>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="spinBoxDataSelecType">
-       <property name="maximum">
-        <number>4</number>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayoutValueList">
+    <layout class="QHBoxLayout" name="horizontalLayoutMain" stretch="1,2,1">
      <item>
-      <widget class="QLabel" name="labelValList">
-       <property name="text">
-        <string>ValueList:</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayoutPropList">
+       <item>
+        <widget class="QLabel" name="labelPropList">
+         <property name="text">
+          <string>Properties List</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetProperties"/>
+       </item>
+      </layout>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEditValList"/>
+      <layout class="QVBoxLayout" name="verticalLayoutProp" stretch="0,0,1,0,50,0">
+       <item>
+        <widget class="QLabel" name="labelPropDesc">
+         <property name="text">
+          <string>Property Description</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelHeaderProp">
+         <property name="text">
+          <string>Header</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEditHeaderProp"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelDescriptionProp">
+         <property name="text">
+          <string>Description</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEditDescProp"/>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutDataSelType" stretch="0,1,0">
+           <item>
+            <widget class="QLabel" name="labelDataSelecType">
+             <property name="text">
+              <string>Data Selection Type: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelDataSelecTypeDesc">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBoxDataSelecType">
+             <property name="maximum">
+              <number>4</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutValueList" stretch="1,2">
+           <item>
+            <widget class="QLabel" name="labelValList">
+             <property name="text">
+              <string>Value List:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditValList"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutStep" stretch="1,2">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
+           <item>
+            <widget class="QLabel" name="labelStep">
+             <property name="text">
+              <string>Step:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditStep">
+             <property name="inputMask">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutPropType" stretch="0,5">
+           <item>
+            <widget class="QLabel" name="labelPropType">
+             <property name="text">
+              <string>Property Type: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelPropTypeVal">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayoutClass" stretch="0,0,1,0,50">
+       <item>
+        <widget class="QLabel" name="labelClassDesc">
+         <property name="text">
+          <string>Class Description</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelHeader">
+         <property name="text">
+          <string>Header</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEditHeader"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelDescription">
+         <property name="text">
+          <string>Description</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEditDescription"/>
+       </item>
+      </layout>
      </item>
     </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayoutStep">
-     <item>
-      <widget class="QLabel" name="labelStep">
-       <property name="text">
-        <string>Step:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditStep"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelPropType">
-     <property name="text">
-      <string>Property Type: </string>
-     </property>
-    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

@@ -26,8 +26,22 @@ public:
 public slots:
     void SaveDescription();
     void ChangeClassDescription(const std::string& class_name);
-    void UpdateProperties();
-    void UpdateProperty(const QString& prop_name);
+    void FillProperties();
+    void UpdateDataSelectionType(int type);
+    void DefaultGUIState();
+
+private slots:
+    void on_spinBoxDataSelecType_valueChanged(int arg1);
+
+    void on_textEditHeaderProp_textChanged();
+
+    void on_textEditDescProp_textChanged();
+
+    void on_lineEditValList_textChanged(const QString &arg1);
+
+    void on_lineEditStep_textChanged(const QString &arg1);
+
+    void on_listWidgetProperties_currentTextChanged(const QString &currentText);
 
 private:
     Ui::UClassDescriptionDisplay *ui;
