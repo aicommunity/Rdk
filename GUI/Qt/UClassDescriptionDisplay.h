@@ -17,6 +17,7 @@ class UClassDescriptionDisplay : public UVisualControllerWidget
 private:
     std::string ClassName;
     RDK::UEPtr<RDK::UContainerDescription> ClassDescription;
+    std::pair<std::string, RDK::UPropertyDescription> CurrentProp;
 
 public:
     explicit UClassDescriptionDisplay(std::string class_name, QWidget *parent = nullptr, RDK::UApplication *app = NULL);

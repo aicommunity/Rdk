@@ -13,6 +13,9 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
 
     connect(ui->pushButtonCancel, &QPushButton::clicked, this, &QWidget::close);
     connect(ui->pushButtonSave,   &QPushButton::clicked, this, &UClassDescriptionDisplay::SaveDescription);
+
+    ui->lineEditStep->setValidator(new QRegExpValidator(QRegExp("[+-]?\\d*\\.?\\d+"), this));
+    //ui->lineEditValList->setValidator(new QRegExpValidator(QRegExp("[+-]?\\d*\\.?\\d+"), this));
 }
 
 UClassDescriptionDisplay::~UClassDescriptionDisplay()
@@ -47,19 +50,31 @@ void UClassDescriptionDisplay::SaveDescription()
 
 void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_name)
 {
+    auto storage = RDK::GetStorageLock();
+
+    // Если предыдущее описание не сохранено в хранилище
+    if(!(storage->GetClassDescription(ClassName, true)))
+    {
+        if(ClassDescription!=NULL)
+        {
+            delete ClassDescription;
+            ClassDescription = NULL;
+        }
+    }
+
     if(ClassName == class_name)
         return;
-
-    DefaultGUIState();
 
     ClassName = class_name;
 
     ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
 
     if(ClassName.empty())
+    {
+        DefaultGUIState();
         return;
+    }
 
-    auto storage = RDK::GetStorageLock();
     ClassDescription = storage->GetClassDescription(ClassName, true);
 
     if(ClassDescription)
@@ -70,14 +85,10 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
     }
     else
     {
-        if(ClassDescription!=NULL)
-        {
-            delete ClassDescription;
-            ClassDescription = NULL;
-        }
         ClassDescription = new RDK::UContainerDescription();
         ClassDescription->SetStorage(storage.Get());
         ClassDescription->SetClassNameValue(ClassName);
+        DefaultGUIState();
         FillProperties();
     }
 }
@@ -91,6 +102,9 @@ void UClassDescriptionDisplay::FillProperties()
     {
         ui->listWidgetProperties->addItem(QString::fromStdString(i->first));
     }
+
+    if(ui->listWidgetProperties->count()>0)
+        ui->listWidgetProperties->setCurrentRow(0);
 }
 
 const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
@@ -126,6 +140,9 @@ void UClassDescriptionDisplay::UpdateDataSelectionType(int type)
     // 3 - Список вариантов
     // 4 - Диапазон с заданным шагом
     ui->spinBoxDataSelecType->setValue(type);
+
+    CurrentProp.second.DataSelectionType = ui->spinBoxDataSelecType->value();
+    ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
 
     // Отключаем ввод в switch включаем необходимое
     ui->lineEditValList->setEnabled(false);
@@ -170,8 +187,8 @@ void UClassDescriptionDisplay::on_textEditHeaderProp_textChanged()
     {
         if(ui->listWidgetProperties->currentItem())
         {
-            RDK::UPropertyDescription& prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
-            prop_desc.Header = ui->textEditHeaderProp->toPlainText().toStdString();
+            CurrentProp.second.Header = ui->textEditHeaderProp->toPlainText().toStdString();
+            ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
         }
     }
 }
@@ -182,8 +199,8 @@ void UClassDescriptionDisplay::on_textEditDescProp_textChanged()
     {
         if(ui->listWidgetProperties->currentItem())
         {
-            RDK::UPropertyDescription& prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
-            prop_desc.Description = ui->textEditDescProp->toPlainText().toStdString();
+            CurrentProp.second.Description = ui->textEditDescProp->toPlainText().toStdString();
+            ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
         }
     }
 }
@@ -194,9 +211,16 @@ void UClassDescriptionDisplay::on_lineEditValList_textChanged(const QString &arg
     {
         if(ui->listWidgetProperties->currentItem())
         {
-            RDK::UPropertyDescription prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
+            QStringList value_list = ui->lineEditValList->text().split(" ");
+            std::vector<std::string> val_list;
+
+            QString str;
+            foreach (str, value_list)
+                val_list.push_back(str.toStdString());
+
+            CurrentProp.second.ValueList = val_list;
+            ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
         }
-        //prop_desc.ValueList = ui->lineEditValList->toPlainText().toStdString();
     }
 }
 
@@ -206,23 +230,27 @@ void UClassDescriptionDisplay::on_lineEditStep_textChanged(const QString &arg1)
     {
         if(ui->listWidgetProperties->currentItem())
         {
-            RDK::UPropertyDescription& prop_desc = ClassDescription->GetPropertyDescription(ui->listWidgetProperties->currentItem()->text().toStdString());
-            prop_desc.Step = ui->lineEditStep->text().toStdString();
+            CurrentProp.second.Step = ui->lineEditStep->text().toStdString();
+            ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
         }
     }
 }
 
 void UClassDescriptionDisplay::on_listWidgetProperties_currentTextChanged(const QString &currentText)
 {
-    RDK::UPropertyDescription prop_desc = ClassDescription->GetPropertyDescription(currentText.toStdString());
+    if(currentText.isEmpty())
+        return;
 
-    ui->textEditHeaderProp->setText(QString::fromStdString(prop_desc.Header));
-    ui->textEditDescProp->setText(QString::fromStdString(prop_desc.Description));
+    CurrentProp.first = currentText.toStdString();
+    CurrentProp.second = ClassDescription->GetPropertyDescription(currentText.toStdString());
 
-    UpdateDataSelectionType(prop_desc.DataSelectionType);
+    ui->textEditHeaderProp->setText(QString::fromStdString(CurrentProp.second.Header));
+    ui->textEditDescProp->setText(QString::fromStdString(CurrentProp.second.Description));
+
+    UpdateDataSelectionType(CurrentProp.second.DataSelectionType);
 
     QString val_list;
-    for(auto i = prop_desc.ValueList.begin(); i != prop_desc.ValueList.end(); ++i)
+    for(auto i = CurrentProp.second.ValueList.begin(); i != CurrentProp.second.ValueList.end(); ++i)
     {
         if(!val_list.isEmpty())
              val_list += ",";
@@ -230,6 +258,6 @@ void UClassDescriptionDisplay::on_listWidgetProperties_currentTextChanged(const 
     }
     ui->lineEditValList->setText(val_list);
 
-    ui->lineEditStep->setText(QString::fromStdString(prop_desc.Step));
-    ui->labelPropTypeVal->setText(QString::fromStdString(prop_desc.Type));
+    ui->lineEditStep->setText(QString::fromStdString(CurrentProp.second.Step));
+    ui->labelPropTypeVal->setText(QString::fromStdString(CurrentProp.second.Type));
 }
