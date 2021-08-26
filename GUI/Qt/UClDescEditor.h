@@ -26,6 +26,9 @@ private:
 
 private slots:
     void clListItemChanged();
+
+protected:
+    virtual void closeEvent(QCloseEvent *event) override;
 };
 
 #endif // UCLDESCEDITOR_H

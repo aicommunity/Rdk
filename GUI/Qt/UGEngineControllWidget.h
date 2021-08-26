@@ -173,6 +173,7 @@ private:
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;
+    QMainWindow *clDescWindow;
     QMainWindow *graphWindow;
     QMainWindow *profilingWindow;
     UCalculationChannelsWidget *channels;
@@ -184,7 +185,7 @@ private:
     UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
-    UClDescEditor *clDescWindow;
+    UClDescEditor *clDesc;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
 #ifndef RDK_DISABLE_EXT_GUI

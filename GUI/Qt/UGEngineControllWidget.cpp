@@ -231,6 +231,10 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionFtpTest, SIGNAL(triggered(bool)), this, SLOT(actionFtpTest()));
     //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action)));
 
+
+    clDesc = new UClDescEditor(this, application);
+    clDesc->hide();
+
     connect(ui->actionClDesc, SIGNAL(triggered(bool)), this, SLOT(actionClDesc()));
 
     readSettings();
@@ -822,13 +826,26 @@ void UGEngineControllWidget::actionFtpTest()
 
 void UGEngineControllWidget::actionClDesc()
 {
-    if(clDescWindow != NULL) clDescWindow->show();
+    /*
+    if(clDescWindow != NULL)
+        clDescWindow->show();
     else
     {
         clDescWindow = new UClDescEditor();
         clDescWindow->setWindowTitle("Classes Description Editor");
         clDescWindow->show();
     }
+    */
+    if(!clDescWindow)
+    {
+        clDescWindow = new QMainWindow(this);
+        clDescWindow->setCentralWidget(clDesc);
+        clDescWindow->setWindowTitle("Classes Description Editor");
+    }
+    clDescWindow->resize(clDesc->size());
+    clDesc->show();
+    clDescWindow->showNormal();
+    clDescWindow->activateWindow();
 }
 
 void UGEngineControllWidget::actionNewWatches()

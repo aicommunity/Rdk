@@ -36,4 +36,9 @@ void UClDescEditor::clListItemChanged()
     ClassDescriptionDisplay->ChangeClassDescription(ClassesListWidget->selctedClass().toStdString());
 }
 
+void UClDescEditor::closeEvent(QCloseEvent *event)
+{
+    int k = 9;
+}
+
 

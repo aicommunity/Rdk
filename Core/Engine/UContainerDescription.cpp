@@ -175,15 +175,31 @@ void UContainerDescription::CreateProperties()
 
             SetPropertyDescription(i->first, prop_desc);
         }
-
         Storage->ReturnObject(cont);
+        Storage->FreeObjectsStorageByClass(Storage->FindClassId(ClassName));
     }
 }
 
-std::map<std::string, UPropertyDescription>& UContainerDescription::GetProperties()
+const std::map<std::string, UPropertyDescription>& UContainerDescription::GetProperties()
 {
     return Properties;
 }
+
+const std::map<std::string, std::string>& UContainerDescription::GetFavorites()
+{
+    return Favorites;
+}
+
+void UContainerDescription::AddNewFavorite(const std::string& name, const std::string& path)
+{
+    Favorites[name] = path;
+}
+
+void UContainerDescription::DeleteFavorite(const std::string &name)
+{
+    Favorites.erase(name);
+}
+
 // --------------------------
 
 // --------------------------
@@ -206,7 +222,7 @@ bool UContainerDescription::Save(USerStorageXML &xml)
   xml.WriteString("Type",I->second.Type);
   xml.WriteInteger("DataSelectionType",I->second.DataSelectionType);
   xml.WriteData("ValueList",I->second.ValueList);
-  xml.WriteData("PropertyType",I->second.PropertyType);
+  xml.WriteInteger("PropertyType",I->second.PropertyType);
   if(I->second.DataSelectionType == 4)
    xml.WriteString("Step",I->second.Step);
 
@@ -214,6 +230,20 @@ bool UContainerDescription::Save(USerStorageXML &xml)
   ++I;
  }
  xml.SelectUp();
+
+ xml.AddNode("Favorites");
+ std::map<std::string, std::string>::const_iterator J=Favorites.begin();
+ while(J != Favorites.end())
+ {
+  xml.AddNode(J->first);
+
+  xml.WriteString("Path",J->second);
+
+  xml.SelectUp();
+  ++J;
+ }
+ xml.SelectUp();
+
  return true;
 }
 
@@ -243,7 +273,7 @@ bool UContainerDescription::Load(USerStorageXML &xml)
   Properties[nodename].Description=xml.ReadString("Description",Properties[nodename].Description);
   Properties[nodename].Type=xml.ReadString("Type",Properties[nodename].Type);
   Properties[nodename].DataSelectionType=xml.ReadInteger("DataSelectionType",Properties[nodename].DataSelectionType);
-  Properties[nodename].PropertyType=xml.ReadData("PropertyType",Properties[nodename].PropertyType);
+  Properties[nodename].PropertyType=xml.ReadInteger("PropertyType",Properties[nodename].PropertyType);
   xml.ReadData("ValueList",Properties[nodename].ValueList);
   if(Properties[nodename].DataSelectionType == 4)
    Properties[nodename].Step=xml.ReadString("Step",Properties[nodename].Step);
@@ -252,6 +282,25 @@ bool UContainerDescription::Load(USerStorageXML &xml)
 //  ++I;
  }
  xml.SelectUp();
+
+
+ if(!xml.SelectNode("Favorites"))
+  return false;
+ Favorites.clear();
+ num_parameters=xml.GetNumNodes();
+ for(int i=0;i<num_parameters;i++)
+ {
+  if(!xml.SelectNode(i))
+  {
+   continue;
+  }
+  std::string nodename=xml.GetNodeName();
+  Favorites[nodename] = xml.ReadString("FullPath", "");
+  xml.SelectUp();
+ }
+ xml.SelectUp();
+
+
  return true;
 }
 // --------------------------

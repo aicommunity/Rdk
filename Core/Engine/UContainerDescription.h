@@ -51,6 +51,8 @@ protected: // Данные
 // Описания свойств
 std::map<std::string, UPropertyDescription> Properties;
 
+std::map<std::string, std::string> Favorites;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -76,7 +78,14 @@ bool RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDes
 // Создание описаний свойств единожды (вызов к хранилищу)
 virtual void CreateProperties();
 
-std::map<std::string, UPropertyDescription>& GetProperties();
+const std::map<std::string, UPropertyDescription>& GetProperties();
+
+// Favorites
+const std::map<std::string, std::string>& GetFavorites();
+
+void AddNewFavorite(const std::string& name, const std::string& path);
+
+void DeleteFavorite(const std::string& name);
 // --------------------------
 
 // --------------------------
