@@ -938,7 +938,6 @@ void UClassesListWidget::disable_cl_desc_popup_menu()
     if(actions.size()>0 && actions.at(0)->text() == "Class description")
     {
         disconnect(actions.at(0), SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
-        disconnect(actions.at(0), SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
         ui->listWidgetStorageByName->removeAction(actions.at(0));
         ui->treeWidgetStorageByLibs->removeAction(actions.at(0));
         delete actions.at(0);

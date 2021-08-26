@@ -21,14 +21,14 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
     QAction * createNewFavorite = new QAction("Create New", this);
     QAction * deleteFavorite =    new QAction("Delete", this);
 
-    ui->listWidgetFavorites->addAction(createNewFavorite);
-    ui->listWidgetFavorites->addAction(deleteFavorite);
+    ui->treeWidgetFavorites->addAction(createNewFavorite);
+    ui->treeWidgetFavorites->addAction(deleteFavorite);
 
     connect(createNewFavorite, SIGNAL(triggered()), this, SLOT(createNewFavoriteSlot()));
     connect(deleteFavorite,    SIGNAL(triggered()), this, SLOT(deleteFavoriteSlot()));
 
 
-    ui->listWidgetFavorites->setContextMenuPolicy(Qt::ActionsContextMenu);
+    ui->treeWidgetFavorites->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
 UClassDescriptionDisplay::~UClassDescriptionDisplay()
@@ -138,16 +138,24 @@ void UClassDescriptionDisplay::FillProperties()
 
 void UClassDescriptionDisplay::FillFavorites()
 {
-    ui->listWidgetFavorites->clear();
+    ui->treeWidgetFavorites->clear();
     const std::map<std::string, std::string>& favs = ClassDescription->GetFavorites();
 
     for (auto i = favs.begin(); i != favs.end(); i++)
     {
-        ui->listWidgetFavorites->addItem(QString::fromStdString(i->first));
+        QTreeWidgetItem* favoriteItem = new QTreeWidgetItem(ui->treeWidgetFavorites);
+        QString name = QString::fromStdString(i->first);
+        QString path = QString::fromStdString(i->second);
+
+        favoriteItem->setText(0, name);
+        favoriteItem->setText(1, path);
+
+        favoriteItem->setToolTip(0, path);
+        favoriteItem->setToolTip(1, path);
     }
 
-    if(ui->listWidgetFavorites->count()>0)
-        ui->listWidgetFavorites->setCurrentRow(0);
+    if(ui->treeWidgetFavorites->topLevelItemCount()>0)
+        ui->treeWidgetFavorites->topLevelItem(0)->setSelected(true);
 }
 
 const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
@@ -166,6 +174,7 @@ void UClassDescriptionDisplay::DefaultGUIState()
     ui->textEditDescProp->clear();
 
     ui->listWidgetProperties->clear();
+    ui->treeWidgetFavorites->clear();
 
     ui->spinBoxDataSelecType->setValue(0);
     ui->labelDataSelecTypeDesc->clear();
@@ -253,11 +262,11 @@ void UClassDescriptionDisplay::createNewFavorite(QString name, QString path)
 
 void UClassDescriptionDisplay::deleteFavoriteSlot()
 {
-    QListWidgetItem* item = ui->listWidgetFavorites->currentItem();
+    QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
 
     if(item)
     {
-        ClassDescription->DeleteFavorite(item->text().toStdString());
+        ClassDescription->DeleteFavorite(item->text(0).toStdString());
         FillFavorites();
     }
 }

@@ -295,7 +295,7 @@ bool UContainerDescription::Load(USerStorageXML &xml)
    continue;
   }
   std::string nodename=xml.GetNodeName();
-  Favorites[nodename] = xml.ReadString("FullPath", "");
+  Favorites[nodename] = xml.ReadString("Path", "");
   xml.SelectUp();
  }
  xml.SelectUp();

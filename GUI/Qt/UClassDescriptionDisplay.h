@@ -47,15 +47,10 @@ private slots:
     void deleteFavoriteSlot();
 
     void on_spinBoxDataSelecType_valueChanged(int arg1);
-
     void on_textEditHeaderProp_textChanged();
-
     void on_textEditDescProp_textChanged();
-
     void on_lineEditValList_textChanged(const QString &arg1);
-
     void on_lineEditStep_textChanged(const QString &arg1);
-
     void on_listWidgetProperties_currentTextChanged(const QString &currentText);
 
 protected:

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1034</width>
-    <height>579</height>
+    <width>1060</width>
+    <height>572</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayoutMain" stretch="3,4,2,0">
+    <layout class="QHBoxLayout" name="horizontalLayoutMain" stretch="3,4,2,5">
      <item>
       <layout class="QVBoxLayout" name="verticalLayoutPropList">
        <item>
@@ -216,7 +216,24 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listWidgetFavorites"/>
+        <widget class="QTreeWidget" name="treeWidgetFavorites">
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="headerVisible">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Path</string>
+          </property>
+         </column>
+        </widget>
        </item>
       </layout>
      </item>
