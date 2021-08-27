@@ -135,8 +135,10 @@ public slots:
     void stateListSelectionChanged();
     void inputsListSelectionChanged();
     void outputsListSelectionChanged();
+    void favoritesListSelectionChanged();
 
     void parametersListItemChanged(QTreeWidgetItem *item, int column);
+    void favoritesListItemChanged(QTreeWidgetItem *item, int column);
 
 
     /// Отправляет событие отрисовки выбранного компонента
@@ -188,6 +190,7 @@ private:
     QString selectedStateName;
     QString selectedInputName;
     QString selectedOutputName;
+    QString selectedFavName;
 
     /// Текущий канал для виджета
     int currentChannel;

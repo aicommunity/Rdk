@@ -52,9 +52,14 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
             this, SLOT(inputsListSelectionChanged()));
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()),
             this, SLOT(outputsListSelectionChanged()));
+    connect(ui->treeWidgetFavorites, SIGNAL(itemSelectionChanged()),
+            this, SLOT(favoritesListSelectionChanged()));
 
     connect(ui->treeWidgetParameters, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
             this, SLOT(parametersListItemChanged(QTreeWidgetItem *, int )));
+    connect(ui->treeWidgetFavorites, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
+            this, SLOT(favoritesListItemChanged(QTreeWidgetItem *, int )));
+
     //выделение канала
     connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
 
@@ -305,22 +310,34 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
     currentDrawPropertyComponentName = selectedComponentLongName;
 
+    std::map<std::string, std::string> Favorites;
+
     //Class
     const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
+
     if(className)
+    {
+        auto class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
+
+        if(class_desc)
+            Favorites = class_desc->GetFavorites();
+
         ui->labelComponentClassName->setText(className);
+    }
     Engine_FreeBufString(className);
 
     ui->treeWidgetParameters->clear();
     ui->treeWidgetState->clear();
     ui->treeWidgetInputs->clear();
     ui->treeWidgetOutputs->clear();
+    ui->treeWidgetFavorites->clear();
 
     // чтоб не бегали скролы на treeWidget'ах
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value(),
         stateScrollPosition = ui->treeWidgetState->verticalScrollBar()->value(),
         inputsScrollPosition = ui->treeWidgetInputs->verticalScrollBar()->value(),
-        outputsScrollPosition = ui->treeWidgetOutputs->verticalScrollBar()->value();
+        outputsScrollPosition = ui->treeWidgetOutputs->verticalScrollBar()->value(),
+        favoritesScrollPosition = ui->treeWidgetFavorites->verticalScrollBar()->value();
 
     try
     {
@@ -459,6 +476,60 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             }
         }
 
+
+        for(std::map<std::string, std::string>::iterator i = Favorites.begin(); i != Favorites.end(); ++i)
+        {
+            QTreeWidgetItem* favoriteItem = new QTreeWidgetItem(ui->treeWidgetFavorites);
+
+            QString favoriteName = QString::fromLocal8Bit(i->first.c_str());
+            QString favoritePath = QString::fromLocal8Bit(i->second.c_str());
+            favoritePath.replace("{CompName}", currentDrawPropertyComponentName);
+
+            favoriteItem->setText(0, favoriteName);
+            favoriteItem->setText(1, favoritePath);
+
+            favoriteItem->setToolTip(0, favoritePath);
+            favoriteItem->setToolTip(1, favoritePath);
+
+            // Parse path
+            QStringList vals = favoritePath.split(":");
+
+            QString component_long_name;
+            QString prop_name;
+            if(vals.size()==2)
+            {
+                component_long_name = vals[0];
+                prop_name = vals[1];
+            }
+
+            RDK::UEPtr<RDK::UContainer> child_cont;
+            child_cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+
+            if(child_cont)
+            {
+                child_cont->GetPropertyValue(prop_name.toStdString(), buffer);
+                auto prop = child_cont->FindProperty(prop_name.toStdString());
+
+                favoriteItem->setData(2, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+                favoriteItem->setText(2, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
+
+                if(favoriteName == selectedFavName)
+                    ui->treeWidgetFavorites->setCurrentItem(favoriteItem);
+
+                if(prop->GetLanguageType() == typeid(bool))
+                {
+                 favoriteItem->setFlags(favoriteItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+
+                 const bool* val=reinterpret_cast<const bool*>(prop->GetMemoryArea());
+                 if(*val)
+                  favoriteItem->setCheckState(1,Qt::Checked);
+                 else
+                  favoriteItem->setCheckState(1,Qt::Unchecked);
+                }
+            }
+
+        }
+
         // чтоб не бегали скролы на treeWidget'ах
         ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
         ui->treeWidgetParameters->verticalScrollBar()->setValue(paramScrollPosition);
@@ -468,6 +539,8 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         ui->treeWidgetInputs->verticalScrollBar()->setValue(inputsScrollPosition);
         ui->treeWidgetOutputs->verticalScrollBar()->setMaximum(outputsScrollPosition);
         ui->treeWidgetOutputs->verticalScrollBar()->setValue(outputsScrollPosition);
+        ui->treeWidgetFavorites->verticalScrollBar()->setMaximum(favoritesScrollPosition);
+        ui->treeWidgetFavorites->verticalScrollBar()->setValue(favoritesScrollPosition);
         UpdateInterfaceFlag=false;
     }
     catch (RDK::UException &exception)
@@ -593,6 +666,90 @@ void UComponentsListWidget::outputsListSelectionChanged()
     selectedOutputName = changedOutputName;
 
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
+}
+
+void UComponentsListWidget::favoritesListSelectionChanged()
+{
+    QTreeWidgetItem * item = ui->treeWidgetFavorites->currentItem();
+    if(!item)
+      return;
+
+    QString changedFavName = item->data(0, Qt::DisplayRole).toString();
+    if(selectedFavName == changedFavName)
+      return;
+
+    selectedFavName = changedFavName;
+
+    emit selectedPropertyValue(item->data(2, Qt::UserRole).toString());
+}
+
+void UComponentsListWidget::favoritesListItemChanged(QTreeWidgetItem *item, int column)
+{
+
+try
+{
+    if(UpdateInterfaceFlag)
+        return;
+
+     if(!item)
+        return;
+
+     // Parse path
+     QStringList vals = item->text(1).split(":");
+
+     QString component_long_name;
+     QString prop_name;
+     if(vals.size()==2)
+     {
+         component_long_name = vals[0];
+         prop_name = vals[1];
+     }
+
+
+     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+
+     RDK::UEPtr<RDK::UContainer> cont;
+
+     cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+
+     if(!cont)
+      return;
+
+     std::string buffer;
+
+     RDK::UEPtr<RDK::UIProperty> property;
+
+     property=cont->FindProperty(prop_name.toLocal8Bit().constData());
+
+     if(!property)
+      return;
+
+   //  parametersItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+   //  parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
+   //  if(parameterName == selectedParameterName)
+   //   ui->treeWidgetParameters->setCurrentItem(parametersItem);
+     if(property->GetLanguageType() == typeid(bool))
+     {
+   //   parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+
+   //   const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
+      bool value(false);
+      if(item->checkState(1) == Qt::Checked)
+       value=true;
+      else
+       value=false;
+      property->ReadFromMemory(&value);
+     }
+}
+catch (RDK::UException &exception)
+{
+    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+}
+catch (std::exception &exception)
+{
+    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+}
+
 }
 
 void UComponentsListWidget::componentSelectedFromScheme(QString name)
