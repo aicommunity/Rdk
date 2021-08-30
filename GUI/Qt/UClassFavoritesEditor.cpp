@@ -14,7 +14,7 @@ UClassFavoritesEditor::UClassFavoritesEditor(std::string class_name, QWidget *pa
     componentList->setEnableTabN(2, false);
     componentList->setEnableTabN(3, false);
 
-    connect(componentList, &USingleClassListWidget::parameterChanged, ui->labelFullPath, &QLabel::setText);
+    connect(componentList, &USingleClassListWidget::parameterChanged, ui->lineEditFullPath, &QLineEdit::setText);
 
     ui->labelClassName->setText(QString::fromStdString(ClassName));
 
@@ -34,19 +34,19 @@ void UClassFavoritesEditor::ChangeClass(std::string class_name)
     ClassName = class_name;
     ui->labelClassName->setText(QString::fromStdString(ClassName));
     ui->lineEditFavName->clear();
-    ui->labelFullPath->clear();
+    ui->lineEditFullPath->clear();
     componentList->ChangeClass(class_name);
 }
 
 void UClassFavoritesEditor::CreateFavorite()
 {
-    if(ui->labelFullPath->text().isEmpty() && ui->lineEditFavName->text().isEmpty())
+    if(ui->lineEditFullPath->text().isEmpty() && ui->lineEditFavName->text().isEmpty())
     {
        return;
     }
     else
     {
-        emit CreateNewFavorite(ui->lineEditFavName->text(), ui->labelFullPath->text());
+        emit CreateNewFavorite(ui->lineEditFavName->text(), ui->lineEditFullPath->text());
     }
 }
 

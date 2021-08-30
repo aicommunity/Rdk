@@ -613,9 +613,16 @@ void UDrawEngineImageWidget::classDescription(const std::string& class_name)
 {
     if(!class_name.empty())
     {
+        QMainWindow* classDescWindow = new QMainWindow(this);
+        classDescWindow->setAttribute(Qt::WA_DeleteOnClose);
         UClassDescriptionDisplay* display = new UClassDescriptionDisplay(class_name);
-        display->setAttribute(Qt::WA_DeleteOnClose);
+        classDescWindow->setCentralWidget(display);
+        classDescWindow->setWindowTitle("Class Description");
+
+        classDescWindow->resize(display->size());
         display->show();
+        classDescWindow->showNormal();
+        classDescWindow->activateWindow();
     }
 }
 

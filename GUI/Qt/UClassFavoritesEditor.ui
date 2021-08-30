@@ -98,11 +98,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="labelFullPath">
-       <property name="text">
-        <string>Undefined</string>
-       </property>
-      </widget>
+      <widget class="QLineEdit" name="lineEditFullPath"/>
      </item>
     </layout>
    </item>

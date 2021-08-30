@@ -209,7 +209,20 @@ QString UComponentsListWidget::getSelectedComponentLongName()
     if(!componentsTree->currentItem())
       return "";
     else
-      return componentsTree->currentItem()->data(0, Qt::UserRole).toString();
+    {
+      if(ui->tabWidgetComponentInfo->currentWidget() == ui->tabFavorites)
+      {
+        if(ui->treeWidgetFavorites->currentItem())
+            return ui->treeWidgetFavorites->currentItem()->data(1, Qt::UserRole).toString();
+        else
+            return "";
+      }
+      else
+      {
+        return componentsTree->currentItem()->data(0, Qt::UserRole).toString();
+      }
+    }
+
 }
 
 void UComponentsListWidget::openTabN(int n)
@@ -250,7 +263,11 @@ QString UComponentsListWidget::getSelectedPropertyName()
         return "";
       else
         return ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
-
+    case 4:
+      if(!ui->treeWidgetFavorites->currentItem())
+        return "";
+      else
+        return ui->treeWidgetFavorites->currentItem()->data(0, Qt::UserRole).toString();
     default:
       return "";
   }
@@ -505,6 +522,9 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             RDK::UEPtr<RDK::UContainer> child_cont;
             child_cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
 
+            favoriteItem->setData(1, Qt::UserRole, component_long_name);
+            favoriteItem->setData(0, Qt::UserRole, prop_name);
+
             if(child_cont)
             {
                 child_cont->GetPropertyValue(prop_name.toStdString(), buffer);
@@ -522,9 +542,9 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
                  const bool* val=reinterpret_cast<const bool*>(prop->GetMemoryArea());
                  if(*val)
-                  favoriteItem->setCheckState(1,Qt::Checked);
+                  favoriteItem->setCheckState(2,Qt::Checked);
                  else
-                  favoriteItem->setCheckState(1,Qt::Unchecked);
+                  favoriteItem->setCheckState(2,Qt::Unchecked);
                 }
             }
 
