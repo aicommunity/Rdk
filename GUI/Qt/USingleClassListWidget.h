@@ -25,8 +25,8 @@ public:
     explicit USingleClassListWidget(std::string class_name, QWidget *parent = 0, RDK::UApplication* app = NULL);
     virtual ~USingleClassListWidget();
 
-    /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
-    void AUpdateInterface();
+    /// Отрисовывает дерево компонентов
+    void reloadClassTree();
 
     /// запись файла настроек
     virtual void ASaveParameters();
@@ -57,9 +57,6 @@ signals:
 private:
     std::string ClassName;
 
-    /// Имя компонента, чьи проперти отображены
-    QString currentDrawPropertyComponentName;
-
     /// Выделенный компонент. Отличается от currentDrawPropertyComponentName, тем что переписывается
     /// при componentListItemSelectionChanged, затем сравнивается с currentDrawPropertyComponentName,
     /// таким образом избегается перерисовка при множественном выделении одного компонента.
@@ -67,17 +64,14 @@ private:
 
     QString selectedComponentLong;
 
-    // имена выбранных строк Property
+    /// имена выбранных строк Property
     QString selectedParameterName;
 
     /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
     QTreeWidget *componentsTree;
 
-    /// Компонент владелец отрисованной схемы
-    QString currentDrawComponentName;
-
     /// Скрытый рекурсивный метод заполнения списка компонентов
-    void addComponentSons(RDK::UEPtr<RDK::UContainer> cont, QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+    void addComponentSons(RDK::UEPtr<RDK::UContainer> cont, QString componentName, QTreeWidgetItem *treeWidgetFather);
 
     QString CalSelectedParameterPath();
 

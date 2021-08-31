@@ -40,6 +40,8 @@ USingleClassListWidget::USingleClassListWidget(std::string class_name, QWidget *
     //выделение элменетов propertys
     connect(ui->treeWidgetParameters, SIGNAL(itemSelectionChanged()),
             this, SLOT(parametersListSelectionChanged()));
+
+    reloadClassTree();
 }
 
 USingleClassListWidget::~USingleClassListWidget()
@@ -49,20 +51,19 @@ USingleClassListWidget::~USingleClassListWidget()
 
 void USingleClassListWidget::ChangeClass(std::string class_name)
 {
+     auto storage = RDK::GetStorageLock();
+     storage->FreeObjectsStorage();
      ClassName = class_name;
 
      ui->treeWidgetParameters->clear();
      componentsTree->clear();
 
      if(!ClassName.empty())
-        AUpdateInterface();
+        reloadClassTree();
 }
 
-void USingleClassListWidget::AUpdateInterface()
+void USingleClassListWidget::reloadClassTree()
 {
-    QString oldRootItem = currentDrawComponentName,
-            oldSelectedItem = selectedClass;
-
     // чтоб не бегали скролы на treeWidget'ах
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
@@ -78,13 +79,20 @@ void USingleClassListWidget::AUpdateInterface()
     rootItem->setExpanded(false);
 
     auto storage = RDK::GetStorageLock();
-    auto cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(ClassName));
 
-    addComponentSons(cont, "{CompName}", rootItem, oldRootItem, oldSelectedItem);
+    try
+    {
+        auto cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(ClassName));
 
-    storage->ReturnObject(cont);
-    storage->FreeObjectsStorageByClass(storage->FindClassId(ClassName));
+        addComponentSons(cont, "{CompName}", rootItem);
 
+        storage->ReturnObject(cont);
+    }
+    catch(RDK::UException& e)
+    {
+        return;
+    }
+    componentsTree->setCurrentItem(rootItem);
     // чтоб не бегали скролы на treeWidget'ах
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
@@ -148,9 +156,6 @@ void USingleClassListWidget::reloadPropertys()
 {
     ui->treeWidgetParameters->clear();
 
-    if(selectedClass.toStdString() == ClassName)
-        return;
-
     // чтоб не бегали скролы на treeWidget'ах
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value();
 
@@ -185,7 +190,6 @@ void USingleClassListWidget::reloadPropertys()
         UpdateInterfaceFlag=false;
 
         storage->ReturnObject(cont);
-        storage->FreeObjectsStorageByClass(storage->FindClassId(selectedClass.toStdString()));
     }
     catch (RDK::UException &exception)
     {
@@ -231,7 +235,7 @@ void USingleClassListWidget::setUpdateInterval(long value)
   UpdateInterval = value;
 }
 
-void USingleClassListWidget::addComponentSons(RDK::UEPtr<RDK::UContainer> cont, QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
+void USingleClassListWidget::addComponentSons(RDK::UEPtr<RDK::UContainer> cont, QString componentName, QTreeWidgetItem *treeWidgetFather)
 {
     std::vector<std::string> tempbuffer;
     cont->GetComponentsList(tempbuffer);
@@ -258,18 +262,8 @@ void USingleClassListWidget::addComponentSons(RDK::UEPtr<RDK::UContainer> cont, 
 
             RDK::UEPtr<RDK::UContainer> child = cont->GetComponent(str.toStdString());
             childItem->setData(1, Qt::UserRole, QString::fromStdString(RDK::GetStorageLock()->FindClassName(child->GetClass())));
-            if(oldRootItem == father+str)
-            {
-                componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
-            }
-            if(oldSelectedItem == father+str)
-            {
-                componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
-            }
 
-            addComponentSons(child, father+str, childItem, oldRootItem, oldSelectedItem);
+            addComponentSons(child, father+str, childItem);
         }
     }
 }
