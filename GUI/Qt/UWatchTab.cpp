@@ -49,8 +49,10 @@ void UWatchTab::AUpdateInterface()
         {
 
             std::list<double>::iterator buffIX, buffIY;
+            // Считывание данных в серию из DataReadera
             ReadSeriesDataSafe(graphIndex,serieIndex,XData,YData);
 
+            // Получение точек для серии
             std::list<double>::iterator itx, ity;
             points.resize(int(XData.size()));
 
@@ -63,6 +65,7 @@ void UWatchTab::AUpdateInterface()
                 i++;
             }
 
+            // Отрисовка текущих точек серии
             current_serie->replace(points);
 
             if(XData.empty())
@@ -200,7 +203,7 @@ void UWatchTab::deleteGraphs(int new_graph_count)
 
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
-
+    // Очистка лишних графиков (в функцию передается новое кол-во графиков)
     deleteGraphs(rowNumber*colNumber);
 
     tabColNumber=colNumber;

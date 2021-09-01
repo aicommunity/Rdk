@@ -22,14 +22,12 @@ USingleClassListWidget::USingleClassListWidget(std::string class_name, QWidget *
     componentsTree = new QTreeWidget(this);
     componentsTree->setHeaderHidden(true);
 
-    //ui->verticalLayoutTreeWidget->setMargin(0);
     ui->verticalLayout->addWidget(componentsTree);
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
 
     UpdateInterval = -1;
     setAccessibleName("USingleClassListWidget"); // имя класса для сериализации
-    //readSettings(app, settingsGroup);
 
     UpdateInterface(true);
 
@@ -37,10 +35,11 @@ USingleClassListWidget::USingleClassListWidget(std::string class_name, QWidget *
     connect(componentsTree, SIGNAL(itemSelectionChanged()),
             this, SLOT(componentListItemSelectionChanged()));
 
-    //выделение элменетов propertys
+    //выделение элементов propertys
     connect(ui->treeWidgetParameters, SIGNAL(itemSelectionChanged()),
             this, SLOT(parametersListSelectionChanged()));
 
+    // отрисовка дерева компонентов
     reloadClassTree();
 }
 
@@ -82,10 +81,11 @@ void USingleClassListWidget::reloadClassTree()
 
     try
     {
+        // берем экземпляр класса
         auto cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(ClassName));
-
+        // рекурсивно проходим по всем его внутренним компонентам
         addComponentSons(cont, "{CompName}", rootItem);
-
+        // возвращем экземпляр
         storage->ReturnObject(cont);
     }
     catch(RDK::UException& e)
@@ -93,6 +93,7 @@ void USingleClassListWidget::reloadClassTree()
         return;
     }
     componentsTree->setCurrentItem(rootItem);
+
     // чтоб не бегали скролы на treeWidget'ах
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
@@ -134,12 +135,6 @@ QString USingleClassListWidget::getSelectedComponentLongName()
       return componentsTree->currentItem()->data(0, Qt::UserRole).toString();
 }
 
-void USingleClassListWidget::setEnableTabN(int n, bool enable)
-{
-    if(n >= 0 && n < 4)
-      ui->tabWidgetComponentInfo->setTabEnabled(n, enable);
-}
-
 void USingleClassListWidget::componentListItemSelectionChanged()
 {
     QTreeWidgetItem * item = componentsTree->currentItem();
@@ -163,6 +158,7 @@ void USingleClassListWidget::reloadPropertys()
     {
         UpdateInterfaceFlag=true;
 
+        // Извлекаем экземпляр класса для отображения его свойств
         auto storage = RDK::GetStorageLock();
         RDK::UEPtr<RDK::UContainer> cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(selectedClass.toStdString()));
 
@@ -202,6 +198,7 @@ void USingleClassListWidget::reloadPropertys()
         Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 
+    // Выделяем первый элемент
     if(ui->treeWidgetParameters->topLevelItemCount())
     {
         ui->treeWidgetParameters->setCurrentItem(
@@ -253,14 +250,16 @@ void USingleClassListWidget::addComponentSons(RDK::UEPtr<RDK::UContainer> cont, 
 
         if(!componentName.isEmpty())
             father = componentName + ".";
-
+        // Проход по всем внутренним компонентам
         foreach(str, componentNames)
         {
             QTreeWidgetItem* childItem = new QTreeWidgetItem(treeWidgetFather);
             childItem->setText(0, str);
+            // в 0-ую колонку UserRole данных записываем длинное имя компонента
             childItem->setData(0, Qt::UserRole, father+str);
 
             RDK::UEPtr<RDK::UContainer> child = cont->GetComponent(str.toStdString());
+            // в 1-ую колонку UserRole данных записываем имя класса компонента
             childItem->setData(1, Qt::UserRole, QString::fromStdString(RDK::GetStorageLock()->FindClassName(child->GetClass())));
 
             addComponentSons(child, father+str, childItem);

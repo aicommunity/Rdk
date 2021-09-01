@@ -143,6 +143,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     series.last()->Jy = jy;
     series.last()->YShift = y_shift;
 
+    // Создание DataReadera в ядре для дальнейщего получения данных
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
     RDK::UControllerDataReader * data=env->RegisterDataReader(componentName.toStdString(),

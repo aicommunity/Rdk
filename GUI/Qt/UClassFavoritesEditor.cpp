@@ -9,10 +9,8 @@ UClassFavoritesEditor::UClassFavoritesEditor(std::string class_name, QWidget *pa
 {
     ui->setupUi(this);
 
+    // Отображения дерева компонентов одного класса со свойствами
     componentList = new USingleClassListWidget(ClassName, this, application);
-    componentList->setEnableTabN(1, false);
-    componentList->setEnableTabN(2, false);
-    componentList->setEnableTabN(3, false);
 
     connect(componentList, &USingleClassListWidget::parameterChanged, ui->lineEditFullPath, &QLineEdit::setText);
 
@@ -33,13 +31,16 @@ void UClassFavoritesEditor::ChangeClass(std::string class_name)
 {
     ClassName = class_name;
     ui->labelClassName->setText(QString::fromStdString(ClassName));
+
     ui->lineEditFavName->clear();
     ui->lineEditFullPath->clear();
+
     componentList->ChangeClass(class_name);
 }
 
 void UClassFavoritesEditor::CreateFavorite()
 {
+    // Создание нового Favorite, если строковые данные не пусты
     if(ui->lineEditFullPath->text().isEmpty() && ui->lineEditFavName->text().isEmpty())
     {
        return;

@@ -9,7 +9,7 @@
 namespace Ui {
 class UClassFavoritesEditor;
 }
-
+/// Класс для создания Favorite для описания определенного класса
 class UClassFavoritesEditor : public UVisualControllerWidget
 {
     Q_OBJECT
@@ -26,6 +26,7 @@ public:
 
 
 signals:
+    // Сигнал о создании нового Favorite
     void CreateNewFavorite(QString name, QString path);
 
 private slots:

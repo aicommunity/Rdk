@@ -70,6 +70,7 @@ public:
     void setAxisXmax(double value);
     void setAxisYmin(double value);
     void setAxisYmax(double value);
+    // Функция для высталвения диапазона времени для считывания и отображения данных
     void updateTimeIntervals(double value);
 
     void setSerieName(int serieIndex, QString name);

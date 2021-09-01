@@ -61,10 +61,12 @@ public:
 
 
 private:
+    // Создание/удаление графиков
     void createGraph();
-    void createSplitterGrid(int rowNumber);
     void deleteGraph(int index);
     void deleteGraphs(int new_graph_count);
+
+    void createSplitterGrid(int rowNumber);
 
     int tabColNumber=0;
     int tabRowNumber=0;

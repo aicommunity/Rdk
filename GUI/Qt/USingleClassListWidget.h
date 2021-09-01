@@ -13,10 +13,9 @@ namespace Ui {
 class USingleClassListWidget;
 }
 
-/// USingleClassListWidget class - виджет отображения класса и его сложенных компонентов
+/// USingleClassListWidget class - виджет отображения класса и его вложенных компонентов
 /// Урезанная версия UComponentsListWidget
 /// Древовидный список компонентов с учетом вложенности, в порядке расчета
-/// Содержит сигналы адресованные к схеме сети, но не содержит указателя на схему, сигналы связываются в UGEngineControllWidget.
 class USingleClassListWidget : public UVisualControllerWidget
 {
     Q_OBJECT
@@ -25,27 +24,26 @@ public:
     explicit USingleClassListWidget(std::string class_name, QWidget *parent = 0, RDK::UApplication* app = NULL);
     virtual ~USingleClassListWidget();
 
-    /// Отрисовывает дерево компонентов
-    void reloadClassTree();
-
     /// запись файла настроек
     virtual void ASaveParameters();
     /// считывание файла настроек
     virtual void ALoadParameters();
 
-
+    /// Изменение класса для отображения
     void ChangeClass(std::string class_name);
 
     /// Возвращает полное имя выбранного компонента
     QString getSelectedComponentLongName();
 
-    /// устанавливает доступность вкладок
-    void setEnableTabN(int n, bool enable);
-
 public slots:
     void componentListItemSelectionChanged();
 
     void parametersListSelectionChanged();
+
+    /// Обновление отображаемого дерева компонентов
+    void reloadClassTree();
+
+    /// Обновления отображаемыех свойств
     void reloadPropertys();
 
     /// Внешняя установка UpdateInterval, для уменьшения нагрузки на ядро
@@ -55,24 +53,25 @@ signals:
     void parameterChanged(QString path);
 
 private:
+    /// Название класса
     std::string ClassName;
 
-    /// Выделенный компонент. Отличается от currentDrawPropertyComponentName, тем что переписывается
-    /// при componentListItemSelectionChanged, затем сравнивается с currentDrawPropertyComponentName,
-    /// таким образом избегается перерисовка при множественном выделении одного компонента.
+    /// Имя выделенного КЛАССА
     QString selectedClass;
 
+    /// Длинное имя выделеннного КОМПОНЕНТА относительно базового класса
     QString selectedComponentLong;
 
-    /// имена выбранных строк Property
+    /// имена выбранной строки Property
     QString selectedParameterName;
 
-    /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
+    /// Дерево компонентов
     QTreeWidget *componentsTree;
 
     /// Скрытый рекурсивный метод заполнения списка компонентов
     void addComponentSons(RDK::UEPtr<RDK::UContainer> cont, QString componentName, QTreeWidgetItem *treeWidgetFather);
 
+    /// Расчет текущего полного пути для выбранного компонента
     QString CalSelectedParameterPath();
 
     Ui::USingleClassListWidget *ui;

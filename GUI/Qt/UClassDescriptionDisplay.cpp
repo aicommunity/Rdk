@@ -24,9 +24,8 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
     ui->treeWidgetFavorites->addAction(createNewFavorite);
     ui->treeWidgetFavorites->addAction(deleteFavorite);
 
-    connect(createNewFavorite, SIGNAL(triggered()), this, SLOT(createNewFavoriteSlot()));
+    connect(createNewFavorite, SIGNAL(triggered()), this, SLOT(createNewFavoriteEditorSlot()));
     connect(deleteFavorite,    SIGNAL(triggered()), this, SLOT(deleteFavoriteSlot()));
-
 
     ui->treeWidgetFavorites->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
@@ -238,7 +237,7 @@ void UClassDescriptionDisplay::UpdateDataSelectionType(int type)
     }
 }
 
-void UClassDescriptionDisplay::createNewFavoriteSlot()
+void UClassDescriptionDisplay::createNewFavoriteEditorSlot()
 {
     if(clFavEditor != NULL)
     {

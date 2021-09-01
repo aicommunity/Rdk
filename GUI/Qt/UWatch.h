@@ -69,6 +69,7 @@ private slots:
 
 
 private:
+    // Список табов с графиками
     QVector <UWatchTab*> tab;
 
     void createTab();
