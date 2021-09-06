@@ -81,14 +81,18 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
 
 /// ¬озвращает врем€ в виде пон€тной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
 /// отображает только те элементы времени, которые необходимы
-std::string get_text_time_from_seconds(double time_data, char date_sep, char time_sep)
+std::string get_text_time_from_seconds(double time_data, char date_sep, char time_sep, bool is_full_time)
 {
  std::string result;
 
  int secs(0),mins(0),hours(0),days(0),mons(0),years(0),msecs(0);
  if(time_data<1e-6)
-  return "0:000s";
-
+ {
+  if(is_full_time)
+      return "00:00:00.000";
+  else
+   return "00.000";
+ }
  years=int(time_data/(365*86400.0));
  time_data-=years*(365*86400.0);
  mons=int(time_data/(30*86400.0));
@@ -115,14 +119,13 @@ std::string get_text_time_from_seconds(double time_data, char date_sep, char tim
  if(!result.empty())
   result+=" ";
 
- if(days || mons || years || hours)
+ if(is_full_time || (days || mons || years || hours))
   result+=sntoa(hours,2)+time_sep;
 
- if(days || mons || years || mins || hours)
+ if(is_full_time || (days || mons || years || mins || hours))
   result+=sntoa(mins,2)+time_sep;
 
- if(days || mons || years || secs || mins || hours)
-  result+=sntoa(secs,2)+"."+sntoa(msecs,3);
+ result+=sntoa(secs,2)+"."+sntoa(msecs,3);
  return result;
 }
 

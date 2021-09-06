@@ -681,12 +681,9 @@ std::string UChannelProfiler::CalcRtTimeText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  UIntegralPerfomanceResults integral_perf=IntegralPerfomanceResults;
- string str_model_time=RDK::get_text_time_from_seconds(integral_perf.ModelTime);
- double diff=integral_perf.RealTime-integral_perf.ModelTime;
- string str_diff_time=RDK::get_text_time_from_seconds(diff);
- string result=string("Time: ")+str_model_time.c_str();
- if(diff>0)
-  result+=string(" (")+str_diff_time+")";
+ string result=string("MT: ")+RDK::get_text_time_from_seconds(integral_perf.ModelTime,'.', ':',true);
+ result+=string(" RT: ")+RDK::get_text_time_from_seconds(integral_perf.RealTime,'.', ':',true);
+
  return result;
 }
 
@@ -695,7 +692,7 @@ std::string UChannelProfiler::CalcNormalTimeText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  UIntegralPerfomanceResults integral_perf=IntegralPerfomanceResults;
- string str_real_time=RDK::get_text_time_from_seconds(integral_perf.RealTime);
+ string str_real_time=RDK::get_text_time_from_seconds(integral_perf.RealTime,'.', ':',true);
  return string("Time: ")+str_real_time;
 }
 
@@ -705,7 +702,7 @@ std::string UChannelProfiler::CalcRtPerfomanceText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  UIntegralPerfomanceResults integral_perf=IntegralPerfomanceResults;
- return string("RT: ")+sntoa(integral_perf.RtPerfomance,3)+string("=")+sntoa(integral_perf.RtModelDuration,3)+string("/")+sntoa(integral_perf.RtCalcDuration,3);
+ return string("RT Coeff: ")+sntoa(integral_perf.RtPerfomance,3)+string("=")+sntoa(integral_perf.RtModelDuration,3)+string("/")+sntoa(integral_perf.RtCalcDuration,3);
 }
 
 /// Возвращает строку с текущей длительностью шага расчета для нормального режима
