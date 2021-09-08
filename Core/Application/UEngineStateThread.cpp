@@ -412,7 +412,7 @@ void UEngineStateThread::ProcessLog(void)
    }
    MLog_ClearReadLog(RDK_GLOB_MESSAGE);
    int calc_stop_lev=EngineControl->GetApplication()->GetCalcStopLogLevel();
-   if(calc_stop_lev>=0 && global_error_level <= calc_stop_lev && EngineControl->GetApplication()->IsChannelStarted(0)) // принудительная остановка расчета
+   if(global_error_level>=0 && calc_stop_lev>=0 && global_error_level <= calc_stop_lev && EngineControl->GetApplication()->IsChannelStarted(0)) // принудительная остановка расчета
    {
     EngineControl->PauseChannel(-1);
     MLog_LogMessageEx(RDK_GLOB_MESSAGE,RDK_EX_INFO,"Calculation process stopped by CalcStopLogLevel signal",0);
