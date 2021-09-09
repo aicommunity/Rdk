@@ -368,6 +368,7 @@ void UGEngineControllWidget::actionCreateConfig()
    return;
  }
 
+ createConfigurationWizardWidget->restart();
  createConfigurationWizardWidget->show();
  if(application->GetProjectOpenFlag())
   this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + application->GetProjectPath().c_str()+application->GetProjectFileName().c_str()+"]");
@@ -603,6 +604,7 @@ void UGEngineControllWidget::actionExit()
 
 void UGEngineControllWidget::actionConfigOptions()
 {
+ createConfigurationWizardWidget->restart();
  createConfigurationWizardWidget->show();
 }
 

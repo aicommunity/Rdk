@@ -121,7 +121,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  if(application->GetProjectOpenFlag())
  {
   ProjectConfig=application->GetProjectConfig();
-  ui->lineEditProjectDirectory->setText((application->GetProjectPath()+application->GetProjectFileName()).c_str());
+  ui->lineEditProjectDirectory->setText(codec->toUnicode((application->GetProjectPath()+application->GetProjectFileName()).c_str()));
 
  }
  else
@@ -134,7 +134,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  // обновляем интерфейс в соответствии с ProjectConfig
  ui->lineEditProjectName->setText(codec->toUnicode(ProjectConfig.ProjectName.c_str()));
 
- ui->plainTextEditProjectDescription->setPlainText(ProjectConfig.ProjectDescription.c_str());
+ ui->plainTextEditProjectDescription->setPlainText(codec->toUnicode(ProjectConfig.ProjectDescription.c_str()));
  ui->checkBoxAutosaveProject->setChecked(ProjectConfig.ProjectAutoSaveFlag);
  ui->checkBoxAutosaveStates->setChecked(ProjectConfig.ProjectAutoSaveStatesFlag);
  ui->checkBoxLogEvents->setChecked(ProjectConfig.EventsLogFlag);
