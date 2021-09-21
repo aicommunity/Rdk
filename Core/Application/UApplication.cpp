@@ -1626,8 +1626,8 @@ bool UApplication::SaveProject(void)
  ProjectXml.Create("Project");
  Project->WriteToXml(ProjectXml);
 
- HistoryXml.LoadFromFile(ProjectPath+"history.xml", "History");
- Project->FixSavePoint(HistoryXml);
+ HistoryXml.LoadFromFile(ProjectPath+"History.xml", "History");
+ FixSavePoint(HistoryXml);
 try
 {
  InterfaceXml.Create(std::string("Interfaces"));
@@ -1706,7 +1706,7 @@ try
   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been saved.").c_str());
  }
 
- is_saved=HistoryXml.SaveToFile(ProjectPath+"history.xml");
+ is_saved=HistoryXml.SaveToFile(ProjectPath+"History.xml");
 
  if(!is_saved)
   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save history file: ")+ProjectFileName).c_str());
@@ -2416,6 +2416,33 @@ bool UApplication::ChangeUseNewProjectFilesStructure(bool value)
 // --------------------------
 // Вспомогательные методы управления счетом
 // --------------------------
+/// Сохраняет точки в истории изменений конфигурации
+bool UApplication::FixSavePoint(USerStorageXML &xml)
+{
+    xml.SelectNodeRoot("History");
+
+    int size = 0;
+
+    std::string size_str = xml.GetNodeAttribute("Size");
+    if(!size_str.empty())
+        size = RDK::atoi(size_str);
+
+    size++;
+
+    xml.SetNodeAttribute("Size",RDK::sntoa(size));
+
+    xml.SelectNodeForce("save_point_"+RDK::sntoa(size));
+    xml.SetNodeAttribute("UserName",UserName);
+    xml.SetNodeAttribute("UserId",  RDK::sntoa(UserId));
+
+    time_t time_data;
+    time(&time_data);
+    xml.SetNodeAttribute("Time",  RDK::get_text_time(time_data, '.', '_'));
+
+    xml.SelectRoot();
+    return true;
+}
+
 /// Включает и выключает тестовый режим
 void UApplication::ChangeTestModeState(bool state)
 {
