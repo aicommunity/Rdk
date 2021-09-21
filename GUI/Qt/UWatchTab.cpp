@@ -47,7 +47,6 @@ void UWatchTab::AUpdateInterface()
         double x_max=0.0;
         for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
-
             std::list<double>::iterator buffIX, buffIY;
             // Считывание данных в серию из DataReadera
             ReadSeriesDataSafe(graphIndex,serieIndex,XData,YData);
@@ -68,20 +67,45 @@ void UWatchTab::AUpdateInterface()
             // Отрисовка текущих точек серии
             current_serie->replace(points);
 
-            if(XData.empty())
+            if(!XData.empty())
+//            {
+//                if(x_min>graph[graphIndex]->getAxisXmin())
+//                 x_min=graph[graphIndex]->getAxisXmin();
+
+//                if(x_max < graph[graphIndex]->getAxisXmax())
+//                 x_max = graph[graphIndex]->getAxisXmax();
+//            }
+//            else
             {
-                x_min = 0;
-                x_max = graph[graphIndex]->axisXrange;
-            }
-            else
-            {
-                x_min = XData.front();
-                x_max = graph[graphIndex]->axisXrange + x_min;
-                if(XData.back()-XData.front() > graph[graphIndex]->axisXrange)
-                    graph[graphIndex]->axisXrange = XData.back()-XData.front();
+                if(x_min == 0)
+                 x_min= XData.front();
+                if(x_min > XData.front())
+                 x_min = XData.front();
+                if(x_max < XData.back())
+                 x_max = XData.back();
+//                if(XData.back()-XData.front() > graph[graphIndex]->axisXrange)
+//                    graph[graphIndex]->axisXrange = XData.back()-XData.front();
             }
         }
-        if(x_max-x_min > 0.001)
+        if(!graph[graphIndex]->checkZoomed())
+        {
+         if(x_max-x_min<graph[graphIndex]->getAxisXrange())
+          x_max=x_min+graph[graphIndex]->getAxisXrange();
+
+         if(graph[graphIndex]->getIsAxisXtrackable())
+         {
+             graph[graphIndex]->setAxisXmax(x_max);
+             graph[graphIndex]->setAxisXmin(x_min);
+             graph[graphIndex]->fixInitialAxesState();
+         }
+         else
+         {
+            graph[graphIndex]->setAxisXmax(x_max);
+            graph[graphIndex]->setAxisXmin(x_min);
+            graph[graphIndex]->fixInitialAxesState();
+         }
+        }
+     /*   if(x_max-x_min > 0.001)
         {
             graph[graphIndex]->setAxisXmax(x_max);
             graph[graphIndex]->setAxisXmin(x_min);
@@ -91,7 +115,7 @@ void UWatchTab::AUpdateInterface()
             // Если есть серии
             if(graph[graphIndex]->countSeries())
                 graph[graphIndex]->updateTimeIntervals(1);
-        }
+        }*/
         graph[graphIndex]->chartView->setUpdatesEnabled(true);
     }
 }
@@ -357,6 +381,7 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
         xml.WriteFloat  ("AxisXmax",        graph[graphIndex]->getAxisXmax());
         xml.WriteFloat  ("AxisYmin",        graph[graphIndex]->getAxisYmin());
         xml.WriteFloat  ("AxisYmax",        graph[graphIndex]->getAxisYmax());
+        xml.WriteFloat  ("AxisXrange",      graph[graphIndex]->getAxisXrange());
 
         xml.WriteInteger("SeriesCount",     graph[graphIndex]->countSeries());
 
@@ -405,9 +430,10 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
         graph[graphIndex]->setAxisYmin   (xml.ReadFloat  ("AxisYmin",    0));
         graph[graphIndex]->setAxisYmax   (xml.ReadFloat  ("AxisYmax",    0));
 
-        graph[graphIndex]->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
+//        graph[graphIndex]->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
         graph[graphIndex]->setAxisXmin   (0.0);
-        graph[graphIndex]->setAxisXmax   (graph[graphIndex]->axisXrange);
+        graph[graphIndex]->setAxisXmax   (xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0));
+        graph[graphIndex]->setAxisXrange (xml.ReadFloat("AxisXrange",   5));
         graph[graphIndex]->fixInitialAxesState();
         int series_count = graph[graphIndex]->countSeries();
         for(int i = 0; i < series_count; i++)
@@ -425,7 +451,7 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
             int jy = xml.ReadInteger("SerieJy", -1);
             double y_shift = xml.ReadFloat("SerieYShift", 0.0);
 
-            double time_interval = graph[graphIndex]->getAxisXmax() - graph[graphIndex]->getAxisXmin();
+            double time_interval = graph[graphIndex]->getAxisXrange();
             graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval, y_shift);
             graph[graphIndex]->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
             graph[graphIndex]->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));

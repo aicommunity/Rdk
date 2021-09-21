@@ -28,7 +28,7 @@ protected:
 
 private:
 signals:
-    void updateChartAxes(double x_range, double y_min, double y_max);
+    void updateChartAxes(double x_min, double x_max, double y_min, double y_max);
 
 };
 

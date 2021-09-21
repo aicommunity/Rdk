@@ -39,14 +39,14 @@ void UWatchChartView::mouseReleaseEvent(QMouseEvent *event)
         start = chart()->mapToValue(origin);
         finish = chart()->mapToValue(event->pos());
 
-        double x_range = finish.x() - start.x();
-
+        double x_min=start.x();
+        double x_max=finish.x();
         double y_min = finish.y();
         double y_max = start.y();
 
         rubberBand->hide();
 
-        emit updateChartAxes(x_range, y_min, y_max);
+        emit updateChartAxes(x_min, x_max, y_min, y_max);
     }
 }
 

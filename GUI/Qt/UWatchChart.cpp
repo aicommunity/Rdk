@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "UWatchTab.h"
+#include "UVisualControllerWidget.h"
 
 UWatchChart::UWatchChart(QWidget *parent) :
     QWidget(parent),
@@ -33,7 +34,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
     axisXrange = 5;
-    axisX->setRange(0, axisXrange);
+    axisX->setRange(0, 5);
     axisY->setRange(-5, 5);
 
     //устанавливаем оси
@@ -48,9 +49,12 @@ UWatchChart::UWatchChart(QWidget *parent) :
 
     chartView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(chartView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
-    connect(chartView, SIGNAL(updateChartAxes(double, double, double)), this, SLOT(updateAxes(double, double, double)));
+    connect(chartView, SIGNAL(updateChartAxes(double, double, double, double)), this, SLOT(updateAxes(double, double, double, double)));
+
 
     WatchTab = dynamic_cast<UWatchTab*>(parent);
+
+    connect(this, SIGNAL(UpdateTabGuiSignal(bool)), parent, SLOT(UpdateInterface(bool)));
 
     fixInitialAxesState();
 }
@@ -111,14 +115,27 @@ void UWatchChart::setSerieYshift(int serieIndex, int y_shift)
 
 void UWatchChart::fixInitialAxesState()
 {
-    InitialAxesState = {double(axisXrange), getAxisYmin(), getAxisYmax()};
+    InitialAxesState = {getAxisXmin(), getAxisXmax(), getAxisYmin(), getAxisYmax()};
 }
 
 void UWatchChart::restoreInitialAxesState()
 {
-    updateTimeIntervals(InitialAxesState[0]);
-    setAxisYmin(InitialAxesState[1]);
-    setAxisYmax(InitialAxesState[2]);
+//    updateTimeIntervals(InitialAxesState[0]);
+    setAxisXmin(InitialAxesState[0]);
+    setAxisXmax(InitialAxesState[1]);
+    setAxisYmin(InitialAxesState[2]);
+    setAxisYmax(InitialAxesState[3]);
+}
+
+bool UWatchChart::checkZoomed(void)
+{
+ if(InitialAxesState[0] != getAxisXmin() ||
+    InitialAxesState[1] != getAxisXmax() ||
+    InitialAxesState[2] != getAxisYmin() ||
+    InitialAxesState[3] != getAxisYmax())
+  return true;
+
+ return false;
 }
 
 void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName,
@@ -155,6 +172,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
         series.last()->data_reader = data;
         data->SetTimeInterval(time_interval);
     }
+    emit UpdateTabGuiSignal(false);
 }
 
 void UWatchChart::deleteSerie(int serieIndex)
@@ -168,12 +186,14 @@ void UWatchChart::deleteSerie(int serieIndex)
 
     delete series[serieIndex];
     series.remove(serieIndex);
+    emit UpdateTabGuiSignal(false);
 
 }
 
 void UWatchChart::addDataToSerie(int serieIndex, double x, double y)
 {
     series[serieIndex]->append(x, y);
+    emit UpdateTabGuiSignal(false);
 }
 
 int UWatchChart::countSeries()
@@ -184,11 +204,13 @@ int UWatchChart::countSeries()
 void UWatchChart::setAxisXname(QString name)
 {
     axisX->setTitleText(name);
+    emit UpdateTabGuiSignal(false);
 }
 
 void UWatchChart::setAxisYname(QString name)
 {
     axisY->setTitleText(name);
+    emit UpdateTabGuiSignal(false);
 }
 
 void UWatchChart::setAxisXmin(double value)
@@ -201,10 +223,15 @@ void UWatchChart::setAxisXmax(double value)
     axisX->setMax(value);
 }
 
+bool UWatchChart::getIsAxisXtrackable(void) const
+{
+ return isAxisXtrackable;
+}
+
 void UWatchChart::updateTimeIntervals(double value)
 {
-    axisXrange = value;
-    setAxisXmax(getAxisXmin()+axisXrange);
+    setAxisXrange(value);
+ //   setAxisXmax(getAxisXmin()+value);
     for(int i = 0; i < series.size(); i++)
     {
         series[i]->data_reader->SetTimeInterval(value);
@@ -221,25 +248,29 @@ void UWatchChart::setAxisYmax(double value)
     axisY->setMax(value);
 }
 
-void UWatchChart::updateAxes(double x_range, double y_min, double y_max)
+void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_max)
 {
     // Если зум в зоне не чувствительности:
     // изменение по любой из осей меньше 10% от текущего диапазона
-    if(std::abs(x_range) < 0.1*axisXrange || std::abs(y_max-y_min) < 0.1*(getAxisYmax()-getAxisYmin()))
+    if(std::abs(x_max-x_min) < 0.02*(getAxisXmax()-getAxisXmin()) || std::abs(y_max-y_min) < 0.02*(getAxisYmax()-getAxisYmin()))
         return;
 
     // Если зум обратный, то восстанавливаем начальные значения
-    if(x_range < 0 || y_max<y_min)
+    if(x_max < x_min || y_max < y_min)
     {
         restoreInitialAxesState();
     }
     // В другом случае - зум
     else
     {
-        updateTimeIntervals(x_range);
+        //updateTimeIntervals(x_range);
+        setAxisXmin(x_min);
+        setAxisXmax(x_max);
         setAxisYmin(y_min);
         setAxisYmax(y_max);
+
     }
+    emit UpdateTabGuiSignal(false);
 }
 
 
@@ -308,6 +339,27 @@ double UWatchChart::getAxisYmax()
     return axisY->max();
 }
 
+double UWatchChart::getAxisXrange(void) const
+{
+ return axisXrange;
+}
+
+void UWatchChart::setAxisXrange(double value)
+{
+ axisXrange=value;
+}
+
+double  UWatchChart::getInitialAxisYmin()
+{
+ return InitialAxesState[2];
+}
+
+double  UWatchChart::getInitialAxisYmax()
+{
+ return InitialAxesState[3];
+}
+
+
 void UWatchChart::wheelEvent(QWheelEvent *event)
 {
     //обработка прокрутки колеса мыши
@@ -337,6 +389,7 @@ void UWatchChart::wheelEvent(QWheelEvent *event)
         else
            axisY->setRange(axisY->min()-0.001*axisY->min(), axisY->max()-0.001*axisY->max());
     }
+    emit UpdateTabGuiSignal(false);
 }
 
 //обработка кнопки ctrl
@@ -446,6 +499,7 @@ void UWatchChart::saveToJpegSlot()
  void UWatchChart::restoreAxes()
  {
      restoreInitialAxesState();
+     emit UpdateTabGuiSignal(false);
  }
 
 

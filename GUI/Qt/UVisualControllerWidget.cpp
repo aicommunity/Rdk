@@ -190,6 +190,8 @@ void UVisualControllerWidget::AAfterCalculate(void)
 // Обновление интерфейса
 void UVisualControllerWidget::UpdateInterface(bool force_update)
 {
+ if(UpdateInterfaceFlag)
+  return;
     if(UpdateInterval.Get() == 0 && !force_update) return;
     unsigned long long current_time=RDK::GetCurrentStartupTime();
     try
@@ -478,5 +480,4 @@ void UVisualControllerWidget::unInit()
 {
 
 }
-
 // -----------------------------

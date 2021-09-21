@@ -50,6 +50,8 @@ public:
     double  getAxisXmax();
     double  getAxisYmin();
     double  getAxisYmax();
+    double  getInitialAxisYmin();
+    double  getInitialAxisYmax();
 
     UWatchSerie *getSerie(int index); //
     QString      getSerieName(int serieIndex);
@@ -70,6 +72,10 @@ public:
     void setAxisXmax(double value);
     void setAxisYmin(double value);
     void setAxisYmax(double value);
+    double getAxisXrange(void) const;
+    void setAxisXrange(double value);
+    bool getIsAxisXtrackable(void) const;
+
     // Функция для высталвения диапазона времени для считывания и отображения данных
     void updateTimeIntervals(double value);
 
@@ -82,6 +88,7 @@ public:
 
     void fixInitialAxesState();
     void restoreInitialAxesState();
+    bool checkZoomed(void);
 
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
@@ -147,9 +154,10 @@ private slots:
     void chartOptionSlot();
     void saveToJpegSlot();
     void restoreAxes();
-    void updateAxes(double x_range, double y_min, double y_max);
+    void updateAxes(double x_min, double x_max, double y_min, double y_max);
 signals:
     void addSerieSignal(int someIndex);
+    void UpdateTabGuiSignal(bool force_update);
 };
 
 #endif // UWATCHCHART_H

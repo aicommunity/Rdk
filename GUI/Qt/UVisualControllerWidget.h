@@ -95,7 +95,6 @@ protected:
     /*! Вызывает метод AUpdateInterface() в блоке обработки исключений.
      Если force_update == true, то интерфейс обновляется
      вне зависимости от UpdateInterval*/
-    virtual void UpdateInterface(bool force_update=false);
     virtual void AUpdateInterface(void);
 
     /// Возврат интерфейса в исходное состояние
@@ -144,6 +143,7 @@ protected:
     virtual unsigned long long GetUpdateTime(void);
 
 public slots:
+    virtual void UpdateInterface(bool force_update=false);
     virtual void unInit();
 
 signals:

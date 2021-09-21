@@ -81,9 +81,9 @@ void UWatchChartOption::updateParameters(int chartIndex)
     if(ui->axisXtrackCB->isChecked()) ui->axisXrangeSB->setEnabled(true);
     else ui->axisXrangeSB->setDisabled(true);
 
-    ui->axisYmaxSB->setValue(WatchTab->getChart(chartIndex)->getAxisYmax());
-    ui->axisYminSB->setValue(WatchTab->getChart(chartIndex)->getAxisYmin());
-    ui->axisXrangeSB->setValue(WatchTab->getChart(chartIndex)->getAxisXmax() - WatchTab->getChart(chartIndex)->getAxisXmin());
+    ui->axisYmaxSB->setValue(WatchTab->getChart(chartIndex)->getInitialAxisYmax());
+    ui->axisYminSB->setValue(WatchTab->getChart(chartIndex)->getInitialAxisYmin());
+    ui->axisXrangeSB->setValue(WatchTab->getChart(chartIndex)->getAxisXrange());
 }
 
 void UWatchChartOption::createLayout()
@@ -145,6 +145,7 @@ void UWatchChartOption::saveParameters()
 
    WatchTab->getChart(index)->setAxisYmax(ui->axisYmaxSB->value());
    WatchTab->getChart(index)->setAxisYmin(ui->axisYminSB->value());
+   WatchTab->getChart(index)->setAxisXrange(ui->axisXrangeSB->value());
    WatchTab->getChart(index)->updateTimeIntervals(ui->axisXrangeSB->value());
    WatchTab->getChart(index)->fixInitialAxesState();
 
