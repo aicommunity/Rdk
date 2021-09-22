@@ -267,7 +267,7 @@ std::string extract_file_name(const std::string& full_name)
 {
 	 size_t pos = full_name.find_last_of("\\/");
 	 return (std::string::npos == pos)
-		 ? std::string("")
+           ? full_name
 		 : full_name.substr(pos+1);
 }
 

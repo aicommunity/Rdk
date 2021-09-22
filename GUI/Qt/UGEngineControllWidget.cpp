@@ -26,8 +26,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
 
-    QString win_title = "Neuro Modeler "+QCoreApplication::applicationVersion() +"[ ";
-
+    QString win_title = "Neuro Modeler "+QCoreApplication::applicationVersion();
+/*
     if(app->GetUserName().empty() && app->GetUserId()<0)
     {
         win_title += "User unknown";
@@ -41,7 +41,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
             win_title += "Id: " + QString::number(app->GetUserId()) + " ";
     }
     win_title += "]";
-
+*/
     this->setWindowTitle(win_title);
 
     application = app;
@@ -306,8 +306,8 @@ void UGEngineControllWidget::actionLoadConfig()
 
 
       application->OpenProject(fileName.toLocal8Bit().constData());
-
-      this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + fileName+"]");
+      UpdateInterface();
+ //     this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + fileName+"]");
 
       /*QStringList list = configFileName.split("/");
       list.pop_back();*/
@@ -330,8 +330,8 @@ void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
  try
  {
   application->OpenProject(config_path.toLocal8Bit().constData());
-
-  this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + config_path+"]");
+  UpdateInterface();
+ // this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + config_path+"]");
 
   /*QStringList list = configFileName.split("/");
   list.pop_back();*/
@@ -370,8 +370,9 @@ void UGEngineControllWidget::actionCreateConfig()
 
  createConfigurationWizardWidget->restart();
  createConfigurationWizardWidget->show();
- if(application->GetProjectOpenFlag())
-  this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + application->GetProjectPath().c_str()+application->GetProjectFileName().c_str()+"]");
+ UpdateInterface();
+// if(application->GetProjectOpenFlag())
+//  this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + application->GetProjectPath().c_str()+application->GetProjectFileName().c_str()+"]");
 }
 
 void UGEngineControllWidget::actionCreateSimple()
@@ -427,7 +428,7 @@ void UGEngineControllWidget::actionCreateSimple()
 
     application->CreateProject(file_name, classname);
 
-    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + file_name.c_str()+"]");
+//    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + file_name.c_str()+"]");
     RDK::UIVisualControllerStorage::UpdateInterface();
   }
   catch(RDK::UException& e)
@@ -451,7 +452,7 @@ void UGEngineControllWidget::actionCloseConfig()
  {
   application->PauseChannel(-1);
   application->CloseProject();
-  this->setWindowTitle("Neuro Modeler"+QCoreApplication::applicationVersion());
+//  this->setWindowTitle("Neuro Modeler"+QCoreApplication::applicationVersion());
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
  catch(RDK::UException& e)
@@ -493,7 +494,7 @@ void UGEngineControllWidget::actionCopyConfig()
   std::string open_file_name=res_path.toLocal8Bit().constData();
   open_file_name+=project_file_name;
   application->OpenProject(open_file_name);
-  this->setWindowTitle(QString("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: ") + open_file_name.c_str()+"]");
+//  this->setWindowTitle(QString("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: ") + open_file_name.c_str()+"]");
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
 
@@ -1113,13 +1114,24 @@ void UGEngineControllWidget::updateChannelsVisibility()
 // Обновление интерфейса
 void UGEngineControllWidget::AUpdateInterface(void)
 {
-
+ QString caption_line="Neuro Modeler "+QCoreApplication::applicationVersion();
+ if(!application->GetUserName().empty())
+ {
+  caption_line=caption_line+" ["+application->GetUserName().c_str();
+  if(application->GetUserId()>=0)
+   caption_line=caption_line+":"+RDK::sntoa(application->GetUserId()).c_str();
+  caption_line=caption_line+="]";
+ }
+ if(application->GetProjectOpenFlag())
+  caption_line=caption_line+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]";
+  this->setWindowTitle(caption_line);
 }
 
 // Возврат интерфейса в исходное состояние
 void UGEngineControllWidget::AClearInterface(void)
 {
-    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
+ AUpdateInterface();
+//    this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion());
 
     //Очистка Watches окон и Images окон
     int count=int(watchesVector.size());
@@ -1151,7 +1163,8 @@ void UGEngineControllWidget::AClearInterface(void)
 // Метод, вызываемый после загрузки проекта
 void UGEngineControllWidget::AAfterLoadProject(void)
 {
- this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]");
+ UpdateInterface();
+// this->setWindowTitle("Neuro Modeler "+QCoreApplication::applicationVersion()+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]");
  if(propertyChanger->componentsList->GetUpdateInterval()>0)
   statusPanel->ChangeAutoupdateProperties(true);
  else

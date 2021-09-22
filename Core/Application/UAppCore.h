@@ -166,9 +166,6 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  autoexecLastProjectFlag = RDK::atoi(projectIniFile("General", "AutoexecLastProjectFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
- userName             = projectIniFile("General", "UserName", "");
- userId               = RDK::atoi(projectIniFile("General", "UserId", "-1"));
-
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
@@ -253,12 +250,21 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(15);
 
- if(!userName.empty())
-  application.SetUserName(userName);
+ // Инициализация из стартового ini файла
+ RDK::UIniFile<char> userIniFile;
 
- if(userId>=0)
-  application.SetUserId(userId);
 
+ if(userIniFile.LoadFromFile(extract_file_name_wo_ext(ini_file_name)+".user.ini"))
+ {
+  userName             = userIniFile("UserData", "UserName", "");
+  userId               = RDK::atoi(userIniFile("UserData", "UserId", "-1"));
+
+  if(!userName.empty())
+   application.SetUserName(userName);
+
+  if(userId>=0)
+   application.SetUserId(userId);
+ }
 
  application.Init();
 
