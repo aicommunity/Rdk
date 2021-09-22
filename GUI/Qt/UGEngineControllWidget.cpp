@@ -26,28 +26,20 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
 
-    QString win_title = "Neuro Modeler "+QCoreApplication::applicationVersion();
-/*
-    if(app->GetUserName().empty() && app->GetUserId()<0)
-    {
-        win_title += "User unknown";
-    }
-    else
-    {
-        if(!app->GetUserName().empty())
-            win_title += "User: "+ QString::fromStdString(app->GetUserName()) + " ";
-
-        if(app->GetUserId()>=0)
-            win_title += "Id: " + QString::number(app->GetUserId()) + " ";
-    }
-    win_title += "]";
-*/
-    this->setWindowTitle(win_title);
-
     application = app;
 
     if(application == NULL)
       QApplication::exit(-1);
+
+    QString caption_line="Neuro Modeler "+QCoreApplication::applicationVersion();
+    if(!application->GetUserName().empty())
+    {
+     caption_line=caption_line+" ["+application->GetUserName().c_str();
+     if(application->GetUserId()>=0)
+      caption_line=caption_line+":"+RDK::sntoa(application->GetUserId()).c_str();
+     caption_line=caption_line+="]";
+    }
+     this->setWindowTitle(caption_line);
 
     settings = NULL;
     propertyChanger = NULL;
@@ -454,6 +446,7 @@ void UGEngineControllWidget::actionCloseConfig()
   application->CloseProject();
 //  this->setWindowTitle("Neuro Modeler"+QCoreApplication::applicationVersion());
   RDK::UIVisualControllerStorage::UpdateInterface(true);
+  AUpdateInterface();
  }
  catch(RDK::UException& e)
  {
