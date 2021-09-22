@@ -69,6 +69,8 @@ public:
     /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
     void AUpdateInterface();
 
+    void AClearInterface();
+
     /// запись файла настроек
     virtual void ASaveParameters();
     /// считывание файла настроек

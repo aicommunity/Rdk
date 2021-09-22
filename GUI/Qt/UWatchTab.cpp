@@ -282,7 +282,8 @@ void UWatchTab::createSelectionDialog(int chartIndex)
 
     //создаем окно для выбора источника данных
     UComponentPropertySelectionWidget dialog(this, 3,application);
-    dialog.show();
+    dialog.setModal(true);
+  //  dialog.show();
     if (dialog.exec())
     {
          channelIndex = dialog.componentsList->getSelectedChannelIndex();

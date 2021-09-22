@@ -173,23 +173,11 @@ bool USerStorageXML::SaveFromNode(std::string &str)
 // Метод не делает ничего, если FileName == ""
 bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root)
 {
- fstream file(file_name.c_str(), ios::in);
-
  string result;
-
- if(!file || !file.is_open())
+ bool res=RDK::LoadFile(file_name,result);
+ if(!res)
   return false;
 
- while(!file.eof() && !file.fail())
-  {
-   std::string buffer;
-   if(!std::getline(file,buffer))
-    break;
-//   file.getline(buffer,4096);
-   result+=buffer;
-  }
-
- file.close();
  Load(result,root);
  return true;
 };
@@ -198,17 +186,9 @@ bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::strin
 // Метод не делает ничего, если FileName == ""
 bool USerStorageXML::SaveToFile(const std::string &file_name)
 {
- fstream file(file_name.c_str(), ios::out | ios::trunc);
-
- if(!file || !file.is_open())
-  return false;
-
  std::string result;
  Save(result);
- file.write(result.c_str(),result.size());
-
- file.close();
- return true;
+ return SaveFile(file_name,result);
 };
 // --------------------------
 

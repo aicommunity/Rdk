@@ -164,6 +164,11 @@ void UComponentsListWidget::AUpdateInterface()
     }
 }
 
+void UComponentsListWidget::AClearInterface()
+{
+ componentsTree->clear();
+}
+
 void UComponentsListWidget::ASaveParameters()
 {
     if(!application) return;

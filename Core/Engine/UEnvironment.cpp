@@ -774,6 +774,9 @@ void UEnvironment::RTCalculate(void)
  //double devicemodeltime=0;
 
  timer_interval=CalcDiffTime(GetCurrentStartupTime(),ProcEndTime);
+
+ if(timer_interval>(unsigned long long)(MaxModelDuration))
+  timer_interval=(unsigned long long)(MaxModelDuration);
  if(timer_interval<=0)
   timer_interval=1;
 

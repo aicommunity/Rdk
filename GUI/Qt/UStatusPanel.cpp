@@ -107,7 +107,7 @@ void UStatusPanel::setShowDebugMessages(bool checked)
   MLog_SetDebugMode(RDK_GLOB_MESSAGE, config.DebugMode);
 
   application->SetProjectConfig(config);
-  application->SaveProjectConfig();
+//  application->SaveProjectConfig();
 }
 
 void UStatusPanel::setDetailedLog(bool checked)
@@ -138,7 +138,7 @@ void UStatusPanel::setDetailedLog(bool checked)
   MLog_SetDebugMode(RDK_GLOB_MESSAGE, config.DebugSysEventsMask);
 
   application->SetProjectConfig(config);
-  application->SaveProjectConfig();
+//  application->SaveProjectConfig();
 }
 
 void UStatusPanel::setAutoupdateProperties(bool checked)
@@ -158,7 +158,7 @@ void UStatusPanel::setAutosaveStates(bool checked)
   config.ProjectAutoSaveStatesFlag = checked;
 
   application->SetProjectConfig(config);
-  application->SaveProjectConfig();
+//  application->SaveProjectConfig();
 }
 
 void UStatusPanel::setAutosaveProject(bool checked)
