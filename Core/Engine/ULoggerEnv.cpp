@@ -27,6 +27,8 @@ ULoggerEnv::ULoggerEnv(void)
 
  EventsLogMode=false;
 
+ CoutLogMode=false;
+
  DebugSysEventsMask=RDK_SYS_DEBUG_NONE;//RDK_SYS_DEBUG_CALC | RDK_SYS_DEBUG_PROPERTIES;
 
  DebuggerMessageFlag=false;
@@ -108,6 +110,22 @@ bool ULoggerEnv::SetEventsLogMode(bool value)
  EventsLogMode=value;
  if(!EventsLogMode)
   Clear();
+ return true;
+}
+
+
+/// Флаг включения внутренней регистрации событий в поток вывода
+/// true - регистрация включена
+bool ULoggerEnv::GetCoutLogMode(void) const
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ return CoutLogMode;
+}
+
+bool ULoggerEnv::SetCoutLogMode(bool value)
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ CoutLogMode=value;
  return true;
 }
 
@@ -213,9 +231,15 @@ void ULoggerEnv::ProcessException(const UException &exception) const
 /// Обрабатывает возникшее исключение (Внутренний метод)
 void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) const
 {
+ std::string log_message=exception.GetMessage();
+ if(CoutLogMode)
+ {
+  std::cout<<log_message<<endl;
+ }
+
  if(EventsLogMode) // Если включено, то сохраняем события в файл
  {
-  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(exception.GetMessage());  // TODO: Проверить на RDK_SUCCESS
+  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(log_message);  // TODO: Проверить на RDK_SUCCESS
  }
 
  if(LastErrorLevel>type)

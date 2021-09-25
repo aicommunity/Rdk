@@ -98,7 +98,7 @@ int ULogger::WriteMessageToFile(const std::string &str)
   }
 
   *EventsLogFile<<str<<std::endl;
-  EventsLogFile->flush();
+//  EventsLogFile->flush();
   if(EventsLogFile->fail())
   {
    Clear();

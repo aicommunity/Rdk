@@ -130,6 +130,9 @@ int LogCreationMode;
 /// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
 int CalcStopLogLevel;
 
+/// Включение вывода сообщений в cout
+bool CoutLogMode;
+
 protected: // Модули приложения
 /// Диспетчер команд
 UEPtr<URpcDispatcher> RpcDispatcher;
@@ -263,6 +266,10 @@ bool SetLogCreationMode(int mode);
 /// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
 int GetCalcStopLogLevel(void) const;
 bool SetCalcStopLogLevel(int log_level);
+
+/// Включение вывода сообщений в cout
+bool GetCoutLogMode(void) const;
+bool SetCoutLogMode(bool value);
 
 /// Заголовок приложения
 const std::string& GetAppCaption(void) const;

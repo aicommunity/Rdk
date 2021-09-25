@@ -51,6 +51,7 @@ UApplication::UApplication(void)
  CalcStopLogLevel=RDK_EX_FATAL;
  UserName="";
  UserId=-1;
+ SetCoutLogMode(false);
  //SetStandartXMLInCatalog();
 
 
@@ -475,6 +476,21 @@ bool UApplication::SetCalcStopLogLevel(int log_level)
 
     CalcStopLogLevel=log_level;
     return true;
+}
+
+/// ¬ключение вывода сообщений в cout
+bool UApplication::GetCoutLogMode(void) const
+{
+ return CoutLogMode;
+}
+
+bool UApplication::SetCoutLogMode(bool value)
+{
+ if(CoutLogMode == value)
+  return true;
+ CoutLogMode=value;
+ GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetCoutLogMode(CoutLogMode);
+ return true;
 }
 
 

@@ -35,6 +35,10 @@ bool DebuggerMessageFlag;
 /// true - регистрация включена
 bool EventsLogMode;
 
+/// Флаг включения внутренней регистрации событий в поток вывода
+/// true - регистрация включена
+bool CoutLogMode;
+
 protected: // Данные
 // Внешний обработчик исключений
 PExceptionHandler ExceptionHandler;
@@ -104,6 +108,11 @@ bool SetDebuggerMessageFlag(bool value);
 /// true - регистрация включена
 bool GetEventsLogMode(void) const;
 bool SetEventsLogMode(bool value);
+
+/// Флаг включения внутренней регистрации событий в поток вывода
+/// true - регистрация включена
+bool GetCoutLogMode(void) const;
+bool SetCoutLogMode(bool value);
 
 /// Индекс текущего канала в многоканальной библиотеке
 int GetChannelIndex(void) const;

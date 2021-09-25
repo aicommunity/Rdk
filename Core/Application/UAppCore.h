@@ -75,6 +75,7 @@ public:
  int serverAutostartFlag;
  int serverStandaloneTask;
  int logCreationMode;
+ bool coutLogMode;
  int calcStopLogLevel;
 
  std::string librariesPath;
@@ -192,6 +193,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
 
  logDebugMode=atoi(projectIniFile("Log","DebugMode","0"));
+ coutLogMode=atoi(projectIniFile("Log","CoutLogMode","0"));
 
  disableAdminForm=atoi(projectIniFile("General","DisableAdminForm","0"));
  temp_proj_path = projectIniFile("General", "TemporaryProjectPath", "");
@@ -213,6 +215,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   RDK::Sleep(startupDelay);
  }
 
+ application.SetCoutLogMode(coutLogMode);
  application.SetApplicationFileName(application_file_name);
  application.SetLogCreationMode(logCreationMode);
  application.SetCalcStopLogLevel(calcStopLogLevel);
