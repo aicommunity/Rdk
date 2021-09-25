@@ -306,11 +306,11 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  application.GetServerControl()->GetServerTransport()->SetServerBinding(serverAddress, serverPort);
- cout<<"ServerAutoStartFlag: "<<serverAutostartFlag<<"\n";
- std::cout<<"Test cout "<<serverAddress.c_str()<<" "<<serverPort<<std::endl;
+ Log_LogMessage(RDK_EX_DEBUG,("ServerAutoStartFlag: "+sntoa(serverAutostartFlag)).c_str());
+ Log_LogMessage(RDK_EX_DEBUG,("Test cout "+serverAddress+" "+sntoa(serverPort)).c_str());
  if(serverAutostartFlag)
  {
-   std::cout<<"Start TCP server on "<<serverAddress.c_str()<<" "<<serverPort<<std::endl;
+   Log_LogMessage(RDK_EX_INFO,("Start TCP server on "+serverAddress+" "+sntoa(serverPort)).c_str());
    application.GetServerControl()->GetServerTransport()->ServerStart();
  }
 
