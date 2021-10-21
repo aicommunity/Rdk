@@ -34,8 +34,8 @@ UWatchChart::UWatchChart(QWidget *parent) :
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
     axisXrange = 5;
-    axisX->setRange(0, 5);
-    axisY->setRange(-5, 5);
+    axisX->setRange(0, 1);
+    axisY->setRange(-1, 1);
 
     //устанавливаем оси
     chart->addAxis(axisX, Qt::AlignBottom);

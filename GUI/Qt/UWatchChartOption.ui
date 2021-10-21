@@ -126,8 +126,8 @@
     <rect>
      <x>360</x>
      <y>390</y>
-     <width>254</width>
-     <height>27</height>
+     <width>295</width>
+     <height>30</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -305,6 +305,9 @@
     </item>
     <item row="5" column="1">
      <widget class="QDoubleSpinBox" name="axisXrangeSB">
+      <property name="decimals">
+       <number>6</number>
+      </property>
       <property name="maximum">
        <double>99999999999.000000000000000</double>
       </property>
@@ -312,6 +315,9 @@
     </item>
     <item row="2" column="1">
      <widget class="QDoubleSpinBox" name="axisYmaxSB">
+      <property name="decimals">
+       <number>14</number>
+      </property>
       <property name="minimum">
        <double>-99999999999.000000000000000</double>
       </property>
@@ -322,6 +328,9 @@
     </item>
     <item row="3" column="1">
      <widget class="QDoubleSpinBox" name="axisYminSB">
+      <property name="decimals">
+       <number>14</number>
+      </property>
       <property name="minimum">
        <double>-99999999999.000000000000000</double>
       </property>
