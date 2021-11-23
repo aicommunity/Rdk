@@ -13,6 +13,7 @@ DEFINES += RDK_QT
 DEFINES += BOOST_PYTHON_STATIC_LIB
 DEFINES += BOOST_NUMPY_STATIC_LIB
 DEFINES += QT_NO_VERSION_TAGGING
+DEFINES += BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 exists($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri) {
     include($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri)
@@ -25,7 +26,7 @@ contains(DEFINES,RDK_USE_CUDA) {
 
 contains(DEFINES,RDK_USE_PYTHON) {
     RDK_PYTHON_MAJOR = 3
-    RDK_PYTHON_MINOR = 6
+    RDK_PYTHON_MINOR = 8
 }
 
 contains(DEFINES,RDK_USE_OPENCV) {
@@ -51,7 +52,7 @@ defineReplace(addPostfix) {
 
     windows {
         contains(DEFINES, OPENCV_4) {
-            OPENCV_LIBS_VERSION = 440
+            OPENCV_LIBS_VERSION = 454
             OPENCV_PATH=$$(OPENCV4_PATH)
         }else{
             OPENCV_LIBS_VERSION = 345
