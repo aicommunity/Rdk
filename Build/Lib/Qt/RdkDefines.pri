@@ -13,8 +13,12 @@ DEFINES += RDK_QT
 DEFINES += BOOST_PYTHON_STATIC_LIB
 DEFINES += BOOST_NUMPY_STATIC_LIB
 DEFINES += BOOST_BIND_GLOBAL_PLACEHOLDERS
-DEFINES += HAVE_SNPRINTF
 DEFINES += QT_NO_VERSION_TAGGING
+
+windows {
+# fix build bug with boost+python under visual studio
+DEFINES += HAVE_SNPRINTF
+}
 
 
 exists($$PWD/../../../../Build/Qt/BuildAll/RdkDefinesApp.pri) {
