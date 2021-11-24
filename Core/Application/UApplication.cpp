@@ -1,16 +1,16 @@
 #ifndef UApplication_CPP
 #define UApplication_CPP
 
-#include "UApplication.h"
-#include "../../Deploy/Include/rdk_cpp_initdll.h"
-#include "../../../Rdk/Deploy/Include/rdk.h"
-
 #ifndef __BORLANDC__
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #endif
+
+#include "UApplication.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../../Rdk/Deploy/Include/rdk.h"
 
 using namespace std;
 
