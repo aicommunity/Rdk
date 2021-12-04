@@ -435,8 +435,8 @@ void UImagesWidget::actionSelectSource()
         selectedImage->setComponentPropertyName(dialog.componentsList->getSelectedPropertyName());
         selectedImage->setCalcChannel(dialog.componentsList->getSelectedChannelIndex());
     }
-    dialog.writeSettings(QString::fromLocal8Bit(
-                           application->GetProjectPath().c_str())+"settings.qt");
+//    dialog.writeSettings(QString::fromLocal8Bit(
+//                           application->GetProjectPath().c_str())+"settings.qt");
 }
 
 void UImagesWidget::actionAddColumn()
