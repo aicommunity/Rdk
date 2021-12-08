@@ -68,11 +68,11 @@ defineReplace(addPostfix) {
         INCLUDEPATH += $${OPENCV_PATH}/build/include
 
         contains(DEFINES, RDK_USE_CUDA) {
-            OPENCV_COMPILED_VERSION_64 = vc15cuda
-            OPENCV_COMPILED_VERSION_86 = vc15
+            OPENCV_COMPILED_VERSION_64 = vc16cuda
+            OPENCV_COMPILED_VERSION_86 = vc16
         } else {
-            OPENCV_COMPILED_VERSION_64 = vc15
-            OPENCV_COMPILED_VERSION_86 = vc15
+            OPENCV_COMPILED_VERSION_64 = vc16
+            OPENCV_COMPILED_VERSION_86 = vc16
         }
 
         !contains(QMAKE_TARGET.arch, x86_64) {
