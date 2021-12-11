@@ -48,20 +48,32 @@ contains(DEFINES,RDK_USE_CUDA) {
 }
 
 contains(DEFINES,RDK_USE_PYTHON) {
-    RDK_PYTHON_MAJOR = 3
-    RDK_PYTHON_MINOR = 8
+
+    RDK_PYTHON_MAJOR = $$(PYTHON_MAJOR_VERSION)
+    RDK_PYTHON_MINOR = $$(PYTHON_MINOR_VERSION)
+
+    isEmpty(RDK_PYTHON_MAJOR) {
+        RDK_PYTHON_MAJOR = 3
+        message("PYTHON_MAJOR_VERSION env variable not found. Usign default ("$$RDK_PYTHON_MAJOR")")
+    }
+
+    isEmpty(RDK_PYTHON_MINOR) {
+        RDK_PYTHON_MINOR = 8
+        message("PYTHON_MINOR_VERSION env variable not found. Usign default ("$$RDK_PYTHON_MINOR")")
+    }
+
 }
 
 contains(DEFINES,RDK_USE_OPENCV) {
 
-# функция добавляет постфикс(второй параметр) ко всем элементам первого входного параметра
-defineReplace(addPostfix) {
- libList = $$1
- for(lib, libList) {
-  returnValue += $${lib}$${2}
- }
- return($$returnValue)
-}
+    # функция добавляет постфикс(второй параметр) ко всем элементам первого входного параметра
+    defineReplace(addPostfix) {
+     libList = $$1
+     for(lib, libList) {
+      returnValue += $${lib}$${2}
+     }
+     return($$returnValue)
+    }
 
     unix {
         contains(DEFINES, OPENCV_4) {
@@ -76,11 +88,20 @@ defineReplace(addPostfix) {
     }
 
     windows {
+        OPENCV_LIBS_VERSION = $$(OPENCV_LIBS_VERSION)
+        isEmpty(OPENCV_LIBS_VERSION) {
+            contains(DEFINES, OPENCV_4) {
+                OPENCV_LIBS_VERSION = 454
+                message("OPENCV_LIBS_VERSION env variable not found. Usign default ("$$OPENCV_LIBS_VERSION")")
+            }else{
+                OPENCV_LIBS_VERSION = 345
+                message("OPENCV_LIBS_VERSION env variable not found. Usign default ("$$OPENCV_LIBS_VERSION")")
+            }
+
+        }
         contains(DEFINES, OPENCV_4) {
-            OPENCV_LIBS_VERSION = 454
             OPENCV_PATH=$$(OPENCV4_PATH)
         }else{
-            OPENCV_LIBS_VERSION = 345
             OPENCV_PATH=$$(OPENCV3_PATH)
         }
 
@@ -114,6 +135,7 @@ defineReplace(addPostfix) {
 
 
 #Boost
+
 unix {
     INCLUDEPATH += $$(BOOST_PATH)
     INCLUDEPATH += $$(BOOST_PATH)/include
