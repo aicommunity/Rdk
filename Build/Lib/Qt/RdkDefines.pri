@@ -1,3 +1,20 @@
+win32-msvc* {
+    MSVC_VER = $$(VisualStudioVersion)
+    equals(MSVC_VER, 14.0){
+        MSVC_COMPILER = vc14
+    }
+    equals(MSVC_VER, 15.0){
+        MSVC_COMPILER = vc15
+    }
+    equals(MSVC_VER, 16.0){
+        MSVC_COMPILER = vc16
+    }
+    equals(MSVC_VER, 17.0){
+        MSVC_COMPILER = vc17
+    }
+#    message("VC Compiler: "$${MSVC_COMPILER})
+}
+
 unix {
 QMAKE_CXXFLAGS += -Wno-misleading-indentation -Wno-deprecated-copy
 }
@@ -54,6 +71,8 @@ defineReplace(addPostfix) {
             INCLUDEPATH += $$(OPENCV3_PATH)/include
             OPENCV_LIB_PATH = $$(OPENCV3_PATH)
         }
+
+        OPENCV_UNIX_LINKER_LINE = -L$${OPENCV_LIB_PATH}/lib $$OPENCV_LIBS_LIST
     }
 
     windows {
@@ -68,17 +87,27 @@ defineReplace(addPostfix) {
         INCLUDEPATH += $${OPENCV_PATH}/build/include
 
         contains(DEFINES, RDK_USE_CUDA) {
-            OPENCV_COMPILED_VERSION_64 = vc16cuda
-            OPENCV_COMPILED_VERSION_86 = vc16
+            OPENCV_COMPILED_VERSION_64 = $${MSVC_COMPILER}cuda
+            OPENCV_COMPILED_VERSION_86 = $${MSVC_COMPILER}
         } else {
-            OPENCV_COMPILED_VERSION_64 = vc16
-            OPENCV_COMPILED_VERSION_86 = vc16
+            OPENCV_COMPILED_VERSION_64 = $${MSVC_COMPILER}
+            OPENCV_COMPILED_VERSION_86 = $${MSVC_COMPILER}
         }
 
         !contains(QMAKE_TARGET.arch, x86_64) {
             OPENCV_LIB_PATH = $${OPENCV_PATH}/build/x86/$${OPENCV_COMPILED_VERSION_86}/lib
         } else {
             OPENCV_LIB_PATH = $${OPENCV_PATH}/build/x64/$${OPENCV_COMPILED_VERSION_64}/lib
+        }
+
+        CONFIG(debug, debug|release) {
+#            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Debug)
+            OPENCV_WIN_LINKER_LINE = -L$${OPENCV_LIB_PATH}/Debug $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION}d)
+        }
+
+        CONFIG(release, debug|release) {
+#            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Release)
+            OPENCV_WIN_LINKER_LINE = -L$${OPENCV_LIB_PATH}/Release $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION})
         }
     }
 }
@@ -106,6 +135,31 @@ unix {
         }
     }
 
+    BOOST_UNIX_LINKER_LINE += -L$$(BOOST_PATH)/lib -lboost_system \
+        -lboost_system \
+        -lboost_chrono \
+        -lboost_thread \
+        -lboost_program_options \
+        -lboost_filesystem \
+        -lboost_date_time \
+        -lboost_timer
+
+    # Следующие две строки должна быть строго выше чем строки линковки питона из анаконды!!!
+    BOOST_UNIX_LINKER_LINE += -L$$(QTDIR)/lib -lQt5Core -lQt5Widgets -lQt5Gui -lQt5PrintSupport -lGL
+    BOOST_UNIX_LINKER_LINE += -L/usr/lib/x86_64-linux-gnu -lcurl
+
+    contains(DEFINES, RDK_USE_PYTHON) {
+        BOOST_UNIX_LINKER_LINE += -L$$(BOOST_PATH)/lib -lboost_python$${RDK_PYTHON_MAJOR}$${RDK_PYTHON_MINOR} \
+            -lboost_numpy$${RDK_PYTHON_MAJOR}$${RDK_PYTHON_MINOR}
+
+    isEmpty(ANACONDA_PATH) {
+         BOOST_UNIX_LINKER_LINE += -L/usr/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/config-$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m-x86_64-linux-gnu -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
+         BOOST_UNIX_LINKER_LINE += -L/usr/lib/python$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}/config-$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m-aarch64-linux-gnu -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}
+    } else {
+         BOOST_UNIX_LINKER_LINE += -L$$(ANACONDA_PATH)/lib -lpython$${RDK_PYTHON_MAJOR}.$${RDK_PYTHON_MINOR}m -lpython$${RDK_PYTHON_MAJOR} #-lpng -lssl
+    }
+}
+
 }
 
 windows {
@@ -121,10 +175,23 @@ windows {
          INCLUDEPATH += $$(CUDA_PATH)/include
     }
 
+    !contains(QMAKE_TARGET.arch, x86_64) {
+        BOOST_WIN_LINKER_LINE += -L$$(BOOST_PATH)/$${BOOST_COMPILED_VERSION}-x86/lib/
+    } else {
+         BOOST_WIN_LINKER_LINE += -L$$(BOOST_PATH)/$${BOOST_COMPILED_VERSION}-x64/lib/
+    }
+
+    BOOST_WIN_LINKER_LINE +=   -lWldap32
+    BOOST_WIN_LINKER_LINE +=   -lAdvapi32
+
+    BOOST_WIN_LINKER_LINE += -L$$(ANACONDA_PATH)/libs/
 }
 
-
-
+contains(DEFINES, RDK_USE_DARKNET) {
+    unix {
+        DARKNET_UNIX_LINKER_LINE+= -L$$PWD/../../../Libraries/Rdk-DarknetLib/ThirdParty/darknet -ldarknet
+    }
+}
 
 contains(DEFINES, RDK_USE_TENSORFLOW) {
     INCLUDEPATH += $$(TENSORFLOW_PATH)/bazel-genfiles
@@ -136,20 +203,26 @@ contains(DEFINES, RDK_USE_TENSORFLOW) {
     DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
     INCLUDEPATH += $$(TENSORFLOW_PATH)
     DEPENDPATH += $$(TENSORFLOW_PATH)/bazel-bin/tensorflow
+
+    windows {
+        TENSORFLOW_WIN_LINKER_LINE += -L$$(TENSORFLOW_PATH)/bazel-bin/tensorflow -ltensorflow_framework.dll.if -ltensorflow.dll.if -ltensorflow_cc.dll.if
+    } else:unix {
+        TENSORFLOW_UNIX_LINKER_LINE += -L$$(TENSORFLOW_PATH)/bazel-bin/tensorflow -ltensorflow_cc -ltensorflow_framework
+    }
 }
 
 contains(DEFINES,RDK_USE_MATLAB) {
+    INCLUDEPATH += $$(MATLAB_PATH)/extern/include/
+    windows {
+        MATLAB_WIN_LINKER_LINE = -llibeng -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+        -llibmx -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+        -llibMatlabEngine -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+        -llibMatlabCppSharedLib -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
+        -llibMatlabDataArray -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/
+    } else:unix {
 
-windows {
 
-INCLUDEPATH += $$(MATLAB_PATH)/extern/include/
-
-RDK_MATLAB_LIBS = -llibeng -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
--llibmx -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
--llibMatlabEngine -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
--llibMatlabCppSharedLib -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/ \
--llibMatlabDataArray -L$$(MATLAB_PATH)/extern/lib/win64/microsoft/
+    }
 
 }
 
-}
