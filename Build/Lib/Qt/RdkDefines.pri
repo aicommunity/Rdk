@@ -123,12 +123,12 @@ contains(DEFINES,RDK_USE_OPENCV) {
 
         CONFIG(debug, debug|release) {
 #            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Debug)
-            OPENCV_WIN_LINKER_LINE = -L$${OPENCV_LIB_PATH}/Debug $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION}d)
+            OPENCV_WIN_LINKER_LINE = -L$${OPENCV_LIB_PATH} $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION}d)
         }
 
         CONFIG(release, debug|release) {
 #            message("VideoAnalytics: using OpenCv from "$${OPENCV_LIB_PATH}/Release)
-            OPENCV_WIN_LINKER_LINE = -L$${OPENCV_LIB_PATH}/Release $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION})
+            OPENCV_WIN_LINKER_LINE = -L$${OPENCV_LIB_PATH} $$addPostfix($$OPENCV_LIBS_LIST, $${OPENCV_LIBS_VERSION})
         }
     }
 }
