@@ -1,0 +1,12 @@
+setx BOOST_PATH C:\boost_1_77_0
+
+setx OPENCV4_PATH C:\OpenCv4.5.4
+setx OPENCV_LIBS_VERSION 454
+
+setx ANACONDA_PATH C:\Anaconda3
+setx PYTHON_HOME C:\Anaconda3
+setx PYTHONHOME C:\Anaconda3
+setx PYTHON_MAJOR_VERSION 3
+setx PYTHON_MINOR_VERSION 8
+
+setx MATLAB_PATH C:/Program Files/MATLAB/R2020b
