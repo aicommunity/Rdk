@@ -104,7 +104,8 @@ void USingleImageWidget::setShowLegend(bool value)
 
 void USingleImageWidget::setImageSizeInfo(QSize size)
 {
-  ui->labelInfo->setText(QString::number(size.width())+"x"+QString::number(size.height()));
+    ui->labelInfo->setText(QString::number(imageLoader->getImageWidth())+"x"+QString::number(imageLoader->getImageHeight()));
+//  ui->labelInfo->setText(QString::number(size.width())+"x"+QString::number(size.height()));
 }
 
 void USingleImageWidget::reDrawWidget()
