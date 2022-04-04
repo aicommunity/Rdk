@@ -92,7 +92,7 @@ signals:
     void polygonSelected(int);
     void rectanglesChanged(QPair<QRectF, QRectF>);
 
-private slots:
+public slots:
     void actionSaveToBMP();
     void actionSaveToJPEG();
     void actionSaveAllToBMP();

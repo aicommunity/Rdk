@@ -112,6 +112,8 @@ void UImagesWidget::AUpdateInterface()
 void UImagesWidget::SetImageLayout(int layoutW, int layoutH)
 {
     clearImagesWidget();
+    rowsCounter = layoutH;
+    columnsCounter = layoutW;
     for(int i=0; i<layoutW; i++)
     {
         for(int j=0; j<layoutH; j++)
