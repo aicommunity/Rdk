@@ -461,14 +461,14 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
    if(obj)
    {
-	obj->Default();
-	if(!prototype)
+    element->UseFlag=true;
+    obj->Default();
+    if(!prototype)
      tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
     else
      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
     obj->SetActivity(true);
-    element->UseFlag=true;
    }
    return static_pointer_cast<UComponent>(obj);
   }
