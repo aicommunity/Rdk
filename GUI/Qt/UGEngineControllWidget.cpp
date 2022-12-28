@@ -58,7 +58,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     graphWindow=NULL;
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
-    watchFormWidget=NULL;
+ //   watchFormWidget=NULL;
     watchWindow = NULL;
     clDescWindow = NULL;
     tcpServerControlWindow=NULL;
@@ -144,9 +144,9 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     ui->dockWidgetGraph->hide();
     */
 
-    watchFormWidget= new UWatchFormWidget(this, application);
-    watchFormWidget->setWindowTitle("Watches");
-    watchFormWidget->hide();
+ //   watchFormWidget= new UWatchFormWidget(this, application);
+ //   watchFormWidget->setWindowTitle("Watches");
+ //   watchFormWidget->hide();
 
     watchWindow = new UWatch(this);
     watchWindow->setWindowTitle("Watch window");
@@ -1075,9 +1075,9 @@ void UGEngineControllWidget::showChannelsWidget (void)
 
 void UGEngineControllWidget::closeEvent(QCloseEvent *event)
 {
- //application->PauseChannel(-1);
+ application->PauseChannel(-1);
  //application->CloseProject();
- //application->UnInit();
+ application->UnInit();
  event->accept();
  //   if (maybeSave()) {
  //       writeSettings();

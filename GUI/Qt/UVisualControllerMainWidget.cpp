@@ -400,12 +400,18 @@ void UVisualControllerMainWidget::ASaveParameters(RDK::USerStorageXML &xml)
 void UVisualControllerMainWidget::SaveFormPosition(RDK::USerStorageXML &xml)
 {
     xml.SelectNodeForce("FormPosition");
-    xml.WriteInteger("Left",x());
-    xml.WriteInteger("Top",y());
-    xml.WriteInteger("Width",width());
-    xml.WriteInteger("Height",height());
+
+    QPoint topLeft = mapToGlobal(rect().topLeft());
+    QPoint bottomRight = mapToGlobal(rect().bottomRight());
+    xml.WriteInteger("Left",topLeft.x());
+    xml.WriteInteger("Top",topLeft.y());
+    xml.WriteInteger("Width",bottomRight.x()-topLeft.x()+1);
+    xml.WriteInteger("Height",bottomRight.y()-topLeft.y()+1);
     xml.WriteBool("Visible",isVisible());
-    xml.WriteInteger("WindowState",(int)windowState());
+
+    Qt::WindowStates win_state = windowState();
+ //   Qt::WidgetStates widget_state = widgetState();
+    xml.WriteInteger("WindowState",int(win_state));
     xml.SelectUp();
 }
 
@@ -443,22 +449,45 @@ void UVisualControllerMainWidget::ALoadParameters(RDK::USerStorageXML &xml)
 void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
 {
     xml.SelectNodeForce("FormPosition");
-    QRect Screen = QApplication::desktop()->screenGeometry();
+ //   QRect Screen = QApplication::desktop()->availableGeometry();
+    int num_screens = QApplication::desktop()->numScreens();
+    std::vector<QRect> screen_sizes(num_screens);
+    for(size_t i=0;i<screen_sizes.size();i++)
+       screen_sizes[i] = QApplication::desktop()->availableGeometry(i);
+
 
     int value_x=0, value_y=0;
 
     value_x=xml.ReadInteger("Left",x());
-    if(value_x<Screen.left() || value_x>= Screen.left()+Screen.width())
-        value_x=Screen.left();
-
     value_y=xml.ReadInteger("Top",y());
-    if(value_y<Screen.top() || value_y>= Screen.top()+Screen.height())
-        value_y=Screen.top();
+
+    int screen_index(0);
+    for(size_t i=0;i<screen_sizes.size();i++)
+    {
+      if(value_x>=screen_sizes[i].left() && value_x <= screen_sizes[i].left()+screen_sizes[i].width() && value_y>=screen_sizes[i].top() && value_y <= screen_sizes[i].top()+screen_sizes[i].height())
+      {
+       screen_index = i;
+       break;
+      }
+    }
 
     int width   = xml.ReadInteger("Width", this->width());
     int height  = xml.ReadInteger("Height", this->height());
 
+    if(value_y<screen_sizes[screen_index].top() || value_y>= screen_sizes[screen_index].top()+screen_sizes[screen_index].height())
+       value_x=screen_sizes[screen_index].left();
+
+    if(value_y<screen_sizes[screen_index].top() || value_y>= screen_sizes[screen_index].top()+screen_sizes[screen_index].height())
+       value_y=screen_sizes[screen_index].top();
+
+    if(width>screen_sizes[screen_index].width())
+       width = screen_sizes[screen_index].width();
+
+    if(height>screen_sizes[screen_index].height())
+       height = screen_sizes[screen_index].height();
+
     setGeometry(value_x, value_y, width, height);
+    resize(width,height);
 
     // Если это не основная форма (основная форма всегда видна)
     if(!(accessibleName()=="UGEngineControllWidget"))

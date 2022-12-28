@@ -182,7 +182,7 @@ private:
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
     UGraphWidget *graphWindowWidget;
-    UWatchFormWidget *watchFormWidget;
+ //   UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
     UClDescEditor *clDesc;
