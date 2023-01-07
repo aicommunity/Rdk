@@ -582,17 +582,26 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index
 
 void UCreateConfigurationWizardWidget::browseNewProjectDirectory()
 {
- QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
- QDir path1(default_path);
- if(!path1.exists(default_path))
- {
-  default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
-  QDir path2(default_path);
-  if(!path2.exists(default_path))
-  {
-   default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
-  }
- }
+    // Директория проектов
+    QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
+    QDir path1(default_path);
+    if(!path1.exists(default_path))
+    {
+        default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
+        QDir path2(default_path);
+        if(!path2.exists(default_path))
+        {
+            default_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
+        }
+    }
+
+    QString default_user_path = default_path+QString::fromLocal8Bit(application->GetUserName().c_str());
+    QDir path3(default_user_path);
+    if(!path3.exists(default_user_path))
+        RDK::CreateNewDirectory(default_user_path.toLocal8Bit());
+    QDir path4(default_user_path);
+    if(path4.exists(default_user_path))
+        default_path = default_user_path;
 
   ui->lineEditProjectDirectory->setText(
         QFileDialog::getExistingDirectory(this, tr("Create project directory"), default_path, QFileDialog::ShowDirsOnly));
