@@ -98,7 +98,7 @@ public:
  ~UAppCore(void);
 
  /// Инициализация
- int Init(const std::string &application_file_name, const std::string &ini_file_name, const std::string &log_dir, int argc, char *argv[]);
+ int Init(const std::string &application_file_name, const std::string &ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[]);
 
  /// Пост-инициализация
  int PostInit(void);
@@ -153,7 +153,7 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
 
 /// Инициализация
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
-int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::Init(const std::string &application_file_name, const std::string& ini_file_name, const std::string &log_dir, int argc, char *argv[])
+int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::Init(const std::string &application_file_name, const std::string& ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[])
 {
  //std::cout<<"Test sout init"<<std::endl;
 
@@ -262,12 +262,18 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   userName             = userIniFile("UserData", "UserName", "");
   userId               = RDK::atoi(userIniFile("UserData", "UserId", "-1"));
 
+  if(userName.empty())
+    userName = default_user_name;
+
   if(!userName.empty())
    application.SetUserName(userName);
 
   if(userId>=0)
    application.SetUserId(userId);
  }
+ else
+  application.SetUserName(default_user_name);
+
 
  application.Init();
 
