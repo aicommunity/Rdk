@@ -33,7 +33,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     ///Дефолтные подписи осей и их макс и мин
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
-    axisXrange = 5;
+    axisXrange = 2;
     axisX->setRange(0, axisXrange);
     axisY->setRange(-1, 1);
 
