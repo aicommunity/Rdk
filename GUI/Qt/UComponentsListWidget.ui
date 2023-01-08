@@ -506,6 +506,14 @@
     <string>Paste Value From Clipboard</string>
    </property>
   </action>
+  <action name="actionReloadTree">
+   <property name="text">
+    <string>Reload Tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload components tree</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

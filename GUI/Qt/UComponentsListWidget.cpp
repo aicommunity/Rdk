@@ -72,6 +72,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     actionSeparator3->setSeparator(true);
     QAction *actionSeparator4 = new QAction(this);
     actionSeparator4->setSeparator(true);
+    QAction *actionSeparator5 = new QAction(this);
+    actionSeparator5->setSeparator(true);
     componentsTree->addAction(ui->actionComponentMoveUp);
     componentsTree->addAction(ui->actionComponentMoveDown);
     componentsTree->addAction(actionSeparator1);
@@ -88,6 +90,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     componentsTree->addAction(ui->actionCopyClassNameToClipboard);
     componentsTree->addAction(actionSeparator4);
     componentsTree->addAction(ui->actionComponentGUI);
+    componentsTree->addAction(actionSeparator5);
+    componentsTree->addAction(ui->actionReloadTree);
     ui->actionComponentGUI->setEnabled(false); // нет реализации, по этому ставим в enable
     connect(ui->actionComponentMoveUp, SIGNAL(triggered()), this, SLOT(componentMoveUp()));
     connect(ui->actionComponentMoveDown, SIGNAL(triggered()), this, SLOT(componentMoveDown()));
@@ -1160,5 +1164,11 @@ void UComponentsListWidget::propertyPasteValueFromClipboard()
      }
    break;
  }
+}
+
+
+void UComponentsListWidget::on_actionReloadTree_triggered()
+{
+    UpdateInterface(true);
 }
 

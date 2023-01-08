@@ -57,6 +57,11 @@ void UStatusPanel::AUpdateInterface()
     else
       ui->labelFps->clear();
   }
+
+  int num_objects = Storage_CalcNumObjects();
+  int num_model_components = RDK::GetModelLock()->GetNumAllComponents();
+
+  ui->labelObjects->setText("Objects: "+  QString::fromLocal8Bit(RDK::sntoa(num_model_components).c_str()) + "/" + QString::fromLocal8Bit(RDK::sntoa(num_objects).c_str()));
 }
 
 void UStatusPanel::AAfterLoadProject()

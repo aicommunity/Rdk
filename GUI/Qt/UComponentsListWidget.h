@@ -167,6 +167,9 @@ public slots:
     void propertyCopyValueToClipboard();
     void propertyPasteValueFromClipboard();
 
+private slots:
+    void on_actionReloadTree_triggered();
+
 private:
     /// Удаляет из переданных данных лидирующие переводы строк
     std::string& EraseLeadEndls(std::string &value);

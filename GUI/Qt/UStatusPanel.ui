@@ -199,6 +199,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="labelObjects">
+       <property name="text">
+        <string>objects</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
