@@ -170,6 +170,8 @@ public slots:
 private slots:
     void on_actionReloadTree_triggered();
 
+    void on_tabWidgetComponentInfo_currentChanged(int index);
+
 private:
     /// Удаляет из переданных данных лидирующие переводы строк
     std::string& EraseLeadEndls(std::string &value);

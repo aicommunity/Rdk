@@ -443,7 +443,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
         for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
         {
-            if (i->second.CheckMask(ptPubParameter))
+            if (i->second.CheckMask(ptPubParameter) && ui->tabWidgetComponentInfo->currentIndex() == 0)
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
                 QString parameterName = QString::fromLocal8Bit(i->first.c_str());
@@ -464,7 +464,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                   parametersItem->setCheckState(1,Qt::Unchecked);
                 }
             }
-            if (i->second.CheckMask(ptPubState))
+            if (i->second.CheckMask(ptPubState) && ui->tabWidgetComponentInfo->currentIndex() == 1)
             {
                 QTreeWidgetItem* stateItem = new QTreeWidgetItem(ui->treeWidgetState);
                 QString stateName = QString::fromLocal8Bit(i->first.c_str());
@@ -475,7 +475,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
             }
-            if (i->second.CheckMask(ptPubInput))
+            if (i->second.CheckMask(ptPubInput) && ui->tabWidgetComponentInfo->currentIndex() == 2)
             {
                 QTreeWidgetItem* inputItem = new QTreeWidgetItem(ui->treeWidgetInputs);
                 QString inputName = QString::fromLocal8Bit(i->first.c_str());
@@ -488,7 +488,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 if(inputName == selectedInputName)
                     ui->treeWidgetInputs->setCurrentItem(inputItem);
             }
-            if (i->second.CheckMask(ptPubOutput))
+            if (i->second.CheckMask(ptPubOutput) && ui->tabWidgetComponentInfo->currentIndex() == 3)
             {
                 QTreeWidgetItem* outputItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
                 QString outputName = QString::fromLocal8Bit(i->first.c_str());
@@ -1170,5 +1170,11 @@ void UComponentsListWidget::propertyPasteValueFromClipboard()
 void UComponentsListWidget::on_actionReloadTree_triggered()
 {
     UpdateInterface(true);
+}
+
+
+void UComponentsListWidget::on_tabWidgetComponentInfo_currentChanged(int index)
+{
+    reloadPropertys(true);
 }
 
