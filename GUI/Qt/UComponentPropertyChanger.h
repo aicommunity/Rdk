@@ -26,7 +26,6 @@ public slots:
   void actionSet();
   void actionSetGlobal();
   void actionSetGlobalOwner();
-  void actionDefaultAll();
   void actionShowXML();
 
   void updateCurrentPropertyValue(QString value);

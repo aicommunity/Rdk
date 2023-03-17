@@ -172,6 +172,8 @@ private slots:
 
     void on_tabWidgetComponentInfo_currentChanged(int index);
 
+    void on_actionDefaultAllParameters_triggered();
+
 private:
     /// Удаляет из переданных данных лидирующие переводы строк
     std::string& EraseLeadEndls(std::string &value);

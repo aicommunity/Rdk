@@ -84,6 +84,7 @@ public slots:
     void componentCopyClassNameToClipboard();
     void componentReset();
     void componentCalculate();
+    void componentDefault();
     void componentGUI();
     void componentCopyXMLDescription();
     void componentCloneComponent();

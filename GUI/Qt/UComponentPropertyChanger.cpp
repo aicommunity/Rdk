@@ -32,13 +32,11 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UAppl
   setProperty->setPopupMode(QToolButton::MenuButtonPopup);
   ui->toolBarControll->addWidget(setProperty);
   ui->toolBarControll->addAction(ui->actionReload);
-  ui->toolBarControll->addAction(ui->actionDefaultAll);
   ui->toolBarControll->addAction(ui->actionShowXML);
   connect(setProperty, SIGNAL(clicked()), this, SLOT(actionSet()));
   connect(ui->actionReload, SIGNAL(triggered()), componentsList, SLOT(reloadPropertys()));
   connect(ui->actionSetGlobal, SIGNAL(triggered()), this, SLOT(actionSetGlobal()));
   connect(ui->actionSetGlobalOwner, SIGNAL(triggered()), this, SLOT(actionSetGlobalOwner()));
-  connect(ui->actionDefaultAll, SIGNAL(triggered()), this, SLOT(actionDefaultAll()));
   connect(ui->actionShowXML, SIGNAL(triggered()), this, SLOT(actionShowXML()));
 
   connect(componentsList, SIGNAL(selectedPropertyValue(QString)), this, SLOT(updateCurrentPropertyValue(QString)));
@@ -124,11 +122,6 @@ void UComponentPropertyChanger::actionSetGlobalOwner()
   Engine_FreeBufString(className);
 
   componentsList->reloadPropertys();
-}
-
-void UComponentPropertyChanger::actionDefaultAll()
-{
-  Env_Default(componentName.toLocal8Bit(), false);
 }
 
 void UComponentPropertyChanger::actionShowXML()

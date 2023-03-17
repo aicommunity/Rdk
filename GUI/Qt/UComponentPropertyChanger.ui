@@ -95,16 +95,6 @@
     <string>Reload</string>
    </property>
   </action>
-  <action name="actionDefault">
-   <property name="text">
-    <string>Default</string>
-   </property>
-  </action>
-  <action name="actionDefaultAll">
-   <property name="text">
-    <string>Default All</string>
-   </property>
-  </action>
   <action name="actionShowXML">
    <property name="text">
     <string>Show XML</string>

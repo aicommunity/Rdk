@@ -82,6 +82,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     componentsTree->addAction(actionSeparator2);
     componentsTree->addAction(ui->actionComponentReset);
     componentsTree->addAction(ui->actionComponentCalculate);
+    componentsTree->addAction(ui->actionDefaultAllParameters);
     componentsTree->addAction(ui->actionComponentInit);
     componentsTree->addAction(ui->actionComponentUnInit);
     componentsTree->addAction(actionSeparator3);
@@ -99,6 +100,8 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionComponentDelete, SIGNAL(triggered()), this, SLOT(componentDelete()));
     connect(ui->actionComponentReset, SIGNAL(triggered()), this, SLOT(componentReset()));
     connect(ui->actionComponentCalculate, SIGNAL(triggered()), this, SLOT(componentCalculate()));
+ //   connect(ui->actionDefaultAllParameters, SIGNAL(triggered()), this, SLOT(on_actionDefaultAllParameters_triggered()));
+
     connect(ui->actionComponentInit, SIGNAL(triggered()), this, SLOT(componentInit()));
     connect(ui->actionComponentUnInit, SIGNAL(triggered()), this, SLOT(componentUnInit()));
     connect(ui->actionCopyNameToClipboard, SIGNAL(triggered()), this, SLOT(componentCopyNameToClipboard()));
@@ -1176,5 +1179,28 @@ void UComponentsListWidget::on_actionReloadTree_triggered()
 void UComponentsListWidget::on_tabWidgetComponentInfo_currentChanged(int index)
 {
     reloadPropertys(true);
+}
+
+
+void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
+{
+    if(componentsTree->currentItem())
+    {
+        if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
+        {
+            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Are you sure you want to reset all parameters for component "+selectedComponentLongName+" to default values?", QMessageBox::Yes|QMessageBox::Cancel);
+            if (reply == QMessageBox::Cancel) return;
+        }
+
+        RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+        std::string stringid = selectedComponentLongName.toLocal8Bit();
+        RDK::UEPtr<RDK::UContainer> object;
+        if(stringid.empty())
+         object=RDK::GetModel();
+        else
+         object=RDK::GetEngine()->FindComponent(stringid.c_str());
+        storage->ResetComponent(object);
+        RDK::UIVisualControllerStorage::UpdateInterface(true);
+    }
 }
 

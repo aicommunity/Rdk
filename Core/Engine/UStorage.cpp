@@ -769,6 +769,29 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
 
  ObjectsStorage.erase(instances);
 }
+
+/// Устанавливает состояние уже выданного компонента в состояние по умолчанию
+void UStorage::ResetComponent(UEPtr<UContainer> object)
+{
+ if(object->GetStorage() != this)
+  return;
+
+ UId classid = object->GetClass();
+ RDK::MVector<double,3> coord = object->GetCoord();
+ bool activity = object->GetActivity();
+
+ UClassesStorageIterator tmplI=ClassesStorage.find(classid);
+ if(tmplI == ClassesStorage.end())
+  throw EClassIdNotExist(classid);
+
+ UClassStorageElement tmpl=tmplI->second;
+
+ object->Default();
+ tmpl->ResetComponent(static_pointer_cast<UComponent>(object));
+
+ object->SetActivity(activity);
+ object->SetCoord(coord);
+}
 // --------------------------
 
 // --------------------------

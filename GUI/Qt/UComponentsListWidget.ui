@@ -321,7 +321,10 @@
   </action>
   <action name="actionDefaultAllParameters">
    <property name="text">
-    <string>Default All</string>
+    <string>Default</string>
+   </property>
+   <property name="toolTip">
+    <string>Set component parameters to default values</string>
    </property>
   </action>
   <action name="actionSetGlobalState">

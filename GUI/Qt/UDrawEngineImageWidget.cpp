@@ -89,6 +89,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionResetComponent->setText("Reset");
     QAction *actionCalculateComponent = new QAction(contextMenu);
     actionCalculateComponent->setText("Calculate");
+    QAction *actionDefaultComponent = new QAction(contextMenu);
+    actionDefaultComponent->setText("Default");
     QAction *actionGUI = new QAction(contextMenu);
     actionGUI->setText("GUI (not implemented)");
     actionGUI->setEnabled(false);
@@ -120,6 +122,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionSeparator5);
     contextMenu->addAction(actionResetComponent);
     contextMenu->addAction(actionCalculateComponent);
+    contextMenu->addAction(actionDefaultComponent);
     contextMenu->addAction(actionSeparator6);
     contextMenu->addAction(actionGUI);
     contextMenu->addAction(actionCopyComponentXMLDescription);
@@ -145,6 +148,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionCopyClassNameToClipboard, SIGNAL(triggered(bool)), this, SLOT(componentCopyClassNameToClipboard()));
     connect(actionResetComponent, SIGNAL(triggered(bool)), this, SLOT(componentReset()));
     connect(actionCalculateComponent, SIGNAL(triggered(bool)), this, SLOT(componentCalculate()));
+    connect(actionDefaultComponent, SIGNAL(triggered(bool)), this, SLOT(componentDefault()));
     connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     connect(actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
@@ -673,6 +677,26 @@ void UDrawEngineImageWidget::componentCalculate()
 {
     Env_Calculate(myLongName().toLocal8Bit());
     RDK::UIVisualControllerStorage::UpdateInterface();
+}
+
+void UDrawEngineImageWidget::componentDefault()
+{
+    QString selectedComponentLongName = myLongName();
+    if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Are you sure you want to reset all parameters for component "+selectedComponentLongName+" to default values?", QMessageBox::Yes|QMessageBox::Cancel);
+        if (reply == QMessageBox::Cancel) return;
+    }
+
+    RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+    std::string stringid = selectedComponentLongName.toLocal8Bit();
+    RDK::UEPtr<RDK::UContainer> object;
+    if(stringid.empty())
+     object=RDK::GetModel();
+    else
+     object=RDK::GetEngine()->FindComponent(stringid.c_str());
+    storage->ResetComponent(object);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 
 void UDrawEngineImageWidget::componentGUI()
