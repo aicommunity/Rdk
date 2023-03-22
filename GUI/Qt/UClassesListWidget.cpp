@@ -929,6 +929,14 @@ void UClassesListWidget::on_action_cl_desc_triggered()
                 ModelScheme->classDescription(item->text(0).toStdString());
             break;
         }
+    case 2:
+        {
+            QListWidgetItem* item = ui->listWidgetRTlibClasses->currentItem();
+            if(!item)
+                return;
+            ModelScheme->classDescription(item->text().toStdString());
+            break;
+        }
     }
 }
 
@@ -949,5 +957,23 @@ void UClassesListWidget::disable_cl_desc_popup_menu()
 void UClassesListWidget::removeTab(int index)
 {
     ui->tabWidget->removeTab(index);
+}
+
+
+void UClassesListWidget::on_treeWidgetStorageByLibs_itemDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    on_action_cl_desc_triggered();
+}
+
+
+void UClassesListWidget::on_listWidgetStorageByName_itemDoubleClicked(QListWidgetItem *item)
+{
+    on_action_cl_desc_triggered();
+}
+
+
+void UClassesListWidget::on_listWidgetRTlibClasses_itemDoubleClicked(QListWidgetItem *item)
+{
+    on_action_cl_desc_triggered();
 }
 

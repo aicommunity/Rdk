@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>864</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -142,6 +142,9 @@
      <string>Window</string>
     </property>
     <widget class="QMenu" name="menuBroadcasters">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Broadcasters</string>
      </property>
@@ -173,7 +176,7 @@
    </widget>
    <widget class="QMenu" name="menuNewWindow">
     <property name="title">
-     <string>New Window</string>
+     <string>New Tab</string>
     </property>
     <addaction name="actionImagesFromNewWindow"/>
     <addaction name="actionWatchesFromNewWindow"/>
@@ -219,9 +222,6 @@
    </property>
   </widget>
   <widget class="QDockWidget" name="dockWidgetComponentsList">
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
    <property name="windowTitle">
     <string>Components list</string>
    </property>
@@ -239,7 +239,7 @@
    <property name="minimumSize">
     <size>
      <width>50</width>
-     <height>26</height>
+     <height>30</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -321,7 +321,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Classes Descriptio</string>
+    <string>Classes Description</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionCreateModel">
@@ -363,6 +366,9 @@
    <property name="text">
     <string>Capture Video</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionOpenVideoFile">
    <property name="enabled">
@@ -370,6 +376,9 @@
    </property>
    <property name="text">
     <string>Open Video File</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionOpenImage">
@@ -379,6 +388,9 @@
    <property name="text">
     <string>Open Image</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionSaveCommonDescriptions">
    <property name="enabled">
@@ -387,6 +399,9 @@
    <property name="text">
     <string>Save Common Descriptions</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionSaveClassesDescriptions">
    <property name="enabled">
@@ -394,6 +409,9 @@
    </property>
    <property name="text">
     <string>Save Classes Descriptions</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionAddCh">
@@ -478,6 +496,9 @@
    <property name="text">
     <string>Engine Monitor</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionVideoSources">
    <property name="enabled">
@@ -486,6 +507,9 @@
    <property name="text">
     <string>Video Sources</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionVideoRegistration">
    <property name="enabled">
@@ -493,6 +517,9 @@
    </property>
    <property name="text">
     <string>Video Registration</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionComponentsControl">
@@ -510,6 +537,9 @@
    <property name="text">
     <string>Components Links</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionPerformance">
    <property name="enabled">
@@ -518,6 +548,9 @@
    <property name="text">
     <string>Performance</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionFavoriteInformation">
    <property name="enabled">
@@ -525,6 +558,9 @@
    </property>
    <property name="text">
     <string>Favorite Information</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionDrawEngine">
@@ -537,6 +573,9 @@
    <property name="text">
     <string>Draw Engine</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionWatchWindow">
    <property name="enabled">
@@ -548,10 +587,13 @@
   </action>
   <action name="actionVASimpleSettings">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Video Analytics settings</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionServerControl">
@@ -560,6 +602,9 @@
    </property>
    <property name="text">
     <string>Server Control</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionHttpBroadcasters">
@@ -623,6 +668,9 @@
    <property name="text">
     <string>Update from other thread</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionChannelsControl">
    <property name="text">
@@ -678,10 +726,13 @@
   </action>
   <action name="actionTcpServer">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>TcpServer</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionCreateSaveMockLibs">
@@ -710,6 +761,9 @@
   <action name="actionFtpTest">
    <property name="text">
     <string>Ftp Test</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionCreateSimple">
@@ -753,6 +807,9 @@
    </property>
    <property name="toolTip">
     <string>Classes Description</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

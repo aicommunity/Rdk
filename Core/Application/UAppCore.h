@@ -171,7 +171,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
  programName=projectIniFile("General","ProgramName","Server");
- configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../../Configs/");
+ configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../Configs/");
  neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
  logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
  if(logDir.empty())
@@ -186,8 +186,8 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  useNewXmlFormatProjectFile=atoi(projectIniFile("General","UseNewXmlFormatProjectFile","0"));
  useNewProjectFilesStructure=atoi(projectIniFile("General","UseNewProjectFilesStructure","0"));
 
- librariesPath=projectIniFile("General", "LibrariesPath", "../../../");
- clDescPath=projectIniFile("General", "ClDescPath", "../../../ClDesc/");
+ librariesPath=projectIniFile("General", "LibrariesPath", "../../");
+ clDescPath=projectIniFile("General", "ClDescPath", "../../ClDesc/");
 
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");

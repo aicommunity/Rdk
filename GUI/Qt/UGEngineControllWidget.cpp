@@ -762,7 +762,11 @@ void UGEngineControllWidget::actionTestCreator()
 
 void UGEngineControllWidget::actionWatchWindow()
 {
-    if(watchWindow != NULL) watchWindow->show();
+    if(watchWindow != NULL)
+    {
+        watchWindow->show();
+        watchWindow->showNormal();
+    }
     else
     {
         watchWindow = new UWatch(this);
