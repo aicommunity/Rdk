@@ -31,7 +31,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     if(application == NULL)
       QApplication::exit(-1);
 
-    QString caption_line="Core Console "+QCoreApplication::applicationVersion();
+    QString caption_line=(application->GetProgramName()+" ").c_str();
+    caption_line += QCoreApplication::applicationVersion();
     if(!application->GetUserName().empty())
     {
      caption_line=caption_line+" ["+application->GetUserName().c_str();
@@ -208,14 +209,12 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
     // window menu actions:
     connect(ui->actionImagesFromWindow, SIGNAL(triggered(bool)), this, SLOT(actionImages()));
-    connect(ui->actionImagesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewImages()));
     connect(ui->actionComponentsControl, SIGNAL(triggered(bool)), this, SLOT(actionComponentsControl()));
     connect(ui->actionChannelsControl, SIGNAL(triggered(bool)), this, SLOT(actionChannelsControl()));
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
-    connect(ui->actionWatchesFromNewWindow, SIGNAL(triggered(bool)), this, SLOT(actionNewWatches()));
 #ifndef RDK_DISABLE_EXT_GUI
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SLOT(actionVASimpleSettings()));
@@ -231,6 +230,8 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
     connect(ui->actionClDesc, SIGNAL(triggered(bool)), this, SLOT(actionClDesc()));
 
     readSettings();
+
+    aboutDialog = 0;
 }
 
 
@@ -310,7 +311,6 @@ void UGEngineControllWidget::actionLoadConfig()
 
       application->OpenProject(fileName.toLocal8Bit().constData());
       UpdateInterface();
- //     this->setWindowTitle("Core Console "+QCoreApplication::applicationVersion()+" [Configuration: " + fileName+"]");
 
       /*QStringList list = configFileName.split("/");
       list.pop_back();*/
@@ -334,7 +334,6 @@ void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
  {
   application->OpenProject(config_path.toLocal8Bit().constData());
   UpdateInterface();
- // this->setWindowTitle("Core Console "+QCoreApplication::applicationVersion()+" [Configuration: " + config_path+"]");
 
   /*QStringList list = configFileName.split("/");
   list.pop_back();*/
@@ -375,7 +374,6 @@ void UGEngineControllWidget::actionCreateConfig()
  createConfigurationWizardWidget->show();
  UpdateInterface();
 // if(application->GetProjectOpenFlag())
-//  this->setWindowTitle("Core Console "+QCoreApplication::applicationVersion()+" [Configuration: " + application->GetProjectPath().c_str()+application->GetProjectFileName().c_str()+"]");
 }
 
 void UGEngineControllWidget::actionCreateSimple()
@@ -439,7 +437,6 @@ void UGEngineControllWidget::actionCreateSimple()
 
     application->CreateProject(file_name, classname);
 
-//    this->setWindowTitle("Core Console "+QCoreApplication::applicationVersion()+" [Configuration: " + file_name.c_str()+"]");
     RDK::UIVisualControllerStorage::UpdateInterface();
   }
   catch(RDK::UException& e)
@@ -463,7 +460,6 @@ void UGEngineControllWidget::actionCloseConfig()
  {
   application->PauseChannel(-1);
   application->CloseProject();
-//  this->setWindowTitle("Core Console"+QCoreApplication::applicationVersion());
   RDK::UIVisualControllerStorage::UpdateInterface(true);
   AUpdateInterface();
  }
@@ -506,7 +502,6 @@ void UGEngineControllWidget::actionCopyConfig()
   std::string open_file_name=res_path.toLocal8Bit().constData();
   open_file_name+=project_file_name;
   application->OpenProject(open_file_name);
-//  this->setWindowTitle(QString("Core Console "+QCoreApplication::applicationVersion()+" [Configuration: ") + open_file_name.c_str()+"]");
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
 
@@ -1130,7 +1125,8 @@ void UGEngineControllWidget::updateChannelsVisibility()
 // Обновление интерфейса
 void UGEngineControllWidget::AUpdateInterface(void)
 {
- QString caption_line="Core Console "+QCoreApplication::applicationVersion();
+ QString caption_line=(application->GetProgramName()+" ").c_str();
+ caption_line += QCoreApplication::applicationVersion();
  if(!application->GetUserName().empty())
  {
   caption_line=caption_line+" ["+application->GetUserName().c_str();
@@ -1147,9 +1143,8 @@ void UGEngineControllWidget::AUpdateInterface(void)
 void UGEngineControllWidget::AClearInterface(void)
 {
  AUpdateInterface();
-//    this->setWindowTitle("Core Console "+QCoreApplication::applicationVersion());
 
-    //Очистка Watches окон и Images окон
+ //Очистка Watches окон и Images окон
     int count=int(watchesVector.size());
     for(int i=count-1;i>=0;i--)
         delete watchesVector[i];
@@ -1180,7 +1175,6 @@ void UGEngineControllWidget::AClearInterface(void)
 void UGEngineControllWidget::AAfterLoadProject(void)
 {
  UpdateInterface();
-// this->setWindowTitle("Core Console "+QCoreApplication::applicationVersion()+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]");
  if(propertyChanger->componentsList->GetUpdateInterval()>0)
   statusPanel->ChangeAutoupdateProperties(true);
  else
@@ -1289,3 +1283,25 @@ void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
     }
     xml.SelectUp();
 }
+
+void UGEngineControllWidget::on_actionAbout_triggered()
+{
+ if(!aboutDialog)
+ {
+  aboutDialog = new UAboutDialog(this, application);
+ }
+ aboutDialog->show();
+}
+
+
+void UGEngineControllWidget::on_actionWatches_triggered()
+{
+ addWatchesWidged();
+}
+
+
+void UGEngineControllWidget::on_actionImages_triggered()
+{
+ addImagesWidged();
+}
+

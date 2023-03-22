@@ -67,6 +67,17 @@ UApplication::~UApplication(void)
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Название приложения
+const std::string& UApplication::GetProgramName(void) const
+{
+ return ProgramName;
+}
+
+void UApplication::SetProgramName(const std::string &value)
+{
+ ProgramName = value;
+}
+
 /// Имя файла приложения
 const std::string& UApplication::GetApplicationFileName(void) const
 {

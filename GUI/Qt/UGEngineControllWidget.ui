@@ -152,6 +152,13 @@
      <addaction name="actionTcpBroadcaster"/>
      <addaction name="actionDevLineHttpBroadcaster"/>
     </widget>
+    <widget class="QMenu" name="menuNew_Tab">
+     <property name="title">
+      <string>New Tab</string>
+     </property>
+     <addaction name="actionWatches"/>
+     <addaction name="actionImages"/>
+    </widget>
     <addaction name="actionImagesFromWindow"/>
     <addaction name="separator"/>
     <addaction name="actionEngineMonitor"/>
@@ -173,19 +180,19 @@
     <addaction name="actionServerControl"/>
     <addaction name="actionTcpServer"/>
     <addaction name="actionFtpTest"/>
+    <addaction name="menuNew_Tab"/>
    </widget>
-   <widget class="QMenu" name="menuNewWindow">
+   <widget class="QMenu" name="menuAbout">
     <property name="title">
-     <string>New Tab</string>
+     <string>Help</string>
     </property>
-    <addaction name="actionImagesFromNewWindow"/>
-    <addaction name="actionWatchesFromNewWindow"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuChannels"/>
    <addaction name="menuCalculate"/>
    <addaction name="menuWindow"/>
-   <addaction name="menuNewWindow"/>
+   <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="minimumSize">
@@ -810,6 +817,26 @@
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionNew_Tab">
+   <property name="text">
+    <string>New Tab</string>
+   </property>
+  </action>
+  <action name="actionWatches">
+   <property name="text">
+    <string>Watches</string>
+   </property>
+  </action>
+  <action name="actionImages">
+   <property name="text">
+    <string>Images</string>
    </property>
   </action>
  </widget>

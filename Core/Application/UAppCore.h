@@ -170,7 +170,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
- programName=projectIniFile("General","ProgramName","Server");
+ programName=projectIniFile("General","ProgramName",RDK_APP_NAME);
  configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../Configs/");
  neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
  logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
@@ -215,6 +215,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   RDK::Sleep(startupDelay);
  }
 
+ application.SetProgramName(programName);
  application.SetCoutLogMode(coutLogMode);
  application.SetApplicationFileName(application_file_name);
  application.SetLogCreationMode(logCreationMode);

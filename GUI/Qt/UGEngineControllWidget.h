@@ -28,6 +28,7 @@
 #include "UTcpServerControlWidget.h"
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
+#include "UAboutDialog.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -162,6 +163,12 @@ private slots:
     void delWatchesWidgetSlot(QObject* obj);
     void delWatchesWidged(size_t index);
 
+    void on_actionAbout_triggered();
+
+    void on_actionWatches_triggered();
+
+    void on_actionImages_triggered();
+
 private:
     // data
     Ui::UGEngineControllWidget *ui;
@@ -188,6 +195,7 @@ private:
     UClDescEditor *clDesc;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
+    UAboutDialog *aboutDialog;
 #ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 #endif

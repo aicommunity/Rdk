@@ -153,6 +153,9 @@ UEPtr<UTestManager> TestManager;
 UEPtr<UProjectDeployer> ProjectDeployer;
 
 protected: // Временные переменные
+/// Название приложения
+std::string ProgramName;
+
 /// Заголовок приложения
 std::string AppCaption;
 
@@ -179,6 +182,10 @@ virtual ~UApplication(void);
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Название приложения
+const std::string& GetProgramName(void) const;
+void SetProgramName(const std::string &value);
+
 /// Имя файла приложения
 const std::string& GetApplicationFileName(void) const;
 bool SetApplicationFileName(const std::string& value);
