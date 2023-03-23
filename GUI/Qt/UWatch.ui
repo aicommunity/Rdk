@@ -60,7 +60,7 @@
      <x>0</x>
      <y>0</y>
      <width>835</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -101,8 +101,14 @@
    </property>
   </action>
   <action name="actionCharts_option">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Charts options</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

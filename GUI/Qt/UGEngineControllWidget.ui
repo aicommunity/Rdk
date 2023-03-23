@@ -365,6 +365,9 @@
    <property name="text">
     <string>Reload Parameters</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionCaptureVideo">
    <property name="enabled">

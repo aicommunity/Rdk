@@ -419,14 +419,14 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     /* Подключаем СЛОТы обработчики для действий контекстного меню */
     connect(addSeiesAction, SIGNAL(triggered()), this, SLOT(addSeriesSlot()));
     connect(seriesOptionAction, SIGNAL(triggered()), this, SLOT(seriesOptionSlot()));
-    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
+//    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
     connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
     connect(restoreAxesAction, SIGNAL(triggered()), this, SLOT(restoreAxes()));
 
     /* Устанавливаем действия в меню */
     menu->addAction(addSeiesAction);
     menu->addAction(seriesOptionAction);
-    menu->addAction(chartOptionAction);
+//    menu->addAction(chartOptionAction);
     menu->addAction(saveJpegAction);
     menu->addAction(restoreAxesAction);
 

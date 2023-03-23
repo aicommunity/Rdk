@@ -40,11 +40,15 @@ private slots:
     void on_graphsList_currentRowChanged(int currentRow);
     void on_graphsSeriesList_currentRowChanged(int currentRow);
 
+    void on_createLayot_button_clicked();
+
+    void on_axisXtrackCB_stateChanged(int arg1);
+
 private:
     Ui::UWatchSeriesOption *ui;
     UWatchTab *WatchTab;
 
-    void loadGraphsName();//загрузить имена графиков
+   //void loadGraphsName();//загрузить имена графиков
     void updateGraphsSeries(int currentChartIndex); //обновить имена серий выбранного графика в листе серий
 
     void updateSeriesProperties(int currentSerieIndex); //Обновить свойства для выбранной серии
@@ -53,6 +57,13 @@ private:
     void updateSeriesWidthProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesLineTypeProp(int currentChartIndex,int currentSerieIndex);
     void updateSeriesYShift(int currentChartIndex,int currentSerieIndex);
+
+    void updateChartList(); //обновить имена в лист графиков
+    void updateLayoutBox();
+    void updateParameters(int chartIndex);//обновить параметры выбранного в листе графика
+    void createLayout(); //создать новое расположение
+    void saveChartParameters(); //сохранить изменения
+
 
     //сохранить параметры
     void saveParemeters();
