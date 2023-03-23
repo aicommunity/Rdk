@@ -447,8 +447,22 @@ void UDrawEngineImageWidget::selectComponent(QString name)
 {
     QStringList list(name.split("."));
     std::string nameStd = list.last().toLocal8Bit().constData();
-    if(nameStd!=selectedComponent && !nameStd.empty())
+    std::string full_component_name = name.toLocal8Bit().constData();
+    std::string expected_component_name;
+    std::string::size_type i = full_component_name.find_last_of(".");
+    if(i != std::string::npos)
+     expected_component_name = full_component_name.substr(0,i);
+    if(nameStd!=selectedComponent && !nameStd.empty() && (ComponentName == expected_component_name.c_str()) )
     {
+        selectedComponent = nameStd;
+        DrawEngine.SelectSingleComponent(nameStd);
+        reDrawScheme(false);
+    }
+    else
+    if(ComponentName != expected_component_name.c_str())
+    {
+        ComponentName = expected_component_name.c_str();
+        reDrawScheme(true);
         selectedComponent = nameStd;
         DrawEngine.SelectSingleComponent(nameStd);
         reDrawScheme(false);
