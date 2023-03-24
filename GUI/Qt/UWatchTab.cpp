@@ -45,6 +45,21 @@ void UWatchTab::AUpdateInterface()
         graph[graphIndex]->chartView->setUpdatesEnabled(false);
         double x_min=0.0;
         double x_max=0.0;
+
+        int i=0;
+        while(i<graph[graphIndex]->countSeries())
+        {
+            RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
+            RDK::UControllerDataReader* data=env->GetDataReader(graph[graphIndex]->getSerie(i)->nameComponent.toStdString(),
+                                                                graph[graphIndex]->getSerie(i)->nameProperty.toStdString(),
+                                                                graph[graphIndex]->getSerie(i)->Jx,
+                                                                graph[graphIndex]->getSerie(i)->Jy);
+            if(!data)
+              graph[graphIndex]->deleteSerie(i);
+            else
+              ++i;
+        }
+
         for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
             std::list<double>::iterator buffIX, buffIY;

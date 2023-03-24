@@ -893,8 +893,8 @@ void UComponentsListWidget::componentDelete()
         }
 
         MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
-        UpdateInterface(true);
-        emit updateScheme(true);
+        RDK::UIVisualControllerStorage::UpdateInterface(true);
+//        emit updateScheme(true);
     }
 }
 

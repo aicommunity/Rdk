@@ -654,8 +654,9 @@ void UDrawEngineImageWidget::componentDelete()
     }
 
     Model_DelComponent("", selectedComponentLongName.toLocal8Bit());
-    reDrawScheme(true);
-    emit updateComponentsList();
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    //reDrawScheme(true);
+//    emit updateComponentsList();
 }
 
 void UDrawEngineImageWidget::componentCopyNameToClipboard()

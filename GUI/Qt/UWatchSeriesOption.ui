@@ -294,14 +294,14 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QPushButton" name="addSerieButton_2">
+           <widget class="QPushButton" name="addSerieButton">
             <property name="text">
              <string>Add new series</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="removeSerieButton_2">
+           <widget class="QPushButton" name="removeSerieButton">
             <property name="text">
              <string>Remove selected series</string>
             </property>

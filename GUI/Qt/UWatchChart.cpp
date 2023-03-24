@@ -411,7 +411,7 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     // Создаём действия для контекстного меню
     QAction * addSeiesAction =      new QAction("Add series", this);
     QAction * seriesOptionAction =  new QAction("Series option", this);
-    QAction * chartOptionAction =   new QAction("Chart's option", this);
+//    QAction * chartOptionAction =   new QAction("Chart's option", this);
     QAction * saveJpegAction =      new QAction("Save chart to JPEG", this);
     QAction * restoreAxesAction =   new QAction("Restore Axes", this);
 
