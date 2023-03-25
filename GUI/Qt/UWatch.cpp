@@ -162,3 +162,9 @@ void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
     }
     xml.SelectUp();
 }
+
+void UWatch::on_tabWidget_currentChanged(int index)
+{
+  tab[index]->UpdateInterface();
+}
+

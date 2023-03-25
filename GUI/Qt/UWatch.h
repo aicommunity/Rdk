@@ -68,6 +68,8 @@ private slots:
     void on_tabWidget_tabCloseRequested(int index);
 
 
+    void on_tabWidget_currentChanged(int index);
+
 private:
     // Список табов с графиками
     QVector <UWatchTab*> tab;
