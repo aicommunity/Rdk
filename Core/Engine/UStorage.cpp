@@ -771,7 +771,7 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
 }
 
 /// Устанавливает состояние уже выданного компонента в состояние по умолчанию
-void UStorage::ResetComponent(UEPtr<UContainer> object)
+void UStorage::DefaultObject(UEPtr<UContainer> object)
 {
  if(object->GetStorage() != this)
   return;

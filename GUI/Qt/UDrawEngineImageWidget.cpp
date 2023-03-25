@@ -705,12 +705,21 @@ void UDrawEngineImageWidget::componentDefault()
 
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
     std::string stringid = selectedComponentLongName.toLocal8Bit();
-    RDK::UEPtr<RDK::UContainer> object;
+    RDK::UEPtr<RDK::UNet> object;
     if(stringid.empty())
-     object=RDK::GetModel();
+     object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
     else
-     object=RDK::GetEngine()->FindComponent(stringid.c_str());
-    storage->ResetComponent(object);
+     object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
+
+    RDK::UEPtr<RDK::UNet> owner = RDK::dynamic_pointer_cast<RDK::UNet>(object->GetOwner());
+    RDK::UStringLinksList links_list;
+
+    if(owner)
+     object->GetLinks(links_list, owner, true, object);
+    storage->DefaultObject(object);
+    if(owner)
+     object->CreateLinks(links_list, owner);
+
     RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 

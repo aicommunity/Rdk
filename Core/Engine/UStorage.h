@@ -273,7 +273,7 @@ virtual void ClearObjectsStorage(bool force=false);
 virtual void ClearObjectsStorageByClass(const UId &classid);
 
 /// Устанавливает состояние уже выданного компонента в состояние по умолчанию
-virtual void ResetComponent(UEPtr<UContainer> object);
+virtual void DefaultObject(UEPtr<UContainer> object);
 // --------------------------
 
 // --------------------------
