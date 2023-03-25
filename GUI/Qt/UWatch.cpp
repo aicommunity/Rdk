@@ -165,6 +165,7 @@ void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 
 void UWatch::on_tabWidget_currentChanged(int index)
 {
+ if(index >=0 && index<tab.size())
   tab[index]->UpdateInterface();
 }
 
