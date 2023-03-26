@@ -41,7 +41,7 @@ void UClassFavoritesEditor::ChangeClass(std::string class_name)
 void UClassFavoritesEditor::CreateFavorite()
 {
     // —оздание нового Favorite, если строковые данные не пусты
-    if(ui->lineEditFullPath->text().isEmpty() && ui->lineEditFavName->text().isEmpty())
+    if(ui->lineEditFullPath->text().isEmpty() || ui->lineEditFavName->text().isEmpty())
     {
        return;
     }

@@ -126,6 +126,13 @@ void UClassDescriptionDisplay::FillProperties()
 
     for (auto i = props.begin(); i != props.end(); i++)
     {
+        if(i->first.find("DataOutput") == 0)
+            continue;
+        if(i->first.find("DataInput") == 0)
+            continue;
+        unsigned int data_type = i->second.PropertyType;
+        if(!(data_type & pgPublic))
+            continue;
         ui->listWidgetProperties->addItem(QString::fromStdString(i->first));
     }
 

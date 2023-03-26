@@ -153,7 +153,7 @@ void UContainerDescription::CreateProperties()
             prop_desc.Step = "";
             prop_desc.ValueList = {"",""};
 
-            prop_desc.PropertyType = i->second.GetPropertyType();
+            prop_desc.PropertyType = i->second.Type;//i->second.GetPropertyType();
             prop_desc.Type = "";
 
             if (i->second.CheckMask(ptPubParameter))
