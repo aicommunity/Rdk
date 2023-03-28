@@ -78,7 +78,7 @@
     <string>https://url.url</string>
    </property>
    <property name="textFormat">
-    <enum>Qt::MarkdownText</enum>
+    <enum>Qt::PlainText</enum>
    </property>
   </widget>
   <widget class="QLabel" name="labelLicense">
