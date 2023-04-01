@@ -7,7 +7,7 @@
 
 namespace RDK {
 
-typedef void (*ProgressBarCallback)(int complete_percent);
+typedef void (*ProgressBarCallback)(int complete_percent, const std::string &text);
 
 
 /// Класс начальной инициализации
@@ -155,7 +155,8 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::Init(const std::string &application_file_name, const std::string& ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[])
 {
- //std::cout<<"Test sout init"<<std::endl;
+ if(FuncProgressBarCallback)
+  FuncProgressBarCallback(0, "Launching application: load application config...");
 
  // Инициализация из стартового ini файла
  RDK::UIniFile<char> projectIniFile;
@@ -252,7 +253,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(15);
+  FuncProgressBarCallback(15, "Launching application: core initialization...");
 
  // Инициализация из стартового ini файла
  RDK::UIniFile<char> userIniFile;
@@ -279,7 +280,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  application.Init();
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(20);
+  FuncProgressBarCallback(20, "Launching application: gui initialization...");
 
  return 0;
 }
@@ -297,7 +298,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(30);
+  FuncProgressBarCallback(30, "Launching application: init paths and server features...");
 
  if(storageMountPoint!="")
      application.SetStorageMountPoint(storageMountPoint);
@@ -329,7 +330,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(40);
+  FuncProgressBarCallback(40, "Launching application: database initialzation...");
 
  if(database_login!="" && database_password!="")
  {
@@ -337,7 +338,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(50);
+  FuncProgressBarCallback(50, "Launching application: load configuration...");
 
  if(!startProjectName.empty())
   application.OpenProject(startProjectName);
@@ -353,7 +354,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(80);
+  FuncProgressBarCallback(80, "Launching application: run a calculation if needed...");
 
  if(autoStartProjectFlag)
  {
@@ -363,7 +364,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  }
 
  if(FuncProgressBarCallback)
-  FuncProgressBarCallback(90);
+  FuncProgressBarCallback(90, "Launching application: finalization...");
 
  return 0;
 }
