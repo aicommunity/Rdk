@@ -393,7 +393,8 @@ void UComponentLinksWidget::createLink()
 
     UpdateInterface(true);
     emit updateScheme(true);
-    emit closeWindow();
+    if(ui->autoCloseDisableCheckBox->checkState() == Qt::CheckState::Unchecked)
+        emit closeWindow();
 }
 
 void UComponentLinksWidget::breakLink()
