@@ -457,6 +457,7 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 
         series_count = xml.ReadInteger("SeriesCount", 0);
 
+        int current_seires_index = -1;
         for(int serieIndex=0; serieIndex < series_count; serieIndex++)
         {
             xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
@@ -468,11 +469,17 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
             double y_shift = xml.ReadFloat("SerieYShift", 0.0);
 
             double time_interval = graph[graphIndex]->getAxisXrange();
+
+            // TODO: 0 - ќшибка. не  будет работать если больше 1 канала.
             graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval, y_shift);
-            graph[graphIndex]->setSerieName      (serieIndex, xml.ReadString("SerieName", "").c_str());
-            graph[graphIndex]->setSerieWidth     (serieIndex, xml.ReadInteger("SerieWidth", 0));
-            graph[graphIndex]->setSerieLineType  (serieIndex, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
-            graph[graphIndex]->getSerie(serieIndex)->setColor(xml.ReadInteger("SerieColor", 0));
+            // TODO: костыль: сери€ создаетс€, но может быть сразу удалена, если компонента не существует (при обновлении внутри createSerie)
+            if(current_seires_index == graph[graphIndex]->countSeries()-1)
+             continue; // ≈сли размер не помен€лс€ то график не был создан, пропускаем
+            current_seires_index = graph[graphIndex]->countSeries()-1;
+            graph[graphIndex]->setSerieName      (current_seires_index, xml.ReadString("SerieName", "").c_str());
+            graph[graphIndex]->setSerieWidth     (current_seires_index, xml.ReadInteger("SerieWidth", 0));
+            graph[graphIndex]->setSerieLineType  (current_seires_index, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
+            graph[graphIndex]->getSerie(current_seires_index)->setColor(xml.ReadInteger("SerieColor", 0));
             xml.SelectUp();
         }
         xml.SelectUp();
