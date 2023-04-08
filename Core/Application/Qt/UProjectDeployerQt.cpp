@@ -2509,6 +2509,7 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
             bool *start_prediction = predictor_container->AccessPropertyData<bool>("StartPredict");
             std::cerr<<"Start prediction = "<<*start_prediction<<"\n";
             *start_prediction = true;
+            return true;
         }
         if(*predict_status==1)
         {
@@ -2527,6 +2528,7 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
             return true;
         }
     }
+    return false;
 }
 
 ///ќбрабатывает накопившийс€ с последнего вызова лог
@@ -2748,6 +2750,7 @@ int UProjectDeployerQt::GetUploadState()
         //по окончании работы тут тоже будет верное состо€ние
         return deploymentState;
     }
+    return DS_NULL;
 }
 
 ///ќбновить статус задачи в базе данных

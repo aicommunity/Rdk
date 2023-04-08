@@ -576,19 +576,19 @@ bool URuntimeLibrary::DeleteOwnDirectory(void)
 /// Создает компонент из описания xml
 UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStorageXML &xml)
 {
- UEPtr<UNet> cont;
+ UEPtr<UContainer> cont;
 
  if(!storage)
     return 0;
 
  std::string class_name=xml.GetNodeAttribute("Class");
 
- cont=dynamic_pointer_cast<UNet>(storage->TakeObject(class_name));
+ cont=dynamic_pointer_cast<UContainer>(storage->TakeObject(class_name));
 
  if(!cont)
     return 0;
 
- if(!cont->LoadComponent(&xml,true))
+ if(!dynamic_pointer_cast<UNet>(cont)->LoadComponent(&xml,true))
  {
     if(Storage->GetLogger())
         Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while LoadComponent() from XML file for class \"" +class_name +"\"");
@@ -720,9 +720,9 @@ UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage 
 
     UEPtr<UMockUNet> mock = new UMockUNet(&xml,storage);
 
-    UEPtr<UNet> cont =dynamic_pointer_cast<UNet>(mock);
+    UEPtr<UContainer> cont =dynamic_pointer_cast<UContainer>(mock);
 
-    if(!cont)
+    if(!dynamic_pointer_cast<UNet>(cont))
     {
         delete mock;
         return 0;

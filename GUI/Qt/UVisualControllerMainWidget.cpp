@@ -452,7 +452,7 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
  //   QRect Screen = QApplication::desktop()->availableGeometry();
     int num_screens = QApplication::desktop()->numScreens();
     std::vector<QRect> screen_sizes(num_screens);
-    for(size_t i=0;i<screen_sizes.size();i++)
+    for(int i=0;i<int(screen_sizes.size());i++)
        screen_sizes[i] = QApplication::desktop()->availableGeometry(i);
 
 
@@ -462,7 +462,7 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
     value_y=xml.ReadInteger("Top",y());
 
     int screen_index(0);
-    for(size_t i=0;i<screen_sizes.size();i++)
+    for(int i=0;i<int(screen_sizes.size());i++)
     {
       if(value_x>=screen_sizes[i].left() && value_x <= screen_sizes[i].left()+screen_sizes[i].width() && value_y>=screen_sizes[i].top() && value_y <= screen_sizes[i].top()+screen_sizes[i].height())
       {

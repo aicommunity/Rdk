@@ -3,7 +3,7 @@
 
 #include "UTcpServerControlWidget.h"
 #include "ui_UTcpServerControlWidget.h"
-#include "UGEngineControllWidget.h"
+#include "UGEngineControlWidget.h"
 
 
 /// Ёкзепл€р класса приложени€

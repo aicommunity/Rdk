@@ -88,7 +88,7 @@ void USingleClassListWidget::reloadClassTree()
         // возвращем экземпляр
         storage->ReturnObject(cont);
     }
-    catch(RDK::UException& e)
+    catch(RDK::UException&)
     {
         return;
     }

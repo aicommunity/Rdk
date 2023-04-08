@@ -1,4 +1,4 @@
-#include "UGEngineControllWidget.h"
+#include "UGEngineControlWidget.h"
 #include "ui_UGEngineControllWidget.h"
 
 
@@ -19,7 +19,7 @@
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
 
-UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplication *app) :
+UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerMainWidget(parent,app),
     ui(new Ui::UGEngineControllWidget)
 {
@@ -236,7 +236,7 @@ UGEngineControllWidget::UGEngineControllWidget(QWidget *parent, RDK::UApplicatio
 
 
 
-UGEngineControllWidget::~UGEngineControllWidget()
+UGEngineControlWidget::~UGEngineControlWidget()
 {
     application->UnInit();
     delete ui;
@@ -253,19 +253,19 @@ void UGEngineControllWidget::setExternVideoAnalyticsSimpleWidget(UVideoAnalytics
 }
 #endif
 
-void UGEngineControllWidget::showLinksForSingleComponent(QString componentName)
+void UGEngineControlWidget::showLinksForSingleComponent(QString componentName)
 {
     componentLinks->initWidget(componentName);
     execDialogUVisualControllWidget(componentLinks);
 }
 
-void UGEngineControllWidget::showLinksForTwoComponents(QString firstComponentName, QString secondComponentName)
+void UGEngineControlWidget::showLinksForTwoComponents(QString firstComponentName, QString secondComponentName)
 {
     componentLinks->initWidget(firstComponentName, secondComponentName);
     execDialogUVisualControllWidget(componentLinks);
 }
 
-void UGEngineControllWidget::switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName)
+void UGEngineControlWidget::switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName)
 {
     componentLinks->initWidget(firstComponentName, secondComponentName, 3);
     execDialogUVisualControllWidget(componentLinks);
@@ -273,7 +273,7 @@ void UGEngineControllWidget::switchLinksForTwoComponents(QString firstComponentN
 
 // file menu actions
 
-void UGEngineControllWidget::actionLoadConfig()
+void UGEngineControlWidget::actionLoadConfig()
 {
     // Директория проектов
     QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
@@ -328,7 +328,7 @@ void UGEngineControllWidget::actionLoadConfig()
     }
 }
 
-void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
+void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
 {
  try
  {
@@ -351,7 +351,7 @@ void UGEngineControllWidget::loadProjectExternal(const QString &config_path)
  }
 }
 
-void UGEngineControllWidget::actionCreateConfig()
+void UGEngineControlWidget::actionCreateConfig()
 {
  if(application->GetProjectOpenFlag())
  {
@@ -376,7 +376,7 @@ void UGEngineControllWidget::actionCreateConfig()
 // if(application->GetProjectOpenFlag())
 }
 
-void UGEngineControllWidget::actionCreateSimple()
+void UGEngineControlWidget::actionCreateSimple()
 {
   try
   {
@@ -449,12 +449,12 @@ void UGEngineControllWidget::actionCreateSimple()
   }
 }
 
-void UGEngineControllWidget::actionSaveConfig()
+void UGEngineControlWidget::actionSaveConfig()
 {
     application->SaveProject();
 }
 
-void UGEngineControllWidget::actionCloseConfig()
+void UGEngineControlWidget::actionCloseConfig()
 {
  try
  {
@@ -473,7 +473,7 @@ void UGEngineControllWidget::actionCloseConfig()
  }
 }
 
-void UGEngineControllWidget::actionCopyConfig()
+void UGEngineControlWidget::actionCopyConfig()
 {
  try
  {
@@ -516,7 +516,7 @@ void UGEngineControllWidget::actionCopyConfig()
  }
 }
 
-void UGEngineControllWidget::actionAutoCopyConfig()
+void UGEngineControlWidget::actionAutoCopyConfig()
 {
   try
   {
@@ -560,7 +560,7 @@ void UGEngineControllWidget::actionAutoCopyConfig()
   }
 }
 
-void UGEngineControllWidget::actionRenameConfig()
+void UGEngineControlWidget::actionRenameConfig()
 {
   try
   {
@@ -605,24 +605,24 @@ void UGEngineControllWidget::actionRenameConfig()
   }
 }
 
-void UGEngineControllWidget::actionExit()
+void UGEngineControlWidget::actionExit()
 {
   QApplication::quit();
 }
 
-void UGEngineControllWidget::actionConfigOptions()
+void UGEngineControlWidget::actionConfigOptions()
 {
  createConfigurationWizardWidget->restart();
  createConfigurationWizardWidget->show();
 }
 
-void UGEngineControllWidget::actionCreateSaveMockLibs()
+void UGEngineControlWidget::actionCreateSaveMockLibs()
 {
  if(application)
   application->CreateSaveMockLibs();
 }
 
-void UGEngineControllWidget::updateShemeClassesList()
+void UGEngineControlWidget::updateShemeClassesList()
 {
  drawEngine->updateScheme(true);
  drawEngine->updateClassesList();
@@ -630,7 +630,7 @@ void UGEngineControllWidget::updateShemeClassesList()
  ui->menuChooseBuildStorageMode->setTitle("Choose Build Storage Mode [" + QString::number(build_mode) +"]");
 }
 
-void UGEngineControllWidget::actionBuildMode1()
+void UGEngineControlWidget::actionBuildMode1()
 {
  if(application)
  {
@@ -639,7 +639,7 @@ void UGEngineControllWidget::actionBuildMode1()
  }
 }
 
-void UGEngineControllWidget::actionBuildMode2()
+void UGEngineControlWidget::actionBuildMode2()
 {
  if(application)
  {
@@ -648,7 +648,7 @@ void UGEngineControllWidget::actionBuildMode2()
  }
 }
 
-void UGEngineControllWidget:: actionBuildMode3()
+void UGEngineControlWidget:: actionBuildMode3()
 {
  if(application)
  {
@@ -660,12 +660,12 @@ void UGEngineControllWidget:: actionBuildMode3()
 
 // calculate menu actions
 
-void UGEngineControllWidget::actionReloadParameters()
+void UGEngineControlWidget::actionReloadParameters()
 {
     application->ReloadParameters();
 }
 //int ts; // костыль
-void UGEngineControllWidget::actionStart()
+void UGEngineControlWidget::actionStart()
 {
   try
   {
@@ -683,25 +683,25 @@ void UGEngineControllWidget::actionStart()
   }
 }
 
-void UGEngineControllWidget::actionPause()
+void UGEngineControlWidget::actionPause()
 {
     pauseChannel(-1);
     //killTimer(ts); // костыль
 //    ui->statusBar->showMessage("Calculation at pause");
 }
 
-void UGEngineControllWidget::actionReset()
+void UGEngineControlWidget::actionReset()
 {
     resetChannel(-1);
 //    ui->statusBar->showMessage("Calculation reseted", 5000);
 }
 
-void UGEngineControllWidget::actionStep()
+void UGEngineControlWidget::actionStep()
 {
   calcOneStepChannel(-1);
 }
 
-void UGEngineControllWidget::actionRunNSteps()
+void UGEngineControlWidget::actionRunNSteps()
 {
   bool ok;
   QString text = QInputDialog::getText(this, tr("Run several steps"),
@@ -717,7 +717,7 @@ void UGEngineControllWidget::actionRunNSteps()
 
 // window menu action
 
-void UGEngineControllWidget::actionImages()
+void UGEngineControlWidget::actionImages()
 {
     if(!imagesWindow)
     {
@@ -730,32 +730,32 @@ void UGEngineControllWidget::actionImages()
     imagesWindow->activateWindow();
 }
 
-void UGEngineControllWidget::actionNewImages()
+void UGEngineControlWidget::actionNewImages()
 {
  addImagesWidged();
 }
 
-void UGEngineControllWidget::actionComponentsControl()
+void UGEngineControlWidget::actionComponentsControl()
 {
     ui->dockWidgetComponentsList->show();
 }
 
-void UGEngineControllWidget::actionChannelsControl()
+void UGEngineControlWidget::actionChannelsControl()
 {
   ui->dockWidgetChannels->show();
 }
 
-void UGEngineControllWidget::actionLogger()
+void UGEngineControlWidget::actionLogger()
 {
   ui->dockWidgetLoger->show();
 }
 
-void UGEngineControllWidget::actionTestCreator()
+void UGEngineControlWidget::actionTestCreator()
 {
   execDialogUVisualControllWidget(createTestWidget);
 }
 
-void UGEngineControllWidget::actionWatchWindow()
+void UGEngineControlWidget::actionWatchWindow()
 {
     if(watchWindow != NULL)
     {
@@ -793,7 +793,7 @@ void UGEngineControllWidget::actionWatchWindow()
 //    ui->dockWidgetGraph->show();*/
 }
 
-void UGEngineControllWidget::actionProfiling()
+void UGEngineControlWidget::actionProfiling()
 {
     if (!ui->dockWidgetProfiling->isVisible())
     {
@@ -814,7 +814,7 @@ void UGEngineControllWidget::actionProfiling()
 //    ui->dockWidgetGraph->show();
 }
 
-void UGEngineControllWidget::actionTcpServer()
+void UGEngineControlWidget::actionTcpServer()
 {
     if(!tcpServerControlWindow )
     {
@@ -832,13 +832,13 @@ void UGEngineControllWidget::actionTcpServer()
     tcpServerControlWindow->activateWindow();
 }
 
-void UGEngineControllWidget::actionFtpTest()
+void UGEngineControlWidget::actionFtpTest()
 {
     curlFtpClientTestWidget->show();
     curlFtpClientTestWidget->activateWindow();
 }
 
-void UGEngineControllWidget::actionClDesc()
+void UGEngineControlWidget::actionClDesc()
 {
     /*
     if(clDescWindow != NULL)
@@ -862,7 +862,7 @@ void UGEngineControllWidget::actionClDesc()
     clDescWindow->activateWindow();
 }
 
-void UGEngineControllWidget::actionNewWatches()
+void UGEngineControlWidget::actionNewWatches()
 {
     addWatchesWidged();
 }
@@ -877,7 +877,7 @@ void UGEngineControllWidget::actionVASimpleSettings()
 }
 #endif
 
-void UGEngineControllWidget::startChannel(int chanelIndex)
+void UGEngineControlWidget::startChannel(int chanelIndex)
 {
     if(!application->GetProjectOpenFlag())
         return;
@@ -885,7 +885,7 @@ void UGEngineControllWidget::startChannel(int chanelIndex)
     application->StartChannel(chanelIndex);
 }
 
-void UGEngineControllWidget::pauseChannel(int chanelIndex)
+void UGEngineControlWidget::pauseChannel(int chanelIndex)
 {
     if(!application->GetProjectOpenFlag())
         return;
@@ -893,7 +893,7 @@ void UGEngineControllWidget::pauseChannel(int chanelIndex)
     application->PauseChannel(chanelIndex);
 }
 
-void UGEngineControllWidget::resetChannel(int chanelIndex)
+void UGEngineControlWidget::resetChannel(int chanelIndex)
 {
     if(!application->GetProjectOpenFlag())
         return;
@@ -901,7 +901,7 @@ void UGEngineControllWidget::resetChannel(int chanelIndex)
     application->ResetChannel(chanelIndex);
 }
 
-void UGEngineControllWidget::calcOneStepChannel(int chanelIndex)
+void UGEngineControlWidget::calcOneStepChannel(int chanelIndex)
 {
     if(!application->GetProjectOpenFlag())
         return;
@@ -910,7 +910,7 @@ void UGEngineControllWidget::calcOneStepChannel(int chanelIndex)
 }
 
 /// Добавляет новый виджет в imagesVector
-void UGEngineControllWidget::addImagesWidged()
+void UGEngineControlWidget::addImagesWidged()
 {
     int index = 1;
     if(!imagesVector.empty())
@@ -931,7 +931,7 @@ void UGEngineControllWidget::addImagesWidged()
     connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delImagesWidgetSlot(QObject*)) );
 }
 
-void UGEngineControllWidget::delImagesWidgetSlot(QObject* obj)
+void UGEngineControlWidget::delImagesWidgetSlot(QObject* obj)
 {
     // Виджет Watches уже удален на данный момент
     // он не виден в отличие от других, необходиом его вычислить и удалить из массива
@@ -948,7 +948,7 @@ void UGEngineControllWidget::delImagesWidgetSlot(QObject* obj)
 }
 
 /// Удаляет виджет из imagesVector по имени
-void UGEngineControllWidget::delImagesWidged(size_t index)
+void UGEngineControlWidget::delImagesWidged(size_t index)
 {
  if(index>=imagesVector.size())
      return;
@@ -959,7 +959,7 @@ void UGEngineControllWidget::delImagesWidged(size_t index)
 
 
 /// Добавляет новый виджет отображения графиков
-void UGEngineControllWidget::addWatchesWidged()
+void UGEngineControlWidget::addWatchesWidged()
 {
     int index = 1;
     if(!watchesVector.empty())
@@ -980,7 +980,7 @@ void UGEngineControllWidget::addWatchesWidged()
     connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delWatchesWidgetSlot(QObject*)) );
 }
 
-void UGEngineControllWidget::delWatchesWidgetSlot(QObject* obj)
+void UGEngineControlWidget::delWatchesWidgetSlot(QObject* obj)
 {
     // Виджет Watches уже удален на данный момент
     // он не виден в отличие от других, необходиом его вычислить и удалить из массива
@@ -997,7 +997,7 @@ void UGEngineControllWidget::delWatchesWidgetSlot(QObject* obj)
 }
 
 /// Удаляет виджет отображения графиков
-void UGEngineControllWidget::delWatchesWidged(size_t index)
+void UGEngineControlWidget::delWatchesWidged(size_t index)
 {
     if(index>=watchesVector.size())
         return;
@@ -1007,7 +1007,7 @@ void UGEngineControllWidget::delWatchesWidged(size_t index)
 }
 
 
-void UGEngineControllWidget::execDialogUVisualControllWidget(UVisualControllerWidget *widget)
+void UGEngineControlWidget::execDialogUVisualControllWidget(UVisualControllerWidget *widget)
 {
     QWidget *widgetOldParent = widget->parentWidget();
 
@@ -1026,7 +1026,7 @@ void UGEngineControllWidget::execDialogUVisualControllWidget(UVisualControllerWi
     widget->setParent(widgetOldParent);
 }
 
-void UGEngineControllWidget::writeSettings()
+void UGEngineControlWidget::writeSettings()
 {
     if(!application) return;
 
@@ -1047,7 +1047,7 @@ void UGEngineControllWidget::writeSettings()
     settings.endGroup();
 }
 
-void UGEngineControllWidget::readSettings()
+void UGEngineControlWidget::readSettings()
 {
     if(!application) return;
 
@@ -1071,7 +1071,7 @@ void UGEngineControllWidget::readSettings()
     settings.endGroup();
 }
 
-void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
+void UGEngineControlWidget::on_mdiArea_destroyed(QObject *arg1)
 {
  /*
  for(size_t i=0;i<imagesVector.size();i++)
@@ -1084,12 +1084,12 @@ void UGEngineControllWidget::on_mdiArea_destroyed(QObject *arg1)
  }*/
 }
 
-void UGEngineControllWidget::showChannelsWidget (void)
+void UGEngineControlWidget::showChannelsWidget (void)
 {
     channels->show();
 }
 
-void UGEngineControllWidget::closeEvent(QCloseEvent *event)
+void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
  application->PauseChannel(-1);
  //application->CloseProject();
@@ -1103,7 +1103,7 @@ void UGEngineControllWidget::closeEvent(QCloseEvent *event)
  //   }
 }
 
-void UGEngineControllWidget::updateChannelsVisibility()
+void UGEngineControlWidget::updateChannelsVisibility()
 {
     if(application->GetNumChannels()>1)
     {
@@ -1123,7 +1123,7 @@ void UGEngineControllWidget::updateChannelsVisibility()
 }
 
 // Обновление интерфейса
-void UGEngineControllWidget::AUpdateInterface(void)
+void UGEngineControlWidget::AUpdateInterface(void)
 {
  QString caption_line=(application->GetProgramName()+" ").c_str();
  caption_line += QCoreApplication::applicationVersion();
@@ -1140,7 +1140,7 @@ void UGEngineControllWidget::AUpdateInterface(void)
 }
 
 // Возврат интерфейса в исходное состояние
-void UGEngineControllWidget::AClearInterface(void)
+void UGEngineControlWidget::AClearInterface(void)
 {
  AUpdateInterface();
 
@@ -1172,7 +1172,7 @@ void UGEngineControllWidget::AClearInterface(void)
 }
 
 // Метод, вызываемый после загрузки проекта
-void UGEngineControllWidget::AAfterLoadProject(void)
+void UGEngineControlWidget::AAfterLoadProject(void)
 {
  UpdateInterface();
  if(propertyChanger->componentsList->GetUpdateInterval()>0)
@@ -1182,37 +1182,37 @@ void UGEngineControllWidget::AAfterLoadProject(void)
 }
 
 // Метод, вызываемый перед закрытием проекта
-void UGEngineControllWidget::ABeforeCloseProject(void)
+void UGEngineControlWidget::ABeforeCloseProject(void)
 {
 
 }
 
 // Метод, вызываемый перед сбросом модели
-void UGEngineControllWidget::ABeforeReset(void)
+void UGEngineControlWidget::ABeforeReset(void)
 {
 
 }
 
 // Метод, вызываемый после сброса модели
-void UGEngineControllWidget::AAfterReset(void)
+void UGEngineControlWidget::AAfterReset(void)
 {
 
 }
 
 // Метод, вызываемый перед шагом расчета
-void UGEngineControllWidget::ABeforeCalculate(void)
+void UGEngineControlWidget::ABeforeCalculate(void)
 {
 
 }
 
 // Метод, вызываемый после шага расчета
-void UGEngineControllWidget::AAfterCalculate(void)
+void UGEngineControlWidget::AAfterCalculate(void)
 {
 
 }
 
 // Сохраняет параметры интерфейса в xml
-void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
+void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.WriteInteger("WatchesCount", int(watchesVector.size()));
     xml.SelectNodeForce("Watches");
@@ -1236,7 +1236,7 @@ void UGEngineControllWidget::ASaveParameters(RDK::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
+void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
     // Очистка существующих Watches
     size_t watches_size = watchesVector.size();
@@ -1284,7 +1284,7 @@ void UGEngineControllWidget::ALoadParameters(RDK::USerStorageXML &xml)
     xml.SelectUp();
 }
 
-void UGEngineControllWidget::on_actionAbout_triggered()
+void UGEngineControlWidget::on_actionAbout_triggered()
 {
  if(!aboutDialog)
  {
@@ -1294,13 +1294,13 @@ void UGEngineControllWidget::on_actionAbout_triggered()
 }
 
 
-void UGEngineControllWidget::on_actionWatches_triggered()
+void UGEngineControlWidget::on_actionWatches_triggered()
 {
  addWatchesWidged();
 }
 
 
-void UGEngineControllWidget::on_actionImages_triggered()
+void UGEngineControlWidget::on_actionImages_triggered()
 {
  addImagesWidged();
 }

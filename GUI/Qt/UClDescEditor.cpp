@@ -38,7 +38,7 @@ void UClDescEditor::clListItemChanged()
 
 void UClDescEditor::closeEvent(QCloseEvent *event)
 {
-    int k = 9;
+    //int k = 9;
 }
 
 

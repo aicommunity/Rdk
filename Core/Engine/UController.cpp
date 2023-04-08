@@ -163,6 +163,7 @@ const type_info& UControllerData::GetDataType(void) const
   return Property->GetLanguageType();
 
  // TODO: Нет возвращаемого значения
+ throw std::runtime_error("Property is nullptr in UControllerData::GetDataType");
 }
 
 // *****************************************************************
