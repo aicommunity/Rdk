@@ -1,4 +1,5 @@
 #include "UComponentPropertyChanger.h"
+#include "UComponentPropertySelectionWidget.h"
 #include "ui_UComponentPropertyChanger.h"
 
 #include <QMenu>
@@ -88,10 +89,21 @@ void UComponentPropertyChanger::actionSetGlobal()
   if(emptySeletion())
     return;
 
+  //создаем окно для выбора источника данных
+  UComponentPropertySelectionWidget dialog(this, 3, application);
+  QString selected_component_name;
+  dialog.setModal(true);
+  if (dialog.exec())
+  {
+       selected_component_name = dialog.componentsList->getSelectedComponentLongName();
+  }
+  else
+   return;
+
   const char *className = Model_GetComponentClassName(componentName.toLocal8Bit());
 
   Model_SetGlobalComponentPropertyValue(
-              componentName.toLocal8Bit(),
+              selected_component_name.toLocal8Bit(),
               className,
               propertyName.toLocal8Bit(),
               ui->plainTextEditValue->toPlainText().toLocal8Bit());
@@ -106,20 +118,39 @@ void UComponentPropertyChanger::actionSetGlobalOwner()
   if(emptySeletion())
     return;
 
-  const char *className = Model_GetComponentClassName(componentName.toLocal8Bit());
+  //создаем окно для выбора источника данных
+  UComponentPropertySelectionWidget dialog(this, 3, application);
+  QString selected_component_name;
+  dialog.setModal(true);
+  if (dialog.exec())
+  {
+       selected_component_name = dialog.componentsList->getSelectedComponentLongName();
+  }
+  else
+   return;
+
+
+  const char *pClassName = Model_GetComponentClassName(componentName.toLocal8Bit());
+  std::string className = pClassName;
+  Engine_FreeBufString(pClassName);
 
   QStringList list = componentName.split(".");
   list.pop_back();
   QString ownerComponentName = list.join(".");
 
+  const char *pOwnerClassName = Model_GetComponentClassName(ownerComponentName.toLocal8Bit());
+  std::string ownerClassName = pOwnerClassName;
+  Engine_FreeBufString(pOwnerClassName);
+
+
   Model_SetGlobalOwnerComponentPropertyValue(
-              componentName.toLocal8Bit(),
-              className,
-              Model_GetComponentClassName(ownerComponentName.toLocal8Bit()), //тут вопрос о владельце
+              selected_component_name.toLocal8Bit(),
+              className.c_str(),
+              ownerClassName.c_str(), //тут вопрос о владельце
               propertyName.toLocal8Bit(),
               ui->plainTextEditValue->toPlainText().toLocal8Bit());
 
-  Engine_FreeBufString(className);
+
 
   componentsList->reloadPropertys();
 }
