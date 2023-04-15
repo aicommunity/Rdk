@@ -74,6 +74,10 @@ void UComponentLinksWidget::AUpdateInterface()
 
             addParameters(firstComponentName, firstRootItem, ptPubOutput, secondRootItem, ptPubInput);
             addComponentSons(firstComponentName, firstRootItem, ptPubOutput, secondRootItem, ptPubInput);
+            ui->treeWidgetInputs->resizeColumnToContents(0);
+            ui->treeWidgetInputs->resizeColumnToContents(1);
+            ui->treeWidgetOutputs->resizeColumnToContents(0);
+            ui->treeWidgetOutputs->resizeColumnToContents(1);
             addLinks(firstComponentName);
         }
         break;
@@ -110,6 +114,12 @@ void UComponentLinksWidget::AUpdateInterface()
 
             addParameters(secondComponentName, secondRootItem, ptPubInput);
             addComponentSons(secondComponentName, secondRootItem, ptPubInput);
+
+            ui->treeWidgetInputs->resizeColumnToContents(0);
+            ui->treeWidgetInputs->resizeColumnToContents(1);
+            ui->treeWidgetOutputs->resizeColumnToContents(0);
+            ui->treeWidgetOutputs->resizeColumnToContents(1);
+
             addLinks(firstComponentName);
         }
         break;
@@ -143,6 +153,11 @@ void UComponentLinksWidget::AUpdateInterface()
 
             addParameters(secondComponentName, secondRootItem, ptPubOutput);
             addComponentSons(secondComponentName, secondRootItem, ptPubOutput);
+            ui->treeWidgetInputs->resizeColumnToContents(0);
+            ui->treeWidgetInputs->resizeColumnToContents(1);
+            ui->treeWidgetOutputs->resizeColumnToContents(0);
+            ui->treeWidgetOutputs->resizeColumnToContents(1);
+
             //AddLinks(firstComponentName);
         }
         break;
@@ -580,6 +595,11 @@ void UComponentLinksWidget::addLinks(QString componentName)
             }
             ++linksListIterator;
         }
+
+        ui->treeWidgetLinks->resizeColumnToContents(0);
+        ui->treeWidgetLinks->resizeColumnToContents(1);
+        ui->treeWidgetLinks->resizeColumnToContents(2);
+        ui->treeWidgetLinks->resizeColumnToContents(3);
     }
     catch (RDK::UException &exception)
     {
@@ -590,3 +610,15 @@ void UComponentLinksWidget::addLinks(QString componentName)
         Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
+
+void UComponentLinksWidget::resizeEvent(QResizeEvent* event)
+{
+ QWidget::resizeEvent(event);
+
+/* int full_width = ui->treeWidgetLinks->width();
+ ui->treeWidgetLinks->setColumnWidth(0, (full_width*3)/8);
+ ui->treeWidgetLinks->setColumnWidth(1, (full_width*1)/8);
+ ui->treeWidgetLinks->setColumnWidth(2, (full_width*3)/8);
+ ui->treeWidgetLinks->setColumnWidth(3, (full_width*1)/8);*/
+}
+
