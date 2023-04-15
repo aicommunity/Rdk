@@ -268,11 +268,11 @@ void UComponentLinksWidget::switchLink()
 
     if(outputItem1->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
-        if(outputItem1->text(1) != outputItem2->text(1))
-        {
-            QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
-            return;
-        }
+//        if(outputItem1->text(1) != outputItem2->text(1))
+//        {
+//            QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+//            return;
+//        }
         if(!outputItem2->text(2).isEmpty())
         {
             QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
@@ -280,7 +280,9 @@ void UComponentLinksWidget::switchLink()
         }
     }
 
-    Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+    int res = Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+    if(res != RDK_SUCCESS)
+        QMessageBox::critical(this,"Failed to connect, see log to detail", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
     UpdateInterface(true);
     emit updateScheme(true);
     emit closeWindow();
@@ -324,11 +326,11 @@ void UComponentLinksWidget::createLink()
 
         if(inputItem->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
         {
-            if(outputItem->text(1) != inputItem->text(1))
-            {
-                QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
-                return;
-            }
+//            if(outputItem->text(1) != inputItem->text(1))
+//            {
+//                QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+//                return;
+//            }
             if(!inputItem->text(2).isEmpty())
             {
                 QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
@@ -336,7 +338,9 @@ void UComponentLinksWidget::createLink()
             }
         }
 
-        Model_CreateLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
+        int res= Model_CreateLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
+        if(res != RDK_SUCCESS)
+            QMessageBox::critical(this,"Failed to connect", "See log to detail", QMessageBox::Ok);
     }
     else if(mode==3)
     {
@@ -376,11 +380,11 @@ void UComponentLinksWidget::createLink()
 
         if(outputItem1->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
         {
-            if(outputItem1->text(1) != outputItem2->text(1))
-            {
-                QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
-                return;
-            }
+ //           if(outputItem1->text(1) != outputItem2->text(1))
+ //           {
+ //               QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+ //               return;
+ //           }
             if(!outputItem2->text(2).isEmpty())
             {
                 QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
@@ -388,7 +392,9 @@ void UComponentLinksWidget::createLink()
             }
         }
 
-        Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+        int res = Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+        if(res != RDK_SUCCESS)
+            QMessageBox::critical(this,"Failed to connect, see log to detail", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
     }
 
     UpdateInterface(true);

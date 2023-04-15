@@ -450,6 +450,12 @@ virtual const type_info& GetLanguageType(void) const=0;
 // Метод сравнивает тип этого свойства с другим свойством
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
+// Возвращает языковой тип хранимого свойства для одного элемента
+virtual const type_info& GetElemLanguageType(void) const=0;
+
+// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+virtual bool CompareElemLanguageType(const UIProperty &dt) const=0;
+
 /// Обновляет указатель PData
 virtual void UpdatePData(void* data)=0;
 

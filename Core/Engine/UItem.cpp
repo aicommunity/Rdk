@@ -407,42 +407,27 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
  if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item))
   return false;
 
- // »щем указатель на выходные данные
+ // »щем указатель на выходные данные (они гарантированно существуют, мы это проверили выше)
  UIProperty* output_property=na->FindProperty(item_property_name);
 
- if(output_property)
- {
-  int size=int(ConnectedItemList[connector_property_name].size());
-  if(size>c_index)
-   ConnectedItemList[connector_property_name][c_index].Name=item_property_name;
-  else
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Fatal: c_index incorrect: ")+sntoa(c_index));
- }
-
- // »щем указатель на входные данные
+ // »щем указатель на входные данные (они гарантированно существуют, мы это проверили выше)
  UIProperty* input_property=FindProperty(connector_property_name);
- if(input_property)
- {
+
+
+ int size=int(ConnectedItemList[connector_property_name].size());
+ if(size>c_index)
+  ConnectedItemList[connector_property_name][c_index].Name=item_property_name;
+ else
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Fatal: c_index incorrect: ")+sntoa(c_index));
+
   if(input_property->GetIoType() & ipData)
   {
    if(input_property->GetIoType() & ipSingle)
    {
-	if(output_property)
-	{
-	 if(output_property->CompareLanguageType(*input_property))
-	 {
 	  if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0)),output_property))
 	  {
-	   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetPointer ipSingle fail"));
+       LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer ipSingle fail"));
       }
-     }
-	 else
-	 {
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item & connector type incompatible: ")+output_property->GetLanguageType().name()+std::string(" != ")+input_property->GetLanguageType().name());
-//	  return DisconnectFromItem(na, item_property_name, connector_property_name);
-	  return true;
-	 }
-	}
    }
    else
    if(input_property->GetIoType() & ipRange)
@@ -451,7 +436,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 	{
 	 if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0)),output_property))
 	 {
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetPointer ipRange fail"));
+      LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer ipRange fail"));
      }
 	}
    }
@@ -460,10 +445,8 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
   if(input_property->GetIoType() & ipComp)
   {
    if(!input_property->SetPointer(c_index,na, 0))
-    LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetPointer ipComp fail"));
-
+    LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer ipComp fail"));
   }
- }
 
  return true;
 }

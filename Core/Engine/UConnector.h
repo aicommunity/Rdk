@@ -256,7 +256,7 @@ virtual void DisconnectByObject(UEPtr<UContainer> brklevel);
 
 public:
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
-bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
+//bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Проверяет, существует ли связь с заданным коннектором
 bool CheckLink(const UEPtr<UItem> &item) const;

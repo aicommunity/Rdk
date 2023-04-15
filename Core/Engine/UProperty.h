@@ -109,6 +109,18 @@ virtual bool CompareLanguageType(const UIProperty &dt) const
  return GetLanguageType() == dt.GetLanguageType();
 }
 
+// ¬озвращает €зыковой тип хранимого свойства дл€ одного элемента
+virtual const type_info& GetElemLanguageType(void) const
+{
+ return typeid(T);
+}
+
+// ћетод сравнивает тип этого свойства с другим свойством (по одному элементу)
+virtual bool CompareElemLanguageType(const UIProperty &dt) const
+{
+ return GetElemLanguageType() == dt.GetElemLanguageType();
+}
+
 // ћетод записывает значение свойства в поток
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {

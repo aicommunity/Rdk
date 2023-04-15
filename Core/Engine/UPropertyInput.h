@@ -68,6 +68,12 @@ virtual const type_info& GetLanguageType(void) const
 {
  return typeid(T);
 }
+
+// Возвращает языковой тип хранимого свойства для одного элемента
+virtual const type_info& GetElemLanguageType(void) const
+{
+ return typeid(T);
+}
 // --------------------------
 
 // Метод возвращает строковое имя свойства
@@ -176,6 +182,12 @@ UVPropertyInputBase(OwnerT * const owner, T** data, int input_type)
 // --------------------------
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}
+
+// Возвращает языковой тип хранимого свойства для одного элемента
+virtual const type_info& GetElemLanguageType(void) const
 {
  return typeid(T);
 }
@@ -539,6 +551,18 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
 // --------------------------
 // Методы управления указателем
 // --------------------------
+// Возвращает языковой тип хранимого свойства для одного элемента
+virtual const type_info& GetElemLanguageType(void) const
+{
+ return typeid(T);
+}
+
+// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+virtual bool CompareElemLanguageType(const UIProperty &dt) const
+{
+ return GetElemLanguageType() == dt.GetElemLanguageType();
+}
+
 // Возвращает true если вход имеет подключение
 bool IsConnected(void) const
 {

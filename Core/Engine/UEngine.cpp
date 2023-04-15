@@ -4451,8 +4451,8 @@ int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_n
    if(!model)
 	return RDK_E_MODEL_NOT_FOUND;
 
-   bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name, connector_c_index);
-   if(!res)
+   bool temp_res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name, connector_c_index);
+   if(!temp_res)
     return RDK_E_MODEL_CREATE_LINK_FAIL;
    res=RDK_SUCCESS;
   }
