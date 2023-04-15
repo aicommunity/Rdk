@@ -2152,12 +2152,12 @@ int RDK_CALL MModel_SetComponentParameterValue(int channel_index, const char *st
  RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
  return 0;
 }
-
+/*
 // Связывает выбранные контейнеры друг с другом
 int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, output_number, stringid2, input_number);
-}
+}*/
 
 int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
@@ -2178,25 +2178,6 @@ int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_pr
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name,connector_c_index);
 }
 
-// Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
-int RDK_CALL Model_ChainLinking(const char* stringid)
-{
- return RdkCoreManager.GetEngineLock()->Model_ChainLinking(stringid);
-}
-
-// Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
-// Используется для тестирования производительности
-int RDK_CALL Model_ParallelLinking(const char* stringid)
-{
- return RdkCoreManager.GetEngineLock()->Model_ParallelLinking(stringid);
-}
-
-// Разрывает выбранную связь
-int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
-{
- return RdkCoreManager.GetEngineLock()->Model_BreakLink(stringid1, output_number, stringid2, input_number);
-}
-
 int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakLink(stringid1, item_property_name, stringid2, connector_property_name);
@@ -2208,11 +2189,6 @@ int RDK_CALL Model_BreakAllLinks(void)
  return RdkCoreManager.GetEngineLock()->Model_BreakAllLinks();
 }
 
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
-/*int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index)
-{
- return RdkCoreManager.GetEngineLock()->Model_BreakConnectorLink(connectorname, connector_index);
-}*/
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)

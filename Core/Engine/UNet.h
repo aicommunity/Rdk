@@ -100,12 +100,12 @@ bool CreateLink(const ULinkT<T> &link, bool forced_connect_same_item=false);
 // 'item' и коннектором 'connector'
 template<typename T>
 bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid, bool forced_connect_same_item=false);
-virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+//virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-virtual bool CreateLink(const NameT &item, int item_index,
-						const NameT &connector, int connector_index=-1, bool forced_connect_same_item=false);
+//virtual bool CreateLink(const NameT &item, int item_index,
+//						const NameT &connector, int connector_index=-1, bool forced_connect_same_item=false);
 virtual bool CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index=-1, bool forced_connect_same_item=false);
 //virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
@@ -127,12 +127,12 @@ bool BreakLink(const ULinkT<T> &link);
 // и коннектором 'connectorid'
 template<typename T>
 bool BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
-virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+//virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-virtual bool BreakLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index);
+//virtual bool BreakLink(const NameT &itemname, int item_index,
+//						const NameT &connectorname, int connector_index);
 virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 						const NameT &connector, const NameT &connector_property_name, int connector_c_index=-1);
 
@@ -163,9 +163,9 @@ virtual void BreakLinks(void);
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 
-bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
-bool CheckLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index);
+//bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+//bool CheckLink(const NameT &itemname, int item_index,
+//						const NameT &connectorname, int connector_index);
 bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
 bool CheckLink(const NameT &itemname,

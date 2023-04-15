@@ -937,27 +937,16 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentState(int channel_index, const char
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
 
 // Связывает выбранные компоненты друг с другом
-RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 RDK_LIB_TYPE int RDK_CALL MModel_CreateLinkByName(int channel_index, const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index);
 
-// Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
-RDK_LIB_TYPE int RDK_CALL Model_ChainLinking(const char* stringid);
-
-// Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
-// Используется для тестирования производительности
-RDK_LIB_TYPE int RDK_CALL Model_ParallelLinking(const char* stringid);
-
 // Разрывает выбранную связь
-RDK_LIB_TYPE int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+//RDK_LIB_TYPE int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Разрывает все связи
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
-
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
-//RDK_LIB_TYPE int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(const char* stringid);
