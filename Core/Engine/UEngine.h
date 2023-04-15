@@ -726,7 +726,7 @@ virtual int Model_BreakLink(const char* stringid1, const char* item_property_nam
 virtual int Model_BreakAllLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-virtual int Model_BreakConnectorLink(const char* connectorname, int connector_index);
+//virtual int Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 virtual int Model_BreakAllComponentLinks(const char* stringid);

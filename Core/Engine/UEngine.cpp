@@ -4477,6 +4477,8 @@ int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_n
 int UEngine::Model_ChainLinking(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
+ return res; // TODO: Метод удалить
+ /*
  RDK_SYS_TRY
  {
   try
@@ -4528,7 +4530,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
  {
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return res;
+ return res;*/
 }
 
 // Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
@@ -4536,7 +4538,9 @@ int UEngine::Model_ChainLinking(const char* stringid)
 int UEngine::Model_ParallelLinking(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
+  return res; // TODO: Метод удалить
+  /*
+  RDK_SYS_TRY
  {
   try
   {
@@ -4576,7 +4580,7 @@ int UEngine::Model_ParallelLinking(const char* stringid)
  RDK_SYS_CATCH
  {
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
+ }*/
  return res;
 }
 
@@ -4584,6 +4588,8 @@ int UEngine::Model_ParallelLinking(const char* stringid)
 int UEngine::Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
+   return res; // TODO: Метод удалить
+   /*
  RDK_SYS_TRY
  {
   try
@@ -4634,7 +4640,7 @@ int UEngine::Model_BreakLink(const char* stringid1, int output_number, const cha
  {
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return res;
+ return res;*/
 }
 
 int UEngine::Model_BreakLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
@@ -4707,7 +4713,7 @@ int UEngine::Model_BreakAllLinks(void)
  }
  return res;
 }
-
+/*
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_index)
 {
@@ -4738,7 +4744,7 @@ int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_i
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
-}
+}*/
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentLinks(const char* stringid)
@@ -4835,15 +4841,17 @@ int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
 bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
+ return false; // TODO: Метод удалить
+ /*
  RDK_SYS_TRY
  {
   try
   {
-   UEPtr<RDK::UADItem> cont1;
+   UEPtr<RDK::UItem> cont1;
    UEPtr<RDK::UConnector> cont2;
    try
    {
-	cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
+    cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
    catch (UException &)// Заглушка!! здесь другое исключение
@@ -4868,7 +4876,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return false;*/
 }
 
 bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
@@ -5192,6 +5200,8 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 // Возвращает число входов у компонента
 int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
+ return 0; // TODO: Метод удалить
+ /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -5217,12 +5227,14 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Возвращает размер входа компонента в числе элементов
 int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 {
+     return 0; // TODO: Метод удалить
+     /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -5248,7 +5260,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Возвращает размер элемента входа в байтах
@@ -5333,6 +5345,8 @@ unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int in
 // Возвращает число выходов у компонента
 int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
+ return 0; // TODO: Метод удалить
+ /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -5358,12 +5372,14 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Возвращает размер выхода компонента в числе элементов
 int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
+ return 0; // TODO: Метод удалить
+ /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -5389,7 +5405,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Возвращает размер выхода компонента в байтах элементов
@@ -5422,6 +5438,8 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int index)
 {
+ return 0; // TODO: Метод удалить
+ /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -5447,7 +5465,7 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -6345,6 +6363,8 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
 {
+ return 0; // TODO: Метод удалить
+ /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -6382,7 +6402,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
@@ -6422,6 +6442,8 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, cons
 
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
+    return 0; // TODO: Метод удалить
+/*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -6455,7 +6477,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int 
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
@@ -6466,6 +6488,8 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
+ return 0; // TODO: Метод удалить
+ /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -6499,7 +6523,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 /// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
@@ -6688,6 +6712,8 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
 {
+    return 0; // TODO: Метод удалить
+/*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -6721,7 +6747,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0;*/
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
@@ -6767,6 +6793,8 @@ int UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *pr
 
 int UEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* bmp, bool reflect)
 {
+ return 0; // TODO: Метод удалить
+ /*
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -6808,7 +6836,7 @@ int UEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, con
  {
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return res;
+ return res;*/
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
@@ -6854,6 +6882,8 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *pro
 
 int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect)
 {
+    return 0; // TODO: Метод удалить
+/*
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
@@ -6896,7 +6926,7 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, cons
  {
   res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return res;
+ return res;*/
 }
 
 // --------------------------

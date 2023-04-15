@@ -555,6 +555,22 @@ int UItem::GetNumAConnectors(const NameT &item_property_name) const
  return GetNumActiveOutputs(item_property_name);
 }
 
+/// Возвращает число выходов к которым кто-то подключен
+int UItem::GetNumActiveOutputs(void) const
+{
+ return int(RelatedConnectors.size());
+}
+
+/// Возвращает число коннекторов к которым подключено заданное свойство
+int UItem::GetNumActiveOutputs(const NameT &item_property_name) const
+{
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.find(item_property_name);
+ if(I == RelatedConnectors.end())
+  return 0;
+
+ return int(I->second.size());
+}
+
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
 bool UItem::Disconnect(const UId &id)
 {
@@ -696,6 +712,7 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, i
  return I->second[index];
 }
 
+
 // Проверяет, существует ли связь с заданным коннектором
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const
 {
@@ -704,20 +721,13 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index)
  for(size_t k=0;k<buffer.size();k++)
  {
   UCLink &link=buffer[k];
-  if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()
-    && (connected_c_index<0 || connected_c_index == link.Input) ))
+  if(!link.InputName.empty() && !link.OutputName.empty()
+    && (connected_c_index<0 || connected_c_index == link.Input) )
    return true;
   }
 
  return false;
 }
-/*
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
-{
- std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
- return CheckLink(connector, item_property_name);
-} */
 
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
 {
@@ -753,12 +763,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
  return false;
 }
 
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
-{
- std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
- std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
- return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
-}
 // ----------------------
 
 

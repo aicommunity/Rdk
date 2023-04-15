@@ -12,13 +12,13 @@ See file license.txt for more information
 #ifndef UANetH
 #define UANetH
 
-#include "UADItem.h"
+#include "UItem.h"
 #include "UStorage.h"
 
 
 namespace RDK {
 
-class RDK_LIB_TYPE UNet: public UADItem
+class RDK_LIB_TYPE UNet: public UItem
 {
 protected: // Основные свойства
 
@@ -156,8 +156,8 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 virtual void BreakLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
-virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
+//virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+//virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Проверяет, существует ли заданная связь
 template<typename T>
@@ -329,11 +329,11 @@ bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item)
 template<typename T>
 bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item)
 {
- UEPtr<UADItem> pitem;
+ UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -359,17 +359,6 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
  {
   int c_index=connector.Index;
   if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index, forced_connect_same_item)))
-   return false;
- }
- else
- {
-  if(item.Index < 0)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-   return false;
-  }
-
-  if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
    return false;
  }
 
@@ -413,11 +402,11 @@ bool UNet::BreakLink(const ULinkT<T> &link)
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UADItem> pitem=0;
+ UEPtr<UItem> pitem=0;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -440,23 +429,20 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!item.Name.empty() || !connector.Name.empty())
  {
   pitem->Disconnect(pconnector, item.Name, connector.Name, connector.Index);
- }
- else
- {
-  pitem->Disconnect(pconnector, item.Index, connector.Index);
+  return true;
  }
 
- return true;
+ return false;
 }
 
 template<typename T>
 bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UADItem> pitem;
+ UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -478,11 +464,6 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   if(!item.Name.empty() || !connector.Name.empty())
   {
    if(pitem->CheckLink(pconnector,item.Name, connector.Name, connector.Index))
-	return true;
-  }
-  else
-  {
-   if(pitem->CheckLink(pconnector,item.Index, connector.Index))
 	return true;
   }
 

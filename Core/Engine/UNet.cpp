@@ -94,7 +94,7 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
  if(!dynamic_pointer_cast<UNet>(target))
   return false;
 
- if(UADItem::Copy(target,stor,copystate))
+ if(UItem::Copy(target,stor,copystate))
   {
    static_pointer_cast<UNet>(target)->BreakLinks();
 
@@ -109,7 +109,7 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
 // или вызов деструктора, если Storage == 0
 void UNet::Free(void)
 {
- UADItem::Free();
+ UItem::Free();
 }
 // --------------------------
 
@@ -269,15 +269,15 @@ void UNet::BreakLinks(void)
  if(dynamic_cast<UConnector* const>(this))
   ((UConnector* const)this)->DisconnectAllItems();
 }
-
+/*
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 {
- UEPtr<UADItem> connector;
+ UEPtr<UItem> connector;
  if(connectorname.size() == 0)
   connector=this;
  else
-  connector=dynamic_pointer_cast<UADItem>(GetComponentL(connectorname,true));
+  connector=dynamic_pointer_cast<UItem>(GetComponentL(connectorname,true));
 
  if(!connector)
  {
@@ -296,7 +296,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
    return;
   }
 
-  UEPtr<UADItem> ad_item=dynamic_cast<UADItem*>(item.Item);
+  UEPtr<UItem> ad_item=dynamic_cast<UItem*>(item.Item);
 
   if(!ad_item)
   {
@@ -335,7 +335,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector
   buffer[i].Item->Disconnect(connector,buffer[i].Name, connector_index, connector_c_index);
  }
 }
-
+*/
 // Проверяет, существует ли заданная связь
 bool UNet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
 {
@@ -379,16 +379,16 @@ bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int conne
 
 bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide &item2)
 {
- UEPtr<UADItem> pitem1,pitem2;
+ UEPtr<UItem> pitem1,pitem2;
  if(!CheckLongId(item1.Id))
   pitem1=this;
  else
-  pitem1=dynamic_pointer_cast<UADItem>(GetComponentL(item1.Id,true));
+  pitem1=dynamic_pointer_cast<UItem>(GetComponentL(item1.Id,true));
 
  if(!CheckLongId(item2.Id))
   pitem2=this;
  else
-  pitem2=dynamic_pointer_cast<UADItem>(GetComponentL(item2.Id,true));
+  pitem2=dynamic_pointer_cast<UItem>(GetComponentL(item2.Id,true));
 
  if(!pitem1)
  {

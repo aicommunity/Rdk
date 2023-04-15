@@ -957,7 +957,7 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByName(const char* stringid1, const cha
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-RDK_LIB_TYPE int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index);
+//RDK_LIB_TYPE int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(const char* stringid);
