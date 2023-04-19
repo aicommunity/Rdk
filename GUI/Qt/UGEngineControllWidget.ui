@@ -159,7 +159,9 @@
      <addaction name="actionWatches"/>
      <addaction name="actionImages"/>
     </widget>
+    <addaction name="actionWatchWindow"/>
     <addaction name="actionImagesFromWindow"/>
+    <addaction name="menuNew_Tab"/>
     <addaction name="separator"/>
     <addaction name="actionEngineMonitor"/>
     <addaction name="actionVideoSources"/>
@@ -172,7 +174,6 @@
     <addaction name="actionTestCreator"/>
     <addaction name="actionFavoriteInformation"/>
     <addaction name="actionDrawEngine"/>
-    <addaction name="actionWatchWindow"/>
     <addaction name="actionProfiling"/>
     <addaction name="actionVASimpleSettings"/>
     <addaction name="separator"/>
@@ -180,7 +181,6 @@
     <addaction name="actionServerControl"/>
     <addaction name="actionTcpServer"/>
     <addaction name="actionFtpTest"/>
-    <addaction name="menuNew_Tab"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -499,6 +499,14 @@
     <string>Images</string>
    </property>
   </action>
+  <action name="actionWatchWindow">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Watches</string>
+   </property>
+  </action>
   <action name="actionEngineMonitor">
    <property name="enabled">
     <bool>false</bool>
@@ -585,14 +593,6 @@
    </property>
    <property name="visible">
     <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionWatchWindow">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Watch Window</string>
    </property>
   </action>
   <action name="actionVASimpleSettings">
