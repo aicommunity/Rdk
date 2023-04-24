@@ -1193,7 +1193,7 @@ void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
         }
 
         RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
-        std::string stringid = selectedComponentLongName.toLocal8Bit();
+        std::string stringid = selectedComponentLongName.toLocal8Bit().constData();
         RDK::UEPtr<RDK::UNet> object;
         if(stringid.empty())
          object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
