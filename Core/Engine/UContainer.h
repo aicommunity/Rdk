@@ -771,6 +771,9 @@ virtual void ForceComponentReCalculation(void);
 /// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
 /// то прерывает обсчет остальной цепочки дочерних компонент
 virtual bool CheckDurationAndSkipComponentCalculation(void);
+
+// ”станавливает компоненты в требуемый пор€док расчета
+virtual void UpdateComputationOrder(void);
 // --------------------------
 
 // --------------------------

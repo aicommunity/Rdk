@@ -529,7 +529,11 @@ void UContainer::SetMainOwner(UEPtr<UComponent> mainowner, int levels)
 // Проверяет предлагаемый Id 'id' на уникальность в рамках данного, объекта.
 bool UContainer::CheckId(const UId &id)
 {
- return (id>LastId)?true:false;
+ std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin();
+ for(;I != CompsLookupTable.end(); I++)
+  if(I->second == id)
+   return false;
+ return true;
 }
 
 bool UContainer::CheckComponent(const NameT &name)
@@ -575,7 +579,7 @@ bool UContainer::ValidateName(const NameT &name)
 // Генерирует уникальный Id.
 UId UContainer::GenerateId(void)
 {
- return LastId+1;
+ return ++LastId;
 }
 
 #ifdef __BORLANDC__
@@ -1544,8 +1548,8 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  }
  else
  {
-  for(int i=index;i>=result;i--)
-   PComponents[i]=PComponents[i-1]; // TODO: при result==0 происходит обращение по индексу -1
+  for(int i=index;i>result;i--)
+   PComponents[i]=PComponents[i-1];
   PComponents[result]=comp;
  }
 
@@ -2085,6 +2089,7 @@ bool UContainer::Build(void)
 // Reset();
 
    AfterBuild();
+   UpdateComputationOrder();
   }
   catch(UException &exception)
   {
@@ -2545,6 +2550,12 @@ bool UContainer::CheckDurationAndSkipComponentCalculation(void)
   return true;
  }
  return false;
+}
+
+// Устанавливает компоненты в требуемый порядок расчета
+void UContainer::UpdateComputationOrder(void)
+{
+
 }
 // --------------------------
 
