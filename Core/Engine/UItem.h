@@ -251,7 +251,7 @@ bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_na
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
-bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
 
 
 // Возвращает список подключений

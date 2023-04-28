@@ -74,6 +74,10 @@ void UComponentLinksWidget::AUpdateInterface()
 
             addParameters(firstComponentName, firstRootItem, ptPubOutput, secondRootItem, ptPubInput);
             addComponentSons(firstComponentName, firstRootItem, ptPubOutput, secondRootItem, ptPubInput);
+            ui->treeWidgetInputs->resizeColumnToContents(0);
+            ui->treeWidgetInputs->resizeColumnToContents(1);
+            ui->treeWidgetOutputs->resizeColumnToContents(0);
+            ui->treeWidgetOutputs->resizeColumnToContents(1);
             addLinks(firstComponentName);
         }
         break;
@@ -110,6 +114,12 @@ void UComponentLinksWidget::AUpdateInterface()
 
             addParameters(secondComponentName, secondRootItem, ptPubInput);
             addComponentSons(secondComponentName, secondRootItem, ptPubInput);
+
+            ui->treeWidgetInputs->resizeColumnToContents(0);
+            ui->treeWidgetInputs->resizeColumnToContents(1);
+            ui->treeWidgetOutputs->resizeColumnToContents(0);
+            ui->treeWidgetOutputs->resizeColumnToContents(1);
+
             addLinks(firstComponentName);
         }
         break;
@@ -143,6 +153,11 @@ void UComponentLinksWidget::AUpdateInterface()
 
             addParameters(secondComponentName, secondRootItem, ptPubOutput);
             addComponentSons(secondComponentName, secondRootItem, ptPubOutput);
+            ui->treeWidgetInputs->resizeColumnToContents(0);
+            ui->treeWidgetInputs->resizeColumnToContents(1);
+            ui->treeWidgetOutputs->resizeColumnToContents(0);
+            ui->treeWidgetOutputs->resizeColumnToContents(1);
+
             //AddLinks(firstComponentName);
         }
         break;
@@ -268,11 +283,11 @@ void UComponentLinksWidget::switchLink()
 
     if(outputItem1->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
-        if(outputItem1->text(1) != outputItem2->text(1))
-        {
-            QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
-            return;
-        }
+//        if(outputItem1->text(1) != outputItem2->text(1))
+//        {
+//            QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+//            return;
+//        }
         if(!outputItem2->text(2).isEmpty())
         {
             QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
@@ -280,7 +295,9 @@ void UComponentLinksWidget::switchLink()
         }
     }
 
-    Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+    int res = Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+    if(res != RDK_SUCCESS)
+        QMessageBox::critical(this,"Failed to connect, see log to detail", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
     UpdateInterface(true);
     emit updateScheme(true);
     emit closeWindow();
@@ -324,11 +341,11 @@ void UComponentLinksWidget::createLink()
 
         if(inputItem->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
         {
-            if(outputItem->text(1) != inputItem->text(1))
-            {
-                QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
-                return;
-            }
+//            if(outputItem->text(1) != inputItem->text(1))
+//            {
+//                QMessageBox::critical(this,"Mismatching types", outputItem->text(1) + " != " + inputItem->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+//                return;
+//            }
             if(!inputItem->text(2).isEmpty())
             {
                 QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
@@ -336,7 +353,9 @@ void UComponentLinksWidget::createLink()
             }
         }
 
-        Model_CreateLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
+        int res= Model_CreateLinkByName(outputComponent.toLocal8Bit(), outputName.toLocal8Bit(), inputComponent.toLocal8Bit(), inputName.toLocal8Bit());
+        if(res != RDK_SUCCESS)
+            QMessageBox::critical(this,"Failed to connect", "See log to detail", QMessageBox::Ok);
     }
     else if(mode==3)
     {
@@ -376,11 +395,11 @@ void UComponentLinksWidget::createLink()
 
         if(outputItem1->text(2) != "range" && QApplication::keyboardModifiers() != Qt::ShiftModifier)
         {
-            if(outputItem1->text(1) != outputItem2->text(1))
-            {
-                QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
-                return;
-            }
+ //           if(outputItem1->text(1) != outputItem2->text(1))
+ //           {
+ //               QMessageBox::critical(this,"Mismatching types", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
+ //               return;
+ //           }
             if(!outputItem2->text(2).isEmpty())
             {
                 QMessageBox::critical(this,"The input busy", "The input is already connected!\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
@@ -388,7 +407,9 @@ void UComponentLinksWidget::createLink()
             }
         }
 
-        Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+        int res = Model_SwitchOutputLinks(output1Component.toLocal8Bit(), outputName1.toLocal8Bit(), output2Component.toLocal8Bit(), outputName2.toLocal8Bit());
+        if(res != RDK_SUCCESS)
+            QMessageBox::critical(this,"Failed to connect, see log to detail", outputItem1->text(1) + " != " + outputItem2->text(1) + "\n\nTo force connect component hold \"Shift\" button.", QMessageBox::Ok);
     }
 
     UpdateInterface(true);
@@ -574,6 +595,11 @@ void UComponentLinksWidget::addLinks(QString componentName)
             }
             ++linksListIterator;
         }
+
+        ui->treeWidgetLinks->resizeColumnToContents(0);
+        ui->treeWidgetLinks->resizeColumnToContents(1);
+        ui->treeWidgetLinks->resizeColumnToContents(2);
+        ui->treeWidgetLinks->resizeColumnToContents(3);
     }
     catch (RDK::UException &exception)
     {
@@ -584,3 +610,15 @@ void UComponentLinksWidget::addLinks(QString componentName)
         Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
+
+void UComponentLinksWidget::resizeEvent(QResizeEvent* event)
+{
+ QWidget::resizeEvent(event);
+
+/* int full_width = ui->treeWidgetLinks->width();
+ ui->treeWidgetLinks->setColumnWidth(0, (full_width*3)/8);
+ ui->treeWidgetLinks->setColumnWidth(1, (full_width*1)/8);
+ ui->treeWidgetLinks->setColumnWidth(2, (full_width*3)/8);
+ ui->treeWidgetLinks->setColumnWidth(3, (full_width*1)/8);*/
+}
+

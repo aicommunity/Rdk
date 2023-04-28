@@ -430,6 +430,24 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  if(!Build())
   return false;
 
+ if(!na->GetActivity() && !na->GetOwner())
+ {
+  std::string item_full_name = na->GetFullName();
+  std::string conn_full_name = GetFullName();
+  LogMessageEx(RDK_EX_WARNING, __FUNCTION__, std::string("Linking warning: item ")+item_full_name+":"+item_property_name+
+                " doesn't exsits in model, connection to "+conn_full_name+":"+connector_property_name+" possible incorect!");
+  //return false;
+ }
+
+ if(!GetActivity() && !GetOwner())
+ {
+  std::string item_full_name = na->GetFullName();
+  std::string conn_full_name = GetFullName();
+  LogMessageEx(RDK_EX_WARNING, __FUNCTION__, std::string("Linking warning: ")+item_full_name+":"+item_property_name+
+                " connector "+conn_full_name+":"+connector_property_name+" doesn't exsits in model. Connection possible incorrect!");
+  //return false;
+ }
+
  UIProperty* i_item_property=na->FindProperty(item_property_name);
  UIProperty* i_conn_property=FindProperty(connector_property_name);
 
@@ -445,10 +463,19 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   return false;
  }
 
- if(!(i_conn_property->GetIoType() & ipComp) && !CheckItem(na, item_property_name, connector_property_name))
+ if(!(i_conn_property->GetIoType() & ipComp))
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Checking fail"));
-  return false;
+  if(!i_conn_property->CompareElemLanguageType(*i_item_property))
+  {
+   std::string item_full_name = na->GetFullName();
+   std::string conn_full_name = GetFullName();
+   std::string item_property_type = i_item_property->GetLanguageType().name();
+   std::string conn_property_type = i_conn_property->GetLanguageType().name();
+   LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Linking error: ")+item_full_name+":"+item_property_name+
+                 " have incompatible type for "+conn_full_name+":"+connector_property_name+" ["+
+                 item_property_type+ " != " + conn_property_type+"]");
+   return false;
+  }
  }
 
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
@@ -685,12 +712,12 @@ void UConnector::DisconnectByObject(UEPtr<UContainer> brklevel)
   }
  }
 }
-
+/*
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 bool UConnector::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name)
 {
  return true;
-}
+}*/
 
 
 // Проверяет, существует ли связь с заданным коннектором

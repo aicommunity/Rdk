@@ -83,6 +83,8 @@ private:
     ///функция добавления связей в таблицу связей
     void addLinks(QString componentName);
 
+    void resizeEvent(QResizeEvent* event);
+
 /// Режим работы виджета
 ///
 /// 0 - не задан ни один компонент;

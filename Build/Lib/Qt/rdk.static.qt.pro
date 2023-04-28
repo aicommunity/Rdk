@@ -30,7 +30,6 @@ SOURCES += \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
-    ../../../Core/Engine/UADItem.cpp \
     ../../../Core/Engine/UAModel.cpp \
     ../../../Core/Engine/UComponent.cpp \
     ../../../Core/Engine/UComponentDescription.cpp \
@@ -139,7 +138,6 @@ HEADERS +=\
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
-    ../../../Core/Engine/UADItem.h \
     ../../../Core/Engine/UAModel.h \
     ../../../Core/Engine/UBinaryEnvSerialize.h \
     ../../../Core/Engine/UComponent.h \

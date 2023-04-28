@@ -12,13 +12,13 @@ See file license.txt for more information
 #ifndef UANetH
 #define UANetH
 
-#include "UADItem.h"
+#include "UItem.h"
 #include "UStorage.h"
 
 
 namespace RDK {
 
-class RDK_LIB_TYPE UNet: public UADItem
+class RDK_LIB_TYPE UNet: public UItem
 {
 protected: // Основные свойства
 
@@ -100,12 +100,12 @@ bool CreateLink(const ULinkT<T> &link, bool forced_connect_same_item=false);
 // 'item' и коннектором 'connector'
 template<typename T>
 bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid, bool forced_connect_same_item=false);
-virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+//virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-virtual bool CreateLink(const NameT &item, int item_index,
-						const NameT &connector, int connector_index=-1, bool forced_connect_same_item=false);
+//virtual bool CreateLink(const NameT &item, int item_index,
+//						const NameT &connector, int connector_index=-1, bool forced_connect_same_item=false);
 virtual bool CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index=-1, bool forced_connect_same_item=false);
 //virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
@@ -127,12 +127,12 @@ bool BreakLink(const ULinkT<T> &link);
 // и коннектором 'connectorid'
 template<typename T>
 bool BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
-virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+//virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-virtual bool BreakLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index);
+//virtual bool BreakLink(const NameT &itemname, int item_index,
+//						const NameT &connectorname, int connector_index);
 virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 						const NameT &connector, const NameT &connector_property_name, int connector_c_index=-1);
 
@@ -156,16 +156,16 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 virtual void BreakLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
-virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
-virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
+//virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+//virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Проверяет, существует ли заданная связь
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 
-bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
-bool CheckLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index);
+//bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+//bool CheckLink(const NameT &itemname, int item_index,
+//						const NameT &connectorname, int connector_index);
 bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
 bool CheckLink(const NameT &itemname,
@@ -329,11 +329,11 @@ bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item)
 template<typename T>
 bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item)
 {
- UEPtr<UADItem> pitem;
+ UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -359,17 +359,6 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
  {
   int c_index=connector.Index;
   if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index, forced_connect_same_item)))
-   return false;
- }
- else
- {
-  if(item.Index < 0)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-   return false;
-  }
-
-  if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
    return false;
  }
 
@@ -413,11 +402,11 @@ bool UNet::BreakLink(const ULinkT<T> &link)
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UADItem> pitem=0;
+ UEPtr<UItem> pitem=0;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -440,23 +429,20 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!item.Name.empty() || !connector.Name.empty())
  {
   pitem->Disconnect(pconnector, item.Name, connector.Name, connector.Index);
- }
- else
- {
-  pitem->Disconnect(pconnector, item.Index, connector.Index);
+  return true;
  }
 
- return true;
+ return false;
 }
 
 template<typename T>
 bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UADItem> pitem;
+ UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -478,11 +464,6 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   if(!item.Name.empty() || !connector.Name.empty())
   {
    if(pitem->CheckLink(pconnector,item.Name, connector.Name, connector.Index))
-	return true;
-  }
-  else
-  {
-   if(pitem->CheckLink(pconnector,item.Index, connector.Index))
 	return true;
   }
 
