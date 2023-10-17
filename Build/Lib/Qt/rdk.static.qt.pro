@@ -27,6 +27,7 @@ SOURCES += \
     ../../../Core/Engine/UBasePropCreatorMatrix.cpp \
     ../../../Core/Engine/UBasePropCreatorTempl.cpp \
     ../../../Core/Engine/UBasePropCreatorVector.cpp \
+    ../../../Core/Engine/UMtWorker.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Core/Engine/Engine.cpp \
@@ -135,6 +136,7 @@ HEADERS +=\
     ../../../Core/Engine/UBasePropCreatorTempl.h \
     ../../../Core/Engine/UBasePropCreatorVector.h \
     ../../../Core/Engine/UCreatorPropTemplate.h \
+    ../../../Core/Engine/UMtWorker.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
