@@ -63,6 +63,9 @@ public slots:
 signals:
     void updateScheme(bool forceUpdate);
 
+private slots:
+    void on_hideInternalLinksCheckBox_stateChanged(int arg1);
+
 private:
     Ui::UComponentLinksWidget *ui;
 

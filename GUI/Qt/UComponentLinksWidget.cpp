@@ -580,7 +580,7 @@ void UComponentLinksWidget::addLinks(QString componentName)
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
         RDK::UStringLinksList linksList;
-        cont->GetLinks(linksList, model.Get());
+        cont->GetLinks(linksList, model.Get(), ui->hideInternalLinksCheckBox->isChecked(), cont);
         RDK::ULinkT<std::string>* linksListIterator = linksList.GetData();
         for(int i = 0; i < linksList.size(); i++)
         {
@@ -620,5 +620,11 @@ void UComponentLinksWidget::resizeEvent(QResizeEvent* event)
  ui->treeWidgetLinks->setColumnWidth(1, (full_width*1)/8);
  ui->treeWidgetLinks->setColumnWidth(2, (full_width*3)/8);
  ui->treeWidgetLinks->setColumnWidth(3, (full_width*1)/8);*/
+}
+
+
+void UComponentLinksWidget::on_hideInternalLinksCheckBox_stateChanged(int arg1)
+{
+    UpdateInterface(true);
 }
 
