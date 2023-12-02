@@ -101,6 +101,7 @@ bool UContainerDescription::SetPropertyDescription(const std::string &name, cons
  return true;
 }
 
+
 // Удаляет свойство из этого описания, если он есть в общих описаниях
 bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
 {
@@ -133,8 +134,9 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<st
 // Обновление данных свойств (вызов к хранилищу)
 void UContainerDescription::CreateProperties()
 {
-    Properties.clear();
     RDK::UEPtr<RDK::UContainer> cont;
+    if(!Storage)
+      return;
     cont = dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(ClassName));
 
     if(cont)
@@ -145,6 +147,9 @@ void UContainerDescription::CreateProperties()
         {
             if(i->first.empty())
                 continue;
+
+            if(Properties.find(i->first) != Properties.end())
+              continue;
 
             UPropertyDescription prop_desc;
             prop_desc.Header = "";
@@ -175,6 +180,18 @@ void UContainerDescription::CreateProperties()
 
             SetPropertyDescription(i->first, prop_desc);
         }
+
+        auto i = Properties.begin();
+        while(i != Properties.end())
+        {
+          if(varMap.find(i->first) == varMap.end())
+          {
+            i=Properties.erase(i);
+          }
+          else
+            ++i;
+        }
+
         Storage->ReturnObject(cont);
         Storage->FreeObjectsStorageByClass(Storage->FindClassId(ClassName));
     }
@@ -256,15 +273,11 @@ bool UContainerDescription::Load(USerStorageXML &xml)
  if(!xml.SelectNode("Properties"))
   return false;
 
- Properties.clear();
  int num_parameters=xml.GetNumNodes();
  for(int i=0;i<num_parameters;i++)
-// std::map<std::string, UPropertyDescription>::iterator I=Properties.begin();
-// while(I != Properties.end())
  {
   if(!xml.SelectNode(i))
   {
-//   ++I;
    continue;
   }
 
@@ -279,7 +292,6 @@ bool UContainerDescription::Load(USerStorageXML &xml)
    Properties[nodename].Step=xml.ReadString("Step",Properties[nodename].Step);
 
   xml.SelectUp();
-//  ++I;
  }
  xml.SelectUp();
 
@@ -300,6 +312,7 @@ bool UContainerDescription::Load(USerStorageXML &xml)
  }
  xml.SelectUp();
 
+ CreateProperties();
 
  return true;
 }

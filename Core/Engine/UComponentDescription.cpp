@@ -46,17 +46,6 @@ UComponentDescription::UComponentDescription(const UComponentDescription &copy)
 
 }
 
-   /*
-UComponentDescription::UComponentDescription(std::string classname, UComponent *prototype)
-{
- ClassName=classname;
-
- if(!prototype)
-  return;
-
- ClassId=sntoa(classname->GetClassId());
-}  */
-
 UComponentDescription::~UComponentDescription(void)
 {
 
@@ -120,7 +109,6 @@ void UComponentDescription::CreateProperties()
 {
 
 }
-
 // --------------------------
 
 // --------------------------

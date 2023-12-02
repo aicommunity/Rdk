@@ -79,19 +79,20 @@ void USingleClassListWidget::reloadClassTree()
 
     auto storage = RDK::GetStorageLock();
 
-    try
-    {
+    if(!ClassName.empty() && storage->CheckClass(ClassName))
+      try
+      {
         // берем экземпляр класса
         auto cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(ClassName));
         // рекурсивно проходим по всем его внутренним компонентам
         addComponentSons(cont, "{CompName}", rootItem);
         // возвращем экземпляр
         storage->ReturnObject(cont);
-    }
-    catch(RDK::UException&)
-    {
-        return;
-    }
+      }
+      catch(RDK::UException&)
+      {
+          return;
+      }
     componentsTree->setCurrentItem(rootItem);
 
     // чтоб не бегали скролы на treeWidget'ах

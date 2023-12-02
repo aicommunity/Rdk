@@ -36,6 +36,9 @@ public slots:
     // Сохранение описания класса
     void SaveDescription();
 
+    // Закрытие
+    void CloseForm();
+
     // Изменение класса для отобраежния описания
     void ChangeClassDescription(const std::string& class_name);
 

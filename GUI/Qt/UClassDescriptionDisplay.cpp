@@ -12,8 +12,7 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
 
     ChangeClassDescription(class_name);
 
-    connect(ui->pushButtonCancel, &QPushButton::clicked, this, &QWidget::close);
-    connect(ui->pushButtonSave,   &QPushButton::clicked, this, &UClassDescriptionDisplay::SaveDescription);
+    connect(ui->pushButtonCancel, &QPushButton::clicked, this, &UClassDescriptionDisplay::CloseForm);
 
     ui->lineEditStep->setValidator(new QRegExpValidator(QRegExp("[+-]?\\d*\\.?\\d+"), this));
 
@@ -41,127 +40,137 @@ UClassDescriptionDisplay::~UClassDescriptionDisplay()
 
 void UClassDescriptionDisplay::SaveDescription()
 {
-    ClassDescription->SetHeader(ui->textEditHeader->toPlainText().toStdString());
-    ClassDescription->SetDescription(ui->textEditDescription->toPlainText().toStdString());
+  ClassDescription->SetHeader(ui->textEditHeader->toPlainText().toStdString());
+  ClassDescription->SetDescription(ui->textEditDescription->toPlainText().toStdString());
 
-    auto storage = RDK::GetStorageLock();
+  auto storage = RDK::GetStorageLock();
+  if(!storage)
+    return;
 
-    // Если описания не существовало
-    if(!storage->GetClassDescription(ClassName, true))
-    {
-        if(QMessageBox::question(this, "Information",
-                                 "There is no description for this class. \n Create a description?",
-                                 QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
-        {
-            storage->SetClassDescription(ClassName, ClassDescription);
-            storage->SaveClassDescriptionToFile(ClassName);
-        }
-    }
-    // Если существовало, просто сохраняем
-    else
-    {
-        storage->SaveClassDescriptionToFile(ClassName);
-    }
+  // Если описания не существовало
+  if(!storage->GetClassDescription(ClassName, true))
+  {
+    if(QMessageBox::question(this, "Information",
+                             "There is no description for this class. \n Create a description?",
+                             QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
+      return;
+  }
+  // Если существовало, просто сохраняем
+  else
+  {
+    if(QMessageBox::question(this, "Information",
+                             "Description for class already exists. Overwrite?",
+                             QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
+      return;
+  }
+
+  storage->SetClassDescription(ClassName, ClassDescription);
+  storage->SaveClassDescriptionToFile(ClassName);
+}
+
+// Закрытие
+void UClassDescriptionDisplay::CloseForm()
+{
+  close();
+  this->parentWidget()->close();
 }
 
 void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_name)
 {
-    auto storage = RDK::GetStorageLock();
+  auto storage = RDK::GetStorageLock();
 
-    if(ClassName == class_name)
-        return;
+  if(ClassName == class_name)
+    return;
 
-    // Если предыдущее описание не сохранено в хранилище
-    if(!(storage->GetClassDescription(ClassName, true)))
-    {
-        if(ClassDescription!=NULL)
-        {
-            delete ClassDescription;
-            ClassDescription = NULL;
-        }
-    }
-    else
-    {
-        ClassDescription = NULL;
-    }
+  // Если предыдущее описание не сохранено в хранилище
+  if(!ClassName.empty() && !(storage->GetClassDescription(ClassName, true)))
+  {
+    storage->SetClassDescription(ClassName, ClassDescription);
+  }
 
-    ClassName = class_name;
+  if(ClassDescription!=NULL)
+  {
+    delete ClassDescription;
+    ClassDescription = NULL;
+  }
 
-    ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
+  ClassName = class_name;
 
-    if(ClassName.empty())
-    {
-        DefaultGUIState();
-        if(clFavEditor != NULL)
-            clFavEditor->ChangeClass(ClassName);
-        return;
-    }
+  ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
 
-    ClassDescription = storage->GetClassDescription(ClassName, true);
-
-    if(ClassDescription)
-    {
-        ui->textEditHeader->setText(ClassDescription->GetHeader().c_str());
-        ui->textEditDescription->setText(ClassDescription->GetDescription().c_str());
-        FillProperties();
-    }
-    else
-    {
-        DefaultGUIState();
-        ClassDescription = new RDK::UContainerDescription();
-        ClassDescription->SetStorage(storage.Get());
-        ClassDescription->SetClassNameValue(ClassName);
-        ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
-        FillProperties();
-    }
-
+  if(ClassName.empty() || !storage->CheckClass(ClassName))
+  {
+    DefaultGUIState();
     if(clFavEditor != NULL)
-        clFavEditor->ChangeClass(ClassName);
+      clFavEditor->ChangeClass(ClassName);
+    return;
+  }
+
+  ClassDescription = storage->GetClassDescription(ClassName, true);
+
+  if(ClassDescription)
+  {
+    ui->textEditHeader->setText(ClassDescription->GetHeader().c_str());
+    ui->textEditDescription->setText(ClassDescription->GetDescription().c_str());
+    FillProperties();
+  }
+  else
+  {
+    DefaultGUIState();
+    ClassDescription = new RDK::UContainerDescription();
+    ClassDescription->SetStorage(storage.Get());
+    ClassDescription->SetClassNameValue(ClassName);
+    ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
+    FillProperties();
+  }
+
+  if(clFavEditor != NULL)
+    clFavEditor->ChangeClass(ClassName);
 }
 
 void UClassDescriptionDisplay::FillProperties()
 {
-    ui->listWidgetProperties->clear();
-    const std::map<std::string, RDK::UPropertyDescription>& props = ClassDescription->GetProperties();
+  ui->listWidgetProperties->clear();
+  const std::map<std::string, RDK::UPropertyDescription>& props = ClassDescription->GetProperties();
 
-    for (auto i = props.begin(); i != props.end(); i++)
-    {
-        if(i->first.find("DataOutput") == 0)
-            continue;
-        if(i->first.find("DataInput") == 0)
-            continue;
-        unsigned int data_type = i->second.PropertyType;
-        if(!(data_type & pgPublic))
-            continue;
-        ui->listWidgetProperties->addItem(QString::fromStdString(i->first));
-    }
+  for (auto i = props.begin(); i != props.end(); i++)
+  {
+    if(i->first.find("DataOutput") == 0)
+      continue;
+    if(i->first.find("DataInput") == 0)
+      continue;
+    unsigned int data_type = i->second.PropertyType;
+    if(!(data_type & pgPublic))
+      continue;
+    ui->listWidgetProperties->addItem(QString::fromStdString(i->first));
+  }
 
-    if(ui->listWidgetProperties->count()>0)
-        ui->listWidgetProperties->setCurrentRow(0);
+  if(ui->listWidgetProperties->count()>0)
+      ui->listWidgetProperties->setCurrentRow(0);
 
-    FillFavorites();
+  FillFavorites();
 }
 
 void UClassDescriptionDisplay::FillFavorites()
 {
-    ui->treeWidgetFavorites->clear();
-    const std::map<std::string, std::string>& favs = ClassDescription->GetFavorites();
+  ui->treeWidgetFavorites->clear();
+  const std::map<std::string, std::string>& favs = ClassDescription->GetFavorites();
 
-    for (auto i = favs.begin(); i != favs.end(); i++)
-    {
-        QTreeWidgetItem* favoriteItem = new QTreeWidgetItem(ui->treeWidgetFavorites);
-        QString name = QString::fromStdString(i->first);
-        QString path = QString::fromStdString(i->second);
+  for (auto i = favs.begin(); i != favs.end(); i++)
+  {
+    QTreeWidgetItem* favoriteItem = new QTreeWidgetItem(ui->treeWidgetFavorites);
+    QString name = QString::fromStdString(i->first);
+    QString path = QString::fromStdString(i->second);
 
-        favoriteItem->setText(0, name);
-        favoriteItem->setText(1, path);
+    favoriteItem->setText(0, name);
+    favoriteItem->setText(1, path);
 
-        favoriteItem->setToolTip(0, path);
-        favoriteItem->setToolTip(1, path);
-    }
+    favoriteItem->setToolTip(0, path);
+    favoriteItem->setToolTip(1, path);
+  }
 
-    if(ui->treeWidgetFavorites->topLevelItemCount()>0)
-        ui->treeWidgetFavorites->topLevelItem(0)->setSelected(true);
+  if(ui->treeWidgetFavorites->topLevelItemCount()>0)
+    ui->treeWidgetFavorites->topLevelItem(0)->setSelected(true);
 }
 
 const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
@@ -171,26 +180,26 @@ const Ui::UClassDescriptionDisplay* UClassDescriptionDisplay::GetUi() const
 
 void UClassDescriptionDisplay::DefaultGUIState()
 {
-    ui->labelClassNamVal->clear();
+  ui->labelClassNamVal->clear();
 
-    ui->textEditHeader->clear();
-    ui->textEditDescription->clear();
+  ui->textEditHeader->clear();
+  ui->textEditDescription->clear();
 
-    ui->textEditHeaderProp->clear();
-    ui->textEditDescProp->clear();
+  ui->textEditHeaderProp->clear();
+  ui->textEditDescProp->clear();
 
-    ui->listWidgetProperties->clear();
-    ui->treeWidgetFavorites->clear();
+  ui->listWidgetProperties->clear();
+  ui->treeWidgetFavorites->clear();
 
-    ui->spinBoxDataSelecType->setValue(0);
-    ui->labelDataSelecTypeDesc->clear();
-    ui->labelPropTypeVal->clear();
+  ui->spinBoxDataSelecType->setValue(0);
+  ui->labelDataSelecTypeDesc->clear();
+  ui->labelPropTypeVal->clear();
 
-    ui->lineEditValList->clear();
-    ui->lineEditStep->clear();
+  ui->lineEditValList->clear();
+  ui->lineEditStep->clear();
 
-    ui->lineEditValList->setEnabled(false);
-    ui->lineEditStep->setEnabled(false);
+  ui->lineEditValList->setEnabled(false);
+  ui->lineEditStep->setEnabled(false);
 }
 
 void UClassDescriptionDisplay::UpdateDataSelectionType(int type)
@@ -375,5 +384,6 @@ void UClassDescriptionDisplay::hideEvent(QHideEvent *event)
     {
         clFavEditor->hide();
     }
+    SaveDescription();
 }
 
