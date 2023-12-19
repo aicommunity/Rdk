@@ -312,24 +312,6 @@ protected:
 // --------------------------
 // Методы управления входами
 // --------------------------
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const
-{
- return std::string("");
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const
-{
- return std::string("");
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const
-{
- return std::string("");
-}
-
 /// Инициализирует данные
 virtual void Init(UItem* item, const std::string &output_name)
 {
@@ -353,27 +335,6 @@ virtual bool IsConnected(void) const
 }
 // --------------------------
 
-// --------------------------
-// Методы управления выходами
-// --------------------------
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const
-{
- return 0;
-}
-
-/// Возвращает указатель на компонент-приемник
-virtual UComponent* GetConnector(int index)
-{
- return 0;
-}
-
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const
-{
- return std::string("");
-}
-// --------------------------
 
 protected:
 // --------------------------

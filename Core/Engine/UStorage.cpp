@@ -468,7 +468,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
     else
      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
-    obj->SetActivity(true);
+    obj->Activity = true;
    }
    return static_pointer_cast<UComponent>(obj);
   }
@@ -495,7 +495,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
  PushObject(classid,obj);
  obj->SetLogger(Logger);
- obj->SetActivity(true);
+ obj->Activity = true;
 
  return static_pointer_cast<UComponent>(obj);
 }
@@ -789,8 +789,8 @@ void UStorage::DefaultObject(UEPtr<UContainer> object)
  object->Default();
  tmpl->ResetComponent(static_pointer_cast<UComponent>(object));
 
- object->SetActivity(activity);
- object->SetCoord(coord);
+ object->Activity = activity;
+ object->Coord = coord;
 }
 // --------------------------
 
@@ -1830,7 +1830,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
 
- obj->SetActivity(false);
+ obj->Activity = false;
  obj->BreakOwner();
 
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());

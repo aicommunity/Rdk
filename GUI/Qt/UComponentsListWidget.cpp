@@ -619,7 +619,6 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
   if(!cont)
    return;
 
-  std::string buffer;
   QString parameterName=item->text(0);
   RDK::UEPtr<RDK::UIProperty> property;
 
@@ -628,15 +627,8 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
   if(!property)
    return;
 
-//  parametersItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
-//  parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
-//  if(parameterName == selectedParameterName)
-//   ui->treeWidgetParameters->setCurrentItem(parametersItem);
   if(property->GetLanguageType() == typeid(bool))
   {
-//   parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
-
-//   const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
    bool value(false);
    if(item->checkState(1) == Qt::Checked)
     value=true;

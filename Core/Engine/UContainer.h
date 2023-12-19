@@ -110,56 +110,49 @@ UAStaticContainerMap StaticComponents;
 // Таблица контроллеров интерфейса
 std::vector<UEPtr<UController> > Controllers;
 
-protected: // Основные свойства
-
-protected: // Общедоступные свойства
+public: // Общедоступные свойства
 // Имя объекта
-NameT Name;
+ULProperty<NameT, UContainer, ptParameter | pgSystem> Name;
 
 // Id объекта
-UId Id;
+ULProperty<UId, UContainer, ptParameter | pgSystem> Id;
 
 // Флаг активности объекта
 // true - расчет объекта будет выполняться
 // false - расчет объекта будет игнорироваться
-bool Activity;
+ULProperty<bool,  UContainer, ptParameter | pgPublic> Activity;
 
 // Шаг счета в долях секунды
 // Реальный шаг = 1./TimeStep
-UTime TimeStep;
+ULProperty<UTime,  UContainer, ptParameter | pgSystem> TimeStep;
 
 /// Максимально допустимое время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах.
 /// Если время расчета превышено, то расчет последующих дочерних компонент
 /// не выполняется
 /// Если значение параметра <0, то нет ограничений
-long long MaxCalculationDuration;
+ULProperty<long long, UContainer, ptParameter | pgPublic> MaxCalculationDuration;
 
 /// Время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
 /// Если значение параметра <0, то нет ограничений
-long long CalculationDurationThreshold;
+ULProperty<long long, UContainer, ptParameter | pgPublic> CalculationDurationThreshold;
 
-public: //
-/// Флаг включения мониторинга утечки памяти
-ULProperty<bool, UContainer, ptPubParameter | pgSystem> MemoryMonitor;
-
-
-protected: // Физические свойства
+public: // Физические свойства
 // Координата компонента в пространстве сети
-RDK::MVector<double,3> Coord;
+ULProperty<RDK::MVector<double,3>, UContainer, ptParameter | pgPublic> Coord;
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-unsigned long long StepDuration;
+ULProperty<unsigned long long, UContainer, ptState | pgPublic | pgSystem> StepDuration;
 
+/// Флаги переопределения настроек вывода детальной отладочной информации
+ULProperty<unsigned int, UContainer, ptParameter | pgPublic | pgSystem> DebugSysEventsMask;
+
+protected: // Временные переменные
 // Время, прошедшее между двумя последними итерациями счета
 unsigned long long InterstepsInterval;
 
-/// Флаги переопределения настроек вывода детальной отладочной информации
-unsigned int DebugSysEventsMask;
-
-protected: // Временные переменные
 // Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
 // счетчиком текущего интервала ожидания.
 // В противном случае 'CalcCounter' не ипользуется
@@ -326,7 +319,6 @@ void DetachPropertyData(const NameT& destination_property);
 public:
 // Координата компонента в пространстве сети
 const RDK::MVector<double,3>& GetCoord(void) const;
-bool SetCoord(const RDK::MVector<double,3> &value);
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
@@ -345,7 +337,6 @@ double GetInstantPerformance(void) const;
 
 // Устанавливает величину шага интегрирования
 const UTime& GetTimeStep(void) const;
-bool SetTimeStep(const UTime &timestep);
 
 // Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
 bool SetGlobalTimeStep(UTime timestep);
@@ -356,11 +347,9 @@ void ChangeUseIndTimeStepMode(bool value);
 
 // Устанавливает флаг активности объекта
 const bool& GetActivity(void) const;
-virtual bool SetActivity(const bool &activity);
 
 // Id объекта
-const UId& GetId(void) const;
-bool SetId(const UId &id);
+const UId GetId(void) const;
 
 // Проверяет предлагаемое имя 'name' на уникальность в рамках данного объекта
 bool CheckName(const NameT &name);
@@ -373,8 +362,6 @@ virtual NameT& GenerateName(const NameT &prefix, NameT &namebuffer);
 
 // Устанавливает имя объекта
 const NameT& GetName(void) const;
-bool SetName(const NameT &name);
-
 
 // Возвращает полное имя объекта
 // (включая имена всех владельцев)
@@ -394,19 +381,14 @@ NameT GetLongName(const UEPtr<UContainer> &mainowner) const;
 /// не выполняется
 /// Если значение параметра <0, то нет ограничений
 const long long& GetMaxCalculationDuration(void) const;
-bool SetMaxCalculationDuration(const long long &value);
 
 /// Время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
 /// Если значение параметра <0, то нет ограничений
 const long long& GetCalculationDurationThreshold(void) const;
-bool SetCalculationDurationThreshold(const long long& value);
 
 /// Флаги переопределения настроек вывода детальной отладочной информации
 const unsigned int& GetDebugSysEventsMask(void) const;
-bool SetDebugSysEventsMask(const unsigned int &value);
-
-bool SetMemoryMonitor(const bool &value);
 
 /// Объем потребленной памяти за шаг расчета.
 /// Может быть отрицательрным если память освобождалась.
@@ -417,6 +399,18 @@ long long GetMemoryUsageDiff(void) const;
 /// Может быть отрицательрным если кусок увеличился.
 /// Актуально если включен флаг MemoryMonitor
 long long GetMaxMemoryBlockDiff(void) const;
+
+bool SetName(const NameT &name);
+bool SetCoord(const RDK::MVector<double,3> &value);
+virtual bool SetActivity(const bool &activity);
+
+protected:
+
+bool SetTimeStep(const UTime &timestep);
+bool SetId(const UId &id);
+bool SetDebugSysEventsMask(const unsigned int &value);
+bool SetMaxCalculationDuration(const long long &value);
+bool SetCalculationDurationThreshold(const long long& value);
 // --------------------------
 
 // --------------------------

@@ -3360,9 +3360,9 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
     return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
 
    if(!new_name || strlen(new_name) == 0)
-    new_component->SetName(component->GetName());
+    new_component->Name = component->GetName();
    else
-    new_component->SetName(new_name);
+    new_component->Name = new_name;
 
    if(!owner->AddComponent(new_component))
    {
@@ -3374,7 +3374,7 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
    RDK::MVector<double,3> coord=new_component->GetCoord();
    coord(0)+=1;
    coord(1)+=1;
-   new_component->SetCoord(coord);
+   new_component->Coord = coord;
 
    AccessCache.clear();
    res=RDK_SUCCESS;
@@ -5637,7 +5637,7 @@ int UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
   {
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-   cont->SetTimeStep(value);
+   cont->TimeStep = value;
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
