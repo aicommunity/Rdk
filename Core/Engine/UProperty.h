@@ -736,7 +736,7 @@ public:
 //Конструктор инициализации
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
     : UPropertyLocal<T,OwnerT>(name, owner, setmethod)
-{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ }
 
 protected:
 UProperty(const UProperty<T,OwnerT,type> &v) {}
@@ -911,12 +911,12 @@ public:
 //Конструктор инициализации
 UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
     : UCPropertyLocal<T,OwnerT>(name, owner, setmethod)
-{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ }
 
 //Конструктор инициализации для отдельных значений
 UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
     : UCPropertyLocal<T,OwnerT>(name, owner,setmethod)
-{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+{ }
 
 protected:
 UCProperty(const UCProperty<T,OwnerT> &v) {}
