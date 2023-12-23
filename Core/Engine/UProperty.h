@@ -61,12 +61,6 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-/*
-UVBaseDataProperty(void)
- : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
-{
-}
-  */
 explicit UVBaseDataProperty(T * const pdata)
  : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
@@ -359,9 +353,6 @@ void ResetUpdateTime(void)
 template<typename T,class OwnerT>
 class UVBaseProperty: public UVBaseDataProperty<T>
 {
-//friend class OwnerT;
-protected: // Типы методов ввода-вывода
-
 protected: // Данные
 // Владелец свойства
 OwnerT* Owner;
@@ -437,7 +428,7 @@ template<typename T,class OwnerT>
 class UVProperty: public UVBaseProperty<T,OwnerT>
 {
 //friend class OwnerT;
-protected: // Типы методов ввода-вывода
+public: // Типы методов ввода-вывода
 typedef const T& (OwnerT::*GetterRT)(void) const;
 typedef bool (OwnerT::*SetterRT)(const T&);
 
@@ -548,16 +539,16 @@ const T& operator () (void) const
 };
 
 T* operator -> (void)
-{ return const_cast<T*>(&this->GetData()); };
+{ return const_cast<T*>(&this->GetData()); }
 
 const T* operator -> (void) const
-{ return &this->GetData(); };
+{ return &this->GetData(); }
 
 T& operator * (void)
-{ return const_cast<T&>(this->GetData()); };
+{ return const_cast<T&>(this->GetData()); }
 
 const T& operator * (void) const
-{ return this->GetData(); };
+{ return this->GetData(); }
 
 
 // Оператор присваивания
@@ -565,13 +556,7 @@ UVProperty<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
-};
-/*
-UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
-{
- this->SetData(v.GetData());
- return *this;
-};*/
+}
 // -----------------------------
 };
 
@@ -580,6 +565,7 @@ UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
 /// Не содержит данного внутри себя
 /// Setter и Getter обеспечивают доступ по значению
 /// Вовзрат значения осуществляется через внутреннюю копию
+/*
 template<typename T,class OwnerT>
 class UVSProperty: public UVBaseProperty<T,OwnerT>
 {
@@ -651,13 +637,13 @@ virtual void SetData(const T &value)
  }
 };
 // -----------------------------
-};
+};*/
 
 /* ************************************************************************* */
 // Класс - свойство с значением внутри
 /* ************************************************************************* */
-template<typename T,class OwnerT>
-class UProperty: public UVProperty<T,OwnerT>
+template<typename T,class OwnerT, unsigned int type=ptPubParameter>
+class UPropertyLocal: public UVProperty<T,OwnerT>
 {
 protected:
 /// Флаг проверки значения свойства на равенство присваевому значению
@@ -673,8 +659,13 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v() { this->PData=&v; };
+public:
+UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v()
+{
+    this->PData=&v;
+    dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
+}
 // -----------------------------
 
 // -----------------------------
@@ -734,13 +725,60 @@ virtual void SetData(const T &value)
 };
 /* ************************************************************************* */
 
+/// Конечный класс свойства со значением внутри
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UProperty: public UPropertyLocal<T,OwnerT>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации
+UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+    : UPropertyLocal<T,OwnerT>(name, owner, setmethod)
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+
+protected:
+UProperty(const UProperty<T,OwnerT,type> &v) {}
+// -----------------------------
+
+// -----------------------------
+// Операторы
+// -----------------------------
+public:
+// Оператор присваивания
+UProperty<T,OwnerT, type>& operator = (const T &value)
+{
+    this->SetData(value);
+    return *this;
+}
+
+UProperty<T,OwnerT, type>& operator = (const UProperty<T,OwnerT, type> &v)
+{
+    this->SetData(v.GetData());
+    return *this;
+}
+
+operator T (void) const
+{
+    return this->GetData();
+}
+
+const T& operator () (void) const
+{
+    return this->GetData();
+}
+// -----------------------------
+};
+
+
 /* ************************************************************************* */
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
-template<typename T, typename OwnerT>
-class UCProperty: public UVProperty<T,OwnerT>
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UCPropertyLocal: public UVProperty<T,OwnerT>
 {
-protected: // Типы методов ввода-вывода
+public: // Типы методов ввода-вывода
 typedef typename T::value_type TV;
 typedef bool (OwnerT::*VSetterRT)(const TV&);
 
@@ -759,12 +797,20 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), CheckEqualsFlag(true), v() { this->PData=&v; };
+public:
+UCPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), CheckEqualsFlag(true), v()
+{
+ this->PData=&v;
+ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
+}
 
-UCProperty(OwnerT * const owner, VSetterRT setmethod)
+UCPropertyLocal(const string &name, OwnerT * const owner, typename UCPropertyLocal<T,OwnerT>::VSetterRT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterRT)0,0), CheckEqualsFlag(true), v()
-{ VSetterR=setmethod; this->PData=&v; };
+{
+ VSetterR=setmethod; this->PData=&v;
+ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
+}
 // -----------------------------
 
 // -----------------------------
@@ -825,15 +871,174 @@ virtual void SetData(const T &value)
 
  v=value;
  this->RenewUpdateTime();
+}
+// -----------------------------
+
+public: // Исключения
+
+// Выход за границы массива C (container) property
+struct EPropertyRangeError: public UIProperty::EPropertyError
+{
+    int MinValue, MaxValue, ErrorValue;
+public:
+    EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
+                        int min_value, int max_value, int error_value)
+        : UIProperty::EPropertyError(owner_name, property_name),
+        MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
+
+
+    // Формирует строку лога об исключении
+    virtual std::string CreateLogMessage(void) const
+    {
+        return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
+               sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
+               std::string(" ErrorValue=")+sntoa(ErrorValue);
+    }
 };
+
+};
+
+
+// Конечный класс - свойство-контейнер со значением внутри
+/* ************************************************************************* */
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UCProperty: public UCPropertyLocal<T,OwnerT>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации
+UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+    : UCPropertyLocal<T,OwnerT>(name, owner, setmethod)
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+
+//Конструктор инициализации для отдельных значений
+UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
+    : UCPropertyLocal<T,OwnerT>(name, owner,setmethod)
+{ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); }
+
+protected:
+UCProperty(const UCProperty<T,OwnerT> &v) {}
+// -----------------------------
+
+public: // Исключения
+
+// Выход за границы массива C (container) property
+struct EPropertyRangeError: public UIProperty::EPropertyError
+{
+    int MinValue, MaxValue, ErrorValue;
+public:
+    EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
+                        int min_value, int max_value, int error_value)
+        : UIProperty::EPropertyError(owner_name, property_name),
+        MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
+
+
+    // Формирует строку лога об исключении
+    virtual std::string CreateLogMessage(void) const
+    {
+        return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
+               sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
+               std::string(" ErrorValue=")+sntoa(ErrorValue);
+    }
+};
+
+
+// -----------------------------
+// Операторы доступа
+// -----------------------------
+// Чтение элемента контейнера
+const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
+{
+    if(i<0 || i>=this->v.size())
+        throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+                                  0,int(this->v.size()),i);
+
+    return this->v[i];
+}
+
+// Запись элемента контейнера
+bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
+{
+    if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
+        throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+
+    if(i<0 || i>=this->v.size())
+        throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+                                  0,int(this->v.size()),i);
+
+    this->v[i]=value;
+    this->RenewUpdateTime();
+
+    return true;
+}
+
+operator T (void) const
+{
+    return this->GetData();
+}
+
+const T& operator () (void) const
+{
+    return this->GetData();
+}
+
+T* operator -> (void)
+{ return const_cast<T*>(&this->GetData()); }
+
+const T* operator -> (void) const
+{ return &this->GetData(); }
+
+T& operator * (void)
+{ return const_cast<T&>(this->GetData()); }
+
+const T& operator * (void) const
+{ return this->GetData(); }
+
+// Оператор присваивания
+UCProperty& operator = (const T &value)
+{
+    this->SetData(value);
+    return *this;
+}
+
+UCProperty& operator = (const UCProperty &value)
+{
+    this->SetData(value.GetData());
+    return *this;
+}
+// -----------------------------
+
+// -----------------------------
+// Скрытые операторы доступа только для дружественного класса
+// -----------------------------
+public:
+typename UCProperty<T,OwnerT>::TV& operator [] (int i)
+{ return this->v[i]; }
+
+const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
+{ return this->v[i]; }
 // -----------------------------
 };
+
+
 #ifdef __BORLANDC__
 #pragma warning( default : 4700)
 #endif
 /* ************************************************************************* */
 
-
+template<typename T, typename OwnerT, unsigned int type>
+std::ostream& operator << (std::ostream &stream, UPropertyLocal<T,OwnerT, type> &property)
+{
+    using namespace std;
+    stream<<"Property "<<property.GetOwnerName()<<":"<<property.GetName();
+    stream<<endl;
+    stream<<"Data:"<<endl;
+    stream<<*property;
+    stream<<"--------------------";
+    return stream;
+}
 
 }
 

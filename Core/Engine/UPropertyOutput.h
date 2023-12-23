@@ -10,7 +10,7 @@ namespace RDK {
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputBase: public ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputBase: public UProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
@@ -20,7 +20,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : ULProperty<T,OwnerT,type>(name, owner,setmethod)
+ : UProperty<T,OwnerT,type>(name, owner,setmethod)
 {
  this->IoType=input_type;
 };

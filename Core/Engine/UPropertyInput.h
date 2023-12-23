@@ -521,7 +521,7 @@ operator T* (void) const
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
+class UPropertyInputCBase: public UCProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -536,7 +536,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
- : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner)
+ : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
 {
  this->IoType=input_type;
 };
