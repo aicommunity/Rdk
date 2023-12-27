@@ -11,15 +11,15 @@ namespace RDK {
 
 /// Специализация: свойства - вектора
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<std::vector<V>, OwnerT, type>: public UPropertyLocal<std::vector<V>,OwnerT>
+class UProperty<std::vector<V>, OwnerT, type>: public UPropertyLocal<std::vector<V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::vector<V>,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<std::vector<V>,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::vector<V>,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<std::vector<V>,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -124,15 +124,15 @@ const std::vector<V>& operator () (void) const
 
 /// Специализация: свойства - список
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<std::list<V>,OwnerT,type>: public UPropertyLocal<std::list<V>,OwnerT>
+class UProperty<std::list<V>,OwnerT,type>: public UPropertyLocal<std::list<V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::list<V>,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<std::list<V>,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::list<V>,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<std::list<V>,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -228,15 +228,15 @@ const std::list<V>& operator () (void) const
 
 /// Специализация: свойства - map
 template<typename T, typename V, typename OwnerT, unsigned int type>
-class UProperty<std::map<T,V>,OwnerT,type>: public UPropertyLocal<std::map<T,V>,OwnerT>
+class UProperty<std::map<T,V>,OwnerT,type>: public UPropertyLocal<std::map<T,V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::map<T,V>,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<std::map<T,V>,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::map<T,V>,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<std::map<T,V>,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -331,7 +331,7 @@ const std::map<T,V>& operator () (void) const
 
 /// Специализация: свойства - MDMatrix
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<MDMatrix<V>,OwnerT,type>: public UPropertyLocal<MDMatrix<V>,OwnerT>
+class UProperty<MDMatrix<V>,OwnerT,type>: public UPropertyLocal<MDMatrix<V>,OwnerT,type>
 
 {
 public: // Методы
@@ -339,8 +339,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<MDMatrix<V>,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<MDMatrix<V>,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<MDMatrix<V>,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<MDMatrix<V>,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -506,15 +506,15 @@ const MDMatrix<V> operator - (const UProperty<MDMatrix<V>,OwnerT, type> &v1,cons
 
 /// Специализация: свойства - MDVector
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<MDVector<V>,OwnerT,type>: public UPropertyLocal<MDVector<V>,OwnerT>
+class UProperty<MDVector<V>,OwnerT,type>: public UPropertyLocal<MDVector<V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<MDVector<V>,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<MDVector<V>,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<MDVector<V>,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<MDVector<V>,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -668,15 +668,15 @@ const MDVector<V> operator + (const UProperty<MDVector<V>,OwnerT, type> &v1,cons
 
 /// Специализация: свойства - double
 template<typename OwnerT, unsigned int type>
-class UProperty<double, OwnerT,type>: public UPropertyLocal<double,OwnerT>
+class UProperty<double, OwnerT,type>: public UPropertyLocal<double,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<double,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<double,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<double,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<double,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -711,15 +711,15 @@ const double& operator () (void) const
 
 /// Специализация: свойства - int
 template<typename OwnerT, unsigned int type>
-class UProperty<int,OwnerT,type>: public UPropertyLocal<int,OwnerT>
+class UProperty<int,OwnerT,type>: public UPropertyLocal<int,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<int,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<int,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<int,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<int,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -783,15 +783,15 @@ const int& operator () (void) const
 
 /// Специализация: свойства - unsigned int
 template<typename OwnerT, unsigned int type>
-class UProperty<unsigned int,OwnerT,type>: public UPropertyLocal<unsigned int,OwnerT>
+class UProperty<unsigned int,OwnerT,type>: public UPropertyLocal<unsigned int,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned int,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<unsigned int,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned int,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<unsigned int,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -856,15 +856,15 @@ const unsigned int& operator () (void) const
 
 /// Специализация: свойства - int
 template<typename OwnerT, unsigned int type>
-class UProperty<unsigned long int,OwnerT,type>: public UPropertyLocal<unsigned long int,OwnerT>
+class UProperty<unsigned long int,OwnerT,type>: public UPropertyLocal<unsigned long int,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned long int,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<unsigned long int,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned long int,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<unsigned long int,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -929,15 +929,15 @@ const unsigned long int& operator () (void) const
 
 /// Специализация: свойства - unsigned long long
 template<typename OwnerT, unsigned int type>
-class UProperty<unsigned long long,OwnerT,type>: public UPropertyLocal<unsigned long long,OwnerT>
+class UProperty<unsigned long long,OwnerT,type>: public UPropertyLocal<unsigned long long,OwnerT,type>
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned long long,OwnerT>::SetterRT setmethod=0)
- : UPropertyLocal<unsigned long long,OwnerT>(name, owner, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned long long,OwnerT,type>::SetterRT setmethod=0)
+ : UPropertyLocal<unsigned long long,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:

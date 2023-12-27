@@ -135,6 +135,7 @@ HEADERS +=\
     ../../../Core/Engine/UBasePropCreatorTempl.h \
     ../../../Core/Engine/UBasePropCreatorVector.h \
     ../../../Core/Engine/UCreatorPropTemplate.h \
+  ../../../Core/Engine/UPropertyEndpoints.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
