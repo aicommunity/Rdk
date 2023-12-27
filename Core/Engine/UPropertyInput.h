@@ -45,7 +45,7 @@ void ApplyOutputUpdateTime(void) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
+class UPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>//, virtual public UIPropertyInput
 {
 protected:
 public: // Методы
@@ -114,44 +114,10 @@ void DetachFrom(void)
  UVProperty<T,OwnerT>::DetachFrom();
 }
 // -----------------------------
-
-// --------------------------
-// Методы управления входами
-// --------------------------
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const
-{
- return UIPropertyInput::GetItemName();
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const
-{
- return UIPropertyInput::GetItemFullName();
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const
-{
- return UIPropertyInput::GetItemOutputName();
-}
-
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name)
-{
- UIPropertyInput::Init(item, output_name);
-}
-
-/// Деинициализирует данные
-virtual void UnInit(void)
-{
- UIPropertyInput::UnInit();
-}
-// --------------------------
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, virtual public UIPropertyInput
+class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>//, virtual public UIPropertyInput
 {
 protected:
 /// Внешний указатель, передаваемый в виртуальный вход
@@ -270,27 +236,24 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value, UIProperty* output)
+bool SetPointer(int index, UIPropertyOutput* property)
 {
  if(*this->PData != UPropertyInputBase<T*,OwnerT,type>::Local)
   return false;
 
- if(value)
- {
-  *this->PData=reinterpret_cast<T*>(value);
-  this->ConnectedOutput=output;
+
+  *this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
+  //this->PData=&property->GetData();
+  this->ConnectedOutput=property;
   UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag=true;
   this->ResetUpdateTime();
   return true;
- }
-
- return false;
 }
 
 /// Сбрасывает указатель на данные
-bool ResetPointer(int index, void* value)
+bool ResetPointer(int index, UIPropertyOutput* property)
 {
- if(*this->PData == value)
+ if(this->ConnectedOutput == property)
  {
   *this->PData=UPropertyInputBase<T*,OwnerT,type>::Local;
   UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag=false;
@@ -366,17 +329,13 @@ void const * GetPointer(int index) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value, UIProperty* output)
+bool SetPointer(int index, UIPropertyOutput* property)
 {
- if(value)
- {
-  this->PData=reinterpret_cast<T*>(value);
+  this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=true;
-  this->ConnectedOutput=output;
+  this->ConnectedOutput=property;
   this->ResetUpdateTime();
   return true;
- }
- return false;
 }
 
 /// Сбрасывает указатель на данные
@@ -393,19 +352,19 @@ bool ResetPointer(int index, void* value)
 }
 
 bool operator ! (void) const
-{ return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?false:true; };
+{ return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?false:true; }
 
 T* operator -> (void) const
 {
  this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
-};
+}
 
 T& operator * (void)
 {
  this->ApplyOutputUpdateTime();
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?*this->PData:UPropertyInputBase<T,OwnerT,type>::Local;
-};
+}
 
 operator T* (void) const
 {
@@ -521,7 +480,7 @@ operator T* (void) const
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCBase: public UCProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
+class UPropertyInputCBase: public UCProperty<std::vector<T*>,OwnerT,type>//, public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -722,24 +681,6 @@ protected:
 virtual UItem* GetItem(void)
 {
  return 0;
-}
-
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const
-{
- return UIPropertyInput::GetItemName();
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const
-{
- return UIPropertyInput::GetItemFullName();
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const
-{
- return UIPropertyInput::GetItemOutputName();
 }
 // --------------------------
 

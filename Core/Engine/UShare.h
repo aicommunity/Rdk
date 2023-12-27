@@ -97,44 +97,7 @@ const T& GetLocal(void) const
 void SetLocal(const T& data)
 {
  RData=data;
-}
-     /*
-const T& GetShared(void) const
-{
-// if(Pointer)
-//  return *Pointer;
- if(VProperty)
-  return VProperty->Get();
-
- return RData;
-}
-
-void SetShared(const T& data)
-{
- if(VProperty)
-  *VProperty=data;
- else
-  RData=data;
-}
-
-const T* GetPointer(void) const
-{
- return Pointer;
-}
-
-void SetPointer(UComponent *owner, T* pointer)
-{
- MainOwnerT *mainowner=dynamic_cast<MainOwnerT*>(owner);
-
- if(mainowner)
- {
-  Pointer=pointer;
-  if(Pointer)
-   *Pointer=RData;
- }
- else
-  Pointer=0;
-}            */
+}    
 // --------------------------
 
 // --------------------------

@@ -10,7 +10,7 @@ namespace RDK {
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputBase: public UProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputBase: public UProperty<T,OwnerT,type>//, public UIPropertyOutput
 {
 protected:
 
@@ -23,7 +23,7 @@ UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, ty
  : UProperty<T,OwnerT,type>(name, owner,setmethod)
 {
  this->IoType=input_type;
-};
+}
 // -----------------------------
 
 // --------------------------
@@ -37,18 +37,6 @@ operator T* (void)
 // --------------------------
 // Методы управления указателем
 // --------------------------
-// Возвращает указатель на данные выхода
-void const * GetPointer(int index) const
-{
- return &this->GetData();
-}
-
-// Устанавливает указатель на данные выхода
-bool SetPointer(int index, void* value, UIProperty* output)
-{
- return true;
-}
-
 /// Обновить указатели свойств-входов
 void UpdateConnectedPointers(void)
 {
@@ -56,12 +44,12 @@ void UpdateConnectedPointers(void)
  size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
  for(size_t i=0;i<num_inputs;i++)
  {
-  UIProperty* property(0);
+  UIPropertyInput* property(0);
   item->FindConnectedProperty(this->GetName(), int(i), property);
   if(!property)
    continue;
 
-  property->SetPointer(int(i), const_cast<void*>(GetPointer(0)), this);
+  property->SetPointer(int(i), dynamic_cast<UIPropertyOutput*>(this));
  }
 }
 // --------------------------
@@ -69,23 +57,6 @@ void UpdateConnectedPointers(void)
 // --------------------------
 // Методы управления выходами
 // --------------------------
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const
-{
- return UIPropertyOutput::GetNumConnectors();
-}
-
-/// Возвращает указатель на компонент-приемник
-virtual UConnector* GetConnector(int index)
-{
- return UIPropertyOutput::GetConnector(index);
-}
-
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const
-{
- return UIPropertyOutput::GetConnectorInputName(index);
-}
 // --------------------------
 };
 
@@ -104,14 +75,14 @@ UPropertyOutputData(const string &name, OwnerT * const owner, typename UVPropert
  : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
 {
 
-};
+}
 
 /// Deprecated
 UPropertyOutputData(const string &name, OwnerT * const owner, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData, setmethod)
 {
 
-};
+}
 // -----------------------------
 
 /// Оператор присваивания
@@ -119,7 +90,7 @@ UPropertyOutputData<T,OwnerT,type>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
-};
+}
 
 UPropertyOutputData<T,OwnerT, type>& operator = (const UPropertyOutputData<T,OwnerT, type> &v)
 {
@@ -129,7 +100,7 @@ UPropertyOutputData<T,OwnerT, type>& operator = (const UPropertyOutputData<T,Own
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCBase: public UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputCBase: public UCProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
@@ -139,7 +110,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : UCLProperty<std::vector<T>,OwnerT,type>(name, owner, setmethod)
+ : UCProperty<std::vector<T>,OwnerT,type>(name, owner, setmethod)
 {
  this->IoType=input_type;
 };
@@ -148,34 +119,6 @@ UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type, t
 // --------------------------
 // Методы управления указателем
 // --------------------------
-T& Value(int i)
-{
- if(int(this->v.size())<=i)
- #ifdef __BORLANDC__
-  throw UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	0,int(this->v.size()),i);
- #else
-  throw typename UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	0,int(this->v.size()),i);
- #endif
-
- return this->v[i];
-}
-
-const T& Value(int i) const
-{
- if(int(this->v.size())<=i)
- #ifdef __BORLANDC__
-  throw UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	0,int(this->v.size()),i);
- #else
-  throw typename UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	0,int(this->v.size()),i);
- #endif
-
- return this->v[i];
-}
-
 T& operator [] (int i)
 {
  if(int(this->v.size())<=i)
@@ -229,7 +172,7 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int index, typena
  : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData, setmethod)
 {
 
-};
+}
 // -----------------------------
 };
 
@@ -250,7 +193,7 @@ UVPropertyOutputBase(OwnerT * const owner, T* data, int input_type, typename UVP
  : UVProperty<T,OwnerT>(owner,data, setmethod)
 {
  this->IoType=input_type;
-};
+}
 // -----------------------------
 
 // --------------------------
@@ -289,14 +232,14 @@ UVPropertyOutputData(OwnerT * const owner, T* data, typename UVProperty<T,OwnerT
  : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData, setmethod)
 {
 
-};
+}
 
 /// Deprecated
 UVPropertyOutputData(OwnerT * const owner, T* data, int index, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData, setmethod)
 {
 
-};
+}
 // -----------------------------
 };
 

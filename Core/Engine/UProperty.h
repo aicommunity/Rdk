@@ -40,7 +40,7 @@ using namespace std;
 
 // Класс - база для свойств
 template<typename T>
-class UVBaseDataProperty: public UIProperty
+class UVBaseDataProperty: public UIPropertyOutput
 {
 protected: // Данные
 // Прямой доступ к данным
@@ -265,6 +265,7 @@ virtual void SetUpdateTime(ULongTime value)
 // --------------------------
 // Методы управления указателем
 // --------------------------
+/*
 /// Возвращает указатель на данные
 virtual void const* GetPointer(int index) const
 {
@@ -282,7 +283,7 @@ virtual bool ResetPointer(int index, void* value)
 {
  return false;
 }
-
+*/
 /// Обновить указатели свойств-входов
 virtual void UpdateConnectedPointers(void)
 {
@@ -475,7 +476,7 @@ virtual const T& GetData(void) const
  }
 
  throw UIProperty::EPropertyZeroPtr(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-};
+}
 
 // Установка значения
 virtual void SetData(const T &value)
@@ -503,7 +504,7 @@ virtual void SetData(const T &value)
    this->RenewUpdateTime();
   }
  }
-};
+}
 // -----------------------------
 
 // -----------------------------
@@ -531,12 +532,12 @@ void DetachFrom(void)
 operator T (void) const
 {
  return this->GetData();
-};
+}
 
 const T& operator () (void) const
 {
  return this->GetData();
-};
+}
 
 T* operator -> (void)
 { return const_cast<T*>(&this->GetData()); }
@@ -639,6 +640,10 @@ virtual void SetData(const T &value)
 // -----------------------------
 };*/
 
+
+class UItem;
+class UConnector;
+
 /* ************************************************************************* */
 // Класс - свойство с значением внутри
 /* ************************************************************************* */
@@ -653,7 +658,6 @@ public:
 //protected:
 // Данные
 mutable T v;
-
 
 public:
 // --------------------------
@@ -724,6 +728,7 @@ virtual void SetData(const T &value)
 // -----------------------------
 };
 /* ************************************************************************* */
+
 
 /// Конечный класс свойства со значением внутри
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>

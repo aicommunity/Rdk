@@ -6105,16 +6105,15 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 	return 0;
 
    // »щем указатель на выходные данные
-   UIProperty* output_property=0;
-   output_property=cont->FindProperty(property_name);
+   UEPtr<UIPropertyOutput> output_property=dynamic_pointer_cast<UIPropertyOutput>(cont->FindProperty(property_name));
    if(!output_property)
 	return 0;
 
-   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property->GetLanguageType() == typeid(MDVector<double>))
-   {
-	return output_property->GetPointer(0);
-   }
+   if(dynamic_pointer_cast<UVBaseDataProperty<MDMatrix<double>>>(output_property))
+    return &dynamic_pointer_cast<UVBaseDataProperty<MDMatrix<double>>>(output_property)->GetData();
+
+   if(dynamic_pointer_cast<UVBaseDataProperty<MDVector<double>>>(output_property))
+       return &dynamic_pointer_cast<UVBaseDataProperty<MDVector<double>>>(output_property)->GetData();
 
    return 0;
   }

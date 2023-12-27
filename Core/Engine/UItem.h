@@ -182,10 +182,10 @@ virtual int GetNumActiveOutputs(const NameT &item_property_name) const;
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
-virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
+virtual void FindOutputProperty(const NameT &item_property_name, UIPropertyOutput* &property) const;
 
 /// Возвращает указатель на свойство подключенного входа компонента-приемника
-virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const;
+virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIPropertyInput* &property) const;
 // --------------------------
 
 
