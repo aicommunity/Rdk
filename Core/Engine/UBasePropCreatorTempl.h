@@ -67,24 +67,10 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
                         serstorage->SelectUp();
                         continue;
                     }
-                    // UPropertyInput
-                    if((io_type & (ipSingle | ipComp)) == (ipSingle | ipComp))
-                    {
-                        CreatorT::template CreateProperty<UPropertyInput,ptPubInput>(serstorage,mock_unet,p_type);
-                        serstorage->SelectUp();
-                        continue;
-                    }
                     // UPropertyInputCData
                     if((io_type & (ipRange  | ipData)) == (ipRange  | ipData))
                     {
                         CreatorT::template CreateProperty<UPropertyInputCData,ptPubInput>(serstorage,mock_unet,p_type);
-                        serstorage->SelectUp();
-                        continue;
-                    }
-                    // UPropertyInputC
-                    if((io_type & (ipRange  | ipComp)) == (ipRange  | ipComp))
-                    {
-                        CreatorT::template CreateProperty<UPropertyInputC,ptPubInput>(serstorage,mock_unet,p_type);
                         serstorage->SelectUp();
                         continue;
                     }

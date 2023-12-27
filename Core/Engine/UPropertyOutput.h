@@ -248,7 +248,7 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int index, typename UVProper
 }
 // -----------------------------
 };
-*/
+
 
 template<typename T, typename OwnerT, unsigned int type>
 std::ostream& operator << (std::ostream &stream, UPropertyOutputData<T,OwnerT,type> &output)
@@ -261,7 +261,7 @@ std::ostream& operator << (std::ostream &stream, UPropertyOutputData<T,OwnerT,ty
  stream<<"--------------------";
  return stream;
 }
-
+*/
 
 }
 #endif
