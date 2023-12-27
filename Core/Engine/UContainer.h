@@ -15,8 +15,6 @@ See file license.txt for more information
 #include "../Math/MVector.h"
 #include "UComponent.h"
 #include "UProperty.h"
-#include "ULocalProperty.h"
-#include "UShare.h"
 #include "UTime.h"
 #include "UController.h"
 
@@ -1194,7 +1192,6 @@ void UContainer::DetachPropertyData(const NameT& destination_property)
 }
 
 #include "UPointer.h"
-#include "UShare.h"
 
 #endif
 

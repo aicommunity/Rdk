@@ -3,7 +3,7 @@
 #ifndef UPropertyEndpointsH
 #define UPropertyEndpointsH
 
-#include "ULocalProperty.h"
+#include "UProperty.h"
 #include <vector>
 //---------------------------------------------------------------------------
 

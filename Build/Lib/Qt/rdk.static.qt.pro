@@ -163,7 +163,6 @@ HEADERS +=\
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
     ../../../Core/Engine/UPropertyInput.h \
-    ../../../Core/Engine/UShare.h \
     ../../../Core/Engine/UStorage.h \
     ../../../Core/Engine/UComponentFactory.h \
     ../../../Core/Engine/UTime.h \

@@ -451,7 +451,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  UIProperty* i_item_property=na->FindProperty(item_property_name);
  UIProperty* i_conn_property=FindProperty(connector_property_name);
 
- if(!i_item_property && !(i_conn_property && (i_conn_property->GetIoType() & ipComp)))
+ if(!i_item_property)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Output not found: ")+item_property_name);
   return false;
@@ -463,8 +463,6 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   return false;
  }
 
- if(!(i_conn_property->GetIoType() & ipComp))
- {
   if(!i_conn_property->CompareElemLanguageType(*i_item_property))
   {
    std::string item_full_name = na->GetFullName();
@@ -476,7 +474,6 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
                  item_property_type+ " != " + conn_property_type+"]");
    return false;
   }
- }
 
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
  if(I != ConnectedItemList.end())

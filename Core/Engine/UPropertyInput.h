@@ -1,7 +1,7 @@
 #ifndef UINPUT_PROPERTY_H
 #define UINPUT_PROPERTY_H
 
-#include "ULocalProperty.h"
+#include "UProperty.h"
 #include "UConnector.h"
 
 namespace RDK {
@@ -131,7 +131,7 @@ UPropertyInputData(const string &name, OwnerT * const owner)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
 {
  this->PData=&(this->Local);
-};
+}
 
 /// Deprecated
 UPropertyInputData(const string &name, OwnerT * const owner, int index)
@@ -169,9 +169,9 @@ bool SetPointer(int index, UIPropertyOutput* property)
 }
 
 /// —брасывает указатель на данные
-bool ResetPointer(int index, void* value)
+bool ResetPointer(int index, UIPropertyOutput* property)
 {
- if(this->PData == value)
+ if(this->ConnectedOutput == property)
  {
   this->PData=&(this->Local);
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=false;
@@ -284,7 +284,7 @@ void const * GetPointer(int index) const
 }
 
 // ”станавливает указатель на данные входа
-bool SetPointer(int index, void* value, UIProperty* output)
+bool SetPointer(int index, UIPropertyOutput* property)
 {
  if(index<0)
   return false;
@@ -302,14 +302,14 @@ bool SetPointer(int index, void* value, UIProperty* output)
   for(size_t i=old_size;i<new_size;i++)
    Local[i]=new T;
  }
- this->v[index]=reinterpret_cast<T*>(value);
+ this->v[index]=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
  ConnectedOutput.resize(this->v.size());
- ConnectedOutput[index]=output;
+ ConnectedOutput[index]=property;
  return true;
 }
 
 /// —брасывает указатель на данные
-bool ResetPointer(int index, void* value)
+bool ResetPointer(int index, UIPropertyOutput* property)
 {
  if(int(this->v.size())>index && index >=0)
  {

@@ -267,34 +267,6 @@ virtual void SetUpdateTime(ULongTime value)
 }
 // --------------------------
 
-// --------------------------
-// Методы управления указателем
-// --------------------------
-/*
-/// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const
-{
- return 0;
-}
-
-/// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)
-{
- return false;
-}
-
-/// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)
-{
- return false;
-}
-*/
-/// Обновить указатели свойств-входов
-virtual void UpdateConnectedPointers(void)
-{
-}
-// --------------------------
-
 // -----------------------------
 // Привязка внешней ссылки как источника данных
 // -----------------------------
@@ -657,7 +629,7 @@ virtual void SetData(const T &value)
 
 /// Конечный класс свойства со значением внутри
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UProperty: public UPropertyLocal<T,OwnerT>
+class UProperty: public UPropertyLocal<T,OwnerT,type>
 {
 public:
 // --------------------------
@@ -665,7 +637,7 @@ public:
 // --------------------------
 //Конструктор инициализации
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
-    : UPropertyLocal<T,OwnerT>(name, owner, setmethod)
+    : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod)
 { }
 
 protected:
@@ -832,7 +804,7 @@ public:
 // Конечный класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UCProperty: public UCPropertyLocal<T,OwnerT>
+class UCProperty: public UCPropertyLocal<T,OwnerT, type>
 {
 public:
 // --------------------------
@@ -840,16 +812,16 @@ public:
 // --------------------------
 //Конструктор инициализации
 UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
-    : UCPropertyLocal<T,OwnerT>(name, owner, setmethod)
+    : UCPropertyLocal<T,OwnerT, type>(name, owner, setmethod)
 { }
 
 //Конструктор инициализации для отдельных значений
 UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
-    : UCPropertyLocal<T,OwnerT>(name, owner,setmethod)
+    : UCPropertyLocal<T,OwnerT, type>(name, owner,setmethod)
 { }
 
 protected:
-UCProperty(const UCProperty<T,OwnerT> &v) {}
+UCProperty(const UCProperty<T,OwnerT, type> &v) {}
 // -----------------------------
 
 public: // Исключения
@@ -879,7 +851,7 @@ public:
 // Операторы доступа
 // -----------------------------
 // Чтение элемента контейнера
-const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
+const typename UCProperty<T,OwnerT, type>::TV& operator () (int i) const
 {
     if(i<0 || i>=this->v.size())
         throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
@@ -889,7 +861,7 @@ const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
 }
 
 // Запись элемента контейнера
-bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
+bool operator () (int i, const typename UCProperty<T,OwnerT, type>::TV &value)
 {
     if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
         throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
@@ -944,10 +916,10 @@ UCProperty& operator = (const UCProperty &value)
 // Скрытые операторы доступа только для дружественного класса
 // -----------------------------
 public:
-typename UCProperty<T,OwnerT>::TV& operator [] (int i)
+typename UCProperty<T,OwnerT, type>::TV& operator [] (int i)
 { return this->v[i]; }
 
-const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
+const typename UCProperty<T,OwnerT, type>::TV& operator [] (int i) const
 { return this->v[i]; }
 // -----------------------------
 };
