@@ -609,6 +609,9 @@ public:
 
     /// Возвращает указатель на свойство подключенного входа компонента-приемника
     virtual UIPropertyInput* GetConnectorProperty(int index);
+
+    /// Обновить указатели свойств-входов
+    virtual void UpdateConnectedPointers(void);
 };
 
 

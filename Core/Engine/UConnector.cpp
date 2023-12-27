@@ -885,6 +885,21 @@ UIPropertyInput* UIPropertyOutput::GetConnectorProperty(int index)
  return property;
 }
 
+void UIPropertyOutput::UpdateConnectedPointers(void)
+{
+    UEPtr<UConnector> item=dynamic_cast<UConnector*>(this->GetOwner());
+    size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
+    for(size_t i=0;i<num_inputs;i++)
+    {
+        UIPropertyInput* property(0);
+        item->FindConnectedProperty(this->GetName(), int(i), property);
+        if(!property)
+            continue;
+
+        property->SetPointer(int(i), dynamic_cast<UIPropertyOutput*>(this));
+    }
+}
+
 
 
 

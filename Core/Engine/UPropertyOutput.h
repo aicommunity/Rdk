@@ -6,6 +6,12 @@
 
 namespace RDK {
 
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
+using UPropertyOutputData = UProperty<T, OwnerT, type>;
+
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
+using UPropertyOutputCData = UCProperty<T, OwnerT, type>;
+/*
 // -----------------------------------------------------------------------------
 // Output properties
 // -----------------------------------------------------------------------------
@@ -100,7 +106,7 @@ UPropertyOutputData<T,OwnerT, type>& operator = (const UPropertyOutputData<T,Own
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCBase: public UCProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputCBase: public UCProperty<std::vector<T>,OwnerT,type>, public UIPropertyOutput
 {
 protected:
 
@@ -180,7 +186,7 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int index, typena
 // Output virtual properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT>
-class UVPropertyOutputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UVPropertyOutputBase: public UVProperty<T,OwnerT>, public UIPropertyOutput
 {
 protected:
 
@@ -242,7 +248,7 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int index, typename UVProper
 }
 // -----------------------------
 };
-
+*/
 
 template<typename T, typename OwnerT, unsigned int type>
 std::ostream& operator << (std::ostream &stream, UPropertyOutputData<T,OwnerT,type> &output)

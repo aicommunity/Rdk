@@ -238,6 +238,11 @@ virtual void UpdatePData(void* data)
 {
  PData=(T*)data;
 }
+/*
+operator T* (void)
+{
+    return this->PData;
+}*/
 // -----------------------------
 
 // --------------------------
@@ -401,25 +406,25 @@ virtual UContainer* GetOwner(void) const
 virtual const std::string& GetName(void) const
 {
  return Variable->first;
-};
+}
 
 // Метод возвращает тип свойства
 virtual unsigned int GetType(void) const
 {
  return Variable->second.Type;
-};
+}
 
 // Метод возвращает строковое имя компонента-владельца свойства
 virtual std::string GetOwnerName(void) const
 {
  return (Owner)?Owner->GetName():std::string("");
-};
+}
 
 // Метод возвращает строковое имя класса-владельца свойства
 virtual std::string GetOwnerClassName(void) const
 {
  return typeid(Owner).name();
-};
+}
 // -----------------------------
 };
 
@@ -531,12 +536,12 @@ void DetachFrom(void)
 // -----------------------------
 operator T (void) const
 {
- return this->GetData();
+    return this->GetData();
 }
 
 const T& operator () (void) const
 {
- return this->GetData();
+    return this->GetData();
 }
 
 T* operator -> (void)
