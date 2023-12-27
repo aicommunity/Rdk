@@ -442,7 +442,7 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int index)
 
 // -----------------------------
 };
-
+/*
 template<typename T, typename OwnerT, unsigned int type>
 std::ostream& operator << (std::ostream &stream, UPropertyInputData<T,OwnerT,type> &input)
 {
@@ -458,7 +458,7 @@ std::ostream& operator << (std::ostream &stream, UPropertyInputData<T,OwnerT,typ
  stream<<"--------------------";
  return stream;
 }
-
+*/
 
 }
 #endif

@@ -953,11 +953,23 @@ const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
 };
 
 
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+using ULProperty = UProperty<T, OwnerT, type>;
+
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+using UCLProperty = UCProperty<T, OwnerT, type>;
+
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
+using UPropertyOutputData = UProperty<T, OwnerT, type>;
+
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
+using UPropertyOutputCData = UCProperty<T, OwnerT, type>;
+
 #ifdef __BORLANDC__
 #pragma warning( default : 4700)
 #endif
 /* ************************************************************************* */
-
+/*
 template<typename T, typename OwnerT, unsigned int type>
 std::ostream& operator << (std::ostream &stream, UPropertyLocal<T,OwnerT, type> &property)
 {
@@ -969,7 +981,7 @@ std::ostream& operator << (std::ostream &stream, UPropertyLocal<T,OwnerT, type> 
     stream<<"--------------------";
     return stream;
 }
-
+*/
 }
 
 #endif
