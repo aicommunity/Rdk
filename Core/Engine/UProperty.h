@@ -81,20 +81,6 @@ virtual const T& GetData(void) const=0;
 
 // Модифицирует данные
 virtual void SetData(const T& data)=0;
-/*
-virtual const T& GetData(void) const
-{
- if(PData)
-  return *PData;
- throw EPropertyZeroPtr(GetOwnerName(),GetName());
-}
-
-// Модифицирует данные
-virtual void SetData(const T& data)
-{
- (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
- RenewUpdateTime();
-}*/
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -390,7 +376,7 @@ protected:
 bool IsConnectedFlag;
 
 /// Указатель на подключенный выход
-UIPropertyOutput *ConnectedOutput;
+std::vector<UIPropertyOutput*> ConnectedOutputs;
 
 public: // Методы
 // --------------------------
@@ -400,63 +386,13 @@ UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
   UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0)
 {
     IsConnectedFlag=false;
-    ConnectedOutput = 0;
 }
 
 UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
   UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0)
 {
     IsConnectedFlag=false;
-    ConnectedOutput = 0;
 }
-// -----------------------------
-
-// -----------------------------
-// Методы управления
-// -----------------------------
-/*
-// Возврат значения
-virtual const T& GetData(void) const
-{
- if(ExternalDataSource)
-  return ExternalDataSource->GetData();
-
- if(IsConnectedFlag)
-  return dynamic_cast<UVBaseDataProperty<T>*>(UConnectedOutput)->GetData();
-
- if(this->Owner)
- {
-  if(GetterR)
-   return (this->Owner->*GetterR)();
- }
-
- throw UIProperty::EPropertyZeroPtr(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-}
-
-// Установка значения
-virtual void SetData(const T &value)
-{
- if(ExternalDataSource)
- {
-  ExternalDataSource->SetData(value);
-  return;
- }
-
- if(IsConnectedFlag)
-  return;
-
- if(this->Owner && SetterR)
- {
-  if(!(this->Owner->*SetterR)(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-  if(this->PData)
-  {
-   *this->PData=value;
-   this->RenewUpdateTime();
-  }
- }
-}*/
 // -----------------------------
 
 // -----------------------------
@@ -484,8 +420,8 @@ void DetachFrom(void)
 /// Применяет время выхода к входу
 void ApplyOutputUpdateTime(void) const
 {
- if(ConnectedOutput)
-  this->UpdateTime=ConnectedOutput->GetUpdateTime();
+ if(!ConnectedOutputs.empty())
+  this->UpdateTime=ConnectedOutputs[0]->GetUpdateTime();
 }
 
 // Возвращает true если вход имеет подключение
@@ -497,7 +433,7 @@ bool IsConnected(void) const
 /// Возвращает true, если на подключенном выходе новые данные
 virtual bool IsNewData(void) const
 {
- return (this->ConnectedOutput)?this->ConnectedOutput->GetUpdateTime()>this->UpdateTime:true;
+ return (!ConnectedOutputs.empty())?this->ConnectedOutputs[0]->GetUpdateTime()>this->UpdateTime:true;
 }
 // -----------------------------
 
@@ -605,7 +541,7 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
- return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutput)->GetData():v;
+ return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
 }
 
 virtual void SetData(const T &value)
@@ -659,7 +595,7 @@ void DetachFrom(void)
 void const * GetPointer(int index) const
 {
  if(IsConnectedFlag)
-  return &dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutput)->GetData();
+  return &dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData();
  return 0;
 }
 
@@ -668,7 +604,7 @@ bool SetPointer(int index, UIPropertyOutput* property)
 {
  //this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
  IsConnectedFlag=true;
- this->ConnectedOutput=property;
+ this->ConnectedOutputs.assign(1,property);
  this->ResetUpdateTime();
  return true;
 }
@@ -676,11 +612,11 @@ bool SetPointer(int index, UIPropertyOutput* property)
 /// Сбрасывает указатель на данные
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
- if(this->ConnectedOutput == property)
+ if(!this->ConnectedOutputs.empty() && this->ConnectedOutputs[0] == property)
  {
 //  this->PData=&v;
   IsConnectedFlag=false;
-  ConnectedOutput=0;
+  ConnectedOutputs.clear();
   return true;
  }
  return false;
@@ -800,7 +736,10 @@ void SetCheckEquals(bool value)
 // Возврат значения
 virtual const T& GetData(void) const
 {
- return (this->ExternalDataSource)?this->ExternalDataSource->GetData():v;
+ if(this->ExternalDataSource)
+  return this->ExternalDataSource->GetData();
+
+ return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
 };
 
 virtual void SetData(const T &value)
@@ -810,6 +749,9 @@ virtual void SetData(const T &value)
   this->ExternalDataSource->SetData(value);
   return;
  }
+
+ if(IsConnectedFlag)
+  return;
 
  if(CheckEqualsFlag && v == value)
   return;
@@ -913,6 +855,12 @@ T& operator * (void)
 const T& operator * (void) const
 { return this->GetData(); }
 
+typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i)
+{ return this->v[i]; }
+
+const typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i) const
+{ return this->v[i]; }
+
 // Оператор присваивания
 UCPropertyLocal& operator = (const T &value)
 {
@@ -925,17 +873,6 @@ UCPropertyLocal& operator = (const UCPropertyLocal &value)
  this->SetData(value.GetData());
  return *this;
 }
-// -----------------------------
-
-// -----------------------------
-// Скрытые операторы доступа только для дружественного класса
-// -----------------------------
-public:
-typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i)
-{ return this->v[i]; }
-
-const typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i) const
-{ return this->v[i]; }
 // -----------------------------
 };
 
@@ -986,9 +923,6 @@ class UPropertyInputCBase: public UCProperty<std::vector<T*>,OwnerT,type>
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
 std::vector<T*> Local;
-
-/// Указатель на подключенный выход
-std::vector<UIPropertyOutput*> ConnectedOutputs;
 
 public: // Методы
 // --------------------------
