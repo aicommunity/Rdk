@@ -419,6 +419,13 @@ protected:
 /// Ссылка на внешнее свойство-источник данных
 UVBaseDataProperty<T>* ExternalDataSource;
 
+protected:
+/// Флаг наличия подключения
+bool IsConnectedFlag;
+
+/// Указатель на подключенный выход
+UIPropertyOutput *ConnectedOutput;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -426,11 +433,15 @@ public: // Методы
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
   UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0)
 {
+    IsConnectedFlag=false;
+    ConnectedOutput = 0;
 }
 
 UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
   UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0)
 {
+    IsConnectedFlag=false;
+    ConnectedOutput = 0;
 }
 // -----------------------------
 
@@ -504,30 +515,67 @@ void DetachFrom(void)
 // -----------------------------
 
 // -----------------------------
+// Методы управления подклчаемым выходом
+// -----------------------------
+/// Применяет время выхода к входу
+void ApplyOutputUpdateTime(void) const
+{
+    if(ConnectedOutput)
+        this->UpdateTime=ConnectedOutput->GetUpdateTime();
+}
+
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+    return IsConnectedFlag;
+}
+
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const
+{
+    return (this->ConnectedOutput)?this->ConnectedOutput->GetUpdateTime()>this->UpdateTime:true;
+}
+// -----------------------------
+
+
+// -----------------------------
 // Методы управления
 // -----------------------------
 operator T (void) const
 {
+    ApplyOutputUpdateTime();
     return this->GetData();
 }
 
 const T& operator () (void) const
 {
+    ApplyOutputUpdateTime();
     return this->GetData();
 }
 
 T* operator -> (void)
-{ return const_cast<T*>(&this->GetData()); }
+{
+    ApplyOutputUpdateTime();
+    return const_cast<T*>(&this->GetData());
+}
 
 const T* operator -> (void) const
-{ return &this->GetData(); }
+{
+    ApplyOutputUpdateTime();
+    return &this->GetData();
+}
 
 T& operator * (void)
-{ return const_cast<T&>(this->GetData()); }
+{
+    ApplyOutputUpdateTime();
+    return const_cast<T&>(this->GetData());
+}
 
 const T& operator * (void) const
-{ return this->GetData(); }
-
+{
+    ApplyOutputUpdateTime();
+    return this->GetData();
+}
 
 // Оператор присваивания
 UVProperty<T,OwnerT>& operator = (const T &value)
@@ -556,6 +604,7 @@ public:
 // Данные
 mutable T v;
 
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -564,8 +613,8 @@ public:
 UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v()
 {
-    this->PData=&v;
-    dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
+ this->PData=&v;
+ dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
 }
 // -----------------------------
 
@@ -594,7 +643,8 @@ virtual const T& GetData(void) const
  {
   return this->ExternalDataSource->GetData();
  }
- return v;
+
+ return (IsConnectedFlag)?*this->PData:v;
 }
 
 virtual void SetData(const T &value)
@@ -606,6 +656,9 @@ virtual void SetData(const T &value)
  }
 
  if(CheckEqualsFlag && value == v)
+  return;
+
+ if(IsConnectedFlag)
   return;
 
  if(this->Owner)
@@ -623,6 +676,81 @@ virtual void SetData(const T &value)
  return;
 }
 // -----------------------------
+
+// -----------------------------
+// Методы управления подклчаемым выходом
+// -----------------------------
+bool AttachTo(UVBaseDataProperty<T>* prop)
+{
+    bool res=UVProperty<T,OwnerT>::AttachTo(prop);
+    if(res)
+    {
+        this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
+        IsConnectedFlag=true;
+    }
+    return res;
+}
+
+void DetachFrom(void)
+{
+    this->PData=&v;
+    IsConnectedFlag=false;
+    UVProperty<T,OwnerT>::DetachFrom();
+}
+
+// Возвращает указатель на данные входа
+void const * GetPointer(int index) const
+{
+    if(IsConnectedFlag)
+     return this->PData;
+    return 0;
+}
+
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, UIPropertyOutput* property)
+{
+    this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
+    IsConnectedFlag=true;
+    this->ConnectedOutput=property;
+    this->ResetUpdateTime();
+    return true;
+}
+
+/// Сбрасывает указатель на данные
+bool ResetPointer(int index, UIPropertyOutput* property)
+{
+    if(this->ConnectedOutput == property)
+    {
+        this->PData=&v;
+        IsConnectedFlag=false;
+        ConnectedOutput=0;
+        return true;
+    }
+    return false;
+}
+
+
+/*
+T* operator -> (void) const
+{
+    this->ApplyOutputUpdateTime();
+    return (IsConnectedFlag)?this->PData:&(this->v);
+}
+
+T& operator * (void)
+{
+    this->ApplyOutputUpdateTime();
+    return (IsConnectedFlag)?*this->PData:v;
+}
+
+operator T* (void) const
+{
+    this->ApplyOutputUpdateTime();
+    return (IsConnectedFlag)?this->PData:&(this->v);
+}
+*/
+// -----------------------------
+
 };
 /* ************************************************************************* */
 
@@ -937,23 +1065,14 @@ using UPropertyOutputData = UProperty<T, OwnerT, type>;
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 using UPropertyOutputCData = UCProperty<T, OwnerT, type>;
 
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
+using UPropertyInputData = UProperty<T, OwnerT, type>;
+
+
 #ifdef __BORLANDC__
 #pragma warning( default : 4700)
 #endif
-/* ************************************************************************* */
-/*
-template<typename T, typename OwnerT, unsigned int type>
-std::ostream& operator << (std::ostream &stream, UPropertyLocal<T,OwnerT, type> &property)
-{
-    using namespace std;
-    stream<<"Property "<<property.GetOwnerName()<<":"<<property.GetName();
-    stream<<endl;
-    stream<<"Data:"<<endl;
-    stream<<*property;
-    stream<<"--------------------";
-    return stream;
-}
-*/
+
 }
 
 #endif

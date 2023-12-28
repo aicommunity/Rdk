@@ -116,56 +116,11 @@ void UNet::Free(void)
 // ----------------------
 // Методы управления связями
 // ----------------------
-/*bool UNet::CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
-{
- return CreateLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
-}*/
-
-// Устанавливает новую связь между выходом элемента сети
-// 'item' и коннектором 'connector'
-/*bool UNet::CreateLink(const NameT &item, int item_index,
-						const NameT &connector, int connector_index, bool forced_connect_same_item)
-{
- return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index), forced_connect_same_item);
-}*/
-
 bool UNet::CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index, bool forced_connect_same_item)
 {
  return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index, connector_c_index), forced_connect_same_item);
 }
-
- /*
-// Разрывает все связи со входом
-template<typename T>
-bool UNet::BreakLink(const ULinkSideT<T> &id)
-{
- UEPtr<UContainer> pointer=GetComponentL(id.Id,true);
-
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(pointer);
- if(connector)
-  {
-   connector->DisconnectAllItems();
-   return true;
-  }
-
- return false;
-}
-   */
-/*
-bool UNet::BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
-{
- return BreakLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
-}*/
-
-/*
-// Разрывает связь между выходом элемента сети, 'itemid'
-// и коннектором 'connectorid'
-bool UNet::BreakLink(const NameT &itemname, int item_index,
-						const NameT &connectorname, int connector_index)
-{
- return BreakLink(UStringLinkSide(itemname,item_index),UStringLinkSide(connectorname,connector_index));
-}*/
 
 // Разрывает все связи между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
