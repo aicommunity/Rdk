@@ -17,7 +17,7 @@ mutable T Local;
 bool IsConnectedFlag;
 
 /// Указатель на подключенный выход
-UIProperty *ConnectedOutput;
+UIPropertyOutput *ConnectedOutput;
 
 public: // Методы
 // --------------------------
@@ -75,23 +75,6 @@ virtual const type_info& GetElemLanguageType(void) const
  return typeid(T);
 }
 // --------------------------
-
-// Метод возвращает строковое имя свойства
-virtual const std::string& GetName(void) const
-{
- return UPropertyInputPreBase<T,OwnerT>::GetName();
-};
-
-// Метод возвращает строковое имя компонента-владельца свойства
-virtual std::string GetOwnerName(void) const
-{
- return UPropertyInputPreBase<T,OwnerT>::GetOwnerName();
-};
-
-virtual ULongTime GetUpdateTime(void) const
-{
- return UPropertyInputPreBase<T,OwnerT>::GetUpdateTime();
-}
 
 // -----------------------------
 // Привязка внешней ссылки как источника данных
@@ -221,7 +204,7 @@ protected:
 std::vector<T*> Local;
 
 /// Указатель на подключенный выход
-std::vector<UIProperty*> ConnectedOutput;
+std::vector<UIPropertyOutput*> ConnectedOutput;
 
 public: // Методы
 // --------------------------
@@ -232,7 +215,7 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
  : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
 {
  this->IoType=input_type;
-};
+}
 
 ~UPropertyInputCBase(void)
 {
