@@ -79,7 +79,9 @@ virtual ~UVBaseDataProperty(void)
 // Возвращает ссылку на данные
 virtual const T& GetData(void) const
 {
- return(PData)?*PData:throw EPropertyZeroPtr(GetOwnerName(),GetName());
+ if(PData)
+  return *PData;
+ throw EPropertyZeroPtr(GetOwnerName(),GetName());
 }
 
 // Модифицирует данные
