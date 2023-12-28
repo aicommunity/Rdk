@@ -442,7 +442,7 @@ void UContainer::SetPropertiesForDetailedLog(const std::string &str)
 // Координата компонента в пространстве сети
 const RDK::MVector<double,3>& UContainer::GetCoord(void) const
 {
- return Coord;
+ return Coord.v;
 }
 
 bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
@@ -831,7 +831,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name,
 // Устанавливает величину шага интегрирования
 const UTime& UContainer::GetTimeStep(void) const
 {
- return TimeStep;
+ return TimeStep.v;
 }
 
 bool UContainer::SetTimeStep(const UTime &timestep)
@@ -889,7 +889,7 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
 // Устанавливает флаг активности объекта
 const bool& UContainer::GetActivity(void) const
 {
- return Activity;
+ return Activity.v;
 }
 
 bool UContainer::SetActivity(const bool &activity)
@@ -948,7 +948,7 @@ bool UContainer::SetId(const UId &id)
 /// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetMaxCalculationDuration(void) const
 {
- return MaxCalculationDuration;
+ return MaxCalculationDuration.v;
 }
 
 bool UContainer::SetMaxCalculationDuration(const long long &value)
@@ -962,7 +962,7 @@ bool UContainer::SetMaxCalculationDuration(const long long &value)
 /// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetCalculationDurationThreshold(void) const
 {
- return CalculationDurationThreshold;
+ return CalculationDurationThreshold.v;
 }
 
 bool UContainer::SetCalculationDurationThreshold(const long long& value)
@@ -975,7 +975,7 @@ bool UContainer::SetCalculationDurationThreshold(const long long& value)
 /// Флаги переопределения настроек вывода детальной отладочной информации
 const unsigned int& UContainer::GetDebugSysEventsMask(void) const
 {
- return DebugSysEventsMask;
+ return DebugSysEventsMask.v;
 }
 
 bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
@@ -2217,8 +2217,8 @@ bool UContainer::Calculate(void)
 
    Build();
 
-   unsigned long long total_used_memory_before(0);
-   unsigned long long largest_free_block_before(0);
+//   unsigned long long total_used_memory_before(0);
+//   unsigned long long largest_free_block_before(0);
 
    BeforeCalculate();
 

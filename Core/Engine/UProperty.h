@@ -293,7 +293,7 @@ virtual void Init(UItem* item, const std::string &output_name)
 virtual void UnInit(void)
 {
 }
-
+/*
 /// Возвращает true, если на подключенном выходе новые данные
 virtual bool IsNewData(void) const
 {
@@ -304,7 +304,7 @@ virtual bool IsNewData(void) const
 virtual bool IsConnected(void) const
 {
  return false;
-}
+}*/
 // --------------------------
 
 
@@ -909,77 +909,29 @@ public: // Исключения
 // Выход за границы массива C (container) property
 struct EPropertyRangeError: public UIProperty::EPropertyError
 {
-    int MinValue, MaxValue, ErrorValue;
+int MinValue, MaxValue, ErrorValue;
 public:
-    EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
-                        int min_value, int max_value, int error_value)
-        : UIProperty::EPropertyError(owner_name, property_name),
-        MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
+EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
+                    int min_value, int max_value, int error_value)
+    : UIProperty::EPropertyError(owner_name, property_name),
+    MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
 
 
-    // Формирует строку лога об исключении
-    virtual std::string CreateLogMessage(void) const
-    {
-        return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
-               sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
-               std::string(" ErrorValue=")+sntoa(ErrorValue);
-    }
-};
-
-};
-
-
-// Конечный класс - свойство-контейнер со значением внутри
-/* ************************************************************************* */
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UCProperty: public UCPropertyLocal<T,OwnerT, type>
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
 {
-public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации
-UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
-    : UCPropertyLocal<T,OwnerT, type>(name, owner, setmethod)
-{ }
-
-//Конструктор инициализации для отдельных значений
-UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
-    : UCPropertyLocal<T,OwnerT, type>(name, owner,setmethod)
-{ }
-
-protected:
-UCProperty(const UCProperty<T,OwnerT, type> &v) {}
-// -----------------------------
-
-public: // Исключения
-
-// Выход за границы массива C (container) property
-struct EPropertyRangeError: public UIProperty::EPropertyError
-{
-    int MinValue, MaxValue, ErrorValue;
-public:
-    EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
-                        int min_value, int max_value, int error_value)
-        : UIProperty::EPropertyError(owner_name, property_name),
-        MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
-
-
-    // Формирует строку лога об исключении
-    virtual std::string CreateLogMessage(void) const
-    {
-        return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
-               sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
-               std::string(" ErrorValue=")+sntoa(ErrorValue);
-    }
+    return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
+           sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
+           std::string(" ErrorValue=")+sntoa(ErrorValue);
+}
 };
 
-
+public:
 // -----------------------------
 // Операторы доступа
 // -----------------------------
 // Чтение элемента контейнера
-const typename UCProperty<T,OwnerT, type>::TV& operator () (int i) const
+const typename UCPropertyLocal<T,OwnerT, type>::TV& operator () (int i) const
 {
     if(i<0 || i>=this->v.size())
         throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
@@ -989,7 +941,7 @@ const typename UCProperty<T,OwnerT, type>::TV& operator () (int i) const
 }
 
 // Запись элемента контейнера
-bool operator () (int i, const typename UCProperty<T,OwnerT, type>::TV &value)
+bool operator () (int i, const typename UCPropertyLocal<T,OwnerT, type>::TV &value)
 {
     if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
         throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
@@ -1027,6 +979,57 @@ const T& operator * (void) const
 { return this->GetData(); }
 
 // Оператор присваивания
+UCPropertyLocal& operator = (const T &value)
+{
+    this->SetData(value);
+    return *this;
+}
+
+UCPropertyLocal& operator = (const UCPropertyLocal &value)
+{
+    this->SetData(value.GetData());
+    return *this;
+}
+// -----------------------------
+
+// -----------------------------
+// Скрытые операторы доступа только для дружественного класса
+// -----------------------------
+public:
+typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i)
+{ return this->v[i]; }
+
+const typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i) const
+{ return this->v[i]; }
+// -----------------------------
+};
+
+
+// Конечный класс - свойство-контейнер со значением внутри
+/* ************************************************************************* */
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UCProperty: public UCPropertyLocal<T,OwnerT, type>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации
+UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+    : UCPropertyLocal<T,OwnerT, type>(name, owner, setmethod)
+{ }
+
+//Конструктор инициализации для отдельных значений
+UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
+    : UCPropertyLocal<T,OwnerT, type>(name, owner,setmethod)
+{ }
+
+protected:
+UCProperty(const UCProperty<T,OwnerT, type> &v) {}
+// -----------------------------
+
+public:
+// Оператор присваивания
 UCProperty& operator = (const T &value)
 {
     this->SetData(value);
@@ -1038,18 +1041,6 @@ UCProperty& operator = (const UCProperty &value)
     this->SetData(value.GetData());
     return *this;
 }
-// -----------------------------
-
-// -----------------------------
-// Скрытые операторы доступа только для дружественного класса
-// -----------------------------
-public:
-typename UCProperty<T,OwnerT, type>::TV& operator [] (int i)
-{ return this->v[i]; }
-
-const typename UCProperty<T,OwnerT, type>::TV& operator [] (int i) const
-{ return this->v[i]; }
-// -----------------------------
 };
 
 
@@ -1058,230 +1049,227 @@ template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputCBase: public UCProperty<std::vector<T*>,OwnerT,type>
 {
 protected:
-    /// Временная переменная, использующаяся, если нет реального подключения
-    std::vector<T*> Local;
+/// Временная переменная, использующаяся, если нет реального подключения
+std::vector<T*> Local;
 
-    /// Указатель на подключенный выход
-    std::vector<UIPropertyOutput*> ConnectedOutput;
+/// Указатель на подключенный выход
+std::vector<UIPropertyOutput*> ConnectedOutputs;
 
 public: // Методы
-    // --------------------------
-    // Конструкторы и деструкторы
-    // --------------------------
-    //Конструктор инициализации.
-    UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
-        : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
-    {
-        this->IoType=input_type;
-    }
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
+    : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
+{
+    this->IoType=input_type;
+}
 
-    ~UPropertyInputCBase(void)
-    {
-        for(size_t i=0;i<Local.size();i++)
-            delete Local[i];
-    }
-    // -----------------------------
+~UPropertyInputCBase(void)
+{
+    for(size_t i=0;i<Local.size();i++)
+        delete Local[i];
+}
+// -----------------------------
 
-    // --------------------------
-    // Методы управления указателем
-    // --------------------------
-    // Возвращает языковой тип хранимого свойства для одного элемента
-    virtual const type_info& GetElemLanguageType(void) const
-    {
-        return typeid(T);
-    }
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает языковой тип хранимого свойства для одного элемента
+virtual const type_info& GetElemLanguageType(void) const
+{
+    return typeid(T);
+}
 
-    // Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
-    virtual bool CompareElemLanguageType(const UIProperty &dt) const
-    {
-        return GetElemLanguageType() == dt.GetElemLanguageType();
-    }
+// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+virtual bool CompareElemLanguageType(const UIProperty &dt) const
+{
+    return GetElemLanguageType() == dt.GetElemLanguageType();
+}
 
-    // Возвращает true если вход имеет подключение
-    bool IsConnected(void) const
-    {
-        return !this->v.empty();
-    }
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+    return !this->v.empty();
+}
 
-    // Число указателей на данные
-    int GetNumPointers(void) const
-    {
-        return int(this->v.size());
-    }
+// Число указателей на данные
+int GetNumPointers(void) const
+{
+    return int(this->v.size());
+}
 
-    // Возвращает указатель на данные входа
-    void const * GetPointer(int index) const
-    {
-        if(int(this->v.size())<=index)
+// Возвращает указатель на данные входа
+void const * GetPointer(int index) const
+{
+    if(int(this->v.size())<=index)
 #if defined(__BORLANDC__) && !defined(__clang__)
-            //  return 0;
-            throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                   0,int(this->v.size()),index);
+        //  return 0;
+        throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+                                                                               0,int(this->v.size()),index);
 #else
-            throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                            0,int(this->v.size()),index);
+        throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+                                                                                        0,int(this->v.size()),index);
 #endif
-        return this->v[index];
-    }
+    return this->v[index];
+}
 
-    // Устанавливает указатель на данные входа
-    bool SetPointer(int index, UIPropertyOutput* property)
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, UIPropertyOutput* property)
+{
+    if(index<0)
+        return false;
+
+    if(int(this->v.size())<=index || (this->v.size() != Local.size()))
     {
-        if(index<0)
-            return false;
+        size_t new_size=index+1;
+        this->v.resize(new_size);
+        size_t old_size=Local.size();
+        for(size_t i=new_size;i<old_size;i++)
+            delete Local[i];
+        Local.resize(new_size);
+        ConnectedOutputs.resize(new_size,0);
 
-        if(int(this->v.size())<=index || (this->v.size() != Local.size()))
+        for(size_t i=old_size;i<new_size;i++)
+            Local[i]=new T;
+    }
+    this->v[index]=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
+    ConnectedOutputs.resize(this->v.size());
+    ConnectedOutputs[index]=property;
+    return true;
+}
+
+/// Сбрасывает указатель на данные
+bool ResetPointer(int index, UIPropertyOutput* property)
+{
+    if(int(this->v.size())>index && index >=0)
+    {
+        this->v.erase(this->v.begin()+index);
+        if(int(Local.size())>index)
         {
-            size_t new_size=index+1;
-            this->v.resize(new_size);
-            size_t old_size=Local.size();
-            for(size_t i=new_size;i<old_size;i++)
-                delete Local[i];
-            Local.resize(new_size);
-            ConnectedOutput.resize(new_size,0);
-
-            for(size_t i=old_size;i<new_size;i++)
-                Local[i]=new T;
+            delete Local[index];
+            Local.erase(Local.begin()+index);
         }
-        this->v[index]=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
-        ConnectedOutput.resize(this->v.size());
-        ConnectedOutput[index]=property;
+        if(int(this->ConnectedOutputs.size())>index)
+            this->ConnectedOutputs.erase(ConnectedOutputs.begin()+index);
         return true;
     }
+    return false;
+}
 
-    /// Сбрасывает указатель на данные
-    bool ResetPointer(int index, UIPropertyOutput* property)
+/// Удаляет все указатели
+void ClearAllPointers(void)
+{
+    for(size_t i=0;i<Local.size();i++)
     {
-        if(int(this->v.size())>index && index >=0)
-        {
-            this->v.erase(this->v.begin()+index);
-            if(int(Local.size())>index)
-            {
-                delete Local[index];
-                Local.erase(Local.begin()+index);
-            }
-            if(int(this->ConnectedOutput.size())>index)
-                this->ConnectedOutput.erase(ConnectedOutput.begin()+index);
-            return true;
-        }
-        return false;
+        delete Local[i];
     }
+    Local.clear();
+    ConnectedOutputs.clear();
+    this->v.clear();
+}
 
-    /// Удаляет все указатели
-    void ClearAllPointers(void)
-    {
-        for(size_t i=0;i<Local.size();i++)
-        {
-            delete Local[i];
-        }
-        Local.clear();
-        ConnectedOutput.clear();
-        this->v.clear();
-    }
-
-    T* operator [] (int i)
-    {
-        if(int(this->v.size())<=i)
+T* operator [] (int i)
+{
+    if(int(this->v.size())<=i)
 #if defined(__BORLANDC__) && !defined(__clang__)
-            throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-                                                                                   0,int(this->v.size()),i);
+        throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
+                                                                               0,int(this->v.size()),i);
 #else
-            throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-                                                                                            0,int(this->v.size()),i);
+        throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
+                                                                                        0,int(this->v.size()),i);
 #endif
 
-        return (this->v[i])?this->v[i]:Local[i];
-    }
+    return (this->v[i])?this->v[i]:Local[i];
+}
 
-    const T* operator [] (int i) const
-    {
-        if(int(this->v.size())<=i)
+const T* operator [] (int i) const
+{
+    if(int(this->v.size())<=i)
 #ifdef __BORLANDC__
-            throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                   0,int(this->v.size()),i);
+        throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+                                                                               0,int(this->v.size()),i);
 #else
-            throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                            0,int(this->v.size()),i);
+        throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+                                                                                        0,int(this->v.size()),i);
 #endif
 
-        return (this->v[i])?this->v[i]:Local[i];
-    }
-    // --------------------------
+    return (this->v[i])?this->v[i]:Local[i];
+}
+// --------------------------
 
-    // --------------------------
-    // Методы управления входами
-    // --------------------------
-    /// Возвращает имя подключенного компонента
-    virtual UItem* GetItem(int index)
+// --------------------------
+// Методы управления входами
+// --------------------------
+/// Возвращает имя подключенного компонента
+virtual UItem* GetItem(int index)
+{
+    if(int(this->ConnectedOutputs.size())>index && index >=0)
     {
-        if(int(this->ConnectedOutput.size())>index && index >=0)
-        {
-            return reinterpret_cast<UItem*>(ConnectedOutput[index]->GetOwner());
-        }
-        return 0;
+        return reinterpret_cast<UItem*>(ConnectedOutputs[index]->GetOwner());
     }
+    return 0;
+}
 
-    /// Возвращает имя подключенного выхода
-    virtual std::string GetItemOutputName(int index) const
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(int index) const
+{
+    if(int(this->ConnectedOutputs.size())>index && index >=0)
     {
-        if(int(this->ConnectedOutput.size())>index && index >=0)
-        {
-            return ConnectedOutput[index]->GetName();
-        }
-        return std::string();
+        return ConnectedOutputs[index]->GetName();
     }
+    return std::string();
+}
 
-    /// Возвращает имя подключенного компонента
-    virtual std::string GetItemName(int index) const
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(int index) const
+{
+    if(int(this->ConnectedOutputs.size())>index && index >=0)
     {
-        if(int(this->ConnectedOutput.size())>index && index >=0)
-        {
-            return ConnectedOutput[index]->GetOwner()->GetName();
-        }
-        return std::string();
+        return ConnectedOutputs[index]->GetOwner()->GetName();
     }
+    return std::string();
+}
 
-    /// Возвращает полное имя подключенного компонента
-    virtual std::string GetItemFullName(int index) const
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(int index) const
+{
+    if(int(this->ConnectedOutputs.size())>index && index >=0)
     {
-        if(int(this->ConnectedOutput.size())>index && index >=0)
-        {
-            return ConnectedOutput[index]->GetOwner()->GetFullName();
-        }
-        return std::string();
+        return ConnectedOutputs[index]->GetOwner()->GetFullName();
     }
+    return std::string();
+}
 
 protected:
-    /// Возвращает имя подключенного компонента
-    virtual UItem* GetItem(void)
-    {
-        return 0;
-    }
-    // --------------------------
+/// Возвращает имя подключенного компонента
+virtual UItem* GetItem(void)
+{
+    return 0;
+}
+// --------------------------
 
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputCData: public UPropertyInputCBase<T,OwnerT,type>
 {
-protected:
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyInputCData(const string &name, OwnerT * const owner)
+    : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+{ }
 
-public: // Методы
+/// Deprecated
+UPropertyInputCData(const string &name, OwnerT * const owner, int index)
+    : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+{ }
 
-    // --------------------------
-    // Конструкторы и деструкторы
-    // --------------------------
-    //Конструктор инициализации.
-    UPropertyInputCData(const string &name, OwnerT * const owner)
-        : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
-    { }
-
-    /// Deprecated
-    UPropertyInputCData(const string &name, OwnerT * const owner, int index)
-        : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
-    { }
-
-    // -----------------------------
+// -----------------------------
 };
 
 
