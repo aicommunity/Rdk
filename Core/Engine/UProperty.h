@@ -44,7 +44,7 @@ class UVBaseDataProperty: public UIPropertyOutput
 {
 protected: // Данные
 // Прямой доступ к данным
-mutable T* PData;
+//mutable T* PData;
 
 // Тип входа
 int IoType;
@@ -62,7 +62,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 explicit UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
+ : /*PData(pdata),*/ IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
@@ -77,6 +77,11 @@ virtual ~UVBaseDataProperty(void)
 // Методы сериализации
 // -----------------------------
 // Возвращает ссылку на данные
+virtual const T& GetData(void) const=0;
+
+// Модифицирует данные
+virtual void SetData(const T& data)=0;
+/*
 virtual const T& GetData(void) const
 {
  if(PData)
@@ -89,7 +94,7 @@ virtual void SetData(const T& data)
 {
  (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
  RenewUpdateTime();
-}
+}*/
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -409,17 +414,18 @@ UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
 // -----------------------------
 // Методы управления
 // -----------------------------
+/*
 // Возврат значения
 virtual const T& GetData(void) const
 {
  if(ExternalDataSource)
   return ExternalDataSource->GetData();
 
+ if(IsConnectedFlag)
+  return dynamic_cast<UVBaseDataProperty<T>*>(UConnectedOutput)->GetData();
+
  if(this->Owner)
  {
-  if(this->PData)
-   return *this->PData;
-
   if(GetterR)
    return (this->Owner->*GetterR)();
  }
@@ -436,12 +442,8 @@ virtual void SetData(const T &value)
   return;
  }
 
- if(this->PData && !SetterR)
- {
-  *this->PData=value;
-  this->RenewUpdateTime();
+ if(IsConnectedFlag)
   return;
- }
 
  if(this->Owner && SetterR)
  {
@@ -454,7 +456,7 @@ virtual void SetData(const T &value)
    this->RenewUpdateTime();
   }
  }
-}
+}*/
 // -----------------------------
 
 // -----------------------------
@@ -566,7 +568,6 @@ public:
 // Данные
 mutable T v;
 
-
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -575,7 +576,7 @@ public:
 UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v()
 {
- this->PData=&v;
+// this->PData=&v;
  dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
 }
 // -----------------------------
@@ -604,7 +605,7 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
- return (IsConnectedFlag)?*this->PData:v;
+ return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutput)->GetData():v;
 }
 
 virtual void SetData(const T &value)
@@ -641,7 +642,7 @@ bool AttachTo(UVBaseDataProperty<T>* prop)
  bool res=UVProperty<T,OwnerT>::AttachTo(prop);
  if(res)
  {
-  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
+//  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
   IsConnectedFlag=true;
  }
  return res;
@@ -649,7 +650,7 @@ bool AttachTo(UVBaseDataProperty<T>* prop)
 
 void DetachFrom(void)
 {
- this->PData=&v;
+// this->PData=&v;
  IsConnectedFlag=false;
  UVProperty<T,OwnerT>::DetachFrom();
 }
@@ -658,14 +659,14 @@ void DetachFrom(void)
 void const * GetPointer(int index) const
 {
  if(IsConnectedFlag)
-  return this->PData;
+  return &dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutput)->GetData();
  return 0;
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, UIPropertyOutput* property)
 {
- this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
+ //this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
  IsConnectedFlag=true;
  this->ConnectedOutput=property;
  this->ResetUpdateTime();
@@ -677,7 +678,7 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 {
  if(this->ConnectedOutput == property)
  {
-  this->PData=&v;
+//  this->PData=&v;
   IsConnectedFlag=false;
   ConnectedOutput=0;
   return true;
@@ -766,14 +767,14 @@ public:
 UCPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), CheckEqualsFlag(true), v()
 {
- this->PData=&v;
+// this->PData=&v;
  dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
 }
 
 UCPropertyLocal(const string &name, OwnerT * const owner, typename UCPropertyLocal<T,OwnerT>::VSetterRT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterRT)0,0), CheckEqualsFlag(true), v()
 {
- VSetterR=setmethod; this->PData=&v;
+ VSetterR=setmethod; //this->PData=&v;
  dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
 }
 // -----------------------------
