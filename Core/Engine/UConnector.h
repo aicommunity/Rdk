@@ -418,5 +418,4 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 
 }
 
-#include "UPropertyInput.h"
 #endif

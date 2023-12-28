@@ -999,6 +999,8 @@ const unsigned long long& operator () (void) const
 }
 
 };
+
+
 /*
 /// Специализация: свойства - bool
 template<typename OwnerT, unsigned int type>
