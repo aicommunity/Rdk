@@ -233,11 +233,6 @@ bool ReadFromMemory(const void *buffer)
  return true;
 }
 
-/// Обновляет указатель PData
-virtual void UpdatePData(void* data)
-{
- PData=(T*)data;
-}
 /*
 operator T* (void)
 {
@@ -284,15 +279,6 @@ protected:
 // --------------------------
 // Методы управления входами
 // --------------------------
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name)
-{
-}
-
-/// Деинициализирует данные
-virtual void UnInit(void)
-{
-}
 /*
 /// Возвращает true, если на подключенном выходе новые данные
 virtual bool IsNewData(void) const

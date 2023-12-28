@@ -3139,7 +3139,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  std::string line=str_type+variable.Property->GetName();
  result=line;
 
- if(type & ptInput && !variable.Property->IsConnected())
+ if(type & ptInput && !dynamic_pointer_cast<UIPropertyInput>(variable.Property)->IsConnected())
  {
   result=line+"[<Disconnected>]";
  }

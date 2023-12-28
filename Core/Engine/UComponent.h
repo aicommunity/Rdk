@@ -343,60 +343,24 @@ struct EEnvironmentNotExist: public EError
 {
 };
 
-// Id свойства не найден
-/*struct EPropertyIdNotExist: public EIdNotExist
-{
-EPropertyIdNotExist(UId id) : EIdNotExist(id) {};
-};
-
-// Id свойства уже существует
-struct EPropertyIdAlreadyExist: public EIdAlreadyExist
-{
-EPropertyIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
-}; */
-
 // Имя свойства не найдено
 struct EPropertyNameNotExist: public ENameNotExist
 {
-explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
 // Имя свойства уже существует
 struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
-explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {}
 };
 
 // Имя алиаса не найдено
 struct EAliasNameNotExist: public ENameNotExist
 {
-explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {};
-};
-/*
-// Id переменной состояния не найден
-struct EStateIdNotExist: public EIdNotExist
-{
-EStateIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
-// Id переменной состояния уже существует
-struct EStateIdAlreadyExist: public EIdAlreadyExist
-{
-EStateIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
-};
-
-// Имя переменной состояния не найдено
-struct EStateNameNotExist: public ENameNotExist
-{
-EStateNameNotExist(const std::string &name) : ENameNotExist(name) {};
-};
-
-// Имя переменной состояния уже существует
-struct EStateNameAlreadyExist: public ENameAlreadyExist
-{
-EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
-};
-    */
 };
 
 template<typename T>
@@ -456,9 +420,6 @@ virtual const type_info& GetElemLanguageType(void) const=0;
 // Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const=0;
 
-/// Обновляет указатель PData
-virtual void UpdatePData(void* data)=0;
-
 // --------------------------
 // Методы управления данными
 // --------------------------
@@ -475,22 +436,6 @@ virtual void SetUpdateTime(ULongTime value)=0;
 virtual void ResetUpdateTime(void)=0;
 // --------------------------
 
-// --------------------------
-// Методы управления входами
-// --------------------------
-/// Возвращает true, если на подключенном выходе новые данные
-virtual bool IsNewData(void) const=0;
-
-/// Возвращает true если вход имеет подключение
-virtual bool IsConnected(void) const=0;
-
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name)=0;
-
-/// Деинициализирует данные
-virtual void UnInit(void)=0;
-// --------------------------
-
 public: // Исключения
 // Обращение к неинициализированным данным свойства
 struct EPropertyError: public EError
@@ -504,8 +449,8 @@ std::string PropertyName;
 
 public:
 EPropertyError(const std::string &owner_name, const std::string &property_name)
-: EError(), OwnerName(owner_name), PropertyName(property_name) {};
-virtual ~EPropertyError(void) throw() {};
+: EError(), OwnerName(owner_name), PropertyName(property_name) {}
+virtual ~EPropertyError(void) throw() {}
 
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const
@@ -548,70 +493,76 @@ class UItem;
 class RDK_LIB_TYPE UIPropertyInput: public UIProperty
 {
 protected: // Данные
-    /// Указатель на компонент-источник данных
-    UItem* Item;
+ /// Указатель на компонент-источник данных
+ UItem* Item;
 
-    /// Имя выхода компнента-источника данных
-    std::string ItemOutputName;
+ /// Имя выхода компнента-источника данных
+ std::string ItemOutputName;
 
 public:
-    /// Конструкторы и деструкторы
-    UIPropertyInput(void);
-    virtual ~UIPropertyInput(void);
+ /// Конструкторы и деструкторы
+ UIPropertyInput(void);
+ virtual ~UIPropertyInput(void);
 
-    /// Возвращает указатель на компонент-источник
-    virtual UItem* GetItem(void);
+ /// Возвращает указатель на компонент-источник
+ virtual UItem* GetItem(void);
 
-    /// Возвращает имя подключенного компонента
-    virtual std::string GetItemName(void) const;
+ /// Возвращает имя подключенного компонента
+ virtual std::string GetItemName(void) const;
 
-    /// Возвращает полное имя подключенного компонента
-    virtual std::string GetItemFullName(void) const;
+ /// Возвращает полное имя подключенного компонента
+ virtual std::string GetItemFullName(void) const;
 
-    /// Возвращает имя подключенного выхода
-    virtual std::string GetItemOutputName(void) const;
+ /// Возвращает имя подключенного выхода
+ virtual std::string GetItemOutputName(void) const;
 
-    /// Инициализирует данные
-    virtual void Init(UItem* item, const std::string &output_name);
+ /// Инициализирует данные
+ virtual void Init(UItem* item, const std::string &output_name);
 
-    /// Деинициализирует данные
-    virtual void UnInit(void);
+ /// Деинициализирует данные
+ virtual void UnInit(void);
 
-    // Устанавливает указатель на данные входа
-    virtual bool SetPointer(int index, UIPropertyOutput* property);
+ // Устанавливает указатель на данные входа
+ virtual bool SetPointer(int index, UIPropertyOutput* property);
 
-    /// Сбрасывает указатель на данные
-    virtual bool ResetPointer(int index, UIPropertyOutput* property);
+ /// Сбрасывает указатель на данные
+ virtual bool ResetPointer(int index, UIPropertyOutput* property);
+
+ /// Возвращает true, если на подключенном выходе новые данные
+ virtual bool IsNewData(void) const=0;
+
+ /// Возвращает true если вход имеет подключение
+ virtual bool IsConnected(void) const=0;
 };
 
 class RDK_LIB_TYPE UIPropertyOutput: public UIPropertyInput
 {
 protected: // Данные
-    /// Указатели на компоненты-приемники данных
-    std::vector<UItem*> Connectors;
+ /// Указатели на компоненты-приемники данных
+ std::vector<UItem*> Connectors;
 
-    /// Имена входов компнентов-приемников данных
-    std::vector<std::string> ConnectorInputNames;
+ /// Имена входов компнентов-приемников данных
+ std::vector<std::string> ConnectorInputNames;
 
 public:
-    /// Конструкторы и деструкторы
-    UIPropertyOutput(void);
-    virtual ~UIPropertyOutput(void);
+ /// Конструкторы и деструкторы
+ UIPropertyOutput(void);
+ virtual ~UIPropertyOutput(void);
 
-    /// Возвращает число подключенных входов
-    virtual size_t GetNumConnectors(void) const;
+ /// Возвращает число подключенных входов
+ virtual size_t GetNumConnectors(void) const;
 
-    /// Возвращает указатель на компонент-приемник
-    virtual UConnector* GetConnector(int index);
+ /// Возвращает указатель на компонент-приемник
+ virtual UConnector* GetConnector(int index);
 
-    /// Возвращает имя подключенного входа компонента-приемника
-    virtual std::string GetConnectorInputName(int index) const;
+ /// Возвращает имя подключенного входа компонента-приемника
+ virtual std::string GetConnectorInputName(int index) const;
 
-    /// Возвращает указатель на свойство подключенного входа компонента-приемника
-    virtual UIPropertyInput* GetConnectorProperty(int index);
+ /// Возвращает указатель на свойство подключенного входа компонента-приемника
+ virtual UIPropertyInput* GetConnectorProperty(int index);
 
-    /// Обновить указатели свойств-входов
-    virtual void UpdateConnectedPointers(void);
+ /// Обновить указатели свойств-входов
+ virtual void UpdateConnectedPointers(void);
 };
 
 

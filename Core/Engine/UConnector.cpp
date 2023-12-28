@@ -448,8 +448,8 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   //return false;
  }
 
- UIProperty* i_item_property=na->FindProperty(item_property_name);
- UIProperty* i_conn_property=FindProperty(connector_property_name);
+ UIPropertyOutput* i_item_property=dynamic_pointer_cast<UIPropertyOutput>(na->FindProperty(item_property_name));
+ UIPropertyInput* i_conn_property=dynamic_pointer_cast<UIPropertyInput>(FindProperty(connector_property_name));
 
  if(!i_item_property)
  {
