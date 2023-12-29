@@ -17,6 +17,8 @@ See file license.txt for more information
 #include <string>
 #include <sstream>
 #include <typeinfo>
+#include <iterator>
+#include <type_traits>
 #include "../Serialize/USerStorageXML.h"
 #include "../Serialize/USerStorageBinary.h"
 #include "../Serialize/UXMLStdSerialize.h"
@@ -31,6 +33,34 @@ See file license.txt for more information
 #include "../System/rdk_system.h"
 
 namespace RDK {
+
+namespace detail
+{
+ // To allow ADL with custom begin/end
+ using std::begin;
+ using std::end;
+
+ template <typename T>
+ auto is_iterable_impl(int)
+ -> decltype (
+     begin(std::declval<T&>()) != end(std::declval<T&>()), // begin/end and operator !=
+     void(), // Handle evil operator ,
+     ++std::declval<decltype(begin(std::declval<T&>()))&>(), // operator ++
+     void(*begin(std::declval<T&>())), // operator*
+     std::true_type{});
+
+ template <typename T>
+ std::false_type is_iterable_impl(...);
+}
+
+template <typename T>
+using is_iterable = decltype(detail::is_iterable_impl<T>(0));
+
+template <typename T, typename = int>
+struct has_resize : std::false_type { };
+
+template <typename T>
+struct has_resize <T, decltype( (void) std::declval<T>().resize(1), 0)> : std::true_type { };
 
 using namespace std;
 
@@ -529,7 +559,7 @@ class UConnector;
 /* ************************************************************************* */
 // Класс - свойство с значением внутри
 /* ************************************************************************* */
-template<typename T,class OwnerT, unsigned int type=ptPubParameter>
+template<typename T,class OwnerT, unsigned int type>
 class UPropertyLocal: public UVProperty<T,OwnerT>
 {
 protected:
@@ -663,8 +693,13 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 
 
 /// Конечный класс свойства со значением внутри
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UProperty: public UPropertyLocal<T,OwnerT,type>
+/// https://stackoverflow.com/questions/60608588/specializing-a-template-for-a-container-of-type-t
+template<typename T,class OwnerT, unsigned int type, bool = is_iterable<T>::value>
+class UProperty;
+
+
+template<typename T, typename OwnerT, unsigned int type>
+class UProperty<T, OwnerT, type, false>: public UPropertyLocal<T,OwnerT,type>
 {
 public:
 // --------------------------
@@ -684,13 +719,13 @@ UProperty(const UProperty<T,OwnerT,type> &v) {}
 // -----------------------------
 public:
 // Оператор присваивания
-UProperty<T,OwnerT, type>& operator = (const T &value)
+UProperty& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
 }
 
-UProperty<T,OwnerT, type>& operator = (const UProperty<T,OwnerT, type> &v)
+UProperty& operator = (const UProperty<T,OwnerT, type> &v)
 {
  this->SetData(v.GetData());
  return *this;
@@ -712,8 +747,8 @@ const T& operator () (void) const
 /* ************************************************************************* */
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UCPropertyLocal: public UPropertyLocal<T,OwnerT,type>
+template<typename T, typename OwnerT, unsigned int type>
+class UProperty<T, OwnerT, type, true>: public UPropertyLocal<T,OwnerT,type>
 {
 public: // Типы методов ввода-вывода
 typedef typename T::value_type TV;
@@ -728,13 +763,13 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 public:
-UCPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod), VSetterR(0)
 {
  this->IoType = ipRange | ipData;
 }
 
-UCPropertyLocal(const string &name, OwnerT * const owner, typename UCPropertyLocal<T,OwnerT>::VSetterRT setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,type>::VSetterRT setmethod)
  : UPropertyLocal<T,OwnerT,type>(name, owner,(typename UVProperty<T,OwnerT>::SetterRT)0)
 {
  VSetterR=setmethod;
@@ -751,7 +786,7 @@ virtual const T& GetData(void) const
   return this->ExternalDataSource->GetData();
 
  return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
-};
+}
 
 virtual void SetData(const T &value)
 {
@@ -856,7 +891,7 @@ public:
 // Операторы доступа
 // -----------------------------
 // Чтение элемента контейнера
-const typename UCPropertyLocal<T,OwnerT, type>::TV& operator () (size_t i) const
+const typename TV& operator () (size_t i) const
 {
  const T& data = GetData();
  if(i>=data.size())
@@ -867,7 +902,7 @@ const typename UCPropertyLocal<T,OwnerT, type>::TV& operator () (size_t i) const
 }
 
 // Запись элемента контейнера
-bool operator () (size_t i, const typename UCPropertyLocal<T,OwnerT, type>::TV &value)
+bool operator () (size_t i, const typename TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
   throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
@@ -907,23 +942,102 @@ T& operator * (void)
 const T& operator * (void) const
 { return this->GetData(); }
 
-typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (size_t i)
-{ return const_cast<UCPropertyLocal<T,OwnerT, type>::TV&>((*this)(i)); }
+typename TV& operator [] (size_t i)
+{ return const_cast<TV&>((*this)(i)); }
 
-const typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (size_t i) const
+const typename TV& operator [] (size_t i) const
 { return (*this)(i); }
 
 // Оператор присваивания
-UCPropertyLocal& operator = (const T &value)
+UProperty& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
 }
 
-UCPropertyLocal& operator = (const UCPropertyLocal &value)
+UProperty& operator = (const UProperty &value)
 {
  this->SetData(value.GetData());
  return *this;
+}
+
+bool empty(void) const
+{
+ return this->GetData().empty();
+}
+
+typename T::const_iterator begin(void) const
+{
+ return this->GetData().begin();
+}
+
+typename T::iterator begin(void)
+{
+ return const_cast<T&>(this->GetData()).begin();
+}
+
+typename T::const_iterator end(void) const
+{
+ return this->GetData().end();
+}
+
+typename T::iterator end(void)
+{
+ return const_cast<T&>(this->GetData()).end();
+}
+
+T& back(void)
+{
+ return const_cast<T&>(this->GetData()).back();
+}
+
+T& front(void)
+{
+ return const_cast<T&>(this->GetData()).front();
+}
+
+const T& back(void) const
+{
+ return this->GetData().back();
+}
+
+const T& front(void) const
+{
+ return this->GetData().front();
+}
+
+void push_back(const TV &value)
+{
+ const_cast<T&>(this->GetData()).push_back(value);
+}
+
+size_t size(void) const
+{
+ return this->GetData().size();
+}
+
+void resize(size_t size, const TV &val)
+{
+ if(has_resize<T>::value)
+  this->v.resize(size,val);
+ else
+  throw std::runtime_error("resize doesn't support");
+}
+
+void resize(size_t size)
+{
+ if(has_resize<T>::value)
+  this->v.resize(size);
+ else
+  throw std::runtime_error("resize doesn't support");
+}
+
+void assign(size_t size, const TV &val)
+{
+ if(has_resize<T>::value)
+  this->v.assign(size,val);
+ else
+  throw std::runtime_error("resize doesn't support");
 }
 
 // --------------------------
@@ -940,6 +1054,8 @@ virtual bool CompareElemLanguageType(const UIProperty &dt) const
 
 // Конечный класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
+
+/*
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
 class UCProperty: public UCPropertyLocal<T,OwnerT, type>
 {
@@ -974,25 +1090,30 @@ UCProperty& operator = (const UCProperty &value)
  this->SetData(value.GetData());
  return *this;
 }
-};
+};*/
 
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
 using ULProperty = UProperty<T, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-using UCLProperty = UCProperty<T, OwnerT, type>;
+using UCProperty = UProperty<T, OwnerT, type>;
+
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+using UCLProperty = UProperty<T, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 using UPropertyOutputData = UProperty<T, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-using UPropertyOutputCData = UCProperty<std::vector<T>, OwnerT, type>;
+using UPropertyOutputCData = UProperty<std::vector<T>, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 using UPropertyInputData = UProperty<T, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-using UPropertyInputCData = UCProperty<std::vector<T>, OwnerT, type>;
+using UPropertyInputCData = UProperty<std::vector<T>, OwnerT, type>;
+
+
 
 
 #ifdef __BORLANDC__

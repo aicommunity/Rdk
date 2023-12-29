@@ -8,10 +8,10 @@
 //---------------------------------------------------------------------------
 
 namespace RDK {
-
+/*
 /// Специализация: свойства - вектора
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<std::vector<V>, OwnerT, type>: public UPropertyLocal<std::vector<V>,OwnerT,type>
+class UProperty<std::vector<V>, OwnerT, type, true>: public UPropertyLocal<std::vector<V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -22,26 +22,16 @@ UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std:
  : UPropertyLocal<std::vector<V>,OwnerT,type>(name, owner, setmethod)
 { }
 
+UProperty(const string &name, OwnerT * const owner, typename UProperty<std::vector<V>,OwnerT,type, true>::VSetterRT setmethod)
+ : UPropertyLocal<std::vector<V>,OwnerT,type>(name, owner,(typename UVProperty<std::vector<V>,OwnerT>::SetterRT)0)
+{
+ VSetterR=setmethod;
+}
+
 protected:
 UProperty(const UProperty<std::vector<V>,OwnerT,type> &v) {}
 
 public:
-
-/// Оператор доступа по индексу
-typename std::vector<V>::reference operator [] (size_t index)
-{
- return this->v[index];
-}
-
-const typename std::vector<V>::const_reference operator [] (size_t index) const
-{
- return this->v[index];
-}
-
-bool empty(void) const
-{
- return this->v.empty();
-}
 
 void resize(size_t size, const V &val)
 {
@@ -58,73 +48,11 @@ void assign(size_t size, const V &val)
  this->v.assign(size,val);
 }
 
-typename std::vector<V>::const_iterator begin(void) const
-{
- return this->v.begin();
-}
-
-typename std::vector<V>::iterator begin(void)
-{
- return this->v.begin();
-}
-
-typename std::vector<V>::const_iterator end(void) const
-{
- return this->v.end();
-}
-
-typename std::vector<V>::iterator end(void)
-{
- return this->v.end();
-}
-
-V& back(void)
-{
- return this->v.back();
-}
-
-V& front(void)
-{
- return this->v.front();
-}
-
-const V& back(void) const
-{
- return this->v.back();
-}
-
-const V& front(void) const
-{
- return this->v.front();
-}
-
-size_t size(void) const
-{
- return this->v.size();
-}
-
-UProperty<std::vector<V>,OwnerT,type>& operator = (const std::vector<V> &value)
-{
- this->SetData(value);
- return *this;
-}
-
-operator std::vector<V> (void) const
-{
- return this->GetData();
-}
-
-const std::vector<V>& operator () (void) const
-{
- return this->GetData();
-}
-
-
-};
-
+};*/
+/*
 /// Специализация: свойства - список
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<std::list<V>,OwnerT,type>: public UPropertyLocal<std::list<V>,OwnerT,type>
+class UProperty<std::list<V>,OwnerT,type, true>: public UPropertyLocal<std::list<V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -140,95 +68,12 @@ UProperty(const UProperty<std::list<V>,OwnerT,type> &v) {}
 
 public:
 
-/// Оператор доступа по индексу
-typename std::list<V>::reference operator [] (size_t index)
-{
- return this->v[index];
-}
 
-const typename std::list<V>::const_reference operator [] (size_t index) const
-{
- return this->v[index];
-}
-
-bool empty(void) const
-{
- return this->v.empty();
-}
-
-typename std::list<V>::const_iterator begin(void) const
-{
- return this->v.begin();
-}
-
-typename std::list<V>::iterator begin(void)
-{
- return this->v.begin();
-}
-
-typename std::list<V>::const_iterator end(void) const
-{
- return this->v.end();
-}
-
-typename std::list<V>::iterator end(void)
-{
- return this->v.end();
-}
-
-V& back(void)
-{
- return this->v.back();
-}
-
-V& front(void)
-{
- return this->v.front();
-}
-
-const V& back(void) const
-{
- return this->v.back();
-}
-
-const V& front(void) const
-{
- return this->v.front();
-}
-
-void push_back(const V &value)
-{
- this->v.push_back(value);
-}
-
-size_t size(void) const
-{
- return this->v.size();
-}
-
-/// Оператор присваивания
-UProperty<std::list<V>,OwnerT,type>& operator = (const std::list<V> &value)
-{
- this->SetData(value);
- return *this;
-}
-
-operator std::list<V> (void) const
-{
- return this->GetData();
-}
-
-const std::list<V>& operator () (void) const
-{
- return this->GetData();
-}
-
-
-};
+};*/
 
 /// Специализация: свойства - map
 template<typename T, typename V, typename OwnerT, unsigned int type>
-class UProperty<std::map<T,V>,OwnerT,type>: public UPropertyLocal<std::map<T,V>,OwnerT,type>
+class UProperty<std::map<T,V>,OwnerT,type, true>: public UPropertyLocal<std::map<T,V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -331,7 +176,7 @@ const std::map<T,V>& operator () (void) const
 
 /// Специализация: свойства - MDMatrix
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<MDMatrix<V>,OwnerT,type>: public UPropertyLocal<MDMatrix<V>,OwnerT,type>
+class UProperty<MDMatrix<V>,OwnerT,type, false>: public UPropertyLocal<MDMatrix<V>,OwnerT,type>
 
 {
 public: // Методы
@@ -506,7 +351,7 @@ const MDMatrix<V> operator - (const UProperty<MDMatrix<V>,OwnerT, type> &v1,cons
 
 /// Специализация: свойства - MDVector
 template<typename V, typename OwnerT, unsigned int type>
-class UProperty<MDVector<V>,OwnerT,type>: public UPropertyLocal<MDVector<V>,OwnerT,type>
+class UProperty<MDVector<V>,OwnerT,type, false>: public UPropertyLocal<MDVector<V>,OwnerT,type>
 {
 public: // Методы
 // --------------------------
