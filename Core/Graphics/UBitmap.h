@@ -385,13 +385,15 @@ void Reduce(int n, int m, UBitmap *target=0);
 // Если 'target' != 0 то результат операции сохраняется в него
 // и цветовая модель 'target' замещается моделью источника
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
-void ReflectionX(UBitmap *target=0);
+void ReflectionX(void);
+void ReflectionX(UBitmap *target) const;
 
 // Отражение по горизонтали
 // Если 'target' != 0 то результат операции сохраняется в него
 // и цветовая модель 'target' замещается моделью источника
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
-void ReflectionY(UBitmap *target=0);
+void ReflectionY(void);
+void ReflectionY(UBitmap *target) const;
 
 // Сдвигает изображение в требуемую сторону на 'pixels' пикселей
 // Направление определяется 'direction'

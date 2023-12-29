@@ -696,7 +696,7 @@ public:
 UCPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod), VSetterR(0)
 {
-// this->PData=&v;
+ this->IoType = ipRange | ipData;
 }
 
 UCPropertyLocal(const string &name, OwnerT * const owner, typename UCPropertyLocal<T,OwnerT>::VSetterRT setmethod)
@@ -758,6 +758,73 @@ virtual void SetData(const T &value)
 }
 // -----------------------------
 
+// -----------------------------
+ // Число указателей на данные
+ int GetNumPointers(void) const
+ {
+  return int(this->ConnectedOutputs.size());
+ }
+
+ // Возвращает указатель на данные входа
+ void const * GetPointer(int index) const
+ {
+  const T& data = GetData();
+
+  if(int(data.size())<=index)
+ #if defined(__BORLANDC__) && !defined(__clang__)
+   throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+                                                                             0,int(data.size()),index);
+ #else
+   throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+                                                                                      0,int(data.size()),index);
+ #endif
+  return &data[index];
+ }
+
+ // Устанавливает указатель на данные входа
+ bool SetPointer(int index, UIPropertyOutput* property)
+ {
+  if(index<0)
+   return false;
+
+  if(int(ConnectedOutputs.size())<=index)
+  {
+   size_t new_size=index+1;
+   this->v.resize(new_size);
+   ConnectedOutputs.resize(new_size,0);
+  }
+  ConnectedOutputs[index]=property;
+  return true;
+ }
+
+ /// Сбрасывает указатель на данные
+ bool ResetPointer(int index, UIPropertyOutput* property)
+ {
+  if(int(this->v.size())>index && index >=0)
+  {
+   auto it = this->v.begin();
+   std::advance(it,index);
+   this->v.erase(it);
+  }
+
+  if(int(this->ConnectedOutputs.size())>index && index >= 0)
+  {
+   this->ConnectedOutputs.erase(ConnectedOutputs.begin()+index);
+   return true;
+  }
+
+  return false;
+ }
+
+ /// Удаляет все указатели
+ void ClearAllPointers(void)
+ {
+  ConnectedOutputs.clear();
+  this->v.clear();
+ }
+
+// -----------------------------
+
 public: // Исключения
 
 // Выход за границы массива C (container) property
@@ -784,24 +851,28 @@ public:
 // Операторы доступа
 // -----------------------------
 // Чтение элемента контейнера
-const typename UCPropertyLocal<T,OwnerT, type>::TV& operator () (int i) const
+const typename UCPropertyLocal<T,OwnerT, type>::TV& operator () (size_t i) const
 {
- if(i<0 || i>=this->v.size())
+ const T& data = GetData();
+ if(i>=data.size())
   throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
-                               0,int(this->v.size()),i);
+                               0,int(data.size()),int(i));
 
- return this->v[i];
+ return data[i];
 }
 
 // Запись элемента контейнера
-bool operator () (int i, const typename UCPropertyLocal<T,OwnerT, type>::TV &value)
+bool operator () (size_t i, const typename UCPropertyLocal<T,OwnerT, type>::TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
   throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
- if(i<0 || i>=this->v.size())
+ if(IsConnectedFlag)
+  return false;
+
+ if(i>=this->v.size())
   throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
-                               0,int(this->v.size()),i);
+                               0,int(this->v.size()),int(i));
 
  this->v[i]=value;
  this->RenewUpdateTime();
@@ -831,11 +902,11 @@ T& operator * (void)
 const T& operator * (void) const
 { return this->GetData(); }
 
-typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i)
-{ return this->v[i]; }
+typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (size_t i)
+{ return const_cast<UCPropertyLocal<T,OwnerT, type>::TV&>((*this)(i)); }
 
-const typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (int i) const
-{ return this->v[i]; }
+const typename UCPropertyLocal<T,OwnerT, type>::TV& operator [] (size_t i) const
+{ return (*this)(i); }
 
 // Оператор присваивания
 UCPropertyLocal& operator = (const T &value)
@@ -849,144 +920,7 @@ UCPropertyLocal& operator = (const UCPropertyLocal &value)
  this->SetData(value.GetData());
  return *this;
 }
-// -----------------------------
-};
-
-
-// Конечный класс - свойство-контейнер со значением внутри
-/* ************************************************************************* */
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UCProperty: public UCPropertyLocal<T,OwnerT, type>
-{
-public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации
-UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
-    : UCPropertyLocal<T,OwnerT, type>(name, owner, setmethod)
-{ }
-
-//Конструктор инициализации для отдельных значений
-UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
-    : UCPropertyLocal<T,OwnerT, type>(name, owner,setmethod)
-{ }
-
-protected:
-UCProperty(const UCProperty<T,OwnerT, type> &v) {}
-// -----------------------------
-
-public:
-// Оператор присваивания
-UCProperty& operator = (const T &value)
-{
- this->SetData(value);
- return *this;
-}
-
-UCProperty& operator = (const UCProperty &value)
-{
- this->SetData(value.GetData());
- return *this;
-}
-};
-
-
-// -----------------------------------------------------------------------------
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCBase: public UCProperty<std::vector<T*>,OwnerT,type>
-{
-protected:
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
- : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
-{
- this->IoType=input_type;
-}
-
-~UPropertyInputCBase(void)
-{
-}
-// -----------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-// Возвращает языковой тип хранимого свойства для одного элемента
-virtual const type_info& GetElemLanguageType(void) const
-{
- return typeid(T);
-}
-
-// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
-virtual bool CompareElemLanguageType(const UIProperty &dt) const
-{
- return GetElemLanguageType() == dt.GetElemLanguageType();
-}
-
-// Число указателей на данные
-int GetNumPointers(void) const
-{
- return int(this->v.size());
-}
-
-// Возвращает указатель на данные входа
-void const * GetPointer(int index) const
-{
- if(int(this->v.size())<=index)
-#if defined(__BORLANDC__) && !defined(__clang__)
-  throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                            0,int(this->v.size()),index);
-#else
-  throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                     0,int(this->v.size()),index);
-#endif
- return this->v[index];
-}
-
-// Устанавливает указатель на данные входа
-bool SetPointer(int index, UIPropertyOutput* property)
-{
- if(index<0)
-  return false;
-
- if(int(this->v.size())<=index)
- {
-  size_t new_size=index+1;
-  this->v.resize(new_size);
-  ConnectedOutputs.resize(new_size,0);
- }
- this->v[index]=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
- ConnectedOutputs.resize(this->v.size());
- ConnectedOutputs[index]=property;
- return true;
-}
-
-/// Сбрасывает указатель на данные
-bool ResetPointer(int index, UIPropertyOutput* property)
-{
- if(int(this->v.size())>index && index >=0)
- {
-  this->v.erase(this->v.begin()+index);
-  if(int(this->ConnectedOutputs.size())>index)
-   this->ConnectedOutputs.erase(ConnectedOutputs.begin()+index);
-  return true;
- }
- return false;
-}
-
-/// Удаляет все указатели
-void ClearAllPointers(void)
-{
- ConnectedOutputs.clear();
- this->v.clear();
-}
-
+/*
 T* operator [] (int i)
 {
  if(int(this->v.size())<=i)
@@ -1019,8 +953,9 @@ const T* operator [] (int i) const
   throw UEPtr<T>::EUsingZeroPtr();
 
  return v[i];
-}
-// --------------------------
+}*/
+// -----------------------------
+
 
 // --------------------------
 // Методы управления входами
@@ -1072,29 +1007,89 @@ virtual UItem* GetItem(void)
  return 0;
 }
 // --------------------------
-
 };
 
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCData: public UPropertyInputCBase<T,OwnerT,type>
+
+// Конечный класс - свойство-контейнер со значением внутри
+/* ************************************************************************* */
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UCProperty: public UCPropertyLocal<T,OwnerT, type>
 {
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-//Конструктор инициализации.
-UPropertyInputCData(const string &name, OwnerT * const owner)
- : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+//Конструктор инициализации
+UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+    : UCPropertyLocal<T,OwnerT, type>(name, owner, setmethod)
 { }
 
-/// Deprecated
-UPropertyInputCData(const string &name, OwnerT * const owner, int index)
- : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+//Конструктор инициализации для отдельных значений
+UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
+    : UCPropertyLocal<T,OwnerT, type>(name, owner,setmethod)
 { }
 
+protected:
+UCProperty(const UCProperty<T,OwnerT, type> &v) {}
 // -----------------------------
+
+public:
+// Оператор присваивания
+UCProperty& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+}
+
+UCProperty& operator = (const UCProperty &value)
+{
+ this->SetData(value.GetData());
+ return *this;
+}
 };
 
+/*
+// -----------------------------------------------------------------------------
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
+class UPropertyInputCData: public UCProperty<std::vector<T*>,OwnerT,type>
+{
+protected:
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyInputCData(const string &name, OwnerT * const owner)
+ : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
+{
+}
+
+~UPropertyInputCData(void)
+{
+}
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает языковой тип хранимого свойства для одного элемента
+virtual const type_info& GetElemLanguageType(void) const
+{
+ return typeid(T);
+}
+
+// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+virtual bool CompareElemLanguageType(const UIProperty &dt) const
+{
+ return GetElemLanguageType() == dt.GetElemLanguageType();
+}
+
+
+
+
+
+};*/
 
 
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
@@ -1111,6 +1106,9 @@ using UPropertyOutputCData = UCProperty<T, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 using UPropertyInputData = UProperty<T, OwnerT, type>;
+
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
+using UPropertyInputCData = UCProperty<std::vector<T>, OwnerT, type>;
 
 
 #ifdef __BORLANDC__

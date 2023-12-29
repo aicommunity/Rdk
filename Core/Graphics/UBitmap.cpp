@@ -1829,89 +1829,94 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 // ≈сли 'target' != 0 то результат операции сохран€етс€ в него
 // и цветова€ модель 'target' замещаетс€ моделью источника
 // ѕоддерживает режимы ubmY8, ubmRGB24, ubmY32
-void UBitmap::ReflectionX(UBitmap *target)
+void UBitmap::ReflectionX(void)
 {
  int i;
  UBColor *buf; // буферна€ строка
  UBColor *beg, *fin; // указатели на начало и конец изображени€
  int LineWidth=CalcLineByteLength(Width,ColorModel);
 
- if(target && target != this)
+ buf=new UBColor[LineWidth];
+ beg=Data;
+ fin=Data+ByteLength-LineWidth;
+ for(i=0; i<(Height>>1); i++)
  {
-  target->SetRes(Width,Height,ColorModel);
-  beg=Data;
-  fin=target->GetData()+ByteLength-LineWidth;
-  for(i=0; i<Height-1; i++)
-  {
-   memcpy(fin,beg,LineWidth);
-   beg+=LineWidth;
-   fin-=LineWidth;
-  }
-  if(Height>0)
-   memcpy(fin,beg,LineWidth);
+  memcpy(buf,beg,LineWidth);
+  memcpy(beg,fin,LineWidth);
+  memcpy(fin,buf,LineWidth);
+  beg+=LineWidth;
+  fin-=LineWidth;
  }
- else
+ delete []buf;
+}
+
+void UBitmap::ReflectionX(UBitmap *target) const
+{
+ int i;
+ UBColor *beg, *fin; // указатели на начало и конец изображени€
+ int LineWidth=CalcLineByteLength(Width,ColorModel);
+
+ target->SetRes(Width,Height,ColorModel);
+ beg=Data;
+ fin=target->GetData()+ByteLength-LineWidth;
+ for(i=0; i<Height-1; i++)
  {
-  buf=new UBColor[LineWidth];
-  beg=Data;
-  fin=Data+ByteLength-LineWidth;
-  for(i=0; i<(Height>>1); i++)
-  {
-   memcpy(buf,beg,LineWidth);
-   memcpy(beg,fin,LineWidth);
-   memcpy(fin,buf,LineWidth);
-   beg+=LineWidth;
-   fin-=LineWidth;
-  }
-  delete []buf;
+  memcpy(fin,beg,LineWidth);
+  beg+=LineWidth;
+  fin-=LineWidth;
  }
+ if(Height>0)
+  memcpy(fin,beg,LineWidth);
 }
 
 // ќтражение по горизонтали
 // ≈сли 'target' != 0 то результат операции сохран€етс€ в него
 // и цветова€ модель 'target' замещаетс€ моделью источника
 // ѕоддерживает режимы ubmY8, ubmRGB24, ubmY32
-void UBitmap::ReflectionY(UBitmap *target)
+void UBitmap::ReflectionY(void)
 {
  int i,j;
  UBColor *buf; // буферна€ строка
  UBColor *beg, *fin; // указатели на начало и конец изображени€
  int LineWidth=CalcLineByteLength(Width,ColorModel);
 
- if(target && target != this)
+ buf=new UBColor[PixelByteLength];
+ for(i=0; i<Height; i++)
  {
-  target->SetRes(Width,Height,ColorModel);
-  for(i=0; i<Height; i++)
+  beg=Data+LineWidth*i;
+  fin=Data+LineWidth*(i+1)-PixelByteLength;
+  for(j=0;j<(Width>>1);j++)
   {
-   beg=Data+LineWidth*i;
-   fin=target->GetData()+LineWidth*(i+1)-PixelByteLength;
-   for(j=0;j<Width;j++)
-   {
-    memcpy(fin,beg,PixelByteLength);
-    beg+=PixelByteLength;
-    fin-=PixelByteLength;
-   }
+   memcpy(buf,beg,PixelByteLength);
+   memcpy(beg,fin,PixelByteLength);
+   memcpy(fin,buf,PixelByteLength);
+   beg+=PixelByteLength;
+   fin-=PixelByteLength;
   }
  }
- else
+ delete []buf;
+}
+
+void UBitmap::ReflectionY(UBitmap *target) const
+{
+ int i,j;
+ UBColor *beg, *fin; // указатели на начало и конец изображени€
+ int LineWidth=CalcLineByteLength(Width,ColorModel);
+
+ target->SetRes(Width,Height,ColorModel);
+ for(i=0; i<Height; i++)
  {
-  buf=new UBColor[PixelByteLength];
-  for(i=0; i<Height; i++)
+  beg=Data+LineWidth*i;
+  fin=target->GetData()+LineWidth*(i+1)-PixelByteLength;
+  for(j=0;j<Width;j++)
   {
-   beg=Data+LineWidth*i;
-   fin=Data+LineWidth*(i+1)-PixelByteLength;
-   for(j=0;j<(Width>>1);j++)
-   {
-    memcpy(buf,beg,PixelByteLength);
-    memcpy(beg,fin,PixelByteLength);
-    memcpy(fin,buf,PixelByteLength);
-    beg+=PixelByteLength;
-    fin-=PixelByteLength;
-   }
+   memcpy(fin,beg,PixelByteLength);
+   beg+=PixelByteLength;
+   fin-=PixelByteLength;
   }
-  delete []buf;
  }
 }
+
 
 // —двигает изображение в требуемую сторону на 'pixels' пикселей
 // Ќаправление определ€етс€ 'direction'
