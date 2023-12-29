@@ -960,6 +960,13 @@ const T* operator [] (int i) const
 // --------------------------
 // Методы управления входами
 // --------------------------
+// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+virtual bool CompareElemLanguageType(const UIProperty &dt) const
+{
+ return (GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(T::value_type) == dt.GetElemLanguageType());
+}
+
+
 /// Возвращает имя подключенного компонента
 virtual UItem* GetItem(int index)
 {
