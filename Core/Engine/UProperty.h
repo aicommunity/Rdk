@@ -43,9 +43,6 @@ template<typename T>
 class UVBaseDataProperty: public UIPropertyOutput
 {
 protected: // Данные
-// Прямой доступ к данным
-//mutable T* PData;
-
 // Тип входа
 int IoType;
 
@@ -62,7 +59,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 explicit UVBaseDataProperty(T * const pdata)
- : /*PData(pdata),*/ IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
+ : IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
@@ -417,6 +414,46 @@ void DetachFrom(void)
 // -----------------------------
 // Методы управления подклчаемым выходом
 // -----------------------------
+/// Возвращает имя подключенного компонента
+virtual UItem* GetItem(int index=0)
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return reinterpret_cast<UItem*>(ConnectedOutputs[index]->GetOwner());
+ }
+ return 0;
+}
+
+/// Возвращает имя подключенного выхода
+virtual std::string GetItemOutputName(int index=0) const
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return ConnectedOutputs[index]->GetName();
+ }
+ return std::string();
+}
+
+/// Возвращает имя подключенного компонента
+virtual std::string GetItemName(int index=0) const
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return ConnectedOutputs[index]->GetOwner()->GetName();
+ }
+ return std::string();
+}
+
+/// Возвращает полное имя подключенного компонента
+virtual std::string GetItemFullName(int index=0) const
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return ConnectedOutputs[index]->GetOwner()->GetFullName();
+ }
+ return std::string();
+}
+
 /// Применяет время выхода к входу
 void ApplyOutputUpdateTime(void) const
 {
@@ -591,12 +628,10 @@ void DetachFrom(void)
  UVProperty<T,OwnerT>::DetachFrom();
 }
 
-// Возвращает указатель на данные входа
-void const * GetPointer(int index) const
+// Число указателей на данные
+int GetNumPointers(void) const
 {
- if(IsConnectedFlag)
-  return &dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData();
- return 0;
+ return int(this->ConnectedOutputs.size());
 }
 
 // Устанавливает указатель на данные входа
@@ -759,70 +794,40 @@ virtual void SetData(const T &value)
 // -----------------------------
 
 // -----------------------------
- // Число указателей на данные
- int GetNumPointers(void) const
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, UIPropertyOutput* property)
+{
+ if(index<0)
+  return false;
+
+ if(int(ConnectedOutputs.size())<=index)
  {
-  return int(this->ConnectedOutputs.size());
+  size_t new_size=index+1;
+  this->v.resize(new_size);
+  ConnectedOutputs.resize(new_size,0);
+ }
+ ConnectedOutputs[index]=property;
+ return true;
+}
+
+/// Сбрасывает указатель на данные
+bool ResetPointer(int index, UIPropertyOutput* property)
+{
+ if(int(this->v.size())>index && index >=0)
+ {
+  auto it = this->v.begin();
+  std::advance(it,index);
+  this->v.erase(it);
  }
 
- // Возвращает указатель на данные входа
- void const * GetPointer(int index) const
+ if(int(this->ConnectedOutputs.size())>index && index >= 0)
  {
-  const T& data = GetData();
-
-  if(int(data.size())<=index)
- #if defined(__BORLANDC__) && !defined(__clang__)
-   throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                             0,int(data.size()),index);
- #else
-   throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                      0,int(data.size()),index);
- #endif
-  return &data[index];
- }
-
- // Устанавливает указатель на данные входа
- bool SetPointer(int index, UIPropertyOutput* property)
- {
-  if(index<0)
-   return false;
-
-  if(int(ConnectedOutputs.size())<=index)
-  {
-   size_t new_size=index+1;
-   this->v.resize(new_size);
-   ConnectedOutputs.resize(new_size,0);
-  }
-  ConnectedOutputs[index]=property;
+  this->ConnectedOutputs.erase(ConnectedOutputs.begin()+index);
   return true;
  }
 
- /// Сбрасывает указатель на данные
- bool ResetPointer(int index, UIPropertyOutput* property)
- {
-  if(int(this->v.size())>index && index >=0)
-  {
-   auto it = this->v.begin();
-   std::advance(it,index);
-   this->v.erase(it);
-  }
-
-  if(int(this->ConnectedOutputs.size())>index && index >= 0)
-  {
-   this->ConnectedOutputs.erase(ConnectedOutputs.begin()+index);
-   return true;
-  }
-
-  return false;
- }
-
- /// Удаляет все указатели
- void ClearAllPointers(void)
- {
-  ConnectedOutputs.clear();
-  this->v.clear();
- }
-
+ return false;
+}
 // -----------------------------
 
 public: // Исключения
@@ -920,42 +925,6 @@ UCPropertyLocal& operator = (const UCPropertyLocal &value)
  this->SetData(value.GetData());
  return *this;
 }
-/*
-T* operator [] (int i)
-{
- if(int(this->v.size())<=i)
-#if defined(__BORLANDC__) && !defined(__clang__)
-  throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-                                                                            0,int(this->v.size()),i);
-#else
-  throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-                                                                                     0,int(this->v.size()),i);
-#endif
-
- if(!this->v[i])
-  throw UEPtr<T>::EUsingZeroPtr();
-
- return v[i];
-}
-
-const T* operator [] (int i) const
-{
- if(int(this->v.size())<=i)
-#ifdef __BORLANDC__
-  throw UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                            0,int(this->v.size()),i);
-#else
-  throw typename UCLProperty<std::vector<T*>,OwnerT, type>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-                                                                                     0,int(this->v.size()),i);
-#endif
-
- if(!this->v[i])
-  throw UEPtr<T>::EUsingZeroPtr();
-
- return v[i];
-}*/
-// -----------------------------
-
 
 // --------------------------
 // Методы управления входами
@@ -964,54 +933,6 @@ const T* operator [] (int i) const
 virtual bool CompareElemLanguageType(const UIProperty &dt) const
 {
  return (GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(T::value_type) == dt.GetElemLanguageType());
-}
-
-
-/// Возвращает имя подключенного компонента
-virtual UItem* GetItem(int index)
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return reinterpret_cast<UItem*>(ConnectedOutputs[index]->GetOwner());
- }
- return 0;
-}
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(int index) const
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetName();
- }
- return std::string();
-}
-
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(int index) const
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetOwner()->GetName();
- }
- return std::string();
-}
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(int index) const
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetOwner()->GetFullName();
- }
- return std::string();
-}
-
-protected:
-/// Возвращает имя подключенного компонента
-virtual UItem* GetItem(void)
-{
- return 0;
 }
 // --------------------------
 };
@@ -1055,50 +976,6 @@ UCProperty& operator = (const UCProperty &value)
 }
 };
 
-/*
-// -----------------------------------------------------------------------------
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputCData: public UCProperty<std::vector<T*>,OwnerT,type>
-{
-protected:
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyInputCData(const string &name, OwnerT * const owner)
- : UCProperty<std::vector<T*>,OwnerT,type>(name, owner)
-{
-}
-
-~UPropertyInputCData(void)
-{
-}
-// -----------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-// Возвращает языковой тип хранимого свойства для одного элемента
-virtual const type_info& GetElemLanguageType(void) const
-{
- return typeid(T);
-}
-
-// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
-virtual bool CompareElemLanguageType(const UIProperty &dt) const
-{
- return GetElemLanguageType() == dt.GetElemLanguageType();
-}
-
-
-
-
-
-};*/
-
-
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
 using ULProperty = UProperty<T, OwnerT, type>;
 
@@ -1109,7 +986,7 @@ template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 using UPropertyOutputData = UProperty<T, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-using UPropertyOutputCData = UCProperty<T, OwnerT, type>;
+using UPropertyOutputCData = UCProperty<std::vector<T>, OwnerT, type>;
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 using UPropertyInputData = UProperty<T, OwnerT, type>;

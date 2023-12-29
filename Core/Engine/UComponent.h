@@ -492,41 +492,28 @@ class UItem;
 
 class RDK_LIB_TYPE UIPropertyInput: public UIProperty
 {
-protected: // Данные
- /// Указатель на компонент-источник данных
- UItem* Item;
-
- /// Имя выхода компнента-источника данных
- std::string ItemOutputName;
-
 public:
  /// Конструкторы и деструкторы
  UIPropertyInput(void);
  virtual ~UIPropertyInput(void);
 
  /// Возвращает указатель на компонент-источник
- virtual UItem* GetItem(void);
+ virtual UItem* GetItem(int index=0)=0;
 
  /// Возвращает имя подключенного компонента
- virtual std::string GetItemName(void) const;
+ virtual std::string GetItemName(int index=0) const=0;
 
  /// Возвращает полное имя подключенного компонента
- virtual std::string GetItemFullName(void) const;
+ virtual std::string GetItemFullName(int index=0) const=0;
 
  /// Возвращает имя подключенного выхода
- virtual std::string GetItemOutputName(void) const;
-
- /// Инициализирует данные
- virtual void Init(UItem* item, const std::string &output_name);
-
- /// Деинициализирует данные
- virtual void UnInit(void);
+ virtual std::string GetItemOutputName(int index=0) const=0;
 
  // Устанавливает указатель на данные входа
- virtual bool SetPointer(int index, UIPropertyOutput* property);
+ virtual bool SetPointer(int index, UIPropertyOutput* property)=0;
 
  /// Сбрасывает указатель на данные
- virtual bool ResetPointer(int index, UIPropertyOutput* property);
+ virtual bool ResetPointer(int index, UIPropertyOutput* property)=0;
 
  /// Возвращает true, если на подключенном выходе новые данные
  virtual bool IsNewData(void) const=0;
