@@ -4,7 +4,6 @@
 #define UPropertyEndpointsH
 
 #include "UProperty.h"
-#include <vector>
 //---------------------------------------------------------------------------
 
 namespace RDK {
@@ -451,7 +450,7 @@ const MDVector<V> operator + (const UProperty<MDVector<V>,OwnerT, type> &v1,cons
 
 /// Специализация: свойства - double
 template<typename OwnerT, unsigned int type>
-class UProperty<double, OwnerT,type>: public UPropertyLocal<double,OwnerT,type>
+class UProperty<double, OwnerT,type, false>: public UPropertyLocal<double,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -480,7 +479,7 @@ UProperty<double,OwnerT, type>& operator = (const double &value)
 
 operator double (void) const
 {
- return GetData();
+ return this->GetData();
 }
 
 const double& operator () (void) const
@@ -494,7 +493,7 @@ const double& operator () (void) const
 
 /// Специализация: свойства - int
 template<typename OwnerT, unsigned int type>
-class UProperty<int,OwnerT,type>: public UPropertyLocal<int,OwnerT,type>
+class UProperty<int,OwnerT,type, false>: public UPropertyLocal<int,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -566,7 +565,7 @@ const int& operator () (void) const
 
 /// Специализация: свойства - unsigned int
 template<typename OwnerT, unsigned int type>
-class UProperty<unsigned int,OwnerT,type>: public UPropertyLocal<unsigned int,OwnerT,type>
+class UProperty<unsigned int,OwnerT,type, false>: public UPropertyLocal<unsigned int,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -639,7 +638,7 @@ const unsigned int& operator () (void) const
 
 /// Специализация: свойства - int
 template<typename OwnerT, unsigned int type>
-class UProperty<unsigned long int,OwnerT,type>: public UPropertyLocal<unsigned long int,OwnerT,type>
+class UProperty<unsigned long int,OwnerT,type, false>: public UPropertyLocal<unsigned long int,OwnerT,type>
 {
 public: // Методы
 // --------------------------
@@ -712,7 +711,7 @@ const unsigned long int& operator () (void) const
 
 /// Специализация: свойства - unsigned long long
 template<typename OwnerT, unsigned int type>
-class UProperty<unsigned long long,OwnerT,type>: public UPropertyLocal<unsigned long long,OwnerT,type>
+class UProperty<unsigned long long,OwnerT,type, false>: public UPropertyLocal<unsigned long long,OwnerT,type>
 {
 public: // Методы
 // --------------------------

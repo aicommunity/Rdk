@@ -20,7 +20,6 @@ See file license.txt for more information
 #include "UContainerDescription.h"
 #include "UTime.h"
 #include "ULoggerEnv.h"
-#include "../Serialize/Serialize.h"
 #include "../Graphics/UFont.h"
 
 #ifndef RDK_PROPERTY_TYPES

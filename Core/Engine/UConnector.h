@@ -384,7 +384,7 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
    if(reinterpret_cast<UContainer*>(I->second[i].Item) == cont)
    {
     reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
-    UIProperty* property=0;
+    UIPropertyInput* property=0;
     FindInputProperty(I->first, property);
     if(property)
      connector.Index=-1;//property->GetMinRange();

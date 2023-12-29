@@ -14,7 +14,7 @@ See file license.txt for more information
 
 #include "../Math/MVector.h"
 #include "UComponent.h"
-#include "UProperty.h"
+#include "UPropertyEndpoints.h"
 #include "UTime.h"
 #include "UController.h"
 
@@ -110,42 +110,42 @@ std::vector<UEPtr<UController> > Controllers;
 
 public: // Общедоступные свойства
 // Имя объекта
-ULProperty<NameT, UContainer, ptParameter | pgSystem> Name;
+UProperty<NameT, UContainer, ptParameter | pgSystem> Name;
 
 // Id объекта
-ULProperty<UId, UContainer, ptParameter | pgSystem> Id;
+UProperty<UId, UContainer, ptParameter | pgSystem> Id;
 
 // Флаг активности объекта
 // true - расчет объекта будет выполняться
 // false - расчет объекта будет игнорироваться
-ULProperty<bool,  UContainer, ptParameter | pgPublic> Activity;
+UProperty<bool,  UContainer, ptParameter | pgPublic> Activity;
 
 // Шаг счета в долях секунды
 // Реальный шаг = 1./TimeStep
-ULProperty<UTime,  UContainer, ptParameter | pgSystem> TimeStep;
+UProperty<UTime,  UContainer, ptParameter | pgSystem> TimeStep;
 
 /// Максимально допустимое время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах.
 /// Если время расчета превышено, то расчет последующих дочерних компонент
 /// не выполняется
 /// Если значение параметра <0, то нет ограничений
-ULProperty<long long, UContainer, ptParameter | pgPublic> MaxCalculationDuration;
+UProperty<long long, UContainer, ptParameter | pgPublic> MaxCalculationDuration;
 
 /// Время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
 /// Если значение параметра <0, то нет ограничений
-ULProperty<long long, UContainer, ptParameter | pgPublic> CalculationDurationThreshold;
+UProperty<long long, UContainer, ptParameter | pgPublic> CalculationDurationThreshold;
 
 public: // Физические свойства
 // Координата компонента в пространстве сети
-ULProperty<RDK::MVector<double,3>, UContainer, ptParameter | pgPublic> Coord;
+UProperty<RDK::MVector<double,3>, UContainer, ptParameter | pgPublic> Coord;
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-ULProperty<unsigned long long, UContainer, ptState | pgPublic | pgSystem> StepDuration;
+UProperty<unsigned long long, UContainer, ptState | pgPublic | pgSystem> StepDuration;
 
 /// Флаги переопределения настроек вывода детальной отладочной информации
-ULProperty<unsigned int, UContainer, ptParameter | pgPublic | pgSystem> DebugSysEventsMask;
+UProperty<unsigned int, UContainer, ptParameter | pgPublic | pgSystem> DebugSysEventsMask;
 
 protected: // Временные переменные
 // Время, прошедшее между двумя последними итерациями счета
@@ -347,7 +347,7 @@ void ChangeUseIndTimeStepMode(bool value);
 const bool& GetActivity(void) const;
 
 // Id объекта
-const UId GetId(void) const;
+UId GetId(void) const;
 
 // Проверяет предлагаемое имя 'name' на уникальность в рамках данного объекта
 bool CheckName(const NameT &name);
@@ -1189,9 +1189,54 @@ void UContainer::DetachPropertyData(const NameT& destination_property)
 }
 
 
+/// Возвращает имя подключенного компонента
+template<typename T,class OwnerT>
+UItem* UVProperty<T, OwnerT>::GetItem(int index)
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return reinterpret_cast<UItem*>(ConnectedOutputs[index]->GetOwner());
+ }
+ return 0;
+}
+
+/// Возвращает имя подключенного выхода
+template<typename T,class OwnerT>
+std::string UVProperty<T, OwnerT>::GetItemOutputName(int index) const
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return ConnectedOutputs[index]->GetName();
+ }
+ return std::string();
+}
+
+/// Возвращает имя подключенного компонента
+template<typename T,class OwnerT>
+std::string UVProperty<T, OwnerT>::GetItemName(int index) const
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return ConnectedOutputs[index]->GetOwner()->GetName();
+ }
+ return std::string();
+}
+
+/// Возвращает полное имя подключенного компонента
+template<typename T,class OwnerT>
+std::string UVProperty<T, OwnerT>::GetItemFullName(int index) const
+{
+ if(int(this->ConnectedOutputs.size())>index && index >=0)
+ {
+  return ConnectedOutputs[index]->GetOwner()->GetFullName();
+ }
+ return std::string();
+}
+
 }
 
 #include "UPointer.h"
+
 
 #endif
 

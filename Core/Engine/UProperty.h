@@ -445,44 +445,16 @@ void DetachFrom(void)
 // Методы управления подклчаемым выходом
 // -----------------------------
 /// Возвращает имя подключенного компонента
-virtual UItem* GetItem(int index=0)
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return reinterpret_cast<UItem*>(ConnectedOutputs[index]->GetOwner());
- }
- return 0;
-}
+virtual UItem* GetItem(int index=0);
 
 /// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(int index=0) const
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetName();
- }
- return std::string();
-}
+virtual std::string GetItemOutputName(int index=0) const;
 
 /// Возвращает имя подключенного компонента
-virtual std::string GetItemName(int index=0) const
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetOwner()->GetName();
- }
- return std::string();
-}
+virtual std::string GetItemName(int index=0) const;
 
 /// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(int index=0) const
-{
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetOwner()->GetFullName();
- }
- return std::string();
-}
+virtual std::string GetItemFullName(int index=0) const;
 
 /// Применяет время выхода к входу
 void ApplyOutputUpdateTime(void) const
@@ -555,6 +527,7 @@ UVProperty<T,OwnerT>& operator = (const T &value)
 
 class UItem;
 class UConnector;
+class UContainer;
 
 /* ************************************************************************* */
 // Класс - свойство с значением внутри
@@ -608,7 +581,7 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
- return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
+ return (UVProperty<T,OwnerT>::IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
 }
 
 virtual void SetData(const T &value)
@@ -619,7 +592,7 @@ virtual void SetData(const T &value)
   return;
  }
 
- if(IsConnectedFlag)
+ if(UVProperty<T,OwnerT>::IsConnectedFlag)
   return;
 
  if(CheckEqualsFlag && value == v)
@@ -646,7 +619,7 @@ bool AttachTo(UVBaseDataProperty<T>* prop)
  if(res)
  {
 //  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
-  IsConnectedFlag=true;
+  UVProperty<T,OwnerT>::IsConnectedFlag=true;
  }
  return res;
 }
@@ -654,7 +627,7 @@ bool AttachTo(UVBaseDataProperty<T>* prop)
 void DetachFrom(void)
 {
 // this->PData=&v;
- IsConnectedFlag=false;
+ UVProperty<T,OwnerT>::IsConnectedFlag=false;
  UVProperty<T,OwnerT>::DetachFrom();
 }
 
@@ -668,8 +641,8 @@ int GetNumPointers(void) const
 bool SetPointer(int index, UIPropertyOutput* property)
 {
  //this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
- IsConnectedFlag=true;
- this->ConnectedOutputs.assign(1,property);
+ UVProperty<T,OwnerT>::IsConnectedFlag=true;
+ UVProperty<T,OwnerT>::ConnectedOutputs.assign(1,property);
  this->ResetUpdateTime();
  return true;
 }
@@ -680,8 +653,8 @@ bool ResetPointer(int index, UIPropertyOutput* property)
  if(!this->ConnectedOutputs.empty() && this->ConnectedOutputs[0] == property)
  {
 //  this->PData=&v;
-  IsConnectedFlag=false;
-  ConnectedOutputs.clear();
+  UVProperty<T,OwnerT>::IsConnectedFlag=false;
+  UVProperty<T,OwnerT>::ConnectedOutputs.clear();
   return true;
  }
  return false;
@@ -785,7 +758,7 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
- return (IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
+ return (this->IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():this->v;
 }
 
 virtual void SetData(const T &value)
@@ -796,10 +769,10 @@ virtual void SetData(const T &value)
   return;
  }
 
- if(IsConnectedFlag)
+ if(this->IsConnectedFlag)
   return;
 
- if(CheckEqualsFlag && v == value)
+ if(this->CheckEqualsFlag && this->v == value)
   return;
 
  if(this->Owner)
@@ -823,7 +796,7 @@ virtual void SetData(const T &value)
   }
  }
 
- v=value;
+ this->v=value;
  this->RenewUpdateTime();
 }
 // -----------------------------
@@ -835,13 +808,16 @@ bool SetPointer(int index, UIPropertyOutput* property)
  if(index<0)
   return false;
 
- if(int(ConnectedOutputs.size())<=index)
+ if(int(UVProperty<T,OwnerT>::ConnectedOutputs.size())<=index)
  {
   size_t new_size=index+1;
-  this->v.resize(new_size);
-  ConnectedOutputs.resize(new_size,0);
+  if(has_resize<T>::value)
+   this->v.resize(new_size);
+  else
+   throw std::runtime_error("resize doesn't support");
+  this->ConnectedOutputs.resize(new_size,0);
  }
- ConnectedOutputs[index]=property;
+ this->ConnectedOutputs[index]=property;
  return true;
 }
 
@@ -857,7 +833,7 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 
  if(int(this->ConnectedOutputs.size())>index && index >= 0)
  {
-  this->ConnectedOutputs.erase(ConnectedOutputs.begin()+index);
+  this->ConnectedOutputs.erase(this->ConnectedOutputs.begin()+index);
   return true;
  }
 
@@ -891,7 +867,7 @@ public:
 // Операторы доступа
 // -----------------------------
 // Чтение элемента контейнера
-const typename TV& operator () (size_t i) const
+const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) const
 {
  const T& data = GetData();
  if(i>=data.size())
@@ -902,12 +878,12 @@ const typename TV& operator () (size_t i) const
 }
 
 // Запись элемента контейнера
-bool operator () (size_t i, const typename TV &value)
+bool operator () (size_t i, const typename UProperty<T, OwnerT, type, true>::TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
   throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
- if(IsConnectedFlag)
+ if(this->IsConnectedFlag)
   return false;
 
  if(i>=this->v.size())
@@ -942,10 +918,10 @@ T& operator * (void)
 const T& operator * (void) const
 { return this->GetData(); }
 
-typename TV& operator [] (size_t i)
-{ return const_cast<TV&>((*this)(i)); }
+typename UProperty<T, OwnerT, type, true>::TV& operator [] (size_t i)
+{ return const_cast<UProperty<T, OwnerT, type, true>::TV&>((*this)(i)); }
 
-const typename TV& operator [] (size_t i) const
+const typename UProperty<T, OwnerT, type, true>::TV& operator [] (size_t i) const
 { return (*this)(i); }
 
 // Оператор присваивания
@@ -1046,7 +1022,7 @@ void assign(size_t size, const TV &val)
 // Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const
 {
- return (GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(T::value_type) == dt.GetElemLanguageType());
+ return (this->GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(TV) == dt.GetElemLanguageType());
 }
 // --------------------------
 };

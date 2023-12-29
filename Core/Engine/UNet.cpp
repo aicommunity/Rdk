@@ -220,10 +220,8 @@ void UNet::BreakLinks(void)
 	static_pointer_cast<UConnector>(PComponents[i])->DisconnectAllItems();
   }
 
- if(dynamic_cast<UItem* const>(this))
-  ((UItem* const)this)->DisconnectAll();
- if(dynamic_cast<UConnector* const>(this))
-  ((UConnector* const)this)->DisconnectAllItems();
+ DisconnectAll();
+ DisconnectAllItems();
 }
 /*
 // Разрывает связь ко входу connector_index коннектора 'connectorid'

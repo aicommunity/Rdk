@@ -59,15 +59,15 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
-  : Id("Id", this, &UContainer::SetId)
-  , Name("Name", this, &UContainer::SetName)
-  , TimeStep("TimeStep", this, &UContainer::SetTimeStep)
+  : Name("Name", this, &UContainer::SetName)
+  , Id("Id", this, &UContainer::SetId)
   , Activity("Activity", this, &UContainer::SetActivity)
-  , Coord("Coord", this, &UContainer::SetCoord)
+  , TimeStep("TimeStep", this, &UContainer::SetTimeStep)
   , MaxCalculationDuration("MaxCalculationDuration", this, &UContainer::SetMaxCalculationDuration)
   , CalculationDurationThreshold("CalculationDurationThreshold", this, &UContainer::SetCalculationDurationThreshold)
-  , DebugSysEventsMask("DebugSysEventsMask", this, &UContainer::SetDebugSysEventsMask)
+  , Coord("Coord", this, &UContainer::SetCoord)
   , StepDuration("StepDuration", this)
+  , DebugSysEventsMask("DebugSysEventsMask", this, &UContainer::SetDebugSysEventsMask)
   , PComponents(0), NumComponents(0), LastId(0)
 
 {
@@ -916,7 +916,7 @@ bool UContainer::SetActivity(const bool &activity)
 }
 
 // Id объекта
-const UId UContainer::GetId(void) const
+UId UContainer::GetId(void) const
 {
  return Id.v;
 }
