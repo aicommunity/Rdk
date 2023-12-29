@@ -1051,46 +1051,27 @@ virtual bool CompareElemLanguageType(const UIProperty &dt) const
 // --------------------------
 };
 
-
-// Конечный класс - свойство-контейнер со значением внутри
-/* ************************************************************************* */
-
-/*
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-class UCProperty: public UCPropertyLocal<T,OwnerT, type>
+template <typename OwnerT, unsigned int type>
+class UProperty<std::string, OwnerT, type, true>
+    : public UProperty<std::string, OwnerT, type, false>
 {
-public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации
-UCProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
-    : UCPropertyLocal<T,OwnerT, type>(name, owner, setmethod)
-{ }
-
-//Конструктор инициализации для отдельных значений
-UCProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
-    : UCPropertyLocal<T,OwnerT, type>(name, owner,setmethod)
-{ }
-
-protected:
-UCProperty(const UCProperty<T,OwnerT, type> &v) {}
-// -----------------------------
+  using base = UProperty<std::string, OwnerT, type, false>;
+  using base::base;
 
 public:
-// Оператор присваивания
-UCProperty& operator = (const T &value)
-{
- this->SetData(value);
- return *this;
-}
+ // Оператор присваивания
+ UProperty& operator = (const std::string &value)
+ {
+  this->SetData(value);
+  return *this;
+ }
 
-UCProperty& operator = (const UCProperty &value)
-{
- this->SetData(value.GetData());
- return *this;
-}
-};*/
+ UProperty& operator = (const UProperty &value)
+ {
+  this->SetData(value.GetData());
+  return *this;
+ }
+};
 
 template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
 using ULProperty = UProperty<T, OwnerT, type>;
