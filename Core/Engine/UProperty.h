@@ -747,6 +747,7 @@ UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT
 UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,type>::VSetterRT setmethod)
  : UPropertyLocal<T,OwnerT,type>(name, owner,(typename UVProperty<T,OwnerT>::SetterRT)0)
 {
+ this->IoType = ipRange | ipData;
  VSetterR=setmethod;
 }
 // -----------------------------
@@ -761,18 +762,8 @@ virtual const T& GetData(void) const
   return this->ExternalDataSource->GetData();
 
  if(this->IsConnectedFlag)
- {
-  LocalInputData.resize(this->ConnectedOutputs.size());
-  size_t i=0;
-  for(auto I=LocalInputData.begin();I != LocalInputData.end();I++)
-  {
-   *I = dynamic_cast<const UVBaseDataProperty<TV>*>(this->ConnectedOutputs[i])->GetData();
-   ++i;
-  }
-  return LocalInputData;
- }
+  return UpdateLocalInputData(LocalInputData);
 
- //return (this->IsConnectedFlag)?dynamic_cast<const UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():this->v;
  return this->v;
 }
 
@@ -1043,6 +1034,19 @@ virtual bool CompareElemLanguageType(const UIProperty &dt) const
  return (this->GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(TV) == dt.GetElemLanguageType());
 }
 // --------------------------
+
+protected:
+const T& UpdateLocalInputData(T& data) const
+{
+ data.resize(this->ConnectedOutputs.size());
+ size_t i=0;
+ for(auto I=data.begin();I != data.end();I++)
+ {
+  *I = dynamic_cast<const UVBaseDataProperty<TV>*>(this->ConnectedOutputs[i])->GetData();
+  ++i;
+ }
+ return data;
+}
 };
 
 template <typename OwnerT, unsigned int type>
