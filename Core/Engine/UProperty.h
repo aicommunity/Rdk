@@ -731,6 +731,8 @@ protected: // Данные
 // Методы ввода-вывода
 VSetterRT VSetterR;
 
+mutable T LocalInputData;
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -758,7 +760,20 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
- return (this->IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():this->v;
+ if(this->IsConnectedFlag)
+ {
+  LocalInputData.resize(this->ConnectedOutputs.size());
+  size_t i=0;
+  for(auto I=LocalInputData.begin();I != LocalInputData.end();I++)
+  {
+   *I = dynamic_cast<const UVBaseDataProperty<TV>*>(this->ConnectedOutputs[i])->GetData();
+   ++i;
+  }
+  return LocalInputData;
+ }
+
+ //return (this->IsConnectedFlag)?dynamic_cast<const UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():this->v;
+ return this->v;
 }
 
 virtual void SetData(const T &value)
@@ -818,6 +833,7 @@ bool SetPointer(int index, UIPropertyOutput* property)
   this->ConnectedOutputs.resize(new_size,0);
  }
  this->ConnectedOutputs[index]=property;
+ UVProperty<T,OwnerT>::IsConnectedFlag=true;
  return true;
 }
 
@@ -834,6 +850,8 @@ bool ResetPointer(int index, UIPropertyOutput* property)
  if(int(this->ConnectedOutputs.size())>index && index >= 0)
  {
   this->ConnectedOutputs.erase(this->ConnectedOutputs.begin()+index);
+  if(this->ConnectedOutputs.empty())
+   UVProperty<T,OwnerT>::IsConnectedFlag=false;
   return true;
  }
 
