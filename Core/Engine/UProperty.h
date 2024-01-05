@@ -581,7 +581,10 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
- return (UVProperty<T,OwnerT>::IsConnectedFlag)?dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData():v;
+ if(UVProperty<T,OwnerT>::IsConnectedFlag)
+  v = dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData();
+
+ return v;
 }
 
 virtual void SetData(const T &value)
@@ -731,8 +734,6 @@ protected: // Данные
 // Методы ввода-вывода
 VSetterRT VSetterR;
 
-mutable T LocalInputData;
-
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -762,7 +763,7 @@ virtual const T& GetData(void) const
   return this->ExternalDataSource->GetData();
 
  if(this->IsConnectedFlag)
-  return UpdateLocalInputData(LocalInputData);
+  UpdateLocalInputData(this->v);
 
  return this->v;
 }
