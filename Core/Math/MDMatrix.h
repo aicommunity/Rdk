@@ -1319,7 +1319,7 @@ T MDMatrix<T>::operator !(void) const
   for(int i=0;i<Rows;i++)
 	for(int j=0;j<Cols;j++)
 		res+=(*this)(i,j) * (*this)(i,j);
- return sqrt(res);
+ return T(sqrt(res));
 }
 
 // Нормализация матрицы

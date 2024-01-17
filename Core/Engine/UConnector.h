@@ -148,6 +148,9 @@ int GetSize(void) const;
 // --------------------------
 };
 
+class UIPropertyInput;
+class UIPropertyOutput;
+
 class RDK_LIB_TYPE UConnector: public UContainer
 {
 friend class UItem;
@@ -210,10 +213,10 @@ virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) cons
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
-virtual void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
+virtual void FindInputProperty(const NameT &connector_property_name, UIPropertyInput* &property) const;
 
 /// Возвращает указатель на свойство подключенного входа компонента-приемника
-virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const=0;
+virtual void FindConnectedProperty(const NameT &item_property_name, int index, UIPropertyInput* &property) const=0;
 // --------------------------
 
 // ----------------------
@@ -294,75 +297,16 @@ public: // Классы описания исключений
 // Некорректный индекс входа
 struct EInvalidInputIndex: public EInvalidIndex
 {
-explicit EInvalidInputIndex(int index) : EInvalidIndex(index) {};
+ explicit EInvalidInputIndex(int index) : EInvalidIndex(index) {}
 };
 
 // Такой вход не существует
 struct EInputIndexNotExist: public EInvalidIndex
 {
-explicit EInputIndexNotExist(int index) : EInvalidIndex(index) {};
+ explicit EInputIndexNotExist(int index) : EInvalidIndex(index) {}
 };
 };
 
-class RDK_LIB_TYPE UIPropertyInput
-{
-protected: // Данные
-/// Указатель на компонент-источник данных
-UItem* Item;
-
-/// Имя выхода компнента-источника данных
-std::string ItemOutputName;
-
-public:
-/// Конструкторы и деструкторы
-UIPropertyInput(void);
-virtual ~UIPropertyInput(void);
-
-/// Возвращает указатель на компонент-источник
-virtual UItem* GetItem(void);
-
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const;
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const;
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const;
-
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name);
-
-/// Деинициализирует данные
-virtual void UnInit(void);
-};
-
-class RDK_LIB_TYPE UIPropertyOutput
-{
-protected: // Данные
-/// Указатели на компоненты-приемники данных
-std::vector<UItem*> Connectors;
-
-/// Имена входов компнентов-приемников данных
-std::vector<std::string> ConnectorInputNames;
-
-public:
-/// Конструкторы и деструкторы
-UIPropertyOutput(void);
-virtual ~UIPropertyOutput(void);
-
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const;
-
-/// Возвращает указатель на компонент-приемник
-virtual UConnector* GetConnector(int index);
-
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const;
-
-/// Возвращает указатель на свойство подключенного входа компонента-приемника
-virtual UIProperty* GetConnectorProperty(int index);
-};
 
 // Template methods UConnector
 // Возвращает список подключений
@@ -383,41 +327,41 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
   {
    if(I->second[i].Item)
    {
-	if(exclude_internals)
-	{
-	 if(reinterpret_cast<UContainer*>(I->second[i].Item)->CheckOwner(internal_level))
-	  continue;
-	}
-   reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
-   UIProperty* property=0;
-   FindInputProperty(I->first, property);
-   if(property)
-	connector.Index=-1;//property->GetMinRange();
-   else
-    connector.Index=-1;//i;
-   connector.Name=I->first;
+    if(exclude_internals)
+    {
+     if(reinterpret_cast<UContainer*>(I->second[i].Item)->CheckOwner(internal_level))
+      continue;
+    }
+    reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
+    UIPropertyInput* property=0;
+    FindInputProperty(I->first, property);
+    if(property)
+     connector.Index=-1;//property->GetMinRange();
+    else
+     connector.Index=-1;//i;
+    connector.Name=I->first;
 
-   item.Index=-1;//CItemList[i].Index;
-   item.Name=I->second[i].Name;//CItemList[i].Name;
-   if(connector.Id.size() != 0)
-   {
-	int item_id=linkslist.FindItem(item);
-	if(item_id >= 0)
-	{
-	 if(linkslist[item_id].FindConnector(connector) >= 0)
-	  continue;
-	 linkslist[item_id].Connector.push_back(connector);
-	}
-	else
-	{
-	 link.Item=item;
-	 link.Connector.clear();
-	 link.Connector.push_back(connector);
-	 linkslist.Add(link);
-	}
+    item.Index=-1;//CItemList[i].Index;
+    item.Name=I->second[i].Name;//CItemList[i].Name;
+    if(connector.Id.size() != 0)
+    {
+     int item_id=linkslist.FindItem(item);
+     if(item_id >= 0)
+     {
+      if(linkslist[item_id].FindConnector(connector) >= 0)
+       continue;
+      linkslist[item_id].Connector.push_back(connector);
+     }
+     else
+     {
+      link.Item=item;
+      link.Connector.clear();
+      link.Connector.push_back(connector);
+      linkslist.Add(link);
+     }
+    }
    }
   }
- }
 
  return linkslist;
 }
@@ -439,32 +383,32 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
   {
    if(reinterpret_cast<UContainer*>(I->second[i].Item) == cont)
    {
-	reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
-	UIProperty* property=0;
-	FindInputProperty(I->first, property);
-	if(property)
-	 connector.Index=-1;//property->GetMinRange();
-	else
-	 connector.Index=-1;//i; // TODO тут неопределенность
-	connector.Name=I->first;
-	item.Index=-1;//CItemList[i].Index;
-	item.Name=I->second[i].Name;
-	if(connector.Id.size() != 0)
-	{
-	 int item_id=linkslist.FindItem(item);
-	 if(item_id >= 0)
-	 {
-	  if(linkslist[item_id].FindConnector(connector) >= 0)
-	   continue;
-	 linkslist[item_id].Connector.push_back(connector);
-	}
-	else
-	{
-	 link.Item=item;
-	 link.Connector.clear();
-	 link.Connector.push_back(connector);
-	 linkslist.Add(link);
-	}
+    reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
+    UIPropertyInput* property=0;
+    FindInputProperty(I->first, property);
+    if(property)
+     connector.Index=-1;//property->GetMinRange();
+    else
+     connector.Index=-1;//i; // TODO тут неопределенность
+    connector.Name=I->first;
+    item.Index=-1;//CItemList[i].Index;
+    item.Name=I->second[i].Name;
+    if(connector.Id.size() != 0)
+    {
+     int item_id=linkslist.FindItem(item);
+     if(item_id >= 0)
+     {
+      if(linkslist[item_id].FindConnector(connector) >= 0)
+       continue;
+     linkslist[item_id].Connector.push_back(connector);
+    }
+    else
+    {
+     link.Item=item;
+     link.Connector.clear();
+     link.Connector.push_back(connector);
+     linkslist.Add(link);
+    }
    }
   }
  }
@@ -474,5 +418,4 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 
 }
 
-#include "UPropertyIO.h"
 #endif

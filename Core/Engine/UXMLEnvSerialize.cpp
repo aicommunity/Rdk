@@ -16,6 +16,7 @@ See file license.txt for more information
 
 #include "UXMLEnvSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
+#include "UNet.h"
 
 namespace RDK {
 
@@ -278,6 +279,28 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksList &data)
  return storage;
 }
       */
+
+
+USerStorageXML& operator << (USerStorageXML& storage, const RDK::UNet* data)
+{
+    storage.SetNodeAttribute("Type","pointer");
+
+    std::stringstream stream;
+    stream<<data;
+
+    std::string str;
+    str=stream.str();
+
+    storage.SetNodeText(str);
+
+    return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, RDK::UNet *data)
+{
+    return storage;
+}
+
 
 }
 #endif

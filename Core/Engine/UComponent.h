@@ -20,7 +20,6 @@ See file license.txt for more information
 #include "UContainerDescription.h"
 #include "UTime.h"
 #include "ULoggerEnv.h"
-#include "../Serialize/Serialize.h"
 #include "../Graphics/UFont.h"
 
 #ifndef RDK_PROPERTY_TYPES
@@ -343,60 +342,24 @@ struct EEnvironmentNotExist: public EError
 {
 };
 
-// Id свойства не найден
-/*struct EPropertyIdNotExist: public EIdNotExist
-{
-EPropertyIdNotExist(UId id) : EIdNotExist(id) {};
-};
-
-// Id свойства уже существует
-struct EPropertyIdAlreadyExist: public EIdAlreadyExist
-{
-EPropertyIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
-}; */
-
 // Имя свойства не найдено
 struct EPropertyNameNotExist: public ENameNotExist
 {
-explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {};
+explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
 // Имя свойства уже существует
 struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
-explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {}
 };
 
 // Имя алиаса не найдено
 struct EAliasNameNotExist: public ENameNotExist
 {
-explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {};
-};
-/*
-// Id переменной состояния не найден
-struct EStateIdNotExist: public EIdNotExist
-{
-EStateIdNotExist(UId id) : EIdNotExist(id) {};
+explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
-// Id переменной состояния уже существует
-struct EStateIdAlreadyExist: public EIdAlreadyExist
-{
-EStateIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
-};
-
-// Имя переменной состояния не найдено
-struct EStateNameNotExist: public ENameNotExist
-{
-EStateNameNotExist(const std::string &name) : ENameNotExist(name) {};
-};
-
-// Имя переменной состояния уже существует
-struct EStateNameAlreadyExist: public ENameAlreadyExist
-{
-EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
-};
-    */
 };
 
 template<typename T>
@@ -431,10 +394,10 @@ virtual std::string GetOwnerName(void) const=0;
 virtual std::string GetOwnerClassName(void) const=0;
 
 // Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+virtual bool Save(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 
 // Метод читает значение свойства из потока
-virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+virtual bool Load(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 
 // Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void)=0;
@@ -456,9 +419,6 @@ virtual const type_info& GetElemLanguageType(void) const=0;
 // Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const=0;
 
-/// Обновляет указатель PData
-virtual void UpdatePData(void* data)=0;
-
 // --------------------------
 // Методы управления данными
 // --------------------------
@@ -473,68 +433,6 @@ virtual void SetUpdateTime(ULongTime value)=0;
 
 /// Сбрасывает время обновления до нуля
 virtual void ResetUpdateTime(void)=0;
-
-/// Возвращает диапазон индексов входа/выхода
-//virtual bool CheckRange(int index)=0;
-
-// Диапазон индексов входов
-//virtual int GetMinRange(void)=0;
-
-//virtual int GetMaxRange(void)=0;
-// --------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-/// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
-
-/// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value, UIProperty* output)=0;
-
-/// Сбрасывает указатель на данные
-virtual bool ResetPointer(int index, void* value)=0;
-
-/// Обновить указатели свойств-входов
-virtual void UpdateConnectedPointers(void)=0;
-// --------------------------
-
-// --------------------------
-// Методы управления входами
-// --------------------------
-/// Возвращает имя подключенного компонента
-virtual std::string GetItemName(void) const=0;
-
-/// Возвращает полное имя подключенного компонента
-virtual std::string GetItemFullName(void) const=0;
-
-/// Возвращает имя подключенного выхода
-virtual std::string GetItemOutputName(void) const=0;
-
-/// Возвращает true, если на подключенном выходе новые данные
-virtual bool IsNewData(void) const=0;
-
-/// Возвращает true если вход имеет подключение
-virtual bool IsConnected(void) const=0;
-
-/// Инициализирует данные
-virtual void Init(UItem* item, const std::string &output_name)=0;
-
-/// Деинициализирует данные
-virtual void UnInit(void)=0;
-// --------------------------
-
-// --------------------------
-// Методы управления выходами
-// --------------------------
-/// Возвращает число подключенных входов
-virtual size_t GetNumConnectors(void) const=0;
-
-/// Возвращает указатель на компонент-приемник
-virtual UComponent* GetConnector(int index)=0;
-
-/// Возвращает имя подключенного входа компонента-приемника
-virtual std::string GetConnectorInputName(int index) const=0;
 // --------------------------
 
 public: // Исключения
@@ -550,8 +448,8 @@ std::string PropertyName;
 
 public:
 EPropertyError(const std::string &owner_name, const std::string &property_name)
-: EError(), OwnerName(owner_name), PropertyName(property_name) {};
-virtual ~EPropertyError(void) throw() {};
+: EError(), OwnerName(owner_name), PropertyName(property_name) {}
+virtual ~EPropertyError(void) throw() {}
 
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const
@@ -565,7 +463,7 @@ struct EPropertyZeroPtr: public EPropertyError
 {
 public:
 EPropertyZeroPtr(const std::string &owner_name, const std::string &property_name)
-: EPropertyError(owner_name, property_name) {};
+: EPropertyError(owner_name, property_name) {}
 };
 
 // Вызов Getter завершен неудачно
@@ -573,7 +471,7 @@ struct EPropertyGetterFail: public EPropertyError
 {
 public:
 EPropertyGetterFail(const std::string &owner_name, const std::string &property_name)
-: EPropertyError(owner_name, property_name) {};
+: EPropertyError(owner_name, property_name) {}
 };
 
 // Вызов Setter завершен неудачно
@@ -581,10 +479,78 @@ struct EPropertySetterFail: public EPropertyError
 {
 public:
 EPropertySetterFail(const std::string &owner_name, const std::string &property_name)
-: EPropertyError(owner_name, property_name) {};
+: EPropertyError(owner_name, property_name) {}
 };
 
 };
+
+
+class RDK_LIB_TYPE UIPropertyOutput;
+class UConnector;
+class UItem;
+
+class RDK_LIB_TYPE UIPropertyInput: public UIProperty
+{
+public:
+ /// Конструкторы и деструкторы
+ UIPropertyInput(void);
+ virtual ~UIPropertyInput(void);
+
+ /// Возвращает указатель на компонент-источник
+ virtual UItem* GetItem(int index=0)=0;
+
+ /// Возвращает имя подключенного компонента
+ virtual std::string GetItemName(int index=0) const=0;
+
+ /// Возвращает полное имя подключенного компонента
+ virtual std::string GetItemFullName(int index=0) const=0;
+
+ /// Возвращает имя подключенного выхода
+ virtual std::string GetItemOutputName(int index=0) const=0;
+
+ // Устанавливает указатель на данные входа
+ virtual bool SetPointer(int index, UIPropertyOutput* property)=0;
+
+ /// Сбрасывает указатель на данные
+ virtual bool ResetPointer(int index, UIPropertyOutput* property)=0;
+
+ /// Возвращает true, если на подключенном выходе новые данные
+ virtual bool IsNewData(void) const=0;
+
+ /// Возвращает true если вход имеет подключение
+ virtual bool IsConnected(void) const=0;
+};
+
+class RDK_LIB_TYPE UIPropertyOutput: public UIPropertyInput
+{
+protected: // Данные
+ /// Указатели на компоненты-приемники данных
+ std::vector<UItem*> Connectors;
+
+ /// Имена входов компнентов-приемников данных
+ std::vector<std::string> ConnectorInputNames;
+
+public:
+ /// Конструкторы и деструкторы
+ UIPropertyOutput(void);
+ virtual ~UIPropertyOutput(void);
+
+ /// Возвращает число подключенных входов
+ virtual size_t GetNumConnectors(void) const;
+
+ /// Возвращает указатель на компонент-приемник
+ virtual UConnector* GetConnector(int index);
+
+ /// Возвращает имя подключенного входа компонента-приемника
+ virtual std::string GetConnectorInputName(int index) const;
+
+ /// Возвращает указатель на свойство подключенного входа компонента-приемника
+ virtual UIPropertyInput* GetConnectorProperty(int index);
+
+ /// Обновить указатели свойств-входов
+ virtual void UpdateConnectedPointers(void);
+};
+
 
 // Класс управления общими свойствами
 class RDK_LIB_TYPE UIShare

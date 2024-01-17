@@ -100,24 +100,15 @@ bool CreateLink(const ULinkT<T> &link, bool forced_connect_same_item=false);
 // 'item' и коннектором 'connector'
 template<typename T>
 bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid, bool forced_connect_same_item=false);
-//virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-//virtual bool CreateLink(const NameT &item, int item_index,
-//						const NameT &connector, int connector_index=-1, bool forced_connect_same_item=false);
 virtual bool CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index=-1, bool forced_connect_same_item=false);
-//virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
-//						const NameT &connector, const NameT &connector_property_name);
 
 // Устанавливает все связи из массива 'linkslist'
 template<typename T>
 bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0);
-
-// Разрывает все связи со входом
-//template<typename T>
-//bool BreakLink(const ULinkSideT<T> &id);
 
 // Разрывает связь 'link'
 template<typename T>
@@ -127,12 +118,9 @@ bool BreakLink(const ULinkT<T> &link);
 // и коннектором 'connectorid'
 template<typename T>
 bool BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
-//virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-//virtual bool BreakLink(const NameT &itemname, int item_index,
-//						const NameT &connectorname, int connector_index);
 virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 						const NameT &connector, const NameT &connector_property_name, int connector_c_index=-1);
 
@@ -155,17 +143,10 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 // Разрывает все внутренние связи сети.
 virtual void BreakLinks(void);
 
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
-//virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
-//virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
-
 // Проверяет, существует ли заданная связь
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 
-//bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
-//bool CheckLink(const NameT &itemname, int item_index,
-//						const NameT &connectorname, int connector_index);
 bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
 bool CheckLink(const NameT &itemname,

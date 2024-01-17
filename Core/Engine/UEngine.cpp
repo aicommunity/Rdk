@@ -3360,9 +3360,9 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
     return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
 
    if(!new_name || strlen(new_name) == 0)
-    new_component->SetName(component->GetName());
+    new_component->Name = component->GetName();
    else
-    new_component->SetName(new_name);
+    new_component->Name = new_name;
 
    if(!owner->AddComponent(new_component))
    {
@@ -3374,7 +3374,7 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
    RDK::MVector<double,3> coord=new_component->GetCoord();
    coord(0)+=1;
    coord(1)+=1;
-   new_component->SetCoord(coord);
+   new_component->Coord = coord;
 
    AccessCache.clear();
    res=RDK_SUCCESS;
@@ -5637,7 +5637,7 @@ int UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
   {
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-   cont->SetTimeStep(value);
+   cont->TimeStep = value;
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6105,16 +6105,15 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 	return 0;
 
    // »щем указатель на выходные данные
-   UIProperty* output_property=0;
-   output_property=cont->FindProperty(property_name);
+   UEPtr<UIPropertyOutput> output_property=dynamic_pointer_cast<UIPropertyOutput>(cont->FindProperty(property_name));
    if(!output_property)
 	return 0;
 
-   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property->GetLanguageType() == typeid(MDVector<double>))
-   {
-	return output_property->GetPointer(0);
-   }
+   if(dynamic_pointer_cast<UVBaseDataProperty<MDMatrix<double>>>(output_property))
+    return &dynamic_pointer_cast<UVBaseDataProperty<MDMatrix<double>>>(output_property)->GetData();
+
+   if(dynamic_pointer_cast<UVBaseDataProperty<MDVector<double>>>(output_property))
+       return &dynamic_pointer_cast<UVBaseDataProperty<MDVector<double>>>(output_property)->GetData();
 
    return 0;
   }

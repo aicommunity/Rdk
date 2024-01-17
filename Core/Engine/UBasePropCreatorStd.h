@@ -51,13 +51,13 @@ void UBasePropCreatorStd::CreateProperty(RDK::USerStorageXML* serstorage, RDK::U
         CreatePropertyPair<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
     }
-
+/*
     // Для map
     if(type == "std::map")
     {
         CreatePropertyMap<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
-    }
+    }*/
 }
 
  // Функция для создания свойства типа list

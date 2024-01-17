@@ -59,20 +59,20 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
- : Id(0), Activity(false), MemoryMonitor("MemoryMonitor",this,&UContainer::SetMemoryMonitor),
-   Coord(0), PComponents(0), NumComponents(0), LastId(0)
+  : Name("Name", this, &UContainer::SetName)
+  , Id("Id", this, &UContainer::SetId)
+  , Activity("Activity", this, &UContainer::SetActivity)
+  , TimeStep("TimeStep", this, &UContainer::SetTimeStep)
+  , MaxCalculationDuration("MaxCalculationDuration", this, &UContainer::SetMaxCalculationDuration)
+  , CalculationDurationThreshold("CalculationDurationThreshold", this, &UContainer::SetCalculationDurationThreshold)
+  , Coord("Coord", this, &UContainer::SetCoord)
+  , StepDuration("StepDuration", this)
+  , DebugSysEventsMask("DebugSysEventsMask", this, &UContainer::SetDebugSysEventsMask)
+  , PComponents(0), NumComponents(0), LastId(0)
 
 {
- AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UContainer>(this,&UContainer::SetId,&UContainer::GetId));
- AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UContainer>(this,&UContainer::SetName,&UContainer::GetName));
- AddLookupProperty("TimeStep",ptParameter | pgSystem,new UVProperty<UTime,UContainer>(this,&UContainer::SetTimeStep,&UContainer::GetTimeStep));
- AddLookupProperty("Activity",ptParameter | pgPublic,new UVProperty<bool,UContainer>(this,&UContainer::SetActivity,&UContainer::GetActivity));
- AddLookupProperty("Coord",ptParameter | pgPublic | pgSystem,new UVProperty<RDK::MVector<double,3>,UContainer>(this,&UContainer::SetCoord,&UContainer::GetCoord));
- AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
- AddLookupProperty("CalculationDurationThreshold",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetCalculationDurationThreshold,&UContainer::GetCalculationDurationThreshold));
- AddLookupProperty("DebugSysEventsMask",ptParameter | pgPublic | pgSystem,new UVProperty<unsigned int,UContainer>(this,&UContainer::SetDebugSysEventsMask,&UContainer::GetDebugSysEventsMask));
-
- AddLookupProperty("StepDuration",ptState | pgPublic | pgSystem,new UVProperty<unsigned long long,UContainer>(this,&StepDuration));
+ Id = 0;
+ Activity = false;
 
  InitFlag=false;
 
@@ -442,13 +442,15 @@ void UContainer::SetPropertiesForDetailedLog(const std::string &str)
 // Координата компонента в пространстве сети
 const RDK::MVector<double,3>& UContainer::GetCoord(void) const
 {
- return Coord;
+ return Coord.v;
 }
 
 bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
 {
- if(Coord != value)
-  Coord=value;
+ if(Coord.v == value)
+  return true;
+
+ Coord.v =value;
 
  return true;
 }
@@ -620,12 +622,12 @@ NameT& UContainer::GenerateName(const NameT &prefix, NameT &namebuffer)
 // Устанавливает имя объекта.
 const NameT& UContainer::GetName(void) const
 {
- return Name;
+ return Name.v;
 }
 
 bool UContainer::SetName(const NameT &name)
 {
- if(Name == name)
+ if(Name.v == name)
   return true;
 
  if(name.empty())
@@ -641,7 +643,7 @@ bool UContainer::SetName(const NameT &name)
 
    GetOwner()->ModifyLookupComponent(Name, name);
   }
- Name=name;
+ Name.v=name;
  return true;
 }
 
@@ -829,7 +831,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name,
 // Устанавливает величину шага интегрирования
 const UTime& UContainer::GetTimeStep(void) const
 {
- return TimeStep;
+ return TimeStep.v;
 }
 
 bool UContainer::SetTimeStep(const UTime &timestep)
@@ -837,7 +839,7 @@ bool UContainer::SetTimeStep(const UTime &timestep)
  if(timestep <= 0)
   return false;
 
- TimeStep=timestep;
+ TimeStep.v=timestep;
 
  if(Owner)
   OwnerTimeStep=GetOwner()->TimeStep;
@@ -887,23 +889,23 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
 // Устанавливает флаг активности объекта
 const bool& UContainer::GetActivity(void) const
 {
- return Activity;
+ return Activity.v;
 }
 
 bool UContainer::SetActivity(const bool &activity)
 {
- if(Activity == activity)
-  return true;
+// if(Activity.v == activity)
+//  return true;
 
- Activity=true;
+ Activity.v=true;
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
-  (*comps)->SetActivity(activity);
+  (*comps)->Activity = activity;
 
 // if(activity)
 //  return Reset(); // !!! Заглушка. Возможно это не нужно!
 
- Activity=activity;
+ Activity.v=activity;
  StepDuration=0;
  InterstepsInterval=0;
 
@@ -914,16 +916,13 @@ bool UContainer::SetActivity(const bool &activity)
 }
 
 // Id объекта
-const UId& UContainer::GetId(void) const
+UId UContainer::GetId(void) const
 {
- return Id;
+ return Id.v;
 }
 
 bool UContainer::SetId(const UId &id)
 {
- if(Id == id)
-  return true;
-
  if(id == ForbiddenId)
   return true;// Заглушка!! Это хак! throwEForbiddenId(id);
 
@@ -938,7 +937,7 @@ bool UContainer::SetId(const UId &id)
 
    GetOwner()->SetLookupComponent(Name, id);
   }
- Id=id;
+ Id.v=id;
  return true;
 }
 
@@ -949,15 +948,12 @@ bool UContainer::SetId(const UId &id)
 /// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetMaxCalculationDuration(void) const
 {
- return MaxCalculationDuration;
+ return MaxCalculationDuration.v;
 }
 
 bool UContainer::SetMaxCalculationDuration(const long long &value)
 {
- if(MaxCalculationDuration == value)
-  return true;
-
- MaxCalculationDuration=value;
+ MaxCalculationDuration.v=value;
  return true;
 }
 
@@ -966,15 +962,12 @@ bool UContainer::SetMaxCalculationDuration(const long long &value)
 /// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetCalculationDurationThreshold(void) const
 {
- return CalculationDurationThreshold;
+ return CalculationDurationThreshold.v;
 }
 
 bool UContainer::SetCalculationDurationThreshold(const long long& value)
 {
- if(CalculationDurationThreshold == value)
-  return true;
-
- CalculationDurationThreshold=value;
+ CalculationDurationThreshold.v=value;
  return true;
 }
 
@@ -982,29 +975,14 @@ bool UContainer::SetCalculationDurationThreshold(const long long& value)
 /// Флаги переопределения настроек вывода детальной отладочной информации
 const unsigned int& UContainer::GetDebugSysEventsMask(void) const
 {
- return DebugSysEventsMask;
+ return DebugSysEventsMask.v;
 }
 
 bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
 {
- if(DebugSysEventsMask == value)
-  return true;
- DebugSysEventsMask=value;
+ DebugSysEventsMask.v=value;
  return true;
 }
-
-bool UContainer::SetMemoryMonitor(const bool &value)
-{
- if(value == true && Logger)
-  Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, GetFullName()+": Memory monitor enabled. Performance warning.");
- else
- {
-  MemoryUsageDiff=0;
-  MaxMemoryBlockDiff=0;
- }
- return true;
-}
-
 
 /// Объем потребленной памяти за шаг расчета.
 /// Может быть отрицательрным если память освобождалась.
@@ -1250,7 +1228,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
  NameT namebuffer;
 
  if(!CheckName(comp->Name))
-  comp->SetName(GenerateName(comp->Name,namebuffer));
+  comp->Name = GenerateName(comp->Name,namebuffer);
  UId id=GenerateId();
 
  bool res=true;
@@ -1266,7 +1244,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
   RDK_THROW(EComponentIdAlreadyExist(id));
 
  comp->SetLogger(Logger);
- comp->SetId(id);
+ comp->Id = id;
  comp->SetOwner(this);
 
  // Добавляем компонент в таблицу соответствий владельца
@@ -1356,7 +1334,7 @@ void UContainer::DelAllComponentsRaw(void)
 void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp)
 {
  comp->SetStaticFlag(true);
- comp->SetName(name);
+ comp->Name = name;
  StaticComponents[comp]=classname;
 
  const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
@@ -1480,7 +1458,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
    }
 
    comp->AddComponent(bufcomp,pointer);
-   bufcomp->SetId((*pcomponents)->Id);
+   bufcomp->Id = (*pcomponents)->Id.v;
    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
   }
  /*
@@ -1932,7 +1910,6 @@ bool UContainer::Default(void)
   try
   {
    BeforeDefault();
-   MemoryMonitor=false;
    Ready=false;
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->Default();
@@ -2240,10 +2217,8 @@ bool UContainer::Calculate(void)
 
    Build();
 
-   unsigned long long total_used_memory_before(0);
-   unsigned long long largest_free_block_before(0);
-   if(MemoryMonitor)
-	ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
+//   unsigned long long total_used_memory_before(0);
+//   unsigned long long largest_free_block_before(0);
 
    BeforeCalculate();
 
@@ -2270,7 +2245,7 @@ bool UContainer::Calculate(void)
 	 {
 	  ForceSkipComponentCalculation();
 	  std::string temp;
-	  LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration)+("] after ")+(*comps)->GetFullName(temp));
+      LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+("] after ")+(*comps)->GetFullName(temp));
      }
 	 ++i,++comps;
 	}
@@ -2321,15 +2296,14 @@ bool UContainer::Calculate(void)
 	{
 	 GetOwner()->ForceSkipComponentCalculation();
 	}
-    LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration)+"]");
+    LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+"]");
    }
 
    StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
 
    if((CalculationDurationThreshold >= 0) && (StepDuration > ULongTime(CalculationDurationThreshold)))
    {
-	std::string temp;
-    LogMessageEx(RDK_EX_WARNING, string("Performance warning: StepDuration>")+RDK::sntoa(CalculationDurationThreshold)+" ms");
+    LogMessageEx(RDK_EX_WARNING, string("Performance warning: StepDuration>")+RDK::sntoa(CalculationDurationThreshold.v)+" ms");
    }
 
    // Обрабатываем контроллеры
@@ -2344,21 +2318,6 @@ bool UContainer::Calculate(void)
 	}
    }
    AfterCalculate();
-   unsigned long long total_used_memory_after(0);
-   unsigned long long largest_free_block_after(0);
-   if(MemoryMonitor && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
-   {
-	MemoryUsageDiff=total_used_memory_before-total_used_memory_after;
-	MaxMemoryBlockDiff=largest_free_block_before-largest_free_block_after;
-	if(MemoryUsageDiff > 0 && MaxMemoryBlockDiff > 0)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(MemoryUsageDiff)+std::string(" bytes of RAM. Largest RAM block has been decreased to ")+sntoa(MaxMemoryBlockDiff)+" bytes");
-	else
-	if(MemoryUsageDiff > 0)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" eats ")+sntoa(MemoryUsageDiff)+std::string(" bytes of RAM."));
-	else
-	if(MaxMemoryBlockDiff > 0)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, GetFullName()+std::string(" Largest RAM block has been decreased to ")+sntoa(MaxMemoryBlockDiff)+" bytes");
-   }
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_OK);
   }
   catch(UException &exception)
@@ -3180,7 +3139,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  std::string line=str_type+variable.Property->GetName();
  result=line;
 
- if(type & ptInput && !variable.Property->IsConnected())
+ if(type & ptInput && !dynamic_pointer_cast<UIPropertyInput>(variable.Property)->IsConnected())
  {
   result=line+"[<Disconnected>]";
  }
@@ -3188,7 +3147,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
  {
   if(type & ptInput)
   {
-   line+=std::string("[")+variable.Property->GetItemFullName()+std::string(":")+variable.Property->GetItemOutputName()+"]";
+   //line+=std::string("[")+variable.Property->GetItemFullName()+std::string(":")+variable.Property->GetItemOutputName()+"]";
 
   }
   line+=" = ";

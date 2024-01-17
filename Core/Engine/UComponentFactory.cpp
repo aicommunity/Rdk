@@ -79,7 +79,7 @@ void UVirtualMethodFactory::FreeComponent()
  UEPtr<UComponent> UComponentFactoryMethod::New()
  {
   UEPtr<UComponent> obj = Method();
-  dynamic_pointer_cast<UContainer>(obj)->SetName(DefaultComponentName);
+  dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
   obj->SetStorage(Storage);
   obj->Default();
   return obj;
@@ -90,7 +90,7 @@ void UVirtualMethodFactory::FreeComponent()
   UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
   obj->SetStorage(Storage);
   obj->Default();
-  obj->SetName(DefaultComponentName);
+  obj->Name = DefaultComponentName;
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
  }

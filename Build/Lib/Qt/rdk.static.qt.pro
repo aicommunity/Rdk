@@ -135,6 +135,7 @@ HEADERS +=\
     ../../../Core/Engine/UBasePropCreatorTempl.h \
     ../../../Core/Engine/UBasePropCreatorVector.h \
     ../../../Core/Engine/UCreatorPropTemplate.h \
+  ../../../Core/Engine/UPropertyEndpoints.h \
         rdk.qt_global.h \
     ../../../Deploy/Include/rdk.qt.h \
     ../../../Core/Engine/Engine.h \
@@ -156,17 +157,12 @@ HEADERS +=\
     ../../../Core/Engine/UItem.h \
     ../../../Core/Engine/UItemData.h \
     ../../../Core/Engine/ULibrary.h \
-    ../../../Core/Engine/ULocalProperty.h \
     ../../../Core/Engine/ULogger.h \
     ../../../Core/Engine/UModule.h \
     ../../../Core/Engine/UNet.h \
     ../../../Core/Engine/UMockUNet.h \
     ../../../Core/Engine/UPointer.h \
     ../../../Core/Engine/UProperty.h \
-    ../../../Core/Engine/UPropertyInput.h \
-    ../../../Core/Engine/UPropertyIO.h \
-    ../../../Core/Engine/UPropertyOutput.h \
-    ../../../Core/Engine/UShare.h \
     ../../../Core/Engine/UStorage.h \
     ../../../Core/Engine/UComponentFactory.h \
     ../../../Core/Engine/UTime.h \

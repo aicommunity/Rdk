@@ -172,6 +172,12 @@ USerStorageXML& operator >> (USerStorageXML& storage, UELockVar<T> &data)
  return storage;
 }
 
+class UNet;
+
+USerStorageXML& operator << (USerStorageXML& storage, const RDK::UNet* data);
+
+USerStorageXML& operator >> (USerStorageXML& storage, RDK::UNet *data);
+
 }
 #endif
 

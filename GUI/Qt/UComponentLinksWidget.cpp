@@ -548,16 +548,19 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
                 QTreeWidgetItem* firstChildPropertyItem = new QTreeWidgetItem(firstTreeWidgetItemFather);
                 firstChildPropertyItem->setText(0, QString::fromLocal8Bit(i->first.c_str()));
                 firstChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
-                if(i->second.Property->IsConnected()) firstChildPropertyItem->setText(2, QString("connected"));
+                if(RDK::dynamic_pointer_cast<RDK::UIPropertyOutput>(i->second.Property)->IsConnected())
+                 firstChildPropertyItem->setText(2, QString("connected"));
             }
             if(secondTreeWidgetItemFather && i->second.CheckMask(secondTypeMask))
             {
                 QTreeWidgetItem* secondChildPropertyItem = new QTreeWidgetItem(secondTreeWidgetItemFather);
                 secondChildPropertyItem->setText(0, QString::fromLocal8Bit(i->first.c_str()));
                 secondChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
-                if(i->second.Property->GetIoType() & ipRange) secondChildPropertyItem->setText(2, QString("range"));
+                if(i->second.Property->GetIoType() & ipRange)
+                 secondChildPropertyItem->setText(2, QString("range"));
                 else
-                    if(i->second.Property->IsConnected()) secondChildPropertyItem->setText(2, QString("connected"));
+                 if(RDK::dynamic_pointer_cast<RDK::UIPropertyOutput>(i->second.Property)->IsConnected())
+                  secondChildPropertyItem->setText(2, QString("connected"));
             }
         }
     }

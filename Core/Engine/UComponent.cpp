@@ -14,8 +14,6 @@ See file license.txt for more information
 
 #include "UComponent.h"
 #include "UProperty.h"
-#include "ULocalProperty.h"
-#include "UShare.h"
 #include "UStorage.h"
 #include "UEnvironment.h"
 #include "UComponentDescription.h"

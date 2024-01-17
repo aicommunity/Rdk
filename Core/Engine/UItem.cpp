@@ -326,7 +326,7 @@ UItem::~UItem(void)
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
-void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const
+void UItem::FindOutputProperty(const NameT &item_property_name, UIPropertyOutput* &property) const
 {
  // Ищем указатель на выходные данные
  property=0;
@@ -344,13 +344,13 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
 
  if(I->second.Type & ptOutput)
  {
-  property=I->second.Property.Get();
+  property=dynamic_cast<UIPropertyOutput*>(I->second.Property.Get());
  }
 }
 
 
 /// Возвращает указатель на свойство подключенного входа компонента-приемника
-void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UIProperty* &property) const
+void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UIPropertyInput* &property) const
 {
  property=0;
  NameT connector_property_name;
@@ -376,7 +376,7 @@ void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UI
   {
    if(link.OutputName == item_property_name)
    {
-    property=vec[index]->FindProperty(link.InputName);
+          property=dynamic_pointer_cast<UIPropertyInput>(vec[index]->FindProperty(link.InputName));
     return;
    }
   }
@@ -408,10 +408,10 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
   return false;
 
  // Ищем указатель на выходные данные (они гарантированно существуют, мы это проверили выше)
- UIProperty* output_property=na->FindProperty(item_property_name);
+ UIPropertyOutput* output_property=dynamic_pointer_cast<UIPropertyOutput>(na->FindProperty(item_property_name));
 
  // Ищем указатель на входные данные (они гарантированно существуют, мы это проверили выше)
- UIProperty* input_property=FindProperty(connector_property_name);
+ UIPropertyInput* input_property=dynamic_pointer_cast<UIPropertyInput>(FindProperty(connector_property_name));
 
 
  int size=int(ConnectedItemList[connector_property_name].size());
@@ -420,32 +420,9 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
  else
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Fatal: c_index incorrect: ")+sntoa(c_index));
 
-  if(input_property->GetIoType() & ipData)
+  if(!input_property->SetPointer(c_index,output_property))
   {
-   if(input_property->GetIoType() & ipSingle)
-   {
-	  if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0)),output_property))
-	  {
-       LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer ipSingle fail"));
-      }
-   }
-   else
-   if(input_property->GetIoType() & ipRange)
-   {
-	if(output_property)
-	{
-	 if(!input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(0)),output_property))
-	 {
-      LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer ipRange fail"));
-     }
-	}
-   }
-  }
-  else
-  if(input_property->GetIoType() & ipComp)
-  {
-   if(!input_property->SetPointer(c_index,na, 0))
-    LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer ipComp fail"));
+   LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("SetPointer fail"));
   }
 
  return true;
