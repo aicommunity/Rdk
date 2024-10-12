@@ -18,7 +18,7 @@ contains(DEFINES, RDK_USE_SQL)
  QT += sql
 }
 
-VERSION = $$system(hg parents --template '{rev}')
+VERSION = 0 # $$system(hg parents --template '{rev}')
 DEFINES += RDK_CORE_VERSION=$$VERSION
 
 SOURCES += \

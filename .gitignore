@@ -1,5 +1,9 @@
 # glob syntax.
 syntax: glob
+.qmake.stash
+Makefile.*
+debug/
+release/
 .hg
 .svn
 __history
