@@ -1,0 +1,82 @@
+QMessageBox{
+    /* белый */
+
+    background: #FFFFFF;
+    border-radius: 8px;
+
+    height: 257px;
+    width: 544px;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 150%;
+
+    color: #002033;
+
+}
+
+QMessageBox QLabel{
+    background: #FFFFFF;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 150%;
+
+    color: #002033;
+}
+
+QPushButton#Yes{
+    width: 178px;
+    height: 60px;
+
+    /* bt/синий */
+
+    background: #0596FF;
+    border-radius: 8px;
+
+    /*text*/
+    /* I_17 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 100%;
+    color: #FFFFFF;
+}
+
+QPushButton#Cancel{
+    width: 140px;
+    height: 60px;
+
+    /* bt/заливка кнопки */
+
+    background: #EDF4FF;
+    /* bt/синий */
+
+    border: 1px solid #0596FF;
+    border-radius: 8px;
+    /*text*/
+    /* I_17 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 100%;
+
+    /* bt/синий */
+    color: #0596FF;
+}
+
+QPushButton:hover
+{
+    border-style: outset;
+    border-width: 2px;}
+
+QPushButton#Cancel:hover
+{
+    border-width: 3px;}

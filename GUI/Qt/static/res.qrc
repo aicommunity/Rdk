@@ -1,0 +1,26 @@
+<RCC>
+  <qresource prefix="/styles">
+    <file alias="main_style.css">styles/bw_style.css</file>
+    <file alias="log_style.css">styles/log_style.css</file>
+    <file alias="deactivate_style.css">styles/deactive_style.css</file>
+    <file alias="error_deactivate_style.css">styles/error_deactivate_style.css</file>
+    <file alias="change_camera_style.css">styles/change_camera_style.css</file>
+    <file alias="datetime_dialog_style.css">styles/datetime_dialog_style.css</file>
+  </qresource>
+  <qresource prefix="/images">
+    <file alias="disable_camera.png">images/disable_camera.png</file>
+    <file alias="main_widget.png">images/main_widget.png</file>
+    <file alias="all_camera_widget.png">images/all_camera_widget.png</file>
+    <file alias="filter_button_icon.png">images/filter_button_icon.png</file>
+    <file alias="unchecked.png">images/unchecked_small.png</file>
+    <file alias="checked.png">images/checked_small.png</file>
+    <file alias="unchecked_30.png">images/unchecked_30.png</file>
+    <file alias="checked_30.png">images/checked_30.png</file>
+    <file alias="info_icon.png">images/info_icon.png</file>
+    <file alias="warning_icon.png">images/warning_icon.png</file>
+    <file alias="critical_error_icon.png">images/critical_error_icon.png</file>
+    <file alias="datetime_icon.png">images/datetime_icon.png</file>
+    <file alias="show_pool.png">images/show_pool_mini.png</file>
+    <file alias="hide_pool.png">images/hide_pool_mini.png</file>
+  </qresource>
+</RCC>

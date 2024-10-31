@@ -1,0 +1,140 @@
+QWidget{
+    background: #FFFFFF;}
+
+/*  год, месяц   */
+#qt_calendar_yearbutton, #qt_calendar_monthbutton {
+    color: #002033;
+    }
+
+#qt_calendar_prevmonth, #qt_calendar_nextmonth {
+    qproperty-icon: none;
+    background-color: transparent; /* Цвет фона прозрачный */
+}
+
+#qt_calendar_prevmonth {
+    qproperty-text: "<";         /* Изменить текст кнопки  */
+    color: rgba(0, 57, 92, 0.8);
+}
+
+#qt_calendar_nextmonth {
+    qproperty-text: ">";
+    color: rgba(0, 57, 92, 0.8);
+}
+
+#qt_calendar_prevmonth:hover, #qt_calendar_nextmonth:hover {
+    background-color: rgba(225, 225, 225, 100);
+}
+
+#qt_calendar_prevmonth:pressed, #qt_calendar_nextmonth:pressed {
+    background-color: rgba(235, 235, 235, 100);
+}
+
+#qt_calendar_calendarview {
+    outline: 0px;                                 /* Удалить выделенную пунктирную рамку */
+    selection-background-color: #0596FF; /* Выберите цвет фона */
+    font-size: 16px;
+}
+
+CalendarWidget QToolButton QMenu {
+    background: #FFFFFF;
+}
+
+QLabel#hoursLabel, QLabel#minsLabel{
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 130%;
+
+    /* серый */
+
+    color: #65737D;
+    qproperty-alignment:AlignCenter;
+}
+
+QLabel#totalTimeLabel{
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 150%;
+    color: #002033;
+    qproperty-alignment:AlignCenter;
+}
+
+QListWidget{
+    border: 1px solid #FFFFFF;
+    background: #FFFFFF;
+
+    qproperty-alignment:AlignCenter;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+
+    /* текст */
+
+    color: #002033;
+}
+
+QListWidget::item {
+    height: 32px;
+    /* текст */
+}
+
+QListWidget::item::selected {
+    /* текст */
+    background-color: #0596FF;
+    color: #FFFFFF;
+}
+
+QPushButton#okPushButton{
+    width: 90px;
+    height: 32px;
+
+    /* bt/синий */
+
+    background: #0596FF;
+    border-radius: 4px;
+
+    /*text*/
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+
+    /* bt/синий */
+    text-align: center;
+    color: #FFFFFF;
+}
+
+QPushButton#cancelPushButton {
+    width: 90px;
+    height: 32px;
+
+    /* bt/заливка кнопки */
+    background: #F2FDFB;
+
+    border: 1px solid #0596FF;
+    border-radius: 4px;
+
+    /*text*/
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+
+    color: #0596FF;
+}
+
+QPushButton:hover
+{
+    border-style: outset;
+    border-width: 2px;}
+
+QPushButton#cancelPushButton:hover
+{
+    border-width: 3px;}

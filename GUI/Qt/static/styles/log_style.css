@@ -1,0 +1,215 @@
+
+QWidget, QVBoxLayout{
+    background-color: #FFFFFF;}
+
+
+
+QPushButton#find_button{
+    width: 90px;
+    height: 32px;
+
+    /* bt/синий */
+    background: #0596FF;
+    border-radius: 4px;
+
+    /*text*/
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+    /* identical to box height, or 17px */
+
+    /* bt/синий */
+    text-align: center;
+
+    /* bg/default */
+    color: #FFFFFF;
+}
+
+
+QPushButton#clear_search_parameters_button{
+    width: 90px;
+    height: 32px;
+
+    background: #FFFFFF;
+    border: 1px solid #FFFFFF;
+
+    /*text*/
+    /* I_14_desktop */
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+
+    /* bt/синий */
+    text-align: center;
+
+    /* bg/default */
+    color: rgba(0, 57, 92, 0.8);
+}
+
+QPushButton#filter_button
+{
+    height: 32px;
+    /* фон */
+
+    background: #F3F8FF;
+    /* bt/синий */
+
+    border: 1px solid #0596FF;
+    border-radius: 4px;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    color: #0596FF;
+}
+
+QPushButton:hover
+{
+    border-style: outset;
+    border-width: 2px;}
+
+QPushButton#filter_button:hover,
+QPushButton#first_datetime_button:hover,
+QPushButton#second_datetime_button:hover
+{
+    border-width: 3px;}
+
+QPushButton#clear_search_parameters_button:hover
+{
+    border: 1px solid #0596FF;
+    color: #0596FF;}
+
+QPushButton#first_datetime_button,
+QPushButton#second_datetime_button{
+    width: 32px;
+    height: 32px;
+
+    border: 1px solid rgba(0, 66, 105, 0.28);
+    border-radius: 4px;
+
+    qproperty-icon: url(:/images/datetime_icon.png);
+}
+
+QTextEdit, QDateTimeEdit
+{
+    height: 32px;
+    background: #FFFFFF;
+
+    border: 1px solid rgba(0, 66, 105, 0.28);
+    border-radius: 4px;
+
+    color: #002033;
+
+    /* I_14_desktop */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+}
+
+QDateTimeEdit:disabled{
+    color: #65737D;
+}
+
+QCheckBox {
+    spacing: 1px;
+}
+
+QCheckBox::indicator {
+    width: 25px;
+    height: 25px;
+}
+
+QCheckBox::indicator:unchecked {
+    image: url(:/images/unchecked_30.png);
+}
+
+QCheckBox::indicator:checked {
+    image: url(:/images/checked_30.png);
+}
+
+/* Menu */
+
+QMenu {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 66, 105, 0.28);
+}
+
+QMenu::item {
+    background-color: transparent;
+    /* текст */
+
+    color: #002033;
+}
+
+QMenu::item:selected {
+    /* фон */
+    background: #F3F8FF;
+}
+
+QMenu::item:disabled {
+    color: #65737D;
+}
+
+QMenu::indicator{
+    width: 30px;
+    height: 30px;
+}
+
+QMenu::indicator:non-exclusive:unchecked {
+    image: url(:/images/unchecked.png);
+}
+
+
+QMenu::indicator:non-exclusive:checked {
+    image: url(:/images/checked.png);
+}
+
+QMenu::indicator:exclusive:unchecked {
+    image: url(:/images/unchecked.png);
+}
+
+QMenu::indicator:exclusive:checked {
+    image: url(:/images/checked.png);
+}
+
+/*Table*/
+
+QTableWidget {
+    gridline-color: #fffff8;
+    border: 1px solid #fffff8;
+}
+
+QTableWidget::item {
+    padding-right: 10px;
+    border-style: none;
+    border-bottom: 1px solid rgba(0, 65, 102, 0.2);;
+    border-right: 1px solid #FFFFFF;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    color: #002033;
+}
+
+QHeaderView {
+    font-family: 'Inter';
+    font-weight: bold;
+    font-size: 12pt;
+    color: #002033;
+}
+
+QHeaderView::section {
+    background: #FFFFFF;
+    border-style: none;
+    border-bottom: 1px solid rgba(0, 65, 102, 0.2);;
+    border-right: 1px solid #FFFFFF;
+}

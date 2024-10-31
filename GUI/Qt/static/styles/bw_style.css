@@ -1,0 +1,251 @@
+
+QWidget{
+    background-color: #F3F8FF;
+/*    min-width: 800px;
+    min-height: 600px;
+    border-radius: 8px;*/
+}
+
+QMenuBar {
+min-width: 60px;
+min-height: 30px;
+
+/* control-default/bg */
+
+background: #FFFFFF;
+
+border: 1px solid #DBE7F0;
+border-radius: 8px;
+
+/*text*/
+/* I_17 */
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 17px;
+line-height: 100%;
+color: #002033;
+}
+
+QAction {
+min-width: 60px;
+min-height: 30px;
+
+/* control-default/bg */
+
+background: #FFFFFF;
+
+border: 1px solid #DBE7F0;
+border-radius: 8px;
+
+/*text*/
+/* I_17 */
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 17px;
+line-height: 100%;
+color: #002033;
+}
+
+QComboBox {
+    min-width: 80px;
+    min-height: 60px;
+    max-width: 80px;
+    max-height: 60px;
+
+    /* control-default/bg */
+
+    background: #FFFFFF;
+    /* bt/заблокированная кнопка */
+
+    border: 1px solid #DBE7F0;
+    border-radius: 8px;
+
+    /*text*/
+    /* I_17 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 100%;
+    color: #002033;
+}
+
+QGroupBox {
+    /* разделитель */
+    border: 2px solid #E4F0FA;
+    background-color: #F3F8FF;
+    margin-top: 2ex;
+    /* I_19 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 19px;
+    line-height: 100%;
+}
+
+QListWidget {
+min-width: 80px;
+min-height: 60px;
+
+/* control-default/bg */
+
+background: #FFFFFF;
+
+border: 1px solid #DBE7F0;
+border-radius: 8px;
+
+/*text*/
+/* I_17 */
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 17px;
+line-height: 100%;
+color: #002033;
+}
+
+QTreeWidget {
+min-width: 80px;
+min-height: 60px;
+
+/* control-default/bg */
+
+background: #FFFFFF;
+
+border: 1px solid #DBE7F0;
+border-radius: 8px;
+
+/*text*/
+/* I_17 */
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 17px;
+line-height: 100%;
+color: #002033;
+}
+
+QComboBox:editable {
+    /* control-default/bg */
+    color: #002033;
+    background: #FFFFFF;
+    border: 1px solid #DBE7F0;
+    border-radius: 8px;
+}
+
+QComboBox QAbstractItemView {
+    color: #002033;
+    border: 2px solid darkgray;
+    selection-background-color: lightgray;
+}
+
+QComboBox:on { /* shift the text when the popup opens */
+    color: #0078D2;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 0px;
+    margin: 0 5px;
+}
+
+QPushButton {
+    min-width: 40px;
+    height: 30px;
+    border-radius: 8px;
+
+background: #EDF4FF;
+/* bt/синий */
+border: 1px solid #0596FF;
+border-radius: 8px;
+
+width: 220px;
+height: 48px;
+
+/*text*/
+/* I_17 */
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 100%;
+/* identical to box height, or 17px */
+
+
+color: #0596FF;
+}
+
+QPushButton:disabled, QToolButton:disabled{
+    background: #DBE7F0;
+    /* el/disabled_text */
+
+    color: rgba(0, 32, 51, 0.26);
+    border: 1px solid #DBE7F0;
+    border-radius: 8px;
+}
+
+QPushButton:hover, QToolButton:hover
+{
+  border-style: outset;
+  border-width: 2px;
+}
+
+QLabel {
+    /* I_15 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 100%;
+    /* identical to box height, or 15px */
+
+    /* серый */
+
+    color: #65737D;
+   }
+
+QLabel#title_lable{
+    width: 118px;
+    height: 32px;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 100%;
+
+    color: #05A5FF;
+}
+
+QVBoxLayout#main_player_horizontal_layout{
+    qproperty-alignment:AlignCenter;
+    background: #07C296;
+}
+
+QToolButton
+{
+    background: #EDF4FF;
+    /* bt/синий */
+
+    border: 1px solid #0596FF;
+    border-radius: 8px;
+
+    min-width: 48px;
+    height: 30px;
+}
+
+QScrollArea#scrollArea{
+    background-color: #F3F8FF;
+    border: 1px solid #F3F8FF;
+}
