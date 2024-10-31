@@ -1,0 +1,92 @@
+QWidget#poll_cameras_widget{
+    background: #FFFFFF;
+    border-radius: 20px 20px 0px 0px;
+}
+
+QWidget#scrollAreaWidgetContents{
+    background: #FFFFFF;
+    border: 1px solid #FFFFFF;
+}
+
+QScrollArea#scrollArea{
+    background: #FFFFFF;
+    border: 1px solid #FFFFFF;
+}
+
+QLabel{
+    /* I_17 */
+    background: #FFFFFF;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 100%;
+
+    /* текст */
+    color: #002033;
+}
+
+QPushButton#save_push_button {
+    width: 150px;
+    height: 60px;
+
+    /* bt/синий */
+
+    background: #0596FF;
+    border-radius: 8px;
+
+    /*text*/
+    /* I_17 */
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 100%;
+
+    color: #FFFFFF;
+}
+
+QPushButton#cancel_push_button {
+    width: 150px;
+    height: 60px;
+
+    /* bt/заливка кнопки */
+    background: #EDF4FF;
+    /* bt/синий */
+
+    border: 1px solid #0596FF;
+    border-radius: 8px;
+
+    /* I_17 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 100%;
+    /* identical to box height, or 17px */
+
+    /* bt/синий */
+    color: #0596FF;
+}
+
+QPushButton:disabled{
+    /* bt/заблокированная кнопка */
+
+    background: #DBE7F0;
+    /* el/disabled_text */
+
+    color: rgba(0, 32, 51, 0.26);
+    border: 1px solid #DBE7F0;
+    border-radius: 8px;
+}
+
+QPushButton:hover
+{
+    border-style: outset;
+    border-width: 2px;}
+
+QPushButton#cancel_push_button:hover
+{
+    border-width: 3px;}

@@ -1,0 +1,46 @@
+QMessageBox{
+    background: #EB5757;
+    border-radius: 8px;
+
+    height: 257px;
+    width: 544px;
+}
+
+QMessageBox QLabel{
+    background: #EB5757;
+    border-radius: 8px;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 140%;
+    /* or 24px */
+
+
+    /* bg/default */
+
+    color: #FFFFFF;
+}
+
+QPushButton#Yes{
+    width: 178px;
+    height: 60px;
+
+    background: #EB5757;
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+
+    /*text*/
+    /* I_17 */
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 100%;
+    color: #FFFFFF;
+}
+
+QPushButton:hover
+{
+    border-width: 3px;}
