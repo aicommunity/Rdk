@@ -134,6 +134,17 @@ contains(DEFINES,RDK_USE_OPENCV) {
 }
 
 
+contains(DEFINES,RDK_USE_SDESOLVER) {
+
+windows {
+  INCLUDEPATH += $$(CUDA_PATH_V12_0)/include
+}
+
+unix {
+}
+
+}
+
 #Boost
 
 unix {

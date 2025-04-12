@@ -279,3 +279,21 @@ windows {
     QMAKE_CXXFLAGS += /bigobj
 }
 
+contains(DEFINES, RDK_USE_SDESOLVER)
+{
+CUDA_SOURCES += \
+    ../../../ThirdParty/sde-solver/src/OdeGpu.cu \
+    ../../../ThirdParty/sde-solver/src/OdeSolver.cu \
+    ../../../ThirdParty/sde-solver/src/OdeCpu.cu #\
+  #  ../../../ThirdParty/sde-solver/src/FileInput.cu
+
+#SOURCES +=
+
+HEADERS +=\
+    ../../../ThirdParty/sde-solver/include/OdeGpu.hpp  \
+    ../../../ThirdParty/sde-solver/include/OdeCpu.hpp \
+    ../../../ThirdParty/sde-solver/include/Ode.hpp \
+    ../../../ThirdParty/sde-solver/include/OdeSolver.hpp #\
+#    ../../../ThirdParty/sde-solver/include/FileInput.hpp
+}
+
