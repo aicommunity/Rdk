@@ -15,6 +15,10 @@ win32-msvc* {
 #    message("VC Compiler: "$${MSVC_COMPILER})
 }
 
+CONFIG += c++17
+
+DEFINES += NOMINMAX
+
 unix {
 QMAKE_CXXFLAGS += -Wno-misleading-indentation -Wno-deprecated-copy
 }
@@ -136,12 +140,20 @@ contains(DEFINES,RDK_USE_OPENCV) {
 
 contains(DEFINES,RDK_USE_SDESOLVER) {
 
+#CUDA_CXXFLAGS = -arch=sm_75
+CUDA_PATH = $$(CUDA_PATH_V12_8)
+CUDA_INC = $$CUDA_PATH/include
+CUDA_LIB = $$CUDA_PATH/lib/x64
+
 windows {
-  INCLUDEPATH += $$(CUDA_PATH_V12_0)/include
+  INCLUDEPATH += $$CUDA_INC
+  SDESOLVER_WIN_LINKER_LINE += -L$$CUDA_LIB -lcuda -lcudart
 }
 
 unix {
 }
+
+CUDA_NVCC = $$CUDA_PATH/bin/nvcc
 
 }
 
