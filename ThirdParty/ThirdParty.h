@@ -27,7 +27,7 @@
 #include "jpeg/JpegIntegration.h"
 
 #ifdef RDK_USE_SDESOLVER
-#include "sde-solver/include/OdeGpu.hpp"
+//#include "sde-solver/include/OdeGpu.hpp"
 #include "sde-solver/include/OdeCpu.hpp"
 #include "sde-solver/include/Ode.hpp"
 #include "sde-solver/include/OdeSolver.hpp"
