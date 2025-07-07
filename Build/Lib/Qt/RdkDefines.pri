@@ -15,7 +15,7 @@ win32-msvc* {
 #    message("VC Compiler: "$${MSVC_COMPILER})
 }
 
-CONFIG += c++17
+CONFIG += c++20
 
 DEFINES += NOMINMAX
 

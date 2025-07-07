@@ -7,6 +7,8 @@
 QT       -= gui
 QT       += network
 
+CONFIG += c++20
+
 TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
@@ -281,66 +283,35 @@ windows {
 
 contains(DEFINES, RDK_USE_SDESOLVER)
 {
-CONFIG += cuda
-INCLUDEPATH += $$CUDA_PATH/include
-LIBS += -L$$CUDA_PATH/lib/x64 -lcudart
+ unix {
+  CONFIG += cuda
+  INCLUDEPATH += $$CUDA_PATH/include
+  LIBS += -L$$CUDA_PATH/lib/x64 -lcudart
+  QMAKE_CXXFLAGS += "-D__CUDACC__"
 
-#SOURCES += \
-#    ../../../ThirdParty/sde-solver/src/OdeGpu.cu \
-#    ../../../ThirdParty/sde-solver/src/OdeSolver.cu \
-#    ../../../ThirdParty/sde-solver/src/OdeCpu.cu
-
-CUDA_SOURCES += \
+  CUDA_SOURCES += \
     ../../../ThirdParty/sde-solver/src/OdeGpu.cu \
-    ../../../ThirdParty/sde-solver/src/OdeSolver.cu \
-    ../../../ThirdParty/sde-solver/src/OdeCpu.cu #\
-  #  ../../../ThirdParty/sde-solver/src/FileInput.cu
+    ../../../ThirdParty/sde-solver/src/OdeSolverGpu.cu \
+    ../../../ThirdParty/sde-solver/src/FileInput.cu
+
+  HEADERS +=\
+     ../../../ThirdParty/sde-solver/include/OdeGpu.hpp \
+     ../../../ThirdParty/sde-solver/include/OdeSolverGpu.hpp
+}
+
+SOURCES += \
+    ../../../ThirdParty/sde-solver/src/OdeSolverFactory.cpp \
+    ../../../ThirdParty/sde-solver/src/OdeSolverCpu.cpp \
+    ../../../ThirdParty/sde-solver/src/OdeCpu.cpp
 
 HEADERS +=\
-    ../../../ThirdParty/sde-solver/include/OdeGpu.hpp  \
-    ../../../ThirdParty/sde-solver/include/OdeCpu.hpp \
-    ../../../ThirdParty/sde-solver/include/Ode.hpp \
-    ../../../ThirdParty/sde-solver/include/OdeSolver.hpp #\
-#    ../../../ThirdParty/sde-solver/include/FileInput.hpp
-
-#QMAKE_CXXFLAGS += -Xcompiler "-fPIC"
-#QMAKE_CXXFLAGS += -Xcompiler "-D__CUDACC__"
-QMAKE_CXXFLAGS += "-D__CUDACC__"
-
-#CUDA_ARCH = sm_75
-#DESTDIR     = $$PWD
-#OBJECTS_DIR = $$DESTDIR/obj
-#CUDA_OBJECTS_DIR = $$DESTDIR/cuda_obj
-
-#MSVCRT_LINK_FLAG_DEBUG = "/MDd"
-
-#MSVCRT_LINK_FLAG_RELEASE = "/MD"
-
-#QMAKE_CXXFLAGS += -Xcompiler "-fPIC"
-
-# Обработка .cu файлов с помощью nvcc
-#QMAKE_CXXFLAGS += -Xcompiler "-D__CUDACC__"
-
-#CONFIG(debug, debug|release) {
-#    # Debug mode
-#    cuda_d.input = $$CUDA_SOURCES
-#    cuda_d.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}.obj
-#    cuda_d.commands = $$CUDA_NVCC -D_DEBUG -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME} -I$$CUDA_INC -arch=$$CUDA_ARCH -Xcompiler $$MSVCRT_LINK_FLAG_DEBUG
-#    cuda_d.dependency_type = TYPE_C
-#    QMAKE_EXTRA_COMPILERS += cuda_d
-#}
-#else {
-#    # Release mode
-#    cuda.input = $$CUDA_SOURCES
-#    cuda.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}.obj
-#    cuda.commands = $$CUDA_NVCC -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME} -I$$CUDA_INC -arch=$$CUDA_ARCH -Xcompiler $$MSVCRT_LINK_FLAG_RELEASE
-#    cuda.dependency_type = TYPE_C
-#    QMAKE_EXTRA_COMPILERS += cuda
-#}
-
-#QMAKE_LFLAGS += -L$$CUDA_LIB -lcudart
-
-
+     ../../../ThirdParty/sde-solver/include/OdeCpu.hpp \
+     ../../../ThirdParty/sde-solver/include/Ode.hpp \
+     ../../../ThirdParty/sde-solver/include/FileInput.hpp \
+     ../../../ThirdParty/sde-solver/include/OdeSolverFactory.hpp \
+     ../../../ThirdParty/sde-solver/include/OdeSolverCpu.hpp \
+     ../../../ThirdParty/sde-solver/include/OdeSolverBase.hpp \
+     ../../../ThirdParty/sde-solver/include/SdeSolver.hpp
 
 }
 
