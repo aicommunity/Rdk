@@ -7,6 +7,8 @@
 QT       -= gui
 QT       += network
 
+CONFIG += c++20
+
 TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
@@ -282,7 +284,6 @@ windows {
 contains(DEFINES, RDK_USE_SDESOLVER)
 {
 HEADERS +=\
-    ../../../ThirdParty/sde-solver/include/OdeGpu.hpp  \
     ../../../ThirdParty/sde-solver/include/OdeCpu.hpp \
     ../../../ThirdParty/sde-solver/include/Ode.hpp \
     ../../../ThirdParty/sde-solver/include/OdeSolver.hpp
