@@ -15,6 +15,10 @@ win32-msvc* {
 #    message("VC Compiler: "$${MSVC_COMPILER})
 }
 
+CONFIG += c++20
+
+DEFINES += NOMINMAX
+
 unix {
 QMAKE_CXXFLAGS += -Wno-misleading-indentation -Wno-deprecated-copy
 }
@@ -132,7 +136,6 @@ contains(DEFINES,RDK_USE_OPENCV) {
         }
     }
 }
-
 
 #Boost
 

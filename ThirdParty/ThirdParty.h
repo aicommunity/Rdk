@@ -25,3 +25,10 @@
 #endif
 
 #include "jpeg/JpegIntegration.h"
+
+#ifdef RDK_USE_ODESOLVER
+#include "ode-solver/include/OdeCpu.hpp"
+#include "ode-solver/include/Ode.hpp"
+#include "ode-solver/include/OdeSolverBase.hpp"
+#include "ode-solver/include/OdeSolverFactory.hpp"
+#endif

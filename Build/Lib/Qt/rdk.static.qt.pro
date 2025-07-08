@@ -7,6 +7,8 @@
 QT       -= gui
 QT       += network
 
+CONFIG += c++20
+
 TARGET = rdk.static.qt
 TEMPLATE = lib
 CONFIG += staticlib
@@ -277,5 +279,13 @@ SOURCES +=     ../../../Deploy/Include/rdk_exceptions.win.cpp
 windows {
     DESTDIR = $$PWD/../../../../Bin/Platform/Win/Lib.Qt
     QMAKE_CXXFLAGS += /bigobj
+}
+
+contains(DEFINES, RDK_USE_ODESOLVER)
+{
+HEADERS +=\
+    ../../../ThirdParty/ode-solver/include/OdeCpu.hpp \
+    ../../../ThirdParty/ode-solver/include/Ode.hpp \
+    ../../../ThirdParty/ode-solver/include/OdeSolverBase.hpp
 }
 
