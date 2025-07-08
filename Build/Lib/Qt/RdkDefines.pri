@@ -137,19 +137,6 @@ contains(DEFINES,RDK_USE_OPENCV) {
     }
 }
 
-
-contains(DEFINES,RDK_USE_SDESOLVER) {
-
-windows {
-    SDESOLVER_WIN_LINKER_LINE += -L$$PWD/../../../../Rdk/ThirdParty/sde-solver/build/ -lsde-solver
-}
-
-unix {
-    SDESOLVER_UNIX_LINKER_LINE += -L$$PWD/../../../../Rdk/ThirdParty/sde-solver/build/ -lsde-solver
-}
-
-}
-
 #Boost
 
 unix {

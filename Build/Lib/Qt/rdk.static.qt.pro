@@ -281,11 +281,11 @@ windows {
     QMAKE_CXXFLAGS += /bigobj
 }
 
-contains(DEFINES, RDK_USE_SDESOLVER)
+contains(DEFINES, RDK_USE_ODESOLVER)
 {
 HEADERS +=\
-    ../../../ThirdParty/sde-solver/include/OdeCpu.hpp \
-    ../../../ThirdParty/sde-solver/include/Ode.hpp \
-    ../../../ThirdParty/sde-solver/include/OdeSolver.hpp
+    ../../../ThirdParty/ode-solver/include/OdeCpu.hpp \
+    ../../../ThirdParty/ode-solver/include/Ode.hpp \
+    ../../../ThirdParty/ode-solver/include/OdeSolverBase.hpp
 }
 
