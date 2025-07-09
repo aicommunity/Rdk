@@ -435,6 +435,8 @@ virtual void SetUpdateTime(ULongTime value)=0;
 virtual void ResetUpdateTime(void)=0;
 // --------------------------
 
+virtual ~UIProperty() = 0;
+
 public: // Исключения
 // Обращение к неинициализированным данным свойства
 struct EPropertyError: public EError
