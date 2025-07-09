@@ -31,6 +31,12 @@ See file license.txt for more information
 
 namespace RDK {
 
+UIPointer::~UIPointer()
+{
+
+}
+
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

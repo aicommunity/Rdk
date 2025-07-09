@@ -21,6 +21,12 @@ See file license.txt for more information
 
 namespace RDK {
 
+UIProperty::~UIProperty()
+{
+
+}
+
+
 /// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
 //UELockVar<UTimeControl> UComponent::DummyTime;
 

@@ -28,6 +28,7 @@ class RDK_LIB_TYPE UIPointer
 protected: // Данные
 
 public:
+virtual ~UIPointer();
 virtual UEPtr<UContainer> const Get(void) const=0;
 
 virtual void Set(UEPtr<UContainer> source)=0;
