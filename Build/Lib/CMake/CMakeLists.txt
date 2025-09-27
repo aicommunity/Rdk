@@ -1,203 +1,132 @@
-cmake_minimum_required (VERSION 2.8)
-project(Rdk)
+cmake_minimum_required(VERSION 3.16)
 
-# Put all the archive targets into ${PROJECT_NAME}/Lib/
+project(rdk_static_qt LANGUAGES CXX)
 
-set(A_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../Bin/Platform/Linux/Libs/")
-file(MAKE_DIRECTORY ${A_OUTPUT_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${A_OUTPUT_DIR})
+set(TARGET_NAME rdk.static.qt)
 
-#Build Rdk options
-option(BUILD_APPLICATION "Build Rdk with Application" OFF)
+add_library(${TARGET_NAME} STATIC)
 
-# Source files
+target_include_directories(${TARGET_NAME}
+  PUBLIC
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include
+    ${CMAKE_SOURCE_DIR}/Rdk/Core
+    ${CMAKE_SOURCE_DIR}/Rdk/ThirdParty
+)
 
-# Rdk/Core directory
-set(C_ENGINE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Engine/")
-set(C_ENGINE_FILES
-	"${C_ENGINE_SOURCE_DIR}/UEngine.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UContainer.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UPropertyInput.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UADItem.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UItem.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UStorage.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UComponent.cpp"
-	"${C_ENGINE_SOURCE_DIR}/ULocalProperty.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UEnvironment.cpp"
-	"${C_ENGINE_SOURCE_DIR}/ULogger.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UController.cpp"
-	"${C_ENGINE_SOURCE_DIR}/ULibrary.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UModule.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UXMLEnvSerialize.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UConnector.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UProperty.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UPropertyIO.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UPropertyOutput.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UTime.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UAModel.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UContainerDescription.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UNet.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UBinaryEnvSerialize.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UEPtr.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UELockPtr.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UEnvException.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UEnvSupport.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UELockVar.cpp"
-	"${C_ENGINE_SOURCE_DIR}/Engine.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UPointer.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UComponentDescription.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UShare.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UItemData.cpp"
-	"${C_ENGINE_SOURCE_DIR}/ULoggerEnv.cpp"
-	"${C_ENGINE_SOURCE_DIR}/UComponentFactory.cpp"
-		)
-set(C_GRAPHICS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Graphics/")
-set(C_GRAPHICS_FILES
-	"${C_GRAPHICS_SOURCE_DIR}/UBitmapVector.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UGraphicsIO.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/Gui.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UGraphicsBinarySerialize.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/Kernel.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/Graphics.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UGraphics.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UDrawEngine.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UGraphicsXMLSerialize.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UFont.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UBitmap.cpp"
-	"${C_GRAPHICS_SOURCE_DIR}/UAGraphics.cpp")
-set(C_MATH_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Math/")
-set(C_MATH_FILES
-	"${C_MATH_SOURCE_DIR}/MCorrelation.cpp"
-	"${C_MATH_SOURCE_DIR}/MGraphics.cpp"
-	"${C_MATH_SOURCE_DIR}/MVector.cpp"
-	"${C_MATH_SOURCE_DIR}/MKalmanFilter.cpp"
-	"${C_MATH_SOURCE_DIR}/MMatrixBase.cpp"
-	"${C_MATH_SOURCE_DIR}/UMath_lite.cpp"
-	"${C_MATH_SOURCE_DIR}/MUBinarySerialize.cpp"
-	"${C_MATH_SOURCE_DIR}/MDKalmanFilter.cpp"
-	"${C_MATH_SOURCE_DIR}/MUIOStream.cpp"
-	"${C_MATH_SOURCE_DIR}/MGeometry.cpp"
-	"${C_MATH_SOURCE_DIR}/MMatrix.cpp"
-	"${C_MATH_SOURCE_DIR}/MCamera.cpp"
-	"${C_MATH_SOURCE_DIR}/UMath.cpp"
-	"${C_MATH_SOURCE_DIR}/MUXMLSerialize.cpp")
-set(C_SERIALIZE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Serialize/")
-set(C_SERIALIZE_FILES
-	"${C_SERIALIZE_SOURCE_DIR}/UBinaryStdSerialize.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/UIOStream.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/UXMLStdSerialize.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/Serialize.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/Serialize_lite.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/USerStorageBinary.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/USerStorage.cpp"
-	"${C_SERIALIZE_SOURCE_DIR}/USerStorageXML.cpp")
-set(C_SYSTEM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/System/")
+# Источники взяты из rdk.static.qt.pro (сокращённый набор начально)
+file(GLOB RDK_STATIC_SOURCES
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Engine/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Graphics/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Math/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Serialize/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/System/Qt/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/System/Gcc/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/System/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Utilities/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Application/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Application/Qt/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/ThirdParty/xmlParser/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/ThirdParty/jpeg/*.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/ThirdParty/ThirdParty.cpp
+)
+
+# Добавляем реализации C-API и инициализации RDK (нужны NeuroModeler)
+list(APPEND RDK_STATIC_SOURCES
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_cpp_init.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_engine_support.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_version.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_new.cpp
+)
+
+# Добавляем deploy-файлы из .pro
+list(APPEND RDK_STATIC_SOURCES
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk.qt.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/myrdk.qt.cpp
+)
+
+# Добавляем Application файлы из .pro
+list(APPEND RDK_STATIC_SOURCES
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Application/UProjectDeployer.cpp
+)
+
+# Добавляем Gcc-специфичные файлы для Linux
 if(UNIX)
-	set(C_SYSTEM_FILES
-		"${C_SYSTEM_SOURCE_DIR}/Gcc/pevents.cpp"
-		"${C_SYSTEM_SOURCE_DIR}/Gcc/UGenericMutex.gcc.cpp"
-		"${C_SYSTEM_SOURCE_DIR}/Gcc/USharedMemoryLoader.gcc.cpp"
-		"${C_SYSTEM_SOURCE_DIR}/Gcc/rdk_system.gcc.cpp"
-		"${C_SYSTEM_SOURCE_DIR}/UGenericMutex.cpp")
-endif(UNIX)
-if(WIN32)
-	set(C_SYSTEM_FILES
-			"${C_SYSTEM_SOURCE_DIR}/Win/UDLLLoader.win.cpp"
-			"${C_SYSTEM_SOURCE_DIR}/Win/UGenericMutex.win.cpp"
-			"${C_SYSTEM_SOURCE_DIR}/Win/USharedMemoryLoader.win.cpp"
-			"${C_SYSTEM_SOURCE_DIR}/Win/rdk_system.win.cpp"
-			"${C_SYSTEM_SOURCE_DIR}/UGenericMutex.cpp")
-endif(WIN32)
-set(C_UTILITIES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Utilities/")
-set(C_UTILITIES_FILES
-	"${C_UTILITIES_SOURCE_DIR}/UIniFile.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/UTree.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/Utilities_lite.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/UTransferPacket.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/Utilities.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/UPtr.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/UTimeStamp.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/USupport.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/URegistry.cpp"
-	"${C_UTILITIES_SOURCE_DIR}/UException.cpp")
-# Rdk/Deploy directory
-set(DEPLOY_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Deploy/Include/")
-set(DEPLOY_FILES
-	"${DEPLOY_SOURCE_DIR}/myrdk.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk_cpp_initdll.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk_engine_support.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk_exceptions.gcc.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk_new.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk_rpc.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk.gcc.cpp"
-	"${DEPLOY_SOURCE_DIR}/rdk_version.cpp")
-# Rdk/ThirdParty directory
-set(THIRDPARTY_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../ThirdParty/")
-set(THIRDPARTY_FILES
-	"${THIRDPARTY_SOURCE_DIR}/xmlParser/xmlParser.cpp"
-	"${THIRDPARTY_SOURCE_DIR}/jpeg/JpegIntegration.cpp"
-	"${THIRDPARTY_SOURCE_DIR}/ThirdParty.cpp")
-
-# Rdk/Application
-set(APPLICATION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Core/Application/")
-set(APPLICATION_SOURCE_FILES
-	"${APPLICATION_SOURCE_DIR}/UAppCore.cpp"
-	"${APPLICATION_SOURCE_DIR}/UApplication.cpp"
-	"${APPLICATION_SOURCE_DIR}/UBroadcasterInterface.cpp"
-	"${APPLICATION_SOURCE_DIR}/UChannelProfiler.cpp"
-	"${APPLICATION_SOURCE_DIR}/UEngineControl.cpp"
-	"${APPLICATION_SOURCE_DIR}/UEngineControlThread.cpp"
-	"${APPLICATION_SOURCE_DIR}/UEngineStateThread.cpp"
-	"${APPLICATION_SOURCE_DIR}/UIVisualController.cpp"
-	"${APPLICATION_SOURCE_DIR}/UProject.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcCommand.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcCommandInternal.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcDecoder.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcDecoderCommon.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcDecoderInternal.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcDispatcher.cpp"
-	"${APPLICATION_SOURCE_DIR}/URpcDispatcherQueues.cpp"
-	"${APPLICATION_SOURCE_DIR}/UServerControl.cpp"
-	"${APPLICATION_SOURCE_DIR}/UServerTransport.cpp"
-	"${APPLICATION_SOURCE_DIR}/UServerTransportTcp.cpp"
-	)
-	
-# Put all the files together
-set(SOURCE_FILES
-	${C_ENGINE_FILES}
-	${C_GRAPHICS_FILES}
-	${C_MATH_FILES}
-	${C_SERIALIZE_FILES}
-	${C_SYSTEM_FILES}
-	${C_UTILITIES_FILES}
-	${DEPLOY_FILES}
-	${THIRDPARTY_FILES}
-	)
-if(BUILD_APPLICATION)
-	List(APPEND SOURCE_FILES ${APPLICATION_SOURCE_FILES})
+  list(APPEND RDK_STATIC_SOURCES
+    ${CMAKE_SOURCE_DIR}/Rdk/Core/System/Gcc/pevents.cpp
+  )
 endif()
-# Headers
-	
-include_directories(
-	${C_ENGINE_SOURCE_DIR}
-	${C_GRAPHICS_SOURCE_DIR}
-	${C_MATH_SOURCE_DIR}
-	${C_SERIALIZE_SOURCE_DIR}
-	${C_SYSTEM_SOURCE_DIR}
-	${C_UTILITIES_SOURCE_DIR}
-	${DEPLOY_SOURCE_DIR}
-	${THIRDPARTY_SOURCE_DIR}
-	)
-if(BUILD_APPLICATION)
-	List(APPEND include_directories ${APPLICATION_SOURCE_DIR})
-endif()
-# Create target file
 
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+# Исключения совместимости (Linux):
+# 1) rdk_init.cpp держим исключённым, чтобы избежать дублей с rdk_cpp_init.cpp
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Deploy/Include/rdk_init\\.cpp$")
+# 2) Исключаем файлы, зависящие от отсутствующих заголовков в текущей конфигурации
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/ULocalProperty\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyInput\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyOutput\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UShare\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyIO\\.cpp$")
+# 3) Исключаем HTTP транспорт и специфичный Qt контрол до проверки зависимостей
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/UServerTransportHttp\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UEngineControlQt\\.cpp$")
+# Подключаем Qt-зависимый деплойер всегда (NeuroModeler его использует)
+# (ранее был условным по RDK_USE_SQL)
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UProjectDeployerQt\\.cpp$")
+list(APPEND RDK_STATIC_SOURCES
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Application/Qt/UProjectDeployerQt.cpp
+)
+# 4) Используем Qt-вариант системного модуля, исключаем gcc-вариант
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/rdk_system\\.gcc\\.cpp$")
 
-if (DEFINED CMAKE_VERSION AND NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.9")
-	set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+# Добавляем только необходимые deploy-файлы под Unix
+if (UNIX)
+  list(APPEND RDK_STATIC_SOURCES
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_exceptions.ansi.cpp
+  )
 endif()
+
+target_sources(${TARGET_NAME}
+  PRIVATE
+    ${RDK_STATIC_SOURCES}
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_rpc.cpp
+)
+
+target_compile_definitions(${TARGET_NAME}
+  PUBLIC
+    RDK_QT
+    LIBRDK_LIBRARY_EXPORT
+    RDK_LIB_TYPE=
+    RDK_CALL=
+    RDK_APP_NAME=\"RDK\"
+    RDK_USE_SQL
+)
+
+# Qt зависимости для модулей, используемых в Core/Application
+find_package(Qt5 REQUIRED COMPONENTS Core Network)
+target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Network)
+
+# QtSql требуется UProjectDeployerQt
+find_package(Qt5 REQUIRED COMPONENTS Sql)
+target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Sql)
+find_package(Boost QUIET COMPONENTS program_options)
+if(Boost_FOUND)
+  target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
+endif()
+
+# Boost.Thread для потоков в Core/Application
+find_package(Boost QUIET COMPONENTS thread)
+if(Boost_FOUND)
+  target_link_libraries(${TARGET_NAME} PUBLIC Boost::thread)
+endif()
+
+# rdk_rpc.cpp добавлен напрямую в target_sources выше
+
+find_package(Threads REQUIRED)
+target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
+
+if (RDK_USE_OPENCV AND OpenCV_FOUND)
+  target_link_libraries(${TARGET_NAME} PUBLIC ${OpenCV_LIBS})
+endif()
+
+# Вывод артефактов уже задан глобально в корневом CMakeLists
+
+ 
