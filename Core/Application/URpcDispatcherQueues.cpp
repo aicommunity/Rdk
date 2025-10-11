@@ -5,11 +5,12 @@
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 //#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "../../Deploy/Include/rdk_rpc.h"
+#include <mutex>
 
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 URpcDispatcherQueues::URpcDispatcherQueues(void)
 {
@@ -23,29 +24,29 @@ URpcDispatcherQueues::~URpcDispatcherQueues(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Добавление команды в очередь на обработку
-/// Записывает Id команды в cmd_id
-/// в случае неудачи возвращает false
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Id пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ cmd_id
+/// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false
 bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command, unsigned &cmd_id)
 {
  if(!command)
   return false;
  if(!command->DecodeBasicData())
  {
-  // Ошибка декодирования
+  // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   return false;
  }
 
- boost::mutex::scoped_lock lock(CommandQueueMutex);
+ std::lock_guard<std::mutex> lock(CommandQueueMutex);
  CommandQueue.push_back(command);
  cmd_id=command->CmdId;
  return true;
 }
 
-/// Добавление команды в очередь на обработку
-/// в случае неудачи возвращает false
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false
 bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
 {
  unsigned cmd_id(0);
@@ -54,11 +55,11 @@ bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
 
 
 
-/// Возвращает указатель на команду по ее Id в очереди ответов
-/// Возвращаемый указатель равен нулю, если команды нет в очереди
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ Id пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
 {
- boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
+ std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
  std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
 
  for(;I != ProcessedCommandQueue.end();++I)
@@ -69,11 +70,11 @@ UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
  return 0;
 }
 
-/// Удаляет команду из очереди ответов по ее идентификатору
-/// Возвращает true если команда была в очереди
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool URpcDispatcherQueues::PopProcessedCommand(unsigned cmd_id)
 {
- boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
+ std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
  std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
 
  for(;I != ProcessedCommandQueue.end();++I)
@@ -87,11 +88,11 @@ bool URpcDispatcherQueues::PopProcessedCommand(unsigned cmd_id)
  return false;
 }
 
-/// Возвращает указатель на самый старый ответ
-/// и удаляет его из очереди
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+/// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
 {
- boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
+ std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
  UEPtr<URpcCommand> result;
 
  if(ProcessedCommandQueue.begin() != ProcessedCommandQueue.end())
@@ -102,10 +103,10 @@ UEPtr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
  return result;
 }
 
-/// Возвращает true если очередь ответов не пуста
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool URpcDispatcherQueues::CheckProcessedCommand(void)
 {
- boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
+ std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
 
  if(ProcessedCommandQueue.begin() != ProcessedCommandQueue.end())
   return true;
@@ -114,30 +115,30 @@ bool URpcDispatcherQueues::CheckProcessedCommand(void)
 }
 
 
-/// Очищает очередь
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void URpcDispatcherQueues::ClearQueue(void)
 {
- boost::mutex::scoped_lock lock(CommandQueueMutex);
+ std::lock_guard<std::mutex> lock(CommandQueueMutex);
  CommandQueue.clear();
 }
 
-/// Очищает очередь ожидающих отправки ответов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void URpcDispatcherQueues::ClearProcessedQueue(void)
 {
- boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
+ std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
  ProcessedCommandQueue.clear();
 }
 // --------------------------
 
 
 // --------------------------
-// Вспомогательные методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Возвращает следующую на очереди команду из CommandQueue и удаляет ее из очереди
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ CommandQueue пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
 {
  UEPtr<URpcCommand> result;
- boost::mutex::scoped_lock lock(CommandQueueMutex);
+ std::lock_guard<std::mutex> lock(CommandQueueMutex);
  if(CommandQueue.begin() != CommandQueue.end())
  {
   result=*(CommandQueue.begin());
@@ -146,10 +147,10 @@ UEPtr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
  return result;
 }
 
-/// Кладет команду в очередь ответов
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void URpcDispatcherQueues::PushToProcessedQueue(const UEPtr<URpcCommand> &command)
 {
- boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
+ std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
  ProcessedCommandQueue.push_back(command);
 }
 // --------------------------

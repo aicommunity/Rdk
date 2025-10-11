@@ -4,17 +4,19 @@
 #include "URpcDecoder.h"
 #include "URpcDispatcher.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include <chrono>
+#include <thread>
 
 
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 URpcDecoder::URpcDecoder(URpcDispatcher* dispatcher)
  : Dispatcher(dispatcher), ThreadTerminated(false)
 {
- DecoderThread=boost::thread(boost::bind(&URpcDecoder::Process, boost::ref(*this)));
+ DecoderThread=std::thread([this]() { this->Process(); });
 }
 
 URpcDecoder::~URpcDecoder(void)
@@ -25,18 +27,18 @@ URpcDecoder::~URpcDecoder(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Устанавливает нового владельца
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void URpcDecoder::SetDispatcher(URpcDispatcher* dispatcher)
 {
  if(Dispatcher == dispatcher)
   return;
- boost::mutex::scoped_lock lock(DispatchMutex);
+ std::lock_guard<std::mutex> lock(DispatchMutex);
  Dispatcher=dispatcher;
 }
 
-/// Метод треда
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void URpcDecoder::Process(void)
 {
  int ex_flag=0;
@@ -48,14 +50,14 @@ void URpcDecoder::Process(void)
    UEPtr<URpcCommand> command=PopFromCommandQueue();
    if(!command)
    {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	continue;
    }
 
-   boost::mutex::scoped_lock lock(DispatchMutex);
+   std::lock_guard<std::mutex> lock(DispatchMutex);
    if(!ProcessCommand(command))
    {
-	// ошибка выполения команды
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
    }
    else
@@ -91,22 +93,22 @@ void URpcDecoder::Process(void)
  }
 }
 
-/// Остановка треда
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void URpcDecoder::StopProcessThread(void)
 {
     ThreadTerminated=true;
     DecoderThread.join();
 }
 
-/// Осуществляет декодирование и вызов команды по текущим данным
-/// Возвращает false если команда не поддерживается
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool URpcDecoder::ProcessCommand(const UEPtr<URpcCommand> &command)
 {
  return AProcessCommand(command);
 }
 
 
-/// Возвращает указатель на экземпляр приложения
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<UApplication> URpcDecoder::GetApplication(void)
 {
  if(!Dispatcher)

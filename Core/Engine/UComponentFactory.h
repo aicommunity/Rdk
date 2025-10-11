@@ -3,12 +3,13 @@
 
 #include "UEPtr.h"
 #include "UContainer.h"
+#include "ModernSmartPointers.h"
 
 namespace RDK {
 
  extern const UId ForbiddenId;
 
- /// Абстрактная фабрика
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  class UComponentAbstractFactory
  {
  protected:
@@ -20,13 +21,13 @@ namespace RDK {
   UComponentAbstractFactory(UStorage* storage);
   virtual ~UComponentAbstractFactory();
 
-  /// Создание компонента
+  /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   virtual UEPtr<UComponent> New() = 0;
 
-  /// Создание компонента с копированием в него компонента @param prototype
+  /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ @param prototype
   virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype) = 0;
 
-  /// Сбрасывает объект к исходному состоянию, которое зависит от порождающей фабрики
+  /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   virtual void ResetComponent(UEPtr<UComponent> component) const = 0;
 
   // ClassId set/get
@@ -34,7 +35,7 @@ namespace RDK {
   UId GetClassId() const;
  };
 
- /// Фабрика, основанная на виртуальном методе (старый механизм работы)
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ)
  class UVirtualMethodFactory : public UComponentAbstractFactory
  {
  protected:
@@ -55,7 +56,7 @@ namespace RDK {
   void FreeComponent();
  };
 
- /// Фабрика, основанная на статическом фабричном методе
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  class UComponentFactoryMethod : public UComponentAbstractFactory
  {
  protected:

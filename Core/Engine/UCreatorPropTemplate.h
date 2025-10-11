@@ -2,11 +2,12 @@
 #define UCREATORPROPTEMPLATE_H
 #include "UStorage.h"
 #include "UMockUNet.h"
+#include "ModernSmartPointers.h"
 
 namespace RDK {
 
-// Класс для частичной специализации своего метода CreatePropertyByType.
-// Подразумевается использование данного класса в библиотеках, при формировании функций-создателей свойств
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ CreatePropertyByType.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt, typename T>
 class CreatorProperty
 {
@@ -14,7 +15,7 @@ public:
     static void CreatePropertyByType(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
     {
         std::string prop_name = serstorage->GetNodeName();
-        PropType<T, UMockUNet, TypeInt>* p = new PropType<T, UMockUNet, TypeInt>(prop_name, mock_unet);
+        auto p = make_ueptr<PropType<T, UMockUNet, TypeInt>>(prop_name, mock_unet);
         mock_unet->ChangeLookupPropertyType(prop_name,ptype);
         p->Load(serstorage);
     }

@@ -19,14 +19,13 @@ namespace RDK
 
  UVirtualMethodFactory::~UVirtualMethodFactory()
  {
-  if(Component)
-   delete Component;
+  // Component is now managed by std::shared_ptr, no manual deletion needed
  }
 
  UEPtr<UComponent> UVirtualMethodFactory::New()
  {
   if(!Component)
-   return 0;
+   return nullptr;
 
   UEPtr<UContainer> obj = Component->New();
   obj->SetStorage(Storage);
@@ -38,7 +37,7 @@ namespace RDK
  UEPtr<UComponent> UVirtualMethodFactory::Prototype(UEPtr<UComponent> prototype)
  {
   if(!Component)
-   return 0;
+   return nullptr;
 
   UEPtr<UContainer> obj = Component->New();
   obj->SetStorage(Storage);
@@ -60,7 +59,7 @@ namespace RDK
 
 void UVirtualMethodFactory::FreeComponent()
 {
- Component=0;
+ Component = nullptr;
 }
 
 
@@ -78,7 +77,7 @@ void UVirtualMethodFactory::FreeComponent()
 
  UEPtr<UComponent> UComponentFactoryMethod::New()
  {
-  UEPtr<UComponent> obj = Method();
+  UEPtr<UComponent> obj = UEPtr<UComponent>(Method());
   dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
   obj->SetStorage(Storage);
   obj->Default();

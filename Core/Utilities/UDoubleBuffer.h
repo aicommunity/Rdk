@@ -8,14 +8,15 @@
 #ifndef UDOUBLE_BUFFER
 #define UDOUBLE_BUFFER
 
-#include <boost/thread.hpp>
-#include "boost/date_time/posix_time/posix_time_types.hpp"
+#include <mutex>
 #include <vector>
+#include "../System/ModernChrono.h"
 
 using namespace std;
-using namespace boost::posix_time;
+using namespace RDK;
 
-ptime const Epoch(boost::gregorian::date(1970,1,1));
+// Unix epoch (January 1, 1970)
+constexpr TimePoint Epoch = UnixEpoch();
 
 template <class T>
 struct TimedBuffer
@@ -36,7 +37,7 @@ template <class T>
 class UDoubleBuffer
 {
 private:
-	boost::mutex mtx;
+	std::mutex mtx;
 	TimedBuffer<T> A;
 	TimedBuffer<T> B;
 
@@ -60,7 +61,7 @@ bool Write(const T& src )
 	if(!buff)
 		return false;
 	buff->Data = src;
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
 	buff->Empty = false;
 	buff->Busy = false;
 	return true;
@@ -72,7 +73,7 @@ bool Read(T& dst)
 	if(!buff)
 		return false;
 	dst = buff->Data;
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
 	buff->Empty = true;
 	buff->Busy = false;
 	return true;
@@ -80,7 +81,7 @@ bool Read(T& dst)
 ///----------------------------------------------------------------------
 void Clear()
 {
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
 	A.Clear();
     B.Clear();
 }
@@ -89,13 +90,13 @@ void Clear()
 ///----------------------------------------------------------------------
 TimedBuffer<T>* GetPtrForWrite()
 {
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
 	if(!A.Busy)
 	{
 		if(A.Empty)
 		{
 			A.Busy=true;
-			A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
+			A.TimeStamp=GetCurrentTimeMs();
 			return &A;
 		}
 		else
@@ -105,7 +106,7 @@ TimedBuffer<T>* GetPtrForWrite()
 				if(B.Empty)
 				{
 					B.Busy=true;
-					B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
+					B.TimeStamp=GetCurrentTimeMs();
 					return &B;
 				}
 				else
@@ -113,13 +114,13 @@ TimedBuffer<T>* GetPtrForWrite()
 					if(A.TimeStamp>B.TimeStamp)
 					{
                         B.Busy=true;
-						B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
+						B.TimeStamp=GetCurrentTimeMs();
 						return &B;
 					}
 					else
 					{
 						A.Busy=true;
-						A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
+						A.TimeStamp=GetCurrentTimeMs();
 						return &A;
 					}
 				}
@@ -127,7 +128,7 @@ TimedBuffer<T>* GetPtrForWrite()
 			else
 			{
 				A.Busy=true;
-				A.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
+				A.TimeStamp=GetCurrentTimeMs();
 				return &A;
 			}
 		}
@@ -137,7 +138,7 @@ TimedBuffer<T>* GetPtrForWrite()
 		if(!B.Busy)
 		{
             B.Busy=true;
-			B.TimeStamp=(microsec_clock::local_time() - Epoch).total_microseconds();
+			B.TimeStamp=GetCurrentTimeMs();
 			return &B;
 		}
 	}
@@ -146,7 +147,7 @@ TimedBuffer<T>* GetPtrForWrite()
 ///----------------------------------------------------------------------
 TimedBuffer<T>* GetPtrForRead()
 {
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
     if(A.TimeStamp>B.TimeStamp)
 	{
 		if(!A.Busy)
@@ -191,13 +192,13 @@ TimedBuffer<T>* GetPtrForRead()
 ///----------------------------------------------------------------------
 void MakeWrited(TimedBuffer<T>* buff)
 {
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
 	buff->Empty = false;
 	buff->Busy = false;
 } ///----------------------------------------------------------------------
 void MakeReaded(TimedBuffer<T>* buff)
 {
-	boost::lock_guard<boost::mutex> guard(mtx);
+	std::lock_guard<std::mutex> guard(mtx);
 	buff->Empty = true;
 	buff->Busy = false;
 }

@@ -7,11 +7,12 @@
 #include "URpcDecoderCommon.h"
 #include "URpcCommandInternal.h"
 #include "UApplication.h"
+#include "../System/NamespaceIsolation.h"
 
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 URpcDecoderCommon::URpcDecoderCommon(void)
 {
@@ -25,16 +26,16 @@ URpcDecoderCommon::~URpcDecoderCommon(void)
 // --------------------------
 
 // --------------------------
-// Методы управления командами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Создает копию этого декодера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 URpcDecoderCommon* URpcDecoderCommon::New(void)
 {
  return new URpcDecoderCommon;
 }
 
-/// Проверяет, поддерживается ли команда диспетчером
-/// ожидает, что команда уже декодирована иначе всегда возвращает false
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false
 bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
@@ -217,20 +218,20 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  return false;
 }
 
-/// Осуществляет декодирование и вызов команды по текущим данным
-/// Возвращает false если команда не поддерживается
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
 {
  if(!command)
  {
-  // Ошибка - команда не задана
+  // пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   return false;
  }
 
  UEPtr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
  if(!cmd)
  {
-  // Ошибка - команда не поддерживается декодером
+  // пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
@@ -486,7 +487,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::stringstream ss;
     ss<<rs<<"|-|"<<resp.c_str();
     response=ss.str();*/
-    //Формирует ответ такой:
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ:
     //"<calculation_state>|<capture_state>|<capture_frid>|<capture_maxfrid>|<capture_finished>|<message>"
     int calculation_state=-1;
     int capture_state=-1;
@@ -495,18 +496,18 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::string message = "test state message";
 
 
-    //Проанализировать состояние расчета - а вдруг ошибка
-    /// Состояние тредов расчета
-    /// -1 - пустое состояние
-    /// 0 - запущен
-    /// 1 - расчет остановлен
-    /// 2 - расчет запущен, но не выполняется
-    /// 3 - ошибка найдена в логах
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// -1 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// 1 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// 2 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// 3 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
     int calc_state = GetApplication()->GetProjectDeployer()->GetCalculationState();
     if(calc_state>=0)
     {
         calculation_state = calc_state;
-        //Выгребаем логи, проверяем нет ли ошибок там:
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ:
         std::string log_err="";
         bool process_log_res = GetApplication()->GetProjectDeployer()->ProcessCalculationLog(log_err);
         if(!process_log_res)

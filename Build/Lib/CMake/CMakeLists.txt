@@ -107,16 +107,15 @@ target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Network)
 # QtSql требуется UProjectDeployerQt
 find_package(Qt5 REQUIRED COMPONENTS Sql)
 target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Sql)
+# Boost.Program_options - опциональная зависимость
+# Можно заменить на современные альтернативы (CLI11, cxxopts)
 find_package(Boost QUIET COMPONENTS program_options)
 if(Boost_FOUND)
   target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
 endif()
 
-# Boost.Thread для потоков в Core/Application
-find_package(Boost QUIET COMPONENTS thread)
-if(Boost_FOUND)
-  target_link_libraries(${TARGET_NAME} PUBLIC Boost::thread)
-endif()
+# Boost.Thread заменен на std::thread (C++20)
+# Boost больше не требуется для потоков
 
 # rdk_rpc.cpp добавлен напрямую в target_sources выше
 

@@ -3,23 +3,20 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
-#define BOOST_THREAD_USE_LIB
-#include <boost/thread.hpp>
-//#include <boost/thread/thread_id.hpp>
-//#include <boost/bind.hpp>
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/exception.hpp>
+#include <shared_mutex>
+#include <mutex>
+#include <thread>
+#include <exception>
 #include <windows.h>
+#include "../ModernBoostReplacement.h"
 
 class RDK_LIB_TYPE UGenericMutexAnsi: public UGenericMutex
 {
 private:
-boost::shared_mutex Mutex;
+std::shared_mutex Mutex;
 
-boost::thread::id Id;
-boost::exception ex;
+std::thread::id Id;
+std::exception ex;
 
 DWORD Pid;
 
