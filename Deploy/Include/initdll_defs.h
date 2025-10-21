@@ -40,13 +40,19 @@
 	#endif
 #elif defined (QT_VERSION)
 	#if defined(LIBRDK_LIBRARY_EXPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE Q_DECL_EXPORT
+		#endif
 		#define RDK_CALL
 	#elif defined(LIBRDK_LIBRARY_IMPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE Q_DECL_IMPORT
+		#endif
 		#define RDK_CALL
 	#else
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE
+		#endif
 		#define RDK_CALL
 	#endif
 #elif defined(__GNUC__)

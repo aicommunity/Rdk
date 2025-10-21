@@ -50,7 +50,7 @@ void UProjectDeployProcessingThread::processReadyReadStandardError()
 void UProjectDeployProcessingThread::processReadyReadStandardOutput()
 {
     /*QString s = zip_process.readAllStandardOutput();
-    //TODO: рассмотреть, что там на выхлопе и научиться скачивать прогресс
+    //TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::cout<<"Unzip process std_output: "<<s;*/
 }
 
@@ -110,12 +110,12 @@ void UProjectDeployProcessingThread::PrepareProjectDeployment(bool task_template
     videosource_dr = task_vsrc_dr;
     videosource_path = task_vsrc_path;
 
-    //Тут возможно еще какой-то код подготовки к деплою проекта со стороны потока
+    //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
 void UProjectDeployProcessingThread::RunProjectDeployment()
 {
-    //Запустить процесс деплоймента
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     this->start();
 }
 
@@ -191,11 +191,11 @@ int UProjectDeployProcessingThread::GetDeploymentProgressCap()
 
 bool UProjectDeployProcessingThread::RecursiveCopyFiles(const QString& src_dir_path, const QString& dst_dir_path)
 {
-    //Перечислить папки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     QDir src_dir(src_dir_path);
     QDir dst_dir(dst_dir_path);
 
-    //Перепроверить наличие
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!src_dir.exists())
     {
         lastError = "Copy err: source dir not exists "+src_dir_path;
@@ -210,7 +210,7 @@ bool UProjectDeployProcessingThread::RecursiveCopyFiles(const QString& src_dir_p
         }
     }
 
-    //Рекурсивно скопировать подпапки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList src_dir_dirlist = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Dirs);
     for(QString subdir_name: src_dir_dirlist)
     {
@@ -232,8 +232,8 @@ bool UProjectDeployProcessingThread::RecursiveCopyFiles(const QString& src_dir_p
         }
     }
 
-    //Скопировать файлы
-    //Перечислить файлы:
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ:
     QStringList src_dir_filelist = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
     for(QString src_file_name: src_dir_filelist)
     {
@@ -268,33 +268,33 @@ void UProjectDeployProcessingThread::run()
     {
 
 
-        //Обработка ошибок, сигнализация о проблемах и выход из потока
-        //Запись чего-то в лог
-        //Изначально самая примитивная верификация, потом усложним
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅ пїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     DeployScript2();
     if(!VerifyScript())
     {
-        //Обработка ошибок, сигнализация о проблемах и выход из потока
-        //Запись чего-то в лог
-        //Изначально самая примитивная верификация, потом усложним
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅ пїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     DeployWeights2();
     if(!VerifyWeights())
     {
-        //Обработка ошибок, сигнализация о проблемах и выход из потока
-        //Запись чего-то в лог
-        //Изначально самая примитивная верификация, потом усложним
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅ пїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     DeployData2();
     if(!VerifyData())
     {
-        //Обработка ошибок, сигнализация о проблемах и выход из потока
-        //Запись чего-то в лог
-        //Изначально самая примитивная верификация, потом усложним
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅ пїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
     deploymentState = DS_DeployFinished;
 }
@@ -338,7 +338,7 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
      if(fi.exists())
      {
       std::cout<<"File "<<fi.absoluteFilePath().toUtf8().constData()<< " already exists";
-      //Перекачивать мы не будем, мб потом еще каких-то проверок навертеть
+      //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
       return true;
      }
      else
@@ -364,8 +364,8 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
      }
 
 
-     //Назвать как папку в папке стремно, требуется проверка в процессе отладки
-     //TODO: возможно, припиливать исходное имя файла?
+     //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+     //TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ?
      QString fn = ls[ls.size()-1];
      QString filename = dst_zip_file+"/"+fn;
      QFileInfo fi2(filename);
@@ -399,10 +399,10 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
 
     if(curl)
     {
-        // Положить ссылку на удаленный объект
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         curl_easy_setopt(curl, CURLOPT_URL, remote_url.toUtf8().constData());
 
-        // Добавляем функцию для отображения процесса
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_response);
 
         /* Define our callback to get called when there's data to be written */
@@ -433,7 +433,7 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
     }
 
     SetDeploymentProgress(100);
-    //Тут еще переименование, копирование, обработка и тп??
+    //пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ??
    return true;
 }
 
@@ -461,7 +461,7 @@ bool UProjectDeployProcessingThread::UnpackZipFile(const QString &local_zip_fold
 {
     SetDeploymentProgressCap(100);
     SetDeploymentProgress(0);
-    //TODO: Убедиться, что файл залетает куда надо после распаковки
+    //TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
 
     zip_process.start(cmd);
@@ -484,10 +484,10 @@ void UProjectDeployProcessingThread::DeployDirectory(const QString& file_with_te
     QString storage_template_dir_path = project_dir_basic;
     storage_template_dir_path.replace("{Database}", storageMountPath);
 
-    //По умолчанию - все файлы, включая нашего, сложены в папочку
-    //если файл наш один - он все равно сложен в папочку чтобы можно было паковать
+    //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ - пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-    //Копируем папку
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     RecursiveCopyFiles(storage_template_dir_path, database_template_dir_path);
 }
 
@@ -535,15 +535,15 @@ void UProjectDeployProcessingThread::DeployTemplate()
         }
     }
 
-    //Подготовить место для распаковки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QDir du_d(unpack_zip_path);
     if(!du_d.exists())
     {
         du_d.mkpath(du_d.path());
     }
 
-    //Теперь шаг 1 - загрузить
-    //Предварительно - только если файла еще нет
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
     if(!dwd_fi.exists())
     {
         if(!DownloadZip(ftp_project_path, download_zip_file))
@@ -556,8 +556,8 @@ void UProjectDeployProcessingThread::DeployTemplate()
     }
 
 
-    //Шаг 2 = распаковать
-    //Поехали распаковывать
+    //пїЅпїЅпїЅ 2 = пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     SetDeploymentState(DeploymentState::DS_UnpackData);
     if(!UnpackZipFolder(download_zip_file, du_d.path()))
     {
@@ -573,21 +573,21 @@ void UProjectDeployProcessingThread::DeployTemplate()
     //template_proj_path.replace("{Database}", downloadTempPath);
 
     /*std::cout<<"Start deploy template";
-    //Рассмотрим, надо ли нам грузить по идее данные:
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ:
     if(template_dr)
     {
         QString template_proj_path = template_path;
         template_proj_path.replace("{Database}", downloadTempPath);
 
-        //В файл
+        //пїЅ пїЅпїЅпїЅпїЅ
         QFileInfo proj_file(template_proj_path);
         QString template_zip_path = proj_file.absolutePath()+".zip";
 
-        //На сервере он лежит по аналогии
+        //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         QString ftp_zip_path = template_zip_path;
         ftp_zip_path.replace(downloadTempPath, ftpRemoteBasePath);
 
-        //Куда распаковывать еще надо будет уточнить, утром
+        //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ
         QString unpackZipPath = proj_file.absolutePath();
         unpackZipPath.replace(downloadTempPath, databasePath);
 
@@ -598,31 +598,31 @@ void UProjectDeployProcessingThread::DeployTemplate()
         QFileInfo fi(template_zip_path);
         if(!fi.exists())
         {
-            //переключим:
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ:
             SetDeploymentState(DeploymentState::DS_DownloadTemplate);
-            //инициируем загрузку
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             std::cout<<"Start download";
             QDir dwd_path(fi.absoluteDir());
             dwd_path.mkpath(dwd_path.path());
             if(!DownloadZip(ftp_zip_path, template_zip_path))
             {
-                //Как будем отработывать косяк... нипанятня
+                //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ... пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 SetDeploymentState(DeploymentState::DS_Error);
                 return;
             }
         }
         else
         {
-            //Чето тут тоже надо, когда уже все есть
+            //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         }
 
         std::cout<<"Downloaded file exists="<<fi.exists();
         if(fi.exists())
         {
-            //Поехали распаковывать
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             SetDeploymentState(DeploymentState::DS_UnpackData);
 
-            //absolutePath() - вот это не точно, уточнить с примером
+            //absolutePath() - пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if(!UnpackZipFolder(fi.absoluteFilePath(), db_fi.absolutePath()))
             {
                 std::cout<<"Unpack ERROR";
@@ -636,7 +636,7 @@ void UProjectDeployProcessingThread::DeployTemplate()
     else
     {
         {
-            //Как будем отработывать косяк... нипанятня
+            //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ... пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             //SetDeploymentState(DeploymentState::DS_Error);
             std::cout<<"Template already exists";
             return;
@@ -652,8 +652,8 @@ bool UProjectDeployProcessingThread::VerifyTemplate()
     QFileInfo fi(proj_file_path);
     if(!fi.exists())
     {
-        //Вообще,можно было бы и остальные проанализировать, ну, как вариант
-        //Но это на этапе открытия вскроется
+        //пїЅпїЅпїЅпїЅпїЅпїЅ,пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         return false;
     }
     return true;
@@ -688,7 +688,7 @@ void UProjectDeployProcessingThread::DeployScript()
     QString deployment_unpack_dir = base_path;
     deployment_unpack_dir.replace("{Database}", databasePath);
 
-    //Подготовить место для загрузки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QFileInfo zd_fi(zip_download_path);
     QDir zd_d(zd_fi.absoluteDir());
     if(!zd_d.exists())
@@ -696,7 +696,7 @@ void UProjectDeployProcessingThread::DeployScript()
         zd_d.mkpath(zd_d.path());
     }
 
-    //Подготовить место для распаковки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QDir du_d(deployment_unpack_dir);
     if(!du_d.exists())
     {
@@ -708,8 +708,8 @@ void UProjectDeployProcessingThread::DeployScript()
     //remote_ftp_zip_path = "ftp://192.168.102.171/database/CloudFtpDatabase/Configs/Detection/SqueezeDetHH.zip";
     //zip_download_path = "/home/ivan/RTV-VideoAnalytics/ExpDatabase/Temp/Configs/Detection/SqueezeDetHH.zip";
 
-    //Теперь шаг 1 - загрузить
-    //Предварительно - только если файла еще нет
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
     if(!zd_fi.exists())
     {
         if(!DownloadZip(remote_ftp_zip_path, zip_download_path))
@@ -722,8 +722,8 @@ void UProjectDeployProcessingThread::DeployScript()
     }
 
 
-    //Шаг 2 = распаковать
-    //Поехали распаковывать
+    //пїЅпїЅпїЅ 2 = пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     SetDeploymentState(DeploymentState::DS_UnpackData);
     if(!UnpackZipFolder(zip_download_path, du_d.path()))
     {
@@ -849,7 +849,7 @@ void UProjectDeployProcessingThread::DeployData2()
     }
     else if(videosource_type==1)
     {
-        //Набор картинок, имя соответствует имени папки,которую надо скопировать непосредственно
+        //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ,пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
         QString database_template_dir_path = videosource_path;
         database_template_dir_path.replace("{Database}", databasePath);
@@ -857,7 +857,7 @@ void UProjectDeployProcessingThread::DeployData2()
         QString storage_template_dir_path = videosource_path;
         storage_template_dir_path.replace("{Database}", storageMountPath);
 
-        //Копируем папку
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         RecursiveCopyFiles(storage_template_dir_path, database_template_dir_path);
     }
 
@@ -876,7 +876,7 @@ void UProjectDeployProcessingThread::DeployData()
 
     if(videosource_type==0)
     {
-        //Видеоролик: имя файла соответствует имени видео + *.zip
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ + *.zip
 
         dwd_zip_file = data_base_path+".zip";
         dwd_zip_file.replace("{Database}", downloadTempPath);
@@ -890,8 +890,8 @@ void UProjectDeployProcessingThread::DeployData()
     }
     else if(videosource_type==1)
     {
-        //Набор картинок, имя архива соответствует имени папки с картинками
-        //распаковка в эту папку соответственно, картинки в корне архива
+        //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
         dwd_zip_file = data_base_path+".zip";
         dwd_zip_file.replace("{Database}", downloadTempPath);
@@ -916,7 +916,7 @@ void UProjectDeployProcessingThread::DeployData()
         unp_dir.mkpath(unp_dir.path());
     }
 
-    //Загрузить
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!DownloadZip(ftp_remote_path, dwd_zip_file))
     {
         qDebug()<<"Dowonlad error";
@@ -1053,7 +1053,7 @@ void UProjectResultsUploadingThread::run()
 
 bool UProjectResultsUploadingThread::CopyResultsToDestinationDir()
 {
-    //Разберем куда надо копировать
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(projectResultsDir=="")
     {
         lastError = "projectResultsDir empty";
@@ -1130,11 +1130,11 @@ bool UProjectResultsUploadingThread::CopyResultsToRemoteStorageDir()
 
 bool UProjectResultsUploadingThread::RecursiveCopyFiles(const QString& src_dir_path, const QString& dst_dir_path)
 {
-    //Перечислить папки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     QDir src_dir(src_dir_path);
     QDir dst_dir(dst_dir_path);
 
-    //Перепроверить наличие
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!src_dir.exists())
     {
         lastError = "Copy err: source dir not exists "+src_dir_path;
@@ -1149,7 +1149,7 @@ bool UProjectResultsUploadingThread::RecursiveCopyFiles(const QString& src_dir_p
         }
     }
 
-    //Рекурсивно скопировать подпапки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList src_dir_dirlist = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Dirs);
     for(QString subdir_name: src_dir_dirlist)
     {
@@ -1171,8 +1171,8 @@ bool UProjectResultsUploadingThread::RecursiveCopyFiles(const QString& src_dir_p
         }
     }
 
-    //Скопировать файлы
-    //Перечислить файлы:
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ:
     QStringList src_dir_filelist = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
     for(QString src_file_name: src_dir_filelist)
     {
@@ -1227,7 +1227,7 @@ bool UProjectResultsUploadingThread::UploadResultsViaFtp()
 
 //====================================================================
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UProjectDeployerQt::UProjectDeployerQt(void):
     db(NULL),
@@ -1236,8 +1236,8 @@ UProjectDeployerQt::UProjectDeployerQt(void):
     deploymentState(DS_NULL),
     projectResultsUploadingThread(NULL)
 {
-    //Инициализация curl, которую надо выполнить только один раз
-    //Этот класс же тоочно не создается дважды?
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ curl, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ?
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
   MLlibDescr classification;
@@ -1342,7 +1342,7 @@ UProjectDeployerQt::~UProjectDeployerQt(void)
 }
 // --------------------------
 
-//Удалить поток обработки или вернуть
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProjectDeployerQt::DestroyProcessingThread()
 {
     if(deployProcessingThread==NULL)
@@ -1410,7 +1410,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id, bool standalo
     return 2;
  }
 
- //Получить данные из базы (по индексу)
+ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
  QSqlQuery q(*db);
  q.prepare("SELECT task_name, task_template, task_weights, task_src_type, task_src_id FROM vid_an.task_list WHERE task_id="+QString::number(task_id)+";");
  q.exec();
@@ -1431,8 +1431,8 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id, bool standalo
  q.finish();
  q.clear();
 
- //Извлеаем последовательно данные о том, где должны располагаться распакованные файлы
- //Сначала проект
+ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  q.prepare("SELECT template_name, template_file, template_script FROM vid_an.templates WHERE template_id="+QString::number(task_template_id)+";");
  q.exec();
  q.first();
@@ -1621,8 +1621,8 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id, bool standalo
      return 10;
  }
 
- //Потом и вообще, возможно, "/tmp/..."
- //Это куда грузить, распаковка должна идти по стандартному пути в {Database}/...
+ //пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, "/tmp/..."
+ //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ {Database}/...
  download_temp_path = database_path+"/Temp";
 
 
@@ -1667,7 +1667,7 @@ int UProjectDeployerQt::StartProjectDeployment(int deploy_task_id, bool standalo
  }
  else
  {
-    //Что по идее не совсем правда, так как доставка и не начиналась, но будет ли работать?
+    //пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ?
     this->deploymentState = DS_DeployFinished;
  }
 
@@ -1800,10 +1800,10 @@ int UProjectDeployerQt::GetStageProgress()
     }
 }
 
-///Подготовить к запуску проект:
-/// 1. Скопировать во временное хранилище
-/// 2. Открыть в тестовом режиме и настроить пути и связи?
-/// 3. Закрыть
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ:
+/// 1. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 2. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ?
+/// 3. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::PrepareProject(std::string &response)
 {
     //lastError="";
@@ -1815,7 +1815,7 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
         return 1;
     }
 
-    //02.02.2021: Уничтожить поток (такое костыльное (?) решение, поток больше не нужен, удалить)
+    //02.02.2021: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (?) пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
     DestroyProcessingThread();
 
     std::cerr<<"Deployment!\n";
@@ -1936,7 +1936,7 @@ int UProjectDeployerQt::GetPreparationResult(std::string &response)
     return preparationResult;
 }
 
-///Открыть подготовленный проект
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::OpenPreparedProject(std::string &response)
 {
     if(this->deploymentState!=DS_ProjectPrepared)
@@ -1946,7 +1946,7 @@ int UProjectDeployerQt::OpenPreparedProject(std::string &response)
         return 1;
     }
     deploymentState = DS_OpenProject;
-    //Здесь какие-то инструкции для правильного открытия проекта
+    //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //RDK::Sleep(3);
     Application->SetStorageBuildMode(1);
     QString pdpath = GetTempProjectDeploymentPath().c_str();
@@ -1978,10 +1978,10 @@ int UProjectDeployerQt::OpenPreparedProject(std::string &response)
 }
 
 // --------------------------
-// Методы транспортировки данных
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 
-///Скопировать проект во временную директорию, в которой будет выполняться работа
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::CopyProjectToTempFolder()
 {
     QString pdpath = GetTempProjectDeploymentPath().c_str();
@@ -2012,27 +2012,27 @@ int UProjectDeployerQt::CopyProjectToTempFolder()
     QDir src_dir(fi.absoluteDir());
     QStringList files_dirs = src_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Files);
     qDebug()<<"Copy "<<src_dir.path()<<" to "<<pdpath;
-    //Скопировать все файлы
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     for(QString fn:files_dirs)
     {
         QFile::copy(src_dir.path()+"/"+fn, pdpath+"/"+fn);
     }
     QDir pddir(pdpath);
-    //Обязательная для лога событий
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     pddir.mkdir("EventsLog");
-    //..и предполагаемая для результатов
+    //..пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     pddir.mkdir("Results");
 
     //RDK::Sleep(3);
     return 0;
 }
 
-/// Открыть проект в заглушенном режиме
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::OpenProjectMockMode()
 {
-    //Сделать заготовки библиотек
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     Application->CreateSaveMockLibs();
-    //Это у нас заглушки вместо компонентов
+    //пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     Application->SetStorageBuildMode(3);
     QString pdpath = GetTempProjectDeploymentPath().c_str();
     QString project_path = pdpath+"/"+task_template_file_name;
@@ -2044,7 +2044,7 @@ int UProjectDeployerQt::OpenProjectMockMode()
     return 0;
 }
 
-/// Задать параметры проекта в заглушенном режиме
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::SetupProjectMockParameters()
 {
     RDK::Sleep(3);
@@ -2053,7 +2053,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
 
     if(!model) return 1;
 
-    //Настроить видеоисточник
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     RDK::UEPtr<RDK::UContainer> video_cont;
     RDK::UEPtr<RDK::UContainer> imseq_cont;
@@ -2066,7 +2066,7 @@ int UProjectDeployerQt::SetupProjectMockParameters()
 
     std::cerr<<"vid_names = "<<vid_names.size()<<" imseq_names="<<imseq_names.size()<<" predictor_names="<<predictor_names.size()<<"\n";
 
-    //Разобрать по условиям - какого типа у нас проект
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(!vid_names.empty()||!imseq_names.empty())
     {
         std::cerr<<"VA variant\n";
@@ -2089,11 +2089,11 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
 
     if(!model) return 1;
 
-    //Настроить видеоисточник
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<std::string> predictor_names;
     predictor_names = model->GetComponentsNameByClassName("TPyPredictSort", predictor_names);
 
-    //Тут в дальнейшем наверняка будет настройка разных предикторов, пока втупую один этот
+    //пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 
     predictor_class_name = "TPyPredictSort";
     predictor_component_name = predictor_names[0];
@@ -2126,7 +2126,7 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
     std::string *python_script_file_name = predictor_container->AccessPropertyData<std::string>("PythonScriptFileName");
     *python_script_file_name = absolute_script_file.toUtf8().constData();
 
-    //Предположительно, это надо делать так:
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ:
     //std::cerr<<"python_script_file_name\n";
 
     return 0;
@@ -2138,7 +2138,7 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
     if(!model) return 1;
 
-    //Настроить видеоисточник
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     RDK::UEPtr<RDK::UContainer> video_cont;
     RDK::UEPtr<RDK::UContainer> imseq_cont;
@@ -2149,11 +2149,11 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
     std::vector<std::string> predictor_names;
     predictor_names = model->GetComponentsNameByClassName("TPyPredictSort", predictor_names);
 
-    if(task_src_type==0)//TODO: Проверить - видео
+    if(task_src_type==0)//TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅ
     {
         if(vid_names.empty())
         {
-            //Видеозаписей - нет
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅ
             lastError="Model does not contain video data source, fix project file/task parameters";
             return 1;
         }
@@ -2199,11 +2199,11 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
             *act = false;
         }
     }
-    else if(task_src_type==1)//TODO: Проверить - картинки
+    else if(task_src_type==1)//TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     {
         if(imseq_names.empty())
         {
-            //Компонента с картинками - нет
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅ
             lastError="Model does not contain image sequence data source, fix project file/task parameters";
             return 1;
         }
@@ -2244,12 +2244,12 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
     }
     else
     {
-        //Тип источника странный, не поддерживается системой
+        //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         lastError="Video source type has undefined value";
         return 1;
     }
 
-    //Дальше настройка конкретного компонента
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //std::vector<std::string> pipelineNames;
     /*RDK::UEPtr<RDK::UContainer> pipeline;
     pipeline = model->GetComponentL("Pipeline1");
@@ -2277,8 +2277,8 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
         //No classes found
         lastError="No one neural network related component found";
 
-        //16.02.2021. Изменено в связи с тем, как стал использоваться проект, иногда не требуется сеть
-        //Требуется структурная переработка в будущем чтобы настройка была проще
+        //16.02.2021. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         return 0;
         //return 1;
     }
@@ -2322,7 +2322,7 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
     return 0;
 }
 
-/// Закрыть заглушенный проект
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::CloseMockProject()
 {
     //RDK::Sleep(3);
@@ -2340,14 +2340,14 @@ QString UProjectDeployerQt::GetTimeStampInPSqlFormat(const QDateTime &now)
     return (datetime+offset);
 }
 
-/// Запустить подготовленный проект
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::RunPreparedProject()
 {
     RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(0);
 
     if(!model) return 1;
 
-    //Если есть компонент обучения/предсказания
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<std::string> predictor_names;
     predictor_names = model->GetComponentsNameByClassName("TPyPredictSort", predictor_names);
 
@@ -2359,14 +2359,14 @@ int UProjectDeployerQt::RunPreparedProject()
         *start_prediction = true;
     }
 
-    //Сюда еще пойдет всякая херня типа сохранения даты и прочего, но это потом
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     processing_start_datetime = QDateTime::currentDateTime();
     Application->StartChannel(-1);
     deploymentState = DS_Calculation;
     UpdateTaskStateInDb(task_id, TS_Calculation, -1.0f, GetTimeStampInPSqlFormat(processing_start_datetime));
     return 0;
 }
-///Возвращает состояние потока расчета (аналог -2/0/1 столбца в Гуях)
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ -2/0/1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ)
 int UProjectDeployerQt::GetCalculationState()
 {
     std::vector<UEngineStateThread::UCalcState> thread_states = Application->GetEngineControl()->GetEngineStateThread()->ReadCalcThreadStates();
@@ -2386,10 +2386,10 @@ int UProjectDeployerQt::GetCalculationState()
     return state;
 }
 
-///Возвращает состояние активного компонента захвата
-/// возвращает false при ошибке получение состояния
-/// @state - индекс состояния захвата (по состояниям, либо 10000 - захват закончил работу)
-/// @frame_id - индекс текущего кадра
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// @state - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ 10000 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ)
+/// @frame_id - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UProjectDeployerQt::GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long& max_frame_id)
 {
     if(template_type==TT_VideoAnalytics)
@@ -2466,7 +2466,7 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
 
     max_frame_id = task_src_frame_length;
 
-    UpdateTaskStateInDb(task_id, TS_Calculation, static_cast<float>(frame_id)/task_src_frame_length);
+    UpdateTaskStateInDb(task_id, TS_Calculation, static_cast<float>(frame_id)/static_cast<float>(task_src_frame_length));
 
     return true;
 }
@@ -2489,7 +2489,7 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
     predictor_container = model->GetComponentL(predictor_component_name);
 
 
-    //Получить статус предсказания
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     int *predict_status = predictor_container->AccessPropertyData<int>("PredictStatus");
 
     if(predict_status!=NULL)
@@ -2531,15 +2531,15 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
     return false;
 }
 
-///Обрабатывает накопившийся с последнего вызова лог
-/// возвращает false если были фатальные ошибки, иначе true
-/// @error - текст ошибки из лога приложения
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ true
+/// @error - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProjectDeployerQt::ProcessCalculationLog(std::string &error)
 {
     int error_level = AnalyzeLogForErrors(error);
     if(error_level>=0 && error_level<=1)
     {
-        //добавлено 15.02.2020 - вылетаем, если ловим фаталочку, экспериментально
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 15.02.2020 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         exit(1);
     }
     if(error_level>=0)
@@ -2552,16 +2552,16 @@ bool UProjectDeployerQt::ProcessCalculationLog(std::string &error)
 }
 
 
-///Завершить расчет проекта, положить соответствующий результат запуска в базу данных
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProjectDeployerQt::FinishCalculation()
 {
-    //0. Зафиксировать время закрытия проекта
-    //Вообще говоря, не предполагается что мы будем делать это 10 раз, но
-    // потом возможно стоит как-то хранить время РЕАЛЬНОГО конца работы проекта
+    //0. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ 10 пїЅпїЅпїЅ, пїЅпїЅ
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     processing_end_datetime = QDateTime::currentDateTime();
-    //1. Закрыть проект
+    //1. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     Application->CloseProject();
-    //2. Прочекать закрытие на ошибки
+    //2. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     std::string err="";
     int err_log_res = AnalyzeLogForErrors(err);
     deploymentState = DS_ProjectClosed;
@@ -2574,15 +2574,15 @@ bool UProjectDeployerQt::FinishCalculation()
     return true;
 }
 
-///Отправить результаты расчета (содержимое папки Results) в соответствующую папку локального хранилища,
-/// запустить процесс упаковки и отправки данных в удаленное хранилище
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ Results) пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ,
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProjectDeployerQt::UploadCalculationResults()
 {
-    //Если расчет по нормальному завершить не получилось, то эта функция не вызовется
-    //не знаю, насколько это логично...
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    //пїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ...
 
-    //Проект закрыт
-    //1. Проанализировать папку с результатами
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    //1. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QString pdpath = GetTempProjectDeploymentPath().c_str();
     QString results_dir_path = pdpath+"/"+"Results";
     QDir results_dir(results_dir_path);
@@ -2601,9 +2601,9 @@ bool UProjectDeployerQt::UploadCalculationResults()
         QStringList rd_contents = results_dir.entryList(QDir::Filter::NoDotAndDotDot|QDir::Filter::Dirs|QDir::Filter::Files);
         if(rd_contents.size()>0)
         {
-            //Сформируем путь
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             QString db_path = Application->GetDatabaseMainPath().c_str();
-            QString relative_database_res_path = "{Database}/Results";//Потенциально задавать извне?
+            QString relative_database_res_path = "{Database}/Results";//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ?
             QString main_database_res_path = relative_database_res_path;
             main_database_res_path.replace("{Database}", db_path);
             QDir main_database_res_dir(main_database_res_path);
@@ -2638,9 +2638,9 @@ bool UProjectDeployerQt::UploadCalculationResults()
             results_destination_dir.mkpath(results_destination_dir.path());
             QString relative_results_destination_dir_path = results_destination_dir_path;
             relative_results_destination_dir_path.replace(db_path, "{Database}");
-            //Задать параметры потока
-            //Переключить состояние (?)
-            //Стартовать поток
+            //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (?)
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             if(projectResultsUploadingThread!=NULL)
             {
                 delete projectResultsUploadingThread;
@@ -2669,8 +2669,8 @@ bool UProjectDeployerQt::UploadCalculationResults()
         deploymentState = DS_UploadFinished;
     }
 
-    //TODO: Вообще говоря, отправка результатов может сломаться, но от этого место,
-    //      куда результаты заливаются не изменится, поэтому запилим тему тут:
+    //TODO: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ,
+    //      пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ:
 
     QString processing_start_time_str = GetTimeStampInPSqlFormat(processing_start_datetime);
     QString processing_end_time_str = GetTimeStampInPSqlFormat(processing_end_datetime);
@@ -2692,7 +2692,7 @@ bool UProjectDeployerQt::UploadCalculationResults()
         return false;
     }
 
-    // Добавление данных в таблицу результатов vid_an.results
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ vid_an.results
     QDateTime result_add_time = QDateTime::currentDateTime();
     QString result_add_time_str = GetTimeStampInPSqlFormat(result_add_time);
 
@@ -2719,8 +2719,8 @@ bool UProjectDeployerQt::UploadCalculationResults()
     return true;
 }
 
-///Аккуратное закрытие солвера, команда которая по идее должна инициировать
-/// процесс завершения работы, поочищать аккуратно выделенные ресурсы и т.п.
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅ.пїЅ.
 bool UProjectDeployerQt::CloseSolver()
 {
     //TODO: For now its working only if everything is allright, that is wrong!
@@ -2728,7 +2728,7 @@ bool UProjectDeployerQt::CloseSolver()
     return true;
 }
 
-///Получить состояние загрузки
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UProjectDeployerQt::GetUploadState()
 {
     if(projectResultsUploadingThread!=NULL)
@@ -2746,14 +2746,14 @@ int UProjectDeployerQt::GetUploadState()
     }
     else
     {
-        //Пока что по умолчанию предположим что деплоймент нормально отработает
-        //по окончании работы тут тоже будет верное состояние
+        //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         return deploymentState;
     }
     return DS_NULL;
 }
 
-///Обновить статус задачи в базе данных
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UProjectDeployerQt::UpdateTaskStateInDb(int task_id, const DatabaseTaskStatus &status, float progress, const QString &start_time, const QString& end_time)
 {
     QString preparation_request="";
@@ -2833,7 +2833,7 @@ void UProjectDeployerQt::UnRegisterSolverFromDatabase()
 }
 
 
-/// Задача для запуска без сети
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 void UProjectDeployerQt::SetStandaloneTask(int task)
 {
     serverStandaloneTask = task;
@@ -2883,7 +2883,7 @@ void UProjectRunThread::WriteLog(const string& s)
 
 std::string UProjectRunThread::ParseDeploymentState(DeploymentState state)
 {
-    //Тут место для анализа состояния
+    //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::string r="";
     switch(state)
     {
@@ -3056,7 +3056,7 @@ void UProjectRunThread::ProjectStateCalculation()
 
     if(!model) return;
 
-    //Если есть компонент обучения/предсказания
+    //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<std::string> predictor_names;
     predictor_names = model->GetComponentsNameByClassName("TPyPredictSort", predictor_names);
 
@@ -3085,7 +3085,7 @@ void UProjectRunThread::ProjectStateCalculation()
         if(calc_state>=0)
         {
             calculation_state = calc_state;
-            //Выгребаем логи, проверяем нет ли ошибок там:
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ:
             std::string log_err="";
             bool process_log_res = Deployer->ProcessCalculationLog(log_err);
             if(!process_log_res)
@@ -3136,11 +3136,11 @@ void UProjectRunThread::ProjectStateCalculation()
         if(!message.empty())
             WriteLog("Capture state: "+ message);
 
-        /// Состояние тредов расчета
-        /// 0 - запущен
-        /// 1 - расчет остановлен
-        /// 2 - расчет запущен, но не выполняется
-        /// 3 - ошибка найдена в логах
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        /// 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        /// 1 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        /// 2 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        /// 3 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
         std::string cstate_str = "";
         switch (calculation_state) {
             case -1:
@@ -3163,7 +3163,7 @@ void UProjectRunThread::ProjectStateCalculation()
                 cstate_str = "Calc thread result default ("+std::to_string(calculation_state)+")";
             break;
         }
-        //Состояния
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         #define RDK_CAPTURE_EMPTY 0
         #define RDK_CAPTURE_CREATED 64
         #define RDK_CAPTURE_INITIALIZATION 1
@@ -3214,7 +3214,7 @@ void UProjectRunThread::ProjectStateCalculation()
         {
             message = std::string("capture_frame_id=") + std::to_string(capture_frame_id) + std::string(" capture_max_frame_id=") + std::to_string(capture_max_frame_id);
             WriteLog(message);
-            //Мы докатились до конца, переключаемся на финализацию
+            //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if(capture_frame_id>=capture_max_frame_id || last_frame_count>capture_frame_id)
             {
                 FinishProject();
@@ -3223,7 +3223,7 @@ void UProjectRunThread::ProjectStateCalculation()
             last_frame_count = capture_frame_id;
         }
     }
-    //TODO: Обработка фатальных ошибок на этапе расчета
+    //TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
 void UProjectRunThread::ProjectStateFinalization()

@@ -11,16 +11,16 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
     ui(new Ui::UComponentLinksWidget)
 {
     ui->setupUi(this);
-    UpdateInterval = 0; //не обновлять виджет по тикам ядра
-    setAccessibleName("UComponentLinksWidget"); // имя класса для сериализации
+    UpdateInterval = 0; //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    setAccessibleName("UComponentLinksWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->treeWidgetInputs->header()->setVisible(true);
     ui->treeWidgetOutputs->header()->setVisible(true);
 
-    //сигнал закрытия
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCancel, SIGNAL(pressed()), this, SIGNAL(closeWindow()));
-    //создание связи
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
-    //разрушение связи
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonBreakLink, SIGNAL(pressed()), this, SLOT(breakLink()));
 
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()), this, SLOT(output1ItemSelectionChanged()));
@@ -244,7 +244,7 @@ void UComponentLinksWidget::unInit()
     ui->treeWidgetLinks->clear();
 }
 
-///переключение выделенной связи
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UComponentLinksWidget::switchLink()
 {
     QString output1Component, outputName1, output2Component, outputName2;
@@ -548,7 +548,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
                 QTreeWidgetItem* firstChildPropertyItem = new QTreeWidgetItem(firstTreeWidgetItemFather);
                 firstChildPropertyItem->setText(0, QString::fromLocal8Bit(i->first.c_str()));
                 firstChildPropertyItem->setText(1, QString(i->second.Property->GetLanguageType().name()));
-                if(RDK::dynamic_pointer_cast<RDK::UIPropertyOutput>(i->second.Property)->IsConnected())
+                if(dynamic_cast<RDK::UIPropertyOutput*>(i->second.Property)->IsConnected())
                  firstChildPropertyItem->setText(2, QString("connected"));
             }
             if(secondTreeWidgetItemFather && i->second.CheckMask(secondTypeMask))
@@ -559,7 +559,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
                 if(i->second.Property->GetIoType() & ipRange)
                  secondChildPropertyItem->setText(2, QString("range"));
                 else
-                 if(RDK::dynamic_pointer_cast<RDK::UIPropertyOutput>(i->second.Property)->IsConnected())
+                 if(dynamic_cast<RDK::UIPropertyOutput*>(i->second.Property)->IsConnected())
                   secondChildPropertyItem->setText(2, QString("connected"));
             }
         }

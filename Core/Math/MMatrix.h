@@ -25,7 +25,7 @@ template<class T, unsigned Rows, unsigned Cols=Rows>
 class MMatrix: public MMatrixBase
 {
 public:
-// Данные матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 union
 {
  T Data[Rows][Cols];
@@ -33,7 +33,7 @@ union
  struct
  {
   T x,y,z,d;
- };*/
+ }*/
  double *Double;
  int *Int;
  unsigned char *UChar;
@@ -43,13 +43,13 @@ union
 };
 
 protected:
-// Данные матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int VRows;
 int VCols;
 
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 MMatrix(void);
 explicit MMatrix(T defvalue);
@@ -63,47 +63,47 @@ virtual ~MMatrix(void);
 // --------------------------
 
 // -----------------------------------
-// Общие методы доступа к параметрам матрицы
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // -----------------------------------
-/// Возвращает размерность матрицы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual int GetDimensions(void) const;
 
-/// Возвращает число элементов по стороне матрицы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual int GetSize(int i) const;
 
-/// Возвращает суммраное число всех элементов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual int GetSize(void) const;
 
-/// Возвращает true если суммарное число всех элементов == 0
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ == 0
 virtual bool IsEmpty(void) const;
 
-/// Возвращает число элементов по всем размерностям
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual MMatrixSize GetMatrixSize(void) const;
 
-/// Устанавливает число элементов по всем размерностям
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual bool Resize(const MMatrixSize &size);
 
-/// Возвращает суммарный размер данных матрицы в байтах
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 virtual int GetByteSize(void) const;
 
-/// Возвращает длину в байтах одного элемента даных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 virtual int GetElementByteSize(void) const;
 
-/// Методы доступа к данным
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 virtual const void* GetVoid(void) const;
 virtual void* GetVoid(void);
 
-/// Методы доступа к данным
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 virtual const T* GetData(void) const;
 virtual T* GetData(void);
-// Возвращает языковой тип элемента матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //virtual const type_info& GetLanguageType(void) const;
 // -----------------------------------
 
 // --------------------------
-// Операторы управления данными
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Rows,Cols>& operator = (const MMatrix<T,Rows,Cols> &copy);
 MMatrix<T,Rows,Cols>& operator = (const MDMatrix<T> &copy);
 MMatrix<T,Rows,Cols>& operator = (T value);
@@ -114,61 +114,61 @@ void Assign(const T *data);
 void Assign(T value);
 void Assign(const MDMatrix<T> &copy);
 
-/// Копирует данные в двумерный массив
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void CopyTo(T data[Rows][Cols]);
 
-/// Копирует данные в одномерный массив
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool CopyTo(T* data);
-/// Копирует данные из двумерного массива
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void CopyFrom(T data[Rows][Cols]);
-/// Копирует данные из одномерного массива
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool CopyFrom(T* data);
 
-/// Копирует данные в другую матрицу
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual bool CopyTo(MMatrixBase &dest) const;
 
-// Получение размерности матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 unsigned GetCols(void) const;
 unsigned GetRows(void) const;
 
-// Доступ к элементу
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 T& operator [] (int i);
 const T& operator [] (int i) const;
 
 T& operator () (int i, int j);
 const T& operator () (int i, int j) const;
 
-// Возвращает заданную строку матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Cols,1> GetRow(int i) const;
 
-// Возвращает заданный столбец матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Rows,1> GetCol(int i) const;
 
-/// Предоставляет доступ к данным матрицы как к одномерному массиву выбранного
-/// типа. Небезопасно!
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
 template<typename U>
 U& As(int i)
 {
  return reinterpret_cast<U*>(Data)[i];
-};
+}
 
 
 template<typename U>
 const U& As(int i) const
 {
  return reinterpret_cast<U*>(Data)[i];
-};
+}
 // --------------------------
 
 // --------------------------
-// Матричные операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 MMatrix<T,Rows,Cols>& operator += (const MMatrix<T,Rows,Cols> &M);
 MMatrix<T,Rows,Cols>& operator -= (const MMatrix<T,Rows,Cols> &M);
 // --------------------------
 
 // --------------------------
-// Скалярные операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 MMatrix<T,Rows,Cols> operator - (void) const;
 
@@ -182,31 +182,31 @@ MMatrix<T,Rows,Cols>& operator -= (T v);
 // --------------------------
 
 // --------------------------
-// Преобразования матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Транспонирование
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Cols,Rows>& Transpose(MMatrix<T,Cols,Rows> &res) const;
 MMatrix<T,Cols,Rows> Transpose(void) const;
 
-// Приведение матрицы к верхней треугольной форме
-// Возрващает число перестановок
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 unsigned TriangleGauss(void);
 unsigned TriangleBareis(void);
 
-// Инвертирование
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Rows,Cols>& Inverse(MMatrix<T,Cols,Rows> &res) const;
 MMatrix<T,Rows,Cols> Inverse(void) const;
 
-// Детерминант
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 T Det3x3(void) const;
 T Det(void) const;
 
-// Вычисление минорной матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Rows-1,Cols-1>& GetMinor(MMatrix<T,Rows-1,Cols-1> &res, unsigned row, unsigned col) const;
 MMatrix<T,Rows-1,Cols-1> GetMinor(unsigned row, unsigned col) const;
 
 
-// Выделяет часть матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<unsigned row_beg, unsigned row_end, unsigned col_beg, unsigned col_end>
 MMatrix<T,row_end-row_beg+1,col_end-col_beg+1>& Split(MMatrix<T,row_end-row_beg+1,col_end-col_beg+1> &res) const
 {
@@ -226,34 +226,34 @@ MMatrix<T,row_end-row_beg+1,col_end-col_beg+1> Split() const
 
 
 
-// След
+// пїЅпїЅпїЅпїЅ
 T Trace(void) const;
 
-// Норма матрицы
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 T operator !(void) const;
 
-// Нормализация матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 MMatrix<T,Rows,Cols>& Normalize(void);
 // --------------------------
 
 // --------------------------
-// Определения матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Нулевая матрица
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 static MMatrix<T,Rows,Cols> Zero(void);
 
-// Единичная матрица
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 static MMatrix<T,Rows,Cols> Eye(void);
 
-// Сбрасывает текущую матрицу в 0
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ 0
 void ToZero(void);
 
-// Сбрасывает текущую матрицу в единичную
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void ToEye(void);
 // --------------------------
 
 // --------------------------
-// Сравнение матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 bool operator == (const MMatrix<T,Rows,Cols> &M) const;
 bool operator != (const MMatrix<T,Rows,Cols> &M) const;
@@ -262,7 +262,7 @@ void Print(std::ostream &stream);
 };
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(void)
@@ -270,7 +270,7 @@ MMatrix<T,Rows,Cols>::MMatrix(void)
  VRows=Rows;
  VCols=Cols;
  memset(Data,0,sizeof(Data));
-};
+}
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
@@ -291,7 +291,7 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const MMatrix<T,Rows,Cols> &copy)
 {
  *this=copy;
-};
+}
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T data[Rows][Cols])
@@ -308,7 +308,7 @@ MMatrix<T,Rows,Cols>::MMatrix(const MDMatrix<T> &copy)
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
-{ *this=data; };
+{ *this=data; }
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(T v1, T v2, T v3)
@@ -345,42 +345,42 @@ MMatrix<T,Rows,Cols>::MMatrix(T v1, T v2, T v3, T v4)
 
 
 template<class T, unsigned Rows, unsigned Cols>
-MMatrix<T,Rows,Cols>::~MMatrix(void){};
+MMatrix<T,Rows,Cols>::~MMatrix(void){}
 // --------------------------
 
 
 // -----------------------------------
-// Общие методы доступа к параметрам матрицы
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // -----------------------------------
-/// Возвращает размерность матрицы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 int MMatrix<T,Rows,Cols>::GetDimensions(void) const
 {
  return 2;
 }
 
-/// Возвращает число элементов по стороне матрицы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 int MMatrix<T,Rows,Cols>::GetSize(int i) const
 {
  return (i==0)?Rows:((i==1)?Cols:0);
 }
 
-/// Возвращает суммраное число всех элементов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 int MMatrix<T,Rows,Cols>::GetSize(void) const
 {
  return Rows*Cols;
 }
 
-/// Возвращает true если суммарное число всех элементов == 0
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ == 0
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::IsEmpty(void) const
 {
  return (!Rows || !Cols);
 }
 
-/// Возвращает число элементов по всем размерностям
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrixSize MMatrix<T,Rows,Cols>::GetMatrixSize(void) const
 {
@@ -388,7 +388,7 @@ MMatrixSize MMatrix<T,Rows,Cols>::GetMatrixSize(void) const
  return size;
 }
 
-/// Устанавливает число элементов по всем размерностям
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::Resize(const MMatrixSize &size)
 {
@@ -398,28 +398,28 @@ bool MMatrix<T,Rows,Cols>::Resize(const MMatrixSize &size)
  return (unsigned(size[0]) == Rows) && (unsigned(size[1]) == Cols);
 }
 
-/// Возвращает суммарный размер данных матрицы в байтах
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 int MMatrix<T,Rows,Cols>::GetByteSize(void) const
 {
  return Rows*Cols*sizeof(T);
 }
 
-/// Возвращает длину в байтах одного элемента даных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 int MMatrix<T,Rows,Cols>::GetElementByteSize(void) const
 {
  return sizeof(T);
 }
    /*
-// Возвращает языковой тип элемента матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T>
 const type_info& MDMatrix<T>::GetLanguageType(void) const
 {
  return typeid(T);
 }  */
 
-/// Методы доступа к данным
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 const void* MMatrix<T,Rows,Cols>::GetVoid(void) const
 {
@@ -432,7 +432,7 @@ void* MMatrix<T,Rows,Cols>::GetVoid(void)
  return Void;
 }
 
-/// Методы доступа к данным
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 const T* MMatrix<T,Rows,Cols>::GetData(void) const
 {
@@ -448,9 +448,9 @@ T* MMatrix<T,Rows,Cols>::GetData(void)
 // -----------------------------------
 
 // --------------------------
-// Операторы управления данными
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Cols> &copy)
 {
@@ -461,7 +461,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Col
  VCols=copy.VCols;
  memcpy(Data,copy.Data,sizeof(T)*Cols*Rows);
  return *this;
-};
+}
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
@@ -484,14 +484,14 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (T value)
  for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = value;
  return *this;
-};
+}
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T data[Rows][Cols])
 {
  memcpy(Data,data,sizeof(Data));
  return *this;
-};
+}
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
@@ -520,14 +520,14 @@ void MMatrix<T,Rows,Cols>::Assign(const MDMatrix<T> &copy)
  *this=copy;
 }
 
-/// Копирует данные в двумерный массив
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::CopyTo(T data[Rows][Cols])
 {
  memcpy(data,Data,sizeof(Data));
 }
 
-/// Копирует данные в одномерный массив
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::CopyTo(T* data)
 {
@@ -536,14 +536,14 @@ bool MMatrix<T,Rows,Cols>::CopyTo(T* data)
  memcpy(data,Data,sizeof(Data));
  return true;
 }
-/// Копирует данные из двумерного массива
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::CopyFrom(T data[Rows][Cols])
 {
  memcpy(Data,data,sizeof(Data));
 }
 
-/// Копирует данные из одномерного массива
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::CopyFrom(T* data)
 {
@@ -553,14 +553,14 @@ bool MMatrix<T,Rows,Cols>::CopyFrom(T* data)
  return true;
 }
 
-/// Копирует данные в другую матрицу
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::CopyTo(MMatrixBase &dest) const
 {
  return MMatrixBase::CopyTo(dest);
 }
 
-// Получение размерности матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 unsigned MMatrix<T,Rows,Cols>::GetCols(void) const
 {
@@ -573,7 +573,7 @@ unsigned MMatrix<T,Rows,Cols>::GetRows(void) const
  return Rows;
 }
 
-// Доступ к элементу
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 T& MMatrix<T,Rows,Cols>::operator [] (int i)
 {
@@ -598,7 +598,7 @@ const T& MMatrix<T,Rows,Cols>::operator () (int i, int j) const
  return Data[i][j];
 }
 
-// Возвращает заданную строку матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Cols,1> MMatrix<T,Rows,Cols>::GetRow(int i) const
 {
@@ -608,7 +608,7 @@ MMatrix<T,Cols,1> MMatrix<T,Rows,Cols>::GetRow(int i) const
  return res;
 }
 
-// Возвращает заданный столбец матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,1> MMatrix<T,Rows,Cols>::GetCol(int i) const
 {
@@ -620,7 +620,7 @@ MMatrix<T,Rows,1> MMatrix<T,Rows,Cols>::GetCol(int i) const
 // --------------------------
 
 // --------------------------
-// Матричные операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator += (const MMatrix<T,Rows,Cols> &M)
@@ -694,7 +694,7 @@ MMatrix<T,Rows,Cols2> operator * (const MMatrix<T,Rows,Cols> &M1, const MMatrix<
 // --------------------------
 
 // --------------------------
-// Скалярные операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::operator - (void) const
@@ -800,9 +800,9 @@ MMatrix<T,Rows,Cols> operator - (T v, const MMatrix<T,Rows,Cols> &M)
 // --------------------------
 
 // --------------------------
-// Операторы сравнения
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 bool operator == (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
@@ -818,9 +818,9 @@ bool operator != (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2
 
 
 // --------------------------
-// Преобразования матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Транспонирование
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Cols,Rows>& MMatrix<T,Rows,Cols>::Transpose(MMatrix<T,Cols,Rows> &res) const
 {
@@ -840,8 +840,8 @@ MMatrix<T,Cols,Rows> MMatrix<T,Rows,Cols>::Transpose(void) const
  return Transpose(res);
 }
 
-// Приведение матрицы к верхней треугольной форме
-// Возрващает число перестановок
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
 {
@@ -857,14 +857,14 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
 
   if(fabs(cWorkElem) <= teEps)
   {
-   // пытаемся найти строку с ненулевым элементом,
-   // среди строк, лежащих ниже
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ,
+   // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
    for (j=i+1; i<Rows; i++)
    {
 	cWorkElem = Data[j][i];
 	if (fabs(cWorkElem) > teEps)
 	{
-	 // добавляем найденную строку к рабочей
+	 // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	 for (k=0; k<Rows; k++)
 	  Data[i][k]+=Data[j][k];
 	 break;
@@ -874,8 +874,8 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
 
   if (fabs(cWorkElem) > teEps)
   {
-   // рабочий элемент корректен -
-   // обрабатываем все нижлежащие строки
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ -
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
    for (j=i+1; j<Rows; j++)
    {
 	for (k=Rows-1;k>=i;k--)
@@ -888,8 +888,8 @@ unsigned MMatrix<T,Rows,Cols>::TriangleGauss(void)
 }
 
 
-// Приведение матрицы к верхней треугольной форме
-// Возрващает число перестановок
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 {
@@ -897,17 +897,17 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 	int exchanges(0);
 
 	for(unsigned l1=0; l1<Rows-1; ++l1)
-	{ //Перебираю все строки матрицы, кроме последней
+	{ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		unsigned maxN=l1;
 		T maxValue=fabs(Data[l1][l1]);
 		for(unsigned l2=l1+1; l2<Rows; ++l2)
-		{ //Нахожу строку с максимальным по модулю элементом
+		{ //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			T const value=fabs(Data[l2][l1]);
 			if( value > maxValue ) { maxN=l2; maxValue=value; }
 		}
 
         if( maxN > l1 )
-		{ //Нужен обмен
+		{ //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 		 for(unsigned i=0;i<Cols;i++)
 		 {
 		  T temp=Data[l1][i];
@@ -919,7 +919,7 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 //			Data[l1]=Data[maxN];
 //			Data[maxN]=temp;
 			++exchanges;
-		} else { //Обмен не нужен, но нужна проверка на ноль
+		} else { //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
             if(maxValue == T(0)) return exchanges;
         }
 
@@ -927,7 +927,7 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 		  //!
 
 		for(unsigned l2=l1+1; l2<Rows; ++l2)
-		{ //Вычитаю строку из всех последующих
+		{ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			T const value2=Data[l2][l1]; //!
 			Data[l2][l1] = T(0);
 			for(unsigned c=l1+1; c<Rows; ++c) //!
@@ -942,7 +942,7 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 }
 
 
-// Инвертирование
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Inverse(MMatrix<T,Cols,Rows> &res) const
 {
@@ -980,7 +980,7 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Inverse(void) const
  return Inverse(res);
 }
 
-// Детерминант 3x3
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 3x3
 template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::Det3x3(void) const
 {
@@ -995,7 +995,7 @@ T MMatrix<T,Rows,Cols>::Det3x3(void) const
 		-Data[0][0]*Data[1][2]*Data[2][1];
 }
 
-// Детерминант
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::Det(void) const
 {
@@ -1060,7 +1060,7 @@ T MMatrix<T,Rows,Cols>::Det(void) const
  return det;     */
 }
 
-// Вычисление минорной матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows-1,Cols-1>& MMatrix<T,Rows,Cols>::GetMinor(MMatrix<T,Rows-1,Cols-1> &res, unsigned row, unsigned col) const
 {
@@ -1094,7 +1094,7 @@ MMatrix<T,Rows-1,Cols-1> MMatrix<T,Rows,Cols>::GetMinor(unsigned row, unsigned c
  return GetMinor(res,row,col);
 }
 
-// След
+// пїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::Trace(void) const
 {
@@ -1107,7 +1107,7 @@ T MMatrix<T,Rows,Cols>::Trace(void) const
  return sum;
 }
 
-// Норма матрицы
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 T MMatrix<T,Rows,Cols>::operator !(void) const
 {
@@ -1118,7 +1118,7 @@ T MMatrix<T,Rows,Cols>::operator !(void) const
  return sqrt(res);
 }
 
-// Нормализация матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
 {
@@ -1134,8 +1134,8 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
  return *this;
 }
 
-// Возвращает часть матрицы заданной величины
-// начиная с позиции i0,j0 в исходной матрицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ i0,j0 пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
 MMatrix<T,Rows2,Cols2>& GetSubMatrix(const MMatrix<T,Rows,Cols>& source,unsigned j0, unsigned i0, MMatrix<T,Rows2,Cols2>& res)
 {
@@ -1152,8 +1152,8 @@ MMatrix<T,Rows2,Cols2>& GetSubMatrix(const MMatrix<T,Rows,Cols>& source,unsigned
 
  return res;
 }
-// Модифицирует часть матрицы заданной величины
-// начиная с позиции i0,j0 в исправляемой матрице
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ i0,j0 пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
 MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned j0, unsigned i0, const MMatrix<T,Rows2,Cols2>& source)
 {
@@ -1173,9 +1173,9 @@ MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned j0, unsig
 // --------------------------
 
 // --------------------------
-// Определения матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Нулевая матрица
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Zero(void)
 {
@@ -1185,7 +1185,7 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Zero(void)
  return res;
 }
 
-// Единичная матрица
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
 {
@@ -1200,14 +1200,14 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
  return res;
 }
 
-// Сбрасывает текущую матрицу в 0
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ 0
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::ToZero(void)
 {
  memset(Data,0,Rows*Cols*sizeof(T));
 }
 
-// Сбрасывает текущую матрицу в единичную
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::ToEye(void)
 {
@@ -1221,7 +1221,7 @@ void MMatrix<T,Rows,Cols>::ToEye(void)
 
 
 // --------------------------
-// Сравнение матриц
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::operator == (const MMatrix<T,Rows,Cols> &M) const

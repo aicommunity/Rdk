@@ -174,7 +174,7 @@ private:
     Ui::UGEngineControllWidget *ui;
 
     // widgets
-    USettingsReaderWidget *settings;
+    // USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
     UDrawEngineWidget *drawEngine;
     UComponentLinksWidget *componentLinks;
