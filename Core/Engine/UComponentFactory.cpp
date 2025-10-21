@@ -2,14 +2,15 @@
 #define UCOMPONENT_FACTORY_CPP
 
 #include "UComponentFactory.h"
+#include "UStorage.h"
 
 namespace RDK
 {
 
- UVirtualMethodFactory::UVirtualMethodFactory(UEPtr<UComponent> comp)
-  : UComponentAbstractFactory(comp->GetStorage())
+ UVirtualMethodFactory::UVirtualMethodFactory(std::shared_ptr<UComponent> comp)
+  : UComponentAbstractFactory(comp->GetStorage().get())
  {
-  Component = dynamic_pointer_cast<UContainer>(comp);
+  Component = std::dynamic_pointer_cast<UContainer>(comp);
   if(Component)
   {
 //   Component->Default();
@@ -22,37 +23,37 @@ namespace RDK
   // Component is now managed by std::shared_ptr, no manual deletion needed
  }
 
- UEPtr<UComponent> UVirtualMethodFactory::New()
+ std::shared_ptr<UComponent> UVirtualMethodFactory::New()
  {
   if(!Component)
    return nullptr;
 
-  UEPtr<UContainer> obj = Component->New();
-  obj->SetStorage(Storage);
+  std::shared_ptr<UContainer> obj(Component->New());
+  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
-  Component->Copy(obj, Storage);
-  return static_pointer_cast<UComponent>(obj);
+  Component->Copy(UEPtr<UContainer>(obj.get()), Storage);
+  return std::static_pointer_cast<UComponent>(obj);
  }
 
- UEPtr<UComponent> UVirtualMethodFactory::Prototype(UEPtr<UComponent> prototype)
+ std::shared_ptr<UComponent> UVirtualMethodFactory::Prototype(std::shared_ptr<UComponent> prototype)
  {
   if(!Component)
    return nullptr;
 
-  UEPtr<UContainer> obj = Component->New();
-  obj->SetStorage(Storage);
+  std::shared_ptr<UContainer> obj(Component->New());
+  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
-  dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, Storage);
-  return static_pointer_cast<UComponent>(obj);
+  std::dynamic_pointer_cast<UContainer>(prototype)->Copy(UEPtr<UContainer>(obj.get()), Storage);
+  return std::static_pointer_cast<UComponent>(obj);
  }
 
- void UVirtualMethodFactory::ResetComponent(UEPtr<UComponent> component) const
+ void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UComponent> component) const
  {
   if(Component)
-   Component->Copy(dynamic_pointer_cast<UContainer>(component), Component->GetStorage());
+   Component->Copy(UEPtr<UContainer>(std::dynamic_pointer_cast<UContainer>(component).get()), UEPtr<UStorage>(Component->GetStorage().get()));
  }
 
- UEPtr<UContainer> UVirtualMethodFactory::GetComponent()
+ std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()
  {
   return Component;
  }
@@ -63,8 +64,8 @@ void UVirtualMethodFactory::FreeComponent()
 }
 
 
- UComponentFactoryMethod::UComponentFactoryMethod(const UEPtr<UStorage> &storage, UComponent* (*funcPointer)(), const std::string &default_component_name)
-  : UComponentAbstractFactory(storage)
+ UComponentFactoryMethod::UComponentFactoryMethod(const std::shared_ptr<UStorage> &storage, UComponent* (*funcPointer)(), const std::string &default_component_name)
+  : UComponentAbstractFactory(storage.get())
  {
   Method = funcPointer;
   DefaultComponentName=default_component_name;
@@ -75,26 +76,26 @@ void UVirtualMethodFactory::FreeComponent()
 
  }
 
- UEPtr<UComponent> UComponentFactoryMethod::New()
+ std::shared_ptr<UComponent> UComponentFactoryMethod::New()
  {
-  UEPtr<UComponent> obj = UEPtr<UComponent>(Method());
-  dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
-  obj->SetStorage(Storage);
+  std::shared_ptr<UComponent> obj = std::shared_ptr<UComponent>(Method());
+  std::dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
+  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
   return obj;
  }
 
- UEPtr<UComponent> UComponentFactoryMethod::Prototype(UEPtr<UComponent> prototype)
+ std::shared_ptr<UComponent> UComponentFactoryMethod::Prototype(std::shared_ptr<UComponent> prototype)
  {
-  UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
-  obj->SetStorage(Storage);
+  std::shared_ptr<UContainer> obj = std::shared_ptr<UContainer>(dynamic_cast<UContainer*>(Method()));
+  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
   obj->Name = DefaultComponentName;
-  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, Storage);
-  return static_pointer_cast<UComponent>(obj);
+  std::dynamic_pointer_cast<const UContainer>(prototype)->Copy(UEPtr<UContainer>(obj.get()), Storage);
+  return std::static_pointer_cast<UComponent>(obj);
  }
 
- void UComponentFactoryMethod::ResetComponent(UEPtr<UComponent> component) const
+ void UComponentFactoryMethod::ResetComponent(std::shared_ptr<UComponent> component) const
  {
   component->Default();
  }

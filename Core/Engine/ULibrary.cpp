@@ -282,10 +282,10 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
  UEPtr<UVirtualMethodFactory> factory;
  try
  {
-  cont->SetLogger(Storage->GetLogger());
-  cont->SetStorage(Storage);
+  cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().Get()));
+  cont->SetStorage(std::shared_ptr<UStorage>(Storage));
   cont->Build();
-  factory = new UVirtualMethodFactory(cont);
+  factory = new UVirtualMethodFactory(std::shared_ptr<UComponent>(cont.Get()));
  }
  catch(...)
  {
@@ -341,7 +341,7 @@ bool ULibrary::UploadClass(const std::string &class_name, const std::string &com
   return true;
 
  std::vector<std::string>::iterator I;
- UEPtr<UComponentFactoryMethod> factory = new UComponentFactoryMethod(Storage,funcPointer,component_name);
+ UEPtr<UComponentFactoryMethod> factory = new UComponentFactoryMethod(std::shared_ptr<UStorage>(Storage),funcPointer,component_name);
 
  if(!Storage->AddClass(factory,class_name))
  {

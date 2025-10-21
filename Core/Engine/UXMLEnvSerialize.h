@@ -21,6 +21,12 @@ See file license.txt for more information
 #include "../Serialize/UXMLStdSerialize.h"
 #include "UEnvSupport.h"
 #include "UELockVar.h"
+#include "UEPtr.h"
+#include "ModernSmartPointers.h"
+#include <filesystem>
+#include <span>
+#include <memory>
+#include <mutex>
 
 namespace RDK {
 
@@ -177,6 +183,74 @@ class UNet;
 USerStorageXML& operator << (USerStorageXML& storage, const RDK::UNet* data);
 
 USerStorageXML& operator >> (USerStorageXML& storage, RDK::UNet *data);
+
+// Modern C++20 XML serialization with std::span and move semantics
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const std::span<T>& data)
+{
+    storage.SetNodeAttribute("Size", std::to_string(data.size()));
+    storage.SetNodeAttribute("Type", "std::span");
+    
+    for (size_t i = 0; i < data.size(); ++i) {
+        storage << data[i];
+    }
+    return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, std::span<T>& data)
+{
+    std::string type = storage.GetNodeAttribute("Type");
+    if (type != "std::span") {
+        throw std::runtime_error("Invalid span type during XML deserialization");
+    }
+    
+    size_t size = std::stoull(storage.GetNodeAttribute("Size"));
+    if (size > data.size()) {
+        throw std::runtime_error("Span size mismatch during XML deserialization");
+    }
+    
+    for (size_t i = 0; i < size; ++i) {
+        storage >> data[i];
+    }
+    return storage;
+}
+
+// Modern file operations with std::filesystem
+template<typename T>
+bool SerializeToXMLFile(const std::filesystem::path& filepath, const T& data)
+{
+    try {
+        USerStorageXML storage;
+        storage << data;
+        return storage.SaveToFile(filepath.string());
+    } catch (const std::exception& e) {
+        return false;
+    }
+}
+
+template<typename T>
+bool DeserializeFromXMLFile(const std::filesystem::path& filepath, T& data)
+{
+    try {
+        USerStorageXML storage;
+        if (!storage.LoadFromFile(filepath.string(), "")) {
+            return false;
+        }
+        storage >> data;
+        return true;
+    } catch (const std::exception& e) {
+        return false;
+    }
+}
+
+// Move semantics for large data structures
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, T&& data)
+{
+    storage << std::forward<T>(data);
+    return storage;
+}
 
 }
 #endif

@@ -7,23 +7,23 @@
 namespace RDK {
 
 
-/// Указатель c подсчетом ссылок (слабый аналог shared_ptr)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ c пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ shared_ptr)
 template<typename T>
 class UESharedPtr
 {
-public: // Исключения
+public: // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 class EUsingZeroPtr: public EFatal {};//T::IException {};
 
 //////////////////////////
 protected:
 T* PData;
 
-// Счетчик ссылок
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 long* Counter;
 
-public: // Методы
+public: // пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UESharedPtr(void);
 explicit UESharedPtr(T* pdata);
@@ -34,12 +34,12 @@ template<typename Y> UESharedPtr(UESharedPtr<Y> &p)
 {
  if(Counter)
   ++(*Counter);
-};
+}
 virtual ~UESharedPtr(void);
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UESharedPtr<T>& operator = (const UESharedPtr<T> &p);
 
@@ -67,57 +67,57 @@ T& operator * (void);
 operator T* (void) const;
 
 
-// Возвращает число ссылок на объект
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 long GetCounter(void) const;
 
 long* GetPCounter(void) const;
 
-// Очищает указатель от текущего  объекта
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void Clear(void);
 
 T* Get(void) const;
 
-// Инициализирует умный указатель
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UESharedPtr<T>& Init(long* counter, T* pdata);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 protected:
 // --------------------------
 };
 
-/* Простой указатель (слабый аналог weak_ptr) */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ weak_ptr) */
 template<typename T>
 class UEPtr
 {
 protected:
 T* PData;
 
-public: // Исключения
+public: // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 class EUsingZeroPtr: public EFatal {};//T::IException {};
 
-public: // Методы
+public: // пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
-// не константная ссылка придет сюда
+// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){}
 virtual ~UEPtr(void);
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 T* Get(void) const;
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UEPtr<T>& operator = (UEPtr<T> &p);
 
@@ -138,7 +138,7 @@ operator T* (void) const;
 
 /* class UEPtr */
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<typename T>
 UEPtr<T>::UEPtr(void)
@@ -166,7 +166,7 @@ UEPtr<T>::~UEPtr(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<typename T>
 T* UEPtr<T>::Get(void) const
@@ -176,7 +176,7 @@ T* UEPtr<T>::Get(void) const
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<typename T>
 UEPtr<T>& UEPtr<T>::operator = (UEPtr<T> &p)
@@ -214,6 +214,24 @@ T& UEPtr<T>::operator * (void)
  return *PData;
 };
 
+// Specialization for void - no operator* for void
+template<>
+class UEPtr<void> {
+private:
+    void* PData;
+public:
+    UEPtr() : PData(nullptr) {}
+    UEPtr(void* ptr) : PData(ptr) {}
+    UEPtr(const UEPtr<void>& other) : PData(other.PData) {}
+    UEPtr& operator=(const UEPtr<void>& other) { PData = other.PData; return *this; }
+    UEPtr& operator=(void* ptr) { PData = ptr; return *this; }
+    operator void*() const { return PData; }
+    void* Get() const { return PData; }
+    bool operator!() const { return !PData; }
+    operator bool() const { return PData != nullptr; }
+    // No operator* for void
+};
+
 template<typename T>
 UEPtr<T>::operator T* (void) const
 {
@@ -224,7 +242,7 @@ UEPtr<T>::operator T* (void) const
 
 // Class UESharedPtr
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<typename T>
 UESharedPtr<T>::UESharedPtr(void)
@@ -262,7 +280,7 @@ UESharedPtr<T>::~UESharedPtr(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<typename T>
 UESharedPtr<T>& UESharedPtr<T>::operator = (const UESharedPtr<T> &p)
@@ -357,7 +375,7 @@ UESharedPtr<T>::operator T* (void) const
 }
 
 
-// Возвращает число ссылок на объект
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 long UESharedPtr<T>::GetCounter(void) const
 { return *Counter; };
@@ -366,7 +384,7 @@ template<typename T>
 long* UESharedPtr<T>::GetPCounter(void) const
 { return Counter; };
 
-// Очищает указатель от текущего  объекта
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void UESharedPtr<T>::Clear(void)
 {
@@ -386,7 +404,7 @@ T* UESharedPtr<T>::Get(void) const
 }
 
 
-// Инициализирует умный указатель
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 UESharedPtr<T>& UESharedPtr<T>::Init(long* counter, T* pdata)
 {
@@ -400,7 +418,7 @@ UESharedPtr<T>& UESharedPtr<T>::Init(long* counter, T* pdata)
 
 
 // -----------------------------------------------------------
-// Приведение  типов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  пїЅпїЅпїЅпїЅпїЅ
 // -----------------------------------------------------------
 template<class T, class U>
 UESharedPtr<T> static_pointer_cast(UESharedPtr<U> const & r)

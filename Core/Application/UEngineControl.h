@@ -3,8 +3,14 @@
 
 #include "UEngineControlThread.h"
 #include "UIVisualController.h"
-//#include <boost/asio.hpp>
-//#include <boost/chrono.hpp>
+#include "../Engine/UEPtr.h"
+#include "../Engine/ModernSmartPointers.h"
+#include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <atomic>
 
 namespace RDK {
 
@@ -204,7 +210,28 @@ int getUpdateInterval() const;
 ///Получение значения инетрвала обновления в мс.
 void setUpdateInterval(int value);
 
-private: // Вспомогательные методы
+// Modern C++20 thread-safe methods
+// Thread-safe state management
+UCalcState GetStateSafe(void) const;
+bool SetStateSafe(UCalcState state);
+
+// Modern thread management with std::jthread
+std::shared_ptr<std::jthread> CreateControlThread(void);
+std::shared_ptr<std::jthread> CreateStateThread(void);
+
+// Thread-safe channel management
+int GetNumChannelsSafe(void) const;
+bool SetNumChannelsSafe(int num);
+
+// Modern synchronization
+void WaitForStateChange(std::chrono::milliseconds timeout = std::chrono::milliseconds(1000));
+void NotifyStateChange(void);
+
+// Move semantics
+UEngineControl(UEngineControl&& other) noexcept;
+UEngineControl& operator=(UEngineControl&& other) noexcept;
+
+private: //   Вспомогательные методы
 // --------------------------
 /// Управление числом каналов
 // --------------------------

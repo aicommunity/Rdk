@@ -2,39 +2,47 @@
 #define UBASEPROPCREATOR_H
 
 #include "UBasePropCreatorTempl.h"
+#include "UEPtr.h"
+#include "ModernProperties.h"
 
 namespace RDK {
 
-// Отвечает за создание функции для формирования базовых свойств
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 class UBasePropCreator: public UBasePropCreatorTempl
 {
 
 public:
-    // Основная функция создания свойств всех возможных типов (добавляется в Storage)
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Storage)
     static bool BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-    // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Проверяет тип на встроенные типы данных и создает, если это так
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static bool CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
+
+    // Modern C++20 property creation (simplified without concepts)
+    template<typename T>
+    static std::shared_ptr<UIProperty> CreateModernProperty(const std::string& name, T&& value) {
+        return std::make_shared<UVBaseDataProperty<T>>(new T(std::forward<T>(value)));
+    }
 };
 
 
-// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
 
-    // Проверка на встроенный ли тип данных у свойства
-    // Если да - создание и выход
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
     if(CreateSimpleTypeProperty<PropType, TypeInt>(serstorage,mock_unet, ptype))
         return;
 
-    // Строка
+    // пїЅпїЅпїЅпїЅпїЅпїЅ
     if(type == "std::string")
     {
         CreatorProperty<PropType, TypeInt, std::string>::CreatePropertyByType(serstorage,mock_unet, ptype);
@@ -87,14 +95,14 @@ void UBasePropCreator::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMoc
 
 }
 
-// Проверяет тип на встроенные типы данных и создает, если это так
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 bool UBasePropCreator::CreateSimpleTypeProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet * mock_unet, unsigned int ptype)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
 
-    // Встроенные типы
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     if(type == typeid(bool).name())
     {
         CreatorProperty<PropType, TypeInt, bool>::CreatePropertyByType(serstorage, mock_unet, ptype);

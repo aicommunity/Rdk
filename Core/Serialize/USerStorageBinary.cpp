@@ -13,15 +13,17 @@ See file license.txt for more information
 #define USER_STORAGE_BINARY_CPP
 
 #include <string.h>
+#include <fstream>
+#include <iostream>
 #include "USerStorageBinary.h"
 
 namespace RDK {
 
-// Методы
+// пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Создает пустую очередь
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 USerStorageBinary::USerStorageBinary(void)
 {
  Size = 0;
@@ -31,7 +33,7 @@ USerStorageBinary::USerStorageBinary(void)
  Back=0;
 };
 
-// Создает очередь с резервированым максимальным размером
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 USerStorageBinary::USerStorageBinary(int size)
 {
  MaxSize = size;
@@ -40,7 +42,7 @@ USerStorageBinary::USerStorageBinary(int size)
  InternalResize(size);
 };
 
-// Создает очередь заполненную данными из вектора vec
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ vec
 USerStorageBinary::USerStorageBinary(const unsigned char* vec, int nsize)
 {
  Size = MaxSize = 0;
@@ -62,22 +64,22 @@ USerStorageBinary::~USerStorageBinary(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает первый элемент
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 unsigned char&    USerStorageBinary::front(void)
 {
  return    m_pData[Front];
 };
 
-// Возвращает последний элемент
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 unsigned char&    USerStorageBinary::back(void)
 {
  return    m_pData[Back];
 };
 
-// Оператор доступа к элементам по индексу
-// Индекс считается от начала очереди
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 unsigned char& USerStorageBinary::operator [] (int i)
 {
  if(Front+i<MaxSize)
@@ -86,13 +88,13 @@ unsigned char& USerStorageBinary::operator [] (int i)
   return m_pData[Front+i-MaxSize];
 }
 
-// Возвращает true если очередь пуста
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool USerStorageBinary::empty(void)
 {
  return (size() == 0);
 };
 
-// Возвращает число элементов данных в очереди
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int USerStorageBinary::size(void)
 {
  return    Size;
@@ -100,14 +102,14 @@ int USerStorageBinary::size(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Добавляет элемент в конец
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 void USerStorageBinary::push(const unsigned char& obj)
 {
  if(empty())
  {
-  // если не создано хранилище
+  // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   if(!MaxSize)
   {
    InternalResize(INIT_SIZE);
@@ -117,28 +119,28 @@ void USerStorageBinary::push(const unsigned char& obj)
  }
  else
  {
-  // если дощли до конца блока памяти
+  // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   if(++Back == MaxSize)
   {
-   // если всю память израсходовли
+   // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    if(Size == MaxSize)
    {
-    // выделяем новый блок, причём все
-    // элементы хранятся неразрывно
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     InternalResize(Size+MaxSize);
     Front = 0;
     Back = MaxSize;
     MaxSize *= 2;
    }
    else
-    // память ещё есть в начале
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     Back = 0;
   }
   else
   if(Back == Front)
   {
-   // если здесь то вся память потрачена
-   // и разбита на две части
+   // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+   // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
    unsigned char* temp=new unsigned char[MaxSize];
    for(int i=Front,j=0;i<MaxSize;i++,j++)
     temp[j]=m_pData[i];
@@ -158,7 +160,7 @@ void USerStorageBinary::push(const unsigned char& obj)
  m_pData[Back] = obj;
 };
 
-// Извлекает элемент из начала
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void USerStorageBinary::pop(void)
 {
  if(++Front == MaxSize)
@@ -166,14 +168,14 @@ void USerStorageBinary::pop(void)
  --Size;
 };
 
-// Очищает очередь
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void USerStorageBinary::clear(void)
 {
  Size = 0;
 };
 
 
-// Резервирует место для size_ элементов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ size_ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void USerStorageBinary::reserve(int size_)
 {
  if(size() < size_)
@@ -183,8 +185,8 @@ void USerStorageBinary::reserve(int size_)
  }
 };
 
-// Заполняет очередь данными из вектора vec.
-// 0-й элемент вектора становится началом очереди
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ vec.
+// 0-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void USerStorageBinary::FromVec(const unsigned char* vec, int nsize)
 {
  InternalResize(nsize);
@@ -196,9 +198,9 @@ void USerStorageBinary::FromVec(const unsigned char* vec, int nsize)
 
 
 // --------------------------
-// Скрытые методы управления данными
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Метод масштабирования массива
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void USerStorageBinary::InternalResize(int size)
 {
  unsigned char *temp=new unsigned char[size];
@@ -209,6 +211,64 @@ void USerStorageBinary::InternalResize(int size)
  delete []m_pData;
  m_pData=temp;
  MaxSize=size;
+}
+
+// Modern file operations
+bool USerStorageBinary::SaveToFile(const std::string& filepath)
+{
+    try {
+        std::ofstream file(filepath, std::ios::binary);
+        if (!file.is_open()) {
+            return false;
+        }
+        
+        // Write size first
+        file.write(reinterpret_cast<const char*>(&Size), sizeof(Size));
+        
+        // Write data
+        if (Size > 0 && m_pData) {
+            file.write(reinterpret_cast<const char*>(m_pData), Size);
+        }
+        
+        file.close();
+        return true;
+    } catch (const std::exception& e) {
+        return false;
+    }
+}
+
+bool USerStorageBinary::LoadFromFile(const std::string& filepath)
+{
+    try {
+        std::ifstream file(filepath, std::ios::binary);
+        if (!file.is_open()) {
+            return false;
+        }
+        
+        // Read size first
+        int fileSize;
+        file.read(reinterpret_cast<char*>(&fileSize), sizeof(fileSize));
+        if (file.fail()) {
+            return false;
+        }
+        
+        // Resize buffer
+        if (fileSize > 0) {
+            InternalResize(fileSize);
+            file.read(reinterpret_cast<char*>(m_pData), fileSize);
+            if (file.fail()) {
+                return false;
+            }
+            Size = fileSize;
+            Front = 0;
+            Back = Size - 1;
+        }
+        
+        file.close();
+        return true;
+    } catch (const std::exception& e) {
+        return false;
+    }
 }
 // --------------------------
 

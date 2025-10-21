@@ -3,10 +3,15 @@
 
 #include <string>
 #include <vector>
-#define BOOST_THREAD_USE_LIB
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/thread/mutex.hpp>
+#include "../Engine/UEPtr.h"
+#include "../Engine/ModernSmartPointers.h"
+#include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <atomic>
+#include <functional>
 
 #include "../../Deploy/Include/rdk.h"
 
@@ -90,7 +95,7 @@ UGenericEvent* CalcWaitOff;
 
 protected: // Потоки
 /// Поток расчета
-boost::thread Thread;
+std::jthread Thread;
 
 bool Terminated;
 
@@ -186,6 +191,24 @@ virtual bool EnableCalculation(void);
 
 /// Запускает аналитику канала
 virtual void Start(void);
+
+// Modern C++20 thread management
+// Thread-safe state management
+UCalcState GetStateSafe(void) const;
+bool SetStateSafe(UCalcState state);
+
+// Modern thread control with std::jthread
+void StartThread(void);
+void StopThread(void);
+void JoinThread(void);
+
+// Modern synchronization
+void WaitForStateChange(std::chrono::milliseconds timeout = std::chrono::milliseconds(1000));
+void NotifyStateChange(void);
+
+// Move semantics
+UEngineControlThread(UEngineControlThread&& other) noexcept;
+UEngineControlThread& operator=(UEngineControlThread&& other) noexcept;
 
 /// Останавливает аналитику канала
 virtual void Pause(void);

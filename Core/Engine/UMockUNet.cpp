@@ -22,8 +22,8 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
     // Установка хранилище и логера
-    SetStorage(storage);
-    SetLogger(storage->GetLogger());
+    SetStorage(std::shared_ptr<UStorage>(storage));
+    SetLogger(std::shared_ptr<ULoggerEnv>(storage->GetLogger().Get()));
 
     // Вызов всех добавленных функций создания свойств
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
@@ -144,7 +144,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
      LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
      return false;
     }
-    UStorage* storage=GetStorage();
+    auto storage = Storage.lock(); UStorage* storage_ptr=storage.get();
     for(int i=0;i<serstorage->GetNumNodes();i++)
     {
      serstorage->SelectNode(i);
@@ -152,7 +152,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
      name=serstorage->GetNodeAttribute("Class");
      try
      {
-      int id=Storage->FindClassId(name);
+      int id=Storage.lock()->FindClassId(name);
       UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
       if(!newcont)
        continue;
@@ -193,7 +193,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 
 UMockUNet* UMockUNet::New(void)
 {
-    return new UMockUNet(&ClassDesriptionXML,GetStorage());
+    return new UMockUNet(&ClassDesriptionXML,GetStorage().get());
 }
 
 UMockUNet::~UMockUNet()

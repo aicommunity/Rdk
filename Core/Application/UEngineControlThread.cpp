@@ -13,7 +13,7 @@
 
 namespace RDK {
 
-/// Возвращает версию boost
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ boost
 const char* BoostVersion(void)
 {
 #ifdef BOOST_VERSION
@@ -36,7 +36,7 @@ const char* BoostVersion(void)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int channel_index)
 : EngineIndex(channel_index), EngineControl(engine_control), Terminated(false)
@@ -58,7 +58,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int c
  CalculationTimeSource=0;
  CalculateMode=0;
  MinInterstepsInterval=1;
- Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
+ Thread=std::jthread(&UEngineControlThread::Execute, std::ref(*this));
  Profiler=new UChannelProfiler;
  Profiler->SetChannelIndex(channel_index);
 
@@ -86,9 +86,9 @@ UEngineControlThread::~UEngineControlThread(void)
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Режим счета
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 int UEngineControlThread::GetCalculateMode(void) const
 {
  return CalculateMode;
@@ -107,7 +107,7 @@ bool UEngineControlThread::SetCalculateMode(int value)
  return true;
 }
 
-/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 0 пїЅ 2, пїЅпїЅ
 int UEngineControlThread::GetMinInterstepsInterval(void) const
 {
  return MinInterstepsInterval;
@@ -125,9 +125,9 @@ bool UEngineControlThread::SetMinInterstepsInterval(RDK::UTime value)
  return true;
 }
 
-/// Источник времени для модели
-/// 0 - часы
-/// 1 - время внешнего видеоисточника
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UEngineControlThread::GetCalculationTimeSource(void) const
 {
  return CalculationTimeSource;
@@ -144,16 +144,16 @@ bool UEngineControlThread::SetCalculationTimeSource(int value)
 // --------------------------
 
 // --------------------------
-// Управление данными
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Возвращает время расчета, переданное в модель последний раз
-/// в соответствии с режимом CalculationTimeSource
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+/// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ CalculationTimeSource
 double UEngineControlThread::GetCalculationTime(void) const
 {
  return CalculationTime;
 }
 
-/// Внешний источник времени
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 double UEngineControlThread::GetServerTimeStamp(void) const
 {
  return ServerTimeStamp;
@@ -165,7 +165,7 @@ bool UEngineControlThread::SetServerTimeStamp(double value)
  return true;
 }
 
-/// Метка внешнего источника времени когда был произведен последний расчет
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 double UEngineControlThread::GetLastCalculationServerTimeStamp(void) const
 {
  return LastCalculationServerTimeStamp;
@@ -177,19 +177,19 @@ double UEngineControlThread::GetRealLastCalculationTime(void) const
 }
 
 
-/// Время, затраченное последней итерацией расчета, мс
+/// пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ
 int UEngineControlThread::GetLastFullStepDuration(void) const
 {
  return LastFullStepDuration;
 }
 
-/// Возвращает класс-владелец потока
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineControl* UEngineControlThread::GetEngineControl(void)
 {
  return EngineControl;
 }
 
-/// Экземпляр обработчика данных производительности
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UChannelProfiler* UEngineControlThread::GetProfiler(void)
 {
  return Profiler;
@@ -197,7 +197,7 @@ UChannelProfiler* UEngineControlThread::GetProfiler(void)
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 void UEngineControlThread::BeforeCalculate(void)
 {
@@ -256,7 +256,7 @@ void UEngineControlThread::Calculate(void)
    return;
   }*/
 
-  // Взяли блокировку канала т.к. дальше будет много обращений в ядро
+  // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ.пїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
   UELockPtr<UContainer> model=GetModelLock(EngineIndex);
 
   int use_controllers_mode=EngineControl->GetUseControllersMode();
@@ -290,7 +290,7 @@ void UEngineControlThread::Calculate(void)
    MEnv_Calculate(EngineIndex,0);
   }
   AfterCalculate();
-  LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: Возможно тут current_time?
+  LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ current_time?
   RealLastCalculationTime=GetVariantLocalTime();
 //  ServerLastCalculationTime=current_time;
   if(use_controllers_mode == 1)
@@ -332,7 +332,7 @@ void UEngineControlThread::Execute(void)
  }
 }
 
-/// Проверяет состояние расчета по id канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ id пїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineControlThread::UCalcState UEngineControlThread::CheckCalcState(void) const
 {
  if(CalcState->wait(0))
@@ -341,8 +341,8 @@ UEngineControlThread::UCalcState UEngineControlThread::CheckCalcState(void) cons
  return csStopped;
 }
 
-/// Возвращает true когда завершится текущая итерация расчета за заданный timeout
-/// Если timeout == -1 То ждет с таймаутом по умолчанию
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ timeout
+/// пїЅпїЅпїЅпїЅ timeout == -1 пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UEngineControlThread::WaitForCalculationComplete(int timeout) const
 {
  if(timeout >= 0)
@@ -351,22 +351,22 @@ bool UEngineControlThread::WaitForCalculationComplete(int timeout) const
 }
 
 
-/// Включает режим ожидания
-/// Снимает состояние события CalcWaitOff
-/// и ожидает окончание итерации расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ CalcWaitOff
+/// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControlThread::WaitSyncSignal(void)
 {
  CalcWaitOff->reset();
 }
 
-/// Выключает режим ожидания
-/// Взводит состояние события CalcWaitOff и отдает управление
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ CalcWaitOff пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControlThread::WaitSyncSignalOff(void)
 {
  CalcWaitOff->set();
 }
 
-/// Возвращает состояния запуска треда
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 int UEngineControlThread::IsCalcStarted(void) const
 {
  if(CalcStarted->wait(0))
@@ -375,14 +375,14 @@ int UEngineControlThread::IsCalcStarted(void) const
  return 0;
 }
 
-/// Взводит флаг разрешения расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UEngineControlThread::EnableCalculation(void)
 {
  CalcEnable->set();
  return true;
 }
 
-/// Запускает аналитику канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControlThread::Start(void)
 {
  if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
@@ -393,7 +393,7 @@ void UEngineControlThread::Start(void)
  CalcWaitOff->set();
 }
 
-/// Останавливает аналитику канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControlThread::Pause(void)
 {
  if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
@@ -404,7 +404,7 @@ void UEngineControlThread::Pause(void)
  LastFullStepDuration=0;
 }
 
-/// Сбрасывает аналитику канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControlThread::Reset(void)
 {
  if(EngineIndex<0 || EngineIndex>Core_GetNumChannels())
@@ -417,7 +417,7 @@ void UEngineControlThread::Reset(void)
  LastFullStepDuration=0;
 }
 
-/// Устанавливает приоритет потока
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UEngineControlThread::SetPriority(int priority_id)
 {
 #ifdef WIN32

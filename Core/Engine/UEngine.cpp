@@ -157,8 +157,8 @@ std::string& UEngine::CreateTempString(void) const
  {
   if(TempStrings.empty())
   {
-   UEPtr<string> pstr=new std::string;
-   TempStrings.insert(std::pair<UEPtr<string>,bool>(pstr,true));
+   std::shared_ptr<string> pstr=std::make_shared<string>();
+   TempStrings.insert(std::pair<std::shared_ptr<string>,bool>(pstr,true));
   }
   return *TempStrings.begin()->first;
  }
@@ -166,7 +166,7 @@ std::string& UEngine::CreateTempString(void) const
 
  case 1:
  {
-  std::map<UEPtr<std::string>,bool>::iterator I,J;
+  std::map<std::shared_ptr<std::string>,bool>::iterator I,J;
   I=TempStrings.begin();
   J=TempStrings.end();
   for(;I!=J;++I)
@@ -178,8 +178,8 @@ std::string& UEngine::CreateTempString(void) const
    }
   }
 
-  UEPtr<string> pstr=new std::string;
-  TempStrings.insert(std::pair<UEPtr<string>,bool>(pstr,true));
+  std::shared_ptr<string> pstr=std::make_shared<string>();
+  TempStrings.insert(std::pair<std::shared_ptr<string>,bool>(pstr,true));
   return *pstr;
  }
  break;
@@ -192,7 +192,7 @@ std::string& UEngine::CreateTempString(void) const
 /// не находит свободные строки!
 std::string& UEngine::FindTempString(const char *str_data) const
 {
- std::map<UEPtr<std::string>,bool>::iterator I,J;
+ std::map<std::shared_ptr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
@@ -214,7 +214,7 @@ void UEngine::DestroyTempString(const char *str_data) const
  if(BufObjectsMode == 0)
   return;
 
- std::map<UEPtr<std::string>,bool>::iterator I,J;
+ std::map<std::shared_ptr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
@@ -234,7 +234,7 @@ void UEngine::DestroyTempString(const std::string &ref) const
  if(BufObjectsMode == 0)
   return;
 
- std::map<UEPtr<std::string>,bool>::iterator I,J;
+ std::map<std::shared_ptr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
@@ -250,12 +250,12 @@ void UEngine::DestroyTempString(const std::string &ref) const
 /// Удаляет все временные строк
 void UEngine::ClearAllTempStrings(void) const
 {
- std::map<UEPtr<std::string>,bool>::iterator I,J;
+ std::map<std::shared_ptr<std::string>,bool>::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  delete I->first;
+  // delete I->first; // shared_ptr will auto-delete
  }
  TempStrings.clear();
 }
@@ -307,13 +307,13 @@ bool UEngine::SetChannelIndex(int value)
 // Возвращает указатель на среду
 UEnvironment* UEngine::GetEnvironment(void)
 {
- return Environment;
+ return Environment.get();
 }
 
 // Возвращает указатель на модель
 UContainer* UEngine::GetModel(void)
 {
- return Environment->GetModel();
+ return Environment->GetModel().get();
 }
 // --------------------------
 
@@ -321,12 +321,12 @@ UContainer* UEngine::GetModel(void)
 // Методы управления счетом
 // --------------------------
 // Указатель на логгер
-UEPtr<ULoggerEnv> const UEngine::GetLogger(void) const
+std::shared_ptr<ULoggerEnv> const UEngine::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UEngine::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UEngine::SetLogger(std::shared_ptr<ULoggerEnv> logger)
 {
  if(Logger == logger)
   return true;
@@ -344,7 +344,7 @@ bool UEngine::SetLogger(UEPtr<ULoggerEnv> logger)
  if(Environment)
  {
   Logger->ClearLog();
-  Logger->RegisterEnvironment(Environment);
+  Logger->RegisterEnvironment(Environment.get());
  }
  return true;
 }
@@ -355,7 +355,7 @@ void UEngine::Init(void)
  // Заглушка
 }
 
-bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
+bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironment> env)
 {
  if(!Default())
   return false;
@@ -368,7 +368,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  if(Logger)
  {
   Logger->ClearLog();
-  Logger->RegisterEnvironment(Environment);
+  Logger->RegisterEnvironment(Environment.get());
   Logger->SetChannelIndex(ChannelIndex);
  }
  Environment->SetChannelIndex(ChannelIndex);
@@ -376,7 +376,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 
  if(!Storage)
   return false;
- Storage->SetLogger(Logger);
+ Storage->SetLogger(UEPtr<ULoggerEnv>(Logger.get()));
 
 
  RDK_SYS_TRY
@@ -410,7 +410,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 
  CreateEnvironment(true,&ClassesList, &LibrariesList);
 
- if(!Storage || !Environment || Environment->GetStorage() != Storage)
+ if(!Storage || !Environment || Environment->GetStorage() != Storage.get())
  {
   return false;
  }
@@ -1062,7 +1062,7 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
 			if(!factory)
 	return TempString.c_str();
 
-			UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(factory->GetComponent());
+			std::shared_ptr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(factory->GetComponent());
 
    if(!cont)
     return TempString.c_str();
@@ -1110,7 +1110,7 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
   try
   {
    UEPtr<UComponentAbstractFactory> factory=Storage->GetComponentFactory(stringid);
-   cont=dynamic_pointer_cast<RDK::UNet>(factory->New());
+   cont=UEPtr<RDK::UNet>(std::shared_ptr<RDK::UNet>(dynamic_pointer_cast<RDK::UNet>(factory->New()).get()).get());
 
    if(!cont)
 	return TempString.c_str();
@@ -2593,7 +2593,7 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
  {
   try
   {
-   Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
+   Environment->GetCurrentComponent()->GetLongName(UEPtr<UContainer>(Environment->GetModel().get()),TempString);
   }
   catch (RDK::UException &exception)
   {
@@ -3115,7 +3115,7 @@ int UEngine::Model_Clear(void)
   try
   {
    AccessCache.clear();
-   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
+   std::shared_ptr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
    if(!model)
 	return RDK_E_MODEL_NOT_FOUND;
@@ -3351,7 +3351,7 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
    if(!component)
     return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-   RDK::UEPtr<RDK::UNet> owner=RDK::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
+   std::shared_ptr<RDK::UNet> owner=std::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
    if(!owner)
     return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
@@ -3579,7 +3579,7 @@ int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
   {
    RDK::UContainer* destcont=FindComponent(stringid);
 
-   if(destcont == Environment->GetModel())
+   if(destcont == Environment->GetModel().get())
 	return RDK_SUCCESS;
 
    if(!destcont)
@@ -3859,7 +3859,7 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
 
    ULongId id;
 
-   destcont->GetLongId(owner_level,id);
+   destcont->GetLongId(std::shared_ptr<UContainer>(owner_level.Get()),id);
    id.EncodeToString(TempString);
    return TempString.c_str();
   }
@@ -5318,12 +5318,12 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    {
 	std::string name=XmlStorage.GetNodeAttribute("Class");
 	UId id=Storage->FindClassId(name);
-	UEPtr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+	UEPtr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).get();
 	if(!cont || cont->GetClass() != id)
 	{
 	 Model_Destroy();
 	 Model_Create(name.c_str());
-	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).get();
 	}
 
 	if(!cont->LoadComponent(&XmlStorage,true))
@@ -7131,7 +7131,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
   {
    Environment->Default();
 
-   if(!Environment->SetStorage(Storage) || !isinit)
+   if(!Environment->SetStorage(Storage.get()) || !isinit)
 	return;
 
    if(external_classes != 0)
@@ -7142,10 +7142,10 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	while(I != J)
 	{
 		UEPtr<UComponent> cont = *I;
-		cont->SetLogger(Storage->GetLogger());
+		cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().Get()));
 		cont->SetStorage(Storage);
 		cont->Build();
-		UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
+		UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(std::shared_ptr<UComponent>(cont.Get()));
 		Storage->AddClass(factory);
 	 ++I;
 	}
@@ -7210,7 +7210,7 @@ int UEngine::LoadPredefinedCrPropFunctions(void)
  Storage->AddCrPropMockFunc(UBasePropCreatorVector::BaseCrPropMock);
  Storage->AddCrPropMockFunc(UBasePropCreatorMatrix::BaseCrPropMock);
 
- RdkLoadPredefinedCrPropFunctions(Storage);
+ RdkLoadPredefinedCrPropFunctions(Storage.get());
  return 0;
 }
 

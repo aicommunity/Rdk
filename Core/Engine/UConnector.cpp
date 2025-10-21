@@ -21,17 +21,17 @@ See file license.txt for more information
 namespace RDK {
 
 /* *************************************************************************** */
-// Описание подключаемого элемента "UConnectedITEM"
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "UConnectedITEM"
 //struct UCItem
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UCItem::UCItem(void)
 {
- // Подключаемый элемент
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Item=0;
 
- // Индекс выхода
+ // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  Index=0;
 }
 
@@ -44,7 +44,7 @@ UCItem::UCItem(const UCItem &copy)
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 bool UCItem::operator == (const UCItem &value)
 {
@@ -60,14 +60,14 @@ bool UCItem::operator != (const UCItem &value)
 /* *************************************************************************** */
 
 /* *************************************************************************** */
-// Описание входящей связи с заданным item "UConnectedLINK"
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ item "UConnectedLINK"
 //struct UCLink: public UCItem
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UCLink::UCLink(void)
 {
- // Индекс входа
+ // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  Input=Output=-1;
 }
 
@@ -82,20 +82,20 @@ UCLink::UCLink(const UCLink &copy)
 /* *************************************************************************** */
 
 /* *************************************************************************** */
-// Контейнер - список указателей на подключенные элементы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // class UCItemList
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UCItemList::UCItemList(void)
 {
- // Размер контейнера
+ // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Size=0;
 
- // Массив элементов
+ // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Data=0;
 
- // Реальный размер контейнера
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  RealSize=0;
 }
 
@@ -112,9 +112,9 @@ UCItemList::~UCItemList(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Очищает контейнер
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UCItemList::Clear(void)
 {
  if(Data)
@@ -125,7 +125,7 @@ void UCItemList::Clear(void)
  Size=RealSize=0;
 }
 
-// Меняет размер контейнера с сохранением элементов
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UCItemList::Resize(int newsize)
 {
  if(Size == newsize)
@@ -154,8 +154,8 @@ void UCItemList::Resize(int newsize)
  }
 }
 
-// Ищет в контейнере первый заданный элемент начиная с индекса index
-// и возвращает его описание
+// пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ index
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UCItem UCItemList::Find(const UEPtr<UItem> &item, int index) const
 {
  return Find(item.Get(),index);
@@ -172,8 +172,8 @@ UCItem UCItemList::Find(const UItem *const item, int index) const
  return UCItem();
 }
 
-// Ищет в контейнере первый заданный элемент начиная с индекса index
-// и возвращает его индекс или -1 если элемент не найден
+// пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ index
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ -1 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UCItemList::Find(const UCItem &item, int index) const
 {
  UCItem *pdata=Data;
@@ -185,15 +185,15 @@ int UCItemList::Find(const UCItem &item, int index) const
  return -1;
 }
 
-// Добавляет в конец контейнера элемент
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UCItemList::Add(const UCItem &item)
 {
  Resize(Size+1);
  Data[Size-1]=item;
 }
 
-// Добавляет в конец контейнера элемент только если таких элементов еще нет
-// Возвращает true в случае успешного добавления
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UCItemList::AddUnique(const UCItem &item)
 {
  if(Find(item)>=0)
@@ -203,7 +203,7 @@ bool UCItemList::AddUnique(const UCItem &item)
  return true;
 }
 
-// Удаляет элемент по индексу
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UCItemList::Del(int index)
 {
  if(index<0 || index >= Size)
@@ -213,7 +213,7 @@ void UCItemList::Del(int index)
  Resize(Size-1);
 }
 
-// Удаляет элемент по указателю
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UCItemList::Del(UCItem *item)
 {
  int index=Find(*item);
@@ -222,9 +222,9 @@ void UCItemList::Del(UCItem *item)
 // --------------------------
 
 // --------------------------
-// Методы доступа
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UCItemList& UCItemList::operator = (const UCItemList &copy)
 {
  Resize(copy.Size);
@@ -234,7 +234,7 @@ UCItemList& UCItemList::operator = (const UCItemList &copy)
  return *this;
 }
 
-// Оператор доступа к элементу
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UCItem& UCItemList::operator [] (int index)
 {
  return Data[index];
@@ -245,13 +245,13 @@ const UCItem& UCItemList::operator [] (int index) const
  return Data[index];
 }
 
-// Оператор доступа к массиву
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UCItem* UCItemList::GetData(void)
 {
  return Data;
 }
 
-// Оператор доступа к размеру
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UCItemList::GetSize(void) const
 {
  return Size;
@@ -261,7 +261,7 @@ int UCItemList::GetSize(void) const
 
 /* *************************************************************************** */
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UConnector::UConnector(void)
 {
@@ -277,15 +277,15 @@ UConnector::~UConnector(void)
 
 
 // --------------------------
-// Методы управления общедоступными свойствами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Возвращает число реально подключенных элементов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UConnector::GetNumActiveInputs(void) const
 {
  return int(ConnectedItemList.size());
 }
 
-/// Возвращает число реально подключенных элементов к заданному свойству
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UConnector::GetNumActiveInputs(const NameT &connector_property_name) const
 {
  std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
@@ -297,10 +297,10 @@ int UConnector::GetNumActiveInputs(const NameT &connector_property_name) const
 // --------------------------
 
 // --------------------------
-// Системные методы управления объектом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ Storage == 0
 void UConnector::Free(void)
 {
  DisconnectAllItems();
@@ -309,9 +309,9 @@ void UConnector::Free(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает подключенный к этому коннектору объект по индексу
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const UCItem& UConnector::GetCItem(const NameT &connector_property_name, int index) const
 {
  std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
@@ -349,8 +349,8 @@ void UConnector::GetCItem(const NameT &connector_property_name, std::vector<UCIt
 }
 
 
-// Возвращает информацию об индексах связей с этим item или -1, -1
-// если такая связь отсутствует
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ item пїЅпїЅпїЅ -1, -1
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UConnector::GetCLink(const UEPtr<UItem> &item, std::vector<UCLink> &buffer) const
 {
  UCLink indexes;
@@ -392,16 +392,16 @@ void UConnector::GetCLink(const UItem* const item, std::vector<UCLink> &buffer) 
 // --------------------------
 
 // --------------------------
-// Методы доступа к описанию входов и выходов
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Ищет свойство-вход по заданному индексу
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UConnector::FindInputProperty(const NameT &connector_property_name, UIPropertyInput* &property) const
 {
- // Ищем указатель на входные данные
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  property=0;
 
  VariableMapCIteratorT I=PropertiesLookupTable.find(connector_property_name);
-// // TODO: Сначала проверяем алиасы
+// // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // VariableMapCIteratorT I=PropertiesLookupTable.end();
 // if(CheckAlias(connector_property_name))
 //  I=PropertiesLookupTable.find(GetPropertyNameByAlias(connector_property_name));
@@ -413,15 +413,15 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
 
  if(I->second.Type & ptInput)
  {
-  property=dynamic_cast<UIPropertyInput*>(I->second.Property.Get());
+  property=dynamic_cast<UIPropertyInput*>(I->second.Property);
  }
 }
 // --------------------------
 
 // ----------------------
-// Коммуникационные методы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // ----------------------
-// Устанавливает связь с элементом сети 'na'.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 'na'.
 bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!na)
@@ -495,8 +495,8 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 
  //i_conn_property->Init(na,item_property_name);
 
- // TODO: Этот код не будет работать в случае, если c_index будет подаваться на
- // вход не по возрастанию
+ // TODO: пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ c_index пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
+ // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  UCItem item;
  item.Item=na;
  item.Index=-1;
@@ -507,7 +507,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  return AConnectToItem(na, item_property_name, connector_property_name);
 }
 
-/// Разрывает все связи с элементом сети 'na'
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 'na'
 void UConnector::DisconnectFromItem(UEPtr<UItem> na)
 {
  if(!na)
@@ -527,7 +527,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na)
  }
 }
 
-/// Разрывает связь с элементом сети 'na', подключенную от i_index
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 'na', пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ i_index
 void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name)
 {
  if(!na)
@@ -540,14 +540,14 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
   while(i<int(I->second.size()))
   {
    if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-    DisconnectFromIndex(I->first,I->second[i].Name,i); // TODO индекс не определен
+    DisconnectFromIndex(I->first,I->second[i].Name,i); // TODO пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    else
     ++i;
   }
  }
 }
 
-/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 'na', пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ i_index пїЅ c_index
 void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
  if(!na)
@@ -563,14 +563,14 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
  while(i<int(I->second.size()))
  {
   if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO: индекс не определен
+   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   else
    ++i;
  }*/
- DisconnectFromIndex(connector_property_name,I->second[connected_c_index].Name,connected_c_index); // TODO индекс не определен
+ DisconnectFromIndex(connector_property_name,I->second[connected_c_index].Name,connected_c_index); // TODO пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
-// Разрывает связь с элементом сети подключенным ко входу 'index'
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 'index'
 void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
@@ -598,7 +598,7 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
      LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("connector ")+connector_property_name+" not found");
     }
 
-    //	if(i_conn_property->CheckRange(index)) // TODO: тут возможно что-то другое
+    //	if(i_conn_property->CheckRange(index)) // TODO: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
        UIPropertyOutput* output_property=dynamic_pointer_cast<UIPropertyOutput>(I->second[index].Item->FindProperty(item_property_name));
     if(output_property && i_conn_property)
     {
@@ -628,7 +628,7 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
   {
    UIPropertyInput* i_conn_property=0;
    FindInputProperty(connector_property_name,i_conn_property);
-  //	if(i_conn_property->CheckRange(i)) // TODO: воозможно тут что то другое
+  //	if(i_conn_property->CheckRange(i)) // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   /* UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
    if(input_prop)
    {
@@ -652,18 +652,18 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
 }
 
 
-// Выполняет действия после физически установленой связи
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UConnector::AConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
 {
  return true;
 }
 
-// Выполняет действия после физически разорваной связи
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UConnector::ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
 {
 }
 
-// Разрывает все текущие связи
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UConnector::DisconnectAllItems(void)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
@@ -677,9 +677,9 @@ void UConnector::DisconnectAllItems(void)
  }
 }
 
-// Разрывает все связи объекта
-// исключая его внутренние связи и обратные связи
-// brklevel - объект, относительно которого связи считаются внутренними
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+// brklevel - пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UConnector::DisconnectByObject(UEPtr<UContainer> brklevel)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
@@ -696,14 +696,14 @@ void UConnector::DisconnectByObject(UEPtr<UContainer> brklevel)
  }
 }
 /*
-// Проверяет, допустимо ли подключение заданного item к этому коннектору
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ item пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UConnector::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name)
 {
  return true;
 }*/
 
 
-// Проверяет, существует ли связь с заданным коннектором
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UConnector::CheckLink(const UEPtr<UItem> &item) const
 {
  std::vector<UCLink> buffer;
@@ -718,7 +718,7 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item) const
  return false;
 }
 
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name) const
 {
  std::vector<UCLink> buffer;
@@ -735,7 +735,7 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_
  return false;
 }
 
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, const NameT &connector_property_name) const
 {
  std::vector<UCLink> buffer;
@@ -755,18 +755,18 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_
 // ----------------------
 
 // --------------------------
-// Методы управления счетом
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Восстановление настроек по умолчанию и сброс процесса счета
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UConnector::Default(void)
 {
  return UContainer::Default();
 }
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ Reset() пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Ready пїЅ true
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UConnector::Build(void)
 {
  return UContainer::Build();
@@ -776,7 +776,7 @@ bool UConnector::Build(void)
 /* *************************************************************************** */
 
 //class UIPropertyInput: public UIPropertyIO
-/// Конструкторы и деструкторы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UIPropertyInput::UIPropertyInput(void)
 {
 }
@@ -785,20 +785,20 @@ UIPropertyInput::~UIPropertyInput(void)
 {
 }
 /*
-// Устанавливает указатель на данные входа
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UIPropertyInput::SetPointer(int index, UIPropertyOutput* property)
 {
  return false;
 }
 
-/// Сбрасывает указатель на данные
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UIPropertyInput::ResetPointer(int index, UIPropertyOutput* property)
 {
  return false;
 }*/
 
 //class UIPropertyOutput: public UIPropertyIO
-/// Конструкторы и деструкторы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UIPropertyOutput::UIPropertyOutput(void)
 {
 }
@@ -809,26 +809,26 @@ UIPropertyOutput::~UIPropertyOutput(void)
  ConnectorInputNames.clear();
 }
 
-// Возвращает число подключенных входов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 size_t UIPropertyOutput::GetNumConnectors(void) const
 {
  return Connectors.size();
 }
 
-// Возвращает указатель на компонент-приемник
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UConnector* UIPropertyOutput::GetConnector(int index)
 {
  return Connectors[index];
 }
 
-// Возвращает имя подключенного входа компонента-приемника
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UIPropertyOutput::GetConnectorInputName(int index) const
 {
  return ConnectorInputNames[index];
 }
 
 
-/// Возвращает указатель на свойство подключенного входа компонента-приемника
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UIPropertyInput* UIPropertyOutput::GetConnectorProperty(int index)
 {
  if(index<0 || index>=int(Connectors.size()))

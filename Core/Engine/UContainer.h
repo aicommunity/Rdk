@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "../Math/MVector.h"
 #include "UComponent.h"
+#include "UEPtr.h"
 #include "ModernSmartPointers.h"
 #include "UPropertyEndpoints.h"
 #include "UTime.h"
@@ -30,20 +31,20 @@ protected: // ������
 
 public:
 virtual ~UIPointer();
-virtual UEPtr<UContainer> const Get(void) const=0;
+virtual std::shared_ptr<UContainer> Get(void) const=0;
 
-virtual void Set(UEPtr<UContainer> source)=0;
+virtual void Set(std::shared_ptr<UContainer> source)=0;
 
-virtual void Del(UEPtr<UContainer> source)=0;
+virtual void Del(std::shared_ptr<UContainer> source)=0;
 
 // ���������, ���������� �� ����� ��������� � ���� ������
 // ���������� 0 ���� ��, � <0 ���� ���
-virtual int Find(UEPtr<const UContainer> cont) const=0;
+virtual int Find(std::shared_ptr<const UContainer> cont) const=0;
 
 // -----------------
 // ���������
 // -----------------
-UIPointer& operator = (UEPtr<UContainer> source)
+UIPointer& operator = (std::shared_ptr<UContainer> source)
 {
  Set(source);
  return *this;
@@ -59,13 +60,13 @@ struct RDK_LIB_TYPE UPVariable
  UId Id;
 
  // ��������� �� ��������
- UEPtr<UIPointer> Pointer;
+ std::shared_ptr<UIPointer> Pointer;
 
 // --------------------------
 // ������������ � �����������
 // --------------------------
 UPVariable(void);
-UPVariable(UId id, UEPtr<UIPointer> prop);
+UPVariable(UId id, std::shared_ptr<UIPointer> prop);
 virtual ~UPVariable(void);
 // --------------------------
 };
@@ -78,10 +79,10 @@ typedef long int IndexT;
 typedef UContainer* PUAContainer;
 
 // ������ ���������� �� ����������
-typedef std::vector<UEPtr<UContainer> > UAContainerVector;
+typedef std::vector<std::shared_ptr<UContainer> > UAContainerVector;
 
 // ������ ����������� ���������
-typedef std::map<UEPtr<UContainer>, NameT> UAStaticContainerMap;
+typedef std::map<std::shared_ptr<UContainer>, NameT> UAStaticContainerMap;
 
 class RDK_LIB_TYPE UContainer: public UComponent
 {
@@ -108,7 +109,7 @@ UAContainerVector Components;
 UAStaticContainerMap StaticComponents;
 
 // ������� ������������ ����������
-std::vector<UEPtr<UController> > Controllers;
+std::vector<std::shared_ptr<UController> > Controllers;
 
 public: // ������������� ��������
 // ��� �������
@@ -164,7 +165,7 @@ int CalcCounter;
 UTime OwnerTimeStep;
 
 // ��������� �� 0-� ������� ������� ���������
-UEPtr<UContainer>* PComponents;
+std::shared_ptr<UContainer>* PComponents;
 
 // ���������� ��������� � ������� ���������
 int NumComponents;
@@ -221,13 +222,13 @@ UContainer& operator=(UContainer&&) noexcept = default;
 // ������ ������� � ���������
 // --------------------------
 // ���������� �������� ����� �������
-UEPtr<UContainer> GetOwner(void) const;
+std::shared_ptr<UContainer> GetOwner(void) const;
 
 // ���������� ��������� �� �������� ��������� ���� ��������
-UEPtr<UContainer> GetMainOwner(void) const;
+std::shared_ptr<UContainer> GetMainOwner(void) const;
 
 // ���������� ��������� ��������� ����� �������
-UEPtr<UStorage> const GetStorage(void) const;
+std::shared_ptr<UStorage> GetStorage(void) const;
 
 // ���������, �������� �� ������ owner
 // ���������� ����� ������� �� �����-���� ������ ��������
@@ -242,10 +243,10 @@ ULongId GetFullId(void) const;
 // (�������� ��� ��������� 'mainowner')
 // ����� ���������� ������ ������, ���� 'mainowner' - �� ��������
 // ���������� ������� �� �� ����� ������ ��������
-ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer) const;
-ULongId GetLongId(UEPtr<UContainer> mainowner) const;
+ULongId& GetLongId(std::shared_ptr<UContainer> mainowner, ULongId &buffer) const;
+ULongId GetLongId(std::shared_ptr<UContainer> mainowner) const;
 // ������������� ������� ������������ ������, ������������� ������� ���
-std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
+std::string& GetLongId(std::shared_ptr<UContainer> mainowner, std::string &buffer) const;
 
 // ���������� true ���� ������������ ������������� ������� ���������, � ��������� ������ ���������� false
 bool CheckLongId(const ULongId &id) const;
@@ -253,10 +254,10 @@ bool CheckLongId(const ULongId &id) const;
 bool CheckLongId(const std::string &id) const;
 
 // ���������� ������ ���������� ����� �������
-virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
+virtual bool SetEnvironment(std::shared_ptr<UEnvironment> environment);
 
 // ��������� �� ������
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 // ����� ����������� ���������� �����
 virtual void ProcessException(UException &exception);
@@ -292,8 +293,8 @@ void BreakOwner(void);
 
 // ��������� ��������������� �� ����� ������� �������� ���������
 // 'levels'. ���� levels < 0 �� ��������������� ����������� �� ���� �������
-void SetMainOwner(UEPtr<UComponent> mainowner);
-void SetMainOwner(UEPtr<UComponent> mainowner, int levels);
+void SetMainOwner(std::shared_ptr<UComponent> mainowner);
+void SetMainOwner(std::shared_ptr<UComponent> mainowner, int levels);
 
 // ��������� ������������ Id 'id' �� ������������ � ������ �������, �������.
 bool CheckId(const UId &id);
@@ -304,10 +305,10 @@ virtual UId GenerateId(void);
 
 // ���������� ������� ����� �������� � ����� ������
 template<typename T>
-const UEPtr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name) const;
+const std::shared_ptr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name) const;
 
 template<typename T>
-UEPtr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name);
+std::shared_ptr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name);
 
 /// ���������� � �������� destination_property ������ �������� ������� ����������
 template<typename T>
@@ -1142,29 +1143,29 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
 
 // ���������� ������� ����� �������� � ����� ������
 template<typename T>
-const UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name) const
+const std::shared_ptr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name) const
 {
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
  if(!property)
-  return 0;
+  return nullptr;
 
  if(property->GetLanguageType() != typeid(T))
-  return 0;
+  return nullptr;
 
- return reinterpret_cast<const UVBaseDataProperty<T>*>(property.Get());
+ return std::static_pointer_cast<UVBaseDataProperty<T>>(property);
 }
 
 template<typename T>
-UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name)
+std::shared_ptr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name)
 {
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
  if(!property)
-  return 0;
+  return nullptr;
 
  if(property->GetLanguageType() != typeid(T))
-  return 0;
+  return nullptr;
 
- return reinterpret_cast<UVBaseDataProperty<T>*>(property.Get());
+ return std::static_pointer_cast<UVBaseDataProperty<T>>(property);
 }
 
 

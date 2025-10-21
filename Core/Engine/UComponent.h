@@ -65,7 +65,7 @@ class UIShare;
 struct RDK_LIB_TYPE UVariable
 {
 // ��������� �� ��������
-UEPtr<UIProperty> Property;
+UIProperty* Property;
 
 // ���� ���������� �������� ������ �� ������� ��������� Property
 bool DelEnable;
@@ -80,7 +80,7 @@ unsigned int Type;
 // ������������ � �����������
 // --------------------------
 UVariable(void);
-UVariable(UEPtr<UIProperty> prop, unsigned int type=0);
+UVariable(UIProperty* prop, unsigned int type=0);
 UVariable(const UVariable &copy);
 virtual ~UVariable(void);
 // --------------------------
@@ -117,9 +117,9 @@ typedef std::map<NameT,UVariable> VariableMapT;
 typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
 typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
 
-typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
-typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
-typedef std::map<UId,UEPtr<UIShare> >::const_iterator ShareMapCIteratorT;
+typedef std::map<UId,std::shared_ptr<UIShare> > ShareMapT;
+typedef std::map<UId,std::shared_ptr<UIShare> >::iterator ShareMapIteratorT;
+typedef std::map<UId,std::shared_ptr<UIShare> >::const_iterator ShareMapCIteratorT;
 
 public: // ������ �������� ����������
 class IException: public UException {};
@@ -130,20 +130,20 @@ protected: // �������� ��������
 bool StaticFlag;
 
 // ��������� �� ��������� ���� ��������
-UEPtr<UComponent> Owner;
+std::weak_ptr<UComponent> Owner;
 
 // ��������� �� �������� ��������� ���� ��������
 // ������������� ��������������� ��� ���� �������� ��������
-UEPtr<UComponent> MainOwner;
+std::weak_ptr<UComponent> MainOwner;
 
 // ��������� �� ��������� ��������� ����� �������
-UEPtr<UStorage> Storage;
+std::weak_ptr<UStorage> Storage;
 
 // ��������� �� ����� ���������� ����� �������
-UEPtr<UEnvironment> Environment;
+std::weak_ptr<UEnvironment> Environment;
 
 // ��������� �� ������
-UEPtr<ULoggerEnv> Logger;
+std::weak_ptr<ULoggerEnv> Logger;
 
 protected: // ������
 // ������������� ������
@@ -190,24 +190,24 @@ bool GetStaticFlag(void) const;
 virtual bool SetStaticFlag(bool value);
 
 // ���������� �������� ����� �������
-UEPtr<UComponent> const GetOwner(void) const;
-virtual bool SetOwner(UEPtr<UComponent> owner);
+std::shared_ptr<UComponent> GetOwner(void) const;
+virtual bool SetOwner(std::shared_ptr<UComponent> owner);
 
 // ���������� ��������� �� �������� ��������� ���� ��������
-UEPtr<UComponent> const GetMainOwner(void) const;
-virtual void SetMainOwner(UEPtr<UComponent> mainowner);
+std::shared_ptr<UComponent> GetMainOwner(void) const;
+virtual void SetMainOwner(std::shared_ptr<UComponent> mainowner);
 
 // ���������� ��������� ��������� ����� �������
-UEPtr<UStorage> const GetStorage(void) const;
-virtual bool SetStorage(UEPtr<UStorage> storage);
+std::shared_ptr<UStorage> GetStorage(void) const;
+virtual bool SetStorage(std::shared_ptr<UStorage> storage);
 
 // ���������� ����� ���������� ����� �������
-UEPtr<UEnvironment> const GetEnvironment(void) const;
-virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
+std::shared_ptr<UEnvironment> GetEnvironment(void) const;
+virtual bool SetEnvironment(std::shared_ptr<UEnvironment> environment);
 
 // ��������� �� ������
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+std::shared_ptr<ULoggerEnv> GetLogger(void) const;
+virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 /// ���������� ������ �� ����� ���������� ������� �� Environment.
 /// ���� Environment ����������� �� ���������� ��������� �� ��������
@@ -257,11 +257,11 @@ virtual void AUpdateInternalData(void);
 // --------------------------
 public:
 // ���������� ��������� �� ������ ��������
-const UEPtr<UIProperty> FindProperty(const NameT &name) const;
+UEPtr<UIProperty> FindProperty(const NameT &name) const;
 UEPtr<UIProperty> FindProperty(const NameT &name);
 
 // ���������� �������� ��������� �� ����� 'name'
-UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
+std::shared_ptr<UVariableData> GetProperty(const NameT &name, std::shared_ptr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;
 
 // ���������� �������� ��������� �� ����� 'name'
@@ -272,7 +272,7 @@ template<typename T>
 T* AccessPropertyData(const NameT &name);
 
 // ������������� �������� ��������� �� ����� 'name'
-void SetProperty(const NameT &name, UEPtr<UVariableData> values);
+void SetProperty(const NameT &name, std::shared_ptr<UVariableData> values);
 void SetPropertyValue(const NameT &name, const std::string &values);
 
 // ���������� ������ Id ����������, ������������ ���������������
@@ -280,17 +280,17 @@ void SetPropertyValue(const NameT &name, const std::string &values);
 const UComponent::VariableMapT& GetPropertiesList(void) const;
 
 // ���� ��� �������� �� ��������� �� ����
-const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
+const NameT& FindPropertyName(const UIProperty* prop) const;
 
 // ���� ��� �������� �� ��������� �� ����
-unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
+unsigned int FindPropertyType(const UIProperty* prop) const;
 
 // ���� ���������� �������� � ������� �� ��������� �� ����
-UComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
+UComponent::VariableMapCIteratorT FindPropertyVariable(const UIProperty* prop) const;
 
 // �������� ��� ��������� ����� ������� � ������ 'comp', ���� ��������.
 // ���������� ������ �������� ���� type
-virtual void CopyProperties(UEPtr<UComponent> comp, unsigned int type) const;
+virtual void CopyProperties(std::shared_ptr<UComponent> comp, unsigned int type) const;
 // --------------------------
 
 // --------------------------
@@ -300,7 +300,7 @@ public:
 // ��������� �������� � ������ 'name' � ������� �����������
 // ���������� � ��������� ��� ���������� ������
 // ������ ���������� � ������������� �������
-void AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
+void AddLookupProperty(const NameT &name, unsigned int type, UIProperty* property, bool delenable=true);
 
 // �������� ��� ���������
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
@@ -321,7 +321,7 @@ public:
 // ��������� ����� �������� �������� � ������ 'name' � ������� �����������
 // ����� ������� � ��������� ��� ���������� ������
 // ������ ���������� � ������������� �������
-UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
+UId AddLookupShare(const NameT &name, std::shared_ptr<UIShare> property);
 // --------------------------
 
 // --------------------------
@@ -400,10 +400,10 @@ virtual std::string GetOwnerName(void) const=0;
 virtual std::string GetOwnerClassName(void) const=0;
 
 // ����� ���������� �������� �������� � �����
-virtual bool Save(UEPtr<USerStorage> storage, bool simplemode=false)=0;
+virtual bool Save(std::shared_ptr<USerStorage> storage, bool simplemode=false)=0;
 
 // ����� ������ �������� �������� �� ������
-virtual bool Load(UEPtr<USerStorage> storage, bool simplemode=false)=0;
+virtual bool Load(std::shared_ptr<USerStorage> storage, bool simplemode=false)=0;
 
 // ����� ���������� ��������� �� ������� ������, ���������� ������ ��������
 virtual const void* GetMemoryArea(void)=0;
@@ -571,7 +571,7 @@ public:
 // virtual std::string GetOwnerName(void) const=0;
 
  // ����� ������������� ������ ��������
- virtual bool Init(UEPtr<UComponent> main_owner)=0;
+ virtual bool Init(std::shared_ptr<UComponent> main_owner)=0;
 
  // ����� ��������������� ������ ��������
  virtual bool UnInit(void)=0;

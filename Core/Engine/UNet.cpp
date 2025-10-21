@@ -435,7 +435,7 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
    {
 	try
 	{
-	 GetProperty(I->first,serstorage);
+	 GetProperty(I->first,std::shared_ptr<USerStorage>(serstorage));
 	}
 	catch(UIProperty::EPropertyError &exception)
 	{
@@ -477,7 +477,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass()),true));
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage.lock()->GetClassDescription(Storage.lock()->FindClassName(GetClass()),true));
 
 
   I=props.begin();
@@ -488,7 +488,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
    {
 	try
 	{
-	 GetProperty(I->first,serstorage);
+	 GetProperty(I->first,std::shared_ptr<USerStorage>(serstorage));
 	}
 	catch(UIProperty::EPropertyError &exception)
 	{
@@ -530,7 +530,7 @@ int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
   {
    try
    {
-	SetProperty(I->first,serstorage);
+	SetProperty(I->first,std::shared_ptr<USerStorage>(serstorage));
    }
    catch(UIProperty::EPropertyError &exception)
    {
@@ -594,8 +594,8 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
    return false;
 
   serstorage->AddNode(GetName());
-  if(Storage)
-   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+  auto storage = Storage.lock(); if(storage)
+   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/storage->FindClassName(GetClass()));
 
   unsigned int prop_type = 0x1;
   unsigned int prop_group = params_type_mask & 0xFFFF00;
@@ -657,8 +657,8 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
   if(!serstorage)
    return false;
 
-  if(Storage)
-   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(GetClass()));
+  auto storage2 = Storage.lock(); if(storage2)
+   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/storage2->FindClassName(GetClass()));
 
   unsigned int prop_type = 0x1;
   unsigned int prop_group = type_mask & 0xFFFF00;
@@ -723,7 +723,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    return false;
 
   std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->FindClassId(name);
+  UId id=Storage.lock()->FindClassId(name);
 
   if(GetClass() != id)
   {
@@ -761,7 +761,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
    return false;
   }
-  UStorage* storage=GetStorage();
+  auto storage = Storage.lock(); UStorage* storage_ptr=storage.get();
   for(int i=0;i<serstorage->GetNumNodes();i++)
   {
    serstorage->SelectNode(i);
@@ -769,7 +769,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    name=serstorage->GetNodeAttribute("Class");
    try
    {
-    id=Storage->FindClassId(name);
+    id=Storage.lock()->FindClassId(name);
 	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
 	 continue;
@@ -816,7 +816,7 @@ bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int
    return false;
 
   serstorage->AddNode(GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage.lock()->FindClassName(GetClass()));
   unsigned int prop_type = 0x1;
   unsigned int prop_group = type_mask & 0xFFFF00;
   for(int i = 0; i < 5; i++)
@@ -869,7 +869,7 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
    return false;
 
   std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->FindClassId(name);
+  UId id=Storage.lock()->FindClassId(name);
   if(GetClass() != id)
   {
    LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(GetClass())+std::string(" found ")+sntoa(id));
@@ -1062,9 +1062,9 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   if(owner_level)
    GetLinks(linkslist, owner_level, true, this);
   else
-   GetLinks(linkslist, GetOwner(), true, this);
+   GetLinks(linkslist, UEPtr<UContainer>(owner_level), true, UEPtr<UContainer>(this));
 
-  *serstorage<<linkslist;
+   GetLinks(linkslist, UEPtr<UContainer>(GetOwner().get()), true, UEPtr<UContainer>(this));
  return 0;
 }
 
@@ -1076,7 +1076,7 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
    return false;
 
   serstorage->AddNode(GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage.lock()->FindClassName(GetClass()));
 
   serstorage->AddNode("Links");
 
@@ -1095,7 +1095,7 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
   {
    UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
    serstorage->AddNode(sub_cont->GetName());
-   serstorage->SetNodeAttribute("Class",Storage->FindClassName(sub_cont->GetClass()));
+   serstorage->SetNodeAttribute("Class",Storage.lock()->FindClassName(sub_cont->GetClass()));
    serstorage->AddNode("Parameters");
    try
    {

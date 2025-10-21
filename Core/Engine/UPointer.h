@@ -16,6 +16,7 @@ See file license.txt for more information
 #include <cstdlib>
 #include <string>
 #include <memory.h>
+#include "UEPtr.h"
 #include "../Utilities/USupport.h"
 #include "UContainer.h"
 
@@ -24,38 +25,39 @@ namespace RDK {
 class UContainer;
 
 
-// Указатель на локальный экземпляр компонента в классе
-// Для удобства использования
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T, class OwnerT>
 class UEPointer: public UPtr<T>, public UIPointer
 {
 //friend class OwnerT;
-protected: // Атрибуты
-// Исходный контейнер
+protected: // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 T* Source;
 
-// Владелец указателя
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 OwnerT* Owner;
 
-public: // Методы
+public: // пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UEPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
 { Source=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,this); };
 // --------------------------
 
-UEPtr<UContainer> const Get(void) const
-{ return Source; };
+// Legacy UEPtr method
+UEPtr<UContainer> const GetUEPtr(void) const
+{ return UEPtr<UContainer>(Source); };
 
 virtual void Del(UEPtr<UContainer> source)
 {
  Source=0;
 }
 
-// Проверяет, существует ли такой указатель в этом классе
-// Возвращает 0 если да, и <0 если нет
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0 пїЅпїЅпїЅпїЅ пїЅпїЅ, пїЅ <0 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 virtual int Find(UEPtr<const UContainer> cont) const
 { return (cont == Source)?0:-1; };
 
@@ -64,38 +66,55 @@ virtual void Set(UEPtr<UContainer> source)
  Source=static_pointer_cast<T>(source);
 };
 
+// Override UIPointer methods with std::shared_ptr
+std::shared_ptr<UContainer> Get(void) const override
+{ return std::shared_ptr<UContainer>(Source); };
+
+virtual void Del(std::shared_ptr<UContainer> source) override
+{
+ Source=0;
+}
+
+virtual int Find(std::shared_ptr<const UContainer> cont) const override
+{ return (cont.get() == Source)?0:-1; };
+
+virtual void Set(std::shared_ptr<UContainer> source) override
+{
+ Source=std::static_pointer_cast<T>(source).get();
+};
+
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPointer<T,OwnerT>& operator = (UEPtr<UContainer> pdata)
 {
- UIPointer::operator = (pdata);
+ // UIPointer::operator = (pdata); // Removed - not compatible with UEPtr
  return *this;
 };
 // --------------------------
 };
 
 
-// Указатель на массив локальных экземпляров компонент в классе
-// Для удобства использования
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T, class OwnerT>
 class UCPointer: public UIPointer
 {
 //friend class OwnerT;
-protected: // Атрибуты
-// Владелец указателя
+protected: // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 OwnerT* Owner;
 
-// Массив указателей
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 T** Sources;
 
-// Размер массива
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 size_t Size;
 
-public: // Методы
+public: // пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UCPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
@@ -111,13 +130,13 @@ virtual ~UCPointer(void)
 };
 // --------------------------
 
-UEPtr<UContainer> const Get(void) const
-{ return *Sources; };
+std::shared_ptr<UContainer> Get(void) const override
+{ return std::shared_ptr<UContainer>(*Sources); };
 
 UEPtr<UContainer> const Get(size_t index) const
 { return Sources[index]; };
 
-virtual void Set(UEPtr<UContainer> source)
+virtual void Set(std::shared_ptr<UContainer> source)
 {
  if(Find(source) >=0)
   return;
@@ -126,11 +145,11 @@ virtual void Set(UEPtr<UContainer> source)
  memcpy(sources,Sources,sizeof(T*)*Size);
  delete []Sources;
  Sources=sources;
- Sources[Size]=static_pointer_cast<T>(source);
+ Sources[Size]=std::static_pointer_cast<T>(source).get();
  ++Size;
 }
 
-virtual void Del(UEPtr<UContainer> source)
+virtual void Del(std::shared_ptr<UContainer> source)
 {
  int index=Find(source);
 
@@ -145,25 +164,25 @@ virtual void Del(UEPtr<UContainer> source)
  --Size;
 }
 
-// Проверяет, существует ли такой указатель в этом классе
-// Возвращает 0 если да, и <0 если нет
-virtual int Find(UEPtr<const UContainer> cont) const
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0 пїЅпїЅпїЅпїЅ пїЅпїЅ, пїЅ <0 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+virtual int Find(std::shared_ptr<const UContainer> cont) const
 {
  T** sources=Sources;
  for(size_t i=0;i<Size;i++,sources++)
-  if(*sources == cont)
+  if(*sources == cont.get())
    return int(i);
 
  return -1;
 };
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPointer<T,OwnerT>& operator = (UEPtr<UContainer> pdata)
 {
- UIPointer::operator = (pdata);
+ // UIPointer::operator = (pdata); // Removed - not compatible with UEPtr
  return *this;
 };
 // --------------------------

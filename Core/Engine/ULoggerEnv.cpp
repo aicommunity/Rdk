@@ -200,7 +200,7 @@ void ULoggerEnv::ProcessException(const UException &exception) const
  UException temp_ex;
  if(Environment && ExceptionPreprocessor)
  {
-  if(ExceptionPreprocessor(Environment,Environment->GetModel(), exception,temp_ex))
+  if(ExceptionPreprocessor(Environment,Environment->GetModel().get(), exception,temp_ex))
    processed_exception=&temp_ex;
  }
 
@@ -222,7 +222,7 @@ void ULoggerEnv::ProcessException(const UException &exception) const
   RdkDebuggerMessage(result_message.GetMessage());
 
  if(ExceptionPostprocessor && Environment)
-  ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception); // TODO: Ќет проверки возвращаемого значени€
+  ExceptionPostprocessor(Environment,Environment->GetModel().get(), *processed_exception); // TODO: Ќет проверки возвращаемого значени€
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
