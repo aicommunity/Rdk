@@ -1,6 +1,0 @@
-#ifndef @UPP@NAMESPACE_NAME@_@UPP@LIBRARY_NAME@_LIB_H
-#define @UPP@NAMESPACE_NAME@_@UPP@LIBRARY_NAME@_LIB_H
-
-#include "../../Core/@HEADER_FILE_NAME@"
-
-#endif
