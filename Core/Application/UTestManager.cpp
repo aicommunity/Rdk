@@ -49,7 +49,7 @@ UTest::UTest(void)
 }
 
 
-UTest::UTest(const UEPtr<UApplication> &value)
+UTest::UTest(const std::shared_ptr<UApplication> &value)
 {
   Application=value;
   calcDuration = 0;
@@ -57,13 +57,13 @@ UTest::UTest(const UEPtr<UApplication> &value)
 }
 
 /// ���������� ��������� �� ����������� ����������
-  UEPtr<UApplication> UTest::GetApplication()
+  std::shared_ptr<UApplication> UTest::GetApplication()
 {
   return Application;
 }
 
 /// ������ ����������� ����������
-void UTest::SetApplication(const UEPtr<UApplication> &value)
+void UTest::SetApplication(const std::shared_ptr<UApplication> &value)
 {
   if(Application == value)
    return;
@@ -220,9 +220,9 @@ int UTest::ProcessTest()
     for(std::vector<UPropertyTest>::iterator i = propertyTests.begin(); i != propertyTests.end(); ++i)
     {
       UPropertyTest testProperty = (*i);
-      RDK::UEPtr<RDK::UComponent> component;
+      std::shared_ptr<UComponent> component;
       if (testProperty.component.empty())
-          component = model.Get();
+          component = std::shared_ptr<UComponent>(model.Get(), [](UComponent*){}); // Non-owning deleter
       else
           component = model->GetComponentL(testProperty.component, true);
 
@@ -233,7 +233,7 @@ int UTest::ProcessTest()
         continue;
       }
 
-      UEPtr<UIProperty> property = component->FindProperty(testProperty.property);
+      std::shared_ptr<UIProperty> property = component->FindProperty(testProperty.property);
 
       if(!property)
       {
@@ -388,13 +388,13 @@ bool UTest::compareProperties(MDMatrix<double> value, string str, string delta)
 // ������ �������������
 // --------------------
 /// ���������� ��������� �� ����������� ����������
-UEPtr<UApplication> UTestManager::GetApplication(void)
+std::shared_ptr<UApplication> UTestManager::GetApplication(void)
 {
  return Application;
 }
 
 /// ������ ����������� ����������
-void UTestManager::SetApplication(const UEPtr<UApplication> &value)
+void UTestManager::SetApplication(const std::shared_ptr<UApplication> &value)
 {
  if(Application == value)
   return;

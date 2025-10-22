@@ -215,7 +215,7 @@ bool UDrawEngine::GetShowBackgroundLines(void) const
 // Методы доступа к данным
 // ---------------------------
 // Возвращает указатель на НС
-/*UEPtr<UNet> UDrawEngine::GetNet(void)
+/*std::shared_ptr<UNet> UDrawEngine::GetNet(void)
 {
  return Net;
 } */
@@ -238,7 +238,7 @@ const UDrawEngine::DescriptionsTableT& UDrawEngine::GetDescriptions(void)
 }
 
 // Возвращает указатель на движок отображения
-UEPtr<UAGraphics> UDrawEngine::GetGEngine(void)
+std::shared_ptr<UAGraphics> UDrawEngine::GetGEngine(void)
 {
  return GEngine;
 }
@@ -252,7 +252,7 @@ bool UDrawEngine::SetNetXml(USerStorageXML &net_xml)
 
 // Связывает класс с новой НС
 // Если engine == 0 то возвращает false и не делеает ничего
-bool UDrawEngine::SetEngine(UEPtr<UAGraphics> engine)
+bool UDrawEngine::SetEngine(std::shared_ptr<UAGraphics> engine)
 {
  if (GEngine == engine)
   return true;

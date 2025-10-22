@@ -16,7 +16,7 @@ See file license.txt for more information
 #include "UItemData.h"
 #include "../Serialize/USerStorageBinary.h"
 #include "UELockVar.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernSmartPointers.h"
 #include <filesystem>
 #include <span>

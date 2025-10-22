@@ -820,7 +820,7 @@ void __fastcall TVideoCaptureThreadBmp::AfterCalculate(void)
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadBmp::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadBmp::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  return new TVideoCaptureThreadBmp(frame,create_suspended);
 }
@@ -1020,17 +1020,17 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
 
  if(BmpSequenceNames[index].find(".bmp") != std::string::npos)
  {
-//  TempBitmap->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
+//  TempBitmap->LoadFromFile((PathName.get()+BmpSequenceNames[index]).c_str());
 //  bmp<<TempBitmap;
-  RDK::LoadBitmapFromFile((PathName.Get()+BmpSequenceNames[index]).c_str(),bmp);
+  RDK::LoadBitmapFromFile((PathName.get()+BmpSequenceNames[index]).c_str(),bmp);
  }
  else
  if(BmpSequenceNames[index].find(".jpg") != std::string::npos || BmpSequenceNames[index].find(".jpeg") != std::string::npos)
  {
-  RDK::LoadJpegFromFile((PathName.Get()+BmpSequenceNames[index]).c_str(), bmp);
+  RDK::LoadJpegFromFile((PathName.get()+BmpSequenceNames[index]).c_str(), bmp);
   bmp.ReflectionX();
 /*  TJPEGImage* JpegIm=new TJPEGImage;
-  JpegIm->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
+  JpegIm->LoadFromFile((PathName.get()+BmpSequenceNames[index]).c_str());
   TempBitmap->Assign(JpegIm);
   TempBitmap->PixelFormat=pf24bit;
   bmp<<TempBitmap;
@@ -1076,7 +1076,7 @@ int TVideoCaptureThread::CheckCaptureThreadState(void) const
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadBmpSequence::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadBmpSequence::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  return new TVideoCaptureThreadBmpSequence(frame,create_suspended);
 }
@@ -1254,7 +1254,7 @@ void __fastcall TVideoCaptureThreadHttpServer::IdHTTPServerCommandGet(TIdContext
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadHttpServer::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadHttpServer::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  return new TVideoCaptureThreadHttpServer(frame,create_suspended);
 }
@@ -1924,7 +1924,7 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
 
  FileName=value;
  VideoGrabber->ClosePlayer();
- VideoGrabber->PlayerFileName=FileName.Get().c_str();
+ VideoGrabber->PlayerFileName=FileName.get().c_str();
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  if(DesiredResolutionFlag)
  {
@@ -1968,7 +1968,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::TvgExecuteCaptureInit(void)
   VideoGrabber->FrameGrabber=fg_BothStreams;
   VideoGrabber->VideoSource=vs_VideoFileOrURL;
   VideoGrabber->ClosePlayer();
-  VideoGrabber->PlayerFileName=FileName.Get().c_str();
+  VideoGrabber->PlayerFileName=FileName.get().c_str();
   VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
   VideoGrabber->OpenPlayer();
  }
@@ -2005,7 +2005,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberAvi::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberAvi::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  TVideoCaptureThreadVideoGrabberAvi *thread=new TVideoCaptureThreadVideoGrabberAvi(frame,create_suspended);
  thread->TvgExecuteCaptureInit();
@@ -2052,7 +2052,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
   if(VideoGrabber->IsPlayerVideoStreamAvailable == ts_Undefined)
   {
    VideoGrabber->ClosePlayer();
-   VideoGrabber->PlayerFileName=FileName.Get().c_str();
+   VideoGrabber->PlayerFileName=FileName.get().c_str();
    VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
    VideoGrabber->OpenPlayer();
   }
@@ -2223,7 +2223,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::TvgExecuteCaptureInit(voi
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberCamera::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberCamera::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  TVideoCaptureThreadVideoGrabberCamera *thread=new TVideoCaptureThreadVideoGrabberCamera(frame,create_suspended);
  thread->TvgExecuteCaptureInit();
@@ -2393,7 +2393,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::TvgExecuteCaptureInit(v
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberIpCamera::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberIpCamera::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  TVideoCaptureThreadVideoGrabberIpCamera *thread=new TVideoCaptureThreadVideoGrabberIpCamera(frame,create_suspended);
  thread->TvgExecuteCaptureInit();
@@ -2621,7 +2621,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::UnsafeInit(void)
   return;
 
  int pipe_byte_size=0;
- Usm_InitPipe(PipeIndex.Get(),pipe_byte_size,0,PipeName.Get().c_str());
+ Usm_InitPipe(PipeIndex.get(),pipe_byte_size,0,PipeName.get().c_str());
  SharedMemoryPipeSize=pipe_byte_size;
 }
 
@@ -2631,7 +2631,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::UnsafeInit(void)
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadSharedMemory::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadSharedMemory::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  return new TVideoCaptureThreadSharedMemory(frame,create_suspended);
 }
@@ -2871,7 +2871,7 @@ return;
 // ”правление данными
 // --------------------------
 /// —оздает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadNewVideoGrabber::New(TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoCaptureThreadNewVideoGrabber::New(TVideoOutputFrame *frame, bool create_suspended)
 {
  TVideoCaptureThreadNewVideoGrabber* thread=new TVideoCaptureThreadNewVideoGrabber(frame,create_suspended);
 // thread->ImageFrame = new TImageFrame(0);

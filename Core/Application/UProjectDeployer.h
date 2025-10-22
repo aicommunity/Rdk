@@ -15,7 +15,7 @@ protected: // Параметры
 
 protected: // Данные
 /// Указатель на экземпляр приложения
-UEPtr<UApplication> Application;
+std::shared_ptr<UApplication> Application;
 protected: // Параметры
 
 protected: // Данные
@@ -48,8 +48,8 @@ public: // Методы
 // Методы доступа к данным
 // --------------------------
 /// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> GetApplication(void);
-bool SetApplication(UEPtr<UApplication> value);
+std::shared_ptr<UApplication> GetApplication(void);
+bool SetApplication(std::shared_ptr<UApplication> value);
 // --------------------------
 
 ///Выполнить загрузку данных для выполнения задачи,

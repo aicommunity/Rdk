@@ -23,14 +23,14 @@ virtual ~URpcDecoderCommon(void);
 // --------------------------
 /// Проверяет, поддерживается ли команда диспетчером
 /// ожидает, что команда уже декодирована иначе всегда возвращает false
-virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const;
+virtual bool IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const;
 
 /// Создает копию этого декодера
 virtual URpcDecoderCommon* New(void);
 
 /// Осуществляет декодирование и вызов команды по текущим данным
 /// Возвращает false если команда не поддерживается
-virtual bool AProcessCommand(const UEPtr<URpcCommand> &command);
+virtual bool AProcessCommand(const std::shared_ptr<URpcCommand> &command);
 
 virtual const char* RemoteCall(const char *request, int &return_value, int &res_channel_index);
 virtual std::string ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int channel_index, int &return_value);

@@ -25,7 +25,7 @@ namespace RDK {
 /// ����� ���������� RDK_EXCEPTION_CATCHED
 int RDK_CALL ProcessException(int channel_index, const UException &ex)
 {
- UEPtr<ULoggerEnv> logger=RdkCoreManager.GetLogger(channel_index);
+ std::shared_ptr<ULoggerEnv> logger=RdkCoreManager.GetLogger(channel_index);
  if(!logger)
   return RDK_UNHANDLED_EXCEPTION;
  logger->ProcessException(ex);
@@ -3208,9 +3208,11 @@ int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *p
 RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
+ {
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ }
 
-  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
 }
 
 int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
@@ -3229,7 +3231,7 @@ int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int channel_index, const ch
 int RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
- return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3237,7 +3239,7 @@ int RDK_CALL MModel_SetComponentBitmapOutput(int channel_index, const char *stri
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3245,13 +3247,13 @@ int RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int channel_index, const char
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return RdkCoreManager.GetEngine(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngine(channel_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 int RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
- return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3259,13 +3261,13 @@ int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const cha
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 // �������� ����������� ����� � �������� 'index' ���������� 'id'
 int RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 int RDK_CALL MModel_SetComponentBitmapInput(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
@@ -3273,13 +3275,13 @@ int RDK_CALL MModel_SetComponentBitmapInput(int channel_index, const char *strin
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 
 int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
- return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap*>(bmp),reflect);
 }
 // --------------------------
 

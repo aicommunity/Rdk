@@ -23,7 +23,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
     // Установка хранилище и логера
     SetStorage(std::shared_ptr<UStorage>(storage));
-    SetLogger(std::shared_ptr<ULoggerEnv>(storage->GetLogger().Get()));
+    SetLogger(std::shared_ptr<ULoggerEnv>(storage->GetLogger().get()));
 
     // Вызов всех добавленных функций создания свойств
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
@@ -153,7 +153,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
      try
      {
       int id=Storage.lock()->FindClassId(name);
-      UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+      std::shared_ptr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
       if(!newcont)
        continue;
       if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент

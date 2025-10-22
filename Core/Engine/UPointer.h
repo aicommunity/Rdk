@@ -16,9 +16,10 @@ See file license.txt for more information
 #include <cstdlib>
 #include <string>
 #include <memory.h>
-#include "UEPtr.h"
+#include <memory>
 #include "../Utilities/USupport.h"
 #include "UContainer.h"
+#include "ModernSmartPointers.h"
 
 namespace RDK {
 
@@ -44,52 +45,48 @@ public: // ������
 // --------------------------
 UEPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
-{ Source=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,this); };
+{
+ Source=0;
+ reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(
+  name,
+  std::shared_ptr<UIPointer>(this, RDK::NonOwningDeleter())
+ );
+};
 // --------------------------
 
-// Legacy UEPtr method
-UEPtr<UContainer> const GetUEPtr(void) const
-{ return UEPtr<UContainer>(Source); };
+// Legacy std::shared_ptr method
+std::shared_ptr<UContainer> const GetUEPtr(void) const
+{ return std::shared_ptr<UContainer>(Source, RDK::NonOwningDeleter()); };
 
-virtual void Del(UEPtr<UContainer> source)
+// Implement UIPointer API
+std::shared_ptr<UContainer> Get(void) const override
+{ return std::shared_ptr<UContainer>(Source, RDK::NonOwningDeleter()); };
+
+virtual void Del(std::shared_ptr<UContainer> source)
 {
  Source=0;
 }
 
 // ���������, ���������� �� ����� ��������� � ���� ������
 // ���������� 0 ���� ��, � <0 ���� ���
-virtual int Find(UEPtr<const UContainer> cont) const
-{ return (cont == Source)?0:-1; };
+virtual int Find(std::shared_ptr<const UContainer> cont) const
+{ return (cont.get() == Source)?0:-1; };
 
-virtual void Set(UEPtr<UContainer> source)
+virtual void Set(std::shared_ptr<UContainer> source)
 {
- Source=static_pointer_cast<T>(source);
+ Source=static_pointer_cast<T>(source).get();
 };
 
 // Override UIPointer methods with std::shared_ptr
-std::shared_ptr<UContainer> Get(void) const override
-{ return std::shared_ptr<UContainer>(Source); };
-
-virtual void Del(std::shared_ptr<UContainer> source) override
-{
- Source=0;
-}
-
-virtual int Find(std::shared_ptr<const UContainer> cont) const override
-{ return (cont.get() == Source)?0:-1; };
-
-virtual void Set(std::shared_ptr<UContainer> source) override
-{
- Source=std::static_pointer_cast<T>(source).get();
-};
+// Modern C++20 methods - already exist above
 
 // --------------------------
 // ���������
 // --------------------------
 // �������� ������������
-UEPointer<T,OwnerT>& operator = (UEPtr<UContainer> pdata)
+UEPointer<T,OwnerT>& operator = (std::shared_ptr<UContainer> pdata)
 {
- // UIPointer::operator = (pdata); // Removed - not compatible with UEPtr
+ // UIPointer::operator = (pdata); // Removed - not compatible with std::shared_ptr
  return *this;
 };
 // --------------------------
@@ -118,7 +115,7 @@ public: // ������
 // --------------------------
 UCPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
-{ Size=0; Sources=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,this); };
+{ Size=0; Sources=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,std::shared_ptr<UIPointer>(this, RDK::NonOwningDeleter())); };
 virtual ~UCPointer(void)
 {
  if(Sources)
@@ -131,10 +128,10 @@ virtual ~UCPointer(void)
 // --------------------------
 
 std::shared_ptr<UContainer> Get(void) const override
-{ return std::shared_ptr<UContainer>(*Sources); };
+{ return std::shared_ptr<UContainer>(*Sources, RDK::NonOwningDeleter()); };
 
-UEPtr<UContainer> const Get(size_t index) const
-{ return Sources[index]; };
+std::shared_ptr<UContainer> const Get(size_t index) const
+{ return std::shared_ptr<UContainer>(Sources[index], RDK::NonOwningDeleter()); };
 
 virtual void Set(std::shared_ptr<UContainer> source)
 {
@@ -180,9 +177,9 @@ virtual int Find(std::shared_ptr<const UContainer> cont) const
 // ���������
 // --------------------------
 // �������� ������������
-UEPointer<T,OwnerT>& operator = (UEPtr<UContainer> pdata)
+UEPointer<T,OwnerT>& operator = (std::shared_ptr<UContainer> pdata)
 {
- // UIPointer::operator = (pdata); // Removed - not compatible with UEPtr
+ // UIPointer::operator = (pdata); // Removed - not compatible with std::shared_ptr
  return *this;
 };
 // --------------------------

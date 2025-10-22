@@ -15,18 +15,9 @@ using ModernUESharedPtr = std::shared_ptr<T>;
 template<typename T>
 using ModernUUniquePtr = std::unique_ptr<T>;
 
-// Compatibility layer - only define if original types don't exist
-#ifndef UEPTR_H
-template<typename T>
-using UEPtr = std::shared_ptr<T>;
-
-template<typename T>
-using UESharedPtr = std::shared_ptr<T>;
-#endif
-
 // Helper functions for creating smart pointers
 template<typename T, typename... Args>
-ModernUEPtr<T> make_ueptr(Args&&... args) {
+ModernUEPtr<T> make_modern_ueptr(Args&&... args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
@@ -34,6 +25,18 @@ template<typename T, typename... Args>
 ModernUUniquePtr<T> make_uuniqueptr(Args&&... args) {
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
+
+// Legacy compatibility function
+template<typename T, typename... Args>
+ModernUEPtr<T> make_ueptr(Args&&... args) {
+    return std::make_shared<T>(std::forward<Args>(args)...);
+}
+
+// Non-owning shared_ptr deleter - does nothing
+struct NonOwningDeleter {
+    template<typename T>
+    void operator()(T*) const {}
+};
 
 } // namespace RDK
 

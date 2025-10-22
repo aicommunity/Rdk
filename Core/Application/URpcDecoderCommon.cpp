@@ -36,7 +36,7 @@ URpcDecoderCommon* URpcDecoderCommon::New(void)
 
 /// ���������, �������������� �� ������� �����������
 /// �������, ��� ������� ��� ������������ ����� ������ ���������� false
-bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
+bool URpcDecoderCommon::IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
   return false;
@@ -220,7 +220,7 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
 
 /// ������������ ������������� � ����� ������� �� ������� ������
 /// ���������� false ���� ������� �� ��������������
-bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
+bool URpcDecoderCommon::AProcessCommand(const std::shared_ptr<URpcCommand> &command)
 {
  if(!command)
  {
@@ -228,7 +228,7 @@ bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
   return false;
  }
 
- UEPtr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
+ std::shared_ptr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
  if(!cmd)
  {
   // ������ - ������� �� �������������� ���������

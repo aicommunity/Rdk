@@ -219,15 +219,15 @@ double UEnvironment::CalcRTPerformance(void) const
 // ��������� �� ������
 std::shared_ptr<ULoggerEnv> const UEnvironment::GetLogger(void) const
 {
- return std::shared_ptr<ULoggerEnv>(Logger.Get());
+ return std::shared_ptr<ULoggerEnv>(Logger.get());
 }
 
 bool UEnvironment::SetLogger(std::shared_ptr<ULoggerEnv> logger)
 {
- if(Logger == UEPtr<ULoggerEnv>(logger.get()))
+ if(Logger == logger)
   return true;
 
- Logger=UEPtr<ULoggerEnv>(logger.get());
+ Logger=logger;
  return true;
 }
 
@@ -277,8 +277,8 @@ bool UEnvironment::CreateModel(const NameT& classname)
   return false;
 
  CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
- Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(GetStorage()->TakeObject(classname)).Get());
- Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.Get()));
+ Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(GetStorage()->TakeObject(classname)).get());
+ Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
  Model->SetEnvironment(std::shared_ptr<UEnvironment>(this));
  Ready=false;
  if(Model)
@@ -302,8 +302,8 @@ bool UEnvironment::CreateModel(const UId& classid)
   return false;
 
  CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
- Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(Storage->TakeObject(classid)).Get());
- Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.Get()));
+ Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(Storage->TakeObject(classid)).get());
+ Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
  Model->SetEnvironment(std::shared_ptr<UEnvironment>(this));
  Ready=false;
  if(Model)
@@ -357,9 +357,9 @@ void UEnvironment::ModelUnInit(void)
 // ��������� ������� � ������ �����
 // --------------------------
 // ���������� ��������� �� ������� ��������� ������
-UEPtr<UContainer> UEnvironment::GetCurrentComponent(void)
+std::shared_ptr<UContainer> UEnvironment::GetCurrentComponent(void)
 {
- return UEPtr<UContainer>(std::dynamic_pointer_cast<UContainer>(CurrentComponent).get());
+ return std::shared_ptr<UContainer>(std::dynamic_pointer_cast<UContainer>(CurrentComponent).get());
 }
 
 // ������������� ��������� �� ������� ��������� ������
@@ -374,7 +374,7 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
  if(name == ForbiddenName)
   CurrentComponent=std::dynamic_pointer_cast<UComponent>(Model);
  else
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(Model->GetComponentL(name).Get()));
+  CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(Model->GetComponentL(name).get()));
 }
 
 void UEnvironment::SelectCurrentComponent(const ULongId &id)
@@ -388,7 +388,7 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
  if(id.GetSize() == 0 || id[0] == ForbiddenId)
   CurrentComponent=std::dynamic_pointer_cast<UComponent>(Model);
  else
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(Model->GetComponentL(id).Get()));
+  CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(Model->GetComponentL(id).get()));
 }
 
 // ������������� ��������� �� ������� ��������� ������ �� ���� ������
@@ -429,7 +429,7 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
   return;
  }
 
- CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(GetCurrentComponent()->GetComponentL(name).Get()));
+ CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(GetCurrentComponent()->GetComponentL(name).get()));
 }
 
 void UEnvironment::DownCurrentComponent(const ULongId &id)
@@ -440,7 +440,7 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
   return;
  }
 
- CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(GetCurrentComponent()->GetComponentL(id).Get()));
+ CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(GetCurrentComponent()->GetComponentL(id).get()));
 }
 
 /// ����� �����
@@ -568,9 +568,9 @@ bool UEnvironment::CallSourceController(void)
  {
   if(!GetModel())
    return false;
-  UEPtr<UContainer> cont=GetModel()->GetComponentL(SourceControllerName);
+  std::shared_ptr<UContainer> cont=GetModel()->GetComponentL(SourceControllerName);
 
-  UEPtr<UIProperty> iproperty=cont->FindProperty(SourceControllerProperty);
+  std::shared_ptr<UIProperty> iproperty=cont->FindProperty(SourceControllerProperty);
   bool value=true;
   if(!iproperty->ReadFromMemory(&value))
    return false;
@@ -601,11 +601,11 @@ UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &compo
  if(!Model)
   return 0;
 
- UContainer *cont=Model->GetComponentL(component_name,true);
+ UContainer *cont=Model->GetComponentL(component_name,true).get();
  if(!cont)
   return 0;
 
- UEPtr<UIProperty> prop=cont->FindProperty(property_name);
+ std::shared_ptr<UIProperty> prop=cont->FindProperty(property_name);
  if(!prop)
   return 0;
 
@@ -969,7 +969,7 @@ bool UEnvironment::ADefault(void)
  }
  else
  {
-  UEPtr<UContainer> destcont;
+  std::shared_ptr<UContainer> destcont;
   destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
@@ -999,7 +999,7 @@ bool UEnvironment::ABuild(void)
  }
  else
  {
-  UEPtr<UContainer> destcont;
+  std::shared_ptr<UContainer> destcont;
   destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
@@ -1039,7 +1039,7 @@ bool UEnvironment::AReset(void)
  }
  else
  {
-  UEPtr<UContainer> destcont;
+  std::shared_ptr<UContainer> destcont;
   destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
@@ -1085,7 +1085,7 @@ bool UEnvironment::ACalculate(void)
  }
  else
  {
-  UEPtr<UContainer> destcont;
+  std::shared_ptr<UContainer> destcont;
   destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)

@@ -18,7 +18,7 @@ See file license.txt for more information
 #include "../System/rdk_system.h"
 #include "ULoggerEnv.h"
 #include "UController.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernSmartPointers.h"
 #include <memory>
 #include <mutex>
@@ -135,7 +135,7 @@ unsigned long long CurrentTime,LastDuration, ProcEndTime, LastStepStartTime;
 double RTModelCalcTime;
 
 /// ��������� ������ ��� �����������
-mutable UEPtr<ULoggerEnv> Logger;
+mutable std::shared_ptr<ULoggerEnv> Logger;
 
 /// ����, ������������ ���� ��������� ����� ������� (�� MaxCalcTime)
 bool CalcFinishedFlag;
@@ -299,7 +299,7 @@ UControllerDataReader* GetDataReader(const std::string &component_name, const st
 // ��������� ������� � ������ �����
 // --------------------------
 // ���������� ��������� �� ������� ��������� ������
-UEPtr<UContainer> GetCurrentComponent(void);
+std::shared_ptr<UContainer> GetCurrentComponent(void);
 
 // ������������� ��������� �� ������� ��������� ������
 // ���� ��� ��� id �� ������, ��� Forbidden, �� �������������

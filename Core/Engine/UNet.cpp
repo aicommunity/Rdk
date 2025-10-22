@@ -17,9 +17,26 @@ See file license.txt for more information
 
 namespace RDK {
 
+// Helper method implementations
+std::shared_ptr<UNet> UNet::GetThisAsSharedNet() {
+    return std::shared_ptr<UNet>(this, RDK::NonOwningDeleter());
+}
+
+std::shared_ptr<UItem> UNet::GetThisAsSharedItem() {
+    return std::shared_ptr<UItem>(this, RDK::NonOwningDeleter());
+}
+
+std::shared_ptr<UConnector> UNet::GetThisAsSharedConnector() {
+    return std::shared_ptr<UConnector>(this, RDK::NonOwningDeleter());
+}
+
+std::shared_ptr<UContainer> UNet::GetThisAsSharedContainer() {
+    return std::shared_ptr<UContainer>(this, RDK::NonOwningDeleter());
+}
+
 /* *************************************************************************** */
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UNet::UNet(void)
 {
@@ -31,13 +48,13 @@ UNet::~UNet(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к компонентам
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Метод проверяет на допустимость объекта данного типа
-// в качестве компоненты данного объекта
-// Метод возвращает 'true' в случае допустимости
-// и 'false' в случае некорректного типа
-bool UNet::CheckComponentType(UEPtr<UContainer> comp) const
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 'true' пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅ 'false' пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+bool UNet::CheckComponentType(std::shared_ptr<UContainer> comp) const
 {
  return (dynamic_pointer_cast<UItem>(comp) ||
  dynamic_pointer_cast<UNet>(comp) || dynamic_pointer_cast<UConnector>(comp))?true:false;
@@ -45,48 +62,48 @@ bool UNet::CheckComponentType(UEPtr<UContainer> comp) const
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления компонентами
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Выполняет завершающие пользовательские действия
-// при добавлении дочернего компонента в этот объект
-// Метод будет вызван только если comp был
-// успешно добавлен в список компонент
-bool UNet::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ comp пїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UNet::AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
  return true;
 }
 
-// Выполняет предварительные пользовательские действия
-// при удалении дочернего компонента из этого объекта
-// Метод будет вызван только если comp
-// существует в списке компонент
-bool UNet::ADelComponent(UEPtr<UContainer> comp)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ comp
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UNet::ADelComponent(std::shared_ptr<UContainer> comp)
 {
  if(!comp->IsMoving())
  {
-  if(dynamic_pointer_cast<UItem>(comp))
-   static_pointer_cast<UItem>(comp)->DisconnectBy(this);
+ if(dynamic_pointer_cast<UItem>(comp))
+  static_pointer_cast<UItem>(comp)->DisconnectBy(GetThisAsSharedContainer());
   else
-  if(dynamic_pointer_cast<UNet>(comp))
-   static_pointer_cast<UNet>(comp)->BreakLinks(this);
+ if(dynamic_pointer_cast<UNet>(comp))
+  static_pointer_cast<UNet>(comp)->BreakLinks(GetThisAsSharedContainer());
  }
  return true;
 }
 // --------------------------
 
 // --------------------------
-// Системные методы управления объектом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UContainer* UNet::New(void)
 {
  return new UNet;
 }
 
-// Копирует этот объект в 'target' с сохранением всех компонент
-// и значений параметров
-// Если 'stor' == 0, то создание объектов осуществляется
-// в том же хранилище где располагается этот объект
-bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ 'target' пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅ 'stor' == 0, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+bool UNet::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
 {
  ULinksList linkslist;
  ULinksList oldlinkslist;
@@ -98,15 +115,15 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
   {
    static_pointer_cast<UNet>(target)->BreakLinks();
 
-   if(static_pointer_cast<UNet>(target)->CreateLinks(GetLinks(linkslist,const_cast<UNet*>(this))))
+   if(static_pointer_cast<UNet>(target)->CreateLinks(GetLinks(linkslist,const_cast<UNet*>(this)->GetThisAsSharedContainer())))
     return true;
   }
 
  return false;
 }
 
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ Storage == 0
 void UNet::Free(void)
 {
  UItem::Free();
@@ -114,7 +131,7 @@ void UNet::Free(void)
 // --------------------------
 
 // ----------------------
-// Методы управления связями
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // ----------------------
 bool UNet::CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index, bool forced_connect_same_item)
@@ -122,19 +139,19 @@ bool UNet::CreateLink(const NameT &item, const NameT &item_index,
  return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index, connector_c_index), forced_connect_same_item);
 }
 
-// Разрывает все связи между выходом элемента сети, 'itemid'
-// и коннектором 'connectorid'
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, 'itemid'
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 'connectorid'
 bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 {
- UEPtr<UItem> item;
- UEPtr<UConnector> connector;
+ std::shared_ptr<UItem> item;
+ std::shared_ptr<UConnector> connector;
  if(itemname.size() == 0)
-  item=this;
+  item=GetThisAsSharedItem();
  else
   item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
  if(connectorname.size() == 0)
-  connector=this;
+  connector=GetThisAsSharedConnector();
  else
   connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
 
@@ -143,12 +160,12 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  return true;
 }
 
-// Разрывает все связи между выходом элемента сети и любыми коннекторами
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UNet::BreakAllOutgoingLinks(const NameT &itemname)
 {
- UEPtr<UItem> item;
+ std::shared_ptr<UItem> item;
  if(itemname.size() == 0)
-  item=this;
+  item=GetThisAsSharedItem();
  else
   item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
@@ -161,9 +178,9 @@ bool UNet::BreakAllOutgoingLinks(const NameT &itemname)
 
 bool UNet::BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_property_name)
 {
- UEPtr<UItem> item;
+ std::shared_ptr<UItem> item;
  if(itemname.size() == 0)
-  item=this;
+  item=GetThisAsSharedItem();
  else
   item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
@@ -180,10 +197,10 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
  return BreakLink(UStringLinkSide(itemname,item_property_name), UStringLinkSide(connectorname,connector_property_name, connector_c_index));
 }
 
-// Разрывает все связи сети
-// исключая ее внутренние связи и обратные связи
-// brklevel - объект, относительно которого связи считаются внутренними
-void UNet::BreakLinks(UEPtr<UContainer> brklevel)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+// brklevel - пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+void UNet::BreakLinks(std::shared_ptr<UContainer> brklevel)
 {
  for(int i=0;i<NumComponents;i++)
   {
@@ -195,7 +212,7 @@ void UNet::BreakLinks(UEPtr<UContainer> brklevel)
   }
 }
 
-// Разрывает заданные связи сети
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 bool UNet::BreakLinks(const ULinksList &linkslist)
 {
  bool res=true;
@@ -206,7 +223,7 @@ bool UNet::BreakLinks(const ULinksList &linkslist)
  return res;
 }
 
-// Разрывает все внутренние связи сети.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
 void UNet::BreakLinks(void)
 {
  for(int i=0;i<NumComponents;i++)
@@ -224,10 +241,10 @@ void UNet::BreakLinks(void)
  DisconnectAllItems();
 }
 /*
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ connector_index пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 'connectorid'
 void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 {
- UEPtr<UItem> connector;
+ std::shared_ptr<UItem> connector;
  if(connectorname.size() == 0)
   connector=this;
  else
@@ -250,7 +267,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
    return;
   }
 
-  UEPtr<UItem> ad_item=dynamic_cast<UItem*>(item.Item);
+  std::shared_ptr<UItem> ad_item=dynamic_cast<UItem*>(item.Item);
 
   if(!ad_item)
   {
@@ -263,7 +280,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 
 void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index)
 {
- UEPtr<UConnector> connector;
+ std::shared_ptr<UConnector> connector;
  if(connectorname.size() == 0)
   connector=this;
  else
@@ -290,7 +307,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector
  }
 }
 */
-// Проверяет, существует ли заданная связь
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 /*bool UNet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
 {
  return CheckLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
@@ -310,8 +327,8 @@ bool UNet::CheckLink(const NameT &itemname, const NameT &item_property_name,
 
 bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int connector_c_index)
 {
- UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
+ std::shared_ptr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+ std::shared_ptr<UConnector> connector=GetComponentL<UConnector>(connectorname,true);
  if(!item)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+itemname);
@@ -333,14 +350,14 @@ bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int conne
 
 bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide &item2)
 {
- UEPtr<UItem> pitem1,pitem2;
+ std::shared_ptr<UItem> pitem1,pitem2;
  if(!CheckLongId(item1.Id))
-  pitem1=this;
+  pitem1=GetThisAsSharedItem();
  else
   pitem1=dynamic_pointer_cast<UItem>(GetComponentL(item1.Id,true));
 
  if(!CheckLongId(item2.Id))
-  pitem2=this;
+  pitem2=GetThisAsSharedItem();
  else
   pitem2=dynamic_pointer_cast<UItem>(GetComponentL(item2.Id,true));
 
@@ -377,7 +394,7 @@ bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide
  }
 		 */
  int num_connectors1=pitem1->GetNumAConnectors(item1.Name);
- std::vector<UConnector*> conns;
+ std::vector<std::shared_ptr<UConnector>> conns;
  std::vector<std::string> conn_names;
  conn_names.reserve(num_connectors1);
  conns.reserve(num_connectors1);
@@ -415,9 +432,9 @@ bool UNet::SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
 
 
 // --------------------------
-// Методы сериализации компонент
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает свойства компонента по идентификатору
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
   if(!serstorage)
@@ -456,8 +473,8 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
  return true;
 }
 
-// Возвращает выборочные свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ buffer пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
 bool UNet::GetComponentSelectedProperties(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -466,8 +483,8 @@ bool UNet::GetComponentSelectedProperties(RDK::USerStorageXML *serstorage)
  return true;
 }
 
-// Возвращает свойства компонента по идентификатору с описаниями
-// Память для buffer должна быть выделена!
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ buffer пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
 bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
   if(!serstorage)
@@ -477,7 +494,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage.lock()->GetClassDescription(Storage.lock()->FindClassName(GetClass()),true));
+  std::shared_ptr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage.lock()->GetClassDescription(Storage.lock()->FindClassName(GetClass()),true));
 
 
   I=props.begin();
@@ -514,7 +531,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 }
 
 
-// устанавливает свойства компонента по идентификатору
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -586,8 +603,8 @@ int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 }
 
 
-// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
   if(!serstorage)
@@ -651,7 +668,7 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
  return true;
 }
 
-/// Сохраняет полную структуру компонента
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask)
 {
   if(!serstorage)
@@ -715,8 +732,8 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
  return true;
 }
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 {
   if(!serstorage)
@@ -770,10 +787,10 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    try
    {
     id=Storage.lock()->FindClassId(name);
-	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+	std::shared_ptr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
 	 continue;
-	if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+	if(FindStaticComponent(name,nodename) == 0) // пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	{
 	 if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
 	 {
@@ -809,7 +826,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 }
 
 
-// Сохраняет все свойства компонента и его дочерних компонент в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
   if(!serstorage)
@@ -862,7 +879,7 @@ bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int
  return true;
 }
 
-// Загружает все свойства компонента и его дочерних компонент из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -923,8 +940,8 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
  return true;
 }
 
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// включая этот компонент
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ stringid, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ class_stringid
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UNet::SetGlobalComponentPropertyValue(UId classid, const char *paramname, const char *buffer)
 {
   if(classid == ForbiddenId)
@@ -948,8 +965,8 @@ void UNet::SetGlobalComponentPropertyValue(UId classid, const char *paramname, c
   }
 }
 
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ stringid, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ class_stringid
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 'class_owner_stringid' пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, const char *paramname, const char *buffer)
 {
   if(classid == ForbiddenId)
@@ -973,9 +990,9 @@ void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, 
   }
 }
 
-// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ stringid пїЅ пїЅпїЅпїЅпїЅ xml пїЅ пїЅпїЅпїЅпїЅпїЅ buffer
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ owner_level
+// пїЅпїЅпїЅпїЅ owner_level пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
   if(!serstorage)
@@ -983,18 +1000,18 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 
   UStringLinksList linkslist;
   if(owner_level)
-   GetLinks(linkslist, owner_level);
+   GetLinks(linkslist, std::shared_ptr<UContainer>(owner_level, RDK::NonOwningDeleter()));
   else
-   GetLinks(linkslist, this);
+   GetLinks(linkslist, GetThisAsSharedContainer());
 
 
   *serstorage<<linkslist;
  return 0;
 }
 
-// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-// Имена применяются до уровня компонента owner_level
-// Если owner_level не задан, то имена применяются до уровня текущего компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ stringid пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ xml пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ buffer
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ owner_level
+// пїЅпїЅпїЅпїЅ owner_level пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
   if(!serstorage)
@@ -1004,19 +1021,19 @@ int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   *serstorage>>linkslist;
 
   BreakLinks();
-  CreateLinks(linkslist, owner_level);
+  CreateLinks(linkslist, std::shared_ptr<UNet>(owner_level, RDK::NonOwningDeleter()));
 
  return true;
 }
 
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ stringid пїЅ пїЅпїЅпїЅпїЅ xml пїЅ пїЅпїЅпїЅпїЅпїЅ buffer
+// пїЅпїЅпїЅпїЅ 'sublevel' == -2, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ 'sublevel' == -1, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ 'sublevel' == 0, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ owner_level
+// пїЅпїЅпїЅпїЅ owner_level пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UNet::GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
   if(!serstorage)
@@ -1029,14 +1046,14 @@ int UNet::GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* own
  return 0;
 }
 
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ stringid пїЅ пїЅпїЅпїЅпїЅ xml пїЅ пїЅпїЅпїЅпїЅпїЅ buffer
+// пїЅпїЅпїЅпїЅ 'sublevel' == -2, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ 'sublevel' == -1, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ 'sublevel' == 0, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ owner_level
+// пїЅпїЅпїЅпїЅ owner_level пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UNet::GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
   if(!serstorage)
@@ -1049,10 +1066,10 @@ int UNet::GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* ow
  return 0;
 }
 
-// Возращает все внешние связи c компонентом и его дочерними компонентами в виде xml в буфер buffer
-// Информация о связях формируется относительно владельца компонента cont!
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ c пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ xml пїЅ пїЅпїЅпїЅпїЅпїЅ buffer
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ cont!
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ owner_level
+// пїЅпїЅпїЅпїЅ owner_level пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
   if(!serstorage)
@@ -1060,16 +1077,14 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 
   UStringLinksList linkslist;
   if(owner_level)
-   GetLinks(linkslist, owner_level, true, this);
+   GetLinks(linkslist, std::shared_ptr<UContainer>(owner_level, RDK::NonOwningDeleter()), true, GetThisAsSharedContainer());
   else
-   GetLinks(linkslist, UEPtr<UContainer>(owner_level), true, UEPtr<UContainer>(this));
-
-   GetLinks(linkslist, UEPtr<UContainer>(GetOwner().get()), true, UEPtr<UContainer>(this));
+   GetLinks(linkslist, std::shared_ptr<UContainer>(GetOwner().get(), RDK::NonOwningDeleter()), true, GetThisAsSharedContainer());
  return 0;
 }
 
-// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
-// переменные состояния в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅ _пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ_ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -1084,8 +1099,8 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
 
   for(int i=0;i<GetNumComponents();i++)
   {
-   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
-   sub_cont->GetLinks(linkslist, this, true, sub_cont);
+   std::shared_ptr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
+   sub_cont->GetLinks(linkslist, GetThisAsSharedContainer(), true, sub_cont);
   }
   *serstorage<<linkslist;
   serstorage->SelectUp();
@@ -1093,7 +1108,7 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
   serstorage->AddNode("Components");
   for(int i=0;i<GetNumComponents();i++)
   {
-   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
+   std::shared_ptr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
    serstorage->AddNode(sub_cont->GetName());
    serstorage->SetNodeAttribute("Class",Storage.lock()->FindClassName(sub_cont->GetClass()));
    serstorage->AddNode("Parameters");

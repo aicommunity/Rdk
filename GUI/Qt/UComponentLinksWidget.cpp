@@ -480,7 +480,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
     try
     {
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
-        RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        std::shared_ptr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
 
@@ -579,11 +579,11 @@ void UComponentLinksWidget::addLinks(QString componentName)
     try
     {
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
-        RDK::UEPtr<RDK::UNet> cont = model->GetComponentL<RDK::UNet>(componentName.toLocal8Bit().constData(), true);
+        std::shared_ptr<RDK::UNet> cont = model->GetComponentL<RDK::UNet>(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
         RDK::UStringLinksList linksList;
-        cont->GetLinks(linksList, model.Get(), ui->hideInternalLinksCheckBox->isChecked(), cont);
+        cont->GetLinks(linksList, std::shared_ptr<RDK::UContainer>(model.Get(), RDK::NonOwningDeleter()), ui->hideInternalLinksCheckBox->isChecked(), cont);
         RDK::ULinkT<std::string>* linksListIterator = linksList.GetData();
         for(int i = 0; i < linksList.size(); i++)
         {

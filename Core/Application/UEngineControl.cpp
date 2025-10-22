@@ -12,7 +12,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UEngineControl::UEngineControl(void)
 {
@@ -38,11 +38,11 @@ UEngineControl::~UEngineControl(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Управление режимом работы
-/// 0 - однопоточный (одноканальный) режим
-/// 1 - многопоточный режим
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) пїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 int UEngineControl::GetThreadMode(void) const
 {
  return ThreadMode;
@@ -57,9 +57,9 @@ void UEngineControl::SetThreadMode(int mode)
  ThreadMode=mode;
 }
 
-/// Режим вызова контроллеров
-/// 0 - при обновлении интерфейса
-/// 1 - индивидуально для каждого канала во время каждого расчета канала
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UEngineControl::GetUseControllersMode(void) const
 {
  return UseControllersMode;
@@ -75,12 +75,12 @@ void UEngineControl::SetUseControllersMode(int value)
  return;
 }
 
-// Управление режимом расчетов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UEngineControl::GetCalculateMode(int channel_index) const
 {
  if(int(EngineControlThreads.size())>channel_index)
   return EngineControlThreads[channel_index]->GetCalculateMode();
- return 0; // TODO: здесь исключение
+ return 0; // TODO: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
 void UEngineControl::SetCalculateMode(int channel_index,int value)
@@ -89,20 +89,20 @@ void UEngineControl::SetCalculateMode(int channel_index,int value)
   EngineControlThreads[channel_index]->SetCalculateMode(value);
 }
 
-/// Режим использования времени для расчета
-/// 0 - системное время
-/// 1 - время источника данных
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UEngineControl::GetCalculationTimeSource(int channel_index) const
 {
  if(channel_index>=int(EngineControlThreads.size()))
-  return 0; // TODO: тут исключение
+  return 0; // TODO: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  return EngineControlThreads[channel_index]->GetCalculationTimeSource();
 }
 
 bool UEngineControl::SetCalculationTimeSource(int channel_index, int value)
 {
  if(channel_index>=int(EngineControlThreads.size()))
-  return false; // TODO: тут исключение
+  return false; // TODO: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
  EngineControlThreads[channel_index]->SetCalculationTimeSource(value);
  return true;
@@ -111,7 +111,7 @@ bool UEngineControl::SetCalculationTimeSource(int channel_index, int value)
 RDK::UTime UEngineControl::GetMinInterstepsInterval(int channel_index) const
 {
  if(channel_index>=int(EngineControlThreads.size()))
-  return 0; // TODO: тут исключение
+  return 0; // TODO: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  return EngineControlThreads[channel_index]->GetMinInterstepsInterval();
 }
 
@@ -123,10 +123,10 @@ bool UEngineControl::SetMinInterstepsInterval(int channel_index, RDK::UTime valu
  return true;
 }
 
-/// Режим обновления отрисовки GUI
-/// 0 - В обычном режиме, независимо от работы каналов
-/// 1 - Режим ожидания завершения расчета каналов перед отрисовкой GUI
-/// (во время отрисовки каналы не ведут расчет, исключая внутренние потоки компонентов)
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ GUI
+/// 0 - пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ GUI
+/// (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 int UEngineControl::GetGuiUpdateMode(void) const
 {
  return GuiUpdateMode;
@@ -146,15 +146,15 @@ bool UEngineControl::SetGuiUpdateMode(int value)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> UEngineControl::GetApplication(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UApplication> UEngineControl::GetApplication(void)
 {
  return Application;
 }
 
-bool UEngineControl::SetApplication(UEPtr<UApplication> value)
+bool UEngineControl::SetApplication(std::shared_ptr<UApplication> value)
 {
  if(Application == value)
   return true;
@@ -171,13 +171,13 @@ UEngineControlThread* UEngineControl::GetEngineThread(int i)
  return EngineControlThreads[i];
 }
 
-/// Доступ к треду мониторинга состояния модулей сервера
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineStateThread* UEngineControl::GetEngineStateThread(void)
 {
  return EngineStateThread;
 }
 
-/// Возвращает данные о производительности канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UChannelProfiler* UEngineControl::GetChannelProfiler(int i)
 {
  if(i<0 || i>= int(EngineControlThreads.size()))
@@ -188,9 +188,9 @@ UChannelProfiler* UEngineControl::GetChannelProfiler(int i)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Инициализация (выполняется первой)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ)
 void UEngineControl::Init(void)
 {
  if(IsInit())
@@ -204,7 +204,7 @@ void UEngineControl::Init(void)
  InitFlag=true;
 }
 
-/// Деинициализация (выполняется последней)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 void UEngineControl::UnInit(void)
 {
  if(!IsInit())
@@ -222,25 +222,25 @@ void UEngineControl::UnInit(void)
  InitFlag=false;
 }
 
-/// Проверка состояния инициализации
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UEngineControl::IsInit(void) const
 {
  return InitFlag;
 }
 
-/// Создание нового треда расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineControlThread* UEngineControl::CreateEngineThread(UEngineControl* engine_control, int channel_index)
 {
  return new UEngineControlThread(engine_control, channel_index);
 }
 
-/// Создание нового треда расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineStateThread* UEngineControl::CreateEngineStateThread(UEngineControl* engine_control)
 {
  return new UEngineStateThread(engine_control);
 }
 
-// Управление временной меткой сервера
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 double UEngineControl::GetServerTimeStamp(int channel_index) const
 {
  if(channel_index>=GetNumChannels())
@@ -257,7 +257,7 @@ void UEngineControl::SetServerTimeStamp(int channel_index, double stamp)
  EngineControlThreads[channel_index]->EnableCalculation();
 }
 
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UEngineControl::StartChannel(int channel_index)
 {
  if(channel_index>=GetNumChannels())
@@ -302,7 +302,7 @@ void UEngineControl::StartChannel(int channel_index)
 
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UEngineControl::PauseChannel(int channel_index)
 {
  if(channel_index>=GetNumChannels())
@@ -373,7 +373,7 @@ void UEngineControl::PauseChannel(int channel_index)
 // EngineStateThread->CloseEventsLogFile();
 }
 
-/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UEngineControl::ResetChannel(int channel_index)
 {
  if(channel_index>=GetNumChannels())
@@ -417,7 +417,7 @@ void UEngineControl::ResetChannel(int channel_index)
  }
 }
 
-/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UEngineControl::StepChannel(int channel_index)
 {
  int num_channels=GetNumChannels();
@@ -577,7 +577,7 @@ void UEngineControl::TimerExecute(void)
  }
 }
 
-/// Проверяет состояние расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineControl::UCalcState UEngineControl::CheckCalcState(int channel_id) const
 {
  if(channel_id<0 || channel_id>GetNumChannels())
@@ -622,14 +622,14 @@ UEngineControl::UCalcState UEngineControl::CheckCalcState(int channel_id) const
  return csUnknown;
 }
 
-/// Вклчает мониторинг сервера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControl::StartEngineStateThread(void)
 {
  if(EngineStateThread)
   EngineStateThread->CalcStarted->set();
 }
 
-/// Останавливает мониторинг сервера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControl::StopEngineStateThread(void)
 {
  if(EngineStateThread)
@@ -639,23 +639,23 @@ void UEngineControl::StopEngineStateThread(void)
  }
 }
 
-/// Регистрирует вещатель метаданных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControl::RegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster)
 {
  for(size_t i=0;i<BroadcastersList.size();i++)
  {
-  if(BroadcastersList[i] == broadcaster)
+  if(BroadcastersList[i].get() == broadcaster)
    return;
  }
- BroadcastersList.push_back(broadcaster);
+ BroadcastersList.push_back(std::shared_ptr<UBroadcasterInterface>(broadcaster, [](UBroadcasterInterface*){}));
 }
 
-/// Снимает регистрацию вещателя метаданных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UEngineControl::UnRegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster)
 {
  for(size_t i=0;i<BroadcastersList.size();i++)
  {
-  if(BroadcastersList[i] == broadcaster)
+  if(BroadcastersList[i].get() == broadcaster)
   {
    BroadcastersList.erase(BroadcastersList.begin()+i);
    return;
@@ -663,7 +663,7 @@ void UEngineControl::UnRegisterMetadataBroadcaster(UBroadcasterInterface *broadc
  }
 }
 
-/// Отправляет метаданные во все зарегистрированные вещатели
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UEngineControl::AddMetadata(int channel_index, double time_stamp)
 {
  bool res=true;
@@ -686,7 +686,7 @@ bool UEngineControl::AddMetadata(int channel_index, double time_stamp)
  return res;
 }
 
-/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UEngineControl::SendMetadata(void)
 {
  bool res=true;
@@ -700,9 +700,9 @@ bool UEngineControl::SendMetadata(void)
 //---------------------------------------------------------------------------
 
 // --------------------------
-// Общие методы управления контроллером
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Сохраняет параметры интерфейса в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 void UEngineControl::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("ThreadMode",ThreadMode);
@@ -718,12 +718,12 @@ void UEngineControl::SaveParameters(RDK::USerStorageXML &xml)
   xml.WriteInteger("MinInterstepsInterval",EngineControlThreads[i]->GetMinInterstepsInterval());
   xml.WriteInteger("CalculationTimeSource",EngineControlThreads[i]->GetCalculationTimeSource());
 
-  // Данные профилирования
+  // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   if(!xml.SelectNode("Profiling"))
    xml.AddNode("Profiling");
   EngineControlThreads[i]->GetProfiler()->SaveParameters(xml);
   xml.SelectUp();
-  // Конец данных профилирования
+  // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
   xml.SelectUp();
  }
@@ -732,7 +732,7 @@ void UEngineControl::SaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 void UEngineControl::LoadParameters(RDK::USerStorageXML &xml)
 {
  SetThreadMode(xml.ReadInteger("ThreadMode",ThreadMode));
@@ -763,9 +763,9 @@ void UEngineControl::LoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 
 // --------------------------
-/// Управление числом каналов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Управление числом каналов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UEngineControl::GetNumChannels(void) const
 {
  return ::Core_GetNumChannels();

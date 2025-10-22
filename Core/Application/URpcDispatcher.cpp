@@ -10,7 +10,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 URpcDispatcher::URpcDispatcher(void)
 {
@@ -26,11 +26,11 @@ URpcDispatcher::~URpcDispatcher(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Проверяет, поддерживается ли заданная команда диспетчером
-/// ожидает декодированную команду, иначе вернет false
-bool URpcDispatcher::IsCmdSupported(const UEPtr<URpcCommand> &command) const
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ false
+bool URpcDispatcher::IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
   return false;
@@ -39,38 +39,37 @@ bool URpcDispatcher::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  if(channel_index<-1 || channel_index>=int(Decoders.size()))
   return false;
 
- // Заглушка
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  if(channel_index<0)
   channel_index=0;
 
  return Decoders[channel_index]->IsCmdSupported(command);
 }
 
-/// Устанавливает декодер
-/// Вызывает смену всех текущих прототипов
-void URpcDispatcher::SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+void URpcDispatcher::SetDecoderPrototype(const std::shared_ptr<URpcDecoder> &decoder)
 {
  DecoderPrototype=decoder;
  for(size_t i=0;i<Decoders.size();i++)
  {
-  delete Decoders[i];
-  Decoders[i]=0;
+  Decoders[i].reset(); // Reset shared_ptr instead of delete
  }
 
  if(DecoderPrototype)
   for(size_t i=0;i<Decoders.size();i++)
   {
-   Decoders[i]=DecoderPrototype->New();
+   Decoders[i]=std::shared_ptr<URpcDecoder>(DecoderPrototype->New());
   }
 }
 
-/// Возвращает и устанавливает главный декодер сервера
-UEPtr<URpcDecoder> URpcDispatcher::GetCommonDecoder(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<URpcDecoder> URpcDispatcher::GetCommonDecoder(void)
 {
  return CommonDecoder;
 }
 
-bool URpcDispatcher::SetCommonDecoder(const UEPtr<URpcDecoder> &decoder)
+bool URpcDispatcher::SetCommonDecoder(const std::shared_ptr<URpcDecoder> &decoder)
 {
  if(CommonDecoder == decoder)
   return true;
@@ -82,13 +81,13 @@ bool URpcDispatcher::SetCommonDecoder(const UEPtr<URpcDecoder> &decoder)
  return true;
 }
 
-/// Экземпляр приложения
-UEPtr<UApplication> URpcDispatcher::GetApplication(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UApplication> URpcDispatcher::GetApplication(void)
 {
  return Application;
 }
 
-bool URpcDispatcher::SetApplication(UEPtr<UApplication> application)
+bool URpcDispatcher::SetApplication(std::shared_ptr<UApplication> application)
 {
  if(Application == application)
   return true;
@@ -97,7 +96,7 @@ bool URpcDispatcher::SetApplication(UEPtr<UApplication> application)
  return true;
 }
 
-/// Осуществляет диспетчеризацию текущей очереди команд
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void URpcDispatcher::Dispatch(void)
 {
  int ex_flag=0;
@@ -106,7 +105,7 @@ void URpcDispatcher::Dispatch(void)
  {
   try
   {
-   UEPtr<URpcCommand> command=PopFromCommandQueue();
+   std::shared_ptr<URpcCommand> command=PopFromCommandQueue();
 
    if(!command)
    {
@@ -144,15 +143,15 @@ void URpcDispatcher::Dispatch(void)
  }
 }
 
-/// Метод остановки треда
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void URpcDispatcher::StopDispatch(void)
 {
     ThreadTerminated=true;
     DispatcherThread.join();
 }
 
-/// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
-bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned timeout)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool URpcDispatcher::SyncDispatchCommand(const std::shared_ptr<URpcCommand> &command, unsigned timeout)
 {
  unsigned cmd_id=0;
  if(!PushCommand(command,cmd_id))
@@ -176,15 +175,15 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsi
 
 
 // --------------------------
-// Вспомогательные методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Осуществляет вызов соответствующего декодера
-/// Метод должен вызываться в своем потоке
-void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+void URpcDispatcher::DispatchCommand(const std::shared_ptr<URpcCommand> &command)
 {
   if(!command->DecodeBasicData())
   {
-   // Ошибка декодирования
+   // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, "RPC Dispatcher: DecodeBasicData Fail.");
    PushToProcessedQueue(command);
    return;
@@ -193,19 +192,19 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   int channel_index=command->GetChannelIndex();
   if(channel_index<-1 || channel_index>=int(Decoders.size()))
   {
-   // Ошибка - некорректный индекс канала
+   // пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - Incorrect channel index.")+sntoa(channel_index)).c_str());
    PushToProcessedQueue(command);
    return;
   }
 
-  // TODO: Ниже неэффективный код с двойной проверкой IsCmdSupported
-  ///06.04.2020 Закомментировано в рамках проверки работы без индекса, внутренняя логика говорит о том что он тут лишний
+  // TODO: пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ IsCmdSupported
+  ///06.04.2020 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   //if(channel_index<0)
   //{
    if(!CommonDecoder)
    {
-	// Ошибка - не задан главный декодер сервера
+	// пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: Common decored don't set")).c_str());
 	return;
    }
@@ -215,41 +214,41 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
    {
 	if(!CommonDecoder->PushCommand(command,common_cmd_id))
 	{
-	 // Ошибка постановки команды в очередь на обработку
+	 // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand to common decoder failed")+RDK::sntoa(common_cmd_id)).c_str());
 	}
    return;
    }
-  ///06.04.2020 Закомментировано в рамках проверки работы без индекса, внутренняя логика говорит о том что он тут лишний
+  ///06.04.2020 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   // else
-  //	channel_index=0; // TODO: Заглушка. Не понятно нужно ли это
+  //	channel_index=0; // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ
   //}
 
   unsigned cmd_id=0;
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))
   {
-   // Ошибка постановки команды в очередь на обработку
+   // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand Failed")+RDK::sntoa(cmd_id)).c_str());
   }
 }
 
-/// Приводит в соответствие список декодеров и число каналов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void URpcDispatcher::UpdateDecoders(void)
 {
- int num_channels=Core_GetNumChannels(); //TODO необходимо убрать!
+ int num_channels=Core_GetNumChannels(); //TODO пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ!
  if(num_channels == int(Decoders.size()))
   return;
 
  size_t old_size=Decoders.size();
  for(size_t i=num_channels;i<old_size;i++)
  {
-  delete Decoders[i];
+  Decoders[i].reset(); // Reset shared_ptr instead of delete
  }
 
  Decoders.resize(num_channels);
  for(size_t i=old_size;i<Decoders.size();i++)
  {
-  Decoders[i]=DecoderPrototype->New();
+  Decoders[i]=std::shared_ptr<URpcDecoder>(DecoderPrototype->New());
   Decoders[i]->SetDispatcher(this);
  }
 }

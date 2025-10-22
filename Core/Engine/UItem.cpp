@@ -376,7 +376,7 @@ void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UI
   {
    if(link.OutputName == item_property_name)
    {
-          property=dynamic_pointer_cast<UIPropertyInput>(vec[index]->FindProperty(link.InputName));
+          property=dynamic_pointer_cast<UIPropertyInput>(vec[index]->FindProperty(link.InputName)).get();
     return;
    }
   }
@@ -402,16 +402,16 @@ void UItem::Free(void)
 // ���������� ���������������� ������
 // ----------------------
 
-bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
+bool UItem::ConnectToItem(std::shared_ptr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item))
   return false;
 
  // ���� ��������� �� �������� ������ (��� �������������� ����������, �� ��� ��������� ����)
- UIPropertyOutput* output_property=dynamic_pointer_cast<UIPropertyOutput>(na->FindProperty(item_property_name));
+ UIPropertyOutput* output_property=dynamic_pointer_cast<UIPropertyOutput>(na->FindProperty(item_property_name)).get();
 
  // ���� ��������� �� ������� ������ (��� �������������� ����������, �� ��� ��������� ����)
- UIPropertyInput* input_property=dynamic_pointer_cast<UIPropertyInput>(FindProperty(connector_property_name));
+ UIPropertyInput* input_property=dynamic_pointer_cast<UIPropertyInput>(FindProperty(connector_property_name)).get();
 
 
  int size=int(ConnectedItemList[connector_property_name].size());
@@ -429,7 +429,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 }
 
 // ������������� ����� � ����������� 'c'.
-bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
+bool UItem::Connect(std::shared_ptr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!c)
   return false;
@@ -437,7 +437,7 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
  if(!Build())
   return false;
 
- if(!c->ConnectToItem(this,item_property_name, connector_property_name, c_index, forced_connect_same_item))
+ if(!c->ConnectToItem(std::shared_ptr<UItem>(this, [](UItem*){}),item_property_name, connector_property_name, c_index, forced_connect_same_item))
   return false;
 
  std::vector<PUAConnector> &vec=RelatedConnectors[item_property_name];
@@ -451,12 +451,12 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
 }
 
 /// ��������� ��� ����� ������ ����� ������� � ����������� 'c'.
-void UItem::Disconnect(UEPtr<UConnector> c)
+void UItem::Disconnect(std::shared_ptr<UConnector> c)
 {
  Build();
 
  if(c)
-  c->DisconnectFromItem(this);
+  c->DisconnectFromItem(std::shared_ptr<UItem>(this, [](UItem*){}));
 
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
 
@@ -474,7 +474,7 @@ void UItem::Disconnect(UEPtr<UConnector> c)
 }
 
 // ��������� ����� ������ ����� ������� � ����������� 'c' �� �������
-void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
+void UItem::Disconnect(std::shared_ptr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
  if(!c)
   return;
@@ -486,7 +486,7 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
  if(I == RelatedConnectors.end())
   return;
 
- UCItem citem=c->GetCItem(connector_property_name,this,connected_c_index);
+ UCItem citem=c->GetCItem(connector_property_name,std::shared_ptr<UItem>(this, [](UItem*){}),connected_c_index);
  int i=0;
  while(i<int(I->second.size()))
  {
@@ -495,7 +495,7 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
    if(citem.Name == item_property_name && citem.Item == this)
    {
 	I->second.erase(I->second.begin()+i);
-    c->DisconnectFromItem(this, item_property_name, connector_property_name, connected_c_index);
+    c->DisconnectFromItem(std::shared_ptr<UItem>(this, [](UItem*){}), item_property_name, connector_property_name, connected_c_index);
    }
    else
     ++i;
@@ -593,7 +593,7 @@ void UItem::DisconnectAll(const NameT &item_property_name)
 // ��������� ��� ����� �������
 // �������� ��� ���������� ����� � �������� �����
 // brklevel - ������, ������������ �������� ����� ��������� �����������
-void UItem::DisconnectBy(UEPtr<UContainer> brklevel)
+void UItem::DisconnectBy(std::shared_ptr<UContainer> brklevel)
 {
  Build();
 
@@ -634,7 +634,7 @@ void UItem::BuildLinks(void)
 	if(I->first == indexes.OutputName)
 	{
 	 int c_index(-1);
-	 I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
+	 I->second[i]->ConnectToItem(std::shared_ptr<UItem>(this, [](UItem*){}),indexes.OutputName,indexes.InputName,c_index);
 	}
    }
   }
@@ -643,7 +643,7 @@ void UItem::BuildLinks(void)
 
 // ���������� ��������� �� ��������� �� ������ �����������
 // �� ����� 'name'.
-UEPtr<UConnector> UItem::GetAConnector(const UId &id, int index) const
+std::shared_ptr<UConnector> UItem::GetAConnector(const UId &id, int index) const
 {
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
 
@@ -661,7 +661,7 @@ UEPtr<UConnector> UItem::GetAConnector(const UId &id, int index) const
 }
 
 // ����������  ��������� �� ������ �����������.
-UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, int index) const
+std::shared_ptr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, int index) const
 {
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.find(item_property_name);
  if(I == RelatedConnectors.end())
@@ -674,7 +674,7 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, i
 
 
 // ���������, ���������� �� ����� � �������� �����������
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const
+bool UItem::CheckLink(const std::shared_ptr<UConnector> &connector, int connected_c_index) const
 {
  std::vector<UCLink> buffer;
  connector->GetCLink(this,buffer);
@@ -689,7 +689,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index)
  return false;
 }
 
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
+bool UItem::CheckLink(const std::shared_ptr<UConnector> &connector, const NameT &item_property_name) const
 {
  std::vector<UCLink> buffer;
  connector->GetCLink(this,buffer);
@@ -707,7 +707,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
 }
 
 // ���������, ���������� �� ����� � �������� ����������� � ���������� ������
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
+bool UItem::CheckLink(const std::shared_ptr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
  std::vector<UCLink> buffer;
  connector->GetCLink(this,buffer);

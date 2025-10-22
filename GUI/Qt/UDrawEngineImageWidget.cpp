@@ -164,7 +164,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     if(font)
      Font=*font;
     Graph.SetFont(&Font);
-    DrawEngine.SetEngine(&Graph);
+    DrawEngine.SetEngine(std::shared_ptr<RDK::UAGraphics>(&Graph, RDK::NonOwningDeleter()));
     DrawEngine.SetFonts(RDK::GetCoreLock()->GetFonts());
     //</��� �� �������>
     reDrawScheme(true);
@@ -705,14 +705,14 @@ void UDrawEngineImageWidget::componentDefault()
 
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
     std::string stringid = selectedComponentLongName.toLocal8Bit().constData();
-    RDK::UEPtr<RDK::UNet> object;
+    std::shared_ptr<RDK::UNet> object;
     if(stringid.empty())
-     object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
+     object=std::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
     else
-     object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
+     object=std::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
 
     auto owner_ptr = object->GetOwner();
-    RDK::UEPtr<RDK::UNet> owner = RDK::UEPtr<RDK::UNet>(std::dynamic_pointer_cast<RDK::UNet>(owner_ptr).get());
+    std::shared_ptr<RDK::UNet> owner = std::dynamic_pointer_cast<RDK::UNet>(owner_ptr);
     RDK::UStringLinksList links_list;
 
     if(owner)

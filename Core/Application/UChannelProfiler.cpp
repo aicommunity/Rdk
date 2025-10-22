@@ -43,7 +43,7 @@ UPerfomanceResults::UPerfomanceResults(void)
 
 
 
-/// Добавляет данные в историю
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UPerfomanceData::AddHistory(long long value, long long interval, int max_values)
 {
  unsigned long long reg_time(0);
@@ -55,9 +55,9 @@ void UPerfomanceData::AddHistory(long long value, long long interval, int max_va
   CalcDurationHistory.erase(CalcDurationHistory.begin());
 }
 
-/// История производительности компонента или элемента интерфейса
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //struct RDK_LIB_TYPE UPerfomanceData: public UPerfomanceResults
-/// Расчет метрик
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UPerfomanceData::CalcMetrics(void)
 {
  AvgDuration=0;
@@ -74,17 +74,17 @@ void UPerfomanceData::CalcMetrics(void)
 
   AvgInterval+=double(curr.Interval);
 
-  if(MinDuration>curr.Duration)
-   MinDuration=double(curr.Duration);
+  if(MinDuration>static_cast<double>(curr.Duration))
+   MinDuration=static_cast<double>(curr.Duration);
 
-  if(MaxDuration<curr.Duration)
-   MaxDuration=double(curr.Duration);
+  if(MaxDuration<static_cast<double>(curr.Duration))
+   MaxDuration=static_cast<double>(curr.Duration);
 
-  if(MinInterval>curr.Interval)
-   MinInterval=double(curr.Interval);
+  if(MinInterval>static_cast<double>(curr.Interval))
+   MinInterval=static_cast<double>(curr.Interval);
 
-  if(MaxInterval<curr.Interval)
-   MaxInterval=double(curr.Interval);
+  if(MaxInterval<static_cast<double>(curr.Interval))
+   MaxInterval=static_cast<double>(curr.Interval);
  }
  if(!CalcDurationHistory.empty())
  {
@@ -97,7 +97,7 @@ void UPerfomanceData::CalcMetrics(void)
  MinDuration/=1000.0;
 }
 
-/// Расчет процента от общего времений
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UPerfomanceData::CalcPercentage(double full_time)
 {
  if(full_time>0)
@@ -108,7 +108,7 @@ void UPerfomanceData::CalcPercentage(double full_time)
 
 
 /// --------------------------
-/// Конструкторы и деструкторы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// --------------------------
 UChannelProfiler::UChannelProfiler(void)
 {
@@ -126,9 +126,9 @@ UChannelProfiler::~UChannelProfiler(void)
 /// --------------------------
 
 /// --------------------------
-/// Методы управления параметрами
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// --------------------------
-/// Индекс канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UChannelProfiler::GetChannelIndex(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -144,7 +144,7 @@ bool UChannelProfiler::SetChannelIndex(int index)
  return true;
 }
 
-/// Число усреднений
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UChannelProfiler::GetAverageIterations(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -161,7 +161,7 @@ bool UChannelProfiler::SetAverageIterations(int num)
  return true;
 }
 
-/// Массив длинных имен наблюдаемых компонент
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::vector<std::string> UChannelProfiler::GetComponentsName(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -178,7 +178,7 @@ bool UChannelProfiler::SetComponentsName(const std::vector<std::string>& value)
  return true;
 }
 
-/// Добавляет новый компонент в список
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UChannelProfiler::AddComponent(const std::string &name)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -189,7 +189,7 @@ bool UChannelProfiler::AddComponent(const std::string &name)
  return true;
 }
 
-/// Добавляет новый компонент в список
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UChannelProfiler::AddAllComponents(const std::string &name)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -224,7 +224,7 @@ bool UChannelProfiler::AddAllComponents(const std::string &name)
  return true;
 }
 
-/// Удаляет компонент
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UChannelProfiler::DelComponent(const std::string &name)
 {
  std::vector<std::string> comp_names=ComponentsName;
@@ -248,7 +248,7 @@ bool UChannelProfiler::DelComponent(int index)
  return true;
 }
 
-/// Добавляет новый компонент в список
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::DelAllComponents(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -257,7 +257,7 @@ void UChannelProfiler::DelAllComponents(void)
  ClearPerfomanceData();
 }
 
-/// Массив имен наблюдаемых интерфейсов
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::vector<std::string> UChannelProfiler::GetGuiNames(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -274,7 +274,7 @@ bool UChannelProfiler::SetGuiNames(const std::vector<std::string>& value)
  return true;
 }
 
-/// Добавляет все интерфейсы в список
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UChannelProfiler::AddAllGui(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -289,7 +289,7 @@ bool UChannelProfiler::AddAllGui(void)
  return true;
 }
 
-/// Возвращает имя компнента по индексу
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UChannelProfiler::GetComponentName(int index) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -299,7 +299,7 @@ std::string UChannelProfiler::GetComponentName(int index) const
  return comp_names[index];
 }
 
-/// Ищет индекс по имени компонента
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UChannelProfiler::FindComponentIndex(const std::string &name) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -310,7 +310,7 @@ int UChannelProfiler::FindComponentIndex(const std::string &name) const
  return int(I-comp_names.begin());
 }
 
-/// Возвращает имя gui по индексу
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ gui пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UChannelProfiler::GetGuiName(int index) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -322,9 +322,9 @@ std::string UChannelProfiler::GetGuiName(int index) const
 /// --------------------------
 
 /// --------------------------
-/// Методы управления данными
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// --------------------------
-/// Удаляет все накопленные данные
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::ClearPerfomanceData(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -351,7 +351,7 @@ void UChannelProfiler::ClearPerfomanceData(void)
  ComponentsProfilerOutputData=profiler_bug;
 }
 
-/// Добавляет данные для выбранного компонента
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::AddComponentPerfomanceData(int index, long long value, long long interval)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -368,7 +368,7 @@ void UChannelProfiler::AddComponentPerfomanceData(const std::string &name, long 
  AddComponentPerfomanceData(FindComponentIndex(name), value,interval);
 }
 
-/// Добавляет данные для выбранного gui
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ gui
 void UChannelProfiler::AddGuiPerfomanceData(int index, long long value, long long interval)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -380,12 +380,12 @@ void UChannelProfiler::AddGuiPerfomanceData(int index, long long value, long lon
  GuiPerfomance=gui_perf_buf;
 }
 
-/// Выполняет считывание сырых данных ядра о производительности
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::LoadCorePerfomanceData(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  UELockPtr<UEngine> engine(GetEngineLock(ChannelIndex));
- UEPtr<UNet> model(GetModel<UNet>(ChannelIndex));
+ std::shared_ptr<UNet> model(GetModel<UNet>(ChannelIndex));
  if(!model)
   return;
  RDK_SYS_TRY
@@ -395,7 +395,7 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
    std::vector<std::string> comp_names=ComponentsName;
    for(size_t i=0;i<comp_names.size();i++)
    {
-    UEPtr<UNet> component=model->GetComponentL<UNet>(comp_names[i],true);
+    std::shared_ptr<UNet> component=model->GetComponentL<UNet>(comp_names[i],true);
 	if(component)
      AddComponentPerfomanceData(int(i), component->GetFullStepDuration(), component->GetInterstepsInterval());
    }
@@ -408,7 +408,7 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
    other_performance.AddHistory(interstep_interval,0,AverageIterations);
    OtherPerfomance=other_performance;
 
-   UEPtr<UEnvironment> env=GetEnvironment(ChannelIndex);
+   std::shared_ptr<UEnvironment> env=GetEnvironment(ChannelIndex);
    UIntegralPerfomanceResults integral_results=IntegralPerfomanceResults;
    integral_results.ModelTime=env->GetTime().GetDoubleTime();
    integral_results.RealTime=env->GetTime().GetDoubleRealTime();
@@ -432,7 +432,7 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
  }
 }
 
-/// Выполняет считывание сырых данных gui о производительности
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ gui пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::LoadGuiPerfomanceData(void)
 {
  std::vector<RDK::UIVisualController*> &interfaces=RDK::UIVisualControllerStorage::InterfaceUpdaters;
@@ -457,7 +457,7 @@ void UChannelProfiler::LoadGuiPerfomanceData(void)
  SummaryGuiPerfomance=summary_gui_perf;
 }
 
-/// Производит расчет оценкок производительности ядра из сырых данных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::CalcCorePerfomance(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -493,7 +493,7 @@ void UChannelProfiler::CalcCorePerfomance(void)
  ComponentsPerfomance=comp_perf_buf;
 }
 
-/// Производит расчет оценкок производительности gui из сырых данных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ gui пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::CalcGuiPerfomance(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -512,12 +512,12 @@ void UChannelProfiler::CalcGuiPerfomance(void)
  GuiPerfomance=gui_perf_buf;
 }
 
-/// Производит расчет выходных данных профайлера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::CalcProfilerOutputData(void)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
 
- // рассчитываем выходные данные
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  std::list<pair<std::string, UPerfomanceResults> > gui_prof_out_data;
  std::pair<std::string, UPerfomanceResults> perf;
  std::vector<UPerfomanceData> gui_perf_buf=GuiPerfomance;
@@ -536,7 +536,7 @@ void UChannelProfiler::CalcProfilerOutputData(void)
  std::vector<UPerfomanceData> comp_perf_buf=ComponentsPerfomance;
  UPerfomanceData model_perf=ModelPerfomance;
  UPerfomanceData other_perf=OtherPerfomance;
- //ComponentsProfilerOutputData=comp_prof_out_data; // очистка
+ //ComponentsProfilerOutputData=comp_prof_out_data; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  for(size_t i=0;i<comp_names.size();i++)
  {
   std::string legend=comp_names[i];
@@ -589,7 +589,7 @@ void UChannelProfiler::CalcProfilerOutputData(void)
  ComponentsProfilerOutputData=comp_prof_out_data;
 }
 
-/// Производит полный расчет данных профайлера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UChannelProfiler::Calculate(void)
 {
  CalculateCore();
@@ -611,9 +611,9 @@ void UChannelProfiler::CalculateGui(void)
 /// --------------------------
 
 /// --------------------------
-/// Методы чтения статистики
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// --------------------------
-/// Возавращает оценку производительности для компонент
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UPerfomanceResults UChannelProfiler::GetComponentPerfomance(const std::string &name) const
 {
  int i=FindComponentIndex(name);
@@ -634,7 +634,7 @@ UPerfomanceResults UChannelProfiler::GetComponentPerfomance(int index) const
  return comp_perf_buf[index];
 }
 
-/// Возавращает оценку производительности для gui
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ gui
 UPerfomanceResults UChannelProfiler::GetGuiPerfomance(int index) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -644,28 +644,28 @@ UPerfomanceResults UChannelProfiler::GetGuiPerfomance(int index) const
  return gui_perf_buf[index];
 }
 
-/// Производительность всей модели
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UPerfomanceData UChannelProfiler::GetModelPerfomance(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  return ModelPerfomance;
 }
 
-/// Производительность всего кроме модели
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UPerfomanceData UChannelProfiler::GetOtherPerfomance(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  return OtherPerfomance;
 }
 
-/// Суммарная производительность Gui
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Gui
 UPerfomanceData UChannelProfiler::GetSummaryGuiPerfomance(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  return SummaryGuiPerfomance;
 }
 
-/// Возвращает интегральные данные о производительности
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UIntegralPerfomanceResults UChannelProfiler::GetIntegralPerfomanceResults(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -674,9 +674,9 @@ UIntegralPerfomanceResults UChannelProfiler::GetIntegralPerfomanceResults(void) 
 /// --------------------------
 
 /// --------------------------
-/// Методы чтения обработанной статистики
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// --------------------------
-/// Возвращает строку с текущим временем для режима RT
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ RT
 std::string UChannelProfiler::CalcRtTimeText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -687,7 +687,7 @@ std::string UChannelProfiler::CalcRtTimeText(void) const
  return result;
 }
 
-/// Возвращает строку с текущим временем для обычного режима
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UChannelProfiler::CalcNormalTimeText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -697,7 +697,7 @@ std::string UChannelProfiler::CalcNormalTimeText(void) const
 }
 
 
-/// Возвращает строку с производительностью для режима Rt
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Rt
 std::string UChannelProfiler::CalcRtPerfomanceText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -705,7 +705,7 @@ std::string UChannelProfiler::CalcRtPerfomanceText(void) const
  return string("RT Coeff: ")+sntoa(integral_perf.RtPerfomance,3)+string("=")+sntoa(integral_perf.RtModelDuration,3)+string("/")+sntoa(integral_perf.RtCalcDuration,3);
 }
 
-/// Возвращает строку с текущей длительностью шага расчета для нормального режима
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UChannelProfiler::CalcNormalStepDurationText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -714,7 +714,7 @@ std::string UChannelProfiler::CalcNormalStepDurationText(void) const
  return string("Step: ")+sntoa(model_perf.AvgDuration,3)+"/"+sntoa(model_perf.AvgDuration+other_perf.AvgDuration,3)+"s";
 }
 
-/// Возвращает строку с текущим FPS для нормального режима
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ FPS пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UChannelProfiler::CalcNormalFpsText(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -725,16 +725,16 @@ std::string UChannelProfiler::CalcNormalFpsText(void) const
 }
 
 
-/// Список легенда-время в секундах для компонент и модели в целом
-/// (см описание соответствующего параметра)
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
+/// (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 std::list<pair<std::string, UPerfomanceResults> > UChannelProfiler::GetComponentsProfilerOutputData(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
  return ComponentsProfilerOutputData;
 }
 
-/// Список легенда-время в секундах обновления Gui
-/// элементы расположены подряд в соответствии с GuiNames
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Gui
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ GuiNames
 std::list<pair<std::string, UPerfomanceResults> > UChannelProfiler::GetGuiProfilerOutputData(void) const
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -745,9 +745,9 @@ std::list<pair<std::string, UPerfomanceResults> > UChannelProfiler::GetGuiProfil
 
 
 // --------------------------
-// Общие методы управления контроллером
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Сохраняет параметры интерфейса в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 void UChannelProfiler::SaveParameters(RDK::USerStorageXML &xml)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);
@@ -764,7 +764,7 @@ void UChannelProfiler::SaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 void UChannelProfiler::LoadParameters(RDK::USerStorageXML &xml)
 {
  // UGenericMutexExclusiveLocker locker(Mutex);

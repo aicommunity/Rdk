@@ -116,7 +116,7 @@ void UTcpServerControlWidget::AUpdateInterface()
  ui->lineEditServerPort->setText(QString::number(application->GetServerControl()->GetServerTransport()->GetServerBindingPort()));
  std::string bnd = addr+":"+ui->lineEditServerPort->text().toUtf8().constData();
 
- if(application->GetServerControl()->GetServerTransport().Get()!=nullptr)
+ if(application->GetServerControl()->GetServerTransport().get()!=nullptr)
  {
 //     bool state = application->GetServerControl()->GetServerTransport()->GetSocketState(bnd);
      if(!application->GetServerControl()->GetServerTransport()->ServerIsActive())

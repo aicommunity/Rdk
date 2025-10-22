@@ -18,7 +18,7 @@ ULogger::~ULogger(void)
   UDestroyMutex(LogMutex);
 }
 
-/// Путь до папки с логами
+/// пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 std::string ULogger::GetLogDir(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -36,10 +36,10 @@ bool ULogger::SetLogDir(const std::string &value)
  return true;
 }
 
-/// Режим логгирования
-/// 0 - отключен
-/// 1 - сохранять каждый канал в отдельный файл лога
-/// 2 - сохранять все каналы в единый файл лога
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+/// 2 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 std::string ULogger::GetSuffix(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -56,7 +56,7 @@ bool ULogger::SetSuffix(const std::string &value)
  return true;
 }
 
-/// Инициализирует лог
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 int ULogger::InitLog(void)
 {
  Clear();
@@ -75,7 +75,7 @@ int ULogger::InitLog(void)
  return RDK_SUCCESS;
 }
 
-/// Сохраняет строку в лог
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 int ULogger::WriteMessageToFile(const std::string &str)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -87,12 +87,12 @@ int ULogger::WriteMessageToFile(const std::string &str)
    time_t time_data;
    time(&time_data);
    file_name=RDK::get_text_time(time_data, '.', '_');
-   EventsLogFile=new std::ofstream((LogDir.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
+   EventsLogFile=std::make_shared<std::ofstream>((LogDir.Get()+file_name+Suffix.Get()+".txt").c_str(),std::ios_base::out | std::ios_base::app);
 
    if(!EventsLogFile->is_open() || EventsLogFile->fail() || EventsLogFile->bad())
    {
 	Clear();
-	RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");
+        RdkDebuggerMessage(std::string("Failed to open log file ")+LogDir.Get()+file_name+Suffix.Get()+".txt");
 	return RDK_E_LOGGER_CANT_CREATE_LOG_FILE;
    }
   }
@@ -115,13 +115,13 @@ int ULogger::WriteMessageToFile(const std::string &str)
  return RDK_UNHANDLED_EXCEPTION;
 }
 
-/// Закрывает файлы с логами и удаляет связанные файловые переменные
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int ULogger::Clear(void)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
  if(EventsLogFile)
  {
-  delete EventsLogFile;
+  EventsLogFile.reset();
   EventsLogFile=0;
  }
 
@@ -129,7 +129,7 @@ int ULogger::Clear(void)
  return RDK_SUCCESS;
 }
 
-/// Возвращает true если файл записи логов открыт
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool ULogger::IsLogFileCreated(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);

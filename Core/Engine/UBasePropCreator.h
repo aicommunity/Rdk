@@ -2,7 +2,7 @@
 #define UBASEPROPCREATOR_H
 
 #include "UBasePropCreatorTempl.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernProperties.h"
 
 namespace RDK {

@@ -16,7 +16,7 @@ See file license.txt for more information
 
 #include "UModule.h"
 #include "UEnvSupport.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernSmartPointers.h"
 #include "UContainerDescription.h"
 #include "UTime.h"
@@ -257,8 +257,8 @@ virtual void AUpdateInternalData(void);
 // --------------------------
 public:
 // ���������� ��������� �� ������ ��������
-UEPtr<UIProperty> FindProperty(const NameT &name) const;
-UEPtr<UIProperty> FindProperty(const NameT &name);
+std::shared_ptr<UIProperty> FindProperty(const NameT &name) const;
+std::shared_ptr<UIProperty> FindProperty(const NameT &name);
 
 // ���������� �������� ��������� �� ����� 'name'
 std::shared_ptr<UVariableData> GetProperty(const NameT &name, std::shared_ptr<UVariableData> values) const;
@@ -581,7 +581,7 @@ public:
 template<typename T>
 const T* UComponent::AccessPropertyData(const NameT &name) const
 {
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
  if(!property)
   return 0;
 
@@ -594,7 +594,7 @@ const T* UComponent::AccessPropertyData(const NameT &name) const
 template<typename T>
 T* UComponent::AccessPropertyData(const NameT &name)
 {
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
  if(!property)
   return 0;
 

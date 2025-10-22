@@ -79,7 +79,7 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  VideoCaptureOptionsForm=new TVideoCaptureOptionsForm(this);
  VideoCaptureOptionsForm->VideoOutputFrame=this;
 
- std::map<int, RDK::UEPtr<TVideoCaptureThread> >::const_iterator I=TVideoCaptureOptionsForm::GetVideoSourcePrototypes().begin(),
+ std::map<int, std::shared_ptr<TVideoCaptureThread> >::const_iterator I=TVideoCaptureOptionsForm::GetVideoSourcePrototypes().begin(),
 													J=TVideoCaptureOptionsForm::GetVideoSourcePrototypes().end();
  for(;I != J;++I)
  {
@@ -120,16 +120,16 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
 /// Создает копию требуемого треда по индексу видеорежима
-RDK::UEPtr<TVideoCaptureThread> TVideoOutputFrame::TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended)
+std::shared_ptr<TVideoCaptureThread> TVideoOutputFrame::TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended)
 {
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoCaptureOptionsForm->VideoSourcePrototypes.find(mode);
+ const std::map<int, std::shared_ptr<TVideoCaptureThread> >::iterator I=VideoCaptureOptionsForm->VideoSourcePrototypes.find(mode);
  if(I == VideoCaptureOptionsForm->VideoSourcePrototypes.end())
   return 0;
  return I->second->New(frame, create_suspended);
 }
 
 /// Уничтожает заданный тред
-void TVideoOutputFrame::ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> thread)
+void TVideoOutputFrame::ReturnVideoCapureThread(std::shared_ptr<TVideoCaptureThread> thread)
 {
  delete thread;
 }

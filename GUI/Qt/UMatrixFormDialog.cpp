@@ -12,7 +12,7 @@ UMatrixFormDialog::UMatrixFormDialog(QWidget *parent) :
   //  connect(ui->buttonBox->Ok,SIGNAL(clicked()),this,SLOT(accept()));
  //   connect(cancel_button,SIGNAL(clicked()),this, SLOT(reject()));
 
-    // Таймер обновления отображаемых данных (каждые 300 мс)
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ 300 пїЅпїЅ)
     updateMatrixDataTimer.setInterval(300);
     updateMatrixDataTimer.setSingleShot(false);
     connect(&updateMatrixDataTimer, SIGNAL(timeout()), this, SLOT(UpdateMatrixData()));
@@ -38,7 +38,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
 
     ui->label->setText((ComponentMatrixName+std::string(":")+PropertyMatrixName).c_str());
 
-    // Уже выделенные ячейки
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     QItemSelectionModel *sel_m = ui->tableWidget->selectionModel();
 
     std::vector<int> row_ids;
@@ -188,7 +188,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
     break;
     }
 
-    // Выделение уже выделенных
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     for(int i = 0; i<row_ids.size(); i++)
     {
         QModelIndex temp = ui->tableWidget->model()->index(row_ids[i], col_ids[i]);
@@ -196,14 +196,14 @@ void UMatrixFormDialog::UpdateMatrixData(void)
     }
 }
 
-/// Выбирает матрицу для наблюдения
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UMatrixFormDialog::SelectMatrix(const std::string &comp_name, const std::string &prop_name)
 {
     RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
     if(!model)
         return false;
 
-    RDK::UEPtr<RDK::UNet> comp;
+    std::shared_ptr<RDK::UNet> comp;
     if(comp_name.empty())
     {
         comp=RDK::GetModel<RDK::UNet>();
@@ -215,7 +215,7 @@ bool UMatrixFormDialog::SelectMatrix(const std::string &comp_name, const std::st
             return false;
     }
 
-    RDK::UIProperty* prop=comp->FindProperty(prop_name);
+    std::shared_ptr<RDK::UIProperty> prop=comp->FindProperty(prop_name);
 
     if(!prop)
      return false;

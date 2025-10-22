@@ -46,16 +46,16 @@ std::string DebugOutputPath;
 
 protected: // Данные
 /// Указатель на экземпляр приложения
-UEPtr<UApplication> Application;
+std::shared_ptr<UApplication> Application;
 
 /// Указатель на экземпляр транспорта
-UEPtr<UServerTransport> ServerTransport;
+std::shared_ptr<UServerTransport> ServerTransport;
 
 /// Указатель на экземпляр транспорта для приема и передачи HTTP
-UEPtr<UServerTransport> ServerTransportHttp;
+std::shared_ptr<UServerTransport> ServerTransportHttp;
 
 /// Диспетчер команд
-UEPtr<URpcDispatcher> RpcDispatcher;
+std::shared_ptr<URpcDispatcher> RpcDispatcher;
 
 /// Флаг состояния инициализации
 bool InitFlag;
@@ -121,23 +121,23 @@ const std::string& GetDebugOutputPath(void) const;
 // Методы доступа к данным
 // --------------------------
 /// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> GetApplication(void);
-bool SetApplication(UEPtr<UApplication> value);
+std::shared_ptr<UApplication> GetApplication(void);
+bool SetApplication(std::shared_ptr<UApplication> value);
 // --------------------------
 /// Возвращает указатель на экземпляр транспорта
-UEPtr<UServerTransport> GetServerTransport(void);
-bool SetServerTransport(UEPtr<UServerTransport> value);
+std::shared_ptr<UServerTransport> GetServerTransport(void);
+bool SetServerTransport(std::shared_ptr<UServerTransport> value);
 
-UEPtr<UServerTransport> GetServerTransportHttp(void);
-bool SetServerTransportHttp(UEPtr<UServerTransport> value);
+std::shared_ptr<UServerTransport> GetServerTransportHttp(void);
+bool SetServerTransportHttp(std::shared_ptr<UServerTransport> value);
 // --------------------------
 
 /// Предоставляет доступ к диспетчеру команд
-virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
+virtual std::shared_ptr<URpcDispatcher> GetRpcDispatcher(void);
 
 /// Устанавливает новый диспетчер команд
 /// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
-virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
+virtual bool SetRpcDispatcher(const std::shared_ptr<URpcDispatcher> &value);
 
 // --------------------------
 // Данные для оценки производительности и сохранения отладочной информации

@@ -42,6 +42,8 @@ list(APPEND RDK_STATIC_SOURCES
 list(APPEND RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk.qt.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/myrdk.qt.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_exceptions.gcc.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_rpc.cpp
 )
 
 # Добавляем Application файлы из .pro
@@ -53,13 +55,27 @@ list(APPEND RDK_STATIC_SOURCES
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/ANSI/.*\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Win/.*\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Mac/.*\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/rdk_system\\.gcc\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UEngineControlQt\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/ULocalProperty\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyOutput\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyIO\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyInput\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UShare\\.cpp$")
+# list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UContainer\\.cpp$")
+# list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UItem\\.cpp$")
+# list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UNet\\.cpp$")
+# list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UStorage\\.cpp$")
+# list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Deploy/Include/rdk_engine_support\\.cpp$")
 
 target_sources(${TARGET_NAME} PRIVATE ${RDK_STATIC_SOURCES})
 
 target_compile_definitions(${TARGET_NAME} PUBLIC RDK_QT RDK_LIB_CVS_REVISION=0)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network)
-target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Widgets Qt5::Network Threads::Threads)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network Sql SerialPort)
+find_package(Boost REQUIRED COMPONENTS program_options)
+
+target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Widgets Qt5::Network Qt5::Sql Qt5::SerialPort Boost::program_options Threads::Threads)
 
 # Modern compiler flags for GNU
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -69,6 +85,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         -flto -fuse-linker-plugin
         -Wno-unused-function
         -Wno-deprecated-copy
+        -frtti
     )
 endif()
 

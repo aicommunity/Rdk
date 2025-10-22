@@ -15,27 +15,27 @@ namespace RDK {
 const RDK::UVersion& RDK_CALL GetCoreVersion(void);
 
 // Возвращает ссылку на указатель ядра
-RDK_LIB_TYPE RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void);
+RDK_LIB_TYPE std::shared_ptr<URdkCoreManager> RDK_CALL GetCore(void);
 
 // Возвращает указатель на логгер
-RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index);
+RDK_LIB_TYPE std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(void);
+RDK_LIB_TYPE std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(int channel_index);
 
 // Возвращает ссылку на указатель управляющего ядра
-RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index);
+RDK_LIB_TYPE std::shared_ptr<UEngine>& RDK_CALL GetEngine(void);
+RDK_LIB_TYPE std::shared_ptr<UEngine> RDK_CALL GetEngine(int channel_index);
 
 // Возвращает ссылку на указатель среды выполнения
-RDK_LIB_TYPE RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int channel_index);
+RDK_LIB_TYPE std::shared_ptr<UEnvironment>& RDK_CALL GetEnvironment(void);
+RDK_LIB_TYPE std::shared_ptr<UEnvironment> RDK_CALL GetEnvironment(int channel_index);
 
 // Возвращает ссылку на указатель хранилища
-RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int channel_index);
+RDK_LIB_TYPE std::shared_ptr<UStorage>& RDK_CALL GetStorage(void);
+RDK_LIB_TYPE std::shared_ptr<UStorage> RDK_CALL GetStorage(int channel_index);
 
 // Возвращает указатель на текущую модель
-RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index);
+RDK_LIB_TYPE std::shared_ptr<UContainer> RDK_CALL GetModel(void);
+RDK_LIB_TYPE std::shared_ptr<UContainer> RDK_CALL GetModel(int channel_index);
 // --------------------------
 
 // --------------------------
@@ -118,13 +118,13 @@ RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout)
 }
 
 template<class T>
-RDK::UEPtr<T> GetModel(void)
+std::shared_ptr<T> GetModel(void)
 {
  return dynamic_pointer_cast<T>(GetModel());
 }
 
 template<class T>
-RDK::UEPtr<T> GetModel(int channel_index)
+std::shared_ptr<T> GetModel(int channel_index)
 {
  return dynamic_pointer_cast<T>(GetModel(channel_index));
 }

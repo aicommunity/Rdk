@@ -1,7 +1,7 @@
 #ifndef UCOMPONENTABSTRACTFACTORY_H
 #define UCOMPONENTABSTRACTFACTORY_H
 
-#include "UEPtr.h"
+#include <memory>
 #include "UContainer.h"
 #include "ModernSmartPointers.h"
 
@@ -81,14 +81,14 @@ namespace RDK {
   std::string XMLDescription;
 
  public:
-  UXMLDescriptionFactory(std::string xml_description, UEPtr<UComponent> comp = nullptr, bool create_structure_immediately = false);
+  UXMLDescriptionFactory(std::string xml_description, std::shared_ptr<UComponent> comp = nullptr, bool create_structure_immediately = false);
   virtual ~UXMLDescriptionFactory();
 
-  virtual UEPtr<UComponent> New();
+  virtual std::shared_ptr<UComponent> New();
 
-  virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage);
+  virtual std::shared_ptr<UComponent> Prototype(std::shared_ptr<UComponent> prototype, std::shared_ptr<UStorage> storage);
 
-  virtual void ResetComponent(UEPtr<UComponent> component) const;
+  virtual void ResetComponent(std::shared_ptr<UComponent> component) const;
  };*/
 
 }

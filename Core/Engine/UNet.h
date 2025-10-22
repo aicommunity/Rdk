@@ -34,7 +34,7 @@ virtual ~UNet(void);
 // ������ ������� � ���������
 // --------------------------
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, bool exclude_internals=false, std::shared_ptr<UContainer> internal_level=0) const;
 
 // ��������� ��� ����� ����� ����� ������������ � ���� xml � ����� buffer
 // ������� ����� ����� ����������
@@ -42,7 +42,7 @@ ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, 
 // ������� �������. �������� ����������� � ��� �������.
 // ���� 'sublevel' == 0, �� ���������� ����� ������ ����� ����� ���������
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel=-1);
+ULinksListT<T>& GetPersonalLinks(std::shared_ptr<UNet> cont, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, int sublevel=-1);
 // --------------------------
 
 // --------------------------
@@ -54,7 +54,7 @@ virtual UContainer* New(void);
 // � �������� ����������
 // ���� 'stor' == 0, �� �������� �������� ��������������
 // � ��� �� ��������� ��� ������������� ���� ������
-virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor=0, bool copystate=false) const;
 
 // ������������ ������������ ����� ������� � ��� ���������
 // ��� ����� �����������, ���� Storage == 0
@@ -68,7 +68,7 @@ virtual void Free(void);
 // � �������� ���������� ������� �������
 // ����� ���������� 'true' � ������ ������������
 // � 'false' � ������ ������������� ����
-virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
+virtual bool CheckComponentType(std::shared_ptr<UContainer> comp) const;
 // --------------------------
 
 // --------------------------
@@ -79,13 +79,19 @@ protected:
 // ��� ���������� ��������� ���������� � ���� ������
 // ����� ����� ������ ������ ���� comp ���
 // ������� �������� � ������ ���������
-virtual bool AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual bool AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
 
 // ��������� ��������������� ���������������� ��������
 // ��� �������� ��������� ���������� �� ����� �������
 // ����� ����� ������ ������ ���� comp
 // ���������� � ������ ���������
-virtual bool ADelComponent(UEPtr<UContainer> comp);
+virtual bool ADelComponent(std::shared_ptr<UContainer> comp);
+
+// Helper methods to create non-owning shared_ptr for 'this'
+std::shared_ptr<UNet> GetThisAsSharedNet();
+std::shared_ptr<UItem> GetThisAsSharedItem();  
+std::shared_ptr<UConnector> GetThisAsSharedConnector();
+std::shared_ptr<UContainer> GetThisAsSharedContainer();
 // --------------------------
 
 // ----------------------
@@ -108,7 +114,7 @@ virtual bool CreateLink(const NameT &item, const NameT &item_index,
 
 // ������������� ��� ����� �� ������� 'linkslist'
 template<typename T>
-bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0);
+bool CreateLinks(const ULinksListT<T> &linkslist, std::shared_ptr<UNet> owner_level=0);
 
 // ��������� ����� 'link'
 template<typename T>
@@ -135,7 +141,7 @@ virtual bool BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_prop
 // ��������� ��� ����� ����
 // �������� �� ���������� ����� � �������� �����
 // brklevel - ������, ������������ �������� ����� ��������� �����������
-virtual void BreakLinks(UEPtr<UContainer> brklevel);
+virtual void BreakLinks(std::shared_ptr<UContainer> brklevel);
 
 // ��������� �������� ����� ����
 virtual bool BreakLinks(const ULinksList &linkslist);
@@ -246,14 +252,14 @@ virtual bool SaveComponentDrawInfo(RDK::USerStorageXML *serstorage);
 // ----------------------
 /// ��������� ������������� ���������� � �������� ������
 template<typename T>
-UEPtr<T> FindComponentByNameAndType(const NameT &component_name);
+std::shared_ptr<T> FindComponentByNameAndType(const NameT &component_name);
 
 /// ��������� ������������� ���������� � �������� ������ � ������� ���
 /// ��� �������������.
 /// ���������� ��������� �� ��������� ���������, ���� �� ��� ��������
 /// ��� 0
 template<typename T>
-UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_name, UEPtr<UIPointer> pointer=0);
+std::shared_ptr<T> AddMissingComponent(const NameT &component_name, const NameT &class_name, std::shared_ptr<UIPointer> pointer=0);
 // ----------------------
 
 // --------------------------
@@ -261,10 +267,10 @@ UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_nam
 // --------------------------
 protected:
 template<typename T>
-ULinksListT<T>& GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(std::shared_ptr<UContainer> cont, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, bool exclude_internals, std::shared_ptr<UContainer> internal_level=0) const;
 
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
+ULinksListT<T>& GetPersonalLinks(std::shared_ptr<UContainer> cont, std::shared_ptr<UContainer> cont2, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel) const;
 // --------------------------
 };
 
@@ -272,9 +278,9 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2
 // ������ ������� � ���������
 // --------------------------
 template<typename T>
-ULinksListT<T>& UNet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
+ULinksListT<T>& UNet::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, bool exclude_internals, std::shared_ptr<UContainer> internal_level) const
 {
- GetLinks(const_cast<UNet*>(this), linkslist, netlevel, exclude_internals, internal_level);
+ GetLinks(const_cast<UNet*>(this)->GetThisAsSharedContainer(), linkslist, netlevel, exclude_internals, internal_level);
 
  return linkslist;
 }
@@ -285,7 +291,7 @@ ULinksListT<T>& UNet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netl
 // ������� �������. �������� ����������� � ��� �������.
 // ���� 'sublevel' == 0, �� ���������� ����� ������ ����� ����� ���������
 template<typename T>
-ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel)
+ULinksListT<T>& UNet::GetPersonalLinks(std::shared_ptr<UNet> cont, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, int sublevel)
 {
  GetPersonalLinks(const_cast<UNet*>(this), cont, linkslist, netlevel);
 
@@ -310,17 +316,17 @@ bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item)
 template<typename T>
 bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item)
 {
- UEPtr<UItem> pitem;
+ std::shared_ptr<UItem> pitem;
  if(!CheckLongId(item.Id))
-  pitem=this;
+  pitem=GetThisAsSharedItem();
  else
-  pitem=UEPtr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).Get())).get());
+  pitem=std::shared_ptr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).get())).get());
 
- UEPtr<UConnector> pconnector=0;
+ std::shared_ptr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
-  pconnector=this;
+  pconnector=GetThisAsSharedConnector();
  else
-  pconnector=UEPtr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).Get())).get());
+  pconnector=std::shared_ptr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).get())).get());
 
  if(!pitem)
  {
@@ -348,7 +354,7 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
 
 // ������������� ��� ����� �� ������� 'linkslist'.
 template<typename T>
-bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)
+bool UNet::CreateLinks(const ULinksListT<T> &linkslist, std::shared_ptr<UNet> owner_level)
 {
  bool res=true;
 
@@ -383,17 +389,17 @@ bool UNet::BreakLink(const ULinkT<T> &link)
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UItem> pitem=0;
+ std::shared_ptr<UItem> pitem=0;
  if(!CheckLongId(item.Id))
-  pitem=this;
+  pitem=GetThisAsSharedItem();
  else
-  pitem=UEPtr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).Get())).get());
+  pitem=std::shared_ptr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).get())).get());
 
- UEPtr<UConnector> pconnector=0;
+ std::shared_ptr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
-  pconnector=this;
+  pconnector=GetThisAsSharedConnector();
  else
-  pconnector=UEPtr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).Get())).get());
+  pconnector=std::shared_ptr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).get())).get());
 
  if(!pitem)
  {
@@ -419,17 +425,17 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 template<typename T>
 bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UItem> pitem;
+ std::shared_ptr<UItem> pitem;
  if(!CheckLongId(item.Id))
-  pitem=this;
+  pitem=GetThisAsSharedItem();
  else
-  pitem=UEPtr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).Get())).get());
+  pitem=std::shared_ptr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).get())).get());
 
- UEPtr<UConnector> pconnector=0;
+ std::shared_ptr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
-  pconnector=this;
+  pconnector=GetThisAsSharedConnector();
  else
-  pconnector=UEPtr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).Get())).get());
+  pconnector=std::shared_ptr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).get())).get());
 
  if(!pitem)
  {
@@ -457,9 +463,9 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 // ----------------------
 /// ��������� ������������� ���������� � �������� ������
 template<typename T>
-UEPtr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
+std::shared_ptr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
 {
- UEPtr<T> comp=std::dynamic_pointer_cast<T>(GetComponent(component_name,true));
+ std::shared_ptr<T> comp=std::dynamic_pointer_cast<T>(GetComponent(component_name,true));
  if(comp)
   return comp;
 
@@ -472,13 +478,13 @@ UEPtr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
 /// ���������� ��������� �� ��������� ���������, ���� �� ��� ��������
 /// ��� 0
 template<typename T>
-UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name, UEPtr<UIPointer> pointer)
+std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name, std::shared_ptr<UIPointer> pointer)
 {
- UEPtr<UContainer> found_comp=GetComponent(component_name,true);
- UEPtr<T> comp;
+ std::shared_ptr<UContainer> found_comp=GetComponent(component_name,true);
+ std::shared_ptr<T> comp;
  if(found_comp)
  {
-  comp=UEPtr<T>(std::dynamic_pointer_cast<T>(std::shared_ptr<UContainer>(found_comp.Get())).get());
+  comp=std::shared_ptr<T>(std::dynamic_pointer_cast<T>(std::shared_ptr<UContainer>(found_comp.get())).get());
   if(comp && comp->GetCompClassName() == class_name)
    return comp;
   else
@@ -492,14 +498,14 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
   return comp;
  }
 
- UEPtr<UComponent> proto=storage->TakeObject(class_name);
+ std::shared_ptr<UComponent> proto=storage->TakeObject(class_name);
  if(!proto)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in the storage. ClassName=")+class_name);
   return comp;
  }
 
- comp=UEPtr<T>(std::dynamic_pointer_cast<T>(std::shared_ptr<UComponent>(proto.Get())).get());
+ comp=std::shared_ptr<T>(std::dynamic_pointer_cast<T>(std::shared_ptr<UComponent>(proto.get())).get());
  if(!comp)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - component found in the storage but cannot convert to ")+std::string(typeid(T).name())+std::string(". ClassName=")+class_name);
@@ -524,16 +530,16 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
 // ������� ������ ������� � ���������
 // --------------------------
 template<typename T>
-ULinksListT<T>& UNet::GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
+ULinksListT<T>& UNet::GetLinks(std::shared_ptr<UContainer> cont, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, bool exclude_internals, std::shared_ptr<UContainer> internal_level) const
 {
- if(dynamic_pointer_cast<UItem>(cont))
+ if(std::dynamic_pointer_cast<UItem>(cont))
  {
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
-  static_pointer_cast<UItem>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
+  std::static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
+  std::static_pointer_cast<UItem>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
  }
  else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
+ if(std::dynamic_pointer_cast<UConnector>(cont))
+  std::static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
 
  for(int i=0;i<cont->GetNumComponents();i++)
   GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel, exclude_internals,internal_level);
@@ -542,16 +548,16 @@ ULinksListT<T>& UNet::GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist
 }
 
 template<typename T>
-ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
+ULinksListT<T>& UNet::GetPersonalLinks(std::shared_ptr<UContainer> cont, std::shared_ptr<UContainer> cont2, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel) const
 {
- if(dynamic_pointer_cast<UItem>(cont))
+ if(std::dynamic_pointer_cast<UItem>(cont))
  {
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
-  static_pointer_cast<UItem>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
+  std::static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
+  std::static_pointer_cast<UItem>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
  }
  else
- if(dynamic_pointer_cast<UConnector>(cont))
-  static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
+ if(std::dynamic_pointer_cast<UConnector>(cont))
+  std::static_pointer_cast<UConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
 
  for(int i=0;i<cont->GetNumComponents();i++)
   GetPersonalLinks(cont->GetComponentByIndex(i), cont2, linkslist, netlevel);

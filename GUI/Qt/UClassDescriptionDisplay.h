@@ -15,16 +15,16 @@ class UClassDescriptionDisplay;
 }
 
 class UClassFavoritesEditor;
-/// Класс отображения описания конкретного класса
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 class UClassDescriptionDisplay : public UVisualControllerWidget
 {
     Q_OBJECT
 private:
     std::string ClassName;
-    RDK::UEPtr<RDK::UContainerDescription> ClassDescription;
+    std::shared_ptr<RDK::UContainerDescription> ClassDescription;
     std::pair<std::string, RDK::UPropertyDescription> CurrentProp;
 
-    // Окно для создания Favorite
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Favorite
     UClassFavoritesEditor *clFavEditor;
 
 public:
@@ -33,27 +33,27 @@ public:
 
     const Ui::UClassDescriptionDisplay* GetUi() const;
 public slots:
-    // Сохранение описания класса
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     void SaveDescription();
 
-    // Закрытие
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void CloseForm();
 
-    // Изменение класса для отобраежния описания
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void ChangeClassDescription(const std::string& class_name);
 
-    // Заполнение списков свойств и Favorites класса
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Favorites пїЅпїЅпїЅпїЅпїЅпїЅ
     void FillProperties();
     void FillFavorites();
 
     void UpdateDataSelectionType(int type);
 
-    // Сброс GUI
+    // пїЅпїЅпїЅпїЅпїЅ GUI
     void DefaultGUIState();
 
 private slots:
 
-    // Открытие окна для создания Favorite
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Favorite
     void createNewFavoriteEditorSlot();
 
 

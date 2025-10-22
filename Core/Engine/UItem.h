@@ -13,12 +13,12 @@ See file license.txt for more information
 #define UAItemH
 
 #include "UConnector.h"
-#include "UEPtr.h"
+#include <memory>
 //#include "UEInterface.h"
 
 namespace RDK {
 
-typedef UEPtr<UConnector> PUAConnector;
+typedef std::shared_ptr<UConnector> PUAConnector;
 
 class RDK_LIB_TYPE UAConnectorVector
 {
@@ -206,16 +206,16 @@ public:
 // ������������� ����� � ��������� ���� 'na' �� ������ �� ������� index.
 // ���������� false ���� na ��� ��������� � ����� �����.
 // ��� �������� ����������� c_index �������� �������� ������ ������������� �����
-virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+virtual bool ConnectToItem(std::shared_ptr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
 
 // ������������� ����� � ����������� 'c'
-virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+virtual bool Connect(std::shared_ptr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
 
 /// ��������� ��� ����� ������ ����� ������� � ����������� 'c'.
-virtual void Disconnect(UEPtr<UConnector> c);
+virtual void Disconnect(std::shared_ptr<UConnector> c);
 
 // ��������� ����� ������ ����� ������� � ����������� 'c' �� �������
-virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
+virtual void Disconnect(std::shared_ptr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
 
 // ���������� ������� ����� ���������� ��� ��������� ������.
 virtual int GetNumAConnectors(const NameT &item_property_name) const;
@@ -231,7 +231,7 @@ virtual void DisconnectAll(const NameT &item_property_name);
 // ��������� ��� ����� �������
 // �������� ��� ���������� ����� � �������� �����
 // brklevel - ������, ������������ �������� ����� ��������� �����������
-virtual void DisconnectBy(UEPtr<UContainer> brklevel);
+virtual void DisconnectBy(std::shared_ptr<UContainer> brklevel);
 
 // ����������������� ��� ����� ����� item �� ����� connectors ������� ��������
 // ������ �� ����� item
@@ -239,35 +239,35 @@ virtual void BuildLinks(void);
 
 // ���������� ��������� �� ��������� �� ������ �����������
 // �� Id 'id'.
-virtual UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
+virtual std::shared_ptr<UConnector> GetAConnector(const UId &id, int index) const;
 
 // ����������  ��������� �� ������ �����������.
-virtual UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
+virtual std::shared_ptr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
 
 // ���������, ���������� �� ����� � �������� �����������
-bool CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const;
+bool CheckLink(const std::shared_ptr<UConnector> &connector, int connected_c_index) const;
 
 // ���������, ���������� �� ����� � �������� ����������� � ���������� ������
-bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const;
+bool CheckLink(const std::shared_ptr<UConnector> &connector, const NameT &item_property_name) const;
 
 // ���������, ���������� �� ����� � �������� ����������� � ���������� ������
-bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
-//bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
+bool CheckLink(const std::shared_ptr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
+//bool CheckLink(const std::shared_ptr<UConnector> &connector, int item_index, int conn_index) const;
 
 
 // ���������� ������ �����������
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, bool exclude_internals=false, std::shared_ptr<UContainer> internal_level=0) const;
 
 // ���������� ������ ����������� ��������������� ���������� cont
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
+ULinksListT<T>& GetPersonalLinks(std::shared_ptr<UContainer> cont, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel) const;
 
 // ���������� ������ ����������� ����� ���������� � ���� �������� ���������
 // � ��������� ���������� comp � ���� ��� �������� �����������
 template<typename T>
-ULinksListT<T>& GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> comp,
-                            UEPtr<UContainer> netlevel) const;
+ULinksListT<T>& GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_ptr<UItem> comp,
+                            std::shared_ptr<UContainer> netlevel) const;
 // ----------------------
 
 public:
@@ -293,13 +293,13 @@ virtual bool Build(void);
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
 template<typename T>
-ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
+ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel, bool exclude_internals, std::shared_ptr<UContainer> internal_level) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
  ULinkSideT<T> connector;
 
- GetLongId(std::shared_ptr<UContainer>(netlevel.Get()),item.Id);
+  GetLongId(std::shared_ptr<UContainer>(netlevel.get()),item.Id);
  if(item.Id.size() == 0)
   return linkslist;
  link.Item=item;
@@ -310,17 +310,17 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
-   UConnector* curr_conn=I->second[i];
+   UConnector* curr_conn=I->second[i].get();
    if(exclude_internals)
    {
 	if(curr_conn->CheckOwner(internal_level))
 	 continue;
    }
-   curr_conn->GetLongId(std::shared_ptr<UContainer>(netlevel.Get()),connector.Id);
+    curr_conn->GetLongId(std::shared_ptr<UContainer>(netlevel.get()),connector.Id);
    if(connector.Id.size() != 0)
    {
 	std::vector<UCLink> buffer;
-	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
 	 if(buffer[k].OutputName == I->first)
@@ -344,7 +344,7 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
 
 // ���������� ������ ����������� ��������������� ���������� cont
 template<typename T>
-ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
+ULinksListT<T>& UItem::GetPersonalLinks(std::shared_ptr<UContainer> cont, ULinksListT<T> &linkslist, std::shared_ptr<UContainer> netlevel) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
@@ -361,14 +361,14 @@ ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
-   UConnector* curr_conn=I->second[i];
-   if(curr_conn != cont)
+   UConnector* curr_conn=I->second[i].get();
+   if(curr_conn != cont.get())
 	continue;
    curr_conn->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
 	std::vector<UCLink> buffer;
-	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
 	 if(buffer[k].OutputName == I->first)
@@ -392,8 +392,8 @@ ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &
 // ���������� ������ ����������� ����� ���������� � ���� �������� ���������
 // � ��������� ���������� comp � ���� ��� �������� �����������
 template<typename T>
-ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> comp,
-                                     UEPtr<UContainer> netlevel) const
+ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_ptr<UItem> comp,
+                                     std::shared_ptr<UContainer> netlevel) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
@@ -412,14 +412,14 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
  for(;I != RelatedConnectors.end();++I)
   for(size_t i=0;i<I->second.size();i++)
   {
-   UConnector* curr_conn=I->second[i];
-   if(!curr_conn->CheckOwner(comp) && curr_conn != comp)
+   UConnector* curr_conn=I->second[i].get();
+   if(!curr_conn->CheckOwner(comp) && curr_conn != comp.get())
 	continue;
    curr_conn->GetLongId(netlevel,connector.Id);
    if(connector.Id.GetSize() != 0)
    {
 	std::vector<UCLink> buffer;
-	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
 	 if(buffer[k].OutputName == I->first)
@@ -438,7 +438,7 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
 
  for(int i=0;i<NumComponents;i++)
  {
-  UEPtr<UItem> item=dynamic_cast<UItem*>(PComponents[i].operator->());
+  std::shared_ptr<UItem> item=dynamic_cast<UItem*>(PComponents[i].operator->());
   item->GetFullItemLinks(linkslist, comp, netlevel);
  }
 

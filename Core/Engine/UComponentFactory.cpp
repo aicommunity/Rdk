@@ -31,7 +31,7 @@ namespace RDK
   std::shared_ptr<UContainer> obj(Component->New());
   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
-  Component->Copy(UEPtr<UContainer>(obj.get()), Storage);
+  Component->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
   return std::static_pointer_cast<UComponent>(obj);
  }
 
@@ -43,14 +43,14 @@ namespace RDK
   std::shared_ptr<UContainer> obj(Component->New());
   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
-  std::dynamic_pointer_cast<UContainer>(prototype)->Copy(UEPtr<UContainer>(obj.get()), Storage);
+  std::dynamic_pointer_cast<UContainer>(prototype)->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
   return std::static_pointer_cast<UComponent>(obj);
  }
 
  void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UComponent> component) const
  {
   if(Component)
-   Component->Copy(UEPtr<UContainer>(std::dynamic_pointer_cast<UContainer>(component).get()), UEPtr<UStorage>(Component->GetStorage().get()));
+   Component->Copy(std::shared_ptr<UContainer>(std::dynamic_pointer_cast<UContainer>(component).get()), std::shared_ptr<UStorage>(Component->GetStorage().get()));
  }
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()
@@ -91,7 +91,7 @@ void UVirtualMethodFactory::FreeComponent()
   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
   obj->Default();
   obj->Name = DefaultComponentName;
-  std::dynamic_pointer_cast<const UContainer>(prototype)->Copy(UEPtr<UContainer>(obj.get()), Storage);
+  std::dynamic_pointer_cast<const UContainer>(prototype)->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
   return std::static_pointer_cast<UComponent>(obj);
  }
 
@@ -100,7 +100,7 @@ void UVirtualMethodFactory::FreeComponent()
   component->Default();
  }
 
- /*UXMLDescriptionFactory::UXMLDescriptionFactory(std::string xml_description, UEPtr<UComponent> comp, bool create_structure_immediately) :
+ /*UXMLDescriptionFactory::UXMLDescriptionFactory(std::string xml_description, std::shared_ptr<UComponent> comp, bool create_structure_immediately) :
    CreateStandartAfterInit(create_structure_immediately)
  {
   if(CreateStandartAfterInit)
@@ -110,19 +110,19 @@ void UVirtualMethodFactory::FreeComponent()
   }
  }
 
- UEPtr<UComponent> UXMLDescriptionFactory::New()
+ std::shared_ptr<UComponent> UXMLDescriptionFactory::New()
  {
-  //UEPtr<UComponent> obj = static_pointer_cast<UComponent>(UEPtr<UNet>(new UNet()));
-  return UEPtr();
+  //std::shared_ptr<UComponent> obj = static_pointer_cast<UComponent>(std::shared_ptr<UNet>(new UNet()));
+  return std::shared_ptr();
  }
 
- UEPtr<UComponent> UXMLDescriptionFactory::Prototype(UEPtr<UComponent> prototype, UEPtr<UStorage> storage)
+ std::shared_ptr<UComponent> UXMLDescriptionFactory::Prototype(std::shared_ptr<UComponent> prototype, std::shared_ptr<UStorage> storage)
  {
-  //UEPtr<UComponent> obj = static_pointer_cast<UComponent>(UEPtr<UNet>(new UNet()));
-  return UEPtr();
+  //std::shared_ptr<UComponent> obj = static_pointer_cast<UComponent>(std::shared_ptr<UNet>(new UNet()));
+  return std::shared_ptr();
  }
 
- void UXMLDescriptionFactory::ResetComponent(UEPtr<UComponent> component) const
+ void UXMLDescriptionFactory::ResetComponent(std::shared_ptr<UComponent> component) const
  {
 
  }*/

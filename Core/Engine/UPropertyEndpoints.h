@@ -4,7 +4,7 @@
 #define UPropertyEndpointsH
 
 #include "UProperty.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernProperties.h"
 //---------------------------------------------------------------------------
 

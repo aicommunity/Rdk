@@ -17,12 +17,12 @@ UProjectDeployer::~UProjectDeployer(void)
 // --------------------------
 
 /// ���������� ��������� �� ��������� ����������
-UEPtr<UApplication> UProjectDeployer::GetApplication(void)
+std::shared_ptr<UApplication> UProjectDeployer::GetApplication(void)
 {
  return Application;
 }
 
-bool UProjectDeployer::SetApplication(UEPtr<UApplication> value)
+bool UProjectDeployer::SetApplication(std::shared_ptr<UApplication> value)
 {
  if(Application == value)
   return true;

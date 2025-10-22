@@ -15,7 +15,7 @@ protected: // Параметры
 
 protected: // Данные
 /// Указатель на экземпляр приложения
-UEPtr<UApplication> Application;
+std::shared_ptr<UApplication> Application;
 
 /// Карта читалок пакетов, по числу источников удаленного приема
 std::map<std::string, RDK::UTransferReader> PacketReaders;
@@ -32,8 +32,8 @@ virtual ~UServerTransport(void);
 // Методы доступа к данным
 // --------------------------
 /// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> GetApplication(void);
-bool SetApplication(UEPtr<UApplication> value);
+std::shared_ptr<UApplication> GetApplication(void);
+bool SetApplication(std::shared_ptr<UApplication> value);
 // --------------------------
 
 // --------------------------

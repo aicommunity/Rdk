@@ -21,7 +21,7 @@ See file license.txt for more information
 #include <type_traits>
 #include <memory>
 #include <concepts>
-#include "UEPtr.h"
+#include <memory>
 #include "ModernProperties.h"
 #include "../Serialize/USerStorageXML.h"
 #include "../Serialize/USerStorageBinary.h"
@@ -199,17 +199,17 @@ virtual bool CompareElemLanguageType(const UIProperty &dt) const
 }
 
 // ����� ���������� �������� �������� � �����
-virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
+virtual bool Save(std::shared_ptr<USerStorage>  storage, bool simplemode=false)
 {
 /*
- UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
+ std::shared_ptr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
  if(binary)
  {
   *binary<<GetData();
   return true;
  }
  */
- UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
+ std::shared_ptr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
  {
   if(simplemode)
@@ -244,11 +244,11 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 }
 
 // ����� ������ �������� �������� �� ������
-virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
+virtual bool Load(std::shared_ptr<USerStorage>  storage, bool simplemode=false)
 {
  T temp;
 /*
- UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
+ std::shared_ptr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
  if(binary)
  {
   operator >> (*binary,temp);
@@ -256,7 +256,7 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
   return true;
  }*/
 
- UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
+ std::shared_ptr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
  {
   if(simplemode)
@@ -297,16 +297,7 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
  return false;
 }
 
-// Modern C++20 Save/Load with std::shared_ptr
-virtual bool Save(std::shared_ptr<USerStorage> storage, bool simplemode=false) override
-{
- return Save(UEPtr<USerStorage>(storage.get()), simplemode);
-}
-
-virtual bool Load(std::shared_ptr<USerStorage> storage, bool simplemode=false) override
-{
- return Load(UEPtr<USerStorage>(storage.get()), simplemode);
-}
+// Modern C++20 Save/Load with std::shared_ptr - methods already exist above
 
 // ����� ���������� ��������� �� ������� ������, ���������� ������ ��������
 virtual const void* GetMemoryArea(void)

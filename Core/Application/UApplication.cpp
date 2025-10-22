@@ -19,7 +19,7 @@ using namespace std;
 //#include "Bcb/Application.bcb.cpp"
 #endif
 
-extern void ExceptionHandler(int channel_index); // TODO: Потом ее куда то убрать
+extern void ExceptionHandler(int channel_index); // TODO: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
 namespace RDK {
 
@@ -31,7 +31,7 @@ po::variables_map CmdVariablesMap;
 #endif
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UApplication::UApplication(void)
 {
@@ -65,9 +65,9 @@ UApplication::~UApplication(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Название приложения
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetProgramName(void) const
 {
  return ProgramName;
@@ -78,7 +78,7 @@ void UApplication::SetProgramName(const std::string &value)
  ProgramName = value;
 }
 
-/// Имя файла приложения
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetApplicationFileName(void) const
 {
  return ApplicationFileName;
@@ -92,7 +92,7 @@ bool UApplication::SetApplicationFileName(const std::string& value)
  return true;
 }
 
-/// Рабочий каталог
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetWorkDirectory(void) const
 {
  return WorkDirectory;
@@ -108,7 +108,7 @@ bool UApplication::SetWorkDirectory(const std::string& value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ /Bin/Configs)
 const std::string& UApplication::GetConfigsMainPath(void) const
 {
  return ConfigsMainPath;
@@ -122,7 +122,7 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ - MockLibs, RTlibs)
 const std::string& UApplication::GetLibrariesPath(void) const
 {
  return LibrariesPath;
@@ -136,7 +136,7 @@ bool UApplication::SetLibrariesPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с описаниями классов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetClDescPath(void) const
 {
  return ClDescPath;
@@ -150,7 +150,7 @@ bool UApplication::SetClDescPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
  return DatabaseMainPath;
@@ -164,7 +164,7 @@ bool UApplication::SetDatabaseMainPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ /Bin/Configs)
 const std::string& UApplication::GetStorageMountPoint(void) const
 {
  return StorageMountPoint;
@@ -179,7 +179,7 @@ bool UApplication::SetStorageMountPoint(const std::string &value)
 }
 
 
-/// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ  (пїЅпїЅпїЅпїЅпїЅпїЅ /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
 {
  return ModelsMainPath;
@@ -220,7 +220,7 @@ bool UApplication::SetUserId(int value)
 }
 
 
-// Признак наличия открытого проекта
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::GetProjectOpenFlag(void) const
 {
  return ProjectOpenFlag;
@@ -233,7 +233,7 @@ bool UApplication::SetProjectOpenFlag(bool value)
  return true;
 }
 
-// Путь до папки проекта
+// пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetProjectPath(void) const
 {
  return ProjectPath;
@@ -251,7 +251,7 @@ bool UApplication::SetProjectPath(const std::string& value)
  return true;
 }
 
-// Имя файла проекта
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetProjectFileName(void) const
 {
  return ProjectFileName;
@@ -266,7 +266,7 @@ bool UApplication::SetProjectFileName(const std::string& value)
  return true;
 }
 
-/// Список последних открытых проектов
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::list<std::string>& UApplication::GetLastProjectsList(void) const
 {
  return LastProjectsList;
@@ -280,7 +280,7 @@ bool UApplication::SetLastProjectsList(const std::list<std::string>& value)
  return true;
 }
 
-/// Размер истории последних открытых проектов
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UApplication::GetLastProjectsListMaxSize(void) const
 {
  return LastProjectsListMaxSize;
@@ -294,26 +294,26 @@ bool UApplication::SetLastProjectsListMaxSize(int value)
  return true;
 }
 
-/// Заголовок приложения
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetAppCaption(void) const
 {
  return AppCaption;
 }
 
-// Файл настроек проекта
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const RDK::USerStorageXML& UApplication::GetProjectXml(void) const
 {
  return ProjectXml;
 }
 
-// Файл настроек интефрейса
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const RDK::USerStorageXML& UApplication::GetInterfaceXml(void) const
 {
  return InterfaceXml;
 }
 
 
-/// Каталог логов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 std::string UApplication::GetLogDir(void) const
 {
  return Core_GetLogDir();
@@ -333,7 +333,7 @@ bool UApplication::SetLogDir(const std::string& value)
  return false;
 }
 
-/// Флаг включения отладочного режима логирования
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::GetDebugMode(void) const
 {
  return Core_GetDebugMode();
@@ -349,7 +349,7 @@ bool UApplication::SetDebugMode(bool value)
 }
 
 
-/// Текущий каталог логов (с учетом переопределения в проекте)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 std::string UApplication::CalcCurrentLogDir(void) const
 {
  std::string log_dir;
@@ -403,13 +403,13 @@ std::string UApplication::CalcCurrentLogDir(void) const
  return log_dir;
 }
 
-/// Флаг, выставляется если включен режим тестирования
+/// пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::IsTestMode(void) const
 {
  return TestMode;
 }
 
-/// Имя файла с описанием тестов
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetTestsDescriptionFileName(void) const
 {
  return TestsDescriptionFileName;
@@ -422,19 +422,19 @@ void UApplication::SetTestsDescriptionFileName(const std::string& value)
  TestsDescriptionFileName=value;
 }
 
-/// Признак требования завершить работу приложения после тестирования
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::IsCloseAfterTest(void) const
 {
  return CloseAfterTest;
 }
 
-/// Приложение инициализированно
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::IsInit(void) const
 {
  return AppIsInit;
 }
 
-/// Фиксированный путь до логов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 const std::string& UApplication::GetFixedLogPath(void) const
 {
  return FixedLogPath;
@@ -449,11 +449,11 @@ bool UApplication::SetFixedLogPath(const std::string& value)
  return true;
 }
 
-/// Режим записи логов
-/// 0 - запись по умолчанию (логи создаются заново при каждом вызове Reset в папке конфигурации)
-/// 1 - файл лога создается заново только при открытии каждой новой конфигурации. В папке конфигурации
-/// 2 - файл лога создается заново только при открытии каждой новой конфигурации. В системной папке
-/// 3 - файл лога создается единожды на весь период работы приложения в системной папке
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Reset пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+/// 1 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 2 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+/// 3 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 int UApplication::GetLogCreationMode(void) const
 {
  return LogCreationMode;
@@ -471,7 +471,7 @@ bool UApplication::SetLogCreationMode(int mode)
  return true;
 }
 
-/// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UApplication::GetCalcStopLogLevel(void) const
 {
  return CalcStopLogLevel;
@@ -489,7 +489,7 @@ bool UApplication::SetCalcStopLogLevel(int log_level)
     return true;
 }
 
-/// Включение вывода сообщений в cout
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ cout
 bool UApplication::GetCoutLogMode(void) const
 {
  return CoutLogMode;
@@ -505,10 +505,10 @@ bool UApplication::SetCoutLogMode(bool value)
 }
 
 
-/// Установка необходимого режима сборки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UApplication::SetStorageBuildMode(int mode)
 {
- // пересборка не нужна
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  if(StorageBuildMode == mode)
      return;
 
@@ -524,13 +524,13 @@ void UApplication::SetStorageBuildMode(int mode)
  }
 }
 
-/// Получение текущего режима сборки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UApplication::GetStorageBuildMode()
 {
  return StorageBuildMode;
 }
 // --------------------------
-/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UApplication::CreateSaveMockLibs()
 {
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
@@ -539,18 +539,18 @@ void UApplication::CreateSaveMockLibs()
     storage->SaveMockLibs();
 }
 // --------------------------
-// Методы инициализации
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Предоставляет доступ к диспетчеру команд
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 /*
-UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
+std::shared_ptr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
 {
  return RpcDispatcher;
 }
 
-/// Устанавливает новый диспетчер команд
-/// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
-bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UApplication::SetRpcDispatcher(const std::shared_ptr<URpcDispatcher> &value)
 {
  if(RpcDispatcher == value)
   return true;
@@ -562,15 +562,15 @@ bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  return true;
 }
 */
-/// Предоставляет доступ к контроллеру движка
-UEPtr<UEngineControl> UApplication::GetEngineControl(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UEngineControl> UApplication::GetEngineControl(void)
 {
  return EngineControl;
 }
 
-/// Устанавливает новый контроллер движка
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
-bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UApplication::SetEngineControl(const std::shared_ptr<UEngineControl> &value)
 {
  if(EngineControl == value)
   return true;
@@ -582,35 +582,37 @@ bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
  }
 
  EngineControl=value;
- EngineControl->SetApplication(this);
+ // Create a weak_ptr from this to avoid double deletion
+ std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
+ EngineControl->SetApplication(self_ptr);
  return true;
 }
 
-/// Предоставляет доступ к проекту
-/*UEPtr<UProject> UApplication::GetProject(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/*std::shared_ptr<UProject> UApplication::GetProject(void)
 {
  return Project;
 } */
 
-/// Устанавливает новый проект
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
-bool UApplication::SetProject(const UEPtr<UProject> &value)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UApplication::SetProject(const std::shared_ptr<UProject> &value)
 {
  if(Project == value)
   return true;
 
- // TODO: Здесь какие-то завершающие действия со старым проектом.
+ // TODO: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
  Project=value;
  return true;
 }
 
-/// Возвращает конфигурацию проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const TProjectConfig& UApplication::GetProjectConfig(void) const
 {
  return Project->GetConfig();
 }
 
-/// Устанавливает новую конфигурацию проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::SetProjectConfig(const TProjectConfig& value)
 {
  if(!Project)
@@ -623,35 +625,37 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
  return true;
 }
 
-/// Предоставляет доступ к контроллеру серверной части
-UEPtr<UServerControl> UApplication::GetServerControl(void) const
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UServerControl> UApplication::GetServerControl(void) const
 {
  return ServerControl;
 }
 
-/// Устанавливает новый контроллер сервера
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
-bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UApplication::SetServerControl(const std::shared_ptr<UServerControl> &value)
 {
  if(ServerControl == value)
   return true;
 
- // TODO: Здесь какие-то завершающие действия со старым сервером
+ // TODO: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  if(ServerControl)
   ServerControl->SetApplication(0);
  ServerControl=value;
- ServerControl->SetApplication(this);
+ // Create a weak_ptr from this to avoid double deletion
+ std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
+ ServerControl->SetApplication(self_ptr);
  return true;
 }
 
-/// Менеджер тестов
-/// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
-UEPtr<UTestManager> UApplication::GetTestManager(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UTestManager> UApplication::GetTestManager(void)
 {
  return TestManager;
 }
 
-bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
+bool UApplication::SetTestManager(const std::shared_ptr<UTestManager> &value)
 {
  if(TestManager == value)
   return true;
@@ -660,17 +664,19 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
   TestManager->SetApplication(0);
 
  TestManager=value;
- TestManager->SetApplication(this);
+ // Create a weak_ptr from this to avoid double deletion
+ std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
+ TestManager->SetApplication(self_ptr);
  return true;
 }
 
-/// Деплоер проекта (под кончретную задачу)
-UEPtr<UProjectDeployer> UApplication::GetProjectDeployer(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ)
+std::shared_ptr<UProjectDeployer> UApplication::GetProjectDeployer(void)
 {
  return ProjectDeployer;
 }
 
- bool UApplication::SetProjectDeployer(const UEPtr<UProjectDeployer> &value)
+ bool UApplication::SetProjectDeployer(const std::shared_ptr<UProjectDeployer> &value)
 {
      if(ProjectDeployer == value)
       return true;
@@ -679,7 +685,9 @@ UEPtr<UProjectDeployer> UApplication::GetProjectDeployer(void)
       ProjectDeployer->SetApplication(0);
 
      ProjectDeployer=value;
-     ProjectDeployer->SetApplication(this);
+     // Create a weak_ptr from this to avoid double deletion
+     std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
+     ProjectDeployer->SetApplication(self_ptr);
 
      return true;
 }
@@ -718,7 +726,7 @@ bool UApplication::SetStandartXMLInCatalog(void)
     return true;
 }
 
-/// Инициализирует приложение
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::Init(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
@@ -757,7 +765,7 @@ bool UApplication::Init(void)
  return true;
 }
 
-/// Деинициализирует приложение
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::UnInit(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
@@ -777,11 +785,11 @@ bool UApplication::UnInit(void)
 }
 
 
-/// Проводит тестирование приложения, если менеджер тестов инициализирован и
-/// тестовый режим включен
-/// Возвращает код ошибки тестирования.
-/// Если exit_request == true,
-/// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+/// пїЅпїЅпїЅпїЅ exit_request == true,
+/// пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UApplication::Test(bool &exit_request)
 {
  exit_request=false;
@@ -808,7 +816,7 @@ int UApplication::Test(bool &exit_request)
  return test_result_code;
 }
 
-/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineArgs)
 {
   InitCmdParser();
@@ -842,7 +850,7 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
 }
 
 #ifndef __BORLANDC__
-/// Осуществляет парсинг командной строки и записывает результаты в CommandLineArgs
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ CommandLineArgs
 void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 {
   InitCmdParser();
@@ -876,9 +884,9 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 // --------------------------
 
 // --------------------------
-// Методы управления проектом
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Создает проект (через сохранение и открытие)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
  CloseProject();
@@ -965,19 +973,19 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  return CreateProject(file_name,project_config);
 }
 
-/// Обновляет проект по новой конфигурации
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 {
  if(!ProjectOpenFlag)
   return false;
 
- // Если необходима перезагрузка конфигурации, то выполняем перезагрузку
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  bool is_reload_needed(false);
 
  const TProjectConfig old_project_config=Project->GetConfig();
  Project->SetConfig(project_config);
 
- // Первый проход. Определяем необходима ли перезагрузка конфигурации
+ // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
  if(old_project_config.ProjectName != project_config.ProjectName)
  {
@@ -1181,7 +1189,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  }
 
- // Если необходима перезагрузка конфигурации то выполняем
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  if(is_reload_needed)
  {
   if(!SaveProject())
@@ -1193,7 +1201,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
   return true;
  }
 
- // ... иначе применяем отдельные настройки
+ // ... пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  if(old_project_config.ProjectName != project_config.ProjectName)
  {
  }
@@ -1221,17 +1229,17 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.ProjectMode != project_config.ProjectMode)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  }
 
  if(old_project_config.ProjectType != project_config.ProjectType)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  }
 
  if(old_project_config.MultiThreadingMode != project_config.MultiThreadingMode)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  }
 
  if(old_project_config.CalcSourceTimeMode != project_config.CalcSourceTimeMode)
@@ -1340,45 +1348,45 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  }
 
  if(old_project_config.NumChannels != project_config.NumChannels)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  }
 
- // обработка каналов
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  for(int i=0;i<project_config.NumChannels;i++)
  {
   if(old_project_config.ChannelsConfig[i].ModelMode != project_config.ChannelsConfig[i].ModelMode)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
   }
 
   if(old_project_config.ChannelsConfig[i].PredefinedStructure != project_config.ChannelsConfig[i].PredefinedStructure)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
   }
 
   if(old_project_config.ChannelsConfig[i].ModelFileName != project_config.ChannelsConfig[i].ModelFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
   }
 
   if(old_project_config.ChannelsConfig[i].ParametersFileName != project_config.ChannelsConfig[i].ParametersFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
   }
 
   if(old_project_config.ChannelsConfig[i].StatesFileName != project_config.ChannelsConfig[i].StatesFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
   }
 
   if(old_project_config.ChannelsConfig[i].ClassName != project_config.ChannelsConfig[i].ClassName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
   }
 
   if(old_project_config.ChannelsConfig[i].GlobalTimeStep != project_config.ChannelsConfig[i].GlobalTimeStep)
@@ -1454,7 +1462,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  return SaveProject();
 }
 
-/// Открывает проект
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
@@ -1518,8 +1526,8 @@ try{
 	RDK_ASSERT_LOG(MEnv_Init(i));
    }
 
-   // TODO: Реалиовать загрузку описаний классов
-   // Загрузка описаний классов
+   // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
@@ -1641,7 +1649,7 @@ catch(RDK::UException &exception)
  return true;
 }
 
-/// Сохраняет проект
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::SaveProject(void)
 {
  if(!ProjectOpenFlag)
@@ -1757,7 +1765,7 @@ bool UApplication::SaveProjectAs(const std::string &filename)
  return true;
 }
 
-/// Закрывает проект
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::CloseProject(void)
 {
  if(!ProjectOpenFlag)
@@ -1801,13 +1809,13 @@ bool UApplication::CloseProject(void)
  return true;
 }
 
-/// Клонирует проект в новое расположение
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::CloneProject(const std::string &filename)
 {
  return true;
 }
 
-/// Переименовывает папку проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::RenameProject(const std::string &filename)
 {
  if(!ProjectOpenFlag)
@@ -1893,7 +1901,7 @@ bool UApplication::CopyProject(const std::string &new_path)
  return true;
 }
 
-/// Сохраняет только файл настроек проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::SaveProjectConfig(void)
 {
  if(!ProjectOpenFlag)
@@ -1927,9 +1935,9 @@ bool UApplication::SaveProjectConfig(void)
 
 
 // --------------------------
-// Методы управления движком
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Управление числом каналов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UApplication::GetNumChannels(void) const
 {
  return EngineControl->GetNumChannels();
@@ -1986,7 +1994,7 @@ if (index == 0)
  return true;
 }
 
-/// Клонирует канал source_id в cloned_id
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ source_id пїЅ cloned_id
 bool UApplication::CloneChannel(int source_id, int cloned_id)
 {
  if(source_id<0 || cloned_id <0)
@@ -2006,7 +2014,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
   TProjectChannelConfig &source_channel=config.ChannelsConfig[source_id];
   TProjectChannelConfig &cloned_channel=config.ChannelsConfig[cloned_id];
 
-  // Меняем номера индексов в именах файлов модели, параметров и состояний
+  // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   if(cloned_id>0)
    cloned_channel.ModelFileName=std::string("model_")+sntoa(cloned_id+1)+".xml";
   else
@@ -2028,7 +2036,9 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
   if(!Core_IsChannelInit())
    Core_ChannelInit(cloned_channel.PredefinedStructure,reinterpret_cast<void*>(ExceptionHandler));
   else
+  {
    Env_SetPredefinedStructure(cloned_channel.PredefinedStructure);
+  }
 
    Model_SetDefaultTimeStep(cloned_channel.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
@@ -2113,33 +2123,33 @@ catch(...)
 // --------------------------
 
 // --------------------------
-// Методы управления счетом
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UApplication::StartChannel(int channel_index)
 {
  EngineControl->StartChannel(channel_index);
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UApplication::PauseChannel(int channel_index)
 {
  EngineControl->PauseChannel(channel_index);
 }
 
-/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UApplication::ResetChannel(int channel_index)
 {
  EngineControl->ResetChannel(channel_index);
 }
 
-/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ channel_index == -1
 void UApplication::StepChannel(int channel_index)
 {
  EngineControl->StepChannel(channel_index);
 }
 
-/// Возвращает true если канал запущен
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ true пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
@@ -2147,7 +2157,7 @@ bool UApplication::IsChannelStarted(int channel_index)
  return (EngineControl->CheckCalcState(channel_index) == UEngineControl::csRunning);
 }
 
-/// Проверяет состояние расчета по id канала
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ id пїЅпїЅпїЅпїЅпїЅпїЅ
 UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
@@ -2157,7 +2167,7 @@ UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 // --------------------------
 
 // --------------------------
-// Методы загрузки сохранения данных в файл
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
 bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_name)
 {
@@ -2363,7 +2373,7 @@ bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string &file_n
  return res;
 }
 
-/// Загружает историю проектов из файла
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UApplication::LoadProjectsHistory(void)
 {
  std::string opt_name=extract_file_name(ApplicationFileName);
@@ -2385,7 +2395,7 @@ void UApplication::LoadProjectsHistory(void)
  }
 }
 
-/// Сохраняет историю проектов в файл
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
 void UApplication::SaveProjectsHistory(void)
 {
  RDK::UIniFile<char> history_ini;
@@ -2404,7 +2414,7 @@ void UApplication::SaveProjectsHistory(void)
  history_ini.SaveToFile(WorkDirectory+opt_name);
 }
 
-/// Флаг принудительного сохранения конфигураций в старом формате
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::IsUseNewXmlFormatProjectFile(void) const
 {
  return UseNewXmlFormatProjectFile;
@@ -2421,8 +2431,8 @@ bool UApplication::ChangeUseNewXmlFormatProjectFile(bool value)
  return true;
 }
 
-/// Флаг включения нового представления файловой структуры конфигурации
-/// (только при сохранении данных конфигурации в новом формате)
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// (пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 bool UApplication::IsUseNewProjectFilesStructure(void) const
 {
  return UseNewProjectFilesStructure;
@@ -2441,9 +2451,9 @@ bool UApplication::ChangeUseNewProjectFilesStructure(bool value)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы управления счетом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Сохраняет точки в истории изменений конфигурации
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::FixSavePoint(USerStorageXML &xml)
 {
     xml.SelectNodeRoot("History");
@@ -2470,7 +2480,7 @@ bool UApplication::FixSavePoint(USerStorageXML &xml)
     return true;
 }
 
-/// Включает и выключает тестовый режим
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UApplication::ChangeTestModeState(bool state)
 {
  if(TestMode == state)
@@ -2484,7 +2494,7 @@ void UApplication::ChangeTestModeState(bool state)
 }
 
 
-/// Инициализация парсера командной строки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UApplication::InitCmdParser(void)
 {
 #ifndef __BORLANDC__
@@ -2520,13 +2530,13 @@ int UApplication::ParseArgs(const std::vector<std::string> &args, std::map<std::
 } */
 
 
-/// Вычисляет заголовок приложения
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UApplication::CalcAppCaption(void)
 {
  AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
 }
 
-/// Обновляет состояние средств логгирования
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UApplication::UpdateLoggers(void)
 {
  RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
@@ -2540,9 +2550,9 @@ void UApplication::UpdateLoggers(void)
 
 
 
-/// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
-/// Если сохранение не удалось, то старый файл остается как был.
-/// Если сохранение удалось, то временный файл заменяет старый
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ n_pass пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ.
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UApplication::SaveFileSafe(const std::string &file_name, const std::string &buffer, const std::string &temp_file_name, int n_pass)
 {
  if(temp_file_name.empty())

@@ -3,7 +3,7 @@
 
 #include "UProject.h"
 #include "URpcCommand.h"
-#include "../Engine/UEPtr.h"
+#include <memory>
 
 #include <mutex>
 #include <condition_variable>
@@ -17,10 +17,10 @@ class RDK_LIB_TYPE URpcDispatcherQueues
 {
 protected:
 /// ������� ������, ��������� ���������
-std::list<UEPtr<URpcCommand> > CommandQueue;
+std::list<std::shared_ptr<URpcCommand> > CommandQueue;
 
 /// ������� ������� �� �������, ��������� ��������
-std::list<UEPtr<URpcCommand> > ProcessedCommandQueue;
+std::list<std::shared_ptr<URpcCommand> > ProcessedCommandQueue;
 
 protected: // ������
 /// ������� ��� ���������� ������� � ������� ������
@@ -43,15 +43,15 @@ virtual ~URpcDispatcherQueues(void);
 /// ���������� ������� � ������� �� ���������
 /// ���������� Id ������� � cmd_id
 /// � ������ ������� ���������� false
-virtual bool PushCommand(const UEPtr<URpcCommand> &command, unsigned &cmd_id);
+virtual bool PushCommand(const std::shared_ptr<URpcCommand> &command, unsigned &cmd_id);
 
 /// ���������� ������� � ������� �� ���������
 /// � ������ ������� ���������� false
-virtual bool PushCommand(const UEPtr<URpcCommand> &command);
+virtual bool PushCommand(const std::shared_ptr<URpcCommand> &command);
 
 /// ���������� ��������� �� ������� �� �� Id � ������� �������
 /// ������������ ��������� ����� ����, ���� ������� ��� � �������
-virtual UEPtr<URpcCommand> FindProcessedCommand(unsigned cmd_id);
+virtual std::shared_ptr<URpcCommand> FindProcessedCommand(unsigned cmd_id);
 
 /// ������� ������� �� ������� ������� �� �� ��������������
 /// ���������� true ���� ������� ���� � �������
@@ -59,7 +59,7 @@ virtual bool PopProcessedCommand(unsigned cmd_id);
 
 /// ���������� ��������� �� ����� ������ �����
 /// � ������� ��� �� �������
-virtual UEPtr<URpcCommand> PopProcessedCommand(void);
+virtual std::shared_ptr<URpcCommand> PopProcessedCommand(void);
 
 /// ���������� true ���� ������� ������� �� �����
 virtual bool CheckProcessedCommand(void);
@@ -76,10 +76,10 @@ virtual void ClearProcessedQueue(void);
 // --------------------------
 public:
 /// ���������� ��������� �� ������� ������� �� CommandQueue � ������� �� �� �������
-UEPtr<URpcCommand> PopFromCommandQueue(void);
+std::shared_ptr<URpcCommand> PopFromCommandQueue(void);
 
 /// ������ ������� � ������� �������
-void PushToProcessedQueue(const UEPtr<URpcCommand> &command);
+void PushToProcessedQueue(const std::shared_ptr<URpcCommand> &command);
 // --------------------------
 
 };

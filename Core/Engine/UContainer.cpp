@@ -90,7 +90,7 @@ UContainer::UContainer(void)
 UContainer::~UContainer(void)
 {
  if(GetStaticFlag() && Owner.lock())
-  GetOwner()->DelStaticComponent(this);
+  GetOwner()->DelStaticComponent(std::shared_ptr<UContainer>(this, [](UContainer*){})); // Non-owning deleter
  DelAllComponentsRaw();
  DelAllStaticComponents();
 
@@ -101,7 +101,7 @@ UContainer::~UContainer(void)
 
  auto storage = Storage.lock();
  if(storage && !GetStaticFlag())
-  storage->PopObject(UEPtr<UContainer>(this));
+  storage->PopObject(std::shared_ptr<UContainer>(this));
 }
 // --------------------------
 
@@ -128,12 +128,12 @@ std::shared_ptr<UStorage> UContainer::GetStorage(void) const
 
 // ���������, �������� �� ������ owner
 // ���������� ����� ������� �� �����-���� ������ ��������
-bool UContainer::CheckOwner(UEPtr<UContainer> owner) const
+bool UContainer::CheckOwner(std::shared_ptr<UContainer> owner) const
 {
- if(Owner.lock() == nullptr && Owner.lock().get() != owner.Get())
+ if(Owner.lock() == nullptr && Owner.lock().get() != owner.get())
   return false;
 
- if(Owner.lock().get() == owner.Get())
+ if(Owner.lock().get() == owner.get())
   return true;
 
  return GetOwner()->CheckOwner(owner);
@@ -201,7 +201,7 @@ ULongId UContainer::GetLongId(std::shared_ptr<UContainer> mainowner) const
 // ������������� ������� ������������ ������, ������������� ������� ���
 std::string& UContainer::GetLongId(std::shared_ptr<UContainer> mainowner, std::string &buffer) const
 {
- return GetLongName(UEPtr<UContainer>(mainowner.get()),buffer);
+ return GetLongName(std::shared_ptr<UContainer>(mainowner.get()),buffer);
 }
 
 // ���������� true ���� ������������ ������������� ������� ���������, � ��������� ������ ���������� false
@@ -506,9 +506,9 @@ double UContainer::GetInstantPerformance(void) const
 // ������� ��������� �������
 void UContainer::BreakOwner(void)
 {
- UEPtr<UContainer> owner(GetOwner().get());
+ std::shared_ptr<UContainer> owner(GetOwner().get());
  if(owner)
-  owner->DelComponent(this,false);
+  owner->DelComponent(std::shared_ptr<UContainer>(this, [](UContainer*){}), false); // Non-owning deleter
 }
 
 // ������������� ��������� �� �������� ��������� ���� ��������
@@ -690,16 +690,16 @@ NameT UContainer::GetFullName(void) const
 // (�������� ��� ��������� 'mainowner').
 // ����� ���������� ������ ������, ���� 'mainowner' - �� ��������
 // ���������� ������� �� �� ����� ������ ��������.
-NameT& UContainer::GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const
+NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, NameT &buffer) const
 {
  auto owner = GetOwner();
- if(!owner && owner != std::shared_ptr<UContainer>(mainowner.Get()))
+ if(!owner && owner != std::shared_ptr<UContainer>(mainowner.get()))
   {
    buffer.clear();
    return buffer;
   }
 
- if(owner == std::shared_ptr<UContainer>(mainowner.Get()))
+ if(owner == mainowner)
   {
    buffer=Name;
    return buffer;
@@ -717,7 +717,7 @@ NameT& UContainer::GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer
  return buffer;
 }
 
-NameT UContainer::GetLongName(const UEPtr<UContainer> &mainowner) const
+NameT UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner) const
 {
  std::string buf;
  return GetLongName(mainowner,buf);
@@ -787,10 +787,10 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 // � ���������� ������ ������� ���� ��������� ���� ������ ������
 // false - ������ � ������� ����������
 // true -  ������ � ������� ���������� � ������
-const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all)
+const vector<std::shared_ptr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<std::shared_ptr<UContainer> > &buffer, bool find_all)
 {
  int numComp=GetNumComponents();
- UEPtr<UContainer> comp;
+ std::shared_ptr<UContainer> comp;
 
  switch(find_all)
  {
@@ -827,14 +827,14 @@ const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const Nam
 // true -  ������ � ������� ���������� � ������
 const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all)
 {
- vector<UEPtr<UContainer> > components;
+ vector<std::shared_ptr<UContainer> > components;
  string compName;
  GetComponentsByClassName(name, components, find_all);
  size_t numComp=components.size();
 
  for(size_t i=0; i<numComp; i++)
  {
-  compName=components[i]->GetLongName(this, compName);
+  compName=components[i]->GetLongName(std::shared_ptr<UContainer>(this, [](UContainer*){}), compName); // Non-owning deleter
   buffer.push_back(compName);
  }
 
@@ -1026,18 +1026,18 @@ long long UContainer::GetMaxMemoryBlockDiff(void) const
 // � �������� ����������.
 // ���� 'stor' == 0, �� �������� �������� ��������������
 // � ��� �� ��������� ��� ������������� ���� ������
-UEPtr<UContainer> UContainer::Alloc(UEPtr<UStorage> stor, bool copystate)
+std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bool copystate)
 {
- UEPtr<UContainer> copy;
- UEPtr<UStorage> storage=(stor!=0)?stor:UEPtr<UStorage>(GetStorage().get());
+ std::shared_ptr<UContainer> copy;
+ std::shared_ptr<UStorage> storage=(stor!=0)?stor:std::shared_ptr<UStorage>(GetStorage().get());
 
  if(storage)
  {
-  copy=dynamic_pointer_cast<UContainer>(storage->TakeObject(Class,this));
+  copy=std::dynamic_pointer_cast<UContainer>(storage->TakeObject(Class, std::shared_ptr<UComponent>(this, [](UComponent*){}))); // Non-owning deleter
  }
  else
  {
-  copy=New();
+  copy=std::shared_ptr<UContainer>(New(), [](UContainer*){}); // Non-owning deleter
   Copy(copy,stor,copystate);
  }
 
@@ -1046,13 +1046,13 @@ UEPtr<UContainer> UContainer::Alloc(UEPtr<UStorage> stor, bool copystate)
 
 // �������� ���� ������ � 'target' � ����������� ���� ���������
 // � �������� ����������
-bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
+bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
 {
- CopyProperties(std::shared_ptr<UComponent>(target.Get()), ptParameter);
+ CopyProperties(std::shared_ptr<UComponent>(target.get()), ptParameter);
  target->Build();
 
  if(copystate)
-  CopyProperties(std::shared_ptr<UComponent>(target.Get()), ptState);
+  CopyProperties(std::shared_ptr<UComponent>(target.get()), ptState);
 
  CopyComponents(target,stor);
  return true;
@@ -1069,7 +1069,7 @@ void UContainer::Free(void)
  {
   BreakOwner();
   if(!StaticFlag)
-   GetStorage()->ReturnObject(this);
+   GetStorage()->ReturnObject(std::shared_ptr<UComponent>(this, [](UComponent*){})); // Non-owning deleter
  }
  else
   UComponent::Free();
@@ -1077,12 +1077,12 @@ void UContainer::Free(void)
 
 	  /*
 // ��������� �� ���� ������ � ���������
-UEPtr<UInstancesStorageElement> UContainer::GetObjectIterator(void)
+std::shared_ptr<UInstancesStorageElement> UContainer::GetObjectIterator(void)
 {
  return ObjectIterator;
 }
 
-void UContainer::SetObjectIterator(UEPtr<UInstancesStorageElement> value)
+void UContainer::SetObjectIterator(std::shared_ptr<UInstancesStorageElement> value)
 {
  if(ObjectIterator == value)
   return;
@@ -1095,7 +1095,7 @@ void UContainer::AUpdateInternalData(void)
  std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.begin();
  for(;I!=StaticComponents.end();++I)
  {
-  UpdateStaticComponent(I->second,UEPtr<UContainer>(I->first.get()));
+  UpdateStaticComponent(I->second,std::shared_ptr<UContainer>(I->first.get()));
  }
 }
 // --------------------------
@@ -1128,7 +1128,7 @@ int UContainer::GetNumAllComponents(void) const
 // � �������� ���������� ������� �������
 // ����� ���������� 'true' � ������ ������������
 // � 'false' � ������ ������������� ����
-bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
+bool UContainer::CheckComponentType(std::shared_ptr<UContainer> comp) const
 {
  return false;
 }
@@ -1136,7 +1136,7 @@ bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ��������� Id 'id'
 // ���� id == ForbiddenId �� ���������� ��������� �� ���� ���������
-UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
+std::shared_ptr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
 {
  if(id == ForbiddenId)
  {
@@ -1148,7 +1148,7 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
  std::shared_ptr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
-   return UEPtr<UContainer>(comps->get());
+   return std::shared_ptr<UContainer>(comps->get());
 
  if(!nothrow)
   RDK_THROW(EComponentIdNotExist(id));
@@ -1157,7 +1157,7 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ��������� ����� 'name'
-UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
+std::shared_ptr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
 {
  return GetComponent(GetComponentId(name,nothrow),nothrow);
 }
@@ -1166,9 +1166,9 @@ UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) cons
 // ������� �� �������� Id 'id'.
 // ���� id[0] == ForbiddenId ��� Id ����� ������� ������,
 // �� ���������� ��������� �� ���� ���������
-UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
+std::shared_ptr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
 {
- UEPtr<UContainer> comp;
+ std::shared_ptr<UContainer> comp;
 
  if(id.GetSize() == 0)
   return 0;
@@ -1186,9 +1186,9 @@ UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) con
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� �������� ����� 'name'
-UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
+std::shared_ptr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
 {
- UEPtr<UContainer> comp;
+ std::shared_ptr<UContainer> comp;
  NameT::size_type pi,pj;
 
  pi=name.find_first_of('.');
@@ -1212,25 +1212,25 @@ UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) con
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ����������� ������ � ������ ���������
 // ����� ���������� 0, ���� ������ ������� �� ������� �������
-UEPtr<UContainer> UContainer::GetComponentByIndex(int index) const
+std::shared_ptr<UContainer> UContainer::GetComponentByIndex(int index) const
 {
- return UEPtr<UContainer>(Components[index].get());
+ return std::shared_ptr<UContainer>(Components[index].get());
 }
 
 // ��������� �������� ��������� � ���� ������
 // ���������� ��� Id ��� ForbiddenId ���� ���������� ��������
 // ����� ���� ������� ��������� �� ��������� ����������
-void UContainer::BeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+void UContainer::BeforeAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
  ABeforeAddComponent(comp,pointer);
 }
 
-void UContainer::AfterAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+void UContainer::AfterAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
  AAfterAddComponent(comp,pointer);
 }
 
-UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
  if(comp->GetOwner().get() == this)
   return comp->Id;
@@ -1279,7 +1279,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 
  comp->SetEnvironment(Environment.lock());
 
- const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
+ const std::shared_ptr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
  if((time_step_prop_type & ptPubParameter) == ptPubParameter)
   comp->ChangeUseIndTimeStepMode(true);
@@ -1318,7 +1318,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // ���� ��������, ���� ��������� �� �����������
 /*void UContainer::DelComponent(const UId &id, bool canfree)
 {
- UEPtr<UContainer> comp=GetComponent(id);
+ std::shared_ptr<UContainer> comp=GetComponent(id);
 
  DelComponent(comp, canfree);
 } */
@@ -1330,7 +1330,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // ���� ��������, ���� ��������� �� �����������
 void UContainer::DelComponent(const NameT &name, bool canfree)
 {
- UEPtr<UContainer> comp=GetComponentL(name,true);
+ std::shared_ptr<UContainer> comp=GetComponentL(name,true);
  if(comp && comp->GetOwner())
   comp->GetOwner()->DelComponent(comp,canfree);
 }
@@ -1345,18 +1345,18 @@ void UContainer::DelAllComponents(void)
 void UContainer::DelAllComponentsRaw(void)
 {
  while(NumComponents)
-  DelComponent(UEPtr<UContainer>(PComponents[NumComponents-1].get()),true);
+  DelComponent(std::shared_ptr<UContainer>(PComponents[NumComponents-1].get()),true);
 }
 
 /// ��������� ��������� ��� ����������� ���������� ������� ��� ��� ������ 'classname'
 /// � ��� 'name'
-void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp)
+void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, std::shared_ptr<UContainer> comp)
 {
  comp->SetStaticFlag(true);
  comp->Name = name;
- StaticComponents[std::shared_ptr<UContainer>(comp.Get())]=classname;
+ StaticComponents[std::shared_ptr<UContainer>(comp.get())]=classname;
 
- const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
+ const std::shared_ptr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
  if((time_step_prop_type & ptPubParameter) == ptPubParameter)
   comp->ChangeUseIndTimeStepMode(true);
@@ -1365,9 +1365,9 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
 }
 
 /// ������� ��������� ��� ����������� ����������
-void UContainer::DelStaticComponent(UEPtr<UContainer> comp)
+void UContainer::DelStaticComponent(std::shared_ptr<UContainer> comp)
 {
- std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.find(std::shared_ptr<UContainer>(comp.Get()));
+ std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.find(std::shared_ptr<UContainer>(comp.get()));
  if(I != StaticComponents.end())
   StaticComponents.erase(I);
 }
@@ -1380,13 +1380,13 @@ void UContainer::DelAllStaticComponents(void)
 
 /// ���������� ��������� �� static ���������
 /// � ������� 'classname' � ������ 'name'
-UEPtr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
+std::shared_ptr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
 {
  std::map<std::shared_ptr<UContainer>, NameT>::const_iterator I=StaticComponents.begin();
  for(;I!=StaticComponents.end();++I)
  {
   if(I->second == classname && I->first->GetName() == name)
-   return UEPtr<UContainer>(I->first.get());
+   return std::shared_ptr<UContainer>(I->first.get());
  }
 
  return 0;
@@ -1396,7 +1396,7 @@ UEPtr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const 
 /// ���� comp �� ����������� ����� ����������, ��� target ����� �������� ��
 /// ����� ���������� storage, ��� target �� ����� ������� � ���� ���������
 /// �� ���������� false � �� ������ ������
-bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
+bool UContainer::MoveComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UContainer> target)
 {
  if(!comp || !target)
   return false;
@@ -1448,9 +1448,9 @@ void UContainer::GetComponentsList(vector<NameT> &buffer) const
 }
 
 // �������� ��� ���������� ����� ������� � ������ 'comp', ���� ��������.
-void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) const
+void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_ptr<UStorage> stor) const
 {
- UEPtr<UContainer> bufcomp;
+ std::shared_ptr<UContainer> bufcomp;
 
  // ������� ������ ���������� �� 'comp'
  comp->DelAllComponents();
@@ -1467,13 +1467,13 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
    if((*pcomponents)->GetStaticFlag())
     continue;
    bufcomp=(*pcomponents)->Alloc(stor);
-   UEPtr<UIPointer> pointer=0;
-   I=FindLookupPointer(UEPtr<UContainer>(pcomponents->get()));
+   std::shared_ptr<UIPointer> pointer=0;
+   I=FindLookupPointer(std::shared_ptr<UContainer>(pcomponents->get()));
    if(I != PointerLookupTable.end())
    {
     J=comp->PointerLookupTable.find(I->first);
     if(J != comp->PointerLookupTable.end())
-     pointer=UEPtr<UIPointer>(J->second.Pointer.get());
+     pointer=std::shared_ptr<UIPointer>(J->second.Pointer.get());
    }
 
    comp->AddComponent(bufcomp,pointer);
@@ -1536,18 +1536,18 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  if(result>=NumComponents)
   result=NumComponents-1;
 
- UEPtr<UContainer> comp=UEPtr<UContainer>(PComponents[index].get());
+ std::shared_ptr<UContainer> comp=std::shared_ptr<UContainer>(PComponents[index].get());
  if(result>index)
  {
   for(int i=index;i<=result;i++)
    PComponents[i]=PComponents[i+1];
-  PComponents[result]=std::shared_ptr<UContainer>(comp.Get());
+  PComponents[result]=std::shared_ptr<UContainer>(comp.get());
  }
  else
  {
   for(int i=index;i>result;i--)
    PComponents[i]=PComponents[i-1];
-  PComponents[result]=std::shared_ptr<UContainer>(comp.Get());
+  PComponents[result]=std::shared_ptr<UContainer>(comp.get());
  }
 
  return true;
@@ -1601,26 +1601,26 @@ bool UContainer::IsMoving(void) const
 // ���� 'sublevel' == 0, �� ���������� �������������� ����������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
 ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
-							int sublevel, UEPtr<UContainer> ownerlevel)
+							int sublevel, std::shared_ptr<UContainer> ownerlevel)
 {
  ULongId id;
 
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.Get()):std::shared_ptr<UContainer>(this),id);
+  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
   buffer.Add(id);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
-  UEPtr<UContainer> cont=GetComponentByIndex(i);
-  UEPtr<UConnector> temp;
+  std::shared_ptr<UContainer> cont=GetComponentByIndex(i);
+  std::shared_ptr<UConnector> temp;
   temp=dynamic_pointer_cast<UConnector>(cont);
   if(temp)
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.Get()):std::shared_ptr<UContainer>(this),id);
+   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
    buffer.Add(id);
   }
 
@@ -1641,7 +1641,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
 // ���� 'sublevel' == 0, �� ���������� �������������� ��������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
 ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
-                            int sublevel, UEPtr<UContainer> ownerlevel)
+                            int sublevel, std::shared_ptr<UContainer> ownerlevel)
 
 {
  ULongId id;
@@ -1649,20 +1649,20 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.Get()):std::shared_ptr<UContainer>(this),id);
+  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
   buffer.Add(id);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
-  UEPtr<UContainer> cont=GetComponentByIndex(i);
-  UEPtr<UItem> temp;
+  std::shared_ptr<UContainer> cont=GetComponentByIndex(i);
+  std::shared_ptr<UItem> temp;
   temp=dynamic_pointer_cast<UItem>(cont);
   if(temp)
 //  if(dynamic_cast<UItem*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.Get()):std::shared_ptr<UContainer>(this),id);
+   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
    buffer.Add(id);
   }
 
@@ -1683,27 +1683,27 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
 // ���� 'sublevel' == 0, �� ���������� �������������� �������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
 ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
-                            int sublevel, UEPtr<UContainer> ownerlevel)
+                            int sublevel, std::shared_ptr<UContainer> ownerlevel)
 {
  ULongId id;
 
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.Get()):std::shared_ptr<UContainer>(this),id);
+  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
   buffer.Add(id);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
-  UEPtr<UContainer> cont=GetComponentByIndex(i);
-  UEPtr<UNet> temp;
+  std::shared_ptr<UContainer> cont=GetComponentByIndex(i);
+  std::shared_ptr<UNet> temp;
   temp=dynamic_pointer_cast<UNet>(cont);
   if(temp)
 //  if(dynamic_cast<UNet*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.Get()):std::shared_ptr<UContainer>(this),id);
+   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
    buffer.Add(id);
   }
 
@@ -1723,14 +1723,14 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
 // 'pointerid'
 bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 {
- UEPtr<UContainer> cont=GetComponent(id);
+ std::shared_ptr<UContainer> cont=GetComponent(id);
 
  PointerMapIteratorT K=PointerLookupTable.end();
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.Get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
   {
    if(J->second.Id == pointerid)
     return true;
@@ -1744,7 +1744,7 @@ bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(std::shared_ptr<UContainer>(cont.Get()));
+  K->second.Pointer->Set(std::shared_ptr<UContainer>(cont.get()));
   return true;
  }
 
@@ -1755,14 +1755,14 @@ bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 // 'pointername'
 bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 {
- UEPtr<UContainer> cont=GetComponent(name);
+ std::shared_ptr<UContainer> cont=GetComponent(name);
 
  PointerMapIteratorT K=PointerLookupTable.end();;
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.Get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
   {
    if(J->first == pointername)
     return true;
@@ -1776,7 +1776,7 @@ bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(std::shared_ptr<UContainer>(cont.Get()));
+  K->second.Pointer->Set(std::shared_ptr<UContainer>(cont.get()));
   return true;
  }
 
@@ -1787,15 +1787,15 @@ bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 // 'pointerid'
 bool UContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 {
- UEPtr<UContainer> cont=GetComponent(id);
+ std::shared_ptr<UContainer> cont=GetComponent(id);
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Id == pointerid && J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.Get()))>=0)
+  if(J->second.Id == pointerid && J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.Get()));
+   J->second.Pointer->Del(cont);
    return true;
   }
 
@@ -1809,15 +1809,15 @@ bool UContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 // 'pointername'
 bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 {
- UEPtr<UContainer> cont=GetComponent(name);
+ std::shared_ptr<UContainer> cont=GetComponent(name);
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.Get()))>=0)
+  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.Get()));
+   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.get()));
    return true;
   }
 
@@ -1830,15 +1830,15 @@ bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 // ���������� ��������� ��������� ���������� 'id' �� ���� ������� ��������� ����������
 bool UContainer::ResetComponentAll(const UId &id)
 {
- UEPtr<UContainer> cont=GetComponent(id);
+ std::shared_ptr<UContainer> cont=GetComponent(id);
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.Get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.Get()));
+   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.get()));
   }
 
   ++J;
@@ -1850,15 +1850,15 @@ bool UContainer::ResetComponentAll(const UId &id)
 // ���������� ��������� ��������� ���������� 'name' �� ���� ������� ��������� ����������
 bool UContainer::ResetComponentAll(const NameT &name)
 {
- UEPtr<UContainer> cont=GetComponent(name);
+ std::shared_ptr<UContainer> cont=GetComponent(name);
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.Get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.Get()));
+   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.get()));
   }
 
   ++J;
@@ -1874,12 +1874,12 @@ void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 
  if(J != PointerLookupTable.end())
  {
-  UEPtr<UContainer> cont=UEPtr<UContainer>(J->second.Pointer->Get().get());
+  std::shared_ptr<UContainer> cont=std::shared_ptr<UContainer>(J->second.Pointer->Get().get());
 
   while(cont)
   {
    DelComponent(cont,canfree);
-   cont=UEPtr<UContainer>(J->second.Pointer->Get().get());
+   cont=std::shared_ptr<UContainer>(J->second.Pointer->Get().get());
   }
  }
 }
@@ -1935,7 +1935,7 @@ bool UContainer::Default(void)
 
    // ���� ���������� �������� � ���������, �� ����� ��������� ����������
    // �� ���������
-   /*UEPtr<UContainer> original; // ������ ���� - ���������� ���� �� ����������� ��������
+   /*std::shared_ptr<UContainer> original; // ������ ���� - ���������� ���� �� ����������� ��������
    if(Storage)
  original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));*/
 
@@ -2022,7 +2022,7 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
    if(subcomps)
    {
 	for(int i=0;i<cont->GetNumComponents();i++)
-	 res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
+	 res &= DefaultAll(cont->GetComponentByIndex(i).get(), subcomps);
    }
   }
   catch(UException &exception)
@@ -2639,12 +2639,12 @@ void UContainer::DelLookupComponent(const NameT &name)
 // �������� ������������ ����� �� ���������� ������
 // --------------------------
 // ��������� ����� ����������
-void UContainer::AddController(UEPtr<UController> controller, bool forchilds)
+void UContainer::AddController(std::shared_ptr<UController> controller, bool forchilds)
 {
  if(CheckController(controller))
   return;
 
- Controllers.push_back(std::shared_ptr<UController>(controller.Get()));
+ Controllers.push_back(std::shared_ptr<UController>(controller.get()));
  if(forchilds)
  {
   std::shared_ptr<UContainer>* comps=PComponents;
@@ -2654,9 +2654,9 @@ void UContainer::AddController(UEPtr<UController> controller, bool forchilds)
 }
 
 // ������� ���������� �� ������
-void UContainer::DelController(UEPtr<UController> controller, bool forchilds)
+void UContainer::DelController(std::shared_ptr<UController> controller, bool forchilds)
 {
- auto I=find(Controllers.begin(),Controllers.end(),std::shared_ptr<UController>(controller.Get()));
+ auto I=find(Controllers.begin(),Controllers.end(),std::shared_ptr<UController>(controller.get()));
 
  if(I != Controllers.end())
   Controllers.erase(I);
@@ -2697,9 +2697,9 @@ void UContainer::UnLinkAllControllers(bool forchilds)
 
 
 // ���������, ���������� �� ���������� � ������
-bool UContainer::CheckController(UEPtr<UController> controller) const
+bool UContainer::CheckController(std::shared_ptr<UController> controller) const
 {
- if(find(Controllers.begin(),Controllers.end(),std::shared_ptr<UController>(controller.Get())) != Controllers.end())
+ if(find(Controllers.begin(),Controllers.end(),std::shared_ptr<UController>(controller.get())) != Controllers.end())
   return true;
  return false;
 }
@@ -2711,9 +2711,9 @@ size_t UContainer::GetNumControllers(void) const
 }
 
 // ���������� ���������� �� �������
-UEPtr<UController> UContainer::GetController(int index)
+std::shared_ptr<UController> UContainer::GetController(int index)
 {
- return UEPtr<UController>(Controllers[index].get());
+ return std::shared_ptr<UController>(Controllers[index].get());
 }
 // --------------------------
 
@@ -2722,9 +2722,9 @@ UEPtr<UController> UContainer::GetController(int index)
 // --------------------------
 // ��������� ��������� � ������� �����������
 // ������ ���������� � ������������� �������
-UId UContainer::AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer)
+UId UContainer::AddLookupPointer(const NameT &name, std::shared_ptr<UIPointer> pointer)
 {
- UPVariable P(1,std::shared_ptr<UIPointer>(pointer.Get()));
+ UPVariable P(1,std::shared_ptr<UIPointer>(pointer.get()));
 
  if(PointerLookupTable.find(name) != PointerLookupTable.end())
   RDK_THROW(EPointerNameAlreadyExist(name));
@@ -2775,12 +2775,12 @@ NameT UContainer::GetPointerLongName(const UIPointer &pointer) const
 }                        */
 
 // ������������ ����� � ������� ���������, ���������������� ��������� ���������
-UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(UEPtr<UContainer> source) const
+UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(std::shared_ptr<UContainer> source) const
 {
  for(PointerMapCIteratorT I=PointerLookupTable.begin(),
                       J=PointerLookupTable.end(); I!=J; ++I)
  {
-   if(I->second.Pointer && I->second.Pointer->Find(std::shared_ptr<const UContainer>(source.Get()))>=0)
+   if(I->second.Pointer && I->second.Pointer->Find(std::shared_ptr<const UContainer>(source.get()))>=0)
     return I;
  }
 
@@ -2808,42 +2808,42 @@ void UContainer::ASharesUnInit(void)
 // ������� ������ ���������� �������� ���������
 // --------------------------
 // ��������� ��������� 'comp' � ������� ���������
-void UContainer::AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+void UContainer::AddComponentTable(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
- Components.push_back(std::shared_ptr<UContainer>(comp.Get()));
+ Components.push_back(std::shared_ptr<UContainer>(comp.get()));
  PComponents=&Components[0];
  NumComponents=int(Components.size());
 
  if(pointer)
-  pointer->Set(std::shared_ptr<UContainer>(comp.Get()));
+  pointer->Set(std::shared_ptr<UContainer>(comp.get()));
  else
  {
   PointerMapCIteratorT I=FindLookupPointer(comp);
   if(I != PointerLookupTable.end())
   {
-   I->second.Pointer->Del(std::shared_ptr<UContainer>(comp.Get()));
+   I->second.Pointer->Del(std::shared_ptr<UContainer>(comp.get()));
   }
  }
 }
 
-void UContainer::DelComponentTable(UEPtr<UContainer> comp)
+void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
 {
  int i;
 
  if(NumComponents)
  {
-  if(PComponents[NumComponents-1]==std::shared_ptr<UContainer>(comp.Get()))
+  if(PComponents[NumComponents-1]==std::shared_ptr<UContainer>(comp.get()))
    Components.resize(NumComponents-1);
   else
   {
    for(i=0;i<NumComponents;i++)
-    if(PComponents[i] == std::shared_ptr<UContainer>(comp.Get()))
+    if(PComponents[i] == std::shared_ptr<UContainer>(comp.get()))
      break;
 
    if(i>=NumComponents)
     return;
 
-   memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(UEPtr<UContainer>));
+   memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(std::shared_ptr<UContainer>));
    Components.resize(NumComponents-1);
   }
  }
@@ -2857,7 +2857,7 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
  PointerMapCIteratorT I=FindLookupPointer(comp);
  if(I != PointerLookupTable.end())
  {
-  I->second.Pointer->Del(std::shared_ptr<UContainer>(comp.Get()));
+  I->second.Pointer->Del(std::shared_ptr<UContainer>(comp.get()));
  }
 }
 // --------------------------
@@ -2866,7 +2866,7 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
 // ������� ������ ���������� ������������
 // --------------------------
 /// ���������� ����������� �������� �� ���������� ������������ ����������
-UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp)
+UId UContainer::UpdateStaticComponent(const NameT &classname, std::shared_ptr<UContainer> comp)
 {
  comp->SetLogger(GetLogger());
  comp->SetStorage(GetStorage());
@@ -2876,7 +2876,7 @@ UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> 
   comp->SetClass(GetStorage()->FindClassId(classname));
 
   for(int i=0;i<NumComponents;i++)
-   if(PComponents[i] == std::shared_ptr<UContainer>(comp.Get()))
+   if(PComponents[i] == std::shared_ptr<UContainer>(comp.get()))
 	return PComponents[i]->GetId();
   return AddComponent(comp);
  }
@@ -2885,17 +2885,17 @@ UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> 
 
 // ������� ��������� comp
 // ����� ������������, ��� ��������� ����������� �������
-void UContainer::BeforeDelComponent(UEPtr<UContainer> comp, bool canfree)
+void UContainer::BeforeDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 {
  ABeforeDelComponent(comp,canfree);
 }
 
-void UContainer::AfterDelComponent(UEPtr<UContainer> comp, bool canfree)
+void UContainer::AfterDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 {
  AAfterDelComponent(comp,canfree);
 }
 
-void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
+void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 {
  BeforeDelComponent(comp,canfree);
  SharesUnInit();
@@ -2930,17 +2930,17 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
 // ��� ���������� ��������� ���������� � ���� ������
 // ����� ����� ������ ������ ���� comp ���
 // ������� �������� � ������ ���������
-void UContainer::ABeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+void UContainer::ABeforeAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
 
 }
 
-void UContainer::AAfterAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+void UContainer::AAfterAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
 
 }
 
-bool UContainer::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
+bool UContainer::AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
  return true;
 }
@@ -2949,17 +2949,17 @@ bool UContainer::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // ��� �������� ��������� ���������� �� ����� �������
 // ����� ����� ������ ������ ���� comp
 // ���������� � ������ ���������
-void UContainer::ABeforeDelComponent(UEPtr<UContainer> comp, bool canfree)
+void UContainer::ABeforeDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 {
 
 }
 
-void UContainer::AAfterDelComponent(UEPtr<UContainer> comp, bool canfree)
+void UContainer::AAfterDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 {
 
 }
 
-bool UContainer::ADelComponent(UEPtr<UContainer> comp)
+bool UContainer::ADelComponent(std::shared_ptr<UContainer> comp)
 {
  return true;
 }

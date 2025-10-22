@@ -76,15 +76,15 @@ void UCreateTestWidget::addProperty()
   {
     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
 
-    RDK::UEPtr<RDK::UComponent> component;
+    std::shared_ptr<RDK::UComponent> component;
     if (componentName.isEmpty())
-        component = model.Get();
+        component = std::shared_ptr<RDK::UComponent>(model.Get(), RDK::NonOwningDeleter());
     else
         component = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
 
     if(!component) return;
 
-    RDK::UEPtr<RDK::UIProperty> property = component->FindProperty(propertyName.toLocal8Bit().constData());
+    std::shared_ptr<RDK::UIProperty> property = component->FindProperty(propertyName.toLocal8Bit().constData());
 
     if(!property) return;
 
@@ -133,7 +133,7 @@ void UCreateTestWidget::createTest()
     storage.SetNodeAttribute("Delta", (*it)->data(4, Qt::DisplayRole).toString().toLocal8Bit().constData());
     std::string nodeValue = (*it)->data(3, Qt::DisplayRole).toString().toLocal8Bit().constData();
 
-    // костыль
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(nodeValue.size() > 0 && nodeValue[0] == '<')
     {
       RDK::USerStorageXML nodeData;

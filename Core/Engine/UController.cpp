@@ -19,7 +19,7 @@ See file license.txt for more information
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UController::UController(void)
  : Component(0)
@@ -34,9 +34,9 @@ UController::~UController(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Флаг разрешения обновления данных контроллера
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UController::IsEnabled(void) const
 {
  return Enabled;
@@ -51,7 +51,7 @@ bool UController::IsEnabled(bool value)
  return true;
 }
 
-// Возвращает имя компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UController::GetComponentName(void) const
 {
  std::string result;
@@ -66,15 +66,15 @@ std::string UController::GetComponentName(void) const
 std::string UController::GetComponentName(UContainer *level) const
 {
  if(Component)
-  return Component->GetLongName(level);
+  return Component->GetLongName(std::shared_ptr<UContainer>(level, [](UContainer*){})); // Non-owning deleter
  return std::string("");
 }
 // --------------------------
 
 // --------------------------
-// Методы управления интерфейсом
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Связывает интерфейс с компонентом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UController::Link(UContainer* component, bool forchilds)
 {
  if(!component)
@@ -84,11 +84,11 @@ bool UController::Link(UContainer* component, bool forchilds)
   return true;
 
  Component=component;
- Component->AddController(this,forchilds);
+ Component->AddController(std::shared_ptr<UController>(this, [](UController*){}), forchilds); // Non-owning deleter
 
  if(!ALink(component))
  {
-  component->DelController(this,forchilds);
+  component->DelController(std::shared_ptr<UController>(this, [](UController*){}), forchilds); // Non-owning deleter
   Component=0;
   return false;
  }
@@ -96,19 +96,19 @@ bool UController::Link(UContainer* component, bool forchilds)
  return true;
 }
 
-// Отвязывает интерфейс от компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UController::UnLink(bool forchilds)
 {
  if(!AUnLink(forchilds))
   return false;
 
  if(Component)
-  Component->DelController(this,forchilds);
+  Component->DelController(std::shared_ptr<UController>(this, [](UController*){}), forchilds); // Non-owning deleter
  Component=0;
  return true;
 }
 
-// Обновляет интерфейс
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UController::Update(void)
 {
  if(!Enabled)
@@ -120,13 +120,13 @@ bool UController::Update(void)
  return AUpdate();
 }
 
-// Связывает интерфейс с компонентом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UController::ALink(UContainer* component, bool forchilds)
 {
  return true;
 }
 
-// Отвязывает интерфейс от компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UController::AUnLink(bool forchilds)
 {
  return true;
@@ -138,7 +138,7 @@ UControllerData::UControllerData(void)
 {
 }
 
-/// Задает размер хранимых данных
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UControllerData::SetNumPoints(int value)
 {
  if(value<0)
@@ -156,13 +156,13 @@ std::string UControllerData::GetPropertyName(void) const
 }
 
 
-/// Возвращает тип данных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const type_info& UControllerData::GetDataType(void) const
 {
  if(Property)
   return Property->GetLanguageType();
 
- // TODO: Нет возвращаемого значения
+ // TODO: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  throw std::runtime_error("Property is nullptr in UControllerData::GetDataType");
 }
 
@@ -173,7 +173,7 @@ UControllerDataReader::UControllerDataReader(void)
 {
 }
 
-/// Задает длину интервала в секундах
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UControllerDataReader::SetTimeInterval(double value)
 {
  TimeInterval=value;
@@ -183,21 +183,21 @@ void UControllerDataReader::SetTimeInterval(double value)
   SetNumPoints(100000);
 }
 
-/// Координаты матрицы по которым берутся данные
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UControllerDataReader::SetMatrixCoord(int row, int col)
 {
  MRow=row;
  MCol=col;
 }
 
-// Отвязывает интерфейс от компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UControllerDataReader::AUnLink(bool forchilds)
 {
  PropertyType=0;
  return UControllerData::AUnLink(forchilds);
 }
 
-/// Обновляет хранимые данные добавляя новые
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UControllerDataReader::AUpdate(void)
 {
  if(!Property)
@@ -279,15 +279,15 @@ bool UControllerDataReader::AUpdate(void)
  return true;
 }
 
-/// Удаляет все хранимые данные
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UControllerDataReader::Clear(void)
 {
  XData.clear();
  YData.clear();
 }
 
-/// Настраивает точку съема данных
-bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> property)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+bool UControllerDataReader::Configure(UContainer *container, std::shared_ptr<UIProperty> property)
 {
  if(Property == property && Component == container)
   return true;
@@ -344,7 +344,7 @@ bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> p
  return true;
 }
 
-/// Задает размер хранимых данных
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UControllerDataReader::SetNumPoints(int value)
 {
  UControllerData::SetNumPoints(value);
@@ -355,13 +355,13 @@ UControllerDataReaderTimeEvents::UControllerDataReaderTimeEvents(void)
 {
 }
 
-/// Координаты матрицы по которым берутся данные
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UControllerDataReaderTimeEvents::SetMatrixCoord(int row, int col)
 {
  UControllerDataReader::SetMatrixCoord(row, col);
 }
 
-/// Обновляет хранимые данные добавляя новые
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UControllerDataReaderTimeEvents::AUpdate(void)
 {
  if(!Property)
@@ -407,7 +407,7 @@ bool UControllerDataReaderTimeEvents::AUpdate(void)
     YData.erase(YData.begin());
   }
 
-  // Удаляем лишнее
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   if(XData.size()>1)
   {
    double t1=XData.front();

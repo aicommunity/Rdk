@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "../Engine/UEPtr.h"
+#include <memory>
 #include "../Engine/ModernSmartPointers.h"
 #include <memory>
 #include <thread>

@@ -27,12 +27,12 @@ void UServerTransport::ConvertStringToVector(const std::string &source, UParamT 
 }
 
 /// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> UServerTransport::GetApplication(void)
+std::shared_ptr<UApplication> UServerTransport::GetApplication(void)
 {
  return Application;
 }
 
-bool UServerTransport::SetApplication(UEPtr<UApplication> value)
+bool UServerTransport::SetApplication(std::shared_ptr<UApplication> value)
 {
  if(Application == value)
   return true;

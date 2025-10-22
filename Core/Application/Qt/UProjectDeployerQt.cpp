@@ -448,7 +448,7 @@ bool UProjectDeployProcessingThread::UnpackZipFolder(const QString &local_zip_fo
 
     QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
 
-    zip_process.start(cmd);
+    zip_process.start("unzip", QStringList() << "-o" << local_zip_folder << "-d" << local_dst_folder);
     while(!zip_process.waitForFinished(2))
     {
         QCoreApplication::processEvents();
@@ -464,7 +464,7 @@ bool UProjectDeployProcessingThread::UnpackZipFile(const QString &local_zip_fold
     //TODO: ���������, ��� ���� �������� ���� ���� ����� ����������
     QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
 
-    zip_process.start(cmd);
+    zip_process.start("unzip", QStringList() << "-o" << local_zip_folder << "-d" << local_dst_folder);
     while(!zip_process.waitForFinished(2))
     {
         QCoreApplication::processEvents();
@@ -2055,8 +2055,8 @@ int UProjectDeployerQt::SetupProjectMockParameters()
 
     //��������� �������������
 
-    RDK::UEPtr<RDK::UContainer> video_cont;
-    RDK::UEPtr<RDK::UContainer> imseq_cont;
+    std::shared_ptr<UContainer> video_cont;
+    std::shared_ptr<UContainer> imseq_cont;
     std::vector<std::string> vid_names;
     vid_names = model->GetComponentsNameByClassName("TCaptureOpenCV", vid_names);
     std::vector<std::string> imseq_names;
@@ -2100,7 +2100,7 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
 
     std::cerr<<"Pred: "<<predictor_class_name.c_str()<<" compname: "<<predictor_component_name.c_str()<<"\n";
 
-    RDK::UEPtr<RDK::UContainer> predictor_container;
+    std::shared_ptr<UContainer> predictor_container;
     predictor_container = model->GetComponentL(predictor_names[0]);
     std::string *sequence_path = predictor_container->AccessPropertyData<std::string>("ImagesDir");
 
@@ -2140,8 +2140,8 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
     //��������� �������������
 
-    RDK::UEPtr<RDK::UContainer> video_cont;
-    RDK::UEPtr<RDK::UContainer> imseq_cont;
+    std::shared_ptr<UContainer> video_cont;
+    std::shared_ptr<UContainer> imseq_cont;
     std::vector<std::string> vid_names;
     vid_names = model->GetComponentsNameByClassName("TCaptureOpenCV", vid_names);
     std::vector<std::string> imseq_names;
@@ -2251,9 +2251,9 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
     //������ ��������� ����������� ����������
     //std::vector<std::string> pipelineNames;
-    /*RDK::UEPtr<RDK::UContainer> pipeline;
+    /*std::shared_ptr<UContainer> pipeline;
     pipeline = model->GetComponentL("Pipeline1");
-    if(!pipeline.Get())
+    if(!pipeline.get())
     {
         lastError="VideoAnalytics Pipeline1 class undetected";
         return 1;
@@ -2284,7 +2284,7 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
     }
 
     //Here component class found
-    RDK::UEPtr<RDK::UContainer> neural_cont;
+    std::shared_ptr<UContainer> neural_cont;
     neural_cont = model->GetComponentL(components_names[0]);
 
     bool *nn_Activity = neural_cont->AccessPropertyData<bool>("Activity");
@@ -2353,7 +2353,7 @@ int UProjectDeployerQt::RunPreparedProject()
 
     if(!predictor_names.empty())
     {
-        RDK::UEPtr<RDK::UContainer> predictor_container;
+        std::shared_ptr<UContainer> predictor_container;
         predictor_container = model->GetComponentL(predictor_names[0]);
         bool *start_prediction = predictor_container->AccessPropertyData<bool>("StartPredict");
         *start_prediction = true;
@@ -2442,7 +2442,7 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
        return false;
     }
 
-    RDK::UEPtr<RDK::UContainer> capture_container;
+    std::shared_ptr<UContainer> capture_container;
     capture_container = model->GetComponentL(capture_component_name);
 
     CaptureLibDescr &lib_descr = capture_tags[capture_class_name];
@@ -2485,7 +2485,7 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
        return false;
     }
 
-    RDK::UEPtr<RDK::UContainer> predictor_container;
+    std::shared_ptr<UContainer> predictor_container;
     predictor_container = model->GetComponentL(predictor_component_name);
 
 
@@ -3062,7 +3062,7 @@ void UProjectRunThread::ProjectStateCalculation()
 
     if(!predictor_names.empty())
     {
-        RDK::UEPtr<RDK::UContainer> predictor_container;
+        std::shared_ptr<UContainer> predictor_container;
         predictor_container = model->GetComponentL(predictor_names[0]);
         bool *prediction_ended = predictor_container->AccessPropertyData<bool>("PredictionEnded");
         if(*prediction_ended)

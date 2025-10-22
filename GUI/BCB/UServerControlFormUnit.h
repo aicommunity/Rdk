@@ -131,7 +131,7 @@ virtual ~URpcDecoderCommonVcl(void);
 // --------------------------
 /// ѕровер€ет, поддерживаетс€ ли команда диспетчером
 /// ожидает, что команда уже декодирована иначе всегда возвращает false
-virtual bool IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const;
+virtual bool IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const;
 
 /// —оздает копию этого декодера
 virtual URpcDecoderCommonVcl* New(void);

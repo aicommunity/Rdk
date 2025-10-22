@@ -140,7 +140,7 @@ bool TMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &
  if(!model)
   return false;
 
- RDK::UEPtr<RDK::UNet> comp;
+ std::shared_ptr<UNet> comp;
  if(comp_name.empty())
  {
   comp=RDK::GetModel<RDK::UNet>();

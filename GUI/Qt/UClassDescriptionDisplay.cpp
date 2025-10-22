@@ -16,7 +16,7 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
 
     ui->lineEditStep->setValidator(new QRegExpValidator(QRegExp("[+-]?\\d*\\.?\\d+"), this));
 
-    // actions для списка избранных
+    // actions пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QAction * createNewFavorite = new QAction("Create New", this);
     QAction * deleteFavorite =    new QAction("Delete", this);
 
@@ -47,7 +47,7 @@ void UClassDescriptionDisplay::SaveDescription()
   if(!storage)
     return;
 
-  // Если описания не существовало
+  // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   if(!storage->GetClassDescription(ClassName, true))
   {
     if(QMessageBox::question(this, "Information",
@@ -55,7 +55,7 @@ void UClassDescriptionDisplay::SaveDescription()
                              QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
       return;
   }
-  // Если существовало, просто сохраняем
+  // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   else
   {
     if(QMessageBox::question(this, "Information",
@@ -68,7 +68,7 @@ void UClassDescriptionDisplay::SaveDescription()
   storage->SaveClassDescriptionToFile(ClassName);
 }
 
-// Закрытие
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UClassDescriptionDisplay::CloseForm()
 {
   close();
@@ -82,7 +82,7 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
   if(ClassName == class_name)
     return;
 
-  // Если предыдущее описание не сохранено в хранилище
+  // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   if(!ClassName.empty() && !(storage->GetClassDescription(ClassName, true)))
   {
     storage->SetClassDescription(ClassName, ClassDescription);
@@ -90,8 +90,7 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
 
   if(ClassDescription!=NULL)
   {
-    delete ClassDescription;
-    ClassDescription = NULL;
+    ClassDescription.reset();
   }
 
   ClassName = class_name;
@@ -117,8 +116,8 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
   else
   {
     DefaultGUIState();
-    ClassDescription = new RDK::UContainerDescription();
-    ClassDescription->SetStorage(storage.Get());
+    ClassDescription = std::make_shared<RDK::UContainerDescription>();
+    ClassDescription->SetStorage(std::shared_ptr<RDK::UStorage>(storage.Get(), RDK::NonOwningDeleter()));
     ClassDescription->SetClassNameValue(ClassName);
     ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
     FillProperties();
@@ -204,17 +203,17 @@ void UClassDescriptionDisplay::DefaultGUIState()
 
 void UClassDescriptionDisplay::UpdateDataSelectionType(int type)
 {
-    // 0 - произвольные данные
+    // 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     // 1 - Checkbox
-    // 2 - Диапазон
-    // 3 - Список вариантов
-    // 4 - Диапазон с заданным шагом
+    // 2 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    // 3 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    // 4 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     ui->spinBoxDataSelecType->setValue(type);
 
     CurrentProp.second.DataSelectionType = ui->spinBoxDataSelecType->value();
     ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
 
-    // Отключаем ввод в switch включаем необходимое
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ switch пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->lineEditValList->setEnabled(false);
     ui->lineEditStep->setEnabled(false);
 

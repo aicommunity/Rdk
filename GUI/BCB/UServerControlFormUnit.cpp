@@ -492,7 +492,7 @@ URpcDecoderCommonVcl::~URpcDecoderCommonVcl(void)
 // --------------------------
 /// Проверяет, поддерживается ли команда диспетчером
 /// ожидает, что команда уже декодирована иначе всегда возвращает false
-bool URpcDecoderCommonVcl::IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const
+bool URpcDecoderCommonVcl::IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const
 {
  return URpcDecoderCommon::IsCmdSupported(command);
 }
@@ -860,13 +860,13 @@ int TUServerControlForm::GetHttpServerBindingPort(void) const
 // Метод, вызываемый после сброса модели
 void TUServerControlForm::AAfterReset(void)
 {
-// RDK::dynamic_pointer_cast<UServerControlVcl>(RdkApplication.GetServerControl())->AfterReset();
+// std::dynamic_pointer_cast<UServerControlVcl>(RdkApplication.GetServerControl())->AfterReset();
 }
 
 // Метод, вызываемый после шага расчета
 void TUServerControlForm::AAfterCalculate(void)
 {
-// RDK::dynamic_pointer_cast<UServerControlVcl>(RdkApplication.GetServerControl())->AfterCalculate();
+// std::dynamic_pointer_cast<UServerControlVcl>(RdkApplication.GetServerControl())->AfterCalculate();
 }
 
 // Обновление интерфейса

@@ -18,7 +18,7 @@ See file license.txt for more information
 //#include "../Engine/UNet.h"
 #include "../Serialize/USerStorageXML.h"
 #include "../Utilities/USupport.h"
-#include "../Engine/UEPtr.h"
+#include <memory>
 #include "../Math/MVector.h"
 #include "UAGraphics.h"
 
@@ -121,7 +121,7 @@ typedef map<string,vector<DescriptionsTableIteratorT> >::iterator DescriptionsLi
 
 protected: // Данные
 // Указатель на сеть
-//UEPtr<UNet> Net;
+//std::shared_ptr<UNet> Net;
 USerStorageXML NetXml;
 
 // Таблица соответствий между нейронами сети и описаний визуальных элементов
@@ -135,7 +135,7 @@ DescriptionsLinksTableT Links;
 RDK::UBitmapFontCollection Fonts;
 
 // Движок для отображения сети
-UEPtr<UAGraphics> GEngine;
+std::shared_ptr<UAGraphics> GEngine;
 
 protected: // Параметры
 // ---------------------------
@@ -227,7 +227,7 @@ bool GetShowBackgroundLines(void) const;
 // Методы доступа к данным
 // ---------------------------
 // Возвращает указатель на НС
-//UEPtr<UNet> GetNet(void);
+//std::shared_ptr<UNet> GetNet(void);
 const USerStorageXML& GetNetXml(void) const;
 
 // Возвращает элемент таблицы соответствий
@@ -237,16 +237,16 @@ UGEDescription& GetDescription(const string &name);
 const UDrawEngine::DescriptionsTableT& GetDescriptions(void);
 
 // Возвращает указатель на движок отображения
-UEPtr<UAGraphics> GetGEngine(void);
+std::shared_ptr<UAGraphics> GetGEngine(void);
 
 // Связывает класс с новой НС
 // Если net == 0 то отключает класс от текущей НС и возвращает true
-//bool SetNet(UEPtr<UNet> net);
+//bool SetNet(std::shared_ptr<UNet> net);
 bool SetNetXml(USerStorageXML &net_xml);
 
 // Связывает класс с новой НС
 // Если engine == 0 то возвращает false и не делеает ничего
-bool SetEngine(UEPtr<UAGraphics> engine);
+bool SetEngine(std::shared_ptr<UAGraphics> engine);
 
 // Обновляет таблицу соответствий
 void UpdateDescriptions(void);

@@ -99,7 +99,7 @@ void UComponentDescription::SetDescription(const std::string& value)
 }
 
 // Установка указателя на хранилище
-void UComponentDescription::SetStorage(UEPtr<UStorage> storage)
+void UComponentDescription::SetStorage(std::shared_ptr<UStorage> storage)
 {
     Storage = storage;
 }

@@ -4,7 +4,7 @@
 #include <string>
 //#include <map>
 #include "UXMLEnvSerialize.h"
-#include "UEPtr.h"
+#include <memory>
 
 namespace RDK {
 
@@ -23,7 +23,7 @@ std::string Header;
 std::string Description;
 
 // Хранилище
-UEPtr<UStorage> Storage;
+std::shared_ptr<UStorage> Storage;
 
 public: // Классы описания исключений
  /* Базовый класс описания исключений */
@@ -71,7 +71,7 @@ void SetDescription(const std::string& value);
 // --------------------------
 
 // Установка указателя на хранилище
-void SetStorage(UEPtr<UStorage> storage);
+void SetStorage(std::shared_ptr<UStorage> storage);
 
 // Создание описаний свойств единожды (вызов к хранилищу)
 virtual void CreateProperties();

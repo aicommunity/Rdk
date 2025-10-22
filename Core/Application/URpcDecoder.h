@@ -48,7 +48,7 @@ virtual URpcDecoder* New(void)=0;
 
 /// ���������, �������������� �� ������� �����������
 /// �������, ��� ������� ��� ������������ ����� ������ ���������� false
-virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const=0;
+virtual bool IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const=0;
 
 /// ����� �����
 virtual void Process(void);
@@ -58,11 +58,11 @@ virtual void StopProcessThread(void);
 
 /// ������������ ������������� � ����� ������� �� ������� ������
 /// ���������� false ���� ������� �� ��������������
-virtual bool ProcessCommand(const UEPtr<URpcCommand> &command);
-virtual bool AProcessCommand(const UEPtr<URpcCommand> &command)=0;
+virtual bool ProcessCommand(const std::shared_ptr<URpcCommand> &command);
+virtual bool AProcessCommand(const std::shared_ptr<URpcCommand> &command)=0;
 
 /// ���������� ��������� �� ��������� ����������
-UEPtr<UApplication> GetApplication(void);
+std::shared_ptr<UApplication> GetApplication(void);
 // --------------------------
 };
 

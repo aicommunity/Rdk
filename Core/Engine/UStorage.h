@@ -14,7 +14,7 @@ See file license.txt for more information
 #define UASTORAGE_H
 
 #include <map>
-#include "UEPtr.h"
+#include <memory>
 #include "UContainer.h"
 #include "../Serialize/USerStorageXML.h"
 #include "UContainerDescription.h"
@@ -28,14 +28,14 @@ namespace RDK {
 class ULibrary;
 class URuntimeLibrary;
 
-typedef UEPtr<UComponentAbstractFactory> UClassStorageElement;
+typedef std::shared_ptr<UComponentAbstractFactory> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
 
-typedef std::map<std::string, UEPtr<UContainerDescription> > UClassesDescription;
-typedef std::map<std::string, UEPtr<UContainerDescription> >::iterator UClassesDescriptionIterator;
-typedef std::map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
+typedef std::map<std::string, std::shared_ptr<UContainerDescription> > UClassesDescription;
+typedef std::map<std::string, std::shared_ptr<UContainerDescription> >::iterator UClassesDescriptionIterator;
+typedef std::map<std::string, std::shared_ptr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
 /* *********************************************************************** */
@@ -44,7 +44,7 @@ class RDK_LIB_TYPE UInstancesStorageElement
 {
 public: // Данные
 // Указатель на объект
-UEPtr<UContainer> Object;
+std::shared_ptr<UContainer> Object;
 
 // Признак того свободен ли объект
 bool UseFlag;
@@ -56,7 +56,7 @@ public: // Методы
 // --------------------------
 UInstancesStorageElement(void);
 UInstancesStorageElement(const UInstancesStorageElement &copy);
-UInstancesStorageElement(const UEPtr<UContainer> &object, bool useflag);
+UInstancesStorageElement(const std::shared_ptr<UContainer> &object, bool useflag);
 virtual ~UInstancesStorageElement(void);
 // --------------------------
 
@@ -105,7 +105,7 @@ std::map<std::string,UId> ClassesLookupTable;
 UClassesStorage ClassesStorage;
 
 /// Экземпляр класса для логирования
-mutable UEPtr<ULoggerEnv> Logger;
+mutable std::shared_ptr<ULoggerEnv> Logger;
 
 protected: // Описания классов
 // XML описания всех классов хранилища
@@ -188,8 +188,8 @@ const NameT FindClassName(const UId &id) const;
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
 // Если classid == ForbiddenId, то id назначается автоматически
-virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid=ForbiddenId);
-virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const std::string &classname, const UId &classid=ForbiddenId);
+virtual UId AddClass(std::shared_ptr<UComponentAbstractFactory> factory, const UId &classid=ForbiddenId);
+virtual UId AddClass(std::shared_ptr<UComponentAbstractFactory> factory, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
 // Если 'force' == true то принудительно удаляет из хранилища
@@ -201,8 +201,8 @@ virtual bool CheckClass(const UId &classid) const;
 virtual bool CheckClass(const string &classname) const;
 
 // Возвращает образец класса
-virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const UId &classid) const;
-virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const std::string &class_name) const;
+virtual std::shared_ptr<UComponentAbstractFactory> GetComponentFactory(const UId &classid) const;
+virtual std::shared_ptr<UComponentAbstractFactory> GetComponentFactory(const std::string &class_name) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;
@@ -235,23 +235,23 @@ virtual void ClearClassesStorage(bool force=false);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
-virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
+virtual std::shared_ptr<UComponent> TakeObject(const UId &classid, const std::shared_ptr<UComponent> &prototype=0);
+virtual std::shared_ptr<UComponent> TakeObject(const string &classname, const std::shared_ptr<UComponent> &prototype=0);
 
 template<class T>
-UEPtr<T> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
+std::shared_ptr<T> TakeObject(const UId &classid, const std::shared_ptr<UComponent> &prototype=0);
 
 template<class T>
-UEPtr<T> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
+std::shared_ptr<T> TakeObject(const string &classname, const std::shared_ptr<UComponent> &prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
-virtual UId FindClass(UEPtr<UComponent> object) const;
+virtual UId FindClass(std::shared_ptr<UComponent> object) const;
 
 // Проверяет существует ли объект 'object' в хранилище
-virtual bool CheckObject(UEPtr<UContainer> object) const;
+virtual bool CheckObject(std::shared_ptr<UContainer> object) const;
 
 // Ищет фабрику, непосредственно хранящую заданный компонент
-virtual UVirtualMethodFactory* FindVirualMethodFactory(UEPtr<UContainer> object);
+virtual UVirtualMethodFactory* FindVirualMethodFactory(std::shared_ptr<UContainer> object);
 
 // Вычисляет суммарное число объектов в хранилище
 virtual int CalcNumObjects(void) const;
@@ -273,7 +273,7 @@ virtual void ClearObjectsStorage(bool force=false);
 virtual void ClearObjectsStorageByClass(const UId &classid);
 
 /// Устанавливает состояние уже выданного компонента в состояние по умолчанию
-virtual void DefaultObject(UEPtr<UContainer> object);
+virtual void DefaultObject(std::shared_ptr<UContainer> object);
 // --------------------------
 
 // --------------------------
@@ -290,11 +290,11 @@ const std::string GetClDescPath() const;
 const std::string GetCreateClDescPath(const std::string& class_name);
 
 // Возвращает XML описание класса
-const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
+const std::shared_ptr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description);
+void SetClassDescription(const std::string &classname, const std::shared_ptr<UContainerDescription>& description);
 
 // Загрузка описаний классов из xml-описаний
 virtual void LoadClassesDescription();
@@ -327,17 +327,17 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // Методы управления библиотеками
 // --------------------------
 // Указатель на логгер
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+std::shared_ptr<ULoggerEnv> const GetLogger(void) const;
+virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 // Возвращает библиотеку по индексу
-UEPtr<ULibrary> GetCollection(int index);
+std::shared_ptr<ULibrary> GetCollection(int index);
 
 // Возвращает число библиотек
 int GetNumCollections(void) const;
 
 // Возвращает библиотеку по имени
-UEPtr<ULibrary> GetCollection(const string &name);
+std::shared_ptr<ULibrary> GetCollection(const string &name);
 
 // Возвращает имя библиотеки по индексу
 const string& GetCollectionName(int index);
@@ -436,8 +436,8 @@ virtual bool BuildStorage(int lib_type);
 virtual void DelAbandonedClasses(void);
 
 /// Возвращает указатель на библиотеку класса по имени класса
-virtual UEPtr<ULibrary> FindCollection(const std::string &class_name);
-virtual UEPtr<ULibrary> FindCollection(const UId &classid);
+virtual std::shared_ptr<ULibrary> FindCollection(const std::string &class_name);
+virtual std::shared_ptr<ULibrary> FindCollection(const UId &classid);
 
 /// Формирует список зависимостей класса компонента от библиотек
 /// Метод не очищает переданный список библиотек, а только пополняет его
@@ -461,23 +461,23 @@ const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 protected:
 // Добавляет уже созданный объект в хранилище
 // Если объект уже принадлежит иному хранилищу то возвращает false
-virtual void PushObject(const UId &classid, UEPtr<UContainer> object);
+virtual void PushObject(const UId &classid, std::shared_ptr<UContainer> object);
 
 public:
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // В случае ошибки возвращает ForbiddenId
-virtual UId PopObject(UEPtr<UContainer> object);
+virtual UId PopObject(std::shared_ptr<UContainer> object);
 
 protected:
 // Перемещает объект в другое хранилище
-virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
+virtual void MoveObject(std::shared_ptr<UContainer> object, std::shared_ptr<UStorage> newstorage);
 
 public:
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
-virtual void ReturnObject(UEPtr<UComponent> object);
+virtual void ReturnObject(std::shared_ptr<UComponent> object);
 
 protected:
 // В случае ошибки возвращает ForbiddenId
@@ -567,10 +567,10 @@ std::string CreateLogMessage(void) const
 };
 
 template<class T>
-UEPtr<T> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
+std::shared_ptr<T> UStorage::TakeObject(const UId &classid, const std::shared_ptr<UComponent> &prototype)
 {
- UEPtr<T> p;
- UEPtr<UComponent> got_class=TakeObject(classid,prototype);
+ std::shared_ptr<T> p;
+ std::shared_ptr<UComponent> got_class=TakeObject(classid,prototype);
  p=dynamic_pointer_cast<T>(got_class);
  if(!p)
  {
@@ -581,10 +581,10 @@ UEPtr<T> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &proto
 }
 
 template<class T>
-UEPtr<T> UStorage::TakeObject(const string &classname, const UEPtr<UComponent> &prototype)
+std::shared_ptr<T> UStorage::TakeObject(const string &classname, const std::shared_ptr<UComponent> &prototype)
 {
- UEPtr<T> p;
- UEPtr<UComponent> got_class=TakeObject(classname,prototype);
+ std::shared_ptr<T> p;
+ std::shared_ptr<UComponent> got_class=TakeObject(classname,prototype);
  p=dynamic_pointer_cast<T>(got_class);
  if(!p)
  {

@@ -12,23 +12,23 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 {
     ui->setupUi(this);
 
-    UpdateInterval = 0; // обновление по системным тикам не происходит
-    setAccessibleName("UClassesListWidget"); // имя класса для сериализации
+    UpdateInterval = 0; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    setAccessibleName("UClassesListWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-    // Список RT библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
-    // Список всех компонентов из RT библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList RTclassesNames;
     QString str;
     foreach(str, RTlibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -39,7 +39,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
         RTclassesNames += libClasses;
     }
 
-    //инициализация списка по всем классам
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     const char * stringBuff = Storage_GetClassesNameList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -53,7 +53,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     }
     ui->listWidgetStorageByName->sortItems(Qt::AscendingOrder);
 
-    //инициализация древовидного списка по библиотекам
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     stringBuff = Storage_GetClassLibrariesList();
     componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -63,7 +63,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
         if(str != "")
         {
             isRTlib = false;
-            // Если это RT библиотека
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if(RTlibsNames.indexOf(str)!=-1)
                 isRTlib = true;
             QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
@@ -89,21 +89,21 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     }
     ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
 
-    //инициализация runtime-библиотек
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->listWidgetRTlibs->addItems(RTlibsNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
 
-    //связь нажатия на компонент для события перетаскивания
+    //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetRTlibClasses, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
 
 
-    //связи на внешний сигнал изменения выделения компонента
+    //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->treeWidgetStorageByLibs, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SIGNAL(classSelectionChanged()));
     connect(ui->listWidgetStorageByName, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SIGNAL(classSelectionChanged()));
 
-    // Меню области списка библиотек
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->listWidgetRTlibs->addAction(ui->actionCreateRuntimeLibrary);
     ui->listWidgetRTlibs->addAction(ui->actionDeleteRuntimeLibrary);
     ui->listWidgetRTlibs->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -113,7 +113,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 
     ui->listWidgetRTlibs->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-    // Меню области списка компонентов
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->listWidgetRTlibClasses->addAction(ui->actionAddNewClass);
     ui->listWidgetRTlibClasses->addAction(ui->actionDeleteClass);
 
@@ -168,7 +168,7 @@ QString UClassesListWidget::selctedClass() const
 
 void UClassesListWidget::AUpdateLibsView(QString lib_name)
 {
-    // обновление runtime-библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     // Storage
     RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
     if(!storage)
@@ -200,7 +200,7 @@ void UClassesListWidget::dropEvent(QDropEvent *event)
     dataStream >> compname;
     */
 
-    // Определение координат дропа в систему координат списка библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QString lib = "";
     QPoint globalPos = this->mapToGlobal(event->pos());
     QPoint RTlibsPos = ui->listWidgetRTlibs->mapFromGlobal(globalPos);
@@ -266,7 +266,7 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
         return;
     QString lib_name = item->text();
 
-    // Заполнение списка компонентов библиотеки
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     const char* stringBuff = Storage_GetLibraryClassNames(lib_name.toLocal8Bit());
     QStringList libClasses = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -282,25 +282,25 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
     }
 }
 
-// Поиск компонентов в разных полях
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UClassesListWidget::tab0_textChanged(const QString &arg1)
 {
     ui->listWidgetStorageByName->clear();
 
-    // Список RT библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
-    // Список всех компонентов из RT библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList RTclassesNames;
     QString str;
     foreach(str, RTlibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -311,18 +311,18 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
         RTclassesNames += libClasses;
     }
 
-    // Список Mock библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ Mock пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     storage->GetLibsNameListByType(buff,3);
     QStringList MockLibsNames = QString(buff.c_str()).split(",");
 
-    // Список всех компонентов из Mock библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ Mock пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList MockClassesNames;
 
     foreach(str, MockLibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -334,7 +334,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
     }
 
 
-    // список всех классов
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     const char * stringBuff = Storage_GetClassesNameList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -364,20 +364,20 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
 {
     ui->treeWidgetStorageByLibs->clear();
 
-    // Список RT библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
-    // Список всех компонентов из RT библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList RTclassesNames;
     QString str;
     foreach(str, RTlibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -389,18 +389,18 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
     }
 
 
-    // Список Mock библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ Mock пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     storage->GetLibsNameListByType(buff,3);
     QStringList MockLibsNames = QString(buff.c_str()).split(",");
 
-    // Список всех компонентов из Mock библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ Mock пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QStringList MockClassesNames;
 
     foreach(str, MockLibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -412,7 +412,7 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
     }
 
 
-    //инициализация древовидного списка по библиотекам
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     const char * stringBuff = Storage_GetClassLibrariesList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -426,11 +426,11 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
             isMocklib = false;
             isRTlib = false;
 
-            // Если это Mock библиотека
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ Mock пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if(MockLibsNames.indexOf(str)!=-1)
                 isMocklib = true;
 
-            // Если это RT библиотека
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if(RTlibsNames.indexOf(str)!=-1)
                 isRTlib = true;
 
@@ -504,7 +504,7 @@ void UClassesListWidget::tab2_textChanged(const QString &arg1)
 {
     ui->listWidgetRTlibs->clear();
 
-    // поиск имен runtime-библиотек
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
@@ -575,7 +575,7 @@ void UClassesListWidget::CreateRTlibrary()
 
 void UClassesListWidget::DeleteRTlibrary()
 {
-    // Если никакая библиотека не выбрана
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(ui->listWidgetRTlibs->selectedItems().size() == 0)
         return;
 
@@ -584,11 +584,11 @@ void UClassesListWidget::DeleteRTlibrary()
     if(!storage)
         return;
 
-    // Имя бибиотеки
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
     QString lib_name = item->text().toUtf8().data();
 
-    // Диалоговое окно удаления
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QString message = "Deleting library \""+ lib_name + "\"";
 
     DeleteDialog* dialog = new DeleteDialog("Delete Library", message);
@@ -611,18 +611,18 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
 {
     RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
-    // Если нет модели
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(!engine || !engine->GetModel() || !engine->GetModel()->GetStorage())
          return;
 
-    // Выделенный компонент
-    RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    std::shared_ptr<RDK::UContainer> container = engine->GetModel()
                                 ->GetComponentL(ModelScheme->GetLongName(), true);
-    // Если компонент не выделен
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!container)
         return;
 
-    // Имя текущей выбранной библиотеки (если выбрана)
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
     QString lib_name = cur_lib;
     if(ui->listWidgetRTlibs->currentItem() && lib_name.isEmpty())
         lib_name  = ui->listWidgetRTlibs->currentItem()->text();
@@ -636,7 +636,7 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
     {
         if(!engine->GetEnvironment()->
                 GetStorage()->AddClassToCollection(dialog->GetClassName(), dialog->GetCompName(),
-                                                   dialog->GetReplace(), container, dialog->GetLibName()))
+                                                   dialog->GetReplace(), container.get(), dialog->GetLibName()))
         {
             QMessageBox::warning(this, "Error",
                          "An error occurred while adding new class \"" + QString::fromStdString(dialog->GetClassName())
@@ -650,7 +650,7 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
 
 void UClassesListWidget::DeleteClass()
 {
-    // Если никакая библиотека не выбрана или никакой класс не выбран
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(ui->listWidgetRTlibs->selectedItems().empty() || ui->listWidgetRTlibClasses->selectedItems().empty())
         return;
 
@@ -659,15 +659,15 @@ void UClassesListWidget::DeleteClass()
     if(!storage)
         return;
 
-    // Имя библиотеки
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
     QString lib_name = item->text();
 
-    // Имя класса
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     item = ui->listWidgetRTlibClasses->currentItem();
     QString class_name = item->text();
 
-    // Диалоговое окно удаления
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QString message = "Deleting class \""+ class_name + "\" from library \"" + lib_name + "\"";
 
     DeleteDialog* dialog = new DeleteDialog("Delete Class", message);
@@ -685,7 +685,7 @@ void UClassesListWidget::DeleteClass()
     delete dialog;
 }
 
-// Диалоговое окно для создания библиотеки
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 CrLibDialog::CrLibDialog(QWidget* pwgt)
 {
     setWindowTitle("Create New Library");
@@ -714,7 +714,7 @@ CrLibDialog::CrLibDialog(QWidget* pwgt)
 
 void CrLibDialog::ProcessInput()
 {
-    // Если ввод пустой
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(InputLibName->text().isEmpty())
     {
         Message->setText("Enter Library Name");
@@ -729,7 +729,7 @@ void CrLibDialog::ProcessInput()
     if(!storage)
         return;
 
-    // Если библиотеки с таким именем нет
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
     if(!storage->GetCollection(lib_name))
     {
         Message->setText("Enter Library name");
@@ -749,18 +749,18 @@ const std::string CrLibDialog::GetLibName() const
     return InputLibName->text().toUtf8().data();
 }
 
-// Диалоговое окно для создания класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp_name, QWidget* pwgt)
 {
     setWindowTitle("Add New Class");
 
     MessageLib = new QLabel("Select the library where to add the component");
 
-    // Список библиотек и установка текущей той, которая выбрана в окне библиотек (если выбрана)
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
     Libraries = new QComboBox;
     Libraries->addItems(libs);
     int index = Libraries->findText(cur_lib);
-    if ( index != -1 ) { // -1 Если не найдено
+    if ( index != -1 ) { // -1 пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
        Libraries->setCurrentIndex(index);
     }
 
@@ -801,7 +801,7 @@ CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp
 
 void CrClassDialog::ProcessInput()
 {
-    // Если ввод пустой
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(InputClassName->text().isEmpty() || InputCompName->text().isEmpty())
     {
         MessageClass->setText("Enter Class Name");
@@ -817,7 +817,7 @@ void CrClassDialog::ProcessInput()
 
     QString class_name = InputClassName->text();
 
-    // Если ввод пустой
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(class_name.isEmpty())
         return;
 
@@ -826,13 +826,13 @@ void CrClassDialog::ProcessInput()
     if(!storage)
         return;
 
-    // Если класс не существует -> создание класса
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ -> пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(!storage->CheckClass(class_name.toUtf8().data()))
     {
         MessageClass->setText("Enter Class Name");
         AddButton->setEnabled(true);
     }
-    else// Если существует - предупреждение
+    else// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     {
         std::string lib_name = storage->FindCollection(class_name.toUtf8().data())->GetName();
         MessageClass->setText("Class \"" + class_name +"\" already exists in \"" + QString::fromStdString(lib_name) + "\" library");
@@ -843,13 +843,13 @@ void CrClassDialog::ProcessInput()
 
 void CrClassDialog::ReplaceClicked()
 {
-    // Диалоговое окно подтверждения замены класса
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     QString message =  MessageClass->text() +
                        "\n" + "You are going to replace class \"" + InputClassName->text() + "\"";
 
     DeleteDialog* dialog = new DeleteDialog("Replacing class", message);
 
-    // При подтверджении замены класса
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(dialog->exec() == QDialog::Accepted)
     {
         accept();
@@ -878,7 +878,7 @@ const std::string CrClassDialog::GetLibName() const
     return Libraries->currentText().toUtf8().data();
 }
 
-// Диалог для удаления библиотеки/класса
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅ
 DeleteDialog::DeleteDialog(QString title, QString message, QWidget* pwgt)
 {
     setWindowTitle(title);
@@ -923,8 +923,8 @@ void UClassesListWidget::on_action_cl_desc_triggered()
             QTreeWidgetItem* item = ui->treeWidgetStorageByLibs->currentItem();
             if(!item)
                 return;
-            // Если есть родитель - значит элемент класса (т.к. у элемента класса - родитель элемент бибилотеки)
-            // у элемента библиотеки отсутствует родительский элемент
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅ.пїЅ. пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+            // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if(item->parent())
                 ModelScheme->classDescription(item->text(0).toStdString());
             break;

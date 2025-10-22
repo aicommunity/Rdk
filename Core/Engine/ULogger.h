@@ -5,7 +5,7 @@
 #include "../System/rdk_system.h"
 #include "../System/UGenericMutex.h"
 #include "UELockVar.h"
-#include "UEPtr.h"
+#include <memory>
 
 namespace RDK {
 
@@ -20,7 +20,7 @@ RDK::UELockVar<std::string> Suffix;
 
 protected: // Данные
 /// Файл для сохранения логов
-RDK::UEPtr<std::ofstream> EventsLogFile;
+std::shared_ptr<std::ofstream> EventsLogFile;
 
 /// Флаг, разрешающий запись в лог
 /// сбрасывается, если невозможно создать катлог, или файл

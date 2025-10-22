@@ -479,7 +479,7 @@ void __fastcall TUClassesListFrame::StringGridMouseMove(TObject *Sender, TShiftS
 
   try
   {
-   const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+   const std::shared_ptr<UContainerDescription> descr=storage->GetClassDescription(class_name);
 
    if(!descr)
 	return;
@@ -519,7 +519,7 @@ void __fastcall TUClassesListFrame::LibComponentListStringGridMouseMove(TObject 
 
   try
   {
-   const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+   const std::shared_ptr<UContainerDescription> descr=storage->GetClassDescription(class_name);
 
    if(!descr)
 	return;
@@ -560,7 +560,7 @@ void __fastcall TUClassesListFrame::TreeViewMouseMove(TObject *Sender, TShiftSta
 
  try
  {
-  const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+  const std::shared_ptr<UContainerDescription> descr=storage->GetClassDescription(class_name);
   if(!descr)
    return;
 
@@ -642,7 +642,7 @@ void __fastcall TUClassesListFrame::CreateNewClass1Click(TObject *Sender)
   return;
 
  // Выделенный компонент
- RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
+ std::shared_ptr<UContainer> container = engine->GetModel()
 								->GetComponentL(NewComponentName, true);
  // Если компонент не выделен
  if(!container)

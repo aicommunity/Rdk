@@ -24,7 +24,7 @@ struct UTest
 {
 protected: // Данные
   /// Тестируемое приложение
-  UEPtr<UApplication> Application;
+  std::shared_ptr<UApplication> Application;
 
   /// Длительность расчёта
   int calcDuration;
@@ -48,13 +48,13 @@ public: // Методы
   // Методы инициализации
   // --------------------
   UTest(void);
-  UTest(const UEPtr<UApplication> &value);
+  UTest(const std::shared_ptr<UApplication> &value);
 
   /// Возвращает указатель на тестируемое приложение
-  UEPtr<UApplication> GetApplication(void);
+  std::shared_ptr<UApplication> GetApplication(void);
 
   /// Задает тестируемое приложение
-  virtual void SetApplication(const UEPtr<UApplication> &value);
+  virtual void SetApplication(const std::shared_ptr<UApplication> &value);
 
   UTest& operator = (const UTest &copy);
   // --------------------
@@ -93,7 +93,7 @@ class UTestManager
 {
 protected: // Данные
 /// Тестируемое приложение
-UEPtr<UApplication> Application;
+std::shared_ptr<UApplication> Application;
 
 /// Список загруженных тестов
 std::vector<UTest> tests;
@@ -103,10 +103,10 @@ public: // Методы
 // Методы инициализации
 // --------------------
 /// Возвращает указатель на тестируемое приложение
-UEPtr<UApplication> GetApplication(void);
+std::shared_ptr<UApplication> GetApplication(void);
 
 /// Задает тестируемое приложение
-virtual void SetApplication(const UEPtr<UApplication> &value);
+virtual void SetApplication(const std::shared_ptr<UApplication> &value);
 // --------------------
 
 // --------------------

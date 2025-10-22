@@ -3,7 +3,7 @@
 
 #include "UEngineControlThread.h"
 #include "UIVisualController.h"
-#include "../Engine/UEPtr.h"
+#include <memory>
 #include "../Engine/ModernSmartPointers.h"
 #include <memory>
 #include <thread>
@@ -55,7 +55,7 @@ RDK::UELockVar<int> GuiUpdateMode;
 
 protected: // Данные
 /// Указатель на экземпляр приложения
-UEPtr<UApplication> Application;
+std::shared_ptr<UApplication> Application;
 
 /// Потоки запуска многоканальной аналитики
 std::vector<UEngineControlThread*> EngineControlThreads;
@@ -63,7 +63,7 @@ std::vector<UEngineControlThread*> EngineControlThreads;
 /// Поток мониторинга состояния расчета
 UEngineStateThread *EngineStateThread;
 
-std::vector<RDK::UEPtr<UBroadcasterInterface> > BroadcastersList;
+std::vector<std::shared_ptr<UBroadcasterInterface> > BroadcastersList;
 
 //boost::asio::io_service io;
 //boost::asio::deadline_timer Timer(io);
@@ -123,8 +123,8 @@ bool SetGuiUpdateMode(int value);
 // Методы доступа к данным
 // --------------------------
 /// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> GetApplication(void);
-bool SetApplication(UEPtr<UApplication> value);
+std::shared_ptr<UApplication> GetApplication(void);
+bool SetApplication(std::shared_ptr<UApplication> value);
 
 /// Доступ к треду мониторинга состояния модулей сервера
 UEngineStateThread* GetEngineStateThread(void);

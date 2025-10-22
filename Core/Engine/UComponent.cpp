@@ -332,7 +332,7 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  UPropertyDescription dummydescr;
  while(I != PropertiesLookupTable.end())
  {
-  UEPtr<UIProperty> prop(I->second.Property);
+  std::shared_ptr<UIProperty> prop(I->second.Property);
   dummydescr.Type=prop->GetLanguageType().name();
   result->SetPropertyDescription(I->first,dummydescr);
   ++I;
@@ -364,7 +364,7 @@ void UComponent::AUpdateInternalData(void)
 // ������ ������� � ����������
 // --------------------------
 // ���������� ��������� �� ������ ��������
-UEPtr<UIProperty> UComponent::FindProperty(const NameT &name) const
+std::shared_ptr<UIProperty> UComponent::FindProperty(const NameT &name) const
 {
  VariableMapCIteratorT I=PropertiesLookupTable.end();
 
@@ -375,12 +375,12 @@ UEPtr<UIProperty> UComponent::FindProperty(const NameT &name) const
   I=PropertiesLookupTable.find(name);
 
  if(I != PropertiesLookupTable.end())
-  return I->second.Property;
+  return std::shared_ptr<UIProperty>(I->second.Property, [](UIProperty*){}); // Non-owning deleter
 
- return UEPtr<UIProperty>(0);
+ return std::shared_ptr<UIProperty>(0);
 }
 
-UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
+std::shared_ptr<UIProperty> UComponent::FindProperty(const NameT &name)
 {
  VariableMapCIteratorT I=PropertiesLookupTable.end();
 
@@ -391,14 +391,14 @@ UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
   I=PropertiesLookupTable.find(name);
 
  if(I != PropertiesLookupTable.end())
-  return I->second.Property;
+  return std::shared_ptr<UIProperty>(I->second.Property, [](UIProperty*){}); // Non-owning deleter
 
- return UEPtr<UIProperty>(0);
+ return std::shared_ptr<UIProperty>(0);
 }
 
 std::shared_ptr<UVariableData> UComponent::GetProperty(const NameT &name, std::shared_ptr<UVariableData> values) const
 {
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
 
  if(property)
   property->Save(std::shared_ptr<USerStorage>(values.get()));
@@ -410,7 +410,7 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
 {
  USerStorageXML data;
 
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
 
  if(property)
  {
@@ -427,7 +427,7 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
 // ������������� �������� ��������� �� ����� 'name'
 void UComponent::SetProperty(const NameT &name, std::shared_ptr<UVariableData> values)
 {
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
 
  if(property)
   property->Load(std::shared_ptr<USerStorage>(values.get()));
@@ -436,7 +436,7 @@ void UComponent::SetProperty(const NameT &name, std::shared_ptr<UVariableData> v
 void UComponent::SetPropertyValue(const NameT &name, const std::string &values)
 {
  USerStorageXML data;
- UEPtr<UIProperty> property=FindProperty(name);
+ std::shared_ptr<UIProperty> property=FindProperty(name);
 
  if(property)
  {

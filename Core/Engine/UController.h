@@ -17,7 +17,7 @@ See file license.txt for more information
 #include <typeinfo>
 #include <list>
 #include "UModule.h"
-#include "UEPtr.h"
+#include <memory>
 #include "../Math/MDMatrix.h"
 
 namespace RDK {
@@ -90,7 +90,7 @@ virtual bool AUpdate(void)=0;
 struct UControllerData: public UController
 {
 /// свойство-источник данных
-UEPtr<UIProperty> Property;
+std::shared_ptr<UIProperty> Property;
 /// Имя свойства
 //std::string PropertyName;
 
@@ -113,7 +113,7 @@ virtual bool AUpdate(void)=0;
 virtual void Clear(void)=0;
 
 /// Настраивает точку съема данных
-virtual bool Configure(UContainer *container, UEPtr<UIProperty> property)=0;
+virtual bool Configure(UContainer *container, std::shared_ptr<UIProperty> property)=0;
 
 /// Возвращает тип данных
 virtual const type_info& GetDataType(void) const;
@@ -161,7 +161,7 @@ virtual bool AUpdate(void);
 virtual void Clear(void);
 
 /// Настраивает точку съема данных
-virtual bool Configure(UContainer *container, UEPtr<UIProperty> property);
+virtual bool Configure(UContainer *container, std::shared_ptr<UIProperty> property);
 
 protected:
 /// Задает размер хранимых данных
@@ -269,7 +269,7 @@ bool UDataSourceT<T>::Configure(UContainer *container, const std::string &proper
 
  PropertyName.clear();
 
- UEPtr<UIProperty> prop=Component->FindProperty(property_name);
+ std::shared_ptr<UIProperty> prop=Component->FindProperty(property_name);
  if(!prop)
  {
   UnLink();

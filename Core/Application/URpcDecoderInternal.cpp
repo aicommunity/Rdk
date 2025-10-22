@@ -35,7 +35,7 @@ URpcDecoderInternal* URpcDecoderInternal::New(void)
 
 /// Проверяет, поддерживается ли команда диспетчером
 /// ожидает, что команда уже декодирована иначе всегда возвращает false
-bool URpcDecoderInternal::IsCmdSupported(const UEPtr<URpcCommand> &command) const
+bool URpcDecoderInternal::IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
   return false;
@@ -154,7 +154,7 @@ bool URpcDecoderInternal::IsCmdSupported(const UEPtr<URpcCommand> &command) cons
 
 /// Осуществляет декодирование и вызов команды по текущим данным
 /// Возвращает false если команда не поддерживается
-bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
+bool URpcDecoderInternal::AProcessCommand(const std::shared_ptr<URpcCommand> &command)
 {
  if(!command)
  {
@@ -162,7 +162,7 @@ bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
   return false;
  }
 
- UEPtr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
+ std::shared_ptr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
  if(!cmd)
  {
   // Ошибка - команда не поддерживается декодером

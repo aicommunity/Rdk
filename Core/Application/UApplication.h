@@ -135,22 +135,22 @@ bool CoutLogMode;
 
 protected: // Модули приложения
 /// Диспетчер команд
-UEPtr<URpcDispatcher> RpcDispatcher;
+std::shared_ptr<URpcDispatcher> RpcDispatcher;
 
 /// Активный проект
-UEPtr<UProject> Project;
+std::shared_ptr<UProject> Project;
 
 /// Контроллер движка
-UEPtr<UEngineControl> EngineControl;
+std::shared_ptr<UEngineControl> EngineControl;
 
 /// Контроллер серверной части
-UEPtr<UServerControl> ServerControl;
+std::shared_ptr<UServerControl> ServerControl;
 
 /// Менеджер тестов
-UEPtr<UTestManager> TestManager;
+std::shared_ptr<UTestManager> TestManager;
 
 /// Деплоер проекта
-UEPtr<UProjectDeployer> ProjectDeployer;
+std::shared_ptr<UProjectDeployer> ProjectDeployer;
 
 protected: // Временные переменные
 /// Название приложения
@@ -324,25 +324,25 @@ void CreateSaveMockLibs();
 // Методы инициализации
 // --------------------------
 /// Предоставляет доступ к диспетчеру команд
-//virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
+//virtual std::shared_ptr<URpcDispatcher> GetRpcDispatcher(void);
 
 /// Устанавливает новый диспетчер команд
 /// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
-//virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
+//virtual bool SetRpcDispatcher(const std::shared_ptr<URpcDispatcher> &value);
 
 /// Предоставляет доступ к контроллеру движка
-virtual UEPtr<UEngineControl> GetEngineControl(void);
+virtual std::shared_ptr<UEngineControl> GetEngineControl(void);
 
 /// Устанавливает новый контроллер движка
 /// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
-virtual bool SetEngineControl(const UEPtr<UEngineControl> &value);
+virtual bool SetEngineControl(const std::shared_ptr<UEngineControl> &value);
 
 /// Предоставляет доступ к проекту
-//virtual UEPtr<UProject> GetProject(void);
+//virtual std::shared_ptr<UProject> GetProject(void);
 
 /// Устанавливает новый проект
 /// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
-virtual bool SetProject(const UEPtr<UProject> &value);
+virtual bool SetProject(const std::shared_ptr<UProject> &value);
 
 /// Возвращает конфигурацию проекта
 virtual const TProjectConfig& GetProjectConfig(void) const;
@@ -351,20 +351,20 @@ virtual const TProjectConfig& GetProjectConfig(void) const;
 virtual bool SetProjectConfig(const TProjectConfig& value);
 
 /// Предоставляет доступ к контроллеру серверной части
-virtual UEPtr<UServerControl> GetServerControl(void) const;
+virtual std::shared_ptr<UServerControl> GetServerControl(void) const;
 
 /// Устанавливает новый контроллер сервера
 /// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
-virtual bool SetServerControl(const UEPtr<UServerControl> &value);
+virtual bool SetServerControl(const std::shared_ptr<UServerControl> &value);
 
 /// Менеджер тестов
 /// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
-UEPtr<UTestManager> GetTestManager(void);
-virtual bool SetTestManager(const UEPtr<UTestManager> &value);
+std::shared_ptr<UTestManager> GetTestManager(void);
+virtual bool SetTestManager(const std::shared_ptr<UTestManager> &value);
 
 /// Деплоер проекта (под кончретную задачу)
-UEPtr<UProjectDeployer> GetProjectDeployer(void);
-virtual bool SetProjectDeployer(const UEPtr<UProjectDeployer> &value);
+std::shared_ptr<UProjectDeployer> GetProjectDeployer(void);
+virtual bool SetProjectDeployer(const std::shared_ptr<UProjectDeployer> &value);
 
 /// Инициализирует приложение
 virtual bool Init(void);

@@ -9,10 +9,10 @@
 #include <QDataStream>
 #include <QCoreApplication>
 
-/// Экзепляр класса приложения
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //extern RDK::UApplication RdkApplication;
 
-/// Экземпляр класса контроллера расчета
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //extern UEngineControlVcl RdkEngineControl;
 
 UServerSocketQt::UServerSocketQt()
@@ -60,7 +60,7 @@ QTcpSocket* UServerSocketQt::GetSocket()
 
 void UServerSocketQt::readyRead()
 {
-    //Рассчитать bind
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ bind
     QString peer_name = socket->peerAddress().toString();
     QString peer_port = QString::number(socket->peerPort());
     QString b = peer_name+":"+peer_port;
@@ -70,7 +70,7 @@ void UServerSocketQt::readyRead()
 
 void UServerSocketQt::disconnected()
 {
-    //Рассчитать bind
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ bind
     QString peer_name = socket->peerAddress().toString();
     QString peer_port = QString::number(socket->peerPort());
     QString b = peer_name+":"+peer_port;
@@ -101,7 +101,7 @@ UServerTransportTcpQt::~UServerTransportTcpQt()
         delete commandQueueTimer;
 }
 
-//Задает адрес и порт входящего интерфейса сервера
+//пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerTransportTcpQt::SetServerBinding(std::string &interface_address, int port)
 {
  if(interface_address == GetServerBindingInterfaceAddress() && port == GetServerBindingPort())
@@ -113,12 +113,12 @@ void UServerTransportTcpQt::SetServerBinding(std::string &interface_address, int
  QHostAddress ha;
  ha.setAddress(QString(interface_address.c_str()));
 
- server->listen(ha, port);
+ server->listen(ha, static_cast<quint16>(port));
  server->close();
  QString s = server->serverAddress().toString();
 }
 
-//Получение адреса интерфейса управления сервером
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UServerTransportTcpQt::GetServerBindingInterfaceAddress()
 {
  if(server->isListening())
@@ -133,7 +133,7 @@ std::string UServerTransportTcpQt::GetServerBindingInterfaceAddress()
  }
 }
 
-//Получение адреса интерфейса управления сервером
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerTransportTcpQt::GetServerBindingPort(void) const
 {
  if(server->isListening())
@@ -188,13 +188,13 @@ void UServerTransportTcpQt::ServerNewConnection()
 
 void UServerTransportTcpQt::SocketReadyRead(std::string bind)
 {
-    Application->GetServerControl()->ProcessIncomingData(bind, Application->GetServerControl()->GetServerTransport());
+    Application->GetServerControl()->ProcessIncomingData(bind, Application->GetServerControl()->GetServerTransport().get());
 }
 
 void UServerTransportTcpQt::SocketDisconnected(std::string bind)
 {
     Application->GetServerControl()->GetServerTransport()->ClientDisconnect(bind);
-    //Получить ссылку на сокет
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
     if(I!=serverSockets.end())
     {
@@ -207,7 +207,7 @@ void UServerTransportTcpQt::CommandQueueTimerTimeout()
 {
     try
     {
-       Application->GetServerControl()->ProcessCommandQueue(Application->GetServerControl()->GetServerTransport());
+       Application->GetServerControl()->ProcessCommandQueue(Application->GetServerControl()->GetServerTransport().get());
     }
     catch(...)
     {
@@ -219,7 +219,7 @@ void UServerTransportTcpQt::timerEvent(QTimerEvent *event)
 {
     try
     {
-       Application->GetServerControl()->ProcessCommandQueue(Application->GetServerControl()->GetServerTransport());
+       Application->GetServerControl()->ProcessCommandQueue(Application->GetServerControl()->GetServerTransport().get());
     }
     catch(...)
     {
@@ -258,7 +258,7 @@ bool UServerTransportTcpQt::ServerIsActive()
  return true;
 }
 
-///Инициировать остановку сервера, отключить все приемники
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerTransportTcpQt::ServerStop()
 {
  server->pauseAccepting();
@@ -271,7 +271,7 @@ void UServerTransportTcpQt::ServerStop()
  Log_LogMessage(RDK_EX_DEBUG, (std::string("Server finished listening.")).c_str());
 }
 
-/// Инициировать запуск сервера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerTransportTcpQt::ServerStart()
 {
     if(server_address!="" && server_port!=0)
@@ -279,21 +279,21 @@ void UServerTransportTcpQt::ServerStart()
         QHostAddress ha;
         ha.setAddress(QString(server_address.c_str()));
 
-        server->listen(ha, server_port);
+        server->listen(ha, static_cast<quint16>(server_port));
         Log_LogMessage(RDK_EX_DEBUG, (std::string("Server is listening on address = \"")+server_address+std::string("\" port = \"")+QString::number(server_port).toUtf8().constData()+std::string("\"")).c_str());
     }
 }
 
-/// Читает входящие байты из выбранного источника, контекст привязки
-/// всегда определяется строкой вне зависимости от типа транспорта
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
 {
  if(server->isListening()&& !bind.empty())
  {
   try
   {
-    //Здесь что-то вроде IdTcpServerExecute ???
-    //Получить ссылку на сокет
+    //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ IdTcpServerExecute ???
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(bind);
     if(I!=serverSockets.end())
     {
@@ -344,7 +344,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
 
     if(current_bind == bind)
     {
-      /// Это все уедет в транспорт, в платформозависимую часть
+      /// пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
       TIdBytes VBuffer;
       int length=context->Connection->IOHandler->InputBuffer->Size;
       if(length>0)
@@ -355,9 +355,9 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
        memcpy(&bytes[0],&VBuffer[0],length);
        bytes.resize(length);
        Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
-       //Отпустить список
+       //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
        UServerControlForm->IdTCPServer->Contexts->UnlockList();
-       //Вернуть длину
+       //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
        return length;
        break;
       }
@@ -377,7 +377,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
  */
 }
 
-/// Отправить ответ на команду соответствующему получателю
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr)
 {
   /*TByteDynArray arr;
@@ -390,8 +390,8 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
  {
   try
   {
-     //Здесь что-то вроде IdTcpServerExecute ???
-     //Получить ссылку на сокет
+     //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ IdTcpServerExecute ???
+     //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
      std::map<std::string, UServerSocketQt*>::iterator I = serverSockets.find(responce_addr);
      if(I!=serverSockets.end())
      {
@@ -440,7 +440,7 @@ void UServerTransportTcpQt::SendResponseBuffer(std::vector<unsigned char> buffer
     if(current_bind == responce_addr)
     {
      context->Connection->IOHandler->Write(arr, arr.get_length());
-     //context->Connection->IOHandler->WriteBufferFlush();  //Это было закомменчено до меня
+     //context->Connection->IOHandler->WriteBufferFlush();  //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
     }
    }
 
@@ -470,9 +470,9 @@ void UServerTransportTcpQt::DisconnectClient(std::string &bind)
 //==========================================================================================
 
 // --------------------------
-// Методы управления вещателями
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Регистрирует удаленный приемник метаданных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerControlQt::RegisterMetadataReceiver(const std::string &address, int port)
 {
  return 0;
@@ -506,7 +506,7 @@ int UServerControlQt::RegisterMetadataReceiver(const std::string &address, int p
  return 0;
 }
 
-/// Удаляет удаленный приемник метаданных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int port)
 {
  return 0;
@@ -530,9 +530,9 @@ int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int
 
 
 // --------------------------
-/// Управление числом каналов
-/// Выполнение вспомогательных методов
-/// Вызывается из UApplication
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ UApplication
 // --------------------------
 bool UServerControlQt::ASetNumChannels(int old_num)
 {
@@ -645,15 +645,15 @@ bool UServerControlQt::ADeleteChannel(int index)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Метод, вызываемый после сброса модели
+// пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControlQt::AfterReset(void)
 {
  UServerControl::AfterReset();
 }
 
-// Метод, вызываемый после шага расчета
+// пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControlQt::AfterCalculate(void)
 {
  UServerControl::AfterCalculate();
@@ -662,7 +662,7 @@ void UServerControlQt::AfterCalculate(void)
 
 //==========================================================================================
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 URpcDecoderCommonQt::URpcDecoderCommonQt(void)//:
 //engine(0)
@@ -677,11 +677,11 @@ URpcDecoderCommonQt::~URpcDecoderCommonQt(void)
 // --------------------------
 
 // --------------------------
-// Методы управления командами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Проверяет, поддерживается ли команда диспетчером
-/// ожидает, что команда уже декодирована иначе всегда возвращает false
-bool URpcDecoderCommonQt::IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false
+bool URpcDecoderCommonQt::IsCmdSupported(const std::shared_ptr<RDK::URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
   return false;
@@ -699,7 +699,7 @@ bool URpcDecoderCommonQt::IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &com
  return URpcDecoderCommon::IsCmdSupported(command);
 }
 
-/// Создает копию этого декодера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 URpcDecoderCommonQt* URpcDecoderCommonQt::New(void)
 {
  return new URpcDecoderCommonQt;
@@ -844,7 +844,7 @@ UTcpServerControlWidget::UTcpServerControlWidget(QWidget *parent, RDK::UApplicat
   tcpServerRestartTimer = new QTimer(this);
   tcpServerRestartTimer->setInterval(1000);
   connect(tcpServerRestartTimer, SIGNAL(timeout()), this, SLOT(TcpServerRestartTimerTick()));
-  tcpServerRestartTimer->setSingleShot(false);//Здесь не уверен
+  tcpServerRestartTimer->setSingleShot(false);//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
   connect(ui->pushButtonReset, SIGNAL(clicked()), this, SLOT(PushButtonResetClicked()));
   connect(ui->pushButtonApply, SIGNAL(clicked()), this, SLOT(PushButtonApplyClicked()));
@@ -911,8 +911,8 @@ void UTcpServerControlWidget::TcpCommandTimerTick()
 
 void UTcpServerControlWidget::TcpServerRestartTimerTick()
 {
- //Вот тут должна быть еще проверка на то что все уже запущено
- //но так как все переехало в класс - она дб там
+ //пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ //пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ
 
  if(application->GetServerControl()->GetAutoStartFlag())
      PushButtonServerStartClicked();
@@ -920,7 +920,7 @@ void UTcpServerControlWidget::TcpServerRestartTimerTick()
 
 
 
-/// обновление интерфейса
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UTcpServerControlWidget::AUpdateInterface()
 {
  std::string addr = application->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress();
@@ -928,7 +928,7 @@ void UTcpServerControlWidget::AUpdateInterface()
  ui->lineEditServerPort->setText(QString::number(application->GetServerControl()->GetServerTransport()->GetServerBindingPort()));
  std::string bnd = addr+":"+ui->lineEditServerPort->text().toUtf8().constData();
 
- if(application->GetServerControl()->GetServerTransport().Get()!=nullptr)
+ if(application->GetServerControl()->GetServerTransport().get()!=nullptr)
  {
      bool state = application->GetServerControl()->GetServerTransport()->GetSocketState(bnd);
      if(!application->GetServerControl()->GetServerTransport()->ServerIsActive())

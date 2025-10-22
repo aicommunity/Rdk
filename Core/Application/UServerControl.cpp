@@ -7,7 +7,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UServerControl::UServerControl(void)
 {
@@ -29,9 +29,9 @@ UServerControl::~UServerControl(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Флаг разрешения запуска сервера при старте
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UServerControl::GetAutoStartFlag(void) const
 {
  return AutoStartFlag;
@@ -45,7 +45,7 @@ bool UServerControl::SetAutoStartFlag(bool value)
  return true;
 }
 
-/// Имя сервера
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UServerControl::GetServerName(void) const
 {
  return ServerName;
@@ -57,7 +57,7 @@ bool UServerControl::SetServerName(const std::string& value)
  return true;
 }
 
-/// Идентификатор сервера
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UServerControl::GetServerId(void) const
 {
  return ServerId;
@@ -69,7 +69,7 @@ bool UServerControl::SetServerId(const std::string& value)
  return true;
 }
 
-/// Число шагов усреднения оценки производительности
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerControl::GetAverageIterations(void) const
 {
  return AverageIterations;
@@ -103,7 +103,7 @@ bool UServerControl::SetMetaComponentStateName(const std::string& value)
  return true;
 }
 
-///Папка для сохранения отладочных данных
+///пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UServerControl::GetDebugFolder(void) const
 {
  return DebugFolder;
@@ -117,7 +117,7 @@ bool UServerControl::SetDebugFolder(const std::string& value)
  return true;
 }
 
-///Полный путь на одну сессию
+///пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UServerControl::GetDebugOutputPath(void) const
 {
  return DebugOutputPath;
@@ -125,21 +125,21 @@ const std::string& UServerControl::GetDebugOutputPath(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 
 // --------------------------
-// Методы инициализации
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Предоставляет доступ к диспетчеру команд
-UEPtr<URpcDispatcher> UServerControl::GetRpcDispatcher(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<URpcDispatcher> UServerControl::GetRpcDispatcher(void)
 {
  return RpcDispatcher;
 }
 
-/// Устанавливает новый диспетчер команд
-/// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
-bool UServerControl::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+bool UServerControl::SetRpcDispatcher(const std::shared_ptr<URpcDispatcher> &value)
 {
  if(RpcDispatcher == value)
   return true;
@@ -150,13 +150,13 @@ bool UServerControl::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  RpcDispatcher->SetApplication(Application);
  return true;
 }
-/// Возвращает указатель на экземпляр приложения
-UEPtr<UApplication> UServerControl::GetApplication(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UApplication> UServerControl::GetApplication(void)
 {
  return Application;
 }
 
-bool UServerControl::SetApplication(UEPtr<UApplication> value)
+bool UServerControl::SetApplication(std::shared_ptr<UApplication> value)
 {
  if(Application == value)
   return true;
@@ -165,12 +165,12 @@ bool UServerControl::SetApplication(UEPtr<UApplication> value)
  return true;
 }
 // --------------------------
-/// Возвращает указатель на экземпляр транспорта
-UEPtr<UServerTransport> UServerControl::GetServerTransport(void)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UServerTransport> UServerControl::GetServerTransport(void)
 {
  return ServerTransport;
 }
-bool UServerControl::SetServerTransport(UEPtr<UServerTransport> value)
+bool UServerControl::SetServerTransport(std::shared_ptr<UServerTransport> value)
 {
  if(ServerTransport == value)
   return true;
@@ -179,11 +179,11 @@ bool UServerControl::SetServerTransport(UEPtr<UServerTransport> value)
  return true;
 }
 
-UEPtr<UServerTransport> UServerControl::GetServerTransportHttp(void)
+std::shared_ptr<UServerTransport> UServerControl::GetServerTransportHttp(void)
 {
  return ServerTransportHttp;
 }
-bool UServerControl::SetServerTransportHttp(UEPtr<UServerTransport> value)
+bool UServerControl::SetServerTransportHttp(std::shared_ptr<UServerTransport> value)
 {
  if(ServerTransportHttp == value)
   return true;
@@ -196,9 +196,9 @@ bool UServerControl::SetServerTransportHttp(UEPtr<UServerTransport> value)
 
 
 // --------------------------
-// Данные для оценки производительности и сохранения отладочной информации
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Результаты измерений производительности, мс
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ
 const std::vector<std::vector<RDK::ULongTime> >& UServerControl::GetModelPerformanceResults(void) const
 {
  return ModelPerformanceResults;
@@ -209,7 +209,7 @@ const std::vector<std::vector<RDK::ULongTime> >& UServerControl::GetTransportPer
  return TransportPerformanceResults;
 }
 
-/// Средние значения затраченного времени на расчет модели и обмена
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const std::vector<RDK::ULongTime>& UServerControl::GetModelAvg(void) const
 {
  return ModelAvg;
@@ -223,9 +223,9 @@ const std::vector<RDK::ULongTime>& UServerControl::GetTransportAvg(void) const
 
 
 // --------------------------
-// Методы управления
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Инициализация (выполняется первой)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ)
 void UServerControl::Init(void)
 {
  if(IsInit())
@@ -234,7 +234,7 @@ void UServerControl::Init(void)
  InitFlag=true;
 }
 
-/// Деинициализация (выполняется последней)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 void UServerControl::UnInit(void)
 {
  if(!IsInit())
@@ -243,7 +243,7 @@ void UServerControl::UnInit(void)
  InitFlag=false;
 }
 
-/// Проверка состояния инициализации
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UServerControl::IsInit(void) const
 {
  return InitFlag;
@@ -251,15 +251,15 @@ bool UServerControl::IsInit(void) const
 // --------------------------
 
 // --------------------------
-// Методы управления вещателями
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Регистрирует удаленный приемник метаданных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerControl::RegisterMetadataReceiver(const std::string &address, int port)
 {
  return 1;
 }
 
-/// Удаляет удаленный приемник метаданных
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UServerControl::UnRegisterMetadataReceiver(const std::string &address, int port)
 {
  return 1;
@@ -267,9 +267,9 @@ int UServerControl::UnRegisterMetadataReceiver(const std::string &address, int p
 // --------------------------
 
 // --------------------------
-// Общие методы управления контроллером
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Сохраняет параметры интерфейса в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 void UServerControl::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("AverageIterations",AverageIterations);
@@ -286,7 +286,7 @@ void UServerControl::SaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 void UServerControl::LoadParameters(RDK::USerStorageXML &xml)
 {
  SetAverageIterations(xml.ReadInteger("AverageIterations",AverageIterations));
@@ -310,10 +310,10 @@ void UServerControl::LoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Рассчитывает производительность сервера
-/// и сохраняет на диск логи производительности
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControl::CalculatePerformance(void)
 {
  if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
@@ -344,7 +344,7 @@ void UServerControl::CalculatePerformance(void)
  TransportAvg.assign(num_channels,0);
  int sum_number=0;
 
- /// Результаты измерений производительности, мс
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ
  const std::vector<std::vector<RDK::ULongTime> >& model_performance=ModelPerformanceResults;
  const std::vector<std::vector<RDK::ULongTime> >& transport_performance=TransportPerformanceResults;
 
@@ -373,7 +373,7 @@ void UServerControl::CalculatePerformance(void)
   perf_data[j].push_back(ModelAvg[j]);
  }
 
- ///Количество отсчетов для усреднения
+ ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  const int average_size = 20;
 
  for(unsigned int k=0; k<ModelAvg.size(); k++)
@@ -401,7 +401,7 @@ void UServerControl::CalculatePerformance(void)
  }
 
  std::ofstream f;
- //Сформировать строку названия
+ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if(DebugOutputPath.empty())
 	{
 	 time_t t = time(NULL);
@@ -450,7 +450,7 @@ void UServerControl::CalculatePerformance(void)
  f.close();  */
 }
 
-// Метод, вызываемый после сброса модели
+// пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControl::AfterReset(void)
 {
  PerformancePushIndex=0;
@@ -465,7 +465,7 @@ void UServerControl::AfterReset(void)
  }
 }
 
-// Метод, вызываемый после шага расчета
+// пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControl::AfterCalculate(void)
 {
  CalculatePerformance();
@@ -473,9 +473,9 @@ void UServerControl::AfterCalculate(void)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы (обработка взаимодействия с транспортом)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 // --------------------------
-/// Кодирует строку в вектор
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControl::ConvertStringToVector(const std::string &source, UParamT &dest)
 {
  dest.resize(source.size());
@@ -483,7 +483,7 @@ void UServerControl::ConvertStringToVector(const std::string &source, UParamT &d
   memcpy(&dest[0],source.c_str(),source.size());
 }
 
-/// Кодирует вектор в строку
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UServerControl::ConvertVectorToString(const UParamT &source, std::string &dest)
 {
  dest.resize(source.size());
@@ -518,18 +518,18 @@ void UServerControl::ProcessCommandQueue(UServerTransport *transport)
  if(!GetRpcDispatcher())
   return;
 
-  // Обработка очереди выполненных команд диспетчера
-  RDK::UEPtr<RDK::URpcCommand> pcmd;
-  RDK::UParamT response;
-  std::vector<RDK::UParamT> binary_response;
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ std::shared_ptr<URpcCommand> pcmd;
+ RDK::UParamT response;
+ std::vector<RDK::UParamT> binary_response;
 
 
   while(pcmd=GetRpcDispatcher()->PopProcessedCommand())
   {
-   RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
+   std::shared_ptr<URpcCommandInternal> pcmd_int=std::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
    ConvertStringToVector(pcmd_int->Response, response);
    SendCommandResponse(transport, pcmd_int->RecepientId, response, binary_response);
-   delete pcmd_int;
+   // No need to delete - shared_ptr handles cleanup automatically
   }
 }
 
@@ -552,9 +552,9 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
 	  }
 	  else         */
 	  //{
-	   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(commands[i]);
-	   ///Закомментировано  01.04.2020, так как неясно, куда эта пара нужна
-	   ///std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
+	   std::shared_ptr<URpcCommand> pcmd= std::make_shared<RDK::URpcCommandInternal>(commands[i]);
+	   ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  01.04.2020, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+	   ///std::pair<std::string,std::shared_ptr<URpcCommand> > cmd_pair;
 	   ///cmd_pair.first=CurrentProcessedCommand.RecepientId;
 	   ///cmd_pair.second=pcmd;
 
@@ -565,7 +565,7 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
        //Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
   }
  }
- //02.04.2020 - Это мб неверно
+ //02.04.2020 - пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  commands.clear();
 }
 
@@ -576,12 +576,12 @@ void UServerControl::ProcessIncomingDataString(std::string &command_data,UServer
  CurrentProcessedCommand.IsDecoded=false;
  if(!CurrentProcessedCommand.DecodeBasicData())
  {
-  // TODO: пишем в лог ошибку декодирования
+  // TODO: пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   Log_LogMessage(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
  }
  else
  {
-  RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
+  std::shared_ptr<URpcCommand> pcmd= std::make_shared<RDK::URpcCommandInternal>(CurrentProcessedCommand);
   GetRpcDispatcher()->PushCommand(pcmd);
   Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
  }
@@ -590,9 +590,9 @@ void UServerControl::ProcessIncomingDataString(std::string &command_data,UServer
 
 
 // --------------------------
-/// Управление числом каналов
-/// Выполнение вспомогательных методов
-/// Вызывается из UApplication
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ UApplication
 // --------------------------
 bool UServerControl::SetNumChannels(int number)
 {
@@ -600,8 +600,8 @@ bool UServerControl::SetNumChannels(int number)
  if(num<=0)
   return false;
 
- //31.03.2020 - притащил сюда из дочернего, подозреваю что клонирование
- //проекта от платформы больше не зависит
+ //31.03.2020 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  for(int i=number;i<num;i++)
  {
   if(Core_GetNumChannels()<=i)
@@ -609,7 +609,7 @@ bool UServerControl::SetNumChannels(int number)
 
   if((!MCore_IsChannelInit(i) || !MModel_Check(i)) && i != 0)
   {
-//   UGEngineControlForm->CloneProject(0, i); // TODO: необходимо починить клонирование
+//   UGEngineControlForm->CloneProject(0, i); // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //   MEnv_Reset(i,0);
   }
  }
@@ -622,7 +622,7 @@ bool UServerControl::SetNumChannels(int number)
  if(!ASetNumChannels(number))
   return false;
 
- //31.03.2020 - притащил сюда из дочернего
+ //31.03.2020 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  TProjectConfig config=Application->GetProjectConfig();
  for(size_t i=0;i<config.ChannelsConfig.size();i++)
  {

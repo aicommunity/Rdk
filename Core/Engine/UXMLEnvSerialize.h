@@ -21,7 +21,7 @@ See file license.txt for more information
 #include "../Serialize/UXMLStdSerialize.h"
 #include "UEnvSupport.h"
 #include "UELockVar.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernSmartPointers.h"
 #include <filesystem>
 #include <span>

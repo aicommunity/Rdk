@@ -1,40 +1,50 @@
 #ifndef UELockPtrH
 #define UELockPtrH
 
-#include "UEPtr.h"
+#include <memory>
 #include "../System/UGenericMutex.h"
 
 namespace RDK {
 
 template<typename T>
-class UELockPtr: protected UEPtr<T>
+class UELockPtr
 {
-/// Мьютекс для блокировки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UGenericMutex* Mutex;
+/// The underlying shared_ptr
+std::shared_ptr<T> PData;
+
+/// Exception class for zero pointer access
+class EUsingZeroPtr : public std::exception {
+public:
+    const char* what() const noexcept override {
+        return "UELockPtr: Attempting to use zero pointer";
+    }
+};
 
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 private:
 UELockPtr(void);
-UELockPtr(const UEPtr<T> &p);
+UELockPtr(const std::shared_ptr<T> &p);
 UELockPtr(const T* p);
-UELockPtr(UEPtr<T> &p);
+UELockPtr(std::shared_ptr<T> &p);
 UELockPtr(T* p);
 public:
 explicit UELockPtr(UGenericMutex* mutex);
 UELockPtr(UGenericMutex* mutex, T* pdata);
-UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
+UELockPtr(UGenericMutex* mutex, const std::shared_ptr<T> &pdata);
 UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout);
-UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned timeout);
+UELockPtr(UGenericMutex* mutex, const std::shared_ptr<T> &pdata, unsigned timeout);
 UELockPtr(const UELockPtr<T> &p);
 //UELockPtr(UELockPtr<T> const &p);
 virtual ~UELockPtr(void);
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 bool operator ! (void) const;
 
@@ -47,31 +57,31 @@ T& operator * (void);
 T* Get(void) const;
 
 bool operator == (const T *p) const
-{ return this->PData == p; };
+{ return this->PData.get() == p; };
 
 bool operator != (const T *p) const
-{ return this->PData != p; };
+{ return this->PData.get() != p; };
 
 private:
 UELockPtr<T>& operator = (const UELockPtr<T> &p);
-UEPtr<T>& operator = (const UEPtr<T> &p);
-UEPtr<T>& operator = (const T *p);
-UEPtr<T>& operator = (UEPtr<T> &p);
-UEPtr<T>& operator = (T *p);
+std::shared_ptr<T>& operator = (const std::shared_ptr<T> &p);
+std::shared_ptr<T>& operator = (const T *p);
+std::shared_ptr<T>& operator = (std::shared_ptr<T> &p);
+std::shared_ptr<T>& operator = (T *p);
 
 //operator T* (void) const;
 // --------------------------
 
 // --------------------------
-// Методы
+// пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Принудительное отключение обертки от данных без снятия блокировки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void ForceForget(void);
 // --------------------------
 };
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 /*
 template<typename T>
@@ -91,15 +101,15 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata)
- : UEPtr<T>(pdata), Mutex(mutex)
+ : Mutex(mutex), PData(pdata)
 {
  if(Mutex)
   Mutex->exclusive_lock();
 }
 
 template<typename T>
-UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
- : UEPtr<T>(pdata.Get()), Mutex(mutex)
+UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const std::shared_ptr<T> &pdata)
+ : Mutex(mutex), PData(pdata)
 {
  if(Mutex)
   Mutex->exclusive_lock();
@@ -107,29 +117,29 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout)
- : UEPtr<T>(pdata), Mutex(mutex)
+ : Mutex(mutex), PData(pdata)
 {
  if(Mutex)
  {
   if(!Mutex->exclusive_lock(timeout))
-   this->PData=0;
+   this->PData=nullptr;
  }
 }
 
 template<typename T>
-UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned timeout)
- : UEPtr<T>(pdata.Get()), Mutex(mutex)
+UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const std::shared_ptr<T> &pdata, unsigned timeout)
+ : Mutex(mutex), PData(pdata)
 {
  if(Mutex)
  {
   if(!Mutex->exclusive_lock(timeout))
-   this->PData=0;
+   this->PData=nullptr;
  }
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(const UELockPtr<T> &p)
- : UEPtr<T>(p), Mutex(p.Mutex)
+ : std::shared_ptr<T>(p), Mutex(p.Mutex)
 {
  const_cast<UELockPtr<T>&>(p).ForceForget();
 }
@@ -144,21 +154,21 @@ UELockPtr<T>::~UELockPtr(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 template<typename T>
 T* UELockPtr<T>::Get(void) const
 {
- return this->PData;
+ return this->PData.get();
 }
 
 template<typename T>
 bool UELockPtr<T>::operator ! (void) const
-{ return (this->PData)?false:true; };
+{ return !this->PData; };
 
 template<typename T>
 UELockPtr<T>::operator bool (void) const
-{ return (this->PData)?true:false; };
+{ return (bool)this->PData; };
 
 
 template<typename T>
@@ -171,7 +181,7 @@ T* UELockPtr<T>::operator -> (void) const
   throw UELockPtr<T>::EUsingZeroPtr();
 #endif
 
- return this->PData;
+ return this->PData.get();
 };
 
 template<typename T>
@@ -198,16 +208,16 @@ UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
 				  /*
 template<typename T>
 UELockPtr<T>::UELockPtr(UELockPtr<T> const &p)
- : UEPtr<T>(p), Mutex(p.Mutex)
+ : std::shared_ptr<T>(p), Mutex(p.Mutex)
 {
  const_cast<UELockPtr<T>&>(p).ForceForget();
 }                   */
 // --------------------------
 
 // --------------------------
-// Методы
+// пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Принудительное отключение обертки от данных без снятия блокировки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void UELockPtr<T>::ForceForget(void)
 {

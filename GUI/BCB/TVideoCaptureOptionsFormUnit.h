@@ -43,7 +43,7 @@ public:		// User declarations
 	__fastcall TVideoCaptureOptionsForm(TComponent* Owner);
 
 /// Список поддерживаемых источников видео
-static std::map<int, RDK::UEPtr<TVideoCaptureThread> > VideoSourcePrototypes;
+static std::map<int, std::shared_ptr<TVideoCaptureThread> > VideoSourcePrototypes;
 
 /// Список настройщиков источников видео
 static std::map<int, TVideoCaptureOptionsDesciption> VideoSourceOptionsFrames;
@@ -61,10 +61,10 @@ TVideoOutputFrame* VideoOutputFrame;
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
 /// Возвращает список поддерживаемых источников видео
-static const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& GetVideoSourcePrototypes(void);
+static const std::map<int, std::shared_ptr<TVideoCaptureThread> >& GetVideoSourcePrototypes(void);
 
 /// Добавляет новый прототип источника видео
-static bool AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread);
+static bool AddVideoSourcePrototypes(int mode, std::shared_ptr<TVideoCaptureThread> thread);
 
 /// Проверяет, существует ли такой видеоисточник
 static bool CheckVideoSourcePrototypes(int mode);

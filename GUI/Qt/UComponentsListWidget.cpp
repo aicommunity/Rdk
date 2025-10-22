@@ -373,9 +373,9 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
      UpdateInterfaceFlag=true;
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
 
-        RDK::UEPtr<RDK::UContainer> cont;
+        std::shared_ptr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
-            cont = model.Get();
+            cont = std::shared_ptr<RDK::UContainer>(model.Get(), RDK::NonOwningDeleter());
         else
             cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
@@ -531,7 +531,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
                 prop_name = vals[1];
             }
 
-            RDK::UEPtr<RDK::UContainer> child_cont;
+            std::shared_ptr<RDK::UContainer> child_cont;
             child_cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
 
             favoriteItem->setData(1, Qt::UserRole, component_long_name);
@@ -610,9 +610,9 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
    return;
   RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
 
-  RDK::UEPtr<RDK::UContainer> cont;
+  std::shared_ptr<RDK::UContainer> cont;
   if (currentDrawPropertyComponentName.isEmpty())
-   cont = model.Get();
+   cont = std::shared_ptr<RDK::UContainer>(model.Get(), RDK::NonOwningDeleter());
   else
    cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
@@ -620,7 +620,7 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
    return;
 
   QString parameterName=item->text(0);
-  RDK::UEPtr<RDK::UIProperty> property;
+  std::shared_ptr<RDK::UIProperty> property;
 
   property=cont->FindProperty(parameterName.toLocal8Bit().constData());
 
@@ -732,7 +732,7 @@ try
 
      RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
 
-     RDK::UEPtr<RDK::UContainer> cont;
+     std::shared_ptr<RDK::UContainer> cont;
 
      cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
 
@@ -741,7 +741,7 @@ try
 
      std::string buffer;
 
-     RDK::UEPtr<RDK::UIProperty> property;
+     std::shared_ptr<RDK::UIProperty> property;
 
      property=cont->FindProperty(prop_name.toLocal8Bit().constData());
 
@@ -1186,14 +1186,14 @@ void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
 
         RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
         std::string stringid = selectedComponentLongName.toLocal8Bit().constData();
-        RDK::UEPtr<RDK::UNet> object;
+        std::shared_ptr<RDK::UNet> object;
         if(stringid.empty())
-         object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
+         object=std::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
         else
-         object=RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
+         object=std::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
 
         auto owner_ptr = object->GetOwner();
-        RDK::UEPtr<RDK::UNet> owner = RDK::UEPtr<RDK::UNet>(std::dynamic_pointer_cast<RDK::UNet>(owner_ptr).get());
+        std::shared_ptr<RDK::UNet> owner = std::dynamic_pointer_cast<RDK::UNet>(owner_ptr);
         RDK::UStringLinksList links_list;
 
         if(owner)

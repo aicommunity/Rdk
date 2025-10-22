@@ -40,7 +40,7 @@ UInstancesStorageElement::UInstancesStorageElement(const UInstancesStorageElemen
 {
 }
 
-UInstancesStorageElement::UInstancesStorageElement(const UEPtr<UContainer> &object, bool useflag)
+UInstancesStorageElement::UInstancesStorageElement(const std::shared_ptr<UContainer> &object, bool useflag)
  : Object(object), UseFlag(useflag)
 {
 
@@ -189,9 +189,9 @@ const NameT UStorage::FindClassName(const UId &id) const
 // --------------------------
 // ��������� ������� ������ ������� � ���������
 // ���������� id ������
-UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid)
+UId UStorage::AddClass(std::shared_ptr<UComponentAbstractFactory> factory, const UId &classid)
 {
-// UEPtr<UStorage> storage=classtemplate->GetStorage();
+// std::shared_ptr<UStorage> storage=classtemplate->GetStorage();
 // if(storage)
 //  storage->PopObject(classtemplate);
 
@@ -213,7 +213,7 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &clas
 }
 
 // ��������� ������� ������ ������� � ���������
-UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &classname, const UId &classid)
+UId UStorage::AddClass(std::shared_ptr<UComponentAbstractFactory> factory, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
   throw EClassNameAlreadyExist(classname);
@@ -258,14 +258,14 @@ void UStorage::DelClass(const UId &classid, bool force)
 
  UClassStorageElement element=I->second;
  if(element)
-  delete element.Get();
+  delete element.get();
 
  UClassesDescriptionIterator J=ClassesDescription.find(name);
 
  if(J != ClassesDescription.end())
  {
   if(J->second)
-   delete J->second;
+   J->second.reset();
 
   ClassesDescription.erase(J);
  }
@@ -281,7 +281,7 @@ void UStorage::DelClass(const UId &classid, bool force)
   }
  }
 
- UEPtr<ULibrary> lib=FindCollection(name);
+ std::shared_ptr<ULibrary> lib=FindCollection(name);
  if(lib)
   lib->RemoveClassFromCompletedList(name);
 }
@@ -305,7 +305,7 @@ bool UStorage::CheckClass(const string &classname) const
 }
 
 // ���������� ������� ������
-UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classid) const
+std::shared_ptr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
@@ -315,7 +315,7 @@ UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classi
  return I->second;
 }
 
-UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string &class_name) const
+std::shared_ptr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string &class_name) const
 {
  UId id=FindClassId(class_name);
  return GetComponentFactory(id);
@@ -397,7 +397,7 @@ void UStorage::ClearClassesStorage(bool force)
 	if(I->second)
 	{
      std::string name=FindClassName(I->first);
-	 delete I->second.Get();
+	 delete I->second.get();
 	}
    }
    catch(...)
@@ -417,7 +417,7 @@ void UStorage::ClearClassesStorage(bool force)
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
   if(I->second)
-   delete I->second.Get();
+   delete I->second.get();
  }
  ClassesDescription.clear();
  LastClassId=0;
@@ -433,7 +433,7 @@ void UStorage::ClearClassesStorage(bool force)
 // ���� 'Activity' ������� ������������ � true
 // ���� ���������� ������� �� ���������� �� ��������� � �����������
 // � ���������
-UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
+std::shared_ptr<UComponent> UStorage::TakeObject(const UId &classid, const std::shared_ptr<UComponent> &prototype)
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
@@ -457,16 +457,16 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
   if(element)
   {
-   UEPtr<UContainer> obj=element->Object;
+   std::shared_ptr<UContainer> obj=element->Object;
 
    if(obj)
    {
     element->UseFlag=true;
     obj->Default();
     if(!prototype)
-     tmpl->ResetComponent(std::shared_ptr<UComponent>(obj.Get()));
+     tmpl->ResetComponent(std::shared_ptr<UComponent>(obj.get()));
     else
-     dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
+      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,std::shared_ptr<UStorage>(this, [](UStorage*){}));
 
     obj->Activity = true;
    }
@@ -476,14 +476,14 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
 
  // ���� ���������� ������� �� �����
- UEPtr<UContainer> obj;
+ std::shared_ptr<UContainer> obj;
  if(prototype)
  {
-  obj=UEPtr<UContainer>(dynamic_pointer_cast<UContainer>(tmpl->Prototype(std::shared_ptr<UComponent>(prototype.Get()))).get());
+  obj=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(tmpl->Prototype(std::shared_ptr<UComponent>(prototype.get()))).get());
  }
  else
  {
-  obj=UEPtr<UContainer>(dynamic_pointer_cast<UContainer>(tmpl->New()).get());
+  obj=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(tmpl->New()).get());
  }
 
  if(!obj)
@@ -494,20 +494,20 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  }
 
  PushObject(classid,obj);
- obj->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.Get()));
+ obj->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
  obj->Activity = true;
 
  return static_pointer_cast<UComponent>(obj);
 }
 
-UEPtr<UComponent> UStorage::TakeObject(const NameT &classname, const UEPtr<UComponent> &prototype)
+std::shared_ptr<UComponent> UStorage::TakeObject(const NameT &classname, const std::shared_ptr<UComponent> &prototype)
 {
  return TakeObject(FindClassId(classname),prototype);
 }
 
 
 // ���������� Id ������, ���������� ������� 'object'
-UId UStorage::FindClass(UEPtr<UComponent> object) const
+UId UStorage::FindClass(std::shared_ptr<UComponent> object) const
 {
  if(!object)
   return ForbiddenId;
@@ -516,7 +516,7 @@ UId UStorage::FindClass(UEPtr<UComponent> object) const
 }
 
 // ��������� ���������� �� ������ 'object' � ���������
-bool UStorage::CheckObject(UEPtr<UContainer> object) const
+bool UStorage::CheckObject(std::shared_ptr<UContainer> object) const
 {
  if(!object)
   return false;
@@ -535,7 +535,7 @@ bool UStorage::CheckObject(UEPtr<UContainer> object) const
 }
 
 // ���� �������, ��������������� �������� �������� ���������
-UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> object)
+UVirtualMethodFactory* UStorage::FindVirualMethodFactory(std::shared_ptr<UContainer> object)
 {
  if(!object)
   return 0;
@@ -543,11 +543,11 @@ UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> objec
  UClassesStorageCIterator instances=ClassesStorage.begin();
  for(;instances != ClassesStorage.end();++instances)
  {
-  UEPtr<UVirtualMethodFactory> virtual_factory=dynamic_pointer_cast<UVirtualMethodFactory>(instances->second);
+  std::shared_ptr<UVirtualMethodFactory> virtual_factory=dynamic_pointer_cast<UVirtualMethodFactory>(instances->second);
   if(virtual_factory)
   {
-   if(virtual_factory->GetComponent().get() == object.Get())
-	return virtual_factory;
+   if(virtual_factory->GetComponent().get() == object.get())
+        return virtual_factory.get();
   }
  }
  return 0;
@@ -610,7 +610,7 @@ void UStorage::FreeObjectsStorage(bool force)
 	if(Logger)
 	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
 	K=I; ++K;
-	UEPtr<UContainer> object=I->Object;
+	std::shared_ptr<UContainer> object=I->Object;
 	PopObject(instances,I);
 	RDK_SYS_TRY
 	{
@@ -621,7 +621,7 @@ void UStorage::FreeObjectsStorage(bool force)
 	  {
 	   virtual_factory->FreeComponent();
 	  }
-	  delete object;
+                object.reset();
 	  ++count;
 	 }
 	 catch(...)
@@ -693,7 +693,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
             if(Logger)
                 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
             K=I; ++K;
-            UEPtr<UContainer> object=I->Object;
+            std::shared_ptr<UContainer> object=I->Object;
             PopObject(instances,I);
             RDK_SYS_TRY
             {
@@ -704,7 +704,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
                 {
                     virtual_factory->FreeComponent();
                 }
-                delete object;
+                object.reset();
                 ++count;
                 }
                 catch(...)
@@ -771,7 +771,7 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
 }
 
 /// ������������� ��������� ��� ��������� ���������� � ��������� �� ���������
-void UStorage::DefaultObject(UEPtr<UContainer> object)
+void UStorage::DefaultObject(std::shared_ptr<UContainer> object)
 {
  if(object->GetStorage().get() != this)
   return;
@@ -787,7 +787,7 @@ void UStorage::DefaultObject(UEPtr<UContainer> object)
  UClassStorageElement tmpl=tmplI->second;
 
  object->Default();
- tmpl->ResetComponent(std::shared_ptr<UComponent>(object.Get()));
+ tmpl->ResetComponent(std::shared_ptr<UComponent>(object.get()));
 
  object->Activity = activity;
  object->Coord = coord;
@@ -816,7 +816,7 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
 {
     std::string path = "";
 
-    UEPtr<ULibrary> lib = FindCollection(class_name);
+    std::shared_ptr<ULibrary> lib = FindCollection(class_name);
     if(lib)
     {
         path = ClDesc;
@@ -839,7 +839,7 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
 }
 
 // ���������� XML �������� ������
-const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
+const std::shared_ptr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
@@ -856,7 +856,7 @@ const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::stri
 
 // ������������� XML �������� ������
 // ����� � ��������� ������ ������������
-void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description)
+void UStorage::SetClassDescription(const std::string &classname, const std::shared_ptr<UContainerDescription>& description)
 {
  UClassesStorageIterator I=ClassesStorage.find(FindClassId(classname));
 
@@ -887,7 +887,7 @@ void UStorage::LoadClassesDescription()
             std::string class_name = cl_desc_xml.GetNodeText();
             cl_desc_xml.SelectRoot();
 
-            SetClassDescription(class_name, new RDK::UContainerDescription());
+            SetClassDescription(class_name, std::make_shared<RDK::UContainerDescription>());
 
             LoadClassDescription(class_name,cl_desc_xml);
         }
@@ -897,7 +897,7 @@ void UStorage::LoadClassesDescription()
 // ��������� �������� ������ � ���� �� ����
 void UStorage::SaveClassDescriptionToFile(const std::string &classname)
 {
-    UEPtr<UContainerDescription> cl_desc = GetClassDescription(classname, true);
+    std::shared_ptr<UContainerDescription> cl_desc = GetClassDescription(classname, true);
 
     if(cl_desc)
     {
@@ -1021,12 +1021,12 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 // ������ ���������� ������������
 // --------------------------
 // ��������� �� ������
-UEPtr<ULoggerEnv> const UStorage::GetLogger(void) const
+std::shared_ptr<ULoggerEnv> const UStorage::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UStorage::SetLogger(std::shared_ptr<ULoggerEnv> logger)
 {
  if(Logger == logger)
   return true;
@@ -1036,9 +1036,9 @@ bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
 }
 
 // ���������� ���������� �� �������
-UEPtr<ULibrary> UStorage::GetCollection(int index)
+std::shared_ptr<ULibrary> UStorage::GetCollection(int index)
 {
- return CollectionList[index];
+ return std::shared_ptr<ULibrary>(CollectionList[index], [](ULibrary*){});
 }
 
 // ���������� ����� ���������
@@ -1048,11 +1048,11 @@ int UStorage::GetNumCollections(void) const
 }
 
 // ���������� ���������� �� �����
-UEPtr<ULibrary> UStorage::GetCollection(const string &name)
+std::shared_ptr<ULibrary> UStorage::GetCollection(const string &name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=CollectionList[i];
+  std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
   if(lib && lib->GetName() == name)
    return lib;
  }
@@ -1077,7 +1077,7 @@ void UStorage::ClearAllLibsClassesNameArrays(void)
 {
     for(size_t i=0;i<CollectionList.size();i++)
     {
-     UEPtr<ULibrary> lib=CollectionList[i];
+     std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
      lib->ClearIncompleteAndComplete();
     }
 }
@@ -1089,7 +1089,7 @@ void UStorage::GetLibsNameListByType(std::string &buffer, int type) const
     buffer.clear();
     for(size_t i=0;i<CollectionList.size();i++)
     {
-        UEPtr<ULibrary> lib = CollectionList[i];
+        std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
         if(lib && lib->GetType() == type)
         {
             buffer.append(lib->GetName());
@@ -1111,10 +1111,10 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
 
     for(size_t i=0;i<CollectionList.size();i++)
     {
-        UEPtr<ULibrary> lib = CollectionList[i];
+        std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
         if(lib && lib->GetName() == lib_name)
         {
-			library = dynamic_cast<URuntimeLibrary*>(lib.Get());
+			library = dynamic_cast<URuntimeLibrary*>(lib.get());
             break;
         }
     }
@@ -1134,7 +1134,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         if(force_replace)
         {
             // ���������� ��� ����� ��� ����������
-            URuntimeLibrary *lib = static_cast<URuntimeLibrary*>(FindCollection(new_class_name).Get());
+            URuntimeLibrary *lib = static_cast<URuntimeLibrary*>(FindCollection(new_class_name).get());
             if(!lib)
                 return false;
             try
@@ -1181,10 +1181,10 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
 
     for(size_t i=0;i<CollectionList.size();i++)
     {
-        UEPtr<ULibrary> lib = CollectionList[i];
+        std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
         if(lib && lib->GetName() == lib_name)
         {
-            library = static_cast<URuntimeLibrary*>(lib.Get());
+            library = static_cast<URuntimeLibrary*>(lib.get());
         }
     }
     // ���� �� ������� ��� ��� �� runtime ����������
@@ -1268,7 +1268,7 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
     int index = -1;
     for(size_t i=0;i<CollectionList.size();i++)
     {
-        UEPtr<ULibrary> lib=CollectionList[i];
+        std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
         if(lib && lib->GetName() == lib_name)
         {
            index = int(i);
@@ -1419,11 +1419,11 @@ bool UStorage::AddCollection(ULibrary *library, bool force_build)
  if(!library)
   return false;
 
- UEPtr<ULibrary> newlib=dynamic_cast<ULibrary*>(library);
+ std::shared_ptr<ULibrary> newlib(dynamic_cast<ULibrary*>(library), [](ULibrary*){});
 
  for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=CollectionList[i];
+  std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
   if(lib && lib->GetName() == newlib->GetName())
    return false;
  }
@@ -1510,7 +1510,7 @@ bool UStorage::CreateMockLibs(void)
     // �������� ���������-�������� �� ����������� ���������
     for(size_t i=0;i<CollectionList.size();i++)
     {
-        UEPtr<ULibrary> lib=CollectionList[i];
+        std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
         if(lib && lib->GetType()==0)
         {
             // �������� ����� ����������, ���� ���������
@@ -1559,13 +1559,13 @@ bool UStorage::SaveMockLibs(void)
     // ���������� ��������� � ��������� �����
     for(size_t i=0;i<CollectionList.size();i++)
     {
-        UEPtr<ULibrary> lib=CollectionList[i];
+        std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
 
         if(lib && lib->GetType()==3)
         {
             // ���������� ���� ����������� �����
             UMockLibrary *library = 0;
-            library = dynamic_cast<UMockLibrary*>(lib.Get());
+            library = dynamic_cast<UMockLibrary*>(lib.get());
 
             library->SaveLibraryToFile();
 
@@ -1589,7 +1589,7 @@ bool UStorage::DelCollection(const string &name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=CollectionList[i];
+  std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
   if(lib && lib->GetName() == name)
    return DelCollection(int(i));
  }
@@ -1681,7 +1681,7 @@ bool UStorage::BuildStorage(int lib_type)
 {
     for(size_t i=0;i<CollectionList.size();i++)
     {
-     UEPtr<ULibrary> lib=CollectionList[i];
+     std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
      if(lib && lib->GetType()==lib_type)
      {
       GetLogger()->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(": collection version is ")+lib->GetVersion()+std::string(" (")+sntoa(lib->GetRevision())+")");
@@ -1738,18 +1738,18 @@ void UStorage::DelAbandonedClasses(void)
 }
 
 /// ���������� ��������� �� ���������� ������ �� ����� ������
-UEPtr<ULibrary> UStorage::FindCollection(const std::string &class_name)
+std::shared_ptr<ULibrary> UStorage::FindCollection(const std::string &class_name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=CollectionList[i];
+  std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
   if(lib->IsClassNamePresent(class_name))
    return lib;
  }
  return 0;
 }
 
-UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
+std::shared_ptr<ULibrary> UStorage::FindCollection(const UId &classid)
 {
  return FindCollection(FindClassName(classid));
 }
@@ -1759,15 +1759,15 @@ UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 /// ����� �� ������� ���������� ������ ���������, � ������ ��������� ���
 void UStorage::FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
 {
- UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(GetComponentFactory(class_name));
+ std::shared_ptr<UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(GetComponentFactory(class_name));
  if(!factory)
   return;
 
- UEPtr<UContainer> class_data(factory->GetComponent().get());
+ std::shared_ptr<UContainer> class_data(factory->GetComponent().get());
  if(!class_data)
   return;
 
- UEPtr<ULibrary> lib=FindCollection(class_name);
+ std::shared_ptr<ULibrary> lib=FindCollection(class_name);
  if(!lib)
   return;
 
@@ -1785,7 +1785,7 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 // --------------------------
 // ��������� ��� ��������� ������ � ���������
 // ���� ������ ��� ����������� ����� ��������� �� ���������� false
-void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
+void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object)
 {
  UInstancesStorage &instances=ObjectsStorage[classid];
 
@@ -1801,7 +1801,7 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 // ������� ��� ��������� ������ �� ��������� � ����������
 // ��� classid
 // � ������ ������ ���������� ForbiddenId
-UId UStorage::PopObject(UEPtr<UContainer> object)
+UId UStorage::PopObject(std::shared_ptr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
@@ -1818,7 +1818,7 @@ UId UStorage::PopObject(UEPtr<UContainer> object)
 }
 
 // ���������� ������ � ������ ���������
-void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
+void UStorage::MoveObject(std::shared_ptr<UContainer> object, std::shared_ptr<UStorage> newstorage)
 {
  newstorage->PushObject(PopObject(object),object);
 }
@@ -1826,9 +1826,9 @@ void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 // ���������� ������ � ���������
 // ��������� ������ ���������� ��� ��������� � ���������
 // ���� 'Activity' ������� ������������ � false
-void UStorage::ReturnObject(UEPtr<UComponent> object)
+void UStorage::ReturnObject(std::shared_ptr<UComponent> object)
 {
- UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
+ std::shared_ptr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
 
  obj->Activity = false;
  obj->BreakOwner();
@@ -1851,7 +1851,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
 // � ������ ������ ���������� ForbiddenId
 UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator)
 {
- UEPtr<UContainer> object=object_iterator->Object;
+ std::shared_ptr<UContainer> object=object_iterator->Object;
 
  instance_iterator->second.erase(object_iterator);
 

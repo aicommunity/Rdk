@@ -644,7 +644,7 @@ int URdkCoreManager::ChannelCreate(int index)
     return RDK_E_CORE_ENGINE_CREATE_FAIL;
    }
 
-   EngineList[index]->SetLogger(std::shared_ptr<RDK::ULoggerEnv>(LoggerList[index]));
+    EngineList[index]->SetLogger(std::shared_ptr<RDK::ULoggerEnv>(LoggerList[index], [](RDK::ULoggerEnv*){}));
 
    StorageList[index]=FuncCreateNewStorage();
    if(!StorageList[index])
@@ -670,7 +670,7 @@ int URdkCoreManager::ChannelCreate(int index)
    EnvironmentList[index]->SetSystemDir(SystemDir);
    EngineList[index]->SetCommonClassesDescriptionFileName(CommonClassesDescriptionFileName);
    EngineList[index]->SetClassesDescriptionFileName(ClassesDescriptionFileName);
-   if(!EngineList[index]->Init(std::shared_ptr<RDK::UStorage>(StorageList[index]),std::shared_ptr<RDK::UEnvironment>(EnvironmentList[index])))
+    if(!EngineList[index]->Init(std::shared_ptr<RDK::UStorage>(StorageList[index], [](RDK::UStorage*){}),std::shared_ptr<RDK::UEnvironment>(EnvironmentList[index], [](RDK::UEnvironment*){})))
    {
     ChannelDestroy(index);
     return RDK_E_CORE_ENGINE_INIT_FAIL;
@@ -679,10 +679,10 @@ int URdkCoreManager::ChannelCreate(int index)
    {
     UGenericMutexExclusiveLocker lock(GlobalMutex);
     /// ������ �������� ���������� ������
-    Engine=EngineList[SelectedChannelIndex];
-    Environment=EnvironmentList[SelectedChannelIndex];
-    Storage=StorageList[SelectedChannelIndex];
-    Logger=LoggerList[SelectedChannelIndex];
+    Engine=std::shared_ptr<RDK::UEngine>(EngineList[SelectedChannelIndex], [](RDK::UEngine*){});
+    Environment=std::shared_ptr<RDK::UEnvironment>(EnvironmentList[SelectedChannelIndex], [](RDK::UEnvironment*){});
+    Storage=std::shared_ptr<RDK::UStorage>(StorageList[SelectedChannelIndex], [](RDK::UStorage*){});
+    Logger=std::shared_ptr<RDK::ULoggerEnv>(LoggerList[SelectedChannelIndex], [](RDK::ULoggerEnv*){});
    }
 
    SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(index)+" has been created");
@@ -719,7 +719,7 @@ int URdkCoreManager::ChannelDestroy(int index)
 
  if(EngineList[index])
  {
-  if(EngineList[index] == Engine)
+  if(Engine && EngineList[index] == Engine.get())
    Engine=0;
   delete EngineList[index];
   EngineList[index]=0;
@@ -727,7 +727,7 @@ int URdkCoreManager::ChannelDestroy(int index)
 
  if(EnvironmentList[index])
  {
-  if(EnvironmentList[index] == Environment)
+  if(Environment && EnvironmentList[index] == Environment.get())
    Environment=0;
   delete EnvironmentList[index];
   EnvironmentList[index]=0;
@@ -735,7 +735,7 @@ int URdkCoreManager::ChannelDestroy(int index)
 
  if(StorageList[index])
  {
-  if(StorageList[index] == Storage)
+  if(Storage && StorageList[index] == Storage.get())
    Storage=0;
   delete StorageList[index];
   StorageList[index]=0;
@@ -927,64 +927,64 @@ void URdkCoreManager::Destroy(void)
 // ������ ������� � �������
 // --------------------------
 // ���������� ������ �� ��������� ������������ ����
-RDK::UEPtr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
+std::shared_ptr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
 {
  return Engine;
 }
 
-RDK::UEPtr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
+std::shared_ptr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EngineList.size()))
   return 0;
 
- return EngineList[channel_index];
+ return std::shared_ptr<RDK::UEngine>(EngineList[channel_index], [](RDK::UEngine*){});
 }
 
 // ���������� ������ �� ��������� ����� ����������
-RDK::UEPtr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
+std::shared_ptr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
 {
  return Environment;
 }
 
-RDK::UEPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
+std::shared_ptr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EnvironmentList.size()))
   return 0;
 
- return EnvironmentList[channel_index];
+ return std::shared_ptr<RDK::UEnvironment>(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
 }
 
 // ���������� ������ �� ��������� ���������
-RDK::UEPtr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
+std::shared_ptr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
 {
  return Storage;
 }
 
-RDK::UEPtr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
+std::shared_ptr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(StorageList.size()))
   return 0;
 
- return StorageList[channel_index];
+ return std::shared_ptr<RDK::UStorage>(StorageList[channel_index], [](RDK::UStorage*){});
 }
 
 // ���������� ��������� �� ������� ������
-RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(void)
+std::shared_ptr<RDK::UContainer> URdkCoreManager::GetModel(void)
 {
  if(Environment)
-  return RDK::UEPtr<RDK::UContainer>(Environment->GetModel().get());
+  return std::shared_ptr<RDK::UContainer>(Environment->GetModel().get(), [](RDK::UContainer*){});
 
  return 0;
 }
 
-RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
+std::shared_ptr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EnvironmentList.size()))
   return 0;
 
- RDK::UEPtr<RDK::UEnvironment> environment=EnvironmentList[channel_index];
+ std::shared_ptr<RDK::UEnvironment> environment(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
  if(environment)
-  return RDK::UEPtr<RDK::UContainer>(environment->GetModel().get());
+  return std::shared_ptr<RDK::UContainer>(environment->GetModel().get(), [](RDK::UContainer*){});
 
  return 0;
 }
@@ -1175,32 +1175,32 @@ int URdkCoreManager::UnLockChannel(int index)
 /// �������� ������������
 // --------------------------
 // ���������� ������ �� ��������� �� ������
-RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
+std::shared_ptr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
 {
  return Logger;
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
+std::shared_ptr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
 {
  if(channel_index == RDK_SYS_MESSAGE)
-  return &SystemLogger;
+  return std::shared_ptr<RDK::ULoggerEnv>(&SystemLogger, [](RDK::ULoggerEnv*){});
 
  if(channel_index == RDK_GLOB_MESSAGE)
-  return &GlobalLogger;
+  return std::shared_ptr<RDK::ULoggerEnv>(&GlobalLogger, [](RDK::ULoggerEnv*){});
 
- return LoggerList[channel_index];
+ return std::shared_ptr<RDK::ULoggerEnv>(LoggerList[channel_index], [](RDK::ULoggerEnv*){});
 }
 
 /// ���������� ������ �� ��������� ������
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
+std::shared_ptr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
 {
- return &SystemLogger;
+ return std::shared_ptr<RDK::ULoggerEnv>(&SystemLogger, [](RDK::ULoggerEnv*){});
 }
 
 /// ���������� ���������  �� ���������� ������ (����������� ���������� �� ���� ��������)
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
+std::shared_ptr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
 {
- return &GlobalLogger;
+ return std::shared_ptr<RDK::ULoggerEnv>(&GlobalLogger, [](RDK::ULoggerEnv*){});
 }
 // --------------------------
 
@@ -1217,10 +1217,10 @@ bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
  SelectedChannelIndex=channel_index;
 // ::SelectedEngineIndex=SelectedChannelIndex;
  /// ������ �������� ���������� ������
- Engine=EngineList[channel_index];
- Environment=EnvironmentList[channel_index];
- Storage=StorageList[channel_index];
- Logger=LoggerList[channel_index];
+ Engine=std::shared_ptr<RDK::UEngine>(EngineList[channel_index], [](RDK::UEngine*){});
+ Environment=std::shared_ptr<RDK::UEnvironment>(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
+ Storage=std::shared_ptr<RDK::UStorage>(StorageList[channel_index], [](RDK::UStorage*){});
+ Logger=std::shared_ptr<RDK::ULoggerEnv>(LoggerList[channel_index], [](RDK::ULoggerEnv*){});
 
  return true;
 }

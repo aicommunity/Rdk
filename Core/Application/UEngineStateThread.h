@@ -58,7 +58,7 @@ protected: // Данные логгирования
 /// Экземпляр класса логирования
 ULogger Logger;
 /// Файл для сохранения логов
-//RDK::UEPtr<std::ofstream> EventsLogFile;
+//std::shared_ptr<std::ofstream> EventsLogFile;
 
 /// Путь до файла логов
 //RDK::UELockVar<std::string> EventsLogFilePath;

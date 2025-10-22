@@ -15,7 +15,7 @@ TVideoCaptureOptionsForm *VideoCaptureOptionsForm;
 std::map<int, TVideoCaptureOptionsDesciption> TVideoCaptureOptionsForm::VideoSourceOptionsFrames;
 
 /// Список поддерживаемых источников видео
-std::map<int, RDK::UEPtr<TVideoCaptureThread> > TVideoCaptureOptionsForm::VideoSourcePrototypes;
+std::map<int, std::shared_ptr<TVideoCaptureThread> > TVideoCaptureOptionsForm::VideoSourcePrototypes;
 
 //---------------------------------------------------------------------------
 __fastcall TVideoCaptureOptionsForm::TVideoCaptureOptionsForm(TComponent* Owner)
@@ -30,15 +30,15 @@ __fastcall TVideoCaptureOptionsForm::TVideoCaptureOptionsForm(TComponent* Owner)
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
 /// Возвращает список поддерживаемых источников видео
-const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& TVideoCaptureOptionsForm::GetVideoSourcePrototypes(void)
+const std::map<int, std::shared_ptr<TVideoCaptureThread> >& TVideoCaptureOptionsForm::GetVideoSourcePrototypes(void)
 {
  return VideoSourcePrototypes;
 }
 
 /// Возвращает список поддерживаемых источников видео
-bool TVideoCaptureOptionsForm::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread)
+bool TVideoCaptureOptionsForm::AddVideoSourcePrototypes(int mode, std::shared_ptr<TVideoCaptureThread> thread)
 {
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
+ const std::map<int, std::shared_ptr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
  if(I != VideoSourcePrototypes.end())
  {
   delete thread;
@@ -51,7 +51,7 @@ bool TVideoCaptureOptionsForm::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVi
 /// Проверяет, существует ли такой видеоисточник
 bool TVideoCaptureOptionsForm::CheckVideoSourcePrototypes(int mode)
 {
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
+ const std::map<int, std::shared_ptr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
  if(I != VideoSourcePrototypes.end())
   return true;
  return false;
@@ -60,7 +60,7 @@ bool TVideoCaptureOptionsForm::CheckVideoSourcePrototypes(int mode)
 /// Очищает список поддерживаемых источников видео
 void TVideoCaptureOptionsForm::ClearAllVideoSourcePrototypes(void)
 {
- std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.begin();
+ std::map<int, std::shared_ptr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.begin();
  while(I != VideoSourcePrototypes.end())
  {
   delete I->second.operator ->();
@@ -163,7 +163,7 @@ void TVideoCaptureOptionsForm::AUpdateInterface(void)
  if(!VideoOutputFrame)
   return;
 
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> > &prototypes=
+ const std::map<int, std::shared_ptr<TVideoCaptureThread> > &prototypes=
 	GetVideoSourcePrototypes();
 
 

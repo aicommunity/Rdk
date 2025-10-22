@@ -240,7 +240,7 @@ virtual int GetWidth(void);
 virtual int GetHeight(void);
 
 /// Создает копию этого потока
-virtual RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended)=0;
+virtual std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended)=0;
 
 /// Сохранение настроек в xml
 virtual bool SaveParameters(RDK::USerStorageXML &xml);
@@ -374,7 +374,7 @@ bool SetFps(double fps);
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -460,7 +460,7 @@ bool SetFps(double fps);
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -538,7 +538,7 @@ virtual bool SetPosition(long long index);
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -744,7 +744,7 @@ bool SetProcessAllFramesFlag(bool value);
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -821,7 +821,7 @@ bool Init(int camera_index, int input_index, int size_index, int subtype_index, 
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -887,7 +887,7 @@ bool Init(const String camera_url, const String user_name, const String user_pas
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -965,7 +965,7 @@ virtual bool SetPosition(long long index);
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
@@ -1068,7 +1068,7 @@ bool SetFps(double fps);
 // Управление данными
 // --------------------------
 /// Создает копию этого потока
-RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
 /// Сохранение настроек в xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);

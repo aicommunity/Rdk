@@ -17,7 +17,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "../Utilities/UIniFile.h"
 #include "UNet.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernSmartPointers.h"
 #include <memory>
 #include <thread>
@@ -1017,7 +1017,7 @@ int LoadLibraries(void);
 public:
 // ������������ ����� ���������� �� �������� ���������� id
 // ���� ��������� id �� ������, �� ���������� ��������� �� ������
-virtual UEPtr<UContainer> FindComponent(const char *stringid) const;
+virtual std::shared_ptr<UContainer> FindComponent(const char *stringid) const;
 
 // �������������� �������� �� ��������� � ����� �������� �����
 virtual bool ADefault(void);
@@ -1129,9 +1129,9 @@ const T& UEngine::Model_GetComponentPropertyData(const char *stringid, const cha
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UVBaseDataProperty<T> > property=dynamic_pointer_cast<UVBaseDataProperty<T> >(iproperty);
+  std::shared_ptr<UContainer> cont=FindComponent(stringid);
+  std::shared_ptr<UIProperty> iproperty=cont->FindProperty(property_name);
+  std::shared_ptr<UVBaseDataProperty<T> > property=dynamic_pointer_cast<UVBaseDataProperty<T> >(iproperty);
   return property->GetData();
  }
  catch (UException &exception)
@@ -1148,9 +1148,9 @@ int UEngine::Model_SetComponentPropertyData(const char *stringid, const char *pr
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UVBaseDataProperty<T> > property=dynamic_pointer_cast<UVBaseDataProperty<T> >(iproperty);
+  std::shared_ptr<UContainer> cont=FindComponent(stringid);
+  std::shared_ptr<UIProperty> iproperty=cont->FindProperty(property_name);
+  std::shared_ptr<UVBaseDataProperty<T> > property=dynamic_pointer_cast<UVBaseDataProperty<T> >(iproperty);
   property.SetData(data);
  }
  catch (UException &exception)

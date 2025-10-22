@@ -7,81 +7,81 @@
 namespace RDK {
 
 // --------------------------
-// Методы доступа к ядру без блокировки
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает ссылку на версию ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 const RDK::UVersion& RDK_CALL GetCoreVersion(void)
 {
  return RdkCoreManager.GetVersion();
 }
 
-// Возвращает ссылку на указатель ядра
-RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+std::shared_ptr<URdkCoreManager> RDK_CALL GetCore(void)
 {
- return &RdkCoreManager;
+ return std::shared_ptr<URdkCoreManager>(&RdkCoreManager, [](URdkCoreManager*){}); // Non-owning deleter
 }
 
-// Возвращает указатель на логгер
-RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(void)
 {
  return RdkCoreManager.GetLogger();
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index)
+std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(int channel_index)
 {
  return RdkCoreManager.GetLogger(channel_index);
 }
 
-// Возвращает ссылку на указатель управляющего ядра
-RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+std::shared_ptr<UEngine>& RDK_CALL GetEngine(void)
 {
  return RdkCoreManager.GetEngine();
 }
 
-RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index)
+std::shared_ptr<UEngine> RDK_CALL GetEngine(int channel_index)
 {
  return RdkCoreManager.GetEngine(channel_index);
 }
 
 
-// Возвращает ссылку на указатель среды выполнения
-RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UEnvironment>& RDK_CALL GetEnvironment(void)
 {
  return RdkCoreManager.GetEnvironment();
 }
 
-RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int channel_index)
+std::shared_ptr<UEnvironment> RDK_CALL GetEnvironment(int channel_index)
 {
  return RdkCoreManager.GetEnvironment(channel_index);
 }
 
-// Возвращает ссылку на указатель хранилища
-RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UStorage>& RDK_CALL GetStorage(void)
 {
  return RdkCoreManager.GetStorage();
 }
 
-RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int channel_index)
+std::shared_ptr<UStorage> RDK_CALL GetStorage(int channel_index)
 {
  return RdkCoreManager.GetStorage(channel_index);
 }
 
-// Возвращает указатель на текущую модель
-RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UContainer> RDK_CALL GetModel(void)
 {
  return RdkCoreManager.GetModel();
 }
 
-RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index)
+std::shared_ptr<UContainer> RDK_CALL GetModel(int channel_index)
 {
  return RdkCoreManager.GetModel(channel_index);
 }
 // --------------------------
 
 // --------------------------
-// Методы доступа к каналам с блокировкой
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает ссылку на указатель ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -91,7 +91,7 @@ RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void)
 #endif
 }
 
-// Возвращает ссылку на указатель управляющего ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
 {
  return RdkCoreManager.GetEngineLock();
@@ -112,7 +112,7 @@ RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(int channel_index, un
  return RdkCoreManager.GetEngineLockTimeout(channel_index, timeout);
 }
 
-// Возвращает ссылку на указатель среды выполнения
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void)
 {
  return RdkCoreManager.GetEnvironmentLock();
@@ -123,7 +123,7 @@ RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index)
  return RdkCoreManager.GetEnvironmentLock(channel_index);
 }
 
-// Возвращает ссылку на указатель хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void)
 {
  return RdkCoreManager.GetStorageLock();
@@ -134,7 +134,7 @@ RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index)
  return RdkCoreManager.GetStorageLock(channel_index);
 }
 
-// Возвращает указатель на текущую модель
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void)
 {
  return RdkCoreManager.GetModelLock();
@@ -153,10 +153,10 @@ RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int channel_index, 
 
 
 // --------------------------
-// Методы доступа к щрифтам
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Возвращает ссылку на шрифты
-/// (не потокобезопасно!)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!)
 RDK::UBitmapFontCollection& GetFonts(void)
 {
  return RdkCoreManager.GetFonts();
@@ -164,7 +164,7 @@ RDK::UBitmapFontCollection& GetFonts(void)
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 EEnginePropertyNotFound::EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name)
 : ComponentName(component_name), PropertyName(property_name)
@@ -178,9 +178,9 @@ EEnginePropertyNotFound::~EEnginePropertyNotFound(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string EEnginePropertyNotFound::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" ComponentName=")+ComponentName+
@@ -189,7 +189,7 @@ std::string EEnginePropertyNotFound::CreateLogMessage(void) const
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 EEnginePropertyDecodeLoadFail::EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type)
 : XmlData(xml_data), VariableType(variable_type)
@@ -203,9 +203,9 @@ EEnginePropertyDecodeLoadFail::~EEnginePropertyDecodeLoadFail(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string EEnginePropertyDecodeLoadFail::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" XmlData=")+XmlData+

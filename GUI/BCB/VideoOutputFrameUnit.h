@@ -335,10 +335,10 @@ public:
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
 /// Создает копию требуемого треда по индексу видеорежима
-RDK::UEPtr<TVideoCaptureThread> TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended);
+std::shared_ptr<TVideoCaptureThread> TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended);
 
 /// Уничтожает заданный тред
-void ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> thread);
+void ReturnVideoCapureThread(std::shared_ptr<TVideoCaptureThread> thread);
 // ---------------------------
 
 // -----------------------------

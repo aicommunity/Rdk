@@ -134,7 +134,7 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<st
 // Обновление данных свойств (вызов к хранилищу)
 void UContainerDescription::CreateProperties()
 {
-    RDK::UEPtr<RDK::UContainer> cont;
+    std::shared_ptr<UContainer> cont;
     if(!Storage)
       return;
     cont = dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(ClassName));

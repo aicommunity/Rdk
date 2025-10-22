@@ -29,7 +29,7 @@ URpcDispatcherQueues::~URpcDispatcherQueues(void)
 /// ���������� ������� � ������� �� ���������
 /// ���������� Id ������� � cmd_id
 /// � ������ ������� ���������� false
-bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command, unsigned &cmd_id)
+bool URpcDispatcherQueues::PushCommand(const std::shared_ptr<URpcCommand> &command, unsigned &cmd_id)
 {
  if(!command)
   return false;
@@ -47,7 +47,7 @@ bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command, unsign
 
 /// ���������� ������� � ������� �� ���������
 /// � ������ ������� ���������� false
-bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
+bool URpcDispatcherQueues::PushCommand(const std::shared_ptr<URpcCommand> &command)
 {
  unsigned cmd_id(0);
  return PushCommand(command,cmd_id);
@@ -57,10 +57,10 @@ bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
 
 /// ���������� ��������� �� ������� �� �� Id � ������� �������
 /// ������������ ��������� ����� ����, ���� ������� ��� � �������
-UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
+std::shared_ptr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
 {
  std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
- std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
+ std::list<std::shared_ptr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
 
  for(;I != ProcessedCommandQueue.end();++I)
  {
@@ -75,7 +75,7 @@ UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
 bool URpcDispatcherQueues::PopProcessedCommand(unsigned cmd_id)
 {
  std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
- std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
+ std::list<std::shared_ptr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
 
  for(;I != ProcessedCommandQueue.end();++I)
  {
@@ -90,10 +90,10 @@ bool URpcDispatcherQueues::PopProcessedCommand(unsigned cmd_id)
 
 /// ���������� ��������� �� ����� ������ �����
 /// � ������� ��� �� �������
-UEPtr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
+std::shared_ptr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
 {
  std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
- UEPtr<URpcCommand> result;
+ std::shared_ptr<URpcCommand> result;
 
  if(ProcessedCommandQueue.begin() != ProcessedCommandQueue.end())
  {
@@ -135,9 +135,9 @@ void URpcDispatcherQueues::ClearProcessedQueue(void)
 // ��������������� ������ ����������
 // --------------------------
 /// ���������� ��������� �� ������� ������� �� CommandQueue � ������� �� �� �������
-UEPtr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
+std::shared_ptr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
 {
- UEPtr<URpcCommand> result;
+ std::shared_ptr<URpcCommand> result;
  std::lock_guard<std::mutex> lock(CommandQueueMutex);
  if(CommandQueue.begin() != CommandQueue.end())
  {
@@ -148,7 +148,7 @@ UEPtr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
 }
 
 /// ������ ������� � ������� �������
-void URpcDispatcherQueues::PushToProcessedQueue(const UEPtr<URpcCommand> &command)
+void URpcDispatcherQueues::PushToProcessedQueue(const std::shared_ptr<URpcCommand> &command)
 {
  std::lock_guard<std::mutex> lock(ProcessedCommandQueueMutex);
  ProcessedCommandQueue.push_back(command);

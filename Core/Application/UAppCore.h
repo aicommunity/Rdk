@@ -4,44 +4,48 @@
 #include "../Utilities/USupport.h"
 #include "../Utilities/UIniFile.h"
 #include "../../Deploy/Include/rdk_application.h"
+#include "UProjectDeployer.h"
+#include "URpcDispatcher.h"
+#include "UServerTransport.h"
+#include "UTestManager.h"
 
 namespace RDK {
 
 typedef void (*ProgressBarCallback)(int complete_percent, const std::string &text);
 
 
-/// Класс начальной инициализации
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class UProjectDeployerT>
 class RDK_LIB_TYPE UAppCore
 {
 public:
- /// Экзепляр прототипа декодера команд
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  DecoderT rpcDecoder;
 
- /// Экзепляр класса диспетчера команд
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  DispatcherT rpcDispatcher;
 
- /// Экземпляр класса контроллера сервера
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ServerControlT serverControl;
 
- /// Экземпляр класса транспорта
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ServerTransportT serverTransport;
 
  DecoderCommonT rpcDecoderCommon;
 
- /// Экземпляр класса контроллера расчета
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  EngineControlT engineControl;
 
- /// Экзепляр класса проекта
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ProjectT project;
 
- /// Экзепляр класса приложения
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ApplicationT application;
 
- /// Экземпляр класса менеджера тестов
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  TestManagerT rdkTestManager;
 
- /// Экземпляр класса доставки конфигураций
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  UProjectDeployerT projectDeployer;
 
 public:
@@ -97,10 +101,10 @@ public:
  UAppCore(ProgressBarCallback func);
  ~UAppCore(void);
 
- /// Инициализация
+ /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  int Init(const std::string &application_file_name, const std::string &ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[]);
 
- /// Пост-инициализация
+ /// пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  int PostInit(void);
 };
 
@@ -108,30 +112,33 @@ template<class ApplicationT, class EngineControlT, class ProjectT, class ServerC
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::UAppCore(void)
 {
  FuncProgressBarCallback=0;
- rdkTestManager.SetApplication(&application);
- rpcDispatcher.SetApplication(&application);
+ rdkTestManager.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
+ rpcDispatcher.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
 
  rpcDecoder.SetDispatcher(&rpcDispatcher);
  rpcDecoderCommon.SetDispatcher(&rpcDispatcher);
 
- application.SetTestManager(&rdkTestManager);
+ application.SetTestManager(std::shared_ptr<UTestManager>(&rdkTestManager, RDK::NonOwningDeleter()));
 
- rpcDispatcher.SetDecoderPrototype(&rpcDecoder);
- rpcDispatcher.SetCommonDecoder(&rpcDecoderCommon);
+ rpcDispatcher.SetDecoderPrototype(std::shared_ptr<URpcDecoder>(&rpcDecoder, RDK::NonOwningDeleter()));
+ rpcDispatcher.SetCommonDecoder(std::shared_ptr<URpcDecoder>(&rpcDecoderCommon, RDK::NonOwningDeleter()));
 
- serverControl.SetApplication(&application);
- serverControl.SetRpcDispatcher(&rpcDispatcher);
+ serverControl.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
+ serverControl.SetRpcDispatcher(std::shared_ptr<URpcDispatcher>(&rpcDispatcher, RDK::NonOwningDeleter()));
 
- serverTransport.SetApplication(&application);
- serverControl.SetServerTransport(&serverTransport);
+ serverTransport.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
+ serverControl.SetServerTransport(std::shared_ptr<UServerTransport>(&serverTransport, RDK::NonOwningDeleter()));
 
- //Внутрь прописывается по идее само
- application.SetProjectDeployer(&projectDeployer);
+ //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+ application.SetProjectDeployer(std::shared_ptr<UProjectDeployer>(&projectDeployer, RDK::NonOwningDeleter()));
 
  //application.SetRpcDispatcher(&rpcDispatcher);
- application.SetServerControl(&serverControl);
- application.SetEngineControl(&engineControl);
- application.SetProject(&project);
+ std::shared_ptr<ServerControlT> serverControlPtr(&serverControl);
+ std::shared_ptr<EngineControlT> engineControlPtr(&engineControl);
+ std::shared_ptr<ProjectT> projectPtr(&project);
+ application.SetServerControl(serverControlPtr);
+ application.SetEngineControl(engineControlPtr);
+ application.SetProject(projectPtr);
 
 }
 
@@ -151,14 +158,14 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  application.UnInit();
 }
 
-/// Инициализация
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::Init(const std::string &application_file_name, const std::string& ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[])
 {
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(0, "Launching application: load application config...");
 
- // Инициализация из стартового ini файла
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ini пїЅпїЅпїЅпїЅпїЅ
  RDK::UIniFile<char> projectIniFile;
 
 
@@ -171,12 +178,12 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
- programName=projectIniFile("General","ProgramName",RDK_APP_NAME);
+ programName=projectIniFile("General","ProgramName","RDK_Application");
  configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../Configs/");
  neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
- logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
+ logDir=projectIniFile("Log","Dir",""); // TODO: пїЅпїЅпїЅпїЅпїЅпїЅ Log/FixedLogPath
  if(logDir.empty())
-  logDir=projectIniFile("Log","FixedLogPath",""); // TODO: Аналог Log/Dir
+  logDir=projectIniFile("Log","FixedLogPath",""); // TODO: пїЅпїЅпїЅпїЅпїЅпїЅ Log/Dir
  logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
  calcStopLogLevel=atoi(projectIniFile("Log","CalcStopLogLevel","1"));
 
@@ -255,7 +262,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(15, "Launching application: core initialization...");
 
- // Инициализация из стартового ini файла
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ini пїЅпїЅпїЅпїЅпїЅ
  RDK::UIniFile<char> userIniFile;
 
 
@@ -285,7 +292,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  return 0;
 }
 
-/// Пост-инициализация
+/// пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::PostInit(void)
 {

@@ -3,7 +3,7 @@
 #include "UStorage.h"
 #include "UMockUNet.h"
 #include "ModernSmartPointers.h"
-#include "UEPtr.h"
+#include <memory>
 #include "ModernProperties.h"
 
 namespace RDK {
@@ -19,7 +19,7 @@ public:
         std::string prop_name = serstorage->GetNodeName();
         auto p = std::make_shared<PropType<T, UMockUNet, TypeInt>>(prop_name, mock_unet);
         mock_unet->ChangeLookupPropertyType(prop_name,ptype);
-        p->Load(UEPtr<USerStorage>(serstorage));
+        p->Load(std::shared_ptr<USerStorage>(serstorage));
     }
 
     // Modern C++20 property creation (simplified without concepts)

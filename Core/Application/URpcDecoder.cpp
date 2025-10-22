@@ -47,7 +47,7 @@ void URpcDecoder::Process(void)
  {
   try
   {
-   UEPtr<URpcCommand> command=PopFromCommandQueue();
+   std::shared_ptr<URpcCommand> command=PopFromCommandQueue();
    if(!command)
    {
 	std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -102,14 +102,14 @@ void URpcDecoder::StopProcessThread(void)
 
 /// ������������ ������������� � ����� ������� �� ������� ������
 /// ���������� false ���� ������� �� ��������������
-bool URpcDecoder::ProcessCommand(const UEPtr<URpcCommand> &command)
+bool URpcDecoder::ProcessCommand(const std::shared_ptr<URpcCommand> &command)
 {
  return AProcessCommand(command);
 }
 
 
 /// ���������� ��������� �� ��������� ����������
-UEPtr<UApplication> URpcDecoder::GetApplication(void)
+std::shared_ptr<UApplication> URpcDecoder::GetApplication(void)
 {
  if(!Dispatcher)
   return 0;

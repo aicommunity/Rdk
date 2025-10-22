@@ -41,7 +41,7 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
 {
  if(&Xml != &xml)
   Xml=xml;
- RDK::UEPtr<TVideoCaptureThreadVideoGrabberCamera> thread=RDK::dynamic_pointer_cast<TVideoCaptureThreadVideoGrabberCamera>(TVideoCaptureOptionsForm::VideoSourcePrototypes[VideoSourceType]);
+ std::shared_ptr<TVideoCaptureThreadVideoGrabberCamera> thread=std::dynamic_pointer_cast<TVideoCaptureThreadVideoGrabberCamera>(TVideoCaptureOptionsForm::VideoSourcePrototypes[VideoSourceType]);
  if(thread)
  {
   TVideoGrabber* VideoGrabber=thread->GetVideoGrabber();

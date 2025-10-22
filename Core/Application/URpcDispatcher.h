@@ -19,17 +19,17 @@ class RDK_LIB_TYPE URpcDispatcher: public URpcDispatcherQueues
 {
 protected:
 /// Массив декодеров, соответствующих каналам
-std::vector<UEPtr<URpcDecoder> > Decoders;
+std::vector<std::shared_ptr<URpcDecoder> > Decoders;
 
 /// Главный декодер сервера
-UEPtr<URpcDecoder> CommonDecoder;
+std::shared_ptr<URpcDecoder> CommonDecoder;
 
 /// Экземпляр приложения
-UEPtr<UApplication> Application;
+std::shared_ptr<UApplication> Application;
 
 protected:
 /// Прототип декодера
-UEPtr<URpcDecoder> DecoderPrototype;
+std::shared_ptr<URpcDecoder> DecoderPrototype;
 
 protected: // Потоки
 /// Мьютекс дня блокировки данных класса
@@ -52,19 +52,19 @@ virtual ~URpcDispatcher(void);
 // --------------------------
 /// Проверяет, поддерживается ли заданная команда диспетчером
 /// ожидает декодированную команду, иначе вернет false
-virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const;
+virtual bool IsCmdSupported(const std::shared_ptr<URpcCommand> &command) const;
 
 /// Устанавливает прототип декодера
 /// Вызывает смену всех текущих прототипов
-virtual void SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder);
+virtual void SetDecoderPrototype(const std::shared_ptr<URpcDecoder> &decoder);
 
 /// Возвращает и устанавливает главный декодер сервера
-UEPtr<URpcDecoder> GetCommonDecoder(void);
-bool SetCommonDecoder(const UEPtr<URpcDecoder> &decoder);
+std::shared_ptr<URpcDecoder> GetCommonDecoder(void);
+bool SetCommonDecoder(const std::shared_ptr<URpcDecoder> &decoder);
 
 /// Экземпляр приложения
-UEPtr<UApplication> GetApplication(void);
-bool SetApplication(UEPtr<UApplication> application);
+std::shared_ptr<UApplication> GetApplication(void);
+bool SetApplication(std::shared_ptr<UApplication> application);
 
 /// Осуществляет диспетчеризацию текущей очереди команд
 virtual void Dispatch(void);
@@ -73,7 +73,7 @@ virtual void Dispatch(void);
 virtual void StopDispatch(void);
 
 /// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
-virtual bool SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned timeout);
+virtual bool SyncDispatchCommand(const std::shared_ptr<URpcCommand> &command, unsigned timeout);
 // --------------------------
 
 // --------------------------
@@ -82,7 +82,7 @@ virtual bool SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned tim
 protected:
 /// Осуществляет вызов соответствующего декодера
 /// Метод должен вызываться в своем потоке
-virtual void DispatchCommand(const UEPtr<URpcCommand> &command);
+virtual void DispatchCommand(const std::shared_ptr<URpcCommand> &command);
 
 public:
 /// Приводит в соответствие список декодеров и число каналов

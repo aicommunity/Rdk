@@ -42,7 +42,7 @@ string Version;
 int Revision;
 
 /// Версия ядра, использованая при сборке библиотки
-RDK::UEPtr<RDK::UVersion> CoreVersion;
+std::shared_ptr<UVersion> CoreVersion;
 
 /// Тип библиотеки
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
@@ -120,7 +120,7 @@ const string& GetVersion(void) const;
 int GetRevision(void) const;
 
 /// Возвращает версию ядра, использованного при сборке библиотеки
-const UEPtr<RDK::UVersion> GetCoreVersion(void) const;
+const std::shared_ptr<UVersion> GetCoreVersion(void) const;
 
 /// Тип библиотеки
 /// 0 - Внутренняя библиотека (собрана вместе с ядром)
@@ -179,8 +179,8 @@ virtual int Upload(UStorage *storage);
 bool CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const;
 
 /// Добавляет в хранилище очередной класс
-virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
-virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
+virtual bool UploadClass(const UId &classid, std::shared_ptr<UComponent> cont);
+virtual bool UploadClass(const string &name, std::shared_ptr<UComponent> cont);
 virtual bool UploadClass(const std::string &class_name, const std::string &component_name, UComponent* (*funcPointer)(void));
 
 /// Удаление заданного класса из списка успешно загруженных
@@ -246,7 +246,7 @@ bool DeleteOwnDirectory(void);
 
 // --------------------------
 /// Создает компонент из описания xml
-UEPtr<UContainer> CreateClassSample(UStorage *storage, USerStorageXML &xml);
+std::shared_ptr<UContainer> CreateClassSample(UStorage *storage, USerStorageXML &xml);
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
@@ -288,7 +288,7 @@ bool SaveLibraryToFile();
 void LoadFromXML(USerStorageXML& xml);
 // --------------------------
 /// Создает компонент из описания xml
-UEPtr<UContainer> CreateClassSample(USerStorageXML &xml, UStorage *storage);
+std::shared_ptr<UContainer> CreateClassSample(USerStorageXML &xml, UStorage *storage);
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
