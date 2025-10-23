@@ -140,7 +140,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const std::shared_ptr<T> &pdata, u
 
 template<typename T>
 UELockPtr<T>::UELockPtr(const UELockPtr<T> &p)
- : std::shared_ptr<T>(p), Mutex(p.Mutex)
+ : PData(p.PData), Mutex(p.Mutex)
 {
  const_cast<UELockPtr<T>&>(p).ForceForget();
 }
