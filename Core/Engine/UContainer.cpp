@@ -1048,11 +1048,11 @@ std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bo
 // � �������� ����������
 bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
 {
- CopyProperties(std::shared_ptr<UComponent>(target.get()), ptParameter);
+ CopyProperties(std::shared_ptr<UComponent>(target.get(), RDK::NonOwningDeleter()), ptParameter);
  target->Build();
 
  if(copystate)
-  CopyProperties(std::shared_ptr<UComponent>(target.get()), ptState);
+  CopyProperties(std::shared_ptr<UComponent>(target.get(), RDK::NonOwningDeleter()), ptState);
 
  CopyComponents(target,stor);
  return true;
@@ -1095,7 +1095,7 @@ void UContainer::AUpdateInternalData(void)
  std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.begin();
  for(;I!=StaticComponents.end();++I)
  {
-  UpdateStaticComponent(I->second,std::shared_ptr<UContainer>(I->first.get()));
+  UpdateStaticComponent(I->second, I->first);
  }
 }
 // --------------------------
@@ -1263,7 +1263,7 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
 
  comp->SetLogger(Logger.lock());
  comp->Id = id;
- comp->SetOwner(std::shared_ptr<UComponent>(this));
+ comp->SetOwner(std::shared_ptr<UComponent>(this, RDK::NonOwningDeleter()));
 
  // ��������� ��������� � ������� ������������ ���������
  SetLookupComponent(comp->Name, comp->Id);
@@ -2876,7 +2876,7 @@ UId UContainer::UpdateStaticComponent(const NameT &classname, std::shared_ptr<UC
   comp->SetClass(GetStorage()->FindClassId(classname));
 
   for(int i=0;i<NumComponents;i++)
-   if(PComponents[i] == std::shared_ptr<UContainer>(comp.get()))
+   if(PComponents[i] == comp)
 	return PComponents[i]->GetId();
   return AddComponent(comp);
  }
@@ -3218,7 +3218,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
 
   try
   {
-   variable.Property->Save(std::shared_ptr<USerStorage>(&xml),true);
+   variable.Property->Save(std::shared_ptr<USerStorage>(&xml, RDK::NonOwningDeleter()),true);
    std::string str_data=xml.GetNodeText();
    if(str_data.empty())
    {

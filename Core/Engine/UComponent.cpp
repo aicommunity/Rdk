@@ -401,7 +401,7 @@ std::shared_ptr<UVariableData> UComponent::GetProperty(const NameT &name, std::s
  std::shared_ptr<UIProperty> property=FindProperty(name);
 
  if(property)
-  property->Save(std::shared_ptr<USerStorage>(values.get()));
+  property->Save(std::shared_ptr<USerStorage>(values.get(), RDK::NonOwningDeleter()));
 
  return values;
 }
@@ -414,7 +414,7 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
 
  if(property)
  {
-  property->Save(std::shared_ptr<USerStorage>(&data),true);
+  property->Save(std::shared_ptr<USerStorage>(&data, RDK::NonOwningDeleter()),true);
   if(data.GetNumNodes() == 0)
    values=data.GetNodeText();
   else
@@ -430,7 +430,7 @@ void UComponent::SetProperty(const NameT &name, std::shared_ptr<UVariableData> v
  std::shared_ptr<UIProperty> property=FindProperty(name);
 
  if(property)
-  property->Load(std::shared_ptr<USerStorage>(values.get()));
+  property->Load(std::shared_ptr<USerStorage>(values.get(), RDK::NonOwningDeleter()));
 }
 
 void UComponent::SetPropertyValue(const NameT &name, const std::string &values)
@@ -444,13 +444,13 @@ void UComponent::SetPropertyValue(const NameT &name, const std::string &values)
   {
    data.Load(values,"");
    data.RenameNode(property->GetName());
-   property->Load(std::shared_ptr<USerStorage>(&data),true);
+   property->Load(std::shared_ptr<USerStorage>(&data, RDK::NonOwningDeleter()),true);
   }
   else
   {
-   property->Save(std::shared_ptr<USerStorage>(&data),true);
+   property->Save(std::shared_ptr<USerStorage>(&data, RDK::NonOwningDeleter()),true);
    data.SetNodeText(values);
-   property->Load(std::shared_ptr<USerStorage>(&data),true);
+   property->Load(std::shared_ptr<USerStorage>(&data, RDK::NonOwningDeleter()),true);
   }
  }
 }
@@ -473,7 +473,7 @@ void UComponent::CopyProperties(std::shared_ptr<UComponent> comp, unsigned int t
 //  databuffer.clear();
   databuffer.Destroy();
   databuffer.Create(I->first);
-  comp->SetProperty(I->first,GetProperty(I->first,std::shared_ptr<UVariableData>(&databuffer)));
+  comp->SetProperty(I->first,GetProperty(I->first,std::shared_ptr<UVariableData>(&databuffer, RDK::NonOwningDeleter())));
  }
 }
 

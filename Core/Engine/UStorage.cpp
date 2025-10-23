@@ -494,7 +494,7 @@ std::shared_ptr<UComponent> UStorage::TakeObject(const UId &classid, const std::
  }
 
  PushObject(classid,obj);
- obj->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
+ obj->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
  obj->Activity = true;
 
  return static_pointer_cast<UComponent>(obj);

@@ -133,9 +133,9 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  application.SetProjectDeployer(std::shared_ptr<UProjectDeployer>(&projectDeployer, RDK::NonOwningDeleter()));
 
  //application.SetRpcDispatcher(&rpcDispatcher);
- std::shared_ptr<ServerControlT> serverControlPtr(&serverControl);
- std::shared_ptr<EngineControlT> engineControlPtr(&engineControl);
- std::shared_ptr<ProjectT> projectPtr(&project);
+ std::shared_ptr<ServerControlT> serverControlPtr(&serverControl, RDK::NonOwningDeleter());
+ std::shared_ptr<EngineControlT> engineControlPtr(&engineControl, RDK::NonOwningDeleter());
+ std::shared_ptr<ProjectT> projectPtr(&project, RDK::NonOwningDeleter());
  application.SetServerControl(serverControlPtr);
  application.SetEngineControl(engineControlPtr);
  application.SetProject(projectPtr);

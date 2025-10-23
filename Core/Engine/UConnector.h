@@ -317,7 +317,7 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<
  ULinkT<T> link;
  ULinkSideT<T> connector;
  ULinkSideT<T> item;
- GetLongId(std::shared_ptr<UContainer>(netlevel.get()),connector.Id);
+ GetLongId(std::shared_ptr<UContainer>(netlevel.get(), RDK::NonOwningDeleter()),connector.Id);
  if(connector.Id.size()==0)
   return linkslist;
 

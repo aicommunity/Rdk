@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "../System/UGenericMutex.h"
+#include "ModernSmartPointers.h"
 
 namespace RDK {
 
@@ -101,7 +102,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata)
- : Mutex(mutex), PData(pdata)
+ : Mutex(mutex), PData(pdata, RDK::NonOwningDeleter())
 {
  if(Mutex)
   Mutex->exclusive_lock();
@@ -117,7 +118,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const std::shared_ptr<T> &pdata)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout)
- : Mutex(mutex), PData(pdata)
+ : Mutex(mutex), PData(pdata, RDK::NonOwningDeleter())
 {
  if(Mutex)
  {

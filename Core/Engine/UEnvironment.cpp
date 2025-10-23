@@ -219,7 +219,7 @@ double UEnvironment::CalcRTPerformance(void) const
 // ��������� �� ������
 std::shared_ptr<ULoggerEnv> const UEnvironment::GetLogger(void) const
 {
- return std::shared_ptr<ULoggerEnv>(Logger.get());
+ return std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter());
 }
 
 bool UEnvironment::SetLogger(std::shared_ptr<ULoggerEnv> logger)
@@ -278,7 +278,7 @@ bool UEnvironment::CreateModel(const NameT& classname)
 
  CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
  Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(GetStorage()->TakeObject(classname)).get());
- Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
+ Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
  Model->SetEnvironment(std::shared_ptr<UEnvironment>(this));
  Ready=false;
  if(Model)
@@ -303,7 +303,7 @@ bool UEnvironment::CreateModel(const UId& classid)
 
  CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
  Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(Storage->TakeObject(classid)).get());
- Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
+ Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
  Model->SetEnvironment(std::shared_ptr<UEnvironment>(this));
  Ready=false;
  if(Model)

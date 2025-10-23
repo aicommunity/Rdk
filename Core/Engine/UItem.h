@@ -299,7 +299,7 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
  ULinkSideT<T> item;
  ULinkSideT<T> connector;
 
-  GetLongId(std::shared_ptr<UContainer>(netlevel.get()),item.Id);
+  GetLongId(std::shared_ptr<UContainer>(netlevel.get(), RDK::NonOwningDeleter()),item.Id);
  if(item.Id.size() == 0)
   return linkslist;
  link.Item=item;

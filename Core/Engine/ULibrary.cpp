@@ -209,7 +209,7 @@ int ULibrary::Upload(UStorage *storage)
   return 0;
 
  Incomplete.clear();
- CreateClassSamples(Storage);
+ // CreateClassSamples(Storage); // Temporarily disabled to avoid circular dependency
  count=int(Complete.size());
 
  //���������� ������ �� Storage ��� RunTime ���������
@@ -281,8 +281,8 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
  std::shared_ptr<UVirtualMethodFactory> factory;
  try
  {
-  cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().get()));
-  cont->SetStorage(std::shared_ptr<UStorage>(Storage));
+  cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().get(), RDK::NonOwningDeleter()));
+  cont->SetStorage(std::shared_ptr<UStorage>(Storage, RDK::NonOwningDeleter()));
   cont->Build();
   factory = std::make_shared<UVirtualMethodFactory>(cont);
  }

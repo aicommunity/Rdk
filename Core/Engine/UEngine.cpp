@@ -376,7 +376,7 @@ bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironme
 
  if(!Storage)
   return false;
- Storage->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get()));
+ Storage->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
 
 
  RDK_SYS_TRY
@@ -7142,7 +7142,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	while(I != J)
 	{
 		std::shared_ptr<UComponent> cont = std::shared_ptr<UComponent>(*I, [](UComponent*){}); // Non-owning deleter
-		cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().get()));
+		cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().get(), RDK::NonOwningDeleter()));
 		cont->SetStorage(Storage);
 		cont->Build();
 		std::shared_ptr<UVirtualMethodFactory> factory = std::make_shared<UVirtualMethodFactory>(cont);
