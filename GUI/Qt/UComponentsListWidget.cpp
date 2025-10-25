@@ -375,7 +375,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
         std::shared_ptr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
-            cont = std::shared_ptr<RDK::UContainer>(model.Get(), RDK::NonOwningDeleter());
+            cont = safe_shared_cast<RDK::UContainer>(model.Get());
         else
             cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 
@@ -612,7 +612,7 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
 
   std::shared_ptr<RDK::UContainer> cont;
   if (currentDrawPropertyComponentName.isEmpty())
-   cont = std::shared_ptr<RDK::UContainer>(model.Get(), RDK::NonOwningDeleter());
+   cont = safe_shared_cast<RDK::UContainer>(model.Get());
   else
    cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
 

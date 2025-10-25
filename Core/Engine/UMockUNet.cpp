@@ -23,7 +23,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
     // ��������� ��������� � ������
     SetStorage(std::shared_ptr<UStorage>(storage));
-    SetLogger(std::shared_ptr<ULoggerEnv>(storage->GetLogger().get(), RDK::NonOwningDeleter()));
+    SetLogger(safe_shared_cast<ULoggerEnv>(storage->GetLogger().get()));
 
     // ����� ���� ����������� ������� �������� �������
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
@@ -158,7 +158,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
        continue;
       if(FindStaticComponent(name,nodename) == 0) // ��� �� ��� ������������ ����������� ���������
       {
-       if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+       if(AddComponent(newcont) == ForbiddenId)
        {
         storage->ReturnObject(newcont);
         continue;

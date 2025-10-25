@@ -164,7 +164,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     if(font)
      Font=*font;
     Graph.SetFont(&Font);
-    DrawEngine.SetEngine(std::shared_ptr<RDK::UAGraphics>(&Graph, RDK::NonOwningDeleter()));
+    DrawEngine.SetEngine(safe_shared_cast<RDK::UAGraphics>(&Graph));
     DrawEngine.SetFonts(RDK::GetCoreLock()->GetFonts());
     //</��� �� �������>
     reDrawScheme(true);

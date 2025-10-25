@@ -12,47 +12,44 @@
 
 namespace RDK {
 
-// Создает пустое хранилище и возвращает указатель на него
-UStorage* NewUAStorage(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
+std::shared_ptr<UStorage> NewUAStorage(void)
 {
- return new UStorage;
+ return std::make_shared<UStorage>();
 }
 
-// Создает среду и возвращает указатель на нее
-UEnvironment* NewUAEnvironment(void)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ
+std::shared_ptr<UEnvironment> NewUAEnvironment(void)
 {
- return new UEnvironment;
+ return std::make_shared<UEnvironment>();
 }
 
 
-// Создает пустое хранилище и возвращает указатель на него
-UStorage* CreateAStorage(UStorage *storage)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
+std::shared_ptr<UStorage> CreateAStorage(std::shared_ptr<UStorage> storage)
 {
  return storage;
 }
 
-// Создает среду и возвращает указатель на нее.
-// Если задано хранилище 'storage', то связывает его со средой.
-// Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
-// Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
-UEnvironment* CreateAEnvironment(UEnvironment *environment, UStorage *storage, bool isinit, ULibrary** external_libs, int numlibs)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 'storage', пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 'isinit' == true, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ external_libs != 0, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+std::shared_ptr<UEnvironment> CreateAEnvironment(std::shared_ptr<UEnvironment> environment, std::shared_ptr<UStorage> storage, bool isinit, ULibrary** external_libs, int numlibs)
 {
- UEnvironment *env=environment;
-
  if(!storage)
-  return env;
+  return environment;
 
- if(!env->SetStorage(storage) || !isinit || !external_libs || !numlibs)
-  return env;
+ if(!environment->SetStorage(storage) || !isinit || !external_libs || !numlibs)
+  return environment;
 
- for(int i=0;i<numlibs;i++)
- {
-  env->AddClassLibrary(external_libs[i]);
+ for(int i=0; i<numlibs; i++) {
+  environment->AddClassLibrary(external_libs[i]);
  }
 
- env->BuildStorage();
+ environment->BuildStorage();
 
- return env;
+ return environment;
 }
 
 }

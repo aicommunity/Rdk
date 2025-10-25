@@ -131,7 +131,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
   ui->lineEditProjectDirectory->setText("");
  }
 
- // обновляем интерфейс в соответствии с ProjectConfig
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ ProjectConfig
  ui->lineEditProjectName->setText(ProjectConfig.ProjectName.c_str());//codec->toUnicode(ProjectConfig.ProjectName.c_str()));
 
  ui->plainTextEditProjectDescription->setPlainText(codec->toUnicode(ProjectConfig.ProjectDescription.c_str()));
@@ -212,7 +212,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
 
 
 
- // каналы...
+ // пїЅпїЅпїЅпїЅпїЅпїЅ...
  ui->checkBoxSettingToAllChannels->setChecked(false);
  ui->spinBoxChannelsNumber->setValue(ProjectConfig.NumChannels);
  int listSize = ui->listWidgetChannels->count();
@@ -491,7 +491,7 @@ void UCreateConfigurationWizardWidget::setCalculationChannelsNumber(int value)
 
   for(int i = old_channels; i < value; ++i)
   {
-    ProjectConfig.ChannelsConfig[i].ClassName="Model";
+    ProjectConfig.ChannelsConfig[i].ClassName="UModel";
     ProjectConfig.ChannelsConfig[i].GlobalTimeStep  = ui->lineEditTimeStepDurationGlobal->text().toInt();
     ProjectConfig.ChannelsConfig[i].DefaultTimeStep = ui->lineEditTimeStepDurationDefault->text().toInt();
     ProjectConfig.ChannelsConfig[i].CalculationMode = ProjectConfig.ChannelsConfig[i-1].CalculationMode;
@@ -582,7 +582,7 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index
 
 void UCreateConfigurationWizardWidget::browseNewProjectDirectory()
 {
-    // Директория проектов
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
     QDir path1(default_path);
     if(!path1.exists(default_path))

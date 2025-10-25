@@ -84,11 +84,11 @@ bool UController::Link(UContainer* component, bool forchilds)
   return true;
 
  Component=component;
- Component->AddController(std::shared_ptr<UController>(this, [](UController*){}), forchilds); // Non-owning deleter
+ Component->AddController(RDK::safe_shared_cast<UController>(this), forchilds); // Non-owning deleter
 
  if(!ALink(component))
  {
-  component->DelController(std::shared_ptr<UController>(this, [](UController*){}), forchilds); // Non-owning deleter
+  component->DelController(RDK::safe_shared_cast<UController>(this), forchilds); // Non-owning deleter
   Component=0;
   return false;
  }
@@ -103,7 +103,7 @@ bool UController::UnLink(bool forchilds)
   return false;
 
  if(Component)
-  Component->DelController(std::shared_ptr<UController>(this, [](UController*){}), forchilds); // Non-owning deleter
+  Component->DelController(RDK::safe_shared_cast<UController>(this), forchilds); // Non-owning deleter
  Component=0;
  return true;
 }

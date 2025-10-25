@@ -209,7 +209,12 @@ int ULibrary::Upload(UStorage *storage)
   return 0;
 
  Incomplete.clear();
- // CreateClassSamples(Storage); // Temporarily disabled to avoid circular dependency
+ 
+ // Safe component initialization - only for BasicLib to avoid circular dependencies
+ if(GetName() == "BasicLib") {
+     CreateClassSamples(Storage);
+ }
+ 
  count=int(Complete.size());
 
  //���������� ������ �� Storage ��� RunTime ���������
@@ -281,10 +286,10 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
  std::shared_ptr<UVirtualMethodFactory> factory;
  try
  {
-  cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().get(), RDK::NonOwningDeleter()));
-  cont->SetStorage(std::shared_ptr<UStorage>(Storage, RDK::NonOwningDeleter()));
+  cont->SetLogger(safe_shared_cast<ULoggerEnv>(Storage->GetLogger().get()));
+  cont->SetStorage(safe_shared_cast<UStorage>(Storage));
   cont->Build();
-  factory = std::make_shared<UVirtualMethodFactory>(cont);
+  factory = std::make_shared<UVirtualMethodFactory>(std::dynamic_pointer_cast<UContainer>(cont));
  }
  catch(...)
  {
@@ -326,7 +331,7 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
  return true;
 }
 
-bool ULibrary::UploadClass(const std::string &class_name, const std::string &component_name, UComponent* (*funcPointer)(void))
+bool ULibrary::UploadClass(const std::string &class_name, const std::string &component_name, UContainer* (*funcPointer)(void))
 {
  if(!funcPointer)
   return false;
@@ -582,7 +587,7 @@ std::shared_ptr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage
 
  std::string class_name=xml.GetNodeAttribute("Class");
 
- cont=dynamic_pointer_cast<UContainer>(storage->TakeObject(class_name));
+ cont=storage->TakeObject(class_name);
 
  if(!cont)
     return 0;
@@ -719,7 +724,7 @@ std::shared_ptr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml,
 
     std::shared_ptr<UMockUNet> mock = std::make_shared<UMockUNet>(&xml, storage);
 
-    std::shared_ptr<UContainer> cont =dynamic_pointer_cast<UContainer>(mock);
+    std::shared_ptr<UContainer> cont = mock;
 
     if(!dynamic_pointer_cast<UNet>(cont))
     {

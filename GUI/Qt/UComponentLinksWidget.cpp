@@ -583,7 +583,7 @@ void UComponentLinksWidget::addLinks(QString componentName)
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
         RDK::UStringLinksList linksList;
-        cont->GetLinks(linksList, std::shared_ptr<RDK::UContainer>(model.Get(), RDK::NonOwningDeleter()), ui->hideInternalLinksCheckBox->isChecked(), cont);
+        cont->GetLinks(linksList, safe_shared_cast<RDK::UContainer>(model.Get()), ui->hideInternalLinksCheckBox->isChecked(), cont);
         RDK::ULinkT<std::string>* linksListIterator = linksList.GetData();
         for(int i = 0; i < linksList.size(); i++)
         {

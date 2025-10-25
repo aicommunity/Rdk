@@ -1,6 +1,7 @@
 #ifndef UAppCore_H
 #define UAppCore_H
 
+#include <memory>
 #include "../Utilities/USupport.h"
 #include "../Utilities/UIniFile.h"
 #include "../../Deploy/Include/rdk_application.h"
@@ -20,33 +21,33 @@ class RDK_LIB_TYPE UAppCore
 {
 public:
  /// �������� ��������� �������� ������
- DecoderT rpcDecoder;
+ std::shared_ptr<DecoderT> rpcDecoder;
 
  /// �������� ������ ���������� ������
- DispatcherT rpcDispatcher;
+ std::shared_ptr<DispatcherT> rpcDispatcher;
 
  /// ��������� ������ ����������� �������
- ServerControlT serverControl;
+ std::shared_ptr<ServerControlT> serverControl;
 
  /// ��������� ������ ����������
- ServerTransportT serverTransport;
+ std::shared_ptr<ServerTransportT> serverTransport;
 
- DecoderCommonT rpcDecoderCommon;
+ std::shared_ptr<DecoderCommonT> rpcDecoderCommon;
 
  /// ��������� ������ ����������� �������
- EngineControlT engineControl;
+ std::shared_ptr<EngineControlT> engineControl;
 
  /// �������� ������ �������
- ProjectT project;
+ std::shared_ptr<ProjectT> project;
 
  /// �������� ������ ����������
- ApplicationT application;
+ std::shared_ptr<ApplicationT> application;
 
  /// ��������� ������ ��������� ������
- TestManagerT rdkTestManager;
+ std::shared_ptr<TestManagerT> rdkTestManager;
 
  /// ��������� ������ �������� ������������
- UProjectDeployerT projectDeployer;
+ std::shared_ptr<UProjectDeployerT> projectDeployer;
 
 public:
  std::string startProjectName;
@@ -111,34 +112,42 @@ public:
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::UAppCore(void)
 {
- FuncProgressBarCallback=0;
- rdkTestManager.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
- rpcDispatcher.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
+ FuncProgressBarCallback = 0;
+ 
+ // Создание всех объектов через make_shared
+ application = std::make_shared<ApplicationT>();
+ rdkTestManager = std::make_shared<TestManagerT>();
+ rpcDispatcher = std::make_shared<DispatcherT>();
+ rpcDecoder = std::make_shared<DecoderT>();
+ rpcDecoderCommon = std::make_shared<DecoderCommonT>();
+ serverControl = std::make_shared<ServerControlT>();
+ serverTransport = std::make_shared<ServerTransportT>();
+ engineControl = std::make_shared<EngineControlT>();
+ project = std::make_shared<ProjectT>();
+ projectDeployer = std::make_shared<ProjectDeployerT>();
+ // Настройка связей - прямые вызовы без NonOwningDeleter
+ rdkTestManager->SetApplication(application);
+ rpcDispatcher->SetApplication(application);
 
- rpcDecoder.SetDispatcher(&rpcDispatcher);
- rpcDecoderCommon.SetDispatcher(&rpcDispatcher);
+ rpcDecoder->SetDispatcher(rpcDispatcher.get());
+ rpcDecoderCommon->SetDispatcher(rpcDispatcher.get());
 
- application.SetTestManager(std::shared_ptr<UTestManager>(&rdkTestManager, RDK::NonOwningDeleter()));
+ application->SetTestManager(rdkTestManager, application);
 
- rpcDispatcher.SetDecoderPrototype(std::shared_ptr<URpcDecoder>(&rpcDecoder, RDK::NonOwningDeleter()));
- rpcDispatcher.SetCommonDecoder(std::shared_ptr<URpcDecoder>(&rpcDecoderCommon, RDK::NonOwningDeleter()));
+ rpcDispatcher->SetDecoderPrototype(rpcDecoder);
+ rpcDispatcher->SetCommonDecoder(rpcDecoderCommon);
 
- serverControl.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
- serverControl.SetRpcDispatcher(std::shared_ptr<URpcDispatcher>(&rpcDispatcher, RDK::NonOwningDeleter()));
+ serverControl->SetApplication(application);
+ serverControl->SetRpcDispatcher(rpcDispatcher);
 
- serverTransport.SetApplication(std::shared_ptr<UApplication>(&application, RDK::NonOwningDeleter()));
- serverControl.SetServerTransport(std::shared_ptr<UServerTransport>(&serverTransport, RDK::NonOwningDeleter()));
+ serverTransport->SetApplication(application);
+ serverControl->SetServerTransport(serverTransport);
 
  //������ ������������� �� ���� ����
- application.SetProjectDeployer(std::shared_ptr<UProjectDeployer>(&projectDeployer, RDK::NonOwningDeleter()));
-
- //application.SetRpcDispatcher(&rpcDispatcher);
- std::shared_ptr<ServerControlT> serverControlPtr(&serverControl, RDK::NonOwningDeleter());
- std::shared_ptr<EngineControlT> engineControlPtr(&engineControl, RDK::NonOwningDeleter());
- std::shared_ptr<ProjectT> projectPtr(&project, RDK::NonOwningDeleter());
- application.SetServerControl(serverControlPtr);
- application.SetEngineControl(engineControlPtr);
- application.SetProject(projectPtr);
+ application->SetProjectDeployer(projectDeployer, application);
+ application->SetServerControl(serverControl, application);
+ application->SetEngineControl(engineControl, application);
+ application->SetProject(project);
 
 }
 
@@ -153,9 +162,21 @@ FuncProgressBarCallback=func;
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::~UAppCore(void)
 {
- application.PauseChannel(-1);
- application.CloseProject();
- application.UnInit();
+ application->PauseChannel(-1);
+ application->CloseProject();
+ application->UnInit();
+ 
+ // Явное освобождение в обратном порядке инициализации
+ projectDeployer.reset();
+ rdkTestManager.reset();
+ application.reset();
+ project.reset();
+ engineControl.reset();
+ rpcDecoderCommon.reset();
+ serverTransport.reset();
+ serverControl.reset();
+ rpcDecoder.reset();
+ rpcDispatcher.reset();
 }
 
 /// �������������
@@ -223,35 +244,35 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   RDK::Sleep(startupDelay);
  }
 
- application.SetProgramName(programName);
- application.SetCoutLogMode(coutLogMode);
- application.SetApplicationFileName(application_file_name);
- application.SetLogCreationMode(logCreationMode);
- application.SetCalcStopLogLevel(calcStopLogLevel);
+ application->SetProgramName(programName);
+ application->SetCoutLogMode(coutLogMode);
+ application->SetApplicationFileName(application_file_name);
+ application->SetLogCreationMode(logCreationMode);
+ application->SetCalcStopLogLevel(calcStopLogLevel);
 
  if(logDir.empty())
  {
-  application.SetFixedLogPath(log_dir);
-  application.SetLogDir(log_dir);
+  application->SetFixedLogPath(log_dir);
+  application->SetLogDir(log_dir);
  }
  else
  {
-  application.SetFixedLogPath(logDir);
-  application.SetLogDir(logDir);
+  application->SetFixedLogPath(logDir);
+  application->SetLogDir(logDir);
  }
 
- application.SetDebugMode(logDebugMode);
+ application->SetDebugMode(logDebugMode);
 
- application.SetLibrariesPath(librariesPath);
- application.SetClDescPath(clDescPath);
- application.SetConfigsMainPath(configsMainPath);
- application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
- application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);
+ application->SetLibrariesPath(librariesPath);
+ application->SetClDescPath(clDescPath);
+ application->SetConfigsMainPath(configsMainPath);
+ application->ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
+ application->ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);
 
  try
  {
    if(argc > 1)
-     application.ProcessCommandLineArgs(argc, argv);
+     application->ProcessCommandLineArgs(argc, argv);
  }
  catch(exception &ex)
  {
@@ -275,16 +296,16 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
     userName = default_user_name;
 
   if(!userName.empty())
-   application.SetUserName(userName);
+   application->SetUserName(userName);
 
   if(userId>=0)
-   application.SetUserId(userId);
+   application->SetUserId(userId);
  }
  else
-  application.SetUserName(default_user_name);
+  application->SetUserName(default_user_name);
 
 
- application.Init();
+ application->Init();
 
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(20, "Launching application: gui initialization...");
@@ -296,10 +317,10 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::PostInit(void)
 {
- if(application.IsTestMode())
+ if(application->IsTestMode())
  {
    bool closeAfterTests = false;
-   int returnCode = application.Test(closeAfterTests);
+   int returnCode = application->Test(closeAfterTests);
    if(closeAfterTests)
      return returnCode;
  }
@@ -308,32 +329,32 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
   FuncProgressBarCallback(30, "Launching application: init paths and server features...");
 
  if(storageMountPoint!="")
-     application.SetStorageMountPoint(storageMountPoint);
+     application->SetStorageMountPoint(storageMountPoint);
 
  if(databaseMainPath!="")
  {
-     application.SetDatabaseMainPath(databaseMainPath);
+     application->SetDatabaseMainPath(databaseMainPath);
  }
 
  if(temp_proj_path!="")
  {
-    application.GetProjectDeployer()->SetTempProjectDeploymentPath(temp_proj_path);
+    application->GetProjectDeployer()->SetTempProjectDeploymentPath(temp_proj_path);
  }
 
- application.GetServerControl()->GetServerTransport()->SetServerBinding(serverAddress, serverPort);
+ application->GetServerControl()->GetServerTransport()->SetServerBinding(serverAddress, serverPort);
  Log_LogMessage(RDK_EX_DEBUG,("ServerAutoStartFlag: "+sntoa(serverAutostartFlag)).c_str());
  Log_LogMessage(RDK_EX_DEBUG,("Test cout "+serverAddress+" "+sntoa(serverPort)).c_str());
  if(serverAutostartFlag)
  {
    Log_LogMessage(RDK_EX_INFO,("Start TCP server on "+serverAddress+" "+sntoa(serverPort)).c_str());
-   application.GetServerControl()->GetServerTransport()->ServerStart();
+   application->GetServerControl()->GetServerTransport()->ServerStart();
  }
 
- application.GetProjectDeployer()->SetStandaloneTask(serverStandaloneTask);
+ application->GetProjectDeployer()->SetStandaloneTask(serverStandaloneTask);
 
  if(remoteFtpDatabasePath!="")
  {
-     application.GetProjectDeployer()->SetFtpRemotePath(remoteFtpDatabasePath);
+     application->GetProjectDeployer()->SetFtpRemotePath(remoteFtpDatabasePath);
  }
 
  if(FuncProgressBarCallback)
@@ -341,22 +362,22 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  if(database_login!="" && database_password!="")
  {
-     application.GetProjectDeployer()->SetDatabaseAccess(database_address, database_name, database_login, database_password);
+     application->GetProjectDeployer()->SetDatabaseAccess(database_address, database_name, database_login, database_password);
  }
 
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(50, "Launching application: load configuration...");
 
  if(!startProjectName.empty())
-  application.OpenProject(startProjectName);
+  application->OpenProject(startProjectName);
  else
  if(autoexecLastProjectFlag)
  {
-  const std::list<std::string> last_projects=application.GetLastProjectsList();
+  const std::list<std::string> last_projects=application->GetLastProjectsList();
   if(!last_projects.empty())
   {
    std::string last_project_name=last_projects.front();
-   application.OpenProject(last_project_name);
+   application->OpenProject(last_project_name);
   }
  }
 
@@ -365,9 +386,9 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  if(autoStartProjectFlag)
  {
-  if(!application.GetProjectOpenFlag())
+  if(!application->GetProjectOpenFlag())
    return -1;
-  application.StartChannel(-1);
+  application->StartChannel(-1);
  }
 
  if(FuncProgressBarCallback)

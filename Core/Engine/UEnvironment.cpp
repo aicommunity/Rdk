@@ -219,7 +219,7 @@ double UEnvironment::CalcRTPerformance(void) const
 // ��������� �� ������
 std::shared_ptr<ULoggerEnv> const UEnvironment::GetLogger(void) const
 {
- return std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter());
+ return Logger;
 }
 
 bool UEnvironment::SetLogger(std::shared_ptr<ULoggerEnv> logger)
@@ -269,7 +269,8 @@ bool UEnvironment::CreateModel(const NameT& classname)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return false;
  }
 
@@ -277,14 +278,18 @@ bool UEnvironment::CreateModel(const NameT& classname)
   return false;
 
  CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
- Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(GetStorage()->TakeObject(classname)).get());
- Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
- Model->SetEnvironment(std::shared_ptr<UEnvironment>(this));
- Ready=false;
- if(Model)
+ Model=GetStorage()->TakeObject(classname);
+ if(!Model)
  {
-  return true;
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Failed to create model from storage. ClassName=" + classname);
+  return false;
  }
+ if(Logger)
+  Model->SetLogger(Logger);
+ Model->SetEnvironment(RDK::safe_shared_cast<UEnvironment>(this));
+ Ready=false;
+ return true;
 
  return false;
 }
@@ -294,7 +299,8 @@ bool UEnvironment::CreateModel(const UId& classid)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return false;
  }
 
@@ -302,14 +308,18 @@ bool UEnvironment::CreateModel(const UId& classid)
   return false;
 
  CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
- Model=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(Storage->TakeObject(classid)).get());
- Model->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
- Model->SetEnvironment(std::shared_ptr<UEnvironment>(this));
+ Model=Storage->TakeObject(classid);
+ if(!Model)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Failed to create model from storage. ClassId=" + std::to_string(classid));
+  return false;
+ }
+ if(Logger)
+  Model->SetLogger(Logger);
+ Model->SetEnvironment(RDK::safe_shared_cast<UEnvironment>(this));
  Ready=false;
- if(Model)
-  return true;
-
- return false;
+ return true;
 }
 
 // ���������� ������� ������
@@ -367,7 +377,8 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -381,7 +392,8 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -396,7 +408,8 @@ void UEnvironment::ResetCurrentComponent(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -409,7 +422,8 @@ void UEnvironment::UpCurrentComponent(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -425,7 +439,8 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -436,7 +451,8 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -543,7 +559,8 @@ bool UEnvironment::RegisterSourceController(const std::string &component_name, c
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return false;
  }
 
@@ -558,7 +575,8 @@ bool UEnvironment::CallSourceController(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return false;
  }
 
@@ -672,7 +690,8 @@ void UEnvironment::IncreaseModelTimeByStep(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 
@@ -748,7 +767,8 @@ void UEnvironment::RTCalculate(void)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't ialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't ialized.");
   return;
  }
 
@@ -839,7 +859,8 @@ void UEnvironment::FastCalculate(double calc_interval)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
   return;
  }
 

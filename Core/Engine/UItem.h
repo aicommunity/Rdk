@@ -156,6 +156,19 @@ protected: // �������� ��������
 //UAConnector2DVector AssociatedConnectors;
 std::map<std::string, std::vector<PUAConnector> > RelatedConnectors;
 
+// Helper методы для безопасного получения shared_ptr на this
+std::shared_ptr<UItem> get_shared_from_this() {
+    return std::static_pointer_cast<UItem>(
+        UComponent::shared_from_this()
+    );
+}
+
+std::weak_ptr<UItem> get_weak_from_this() {
+    return std::static_pointer_cast<UItem>(
+        UComponent::shared_from_this()
+    );
+}
+
 protected: // ��������� ����������. Read Only!
 
 protected: // ���������� �������� ������� � ������� �������. Read only!
@@ -299,7 +312,7 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
  ULinkSideT<T> item;
  ULinkSideT<T> connector;
 
-  GetLongId(std::shared_ptr<UContainer>(netlevel.get(), RDK::NonOwningDeleter()),item.Id);
+  GetLongId(safe_shared_cast<UContainer>(netlevel.get()),item.Id);
  if(item.Id.size() == 0)
   return linkslist;
  link.Item=item;

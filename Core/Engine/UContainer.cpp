@@ -90,7 +90,7 @@ UContainer::UContainer(void)
 UContainer::~UContainer(void)
 {
  if(GetStaticFlag() && Owner.lock())
-  GetOwner()->DelStaticComponent(std::shared_ptr<UContainer>(this, [](UContainer*){})); // Non-owning deleter
+  GetOwner()->DelStaticComponent(get_shared_from_this());
  DelAllComponentsRaw();
  DelAllStaticComponents();
 
@@ -101,7 +101,7 @@ UContainer::~UContainer(void)
 
  auto storage = Storage.lock();
  if(storage && !GetStaticFlag())
-  storage->PopObject(std::shared_ptr<UContainer>(this));
+  storage->PopObject(get_shared_from_this());
 }
 // --------------------------
 
@@ -508,7 +508,7 @@ void UContainer::BreakOwner(void)
 {
  std::shared_ptr<UContainer> owner(GetOwner().get());
  if(owner)
-  owner->DelComponent(std::shared_ptr<UContainer>(this, [](UContainer*){}), false); // Non-owning deleter
+  owner->DelComponent(get_shared_from_this(), false);
 }
 
 // ������������� ��������� �� �������� ��������� ���� ��������
@@ -834,7 +834,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name,
 
  for(size_t i=0; i<numComp; i++)
  {
-  compName=components[i]->GetLongName(std::shared_ptr<UContainer>(this, [](UContainer*){}), compName); // Non-owning deleter
+  compName=components[i]->GetLongName(get_shared_from_this(), compName);
   buffer.push_back(compName);
  }
 
@@ -1033,7 +1033,7 @@ std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bo
 
  if(storage)
  {
-  copy=std::dynamic_pointer_cast<UContainer>(storage->TakeObject(Class, std::shared_ptr<UComponent>(this, [](UComponent*){}))); // Non-owning deleter
+  copy=storage->TakeObject(Class, get_shared_from_this());
  }
  else
  {
@@ -1048,11 +1048,11 @@ std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bo
 // � �������� ����������
 bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
 {
- CopyProperties(std::shared_ptr<UComponent>(target.get(), RDK::NonOwningDeleter()), ptParameter);
+ CopyProperties(safe_shared_cast<UComponent>(target.get()), ptParameter);
  target->Build();
 
  if(copystate)
-  CopyProperties(std::shared_ptr<UComponent>(target.get(), RDK::NonOwningDeleter()), ptState);
+  CopyProperties(safe_shared_cast<UComponent>(target.get()), ptState);
 
  CopyComponents(target,stor);
  return true;
@@ -1069,7 +1069,7 @@ void UContainer::Free(void)
  {
   BreakOwner();
   if(!StaticFlag)
-   GetStorage()->ReturnObject(std::shared_ptr<UComponent>(this, [](UComponent*){})); // Non-owning deleter
+   GetStorage()->ReturnObject(get_shared_from_this());
  }
  else
   UComponent::Free();
@@ -1263,7 +1263,7 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
 
  comp->SetLogger(Logger.lock());
  comp->Id = id;
- comp->SetOwner(std::shared_ptr<UComponent>(this, RDK::NonOwningDeleter()));
+ comp->SetOwner(safe_shared_cast<UComponent>(this));
 
  // ��������� ��������� � ������� ������������ ���������
  SetLookupComponent(comp->Name, comp->Id);
@@ -1608,7 +1608,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
+  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
   buffer.Add(id);
  }
 
@@ -1620,7 +1620,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
   if(temp)
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
+   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
    buffer.Add(id);
   }
 
@@ -1649,7 +1649,7 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
+  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
   buffer.Add(id);
  }
 
@@ -1662,7 +1662,7 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
 //  if(dynamic_cast<UItem*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
+   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
    buffer.Add(id);
   }
 
@@ -1690,7 +1690,7 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
+  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
   buffer.Add(id);
  }
 
@@ -1703,7 +1703,7 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
 //  if(dynamic_cast<UNet*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):std::shared_ptr<UContainer>(this),id);
+   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
    buffer.Add(id);
   }
 
@@ -3218,7 +3218,7 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
 
   try
   {
-   variable.Property->Save(std::shared_ptr<USerStorage>(&xml, RDK::NonOwningDeleter()),true);
+   variable.Property->Save(safe_shared_cast<USerStorage>(&xml),true);
    std::string str_data=xml.GetNodeText();
    if(str_data.empty())
    {

@@ -109,7 +109,8 @@ bool CheckMask(unsigned int mask) const;
 };
 
 
-class RDK_LIB_TYPE UComponent: public UModule
+class RDK_LIB_TYPE UComponent: public UModule,
+                               public std::enable_shared_from_this<UComponent>
 {
 friend class UStorage;
 public: // ���� ������
@@ -250,6 +251,16 @@ protected:
 /// ������������ ���������� ���������� ������ ����������, �������������� ��� �����������
 virtual void UpdateInternalData(void);
 virtual void AUpdateInternalData(void);
+
+// Helper методы для безопасного получения shared_ptr на this
+std::shared_ptr<UComponent> get_shared_from_this() {
+    return shared_from_this();
+}
+
+// Helper метод для безопасного получения weak_ptr на this  
+std::weak_ptr<UComponent> get_weak_from_this() {
+    return weak_from_this();
+}
 // --------------------------
 
 // --------------------------
@@ -367,6 +378,7 @@ explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
 };
+
 
 template<typename T>
 static UComponent* NewStaticFunc()

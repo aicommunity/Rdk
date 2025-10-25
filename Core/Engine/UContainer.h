@@ -205,6 +205,19 @@ protected:
 /// ������ �������, ��������� � ��������� ���
 std::vector<std::string> PropertiesForDetailedLog;
 
+// Helper методы для безопасного получения shared_ptr на this
+std::shared_ptr<UContainer> get_shared_from_this() {
+    return std::static_pointer_cast<UContainer>(
+        UComponent::shared_from_this()
+    );
+}
+
+std::weak_ptr<UContainer> get_weak_from_this() {
+    return std::static_pointer_cast<UContainer>(
+        UComponent::shared_from_this()
+    );
+}
+
 // --------------------------
 // ������������ � �����������
 // --------------------------
@@ -1108,7 +1121,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
  string compName;
 
  if(!net)
-  root=std::shared_ptr<UContainer>(this, RDK::NonOwningDeleter());
+  root=safe_shared_cast<UContainer>(this);
 
  switch(find_all)
  {

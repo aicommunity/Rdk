@@ -117,7 +117,7 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
   {
     DefaultGUIState();
     ClassDescription = std::make_shared<RDK::UContainerDescription>();
-    ClassDescription->SetStorage(std::shared_ptr<RDK::UStorage>(storage.Get(), RDK::NonOwningDeleter()));
+    ClassDescription->SetStorage(safe_shared_cast<RDK::UStorage>(storage.Get()));
     ClassDescription->SetClassNameValue(ClassName);
     ui->labelClassNamVal->setText(QString::fromStdString(ClassName));
     FillProperties();

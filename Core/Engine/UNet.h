@@ -484,7 +484,7 @@ std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const 
  std::shared_ptr<T> comp;
  if(found_comp)
  {
-  comp=std::shared_ptr<T>(std::dynamic_pointer_cast<T>(std::shared_ptr<UContainer>(found_comp.get())).get());
+  comp=std::dynamic_pointer_cast<T>(found_comp);
   if(comp && comp->GetCompClassName() == class_name)
    return comp;
   else
@@ -498,14 +498,14 @@ std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const 
   return comp;
  }
 
- std::shared_ptr<UComponent> proto=storage->TakeObject(class_name);
+ std::shared_ptr<UContainer> proto=storage->TakeObject(class_name);
  if(!proto)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in the storage. ClassName=")+class_name);
   return comp;
  }
 
- comp=std::shared_ptr<T>(std::dynamic_pointer_cast<T>(std::shared_ptr<UComponent>(proto.get())).get());
+ comp=std::dynamic_pointer_cast<T>(proto);
  if(!comp)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - component found in the storage but cannot convert to ")+std::string(typeid(T).name())+std::string(". ClassName=")+class_name);

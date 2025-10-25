@@ -376,7 +376,7 @@ bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironme
 
  if(!Storage)
   return false;
- Storage->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
+ Storage->SetLogger(safe_shared_cast<ULoggerEnv>(Logger.get()));
 
 
  RDK_SYS_TRY
@@ -3115,7 +3115,7 @@ int UEngine::Model_Clear(void)
   try
   {
    AccessCache.clear();
-   std::shared_ptr<UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
+   std::shared_ptr<UContainer> model=Environment->GetModel();
 
    if(!model)
 	return RDK_E_MODEL_NOT_FOUND;
@@ -3210,7 +3210,7 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
   try
   {
    std::shared_ptr<UContainer> destcont=FindComponent(stringid);
-   std::shared_ptr<UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classname));
+   std::shared_ptr<UContainer> cont=Storage->TakeObject(classname);
 
    if(!cont)
    {
@@ -7141,11 +7141,11 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	J=external_classes->end();
 	while(I != J)
 	{
-		std::shared_ptr<UComponent> cont = std::shared_ptr<UComponent>(*I, [](UComponent*){}); // Non-owning deleter
-		cont->SetLogger(std::shared_ptr<ULoggerEnv>(Storage->GetLogger().get(), RDK::NonOwningDeleter()));
+		std::shared_ptr<UComponent> cont = safe_shared_cast<UComponent>(*I);
+		cont->SetLogger(safe_shared_cast<ULoggerEnv>(Storage->GetLogger().get()));
 		cont->SetStorage(Storage);
 		cont->Build();
-		std::shared_ptr<UVirtualMethodFactory> factory = std::make_shared<UVirtualMethodFactory>(cont);
+		std::shared_ptr<UVirtualMethodFactory> factory = std::make_shared<UVirtualMethodFactory>(std::dynamic_pointer_cast<UContainer>(cont));
 		Storage->AddClass(factory);
 	 ++I;
 	}
@@ -7286,11 +7286,11 @@ std::shared_ptr<UContainer> UEngine::FindComponent(const char *stringid) const
    if(!longid.GetSize() || longid[0] == ForbiddenId)
     cont=model;
    else
-    cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
+    cont=model->GetComponentL(longid);
   }
   else // ...����� ���������� ��� ���
   {
-   cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
+   cont=model->GetComponentL(stringid);
   }
 
  }

@@ -163,6 +163,19 @@ std::map<std::string, std::vector<UCItem> > ConnectedItemList;
 // ��������, ������������ � ������, ����� ���������� ������ �� CItem ������� ����������
 UCItem DummyItem;
 
+// Helper методы для безопасного получения shared_ptr на this
+std::shared_ptr<UConnector> get_shared_from_this() {
+    return std::static_pointer_cast<UConnector>(
+        UComponent::shared_from_this()
+    );
+}
+
+std::weak_ptr<UConnector> get_weak_from_this() {
+    return std::static_pointer_cast<UConnector>(
+        UComponent::shared_from_this()
+    );
+}
+
 public: // ������
 // --------------------------
 // ������������ � �����������
@@ -317,7 +330,7 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<
  ULinkT<T> link;
  ULinkSideT<T> connector;
  ULinkSideT<T> item;
- GetLongId(std::shared_ptr<UContainer>(netlevel.get(), RDK::NonOwningDeleter()),connector.Id);
+ GetLongId(safe_shared_cast<UContainer>(netlevel.get()),connector.Id);
  if(connector.Id.size()==0)
   return linkslist;
 

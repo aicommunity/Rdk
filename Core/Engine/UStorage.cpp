@@ -397,7 +397,7 @@ void UStorage::ClearClassesStorage(bool force)
 	if(I->second)
 	{
      std::string name=FindClassName(I->first);
-	 delete I->second.get();
+	 // shared_ptr сам управляет памятью, не нужно вызывать delete
 	}
    }
    catch(...)
@@ -433,13 +433,21 @@ void UStorage::ClearClassesStorage(bool force)
 // ���� 'Activity' ������� ������������ � true
 // ���� ���������� ������� �� ���������� �� ��������� � �����������
 // � ���������
-std::shared_ptr<UComponent> UStorage::TakeObject(const UId &classid, const std::shared_ptr<UComponent> &prototype)
+std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::shared_ptr<UContainer> &prototype)
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
   throw EClassIdNotExist(classid);
 
  UClassStorageElement tmpl=tmplI->second;
+ 
+ // Проверяем валидность tmpl
+ if(!tmpl)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid class template for classid: ")+std::to_string(classid));
+  return 0;
+ }
 
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
  if(instances != ObjectsStorage.end())
@@ -464,9 +472,9 @@ std::shared_ptr<UComponent> UStorage::TakeObject(const UId &classid, const std::
     element->UseFlag=true;
     obj->Default();
     if(!prototype)
-     tmpl->ResetComponent(std::shared_ptr<UComponent>(obj.get()));
+     tmpl->ResetComponent(std::shared_ptr<UContainer>(obj.get()));
     else
-      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,std::shared_ptr<UStorage>(this, [](UStorage*){}));
+      prototype->Copy(obj,get_shared_from_this());
 
     obj->Activity = true;
    }
@@ -479,11 +487,23 @@ std::shared_ptr<UComponent> UStorage::TakeObject(const UId &classid, const std::
  std::shared_ptr<UContainer> obj;
  if(prototype)
  {
-  obj=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(tmpl->Prototype(std::shared_ptr<UComponent>(prototype.get()))).get());
+  if(!tmpl)
+  {
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid template for prototype creation, classid: ")+std::to_string(classid));
+   return 0;
+  }
+  obj=tmpl->Prototype(prototype);
  }
  else
  {
-  obj=std::shared_ptr<UContainer>(dynamic_pointer_cast<UContainer>(tmpl->New()).get());
+  if(!tmpl)
+  {
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid template for new object creation, classid: ")+std::to_string(classid));
+   return 0;
+  }
+  obj=tmpl->New();
  }
 
  if(!obj)
@@ -494,20 +514,35 @@ std::shared_ptr<UComponent> UStorage::TakeObject(const UId &classid, const std::
  }
 
  PushObject(classid,obj);
- obj->SetLogger(std::shared_ptr<ULoggerEnv>(Logger.get(), RDK::NonOwningDeleter()));
+ obj->SetLogger(safe_shared_cast<ULoggerEnv>(Logger.get()));
  obj->Activity = true;
 
- return static_pointer_cast<UComponent>(obj);
+ return obj;
 }
 
-std::shared_ptr<UComponent> UStorage::TakeObject(const NameT &classname, const std::shared_ptr<UComponent> &prototype)
+std::shared_ptr<UContainer> UStorage::TakeObject(const NameT &classname, const std::shared_ptr<UContainer> &prototype)
 {
- return TakeObject(FindClassId(classname),prototype);
+ try
+ {
+  return TakeObject(FindClassId(classname),prototype);
+ }
+ catch(const EClassNameNotExist& e)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class not found: ")+classname);
+  return nullptr;
+ }
+ catch(...)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Unknown error when finding class: ")+classname);
+  return nullptr;
+ }
 }
 
 
 // ���������� Id ������, ���������� ������� 'object'
-UId UStorage::FindClass(std::shared_ptr<UComponent> object) const
+UId UStorage::FindClass(std::shared_ptr<UContainer> object) const
 {
  if(!object)
   return ForbiddenId;
@@ -787,7 +822,7 @@ void UStorage::DefaultObject(std::shared_ptr<UContainer> object)
  UClassStorageElement tmpl=tmplI->second;
 
  object->Default();
- tmpl->ResetComponent(std::shared_ptr<UComponent>(object.get()));
+ tmpl->ResetComponent(std::shared_ptr<UContainer>(object.get()));
 
  object->Activity = activity;
  object->Coord = coord;
@@ -1795,7 +1830,7 @@ void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object
  //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
 
- object->SetStorage(std::shared_ptr<UStorage>(this));
+ object->SetStorage(get_shared_from_this());
 }
 
 // ������� ��� ��������� ������ �� ��������� � ����������
@@ -1826,12 +1861,11 @@ void UStorage::MoveObject(std::shared_ptr<UContainer> object, std::shared_ptr<US
 // ���������� ������ � ���������
 // ��������� ������ ���������� ��� ��������� � ���������
 // ���� 'Activity' ������� ������������ � false
-void UStorage::ReturnObject(std::shared_ptr<UComponent> object)
+void UStorage::ReturnObject(std::shared_ptr<UContainer> object)
 {
- std::shared_ptr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
 
- obj->Activity = false;
- obj->BreakOwner();
+ object->Activity = false;
+ object->BreakOwner();
 
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())

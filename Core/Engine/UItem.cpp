@@ -437,7 +437,7 @@ bool UItem::Connect(std::shared_ptr<UConnector> c, const NameT &item_property_na
  if(!Build())
   return false;
 
- if(!c->ConnectToItem(std::shared_ptr<UItem>(this, [](UItem*){}),item_property_name, connector_property_name, c_index, forced_connect_same_item))
+ if(!c->ConnectToItem(get_shared_from_this(),item_property_name, connector_property_name, c_index, forced_connect_same_item))
   return false;
 
  std::vector<PUAConnector> &vec=RelatedConnectors[item_property_name];
@@ -456,7 +456,7 @@ void UItem::Disconnect(std::shared_ptr<UConnector> c)
  Build();
 
  if(c)
-  c->DisconnectFromItem(std::shared_ptr<UItem>(this, [](UItem*){}));
+  c->DisconnectFromItem(get_shared_from_this());
 
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
 
@@ -486,7 +486,7 @@ void UItem::Disconnect(std::shared_ptr<UConnector> c, const NameT &item_property
  if(I == RelatedConnectors.end())
   return;
 
- UCItem citem=c->GetCItem(connector_property_name,std::shared_ptr<UItem>(this, [](UItem*){}),connected_c_index);
+ UCItem citem=c->GetCItem(connector_property_name,get_shared_from_this(),connected_c_index);
  int i=0;
  while(i<int(I->second.size()))
  {
@@ -495,7 +495,7 @@ void UItem::Disconnect(std::shared_ptr<UConnector> c, const NameT &item_property
    if(citem.Name == item_property_name && citem.Item == this)
    {
 	I->second.erase(I->second.begin()+i);
-    c->DisconnectFromItem(std::shared_ptr<UItem>(this, [](UItem*){}), item_property_name, connector_property_name, connected_c_index);
+    c->DisconnectFromItem(get_shared_from_this(), item_property_name, connector_property_name, connected_c_index);
    }
    else
     ++i;
@@ -634,7 +634,7 @@ void UItem::BuildLinks(void)
 	if(I->first == indexes.OutputName)
 	{
 	 int c_index(-1);
-	 I->second[i]->ConnectToItem(std::shared_ptr<UItem>(this, [](UItem*){}),indexes.OutputName,indexes.InputName,c_index);
+	 I->second[i]->ConnectToItem(get_shared_from_this(),indexes.OutputName,indexes.InputName,c_index);
 	}
    }
   }

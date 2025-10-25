@@ -1,12 +1,10 @@
 #ifndef UApplication_CPP
 #define UApplication_CPP
 
-#ifndef __BORLANDC__
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
-#endif
 
 #include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
@@ -15,20 +13,15 @@
 using namespace std;
 
 
-#ifdef __BORLANDC__
-//#include "Bcb/Application.bcb.cpp"
-#endif
 
 extern void ExceptionHandler(int channel_index); // TODO: ����� �� ���� �� ������
 
 namespace RDK {
 
-#ifndef __BORLANDC__
 namespace po = boost::program_options;
 
 po::options_description CmdLineDescription("Allowed options");
 po::variables_map CmdVariablesMap;
-#endif
 
 // --------------------------
 // ������������ � �����������
@@ -570,7 +563,7 @@ std::shared_ptr<UEngineControl> UApplication::GetEngineControl(void)
 
 /// ������������� ����� ���������� ������
 /// ��������������� �� ������������ ������ ����������� ����� �� ���������� �������
-bool UApplication::SetEngineControl(const std::shared_ptr<UEngineControl> &value)
+bool UApplication::SetEngineControl(const std::shared_ptr<UEngineControl> &value, const std::shared_ptr<UApplication> &self)
 {
  if(EngineControl == value)
   return true;
@@ -582,9 +575,8 @@ bool UApplication::SetEngineControl(const std::shared_ptr<UEngineControl> &value
  }
 
  EngineControl=value;
- // Create a weak_ptr from this to avoid double deletion
- std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
- EngineControl->SetApplication(self_ptr);
+ // Use the provided shared_ptr to avoid double deletion
+ EngineControl->SetApplication(self);
  return true;
 }
 
@@ -633,7 +625,7 @@ std::shared_ptr<UServerControl> UApplication::GetServerControl(void) const
 
 /// ������������� ����� ���������� �������
 /// ��������������� �� ������������ ������ ����������� ����� �� ���������� �������
-bool UApplication::SetServerControl(const std::shared_ptr<UServerControl> &value)
+bool UApplication::SetServerControl(const std::shared_ptr<UServerControl> &value, const std::shared_ptr<UApplication> &self)
 {
  if(ServerControl == value)
   return true;
@@ -642,9 +634,8 @@ bool UApplication::SetServerControl(const std::shared_ptr<UServerControl> &value
  if(ServerControl)
   ServerControl->SetApplication(0);
  ServerControl=value;
- // Create a weak_ptr from this to avoid double deletion
- std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
- ServerControl->SetApplication(self_ptr);
+ // Use the provided shared_ptr to avoid double deletion
+ ServerControl->SetApplication(self);
  return true;
 }
 
@@ -655,7 +646,7 @@ std::shared_ptr<UTestManager> UApplication::GetTestManager(void)
  return TestManager;
 }
 
-bool UApplication::SetTestManager(const std::shared_ptr<UTestManager> &value)
+bool UApplication::SetTestManager(const std::shared_ptr<UTestManager> &value, const std::shared_ptr<UApplication> &self)
 {
  if(TestManager == value)
   return true;
@@ -664,9 +655,8 @@ bool UApplication::SetTestManager(const std::shared_ptr<UTestManager> &value)
   TestManager->SetApplication(0);
 
  TestManager=value;
- // Create a weak_ptr from this to avoid double deletion
- std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
- TestManager->SetApplication(self_ptr);
+ // Use the provided shared_ptr to avoid double deletion
+ TestManager->SetApplication(self);
  return true;
 }
 
@@ -676,7 +666,7 @@ std::shared_ptr<UProjectDeployer> UApplication::GetProjectDeployer(void)
  return ProjectDeployer;
 }
 
- bool UApplication::SetProjectDeployer(const std::shared_ptr<UProjectDeployer> &value)
+ bool UApplication::SetProjectDeployer(const std::shared_ptr<UProjectDeployer> &value, const std::shared_ptr<UApplication> &self)
 {
      if(ProjectDeployer == value)
       return true;
@@ -685,9 +675,8 @@ std::shared_ptr<UProjectDeployer> UApplication::GetProjectDeployer(void)
       ProjectDeployer->SetApplication(0);
 
      ProjectDeployer=value;
-     // Create a weak_ptr from this to avoid double deletion
-     std::shared_ptr<UApplication> self_ptr = std::shared_ptr<UApplication>(this, [](UApplication*){}); // Non-owning deleter
-     ProjectDeployer->SetApplication(self_ptr);
+     // Use the provided shared_ptr to avoid double deletion
+     ProjectDeployer->SetApplication(self);
 
      return true;
 }
@@ -849,7 +838,6 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
     CloseAfterTest=false;
 }
 
-#ifndef __BORLANDC__
 /// ������������ ������� ��������� ������ � ���������� ���������� � CommandLineArgs
 void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 {
@@ -880,7 +868,6 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
   else
 	CloseAfterTest=true;
 }
-#endif
 // --------------------------
 
 // --------------------------
@@ -2497,7 +2484,6 @@ void UApplication::ChangeTestModeState(bool state)
 /// ������������� ������� ��������� ������
 void UApplication::InitCmdParser(void)
 {
-#ifndef __BORLANDC__
  CmdLineDescription.add_options()
     ("help", "produce help message")
     ("standalone", "standalone vesrion of server without network")
@@ -2510,7 +2496,6 @@ void UApplication::InitCmdParser(void)
     ("save_model_bmp", po::value<string>(), "Component name")
     ("session", po::value<unsigned>(), "Session Id")
 ;
-#endif
 }
 /*
 int UApplication::ParseArgs(const std::vector<std::string> &args, std::map<std::string,std::string> &parsed_args)
@@ -2611,4 +2596,3 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
 }
 
 #endif
-

@@ -7,10 +7,10 @@
 namespace RDK
 {
 
- UVirtualMethodFactory::UVirtualMethodFactory(std::shared_ptr<UComponent> comp)
+ UVirtualMethodFactory::UVirtualMethodFactory(std::shared_ptr<UContainer> comp)
   : UComponentAbstractFactory(comp->GetStorage().get())
  {
-  Component = std::dynamic_pointer_cast<UContainer>(comp);
+  Component = comp;
   if(Component)
   {
 //   Component->Default();
@@ -23,34 +23,54 @@ namespace RDK
   // Component is now managed by std::shared_ptr, no manual deletion needed
  }
 
- std::shared_ptr<UComponent> UVirtualMethodFactory::New()
+ std::shared_ptr<UContainer> UVirtualMethodFactory::New()
  {
   if(!Component)
    return nullptr;
 
-  std::shared_ptr<UContainer> obj(Component->New());
-  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
-  obj->Default();
-  Component->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
-  return std::static_pointer_cast<UComponent>(obj);
+  try
+  {
+   std::shared_ptr<UContainer> obj(Component->New());
+   if(!obj)
+    return nullptr;
+    
+   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
+   obj->Default();
+   Component->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
+   return obj;
+  }
+  catch(...)
+  {
+   return nullptr;
+  }
  }
 
- std::shared_ptr<UComponent> UVirtualMethodFactory::Prototype(std::shared_ptr<UComponent> prototype)
+ std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UContainer> prototype)
  {
   if(!Component)
    return nullptr;
 
-  std::shared_ptr<UContainer> obj(Component->New());
-  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
-  obj->Default();
-  std::dynamic_pointer_cast<UContainer>(prototype)->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
-  return std::static_pointer_cast<UComponent>(obj);
+  try
+  {
+   std::shared_ptr<UContainer> obj(Component->New());
+   if(!obj)
+    return nullptr;
+    
+   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
+   obj->Default();
+   prototype->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
+   return obj;
+  }
+  catch(...)
+  {
+   return nullptr;
+  }
  }
 
- void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UComponent> component) const
+ void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UContainer> component) const
  {
   if(Component)
-   Component->Copy(std::shared_ptr<UContainer>(std::dynamic_pointer_cast<UContainer>(component).get()), std::shared_ptr<UStorage>(Component->GetStorage().get()));
+   Component->Copy(std::shared_ptr<UContainer>(component.get()), std::shared_ptr<UStorage>(Component->GetStorage().get()));
  }
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()
@@ -64,7 +84,7 @@ void UVirtualMethodFactory::FreeComponent()
 }
 
 
- UComponentFactoryMethod::UComponentFactoryMethod(const std::shared_ptr<UStorage> &storage, UComponent* (*funcPointer)(), const std::string &default_component_name)
+ UComponentFactoryMethod::UComponentFactoryMethod(const std::shared_ptr<UStorage> &storage, UContainer* (*funcPointer)(), const std::string &default_component_name)
   : UComponentAbstractFactory(storage.get())
  {
   Method = funcPointer;
@@ -76,26 +96,46 @@ void UVirtualMethodFactory::FreeComponent()
 
  }
 
- std::shared_ptr<UComponent> UComponentFactoryMethod::New()
+ std::shared_ptr<UContainer> UComponentFactoryMethod::New()
  {
-  std::shared_ptr<UComponent> obj = std::shared_ptr<UComponent>(Method());
-  std::dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
-  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
-  obj->Default();
-  return obj;
+  try
+  {
+   std::shared_ptr<UContainer> obj = std::shared_ptr<UContainer>(Method());
+   if(!obj)
+    return nullptr;
+    
+   obj->Name = DefaultComponentName;
+   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
+   obj->Default();
+   return obj;
+  }
+  catch(...)
+  {
+   return nullptr;
+  }
  }
 
- std::shared_ptr<UComponent> UComponentFactoryMethod::Prototype(std::shared_ptr<UComponent> prototype)
+ std::shared_ptr<UContainer> UComponentFactoryMethod::Prototype(std::shared_ptr<UContainer> prototype)
  {
-  std::shared_ptr<UContainer> obj = std::shared_ptr<UContainer>(dynamic_cast<UContainer*>(Method()));
-  obj->SetStorage(std::shared_ptr<UStorage>(Storage));
-  obj->Default();
-  obj->Name = DefaultComponentName;
-  std::dynamic_pointer_cast<const UContainer>(prototype)->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
-  return std::static_pointer_cast<UComponent>(obj);
+  try
+  {
+   std::shared_ptr<UContainer> obj = std::shared_ptr<UContainer>(Method());
+   if(!obj)
+    return nullptr;
+    
+   obj->SetStorage(std::shared_ptr<UStorage>(Storage));
+   obj->Default();
+   obj->Name = DefaultComponentName;
+   prototype->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
+   return obj;
+  }
+  catch(...)
+  {
+   return nullptr;
+  }
  }
 
- void UComponentFactoryMethod::ResetComponent(std::shared_ptr<UComponent> component) const
+ void UComponentFactoryMethod::ResetComponent(std::shared_ptr<UContainer> component) const
  {
   component->Default();
  }

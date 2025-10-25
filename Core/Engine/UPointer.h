@@ -49,18 +49,18 @@ UEPointer(const string &name, OwnerT * const owner)
  Source=0;
  reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(
   name,
-  std::shared_ptr<UIPointer>(this, RDK::NonOwningDeleter())
+  RDK::safe_shared_cast<UIPointer>(this)
  );
 };
 // --------------------------
 
 // Legacy std::shared_ptr method
 std::shared_ptr<UContainer> const GetUEPtr(void) const
-{ return std::shared_ptr<UContainer>(Source, RDK::NonOwningDeleter()); };
+{ return safe_shared_cast<UContainer>(Source); };
 
 // Implement UIPointer API
 std::shared_ptr<UContainer> Get(void) const override
-{ return std::shared_ptr<UContainer>(Source, RDK::NonOwningDeleter()); };
+{ return safe_shared_cast<UContainer>(Source); };
 
 virtual void Del(std::shared_ptr<UContainer> source)
 {
@@ -115,7 +115,7 @@ public: // ������
 // --------------------------
 UCPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
-{ Size=0; Sources=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,std::shared_ptr<UIPointer>(this, RDK::NonOwningDeleter())); };
+{ Size=0; Sources=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,safe_shared_cast<UIPointer>(this)); };
 virtual ~UCPointer(void)
 {
  if(Sources)
@@ -128,10 +128,10 @@ virtual ~UCPointer(void)
 // --------------------------
 
 std::shared_ptr<UContainer> Get(void) const override
-{ return std::shared_ptr<UContainer>(*Sources, RDK::NonOwningDeleter()); };
+{ return safe_shared_cast<UContainer>(*Sources); };
 
 std::shared_ptr<UContainer> const Get(size_t index) const
-{ return std::shared_ptr<UContainer>(Sources[index], RDK::NonOwningDeleter()); };
+{ return safe_shared_cast<UContainer>(Sources[index]); };
 
 virtual void Set(std::shared_ptr<UContainer> source)
 {

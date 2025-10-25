@@ -15,11 +15,11 @@ UPropertyDescription::UPropertyDescription(void)
 
 }
 
-// Описания общих свойств
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UContainerDescription::UContainerDescription(void)
 {
@@ -40,15 +40,15 @@ UContainerDescription::~UContainerDescription(void)
 // --------------------------
 
 // --------------------------
-// Методы управления общими свойствами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 /*
-// Описание общего свойства
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const UPropertyDescription& UContainerDescription::GetCommonProperty(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
- // Заглушка! Здесь исключение если не найдено
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ! пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
  return I->second;
 }
@@ -60,7 +60,7 @@ bool UContainerDescription::SetCommonProperty(const std::string &name, const UPr
  return true;
 }
 
-// Проверяет наличие общего свойства с заданным именем
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UContainerDescription::CheckCommonProperty(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
@@ -71,9 +71,9 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 
 
 // --------------------------
-// Методы управления данными
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Описание свойства
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
@@ -102,7 +102,7 @@ bool UContainerDescription::SetPropertyDescription(const std::string &name, cons
 }
 
 
-// Удаляет свойство из этого описания, если он есть в общих описаниях
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=common_descriptions.find(name);
@@ -113,7 +113,7 @@ bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std
  return true;
 }
 
-// Удаляет все свойства из этого описания, если они есть в общих описаниях
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions)
 {
  std::map<std::string, UPropertyDescription>::iterator I,J;
@@ -131,13 +131,13 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<st
  return true;
 }
 
-// Обновление данных свойств (вызов к хранилищу)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 void UContainerDescription::CreateProperties()
 {
     std::shared_ptr<UContainer> cont;
     if(!Storage)
       return;
-    cont = dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(ClassName));
+    cont = Storage->TakeObject(ClassName);
 
     if(cont)
     {
@@ -220,9 +220,9 @@ void UContainerDescription::DeleteFavorite(const std::string &name)
 // --------------------------
 
 // --------------------------
-// Методы ввода вывода данными
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Сохраняет данные класса в XML
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ XML
 bool UContainerDescription::Save(USerStorageXML &xml)
 {
  if(!UComponentDescription::Save(xml))
@@ -264,7 +264,7 @@ bool UContainerDescription::Save(USerStorageXML &xml)
  return true;
 }
 
-// Загружает данные класса из XML
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML
 bool UContainerDescription::Load(USerStorageXML &xml)
 {
  if(!UComponentDescription::Load(xml))
@@ -320,10 +320,10 @@ bool UContainerDescription::Load(USerStorageXML &xml)
 
 
 // --------------------------
-// Методы ввода вывода общих данных
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 /*
-// Сохраняет данные класса в XML
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ XML
 bool UContainerDescription::SaveCommon(USerStorageXML &xml)
 {
  xml.AddNode("Properties");
@@ -343,7 +343,7 @@ bool UContainerDescription::SaveCommon(USerStorageXML &xml)
  return true;
 }
 
-// Загружает данные класса из XML
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML
 bool UContainerDescription::LoadCommon(USerStorageXML &xml)
 {
  if(!xml.SelectNode("Properties"))

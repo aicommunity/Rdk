@@ -32,11 +32,15 @@ ModernUEPtr<T> make_ueptr(Args&&... args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
-// Non-owning shared_ptr deleter - does nothing
-struct NonOwningDeleter {
-    template<typename T>
-    void operator()(T*) const {}
-};
+
+// Forward declaration
+class UComponent;
+
+// NonOwningDeleter полностью удален - все объекты теперь управляются через shared_ptr
+
+// Helper для безопасного получения shared_ptr производного типа
+// ТРЕБУЕТ: объект должен быть создан через std::make_shared
+// Определение перенесено в UComponent.h для доступа к полному определению класса
 
 } // namespace RDK
 

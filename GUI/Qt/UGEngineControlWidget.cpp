@@ -433,7 +433,7 @@ void UGEngineControlWidget::actionCreateSimple()
     }
 
     std::string file_name = path_dialog +"/project.ini";
-    std::string classname="Model";
+    std::string classname="UModel";
 
     application->CreateProject(file_name, classname);
 

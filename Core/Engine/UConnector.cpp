@@ -843,7 +843,7 @@ UIPropertyInput* UIPropertyOutput::GetConnectorProperty(int index)
 
 void UIPropertyOutput::UpdateConnectedPointers(void)
 {
- std::shared_ptr<UConnector> item=std::shared_ptr<UConnector>(dynamic_cast<UConnector*>(this->GetOwner()), [](UConnector*){}); // Non-owning deleter
+ std::shared_ptr<UConnector> item=std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(this->GetOwner()));
  size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
  for(size_t i=0;i<num_inputs;i++)
  {

@@ -19,19 +19,27 @@ namespace RDK {
 
 // Helper method implementations
 std::shared_ptr<UNet> UNet::GetThisAsSharedNet() {
-    return std::shared_ptr<UNet>(this, RDK::NonOwningDeleter());
+    return std::static_pointer_cast<UNet>(
+        UComponent::shared_from_this()
+    );
 }
 
 std::shared_ptr<UItem> UNet::GetThisAsSharedItem() {
-    return std::shared_ptr<UItem>(this, RDK::NonOwningDeleter());
+    return std::static_pointer_cast<UItem>(
+        UComponent::shared_from_this()
+    );
 }
 
 std::shared_ptr<UConnector> UNet::GetThisAsSharedConnector() {
-    return std::shared_ptr<UConnector>(this, RDK::NonOwningDeleter());
+    return std::static_pointer_cast<UConnector>(
+        UComponent::shared_from_this()
+    );
 }
 
 std::shared_ptr<UContainer> UNet::GetThisAsSharedContainer() {
-    return std::shared_ptr<UContainer>(this, RDK::NonOwningDeleter());
+    return std::static_pointer_cast<UContainer>(
+        UComponent::shared_from_this()
+    );
 }
 
 /* *************************************************************************** */
@@ -792,7 +800,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 	 continue;
 	if(FindStaticComponent(name,nodename) == 0) // ��� �� ��� ������������ ����������� ���������
 	{
-	 if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+	 if(AddComponent(newcont) == ForbiddenId)
 	 {
 	  storage->ReturnObject(newcont);
 	  continue;
@@ -1000,7 +1008,7 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 
   UStringLinksList linkslist;
   if(owner_level)
-   GetLinks(linkslist, std::shared_ptr<UContainer>(owner_level, RDK::NonOwningDeleter()));
+   GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level));
   else
    GetLinks(linkslist, GetThisAsSharedContainer());
 
@@ -1021,7 +1029,7 @@ int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   *serstorage>>linkslist;
 
   BreakLinks();
-  CreateLinks(linkslist, std::shared_ptr<UNet>(owner_level, RDK::NonOwningDeleter()));
+  CreateLinks(linkslist, safe_shared_cast<UNet>(owner_level));
 
  return true;
 }
@@ -1077,9 +1085,9 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 
   UStringLinksList linkslist;
   if(owner_level)
-   GetLinks(linkslist, std::shared_ptr<UContainer>(owner_level, RDK::NonOwningDeleter()), true, GetThisAsSharedContainer());
+   GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level), true, GetThisAsSharedContainer());
   else
-   GetLinks(linkslist, std::shared_ptr<UContainer>(GetOwner().get(), RDK::NonOwningDeleter()), true, GetThisAsSharedContainer());
+   GetLinks(linkslist, safe_shared_cast<UContainer>(GetOwner().get()), true, GetThisAsSharedContainer());
  return 0;
 }
 

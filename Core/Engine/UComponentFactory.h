@@ -22,13 +22,13 @@ namespace RDK {
   virtual ~UComponentAbstractFactory();
 
   /// �������� ����������
-  virtual std::shared_ptr<UComponent> New() = 0;
+  virtual std::shared_ptr<UContainer> New() = 0;
 
   /// �������� ���������� � ������������ � ���� ���������� @param prototype
-  virtual std::shared_ptr<UComponent> Prototype(std::shared_ptr<UComponent> prototype) = 0;
+  virtual std::shared_ptr<UContainer> Prototype(std::shared_ptr<UContainer> prototype) = 0;
 
   /// ���������� ������ � ��������� ���������, ������� ������� �� ����������� �������
-  virtual void ResetComponent(std::shared_ptr<UComponent> component) const = 0;
+  virtual void ResetComponent(std::shared_ptr<UContainer> component) const = 0;
 
   // ClassId set/get
   void SetClassId(const UId id);
@@ -42,14 +42,14 @@ namespace RDK {
   std::shared_ptr<UContainer> Component;
 
  public:
-  UVirtualMethodFactory(std::shared_ptr<UComponent> comp);
+  UVirtualMethodFactory(std::shared_ptr<UContainer> comp);
   virtual ~UVirtualMethodFactory();
 
-  virtual std::shared_ptr<UComponent> New();
+  virtual std::shared_ptr<UContainer> New();
 
-  virtual std::shared_ptr<UComponent> Prototype(std::shared_ptr<UComponent> prototype);
+  virtual std::shared_ptr<UContainer> Prototype(std::shared_ptr<UContainer> prototype);
 
-  virtual void ResetComponent(std::shared_ptr<UComponent> component) const;
+  virtual void ResetComponent(std::shared_ptr<UContainer> component) const;
 
   std::shared_ptr<UContainer> GetComponent();
 
@@ -60,18 +60,18 @@ namespace RDK {
  class UComponentFactoryMethod : public UComponentAbstractFactory
  {
  protected:
-  UComponent* (*Method)(void);
+  UContainer* (*Method)(void);
   std::string DefaultComponentName;
 
  public:
-  UComponentFactoryMethod(const std::shared_ptr<UStorage> &storage, UComponent* (*funcPointer)(void), const std::string &default_component_name);
+  UComponentFactoryMethod(const std::shared_ptr<UStorage> &storage, UContainer* (*funcPointer)(void), const std::string &default_component_name);
   virtual ~UComponentFactoryMethod();
 
-  virtual std::shared_ptr<UComponent> New();
+  virtual std::shared_ptr<UContainer> New();
 
-  virtual std::shared_ptr<UComponent> Prototype(std::shared_ptr<UComponent> prototype);
+  virtual std::shared_ptr<UContainer> Prototype(std::shared_ptr<UContainer> prototype);
 
-  virtual void ResetComponent(std::shared_ptr<UComponent> component) const;
+  virtual void ResetComponent(std::shared_ptr<UContainer> component) const;
  };
 
  /*class UXMLDescriptionFactory: public UComponentAbstractFactory

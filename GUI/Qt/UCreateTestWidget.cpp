@@ -78,7 +78,7 @@ void UCreateTestWidget::addProperty()
 
     std::shared_ptr<RDK::UComponent> component;
     if (componentName.isEmpty())
-        component = std::shared_ptr<RDK::UComponent>(model.Get(), RDK::NonOwningDeleter());
+        component = safe_shared_cast<RDK::UComponent>(model.Get());
     else
         component = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
 
