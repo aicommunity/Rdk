@@ -203,15 +203,22 @@ std::shared_ptr<UStorage> UComponent::GetStorage(void) const
  return Storage.lock();
 }
 
-bool UComponent::SetStorage(std::shared_ptr<UStorage> storage)
+bool UComponent::SetStorage(std::weak_ptr<UStorage> storage)
 {
- if(Storage.lock() == storage)
+ if(Storage.lock() == storage.lock())
   return true;
 
  Storage=storage;
  UpdateInternalData();
  return true;
 }
+
+void UComponent::ResetStorage()
+{
+ Storage.reset();
+ UpdateInternalData();
+}
+
 
 // ���������� ����� ���������� ����� �������
 std::shared_ptr<UEnvironment> UComponent::GetEnvironment(void) const

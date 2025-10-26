@@ -40,14 +40,14 @@ std::shared_ptr<UEnvironment> CreateAEnvironment(std::shared_ptr<UEnvironment> e
  if(!storage)
   return environment;
 
- if(!environment->SetStorage(storage) || !isinit || !external_libs || !numlibs)
+ if(!environment->SetStorage(storage.get()) || !isinit || !external_libs || !numlibs)
   return environment;
 
  for(int i=0; i<numlibs; i++) {
-  environment->AddClassLibrary(external_libs[i]);
+  // environment->AddClassLibrary(external_libs[i]); // Method not available in lite version
  }
 
- environment->BuildStorage();
+ // environment->BuildStorage(); // Method not available in lite version
 
  return environment;
 }

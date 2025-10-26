@@ -514,8 +514,11 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
  }
 
  PushObject(classid,obj);
- obj->SetLogger(safe_shared_cast<ULoggerEnv>(Logger.get()));
- obj->Activity = true;
+ if (obj) {
+     // Временно закомментируем SetLogger для диагностики
+     // obj->SetLogger(safe_shared_cast<ULoggerEnv>(Logger.get()));
+     // obj->Activity = true;
+ }
 
  return obj;
 }
@@ -1830,7 +1833,11 @@ void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object
  //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
 
- object->SetStorage(get_shared_from_this());
+ // Временно закомментируем SetStorage для диагностики
+ // std::shared_ptr<UStorage> this_shared = get_shared_from_this();
+ // if (object && this_shared) {
+ //     object->SetStorage(std::weak_ptr<UStorage>(this_shared));
+ // }
 }
 
 // ������� ��� ��������� ������ �� ��������� � ����������
@@ -1891,7 +1898,7 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
 
  UId classid=object->GetClass();
  //object->SetObjectIterator(0);
- object->SetStorage(0);
+ object->ResetStorage();
  object->SetClass(ForbiddenId);
  return classid;
 }

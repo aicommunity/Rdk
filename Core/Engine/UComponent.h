@@ -200,7 +200,8 @@ virtual void SetMainOwner(std::shared_ptr<UComponent> mainowner);
 
 // ���������� ��������� ��������� ����� �������
 std::shared_ptr<UStorage> GetStorage(void) const;
-virtual bool SetStorage(std::shared_ptr<UStorage> storage);
+virtual bool SetStorage(std::weak_ptr<UStorage> storage);
+void ResetStorage();
 
 // ���������� ����� ���������� ����� �������
 std::shared_ptr<UEnvironment> GetEnvironment(void) const;
