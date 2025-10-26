@@ -56,7 +56,7 @@ UEngineControl* EngineControl;
 
 protected: // Данные логгирования
 /// Экземпляр класса логирования
-ULogger Logger;
+// Logger удален - используется glog
 /// Файл для сохранения логов
 //std::shared_ptr<std::ofstream> EventsLogFile;
 
@@ -71,6 +71,15 @@ ULogger Logger;
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
 std::list<std::string> GuiUnsentLog;
+
+/// Путь к текущему файлу лога
+std::string CurrentLogFilePath;
+
+/// Позиция чтения в файле
+std::streampos LogFileReadPosition;
+
+/// Время последней модификации файла
+std::time_t LastLogFileModTime;
 
 public:
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
@@ -148,6 +157,18 @@ virtual void AdditionExecute(void);
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
 std::list<std::string> ReadGuiUnsentLog(void);
+
+/// Сбросить позицию чтения файла
+void ResetLogFilePosition();
+
+/// Получить путь к последнему файлу логов glog
+std::string GetLatestGlogFile();
+
+/// Прочитать новые строки из файла логов
+void ReadNewLogLines();
+
+/// Конвертировать формат glog в RDK
+std::string ConvertGlogToRdkFormat(const std::string& glog_line);
 
 /// Прерывает исполнение потока
 virtual void Terminate(void);

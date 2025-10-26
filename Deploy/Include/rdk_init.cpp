@@ -4,6 +4,7 @@
 #include <exception>
 #include <sstream>
 #include "rdk_init.h"
+#include <glog/logging.h>
 
 // Временная декларация, реализована в rdk_remote_stub.cpp
 namespace RDK {
@@ -25,10 +26,8 @@ namespace RDK {
 /// ����� ���������� RDK_EXCEPTION_CATCHED
 int RDK_CALL ProcessException(int channel_index, const UException &ex)
 {
- std::shared_ptr<ULoggerEnv> logger=RdkCoreManager.GetLogger(channel_index);
- if(!logger)
-  return RDK_UNHANDLED_EXCEPTION;
- logger->ProcessException(ex);
+ // GetLogger удален - используется glog
+ LOG(ERROR) << "Unhandled exception: " << ex.what();
  return RDK_EXCEPTION_CATCHED;
 }
 
@@ -141,7 +140,7 @@ const char* RDK_CALL Ver_OpenCvVersion(void)
 // ���������� ��������� ���������� ������������
 bool RDK_CALL Log_GetEventsLogMode(void)
 {
- return RdkCoreManager.GetLogger()->GetEventsLogMode();
+ return false; // GetEventsLogMode удален - используется glog
 }
 
 bool RDK_CALL MLog_GetEventsLogMode(int channel_index)
@@ -149,13 +148,13 @@ bool RDK_CALL MLog_GetEventsLogMode(int channel_index)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return false;
 
- return RdkCoreManager.GetLogger(channel_index)->GetEventsLogMode();
+ return false; // GetEventsLogMode удален - используется glog
 }
 
 // ��������/��������� ��������� ������������
 int RDK_CALL Log_SetEventsLogMode(bool value)
 {
- return RdkCoreManager.GetLogger()->SetEventsLogMode(value);
+ return RDK_SUCCESS; // SetEventsLogMode удален - используется glog
 }
 
 int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value)
@@ -163,39 +162,39 @@ int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return RdkCoreManager.GetLogger(channel_index)->SetEventsLogMode(value);
+ return RDK_SUCCESS; // SetEventsLogMode удален - используется glog
 }
 
 /// ���������� ��������� ����� ����������� ������ �����
 bool RDK_CALL Log_GetDebugMode(void)
 {
- return RdkCoreManager.GetLogger()->GetDebugMode();
+ return false; // GetDebugMode удален - используется glog
 }
 
 bool RDK_CALL MLog_GetDebugMode(int channel_index)
 {
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return false;
- return RdkCoreManager.GetLogger(channel_index)->GetDebugMode();
+ return false; // GetDebugMode удален - используется glog
 }
 
 /// ������������� ��������� ����� ����������� ������ �����
 int RDK_CALL Log_SetDebugMode(bool value)
 {
- return RdkCoreManager.GetLogger()->SetDebugMode(value);
+ return RDK_SUCCESS; // SetDebugMode удален - используется glog
 }
 
 int RDK_CALL MLog_SetDebugMode(int channel_index, bool value)
 {
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
- return RdkCoreManager.GetLogger(channel_index)->SetDebugMode(value);
+ return RDK_SUCCESS; // SetDebugMode удален - используется glog
 }
 
 /// ���������� ����� ��������� ������� ��� �����������
 unsigned int RDK_CALL Log_GetDebugSysEventsMask(void)
 {
- return RdkCoreManager.GetLogger()->GetDebugSysEventsMask();
+ return 0; // GetDebugSysEventsMask удален - используется glog
 }
 
 unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int channel_index)
@@ -203,13 +202,13 @@ unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int channel_index)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
- return RdkCoreManager.GetLogger(channel_index)->GetDebugSysEventsMask();
+ return 0; // GetDebugSysEventsMask удален - используется glog
 }
 
 /// ������������� ����� ��������� ������� ��� �����������
 int RDK_CALL Log_SetDebugSysEventsMask(unsigned int value)
 {
- return RdkCoreManager.GetLogger()->SetDebugSysEventsMask(value);
+ return RDK_SUCCESS; // SetDebugSysEventsMask удален - используется glog
 }
 
 int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
@@ -217,13 +216,13 @@ int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- return RdkCoreManager.GetLogger(channel_index)->SetDebugSysEventsMask(value);
+ return RDK_SUCCESS; // SetDebugSysEventsMask удален - используется glog
 }
 
 /// ���������� ���� ��������� ������ ���� � ��������
 bool RDK_CALL Log_GetDebuggerMessageFlag(void)
 {
- return RdkCoreManager.GetLogger()->GetDebuggerMessageFlag();
+ return false; // GetDebuggerMessageFlag удален - используется glog
 }
 
 bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
@@ -231,15 +230,13 @@ bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
- return RdkCoreManager.GetLogger(channel_index)->GetDebuggerMessageFlag();
+ return false; // GetDebuggerMessageFlag удален - используется glog
 }
 
 /// ������������� ���� ��������� ������ ���� � ��������
 int RDK_CALL Log_SetDebuggerMessageFlag(bool value)
 {
- if(!RdkCoreManager.GetLogger()->SetDebuggerMessageFlag(value))
-  return RDK_E_LOGGER_SET_DEBUGGER_FLAG_FAIL;
- return RDK_SUCCESS;
+ return RDK_SUCCESS; // SetDebuggerMessageFlag удален - используется glog
 }
 
 int RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
@@ -247,15 +244,13 @@ int RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
- if(!RdkCoreManager.GetLogger(channel_index)->SetDebuggerMessageFlag(value))
-  return RDK_E_LOGGER_SET_DEBUGGER_FLAG_FAIL;
- return RDK_SUCCESS;
+ return RDK_SUCCESS; // SetDebuggerMessageFlag удален - используется glog
 }
 
 // ���������� ��������-������������ ����������
 void* RDK_CALL Log_GetExceptionHandler(void)
 {
- return (void*)RdkCoreManager.GetLogger()->GetExceptionHandler();
+ return nullptr; // GetExceptionHandler удален - используется glog
 }
 
 void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
@@ -263,12 +258,12 @@ void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
- return (void*)RdkCoreManager.GetLogger(channel_index)->GetExceptionHandler();
+ return nullptr; // GetExceptionHandler удален - используется glog
 }
 
 int RDK_CALL Log_SetExceptionHandler(void* value)
 {
- return RdkCoreManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ return RDK_SUCCESS; // SetExceptionHandler удален - используется glog
 }
 
 int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
@@ -276,8 +271,7 @@ int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- if(!RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value)))
-  return RDK_E_LOGGER_SET_EXCEPTION_HANDLER_FAIL;
+ // SetExceptionHandler удален - используется glog
 
  return RDK_SUCCESS;
 }
@@ -285,7 +279,7 @@ int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
 // ���������� ������ ����� ����
 const char* RDK_CALL Log_GetLog(int &error_level)
 {
- return RdkCoreManager.GetLogger()->GetLog(error_level);
+ return ""; // GetLog удален - используется glog
 }
 
 const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level)
@@ -293,13 +287,23 @@ const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
 
- return RdkCoreManager.GetLogger(channel_index)->GetLog(error_level);
+ return ""; // GetLog удален - используется glog
 }
 
 // ���������� � ��� ����� ���������
 int RDK_CALL Log_LogMessage(int log_level, const char *message)
 {
- RdkCoreManager.GetLogger()->LogMessage(log_level, message);
+ // Заменено на glog
+ // Заменено на glog - логирование по уровням
+switch(log_level) {
+    case 1: LOG(FATAL) << "Global - " << message; break;
+    case 2: LOG(ERROR) << "Global - " << message; break;
+    case 3: LOG(WARNING) << "Global - " << message; break;
+    case 4: LOG(INFO) << "Global - " << message; break;
+    case 5: LOG(INFO) << "[APP] Global - " << message; break;
+    case 6: VLOG(1) << "Global - " << message; break;
+    default: LOG(ERROR) << "Global - " << message; break;
+}
  return RDK_SUCCESS;
 }
 
@@ -308,14 +312,34 @@ int RDK_CALL MLog_LogMessage(int channel_index, int log_level, const char *messa
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- RdkCoreManager.GetLogger(channel_index)->LogMessage(log_level, message);
+ // Заменено на glog
+ // Заменено на glog - логирование по уровням
+switch(log_level) {
+    case 1: LOG(FATAL) << "Channel[" << channel_index << "] - " << message; break;
+    case 2: LOG(ERROR) << "Channel[" << channel_index << "] - " << message; break;
+    case 3: LOG(WARNING) << "Channel[" << channel_index << "] - " << message; break;
+    case 4: LOG(INFO) << "Channel[" << channel_index << "] - " << message; break;
+    case 5: LOG(INFO) << "[APP] Channel[" << channel_index << "] - " << message; break;
+    case 6: VLOG(1) << "Channel[" << channel_index << "] - " << message; break;
+    default: LOG(ERROR) << "Channel[" << channel_index << "] - " << message; break;
+}
  return RDK_SUCCESS;
 }
 
 // ���������� � ��� ����� ��������� � ����� ������
 int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_event_number)
 {
- RdkCoreManager.GetLogger()->LogMessage(log_level, message,error_event_number);
+ // Заменено на glog
+ // Заменено на glog - логирование по уровням
+switch(log_level) {
+    case 1: LOG(FATAL) << "Global - " << message; break;
+    case 2: LOG(ERROR) << "Global - " << message; break;
+    case 3: LOG(WARNING) << "Global - " << message; break;
+    case 4: LOG(INFO) << "Global - " << message; break;
+    case 5: LOG(INFO) << "[APP] Global - " << message; break;
+    case 6: VLOG(1) << "Global - " << message; break;
+    default: LOG(ERROR) << "Global - " << message; break;
+}
  return RDK_SUCCESS;
 }
 
@@ -324,7 +348,17 @@ int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *mes
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- RdkCoreManager.GetLogger(channel_index)->LogMessage(log_level, message,error_event_number);
+ // Заменено на glog
+ // Заменено на glog - логирование по уровням
+switch(log_level) {
+    case 1: LOG(FATAL) << "Channel[" << channel_index << "] - " << message; break;
+    case 2: LOG(ERROR) << "Channel[" << channel_index << "] - " << message; break;
+    case 3: LOG(WARNING) << "Channel[" << channel_index << "] - " << message; break;
+    case 4: LOG(INFO) << "Channel[" << channel_index << "] - " << message; break;
+    case 5: LOG(INFO) << "[APP] Channel[" << channel_index << "] - " << message; break;
+    case 6: VLOG(1) << "Channel[" << channel_index << "] - " << message; break;
+    default: LOG(ERROR) << "Channel[" << channel_index << "] - " << message; break;
+}
  return RDK_SUCCESS;
 }
 
@@ -333,7 +367,7 @@ int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *mes
 const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
 {
  time_t read_time;
- const char* res=RdkCoreManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
+ const char* res=""; // GetUnreadLog удален - используется glog
  time=read_time;
  return res;
 }
@@ -343,7 +377,7 @@ const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int 
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
  time_t read_time;
- const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
+ const char* res=""; // GetUnreadLog удален - используется glog
  time=read_time;
  return res;
 }
@@ -351,7 +385,7 @@ const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int 
 const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
 {
  time_t read_time;
- const char* res=RdkCoreManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
+ const char* res=""; // GetUnreadLog удален - используется glog
  time=read_time;
  return res;
 }
@@ -361,7 +395,7 @@ const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
  time_t read_time;
- const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
+ const char* res=""; // GetUnreadLog удален - используется glog
  time=read_time;
  return res;
 }
@@ -369,34 +403,34 @@ const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level
 /// ���������� ����� ������������� ����� ����
 int RDK_CALL Log_GetNumUnreadLogLines(void)
 {
- return RdkCoreManager.GetLogger()->GetNumUnreadLogLines();
+ return 0; // GetNumUnreadLogLines удален - используется glog
 }
 
 int RDK_CALL MLog_GetNumUnreadLogLines(int channel_index)
 {
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
- return RdkCoreManager.GetLogger(channel_index)->GetNumUnreadLogLines();
+ return 0; // GetNumUnreadLogLines удален - используется glog
 }
 
 /// ���������� ����� ����� ����
 int RDK_CALL Log_GetNumLogLines(void)
 {
- return RdkCoreManager.GetLogger()->GetNumLogLines();
+ return 0; // GetNumLogLines удален - используется glog
 }
 
 int RDK_CALL MLog_GetNumLogLines(int channel_index)
 {
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return 0;
- return RdkCoreManager.GetLogger(channel_index)->GetNumLogLines();
+ return 0; // GetNumLogLines удален - используется glog
 }
 
 
 /// ������� ��� ����������� ���������
 int RDK_CALL Log_ClearReadLog(void)
 {
- RdkCoreManager.GetLogger()->ClearReadLog();
+ // ClearReadLog удален - используется glog
  return RDK_SUCCESS;
 }
 
@@ -404,7 +438,7 @@ int RDK_CALL MLog_ClearReadLog(int channel_index)
 {
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
- RdkCoreManager.GetLogger(channel_index)->ClearReadLog();
+ // ClearReadLog удален - используется glog
  return RDK_SUCCESS;
 }
 // ----------------------------

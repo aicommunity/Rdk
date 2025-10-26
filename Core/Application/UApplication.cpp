@@ -7,8 +7,10 @@
 #include <boost/program_options/parsers.hpp>
 
 #include "UApplication.h"
+#include <glog/logging.h>
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -493,7 +495,7 @@ bool UApplication::SetCoutLogMode(bool value)
  if(CoutLogMode == value)
   return true;
  CoutLogMode=value;
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetCoutLogMode(CoutLogMode);
+ // SetCoutLogMode удален - используется glog
  return true;
 }
 
@@ -612,7 +614,7 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
  if(!Project->SetConfig(value))
   return false;
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(value.EventsLogFlag);
+ // SetEventsLogMode удален - используется glog
 // EngineControl->GetEngineStateThread()->SetLogFlag(value.EventsLogFlag);
  return true;
 }
@@ -718,8 +720,12 @@ bool UApplication::SetStandartXMLInCatalog(void)
 /// �������������� ����������
 bool UApplication::Init(void)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
+ LOG(INFO) << "Application initialization has been started.";
+ LOG(INFO) << "Version: " << GetCoreVersion().ToStringFull();
+ 
+ // Инициализировать glog с путём к логам
+ InitializeGlogLogging();
+ 
  Core_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
@@ -738,15 +744,15 @@ bool UApplication::Init(void)
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been finished.");
+ LOG(INFO) << "Application initialization has been finished.";
 
  /*if(CommandLineArgs.size()<2)
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Command line parameters not found.");
+  LOG(INFO) << "Command line parameters not found.";
  else
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Parsing command line parameters: ")+concat_strings(CommandLineArgs,std::string(" "))).c_str());
+  LOG(INFO) << "Parsing command line parameters: " << concat_strings(CommandLineArgs, std::string(" "));
   ProcessCommandLineArgs();
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
+  LOG(INFO) << "Finished parsing command line parameters";
  }*/
  SetStandartXMLInCatalog();
 
@@ -757,7 +763,7 @@ bool UApplication::Init(void)
 /// ���������������� ����������
 bool UApplication::UnInit(void)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
+ LOG(INFO) << "Application uninitialization has been started.";
  if(EngineControl)
  {
   EngineControl->PauseChannel(-1);
@@ -768,7 +774,7 @@ bool UApplication::UnInit(void)
  EngineControl->UnInit();
  GetCoreLock()->Destroy();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
+ LOG(INFO) << "Application uninitialization has been finished.";
  AppIsInit = false;
  return true;
 }
@@ -790,7 +796,7 @@ int UApplication::Test(bool &exit_request)
   {
    if(TestManager->LoadTests(TestsDescriptionFileName) != RDK_SUCCESS)
    {
-	MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Failed to load tests!");
+	LOG(ERROR) << "Failed to load tests!";
 	test_result_code=1000;
 	ChangeTestModeState(false);
 	return test_result_code;
@@ -1211,7 +1217,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
  {
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(project_config.EventsLogFlag);
+  // SetEventsLogMode удален - используется glog
  }
 
  if(old_project_config.ProjectMode != project_config.ProjectMode)
@@ -1470,9 +1476,7 @@ bool UApplication::OpenProject(const std::string &filename)
   UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(config.EventsLogFlag);
- if(LogCreationMode != 3)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
+ // SetEventsLogMode и Clear удалены - используется glog
 // EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
 // EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);
@@ -1813,7 +1817,7 @@ bool UApplication::RenameProject(const std::string &filename)
 
  PauseChannel(-1);
  bool events_log_mode=GetProjectConfig().EventsLogFlag;
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(false);
+  // SetEventsLogMode удален - используется glog
 
  std::string resfilename=filename;
 
@@ -1822,7 +1826,7 @@ bool UApplication::RenameProject(const std::string &filename)
  if(filename.find_last_of("\\/") != filename.size()-1)
   resfilename+="/";
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(events_log_mode);
+ // SetEventsLogMode удален - используется glog
  if(res == 0)
  {
   SetProjectPath(resfilename);
@@ -2524,12 +2528,42 @@ void UApplication::CalcAppCaption(void)
 /// ��������� ��������� ������� ������������
 void UApplication::UpdateLoggers(void)
 {
- RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
+ std::string new_log_dir = CalcCurrentLogDir();
+ if(FLAGS_log_dir != new_log_dir)
+ {
+  // Пересоздать glog с новым путём
+  google::ShutdownGoogleLogging();
+  InitializeGlogLogging();
+ }
+ 
+ RdkCoreManager.SetLogDir(new_log_dir.c_str());
  if(EngineControl && EngineControl->GetEngineStateThread())
  {
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+  // Сбросить позицию чтения файла в GUI
+  EngineControl->GetEngineStateThread()->ResetLogFilePosition();
  }
 //  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
+}
+
+///  glog  
+void UApplication::InitializeGlogLogging()
+{
+    std::string log_dir = CalcCurrentLogDir();
+    
+    // Создать папку если не существует
+    #ifdef _WIN32
+        CreateDirectoryA(log_dir.c_str(), NULL);
+    #else
+        mkdir(log_dir.c_str(), 0755);
+    #endif
+    
+    // Настроить glog
+    FLAGS_log_dir = log_dir;
+    FLAGS_alsologtostderr = true;  // Дублировать в stderr
+    FLAGS_colorlogtostderr = true;
+    // FLAGS_timestamp_in_logfile_name = true;  // Может не поддерживаться в этой версии
+    FLAGS_max_log_size = 100;  // MB
+    FLAGS_stop_logging_if_full_disk = true;
 }
 
 

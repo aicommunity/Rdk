@@ -134,6 +134,8 @@ virtual void AUnInit(void);
 template<typename Derived, typename Base>
 std::shared_ptr<Derived> safe_shared_cast(Base* obj) {
     // Проверяем, наследуется ли Derived от UComponent
+    // Временно отключено из-за проблем с forward declaration
+    /*
     if constexpr (std::is_base_of<UComponent, Derived>::value) {
         if (auto* component = dynamic_cast<UComponent*>(obj)) {
             try {
@@ -149,6 +151,7 @@ std::shared_ptr<Derived> safe_shared_cast(Base* obj) {
             }
         }
     }
+    */
     
     // Проверяем, наследуется ли Derived от UModule (включая UComponent, который наследуется от UModule)
     if constexpr (std::is_base_of<UModule, Derived>::value) {

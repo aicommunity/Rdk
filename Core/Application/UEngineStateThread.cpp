@@ -6,6 +6,11 @@
 #include "UApplication.h"
 #include "UEngineControl.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include <fstream>
+#include <sstream>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <ctime>
 
 void ExceptionHandler(int channel_index)
 {
@@ -367,61 +372,9 @@ void UEngineStateThread::ProcessLog(void)
 {
  if(!GetRdkExceptionHandlerMutex())
   return;
- std::list<int> ch_indexes;
- {
-  UGenericMutexExclusiveLocker locker(GetRdkExceptionHandlerMutex());
-  std::list<int>& ch_indexes_ref=GetUnsentLogChannelIndexes();
-
-  if(!ch_indexes_ref.empty())
-  {
-   ch_indexes=ch_indexes_ref;
-   ch_indexes_ref.clear();
-  }
- }
-
- if(ch_indexes.empty())
-  return;
-
- if(find(ch_indexes.begin(),ch_indexes.end(),RDK_GLOB_MESSAGE) == ch_indexes.end())
-  return;
-
- int global_error_level=-1;
- try
- {
-   int error_level=-1;
-   int number=0;
-   unsigned long long time=0;
-   int num_log_lines=MLog_GetNumUnreadLogLines(RDK_GLOB_MESSAGE);
-   for(int k=0;k<num_log_lines;k++)
-   {
-	const char * data=MLog_GetUnreadLog(RDK_GLOB_MESSAGE, error_level,number,time);
-	if(!data)
-	 continue;
-	if(global_error_level>error_level)
-	 global_error_level=error_level;
-
-	std::string new_log_data=data;
-	if(!new_log_data.empty())
-	{
-	 if(CalculationInProgress->exclusive_lock(10000))
-	 {
-	  GuiUnsentLog.push_back(new_log_data);
-      CalculationInProgress->exclusive_unlock();
-	 }
-	}
-   }
-   MLog_ClearReadLog(RDK_GLOB_MESSAGE);
-   int calc_stop_lev=EngineControl->GetApplication()->GetCalcStopLogLevel();
-   if(global_error_level>=0 && calc_stop_lev>=0 && global_error_level <= calc_stop_lev && EngineControl->GetApplication()->IsChannelStarted(0)) // принудительная остановка расчета
-   {
-    EngineControl->PauseChannel(-1);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE,RDK_EX_INFO,"Calculation process stopped by CalcStopLogLevel signal",0);
-   }
- }
- catch(...)
- {
-  throw;
- }
+ 
+ // Прочитать новые строки из файла логов glog
+ ReadNewLogLines();
 /*
  try
  {
@@ -440,6 +393,148 @@ void UEngineStateThread::ProcessLog(void)
   throw;
  }      */
 }
+// --------------------------
+
+// --------------------------
+// Методы мониторинга файла логов glog
+// --------------------------
+
+/// Сбросить позицию чтения файла
+void UEngineStateThread::ResetLogFilePosition()
+{
+    CurrentLogFilePath.clear();
+    LogFileReadPosition = 0;
+    LastLogFileModTime = 0;
+}
+
+/// Получить путь к последнему файлу логов glog
+std::string UEngineStateThread::GetLatestGlogFile()
+{
+    std::string log_dir = EngineControl->GetApplication()->CalcCurrentLogDir();
+    
+    // Формат имени файла glog: <program_name>.<hostname>.<user>.<severity>.<date>-<time>.<pid>
+    // Ищем файлы *.INFO.* как основной файл логов
+    
+    DIR* dir = opendir(log_dir.c_str());
+    if(!dir) return "";
+    
+    std::string latest_file;
+    std::time_t latest_time = 0;
+    
+    struct dirent* entry;
+    while((entry = readdir(dir)) != NULL)
+    {
+        std::string filename = entry->d_name;
+        if(filename.find(".INFO.") != std::string::npos)
+        {
+            std::string full_path = log_dir + filename;
+            struct stat st;
+            if(stat(full_path.c_str(), &st) == 0)
+            {
+                if(st.st_mtime > latest_time)
+                {
+                    latest_time = st.st_mtime;
+                    latest_file = full_path;
+                }
+            }
+        }
+    }
+    closedir(dir);
+    
+    return latest_file;
+}
+
+/// Прочитать новые строки из файла логов
+void UEngineStateThread::ReadNewLogLines()
+{
+    std::string log_file = GetLatestGlogFile();
+    if(log_file.empty()) return;
+    
+    // Если файл изменился, сбросить позицию
+    if(log_file != CurrentLogFilePath)
+    {
+        CurrentLogFilePath = log_file;
+        LogFileReadPosition = 0;
+    }
+    
+    std::ifstream file(log_file);
+    if(!file.is_open()) return;
+    
+    // Перейти к последней прочитанной позиции
+    file.seekg(LogFileReadPosition);
+    
+    std::string line;
+    while(std::getline(file, line))
+    {
+        // Парсить строку glog: I1026 12:34:56.789012 12345 file.cpp:123] Message
+        if(line.empty()) continue;
+        
+        // Конвертировать в формат RDK
+        std::string formatted_line = ConvertGlogToRdkFormat(line);
+        
+        if(CalculationInProgress->exclusive_lock(10000))
+        {
+            GuiUnsentLog.push_back(formatted_line);
+            CalculationInProgress->exclusive_unlock();
+        }
+    }
+    
+    // Сохранить позицию
+    LogFileReadPosition = file.tellg();
+}
+
+/// Конвертировать формат glog в RDK
+std::string UEngineStateThread::ConvertGlogToRdkFormat(const std::string& glog_line)
+{
+    // Формат glog: I1026 12:34:56.789012 12345 file.cpp:123] Message
+    // Формат RDK: >1>2024.10.26 12:34:56> Message
+    
+    if(glog_line.empty()) return "";
+    
+    char severity = glog_line[0];
+    int rdk_level = RDK_EX_INFO;
+    
+    switch(severity)
+    {
+        case 'I': rdk_level = RDK_EX_INFO; break;
+        case 'W': rdk_level = RDK_EX_WARNING; break;
+        case 'E': rdk_level = RDK_EX_ERROR; break;
+        case 'F': rdk_level = RDK_EX_FATAL; break;
+        default: rdk_level = RDK_EX_UNKNOWN; break;
+    }
+    
+    // Найти начало сообщения (после ']')
+    size_t msg_start = glog_line.find(']');
+    if(msg_start == std::string::npos) return glog_line;
+    
+    std::string message = glog_line.substr(msg_start + 1);
+    
+    // Извлечь время из glog (MMDD HH:MM:SS)
+    std::string time_str;
+    if(glog_line.size() >= 18 && glog_line[0] >= 'A' && glog_line[0] <= 'Z')
+    {
+        // Формат: I1026 19:11:42.058125
+        std::string month_day = glog_line.substr(1, 4);
+        std::string time_part = glog_line.substr(6, 8);
+        time_str = "2024." + month_day.substr(0, 2) + "." + month_day.substr(2, 2) + " " + time_part;
+    }
+    else
+    {
+        // Если не удалось распарсить, использовать текущее время
+        time_t now = time(0);
+        struct tm* tm_info = localtime(&now);
+        char buffer[26];
+        strftime(buffer, 26, "%Y.%m.%d %H:%M:%S", tm_info);
+        time_str = buffer;
+    }
+    
+    // Формат: >level>time> message
+    std::ostringstream oss;
+    oss << ">" << rdk_level << ">" << time_str << ">" << message;
+    
+    return oss.str();
+}
+
 // --------------------------
 
 

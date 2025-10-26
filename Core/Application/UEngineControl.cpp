@@ -264,7 +264,7 @@ void UEngineControl::StartChannel(int channel_index)
   return;
 
  if(Application && Application->GetLogCreationMode() == 0)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+  // RecreateEventsLogFile удален - используется glog
 // EngineStateThread->RecreateEventsLogFile();
  switch(ThreadMode)
  {
@@ -369,7 +369,9 @@ void UEngineControl::PauseChannel(int channel_index)
  }
 
  if(Application && Application->GetLogCreationMode() == 0)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
+ {
+  // Clear удален - используется glog
+ }
 // EngineStateThread->CloseEventsLogFile();
 }
 
@@ -380,7 +382,7 @@ void UEngineControl::ResetChannel(int channel_index)
   return;
 
  if(Application && Application->GetLogCreationMode() == 0)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
+  // RecreateEventsLogFile удален - используется glog
 // EngineStateThread->RecreateEventsLogFile();
  if(channel_index == -1)
  {

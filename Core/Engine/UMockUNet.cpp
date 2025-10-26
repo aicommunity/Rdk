@@ -23,7 +23,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
     // ��������� ��������� � ������
     SetStorage(std::shared_ptr<UStorage>(storage));
-    SetLogger(safe_shared_cast<ULoggerEnv>(storage->GetLogger().get()));
+    // SetLogger удален - используется glog
 
     // ����� ���� ����������� ������� �������� �������
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();

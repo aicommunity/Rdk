@@ -26,6 +26,7 @@ See file license.txt for more information
 #include "UBasePropCreatorStd.h"
 #include "UBasePropCreatorVector.h"
 #include "UBasePropCreatorMatrix.h"
+#include <glog/logging.h>
 
 // --------------------------------------
 // ���������� �������������� �������
@@ -294,8 +295,7 @@ bool UEngine::SetChannelIndex(int value)
  if(Environment)
   Environment->SetChannelIndex(ChannelIndex);
 
- if(Logger)
-  Logger->SetChannelIndex(ChannelIndex);
+ // SetChannelIndex удален - используется glog
  return true;
 }
 // --------------------------
@@ -321,33 +321,9 @@ UContainer* UEngine::GetModel(void)
 // ������ ���������� ������
 // --------------------------
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> const UEngine::GetLogger(void) const
-{
- return Logger;
-}
+// GetLogger удален - используется glog
 
-bool UEngine::SetLogger(std::shared_ptr<ULoggerEnv> logger)
-{
- if(Logger == logger)
-  return true;
-
- if(Logger)
- {
-  Logger->UnRegisterEnvironment();
- }
-
- Logger=logger;
- if(!Logger)
-  return true;
-
- Logger->SetChannelIndex(ChannelIndex);
- if(Environment)
- {
-  Logger->ClearLog();
-  Logger->RegisterEnvironment(Environment.get());
- }
- return true;
-}
+// SetLogger удален - используется glog
 
 // �������������� ������ ������
 void UEngine::Init(void)
@@ -365,18 +341,13 @@ bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironme
  Storage=storage;
  Environment=env;
 
- if(Logger)
- {
-  Logger->ClearLog();
-  Logger->RegisterEnvironment(Environment.get());
-  Logger->SetChannelIndex(ChannelIndex);
- }
+ // ClearLog, RegisterEnvironment, SetChannelIndex удалены - используется glog
  Environment->SetChannelIndex(ChannelIndex);
- Environment->SetLogger(Logger);
+ // Environment->SetLogger удален - используется glog
 
  if(!Storage)
   return false;
- Storage->SetLogger(safe_shared_cast<ULoggerEnv>(Logger.get()));
+ // Storage->SetLogger удален - используется glog
 
 
  RDK_SYS_TRY
@@ -421,10 +392,10 @@ bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironme
   if(LoadFile(CommonClassesDescriptionFileName,common_classes_description_xml))
   {
    if(Storage_LoadCommonClassesDescription(common_classes_description_xml.c_str()) != RDK_SUCCESS)
-	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to apply common classes descriptions from file ")+CommonClassesDescriptionFileName);
+	LOG(ERROR) << "UEngine::" << __FUNCTION__ << " - Failed to apply common classes descriptions from file " << CommonClassesDescriptionFileName;
   }
   else
-   GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to load common classes description file ")+CommonClassesDescriptionFileName);
+   LOG(ERROR) << "UEngine::" << __FUNCTION__ << " - Failed to load common classes description file " << CommonClassesDescriptionFileName;
  }
 
  if(!ClassesDescriptionFileName.empty())
@@ -433,10 +404,10 @@ bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironme
   if(LoadFile(ClassesDescriptionFileName,classes_description_xml))
   {
    if(Storage_LoadClassesDescription(classes_description_xml.c_str()) != RDK_SUCCESS)
-	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to apply classes descriptions from file ")+ClassesDescriptionFileName);
+	LOG(ERROR) << "UEngine::" << __FUNCTION__ << " - Failed to apply classes descriptions from file " << ClassesDescriptionFileName;
   }
   else
-   GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to load classes description file ")+ClassesDescriptionFileName);
+   LOG(ERROR) << "UEngine::" << __FUNCTION__ << " - Failed to load classes description file " << ClassesDescriptionFileName;
  }
 
  return true;
@@ -1820,7 +1791,7 @@ bool UEngine::Env_GetEventsLogMode(void) const
  {
   try
   {
-   return Logger->GetEventsLogMode();
+   return false; // GetEventsLogMode удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -1846,10 +1817,8 @@ int UEngine::Env_SetEventsLogMode(bool value)
  {
   try
   {
-   if(!Logger->SetEventsLogMode(value))
-	res=RDK_E_LOGGER_SET_EVENTS_LOG_MODE_FAIL;
-   else
-    res=RDK_SUCCESS;
+   // SetEventsLogMode удален - используется glog
+   res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
@@ -2759,7 +2728,7 @@ bool UEngine::Env_GetDebugMode(void) const
  {
   try
   {
-   return Logger->GetDebugMode();
+   return false; // GetDebugMode удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -2785,10 +2754,7 @@ int UEngine::Env_SetDebugMode(bool value)
  {
   try
   {
-   if(!Logger->SetDebugMode(value))
-   {
-    return RDK_E_LOGGER_SET_FLAG_FAIL;
-   }
+   // SetDebugMode удален - используется glog
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -2815,7 +2781,7 @@ unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
  {
   try
   {
-   return Logger->GetDebugSysEventsMask();
+   return 0; // GetDebugSysEventsMask удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -2841,10 +2807,7 @@ int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
  {
   try
   {
-   if(!Logger->SetDebugSysEventsMask(value))
-   {
-    return RDK_E_LOGGER_SET_FLAG_FAIL;
-   }
+   // SetDebugSysEventsMask удален - используется glog
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -2872,7 +2835,7 @@ bool UEngine::Env_GetDebuggerMessageFlag(void) const
  {
   try
   {
-   return Logger->GetDebuggerMessageFlag();
+   return false; // GetDebuggerMessageFlag удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -2898,10 +2861,7 @@ int UEngine::Env_SetDebuggerMessageFlag(bool value)
  {
   try
   {
-   if(!Logger->SetDebuggerMessageFlag(value))
-   {
-    return RDK_E_LOGGER_SET_FLAG_FAIL;
-   }
+   // SetDebuggerMessageFlag удален - используется glog
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -5306,7 +5266,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    AccessCache.clear();
    if(!XmlStorage.Load(buffer,"Save"))
    {
-	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to parse model file. Possible xml syntax error."));
+	LOG(ERROR) << "UEngine::" << __FUNCTION__ << " - Failed to parse model file. Possible xml syntax error.";
 	return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }
    std::string xml_model_name=XmlStorage.GetNodeAttribute("ModelName");
@@ -5490,7 +5450,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
    if(!XmlStorage.Load(buffer,"SaveProperties"))
    {
-	GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,std::string("Failed to parse properties (parametes/state) file. Possible xml syntax error."));
+	LOG(ERROR) << "UEngine::" << __FUNCTION__ << " - Failed to parse properties (parametes/state) file. Possible xml syntax error.";
 	return RDK_E_MODEL_LOAD_COMPONENT_PROPERTIES_FAIL;
    }
 
@@ -6713,7 +6673,7 @@ const char* UEngine::GetLog(int &error_level) const
  {
   try
   {
-   TempString=Logger->GetLog(error_level);
+   TempString=""; // GetLog удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -6741,7 +6701,7 @@ const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
  {
   try
   {
-   TempString=Logger->GetUnreadLog(error_level, number, time);
+   TempString=""; // GetUnreadLog удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -6762,15 +6722,22 @@ const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
 /// ���������� � ��� ����� ���������
 int UEngine::Engine_LogMessage(int log_level, const char *message, int error_event_number)
 {
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
+ // Logger удален - используется glog
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Logger->LogMessage(log_level,message,error_event_number);
+   // LogMessage заменен на glog
+   switch(log_level) {
+     case RDK_EX_FATAL: LOG(FATAL) << message; break;
+     case RDK_EX_ERROR: LOG(ERROR) << message; break;
+     case RDK_EX_WARNING: LOG(WARNING) << message; break;
+     case RDK_EX_INFO: LOG(INFO) << message; break;
+     case RDK_EX_DEBUG: VLOG(1) << message; break;
+     default: LOG(INFO) << message; break;
+   }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6791,15 +6758,22 @@ int UEngine::Engine_LogMessage(int log_level, const char *message, int error_eve
 
 int UEngine::Engine_LogMessage(int msg_level, const char *method_name, const char *message, int error_event_number)
 {
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
+ // Logger удален - используется glog
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Logger->LogMessage(msg_level,method_name,message,error_event_number);
+   // LogMessage заменен на glog
+   switch(msg_level) {
+     case RDK_EX_FATAL: LOG(FATAL) << method_name << " - " << message; break;
+     case RDK_EX_ERROR: LOG(ERROR) << method_name << " - " << message; break;
+     case RDK_EX_WARNING: LOG(WARNING) << method_name << " - " << message; break;
+     case RDK_EX_INFO: LOG(INFO) << method_name << " - " << message; break;
+     case RDK_EX_DEBUG: VLOG(1) << method_name << " - " << message; break;
+     default: LOG(INFO) << method_name << " - " << message; break;
+   }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6820,15 +6794,22 @@ int UEngine::Engine_LogMessage(int msg_level, const char *method_name, const cha
 
 int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const char *message, int error_event_number)
 {
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
+ // Logger удален - используется glog
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Logger->LogMessageEx(msg_level,object_name,message,error_event_number);
+   // LogMessageEx заменен на glog
+   switch(msg_level) {
+     case RDK_EX_FATAL: LOG(FATAL) << object_name << " - " << message; break;
+     case RDK_EX_ERROR: LOG(ERROR) << object_name << " - " << message; break;
+     case RDK_EX_WARNING: LOG(WARNING) << object_name << " - " << message; break;
+     case RDK_EX_INFO: LOG(INFO) << object_name << " - " << message; break;
+     case RDK_EX_DEBUG: VLOG(1) << object_name << " - " << message; break;
+     default: LOG(INFO) << object_name << " - " << message; break;
+   }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6849,15 +6830,22 @@ int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const c
 
 int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const char *method_name, const char *message, int error_event_number)
 {
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
+ // Logger удален - используется glog
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Logger->LogMessageEx(msg_level,object_name,method_name,message,error_event_number);
+   // LogMessageEx заменен на glog
+   switch(msg_level) {
+     case RDK_EX_FATAL: LOG(FATAL) << object_name << "::" << method_name << " - " << message; break;
+     case RDK_EX_ERROR: LOG(ERROR) << object_name << "::" << method_name << " - " << message; break;
+     case RDK_EX_WARNING: LOG(WARNING) << object_name << "::" << method_name << " - " << message; break;
+     case RDK_EX_INFO: LOG(INFO) << object_name << "::" << method_name << " - " << message; break;
+     case RDK_EX_DEBUG: VLOG(1) << object_name << "::" << method_name << " - " << message; break;
+     default: LOG(INFO) << object_name << "::" << method_name << " - " << message; break;
+   }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6877,64 +6865,9 @@ int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const c
 }
 
 // ���������� ��������-������������ ����������
-ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
-{
- if(!Logger)
-  return 0;
+// GetExceptionHandler удален - используется glog
 
- //int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   return Logger->GetExceptionHandler();
-  }
-  catch (RDK::UException &exception)
-  {
-   ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return 0;
-}
-
-int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
-{
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
-
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(!Logger->SetExceptionHandler(value))
-    res=RDK_E_LOGGER_SET_EXCEPTION_HANDLER_FAIL;
-   else
-	res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return res;
-}
+// SetExceptionHandler удален - используется glog
 
 // ������������ ����� �������� ����������
 // ���� 0, �� �������������
@@ -6945,9 +6878,8 @@ int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
  {
   try
   {
-   if(!Logger)
-    return 0;
-   return Logger->GetMaxExceptionsLogSize();
+   // GetMaxExceptionsLogSize удален - используется glog
+   return 0;
   }
   catch (RDK::UException &exception)
   {
@@ -6967,15 +6899,14 @@ int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
 
 int UEngine::SetMaxExceptionsLogSize(int value)
 {
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
+ // Logger удален - используется glog
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Logger->SetMaxExceptionsLogSize(value);
+   // SetMaxExceptionsLogSize удален - используется glog
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -6998,15 +6929,14 @@ int UEngine::SetMaxExceptionsLogSize(int value)
 /// ���������� ����� ������������� ����� ����
 int UEngine::GetNumUnreadLogLines(void) const
 {
- if(!Logger)
-  return 0;
+ // Logger удален - используется glog
 
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   return Logger->GetNumUnreadLogLines();
+   return 0; // GetNumUnreadLogLines удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -7027,15 +6957,14 @@ int UEngine::GetNumUnreadLogLines(void) const
 /// ���������� ����� ����� ����
 int UEngine::GetNumLogLines(void) const
 {
- if(!Logger)
-  return 0;
+ // Logger удален - используется glog
 
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   return Logger->GetNumLogLines();
+   return 0; // GetNumLogLines удален - используется glog
   }
   catch (RDK::UException &exception)
   {
@@ -7056,15 +6985,14 @@ int UEngine::GetNumLogLines(void) const
 /// ������� ��� ����������� ���������
 int UEngine::ClearReadLog(void)
 {
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
+ // Logger удален - используется glog
 
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
-   Logger->ClearReadLog();
+   // ClearReadLog удален - используется glog
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -7094,10 +7022,8 @@ int UEngine::ClearReadLog(void)
 /// ����� ���������� RDK_EXCEPTION_CATCHED
 int UEngine::ProcessException(UException &exception) const
 {
- if(Logger)
-  Logger->ProcessException(exception);
- else
-  return RDK_UNHANDLED_EXCEPTION;
+ LOG(ERROR) << "Unhandled exception: " << exception.what();
+ return RDK_UNHANDLED_EXCEPTION;
 
  return RDK_EXCEPTION_CATCHED;
  //return ProcessException((const UException &)(exception));
@@ -7105,10 +7031,8 @@ int UEngine::ProcessException(UException &exception) const
 
 int UEngine::ProcessException(const UException &exception) const
 {
- if(Logger)
-  Logger->ProcessException(const_cast<UException &>(exception));
- else
-  return RDK_UNHANDLED_EXCEPTION;
+ LOG(ERROR) << "Unhandled exception: " << exception.what();
+ return RDK_UNHANDLED_EXCEPTION;
 
  return RDK_EXCEPTION_CATCHED;
 }
@@ -7142,7 +7066,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	while(I != J)
 	{
 		std::shared_ptr<UComponent> cont = safe_shared_cast<UComponent>(*I);
-		cont->SetLogger(safe_shared_cast<ULoggerEnv>(Storage->GetLogger().get()));
+		// cont->SetLogger удален - используется glog
 		cont->SetStorage(Storage);
 		cont->Build();
 		std::shared_ptr<UVirtualMethodFactory> factory = std::make_shared<UVirtualMethodFactory>(std::dynamic_pointer_cast<UContainer>(cont));
@@ -7163,7 +7087,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	}
    }
 
-   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
+   LOG(INFO) << "Build storage has been started...";
    Storage->InitRTlibs();
 
    Storage->BuildStorage();
@@ -7173,7 +7097,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
    Storage->SaveMockLibs();
    */
 
-   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been finished");
+   LOG(INFO) << "Build storage has been finished";
   }
   catch (RDK::UException &exception)
   {

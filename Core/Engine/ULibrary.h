@@ -13,6 +13,8 @@ See file license.txt for more information
 #ifndef UALibraryH
 #define UALibraryH
 
+#include <glog/logging.h>
+
 //#include "ULibrary.h"
 #include "UStorage.h"
 #include "../../Deploy/Include/rdk_version.h"
@@ -316,7 +318,7 @@ T* ULibrary::UploadClass(const std::string &class_name, const std::string &compo
  unsigned long long total_used_memory_after(0);
  unsigned long long largest_free_block_after(0);
  if(memory_measure && ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
-  Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, class_name+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+  LOG(INFO) << class_name << " eats " << (total_used_memory_after-total_used_memory_before) << " bytes of RAM. Largest RAM block decreased to " << (largest_free_block_before-largest_free_block_after) << " bytes";
  return cont;
 }
 			   /*

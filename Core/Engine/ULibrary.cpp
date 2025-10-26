@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UNet.h"
 #include "UMockUNet.h"
 #include "UComponentFactory.h"
+#include <glog/logging.h>
 
 namespace RDK {
 
@@ -286,7 +287,7 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
  std::shared_ptr<UVirtualMethodFactory> factory;
  try
  {
-  cont->SetLogger(safe_shared_cast<ULoggerEnv>(Storage->GetLogger().get()));
+  // cont->SetLogger удален - используется glog
   cont->SetStorage(safe_shared_cast<UStorage>(Storage));
   cont->Build();
   factory = std::make_shared<UVirtualMethodFactory>(std::dynamic_pointer_cast<UContainer>(cont));
@@ -407,8 +408,7 @@ void ULibrary::FillMockLibrary(UMockLibrary* lib)
         }
         catch(UException &ex)
         {
-            if(Storage->GetLogger())
-                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+            LOG(INFO) << __FUNCTION__ << " - " << ex.what();
             continue;
         }
 
@@ -426,8 +426,7 @@ void ULibrary::FillMockLibrary(UMockLibrary* lib)
         // ���������� XML ����� �������� ����������
         if(!cont->SaveComponent(&ComponentStruct, true, ptAny|pgPublic))
         {
-            if(Storage->GetLogger())
-                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while saving XML description of class " + *it);
+            LOG(INFO) << __FUNCTION__ << " - Error while saving XML description of class " << *it;
             Storage->ReturnObject(cont);
             continue;
         }
@@ -523,8 +522,7 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
 
     if(!UploadClass(new_class_name, cont_1))
     {
-        if(Storage->GetLogger())
-            Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "UploadClass failed while uploading \""+new_class_name + "\" class");
+        LOG(INFO) << __FUNCTION__ << " - UploadClass failed while uploading \"" << new_class_name << "\" class";
         return false;
     }
 
@@ -544,8 +542,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
         // ���� ����� �� ������ ����������
         if(Storage->FindCollection(class_name).get()!= static_cast<ULibrary*>(this))
         {
-            if(Storage->GetLogger())
-                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "\""+class_name + "\" class exists in another library. Not in \"" + Name +"\"");
+            LOG(INFO) << __FUNCTION__ << " - \"" << class_name << "\" class exists in another library. Not in \"" << Name << "\"";
             return false;
         }
 
@@ -594,8 +591,7 @@ std::shared_ptr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage
 
  if(!dynamic_pointer_cast<UNet>(cont)->LoadComponent(&xml,true))
  {
-    if(Storage->GetLogger())
-        Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while LoadComponent() from XML file for class \"" +class_name +"\"");
+    LOG(INFO) << __FUNCTION__ << " - Error while LoadComponent() from XML file for class \"" << class_name << "\"";
 
     storage->ReturnObject(cont);
     return 0;
@@ -627,8 +623,7 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
         }
         catch(UException &ex)
         {
-            if(Storage->GetLogger())
-                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+            LOG(INFO) << __FUNCTION__ << " - " << ex.what();
         }
     }
 }
@@ -759,8 +754,7 @@ void UMockLibrary::CreateClassSamples(UStorage *storage)
         }
         catch(UException &ex)
         {
-            if(Storage->GetLogger())
-                Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, ex.what());
+            LOG(INFO) << __FUNCTION__ << " - " << ex.what();
         }
     }
 }

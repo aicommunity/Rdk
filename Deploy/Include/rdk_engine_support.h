@@ -29,13 +29,13 @@ std::vector<UGenericMutex*> MutexList;
 std::vector<RDK::UELockPtr<RDK::UEngine>*> LockerList;
 
 /// ������ ��������
-std::vector<RDK::ULoggerEnv*> LoggerList;
+// LoggerList удален - используется glog
 
 /// ��������� ������
-RDK::ULoggerEnv SystemLogger;
+// SystemLogger удален - используется glog
 
 /// ���������� ������ (����������� ���������� �� ���� ��������)
-RDK::ULoggerEnv GlobalLogger;
+// GlobalLogger удален - используется glog
 
 UGenericMutex* GlobalMutex;
 
@@ -46,7 +46,7 @@ RDK::UELockVar<int> SelectedChannelIndex;
 RDK::UELockVar<int> NumChannels;
 
 /// ������ �������� ���������� ������
-std::shared_ptr<RDK::ULoggerEnv> Logger;
+// Logger удален - используется glog
 std::shared_ptr<RDK::UEngine> Engine;
 std::shared_ptr<RDK::UEnvironment> Environment;
 std::shared_ptr<RDK::UStorage> Storage;
@@ -300,16 +300,16 @@ int UnLockChannel(int index);
 /// �������� ������������
 // --------------------------
 // ���������� ������ �� ��������� �� ������ �������� ������
-std::shared_ptr<RDK::ULoggerEnv>& GetLogger(void);
+// GetLogger функции удалены - используется glog
 
 // ���������� ��������� �� ������ ���������� ������, ��� SystemLogger
-std::shared_ptr<RDK::ULoggerEnv> GetLogger(int channel_index);
+// GetLogger функции удалены - используется glog
 
 /// ���������� ��������� �� ��������� ������
-std::shared_ptr<RDK::ULoggerEnv> GetSystemLogger(void);
+// GetSystemLogger удален - используется glog
 
 /// ���������� ���������  �� ���������� ������ (����������� ���������� �� ���� ��������)
-std::shared_ptr<RDK::ULoggerEnv> GetGlobalLogger(void);
+// GetGlobalLogger удален - используется glog
 // --------------------------
 
 

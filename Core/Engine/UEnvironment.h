@@ -16,7 +16,6 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "ULibrary.h"
 #include "../System/rdk_system.h"
-#include "ULoggerEnv.h"
 #include "UController.h"
 #include <memory>
 #include "ModernSmartPointers.h"
@@ -135,7 +134,6 @@ unsigned long long CurrentTime,LastDuration, ProcEndTime, LastStepStartTime;
 double RTModelCalcTime;
 
 /// ��������� ������ ��� �����������
-mutable std::shared_ptr<ULoggerEnv> Logger;
 
 /// ����, ������������ ���� ��������� ����� ������� (�� MaxCalcTime)
 bool CalcFinishedFlag;
@@ -209,8 +207,6 @@ double CalcRTPerformance(void) const;
 // ������ ���������� ������� �����
 // --------------------------
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 // ���������� ��������� �� ���������
 virtual UStorage* GetStorage(void);
@@ -352,7 +348,6 @@ virtual void FastCalculate(double calc_interval);
 std::shared_ptr<UContainer> GetModelSafe(void) const;
 
 // Thread-safe logger access
-std::shared_ptr<ULoggerEnv> GetLoggerSafe(void) const;
 
 // Thread-safe storage access
 UStorage* GetStorageSafe(void) const;

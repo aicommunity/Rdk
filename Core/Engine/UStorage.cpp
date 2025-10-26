@@ -16,6 +16,7 @@ See file license.txt for more information
 #include <string.h>
 #include "../../Deploy/Include/rdk_version.h"
 #include "UStorage.h"
+#include <glog/logging.h>
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
@@ -127,23 +128,19 @@ UStorage::~UStorage(void)
  }
  catch(EObjectStorageNotEmpty &ex)
  {
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+  LOG(ERROR) << "UStorage::" << __FUNCTION__ << " - " << ex.what();
  }
  catch(UException &ex)
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+  LOG(ERROR) << "UStorage::" << __FUNCTION__ << " - " << ex.what();
  }
  catch(std::exception &ex)
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+  LOG(ERROR) << "UStorage::" << __FUNCTION__ << " - " << ex.what();
  }
  catch(...)
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Unknown excception");
+  LOG(ERROR) << "UStorage::" << __FUNCTION__ << " - Unknown exception";
  }
 }
 // --------------------------
@@ -380,7 +377,7 @@ void UStorage::ClearClassesStorage(bool force)
   UObjectsStorageIterator temp=ObjectsStorage.find(I->first);
   if(temp != ObjectsStorage.end() && temp->second.size() != 0)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
+   LOG(ERROR) << "UStorage::" << __FUNCTION__ << " - Destroy class which objects in use: " << FindClassName(I->first);
    if(!force)
 	throw EObjectStorageNotEmpty(I->first);
    else
@@ -402,14 +399,13 @@ void UStorage::ClearClassesStorage(bool force)
    }
    catch(...)
    {
-	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
+	LOG(FATAL) << __FUNCTION__ << " - Exception raised when destroy class " << FindClassName(I->first);
    }
   }
   RDK_SYS_CATCH
   {
-   if(Logger)
-    Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+   // if(Logger) удален - используется glog
+    // Logger-> удален - используется glogProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   }
  }
  ClassesStorage.clear();
@@ -444,8 +440,8 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
  // Проверяем валидность tmpl
  if(!tmpl)
  {
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid class template for classid: ")+std::to_string(classid));
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid class template for classid: ")+std::to_string(classid));
   return 0;
  }
 
@@ -489,8 +485,8 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
  {
   if(!tmpl)
   {
-   if(Logger)
-    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid template for prototype creation, classid: ")+std::to_string(classid));
+   // if(Logger) удален - используется glog
+    // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid template for prototype creation, classid: ")+std::to_string(classid));
    return 0;
   }
   obj=tmpl->Prototype(prototype);
@@ -499,8 +495,8 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
  {
   if(!tmpl)
   {
-   if(Logger)
-    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid template for new object creation, classid: ")+std::to_string(classid));
+   // if(Logger) удален - используется glog
+    // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid template for new object creation, classid: ")+std::to_string(classid));
    return 0;
   }
   obj=tmpl->New();
@@ -508,8 +504,8 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
 
  if(!obj)
  {
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class factory doesn't return object: ")+FindClassName(classid));
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class factory doesn't return object: ")+FindClassName(classid));
   return 0;
  }
 
@@ -531,14 +527,14 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const NameT &classname, const s
  }
  catch(const EClassNameNotExist& e)
  {
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class not found: ")+classname);
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class not found: ")+classname);
   return nullptr;
  }
  catch(...)
  {
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Unknown error when finding class: ")+classname);
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Unknown error when finding class: ")+classname);
   return nullptr;
  }
 }
@@ -631,22 +627,20 @@ void UStorage::FreeObjectsStorage(bool force)
   size_t size=instances->second.size();
   size_t count=0;
 
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
    std::string object_name=I->Object->GetName();
    if(I->UseFlag && force)
    {
-	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("FORCED destroy objects by name ")+object_name+": object in use!");
+	LOG(ERROR) << __FUNCTION__ << " - FORCED destroy objects by name " << object_name << ": object in use!";
    }
 
    if(!I->UseFlag || force)
    {
 	list<UInstancesStorageElement>::iterator K;
-	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+	LOG(INFO) << __FUNCTION__ << " - Destroy objects by name " << object_name;
 	K=I; ++K;
 	std::shared_ptr<UContainer> object=I->Object;
 	PopObject(instances,I);
@@ -664,14 +658,14 @@ void UStorage::FreeObjectsStorage(bool force)
 	 }
 	 catch(...)
 	 {
-	  if(Logger)
-	   Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
+	  // if(Logger) удален - используется glog
+	   // Logger-> удален - используется glogLogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
 	 }
 	}
 	RDK_SYS_CATCH
 	{
-	 if(Logger)
-	  Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+	 // if(Logger) удален - используется glog
+	  // Logger-> удален - используется glogProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
 	}
     I=K;
    }
@@ -680,8 +674,8 @@ void UStorage::FreeObjectsStorage(bool force)
 	++I;
 //	if(!force)
 //	{
-//	 if(Logger)
-//	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+//	 // if(Logger) удален - используется glog
+//	  // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
 //	}
    }
   }
@@ -689,12 +683,12 @@ void UStorage::FreeObjectsStorage(bool force)
 //  size_t end_size=instances->second.size();
 //  if(end_size>0)
 //  {
-//   if(Logger)
-//	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
+//   // if(Logger) удален - используется glog
+//	// Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
 //  }
 //  instances->second.clear();
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
  }
 }
 
@@ -713,23 +707,23 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
     size_t size=instances->second.size();
     size_t count=0;
 
-    if(Logger)
-        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+    // if(Logger) удален - используется glog
+        // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
 
     for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
     {
         std::string object_name=I->Object->GetName();
         if(I->UseFlag)
         {
-            if(Logger)
-                Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Can't destroy objects by name ")+object_name+": object in use!");
+            // if(Logger) удален - используется glog
+                // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Can't destroy objects by name ")+object_name+": object in use!");
         }
 
         if(!I->UseFlag)
         {
             list<UInstancesStorageElement>::iterator K;
-            if(Logger)
-                Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+            // if(Logger) удален - используется glog
+                // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
             K=I; ++K;
             std::shared_ptr<UContainer> object=I->Object;
             PopObject(instances,I);
@@ -747,27 +741,27 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
                 }
                 catch(...)
                 {
-                if(Logger)
-                    Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
+                // if(Logger) удален - используется glog
+                    // Logger-> удален - используется glogLogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
                 }
             }
             RDK_SYS_CATCH
             {
-                if(Logger)
-                    Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+                // if(Logger) удален - используется glog
+                    // Logger-> удален - используется glogProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
             }
             I=K;
         }
         else
         {
            ++I;
-//           if(Logger)
-//               Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
+//           // if(Logger) удален - используется glog
+//               // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
         }
     }
 
-    if(Logger)
-        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+    // if(Logger) удален - используется glog
+        // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
 
 }
 
@@ -778,18 +772,18 @@ void UStorage::ClearObjectsStorage(bool force)
 												instances != iend; ++instances)
  {
   std::string object_class_name=FindClassName(instances->first);
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has begun");
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
   {
    std::string object_name=I->Object->GetName();
-   if(Logger)
-	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects by name ")+object_name);
+   // if(Logger) удален - используется glog
+	// Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects by name ")+object_name);
    I->Object->Free();
   }
 
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
+  // if(Logger) удален - используется glog
+   // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
  }
 
  FreeObjectsStorage(force);
@@ -1059,19 +1053,7 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 // ������ ���������� ������������
 // --------------------------
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> const UStorage::GetLogger(void) const
-{
- return Logger;
-}
-
-bool UStorage::SetLogger(std::shared_ptr<ULoggerEnv> logger)
-{
- if(Logger == logger)
-  return true;
-
- Logger=logger;
- return true;
-}
+// GetLogger and SetLogger удалены - используется glog
 
 // ���������� ���������� �� �������
 std::shared_ptr<ULibrary> UStorage::GetCollection(int index)
@@ -1160,8 +1142,8 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
     // ���� �� ������� ��� ��� �� runtime ����������
     if(!library || (library->GetType()!=2))
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
         return false;
     }
 
@@ -1183,14 +1165,14 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
             }
             catch(EObjectStorageNotEmpty &ex)
             {
-             if(Logger)
-              Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+             // if(Logger) удален - используется glog
+              // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
               return false;
             }
             catch(EClassIdNotExist &ex)
             {
-             if(Logger)
-              Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
+             // if(Logger) удален - используется glog
+              // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
               return false;
             }
             // ���������� � ������
@@ -1228,8 +1210,8 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
     // ���� �� ������� ��� ��� �� runtime ����������
     if(!library || (library->GetType()!=2))
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
         return false;
     }
     // �������� ����������
@@ -1240,14 +1222,14 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
     }
     catch(EObjectStorageNotEmpty &ex)
     {
-     if(Logger)
-        Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+     // if(Logger) удален - используется glog
+        // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
         return false;
     }
     catch(EClassIdNotExist &ex)
     {
-     if(Logger)
-        Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+     // if(Logger) удален - используется glog
+        // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
         return false;
     }
     return true;
@@ -1258,15 +1240,15 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
 {
     if(lib_name.empty())
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Empty lib name");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Empty lib name");
         return false;
     }
 
 	if(GetCollection(lib_name) != 0)
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library with name \"" + lib_name + "\" already exists");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library with name \"" + lib_name + "\" already exists");
         return false;
     }
 
@@ -1285,16 +1267,16 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
         }
         else
         {
-            if(Logger)
-                Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "CreateNewDirectory() failed while creating directrory for library \"" + lib_name + "\"");
+            // if(Logger) удален - используется glog
+                // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "CreateNewDirectory() failed while creating directrory for library \"" + lib_name + "\"");
             delete lib;
             return false;
         }
     }
     else
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "AddCollection() failed while adding the library \"" + lib_name + "\"");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "AddCollection() failed while adding the library \"" + lib_name + "\"");
         delete lib;
         return false;
     }
@@ -1316,8 +1298,8 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 
     if(index < 0 || index >= int(CollectionList.size()))
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \""+lib_name+"\" not found");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \""+lib_name+"\" not found");
         return false;
     }
 
@@ -1328,8 +1310,8 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
         // ��������� ������� �������� �����
         if(!static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory())
         {
-            if(Logger)
-               Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" isn't runtime-library");
+            // if(Logger) удален - используется glog
+               // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" isn't runtime-library");
             return false;
         }
         delete *I;
@@ -1342,22 +1324,22 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
         }
         catch(EObjectStorageNotEmpty &ex)
         {
-         if(Logger)
-          Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+         // if(Logger) удален - используется glog
+          // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
           return false;
         }
         catch(EClassIdNotExist &ex)
         {
-         if(Logger)
-          Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
+         // if(Logger) удален - используется glog
+          // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, ex.what());
           return false;
         }
         return true;
     }
     else
     {
-        if(Logger)
-           Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" isn't runtime-library");
+        // if(Logger) удален - используется glog
+           // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" isn't runtime-library");
         return false;
     }
 }
@@ -1391,8 +1373,8 @@ void UStorage::InitRTlibs(void)
 
     if(RDK::FindFilesList(lib_path,"*",false,lib_names))
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "FindFilesList() error");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "FindFilesList() error");
         return;
     }
 
@@ -1412,8 +1394,8 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
     // ��� ����������
     if(GetCollection(lib_name) != 0)
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \""+lib_name+"\" already exists");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \""+lib_name+"\" already exists");
         return false;
     }
 
@@ -1425,8 +1407,8 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
     // �������� �������� ����������� ������ ����������
     if(!lib->LoadCompDescriptions())
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" error ");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" + lib_name + "\" error ");
         delete lib;
         return false;
     }
@@ -1437,8 +1419,8 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
     }
     else
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "AddCollection() failed while adding the library \"" + lib_name + "\"");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "AddCollection() failed while adding the library \"" + lib_name + "\"");
         delete lib;
         return false;
     }
@@ -1498,8 +1480,8 @@ bool UStorage::InitMockLibs(void)
     USerStorageXML LibList;
     if(!LibList.LoadFromFile(lib_list_file,"LibraryList"))
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_ERROR, std::string("Error while loading Library List from file: " + lib_list_file));
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, std::string("Error while loading Library List from file: " + lib_list_file));
         return false;
     }
 
@@ -1521,8 +1503,8 @@ bool UStorage::InitMockLibs(void)
         // ���������� �������� �������
         if(!CompDesctips.LoadFromFile(lib_path+"/"+lib_name+".xml","MockLib"))
         {
-            if(Logger)
-                Logger->LogMessage(RDK_EX_ERROR, std::string("Error while loading Library Classes Descriptions from file: " + lib_path+"/"+lib_name+".xml"));
+            // if(Logger) удален - используется glog
+                // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, std::string("Error while loading Library Classes Descriptions from file: " + lib_path+"/"+lib_name+".xml"));
             delete lib_mock;
             continue;
         }
@@ -1542,8 +1524,8 @@ bool UStorage::InitMockLibs(void)
 
 bool UStorage::CreateMockLibs(void)
 {
-    if(Logger)
-        Logger->LogMessage(RDK_EX_DEBUG, std::string("Creating Mock Libraries from Static Libraries"));
+    // if(Logger) удален - используется glog
+        // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, std::string("Creating Mock Libraries from Static Libraries"));
 
     // �������� ���������-�������� �� ����������� ���������
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1556,8 +1538,8 @@ bool UStorage::CreateMockLibs(void)
 
             if(RDK::CreateNewDirectory(lib_path.c_str()))
             {
-                if(Logger)
-                    Logger->LogMessage(RDK_EX_ERROR, std::string("Error while creating MockLibs path :" + lib_path));
+                // if(Logger) удален - используется glog
+                    // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, std::string("Error while creating MockLibs path :" + lib_path));
                 return false;
             }
 
@@ -1585,8 +1567,8 @@ bool UStorage::CreateMockLibs(void)
 
 bool UStorage::SaveMockLibs(void)
 {
-    if(Logger)
-        Logger->LogMessage(RDK_EX_DEBUG, std::string("Starting saving Mock Libraries to files"));
+    // if(Logger) удален - используется glog
+        // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, std::string("Starting saving Mock Libraries to files"));
 
     // ���������� ������ ���������-�������� �� ������� (����� �� ��� � CollectionList)
     USerStorageXML LibList;
@@ -1681,8 +1663,8 @@ bool UStorage::BuildStorage(void)
      }
      else
      {
-         if(Logger)
-             Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
+         // if(Logger) удален - используется glog
+             // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
      }
 
      BuildStorage(2); // ������ runtime-���������
@@ -1697,8 +1679,8 @@ bool UStorage::BuildStorage(void)
      }
      else
      {
-         if(Logger)
-             Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
+         // if(Logger) удален - используется glog
+             // Logger-> удален - используется glogLogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
      }
 
      BuildStorage(2); // ������ runtime-���������
@@ -1722,33 +1704,36 @@ bool UStorage::BuildStorage(int lib_type)
      std::shared_ptr<ULibrary> lib(CollectionList[i], [](ULibrary*){});
      if(lib && lib->GetType()==lib_type)
      {
-      GetLogger()->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(": collection version is ")+lib->GetVersion()+std::string(" (")+sntoa(lib->GetRevision())+")");
+      // Declare variables at the beginning of the scope
+      unsigned long long total_used_memory_before(0);
+      unsigned long long largest_free_block_before(0);
+      unsigned long long total_used_memory_after(0);
+      unsigned long long largest_free_block_after(0);
+      
+      LOG(INFO) << lib->GetName() << ": collection version is " << lib->GetVersion() << " (" << lib->GetRevision() << ")";
 
       if(lib->GetCoreVersion())
       {
        if(!lib->GetCoreVersion()->IsEqualFull(GetGlobalVersion()))
        {
-        Logger->LogMessage(RDK_EX_FATAL, lib->GetName()+std::string(" collection SKIPPED: application core version ")+GetGlobalVersion().ToStringFull()+std::string(" is incompatible lib core version ")+lib->GetCoreVersion()->ToStringFull());
+        // Logger-> удален - используется glogLogMessage(RDK_EX_FATAL, lib->GetName()+std::string(" collection SKIPPED: application core version ")+GetGlobalVersion().ToStringFull()+std::string(" is incompatible lib core version ")+lib->GetCoreVersion()->ToStringFull());
         continue;
        }
       }
       else
-       Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
+       // Logger-> удален - используется glogLogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
 
-      Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
-      unsigned long long total_used_memory_before(0);
-      unsigned long long largest_free_block_before(0);
+      // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
       ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
 
       CollectionList[i]->Upload(this);
-      unsigned long long total_used_memory_after(0);
-      unsigned long long largest_free_block_after(0);
-      if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
-       Logger->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+      if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after)) {
+       LOG(INFO) << lib->GetName() << " eats " << (total_used_memory_after-total_used_memory_before) << " bytes of RAM. Largest RAM block decreased to " << (largest_free_block_before-largest_free_block_after) << " bytes";
+      }
 
-      Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
+      // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
       if(!lib->GetIncomplete().empty())
-       Logger->LogMessage(RDK_EX_DEBUG, std::string("Failed to add [")+sntoa(lib->GetIncomplete().size())+std::string("]: ")+concat_strings(lib->GetIncomplete(),std::string(",")));
+       // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, std::string("Failed to add [")+sntoa(lib->GetIncomplete().size())+std::string("]: ")+concat_strings(lib->GetIncomplete(),std::string(",")));
       CompletedClassNames.insert(CompletedClassNames.end(),
                                 lib->GetComplete().begin(),
                                 lib->GetComplete().end());
@@ -1940,15 +1925,15 @@ bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
     // ������� ���������
     if(func_ptr == 0)
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add null function to FunctionsCrPropMock list in Storage");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add null function to FunctionsCrPropMock list in Storage");
         return false;
     }
     // ���� ��� ����������
     if(std::find(FunctionsCrPropMock.begin(), FunctionsCrPropMock.end(), func_ptr) != FunctionsCrPropMock.end())
     {
-        if(Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add function that already exists in FunctionsCrPropMock list in Storage");
+        // if(Logger) удален - используется glog
+            // Logger-> удален - используется glogLogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add function that already exists in FunctionsCrPropMock list in Storage");
         return false;
     }
 

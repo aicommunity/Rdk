@@ -9,56 +9,55 @@
 namespace RDK {
 
 // --------------------------
-// Методы доступа к ядру без блокировки
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает ссылку на версию ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 const RDK::UVersion& RDK_CALL GetCoreVersion(void);
 
-// Возвращает ссылку на указатель ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::shared_ptr<URdkCoreManager> RDK_CALL GetCore(void);
 
-// Возвращает указатель на логгер
-RDK_LIB_TYPE std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(void);
-RDK_LIB_TYPE std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(int channel_index);
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// GetLogger С„СѓРЅРєС†РёРё СѓРґР°Р»РµРЅС‹ - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ glog
 
-// Возвращает ссылку на указатель управляющего ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::shared_ptr<UEngine>& RDK_CALL GetEngine(void);
 RDK_LIB_TYPE std::shared_ptr<UEngine> RDK_CALL GetEngine(int channel_index);
 
-// Возвращает ссылку на указатель среды выполнения
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::shared_ptr<UEnvironment>& RDK_CALL GetEnvironment(void);
 RDK_LIB_TYPE std::shared_ptr<UEnvironment> RDK_CALL GetEnvironment(int channel_index);
 
-// Возвращает ссылку на указатель хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::shared_ptr<UStorage>& RDK_CALL GetStorage(void);
 RDK_LIB_TYPE std::shared_ptr<UStorage> RDK_CALL GetStorage(int channel_index);
 
-// Возвращает указатель на текущую модель
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::shared_ptr<UContainer> RDK_CALL GetModel(void);
 RDK_LIB_TYPE std::shared_ptr<UContainer> RDK_CALL GetModel(int channel_index);
 // --------------------------
 
 // --------------------------
-// Методы доступа к ядру с блокировкой
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает ссылку на указатель ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void);
 
-// Возвращает ссылку на указатель управляющего ядра
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int channel_index);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(unsigned timeout);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(int channel_index, unsigned timeout);
 
-// Возвращает ссылку на указатель среды выполнения
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index);
 
-// Возвращает ссылку на указатель хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index);
 
-// Возвращает указатель на текущую модель
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(unsigned timeout);
@@ -66,24 +65,24 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int ch
 // --------------------------
 
 // --------------------------
-// Методы доступа к щрифтам
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Возвращает ссылку на шрифты
-/// (не потокобезопасно!)
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!)
 RDK::UBitmapFontCollection& GetFonts(void);
 // --------------------------
 
-/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
-/// иначе возвращает RDK_EXCEPTION_CATCHED
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ RDK_UNHANDLED_EXCEPTION пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ RDK_EXCEPTION_CATCHED
 RDK_LIB_TYPE int RDK_CALL ProcessException(int channel_index, const UException &ex);
 
 
-/// Записывает в отладочную консоль сообщение, если result != RDK_SUCCESS
-/// работает только если включен отладочный режим
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ result != RDK_SUCCESS
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE void RDK_CALL AssertDebugger(int result, const char* function, const char* file, int line);
 
-/// Записывает в лог сообщение, если result != RDK_SUCCESS
-/// Также записывает его в отладочную консоль если включен отладочный режим
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ result != RDK_SUCCESS
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE void RDK_CALL AssertLog(int result, const char* function, const char* file, int line);
 
 template<class T>
@@ -98,7 +97,7 @@ RDK::UELockPtr<T> GetEngineLockTimeout(int channel_index, unsigned timeout)
  return RdkCoreManager.GetEngineLockTimeout<T>(channel_index,timeout);
 }
 
-// Возвращает указатель на текущую модель
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<class T>
 RDK::UELockPtr<T> GetModelLock(void)
 {
@@ -129,55 +128,55 @@ std::shared_ptr<T> GetModel(int channel_index)
  return dynamic_pointer_cast<T>(GetModel(channel_index));
 }
 
-// Исключения
-/// Исключение - свойство не найдено
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 struct RDK_LIB_TYPE EEnginePropertyNotFound: public EError
 {
-/// Имя компонента
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string ComponentName;
 
-/// Имя свойства
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string PropertyName;
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name);
 virtual ~EEnginePropertyNotFound(void) throw();
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
 struct RDK_LIB_TYPE EEnginePropertyDecodeLoadFail: public EError
 {
-/// Имя компонента
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string XmlData;
 
-/// Имя свойства
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string VariableType;
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type);
 virtual ~EEnginePropertyDecodeLoadFail(void) throw();
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
-// Декодирует содержимое свойства/переменной состояния компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 T& DecodePropertyValue(const std::string &param_value, T &res)
 {
@@ -209,7 +208,7 @@ T DecodePropertyValue(const std::string &param_value)
  return DecodePropertyValue<T>(param_value,res);
 }
 
-// Кодирует содержимое свойства/переменной состояния компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 std::string& EncodePropertyValue(const T &param_data, std::string& res)
 {
@@ -226,7 +225,7 @@ std::string& EncodePropertyValue(const T &param_data, std::string& res)
  return res;
 }
 
-// Считывает и декодирует содержимое свойства компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 T& ReadPropertyValue(const std::string &comp_name, const std::string &property_name, T &res)
 {
@@ -240,7 +239,7 @@ T& ReadPropertyValue(const std::string &comp_name, const std::string &property_n
  return res;
 }
 
-// Считывает и декодирует содержимое свойства компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 T& MReadPropertyValue(int channel_index, const std::string &comp_name, const std::string &property_name, T &res)
 {
@@ -267,7 +266,7 @@ T MReadPropertyValue(int channel_index, const std::string &comp_name, const std:
  return MReadPropertyValue(channel_index, comp_name, property_name,res);
 }
 
-// Считывает и декодирует содержимое параметра компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 T& ReadParameterValue(const std::string &comp_name, const std::string &param_name, T &res)
 {
@@ -280,7 +279,7 @@ T ReadParameterValue(const std::string &comp_name, const std::string &param_name
  return ReadPropertyValue<T>(comp_name,param_name);
 }
 
-// Считывает и декодирует содержимое переменной состояния компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 T& ReadStateValue(const std::string &comp_name, const std::string &state_name, T &res)
 {
@@ -294,7 +293,7 @@ T ReadStateValue(const std::string &comp_name, const std::string &state_name)
  return ReadPropertyValue(comp_name,state_name,res);
 }
 
-// Кодирует и записывает содержимое свойства компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void WritePropertyValue(const std::string &comp_name, const std::string &property_name, const T &res)
 {
@@ -304,14 +303,14 @@ void WritePropertyValue(const std::string &comp_name, const std::string &propert
  Model_SetComponentPropertyValue(comp_name.c_str(),property_name.c_str(),property_value.c_str());
 }
 
-// Кодирует и записывает содержимое свойства компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void WriteParameterValue(const std::string &comp_name, const std::string &param_name, const T &res)
 {
  WritePropertyValue(comp_name.c_str(),param_name.c_str(),res);
 }
 
-// Кодирует и записывает содержимое свойства компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void MWritePropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name, const T &res)
 {
@@ -325,14 +324,14 @@ void MWritePropertyValue(int engine_index, const std::string &comp_name, const s
  MModel_SetComponentPropertyValue(engine_index, comp_name.c_str(),property_name.c_str(), property_value.c_str());
 }
 
-// Кодирует и записывает содержимое свойства компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void MWriteParameterValue(int engine_index, const std::string &comp_name, const std::string &property_name, const T &res)
 {
 	MWritePropertyValue(engine_index, comp_name, property_name, res);
 }
 
-// Кодирует и записывает содержимое переменной состояния компонента
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void WriteStateValue(const std::string &comp_name, const std::string &param_name, const T &res)
 {

@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "../System/rdk_system.h"
 #include "../Application/UIVisualController.h"
+#include <glog/logging.h>
 
 
 namespace RDK {
@@ -217,19 +218,7 @@ double UEnvironment::CalcRTPerformance(void) const
 // ������ ���������� ������� �����
 // --------------------------
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> const UEnvironment::GetLogger(void) const
-{
- return Logger;
-}
-
-bool UEnvironment::SetLogger(std::shared_ptr<ULoggerEnv> logger)
-{
- if(Logger == logger)
-  return true;
-
- Logger=logger;
- return true;
-}
+// Методы GetLogger и SetLogger удалены - используется glog
 
 // ���������� ��������� �� ���������
 UStorage* UEnvironment::GetStorage(void)
@@ -269,8 +258,7 @@ bool UEnvironment::CreateModel(const NameT& classname)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return false;
  }
 
@@ -281,12 +269,10 @@ bool UEnvironment::CreateModel(const NameT& classname)
  Model=GetStorage()->TakeObject(classname);
  if(!Model)
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Failed to create model from storage. ClassName=" + classname);
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Failed to create model from storage. ClassName=" << classname;
   return false;
  }
- if(Logger)
-  Model->SetLogger(Logger);
+ // Model->SetLogger(Logger) удален - используется glog
  Model->SetEnvironment(RDK::safe_shared_cast<UEnvironment>(this));
  Ready=false;
  return true;
@@ -299,8 +285,7 @@ bool UEnvironment::CreateModel(const UId& classid)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return false;
  }
 
@@ -311,12 +296,10 @@ bool UEnvironment::CreateModel(const UId& classid)
  Model=Storage->TakeObject(classid);
  if(!Model)
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Failed to create model from storage. ClassId=" + std::to_string(classid));
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Failed to create model from storage. ClassId=" << classid;
   return false;
  }
- if(Logger)
-  Model->SetLogger(Logger);
+ // Model->SetLogger(Logger) удален - используется glog
  Model->SetEnvironment(RDK::safe_shared_cast<UEnvironment>(this));
  Ready=false;
  return true;
@@ -377,8 +360,7 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -392,8 +374,7 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -408,8 +389,7 @@ void UEnvironment::ResetCurrentComponent(void)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -422,8 +402,7 @@ void UEnvironment::UpCurrentComponent(void)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -439,8 +418,7 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -451,8 +429,7 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -559,8 +536,7 @@ bool UEnvironment::RegisterSourceController(const std::string &component_name, c
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return false;
  }
 
@@ -575,8 +551,7 @@ bool UEnvironment::CallSourceController(void)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return false;
  }
 
@@ -690,8 +665,7 @@ void UEnvironment::IncreaseModelTimeByStep(void)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -767,8 +741,7 @@ void UEnvironment::RTCalculate(void)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't ialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -859,8 +832,7 @@ void UEnvironment::FastCalculate(double calc_interval)
 {
  if(!IsInit())
  {
-  if(Logger)
-   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  LOG(ERROR) << "UEnvironment::" << __FUNCTION__ << " - Environment does't initialized.";
   return;
  }
 
@@ -1043,8 +1015,7 @@ bool UEnvironment::AReset(void)
  LastStepStartTime=0;
  Time.SetTime(0);
 
- if(Logger)
-  Logger->Reset();
+ // Logger->Reset() заменен на glog - сброс не требуется
  RTModelCalcTime=0;
 
  for(size_t i=0;i<DataReaders.size();i++)

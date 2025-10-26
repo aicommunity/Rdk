@@ -3,7 +3,7 @@
 
 namespace RDK {
 
-
+// GetOwner implementation moved to header file
 
 }
 

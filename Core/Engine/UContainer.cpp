@@ -16,6 +16,7 @@ See file license.txt for more information
 #include <string.h>
 #include <cstdio>
 #include "UContainer.h"
+#include <glog/logging.h>
 #include "UStorage.h"
 #include "UConnector.h"
 #include "UItem.h"
@@ -237,69 +238,80 @@ bool UContainer::SetEnvironment(std::shared_ptr<UEnvironment> environment)
 }
 
 // ��������� �� ������
-bool UContainer::SetLogger(std::shared_ptr<ULoggerEnv> logger)
-{
- if(!UComponent::SetLogger(logger))
-  return false;
-
- bool res=true;
-
- for(int i=0;i<NumComponents;i++)
-  res&=PComponents[i]->SetLogger(logger);
-
- return res;
-}
+// SetLogger удален - используется glog
 
 // ����� ����������� ���������� �����
 void UContainer::ProcessException(UException &exception)
 {
- auto logger = Logger.lock();
- if(logger)
-  logger->ProcessException(exception);
- else
-  throw exception;
+ // ProcessException заменен на glog - исключения логируются напрямую
+ LOG(ERROR) << "Unhandled exception: " << exception.what();
+ throw exception;
 }
 
 
 // ����� ����������� ���������� ����� ��� ������� ������ ������ � ���
 void UContainer::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
- auto logger = Logger.lock();
- if(logger)
- {
-  logger->LogMessageEx(msg_level, GetFullName(), line, error_event_number);
- }
+ // LogMessage заменен на glog
+ // Заменено на glog - логирование по уровням
+switch(msg_level) {
+    case 1: LOG(FATAL) << GetFullName() << " - " << line; break;
+    case 2: LOG(ERROR) << GetFullName() << " - " << line; break;
+    case 3: LOG(WARNING) << GetFullName() << " - " << line; break;
+    case 4: LOG(INFO) << GetFullName() << " - " << line; break;
+    case 5: LOG(INFO) << "[APP] " << GetFullName() << " - " << line; break;
+    case 6: VLOG(1) << GetFullName() << " - " << line; break;
+    default: LOG(ERROR) << GetFullName() << " - " << line; break;
+}
 }
 
 void UContainer::LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
- auto logger = Logger.lock();
- if(logger)
- {
-  logger->LogMessageEx(msg_level, GetFullName(), method_name, line, error_event_number);
- }
+ // LogMessage заменен на glog
+ // Заменено на glog - логирование по уровням
+switch(msg_level) {
+    case 1: LOG(FATAL) << GetFullName() << "::" << method_name << " - " << line; break;
+    case 2: LOG(ERROR) << GetFullName() << "::" << method_name << " - " << line; break;
+    case 3: LOG(WARNING) << GetFullName() << "::" << method_name << " - " << line; break;
+    case 4: LOG(INFO) << GetFullName() << "::" << method_name << " - " << line; break;
+    case 5: LOG(INFO) << "[APP] " << GetFullName() << "::" << method_name << " - " << line; break;
+    case 6: VLOG(1) << GetFullName() << "::" << method_name << " - " << line; break;
+    default: LOG(ERROR) << GetFullName() << "::" << method_name << " - " << line; break;
+}
 }
 
 void UContainer::LogMessageEx(int msg_level, const std::string &line, int error_event_number)
 {
- auto logger = Logger.lock();
- if(logger)
- {
-  std::string full_name;
-  GetFullName(full_name);
-  logger->LogMessageEx(msg_level, full_name, full_name+std::string(" - ")+line, error_event_number);
- }
+ // LogMessageEx заменен на glog
+ std::string full_name;
+ GetFullName(full_name);
+ // Заменено на glog - логирование по уровням
+switch(msg_level) {
+    case 1: LOG(FATAL) << full_name << " - " << full_name << " - " << line; break;
+    case 2: LOG(ERROR) << full_name << " - " << full_name << " - " << line; break;
+    case 3: LOG(WARNING) << full_name << " - " << full_name << " - " << line; break;
+    case 4: LOG(INFO) << full_name << " - " << full_name << " - " << line; break;
+    case 5: LOG(INFO) << "[APP] " << full_name << " - " << full_name << " - " << line; break;
+    case 6: VLOG(1) << full_name << " - " << full_name << " - " << line; break;
+    default: LOG(ERROR) << full_name << " - " << full_name << " - " << line; break;
+}
 }
 
 void UContainer::LogMessageEx(int msg_level, const std::string &method_name, const std::string &line, int error_event_number)
 {
- auto logger = Logger.lock();
- if(logger)
- {
-  std::string full_name;
-  GetFullName(full_name);
-  logger->LogMessageEx(msg_level, full_name, method_name, full_name+std::string(" - ")+line, error_event_number);
- }
+ // LogMessageEx заменен на glog
+ std::string full_name;
+ GetFullName(full_name);
+ // Заменено на glog - логирование по уровням
+switch(msg_level) {
+    case 1: LOG(FATAL) << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+    case 2: LOG(ERROR) << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+    case 3: LOG(WARNING) << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+    case 4: LOG(INFO) << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+    case 5: LOG(INFO) << "[APP] " << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+    case 6: VLOG(1) << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+    default: LOG(ERROR) << full_name << "::" << method_name << " - " << full_name << " - " << line; break;
+}
 }
 
 void UContainer::LogMessageEx(int msg_level, const std::string &method_name, int line, int error_event_number)
@@ -310,8 +322,8 @@ void UContainer::LogMessageEx(int msg_level, const std::string &method_name, int
 
 void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier)
 {
- auto logger = Logger.lock();
- if(logger && logger->GetDebugMode() && (logger->GetDebugSysEventsMask() & (debug_sys_msg_type & DebugSysEventsMask)))
+ // Logger удален - используется glog
+ // Debug mode проверка удалена - используется glog
  {
   std::string prefix;
   switch(debug_sys_msg_type)
@@ -352,8 +364,8 @@ void UContainer::LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsig
 /// �������� �������� ��� ����� � ������ (�����, ���������, ���������)
 void UContainer::LogPropertiesBeforeCalc(void)
 {
- auto logger = Logger.lock();
- if(logger && logger->GetDebugMode() && (logger->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ // Logger удален - используется glog
+ // Debug mode проверка удалена - используется glog
  {
   std::string log_message;
 
@@ -393,8 +405,8 @@ void UContainer::LogPropertiesBeforeCalc(void)
 /// �������� �������� ��� ������ �� ������� (������)
 void UContainer::LogPropertiesAfterCalc(void)
 {
- auto logger = Logger.lock();
- if(logger && logger->GetDebugMode() && (logger->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)))
+ // Logger удален - используется glog
+ // Debug mode проверка удалена - используется glog
  {
   std::string log_message;
   if(PropertiesForDetailedLog.empty())
@@ -434,10 +446,10 @@ void UContainer::LogPropertiesAfterCalc(void)
 /// ���������� ��������� ����� ������ �������
 bool UContainer::CheckDebugMode(void) const
 {
- auto logger = Logger.lock();
- if(logger)
+ // Logger удален - используется glog
+ // Logger удален - используется glog
  {
-  return logger->GetDebugMode();
+   return false; // Debug mode удален - используется glog
  }
  return false;
 }
@@ -1261,7 +1273,7 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
  if(!res)
   RDK_THROW(EComponentIdAlreadyExist(id));
 
- comp->SetLogger(Logger.lock());
+ // comp->SetLogger удален - используется glog
  comp->Id = id;
  comp->SetOwner(safe_shared_cast<UComponent>(this));
 
@@ -1960,45 +1972,45 @@ bool UContainer::Default(void)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
@@ -2027,45 +2039,45 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
@@ -2102,45 +2114,45 @@ bool UContainer::Build(void)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
@@ -2187,45 +2199,45 @@ bool UContainer::Reset(void)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
  //  RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throws exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return true;
@@ -2368,45 +2380,45 @@ bool UContainer::Calculate(void)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
@@ -2436,45 +2448,45 @@ void UContainer::Init(void)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 }
@@ -2496,45 +2508,45 @@ void UContainer::UnInit(void)
   }
   catch(UException &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   throw;
   }
   catch(std::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
+   // Logger удален - используется glog
+   // Logger удален - используется glog logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   auto logger = Logger.lock();
-   if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
+   // Logger удален - используется glog
+   // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw exception: " << exception.what();
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  auto logger = Logger.lock();
-  if(logger) logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  // Logger удален - используется glog
+  // Logger удален - используется glog LOG(ERROR) << "UContainer::" << __FUNCTION__ << " - " << GetFullName() << " throw system exception: " << GET_SYSTEM_EXCEPTION_DATA;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  InitFlag=false;
@@ -2868,7 +2880,7 @@ void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
 /// ���������� ����������� �������� �� ���������� ������������ ����������
 UId UContainer::UpdateStaticComponent(const NameT &classname, std::shared_ptr<UContainer> comp)
 {
- comp->SetLogger(GetLogger());
+ // comp->SetLogger удален - используется glog
  comp->SetStorage(GetStorage());
  comp->SetEnvironment(GetEnvironment());
  if(GetStorage())
@@ -2922,7 +2934,7 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 
  if(!NumComponents)
   LastId=0;
- comp->SetLogger(0);
+ // comp->SetLogger удален - используется glog
 }
 
 

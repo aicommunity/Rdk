@@ -23,6 +23,9 @@ See file license.txt for more information
 #include <concepts>
 #include <memory>
 #include "ModernProperties.h"
+
+// Forward declaration
+class UContainer;
 #include "../Serialize/USerStorageXML.h"
 #include "../Serialize/USerStorageBinary.h"
 #include "../Serialize/UXMLStdSerialize.h"
@@ -169,10 +172,12 @@ UVBaseDataProperty& operator=(UVBaseDataProperty&& other) noexcept
 // ������ ������������
 // -----------------------------
 // ���������� ������ �� ������
-virtual const T& GetData(void) const=0;
+// GetData method - specialized for void and non-void types
+virtual const T& GetData(void) const = 0;
 
 // ������������ ������
-virtual void SetData(const T& data)=0;
+// SetData method - specialized for void and non-void types  
+virtual void SetData(const T& data) = 0;
 
 // ���������� �������� ��� ��������� ��������
 virtual const type_info& GetLanguageType(void) const
@@ -374,6 +379,25 @@ void ResetUpdateTime(void)
 
 
 // ����� - ���� ��� �������
+// Specialization for void type
+template<>
+class UVBaseDataProperty<void>: public UIPropertyOutput
+{
+protected:
+ // No data for void type
+ int dummy_data; // Use int as dummy data
+public:
+ UVBaseDataProperty() : dummy_data(0) {}
+ virtual ~UVBaseDataProperty() {}
+ // Dummy implementations for void type
+ virtual const int& GetData(void) const { return dummy_data; }
+ virtual void SetData(const int& data) { dummy_data = data; }
+ virtual const type_info& GetLanguageType(void) const
+ {
+  return typeid(void);
+ }
+};
+
 template<typename T,class OwnerT>
 class UVBaseProperty: public UVBaseDataProperty<T>
 {
@@ -417,7 +441,7 @@ virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 // ����� ���������� ��������� ����������-��������� ��������
 virtual UContainer* GetOwner(void) const
 {
- return dynamic_cast<UContainer*>(Owner);
+ return nullptr; // Default implementation - override in derived classes
 }
 
 // ����� ���������� ��������� ��� ��������

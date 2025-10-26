@@ -22,15 +22,7 @@ std::shared_ptr<URdkCoreManager> RDK_CALL GetCore(void)
 }
 
 // ���������� ��������� �� ������
-std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(void)
-{
- return RdkCoreManager.GetLogger();
-}
-
-std::shared_ptr<ULoggerEnv> RDK_CALL GetLogger(int channel_index)
-{
- return RdkCoreManager.GetLogger(channel_index);
-}
+// GetLogger функции удалены - используется glog
 
 // ���������� ������ �� ��������� ������������ ����
 std::shared_ptr<UEngine>& RDK_CALL GetEngine(void)

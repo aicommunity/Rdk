@@ -20,8 +20,10 @@ See file license.txt for more information
 #include "ModernSmartPointers.h"
 #include "UContainerDescription.h"
 #include "UTime.h"
-#include "ULoggerEnv.h"
 #include "../Graphics/UFont.h"
+
+// Forward declaration
+class UContainer;
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
@@ -144,7 +146,6 @@ std::weak_ptr<UStorage> Storage;
 std::weak_ptr<UEnvironment> Environment;
 
 // ��������� �� ������
-std::weak_ptr<ULoggerEnv> Logger;
 
 protected: // ������
 // ������������� ������
@@ -208,8 +209,6 @@ std::shared_ptr<UEnvironment> GetEnvironment(void) const;
 virtual bool SetEnvironment(std::shared_ptr<UEnvironment> environment);
 
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> GetLogger(void) const;
-virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 /// ���������� ������ �� ����� ���������� ������� �� Environment.
 /// ���� Environment ����������� �� ���������� ��������� �� ��������

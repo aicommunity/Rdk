@@ -43,7 +43,6 @@ public:
 // Thread-safe engine access
 std::shared_ptr<UEnvironment> GetEnvironmentSafe(void) const;
 std::shared_ptr<UStorage> GetStorageSafe(void) const;
-std::shared_ptr<ULoggerEnv> GetLoggerSafe(void) const;
 
 // Modern move semantics
 UEngine(UEngine&& other) noexcept;
@@ -98,7 +97,6 @@ protected: // ������
 UIniFile<char> Options;
 
 // ������
-std::shared_ptr<ULoggerEnv> Logger;
 
 // ���������
 std::shared_ptr<UStorage> Storage;
@@ -234,8 +232,6 @@ virtual UContainer* GetModel(void);
 // ������ ����� � ��� �� �������������
 // --------------------------
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 // �������������� ������ ������
 virtual void Init(void);
@@ -962,8 +958,8 @@ int Engine_LogMessageEx(int msg_level, const char *object_name, const char *mess
 int Engine_LogMessageEx(int msg_level, const char *object_name, const char *method_name, const char *message, int error_event_number=0);
 
 // ���������� ��������-������������ ����������
-ULoggerEnv::PExceptionHandler GetExceptionHandler(void) const;
-int SetExceptionHandler(ULoggerEnv::PExceptionHandler value);
+// GetExceptionHandler удален - используется glog
+// SetExceptionHandler удален - используется glog
 
 /// ������� ���
 int ClearLog(void);

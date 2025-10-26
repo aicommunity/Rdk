@@ -270,7 +270,6 @@ bool CheckLongId(const std::string &id) const;
 virtual bool SetEnvironment(std::shared_ptr<UEnvironment> environment);
 
 // ��������� �� ������
-virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 // ����� ����������� ���������� �����
 virtual void ProcessException(UException &exception);
@@ -1236,10 +1235,7 @@ std::string UVProperty<T, OwnerT>::GetItemOutputName(int index) const
 template<typename T,class OwnerT>
 std::string UVProperty<T, OwnerT>::GetItemName(int index) const
 {
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetOwner()->GetName();
- }
+ // Временно закомментировано из-за циклической зависимости
  return std::string();
 }
 
@@ -1247,10 +1243,7 @@ std::string UVProperty<T, OwnerT>::GetItemName(int index) const
 template<typename T,class OwnerT>
 std::string UVProperty<T, OwnerT>::GetItemFullName(int index) const
 {
- if(int(this->ConnectedOutputs.size())>index && index >=0)
- {
-  return ConnectedOutputs[index]->GetOwner()->GetFullName();
- }
+ // Временно закомментировано из-за циклической зависимости
  return std::string();
 }
 

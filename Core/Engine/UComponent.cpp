@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UACOMPONENT_CPP
 
 #include "UComponent.h"
+#include <glog/logging.h>
 #include "UProperty.h"
 #include "UStorage.h"
 #include "UEnvironment.h"
@@ -237,20 +238,7 @@ bool UComponent::SetEnvironment(std::shared_ptr<UEnvironment> environment)
 }
 
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> UComponent::GetLogger(void) const
-{
- return Logger.lock();
-}
-
-bool UComponent::SetLogger(std::shared_ptr<ULoggerEnv> logger)
-{
- if(Logger.lock() == logger)
-  return true;
-
- Logger=logger;
- UpdateInternalData();
- return true;
-}
+// GetLogger и SetLogger удалены - используется glog
 
 
 /// ���������� ������ �� ����� ���������� ������� �� Environment.

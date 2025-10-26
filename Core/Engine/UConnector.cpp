@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UConnector.h"
 #include "UStorage.h"
 #include "UItem.h"
+#include "UContainer.h"
 
 namespace RDK {
 
@@ -843,7 +844,10 @@ UIPropertyInput* UIPropertyOutput::GetConnectorProperty(int index)
 
 void UIPropertyOutput::UpdateConnectedPointers(void)
 {
- std::shared_ptr<UConnector> item=std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(this->GetOwner()));
+ UContainer* owner = reinterpret_cast<UContainer*>(this->GetOwner());
+ if(!owner) return;
+ UConnector* item = dynamic_cast<UConnector*>(owner);
+ if(!item) return;
  size_t num_inputs=item->GetNumActiveOutputs(this->GetName());
  for(size_t i=0;i<num_inputs;i++)
  {

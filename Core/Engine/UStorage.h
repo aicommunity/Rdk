@@ -105,7 +105,6 @@ std::map<std::string,UId> ClassesLookupTable;
 UClassesStorage ClassesStorage;
 
 /// ��������� ������ ��� �����������
-mutable std::shared_ptr<ULoggerEnv> Logger;
 
 
 protected: // �������� �������
@@ -328,8 +327,6 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // ������ ���������� ������������
 // --------------------------
 // ��������� �� ������
-std::shared_ptr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(std::shared_ptr<ULoggerEnv> logger);
 
 // ���������� ���������� �� �������
 std::shared_ptr<ULibrary> GetCollection(int index);

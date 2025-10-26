@@ -27,14 +27,9 @@ URdkCoreManager::URdkCoreManager(void)
  DebuggerMessageFlag=false;
  DebugMode=false;
  BufObjectsMode=1;
- GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
- GlobalLogger.SetDebugMode(DebugMode);
- GlobalLogger.SetDebuggerMessageFlag(false);
- GlobalLogger.SetEventsLogMode(true);
- SystemLogger.RegisterGlobalLogger(&GlobalLogger);
- SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
- SystemLogger.SetDebugMode(DebugMode);
- SystemLogger.SetDebuggerMessageFlag(false);
+ // GlobalLogger удален - используется glog
+ // SystemLogger.RegisterGlobalLogger удален - используется glog
+ // SystemLogger удален - используется glog
 
  StorageBuildMode = 1;
 }
@@ -119,17 +114,8 @@ int URdkCoreManager::SetLogDir(const char *dir)
 
  if(LogDir == dir)
   return RDK_SUCCESS;
- if(GlobalLogger.IsLogFileCreated())
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
+ // GlobalLogger, SystemLogger, LoggerList удалены - используется glog
  LogDir=dir;
- for(size_t i=0;i<LoggerList.size();i++)
- {
-  if(LoggerList[i])
-   LoggerList[i]->SetLogDir(LogDir);
- }
-
- SystemLogger.SetLogDir(LogDir);
- GlobalLogger.SetLogDir(LogDir);
  return RDK_SUCCESS;
 }
 
@@ -146,13 +132,7 @@ int URdkCoreManager::SetDebugMode(bool value)
  if(DebugMode == value)
   return RDK_SUCCESS;
  DebugMode=value;
- for(size_t i=0;i<LoggerList.size();i++)
- {
-  if(LoggerList[i])
-   LoggerList[i]->SetDebugMode(DebugMode);
- }
- SystemLogger.SetDebugMode(DebugMode);
- GlobalLogger.SetDebugMode(DebugMode);
+ // LoggerList, SystemLogger, GlobalLogger удалены - используется glog
  return RDK_SUCCESS;
 }
 
@@ -168,12 +148,7 @@ int URdkCoreManager::SetDebuggerMessageFlag(bool value)
  if(DebuggerMessageFlag == value)
   return RDK_SUCCESS;
  DebuggerMessageFlag=value;
- for(size_t i=0;i<LoggerList.size();i++)
- {
-  if(LoggerList[i])
-   LoggerList[i]->SetDebuggerMessageFlag(DebuggerMessageFlag);
- }
- SystemLogger.SetDebuggerMessageFlag(DebuggerMessageFlag);
+ // LoggerList, SystemLogger удалены - используется glog
  return RDK_SUCCESS;
 }
 
@@ -203,18 +178,18 @@ int URdkCoreManager::SetBufObjectsMode(int value)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -240,33 +215,37 @@ int URdkCoreManager::LoadFonts(void)
    std::vector<std::string> font_names;
    std::string font_path=SystemDir+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path);
+   // // SystemLogger.LogMessage удален - используется glog удален - используется glog
 
    ClearFonts();
    RDK::UBitmapFont font;
    for(size_t i=0;i<font_names.size();i++)
    {
     if(AddFont(font_path+font_names[i]))
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]);
+    {
+     // SystemLogger.LogMessage удален - используется glog
+    }
     else
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Failed to load font ")+font_names[i]);
+    {
+     // SystemLogger.LogMessage удален - используется glog
+    }
    }
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -301,16 +280,16 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
  }
 
  return false;
@@ -407,7 +386,7 @@ int URdkCoreManager::SetNumChannels(int num)
     EnvironmentList.resize(num,0);
     MutexList.resize(num,0);
     LockerList.resize(num,0);
-    LoggerList.resize(num,0);
+    // LoggerList удален - используется glog
     for(int i=old_num;i<num;i++)
     {
      MutexList[i]=UCreateMutex();
@@ -424,18 +403,18 @@ int URdkCoreManager::SetNumChannels(int num)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -466,18 +445,18 @@ int URdkCoreManager::SelectChannel(int index)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -508,7 +487,7 @@ int URdkCoreManager::Add(int index)
   EnvironmentList.resize(num,0);
   MutexList.resize(num,0);
   LockerList.resize(num,0);
-  LoggerList.resize(num,0);
+  // LoggerList удален - используется glog
  }
 
  for(int i=int(EngineList.size())-1;i>index;i--)
@@ -519,7 +498,7 @@ int URdkCoreManager::Add(int index)
   EnvironmentList[i]=EnvironmentList[i-1];
   MutexList[i]=MutexList[i-1];
   LockerList[i]=LockerList[i-1];
-  LoggerList[i]=LoggerList[i-1];
+  // LoggerList[ удален - используется glogi]=// LoggerList[ удален - используется glogi-1];
  }
 
  EngineList[index]=0;
@@ -527,7 +506,7 @@ int URdkCoreManager::Add(int index)
  EnvironmentList[index]=0;
  MutexList[index]=0;
  LockerList[index]=0;
- LoggerList[index]=0;
+ // LoggerList[ удален - используется glogindex]=0;
  MutexList[index]=UCreateMutex();
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  MutexList[index]->DebugId=index;
@@ -568,7 +547,7 @@ int URdkCoreManager::Del(int index)
     EnvironmentList[i-1]=EnvironmentList[i];
     MutexList[i-1]=MutexList[i];
     LockerList[i-1]=LockerList[i];
-    LoggerList[i-1]=LoggerList[i];
+    // LoggerList[ удален - используется glogi-1]=// LoggerList[ удален - используется glogi];
    }
 
    int new_num_size=0;
@@ -580,7 +559,7 @@ int URdkCoreManager::Del(int index)
     StorageList.resize(StorageList.size()-1);
     EnvironmentList.resize(EnvironmentList.size()-1);
     MutexList.resize(MutexList.size()-1);
-    LoggerList.resize(LoggerList.size()-1);
+    // LoggerList удален - используется glog
     LockerList.resize(LockerList.size()-1);
     new_num_size=NumChannels=int(EngineList.size());
     curr_selected_channel_index=SelectedChannelIndex;
@@ -595,18 +574,18 @@ int URdkCoreManager::Del(int index)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -628,14 +607,9 @@ int URdkCoreManager::ChannelCreate(int index)
  {
   try
   {
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to create channel ")+RDK::sntoa(index));
+   // // SystemLogger.LogMessage удален - используется glog удален - используется glog
    // TODO: ����� ������������� ���������� ������� � ��� ������
-   LoggerList[index]=new RDK::ULoggerEnv;
-   LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
-   LoggerList[index]->SetMaxExceptionsLogSize(0);
-   LoggerList[index]->SetLogDir(LogDir);
-   LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
-   LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());
+   // LoggerList, GlobalLogger удалены - используется glog
 
    EngineList[index]=FuncCreateNewEngine();
    if(!EngineList[index])
@@ -644,7 +618,7 @@ int URdkCoreManager::ChannelCreate(int index)
     return RDK_E_CORE_ENGINE_CREATE_FAIL;
    }
 
-    EngineList[index]->SetLogger(std::shared_ptr<RDK::ULoggerEnv>(LoggerList[index], [](RDK::ULoggerEnv*){}));
+    // EngineList[index]->SetLogger удален - используется glog
 
    StorageList[index]=FuncCreateNewStorage();
    if(!StorageList[index])
@@ -682,26 +656,26 @@ int URdkCoreManager::ChannelCreate(int index)
     Engine=std::shared_ptr<RDK::UEngine>(EngineList[SelectedChannelIndex], [](RDK::UEngine*){});
     Environment=std::shared_ptr<RDK::UEnvironment>(EnvironmentList[SelectedChannelIndex], [](RDK::UEnvironment*){});
     Storage=std::shared_ptr<RDK::UStorage>(StorageList[SelectedChannelIndex], [](RDK::UStorage*){});
-    Logger=std::shared_ptr<RDK::ULoggerEnv>(LoggerList[SelectedChannelIndex], [](RDK::ULoggerEnv*){});
+    // Logger удален - используется glog
    }
 
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(index)+" has been created");
+   // SystemLogger.LogMessage удален - используется glog
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -741,8 +715,7 @@ int URdkCoreManager::ChannelDestroy(int index)
   StorageList[index]=0;
  }
 
- delete LoggerList[index];
- LoggerList[index]=0;
+ // LoggerList удален - используется glog
  return RDK_SUCCESS;
 }
 
@@ -758,7 +731,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    if(channel_index<0 || channel_index>=NumChannels)
     return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to initialize channel ")+RDK::sntoa(channel_index));
+   // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Preparing to initialize channel ")+RDK::sntoa(channel_index));
    res=RDK_ASSERT_LOG(ChannelUnInit(channel_index));
    if(res != RDK_SUCCESS)
    {
@@ -784,22 +757,22 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    res=RDK_ASSERT_LOG(MEnv_Init(channel_index));
    if(res != RDK_SUCCESS)
     return res;
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(channel_index)+" has been initialized successfully");
+   // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(channel_index)+" has been initialized successfully");
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -828,18 +801,18 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
    res=RDK_EXCEPTION_CATCHED;
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
   res=RDK_EXCEPTION_CATCHED;
  }
 
@@ -854,9 +827,9 @@ void URdkCoreManager::Destroy(void)
 
  for(int i=0;i<NumChannels;i++)
  {
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
+  // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
   ChannelUnInit(i);
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
+  // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
  }
 
  RDK_SYS_TRY
@@ -866,7 +839,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<EnvironmentList.size();i++)
 	if(EnvironmentList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
+     // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
      delete EnvironmentList[i];
     }
 
@@ -875,7 +848,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<StorageList.size();i++)
 	if(StorageList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
+     // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
      delete StorageList[i];
     }
 
@@ -884,19 +857,13 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<EngineList.size();i++)
 	if(EngineList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
+     // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
      delete EngineList[i];
     }
 
    EngineList.resize(0);
 
-   for(size_t i=0;i<LoggerList.size();i++)
-	if(LoggerList[i])
-    {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted channel logger ")+RDK::sntoa(i));
-     delete LoggerList[i];
-    }
-   LoggerList.resize(0);
+   // LoggerList удален - используется glog
 
    for(size_t i=0;i<MutexList.size();i++)
 	if(MutexList[i])
@@ -909,16 +876,16 @@ void URdkCoreManager::Destroy(void)
   }
   catch (RDK::UException &exception)
   {
-   SystemLogger.ProcessException(exception);
+   // SystemLogger.ProcessException удален - используется glog
   }
   catch (std::exception &exception)
   {
-   SystemLogger.ProcessException(RDK::UExceptionWrapperStd(exception));
+   // SystemLogger.ProcessException удален - используется glog
   }
  }
  RDK_SYS_CATCH
  {
-  SystemLogger.ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  // SystemLogger.ProcessException удален - используется glog
  }
 }
 // --------------------------
@@ -1175,33 +1142,15 @@ int URdkCoreManager::UnLockChannel(int index)
 /// �������� ������������
 // --------------------------
 // ���������� ������ �� ��������� �� ������
-std::shared_ptr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
-{
- return Logger;
-}
+// GetLogger методы удалены - используется glog
 
-std::shared_ptr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
-{
- if(channel_index == RDK_SYS_MESSAGE)
-  return std::shared_ptr<RDK::ULoggerEnv>(&SystemLogger, [](RDK::ULoggerEnv*){});
-
- if(channel_index == RDK_GLOB_MESSAGE)
-  return std::shared_ptr<RDK::ULoggerEnv>(&GlobalLogger, [](RDK::ULoggerEnv*){});
-
- return std::shared_ptr<RDK::ULoggerEnv>(LoggerList[channel_index], [](RDK::ULoggerEnv*){});
-}
+// GetLogger методы удалены - используется glog
 
 /// ���������� ������ �� ��������� ������
-std::shared_ptr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
-{
- return std::shared_ptr<RDK::ULoggerEnv>(&SystemLogger, [](RDK::ULoggerEnv*){});
-}
+// GetLogger методы удалены - используется glog
 
 /// ���������� ���������  �� ���������� ������ (����������� ���������� �� ���� ��������)
-std::shared_ptr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
-{
- return std::shared_ptr<RDK::ULoggerEnv>(&GlobalLogger, [](RDK::ULoggerEnv*){});
-}
+// GetLogger методы удалены - используется glog
 // --------------------------
 
 // --------------------------
@@ -1220,7 +1169,7 @@ bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
  Engine=std::shared_ptr<RDK::UEngine>(EngineList[channel_index], [](RDK::UEngine*){});
  Environment=std::shared_ptr<RDK::UEnvironment>(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
  Storage=std::shared_ptr<RDK::UStorage>(StorageList[channel_index], [](RDK::UStorage*){});
- Logger=std::shared_ptr<RDK::ULoggerEnv>(LoggerList[channel_index], [](RDK::ULoggerEnv*){});
+ // Logger удален - используется glog
 
  return true;
 }
