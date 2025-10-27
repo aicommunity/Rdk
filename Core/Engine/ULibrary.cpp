@@ -288,7 +288,7 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
  try
  {
   // cont->SetLogger удален - используется glog
-  cont->SetStorage(safe_shared_cast<UStorage>(Storage));
+   cont->SetStorage(Storage);
   cont->Build();
   factory = std::make_shared<UVirtualMethodFactory>(std::dynamic_pointer_cast<UContainer>(cont));
  }

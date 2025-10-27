@@ -41,15 +41,15 @@ public:
 
 // Modern C++20 thread-safe methods
 // Thread-safe engine access
-std::shared_ptr<UEnvironment> GetEnvironmentSafe(void) const;
-std::shared_ptr<UStorage> GetStorageSafe(void) const;
+UEnvironment* GetEnvironmentSafe(void) const;
+UStorage* GetStorageSafe(void) const;
 
 // Modern move semantics
 UEngine(UEngine&& other) noexcept;
 UEngine& operator=(UEngine&& other) noexcept;
 
 // Modern initialization with smart pointers
-bool InitializeModern(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironment> env);
+bool InitializeModern(UStorage* storage, UEnvironment* env);
 
 protected: //   ��������� �������������
 // ��� ����� �������������
@@ -99,10 +99,10 @@ UIniFile<char> Options;
 // ������
 
 // ���������
-std::shared_ptr<UStorage> Storage;
+UStorage* Storage;
 
 // �����
-std::shared_ptr<UEnvironment> Environment;
+UEnvironment* Environment;
 
 protected: // ��������� ����������
 // ��� ���������� �������
@@ -235,7 +235,7 @@ virtual UContainer* GetModel(void);
 
 // �������������� ������ ������
 virtual void Init(void);
-virtual bool Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironment> env);
+virtual bool Init(UStorage* storage, UEnvironment* env);
 
 // ���������������� ������ ������
 // � ��������� ������� ���������

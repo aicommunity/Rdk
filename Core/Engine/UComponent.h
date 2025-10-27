@@ -140,10 +140,10 @@ std::weak_ptr<UComponent> Owner;
 std::weak_ptr<UComponent> MainOwner;
 
 // ��������� �� ��������� ��������� ����� �������
-std::weak_ptr<UStorage> Storage;
+UStorage* Storage;
 
 // ��������� �� ����� ���������� ����� �������
-std::weak_ptr<UEnvironment> Environment;
+UEnvironment* Environment;
 
 // ��������� �� ������
 
@@ -200,13 +200,13 @@ std::shared_ptr<UComponent> GetMainOwner(void) const;
 virtual void SetMainOwner(std::shared_ptr<UComponent> mainowner);
 
 // ���������� ��������� ��������� ����� �������
-std::shared_ptr<UStorage> GetStorage(void) const;
-virtual bool SetStorage(std::weak_ptr<UStorage> storage);
+UStorage* GetStorage(void) const;
+virtual bool SetStorage(UStorage* storage);
 void ResetStorage();
 
 // ���������� ����� ���������� ����� �������
-std::shared_ptr<UEnvironment> GetEnvironment(void) const;
-virtual bool SetEnvironment(std::shared_ptr<UEnvironment> environment);
+UEnvironment* GetEnvironment(void) const;
+virtual bool SetEnvironment(UEnvironment* environment);
 
 // ��������� �� ������
 

@@ -13,20 +13,20 @@
 namespace RDK {
 
 // ������� ������ ��������� � ���������� ��������� �� ����
-std::shared_ptr<UStorage> NewUAStorage(void)
+std::unique_ptr<UStorage> NewUAStorage(void)
 {
- return std::make_shared<UStorage>();
+ return std::make_unique<UStorage>();
 }
 
 // ������� ����� � ���������� ��������� �� ���
-std::shared_ptr<UEnvironment> NewUAEnvironment(void)
+std::unique_ptr<UEnvironment> NewUAEnvironment(void)
 {
- return std::make_shared<UEnvironment>();
+ return std::make_unique<UEnvironment>();
 }
 
 
 // ������� ������ ��������� � ���������� ��������� �� ����
-std::shared_ptr<UStorage> CreateAStorage(std::shared_ptr<UStorage> storage)
+std::unique_ptr<UStorage> CreateAStorage(std::unique_ptr<UStorage> storage)
 {
  return storage;
 }
@@ -35,7 +35,7 @@ std::shared_ptr<UStorage> CreateAStorage(std::shared_ptr<UStorage> storage)
 // ���� ������ ��������� 'storage', �� ��������� ��� �� ������.
 // ���� ���� 'isinit' == true, �� �������������� ��������� ������������ ������������
 // ���� ��������� �� ������ external_libs != 0, ������������� �������������� ��������� ����� �������������
-std::shared_ptr<UEnvironment> CreateAEnvironment(std::shared_ptr<UEnvironment> environment, std::shared_ptr<UStorage> storage, bool isinit, ULibrary** external_libs, int numlibs)
+std::unique_ptr<UEnvironment> CreateAEnvironment(std::unique_ptr<UEnvironment> environment, std::unique_ptr<UStorage> storage, bool isinit, ULibrary** external_libs, int numlibs)
 {
  if(!storage)
   return environment;

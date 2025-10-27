@@ -27,35 +27,41 @@ std::shared_ptr<URdkCoreManager> RDK_CALL GetCore(void)
 // ���������� ������ �� ��������� ������������ ����
 std::shared_ptr<UEngine>& RDK_CALL GetEngine(void)
 {
- return RdkCoreManager.GetEngine();
+ static std::shared_ptr<UEngine> wrapper;
+ wrapper = std::shared_ptr<UEngine>(RdkCoreManager.GetEngine(), [](UEngine*){});
+ return wrapper;
 }
 
 std::shared_ptr<UEngine> RDK_CALL GetEngine(int channel_index)
 {
- return RdkCoreManager.GetEngine(channel_index);
+ return std::shared_ptr<UEngine>(RdkCoreManager.GetEngine(channel_index), [](UEngine*){});
 }
 
 
 // ���������� ������ �� ��������� ����� ����������
 std::shared_ptr<UEnvironment>& RDK_CALL GetEnvironment(void)
 {
- return RdkCoreManager.GetEnvironment();
+ static std::shared_ptr<UEnvironment> wrapper;
+ wrapper = std::shared_ptr<UEnvironment>(RdkCoreManager.GetEnvironment(), [](UEnvironment*){});
+ return wrapper;
 }
 
 std::shared_ptr<UEnvironment> RDK_CALL GetEnvironment(int channel_index)
 {
- return RdkCoreManager.GetEnvironment(channel_index);
+ return std::shared_ptr<UEnvironment>(RdkCoreManager.GetEnvironment(channel_index), [](UEnvironment*){});
 }
 
 // ���������� ������ �� ��������� ���������
 std::shared_ptr<UStorage>& RDK_CALL GetStorage(void)
 {
- return RdkCoreManager.GetStorage();
+ static std::shared_ptr<UStorage> wrapper;
+ wrapper = std::shared_ptr<UStorage>(RdkCoreManager.GetStorage(), [](UStorage*){});
+ return wrapper;
 }
 
 std::shared_ptr<UStorage> RDK_CALL GetStorage(int channel_index)
 {
- return RdkCoreManager.GetStorage(channel_index);
+ return std::shared_ptr<UStorage>(RdkCoreManager.GetStorage(channel_index), [](UStorage*){});
 }
 
 // ���������� ��������� �� ������� ������

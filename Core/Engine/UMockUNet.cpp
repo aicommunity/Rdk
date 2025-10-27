@@ -22,7 +22,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
     // ��������� ��������� � ������
-    SetStorage(std::shared_ptr<UStorage>(storage));
+    SetStorage(storage);
     // SetLogger удален - используется glog
 
     // ����� ���� ����������� ������� �������� �������
@@ -144,7 +144,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
      LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Components section not found"));
      return false;
     }
-    auto storage = Storage.lock(); UStorage* storage_ptr=storage.get();
+    UStorage* storage = Storage;
     for(int i=0;i<serstorage->GetNumNodes();i++)
     {
      serstorage->SelectNode(i);
@@ -152,7 +152,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
      name=serstorage->GetNodeAttribute("Class");
      try
      {
-      int id=Storage.lock()->FindClassId(name);
+      int id=Storage->FindClassId(name);
       std::shared_ptr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
       if(!newcont)
        continue;

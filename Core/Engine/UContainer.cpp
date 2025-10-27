@@ -91,7 +91,13 @@ UContainer::UContainer(void)
 UContainer::~UContainer(void)
 {
  if(GetStaticFlag() && Owner.lock())
-  GetOwner()->DelStaticComponent(get_shared_from_this());
+ {
+  try {
+   GetOwner()->DelStaticComponent(get_shared_from_this());
+  } catch (const std::bad_weak_ptr&) {
+   // Object is not managed by shared_ptr, skip
+  }
+ }
  DelAllComponentsRaw();
  DelAllStaticComponents();
 
@@ -100,9 +106,14 @@ UContainer::~UContainer(void)
 
  BreakOwner();
 
- auto storage = Storage.lock();
- if(storage && !GetStaticFlag())
-  storage->PopObject(get_shared_from_this());
+ if(Storage && !GetStaticFlag())
+ {
+  try {
+   Storage->PopObject(get_shared_from_this());
+  } catch (const std::bad_weak_ptr&) {
+   // Object is not managed by shared_ptr, skip
+  }
+ }
 }
 // --------------------------
 
@@ -124,7 +135,7 @@ std::shared_ptr<UContainer> UContainer::GetMainOwner(void) const
 // ���������� ��������� ��������� ����� �������
 std::shared_ptr<UStorage> UContainer::GetStorage(void) const
 {
- return Storage.lock();
+ return std::shared_ptr<UStorage>(Storage, [](UStorage*){});
 }
 
 // ���������, �������� �� ������ owner
@@ -224,7 +235,7 @@ bool UContainer::CheckLongId(const std::string &id) const
 }
 
 // ���������� ������ ���������� ����� �������
-bool UContainer::SetEnvironment(std::shared_ptr<UEnvironment> environment)
+bool UContainer::SetEnvironment(UEnvironment* environment)
 {
  if(!UComponent::SetEnvironment(environment))
   return false;
@@ -1077,11 +1088,11 @@ void UContainer::Free(void)
  while(NumComponents)
   PComponents[0]->Free();
 
- if(Storage.lock())
+ if(Storage)
  {
   BreakOwner();
   if(!StaticFlag)
-   GetStorage()->ReturnObject(get_shared_from_this());
+   Storage->ReturnObject(get_shared_from_this());
  }
  else
   UComponent::Free();
@@ -1289,7 +1300,7 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
  if(main_owner)
   comp->SetMainOwner(main_owner);
 
- comp->SetEnvironment(Environment.lock());
+ comp->SetEnvironment(Environment);
 
  const std::shared_ptr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
@@ -2092,8 +2103,7 @@ bool UContainer::Build(void)
  if(Ready)
   return true;
 
- auto storage = Storage.lock();
- if(!storage) // TODO: ����� � ������ ���� ��������� �� ������.
+ if(!Storage) // TODO: ����� � ������ ���� ��������� �� ������.
   return true;
 
  RDK_SYS_TRY
@@ -2881,8 +2891,8 @@ void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
 UId UContainer::UpdateStaticComponent(const NameT &classname, std::shared_ptr<UContainer> comp)
 {
  // comp->SetLogger удален - используется glog
- comp->SetStorage(GetStorage());
- comp->SetEnvironment(GetEnvironment());
+ comp->SetStorage(Storage);
+ comp->SetEnvironment(Environment);
  if(GetStorage())
  {
   comp->SetClass(GetStorage()->FindClassId(classname));

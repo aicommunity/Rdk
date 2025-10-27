@@ -307,7 +307,7 @@ bool UEngine::SetChannelIndex(int value)
 // ���������� ��������� �� �����
 UEnvironment* UEngine::GetEnvironment(void)
 {
- return Environment.get();
+ return Environment;
 }
 
 // ���������� ��������� �� ������
@@ -331,7 +331,7 @@ void UEngine::Init(void)
  // ��������
 }
 
-bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironment> env)
+bool UEngine::Init(UStorage* storage, UEnvironment* env)
 {
  if(!Default())
   return false;
@@ -381,7 +381,7 @@ bool UEngine::Init(std::shared_ptr<UStorage> storage, std::shared_ptr<UEnvironme
 
  CreateEnvironment(true,&ClassesList, &LibrariesList);
 
- if(!Storage || !Environment || Environment->GetStorage() != Storage.get())
+ if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
   return false;
  }
@@ -7055,7 +7055,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
   {
    Environment->Default();
 
-   if(!Environment->SetStorage(Storage.get()) || !isinit)
+   if(!Environment->SetStorage(Storage) || !isinit)
 	return;
 
    if(external_classes != 0)
@@ -7134,7 +7134,7 @@ int UEngine::LoadPredefinedCrPropFunctions(void)
  Storage->AddCrPropMockFunc(UBasePropCreatorVector::BaseCrPropMock);
  Storage->AddCrPropMockFunc(UBasePropCreatorMatrix::BaseCrPropMock);
 
- RdkLoadPredefinedCrPropFunctions(Storage.get());
+ RdkLoadPredefinedCrPropFunctions(Storage);
  return 0;
 }
 

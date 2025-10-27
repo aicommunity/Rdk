@@ -7,9 +7,9 @@
 #include "UStorage.h"
 namespace RDK {
 
-/* Базовый класс описания исключений */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UComponentDescription::IException::IException(void)
 {
@@ -29,7 +29,7 @@ UComponentDescription::IException::~IException(void)
 /* ******************************** */
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UComponentDescription::UComponentDescription(void)
     : Storage(NULL)
@@ -53,9 +53,9 @@ UComponentDescription::~UComponentDescription(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Имя класса
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UComponentDescription::GetClassNameValue(void) const
 {
  return ClassName;
@@ -70,7 +70,7 @@ void UComponentDescription::SetClassNameValue(const std::string& value)
  CreateProperties();
 }
 
-// Заголовок класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UComponentDescription::GetHeader(void) const
 {
  return Header;
@@ -84,7 +84,7 @@ void UComponentDescription::SetHeader(const std::string& value)
  Header=value;
 }
 
-// Описание
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UComponentDescription::GetDescription(void) const
 {
  return Description;
@@ -98,13 +98,13 @@ void UComponentDescription::SetDescription(const std::string& value)
  Description=value;
 }
 
-// Установка указателя на хранилище
-void UComponentDescription::SetStorage(std::shared_ptr<UStorage> storage)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+void UComponentDescription::SetStorage(UStorage* storage)
 {
     Storage = storage;
 }
 
-// Создание описаний свойств единожды (вызов к хранилищу)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 void UComponentDescription::CreateProperties()
 {
 
@@ -112,9 +112,9 @@ void UComponentDescription::CreateProperties()
 // --------------------------
 
 // --------------------------
-// Методы ввода вывода данными
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Сохраняет данные класса в XML
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ XML
 bool UComponentDescription::Save(USerStorageXML &xml)
 {
  xml.AddNode("ClassName");
@@ -131,7 +131,7 @@ bool UComponentDescription::Save(USerStorageXML &xml)
  return true;
 }
 
-// Загружает данные класса из XML
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML
 bool UComponentDescription::Load(USerStorageXML &xml)
 {
  if(xml.SelectNode("ClassName"))

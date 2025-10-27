@@ -199,14 +199,14 @@ void UComponent::SetMainOwner(std::shared_ptr<UComponent> mainowner)
 }
 
 // ���������� ��������� ��������� ����� �������
-std::shared_ptr<UStorage> UComponent::GetStorage(void) const
+UStorage* UComponent::GetStorage(void) const
 {
- return Storage.lock();
+ return Storage;
 }
 
-bool UComponent::SetStorage(std::weak_ptr<UStorage> storage)
+bool UComponent::SetStorage(UStorage* storage)
 {
- if(Storage.lock() == storage.lock())
+ if(Storage == storage)
   return true;
 
  Storage=storage;
@@ -216,20 +216,20 @@ bool UComponent::SetStorage(std::weak_ptr<UStorage> storage)
 
 void UComponent::ResetStorage()
 {
- Storage.reset();
+ Storage=nullptr;
  UpdateInternalData();
 }
 
 
 // ���������� ����� ���������� ����� �������
-std::shared_ptr<UEnvironment> UComponent::GetEnvironment(void) const
+UEnvironment* UComponent::GetEnvironment(void) const
 {
- return Environment.lock();
+ return Environment;
 }
 
-bool UComponent::SetEnvironment(std::shared_ptr<UEnvironment> environment)
+bool UComponent::SetEnvironment(UEnvironment* environment)
 {
- if(Environment.lock() == environment)
+ if(Environment == environment)
   return true;
 
  Environment=environment;
@@ -246,32 +246,29 @@ bool UComponent::SetEnvironment(std::shared_ptr<UEnvironment> environment)
 /// DummyTime
 const UTimeControl& UComponent::GetTime(void) const
 {
- auto env = Environment.lock();
- if(!env)
+ if(!Environment)
   RDK_RAW_THROW(EEnvironmentNotExist());
 
- return env->GetTime();
+ return Environment->GetTime();
 }
 
 
 /// ���������� ��������� �� ����� �� ���������
 UAFont* UComponent::GetDefaultFont(void)
 {
- auto env = Environment.lock();
- if(!env)
+ if(!Environment)
   RDK_RAW_THROW(EEnvironmentNotExist());
 
- return env->GetFonts().GetDefaultFont();
+ return Environment->GetFonts().GetDefaultFont();
 }
 
 /// ���������� �������� �����
 UAFont* UComponent::GetFont(const string &name, int size)
 {
- auto env = Environment.lock();
- if(!env)
+ if(!Environment)
   RDK_RAW_THROW(EEnvironmentNotExist());
 
- return env->GetFonts().GetFont(name,size);
+ return Environment->GetFonts().GetFont(name,size);
 }
 // --------------------------
 
@@ -297,10 +294,9 @@ bool UComponent::SetClass(UId value)
 // ���������� ��� ������ ����������
 const NameT UComponent::GetCompClassName(void) const
 {
- auto storage = Storage.lock();
- if(!storage)
+ if(!Storage)
   return "";
- return storage->FindClassName(Class);
+ return Storage->FindClassName(Class);
 }
 // --------------------------
 

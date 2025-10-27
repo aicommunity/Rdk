@@ -381,9 +381,9 @@ int URdkCoreManager::SetNumChannels(int num)
 
     int old_num=int(EngineList.size());
 
-    EngineList.resize(num,0);
-    StorageList.resize(num,0);
-    EnvironmentList.resize(num,0);
+    EngineList.resize(num);
+    StorageList.resize(num);
+    EnvironmentList.resize(num);
     MutexList.resize(num,0);
     LockerList.resize(num,0);
     // LoggerList удален - используется glog
@@ -482,9 +482,9 @@ int URdkCoreManager::Add(int index)
 
  {
   UGenericMutexExclusiveLocker lock(GlobalMutex);
-  EngineList.resize(num,0);
-  StorageList.resize(num,0);
-  EnvironmentList.resize(num,0);
+  EngineList.resize(num);
+  StorageList.resize(num);
+  EnvironmentList.resize(num);
   MutexList.resize(num,0);
   LockerList.resize(num,0);
   // LoggerList удален - используется glog
@@ -493,9 +493,9 @@ int URdkCoreManager::Add(int index)
  for(int i=int(EngineList.size())-1;i>index;i--)
  {
   UGenericMutexExclusiveLocker lock1(MutexList[i-1]);
-  EngineList[i]=EngineList[i-1];
-  StorageList[i]=StorageList[i-1];
-  EnvironmentList[i]=EnvironmentList[i-1];
+  EngineList[i]=std::move(EngineList[i-1]);
+  StorageList[i]=std::move(StorageList[i-1]);
+  EnvironmentList[i]=std::move(EnvironmentList[i-1]);
   MutexList[i]=MutexList[i-1];
   LockerList[i]=LockerList[i-1];
   // LoggerList[ удален - используется glogi]=// LoggerList[ удален - используется glogi-1];
@@ -542,9 +542,9 @@ int URdkCoreManager::Del(int index)
    for(int i=index+1;i<int(EngineList.size());i++)
    {
     UGenericMutexExclusiveLocker lock2(MutexList[i]);
-    EngineList[i-1]=EngineList[i];
-    StorageList[i-1]=StorageList[i];
-    EnvironmentList[i-1]=EnvironmentList[i];
+    EngineList[i-1]=std::move(EngineList[i]);
+    StorageList[i-1]=std::move(StorageList[i]);
+    EnvironmentList[i-1]=std::move(EnvironmentList[i]);
     MutexList[i-1]=MutexList[i];
     LockerList[i-1]=LockerList[i];
     // LoggerList[ удален - используется glogi-1]=// LoggerList[ удален - используется glogi];
@@ -644,7 +644,7 @@ int URdkCoreManager::ChannelCreate(int index)
    EnvironmentList[index]->SetSystemDir(SystemDir);
    EngineList[index]->SetCommonClassesDescriptionFileName(CommonClassesDescriptionFileName);
    EngineList[index]->SetClassesDescriptionFileName(ClassesDescriptionFileName);
-    if(!EngineList[index]->Init(std::shared_ptr<RDK::UStorage>(StorageList[index], [](RDK::UStorage*){}),std::shared_ptr<RDK::UEnvironment>(EnvironmentList[index], [](RDK::UEnvironment*){})))
+    if(!EngineList[index]->Init(StorageList[index].get(), EnvironmentList[index].get()))
    {
     ChannelDestroy(index);
     return RDK_E_CORE_ENGINE_INIT_FAIL;
@@ -653,9 +653,9 @@ int URdkCoreManager::ChannelCreate(int index)
    {
     UGenericMutexExclusiveLocker lock(GlobalMutex);
     /// ������ �������� ���������� ������
-    Engine=std::shared_ptr<RDK::UEngine>(EngineList[SelectedChannelIndex], [](RDK::UEngine*){});
-    Environment=std::shared_ptr<RDK::UEnvironment>(EnvironmentList[SelectedChannelIndex], [](RDK::UEnvironment*){});
-    Storage=std::shared_ptr<RDK::UStorage>(StorageList[SelectedChannelIndex], [](RDK::UStorage*){});
+    Engine=EngineList[SelectedChannelIndex].get();
+    Environment=EnvironmentList[SelectedChannelIndex].get();
+    Storage=StorageList[SelectedChannelIndex].get();
     // Logger удален - используется glog
    }
 
@@ -692,27 +692,24 @@ int URdkCoreManager::ChannelDestroy(int index)
  UGenericMutexExclusiveLocker lock(MutexList[index]);
 
  if(EngineList[index])
- {
-  if(Engine && EngineList[index] == Engine.get())
-   Engine=0;
-  delete EngineList[index];
-  EngineList[index]=0;
- }
+{
+ if(Engine && EngineList[index].get() == Engine)
+  Engine=nullptr;
+ EngineList[index].reset();
+}
 
  if(EnvironmentList[index])
- {
-  if(Environment && EnvironmentList[index] == Environment.get())
-   Environment=0;
-  delete EnvironmentList[index];
-  EnvironmentList[index]=0;
- }
+{
+ if(Environment && EnvironmentList[index].get() == Environment)
+  Environment=nullptr;
+ EnvironmentList[index].reset();
+}
 
  if(StorageList[index])
  {
-  if(Storage && StorageList[index] == Storage.get())
-   Storage=0;
-  delete StorageList[index];
-  StorageList[index]=0;
+ if(Storage && StorageList[index].get() == Storage)
+  Storage=nullptr;
+ StorageList[index].reset();
  }
 
  // LoggerList удален - используется glog
@@ -836,32 +833,10 @@ void URdkCoreManager::Destroy(void)
  {
   try
   {
-   for(size_t i=0;i<EnvironmentList.size();i++)
-	if(EnvironmentList[i])
-    {
-     // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
-     delete EnvironmentList[i];
-    }
-
-   EnvironmentList.resize(0);
-
-   for(size_t i=0;i<StorageList.size();i++)
-	if(StorageList[i])
-    {
-     // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
-     delete StorageList[i];
-    }
-
-   StorageList.resize(0);
-
-   for(size_t i=0;i<EngineList.size();i++)
-	if(EngineList[i])
-    {
-     // SystemLogger.LogMessage удален - используется glog(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
-     delete EngineList[i];
-    }
-
-   EngineList.resize(0);
+   // unique_ptr автоматически удаляет объекты при resize
+   EnvironmentList.clear();
+   StorageList.clear();
+   EngineList.clear();
 
    // LoggerList удален - используется glog
 
@@ -894,66 +869,66 @@ void URdkCoreManager::Destroy(void)
 // ������ ������� � �������
 // --------------------------
 // ���������� ������ �� ��������� ������������ ����
-std::shared_ptr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
+RDK::UEngine* URdkCoreManager::GetEngine(void)
 {
  return Engine;
 }
 
-std::shared_ptr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
+RDK::UEngine* URdkCoreManager::GetEngine(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EngineList.size()))
-  return 0;
+  return nullptr;
 
- return std::shared_ptr<RDK::UEngine>(EngineList[channel_index], [](RDK::UEngine*){});
+ return EngineList[channel_index].get();
 }
 
 // ���������� ������ �� ��������� ����� ����������
-std::shared_ptr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
+RDK::UEnvironment* URdkCoreManager::GetEnvironment(void)
 {
  return Environment;
 }
 
-std::shared_ptr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
+RDK::UEnvironment* URdkCoreManager::GetEnvironment(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EnvironmentList.size()))
-  return 0;
+  return nullptr;
 
- return std::shared_ptr<RDK::UEnvironment>(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
+ return EnvironmentList[channel_index].get();
 }
 
 // ���������� ������ �� ��������� ���������
-std::shared_ptr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
+RDK::UStorage* URdkCoreManager::GetStorage(void)
 {
  return Storage;
 }
 
-std::shared_ptr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
+RDK::UStorage* URdkCoreManager::GetStorage(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(StorageList.size()))
-  return 0;
+  return nullptr;
 
- return std::shared_ptr<RDK::UStorage>(StorageList[channel_index], [](RDK::UStorage*){});
+ return StorageList[channel_index].get();
 }
 
 // ���������� ��������� �� ������� ������
 std::shared_ptr<RDK::UContainer> URdkCoreManager::GetModel(void)
 {
  if(Environment)
-  return std::shared_ptr<RDK::UContainer>(Environment->GetModel().get(), [](RDK::UContainer*){});
+  return Environment->GetModel();
 
- return 0;
+ return nullptr;
 }
 
 std::shared_ptr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 {
  if(channel_index<0 || channel_index>=int(EnvironmentList.size()))
-  return 0;
+  return nullptr;
 
- std::shared_ptr<RDK::UEnvironment> environment(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
+ RDK::UEnvironment* environment = EnvironmentList[channel_index].get();
  if(environment)
-  return std::shared_ptr<RDK::UContainer>(environment->GetModel().get(), [](RDK::UContainer*){});
+  return environment->GetModel();
 
- return 0;
+ return nullptr;
 }
 // --------------------------
 
@@ -1166,9 +1141,9 @@ bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
  SelectedChannelIndex=channel_index;
 // ::SelectedEngineIndex=SelectedChannelIndex;
  /// ������ �������� ���������� ������
- Engine=std::shared_ptr<RDK::UEngine>(EngineList[channel_index], [](RDK::UEngine*){});
- Environment=std::shared_ptr<RDK::UEnvironment>(EnvironmentList[channel_index], [](RDK::UEnvironment*){});
- Storage=std::shared_ptr<RDK::UStorage>(StorageList[channel_index], [](RDK::UStorage*){});
+ Engine=EngineList[channel_index].get();
+ Environment=EnvironmentList[channel_index].get();
+ Storage=StorageList[channel_index].get();
  // Logger удален - используется glog
 
  return true;

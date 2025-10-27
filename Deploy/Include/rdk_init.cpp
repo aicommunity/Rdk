@@ -53,11 +53,11 @@ void AssertLog(int result, const char* function, const char* file, int line)
 }
 
 /*****************************************************************************/
-extern RDK::UStorage* CreateNewStorage(void);
+extern std::unique_ptr<RDK::UStorage> CreateNewStorage(void);
 
-extern RDK::UEnvironment* CreateNewEnvironment(void);
+extern std::unique_ptr<RDK::UEnvironment> CreateNewEnvironment(void);
 
-extern RDK::UEngine* CreateNewEngine(void);
+extern std::unique_ptr<RDK::UEngine> CreateNewEngine(void);
 /*****************************************************************************/
 
 // ----------------------------

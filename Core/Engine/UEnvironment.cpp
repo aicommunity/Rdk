@@ -265,7 +265,7 @@ bool UEnvironment::CreateModel(const NameT& classname)
  if(!IsStoragePresent())
   return false;
 
- CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
+ CurrentComponent=Model; 
  Model=GetStorage()->TakeObject(classname);
  if(!Model)
  {
@@ -273,7 +273,7 @@ bool UEnvironment::CreateModel(const NameT& classname)
   return false;
  }
  // Model->SetLogger(Logger) удален - используется glog
- Model->SetEnvironment(RDK::safe_shared_cast<UEnvironment>(this));
+ Model->SetEnvironment(this);
  Ready=false;
  return true;
 
@@ -292,7 +292,7 @@ bool UEnvironment::CreateModel(const UId& classid)
  if(!IsStoragePresent())
   return false;
 
- CurrentComponent=std::shared_ptr<UContainer>(Model.get()); 
+ CurrentComponent=Model; 
  Model=Storage->TakeObject(classid);
  if(!Model)
  {
@@ -300,7 +300,7 @@ bool UEnvironment::CreateModel(const UId& classid)
   return false;
  }
  // Model->SetLogger(Logger) удален - используется glog
- Model->SetEnvironment(RDK::safe_shared_cast<UEnvironment>(this));
+ Model->SetEnvironment(this);
  Ready=false;
  return true;
 }

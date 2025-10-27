@@ -9,22 +9,22 @@ void RdkDummyFunc(void);
 }
 #endif
 /*****************************************************************************/
-extern RDK::UStorage* CreateNewStorage(void)
+extern std::unique_ptr<RDK::UStorage> CreateNewStorage(void)
 {
 #ifdef __GNUC__
 // RDK::RdkDummyFunc();
 #endif
- return new RDK::UStorage;
+ return std::make_unique<RDK::UStorage>();
 }
 
-extern RDK::UEnvironment* CreateNewEnvironment(void)
+extern std::unique_ptr<RDK::UEnvironment> CreateNewEnvironment(void)
 {
- return new RDK::UEnvironment;
+ return std::make_unique<RDK::UEnvironment>();
 }
 
-extern RDK::UEngine* CreateNewEngine(void)
+extern std::unique_ptr<RDK::UEngine> CreateNewEngine(void)
 {
- return new RDK::UEngine;
+ return std::make_unique<RDK::UEngine>();
 }
 /*****************************************************************************/
 #endif

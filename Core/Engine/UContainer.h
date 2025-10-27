@@ -267,7 +267,7 @@ bool CheckLongId(const ULongId &id) const;
 bool CheckLongId(const std::string &id) const;
 
 // ���������� ������ ���������� ����� �������
-virtual bool SetEnvironment(std::shared_ptr<UEnvironment> environment);
+virtual bool SetEnvironment(UEnvironment* environment);
 
 // ��������� �� ������
 

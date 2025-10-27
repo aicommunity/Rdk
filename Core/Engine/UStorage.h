@@ -471,36 +471,11 @@ virtual UId PopObject(std::shared_ptr<UContainer> object);
 // Helper методы для безопасного получения shared_ptr на this
 // --------------------------
 std::shared_ptr<UStorage> get_shared_from_this() {
-    try {
-        auto ptr = shared_from_this();
-        // Диагностика: проверяем, что weak_ptr инициализирован
-        return ptr;
-    } catch (const std::bad_weak_ptr& e) {
-        // Объект не был создан через shared_ptr
-        std::cerr << "ERROR: UStorage::get_shared_from_this() - object not created via shared_ptr!" << std::endl;
-        std::cerr << "  This indicates UStorage was created with 'new' instead of 'std::make_shared'" << std::endl;
-        std::cerr << "  Address: " << this << std::endl;
-        throw;  // Пробрасываем исключение дальше
-    }
+    return shared_from_this();
 }
 
 std::weak_ptr<UStorage> get_weak_from_this() {
-    try {
-        auto weak_ptr = weak_from_this();
-        // Проверяем, что weak_ptr валиден
-        if (weak_ptr.expired()) {
-            std::cerr << "WARNING: UStorage::get_weak_from_this() - weak_ptr is expired!" << std::endl;
-            return std::shared_ptr<UStorage>(this, [](UStorage*){});
-        }
-        return weak_ptr;
-    } catch (const std::bad_weak_ptr&) {
-        std::cerr << "WARNING: UStorage::get_weak_from_this() - bad_weak_ptr caught!" << std::endl;
-        // Объект не был создан через shared_ptr, создаем временный shared_ptr
-        return std::shared_ptr<UStorage>(this, [](UStorage*){});
-    } catch (const std::exception& e) {
-        std::cerr << "ERROR: UStorage::get_weak_from_this() - exception: " << e.what() << std::endl;
-        return std::shared_ptr<UStorage>(this, [](UStorage*){});
-    }
+    return weak_from_this();
 }
 
 protected:

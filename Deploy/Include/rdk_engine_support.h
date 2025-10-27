@@ -14,13 +14,13 @@ class RDK_LIB_TYPE URdkCoreManager
 {
 public:
 /// ������ ��������
-std::vector<RDK::UStorage*> StorageList;
+std::vector<std::unique_ptr<RDK::UStorage>> StorageList;
 
 /// ������ ����
-std::vector<RDK::UEnvironment*> EnvironmentList;
+std::vector<std::unique_ptr<RDK::UEnvironment>> EnvironmentList;
 
 /// ������ �������
-std::vector<RDK::UEngine*> EngineList;
+std::vector<std::unique_ptr<RDK::UEngine>> EngineList;
 
 /// ������ ���������
 std::vector<UGenericMutex*> MutexList;
@@ -47,9 +47,9 @@ RDK::UELockVar<int> NumChannels;
 
 /// ������ �������� ���������� ������
 // Logger удален - используется glog
-std::shared_ptr<RDK::UEngine> Engine;
-std::shared_ptr<RDK::UEnvironment> Environment;
-std::shared_ptr<RDK::UStorage> Storage;
+RDK::UEngine* Engine;
+RDK::UEnvironment* Environment;
+RDK::UStorage* Storage;
 
 /// ���� �� ���������� � ��������� ������� ���� (����������)
 std::string SystemDir;
@@ -103,17 +103,17 @@ const std::string GetClDescPath() const;
 // ----------------------------------------------------------
 // ������� ����� ��������� � �������� � ����� �������
 // ���������� ��������� �� ���������
-typedef RDK::UStorage* (*PCreateNewStorage)(void);
+typedef std::unique_ptr<RDK::UStorage> (*PCreateNewStorage)(void);
 PCreateNewStorage FuncCreateNewStorage;
 
 // ������� ����� ����� � �������� � ����� �������
 // ���������� ��������� �� �����
-typedef RDK::UEnvironment* (*PCreateNewEnvironment)(void);
+typedef std::unique_ptr<RDK::UEnvironment> (*PCreateNewEnvironment)(void);
 PCreateNewEnvironment FuncCreateNewEnvironment;
 
 // ������� ����� ������ � �������� � ����� �������
 // ���������� ��������� �� ������
-typedef RDK::UEngine* (*PCreateNewEngine)(void);
+typedef std::unique_ptr<RDK::UEngine> (*PCreateNewEngine)(void);
 PCreateNewEngine FuncCreateNewEngine;
 // ----------------------------------------------------------
 
@@ -231,16 +231,16 @@ void Destroy(void);
 // --------------------------
 public:
 // ���������� ������ �� ��������� ������������ ����
-std::shared_ptr<RDK::UEngine>& GetEngine(void);
-std::shared_ptr<RDK::UEngine> GetEngine(int channel_index);
+RDK::UEngine* GetEngine(void);
+RDK::UEngine* GetEngine(int channel_index);
 
 // ���������� ������ �� ��������� ����� ����������
-std::shared_ptr<RDK::UEnvironment>& GetEnvironment(void);
-std::shared_ptr<RDK::UEnvironment> GetEnvironment(int channel_index);
+RDK::UEnvironment* GetEnvironment(void);
+RDK::UEnvironment* GetEnvironment(int channel_index);
 
 // ���������� ������ �� ��������� ���������
-std::shared_ptr<RDK::UStorage>& GetStorage(void);
-std::shared_ptr<RDK::UStorage> GetStorage(int channel_index);
+RDK::UStorage* GetStorage(void);
+RDK::UStorage* GetStorage(int channel_index);
 
 // ���������� ��������� �� ������� ������
 std::shared_ptr<RDK::UContainer> GetModel(void);
@@ -328,7 +328,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetEngineLock(int channel_index)
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<T>(0,GetEngine(channel_index));
 #else
- return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],std::dynamic_pointer_cast<T>(GetEngine(channel_index))):RDK::UELockPtr<T>(0,0);
+ return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],std::dynamic_pointer_cast<T>(std::shared_ptr<RDK::UEngine>(GetEngine(channel_index), [](RDK::UEngine*){}))):RDK::UELockPtr<T>(0,0);
 #endif
 }
 
@@ -338,7 +338,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetEngineLockTimeout(int channel_index, unsig
 #ifdef RDK_ENGINE_UNLOCKED
  return RDK::UELockPtr<T>(0,GetEngine(channel_index));
 #else
- return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],std::dynamic_pointer_cast<T>(GetEngine(channel_index)), timeout):RDK::UELockPtr<T>(0,0);
+ return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],std::dynamic_pointer_cast<T>(std::shared_ptr<RDK::UEngine>(GetEngine(channel_index), [](RDK::UEngine*){})), timeout):RDK::UELockPtr<T>(0,0);
 #endif
 }
 

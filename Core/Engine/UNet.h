@@ -491,14 +491,13 @@ std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const 
    DelComponent(component_name);
  }
 
- auto storage = Storage.lock();
- if(!storage)
+ if(!Storage)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Storage not found"));
   return comp;
  }
 
- std::shared_ptr<UContainer> proto=storage->TakeObject(class_name);
+ std::shared_ptr<UContainer> proto=Storage->TakeObject(class_name);
  if(!proto)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in the storage. ClassName=")+class_name);
@@ -517,7 +516,7 @@ std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const 
  if(!AddComponent(comp, pointer))
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - AddComponent failed. ClassName=")+class_name);
-  storage->ReturnObject(comp);
+  Storage->ReturnObject(comp);
   comp=0;
   return comp;
  }
