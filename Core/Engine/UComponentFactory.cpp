@@ -8,7 +8,7 @@ namespace RDK
 {
 
  UVirtualMethodFactory::UVirtualMethodFactory(std::shared_ptr<UContainer> comp)
-  : UComponentAbstractFactory(comp->GetStorage().get())
+  : UComponentAbstractFactory(comp && comp->GetStorage() ? comp->GetStorage().get() : nullptr)
  {
   Component = comp;
   if(Component)

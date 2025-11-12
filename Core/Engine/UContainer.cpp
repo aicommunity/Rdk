@@ -90,6 +90,20 @@ UContainer::UContainer(void)
 
 UContainer::~UContainer(void)
 {
+ // Get name and address before destruction starts (GetName() may fail if object is partially destroyed)
+ std::string container_name;
+ void* container_addr = this;
+ try {
+  container_name = GetName();
+ } catch (...) {
+  container_name = "<unknown>";
+ }
+ 
+ // Don't call shared_from_this() in destructor - it may throw bad_weak_ptr
+ // The object is being destroyed, so we can't safely get use_count
+ LOG(INFO) << "UContainer::~UContainer - starting destruction, name=" << container_name 
+           << " address=" << container_addr;
+           
  if(GetStaticFlag() && Owner.lock())
  {
   try {
@@ -98,7 +112,9 @@ UContainer::~UContainer(void)
    // Object is not managed by shared_ptr, skip
   }
  }
+ LOG(INFO) << "UContainer::~UContainer - calling DelAllComponentsRaw";
  DelAllComponentsRaw();
+ LOG(INFO) << "UContainer::~UContainer - calling DelAllStaticComponents";
  DelAllStaticComponents();
 
 
@@ -106,22 +122,9 @@ UContainer::~UContainer(void)
 
  BreakOwner();
 
- // Only try to pop object from Storage if Storage is valid and not being destroyed
- // ResetStorage() should have been called before destruction, but check anyway
- if(Storage && !GetStaticFlag())
- {
-  try {
-   // Defensive check: verify Storage is still valid before accessing it
-   // During UStorage destruction, Storage may point to a partially destroyed object
-   // ResetStorage() should have been called, but if not, this check prevents segfault
-   Storage->PopObject(get_shared_from_this());
-  } catch (const std::bad_weak_ptr&) {
-   // Object is not managed by shared_ptr, skip
-  } catch (...) {
-   // Ignore any exceptions during destruction - Storage may be partially destroyed
-   // This is safe to skip as ResetStorage() should have been called
-  }
- }
+ // With shared_ptr, we don't need to call Storage->PopObject() in destructor
+ // The object will be automatically removed from Storage when the last shared_ptr is destroyed
+ // ResetStorage() should have been called before destruction to prevent access to partially destroyed Storage
 }
 // --------------------------
 
@@ -537,7 +540,8 @@ double UContainer::GetInstantPerformance(void) const
 // ������� ��������� �������
 void UContainer::BreakOwner(void)
 {
- std::shared_ptr<UContainer> owner(GetOwner().get());
+ // Use GetOwner() directly - it already returns shared_ptr, don't create new one from .get()
+ std::shared_ptr<UContainer> owner = GetOwner();
  if(owner)
   owner->DelComponent(get_shared_from_this(), false);
 }
@@ -1079,11 +1083,14 @@ std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bo
 // � �������� ����������
 bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
 {
- CopyProperties(safe_shared_cast<UComponent>(target.get()), ptParameter);
+ // Use target directly as shared_ptr<UComponent> - don't create new one with non-owning deleter
+ // target is already a shared_ptr, so we can cast it directly
+ std::shared_ptr<UComponent> target_component = std::static_pointer_cast<UComponent>(target);
+ CopyProperties(target_component, ptParameter);
  target->Build();
 
  if(copystate)
-  CopyProperties(safe_shared_cast<UComponent>(target.get()), ptState);
+  CopyProperties(target_component, ptState);
 
  CopyComponents(target,stor);
  return true;
@@ -1093,17 +1100,20 @@ bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStora
 // ��� ����� �����������, ���� Storage == 0
 void UContainer::Free(void)
 {
+ // With shared_ptr, we don't need to call Free() recursively
+ // Components will be automatically destroyed when shared_ptr goes out of scope
+ // Just remove components from the container
  while(NumComponents)
-  PComponents[0]->Free();
-
- if(Storage)
  {
-  BreakOwner();
-  if(!StaticFlag)
-   Storage->ReturnObject(get_shared_from_this());
+  DelComponent(PComponents[0]->GetName(), false); // Don't free, let shared_ptr handle it
  }
- else
-  UComponent::Free();
+
+ // Break owner relationships
+ BreakOwner();
+
+ // With shared_ptr, we don't need to call Storage->ReturnObject()
+ // The object lifecycle is managed automatically by shared_ptr
+ // If needed, call ReturnObject() explicitly from the caller
 }
 
 	  /*
@@ -1179,7 +1189,9 @@ std::shared_ptr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow
  std::shared_ptr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
-   return std::shared_ptr<UContainer>(comps->get());
+   // Return existing shared_ptr directly, don't create new one from .get()
+   // This prevents double destruction when shared_ptr is destroyed
+   return *comps;
 
  if(!nothrow)
   RDK_THROW(EComponentIdNotExist(id));
@@ -1245,7 +1257,11 @@ std::shared_ptr<UContainer> UContainer::GetComponentL(const NameT &name, bool no
 // ����� ���������� 0, ���� ������ ������� �� ������� �������
 std::shared_ptr<UContainer> UContainer::GetComponentByIndex(int index) const
 {
- return std::shared_ptr<UContainer>(Components[index].get());
+ // Return existing shared_ptr directly, don't create new one from .get()
+ // This prevents double destruction when shared_ptr is destroyed
+ if(index >= 0 && index < NumComponents && Components[index])
+  return Components[index];
+ return nullptr;
 }
 
 // ��������� �������� ��������� � ���� ������
@@ -1294,7 +1310,15 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
 
  // comp->SetLogger удален - используется glog
  comp->Id = id;
- comp->SetOwner(safe_shared_cast<UComponent>(this));
+ // Use shared_from_this() instead of safe_shared_cast to avoid creating new shared_ptr with non-owning deleter
+ // This ensures that Owner uses the same shared_ptr reference as the container itself
+ try {
+  comp->SetOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
+ } catch (const std::bad_weak_ptr&) {
+  // If shared_from_this() fails, use safe_shared_cast as fallback
+  // But this should not happen if container is managed by shared_ptr
+  comp->SetOwner(safe_shared_cast<UComponent>(this));
+ }
 
  // ��������� ��������� � ������� ������������ ���������
  SetLookupComponent(comp->Name, comp->Id);
@@ -1304,9 +1328,13 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
 
  comp->OwnerTimeStep=TimeStep;
 
+ // Set MainOwner: if container has MainOwner, use it; otherwise, use container itself
  auto main_owner = MainOwner.lock();
  if(main_owner)
   comp->SetMainOwner(main_owner);
+ else
+  // Container is root, so set MainOwner to container itself
+  comp->SetMainOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
 
  comp->SetEnvironment(Environment);
 
@@ -1375,8 +1403,23 @@ void UContainer::DelAllComponents(void)
 
 void UContainer::DelAllComponentsRaw(void)
 {
- while(NumComponents)
-  DelComponent(std::shared_ptr<UContainer>(PComponents[NumComponents-1].get()),true);
+ // During destruction, we need to be careful about component destruction order
+ // Components may still be referenced in Storage, so we should not destroy them here
+ // Instead, we just clear the Components vector - objects will be destroyed when Storage is destroyed
+ // Storage pointer will be reset in ClearObjectsStorage before Storage is destroyed
+ LOG(INFO) << "UContainer::DelAllComponentsRaw - clearing Components, size=" << Components.size() 
+           << " name=" << GetName();
+ 
+ // Don't call ResetStorage() here - it may cause segfault if Storage is already destroyed
+ // Storage pointer will be reset in ClearObjectsStorage before Storage is destroyed
+ // Just clear Components vector - shared_ptr will automatically destroy components
+ // when the last reference is released (which happens when Storage is destroyed)
+ LOG(INFO) << "UContainer::DelAllComponentsRaw - about to clear Components vector";
+ Components.clear();
+ LOG(INFO) << "UContainer::DelAllComponentsRaw - Components vector cleared";
+ NumComponents = 0;
+ PComponents = nullptr;
+ LOG(INFO) << "UContainer::DelAllComponentsRaw - Components cleared";
 }
 
 /// ��������� ��������� ��� ����������� ���������� ������� ��� ��� ������ 'classname'
@@ -1385,7 +1428,8 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, s
 {
  comp->SetStaticFlag(true);
  comp->Name = name;
- StaticComponents[std::shared_ptr<UContainer>(comp.get())]=classname;
+ // Use existing shared_ptr directly, don't create new one from raw pointer
+ StaticComponents[comp]=classname;
 
  const std::shared_ptr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
@@ -1398,7 +1442,8 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, s
 /// ������� ��������� ��� ����������� ����������
 void UContainer::DelStaticComponent(std::shared_ptr<UContainer> comp)
 {
- std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.find(std::shared_ptr<UContainer>(comp.get()));
+ // Use existing shared_ptr directly, don't create new one from raw pointer
+ std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.find(comp);
  if(I != StaticComponents.end())
   StaticComponents.erase(I);
 }
@@ -1567,18 +1612,19 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  if(result>=NumComponents)
   result=NumComponents-1;
 
- std::shared_ptr<UContainer> comp=std::shared_ptr<UContainer>(PComponents[index].get());
+ // Use existing shared_ptr directly, don't create new one from raw pointer
+ std::shared_ptr<UContainer> comp=PComponents[index];
  if(result>index)
  {
   for(int i=index;i<=result;i++)
    PComponents[i]=PComponents[i+1];
-  PComponents[result]=std::shared_ptr<UContainer>(comp.get());
+  PComponents[result]=comp; // Use existing shared_ptr directly
  }
  else
  {
   for(int i=index;i>result;i--)
    PComponents[i]=PComponents[i-1];
-  PComponents[result]=std::shared_ptr<UContainer>(comp.get());
+  PComponents[result]=comp; // Use existing shared_ptr directly
  }
 
  return true;
@@ -2840,18 +2886,19 @@ void UContainer::ASharesUnInit(void)
 // ��������� ��������� 'comp' � ������� ���������
 void UContainer::AddComponentTable(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
- Components.push_back(std::shared_ptr<UContainer>(comp.get()));
+ // Use existing shared_ptr directly, don't create new one from raw pointer
+ Components.push_back(comp);
  PComponents=&Components[0];
  NumComponents=int(Components.size());
 
  if(pointer)
-  pointer->Set(std::shared_ptr<UContainer>(comp.get()));
+  pointer->Set(comp);
  else
  {
   PointerMapCIteratorT I=FindLookupPointer(comp);
   if(I != PointerLookupTable.end())
   {
-   I->second.Pointer->Del(std::shared_ptr<UContainer>(comp.get()));
+   I->second.Pointer->Del(comp);
   }
  }
 }
@@ -2862,12 +2909,14 @@ void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
 
  if(NumComponents)
  {
-  if(PComponents[NumComponents-1]==std::shared_ptr<UContainer>(comp.get()))
+  // Compare by pointer value, not by shared_ptr equality
+  // This is safe because we're comparing the same object
+  if(PComponents[NumComponents-1].get() == comp.get())
    Components.resize(NumComponents-1);
   else
   {
    for(i=0;i<NumComponents;i++)
-    if(PComponents[i] == std::shared_ptr<UContainer>(comp.get()))
+    if(PComponents[i].get() == comp.get())
      break;
 
    if(i>=NumComponents)
@@ -2887,7 +2936,7 @@ void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
  PointerMapCIteratorT I=FindLookupPointer(comp);
  if(I != PointerLookupTable.end())
  {
-  I->second.Pointer->Del(std::shared_ptr<UContainer>(comp.get()));
+  I->second.Pointer->Del(comp);
  }
 }
 // --------------------------
@@ -2931,10 +2980,28 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
  SharesUnInit();
  ADelComponent(comp);
 
- comp->SetEnvironment(0);
+ // Safely set Environment - comp may be partially destroyed during container destruction
+ // SetEnvironment may call UpdateInternalData() which can access Storage
+ // We need to ensure Storage is still valid or skip UpdateInternalData()
+ // Check if comp is still valid by checking its Class
+ if(comp && comp->GetClass() != ForbiddenId)
+ {
+  try {
+   comp->SetEnvironment(0);
+  } catch (...) {
+   // Ignore exceptions during destruction
+  }
+ }
 
  //if(comp->GetMainOwner() == MainOwner)
- comp->SetMainOwner(0);
+ if(comp)
+ {
+  try {
+   comp->SetMainOwner(0);
+  } catch (...) {
+   // Ignore exceptions during destruction
+  }
+ }
 
  // �������� �� ���� ���������
  // ������� ��������� �� ������� ������������ ���������
@@ -2947,8 +3014,22 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 
  AfterDelComponent(comp,canfree);
 
- if(canfree)
-  comp->Free();
+ // With shared_ptr, we don't need to call Free()
+ // If canfree is true and component has Storage, return it to Storage
+ // Otherwise, let shared_ptr handle the lifecycle automatically
+ if(canfree && comp && comp->GetClass() != ForbiddenId)
+ {
+  // Get Storage safely - it may be nullptr if Storage is being destroyed
+  try {
+   std::shared_ptr<UStorage> compStorage = comp->GetStorage();
+   if(compStorage)
+   {
+    compStorage->ReturnObject(comp);
+   }
+  } catch (...) {
+   // Ignore exceptions during destruction - Storage may be partially destroyed
+  }
+ }
 
  if(!NumComponents)
   LastId=0;

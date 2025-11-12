@@ -313,8 +313,14 @@ bool UEnvironment::DestroyModel(void)
 
  UnRegisterAllDataReaders();
 
- Model->Free();
- Model=0;
+ // With shared_ptr, we don't need to call Free()
+ // Just reset the shared_ptr - object will be automatically destroyed
+ // If Model has Storage, return it to Storage
+ if(Model && Model->GetStorage())
+ {
+  Model->GetStorage()->ReturnObject(Model);
+ }
+ Model.reset();
  CurrentComponent=0;
 
  return true;

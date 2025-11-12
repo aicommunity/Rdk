@@ -50,6 +50,33 @@ UInstancesStorageElement::UInstancesStorageElement(const std::shared_ptr<UContai
 
 UInstancesStorageElement::~UInstancesStorageElement(void)
 {
+ // Log destruction for debugging segfault
+ // WARNING: Object may be already destroyed, so we need to be careful
+ // Don't access Object here if it's already been destroyed
+ // Object shared_ptr will be automatically destroyed when this element is destroyed
+ // But if Object.reset() was called in ClearObjectsStorage, Object will be nullptr
+ try {
+  if(Object)
+  {
+   size_t use_count = Object.use_count();
+   std::string obj_name = "unknown";
+   void* obj_addr = Object.get();
+   try {
+    if(obj_addr) {
+     obj_name = Object->GetName();
+    }
+   } catch (...) {
+    obj_name = "<destroyed>";
+   }
+   LOG(INFO) << "UInstancesStorageElement::~UInstancesStorageElement - destroying element, object: " << obj_name 
+             << " use_count=" << use_count << " address=" << obj_addr;
+   // Object shared_ptr will be automatically destroyed when this element is destroyed
+   // If use_count > 1, object won't be destroyed here (it's still referenced elsewhere)
+   // If use_count == 1, object will be destroyed when Object goes out of scope
+  }
+ } catch (...) {
+  LOG(ERROR) << "UInstancesStorageElement::~UInstancesStorageElement - exception during logging";
+ }
 }
 // --------------------------
 
@@ -114,9 +141,12 @@ UStorage::UStorage(void)
 
 UStorage::~UStorage(void)
 {
+ LOG(INFO) << "UStorage::~UStorage - starting destruction";
  try
  {
+  LOG(INFO) << "UStorage::~UStorage - calling ClearObjectsStorage(true)";
   ClearObjectsStorage(true);
+  LOG(INFO) << "UStorage::~UStorage - calling ClearClassesStorage(true)";
   ClearClassesStorage(true);
 
   // �������� ���� ���������
@@ -452,10 +482,11 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
               J=instances->second.end(); I!=J; ++I)
   {
-   if(I->UseFlag == false)
+   std::shared_ptr<UContainer> obj=I->Object;
+   if(obj && obj.use_count() == 1)
    {
-   element=&(*I);
-   break;
+    element=&(*I);
+    break;
    }
   }
 
@@ -465,7 +496,6 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
 
    if(obj)
    {
-    element->UseFlag=true;
     obj->Default();
     if(!prototype)
      tmpl->ResetComponent(obj);
@@ -473,6 +503,10 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
       prototype->Copy(obj,get_shared_from_this());
 
     obj->Activity = true;
+    // Update UseFlag based on use_count() after returning
+    // use_count() will be > 1 after we return the shared_ptr, so mark as used
+    // But we update it here before returning to ensure consistency
+    element->UseFlag = true;
    }
    return obj;
   }
@@ -617,6 +651,19 @@ size_t UStorage::CalcNumObjects(const string &classname) const
 // ������� ��� ��������� ������� �� ���������
 void UStorage::FreeObjectsStorage(bool force)
 {
+ // With shared_ptr, we can simplify destruction significantly
+ // If forcing, we need to be careful - objects may still have active references
+ // ResetStorage() has already been called in ClearObjectsStorage
+ if(force)
+ {
+  // Forced destruction: clear ObjectsStorage, but objects will be destroyed
+  // when the last shared_ptr reference is released
+  // We've already called ResetStorage() on all objects, so they won't try to access Storage
+  ObjectsStorage.clear();
+  return;
+ }
+
+ // Normal destruction: only destroy objects with use_count() == 1
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
  {
@@ -628,98 +675,40 @@ void UStorage::FreeObjectsStorage(bool force)
    // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
-   std::string object_name=I->Object->GetName();
-   if(I->UseFlag && force)
+   std::shared_ptr<UContainer> object=I->Object;
+   if(!object)
    {
-	LOG(ERROR) << __FUNCTION__ << " - FORCED destroy objects by name " << object_name << ": object in use!";
+    ++I;
+    continue;
    }
-
-   if(!I->UseFlag || force)
+   
+   std::string object_name=object->GetName();
+   // Check use_count() - only destroy objects that are free (use_count() == 1)
+   size_t use_count = object.use_count();
+   if(use_count == 1)
    {
 	list<UInstancesStorageElement>::iterator K;
 	LOG(INFO) << __FUNCTION__ << " - Destroy objects by name " << object_name;
 	K=I; ++K;
-	
-	// Save shared_ptr BEFORE erasing iterator to keep object alive
-	std::shared_ptr<UContainer> object=I->Object;
 	
 	// Reset Storage pointer in object BEFORE removing from storage
 	// This prevents UContainer destructor from trying to access destroyed Storage
 	if(object)
 	{
 	 object->ResetStorage();
+	 object->SetClass(ForbiddenId);
 	}
 	
-	// Mark object as removed from storage by setting UseFlag and erasing iterator
-	// Don't call PopObject during forced destruction as it may access partially destroyed Storage
-	if(force)
-	{
-	 // During forced destruction, just erase the iterator and mark object as invalid
-	 // The object will be destroyed when shared_ptr goes out of scope
-	 I->UseFlag=false;
-	 if(object)
-	 {
-	  object->SetClass(ForbiddenId);
-	 }
-	 instances->second.erase(I);
-	}
-	else
-	{
-	 // Normal destruction: use PopObject to properly clean up
-	 PopObject(instances,I);
-	}
-	
-	RDK_SYS_TRY
-	{
-	 try
-	 {
-	  // Try to find and free virtual factory, but don't fail if it doesn't exist
-	  // This may fail if Storage is partially destroyed
-	  // Note: We skip this if Storage is being destroyed (force=true) to avoid accessing partially destroyed Storage
-	  UVirtualMethodFactory* virtual_factory=nullptr;
-	  if(!force) // Only try to find factory if not forcing destruction
-	  {
-	   try {
-	    virtual_factory=FindVirualMethodFactory(object);
-	   } catch(...) {
-	    // Ignore errors when finding factory during destruction
-	   }
-	  }
-	  
-	  if(virtual_factory)
-	  {
-	   try {
-	    virtual_factory->FreeComponent();
-	   } catch(...) {
-	    // Ignore errors when freeing component during destruction
-	   }
-	  }
-	  
-	  // Reset object - this will trigger its destructor
-	  // Storage pointer is already reset, so destructor won't try to access destroyed Storage
-	  object.reset();
-	 }
-	 catch(...)
-	 {
-	  // if(Logger) удален - используется glog
-	   // Logger-> удален - используется glogLogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
-	 }
-	}
-	RDK_SYS_CATCH
-	{
-	 // if(Logger) удален - используется glog
-	  // Logger-> удален - используется glogProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
-	}
-    I=K;
+	// Erase iterator - shared_ptr will automatically destroy the object
+	// The object will be automatically destroyed when the last shared_ptr is destroyed
+	instances->second.erase(I);
+	I=K;
    }
    else
    {
+	// Object is still in use, skip it
+	LOG(WARNING) << __FUNCTION__ << " - Skipping object " << object_name << ": still in use (use_count=" << use_count << ")";
 	++I;
-//	if(!force)
-//	{
-//	 // if(Logger) удален - используется glog
-//	  // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
-//	}
    }
   }
 
@@ -752,51 +741,36 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
 
     for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
     {
-        std::string object_name=I->Object->GetName();
-        if(I->UseFlag)
+        std::shared_ptr<UContainer> object=I->Object;
+        if(!object)
         {
-            // if(Logger) удален - используется glog
-                // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Can't destroy objects by name ")+object_name+": object in use!");
+            ++I;
+            continue;
+        }
+        
+        std::string object_name=object->GetName();
+        // Check use_count() instead of UseFlag for more accurate status
+        size_t use_count = object.use_count();
+        if(use_count > 1)
+        {
+            // Object is still in use, skip it
+            ++I;
+            continue;
         }
 
-        if(!I->UseFlag)
+        // Object is free (use_count() == 1), can be destroyed
+        list<UInstancesStorageElement>::iterator K=I; ++K;
+        
+        // Reset Storage pointer to prevent access to partially destroyed Storage
+        if(object)
         {
-            list<UInstancesStorageElement>::iterator K;
-            // if(Logger) удален - используется glog
-                // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
-            K=I; ++K;
-            std::shared_ptr<UContainer> object=I->Object;
-            PopObject(instances,I);
-            RDK_SYS_TRY
-            {
-                try
-                {
-                UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
-                if(virtual_factory)
-                {
-                    virtual_factory->FreeComponent();
-                }
-                object.reset();
-                }
-                catch(...)
-                {
-                // if(Logger) удален - используется glog
-                    // Logger-> удален - используется glogLogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when object ")+object_name);
-                }
-            }
-            RDK_SYS_CATCH
-            {
-                // if(Logger) удален - используется glog
-                    // Logger-> удален - используется glogProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
-            }
-            I=K;
+            object->ResetStorage();
+            object->SetClass(ForbiddenId);
         }
-        else
-        {
-           ++I;
-//           // if(Logger) удален - используется glog
-//               // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
-        }
+        
+        // Erase iterator - shared_ptr will automatically destroy the object
+        instances->second.erase(I);
+        I=K;
     }
 
     // if(Logger) удален - используется glog
@@ -807,18 +781,75 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
 // ������� ��� ������� �� ���������
 void UStorage::ClearObjectsStorage(bool force)
 {
- // First, reset Storage pointer in all objects to prevent access to destroyed Storage
- // This prevents segfault in UContainer destructor and Free() method
+ // With shared_ptr, we can simplify destruction significantly
+ // If forcing, just clear ObjectsStorage - shared_ptr will automatically destroy objects
+ // We don't need to call ResetStorage() or SetClass() - objects will be destroyed automatically
+ if(force)
+ {
+  // Forced destruction: reset Storage pointer in all objects first
+  // This prevents objects from trying to access Storage during destruction
+  // Then clear ObjectsStorage - objects will be automatically destroyed when shared_ptr goes out of scope
+  LOG(INFO) << "ClearObjectsStorage(force=true) - clearing ObjectsStorage, size=" << ObjectsStorage.size();
+  
+  // First, reset Storage pointer in all objects to prevent access to partially destroyed Storage
+  // This must be done BEFORE clearing ObjectsStorage to prevent segfault
+  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
+      instances != iend; ++instances)
+  {
+   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
+   {
+    if(I->Object)
+    {
+     try {
+      // Reset Storage pointer BEFORE clearing ObjectsStorage
+      // This prevents UContainer destructor from trying to access destroyed Storage
+      I->Object->ResetStorage();
+      // SetClass may access object internals, so check if object is still valid
+      if(I->Object->GetClass() != ForbiddenId)
+      {
+       I->Object->SetClass(ForbiddenId);
+      }
+     } catch (...) {
+      // Ignore exceptions during destruction - object may be partially destroyed
+     }
+    }
+   }
+  }
+  
+  // Now clear ObjectsStorage WITHOUT destroying objects
+  // Objects will be automatically destroyed when the last shared_ptr reference is released
+  // We've already reset Storage pointer in all objects, so they won't try to access Storage
+  // Just clear ObjectsStorage - shared_ptr will automatically destroy objects when the last reference is released
+  // Don't call reset() on Object shared_ptr here - it may cause segfault if object is already destroyed
+  ObjectsStorage.clear();
+  LOG(INFO) << "ClearObjectsStorage(force=true) - ObjectsStorage cleared";
+  return;
+ }
+
+ // Normal destruction: reset Storage pointer in objects before destroying
+ // This prevents segfault in UContainer destructor
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 												instances != iend; ++instances)
  {
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
   {
-   if(I->Object)
-   {
-    // Reset Storage pointer before destroying objects
-    // This prevents UContainer destructor and Free() from trying to access destroyed Storage
-    I->Object->ResetStorage();
+   // Safely reset Storage pointer - object may be partially destroyed
+   // Use try-catch to prevent segfault during destruction
+   try {
+    if(I->Object)
+    {
+     // Reset Storage pointer before destroying objects
+     // This prevents UContainer destructor from trying to access destroyed Storage
+     I->Object->ResetStorage();
+     // SetClass may access object internals, so check if object is still valid
+     if(I->Object->GetClass() != ForbiddenId)
+     {
+      I->Object->SetClass(ForbiddenId);
+     }
+    }
+   } catch (...) {
+    // Ignore exceptions during destruction - object may be partially destroyed
+    // Just continue with next object
    }
   }
  }
@@ -834,8 +865,17 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
  if(instances ==ObjectsStorage.end())
   return;
 
+ // With shared_ptr, we don't need to call Free()
+ // Just reset Storage pointer and clear the storage
+ // Objects will be automatically destroyed when shared_ptr goes out of scope
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
-  I->Object->Free();
+ {
+  if(I->Object)
+  {
+   I->Object->ResetStorage();
+   I->Object->SetClass(ForbiddenId);
+  }
+ }
 
  ObjectsStorage.erase(instances);
 }
@@ -857,7 +897,8 @@ void UStorage::DefaultObject(std::shared_ptr<UContainer> object)
  UClassStorageElement tmpl=tmplI->second;
 
  object->Default();
- tmpl->ResetComponent(std::shared_ptr<UContainer>(object.get()));
+ // Use existing shared_ptr instead of creating new one from raw pointer
+ tmpl->ResetComponent(object);
 
  object->Activity = activity;
  object->Coord = coord;
@@ -1824,7 +1865,9 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
  if(!factory)
   return;
 
- std::shared_ptr<UContainer> class_data(factory->GetComponent().get());
+ // Use GetComponent() directly - it already returns shared_ptr, don't create new one from .get()
+ // This prevents double destruction when shared_ptr is destroyed
+ std::shared_ptr<UContainer> class_data = factory->GetComponent();
  if(!class_data)
   return;
 
@@ -1850,18 +1893,14 @@ void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object
 {
  UInstancesStorage &instances=ObjectsStorage[classid];
 
- UInstancesStorageElement element(object,true);
+ // UseFlag is set based on use_count()
+ // use_count() == 1 means only UStorage owns it (free)
+ // use_count() > 1 means object is in use
+ // Initially, object is in use (we're about to return it), so UseFlag = true
+ UInstancesStorageElement element(object, true);
  instances.insert(instances.end(),element);
- //list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
- //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
  object->Activity = true;
-
- // Временно закомментируем SetStorage для диагностики
- // std::shared_ptr<UStorage> this_shared = get_shared_from_this();
- // if (object && this_shared) {
- //     object->SetStorage(std::weak_ptr<UStorage>(this_shared));
- // }
 }
 
 // ������� ��� ��������� ������ �� ��������� � ����������
@@ -1894,7 +1933,6 @@ void UStorage::MoveObject(std::shared_ptr<UContainer> object, std::shared_ptr<US
 // ���� 'Activity' ������� ������������ � false
 void UStorage::ReturnObject(std::shared_ptr<UContainer> object)
 {
-
  object->Activity = false;
  object->BreakOwner();
 
@@ -1907,7 +1945,10 @@ void UStorage::ReturnObject(std::shared_ptr<UContainer> object)
  {
   if(I->Object == object)
   {
-   I->UseFlag=false;
+   // Update UseFlag based on use_count()
+   // use_count() == 1 means only UStorage owns it (free)
+   // use_count() > 1 means object is still in use
+   I->UseFlag = (object.use_count() > 1);
    break;
   }
  }

@@ -234,8 +234,17 @@ bool UComponent::SetEnvironment(UEnvironment* environment)
  if(Environment == environment)
   return true;
 
+ // During destruction, Storage may be nullptr or partially destroyed
+ // Skip UpdateInternalData() to prevent segfault
  Environment=environment;
- UpdateInternalData();
+ if(Storage && Class != ForbiddenId)
+ {
+  try {
+   UpdateInternalData();
+  } catch (...) {
+   // Ignore exceptions during destruction
+  }
+ }
  return true;
 }
 
@@ -337,8 +346,9 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
 // ����������� ����� �������
 void UComponent::Free(void)
 {
- if(!StaticFlag)
-  delete this;
+ // With shared_ptr, we don't delete the object here
+ // The object will be automatically destroyed when the last shared_ptr is destroyed
+ // This method is kept for backward compatibility but should not be used
 }
 
 /// ������������ ���������� ���������� ������ ����������, �������������� ��� �����������

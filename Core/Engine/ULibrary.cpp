@@ -346,7 +346,11 @@ bool ULibrary::UploadClass(const std::string &class_name, const std::string &com
   return true;
 
  std::vector<std::string>::iterator I;
- std::shared_ptr<UComponentFactoryMethod> factory = std::make_shared<UComponentFactoryMethod>(std::shared_ptr<UStorage>(Storage, [](UStorage*){}), funcPointer, component_name); // Non-owning deleter
+ // Storage is a raw pointer, but UComponentFactoryMethod expects shared_ptr
+ // We need to create a shared_ptr with non-owning deleter to pass to factory
+ // The factory will not own the Storage - it's just for reference
+ std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){}); // Non-owning deleter - Storage is owned by ULibrary
+ std::shared_ptr<UComponentFactoryMethod> factory = std::make_shared<UComponentFactoryMethod>(storage_ptr, funcPointer, component_name);
 
  if(!Storage->AddClass(factory,class_name))
  {
@@ -491,7 +495,10 @@ bool URuntimeLibrary::LoadCompDescriptions()
 /// ��������� ����� ��������� (���������� � ����)
 bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass)
 {
-    std::shared_ptr<UContainer> p = std::shared_ptr<UContainer>(newclass, [](UContainer*){}); // Non-owning deleter
+    // newclass is a raw pointer passed from outside - we need to create shared_ptr
+    // But we don't own newclass, so we use non-owning deleter
+    // This is a temporary shared_ptr for passing to dynamic_pointer_cast
+    std::shared_ptr<UContainer> p = std::shared_ptr<UContainer>(newclass, [](UContainer*){}); // Non-owning deleter - caller owns newclass
     std::shared_ptr<UNet> cont = dynamic_pointer_cast<UNet>(p);
 
     if(!cont)
