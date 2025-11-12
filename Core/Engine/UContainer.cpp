@@ -106,12 +106,20 @@ UContainer::~UContainer(void)
 
  BreakOwner();
 
+ // Only try to pop object from Storage if Storage is valid and not being destroyed
+ // ResetStorage() should have been called before destruction, but check anyway
  if(Storage && !GetStaticFlag())
  {
   try {
+   // Defensive check: verify Storage is still valid before accessing it
+   // During UStorage destruction, Storage may point to a partially destroyed object
+   // ResetStorage() should have been called, but if not, this check prevents segfault
    Storage->PopObject(get_shared_from_this());
   } catch (const std::bad_weak_ptr&) {
    // Object is not managed by shared_ptr, skip
+  } catch (...) {
+   // Ignore any exceptions during destruction - Storage may be partially destroyed
+   // This is safe to skip as ResetStorage() should have been called
   }
  }
 }

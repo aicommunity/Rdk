@@ -468,7 +468,7 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
     element->UseFlag=true;
     obj->Default();
     if(!prototype)
-     tmpl->ResetComponent(std::shared_ptr<UContainer>(obj.get()));
+     tmpl->ResetComponent(obj);
     else
       prototype->Copy(obj,get_shared_from_this());
 
@@ -624,9 +624,6 @@ void UStorage::FreeObjectsStorage(bool force)
   if(instances->second.empty())
    continue;
 
-  size_t size=instances->second.size();
-  size_t count=0;
-
   // if(Logger) удален - используется glog
    // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
@@ -642,19 +639,65 @@ void UStorage::FreeObjectsStorage(bool force)
 	list<UInstancesStorageElement>::iterator K;
 	LOG(INFO) << __FUNCTION__ << " - Destroy objects by name " << object_name;
 	K=I; ++K;
+	
+	// Save shared_ptr BEFORE erasing iterator to keep object alive
 	std::shared_ptr<UContainer> object=I->Object;
-	PopObject(instances,I);
+	
+	// Reset Storage pointer in object BEFORE removing from storage
+	// This prevents UContainer destructor from trying to access destroyed Storage
+	if(object)
+	{
+	 object->ResetStorage();
+	}
+	
+	// Mark object as removed from storage by setting UseFlag and erasing iterator
+	// Don't call PopObject during forced destruction as it may access partially destroyed Storage
+	if(force)
+	{
+	 // During forced destruction, just erase the iterator and mark object as invalid
+	 // The object will be destroyed when shared_ptr goes out of scope
+	 I->UseFlag=false;
+	 if(object)
+	 {
+	  object->SetClass(ForbiddenId);
+	 }
+	 instances->second.erase(I);
+	}
+	else
+	{
+	 // Normal destruction: use PopObject to properly clean up
+	 PopObject(instances,I);
+	}
+	
 	RDK_SYS_TRY
 	{
 	 try
 	 {
-	  UVirtualMethodFactory* virtual_factory=FindVirualMethodFactory(object);
+	  // Try to find and free virtual factory, but don't fail if it doesn't exist
+	  // This may fail if Storage is partially destroyed
+	  // Note: We skip this if Storage is being destroyed (force=true) to avoid accessing partially destroyed Storage
+	  UVirtualMethodFactory* virtual_factory=nullptr;
+	  if(!force) // Only try to find factory if not forcing destruction
+	  {
+	   try {
+	    virtual_factory=FindVirualMethodFactory(object);
+	   } catch(...) {
+	    // Ignore errors when finding factory during destruction
+	   }
+	  }
+	  
 	  if(virtual_factory)
 	  {
-	   virtual_factory->FreeComponent();
+	   try {
+	    virtual_factory->FreeComponent();
+	   } catch(...) {
+	    // Ignore errors when freeing component during destruction
+	   }
 	  }
-                object.reset();
-	  ++count;
+	  
+	  // Reset object - this will trigger its destructor
+	  // Storage pointer is already reset, so destructor won't try to access destroyed Storage
+	  object.reset();
 	 }
 	 catch(...)
 	 {
@@ -704,9 +747,6 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
     if(instances->second.empty())
         return;
 
-    size_t size=instances->second.size();
-    size_t count=0;
-
     // if(Logger) удален - используется glog
         // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
 
@@ -737,7 +777,6 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
                     virtual_factory->FreeComponent();
                 }
                 object.reset();
-                ++count;
                 }
                 catch(...)
                 {
@@ -768,24 +807,23 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
 // ������� ��� ������� �� ���������
 void UStorage::ClearObjectsStorage(bool force)
 {
+ // First, reset Storage pointer in all objects to prevent access to destroyed Storage
+ // This prevents segfault in UContainer destructor and Free() method
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 												instances != iend; ++instances)
  {
-  std::string object_class_name=FindClassName(instances->first);
-  // if(Logger) удален - используется glog
-   // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has begun");
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
   {
-   std::string object_name=I->Object->GetName();
-   // if(Logger) удален - используется glog
-	// Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects by name ")+object_name);
-   I->Object->Free();
+   if(I->Object)
+   {
+    // Reset Storage pointer before destroying objects
+    // This prevents UContainer destructor and Free() from trying to access destroyed Storage
+    I->Object->ResetStorage();
+   }
   }
-
-  // if(Logger) удален - используется glog
-   // Logger-> удален - используется glogLogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
  }
 
+ // Now free and destroy objects (FreeObjectsStorage will handle actual destruction)
  FreeObjectsStorage(force);
 }
 
@@ -1817,6 +1855,7 @@ void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object
  //list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
  //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
+ object->Activity = true;
 
  // Временно закомментируем SetStorage для диагностики
  // std::shared_ptr<UStorage> this_shared = get_shared_from_this();

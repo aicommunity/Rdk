@@ -6,6 +6,8 @@
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 //#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "../../Deploy/Include/rdk_rpc.h"
+#include <chrono>
+#include <thread>
 
 namespace RDK {
 
@@ -15,13 +17,13 @@ namespace RDK {
 URpcDispatcher::URpcDispatcher(void)
 {
  ThreadTerminated=false;
- DispatcherThread=boost::thread(boost::bind(&URpcDispatcher::Dispatch, boost::ref(*this)));
+ DispatcherThread=std::jthread([this]() { Dispatch(); });
 }
 
 URpcDispatcher::~URpcDispatcher(void)
 {
  ThreadTerminated=true;
- DispatcherThread.join();
+ // std::jthread automatically joins in destructor
 }
 // --------------------------
 
@@ -109,11 +111,11 @@ void URpcDispatcher::Dispatch(void)
 
    if(!command)
    {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	continue;
    }
 
-   boost::mutex::scoped_lock lock(DispatchMutex);
+   std::lock_guard<std::mutex> lock(DispatchMutex);
 
 //   UpdateDecoders();
    DispatchCommand(command);
@@ -162,7 +164,7 @@ bool URpcDispatcher::SyncDispatchCommand(const std::shared_ptr<URpcCommand> &com
  {
   if(!PopProcessedCommand(cmd_id))
   {
-   boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
    continue;
   }
   else

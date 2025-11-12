@@ -3,10 +3,9 @@
 
 #include <string>
 #include <vector>
-#define BOOST_THREAD_USE_LIB
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/thread/mutex.hpp>
+#include <thread>
+#include <functional>
+#include <mutex>
 
 #include "../../Deploy/Include/rdk.h"
 
@@ -100,7 +99,7 @@ protected: // Потоки
 std::vector<UEngineControlThread*> CalcThreads;
 
 /// Поток расчета
-boost::thread Thread;
+std::jthread Thread;
 
 bool Terminated;
 

@@ -36,7 +36,8 @@ namespace RDK
     
    obj->SetStorage(Storage);
    obj->Default();
-   Component->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
+   std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){});
+   Component->Copy(obj, storage_ptr);
    return obj;
   }
   catch(...)
@@ -58,7 +59,8 @@ namespace RDK
     
    obj->SetStorage(Storage);
    obj->Default();
-   prototype->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
+   std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){});
+   prototype->Copy(obj, storage_ptr);
    return obj;
   }
   catch(...)
@@ -70,7 +72,7 @@ namespace RDK
  void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UContainer> component) const
  {
   if(Component)
-   Component->Copy(std::shared_ptr<UContainer>(component.get()), std::shared_ptr<UStorage>(Component->GetStorage().get()));
+   Component->Copy(component, Component->GetStorage());
  }
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()

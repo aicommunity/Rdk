@@ -54,7 +54,7 @@ UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
  CalculationInProgress=UCreateMutex();
 
  Terminated=false;
- Thread=boost::thread(boost::bind(&UEngineStateThread::Execute, boost::ref(*this)));
+ Thread=std::jthread([this]() { Execute(); });
 
  NumAvgIterations=200;
  AvgThreshold=5.0;

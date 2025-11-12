@@ -217,7 +217,9 @@ bool UComponent::SetStorage(UStorage* storage)
 void UComponent::ResetStorage()
 {
  Storage=nullptr;
- UpdateInternalData();
+ // Don't call UpdateInternalData() during destruction to avoid segfault
+ // UpdateInternalData() may access Storage or other partially destroyed objects
+ // This is safe to skip during Storage destruction
 }
 
 

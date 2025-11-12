@@ -74,8 +74,11 @@ target_compile_definitions(${TARGET_NAME} PUBLIC RDK_QT RDK_LIB_CVS_REVISION=0)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network Sql SerialPort PrintSupport)
 find_package(Boost REQUIRED COMPONENTS program_options)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CURL REQUIRED libcurl)
 
-target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Widgets Qt5::Network Qt5::Sql Qt5::SerialPort Qt5::PrintSupport Boost::program_options Threads::Threads glog::glog)
+target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Widgets Qt5::Network Qt5::Sql Qt5::SerialPort Qt5::PrintSupport Boost::program_options Threads::Threads glog::glog ${CURL_LIBRARIES})
+target_include_directories(${TARGET_NAME} PUBLIC ${CURL_INCLUDE_DIRS})
 
 # Modern compiler flags for GNU
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
