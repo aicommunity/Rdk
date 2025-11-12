@@ -37,7 +37,9 @@ typedef std::map<std::string, std::shared_ptr<UContainerDescription> > UClassesD
 typedef std::map<std::string, std::shared_ptr<UContainerDescription> >::iterator UClassesDescriptionIterator;
 typedef std::map<std::string, std::shared_ptr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
-typedef std::vector<ULibrary*> UClassLibraryList;
+// Changed from std::vector<ULibrary*> to std::vector<std::shared_ptr<ULibrary>>
+// to properly manage library lifetime with shared_ptr
+typedef std::vector<std::shared_ptr<ULibrary>> UClassLibraryList;
 /* *********************************************************************** */
 // ������� ������ ������������ �������� ������������� ������
 class RDK_LIB_TYPE UInstancesStorageElement
@@ -386,7 +388,7 @@ bool DeleteRuntimeCollection(const std::string &lib_name);
 // ��������������� �� ������������ ������ ����������� ����� �� ���������� �������.
 // ���� force_build == true �� ���������� ������������ ������������� ����������
 // � ���������
-virtual bool AddCollection(ULibrary *library, bool force_build=false);
+virtual bool AddCollection(std::shared_ptr<ULibrary> library, bool force_build=false);
 
 // ������� ������������ ���������� �� ������ �� �������
 // ��������������� �� ������������ ������ ����� �� ���������� �������.

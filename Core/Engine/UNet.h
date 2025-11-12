@@ -320,13 +320,21 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
  if(!CheckLongId(item.Id))
   pitem=GetThisAsSharedItem();
  else
-  pitem=std::shared_ptr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).get())).get());
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = GetComponentL(item.Id,true);
+  pitem=std::dynamic_pointer_cast<UItem>(component);
+ }
 
  std::shared_ptr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=GetThisAsSharedConnector();
  else
-  pconnector=std::shared_ptr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).get())).get());
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = GetComponentL(connector.Id,true);
+  pconnector=std::dynamic_pointer_cast<UConnector>(component);
+ }
 
  if(!pitem)
  {
@@ -393,13 +401,21 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!CheckLongId(item.Id))
   pitem=GetThisAsSharedItem();
  else
-  pitem=std::shared_ptr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).get())).get());
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = GetComponentL(item.Id,true);
+  pitem=std::dynamic_pointer_cast<UItem>(component);
+ }
 
  std::shared_ptr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=GetThisAsSharedConnector();
  else
-  pconnector=std::shared_ptr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).get())).get());
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = GetComponentL(connector.Id,true);
+  pconnector=std::dynamic_pointer_cast<UConnector>(component);
+ }
 
  if(!pitem)
  {
@@ -429,13 +445,21 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!CheckLongId(item.Id))
   pitem=GetThisAsSharedItem();
  else
-  pitem=std::shared_ptr<UItem>(std::dynamic_pointer_cast<UItem>(std::shared_ptr<UContainer>(GetComponentL(item.Id,true).get())).get());
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = GetComponentL(item.Id,true);
+  pitem=std::dynamic_pointer_cast<UItem>(component);
+ }
 
  std::shared_ptr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=GetThisAsSharedConnector();
  else
-  pconnector=std::shared_ptr<UConnector>(std::dynamic_pointer_cast<UConnector>(std::shared_ptr<UContainer>(GetComponentL(connector.Id,true).get())).get());
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = GetComponentL(connector.Id,true);
+  pconnector=std::dynamic_pointer_cast<UConnector>(component);
+ }
 
  if(!pitem)
  {

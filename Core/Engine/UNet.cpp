@@ -1008,7 +1008,15 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 
   UStringLinksList linkslist;
   if(owner_level)
-   GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level));
+  {
+   // owner_level is UNet* - if it's this, use shared_from_this(); otherwise use safe_shared_cast
+   // Note: safe_shared_cast creates non-owning deleter, which is acceptable here as owner_level
+   // is managed elsewhere. Ideally, this should be changed to accept shared_ptr parameter.
+   if(owner_level == this)
+    GetLinks(linkslist, get_shared_from_this());
+   else
+    GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level));
+  }
   else
    GetLinks(linkslist, GetThisAsSharedContainer());
 
@@ -1029,7 +1037,13 @@ int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   *serstorage>>linkslist;
 
   BreakLinks();
-  CreateLinks(linkslist, safe_shared_cast<UNet>(owner_level));
+  // owner_level is UNet* - if it's this, use shared_from_this(); otherwise use safe_shared_cast
+  // Note: safe_shared_cast creates non-owning deleter, which is acceptable here as owner_level
+  // is managed elsewhere. Ideally, this should be changed to accept shared_ptr parameter.
+  if(owner_level == this)
+   CreateLinks(linkslist, std::static_pointer_cast<UNet>(shared_from_this()));
+  else
+   CreateLinks(linkslist, safe_shared_cast<UNet>(owner_level));
 
  return true;
 }
@@ -1085,9 +1099,24 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 
   UStringLinksList linkslist;
   if(owner_level)
-   GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level), true, GetThisAsSharedContainer());
+  {
+   // owner_level is UNet* - if it's this, use shared_from_this(); otherwise use safe_shared_cast
+   // Note: safe_shared_cast creates non-owning deleter, which is acceptable here as owner_level
+   // is managed elsewhere. Ideally, this should be changed to accept shared_ptr parameter.
+   if(owner_level == this)
+    GetLinks(linkslist, get_shared_from_this(), true, GetThisAsSharedContainer());
+   else
+    GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level), true, GetThisAsSharedContainer());
+  }
   else
-   GetLinks(linkslist, safe_shared_cast<UContainer>(GetOwner().get()), true, GetThisAsSharedContainer());
+  {
+   // Use GetOwner() directly - it already returns shared_ptr, don't create new one from .get()
+   auto owner = GetOwner();
+   if(owner)
+    GetLinks(linkslist, std::dynamic_pointer_cast<UContainer>(owner), true, GetThisAsSharedContainer());
+   else
+    GetLinks(linkslist, GetThisAsSharedContainer(), true, GetThisAsSharedContainer());
+  }
  return 0;
 }
 

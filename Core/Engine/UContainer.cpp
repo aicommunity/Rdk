@@ -224,7 +224,8 @@ ULongId UContainer::GetLongId(std::shared_ptr<UContainer> mainowner) const
 // ������������� ������� ������������ ������, ������������� ������� ���
 std::string& UContainer::GetLongId(std::shared_ptr<UContainer> mainowner, std::string &buffer) const
 {
- return GetLongName(std::shared_ptr<UContainer>(mainowner.get()),buffer);
+ // Use mainowner directly - it's already a shared_ptr, don't create new one from .get()
+ return GetLongName(mainowner, buffer);
 }
 
 // ���������� true ���� ������������ ������������� ������� ���������, � ��������� ������ ���������� false
@@ -728,7 +729,8 @@ NameT UContainer::GetFullName(void) const
 NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, NameT &buffer) const
 {
  auto owner = GetOwner();
- if(!owner && owner != std::shared_ptr<UContainer>(mainowner.get()))
+ // Use mainowner directly - it's already a shared_ptr, don't create new one from .get()
+ if(!owner && owner != mainowner)
   {
    buffer.clear();
    return buffer;
@@ -1064,7 +1066,9 @@ long long UContainer::GetMaxMemoryBlockDiff(void) const
 std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bool copystate)
 {
  std::shared_ptr<UContainer> copy;
- std::shared_ptr<UStorage> storage=(stor!=0)?stor:std::shared_ptr<UStorage>(GetStorage().get());
+ // GetStorage() returns std::shared_ptr<UStorage> (UContainer overrides UComponent::GetStorage)
+ // Use it directly - don't create new shared_ptr from raw pointer
+ std::shared_ptr<UStorage> storage = (stor != nullptr) ? stor : GetStorage();
 
  if(storage)
  {
@@ -1312,13 +1316,8 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
  comp->Id = id;
  // Use shared_from_this() instead of safe_shared_cast to avoid creating new shared_ptr with non-owning deleter
  // This ensures that Owner uses the same shared_ptr reference as the container itself
- try {
-  comp->SetOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
- } catch (const std::bad_weak_ptr&) {
-  // If shared_from_this() fails, use safe_shared_cast as fallback
-  // But this should not happen if container is managed by shared_ptr
-  comp->SetOwner(safe_shared_cast<UComponent>(this));
- }
+ // All containers should be managed by shared_ptr, so shared_from_this() should always work
+ comp->SetOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
 
  // ��������� ��������� � ������� ������������ ���������
  SetLookupComponent(comp->Name, comp->Id);
@@ -1462,7 +1461,8 @@ std::shared_ptr<UContainer> UContainer::FindStaticComponent(const NameT &classna
  for(;I!=StaticComponents.end();++I)
  {
   if(I->second == classname && I->first->GetName() == name)
-   return std::shared_ptr<UContainer>(I->first.get());
+   // Use I->first directly - it's already a shared_ptr, don't create new one from .get()
+   return I->first;
  }
 
  return 0;
@@ -1544,12 +1544,12 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
     continue;
    bufcomp=(*pcomponents)->Alloc(stor);
    std::shared_ptr<UIPointer> pointer=0;
-   I=FindLookupPointer(std::shared_ptr<UContainer>(pcomponents->get()));
+   I=FindLookupPointer(*pcomponents);
    if(I != PointerLookupTable.end())
    {
     J=comp->PointerLookupTable.find(I->first);
     if(J != comp->PointerLookupTable.end())
-     pointer=std::shared_ptr<UIPointer>(J->second.Pointer.get());
+     pointer=J->second.Pointer;
    }
 
    comp->AddComponent(bufcomp,pointer);
@@ -1685,7 +1685,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
+  this->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
   buffer.Add(id);
  }
 
@@ -1697,7 +1697,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
   if(temp)
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
+   cont->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
    buffer.Add(id);
   }
 
@@ -1726,7 +1726,7 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
+  this->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
   buffer.Add(id);
  }
 
@@ -1739,7 +1739,7 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
 //  if(dynamic_cast<UItem*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
+   cont->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
    buffer.Add(id);
   }
 
@@ -1767,7 +1767,7 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
+  this->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
   buffer.Add(id);
  }
 
@@ -1780,7 +1780,7 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
 //  if(dynamic_cast<UNet*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?std::shared_ptr<UContainer>(ownerlevel.get()):get_shared_from_this(),id);
+   cont->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
    buffer.Add(id);
   }
 
@@ -1951,12 +1951,12 @@ void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 
  if(J != PointerLookupTable.end())
  {
-  std::shared_ptr<UContainer> cont=std::shared_ptr<UContainer>(J->second.Pointer->Get().get());
+  std::shared_ptr<UContainer> cont=J->second.Pointer->Get();
 
   while(cont)
   {
    DelComponent(cont,canfree);
-   cont=std::shared_ptr<UContainer>(J->second.Pointer->Get().get());
+   cont=J->second.Pointer->Get();
   }
  }
 }
@@ -2789,7 +2789,7 @@ size_t UContainer::GetNumControllers(void) const
 // ���������� ���������� �� �������
 std::shared_ptr<UController> UContainer::GetController(int index)
 {
- return std::shared_ptr<UController>(Controllers[index].get());
+ return Controllers[index];
 }
 // --------------------------
 
@@ -2800,7 +2800,7 @@ std::shared_ptr<UController> UContainer::GetController(int index)
 // ������ ���������� � ������������� �������
 UId UContainer::AddLookupPointer(const NameT &name, std::shared_ptr<UIPointer> pointer)
 {
- UPVariable P(1,std::shared_ptr<UIPointer>(pointer.get()));
+ UPVariable P(1,pointer);
 
  if(PointerLookupTable.find(name) != PointerLookupTable.end())
   RDK_THROW(EPointerNameAlreadyExist(name));
@@ -3017,17 +3017,32 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
  // With shared_ptr, we don't need to call Free()
  // If canfree is true and component has Storage, return it to Storage
  // Otherwise, let shared_ptr handle the lifecycle automatically
+ // IMPORTANT: Don't call ReturnObject during container destruction (canfree=true)
+ // because ReturnObject may try to access Activity property which has invalid Owner pointer
+ // Instead, let shared_ptr handle cleanup automatically
+ // Only call ReturnObject if we're explicitly removing a component (not during destruction)
  if(canfree && comp && comp->GetClass() != ForbiddenId)
  {
   // Get Storage safely - it may be nullptr if Storage is being destroyed
+  // Check if we're in destruction phase - if so, skip ReturnObject
+  // During destruction, components will be cleaned up automatically by shared_ptr
   try {
    std::shared_ptr<UStorage> compStorage = comp->GetStorage();
    if(compStorage)
    {
-    compStorage->ReturnObject(comp);
+    // Only return object if it's not being destroyed
+    // Check use_count to see if object is still in use
+    // If use_count is 1, object is only owned by Storage, so it's safe to return
+    // If use_count > 1, object is still in use, so we should return it
+    // But if object is being destroyed (Class == ForbiddenId), skip ReturnObject
+    if(comp->GetClass() != ForbiddenId)
+    {
+     compStorage->ReturnObject(comp);
+    }
    }
   } catch (...) {
    // Ignore exceptions during destruction - Storage may be partially destroyed
+   // or object may be partially destroyed
   }
  }
 

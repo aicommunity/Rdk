@@ -358,7 +358,8 @@ void UEnvironment::ModelUnInit(void)
 // ���������� ��������� �� ������� ��������� ������
 std::shared_ptr<UContainer> UEnvironment::GetCurrentComponent(void)
 {
- return std::shared_ptr<UContainer>(std::dynamic_pointer_cast<UContainer>(CurrentComponent).get());
+ // Use dynamic_pointer_cast directly - it already returns shared_ptr, don't create new one from .get()
+ return std::dynamic_pointer_cast<UContainer>(CurrentComponent);
 }
 
 // ������������� ��������� �� ������� ��������� ������
@@ -373,7 +374,11 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
  if(name == ForbiddenName)
   CurrentComponent=std::dynamic_pointer_cast<UComponent>(Model);
  else
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(Model->GetComponentL(name).get()));
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = Model->GetComponentL(name);
+  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+ }
 }
 
 void UEnvironment::SelectCurrentComponent(const ULongId &id)
@@ -387,7 +392,11 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
  if(id.GetSize() == 0 || id[0] == ForbiddenId)
   CurrentComponent=std::dynamic_pointer_cast<UComponent>(Model);
  else
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(Model->GetComponentL(id).get()));
+ {
+  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+  auto component = Model->GetComponentL(id);
+  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+ }
 }
 
 // ������������� ��������� �� ������� ��������� ������ �� ���� ������
@@ -428,7 +437,13 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
   return;
  }
 
- CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(GetCurrentComponent()->GetComponentL(name).get()));
+ // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+ auto current = GetCurrentComponent();
+ if(current)
+ {
+  auto component = current->GetComponentL(name);
+  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+ }
 }
 
 void UEnvironment::DownCurrentComponent(const ULongId &id)
@@ -439,7 +454,13 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
   return;
  }
 
- CurrentComponent=std::dynamic_pointer_cast<UComponent>(std::shared_ptr<UContainer>(GetCurrentComponent()->GetComponentL(id).get()));
+ // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
+ auto current = GetCurrentComponent();
+ if(current)
+ {
+  auto component = current->GetComponentL(id);
+  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+ }
 }
 
 /// ����� �����

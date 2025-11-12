@@ -7065,6 +7065,11 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	J=external_classes->end();
 	while(I != J)
 	{
+		// external_classes is list<UContainer*> - raw pointers
+		// These objects should be managed via shared_ptr elsewhere, but here they're passed as raw pointers
+		// ARCHITECTURAL ISSUE: This should be changed to list<std::shared_ptr<UContainer>>
+		// For now, use safe_shared_cast with non-owning deleter as temporary solution
+		// TODO: Refactor to use shared_ptr throughout the codebase
 		std::shared_ptr<UComponent> cont = safe_shared_cast<UComponent>(*I);
 		// cont->SetLogger удален - используется glog
 		cont->SetStorage(Storage);
@@ -7082,7 +7087,12 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	J=external_libs->end();
 	while(I != J)
 	{
-	 Storage->AddCollection(*I);
+	 // external_libs is list<ULibrary*> - raw pointers
+	 // ARCHITECTURAL ISSUE: This should be changed to list<std::shared_ptr<ULibrary>>
+	 // For now, create shared_ptr with non-owning deleter as temporary solution
+	 // TODO: Refactor to use shared_ptr throughout the codebase
+	 std::shared_ptr<ULibrary> lib(*I, [](ULibrary*){}); // Non-owning deleter - library is managed elsewhere
+	 Storage->AddCollection(lib);
 	 ++I;
 	}
    }

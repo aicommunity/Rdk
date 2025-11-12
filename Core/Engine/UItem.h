@@ -329,7 +329,8 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
 	if(curr_conn->CheckOwner(internal_level))
 	 continue;
    }
-    curr_conn->GetLongId(std::shared_ptr<UContainer>(netlevel.get()),connector.Id);
+    // Use netlevel directly - it's already a shared_ptr, don't create new one from .get()
+    curr_conn->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
 	std::vector<UCLink> buffer;

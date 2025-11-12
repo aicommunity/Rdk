@@ -346,7 +346,8 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<
      if(reinterpret_cast<UContainer*>(I->second[i].Item)->CheckOwner(internal_level))
       continue;
     }
-    reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(std::shared_ptr<UContainer>(netlevel.get()),item.Id);
+    // Use netlevel directly - it's already a shared_ptr, don't create new one from .get()
+    reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
     UIPropertyInput* property=0;
     FindInputProperty(I->first, property);
     if(property)
