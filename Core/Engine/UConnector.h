@@ -330,7 +330,7 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<
  ULinkT<T> link;
  ULinkSideT<T> connector;
  ULinkSideT<T> item;
- GetLongId(safe_shared_cast<UContainer>(netlevel.get()),connector.Id);
+ GetLongId(netlevel,connector.Id);
  if(connector.Id.size()==0)
   return linkslist;
 

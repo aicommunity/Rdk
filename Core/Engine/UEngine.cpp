@@ -2562,7 +2562,10 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
  {
   try
   {
-   Environment->GetCurrentComponent()->GetLongName(std::shared_ptr<UContainer>(Environment->GetModel().get()),TempString);
+   auto model = Environment->GetModel();
+   if(model) {
+    Environment->GetCurrentComponent()->GetLongName(model, TempString);
+   }
   }
   catch (RDK::UException &exception)
   {
@@ -3819,7 +3822,7 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
 
    ULongId id;
 
-   destcont->GetLongId(std::shared_ptr<UContainer>(owner_level.get()),id);
+   destcont->GetLongId(owner_level, id);
    id.EncodeToString(TempString);
    return TempString.c_str();
   }
@@ -4708,7 +4711,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
    std::shared_ptr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
    std::shared_ptr<UNet> owner;
    if(owner_level_stringid)
-	dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
+	owner=dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
    TempString="";
    if(!cont)
@@ -4716,7 +4719,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 
    XmlStorage.Create("Links");
 
-   if(cont->GetComponentInternalLinks(&XmlStorage,owner.get()))
+   if(cont->GetComponentInternalLinks(&XmlStorage,owner))
 	return TempString.c_str();
 
    XmlStorage.Save(TempString);
@@ -4751,14 +4754,14 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
    std::shared_ptr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
    std::shared_ptr<UNet> owner;
    if(owner_level_stringid)
-	dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
+	owner=dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
    if(!cont)
 	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
    XmlStorage.Load(buffer,"Links");
 
-   if(!cont->SetComponentInternalLinks(&XmlStorage,owner.get()))
+   if(!cont->SetComponentInternalLinks(&XmlStorage,owner))
 	return RDK_E_MODEL_CREARE_INTERNAL_LINKS_FAIL;
    res=RDK_SUCCESS;
   }
@@ -4908,7 +4911,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 
    XmlStorage.Create("Links");
 
-   if(cont->GetComponentPersonalLinks(&XmlStorage,owner.get()))
+   if(cont->GetComponentPersonalLinks(&XmlStorage,owner))
 	return TempString.c_str();
 
    TempString="";

@@ -128,7 +128,9 @@ void UVirtualMethodFactory::FreeComponent()
    obj->SetStorage(Storage);
    obj->Default();
    obj->Name = DefaultComponentName;
-   prototype->Copy(std::shared_ptr<UContainer>(obj.get()), std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
+   // obj is already shared_ptr, use it directly
+   // Storage is raw pointer, create shared_ptr with non-owning deleter
+   prototype->Copy(obj, std::shared_ptr<UStorage>(Storage, [](UStorage*){})); // Non-owning deleter
    return obj;
   }
   catch(...)

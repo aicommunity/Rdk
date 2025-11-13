@@ -209,12 +209,12 @@ virtual void SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid
 // ��������� ��� ����� ������ ���������� � ���� xml � ����� buffer
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+virtual int GetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
 
 // ������������� ��� ����� ������ ���������� stringid �� ������ xml � ������ buffer
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+virtual int SetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
 
 // ��������� ��� ������� ����� � ���������� stringid � ���� xml � ����� buffer
 // ���� 'sublevel' == -2, �� ���������� ����� ���� ��������� �������
@@ -240,7 +240,7 @@ virtual int GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 // ���������� � ������ ����������� ������������ ��������� ���������� cont!
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+virtual int GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
 
 // ��������� ���������� ������ ����������, � ��� _����������������_ �������� ���������, ��������
 // ���������� ��������� � xml

@@ -1807,7 +1807,7 @@ bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
    if(J->second.Id == pointerid)
     return true;
@@ -1821,7 +1821,7 @@ bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(std::shared_ptr<UContainer>(cont.get()));
+  K->second.Pointer->Set(cont);
   return true;
  }
 
@@ -1839,7 +1839,7 @@ bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
    if(J->first == pointername)
     return true;
@@ -1853,7 +1853,7 @@ bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(std::shared_ptr<UContainer>(cont.get()));
+  K->second.Pointer->Set(cont);
   return true;
  }
 
@@ -1892,9 +1892,9 @@ bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
+  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.get()));
+   J->second.Pointer->Del(cont);
    return true;
   }
 
@@ -1913,9 +1913,9 @@ bool UContainer::ResetComponentAll(const UId &id)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.get()));
+   J->second.Pointer->Del(cont);
   }
 
   ++J;
@@ -1933,9 +1933,9 @@ bool UContainer::ResetComponentAll(const NameT &name)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(std::shared_ptr<const UContainer>(cont.get()))>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(std::shared_ptr<UContainer>(cont.get()));
+   J->second.Pointer->Del(cont);
   }
 
   ++J;
@@ -2720,7 +2720,7 @@ void UContainer::AddController(std::shared_ptr<UController> controller, bool for
  if(CheckController(controller))
   return;
 
- Controllers.push_back(std::shared_ptr<UController>(controller.get()));
+ Controllers.push_back(controller);
  if(forchilds)
  {
   std::shared_ptr<UContainer>* comps=PComponents;
@@ -2732,7 +2732,7 @@ void UContainer::AddController(std::shared_ptr<UController> controller, bool for
 // ������� ���������� �� ������
 void UContainer::DelController(std::shared_ptr<UController> controller, bool forchilds)
 {
- auto I=find(Controllers.begin(),Controllers.end(),std::shared_ptr<UController>(controller.get()));
+ auto I=find(Controllers.begin(),Controllers.end(),controller);
 
  if(I != Controllers.end())
   Controllers.erase(I);
@@ -2775,7 +2775,7 @@ void UContainer::UnLinkAllControllers(bool forchilds)
 // ���������, ���������� �� ���������� � ������
 bool UContainer::CheckController(std::shared_ptr<UController> controller) const
 {
- if(find(Controllers.begin(),Controllers.end(),std::shared_ptr<UController>(controller.get())) != Controllers.end())
+ if(find(Controllers.begin(),Controllers.end(),controller) != Controllers.end())
   return true;
  return false;
 }
@@ -2856,7 +2856,7 @@ UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(std::shared_ptr<U
  for(PointerMapCIteratorT I=PointerLookupTable.begin(),
                       J=PointerLookupTable.end(); I!=J; ++I)
  {
-   if(I->second.Pointer && I->second.Pointer->Find(std::shared_ptr<const UContainer>(source.get()))>=0)
+   if(I->second.Pointer && I->second.Pointer->Find(source)>=0)
     return I;
  }
 

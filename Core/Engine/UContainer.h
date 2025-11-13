@@ -25,7 +25,9 @@ namespace RDK {
 class UContainer;
 
 // ����� �������� ��������� ����������
-class RDK_LIB_TYPE UIPointer
+// UIPointer objects are always managed via shared_ptr (stored in UContainer::PointerLookupTable)
+// Add enable_shared_from_this to allow safe access to shared_ptr
+class RDK_LIB_TYPE UIPointer: public std::enable_shared_from_this<UIPointer>
 {
 protected: // ������
 
@@ -1120,7 +1122,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
  string compName;
 
  if(!net)
-  root=safe_shared_cast<UContainer>(this);
+  root=get_shared_from_this();
 
  switch(find_all)
  {

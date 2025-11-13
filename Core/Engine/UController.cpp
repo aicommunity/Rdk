@@ -84,11 +84,12 @@ bool UController::Link(UContainer* component, bool forchilds)
   return true;
 
  Component=component;
- Component->AddController(RDK::safe_shared_cast<UController>(this), forchilds); // Non-owning deleter
+ // UController now inherits from enable_shared_from_this, so we can use shared_from_this() safely
+ Component->AddController(shared_from_this(), forchilds);
 
  if(!ALink(component))
  {
-  component->DelController(RDK::safe_shared_cast<UController>(this), forchilds); // Non-owning deleter
+  component->DelController(shared_from_this(), forchilds);
   Component=0;
   return false;
  }
@@ -103,7 +104,8 @@ bool UController::UnLink(bool forchilds)
   return false;
 
  if(Component)
-  Component->DelController(RDK::safe_shared_cast<UController>(this), forchilds); // Non-owning deleter
+  // UController now inherits from enable_shared_from_this, so we can use shared_from_this() safely
+  Component->DelController(shared_from_this(), forchilds);
  Component=0;
  return true;
 }

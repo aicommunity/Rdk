@@ -1001,7 +1001,7 @@ void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, 
 // ��������� ��� ����� ������ ���������� stringid � ���� xml � ����� buffer
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level)
 {
   if(!serstorage)
    return 1;
@@ -1009,13 +1009,11 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   UStringLinksList linkslist;
   if(owner_level)
   {
-   // owner_level is UNet* - if it's this, use shared_from_this(); otherwise use safe_shared_cast
-   // Note: safe_shared_cast creates non-owning deleter, which is acceptable here as owner_level
-   // is managed elsewhere. Ideally, this should be changed to accept shared_ptr parameter.
-   if(owner_level == this)
+   // owner_level is now shared_ptr - if it's this, use shared_from_this(); otherwise use owner_level directly
+   if(owner_level.get() == this)
     GetLinks(linkslist, get_shared_from_this());
    else
-    GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level));
+    GetLinks(linkslist, std::static_pointer_cast<UContainer>(owner_level));
   }
   else
    GetLinks(linkslist, GetThisAsSharedContainer());
@@ -1028,7 +1026,7 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 // ������������� ��� ����� ������ ���������� stringid �� ������ xml � ������ buffer
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level)
 {
   if(!serstorage)
    return 1;
@@ -1037,13 +1035,11 @@ int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   *serstorage>>linkslist;
 
   BreakLinks();
-  // owner_level is UNet* - if it's this, use shared_from_this(); otherwise use safe_shared_cast
-  // Note: safe_shared_cast creates non-owning deleter, which is acceptable here as owner_level
-  // is managed elsewhere. Ideally, this should be changed to accept shared_ptr parameter.
-  if(owner_level == this)
+  // owner_level is now shared_ptr - if it's this, use shared_from_this(); otherwise use owner_level directly
+  if(owner_level && owner_level.get() == this)
    CreateLinks(linkslist, std::static_pointer_cast<UNet>(shared_from_this()));
-  else
-   CreateLinks(linkslist, safe_shared_cast<UNet>(owner_level));
+  else if(owner_level)
+   CreateLinks(linkslist, owner_level);
 
  return true;
 }
@@ -1092,7 +1088,7 @@ int UNet::GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* ow
 // ���������� � ������ ����������� ������������ ��������� ���������� cont!
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level)
 {
   if(!serstorage)
    return 1;
@@ -1100,13 +1096,11 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   UStringLinksList linkslist;
   if(owner_level)
   {
-   // owner_level is UNet* - if it's this, use shared_from_this(); otherwise use safe_shared_cast
-   // Note: safe_shared_cast creates non-owning deleter, which is acceptable here as owner_level
-   // is managed elsewhere. Ideally, this should be changed to accept shared_ptr parameter.
-   if(owner_level == this)
+   // owner_level is now shared_ptr - if it's this, use shared_from_this(); otherwise use owner_level directly
+   if(owner_level.get() == this)
     GetLinks(linkslist, get_shared_from_this(), true, GetThisAsSharedContainer());
    else
-    GetLinks(linkslist, safe_shared_cast<UContainer>(owner_level), true, GetThisAsSharedContainer());
+    GetLinks(linkslist, std::static_pointer_cast<UContainer>(owner_level), true, GetThisAsSharedContainer());
   }
   else
   {
