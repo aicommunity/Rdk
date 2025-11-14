@@ -211,10 +211,10 @@ int ULibrary::Upload(UStorage *storage)
 
  Incomplete.clear();
  
- // Safe component initialization - only for BasicLib to avoid circular dependencies
- if(GetName() == "BasicLib") {
-     CreateClassSamples(Storage);
- }
+ // Create class samples for all libraries
+ // The order is important: BasicLib must be first, then others
+ // This is handled by BuildStorage() which processes libraries in the correct order
+ CreateClassSamples(Storage);
  
  count=int(Complete.size());
 
