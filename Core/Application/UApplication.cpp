@@ -2532,8 +2532,29 @@ void UApplication::UpdateLoggers(void)
  if(FLAGS_log_dir != new_log_dir)
  {
   // Пересоздать glog с новым путём
-  google::ShutdownGoogleLogging();
-  InitializeGlogLogging();
+  // Проблема: glog может быть инициализирован в main.cpp через InitGoogleLogging()
+  // В этом случае мы не должны вызывать ShutdownGoogleLogging(), так как это приведет к ошибке
+  // Решение: не вызывать ShutdownGoogleLogging() если:
+  // 1. AppIsInit == false (glog был инициализирован в main.cpp)
+  // 2. Проект закрывается (ProjectOpenFlag == false или ProjectPath пустой)
+  // 3. new_log_dir пустой (проект закрывается)
+  // Если AppIsInit == true и проект открыт, значит можно безопасно пересоздать glog
+  if(AppIsInit && ProjectOpenFlag && !ProjectPath.empty() && !new_log_dir.empty())
+  {
+   try {
+    google::ShutdownGoogleLogging();
+   } catch (...) {
+    // Если ShutdownGoogleLogging вызван без предварительной инициализации,
+    // игнорируем ошибку и продолжаем
+   }
+   InitializeGlogLogging();
+  }
+  else
+  {
+   // Если AppIsInit == false или проект закрывается, значит glog был инициализирован в main.cpp
+   // Просто обновляем флаги без пересоздания glog
+   FLAGS_log_dir = new_log_dir;
+  }
  }
  
  RdkCoreManager.SetLogDir(new_log_dir.c_str());
