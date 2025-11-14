@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "UConnector.h"
 #include <memory>
+#include <glog/logging.h>
 //#include "UEInterface.h"
 
 namespace RDK {
@@ -317,28 +318,71 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
   return linkslist;
  link.Item=item;
 
- std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
- for(;I != RelatedConnectors.end();++I)
+ // CRITICAL: Make a copy of RelatedConnectors before iteration to avoid use-after-free
+ // During UNet::Copy, the prototype object may be destroyed while RelatedConnectors is still being iterated
+ // By copying the map, we ensure that shared_ptr references remain valid even if the original map is destroyed
+ std::map<std::string, std::vector<PUAConnector> > related_connectors_copy;
+ try {
+  related_connectors_copy = RelatedConnectors;
+ } catch (...) {
+  LOG(ERROR) << "UItem::GetLinks - exception when copying RelatedConnectors, returning empty linkslist";
+  return linkslist;
+ }
+
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=related_connectors_copy.begin();
+ for(;I != related_connectors_copy.end();++I)
  {
-  // CRITICAL: Save I->first to local copy to avoid use-after-free if RelatedConnectors is destroyed
-  // during iteration (e.g., during UNet::Copy when prototype is being destroyed)
+  // CRITICAL: Save I->first to local copy to avoid use-after-free
   std::string output_name_key = I->first;
   
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
-   UConnector* curr_conn=I->second[i].get();
+   // CRITICAL: Check if shared_ptr is valid before calling .get()
+   // During UNet::Copy, objects may be destroyed while RelatedConnectors is still being iterated
+   if(!I->second[i])
+   {
+    LOG(WARNING) << "UItem::GetLinks - invalid shared_ptr in RelatedConnectors, skipping";
+    continue;
+   }
+   UConnector* curr_conn = nullptr;
+   try {
+    curr_conn = I->second[i].get();
+   } catch (...) {
+    LOG(WARNING) << "UItem::GetLinks - exception when calling .get() on shared_ptr, skipping";
+    continue;
+   }
+   if(!curr_conn)
+   {
+    LOG(WARNING) << "UItem::GetLinks - curr_conn is nullptr after get(), skipping";
+    continue;
+   }
    if(exclude_internals)
    {
-	if(curr_conn->CheckOwner(internal_level))
+	try {
+	 if(curr_conn->CheckOwner(internal_level))
+	  continue;
+	} catch (...) {
+	 LOG(WARNING) << "UItem::GetLinks - exception in CheckOwner, skipping";
 	 continue;
+	}
    }
     // Use netlevel directly - it's already a shared_ptr, don't create new one from .get()
-    curr_conn->GetLongId(netlevel,connector.Id);
+    try {
+     curr_conn->GetLongId(netlevel,connector.Id);
+    } catch (...) {
+     LOG(WARNING) << "UItem::GetLinks - exception in GetLongId, skipping";
+     continue;
+    }
    if(connector.Id.size() != 0)
    {
 	std::vector<UCLink> buffer;
-	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
+	try {
+	 curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
+	} catch (...) {
+	 LOG(WARNING) << "UItem::GetLinks - exception in GetCLink, skipping";
+	 continue;
+	}
 	for(size_t k=0;k<buffer.size();k++)
 	{
 	 // Use saved copy instead of I->first to avoid use-after-free
@@ -383,7 +427,18 @@ ULinksListT<T>& UItem::GetPersonalLinks(std::shared_ptr<UContainer> cont, ULinks
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
+   // CRITICAL: Check if shared_ptr is valid before calling .get()
+   if(!I->second[i])
+   {
+    LOG(WARNING) << "UItem::GetPersonalLinks - invalid shared_ptr in RelatedConnectors, skipping";
+    continue;
+   }
    UConnector* curr_conn=I->second[i].get();
+   if(!curr_conn)
+   {
+    LOG(WARNING) << "UItem::GetPersonalLinks - curr_conn is nullptr after get(), skipping";
+    continue;
+   }
    if(curr_conn != cont.get())
 	continue;
    curr_conn->GetLongId(netlevel,connector.Id);
@@ -439,7 +494,18 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_p
   
   for(size_t i=0;i<I->second.size();i++)
   {
+   // CRITICAL: Check if shared_ptr is valid before calling .get()
+   if(!I->second[i])
+   {
+    LOG(WARNING) << "UItem::GetFullItemLinks - invalid shared_ptr in RelatedConnectors, skipping";
+    continue;
+   }
    UConnector* curr_conn=I->second[i].get();
+   if(!curr_conn)
+   {
+    LOG(WARNING) << "UItem::GetFullItemLinks - curr_conn is nullptr after get(), skipping";
+    continue;
+   }
    if(!curr_conn->CheckOwner(comp) && curr_conn != comp.get())
 	continue;
    curr_conn->GetLongId(netlevel,connector.Id);

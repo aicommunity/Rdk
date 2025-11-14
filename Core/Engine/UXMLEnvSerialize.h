@@ -245,12 +245,15 @@ bool DeserializeFromXMLFile(const std::filesystem::path& filepath, T& data)
 }
 
 // Move semantics for large data structures
-template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, T&& data)
-{
-    storage << std::forward<T>(data);
-    return storage;
-}
+// REMOVED: This template causes infinite recursion because std::forward<T>(data) 
+// returns the same type T&& which matches this template again
+// Use specific overloads for std::vector, std::span, etc. instead
+// template<typename T>
+// USerStorageXML& operator << (USerStorageXML& storage, T&& data)
+// {
+//     storage << std::forward<T>(data);
+//     return storage;
+// }
 
 }
 #endif

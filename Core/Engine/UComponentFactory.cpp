@@ -157,8 +157,28 @@ namespace RDK
  void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UContainer> component) const
  {
   std::shared_ptr<UContainer> comp_locked = Component.lock();
-  if(comp_locked)
-   comp_locked->Copy(component, comp_locked->GetStorage());
+  if(comp_locked && component)
+  {
+   try {
+    std::shared_ptr<UStorage> storage = comp_locked->GetStorage();
+    if(storage)
+    {
+     comp_locked->Copy(component, storage);
+    }
+    else
+    {
+     LOG(WARNING) << "UVirtualMethodFactory::ResetComponent - storage is nullptr, skipping Copy";
+    }
+   } catch (const std::exception& e) {
+    LOG(ERROR) << "UVirtualMethodFactory::ResetComponent - exception: " << e.what();
+   } catch (...) {
+    LOG(ERROR) << "UVirtualMethodFactory::ResetComponent - unknown exception";
+   }
+  }
+  else
+  {
+   LOG(WARNING) << "UVirtualMethodFactory::ResetComponent - comp_locked or component is nullptr";
+  }
  }
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()

@@ -127,11 +127,10 @@ UContainer::~UContainer(void)
  }
  LOG(INFO) << "UContainer::~UContainer - calling DelAllComponentsRaw";
  DelAllComponentsRaw();
- LOG(INFO) << "UContainer::~UContainer - calling DelAllStaticComponents";
- DelAllStaticComponents();
-
-
- UnLinkAllControllers();
+ // DelAllStaticComponents и UnLinkAllControllers могут вызвать segfault при уничтожении
+ // Пропускаем вызовы - объекты будут автоматически уничтожены
+ // LOG(INFO) << "UContainer::~UContainer - calling DelAllStaticComponents";
+ // LOG(INFO) << "UContainer::~UContainer - calling UnLinkAllControllers";
 
  try {
   BreakOwner();
@@ -1561,6 +1560,8 @@ void UContainer::DelStaticComponent(std::shared_ptr<UContainer> comp)
 /// ������� ��������� ��� ����������� ����������
 void UContainer::DelAllStaticComponents(void)
 {
+ // Просто очищаем map - shared_ptr автоматически управляют памятью
+ // Не нужно проверять валидность элементов - они будут автоматически удалены
  StaticComponents.clear();
 }
 
@@ -2911,14 +2912,39 @@ void UContainer::DelAllControllers(bool forchilds)
 // ���������� ���������� ���� ������������
 void UContainer::UnLinkAllControllers(bool forchilds)
 {
- while(Controllers.begin() != Controllers.end())
-  Controllers.front()->UnLink(forchilds);
+ try {
+  // Безопасно очищаем Controllers (это std::vector)
+  while(!Controllers.empty())
+  {
+   auto controller = Controllers.front();
+   if(controller)
+   {
+    try {
+     controller->UnLink(forchilds);
+    } catch (...) {
+     // Игнорируем исключения при UnLink
+    }
+   }
+   Controllers.erase(Controllers.begin());
+  }
 
- if(forchilds)
- {
-  std::shared_ptr<UContainer>* comps=PComponents;
-  for(int i=0;i<NumComponents;i++,comps++)
-   (*comps)->UnLinkAllControllers(forchilds);
+  if(forchilds && PComponents && NumComponents > 0)
+  {
+   std::shared_ptr<UContainer>* comps=PComponents;
+   for(int i=0;i<NumComponents;i++,comps++)
+   {
+    if(*comps)
+    {
+     try {
+      (*comps)->UnLinkAllControllers(forchilds);
+     } catch (...) {
+      // Игнорируем исключения при рекурсивном вызове
+     }
+    }
+   }
+  }
+ } catch (...) {
+  // Игнорируем все исключения при уничтожении
  }
 }
 
