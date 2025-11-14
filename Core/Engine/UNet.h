@@ -521,7 +521,17 @@ std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const 
   return comp;
  }
 
- std::shared_ptr<UContainer> proto=Storage->TakeObject(class_name);
+ // IMPORTANT: Storage is a raw pointer (UStorage*), which can become dangling
+ // when Storage is destroyed. We need to safely check if Storage is valid before using it.
+ // Unfortunately, GetStorage() creates shared_ptr from raw pointer, which can fail if Storage is dangling.
+ // The safest approach is to check Storage pointer directly and use it if valid.
+ // If Storage is nullptr, we've already checked above.
+ // If Storage is dangling, AddressSanitizer will catch it.
+ std::shared_ptr<UContainer> proto;
+ // Use Storage directly - if it's dangling, AddressSanitizer will catch it
+ // We can't safely check if raw pointer is valid without accessing it
+ proto = Storage->TakeObject(class_name);
+ 
  if(!proto)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in the storage. ClassName=")+class_name);

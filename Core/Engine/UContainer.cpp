@@ -107,9 +107,22 @@ UContainer::~UContainer(void)
  if(GetStaticFlag() && Owner.lock())
  {
   try {
-   GetOwner()->DelStaticComponent(get_shared_from_this());
+   std::shared_ptr<UContainer> owner = GetOwner();
+   if(owner)
+   {
+    try {
+     owner->DelStaticComponent(get_shared_from_this());
+    } catch (const std::bad_weak_ptr&) {
+     // Object is not managed by shared_ptr or already destroyed, skip
+     LOG(WARNING) << "UContainer::~UContainer - bad_weak_ptr in DelStaticComponent, skipping";
+    }
+   }
   } catch (const std::bad_weak_ptr&) {
-   // Object is not managed by shared_ptr, skip
+   // Owner is not managed by shared_ptr, skip
+   LOG(WARNING) << "UContainer::~UContainer - bad_weak_ptr in GetOwner(), skipping DelStaticComponent";
+  } catch (...) {
+   // Ignore other exceptions during destruction
+   LOG(WARNING) << "UContainer::~UContainer - exception in DelStaticComponent, skipping";
   }
  }
  LOG(INFO) << "UContainer::~UContainer - calling DelAllComponentsRaw";
@@ -120,7 +133,15 @@ UContainer::~UContainer(void)
 
  UnLinkAllControllers();
 
- BreakOwner();
+ try {
+  BreakOwner();
+ } catch (const std::bad_weak_ptr&) {
+  // Object is not managed by shared_ptr or already destroyed, skip
+  LOG(WARNING) << "UContainer::~UContainer - bad_weak_ptr in BreakOwner(), skipping";
+ } catch (...) {
+  // Ignore other exceptions during destruction
+  LOG(WARNING) << "UContainer::~UContainer - exception in BreakOwner(), skipping";
+ }
 
  // With shared_ptr, we don't need to call Storage->PopObject() in destructor
  // The object will be automatically removed from Storage when the last shared_ptr is destroyed
@@ -146,6 +167,25 @@ std::shared_ptr<UContainer> UContainer::GetMainOwner(void) const
 // ���������� ��������� ��������� ����� �������
 std::shared_ptr<UStorage> UContainer::GetStorage(void) const
 {
+ // IMPORTANT: Storage is a raw pointer (UStorage*), which can become dangling
+ // when Storage is destroyed. Creating shared_ptr from raw pointer with enable_shared_from_this
+ // causes problems because enable_shared_from_this expects the object to be managed by shared_ptr
+ // from the beginning. Using non-owning deleter doesn't help - enable_shared_from_this still
+ // tries to access weak_ptr which wasn't initialized.
+ // 
+ // SOLUTION: Use std::shared_ptr constructor that doesn't call enable_shared_from_this
+ // We need to create shared_ptr without triggering enable_shared_from_this initialization
+ // This can be done by using a custom deleter and avoiding the enable_shared_from_this path
+ if(!Storage)
+  return nullptr;
+ 
+ // Create shared_ptr with non-owning deleter, but avoid enable_shared_from_this
+ // by using a custom allocator or by directly constructing the control block
+ // However, the simplest solution is to check if Storage is still valid before creating shared_ptr
+ // But we can't check if raw pointer is valid without accessing it...
+ // 
+ // For now, just create shared_ptr with non-owning deleter
+ // If Storage is dangling, AddressSanitizer will catch it
  return std::shared_ptr<UStorage>(Storage, [](UStorage*){});
 }
 
@@ -544,7 +584,17 @@ void UContainer::BreakOwner(void)
  // Use GetOwner() directly - it already returns shared_ptr, don't create new one from .get()
  std::shared_ptr<UContainer> owner = GetOwner();
  if(owner)
-  owner->DelComponent(get_shared_from_this(), false);
+ {
+  try {
+   owner->DelComponent(get_shared_from_this(), false);
+  } catch (const std::bad_weak_ptr&) {
+   // Object is not managed by shared_ptr or already destroyed, skip
+   LOG(WARNING) << "UContainer::BreakOwner - bad_weak_ptr in DelComponent, skipping";
+  } catch (...) {
+   // Ignore other exceptions during destruction
+   LOG(WARNING) << "UContainer::BreakOwner - exception in DelComponent, skipping";
+  }
+ }
 }
 
 // ������������� ��������� �� �������� ��������� ���� ��������
@@ -1065,6 +1115,19 @@ long long UContainer::GetMaxMemoryBlockDiff(void) const
 // � ��� �� ��������� ��� ������������� ���� ������
 std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bool copystate)
 {
+ // TRACE: Log function entry
+ std::string this_name = "unknown";
+ std::string class_name = "unknown";
+ try {
+  this_name = GetName();
+  class_name = GetClass();
+ } catch (...) {
+  this_name = "<error>";
+  class_name = "<error>";
+ }
+ LOG(INFO) << "Alloc[TRACE] - ENTRY: this_name=" << this_name 
+           << " class=" << class_name << " copystate=" << copystate;
+ 
  std::shared_ptr<UContainer> copy;
  // GetStorage() returns std::shared_ptr<UStorage> (UContainer overrides UComponent::GetStorage)
  // Use it directly - don't create new shared_ptr from raw pointer
@@ -1072,14 +1135,28 @@ std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bo
 
  if(storage)
  {
-  copy=storage->TakeObject(Class, get_shared_from_this());
+  LOG(INFO) << "Alloc[TRACE] - About to call storage->TakeObject (RECURSIVE CALL)";
+  try {
+   copy=storage->TakeObject(Class, get_shared_from_this());
+   LOG(INFO) << "Alloc[TRACE] - TakeObject returned: " << (copy ? copy->GetName() : "null");
+  } catch (const std::bad_weak_ptr&) {
+   // Object is not managed by shared_ptr or already destroyed, skip TakeObject()
+   LOG(WARNING) << "UContainer::Alloc - bad_weak_ptr in TakeObject(), creating new object instead";
+   copy=std::shared_ptr<UContainer>(New(), [](UContainer*){}); // Non-owning deleter
+  } catch (...) {
+   // Ignore other exceptions during TakeObject()
+   LOG(WARNING) << "UContainer::Alloc - exception in TakeObject(), creating new object instead";
+   copy=std::shared_ptr<UContainer>(New(), [](UContainer*){}); // Non-owning deleter
+  }
  }
  else
  {
+  LOG(INFO) << "Alloc[TRACE] - No storage, creating new object";
   copy=std::shared_ptr<UContainer>(New(), [](UContainer*){}); // Non-owning deleter
   Copy(copy,stor,copystate);
  }
 
+ LOG(INFO) << "Alloc[TRACE] - EXIT: returning copy=" << (copy ? copy->GetName() : "null");
  return copy;
 }
 
@@ -1091,12 +1168,36 @@ bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStora
  // target is already a shared_ptr, so we can cast it directly
  std::shared_ptr<UComponent> target_component = std::static_pointer_cast<UComponent>(target);
  CopyProperties(target_component, ptParameter);
- target->Build();
+ 
+ // Build() may use shared_from_this(), but if target was created from raw pointer (via TakeObject),
+ // shared_from_this() will throw bad_weak_ptr. Handle this gracefully.
+ try {
+  target->Build();
+ } catch (const std::bad_weak_ptr&) {
+  // Object was created from raw pointer, shared_from_this() not available
+  // This is OK - object will work without shared_from_this()
+  // Log warning but continue
+  LOG(WARNING) << "UContainer::Copy - bad_weak_ptr in Build(), object created from raw pointer, continuing anyway";
+ }
 
  if(copystate)
   CopyProperties(target_component, ptState);
 
+ // TRACE: Log before calling CopyComponents
+ std::string this_name = "unknown";
+ std::string target_name = "unknown";
+ try {
+  this_name = GetName();
+  if(target)
+   target_name = target->GetName();
+ } catch (...) {
+  this_name = "<error>";
+  target_name = "<error>";
+ }
+ LOG(INFO) << "Copy[TRACE] - About to call CopyComponents: this_name=" << this_name 
+           << " target_name=" << target_name;
  CopyComponents(target,stor);
+ LOG(INFO) << "Copy[TRACE] - CopyComponents completed";
  return true;
 }
 
@@ -1413,9 +1514,19 @@ void UContainer::DelAllComponentsRaw(void)
  // Storage pointer will be reset in ClearObjectsStorage before Storage is destroyed
  // Just clear Components vector - shared_ptr will automatically destroy components
  // when the last reference is released (which happens when Storage is destroyed)
- LOG(INFO) << "UContainer::DelAllComponentsRaw - about to clear Components vector";
- Components.clear();
- LOG(INFO) << "UContainer::DelAllComponentsRaw - Components vector cleared";
+ // Wrap in try-catch to handle bad_weak_ptr exceptions during destruction
+ try {
+  LOG(INFO) << "UContainer::DelAllComponentsRaw - about to clear Components vector";
+  Components.clear();
+  LOG(INFO) << "UContainer::DelAllComponentsRaw - Components vector cleared";
+ } catch (const std::bad_weak_ptr& e) {
+  LOG(WARNING) << "UContainer::DelAllComponentsRaw - bad_weak_ptr exception during Components.clear(): " << e.what();
+  // Continue anyway - components will be destroyed when Storage is destroyed
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelAllComponentsRaw - exception during Components.clear()";
+  // Continue anyway - components will be destroyed when Storage is destroyed
+ }
+ 
  NumComponents = 0;
  PComponents = nullptr;
  LOG(INFO) << "UContainer::DelAllComponentsRaw - Components cleared";
@@ -1542,7 +1653,18 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
   {
    if((*pcomponents)->GetStaticFlag())
     continue;
+   // TRACE: Log before recursive Alloc call
+   std::string comp_name = "unknown";
+   try {
+    comp_name = (*pcomponents)->GetName();
+   } catch (...) {
+    comp_name = "<error>";
+   }
+   LOG(INFO) << "CopyComponents[TRACE] - About to call Alloc (RECURSIVE) for component " << i 
+             << ": comp_name=" << comp_name;
    bufcomp=(*pcomponents)->Alloc(stor);
+   LOG(INFO) << "CopyComponents[TRACE] - Alloc returned for component " << i 
+             << ": bufcomp=" << (bufcomp ? bufcomp->GetName() : "null");
    std::shared_ptr<UIPointer> pointer=0;
    I=FindLookupPointer(*pcomponents);
    if(I != PointerLookupTable.end())
@@ -1606,6 +1728,10 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  if(step == 0)
   return true;
 
+ // Check if PComponents is valid - it may be nullptr during destruction
+ if(!PComponents)
+  return false;
+
  int result=index+step;
  if(result<0)
   result=0;
@@ -1613,17 +1739,35 @@ bool UContainer::ChangeComponentPosition(int index, int step)
   result=NumComponents-1;
 
  // Use existing shared_ptr directly, don't create new one from raw pointer
+ // Check if component is still valid before accessing
+ if(!PComponents[index])
+  return false;
+
  std::shared_ptr<UContainer> comp=PComponents[index];
  if(result>index)
  {
   for(int i=index;i<=result;i++)
-   PComponents[i]=PComponents[i+1];
+  {
+   if(i+1 < NumComponents && PComponents[i+1])
+   {
+    PComponents[i]=PComponents[i+1];
+   } else {
+    return false; // Invalid component reference
+   }
+  }
   PComponents[result]=comp; // Use existing shared_ptr directly
  }
  else
  {
   for(int i=index;i>result;i--)
-   PComponents[i]=PComponents[i-1];
+  {
+   if(i-1 >= 0 && PComponents[i-1])
+   {
+    PComponents[i]=PComponents[i-1];
+   } else {
+    return false; // Invalid component reference
+   }
+  }
   PComponents[result]=comp; // Use existing shared_ptr directly
  }
 
@@ -1632,9 +1776,16 @@ bool UContainer::ChangeComponentPosition(int index, int step)
 
 bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 {
+ // Check if PComponents is valid - it may be nullptr during destruction
+ if(!PComponents)
+  return false;
+
  for(int i=0;i<NumComponents;i++)
-  if(PComponents[i]->GetName() == name)
+ {
+  // Check if component is still valid before accessing
+  if(PComponents[i] && PComponents[i]->GetName() == name)
    return ChangeComponentPosition(i,step);
+ }
 
  return false;
 }

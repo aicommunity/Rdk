@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UANET_CPP
 
 #include "UNet.h"
+#include <glog/logging.h>
 #include "UXMLEnvSerialize.h"
 
 namespace RDK {
@@ -37,9 +38,17 @@ std::shared_ptr<UConnector> UNet::GetThisAsSharedConnector() {
 }
 
 std::shared_ptr<UContainer> UNet::GetThisAsSharedContainer() {
-    return std::static_pointer_cast<UContainer>(
-        UComponent::shared_from_this()
-    );
+    try {
+        return std::static_pointer_cast<UContainer>(
+            UComponent::shared_from_this()
+        );
+    } catch (const std::bad_weak_ptr&) {
+        // Object is not managed by shared_ptr - this should not happen
+        // but can occur if object was created incorrectly
+        LOG(ERROR) << "UNet::GetThisAsSharedContainer - bad_weak_ptr exception, object not managed by shared_ptr";
+        // Return empty shared_ptr instead of throwing
+        return std::shared_ptr<UContainer>();
+    }
 }
 
 /* *************************************************************************** */

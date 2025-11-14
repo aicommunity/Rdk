@@ -289,8 +289,47 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
  {
   // cont->SetLogger удален - используется glog
    cont->SetStorage(Storage);
-  cont->Build();
-  factory = std::make_shared<UVirtualMethodFactory>(std::dynamic_pointer_cast<UContainer>(cont));
+  
+  // Log before Build() to track where bad_weak_ptr occurs
+  std::string obj_name_build = "unknown";
+  try {
+   auto container_build = std::dynamic_pointer_cast<UContainer>(cont);
+   if(container_build) {
+    obj_name_build = container_build->GetName();
+   }
+  } catch (...) {
+   obj_name_build = "<error>";
+  }
+  LOG(INFO) << "UploadClass - calling Build() for: name=" << name << " object_name=" << obj_name_build;
+  
+  try {
+   cont->Build();
+  } catch (const std::bad_weak_ptr& e) {
+   LOG(ERROR) << "UploadClass - bad_weak_ptr in Build() for: name=" << name << " object_name=" << obj_name_build << " error=" << e.what();
+   throw; // Re-throw to be caught by outer catch
+  }
+  
+  LOG(INFO) << "UploadClass - Build() completed for: name=" << name << " object_name=" << obj_name_build;
+  
+  std::shared_ptr<UContainer> container = std::dynamic_pointer_cast<UContainer>(cont);
+  std::string obj_name = "unknown";
+  void* obj_addr = container.get();
+  size_t use_count_before = container.use_count();
+  try {
+   obj_name = container->GetName();
+  } catch (...) {
+   obj_name = "<error>";
+  }
+  
+  LOG(INFO) << "UploadClass - creating factory for: name=" << name 
+            << " object_name=" << obj_name << " use_count=" << use_count_before 
+            << " address=" << obj_addr;
+  
+  factory = std::make_shared<UVirtualMethodFactory>(container);
+  
+  size_t use_count_after = container.use_count();
+  LOG(INFO) << "UploadClass - factory created: name=" << name 
+            << " object_name=" << obj_name << " use_count_after=" << use_count_after;
  }
  catch(...)
  {

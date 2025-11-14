@@ -3,6 +3,7 @@
 
 #include "UComponentFactory.h"
 #include "UStorage.h"
+#include <glog/logging.h>
 
 namespace RDK
 {
@@ -10,35 +11,83 @@ namespace RDK
  UVirtualMethodFactory::UVirtualMethodFactory(std::shared_ptr<UContainer> comp)
   : UComponentAbstractFactory(comp && comp->GetStorage() ? comp->GetStorage().get() : nullptr)
  {
+  // Store as weak_ptr - prototype stays in ObjectsStorage until factory is destroyed
+  // This eliminates the need for PopObject before UploadClass
   Component = comp;
-  if(Component)
+  std::shared_ptr<UContainer> comp_locked = Component.lock();
+  if(comp_locked)
   {
-//   Component->Default();
-   Component->SetClass(ClassId);
+//   comp_locked->Default();
+   comp_locked->SetClass(ClassId);
   }
  }
 
  UVirtualMethodFactory::~UVirtualMethodFactory()
  {
-  // Component is now managed by std::shared_ptr, no manual deletion needed
+  // Component is weak_ptr, so prototype will remain in ObjectsStorage
+  // Log destruction for debugging
+  try {
+   std::shared_ptr<UContainer> comp_locked = Component.lock();
+   if(comp_locked)
+   {
+    std::string comp_name = "unknown";
+    void* comp_addr = comp_locked.get();
+    size_t comp_use_count = comp_locked.use_count();
+    try {
+     comp_name = comp_locked->GetName();
+    } catch (...) {
+     comp_name = "<error>";
+    }
+    LOG(INFO) << "UVirtualMethodFactory::~UVirtualMethodFactory - destroying factory, component: " << comp_name 
+              << " use_count=" << comp_use_count << " address=" << comp_addr;
+   } else {
+    LOG(INFO) << "UVirtualMethodFactory::~UVirtualMethodFactory - destroying factory, component already destroyed";
+   }
+  } catch (...) {
+   LOG(ERROR) << "UVirtualMethodFactory::~UVirtualMethodFactory - exception during logging";
+  }
  }
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::New()
  {
-  if(!Component)
+  // Lock weak_ptr to get shared_ptr to prototype
+  std::shared_ptr<UContainer> comp_locked = Component.lock();
+  if(!comp_locked)
    return nullptr;
 
   try
   {
-   std::shared_ptr<UContainer> obj(Component->New());
-   if(!obj)
+   // comp_locked->New() returns raw pointer, but we need shared_ptr for enable_shared_from_this
+   // Use std::shared_ptr constructor with custom deleter to properly manage the object
+   // However, this still won't enable shared_from_this() because object wasn't created via make_shared
+   // We need to wrap it properly - but since New() returns raw pointer, we can't use make_shared
+   // The object must be created in a way that allows shared_from_this() to work
+   UContainer* raw_obj = comp_locked->New();
+   if(!raw_obj)
     return nullptr;
-    
+   
+   // Create shared_ptr with proper deleter
+   // IMPORTANT: This creates shared_ptr from raw pointer, so shared_from_this() won't work
+   // Objects created this way cannot use shared_from_this() until they are properly wrapped
+   std::shared_ptr<UContainer> obj(raw_obj, [](UContainer* ptr) { delete ptr; });
+   
+   // Set storage and initialize
    obj->SetStorage(Storage);
    obj->Default();
+   
+   // Copy properties from prototype
    std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){});
-   Component->Copy(obj, storage_ptr);
+   comp_locked->Copy(obj, storage_ptr);
+   
+   // IMPORTANT: After Copy(), obj->Build() may be called, which may use shared_from_this()
+   // But since obj was created from raw pointer, shared_from_this() will throw bad_weak_ptr
+   // We need to ensure that Build() doesn't use shared_from_this() or handle the exception
    return obj;
+  }
+  catch(const std::bad_weak_ptr& e)
+  {
+   LOG(ERROR) << "UVirtualMethodFactory::New - bad_weak_ptr exception: " << e.what();
+   return nullptr;
   }
   catch(...)
   {
@@ -48,20 +97,37 @@ namespace RDK
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UContainer> prototype)
  {
-  if(!Component)
+  // Lock weak_ptr to get shared_ptr to prototype
+  std::shared_ptr<UContainer> comp_locked = Component.lock();
+  if(!comp_locked)
    return nullptr;
 
   try
   {
-   std::shared_ptr<UContainer> obj(Component->New());
-   if(!obj)
+   // Same issue as New() - comp_locked->New() returns raw pointer
+   UContainer* raw_obj = comp_locked->New();
+   if(!raw_obj)
     return nullptr;
-    
+   
+   // Create shared_ptr with proper deleter
+   std::shared_ptr<UContainer> obj(raw_obj, [](UContainer* ptr) { delete ptr; });
+   
+   // Set storage and initialize
    obj->SetStorage(Storage);
    obj->Default();
+   
+   // Copy properties from prototype
    std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){});
    prototype->Copy(obj, storage_ptr);
+   
+   // IMPORTANT: After Copy(), obj->Build() may be called, which may use shared_from_this()
+   // But since obj was created from raw pointer, shared_from_this() will throw bad_weak_ptr
    return obj;
+  }
+  catch(const std::bad_weak_ptr& e)
+  {
+   LOG(ERROR) << "UVirtualMethodFactory::Prototype - bad_weak_ptr exception: " << e.what();
+   return nullptr;
   }
   catch(...)
   {
@@ -71,18 +137,19 @@ namespace RDK
 
  void UVirtualMethodFactory::ResetComponent(std::shared_ptr<UContainer> component) const
  {
-  if(Component)
-   Component->Copy(component, Component->GetStorage());
+  std::shared_ptr<UContainer> comp_locked = Component.lock();
+  if(comp_locked)
+   comp_locked->Copy(component, comp_locked->GetStorage());
  }
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()
  {
-  return Component;
+  return Component.lock();  // Lock weak_ptr to get shared_ptr
  }
 
 void UVirtualMethodFactory::FreeComponent()
 {
- Component = nullptr;
+ Component.reset();  // Reset weak_ptr - prototype remains in ObjectsStorage
 }
 
 

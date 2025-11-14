@@ -35,13 +35,13 @@ namespace RDK {
   UId GetClassId() const;
  };
 
- /// �������, ���������� �� ����������� ������ (������ �������� ������)
- class UVirtualMethodFactory : public UComponentAbstractFactory
- {
- protected:
-  std::shared_ptr<UContainer> Component;
+/// �������, ���������� �� ����������� ������ (������ �������� ������)
+class UVirtualMethodFactory : public UComponentAbstractFactory
+{
+protected:
+  std::weak_ptr<UContainer> Component;  // Use weak_ptr - prototype stays in ObjectsStorage until factory is destroyed
 
- public:
+public:
   UVirtualMethodFactory(std::shared_ptr<UContainer> comp);
   virtual ~UVirtualMethodFactory();
 
@@ -54,7 +54,7 @@ namespace RDK {
   std::shared_ptr<UContainer> GetComponent();
 
   void FreeComponent();
- };
+};
 
  /// �������, ���������� �� ����������� ��������� ������
  class UComponentFactoryMethod : public UComponentAbstractFactory

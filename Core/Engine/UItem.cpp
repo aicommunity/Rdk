@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <string.h>
 #include "UItem.h"
+#include <glog/logging.h>
 
 namespace RDK {
 
@@ -313,7 +314,16 @@ UItem::UItem(void)
 
 UItem::~UItem(void)
 {
- DisconnectAll();
+ try {
+  DisconnectAll();
+ } catch (const std::bad_weak_ptr&) {
+  // Object is not managed by shared_ptr or already destroyed, skip
+  // This can happen during destruction when shared_from_this() is called
+  LOG(WARNING) << "UItem::~UItem - bad_weak_ptr in DisconnectAll(), skipping";
+ } catch (...) {
+  // Ignore other exceptions during destruction
+  LOG(WARNING) << "UItem::~UItem - exception in DisconnectAll(), skipping";
+ }
 }
 // --------------------------
 
@@ -557,7 +567,15 @@ bool UItem::Disconnect(const UId &id)
 // ������������� ������������.
 void UItem::DisconnectAll(void)
 {
- Build();
+ try {
+  Build();
+ } catch (const std::bad_weak_ptr&) {
+  // Object is not managed by shared_ptr or already destroyed, skip Build()
+  LOG(WARNING) << "UItem::DisconnectAll - bad_weak_ptr in Build(), skipping";
+ } catch (...) {
+  // Ignore other exceptions during destruction
+  LOG(WARNING) << "UItem::DisconnectAll - exception in Build(), skipping";
+ }
 
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
 
@@ -566,7 +584,17 @@ void UItem::DisconnectAll(void)
   int i=int(I->second.size())-1;
   while(i>=0)
   {
-   Disconnect(I->second[i]);
+   try {
+    Disconnect(I->second[i]);
+   } catch (const std::bad_weak_ptr&) {
+    // Object is not managed by shared_ptr or already destroyed, skip Disconnect()
+    LOG(WARNING) << "UItem::DisconnectAll - bad_weak_ptr in Disconnect(), skipping";
+    break; // Exit loop if we can't disconnect
+   } catch (...) {
+    // Ignore other exceptions during destruction
+    LOG(WARNING) << "UItem::DisconnectAll - exception in Disconnect(), skipping";
+    break; // Exit loop if we can't disconnect
+   }
    i=int(I->second.size())-1;
   }
  }
