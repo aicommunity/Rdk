@@ -3270,7 +3270,7 @@ void UProjectRunThread::OpenProject()
     std::string response;
     if(Deployer->OpenPreparedProject(response))
     {
-        WriteLog(Deployer->GetLastError());
+        WriteLog(response.empty() ? Deployer->GetLastError() : response);
         projectRunState = ProjectRunState::PS_Termination;
         return;
     }

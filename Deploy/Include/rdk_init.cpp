@@ -5,11 +5,7 @@
 #include <sstream>
 #include "rdk_init.h"
 #include <glog/logging.h>
-
-// Временная декларация, реализована в rdk_remote_stub.cpp
-namespace RDK {
-  const char* RemoteCallInternal(const char* request, int& return_value, int& channel_index);
-}
+// Все includes должны быть ПЕРЕД namespace RDK
 #include "rdk.h"
 #include "rdk_version.h"
 //#include "rdk_rpc.cpp"
@@ -18,6 +14,11 @@ namespace RDK {
 #include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
 #include "../../Core/System/UGenericMutex.h"
+
+// Временная декларация, реализована в rdk_remote_stub.cpp
+namespace RDK {
+  const char* RemoteCallInternal(const char* request, int& return_value, int& channel_index);
+}
 
 namespace RDK {
 

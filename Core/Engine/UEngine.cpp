@@ -5289,6 +5289,12 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel());
 	}
 
+	if(!cont)
+	{
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Failed to create/get model component";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+
 	if(!cont->LoadComponent(&XmlStorage,true))
 	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }

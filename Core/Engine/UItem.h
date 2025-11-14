@@ -320,6 +320,10 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
  for(;I != RelatedConnectors.end();++I)
  {
+  // CRITICAL: Save I->first to local copy to avoid use-after-free if RelatedConnectors is destroyed
+  // during iteration (e.g., during UNet::Copy when prototype is being destroyed)
+  std::string output_name_key = I->first;
+  
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
@@ -337,7 +341,8 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
 	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
-	 if(buffer[k].OutputName == I->first)
+	 // Use saved copy instead of I->first to avoid use-after-free
+	 if(buffer[k].OutputName == output_name_key)
 	 {
 	  link.Item.Index=buffer[k].Output;
 	  link.Item.Name=buffer[k].OutputName;
@@ -372,6 +377,9 @@ ULinksListT<T>& UItem::GetPersonalLinks(std::shared_ptr<UContainer> cont, ULinks
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
  for(;I != RelatedConnectors.end();++I)
  {
+  // CRITICAL: Save I->first to local copy to avoid use-after-free if RelatedConnectors is destroyed
+  std::string output_name_key = I->first;
+  
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
@@ -385,7 +393,8 @@ ULinksListT<T>& UItem::GetPersonalLinks(std::shared_ptr<UContainer> cont, ULinks
 	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
-	 if(buffer[k].OutputName == I->first)
+	 // Use saved copy instead of I->first to avoid use-after-free
+	 if(buffer[k].OutputName == output_name_key)
 	 {
 	  link.Item.Index=buffer[k].Output;
 	  link.Item.Name=buffer[k].OutputName;
@@ -424,6 +433,10 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_p
 
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
  for(;I != RelatedConnectors.end();++I)
+ {
+  // CRITICAL: Save I->first to local copy to avoid use-after-free if RelatedConnectors is destroyed
+  std::string output_name_key = I->first;
+  
   for(size_t i=0;i<I->second.size();i++)
   {
    UConnector* curr_conn=I->second[i].get();
@@ -436,7 +449,8 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_p
 	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
-	 if(buffer[k].OutputName == I->first)
+	 // Use saved copy instead of I->first to avoid use-after-free
+	 if(buffer[k].OutputName == output_name_key)
 	 {
 	  link.Item.Index=buffer[k].Output;
 	  link.Item.Name=buffer[k].OutputName;
@@ -449,6 +463,7 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_p
 	}
    }
   }
+ }
 
  for(int i=0;i<NumComponents;i++)
  {

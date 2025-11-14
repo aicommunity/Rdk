@@ -9,6 +9,8 @@
 #include <QDataStream>
 #include <QCoreApplication>
 
+namespace RDK{
+
 /// �������� ������ ����������
 //extern RDK::UApplication RdkApplication;
 
@@ -960,5 +962,7 @@ void UTcpServerControlWidget::ALoadParameters()
   settings.endGroup();
 }
 */
+
+}//namespace RDK
 
 #endif //UServerTransportTcpQt_CPP

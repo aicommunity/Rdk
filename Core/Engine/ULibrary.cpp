@@ -285,6 +285,7 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
 
  std::vector<std::string>::iterator I;
  std::shared_ptr<UVirtualMethodFactory> factory;
+ std::shared_ptr<UContainer> container; // Store container outside try block for use after AddClass
  try
  {
   // cont->SetLogger удален - используется glog
@@ -311,7 +312,13 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
   
   LOG(INFO) << "UploadClass - Build() completed for: name=" << name << " object_name=" << obj_name_build;
   
-  std::shared_ptr<UContainer> container = std::dynamic_pointer_cast<UContainer>(cont);
+  container = std::dynamic_pointer_cast<UContainer>(cont);
+  if(!container)
+  {
+   LOG(ERROR) << "UploadClass - dynamic_pointer_cast<UContainer> returned nullptr for: name=" << name;
+   throw std::runtime_error("Failed to cast to UContainer");
+  }
+  
   std::string obj_name = "unknown";
   void* obj_addr = container.get();
   size_t use_count_before = container.use_count();
@@ -323,13 +330,14 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
   
   LOG(INFO) << "UploadClass - creating factory for: name=" << name 
             << " object_name=" << obj_name << " use_count=" << use_count_before 
-            << " address=" << obj_addr;
+            << " address=" << obj_addr << " container_valid=" << (container ? "yes" : "no");
   
   factory = std::make_shared<UVirtualMethodFactory>(container);
   
   size_t use_count_after = container.use_count();
   LOG(INFO) << "UploadClass - factory created: name=" << name 
-            << " object_name=" << obj_name << " use_count_after=" << use_count_after;
+            << " object_name=" << obj_name << " use_count_after=" << use_count_after
+            << " container_valid=" << (container ? "yes" : "no");
  }
  catch(...)
  {
@@ -345,7 +353,8 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
   return false;
  }
 
- if(!Storage->AddClass(factory,name))
+ UId class_id = Storage->AddClass(factory,name);
+ if(class_id == ForbiddenId)
  {
   if(find(Incomplete.begin(),Incomplete.end(),name) == Incomplete.end())
    Incomplete.push_back(name);
@@ -358,6 +367,21 @@ bool ULibrary::UploadClass(const string &name, std::shared_ptr<UComponent> cont)
 
   factory.reset(); // shared_ptr handles deletion
   return false;
+ }
+ 
+ // IMPORTANT: Ensure prototype is stored in ObjectsStorage so it remains alive
+ // The factory uses weak_ptr, so we need to keep the prototype in ObjectsStorage
+ // AddPrototypeToStorage will add the prototype to ObjectsStorage, ensuring it stays alive
+ if(container)
+ {
+  LOG(INFO) << "UploadClass - adding prototype to ObjectsStorage: name=" << name << " class_id=" << class_id 
+            << " container use_count=" << container.use_count();
+  Storage->AddPrototypeToStorage(class_id, container);
+  LOG(INFO) << "UploadClass - prototype added to ObjectsStorage: name=" << name << " class_id=" << class_id;
+ }
+ else
+ {
+  LOG(ERROR) << "UploadClass - container is nullptr, cannot add prototype to ObjectsStorage: name=" << name << " class_id=" << class_id;
  }
 
  if(find(ClassesList.begin(),ClassesList.end(),name) == ClassesList.end())

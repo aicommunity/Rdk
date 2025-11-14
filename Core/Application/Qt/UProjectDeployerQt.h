@@ -7,6 +7,7 @@
 #include <QtSql/QtSql>
 #include <QThread>
 #include <QMutex>
+
 #include <thread>
 #include <mutex>
 #ifdef __unix__

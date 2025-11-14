@@ -53,7 +53,21 @@ namespace RDK
   // Lock weak_ptr to get shared_ptr to prototype
   std::shared_ptr<UContainer> comp_locked = Component.lock();
   if(!comp_locked)
+  {
+   LOG(ERROR) << "UVirtualMethodFactory::New - Component.lock() returned nullptr, prototype was destroyed";
+   LOG(ERROR) << "UVirtualMethodFactory::New - Storage=" << (Storage ? "valid" : "null") 
+               << " ClassId=" << ClassId;
    return nullptr;
+  }
+
+  std::string comp_name = "unknown";
+  try {
+   comp_name = comp_locked->GetName();
+  } catch (...) {
+   comp_name = "<error>";
+  }
+  LOG(INFO) << "UVirtualMethodFactory::New - prototype locked: name=" << comp_name 
+            << " ClassId=" << ClassId << " use_count=" << comp_locked.use_count();
 
   try
   {
@@ -62,9 +76,14 @@ namespace RDK
    // However, this still won't enable shared_from_this() because object wasn't created via make_shared
    // We need to wrap it properly - but since New() returns raw pointer, we can't use make_shared
    // The object must be created in a way that allows shared_from_this() to work
+   LOG(INFO) << "UVirtualMethodFactory::New - calling comp_locked->New() for: name=" << comp_name;
    UContainer* raw_obj = comp_locked->New();
    if(!raw_obj)
+   {
+    LOG(ERROR) << "UVirtualMethodFactory::New - comp_locked->New() returned nullptr for: name=" << comp_name;
     return nullptr;
+   }
+   LOG(INFO) << "UVirtualMethodFactory::New - comp_locked->New() succeeded for: name=" << comp_name;
    
    // Create shared_ptr with proper deleter
    // IMPORTANT: This creates shared_ptr from raw pointer, so shared_from_this() won't work

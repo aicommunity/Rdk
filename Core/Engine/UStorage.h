@@ -461,7 +461,11 @@ const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 protected:
 // ��������� ��� ��������� ������ � ���������
 // ���� ������ ��� ����������� ����� ��������� �� ���������� false
-virtual void PushObject(const UId &classid, std::shared_ptr<UContainer> object);
+ virtual void PushObject(const UId &classid, std::shared_ptr<UContainer> object);
+public:
+ // Allow ULibrary to add prototypes to ObjectsStorage
+ void AddPrototypeToStorage(const UId &classid, std::shared_ptr<UContainer> object) { PushObject(classid, object); }
+protected:
 
 public:
 // ������� ��� ��������� ������ �� ��������� � ����������

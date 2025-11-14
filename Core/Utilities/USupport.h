@@ -18,6 +18,7 @@ See file license.txt for more information
 #include <iomanip>
 #include <locale>
 #include <limits>
+#include <type_traits>  // Р”Р»СЏ signum template С„СѓРЅРєС†РёРё
 #include "UPtr.h"
 
 #ifndef u_min
@@ -89,23 +90,23 @@ namespace RDK {
 
 using namespace std;
 
-// Cистемные буферы
+// CпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 //extern string ustrbuf;
 //extern wstring uwstrbuf;
 
 /*
- Функции возвращают указатель на внутренний буфер
- Значение буфера изменяется при следующем вызове функции библиотеки
+ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 */
 
-/// Проверка на NaN
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ NaN
 template<typename NumT>
 bool is_nan(NumT n)
 {
  return n != n;
 }
 
-/// Проверка на Inf
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ Inf
 template<typename NumT>
 bool is_inf(NumT n)
 {
@@ -113,7 +114,7 @@ bool is_inf(NumT n)
 }
 
 
-// Функция, преобразующая число в строку
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
 {
@@ -160,7 +161,7 @@ wstring wntoa(NumT n,int digs)
  return ntoa(n,digs,res);
 }
 
-// Функция, преобразующая число в шестнадцатиричную строку
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntohex(NumT n, basic_string<CharT> &buf)
 {
@@ -208,7 +209,7 @@ wstring wntohex(NumT n, int digs)
  return ntohex(n,digs, res);
 }
 
-// Функция, преобразующая строку в вещественное число
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
 {
@@ -218,7 +219,7 @@ double atof(const std::basic_string<CharT> &str)
  return res;
 }
 
-// Функция, преобразующая строку в целое число
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 template<typename CharT>
 int atoi(const std::basic_string<CharT> &str)
 {
@@ -228,7 +229,7 @@ int atoi(const std::basic_string<CharT> &str)
  return res;
 }
 
-// Функция, преобразующая шестнадцатиричную строку в целое число
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 template<typename CharT, typename T>
 T hextoi(const std::basic_string<CharT> &str)
 {
@@ -238,11 +239,11 @@ T hextoi(const std::basic_string<CharT> &str)
  return res;
 }
 
-// Выделяет дробную часть числа с точностью digs знаков после запятой
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ digs пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE int fraction(double d, int digs);
 
-// Разделяет строку на составлящие через сепаратор 'sep'
-// Возвращает число полученных строк
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 'sep'
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 template<typename CharT>
 int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > &output, CharT sep, int num=0, int *lastpos=0)
 {
@@ -302,31 +303,31 @@ std::basic_string<CharT> concat_strings(const std::vector<std::basic_string<Char
  return "";
 }
 
-/// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ YYYY.MM.DD HH:MM:SS
 RDK_LIB_TYPE std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 
-/// Возвращает время в виде понятной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
-/// отображает только те элементы времени, которые необходимы
-/// Если is_full_time==true то время выводится полностью всегда
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ YYYYy MMm DDd HHh MMm SS:MSMSs пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅ is_full_time==true пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::string get_text_time_from_seconds(double time_data, char date_sep='.', char time_sep=':', bool is_full_time=false);
 
-// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS + добавочная строка additional_line
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ YYYY/MM/DD HH:MM:SS,MS + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ additional_line
 //std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
 
-// Конвертация string<->wstring
-// !!! Платформенно-зависимая реализация !!!
-// Копипаста с http://habrahabr.ru/blogs/cpp/112997/
-//@brief Сужает широкую строку, используя локализацию loc
-//   @return Возвращает суженную строку или пустую суженную строку, в
-//   случае. если возникла ошибка
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ string<->wstring
+// !!! пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ !!!
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ http://habrahabr.ru/blogs/cpp/112997/
+//@brief пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ loc
+//   @return пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ
+//   пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 //RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
 //RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage);
 
 //std::string narrow2(const std::wstring& wstr);
 
-//@brief Расширяет строку, используя локализацию loc
-//   @return Возвращает расширенную строку или пустую расширенную строку, в
-//   случае, если возникла ошибка.
+//@brief пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ loc
+//   @return пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ
+//   пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 //RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
 //RDK_LIB_TYPE std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage);
 
@@ -334,7 +335,7 @@ RDK_LIB_TYPE std::string get_text_time_from_seconds(double time_data, char date_
 
 /// From http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 #if __cplusplus >= 201103L
-#include <type_traits>
+// type_traits СѓР¶Рµ РІРєР»СЋС‡РµРЅ РІ РЅР°С‡Р°Р»Рµ С„Р°Р№Р»Р°
 
 template <typename T>
 inline int signum(T x, std::false_type is_signed)
@@ -361,34 +362,34 @@ inline int signum(T x)
 }
 #endif
 
-/// Обрезает лидирующие и завершающие пробелы в строке
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::string trim_spaces(const std::string &str);
 
-/// Извлекает путь из полного имени файла
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::string extract_file_path(const std::string& full_name);
 
-/// Извлекает имя файла из полного имени файла
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 
-/// Извлекает имя файла из полного имени файла исключая расширение
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::string extract_file_name_wo_ext(const std::string& full_name);
 
-/// Извлекает расширение файла из имени файла
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
-/// Модифицирует имя файла так, чтобы оно стало относительным относительно заданного пути
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE string relative_file_path(const string &path, const string &relative_path_base);
 
-/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ find_str пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str);
 
 
 
-/// Загружает файл в строку
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer);
 RDK_LIB_TYPE bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer);
 
-/// Сохраняет файл из строки
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer);
 RDK_LIB_TYPE bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffer);
 

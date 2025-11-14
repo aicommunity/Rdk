@@ -11,6 +11,10 @@
 #include <mutex>
 #include <shared_mutex>
 #include <condition_variable>
+// UPropertyEndpoints.h может быть включен условно после namespace, но лучше включить здесь если нужен
+#ifdef RDK_ENABLE_OPERATOR_CONFLICTS
+#include "../Engine/UPropertyEndpoints.h"
+#endif
 
 namespace RDK {
     namespace Isolated {
@@ -60,10 +64,8 @@ namespace RDK {
 }
 
 // Macro to enable/disable RDK operator conflicts
-#ifdef RDK_ENABLE_OPERATOR_CONFLICTS
-    // Include RDK operators that might conflict with std
-    #include "../Engine/UPropertyEndpoints.h"
-#else
+// UPropertyEndpoints.h уже включен в начале файла если RDK_ENABLE_OPERATOR_CONFLICTS определен
+#ifndef RDK_ENABLE_OPERATOR_CONFLICTS
     // Define minimal RDK types without conflicting operators
     namespace RDK {
         namespace Minimal {

@@ -8,6 +8,7 @@
 #include <QTcpSocket>
 #include <QTimer>
 
+namespace RDK{
 
 class UServerSocketQt: public QObject
 {
@@ -201,5 +202,7 @@ private:
 
 };
 */
+
+}//namespace RDK
 
 #endif //UServerTransportTcpQt_H

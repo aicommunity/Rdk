@@ -168,35 +168,35 @@ bool SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
 // ������ ������������ ���������
 // --------------------------
 // ���������� �������� ���������� �� ��������������
-virtual bool GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool GetComponentProperties(USerStorageXML *serstorage, unsigned int type_mask);
 
 // ���������� ���������� �������� ���������� �� ��������������
 // ������ ��� buffer ������ ���� ��������!
-virtual bool GetComponentSelectedProperties(RDK::USerStorageXML *serstorage);
+virtual bool GetComponentSelectedProperties(USerStorageXML *serstorage);
 
 // ���������� �������� ���������� �� �������������� � ����������
 // ������ ��� buffer ������ ���� ��������!
-virtual bool GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool GetComponentPropertiesEx(USerStorageXML *serstorage, unsigned int type_mask);
 
 // ������������� �������� ���������� �� ��������������
-virtual int SetComponentProperties(RDK::USerStorageXML *serstorage);
+virtual int SetComponentProperties(USerStorageXML *serstorage);
 
 // ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
 // ���������� ��������� � xml
-virtual bool SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
+virtual bool SaveComponent(USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
 
 // ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
 // ���������� ��������� �� xml
-virtual bool LoadComponent(RDK::USerStorageXML *serstorage, bool links);
+virtual bool LoadComponent(USerStorageXML *serstorage, bool links);
 
 // ��������� ��� �������� ���������� � ��� �������� ��������� � xml
-virtual bool SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool SaveComponentProperties(USerStorageXML *serstorage, unsigned int type_mask);
 
 // ��������� ��� �������� ���������� � ��� �������� ��������� �� xml
-virtual bool LoadComponentProperties(RDK::USerStorageXML *serstorage);
+virtual bool LoadComponentProperties(USerStorageXML *serstorage);
 
 /// ��������� ������ ��������� ����������
-virtual bool SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask);
+virtual bool SaveComponentStructure(USerStorageXML *serstorage, bool links, unsigned int type_mask);
 
 // ������������� �������� �������� ���� �������� ����������� ���������� stringid, ����������� �� ������ class_stringid
 // ������� ���� ���������
@@ -209,12 +209,12 @@ virtual void SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid
 // ��������� ��� ����� ������ ���������� � ���� xml � ����� buffer
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int GetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
+virtual int GetComponentInternalLinks(USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
 
 // ������������� ��� ����� ������ ���������� stringid �� ������ xml � ������ buffer
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int SetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
+virtual int SetComponentInternalLinks(USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
 
 // ��������� ��� ������� ����� � ���������� stringid � ���� xml � ����� buffer
 // ���� 'sublevel' == -2, �� ���������� ����� ���� ��������� �������
@@ -224,7 +224,7 @@ virtual int SetComponentInternalLinks(RDK::USerStorageXML *serstorage, std::shar
 // ���� 'sublevel' == 0, �� ���������� ����� �������� ������ ���� ����
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
+virtual int GetComponentInputLinks(USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
 
 // ��������� ��� �������� ����� �� ���������� stringid � ���� xml � ����� buffer
 // ���� 'sublevel' == -2, �� ���������� ����� ���� ��������� �������
@@ -234,17 +234,17 @@ virtual int GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* o
 // ���� 'sublevel' == 0, �� ���������� ����� �������� ������ ���� ����
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
+virtual int GetComponentOutputLinks(USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
 
 // ��������� ��� ������� ����� c ����������� cont � ��� ��������� ������������ � ���� xml � ����� buffer
 // ���������� � ������ ����������� ������������ ��������� ���������� cont!
 // ����� ����������� �� ������ ���������� owner_level
 // ���� owner_level �� �����, �� ����� ����������� �� ������ �������� ����������
-virtual int GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
+virtual int GetComponentPersonalLinks(USerStorageXML *serstorage, std::shared_ptr<RDK::UNet> owner_level = nullptr);
 
 // ��������� ���������� ������ ����������, � ��� _����������������_ �������� ���������, ��������
 // ���������� ��������� � xml
-virtual bool SaveComponentDrawInfo(RDK::USerStorageXML *serstorage);
+virtual bool SaveComponentDrawInfo(USerStorageXML *serstorage);
 // --------------------------
 
 // ----------------------
