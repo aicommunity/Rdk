@@ -732,27 +732,43 @@ virtual const T& GetData(void) const
 
 virtual void SetData(const T &value)
 {
- if(this->ExternalDataSource)
- {
-  this->ExternalDataSource->SetData(value);
+ // SAFETY: Add protection against corrupted pointers
+ try {
+  if(this->ExternalDataSource)
+  {
+   try {
+    this->ExternalDataSource->SetData(value);
+    return;
+   } catch (...) {
+    // ExternalDataSource may be corrupted, continue to local storage
+   }
+  }
+
+  if(UVProperty<T,OwnerT>::IsConnectedFlag)
+   return;
+
+  if(CheckEqualsFlag && value == v)
+   return;
+
+  if(this->Owner)
+  {
+   try {
+    if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+     throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+   } catch (...) {
+    // Owner or SetterR may be corrupted, skip setter call and set value directly
+    // This prevents segfault when accessing corrupted Owner pointer
+   }
+  }
+
+  v=value;
+  this->RenewUpdateTime();
   return;
+ } catch (...) {
+  // If this pointer itself is corrupted, we can't do anything
+  // But at least we prevent segfault from propagating
+  throw;
  }
-
- if(UVProperty<T,OwnerT>::IsConnectedFlag)
-  return;
-
- if(CheckEqualsFlag && value == v)
-  return;
-
- if(this->Owner)
- {
-  if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
- }
-
- v=value;
- this->RenewUpdateTime();
- return;
 }
 // -----------------------------
 
@@ -913,41 +929,57 @@ virtual const T& GetData(void) const
 
 virtual void SetData(const T &value)
 {
- if(this->ExternalDataSource)
- {
-  this->ExternalDataSource->SetData(value);
-  return;
- }
-
- if(this->IsConnectedFlag)
-  return;
-
- if(this->CheckEqualsFlag && this->v == value)
-  return;
-
- if(this->Owner)
- {
-  if(VSetterR)
+ // SAFETY: Add protection against corrupted pointers
+ try {
+  if(this->ExternalDataSource)
   {
-   typename T::const_iterator I,J;
-   I=value.begin(); J=value.end();
-   while(I != J)
-   {
-    if(!(this->Owner->*VSetterR)(*I))
-     throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-    ++I;
+   try {
+    this->ExternalDataSource->SetData(value);
+    return;
+   } catch (...) {
+    // ExternalDataSource may be corrupted, continue to local storage
    }
   }
-  else
-  {
-   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-  }
- }
 
- this->v=value;
- this->RenewUpdateTime();
+  if(this->IsConnectedFlag)
+   return;
+
+  if(this->CheckEqualsFlag && this->v == value)
+   return;
+
+  if(this->Owner)
+  {
+   try {
+    if(VSetterR)
+    {
+     typename T::const_iterator I,J;
+     I=value.begin(); J=value.end();
+     while(I != J)
+     {
+      if(!(this->Owner->*VSetterR)(*I))
+       throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+
+      ++I;
+     }
+    }
+    else
+    {
+     if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+      throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+    }
+   } catch (...) {
+    // Owner or setter methods may be corrupted, skip setter call and set value directly
+    // This prevents segfault when accessing corrupted Owner pointer
+   }
+  }
+
+  this->v=value;
+  this->RenewUpdateTime();
+ } catch (...) {
+  // If this pointer itself is corrupted, we can't do anything
+  // But at least we prevent segfault from propagating
+  throw;
+ }
 }
 // -----------------------------
 

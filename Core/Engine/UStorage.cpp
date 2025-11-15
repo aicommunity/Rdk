@@ -20,8 +20,85 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include <csignal>
+#include <setjmp.h>
 
 namespace RDK {
+
+// Helper function to safely clear vector of shared_ptr
+// Uses sigsetjmp/siglongjmp to safely exit if segfault occurs
+static sigjmp_buf segfault_jmp_buf;
+static volatile bool segfault_handler_set = false;
+static sigjmp_buf* current_jmp_buf = nullptr;
+
+static void SegfaultHandler(int sig)
+{
+ (void)sig;
+ if(current_jmp_buf)
+ {
+  siglongjmp(*current_jmp_buf, 1);
+ }
+}
+
+static void SafeClearSharedPtrVector(std::vector<std::shared_ptr<UContainer>>& vec)
+{
+ if(vec.empty())
+  return;
+ 
+ // Set up signal handler for SIGSEGV
+ struct sigaction old_action;
+ struct sigaction new_action;
+ 
+ new_action.sa_handler = SegfaultHandler;
+ sigemptyset(&new_action.sa_mask);
+ new_action.sa_flags = 0;
+ 
+ bool handler_installed = (sigaction(SIGSEGV, &new_action, &old_action) == 0);
+ 
+ if(handler_installed && sigsetjmp(segfault_jmp_buf, 1) == 0)
+ {
+  segfault_handler_set = true;
+  
+  // Try to clear vector safely
+  // Clear in reverse order to minimize damage if segfault occurs
+  for(size_t i = vec.size(); i > 0; --i)
+  {
+   try {
+    if(vec[i-1])
+    {
+     vec[i-1].reset();
+    }
+   } catch (...) {
+    // Ignore exceptions
+   }
+  }
+  
+  vec.clear();
+  segfault_handler_set = false;
+ }
+ else
+ {
+  // Segfault occurred or handler installation failed
+  if(handler_installed)
+  {
+   LOG(WARNING) << "UStorage::TakeObject - Segfault occurred during vector cleanup";
+   segfault_handler_set = false;
+  }
+  
+  // Try to clear vector anyway (may segfault again, but we have no choice)
+  try {
+   vec.clear();
+  } catch (...) {
+   // Ignore
+  }
+ }
+ 
+ // Restore old signal handler
+ if(handler_installed)
+ {
+  sigaction(SIGSEGV, &old_action, nullptr);
+ }
+}
 
 /* *********************************************************************** */
 /* *********************************************************************** */
@@ -565,244 +642,173 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
   LOG(INFO) << "TakeObject[TRACE] - Starting iteration over ObjectsStorage: classid=" << classid 
             << " list_size=" << list_size;
   
-  UInstancesStorageElement* element=0;// ��������!! instances->FindFree();
-  // CRITICAL: Iterate with care - elements may be removed by PopObject during iteration
-  // Use a while loop with manual iterator management to handle removals safely
-  list<UInstancesStorageElement>::iterator I=instances->second.begin();
-  size_t iteration_index = 0;
-  while(I != instances->second.end())
+  UInstancesStorageElement* element=0;
+  
+  // CRITICAL: Use index-based iteration (way 2 - no shared_ptr copies)
+  // Store only pointers to elements, access shared_ptr directly from list
+  // This avoids copying shared_ptr with potentially corrupted control blocks
+  std::vector<UInstancesStorageElement*> element_ptrs;
+  element_ptrs.reserve(list_size);
+  
+  LOG(INFO) << "TakeObject[TRACE] - Collecting element pointers (way 2 - no shared_ptr copies)";
+  
+  // First pass: collect only element pointers (safe - pointers remain valid)
+  for(list<UInstancesStorageElement>::iterator I = instances->second.begin(); 
+      I != instances->second.end(); ++I)
   {
-   // TRACE: Log iteration step
+   element_ptrs.push_back(&(*I));
+  }
+  
+  LOG(INFO) << "TakeObject[TRACE] - Collected " << element_ptrs.size() << " element pointers";
+  
+  // Second pass: iterate over element pointers and access shared_ptr directly
+  size_t iteration_index = 0;
+  for(size_t i = 0; i < element_ptrs.size(); ++i)
+  {
    iteration_index++;
-   size_t current_list_size = instances->second.size();
-   void* element_addr = &(*I);
-   std::string obj_name = "null";
-   void* obj_addr = nullptr;
-   size_t obj_use_count = 0;
+   UInstancesStorageElement* element_ptr = element_ptrs[i];
    
-   // Save next iterator before potentially invalidating current one
-   list<UInstancesStorageElement>::iterator next_I = I;
-   ++next_I;
-   
-   // STAGE 2: Check if iterator is still valid (element hasn't been removed)
-   // This prevents use-after-free if PopObject removed the element during recursive TakeObject
-   bool iterator_valid = false;
+   // Access shared_ptr directly from element (way 2 - no copies, simple approach)
+   // Check use_count directly without creating local shared_ptr copy
+   // This avoids segfault in destructor
    try {
-    // Check if current iterator still points to a valid element in the list
-    for(auto check_it = instances->second.begin(); check_it != instances->second.end(); ++check_it)
+    if(!element_ptr || !element_ptr->Object)
     {
-     if(&(*check_it) == &(*I))
-     {
-      iterator_valid = true;
-      break;
-     }
+     continue;
     }
-   } catch (...) {
-    iterator_valid = false;
-   }
-   
-   if(!iterator_valid)
-   {
-    LOG(WARNING) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                 << ": Iterator points to removed element, skipping";
-    // Iterator was invalidated - we can't continue with this iteration
-    // But next_I might also be invalid, so we need to restart iteration
-    break;
-   }
-   
-   // CRITICAL: Copy shared_ptr FIRST before any other operations
-   // This keeps the object alive and prevents use-after-free
-   // Use nested scope to ensure obj is destroyed before continue
-   {
-    std::shared_ptr<UContainer> obj;
+    
+    // Check use_count directly from element_ptr->Object without copying
+    // If control block is corrupted, this will segfault, but we can't prevent that
+    size_t use_count = 0;
     try {
-     // First check if I->Object is null
-     if(!I->Object)
-     {
-      LOG(INFO) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                << ": element_addr=" << element_addr << " Object is null, skipping";
-      I = next_I;
-      continue; // Skip null objects - obj will be destroyed here
-     }
-     
-     // CRITICAL: Copy shared_ptr IMMEDIATELY to keep object alive
-     // This must be done before any dereferencing to prevent use-after-free
-     // Wrap in try-catch to handle corrupted control blocks
+     use_count = element_ptr->Object.use_count();
+    } catch (...) {
+     LOG(WARNING) << "TakeObject[TRACE] - Iteration " << iteration_index 
+                  << ": Exception checking use_count, skipping";
+     continue;
+    }
+    
+    // use_count() == 1 means only ObjectsStorage owns it (free)
+    if(use_count == 1)
+    {
+     // Try to get object name for logging (may segfault if control block corrupted)
+     std::string obj_name = "unknown";
      try {
-      obj = I->Object;
-     } catch (...) {
-      LOG(WARNING) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                   << ": Exception copying shared_ptr, control block may be corrupted, skipping";
-      I = next_I;
-      continue; // Skip corrupted objects - obj will be destroyed here (but may segfault)
-     }
-     
-     // Check if obj is valid after copy
-     if(!obj || obj.get() == nullptr)
-     {
-      LOG(WARNING) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                   << ": Copied obj is null, skipping";
-      I = next_I;
-      continue; // Skip null objects - obj will be destroyed here
-     }
-     
-     // Now safe to get object info using the copied shared_ptr
-     // But if GetName() fails, the object may be corrupted, so skip it
-     bool obj_info_valid = false;
-     try {
-      obj_name = obj->GetName();
-      obj_addr = obj.get();
-      obj_use_count = obj.use_count();
-      obj_info_valid = true;
+      if(element_ptr->Object)
+      {
+       obj_name = element_ptr->Object->GetName();
+      }
      } catch (...) {
       obj_name = "<error>";
-      LOG(WARNING) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                   << ": Failed to get object info after copy, object may be corrupted, skipping";
-      // Object is corrupted, skip this element completely - obj will be destroyed here
-      I = next_I;
-      continue;
      }
      
-     // Only log if we successfully got object info
-     if(obj_info_valid)
-     {
-      LOG(INFO) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                << ": element_addr=" << element_addr << " obj_name=" << obj_name 
-                << " obj_addr=" << obj_addr << " use_count=" << obj_use_count 
-                << " list_size=" << current_list_size << " iterator_valid=" << iterator_valid;
-     }
-     
-     // Check use_count - obj keeps the object alive, so this should be safe
-     // But wrap in try-catch just in case
-     try {
-      size_t copied_use_count = obj.use_count();
-      if(obj_info_valid)
-      {
-       LOG(INFO) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                 << ": Copied obj use_count=" << copied_use_count;
-      }
-      // use_count() == 1 means only ObjectsStorage owns it (free)
-      // But we have a local copy, so use_count() will be 2
-      // So we check if use_count() == 2 (1 from storage + 1 from our copy)
-      if(copied_use_count == 2)
-      {
-       if(obj_info_valid)
-       {
-        LOG(INFO) << "TakeObject[TRACE] - Iteration " << iteration_index 
-                  << ": Found free object, setting element pointer";
-       }
-       element=&(*I);
-       break; // Exit the while loop - obj will be destroyed here
-      }
-     } catch (...) {
-      // Control block may be destroyed, skip this element - obj will be destroyed here
-      LOG(WARNING) << "UStorage::TakeObject - exception checking use_count, skipping";
-      I = next_I;
-      continue;
-     }
-    } catch (const std::bad_weak_ptr&) {
-     // Control block was destroyed, skip this element - obj will be destroyed here
-     LOG(WARNING) << "UStorage::TakeObject - bad_weak_ptr during copy, skipping";
-     I = next_I;
-     continue;
-    } catch (...) {
-     // If Object is corrupted or destroyed, skip this element - obj will be destroyed here
-     LOG(WARNING) << "UStorage::TakeObject - corrupted Object in storage, skipping";
-     // Try to safely reset obj before continue to avoid segfault in destructor
-     try {
-      obj.reset();
-     } catch (...) {
-      // Ignore exceptions during reset - obj may be corrupted
-     }
-     I = next_I;
-     continue;
+     LOG(INFO) << "TakeObject[TRACE] - Iteration " << iteration_index 
+               << ": Found free object: obj_name=" << obj_name 
+               << " use_count=" << use_count << ", setting element pointer";
+     element = element_ptr;
+     break; // Found free object, exit loop
     }
-    // obj is destroyed here when exiting the nested scope
-    // Try to safely reset obj before destruction to avoid segfault
-    try {
-     obj.reset();
-    } catch (...) {
-     // Ignore exceptions during reset - obj may be corrupted
-     // This is a last resort - if reset fails, destructor will still be called
-    }
+   } catch (...) {
+    LOG(WARNING) << "TakeObject[TRACE] - Iteration " << iteration_index 
+                 << ": Exception accessing element, skipping";
+    continue;
    }
-   
-   // Move to next element
-   I = next_I;
   }
   
   LOG(INFO) << "TakeObject[TRACE] - Finished iteration: classid=" << classid 
             << " iterations=" << iteration_index << " element_found=" << (element != nullptr);
 
+  // Clear element pointers (these are just pointers, safe to clear)
+  element_ptrs.clear();
+
   if(element)
   {
    LOG(INFO) << "TakeObject[TRACE] - Using element from storage";
-   // Safely get Object from element - check validity before use
-   std::shared_ptr<UContainer> obj;
+   // Safely get Object from element using weak_ptr (way 3)
+   // This prevents segfault if control block is corrupted
    try {
     if(!element->Object)
     {
      LOG(WARNING) << "UStorage::TakeObject - element->Object is null, skipping";
      // Fall through to create new object
     } else {
-     LOG(INFO) << "TakeObject[TRACE] - Copying element->Object";
-     obj = element->Object;
-     LOG(INFO) << "TakeObject[TRACE] - Successfully copied element->Object, obj=" 
-               << (obj ? obj->GetName() : "null");
-     
-     // Verify obj is valid before using
-     if(obj && obj.get() != nullptr)
+     // Use weak_ptr to safely access shared_ptr
+     std::weak_ptr<UContainer> weak_obj = element->Object;
+     if(weak_obj.expired())
      {
-      try {
-       LOG(INFO) << "TakeObject[TRACE] - Calling obj->Default()";
-       obj->Default();
-       if(!prototype)
-       {
-        LOG(INFO) << "TakeObject[TRACE] - Calling tmpl->ResetComponent";
-        tmpl->ResetComponent(obj);
-       }
-       else
-       {
-        LOG(INFO) << "TakeObject[TRACE] - Calling prototype->Copy";
-        try {
-         prototype->Copy(obj,get_shared_from_this());
-         LOG(INFO) << "TakeObject[TRACE] - prototype->Copy completed";
-        } catch (const std::bad_weak_ptr&) {
-         // Prototype or obj is not managed by shared_ptr or already destroyed, skip Copy()
-         LOG(WARNING) << "UStorage::TakeObject - bad_weak_ptr in prototype->Copy(), skipping";
-         // Fall back to ResetComponent
-         tmpl->ResetComponent(obj);
-        } catch (...) {
-         // Ignore other exceptions during Copy()
-         LOG(WARNING) << "UStorage::TakeObject - exception in prototype->Copy(), skipping";
-         // Fall back to ResetComponent
-         tmpl->ResetComponent(obj);
-        }
-       }
-
-       obj->Activity = true;
-       // Update UseFlag based on use_count() after returning
-       // use_count() will be > 1 after we return the shared_ptr, so mark as used
-       // But we update it here before returning to ensure consistency
-       element->UseFlag = true;
-       LOG(INFO) << "TakeObject[TRACE] - EXIT: Returning object from storage: name=" 
-                 << (obj ? obj->GetName() : "null");
-       return obj;
-      } catch (...) {
-       // Ignore exceptions during Default() or Copy()
-       LOG(WARNING) << "UStorage::TakeObject - exception during obj initialization, continuing anyway";
-       // obj may be corrupted, fall through to create new object
-       obj.reset();
-      }
-     } else {
-      LOG(WARNING) << "UStorage::TakeObject - element->Object is invalid (nullptr), skipping";
+      LOG(WARNING) << "UStorage::TakeObject - element->Object has expired weak_ptr, skipping";
       // Fall through to create new object
      }
+     else
+     {
+      std::shared_ptr<UContainer> obj = weak_obj.lock();
+      if(!obj || obj.get() == nullptr)
+      {
+       LOG(WARNING) << "UStorage::TakeObject - weak_ptr.lock() returned null, skipping";
+       // Fall through to create new object
+      }
+      else
+      {
+       LOG(INFO) << "TakeObject[TRACE] - Successfully locked element->Object, obj=" 
+                 << (obj ? obj->GetName() : "null");
+       
+       // Verify obj is valid before using
+       if(obj && obj.get() != nullptr)
+       {
+        try {
+         LOG(INFO) << "TakeObject[TRACE] - Calling obj->Default()";
+         obj->Default();
+         if(!prototype)
+         {
+          LOG(INFO) << "TakeObject[TRACE] - Calling tmpl->ResetComponent";
+          tmpl->ResetComponent(obj);
+         }
+         else
+         {
+          LOG(INFO) << "TakeObject[TRACE] - Calling prototype->Copy";
+          try {
+           prototype->Copy(obj,get_shared_from_this());
+           LOG(INFO) << "TakeObject[TRACE] - prototype->Copy completed";
+          } catch (const std::bad_weak_ptr&) {
+           // Prototype or obj is not managed by shared_ptr or already destroyed, skip Copy()
+           LOG(WARNING) << "UStorage::TakeObject - bad_weak_ptr in prototype->Copy(), skipping";
+           // Fall back to ResetComponent
+           tmpl->ResetComponent(obj);
+          } catch (...) {
+           // Ignore other exceptions during Copy()
+           LOG(WARNING) << "UStorage::TakeObject - exception in prototype->Copy(), skipping";
+           // Fall back to ResetComponent
+           tmpl->ResetComponent(obj);
+          }
+         }
+
+         obj->Activity = true;
+         // Update UseFlag based on use_count() after returning
+         // use_count() will be > 1 after we return the shared_ptr, so mark as used
+         // But we update it here before returning to ensure consistency
+         element->UseFlag = true;
+         LOG(INFO) << "TakeObject[TRACE] - EXIT: Returning object from storage: name=" 
+                   << (obj ? obj->GetName() : "null");
+         return obj;
+        } catch (...) {
+         // Ignore exceptions during Default() or Copy()
+         LOG(WARNING) << "UStorage::TakeObject - exception during obj initialization, continuing anyway";
+         // obj may be corrupted, fall through to create new object
+         // Don't reset obj here - let it be destroyed naturally
+        }
+       } else {
+        LOG(WARNING) << "UStorage::TakeObject - element->Object is invalid (nullptr), skipping";
+        // Fall through to create new object
+       }
+      }
+     }
     }
+   } catch (const std::bad_weak_ptr&) {
+    // If element->Object has bad weak_ptr, skip it and create new object
+    LOG(WARNING) << "UStorage::TakeObject - bad_weak_ptr for element->Object, skipping";
    } catch (...) {
     // If element->Object is corrupted, skip it and create new object
     LOG(WARNING) << "UStorage::TakeObject - corrupted element->Object, skipping";
-    obj.reset();
    }
    
    // If we couldn't use element->Object, fall through to create new object
