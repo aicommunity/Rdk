@@ -401,12 +401,44 @@ std::shared_ptr<UIProperty> UComponent::FindProperty(const NameT &name)
 
 std::shared_ptr<UVariableData> UComponent::GetProperty(const NameT &name, std::shared_ptr<UVariableData> values) const
 {
- std::shared_ptr<UIProperty> property=FindProperty(name);
+ // CRITICAL: Check if this pointer is valid
+ if(!this)
+ {
+  LOG(ERROR) << "UComponent::GetProperty - this pointer is null!";
+  return nullptr;
+ }
+ 
+ // CRITICAL: Check if values is valid
+ if(!values)
+ {
+  LOG(ERROR) << "UComponent::GetProperty - values is null!";
+  return nullptr;
+ }
+ 
+ try {
+  std::shared_ptr<UIProperty> property=FindProperty(name);
 
- if(property)
-  property->Save(safe_shared_cast<USerStorage>(values.get()));
+  if(property)
+  {
+   std::shared_ptr<USerStorage> storage = safe_shared_cast<USerStorage>(values.get());
+   if(storage)
+   {
+    property->Save(storage);
+   }
+   else
+   {
+    LOG(WARNING) << "UComponent::GetProperty - safe_shared_cast<USerStorage> returned nullptr for property: " << name;
+   }
+  }
 
- return values;
+  return values;
+ } catch (const std::exception& e) {
+  LOG(ERROR) << "UComponent::GetProperty - exception for property " << name << ": " << e.what();
+  return nullptr;
+ } catch (...) {
+  LOG(ERROR) << "UComponent::GetProperty - unknown exception for property: " << name;
+  return nullptr;
+ }
 }
 
 std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values) const
@@ -467,6 +499,20 @@ const UComponent::VariableMapT& UComponent::GetPropertiesList(void) const
 // ���������� ������ �������� ���� type
 void UComponent::CopyProperties(std::shared_ptr<UComponent> comp, unsigned int type) const
 {
+ // CRITICAL: Check if this pointer is valid
+ if(!this)
+ {
+  LOG(ERROR) << "UComponent::CopyProperties - this pointer is null!";
+  return;
+ }
+ 
+ // CRITICAL: Check if comp is valid
+ if(!comp)
+ {
+  LOG(ERROR) << "UComponent::CopyProperties - comp is null!";
+  return;
+ }
+ 
  USerStorageXML databuffer;
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
                             J=PropertiesLookupTable.end(); I!=J; ++I)
@@ -474,9 +520,25 @@ void UComponent::CopyProperties(std::shared_ptr<UComponent> comp, unsigned int t
   if(!(I->second.Type & type))
    continue;
 //  databuffer.clear();
-  databuffer.Destroy();
-  databuffer.Create(I->first);
-  comp->SetProperty(I->first,GetProperty(I->first,safe_shared_cast<UVariableData>(&databuffer)));
+  try {
+   databuffer.Destroy();
+   databuffer.Create(I->first);
+   std::shared_ptr<UVariableData> prop_data = GetProperty(I->first,safe_shared_cast<UVariableData>(&databuffer));
+   if(prop_data)
+   {
+    comp->SetProperty(I->first,prop_data);
+   }
+   else
+   {
+    LOG(WARNING) << "UComponent::CopyProperties - GetProperty returned nullptr for property: " << I->first;
+   }
+  } catch (const std::exception& e) {
+   LOG(ERROR) << "UComponent::CopyProperties - exception for property " << I->first << ": " << e.what();
+   // Continue with next property
+  } catch (...) {
+   LOG(ERROR) << "UComponent::CopyProperties - unknown exception for property: " << I->first;
+   // Continue with next property
+  }
  }
 }
 

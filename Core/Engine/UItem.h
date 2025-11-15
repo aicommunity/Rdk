@@ -378,23 +378,67 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, std::shared_ptr<UCont
    {
 	std::vector<UCLink> buffer;
 	try {
-	 curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
+	 // CRITICAL: Use shared_from_this() instead of creating new shared_ptr from raw pointer
+	 // Creating shared_ptr from raw pointer causes bad-free if object was created via make_shared
+	 // shared_from_this() returns existing shared_ptr, which is safe
+	 // Note: const_cast is safe here because we're only calling shared_from_this() which doesn't modify the object
+	 std::shared_ptr<UItem> this_shared;
+	 try {
+	  this_shared = const_cast<UItem*>(this)->get_shared_from_this();
+	 } catch (const std::bad_weak_ptr&) {
+	  // Object is not managed by shared_ptr, skip GetCLink
+	  LOG(WARNING) << "UItem::GetLinks - bad_weak_ptr in get_shared_from_this(), skipping GetCLink";
+	  continue;
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetLinks - exception in get_shared_from_this(), skipping GetCLink";
+	  continue;
+	 }
+	 if(!this_shared)
+	 {
+	  LOG(WARNING) << "UItem::GetLinks - get_shared_from_this() returned nullptr, skipping GetCLink";
+	  continue;
+	 }
+	 curr_conn->GetCLink(this_shared, buffer);
 	} catch (...) {
 	 LOG(WARNING) << "UItem::GetLinks - exception in GetCLink, skipping";
 	 continue;
 	}
 	for(size_t k=0;k<buffer.size();k++)
 	{
+	 // CRITICAL: Save buffer[k].OutputName to local copy before comparison
+	 // buffer[k] may be destroyed or moved during iteration, so we need a copy
+	 std::string buffer_output_name;
+	 try {
+	  buffer_output_name = buffer[k].OutputName;
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetLinks - exception when copying buffer[k].OutputName, skipping";
+	  continue;
+	 }
 	 // Use saved copy instead of I->first to avoid use-after-free
-	 if(buffer[k].OutputName == output_name_key)
-	 {
-	  link.Item.Index=buffer[k].Output;
-	  link.Item.Name=buffer[k].OutputName;
-	  connector.Index=buffer[k].Input;
-	  connector.Name=buffer[k].InputName;
+	 try {
+	  if(buffer_output_name == output_name_key)
+	  {
+	   link.Item.Index=buffer[k].Output;
+	   // CRITICAL: Save all string members before using them
+	   std::string buffer_output_name_copy;
+	   std::string buffer_input_name_copy;
+	   try {
+	    buffer_output_name_copy = buffer[k].OutputName;
+	    buffer_input_name_copy = buffer[k].InputName;
+	   } catch (...) {
+	    LOG(WARNING) << "UItem::GetLinks - exception when copying buffer string members, skipping";
+	    continue;
+	   }
+	   link.Item.Name=buffer_output_name_copy;
+	   connector.Index=buffer[k].Input;
+	   connector.Name=buffer_input_name_copy;
 
-	  link.Connector.push_back(connector);
-	  linkslist.Set(link);
+	   link.Connector.push_back(connector);
+	   linkslist.Set(link);
+	  }
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetLinks - exception during string comparison or assignment, skipping";
+	  continue;
 	 }
 	}
    }
@@ -445,19 +489,61 @@ ULinksListT<T>& UItem::GetPersonalLinks(std::shared_ptr<UContainer> cont, ULinks
    if(connector.Id.size() != 0)
    {
 	std::vector<UCLink> buffer;
-	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
+	// CRITICAL: Use shared_from_this() instead of creating new shared_ptr from raw pointer
+	// Creating shared_ptr from raw pointer causes bad-free if object was created via make_shared
+	// Note: const_cast is safe here because we're only calling shared_from_this() which doesn't modify the object
+	std::shared_ptr<UItem> this_shared;
+	try {
+	 this_shared = const_cast<UItem*>(this)->get_shared_from_this();
+	} catch (const std::bad_weak_ptr&) {
+	 LOG(WARNING) << "UItem::GetPersonalLinks - bad_weak_ptr in get_shared_from_this(), skipping GetCLink";
+	 continue;
+	} catch (...) {
+	 LOG(WARNING) << "UItem::GetPersonalLinks - exception in get_shared_from_this(), skipping GetCLink";
+	 continue;
+	}
+	if(!this_shared)
+	{
+	 LOG(WARNING) << "UItem::GetPersonalLinks - get_shared_from_this() returned nullptr, skipping GetCLink";
+	 continue;
+	}
+	curr_conn->GetCLink(this_shared, buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
+	 // CRITICAL: Save buffer[k].OutputName to local copy before comparison
+	 // buffer[k] may be destroyed or moved during iteration, so we need a copy
+	 std::string buffer_output_name;
+	 try {
+	  buffer_output_name = buffer[k].OutputName;
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetPersonalLinks - exception when copying buffer[k].OutputName, skipping";
+	  continue;
+	 }
 	 // Use saved copy instead of I->first to avoid use-after-free
-	 if(buffer[k].OutputName == output_name_key)
-	 {
-	  link.Item.Index=buffer[k].Output;
-	  link.Item.Name=buffer[k].OutputName;
-	  connector.Index=buffer[k].Input;
-	  connector.Name=buffer[k].InputName;
+	 try {
+	  if(buffer_output_name == output_name_key)
+	  {
+	   link.Item.Index=buffer[k].Output;
+	   // CRITICAL: Save all string members before using them
+	   std::string buffer_output_name_copy;
+	   std::string buffer_input_name_copy;
+	   try {
+	    buffer_output_name_copy = buffer[k].OutputName;
+	    buffer_input_name_copy = buffer[k].InputName;
+	   } catch (...) {
+	    LOG(WARNING) << "UItem::GetPersonalLinks - exception when copying buffer string members, skipping";
+	    continue;
+	   }
+	   link.Item.Name=buffer_output_name_copy;
+	   connector.Index=buffer[k].Input;
+	   connector.Name=buffer_input_name_copy;
 
-	  link.Connector.push_back(connector);
-	  linkslist.Set(link);
+	   link.Connector.push_back(connector);
+	   linkslist.Set(link);
+	  }
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetPersonalLinks - exception during string comparison or assignment, skipping";
+	  continue;
 	 }
 	}
    }
@@ -512,19 +598,61 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_p
    if(connector.Id.GetSize() != 0)
    {
 	std::vector<UCLink> buffer;
-	curr_conn->GetCLink(std::shared_ptr<UItem>(const_cast<UItem*>(this)),buffer);
+	// CRITICAL: Use shared_from_this() instead of creating new shared_ptr from raw pointer
+	// Creating shared_ptr from raw pointer causes bad-free if object was created via make_shared
+	// Note: const_cast is safe here because we're only calling shared_from_this() which doesn't modify the object
+	std::shared_ptr<UItem> this_shared;
+	try {
+	 this_shared = const_cast<UItem*>(this)->get_shared_from_this();
+	} catch (const std::bad_weak_ptr&) {
+	 LOG(WARNING) << "UItem::GetFullItemLinks - bad_weak_ptr in get_shared_from_this(), skipping GetCLink";
+	 continue;
+	} catch (...) {
+	 LOG(WARNING) << "UItem::GetFullItemLinks - exception in get_shared_from_this(), skipping GetCLink";
+	 continue;
+	}
+	if(!this_shared)
+	{
+	 LOG(WARNING) << "UItem::GetFullItemLinks - get_shared_from_this() returned nullptr, skipping GetCLink";
+	 continue;
+	}
+	curr_conn->GetCLink(this_shared, buffer);
 	for(size_t k=0;k<buffer.size();k++)
 	{
+	 // CRITICAL: Save buffer[k].OutputName to local copy before comparison
+	 // buffer[k] may be destroyed or moved during iteration, so we need a copy
+	 std::string buffer_output_name;
+	 try {
+	  buffer_output_name = buffer[k].OutputName;
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetFullItemLinks - exception when copying buffer[k].OutputName, skipping";
+	  continue;
+	 }
 	 // Use saved copy instead of I->first to avoid use-after-free
-	 if(buffer[k].OutputName == output_name_key)
-	 {
-	  link.Item.Index=buffer[k].Output;
-	  link.Item.Name=buffer[k].OutputName;
-	  connector.Index=buffer[k].Input;
-	  connector.Name=buffer[k].InputName;
+	 try {
+	  if(buffer_output_name == output_name_key)
+	  {
+	   link.Item.Index=buffer[k].Output;
+	   // CRITICAL: Save all string members before using them
+	   std::string buffer_output_name_copy;
+	   std::string buffer_input_name_copy;
+	   try {
+	    buffer_output_name_copy = buffer[k].OutputName;
+	    buffer_input_name_copy = buffer[k].InputName;
+	   } catch (...) {
+	    LOG(WARNING) << "UItem::GetFullItemLinks - exception when copying buffer string members, skipping";
+	    continue;
+	   }
+	   link.Item.Name=buffer_output_name_copy;
+	   connector.Index=buffer[k].Input;
+	   connector.Name=buffer_input_name_copy;
 
-	  link.Connector.push_back(connector);
-	  linkslist.Set(link);
+	   link.Connector.push_back(connector);
+	   linkslist.Set(link);
+	  }
+	 } catch (...) {
+	  LOG(WARNING) << "UItem::GetFullItemLinks - exception during string comparison or assignment, skipping";
+	  continue;
 	 }
 	}
    }

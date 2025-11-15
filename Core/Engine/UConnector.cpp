@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "UItem.h"
 #include "UContainer.h"
+#include <glog/logging.h>
 
 namespace RDK {
 
@@ -360,10 +361,24 @@ void UConnector::GetCLink(const std::shared_ptr<UItem> &item, std::vector<UCLink
  if(!item)
   return;
 
- std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+ // CRITICAL: Make a copy of ConnectedItemList before iteration to avoid use-after-free
+ // During UNet::Copy, the connector object may be destroyed while ConnectedItemList is still being iterated
+ // By copying the map, we ensure that string references remain valid even if the original map is destroyed
+ std::map<std::string, std::vector<UCItem> > connected_item_list_copy;
+ try {
+  connected_item_list_copy = ConnectedItemList;
+ } catch (...) {
+  LOG(ERROR) << "UConnector::GetCLink - exception when copying ConnectedItemList, returning empty buffer";
+  return;
+ }
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=connected_item_list_copy.begin();
  UCItem citem;
- for(;I != ConnectedItemList.end();++I)
+ for(;I != connected_item_list_copy.end();++I)
  {
+  // CRITICAL: Save I->first to local copy to avoid use-after-free
+  std::string connector_property_name = I->first;
+  
   for(size_t i=0;i<I->second.size();i++)
    if(I->second[i].Item == item.get())
    {
@@ -373,13 +388,31 @@ void UConnector::GetCLink(const std::shared_ptr<UItem> &item, std::vector<UCLink
 	 continue;
 
     UIPropertyInput* property=0;
-	FindInputProperty(I->first, property);
+	FindInputProperty(connector_property_name, property);
 	if(property)
 	{
-	 indexes.InputName=property->GetName();
+	 // CRITICAL: Save property->GetName() to local copy before assigning to indexes.InputName
+	 // property may be destroyed or its name may be freed before assignment completes
+	 std::string property_name;
+	 try {
+	  property_name = property->GetName();
+	 } catch (...) {
+	  LOG(WARNING) << "UConnector::GetCLink - exception in property->GetName(), skipping InputName";
+	  property_name.clear();
+	 }
+	 indexes.InputName=property_name;
 	}
 	indexes.Output=citem.Index;
-	indexes.OutputName=citem.Name;
+	// CRITICAL: Save citem.Name to local copy before assigning to indexes.OutputName
+	// citem may be destroyed or its Name may be freed before assignment completes
+	std::string citem_name;
+	try {
+	 citem_name = citem.Name;
+	} catch (...) {
+	 LOG(WARNING) << "UConnector::GetCLink - exception when copying citem.Name, skipping OutputName";
+	 citem_name.clear();
+	}
+	indexes.OutputName=citem_name;
 	buffer.push_back(indexes);
    }
  }
@@ -428,8 +461,30 @@ bool UConnector::ConnectToItem(std::shared_ptr<UItem> na, const NameT &item_prop
  if(!na)
   return false;
 
- if(!Build())
-  return false;
+ // CRITICAL: Prevent infinite recursion - if Build() is already in progress, skip it
+ // Build() may call BuildStructure() which calls CreateLink() which calls ConnectToItem() again
+ // Use a thread-local flag to track if Build() is in progress
+ thread_local static bool build_in_progress = false;
+ if(build_in_progress)
+ {
+  // Build() is already in progress, skip it to prevent infinite recursion
+  LOG(WARNING) << "UConnector::ConnectToItem - Build() already in progress, skipping to prevent infinite recursion";
+ }
+ else
+ {
+  build_in_progress = true;
+  try {
+   if(!Build())
+   {
+    build_in_progress = false;
+    return false;
+   }
+  } catch (...) {
+   build_in_progress = false;
+   throw;
+  }
+  build_in_progress = false;
+ }
 
  if(!na->GetActivity() && !na->GetOwner())
  {

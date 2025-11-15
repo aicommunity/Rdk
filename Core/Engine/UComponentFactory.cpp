@@ -92,15 +92,36 @@ namespace RDK
    
    // Set storage and initialize
    obj->SetStorage(Storage);
-   obj->Default();
+   try {
+    LOG(INFO) << "UVirtualMethodFactory::New - calling obj->Default() for: name=" << comp_name;
+    obj->Default();
+    LOG(INFO) << "UVirtualMethodFactory::New - obj->Default() completed for: name=" << comp_name;
+   } catch (const std::exception& e) {
+    LOG(ERROR) << "UVirtualMethodFactory::New - exception in obj->Default() for: name=" << comp_name << " error=" << e.what();
+    return nullptr; // Return nullptr if Default() fails
+   } catch (...) {
+    LOG(ERROR) << "UVirtualMethodFactory::New - unknown exception in obj->Default() for: name=" << comp_name;
+    return nullptr; // Return nullptr if Default() fails
+   }
    
    // Copy properties from prototype
    std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){});
-   comp_locked->Copy(obj, storage_ptr);
+   try {
+    LOG(INFO) << "UVirtualMethodFactory::New - calling comp_locked->Copy() for: name=" << comp_name;
+    comp_locked->Copy(obj, storage_ptr);
+    LOG(INFO) << "UVirtualMethodFactory::New - comp_locked->Copy() completed for: name=" << comp_name;
+   } catch (const std::exception& e) {
+    LOG(ERROR) << "UVirtualMethodFactory::New - exception in comp_locked->Copy() for: name=" << comp_name << " error=" << e.what();
+    return nullptr; // Return nullptr if Copy() fails
+   } catch (...) {
+    LOG(ERROR) << "UVirtualMethodFactory::New - unknown exception in comp_locked->Copy() for: name=" << comp_name;
+    return nullptr; // Return nullptr if Copy() fails
+   }
    
    // IMPORTANT: After Copy(), obj->Build() may be called, which may use shared_from_this()
    // But since obj was created from raw pointer, shared_from_this() will throw bad_weak_ptr
    // We need to ensure that Build() doesn't use shared_from_this() or handle the exception
+   LOG(INFO) << "UVirtualMethodFactory::New - returning object: name=" << comp_name;
    return obj;
   }
   catch(const std::bad_weak_ptr& e)

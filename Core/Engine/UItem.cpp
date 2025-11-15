@@ -444,8 +444,30 @@ bool UItem::Connect(std::shared_ptr<UConnector> c, const NameT &item_property_na
  if(!c)
   return false;
 
- if(!Build())
-  return false;
+ // CRITICAL: Prevent infinite recursion - if Build() is already in progress, skip it
+ // Build() may call BuildStructure() which calls CreateLink() which calls Connect() again
+ // Use a thread-local flag to track if Build() is in progress
+ thread_local static bool build_in_progress = false;
+ if(build_in_progress)
+ {
+  // Build() is already in progress, skip it to prevent infinite recursion
+  LOG(WARNING) << "UItem::Connect - Build() already in progress, skipping to prevent infinite recursion";
+ }
+ else
+ {
+  build_in_progress = true;
+  try {
+   if(!Build())
+   {
+    build_in_progress = false;
+    return false;
+   }
+  } catch (...) {
+   build_in_progress = false;
+   throw;
+  }
+  build_in_progress = false;
+ }
 
  if(!c->ConnectToItem(get_shared_from_this(),item_property_name, connector_property_name, c_index, forced_connect_same_item))
   return false;

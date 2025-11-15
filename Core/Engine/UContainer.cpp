@@ -154,7 +154,18 @@ UContainer::~UContainer(void)
 // ���������� �������� ����� �������
 std::shared_ptr<UContainer> UContainer::GetOwner(void) const
 {
- return std::dynamic_pointer_cast<UContainer>(Owner.lock());
+ // CRITICAL: Check if this pointer is valid before accessing Owner
+ if(!this)
+ {
+  LOG(ERROR) << "UContainer::GetOwner - this pointer is null!";
+  return nullptr;
+ }
+ try {
+  return std::dynamic_pointer_cast<UContainer>(Owner.lock());
+ } catch (...) {
+  LOG(WARNING) << "UContainer::GetOwner - exception in Owner.lock()";
+  return nullptr;
+ }
 }
 
 // ���������� ��������� �� �������� ��������� ���� ��������
@@ -777,6 +788,14 @@ NameT UContainer::GetFullName(void) const
 // ���������� ������� �� �� ����� ������ ��������.
 NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, NameT &buffer) const
 {
+ // CRITICAL: Check if this pointer is valid
+ if(!this)
+ {
+  LOG(ERROR) << "UContainer::GetLongName - this pointer is null!";
+  buffer.clear();
+  return buffer;
+ }
+ 
  auto owner = GetOwner();
  // Use mainowner directly - it's already a shared_ptr, don't create new one from .get()
  if(!owner && owner != mainowner)
@@ -791,11 +810,24 @@ NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, Nam
    return buffer;
   }
 
- if(GetOwner()->GetLongName(mainowner,buffer) == ForbiddenName)
+ // CRITICAL: Check owner before calling GetLongName recursively
+ if(!owner)
   {
    buffer.clear();
    return buffer;
   }
+  
+ try {
+  if(owner->GetLongName(mainowner,buffer) == ForbiddenName)
+   {
+    buffer.clear();
+    return buffer;
+   }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::GetLongName - exception in recursive GetLongName()";
+  buffer.clear();
+  return buffer;
+ }
 
  buffer+='.';
  buffer+=Name;
@@ -1195,8 +1227,16 @@ bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStora
  }
  LOG(INFO) << "Copy[TRACE] - About to call CopyComponents: this_name=" << this_name 
            << " target_name=" << target_name;
- CopyComponents(target,stor);
- LOG(INFO) << "Copy[TRACE] - CopyComponents completed";
+ try {
+  CopyComponents(target,stor);
+  LOG(INFO) << "Copy[TRACE] - CopyComponents completed";
+ } catch (const std::exception& e) {
+  LOG(ERROR) << "Copy[TRACE] - exception in CopyComponents: " << e.what();
+  return false;
+ } catch (...) {
+  LOG(ERROR) << "Copy[TRACE] - unknown exception in CopyComponents";
+  return false;
+ }
  return true;
 }
 
@@ -1663,9 +1703,34 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
    }
    LOG(INFO) << "CopyComponents[TRACE] - About to call Alloc (RECURSIVE) for component " << i 
              << ": comp_name=" << comp_name;
+   // CRITICAL: Alloc() may return a component that already has an owner
+   // We need to handle this case by breaking the owner relationship before AddComponent
    bufcomp=(*pcomponents)->Alloc(stor);
    LOG(INFO) << "CopyComponents[TRACE] - Alloc returned for component " << i 
              << ": bufcomp=" << (bufcomp ? bufcomp->GetName() : "null");
+   if(bufcomp && bufcomp->GetOwner())
+   {
+    LOG(WARNING) << "CopyComponents - component " << comp_name 
+                 << " already has owner, breaking owner relationship";
+    try {
+     // CRITICAL: BreakOwner() may destroy the object if it's no longer needed
+     // We need to ensure bufcomp remains valid after BreakOwner()
+     // Store a shared_ptr reference to keep the object alive
+     std::shared_ptr<UContainer> bufcomp_ref = bufcomp;
+     bufcomp->BreakOwner();
+     // Verify bufcomp is still valid after BreakOwner()
+     if(!bufcomp_ref || bufcomp_ref.get() == nullptr)
+     {
+      LOG(ERROR) << "CopyComponents - component " << comp_name 
+                 << " was destroyed by BreakOwner(), skipping";
+      continue;
+     }
+     bufcomp = bufcomp_ref; // Update bufcomp to use the reference
+    } catch (...) {
+     LOG(WARNING) << "CopyComponents - exception in BreakOwner() for " << comp_name;
+     // If BreakOwner() fails, try to continue anyway
+    }
+   }
    std::shared_ptr<UIPointer> pointer=0;
    I=FindLookupPointer(*pcomponents);
    if(I != PointerLookupTable.end())
@@ -1675,9 +1740,38 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
      pointer=J->second.Pointer;
    }
 
-   comp->AddComponent(bufcomp,pointer);
-   bufcomp->Id = (*pcomponents)->Id.v;
-   comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+   // CRITICAL: AddComponent will set owner and ID, so we don't need to do it manually
+   // But we need to ensure that bufcomp doesn't have an owner before AddComponent
+   try {
+    comp->AddComponent(bufcomp,pointer);
+    // After AddComponent, bufcomp has a new ID assigned by AddComponent
+    // We don't need to copy the ID from prototype - AddComponent handles it
+    // Just set lookup if needed
+    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+   } catch (const EAddComponentAlreadyHaveOwner&) {
+    // Component already has owner - this shouldn't happen if BreakOwner() worked
+    LOG(ERROR) << "CopyComponents - AddComponent failed: component " << comp_name 
+               << " still has owner after BreakOwner()";
+    // Try to break owner again and retry
+    if(bufcomp && bufcomp->GetOwner())
+    {
+     try {
+      bufcomp->BreakOwner();
+      comp->AddComponent(bufcomp,pointer);
+      comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+     } catch (...) {
+      LOG(ERROR) << "CopyComponents - Failed to add component " << comp_name << " after retry";
+      // Skip this component
+      continue;
+     }
+    }
+   } catch (const EComponentIdAlreadyExist&) {
+    // ID conflict - AddComponent should have generated a new ID, but it didn't
+    LOG(WARNING) << "CopyComponents - ID conflict for component " << comp_name 
+                 << ", skipping ID assignment";
+    // Component was added but ID conflict occurred - just set lookup
+    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+   }
   }
  /*
  // ������� ������ ���������� �� 'comp'

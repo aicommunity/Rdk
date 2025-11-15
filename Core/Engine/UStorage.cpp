@@ -55,6 +55,10 @@ UInstancesStorageElement::~UInstancesStorageElement(void)
  // If Object.reset() was called in ClearObjectsStorage, Object will be nullptr
  // Just let shared_ptr handle the destruction naturally
  // Don't access Object here as it may be partially destroyed
+ // CRITICAL: Do NOT call delete Object.get() - Object is a shared_ptr and manages its own memory
+ // When Object goes out of scope, shared_ptr destructor will automatically call the object's destructor
+ // If Object was created via make_shared, it's in the same memory block as control block
+ // Calling delete Object.get() would cause bad-free
 }
 // --------------------------
 
@@ -125,22 +129,39 @@ UStorage::~UStorage(void)
  // So we do minimal cleanup and let shared_ptr handle the rest
  try
  {
+  LOG(INFO) << "UStorage::~UStorage - starting destruction, ClassesStorage.size()=" << ClassesStorage.size() 
+            << " ObjectsStorage.size()=" << ObjectsStorage.size();
+  
   // Destroy factories FIRST, then objects
-  // Factories hold shared_ptr to prototype objects
-  // By destroying factories first, we release their shared_ptr references to prototypes
+  // Factories hold weak_ptr to prototype objects (not shared_ptr)
+  // Prototypes are stored in ObjectsStorage and managed by shared_ptr there
+  // By destroying factories first, we release their weak_ptr references to prototypes
+  // This allows prototypes to be destroyed when ObjectsStorage is cleared
+  // IMPORTANT: Order is critical - ClearClassesStorage must be called BEFORE ClearObjectsStorage
+  // to prevent prototypes from being destroyed twice
   ClearClassesStorage(true);
   
+  LOG(INFO) << "UStorage::~UStorage - after ClearClassesStorage, ObjectsStorage.size()=" << ObjectsStorage.size();
+  
   // Then destroy objects
+  // ClearObjectsStorage will destroy all objects in ObjectsStorage, including prototypes
+  // Objects will be automatically destroyed when their shared_ptr goes out of scope
+  // CRITICAL: Do NOT call delete on any objects - they are managed by shared_ptr
   ClearObjectsStorage(true);
+
+  LOG(INFO) << "UStorage::~UStorage - after ClearObjectsStorage";
 
   // Clear CollectionList - shared_ptr will handle library destruction
   CollectionList.clear();
+  
+  LOG(INFO) << "UStorage::~UStorage - destruction completed";
  }
  catch(...)
  {
   // Swallow all exceptions during destruction to prevent "bad-free"
   // If we're here, something went wrong, but we can't fix it anyway
   // The object is being destroyed, so we just need to avoid crashing
+  LOG(ERROR) << "UStorage::~UStorage - exception during destruction";
  }
 }
 // --------------------------
@@ -404,27 +425,66 @@ void UStorage::ClearClassesStorage(bool force)
      std::shared_ptr<UVirtualMethodFactory> virtual_factory = std::dynamic_pointer_cast<UVirtualMethodFactory>(I->second);
      if(virtual_factory)
      {
-      // Explicitly free prototype before destroying factory
-      // This releases weak_ptr reference, allowing prototype to be destroyed if no other references exist
-      virtual_factory->FreeComponent();
-      
+      // CRITICAL: Get prototype BEFORE calling FreeComponent()
+      // FreeComponent() resets weak_ptr, so GetComponent() will return nullptr after that
       std::shared_ptr<UContainer> prototype = virtual_factory->GetComponent();
+      std::string proto_name = "unknown";
+      void* proto_addr = nullptr;
+      size_t proto_use_count = 0;
+      
       if(prototype)
       {
-       std::string proto_name = "unknown";
-       void* proto_addr = prototype.get();
-       size_t proto_use_count = prototype.use_count();
+       proto_addr = prototype.get();
+       proto_use_count = prototype.use_count();
        try {
         proto_name = prototype->GetName();
        } catch (...) {
         proto_name = "<error>";
        }
-       LOG(INFO) << "ClearClassesStorage - destroying factory for class: " << name 
+       LOG(INFO) << "ClearClassesStorage - BEFORE FreeComponent: class=" << name 
                  << " prototype_name=" << proto_name << " prototype_use_count=" << proto_use_count 
                  << " prototype_address=" << proto_addr;
+       
+       // Check if prototype is in ObjectsStorage
+       UObjectsStorageIterator proto_storage = ObjectsStorage.find(I->first);
+       if(proto_storage != ObjectsStorage.end())
+       {
+        bool found_in_storage = false;
+        for(const auto& elem : proto_storage->second)
+        {
+         if(elem.Object == prototype)
+         {
+          found_in_storage = true;
+          LOG(INFO) << "ClearClassesStorage - prototype found in ObjectsStorage: class=" << name 
+                    << " prototype_name=" << proto_name;
+          break;
+         }
+        }
+        if(!found_in_storage)
+        {
+         LOG(WARNING) << "ClearClassesStorage - prototype NOT found in ObjectsStorage: class=" << name 
+                      << " prototype_name=" << proto_name << " This may cause bad-free!";
+        }
+       }
+      }
+      
+      // Explicitly free prototype before destroying factory
+      // This releases weak_ptr reference, allowing prototype to be destroyed if no other references exist
+      // IMPORTANT: Do NOT call delete on prototype - it's managed by shared_ptr
+      virtual_factory->FreeComponent();
+      
+      // After FreeComponent(), prototype should still be valid if it's in ObjectsStorage
+      // Check prototype after FreeComponent()
+      std::shared_ptr<UContainer> prototype_after = virtual_factory->GetComponent();
+      if(prototype_after)
+      {
+       size_t proto_use_count_after = prototype_after.use_count();
+       LOG(INFO) << "ClearClassesStorage - AFTER FreeComponent: class=" << name 
+                 << " prototype_name=" << proto_name << " prototype_use_count=" << proto_use_count_after 
+                 << " prototype_address=" << proto_addr;
       } else {
-       LOG(INFO) << "ClearClassesStorage - destroying factory for class: " << name 
-                 << " prototype already released";
+       LOG(INFO) << "ClearClassesStorage - prototype already released after FreeComponent: class=" << name 
+                 << " prototype_name=" << proto_name;
       }
      }
      
@@ -480,16 +540,21 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
  
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
+ {
+  LOG(ERROR) << "TakeObject[TRACE] - Class not found in ClassesStorage: classid=" << classid << " class_name=" << class_name;
   throw EClassIdNotExist(classid);
+ }
 
  UClassStorageElement tmpl=tmplI->second;
+ LOG(INFO) << "TakeObject[TRACE] - Found factory in ClassesStorage: classid=" << classid << " class_name=" << class_name 
+           << " factory_valid=" << (tmpl ? "yes" : "no");
  
  // Проверяем валидность tmpl
  if(!tmpl)
  {
   // if(Logger) удален - используется glog
    // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Invalid class template for classid: ")+std::to_string(classid));
-  LOG(WARNING) << "TakeObject[TRACE] - Invalid template, returning null";
+  LOG(WARNING) << "TakeObject[TRACE] - Invalid template, returning null: classid=" << classid << " class_name=" << class_name;
   return 0;
  }
 
@@ -758,14 +823,29 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
 
 std::shared_ptr<UContainer> UStorage::TakeObject(const NameT &classname, const std::shared_ptr<UContainer> &prototype)
 {
+ LOG(INFO) << "TakeObject[TRACE] - ENTRY by name: classname=" << classname 
+           << " prototype=" << (prototype ? prototype->GetName() : "null");
  try
  {
-  return TakeObject(FindClassId(classname),prototype);
+  UId class_id = FindClassId(classname);
+  LOG(INFO) << "TakeObject[TRACE] - FindClassId('" << classname << "') returned: " << class_id;
+  bool class_exists = CheckClass(classname);
+  LOG(INFO) << "TakeObject[TRACE] - CheckClass('" << classname << "') returned: " << (class_exists ? "true" : "false");
+  if(!class_exists)
+  {
+   LOG(ERROR) << "TakeObject[TRACE] - Class '" << classname << "' not found in ClassesStorage!";
+   return nullptr;
+  }
+  std::shared_ptr<UContainer> result = TakeObject(class_id, prototype);
+  LOG(INFO) << "TakeObject[TRACE] - EXIT by name: classname=" << classname 
+            << " result=" << (result ? result->GetName() : "null");
+  return result;
  }
  catch(const EClassNameNotExist& e)
  {
   // if(Logger) удален - используется glog
    // Logger-> удален - используется glogLogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Class not found: ")+classname);
+  LOG(ERROR) << "TakeObject[TRACE] - EClassNameNotExist exception for classname=" << classname << ": " << e.what();
   return nullptr;
  }
  catch(...)
@@ -1052,6 +1132,10 @@ void UStorage::ClearObjectsStorage(bool force)
   // Each destructor will destroy its Object shared_ptr, which will decrement use_count
   // If use_count reaches 0, the object will be destroyed automatically
   // This is safe because we've already reset Storage pointer in all objects
+  // CRITICAL: Do NOT call delete on any objects - they are managed by shared_ptr
+  // ObjectsStorage.clear() will call UInstancesStorageElement destructors, which will
+  // automatically destroy shared_ptr members, but NOT call delete on them
+  LOG(INFO) << "ClearObjectsStorage(force=true) - about to clear ObjectsStorage, size=" << ObjectsStorage.size();
   ObjectsStorage.clear();
   LOG(INFO) << "ClearObjectsStorage(force=true) - ObjectsStorage cleared";
   return;
