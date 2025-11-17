@@ -764,15 +764,39 @@ bool UApplication::Init(void)
 bool UApplication::UnInit(void)
 {
  LOG(INFO) << "Application uninitialization has been started.";
- if(EngineControl)
- {
-  EngineControl->PauseChannel(-1);
-  EngineControl->StopEngineStateThread();
+ 
+ // SAFETY: Wrap cleanup in try-catch to prevent SIGABRT from propagating
+ try {
+  if(EngineControl)
+  {
+   EngineControl->PauseChannel(-1);
+   EngineControl->StopEngineStateThread();
+  }
+  Sleep(10);
+  CloseProject();
+  
+  if(EngineControl)
+  {
+   EngineControl->UnInit();
+  }
+  
+  // SAFETY: GetCoreLock()->Destroy() may throw std::system_error if mutex is already destroyed
+  try {
+   if(GetCoreLock())
+   {
+    GetCoreLock()->Destroy();
+   }
+  } catch (const std::system_error& e) {
+   LOG(WARNING) << "UApplication::UnInit - Exception destroying CoreLock: " << e.what();
+  } catch (...) {
+   LOG(WARNING) << "UApplication::UnInit - Unknown exception destroying CoreLock";
+  }
+ } catch (const std::system_error& e) {
+  LOG(ERROR) << "UApplication::UnInit - std::system_error during cleanup: " << e.what();
+  // Continue with cleanup even if error occurred
+ } catch (...) {
+  LOG(ERROR) << "UApplication::UnInit - Unknown exception during cleanup";
  }
- Sleep(10);
- CloseProject();
- EngineControl->UnInit();
- GetCoreLock()->Destroy();
 
  LOG(INFO) << "Application uninitialization has been finished.";
  AppIsInit = false;

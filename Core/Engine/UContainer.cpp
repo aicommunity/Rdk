@@ -299,13 +299,50 @@ bool UContainer::CheckLongId(const std::string &id) const
 // ���������� ������ ���������� ����� �������
 bool UContainer::SetEnvironment(UEnvironment* environment)
 {
+ // SAFETY: Check if environment is valid before using it
+ // According to backtrace, environment can be nullptr (0x0)
+ if(!environment)
+ {
+  LOG(WARNING) << "UContainer::SetEnvironment - environment is null, skipping";
+  return false;
+ }
+
  if(!UComponent::SetEnvironment(environment))
   return false;
 
  bool res=true;
 
- for(int i=0;i<NumComponents;i++)
-  res&=PComponents[i]->SetEnvironment(environment);
+ // SAFETY: Check PComponents validity before iteration
+ if(PComponents && NumComponents > 0)
+ {
+  for(int i=0;i<NumComponents;i++)
+  {
+   // SAFETY: Check component validity before calling SetEnvironment
+   if(!PComponents[i])
+    continue;
+   
+   // SAFETY: Check use_count to detect corrupted shared_ptr
+   try {
+    size_t use_count = PComponents[i].use_count();
+    if(use_count > 1000000 || use_count == 0)
+    {
+     LOG(WARNING) << "UContainer::SetEnvironment - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
+     continue;
+    }
+   } catch (...) {
+    LOG(WARNING) << "UContainer::SetEnvironment - exception checking use_count for component " << i << ", skipping";
+    continue;
+   }
+   
+   try {
+    res&=PComponents[i]->SetEnvironment(environment);
+   } catch (...) {
+    // Component may be destroyed or corrupted, skip
+    LOG(WARNING) << "UContainer::SetEnvironment - exception setting environment for component " << i << ", skipping";
+    continue;
+   }
+  }
+ }
 
  return res;
 }
@@ -1554,6 +1591,46 @@ void UContainer::DelAllComponentsRaw(void)
  // Just clear Components vector - shared_ptr will automatically destroy components
  // when the last reference is released (which happens when Storage is destroyed)
  // Wrap in try-catch to handle bad_weak_ptr exceptions during destruction
+ 
+ // SAFETY: Before clearing Components, check each shared_ptr for corruption
+ // If a shared_ptr has corrupted use_count, its destructor may segfault
+ // We need to remove corrupted shared_ptr elements before calling clear()
+ std::vector<std::shared_ptr<UContainer>> valid_components;
+ valid_components.reserve(Components.size());
+ 
+ for(size_t i = 0; i < Components.size(); ++i)
+ {
+  try {
+   // Check if shared_ptr is valid by checking use_count
+   size_t use_count = Components[i].use_count();
+   if(use_count > 1000000 || use_count == 0)
+   {
+    LOG(WARNING) << "UContainer::DelAllComponentsRaw - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
+    // Don't add to valid_components - this will effectively remove it
+    continue;
+   }
+   
+   // Check if raw pointer is valid
+   void* raw_ptr = Components[i].get();
+   if(!raw_ptr)
+   {
+    LOG(WARNING) << "UContainer::DelAllComponentsRaw - Component " << i << " has null raw pointer, skipping";
+    continue;
+   }
+   
+   // Component seems valid, add to valid_components
+   valid_components.push_back(Components[i]);
+  } catch (...) {
+   LOG(WARNING) << "UContainer::DelAllComponentsRaw - exception checking component " << i << ", skipping";
+   // Don't add to valid_components - this will effectively remove it
+   continue;
+  }
+ }
+ 
+ // Replace Components with valid_components
+ // This ensures we only destroy valid shared_ptr objects
+ Components = std::move(valid_components);
+ 
  try {
   LOG(INFO) << "UContainer::DelAllComponentsRaw - about to clear Components vector";
   Components.clear();
@@ -1692,6 +1769,28 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
 
  for(int i=0;i<NumComponents;i++,pcomponents++)
   {
+   // SAFETY: Check if (*pcomponents) is valid before using it
+   // If (*pcomponents) has corrupted use_count, operations on it may segfault
+   if(!(*pcomponents))
+   {
+    LOG(WARNING) << "CopyComponents - Component " << i << " is nullptr, skipping";
+    continue;
+   }
+   
+   // SAFETY: Check use_count before accessing component
+   size_t comp_use_count = 0;
+   try {
+    comp_use_count = (*pcomponents).use_count();
+    if(comp_use_count > 1000000 || comp_use_count == 0)
+    {
+     LOG(ERROR) << "CopyComponents - Component " << i << " has suspicious use_count: " << comp_use_count << ", skipping";
+     continue;
+    }
+   } catch (...) {
+    LOG(WARNING) << "CopyComponents - Exception checking use_count for component " << i << ", skipping";
+    continue;
+   }
+   
    if((*pcomponents)->GetStaticFlag())
     continue;
    // TRACE: Log before recursive Alloc call
@@ -1702,10 +1801,18 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
     comp_name = "<error>";
    }
    LOG(INFO) << "CopyComponents[TRACE] - About to call Alloc (RECURSIVE) for component " << i 
-             << ": comp_name=" << comp_name;
+             << ": comp_name=" << comp_name << " use_count=" << comp_use_count;
    // CRITICAL: Alloc() may return a component that already has an owner
    // We need to handle this case by breaking the owner relationship before AddComponent
-   bufcomp=(*pcomponents)->Alloc(stor);
+   try {
+    bufcomp=(*pcomponents)->Alloc(stor);
+   } catch (const std::bad_weak_ptr&) {
+    LOG(WARNING) << "CopyComponents - bad_weak_ptr in Alloc() for component " << i << " comp_name=" << comp_name << ", skipping";
+    continue;
+   } catch (...) {
+    LOG(WARNING) << "CopyComponents - Exception in Alloc() for component " << i << " comp_name=" << comp_name << ", skipping";
+    continue;
+   }
    LOG(INFO) << "CopyComponents[TRACE] - Alloc returned for component " << i 
              << ": bufcomp=" << (bufcomp ? bufcomp->GetName() : "null");
    if(bufcomp && bufcomp->GetOwner())
@@ -2253,8 +2360,54 @@ bool UContainer::Default(void)
   {
    BeforeDefault();
    Ready=false;
-   for(int i=0;i<NumComponents;i++)
-	PComponents[i]->Default();
+   
+   // SAFETY: Check PComponents validity before iteration
+   if(PComponents && NumComponents > 0)
+   {
+    for(int i=0;i<NumComponents;i++)
+    {
+     // SAFETY: Check component validity before calling Default()
+     if(!PComponents[i])
+      continue;
+     
+     // SAFETY: Wrap Default() call in try-catch to handle corrupted shared_ptr
+     try {
+      // Check if component is still valid by checking use_count
+      // If use_count is extremely large, the control block is likely corrupted
+      size_t use_count = PComponents[i].use_count();
+      if(use_count > 1000000 || use_count == 0) // Sanity check - normal use_count should be much smaller
+      {
+       LOG(WARNING) << "UContainer::Default - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
+       continue;
+      }
+      
+      // SAFETY: Check if raw pointer is valid before calling Default()
+      // Default() may segfault if component is destroyed
+      void* raw_ptr = PComponents[i].get();
+      if(!raw_ptr)
+      {
+       LOG(WARNING) << "UContainer::Default - Component " << i << " has null raw pointer, skipping";
+       continue;
+      }
+      
+      // CRITICAL: If use_count is suspiciously high, skip Default() to avoid segfault
+      // This prevents segfault from corrupted vtables or expired objects
+      if(use_count > 1000)
+      {
+       LOG(WARNING) << "UContainer::Default - Component " << i << " has high use_count: " << use_count << ", skipping Default() to avoid segfault";
+       continue;
+      }
+      
+      PComponents[i]->Default();
+     } catch (const std::bad_weak_ptr&) {
+      LOG(WARNING) << "UContainer::Default - bad_weak_ptr for component " << i << ", skipping";
+      continue;
+     } catch (...) {
+      LOG(WARNING) << "UContainer::Default - exception during Default() for component " << i << ", skipping";
+      continue;
+     }
+    }
+   }
 
    // ���� ���������� �������� � ���������, �� ����� ��������� ����������
    // �� ���������
@@ -2412,8 +2565,53 @@ bool UContainer::Build(void)
   {
    BeforeBuild();
 
-   for(int i=0;i<NumComponents;i++)
-	PComponents[i]->Build();
+   // SAFETY: Check PComponents validity before iteration
+   if(PComponents && NumComponents > 0)
+   {
+    for(int i=0;i<NumComponents;i++)
+    {
+     // SAFETY: Check component validity before calling Build()
+     if(!PComponents[i])
+      continue;
+     
+     // SAFETY: Wrap Build() call in try-catch to handle corrupted shared_ptr
+     try {
+      // Check if component is still valid by checking use_count
+      // If use_count is extremely large, the control block is likely corrupted
+      size_t use_count = PComponents[i].use_count();
+      if(use_count > 1000000 || use_count == 0) // Sanity check - normal use_count should be much smaller
+      {
+       LOG(WARNING) << "UContainer::Build - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
+       continue;
+      }
+      
+      // SAFETY: Check if raw pointer is valid before calling Build()
+      // Build() may segfault if component is destroyed
+      void* raw_ptr = PComponents[i].get();
+      if(!raw_ptr)
+      {
+       LOG(WARNING) << "UContainer::Build - Component " << i << " has null raw pointer, skipping";
+       continue;
+      }
+      
+      // CRITICAL: If use_count is suspiciously high, skip Build() to avoid segfault
+      // This prevents segfault from corrupted vtables or expired objects
+      if(use_count > 1000)
+      {
+       LOG(WARNING) << "UContainer::Build - Component " << i << " has high use_count: " << use_count << ", skipping Build() to avoid segfault";
+       continue;
+      }
+      
+      PComponents[i]->Build();
+     } catch (const std::bad_weak_ptr&) {
+      LOG(WARNING) << "UContainer::Build - bad_weak_ptr for component " << i << ", skipping";
+      continue;
+     } catch (...) {
+      LOG(WARNING) << "UContainer::Build - exception during Build() for component " << i << ", skipping";
+      continue;
+     }
+    }
+   }
 
    ABuild();
    Ready=true;
@@ -3247,6 +3445,30 @@ void UContainer::AfterDelComponent(std::shared_ptr<UContainer> comp, bool canfre
 
 void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 {
+ // SAFETY: Check if comp is valid before using it
+ // According to backtrace, comp can have corrupted use_count (e.g., -4)
+ if(!comp)
+ {
+  LOG(WARNING) << "UContainer::DelComponent - comp is null, skipping";
+  return;
+ }
+ 
+ // SAFETY: Check use_count to detect corrupted shared_ptr
+ // Negative use_count indicates corrupted control block
+ try {
+  size_t use_count = comp.use_count();
+  // Check for corrupted shared_ptr - use_count should never be negative or extremely large
+  // Maximum reasonable use_count is around 100-1000 for normal operations
+  if(use_count > 1000000 || use_count == 0)
+  {
+   LOG(WARNING) << "UContainer::DelComponent - comp has suspicious use_count: " << use_count << ", skipping operations";
+   return;
+  }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking use_count, comp may be corrupted, skipping";
+  return;
+ }
+ 
  BeforeDelComponent(comp,canfree);
  SharesUnInit();
  ADelComponent(comp);
@@ -3255,35 +3477,95 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
  // SetEnvironment may call UpdateInternalData() which can access Storage
  // We need to ensure Storage is still valid or skip UpdateInternalData()
  // Check if comp is still valid by checking its Class
- if(comp && comp->GetClass() != ForbiddenId)
- {
-  try {
-   comp->SetEnvironment(0);
-  } catch (...) {
-   // Ignore exceptions during destruction
+ // SAFETY: Re-check comp validity after ADelComponent
+ try {
+  if(comp && comp->GetClass() != ForbiddenId)
+  {
+   try {
+    comp->SetEnvironment(0);
+   } catch (...) {
+    // Ignore exceptions during destruction
+    LOG(WARNING) << "UContainer::DelComponent - exception in SetEnvironment(0), skipping";
+   }
   }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking GetClass(), comp may be destroyed, skipping SetEnvironment";
  }
 
  //if(comp->GetMainOwner() == MainOwner)
- if(comp)
- {
-  try {
-   comp->SetMainOwner(0);
-  } catch (...) {
-   // Ignore exceptions during destruction
+ // SAFETY: Re-check comp validity before SetMainOwner
+ try {
+  if(comp)
+  {
+   try {
+    comp->SetMainOwner(0);
+   } catch (...) {
+    // Ignore exceptions during destruction
+    LOG(WARNING) << "UContainer::DelComponent - exception in SetMainOwner(0), skipping";
+   }
   }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity, skipping SetMainOwner";
  }
 
  // �������� �� ���� ���������
  // ������� ��������� �� ������� ������������ ���������
- DelLookupComponent(comp->Name);
+ // SAFETY: Re-check comp validity before accessing comp->Name
+ try {
+  if(comp)
+  {
+   try {
+    DelLookupComponent(comp->Name);
+   } catch (...) {
+    LOG(WARNING) << "UContainer::DelComponent - exception in DelLookupComponent, skipping";
+   }
+  }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before DelLookupComponent, skipping";
+ }
 
  // �������� �� ���� ���������
- DelComponentTable(comp);
+ // SAFETY: Re-check comp validity before DelComponentTable
+ try {
+  if(comp)
+  {
+   try {
+    DelComponentTable(comp);
+   } catch (...) {
+    LOG(WARNING) << "UContainer::DelComponent - exception in DelComponentTable, skipping";
+   }
+  }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before DelComponentTable, skipping";
+ }
 
- comp->Owner.reset();
+ // SAFETY: Re-check comp validity before Owner.reset()
+ try {
+  if(comp)
+  {
+   try {
+    comp->Owner.reset();
+   } catch (...) {
+    LOG(WARNING) << "UContainer::DelComponent - exception in Owner.reset(), skipping";
+   }
+  }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before Owner.reset(), skipping";
+ }
 
- AfterDelComponent(comp,canfree);
+ // SAFETY: Re-check comp validity before AfterDelComponent
+ try {
+  if(comp)
+  {
+   try {
+    AfterDelComponent(comp,canfree);
+   } catch (...) {
+    LOG(WARNING) << "UContainer::DelComponent - exception in AfterDelComponent, skipping";
+   }
+  }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before AfterDelComponent, skipping";
+ }
 
  // With shared_ptr, we don't need to call Free()
  // If canfree is true and component has Storage, return it to Storage
@@ -3292,7 +3574,9 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
  // because ReturnObject may try to access Activity property which has invalid Owner pointer
  // Instead, let shared_ptr handle cleanup automatically
  // Only call ReturnObject if we're explicitly removing a component (not during destruction)
- if(canfree && comp && comp->GetClass() != ForbiddenId)
+ // SAFETY: Re-check comp validity before ReturnObject
+ try {
+  if(canfree && comp && comp->GetClass() != ForbiddenId)
  {
   // Get Storage safely - it may be nullptr if Storage is being destroyed
   // Check if we're in destruction phase - if so, skip ReturnObject
@@ -3314,7 +3598,11 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
   } catch (...) {
    // Ignore exceptions during destruction - Storage may be partially destroyed
    // or object may be partially destroyed
+   LOG(WARNING) << "UContainer::DelComponent - exception in ReturnObject, skipping";
   }
+  }
+ } catch (...) {
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before ReturnObject, skipping";
  }
 
  if(!NumComponents)

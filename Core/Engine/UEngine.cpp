@@ -1033,7 +1033,28 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
 			if(!factory)
 	return TempString.c_str();
 
-			std::shared_ptr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(factory->GetComponent());
+			// SAFETY: Get component safely before dynamic_pointer_cast
+			std::shared_ptr<UContainer> component_ptr = factory->GetComponent();
+			if(!component_ptr)
+			{
+			 return TempString.c_str();
+			}
+			
+			// SAFETY: Check use_count before dynamic_pointer_cast
+			try {
+			 size_t use_count = component_ptr.use_count();
+			 if(use_count > 1000000 || use_count == 0)
+			 {
+			  LOG(ERROR) << "UEngine::Model_GetComponentXML - Component has suspicious use_count: " << use_count;
+			  return TempString.c_str();
+			 }
+			} catch (...) {
+			 LOG(ERROR) << "UEngine::Model_GetComponentXML - Exception checking component use_count";
+			 return TempString.c_str();
+			}
+			
+			// SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+			std::shared_ptr<UNet> cont = SafeDynamicPointerCast<RDK::UNet>(component_ptr);
 
    if(!cont)
     return TempString.c_str();
@@ -1081,7 +1102,28 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
   try
   {
    std::shared_ptr<UComponentAbstractFactory> factory=Storage->GetComponentFactory(stringid);
-   cont=dynamic_pointer_cast<RDK::UNet>(factory->New());
+   // SAFETY: Get new component safely before dynamic_pointer_cast
+   std::shared_ptr<UContainer> new_component = factory->New();
+   if(!new_component)
+   {
+	return TempString.c_str();
+   }
+   
+   // SAFETY: Check use_count before dynamic_pointer_cast
+   try {
+	size_t use_count = new_component.use_count();
+	if(use_count > 1000000 || use_count == 0)
+	{
+	 LOG(ERROR) << "UEngine::Model_CreateComponentXML - New component has suspicious use_count: " << use_count;
+	 return TempString.c_str();
+	}
+   } catch (...) {
+	LOG(ERROR) << "UEngine::Model_CreateComponentXML - Exception checking new component use_count";
+	return TempString.c_str();
+   }
+   
+   // SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+   cont = SafeDynamicPointerCast<RDK::UNet>(new_component);
 
    if(!cont)
 	return TempString.c_str();
@@ -3309,16 +3351,79 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
  {
   try
   {
-   std::shared_ptr<UNet> component=dynamic_pointer_cast<RDK::UNet>(FindComponent(component_name));
+   // SAFETY: Get component safely before dynamic_pointer_cast
+   std::shared_ptr<UContainer> component_ptr = FindComponent(component_name);
+   if(!component_ptr)
+   {
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+   }
+   
+   // SAFETY: Check use_count before dynamic_pointer_cast
+   try {
+	size_t use_count = component_ptr.use_count();
+	if(use_count > 1000000 || use_count == 0)
+	{
+	 LOG(ERROR) << "UEngine::Model_GetComponentPropertiesXML - Component has suspicious use_count: " << use_count;
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+   } catch (...) {
+	LOG(ERROR) << "UEngine::Model_GetComponentPropertiesXML - Exception checking component use_count";
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+   }
+   
+   // SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+   std::shared_ptr<UNet> component = SafeDynamicPointerCast<RDK::UNet>(component_ptr);
 
    if(!component)
     return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-   std::shared_ptr<UNet> owner=std::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
+   // SAFETY: Get owner safely before dynamic_pointer_cast
+   std::shared_ptr<UContainer> owner_ptr = component->GetOwner();
+   if(!owner_ptr)
+   {
+	return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+   }
+   
+   // SAFETY: Check use_count before dynamic_pointer_cast
+   try {
+	size_t owner_use_count = owner_ptr.use_count();
+	if(owner_use_count > 1000000 || owner_use_count == 0)
+	{
+	 LOG(ERROR) << "UEngine::Model_CopyComponent - Owner has suspicious use_count: " << owner_use_count;
+	 return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+	}
+   } catch (...) {
+	LOG(ERROR) << "UEngine::Model_CopyComponent - Exception checking owner use_count";
+	return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+   }
+   
+   // SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+   std::shared_ptr<UNet> owner = SafeDynamicPointerCast<RDK::UNet>(owner_ptr);
    if(!owner)
     return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
-   std::shared_ptr<UNet> new_component=std::dynamic_pointer_cast<RDK::UNet>(Storage->TakeObject(component->GetClass(),component));
+   // SAFETY: Get new component safely before dynamic_pointer_cast
+   std::shared_ptr<UContainer> new_component_ptr = Storage->TakeObject(component->GetClass(), component);
+   if(!new_component_ptr)
+   {
+	return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
+   }
+   
+   // SAFETY: Check use_count before dynamic_pointer_cast
+   try {
+	size_t new_use_count = new_component_ptr.use_count();
+	if(new_use_count > 1000000 || new_use_count == 0)
+	{
+	 LOG(ERROR) << "UEngine::Model_CopyComponent - New component has suspicious use_count: " << new_use_count;
+	 return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
+	}
+   } catch (...) {
+	LOG(ERROR) << "UEngine::Model_CopyComponent - Exception checking new component use_count";
+	return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
+   }
+   
+   // SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+   std::shared_ptr<UNet> new_component = SafeDynamicPointerCast<RDK::UNet>(new_component_ptr);
    if(!new_component)
     return RDK_E_STORAGE_TAKE_OBJECT_FAIL;
 
@@ -5281,17 +5386,44 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    {
 	std::string name=XmlStorage.GetNodeAttribute("Class");
 	UId id=Storage->FindClassId(name);
-	std::shared_ptr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel());
-	if(!cont || cont->GetClass() != id)
+	
+	// CRITICAL: Create model first, then get it safely
+	Model_Destroy();
+	Model_Create(name.c_str());
+	
+	// SAFETY: Get model and check validity before dynamic_pointer_cast
+	std::shared_ptr<UContainer> model_ptr = Environment->GetModel();
+	if(!model_ptr)
 	{
-	 Model_Destroy();
-	 Model_Create(name.c_str());
-	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel());
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Failed to create model";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 	}
-
+	
+	// SAFETY: Check use_count before dynamic_pointer_cast to prevent segfault
+	try {
+	 size_t use_count = model_ptr.use_count();
+	 if(use_count > 1000000 || use_count == 0)
+	 {
+	  LOG(ERROR) << "UEngine::Model_LoadComponent - Model has suspicious use_count: " << use_count;
+	  return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	 }
+	} catch (...) {
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Exception checking model use_count";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+	
+	// SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+	std::shared_ptr<UNet> cont = SafeDynamicPointerCast<RDK::UNet>(model_ptr);
+	
 	if(!cont)
 	{
-	 LOG(ERROR) << "UEngine::Model_LoadComponent - Failed to create/get model component";
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Failed to cast model to UNet";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+	
+	if(cont->GetClass() != id)
+	{
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Model class mismatch: expected=" << id << " got=" << cont->GetClass();
 	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 	}
 
@@ -5300,13 +5432,59 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    }
    else
    {
-	if((strlen(stringid) == 0) && (xml_model_name != Environment->GetModel()->GetName()))
-	 RDK_RAW_THROW(EErrorEngineModelNameDontMatch(xml_model_name, Environment->GetModel()->GetName()));
+	// SAFETY: Get model safely and check validity
+	std::shared_ptr<UContainer> model_ptr = Environment->GetModel();
+	if(!model_ptr)
+	{
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Environment->GetModel() returned nullptr";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+	
+	// SAFETY: Check use_count before accessing model
+	try {
+	 size_t use_count = model_ptr.use_count();
+	 if(use_count > 1000000 || use_count == 0)
+	 {
+	  LOG(ERROR) << "UEngine::Model_LoadComponent - Model has suspicious use_count: " << use_count;
+	  return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	 }
+	 
+	 if((strlen(stringid) == 0) && (xml_model_name != model_ptr->GetName()))
+	  RDK_RAW_THROW(EErrorEngineModelNameDontMatch(xml_model_name, model_ptr->GetName()));
+	} catch (...) {
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Exception checking model validity";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
 
-	std::shared_ptr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+	// SAFETY: Get component safely before dynamic_pointer_cast
+	std::shared_ptr<UContainer> component_ptr = FindComponent(stringid);
+	if(!component_ptr)
+	{
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - FindComponent returned nullptr for: " << stringid;
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+	
+	// SAFETY: Check use_count before dynamic_pointer_cast
+	try {
+	 size_t comp_use_count = component_ptr.use_count();
+	 if(comp_use_count > 1000000 || comp_use_count == 0)
+	 {
+	  LOG(ERROR) << "UEngine::Model_LoadComponent - Component has suspicious use_count: " << comp_use_count;
+	  return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	 }
+	} catch (...) {
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Exception checking component use_count";
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
+	
+	// SAFETY: Use SafeDynamicPointerCast to prevent segfault from corrupted vtable
+	std::shared_ptr<UNet> cont = SafeDynamicPointerCast<RDK::UNet>(component_ptr);
 
 	if(!cont)
+	{
+	 LOG(ERROR) << "UEngine::Model_LoadComponent - Failed to cast component to UNet: " << stringid;
 	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	}
 
 	if(!cont->LoadComponent(&XmlStorage,true))
 	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;

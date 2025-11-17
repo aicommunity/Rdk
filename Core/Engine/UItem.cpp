@@ -589,15 +589,18 @@ bool UItem::Disconnect(const UId &id)
 // ������������� ������������.
 void UItem::DisconnectAll(void)
 {
- try {
-  Build();
- } catch (const std::bad_weak_ptr&) {
-  // Object is not managed by shared_ptr or already destroyed, skip Build()
-  LOG(WARNING) << "UItem::DisconnectAll - bad_weak_ptr in Build(), skipping";
- } catch (...) {
-  // Ignore other exceptions during destruction
-  LOG(WARNING) << "UItem::DisconnectAll - exception in Build(), skipping";
- }
+ // SAFETY: Avoid recursive Build() call during BreakLinks
+ // BreakLinks -> DisconnectAll -> Build -> BreakLinks creates infinite recursion
+ // CRITICAL: Never call Build() from DisconnectAll() - it causes recursion
+ // Build() may call BreakLinks() which calls DisconnectAll() again, creating infinite loop
+ // Instead, just disconnect connectors without building
+ // If Build() is needed, it should be called separately before DisconnectAll()
+ 
+ // REMOVED: Build() call to prevent recursion
+ // The original code called Build() here, but this causes:
+ // DisconnectAll() -> Build() -> BreakLinks() -> DisconnectAll() -> Build() -> ...
+ // This creates infinite recursion and segfault
+ // If object needs to be built, it should be built before calling DisconnectAll()
 
  std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
 

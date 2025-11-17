@@ -46,7 +46,9 @@ class RDK_LIB_TYPE UInstancesStorageElement
 {
 public: // ������
 // ��������� �� ������
-std::shared_ptr<UContainer> Object;
+// CRITICAL: Use weak_ptr instead of shared_ptr to prevent use-after-free
+// Objects are owned by other shared_ptr instances, ObjectsStorage only tracks them
+std::weak_ptr<UContainer> Object;
 
 // ������� ���� �������� �� ������
 bool UseFlag;

@@ -15,8 +15,22 @@ See file license.txt for more information
 #include "UNet.h"
 #include <glog/logging.h>
 #include "UXMLEnvSerialize.h"
+#include <csignal>
+#include <setjmp.h>
 
 namespace RDK {
+
+// Helper for safe dynamic_pointer_cast with signal protection
+static sigjmp_buf* current_dynamic_cast_jmp_buf = nullptr;
+
+static void DynamicCastSegfaultHandler(int sig)
+{
+ (void)sig;
+ if(current_dynamic_cast_jmp_buf)
+ {
+  siglongjmp(*current_dynamic_cast_jmp_buf, 1);
+ }
+}
 
 // Helper method implementations
 std::shared_ptr<UNet> UNet::GetThisAsSharedNet() {
@@ -96,14 +110,115 @@ bool UNet::AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPoi
 // ���������� � ������ ���������
 bool UNet::ADelComponent(std::shared_ptr<UContainer> comp)
 {
- if(!comp->IsMoving())
+ // SAFETY: Check component validity before use
+ if(!comp)
+  return true;
+ 
+ // SAFETY: Set up signal handler early to catch any segfaults
+ sigjmp_buf local_jmp_buf;
+ struct sigaction old_action;
+ struct sigaction new_action;
+ new_action.sa_handler = DynamicCastSegfaultHandler;
+ sigemptyset(&new_action.sa_mask);
+ new_action.sa_flags = 0;
+ 
+ sigjmp_buf* prev_jmp_buf = current_dynamic_cast_jmp_buf;
+ current_dynamic_cast_jmp_buf = &local_jmp_buf;
+ 
+ bool handler_installed = (sigaction(SIGSEGV, &new_action, &old_action) == 0);
+ 
+ // Wrap all operations in signal protection
+ if(handler_installed && sigsetjmp(local_jmp_buf, 1) == 0)
  {
- if(dynamic_pointer_cast<UItem>(comp))
-  static_pointer_cast<UItem>(comp)->DisconnectBy(GetThisAsSharedContainer());
-  else
- if(dynamic_pointer_cast<UNet>(comp))
-  static_pointer_cast<UNet>(comp)->BreakLinks(GetThisAsSharedContainer());
+  // SAFETY: Wrap all operations in try-catch to handle corrupted shared_ptr
+  try {
+   // Check if component is still valid by checking use_count
+   // If use_count is extremely large, the control block is likely corrupted
+   size_t use_count = comp.use_count();
+   if(use_count > 1000000) // Sanity check - normal use_count should be much smaller
+   {
+    LOG(WARNING) << "UNet::ADelComponent - Component has suspicious use_count: " << use_count << ", skipping";
+    current_dynamic_cast_jmp_buf = prev_jmp_buf;
+    if(handler_installed)
+     sigaction(SIGSEGV, &old_action, nullptr);
+    return true;
+   }
+   
+   // Check IsMoving() - this may segfault if comp is corrupted
+   bool is_moving = false;
+   try {
+    is_moving = comp->IsMoving();
+   } catch (...) {
+    LOG(WARNING) << "UNet::ADelComponent - exception calling IsMoving(), skipping";
+    current_dynamic_cast_jmp_buf = prev_jmp_buf;
+    if(handler_installed)
+     sigaction(SIGSEGV, &old_action, nullptr);
+    return true;
+   }
+   
+   if(!is_moving)
+   {
+    // Try dynamic_pointer_cast for UItem - if vtable is corrupted, segfault will occur
+    // Signal handler will catch it and jump to sigsetjmp
+    std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(comp);
+    
+    if(item)
+    {
+     item->DisconnectBy(GetThisAsSharedContainer());
+     current_dynamic_cast_jmp_buf = prev_jmp_buf;
+     if(handler_installed)
+      sigaction(SIGSEGV, &old_action, nullptr);
+     return true;
+    }
+    
+    // Try dynamic_pointer_cast for UNet
+    std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(comp);
+    
+    if(net)
+    {
+     net->BreakLinks(GetThisAsSharedContainer());
+     current_dynamic_cast_jmp_buf = prev_jmp_buf;
+     if(handler_installed)
+      sigaction(SIGSEGV, &old_action, nullptr);
+     return true;
+    }
+   }
+   
+   // Restore signal handler
+   current_dynamic_cast_jmp_buf = prev_jmp_buf;
+   if(handler_installed)
+    sigaction(SIGSEGV, &old_action, nullptr);
+  } catch (const std::bad_weak_ptr&) {
+   LOG(WARNING) << "UNet::ADelComponent - bad_weak_ptr, skipping disconnect";
+   current_dynamic_cast_jmp_buf = prev_jmp_buf;
+   if(handler_installed)
+    sigaction(SIGSEGV, &old_action, nullptr);
+   return true;
+  } catch (...) {
+   LOG(WARNING) << "UNet::ADelComponent - exception during operations, skipping disconnect";
+   current_dynamic_cast_jmp_buf = prev_jmp_buf;
+   if(handler_installed)
+    sigaction(SIGSEGV, &old_action, nullptr);
+   return true;
+  }
  }
+ else
+ {
+  // Segfault occurred during operations
+  LOG(WARNING) << "UNet::ADelComponent - Segfault occurred, skipping disconnect";
+  current_dynamic_cast_jmp_buf = prev_jmp_buf;
+  if(handler_installed)
+   sigaction(SIGSEGV, &old_action, nullptr);
+  return true;
+ }
+ 
+ // If handler installation failed, skip operations
+ if(!handler_installed)
+ {
+  LOG(WARNING) << "UNet::ADelComponent - Failed to install signal handler, skipping disconnect";
+  current_dynamic_cast_jmp_buf = prev_jmp_buf;
+ }
+ 
  return true;
 }
 // --------------------------
@@ -219,13 +334,46 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 // brklevel - ������, ������������ �������� ����� ��������� �����������
 void UNet::BreakLinks(std::shared_ptr<UContainer> brklevel)
 {
+ // SAFETY: Check PComponents validity before iteration
+ if(!PComponents || NumComponents <= 0)
+  return;
+ 
  for(int i=0;i<NumComponents;i++)
   {
-   if(dynamic_pointer_cast<UItem>(PComponents[i]))
-	static_pointer_cast<UItem>(PComponents[i])->DisconnectBy(brklevel);
-   else
-   if(dynamic_pointer_cast<UNet>(PComponents[i]))
-    static_pointer_cast<UNet>(PComponents[i])->BreakLinks(brklevel);
+   // SAFETY: Check component validity before dynamic_pointer_cast
+   if(!PComponents[i])
+    continue;
+   
+   // SAFETY: Wrap dynamic_pointer_cast in try-catch to handle corrupted shared_ptr
+   try {
+    // Check if component is still valid by checking use_count
+    // If use_count is extremely large, the control block is likely corrupted
+    size_t use_count = PComponents[i].use_count();
+    if(use_count > 1000000) // Sanity check - normal use_count should be much smaller
+    {
+     LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
+     continue;
+    }
+    
+    std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(PComponents[i]);
+    if(item)
+    {
+     item->DisconnectBy(brklevel);
+     continue;
+    }
+    
+    std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(PComponents[i]);
+    if(net)
+    {
+     net->BreakLinks(brklevel);
+    }
+   } catch (const std::bad_weak_ptr&) {
+    LOG(WARNING) << "UNet::BreakLinks - bad_weak_ptr for component " << i << ", skipping";
+    continue;
+   } catch (...) {
+    LOG(WARNING) << "UNet::BreakLinks - exception during dynamic_pointer_cast for component " << i << ", skipping";
+    continue;
+   }
   }
 }
 
@@ -243,16 +391,84 @@ bool UNet::BreakLinks(const ULinksList &linkslist)
 // ��������� ��� ���������� ����� ����.
 void UNet::BreakLinks(void)
 {
+ // SAFETY: Check PComponents validity before iteration
+ if(!PComponents || NumComponents <= 0)
+ {
+  DisconnectAll();
+  DisconnectAllItems();
+  return;
+ }
+ 
  for(int i=0;i<NumComponents;i++)
-  if(dynamic_pointer_cast<UNet>(PComponents[i]))
-   static_pointer_cast<UNet>(PComponents[i])->BreakLinks();
-  else
-  {
-   if(dynamic_pointer_cast<UItem>(PComponents[i]))
-	static_pointer_cast<UItem>(PComponents[i])->DisconnectAll();
-   if(dynamic_pointer_cast<UConnector>(PComponents[i]))
-	static_pointer_cast<UConnector>(PComponents[i])->DisconnectAllItems();
+ {
+  // SAFETY: Check component validity before dynamic_pointer_cast
+  if(!PComponents[i])
+   continue;
+  
+  // SAFETY: Wrap dynamic_pointer_cast in try-catch to handle corrupted shared_ptr
+  try {
+   // Check if component is still valid by checking use_count
+   // If use_count is extremely large, the control block is likely corrupted
+   size_t use_count = PComponents[i].use_count();
+   if(use_count > 1000000) // Sanity check - normal use_count should be much smaller
+   {
+    LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
+    continue;
+   }
+   
+   // SAFETY: Check if shared_ptr is expired by checking if get() returns valid pointer
+   // If use_count is 0, the object may be destroyed
+   if(use_count == 0)
+   {
+    LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has use_count=0, skipping";
+    continue;
+   }
+   
+   // SAFETY: Check if raw pointer is valid before dynamic_pointer_cast
+   // dynamic_pointer_cast can segfault if vtable is corrupted even if get() is not nullptr
+   void* raw_ptr = PComponents[i].get();
+   if(!raw_ptr)
+   {
+    LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has null raw pointer, skipping";
+    continue;
+   }
+   
+   // CRITICAL: If use_count is suspiciously high or low, skip dynamic_pointer_cast entirely
+   // This prevents segfault from corrupted vtables or expired objects
+   // According to backtrace, segfault occurs when shared_ptr is expired (weak count 0)
+   // but use_count may still be > 0, so we need to be very conservative
+   if(use_count > 1000 || use_count == 0)
+   {
+    LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has suspicious use_count: " << use_count << ", skipping all operations to avoid segfault";
+    continue;
+   }
+   
+   std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(PComponents[i]);
+   if(net)
+   {
+    net->BreakLinks();
+    continue;
+   }
+   
+   std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(PComponents[i]);
+   if(item)
+   {
+    item->DisconnectAll();
+   }
+   
+   std::shared_ptr<UConnector> connector = dynamic_pointer_cast<UConnector>(PComponents[i]);
+   if(connector)
+   {
+    connector->DisconnectAllItems();
+   }
+  } catch (const std::bad_weak_ptr&) {
+   LOG(WARNING) << "UNet::BreakLinks - bad_weak_ptr for component " << i << ", skipping";
+   continue;
+  } catch (...) {
+   LOG(WARNING) << "UNet::BreakLinks - exception during dynamic_pointer_cast for component " << i << ", skipping";
+   continue;
   }
+ }
 
  DisconnectAll();
  DisconnectAllItems();

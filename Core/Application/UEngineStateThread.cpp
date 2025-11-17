@@ -342,7 +342,21 @@ std::list<std::string> UEngineStateThread::ReadGuiUnsentLog(void)
 void UEngineStateThread::Terminate(void)
 {
  Terminated=true;
- Thread.join();
+ 
+ // SAFETY: Check if thread is joinable before joining to prevent std::system_error
+ // If thread is already joined or not started, join() will throw std::system_error
+ try {
+  if(Thread.joinable())
+  {
+   Thread.join();
+  }
+ } catch (const std::system_error& e) {
+  // Thread may already be joined or not started - ignore error
+  LOG(WARNING) << "UEngineStateThread::Terminate - Exception joining thread: " << e.what();
+ } catch (...) {
+  LOG(WARNING) << "UEngineStateThread::Terminate - Unknown exception joining thread";
+ }
+ 
  CalcStarted->reset();
 
  if(!CalculationNotInProgress->wait(0) || !CalculationNotInProgress->wait(10000))
