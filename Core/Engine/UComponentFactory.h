@@ -39,7 +39,7 @@ namespace RDK {
 class UVirtualMethodFactory : public UComponentAbstractFactory
 {
 protected:
-  std::weak_ptr<UContainer> Component;  // Use weak_ptr - prototype stays in ObjectsStorage until factory is destroyed
+  std::shared_ptr<UContainer> Component;  // Use shared_ptr to keep prototype alive - factory owns the prototype
 
 public:
   UVirtualMethodFactory(std::shared_ptr<UContainer> comp);

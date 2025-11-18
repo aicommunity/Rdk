@@ -7,6 +7,7 @@
 #include "UChannelProfiler.h"
 #include "UBroadcasterInterface.h"
 #include "UApplication.h"
+#include "../Engine/UEnvironment.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 namespace RDK {
@@ -875,6 +876,19 @@ bool UEngineControl::DeleteChannel(int index)
 int UEngineControl::getUpdateInterval() const
 {
     return UpdateInterval;
+}
+
+std::shared_ptr<UEnvironment> UEngineControl::GetEnvironment(int channel_index)
+{
+ // UEngineControl наследуется от UAppController
+ // UAppController имеет метод GetEnvironmentLock(int channel_index)
+ // GetEnvironmentLock возвращает UELockPtr<UEnvironment>
+ UELockPtr<UEnvironment> envLock = GetEnvironmentLock(channel_index);
+ if (!envLock) {
+  return nullptr;
+ }
+ // UELockPtr имеет метод GetPtr() для получения shared_ptr из PData
+ return envLock.GetPtr();
 }
 
 void UEngineControl::setUpdateInterval(const int value)

@@ -583,10 +583,20 @@ bool UApplication::SetEngineControl(const std::shared_ptr<UEngineControl> &value
 }
 
 /// ������������� ������ � �������
-/*std::shared_ptr<UProject> UApplication::GetProject(void)
+std::shared_ptr<UProject> UApplication::GetProject(void)
 {
  return Project;
-} */
+}
+
+std::shared_ptr<UEnvironment> UApplication::GetEnvironment(int channel_index)
+{
+ if (!EngineControl) {
+  return nullptr;
+ }
+ 
+ // Получаем Environment через EngineControl->GetEnvironment(channel_index)
+ return EngineControl->GetEnvironment(channel_index);
+}
 
 /// ������������� ����� ������
 /// ��������������� �� ������������ ������ ����������� ����� �� ���������� �������
@@ -735,6 +745,14 @@ bool UApplication::Init(void)
  MLog_SetExceptionHandler(RDK_GLOB_MESSAGE,(void*)ExceptionHandler);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
  Core_LoadFonts();
+
+ // SAFETY: Create EngineControl if it doesn't exist
+ if (!EngineControl) {
+  EngineControl = std::make_shared<UEngineControl>();
+  // Note: SetApplication will be called later if needed, or we can pass nullptr for now
+  // EngineControl->SetApplication requires shared_ptr, but we're in Init() before object is fully managed
+  // For now, create EngineControl without SetApplication - it will be set later if needed
+ }
 
  EngineControl->Init();
  RDK::GetCoreLock()->SetLibrariesPath(LibrariesPath);
@@ -1960,14 +1978,26 @@ int UApplication::GetNumChannels(void) const
 
 bool UApplication::SetNumChannels(int num)
 {
+ // SAFETY: Check EngineControl before use
+ if (!EngineControl) {
+  LOG(ERROR) << "UApplication::SetNumChannels - EngineControl is nullptr";
+  return false;
+ }
+ 
  int old_num=GetNumChannels();
  if(!EngineControl->SetNumChannels(num))
   return false;
 
- if(!ServerControl->SetNumChannels(old_num))
-  return false;
+ // SAFETY: Check ServerControl before use (may be nullptr during initialization)
+ if(ServerControl) {
+  if(!ServerControl->SetNumChannels(old_num))
+   return false;
+ }
 
- Project->SetNumChannels(num);
+ // SAFETY: Check Project before use (may be nullptr during initialization)
+ if(Project) {
+  Project->SetNumChannels(num);
+ }
 
  for(int i=old_num;i<num;i++)
  {

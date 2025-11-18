@@ -312,18 +312,25 @@ bool UContainer::SetEnvironment(UEnvironment* environment)
 
  bool res=true;
 
- // SAFETY: Check PComponents validity before iteration
- if(PComponents && NumComponents > 0)
+ // SAFETY: Use Components vector directly instead of PComponents pointer
+ // PComponents may be invalid if Components vector was modified
+ NumComponents = int(Components.size());
+ if(NumComponents > 0)
+  PComponents = &Components[0];
+ else
+  PComponents = nullptr;
+
+ if(NumComponents > 0)
  {
   for(int i=0;i<NumComponents;i++)
   {
-   // SAFETY: Check component validity before calling SetEnvironment
-   if(!PComponents[i])
+   // SAFETY: Check bounds and component validity before calling SetEnvironment
+   if(i >= int(Components.size()) || !Components[i])
     continue;
    
    // SAFETY: Check use_count to detect corrupted shared_ptr
    try {
-    size_t use_count = PComponents[i].use_count();
+    size_t use_count = Components[i].use_count();
     if(use_count > 1000000 || use_count == 0)
     {
      LOG(WARNING) << "UContainer::SetEnvironment - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
@@ -335,7 +342,7 @@ bool UContainer::SetEnvironment(UEnvironment* environment)
    }
    
    try {
-    res&=PComponents[i]->SetEnvironment(environment);
+    res&=Components[i]->SetEnvironment(environment);
    } catch (...) {
     // Component may be destroyed or corrupted, skip
     LOG(WARNING) << "UContainer::SetEnvironment - exception setting environment for component " << i << ", skipping";
@@ -599,8 +606,13 @@ bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
 unsigned long long UContainer::GetStepDuration(void) const
 {
  unsigned long long res=0;
- for(int i=0;i<NumComponents;i++)
-  res+=PComponents[i]->GetFullStepDuration();
+ // SAFETY: Use Components vector directly instead of PComponents pointer
+ int num_components = int(Components.size());
+ for(int i=0;i<num_components;i++)
+ {
+  if(i < int(Components.size()) && Components[i])
+   res+=Components[i]->GetFullStepDuration();
+ }
 
  return StepDuration-res;
 }
@@ -1284,9 +1296,13 @@ void UContainer::Free(void)
  // With shared_ptr, we don't need to call Free() recursively
  // Components will be automatically destroyed when shared_ptr goes out of scope
  // Just remove components from the container
- while(NumComponents)
+ // SAFETY: Use Components vector directly instead of PComponents pointer
+ while(!Components.empty())
  {
-  DelComponent(PComponents[0]->GetName(), false); // Don't free, let shared_ptr handle it
+  if(Components[0])
+   DelComponent(Components[0]->GetName(), false); // Don't free, let shared_ptr handle it
+  else
+   Components.erase(Components.begin()); // Remove invalid component
  }
 
  // Break owner relationships
@@ -1440,7 +1456,9 @@ std::shared_ptr<UContainer> UContainer::GetComponentByIndex(int index) const
 {
  // Return existing shared_ptr directly, don't create new one from .get()
  // This prevents double destruction when shared_ptr is destroyed
- if(index >= 0 && index < NumComponents && Components[index])
+ // SAFETY: Use Components vector size directly instead of NumComponents
+ // NumComponents may be out of sync with Components.size()
+ if(index >= 0 && index < int(Components.size()) && Components[index])
   return Components[index];
  return nullptr;
 }
@@ -1477,14 +1495,28 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
   comp->Name = GenerateName(comp->Name,namebuffer);
  UId id=GenerateId();
 
+ // SAFETY: Use Components vector directly instead of PComponents pointer
+ // PComponents may be invalid if Components vector was modified
+ // Update NumComponents and PComponents from Components vector before checking
+ NumComponents = int(Components.size());
+ if(NumComponents > 0)
+  PComponents = &Components[0];
+ else
+  PComponents = nullptr;
+
  bool res=true;
  int i=0;
+ // SAFETY: Use Components vector directly to avoid issues with invalid PComponents
  for(i=0;i<NumComponents;i++)
-  if(PComponents[i]->Id == id)
+ {
+  if(i >= int(Components.size()))
+   break;
+  if(Components[i] && Components[i]->Id == id)
   {
    res=false;
    break;
   }
+ }
 
  if(!res)
   RDK_THROW(EComponentIdAlreadyExist(id));
@@ -1924,15 +1956,24 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
 // �� ��� �������
 bool UContainer::ChangeComponentPosition(int index, int step)
 {
+ // SAFETY: Use Components vector directly instead of PComponents pointer
+ // This avoids issues with PComponents pointing to invalid memory after vector resize
+ if(Components.empty())
+ {
+  PComponents = nullptr;
+  NumComponents = 0;
+  return false;
+ }
+
+ // Update NumComponents and PComponents from Components vector
+ NumComponents = int(Components.size());
+ PComponents = &Components[0];
+
  if(index<0 || index >= NumComponents)
   return false;
 
  if(step == 0)
   return true;
-
- // Check if PComponents is valid - it may be nullptr during destruction
- if(!PComponents)
-  return false;
 
  int result=index+step;
  if(result<0)
@@ -1940,38 +1981,91 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  if(result>=NumComponents)
   result=NumComponents-1;
 
- // Use existing shared_ptr directly, don't create new one from raw pointer
- // Check if component is still valid before accessing
- if(!PComponents[index])
+ // SAFETY: Check if component is still valid before accessing
+ if(index >= int(Components.size()) || !Components[index])
   return false;
 
- std::shared_ptr<UContainer> comp=PComponents[index];
- if(result>index)
- {
-  for(int i=index;i<=result;i++)
-  {
-   if(i+1 < NumComponents && PComponents[i+1])
-   {
-    PComponents[i]=PComponents[i+1];
-   } else {
-    return false; // Invalid component reference
-   }
+ // SAFETY: Check if shared_ptr is still valid before copying
+ // If object was deleted, shared_ptr may be corrupted
+ std::shared_ptr<UContainer> comp;
+ try {
+  comp = Components[index];
+  if(!comp) {
+   return false;
   }
-  PComponents[result]=comp; // Use existing shared_ptr directly
- }
- else
- {
-  for(int i=index;i>result;i--)
-  {
-   if(i-1 >= 0 && PComponents[i-1])
-   {
-    PComponents[i]=PComponents[i-1];
-   } else {
-    return false; // Invalid component reference
-   }
+  // Check use_count to detect corruption
+  size_t use_count = comp.use_count();
+  if(use_count > 1000000 || use_count == 0) {
+   LOG(WARNING) << "UContainer::ChangeComponentPosition - suspicious use_count: " << use_count;
+   return false;
   }
-  PComponents[result]=comp; // Use existing shared_ptr directly
+ } catch (...) {
+  LOG(WARNING) << "UContainer::ChangeComponentPosition - exception accessing Components[index]";
+  return false;
  }
+
+ // SAFETY: Re-check Components size before moving elements
+ // Vector may have been modified during recursive calls
+ if(Components.size() != size_t(NumComponents))
+ {
+  NumComponents = int(Components.size());
+  PComponents = &Components[0];
+  if(index >= NumComponents || result >= NumComponents)
+   return false;
+ }
+
+ // SAFETY: Wrap all operations in try-catch to prevent segfault from corrupted shared_ptr
+ try {
+  if(result>index)
+  {
+   // Move elements forward
+   // SAFETY: Use copy instead of move to avoid issues with custom deleters
+   // shared_ptr is designed for copying, and copying is safer than moving with custom deleters
+   for(int i=index;i<result;i++)
+   {
+    if(i+1 >= NumComponents || i+1 >= int(Components.size()))
+     return false;
+    // SAFETY: Check shared_ptr validity before copying
+    if(!Components[i+1])
+    {
+     LOG(WARNING) << "UContainer::ChangeComponentPosition - Components[i+1] is nullptr, aborting";
+     return false;
+    }
+    // Copy shared_ptr instead of move - this is safer with custom deleters
+    Components[i] = Components[i+1];
+   }
+   Components[result] = comp; // Copy instead of move
+  }
+  else
+  {
+   // Move elements backward
+   // SAFETY: Use copy instead of move to avoid issues with custom deleters
+   // shared_ptr is designed for copying, and copying is safer than moving with custom deleters
+   for(int i=index;i>result;i--)
+   {
+    if(i-1 < 0 || i-1 >= int(Components.size()))
+     return false;
+    // SAFETY: Check shared_ptr validity before copying
+    if(!Components[i-1])
+    {
+     LOG(WARNING) << "UContainer::ChangeComponentPosition - Components[i-1] is nullptr, aborting";
+     return false;
+    }
+    // Copy shared_ptr instead of move - this is safer with custom deleters
+    Components[i] = Components[i-1];
+   }
+   Components[result] = comp; // Copy instead of move
+  }
+ } catch (const std::exception& e) {
+  LOG(ERROR) << "UContainer::ChangeComponentPosition - exception during element movement: " << e.what();
+  return false;
+ } catch (...) {
+  LOG(ERROR) << "UContainer::ChangeComponentPosition - unknown exception during element movement";
+  return false;
+ }
+
+ // Update PComponents after modifying Components
+ PComponents = &Components[0];
 
  return true;
 }

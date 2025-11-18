@@ -57,6 +57,10 @@ T& operator * (void);
 
 T* Get(void) const;
 
+/// Возвращает shared_ptr из PData
+std::shared_ptr<T> GetPtr(void) const
+{ return this->PData; };
+
 bool operator == (const T *p) const
 { return this->PData.get() == p; };
 

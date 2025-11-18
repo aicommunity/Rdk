@@ -335,7 +335,11 @@ virtual std::shared_ptr<UEngineControl> GetEngineControl(void);
 virtual bool SetEngineControl(const std::shared_ptr<UEngineControl> &value, const std::shared_ptr<UApplication> &self);
 
 /// ������������� ������ � �������
-//virtual std::shared_ptr<UProject> GetProject(void);
+virtual std::shared_ptr<UProject> GetProject(void);
+
+/// ������������� Environment ��� ��������� ������
+/// ���������� nullptr ���� ������ �� ��������� ��� ������ �� ��������
+virtual std::shared_ptr<UEnvironment> GetEnvironment(int channel_index);
 
 /// ������������� ����� ������
 /// ��������������� �� ������������ ������ ����������� ����� �� ���������� �������

@@ -53,8 +53,8 @@ thread_local static int reset_component_recursion_depth = 0;
    return;
   }
   
-  // Store as weak_ptr - prototype stays in ObjectsStorage until factory is destroyed
-  // This eliminates the need for PopObject before UploadClass
+  // Store as shared_ptr - factory owns the prototype to keep it alive
+  // This ensures the prototype remains available for creating new instances
   try {
    Component = comp;
    LOG(INFO) << "UVirtualMethodFactory::UVirtualMethodFactory - Component assigned: comp_name=" << comp_name;
@@ -66,29 +66,28 @@ thread_local static int reset_component_recursion_depth = 0;
   
   // Verify Component after assignment
   try {
-   std::shared_ptr<UContainer> comp_locked = Component.lock();
-   if(comp_locked)
+   if(Component)
    {
-    size_t locked_use_count = comp_locked.use_count();
-    LOG(INFO) << "UVirtualMethodFactory::UVirtualMethodFactory - Component.lock() succeeded: comp_name=" << comp_name 
-              << " locked_use_count=" << locked_use_count;
+    size_t use_count = Component.use_count();
+    LOG(INFO) << "UVirtualMethodFactory::UVirtualMethodFactory - Component assigned successfully: comp_name=" << comp_name 
+              << " use_count=" << use_count;
     
-    // Check if locked shared_ptr has suspicious use_count
-    if(locked_use_count > 1000000 || locked_use_count == 0)
+    // Check if Component has suspicious use_count
+    if(use_count > 1000000 || use_count == 0)
     {
-     LOG(ERROR) << "UVirtualMethodFactory::UVirtualMethodFactory - comp_locked has suspicious use_count: " 
-                 << locked_use_count << " comp_name=" << comp_name << ", factory may be invalid";
+     LOG(ERROR) << "UVirtualMethodFactory::UVirtualMethodFactory - Component has suspicious use_count: " 
+                 << use_count << " comp_name=" << comp_name << ", factory may be invalid";
     }
     
-//   comp_locked->Default();
-    comp_locked->SetClass(ClassId);
+//   Component->Default();
+    Component->SetClass(ClassId);
    }
    else
    {
-    LOG(WARNING) << "UVirtualMethodFactory::UVirtualMethodFactory - Component.lock() returned nullptr: comp_name=" << comp_name;
+    LOG(WARNING) << "UVirtualMethodFactory::UVirtualMethodFactory - Component is nullptr: comp_name=" << comp_name;
    }
   } catch (...) {
-   LOG(ERROR) << "UVirtualMethodFactory::UVirtualMethodFactory - Exception in Component.lock() after assignment, Component may be corrupted";
+   LOG(ERROR) << "UVirtualMethodFactory::UVirtualMethodFactory - Exception accessing Component after assignment, Component may be corrupted";
   }
   
   LOG(INFO) << "UVirtualMethodFactory::UVirtualMethodFactory - EXIT: comp_name=" << comp_name;
@@ -96,17 +95,16 @@ thread_local static int reset_component_recursion_depth = 0;
 
  UVirtualMethodFactory::~UVirtualMethodFactory()
  {
-  // Component is weak_ptr, so prototype will remain in ObjectsStorage
+  // Component is shared_ptr, factory owns the prototype
   // Log destruction for debugging
   try {
-   std::shared_ptr<UContainer> comp_locked = Component.lock();
-   if(comp_locked)
+  if(Component)
    {
     std::string comp_name = "unknown";
-    void* comp_addr = comp_locked.get();
-    size_t comp_use_count = comp_locked.use_count();
+    void* comp_addr = Component.get();
+    size_t comp_use_count = Component.use_count();
     try {
-     comp_name = comp_locked->GetName();
+     comp_name = Component->GetName();
     } catch (...) {
      comp_name = "<error>";
     }
@@ -122,72 +120,72 @@ thread_local static int reset_component_recursion_depth = 0;
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::New()
  {
-  // SAFETY: Check Component validity before locking
-  // If Component (weak_ptr) control block is corrupted, lock() may segfault
-  std::shared_ptr<UContainer> comp_locked;
-  try {
-   comp_locked = Component.lock();
-  } catch (...) {
-   LOG(ERROR) << "UVirtualMethodFactory::New - Exception in Component.lock(), cannot create object";
-   return nullptr;
-  }
-  
-  if(!comp_locked)
+  // SAFETY: Check Component validity
+  if(!Component)
   {
-   LOG(ERROR) << "UVirtualMethodFactory::New - Component.lock() returned nullptr, prototype was destroyed";
+   LOG(ERROR) << "UVirtualMethodFactory::New - Component is nullptr, prototype was destroyed";
    LOG(ERROR) << "UVirtualMethodFactory::New - Storage=" << (Storage ? "valid" : "null") 
                << " ClassId=" << ClassId;
    return nullptr;
   }
 
-  // SAFETY: Check comp_locked validity before using it
-  // If comp_locked has corrupted use_count, operations on it may segfault
+  // SAFETY: Check Component validity before using it
+  // If Component has corrupted use_count, operations on it may segfault
   try {
-   size_t comp_use_count = comp_locked.use_count();
+   size_t comp_use_count = Component.use_count();
    if(comp_use_count > 1000000 || comp_use_count == 0)
    {
-    LOG(ERROR) << "UVirtualMethodFactory::New - comp_locked has suspicious use_count: " << comp_use_count << ", cannot create object";
+    LOG(ERROR) << "UVirtualMethodFactory::New - Component has suspicious use_count: " << comp_use_count << ", cannot create object";
     return nullptr;
    }
   } catch (...) {
-   LOG(ERROR) << "UVirtualMethodFactory::New - Exception checking comp_locked use_count, cannot create object";
+   LOG(ERROR) << "UVirtualMethodFactory::New - Exception checking Component use_count, cannot create object";
    return nullptr;
   }
 
   std::string comp_name = "unknown";
   try {
-   comp_name = comp_locked->GetName();
+   comp_name = Component->GetName();
   } catch (...) {
    comp_name = "<error>";
   }
-  LOG(INFO) << "UVirtualMethodFactory::New - prototype locked: name=" << comp_name 
-            << " ClassId=" << ClassId << " use_count=" << comp_locked.use_count();
+  LOG(INFO) << "UVirtualMethodFactory::New - prototype: name=" << comp_name 
+            << " ClassId=" << ClassId << " use_count=" << Component.use_count();
   
-  // CRITICAL: Store comp_locked in a local variable to keep it alive during the entire function
-  // This prevents comp_locked from being destroyed during recursive calls (Copy -> Build -> TakeObject -> New)
-  // If comp_locked is destroyed during recursion, operations on it will cause use-after-free
-  std::shared_ptr<UContainer> comp_locked_ref = comp_locked;
+  // CRITICAL: Store Component in a local variable to keep it alive during the entire function
+  // This prevents Component from being destroyed during recursive calls (Copy -> Build -> TakeObject -> New)
+  // If Component is destroyed during recursion, operations on it will cause use-after-free
+  std::shared_ptr<UContainer> comp_ref = Component;
 
   try
   {
-   // comp_locked->New() returns raw pointer, but we need shared_ptr for enable_shared_from_this
+   // Component->New() returns raw pointer, but we need shared_ptr for enable_shared_from_this
    // Use std::shared_ptr constructor with custom deleter to properly manage the object
    // However, this still won't enable shared_from_this() because object wasn't created via make_shared
    // We need to wrap it properly - but since New() returns raw pointer, we can't use make_shared
    // The object must be created in a way that allows shared_from_this() to work
-   LOG(INFO) << "UVirtualMethodFactory::New - calling comp_locked->New() for: name=" << comp_name;
-   UContainer* raw_obj = comp_locked->New();
+   LOG(INFO) << "UVirtualMethodFactory::New - calling Component->New() for: name=" << comp_name;
+   UContainer* raw_obj = Component->New();
    if(!raw_obj)
    {
-    LOG(ERROR) << "UVirtualMethodFactory::New - comp_locked->New() returned nullptr for: name=" << comp_name;
+    LOG(ERROR) << "UVirtualMethodFactory::New - Component->New() returned nullptr for: name=" << comp_name;
     return nullptr;
    }
-   LOG(INFO) << "UVirtualMethodFactory::New - comp_locked->New() succeeded for: name=" << comp_name;
+   LOG(INFO) << "UVirtualMethodFactory::New - Component->New() succeeded for: name=" << comp_name;
    
    // Create shared_ptr with proper deleter
    // IMPORTANT: This creates shared_ptr from raw pointer, so shared_from_this() won't work
    // Objects created this way cannot use shared_from_this() until they are properly wrapped
-   std::shared_ptr<UContainer> obj(raw_obj, [](UContainer* ptr) { delete ptr; });
+   // SAFETY: Add nullptr check in deleter to prevent double-delete
+   std::shared_ptr<UContainer> obj(raw_obj, [](UContainer* ptr) { 
+    if(ptr) {
+     try {
+      delete ptr;
+     } catch (...) {
+      // Ignore exceptions during deletion - object may already be destroyed
+     }
+    }
+   });
    
    // Set storage and initialize
    obj->SetStorage(Storage);
@@ -206,14 +204,14 @@ thread_local static int reset_component_recursion_depth = 0;
    // Copy properties from prototype
    std::shared_ptr<UStorage> storage_ptr(Storage, [](UStorage*){});
    try {
-    LOG(INFO) << "UVirtualMethodFactory::New - calling comp_locked->Copy() for: name=" << comp_name;
-    comp_locked->Copy(obj, storage_ptr);
-    LOG(INFO) << "UVirtualMethodFactory::New - comp_locked->Copy() completed for: name=" << comp_name;
+    LOG(INFO) << "UVirtualMethodFactory::New - calling Component->Copy() for: name=" << comp_name;
+    Component->Copy(obj, storage_ptr);
+    LOG(INFO) << "UVirtualMethodFactory::New - Component->Copy() completed for: name=" << comp_name;
    } catch (const std::exception& e) {
-    LOG(ERROR) << "UVirtualMethodFactory::New - exception in comp_locked->Copy() for: name=" << comp_name << " error=" << e.what();
+    LOG(ERROR) << "UVirtualMethodFactory::New - exception in Component->Copy() for: name=" << comp_name << " error=" << e.what();
     return nullptr; // Return nullptr if Copy() fails
    } catch (...) {
-    LOG(ERROR) << "UVirtualMethodFactory::New - unknown exception in comp_locked->Copy() for: name=" << comp_name;
+    LOG(ERROR) << "UVirtualMethodFactory::New - unknown exception in Component->Copy() for: name=" << comp_name;
     return nullptr; // Return nullptr if Copy() fails
    }
    
@@ -251,38 +249,30 @@ std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UCo
  }
  
  // Lock weak_ptr to get shared_ptr to prototype
- // SAFETY: Component.lock() may segfault if Component (weak_ptr) is corrupted
- std::shared_ptr<UContainer> comp_locked;
- try {
-  comp_locked = Component.lock();
- } catch (...) {
-  LOG(WARNING) << "UVirtualMethodFactory::Prototype - Exception in Component.lock(), cannot create copy";
-  return nullptr;
- }
- 
- if(!comp_locked)
+ // SAFETY: Check Component validity
+ if(!Component)
  {
-  LOG(WARNING) << "UVirtualMethodFactory::Prototype - Component.lock() returned nullptr, prototype expired";
+  LOG(WARNING) << "UVirtualMethodFactory::Prototype - Component is nullptr, prototype expired";
   return nullptr;
  }
 
- // SAFETY: Check comp_locked validity before using it
+ // SAFETY: Check Component validity before using it
  try {
-  size_t comp_use_count = comp_locked.use_count();
+  size_t comp_use_count = Component.use_count();
   if(comp_use_count > 1000000 || comp_use_count == 0)
   {
-   LOG(WARNING) << "UVirtualMethodFactory::Prototype - comp_locked has suspicious use_count: " << comp_use_count << ", cannot create copy";
+   LOG(WARNING) << "UVirtualMethodFactory::Prototype - Component has suspicious use_count: " << comp_use_count << ", cannot create copy";
    return nullptr;
   }
  } catch (...) {
-  LOG(WARNING) << "UVirtualMethodFactory::Prototype - Exception checking comp_locked use_count, cannot create copy";
+  LOG(WARNING) << "UVirtualMethodFactory::Prototype - Exception checking Component use_count, cannot create copy";
   return nullptr;
  }
 
  try
  {
-  // Same issue as New() - comp_locked->New() returns raw pointer
-  UContainer* raw_obj = comp_locked->New();
+  // Same issue as New() - Component->New() returns raw pointer
+  UContainer* raw_obj = Component->New();
   if(!raw_obj)
    return nullptr;
   
@@ -349,14 +339,14 @@ std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UCo
   // If Component (weak_ptr) control block is corrupted, lock() may segfault
   std::shared_ptr<UContainer> comp_locked;
   try {
-   comp_locked = Component.lock();
+   // Component is now shared_ptr, no need to lock
   } catch (...) {
    LOG(WARNING) << "UVirtualMethodFactory::ResetComponent - Exception in Component.lock(), cannot reset component";
    reset_component_recursion_depth--;
    return;
   }
   
-  if(!comp_locked)
+  if(!Component)
   {
    LOG(WARNING) << "UVirtualMethodFactory::ResetComponent - Component.lock() returned nullptr, prototype expired";
    reset_component_recursion_depth--;
@@ -373,15 +363,15 @@ std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UCo
   // SAFETY: Check comp_locked validity before using it
   // If comp_locked has corrupted use_count, operations on it may segfault
   try {
-   size_t comp_use_count = comp_locked.use_count();
+   size_t comp_use_count = Component.use_count();
    if(comp_use_count > 1000000 || comp_use_count == 0)
    {
-    LOG(ERROR) << "UVirtualMethodFactory::ResetComponent - comp_locked has suspicious use_count: " << comp_use_count << ", cannot reset component";
+    LOG(ERROR) << "UVirtualMethodFactory::ResetComponent - Component has suspicious use_count: " << comp_use_count << ", cannot reset component";
     reset_component_recursion_depth--;
     return;
    }
   } catch (...) {
-   LOG(WARNING) << "UVirtualMethodFactory::ResetComponent - Exception checking comp_locked use_count, cannot reset component";
+   LOG(WARNING) << "UVirtualMethodFactory::ResetComponent - Exception checking Component use_count, cannot reset component";
    reset_component_recursion_depth--;
    return;
   }
@@ -402,15 +392,15 @@ std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UCo
   }
   
   try {
-   std::shared_ptr<UStorage> storage = comp_locked->GetStorage();
+   std::shared_ptr<UStorage> storage = Component->GetStorage();
    if(storage)
    {
     // CRITICAL: Copy() may call Build() which may call TakeObject() which may call ResetComponent() again
-    // This creates recursion and may lead to use-after-free if comp_locked is destroyed during recursion
+    // This creates recursion and may lead to use-after-free if Component is destroyed during recursion
     // We've already protected against recursion above, so this should be safe now
-    // Store a reference to comp_locked to keep it alive during Copy()
-    std::shared_ptr<UContainer> comp_locked_ref = comp_locked;
-    comp_locked->Copy(component, storage);
+    // Store a reference to Component to keep it alive during Copy()
+    std::shared_ptr<UContainer> comp_ref = Component;
+    Component->Copy(component, storage);
    }
    else
     {
@@ -428,12 +418,12 @@ std::shared_ptr<UContainer> UVirtualMethodFactory::Prototype(std::shared_ptr<UCo
 
  std::shared_ptr<UContainer> UVirtualMethodFactory::GetComponent()
  {
-  return Component.lock();  // Lock weak_ptr to get shared_ptr
+  return Component;  // Return shared_ptr directly
  }
 
 void UVirtualMethodFactory::FreeComponent()
 {
- Component.reset();  // Reset weak_ptr - prototype remains in ObjectsStorage
+ Component.reset();  // Reset shared_ptr - factory releases ownership of prototype
 }
 
 

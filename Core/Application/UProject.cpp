@@ -181,25 +181,25 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  NumChannels=copy.NumChannels;
  ChannelsConfig=copy.ChannelsConfig;
 
- /// Адрес интерфейса управления сервером
+ /// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ServerInterfaceAddress=copy.ServerInterfaceAddress;
 
- /// Порт интерфейса управления сервером
+ /// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ServerInterfacePort=copy.ServerInterfacePort;
 
-  /// Адрес интерфейса Http-сервера
+  /// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Http-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  HttpServerInterfaceAddress=copy.HttpServerInterfaceAddress;
 
-  /// Порт интерфейса управления сервером
+  /// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  HttpServerInterfacePort=copy.HttpServerInterfacePort;
 
-  /// Порт интерфейса управления сервером
+  /// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  HttpServerLogin=copy.HttpServerLogin;
 
-  /// Порт интерфейса управления сервером
+  /// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  HttpServerPassword=copy.HttpServerPassword;
 
- // Флаг отображения состояний каналов
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  ProjectShowChannelsStates=copy.ProjectShowChannelsStates;
 
  InterfaceFileName=copy.InterfaceFileName;
@@ -255,7 +255,7 @@ bool TProjectConfig::operator == (const TProjectConfig& copy) const
 }
 
 // --------------------------
-/// Управление числом каналов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 int TProjectConfig::GetNumChannels(void) const
 {
@@ -300,7 +300,7 @@ bool TProjectConfig::DeleteChannel(int index)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UProject::UProject(void)
 {
@@ -317,9 +317,9 @@ UProject::~UProject(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Данные проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const TProjectConfig& UProject::GetConfig(void) const
 {
  return Config;
@@ -337,29 +337,29 @@ bool UProject::SetConfig(const TProjectConfig& value)
 // --------------------------
 
 // --------------------------
-// Методы управления проектом
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-/// Проверяет наличие изменений в конфигурации проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProject::IsModified(void) const
 {
  return ModifiedFlag;
 }
 
-/// Выставляет признак наличия изменений в конфигурации проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProject::SetModified(void)
 {
  ModifiedFlag=true;
  return true;
 }
 
-/// Сбрасывает признак наличия изменений в конфигурации проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProject::ResetModified(void)
 {
  ModifiedFlag=false;
  return true;
 }
 
-/// Флаг принудительного сохранения данных конфигурации в старом формате файла
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UProject::GetForceOldXmlFormat(void) const
 {
  return ForceOldXmlFormat;
@@ -382,7 +382,7 @@ bool UProject::SetForceOldXmlFormat(bool value)
  return true;
 }
 
-/// Флаг включения нового представления файловой структуры конфигурации
+/// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UProject::GetForceNewConfigFilesStructure(void) const
 {
  return ForceNewConfigFilesStructure;
@@ -404,8 +404,8 @@ bool UProject::SetForceNewConfigFilesStructure(bool value)
  return true;
 }
 
-/// Сбрасывает конфигурацию проекта в состояние по умолчанию
-/// Метод также сбрасывает ModifiedFlag
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ModifiedFlag
 void UProject::ResetToDefault(void)
 {
  TProjectConfig default_config;
@@ -413,7 +413,7 @@ void UProject::ResetToDefault(void)
  ResetModified();
 }
 
-/// Доступ к пути до проекта
+/// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string& UProject::GetProjectPath(void) const
 {
  return ProjectPath;
@@ -451,7 +451,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 }
 
 
-/// Сохраняет конфигурацию проекта в xml
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 bool UProject::WriteToXml(USerStorageXML &xml)
 {
  if(ForceOldXmlFormat)
@@ -507,19 +507,19 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
 
  Config.ProjectName=xml.ReadString("ProjectName","NoName").c_str();
 
- // Число входов среды
+ // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  //NumEnvInputs=xml.ReadInteger("NumEnvInputs",1);
 
- // Число выходов среды
+ // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  //NumEnvOutputs=xml.ReadInteger("NumEnvOutputs",1);
 
  //InputEnvImageWidth=xml.ReadInteger("InputEnvImageWidth",360);
  //InputEnvImageHeight=xml.ReadInteger("InputEnvImageHeight",240);
 
- // Флаг автоматического сохранения проекта
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
 
- // Флаг автоматического сохранения проекта
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  std::string descriptionfilename=xml.ReadString("ProjectDescriptionFileName","");
@@ -572,7 +572,7 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
   Config.ChannelsConfig[i].UseIndTimeStepFlag=xml.ReadBool(std::string("UseIndTimeStepFlag")+RDK::sntoa(i), false);
  }
 
- // TODO: Реализовать загрузку описания
+ // TODO: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /*
  if(descriptionfilename.Length() != 0 && FileExists(descriptionfilename))
  {
@@ -627,10 +627,10 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
  Config.UserId = xml.ReadInteger("UserId", -1);
  Config.CreationTime = xml.ReadString("CreationTime","");
 
- // Флаг автоматического сохранения проекта
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
 
- // Флаг автоматического сохранения проекта
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  std::string descriptionfilename=xml.ReadString("ProjectDescriptionFileName","");
@@ -792,10 +792,10 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
   if(i == 0)
   {
    xml.WriteInteger("PredefinedStructure",channel_config.PredefinedStructure);
-   // Шаг счета по умолчанию
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    xml.WriteInteger("DefaultTimeStep",channel_config.DefaultTimeStep);
 
-   // Глобальный шаг счета модели
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
    xml.WriteInteger("GlobalTimeStep",channel_config.GlobalTimeStep);
 
    xml.WriteInteger("CalculationMode",channel_config.CalculationMode);
@@ -813,10 +813,10 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
   {
    std::string suffix=RDK::sntoa(i);
    xml.WriteInteger(std::string("PredefinedStructure_")+suffix,channel_config.PredefinedStructure);
-   // Шаг счета по умолчанию
+   // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    xml.WriteInteger(std::string("DefaultTimeStep_")+suffix,channel_config.DefaultTimeStep);
 
-   // Глобальный шаг счета модели
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
    xml.WriteInteger(std::string("GlobalTimeStep_")+suffix,channel_config.GlobalTimeStep);
 
    xml.WriteInteger(std::string("CalculationMode_")+suffix,channel_config.CalculationMode);
@@ -835,13 +835,13 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
 
- // Флаг автоматического сохранения проекта
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
 
- // Число входов среды
+ // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 // xml.WriteInteger("NumEnvInputs",NumEnvInputs);
 
- // Число выходов среды
+ // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 // xml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
 
  xml.WriteInteger("ProjectMode",Config.ProjectMode);
@@ -898,7 +898,7 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
 
- // Флаг автоматического сохранения проекта
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
 
  xml.WriteInteger("ProjectMode",Config.ProjectMode);
@@ -959,10 +959,10 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
 
   xml.WriteInteger("PredefinedStructure",channel_config.PredefinedStructure);
 
-  // Шаг счета по умолчанию
+  // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   xml.WriteInteger("DefaultTimeStep",channel_config.DefaultTimeStep);
 
-  // Глобальный шаг счета модели
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
   xml.WriteInteger("GlobalTimeStep",channel_config.GlobalTimeStep);
 
   xml.WriteInteger("CalculationMode",channel_config.CalculationMode);
@@ -1010,7 +1010,7 @@ bool UProject::FixSavePoint(USerStorageXML &xml)
 // --------------------------
 
 // --------------------------
-/// Управление числом каналов
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 int UProject::GetNumChannels(void) const
 {
@@ -1043,6 +1043,15 @@ bool UProject::DeleteChannel(int index)
  ModifiedFlag=true;
  return true;
 
+}
+
+std::shared_ptr<UEnvironment> UProject::GetEnvironment(int channel_index)
+{
+ // UProject РЅРµ РёРјРµРµС‚ РїСЂСЏРјРѕРіРѕ РґРѕСЃС‚СѓРїР° Рє Environment
+ // Environment С…СЂР°РЅРёС‚СЃСЏ РІ EngineControl, РєРѕС‚РѕСЂС‹Р№ РґРѕСЃС‚СѓРїРµРЅ С‡РµСЂРµР· UApplication
+ // РџРѕСЌС‚РѕРјСѓ СЌС‚РѕС‚ РјРµС‚РѕРґ РґРѕР»Р¶РµРЅ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РёР· РєРѕРЅС‚РµРєСЃС‚Р°, РіРґРµ РµСЃС‚СЊ РґРѕСЃС‚СѓРї Рє UApplication
+ // Р’СЂРµРјРµРЅРЅРѕ РІРѕР·РІСЂР°С‰Р°РµРј nullptr - СЂРµР°Р»РёР·Р°С†РёСЏ Р±СѓРґРµС‚ С‡РµСЂРµР· UApplication::GetEnvironment()
+ return nullptr;
 }
 // --------------------------
 

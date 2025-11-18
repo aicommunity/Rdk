@@ -173,6 +173,9 @@ virtual void StepChannel(int channel_index);
 /// Проверяет состояние расчета по id канала
 virtual UEngineControl::UCalcState CheckCalcState(int channel_id) const;
 
+/// Возвращает Environment для указанного канала
+std::shared_ptr<UEnvironment> GetEnvironment(int channel_index);
+
 /// Вклчает мониторинг сервера
 void StartEngineStateThread(void);
 
