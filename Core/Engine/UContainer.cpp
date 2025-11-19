@@ -725,6 +725,8 @@ double UContainer::GetInstantPerformance(void) const
 void UContainer::BreakOwner(void)
 {
  // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+ // RESTORED FROM DEVELOP: BreakOwner calls owner->DelComponent to remove component from owner's container
+ // This matches the working logic from develop branch
  std::weak_ptr<UContainer> owner_weak = GetOwner();
  if(!owner_weak.expired())
  {
@@ -742,6 +744,8 @@ void UContainer::BreakOwner(void)
    }
   }
  }
+ // NOTE: In develop, Owner is NOT cleared here - it's cleared in DelComponent via BreakOwner call
+ // This prevents recursion: BreakOwner -> DelComponent -> BreakOwner (but Owner already cleared in DelComponent)
 }
 
 // ������������� ��������� �� �������� ��������� ���� ��������
@@ -4295,11 +4299,16 @@ void UContainer::DelComponent(std::weak_ptr<UContainer> comp, bool canfree)
   LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before DelComponentTable, skipping";
  }
 
- // SAFETY: Re-check comp_locked validity before Owner.reset()
+ // CRITICAL: Clear Owner BEFORE calling BreakOwner to prevent recursion
+ // BreakOwner calls owner->DelComponent, which would call BreakOwner again
+ // By clearing Owner first, BreakOwner will see expired Owner and skip DelComponent call
+ // SAFETY: Re-check comp_locked validity before clearing Owner
  try {
   if(comp_locked)
   {
    try {
+    // Clear Owner BEFORE calling BreakOwner to prevent infinite recursion
+    comp_locked->Owner = std::weak_ptr<UComponent>();
     comp_locked->BreakOwner();
    } catch (...) {
     LOG(WARNING) << "UContainer::DelComponent - exception in BreakOwner(), skipping";
