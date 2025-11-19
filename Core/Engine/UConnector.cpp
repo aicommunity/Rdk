@@ -486,7 +486,9 @@ bool UConnector::ConnectToItem(std::shared_ptr<UItem> na, const NameT &item_prop
   build_in_progress = false;
  }
 
- if(!na->GetActivity() && !na->GetOwner())
+ // CRITICAL: GetOwner() now returns weak_ptr, need to check expired()
+ std::weak_ptr<UContainer> na_owner_weak = na->GetOwner();
+ if(!na->GetActivity() && na_owner_weak.expired())
  {
   std::string item_full_name = na->GetFullName();
   std::string conn_full_name = GetFullName();
@@ -495,7 +497,9 @@ bool UConnector::ConnectToItem(std::shared_ptr<UItem> na, const NameT &item_prop
   //return false;
  }
 
- if(!GetActivity() && !GetOwner())
+ // CRITICAL: GetOwner() now returns weak_ptr, need to check expired()
+ std::weak_ptr<UContainer> conn_owner_weak = GetOwner();
+ if(!GetActivity() && conn_owner_weak.expired())
  {
   std::string item_full_name = na->GetFullName();
   std::string conn_full_name = GetFullName();

@@ -107,14 +107,19 @@ UContainer::~UContainer(void)
  if(GetStaticFlag() && Owner.lock())
  {
   try {
-   std::shared_ptr<UContainer> owner = GetOwner();
-   if(owner)
+   // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+   std::weak_ptr<UContainer> owner_weak = GetOwner();
+   if(!owner_weak.expired())
    {
-    try {
-     owner->DelStaticComponent(get_shared_from_this());
-    } catch (const std::bad_weak_ptr&) {
-     // Object is not managed by shared_ptr or already destroyed, skip
-     LOG(WARNING) << "UContainer::~UContainer - bad_weak_ptr in DelStaticComponent, skipping";
+    std::shared_ptr<UContainer> owner = owner_weak.lock();
+    if(owner)
+    {
+     try {
+      owner->DelStaticComponent(get_shared_from_this());
+     } catch (const std::bad_weak_ptr&) {
+      // Object is not managed by shared_ptr or already destroyed, skip
+      LOG(WARNING) << "UContainer::~UContainer - bad_weak_ptr in DelStaticComponent, skipping";
+     }
     }
    }
   } catch (const std::bad_weak_ptr&) {
@@ -152,26 +157,44 @@ UContainer::~UContainer(void)
 // ������ ������� � ���������
 // --------------------------
 // ���������� �������� ����� �������
-std::shared_ptr<UContainer> UContainer::GetOwner(void) const
+std::weak_ptr<UContainer> UContainer::GetOwner(void) const
 {
+ // CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+ // Owner is already weak_ptr<UComponent>, convert to weak_ptr<UContainer>
  // CRITICAL: Check if this pointer is valid before accessing Owner
  if(!this)
  {
   LOG(ERROR) << "UContainer::GetOwner - this pointer is null!";
-  return nullptr;
+  return std::weak_ptr<UContainer>();
  }
  try {
-  return std::dynamic_pointer_cast<UContainer>(Owner.lock());
+  // Owner is weak_ptr<UComponent>, need to convert to weak_ptr<UContainer>
+  // Lock to get shared_ptr, cast, then convert back to weak_ptr
+  std::shared_ptr<UComponent> owner_comp = Owner.lock();
+  if(!owner_comp)
+   return std::weak_ptr<UContainer>();
+  std::shared_ptr<UContainer> owner_cont = std::dynamic_pointer_cast<UContainer>(owner_comp);
+  if(!owner_cont)
+   return std::weak_ptr<UContainer>();
+  return std::weak_ptr<UContainer>(owner_cont);
  } catch (...) {
   LOG(WARNING) << "UContainer::GetOwner - exception in Owner.lock()";
-  return nullptr;
+  return std::weak_ptr<UContainer>();
  }
 }
 
 // ���������� ��������� �� �������� ��������� ���� ��������
-std::shared_ptr<UContainer> UContainer::GetMainOwner(void) const
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> UContainer::GetMainOwner(void) const
 {
- return std::dynamic_pointer_cast<UContainer>(MainOwner.lock());
+ // MainOwner is already weak_ptr<UComponent>, convert to weak_ptr<UContainer>
+ std::shared_ptr<UComponent> main_owner_comp = MainOwner.lock();
+ if(!main_owner_comp)
+  return std::weak_ptr<UContainer>();
+ std::shared_ptr<UContainer> main_owner_cont = std::dynamic_pointer_cast<UContainer>(main_owner_comp);
+ if(!main_owner_cont)
+  return std::weak_ptr<UContainer>();
+ return std::weak_ptr<UContainer>(main_owner_cont);
 }
 
 // ���������� ��������� ��������� ����� �������
@@ -201,15 +224,32 @@ std::shared_ptr<UStorage> UContainer::GetStorage(void) const
 
 // ���������, �������� �� ������ owner
 // ���������� ����� ������� �� �����-���� ������ ��������
-bool UContainer::CheckOwner(std::shared_ptr<UContainer> owner) const
+bool UContainer::CheckOwner(std::weak_ptr<UContainer> owner) const
 {
- if(Owner.lock() == nullptr && Owner.lock().get() != owner.get())
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(owner.expired())
   return false;
-
- if(Owner.lock().get() == owner.get())
+ std::shared_ptr<UContainer> owner_locked = owner.lock();
+ if(!owner_locked)
+  return false;
+ 
+ std::shared_ptr<UComponent> this_owner_comp = Owner.lock();
+ if(!this_owner_comp)
+  return false;
+ std::shared_ptr<UContainer> this_owner_cont = std::dynamic_pointer_cast<UContainer>(this_owner_comp);
+ if(!this_owner_cont)
+  return false;
+ 
+ if(this_owner_cont == owner_locked)
   return true;
 
- return GetOwner()->CheckOwner(owner);
+ std::weak_ptr<UContainer> this_owner_weak = GetOwner();
+ if(this_owner_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> this_owner_locked = this_owner_weak.lock();
+ if(!this_owner_locked)
+  return false;
+ return this_owner_locked->CheckOwner(owner);
 }
 
 // ���������� ������ Id �������
@@ -222,7 +262,14 @@ ULongId& UContainer::GetFullId(ULongId &buffer) const
    return buffer;
   }
 
- GetOwner()->GetFullId(buffer);
+ // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+ std::weak_ptr<UContainer> owner_weak = GetOwner();
+ if(!owner_weak.expired())
+ {
+  std::shared_ptr<UContainer> owner = owner_weak.lock();
+  if(owner)
+   owner->GetFullId(buffer);
+ }
  buffer.Add(Id);
 
  return buffer;
@@ -240,22 +287,49 @@ ULongId UContainer::GetFullId(void) const
 // (�������� ��� ��������� 'mainowner').
 // ����� ���������� ������ ������, ���� 'mainowner' - �� ��������
 // ���������� ������� �� �� ����� ������ ��������.
-ULongId& UContainer::GetLongId(std::shared_ptr<UContainer> mainowner, ULongId &buffer) const
+ULongId& UContainer::GetLongId(std::weak_ptr<UContainer> mainowner, ULongId &buffer) const
 {
- if(Owner.lock() == nullptr && Owner.lock() != mainowner)
-  {
-   buffer.Resize(0);
-   return buffer;
-  }
-
- if(Owner.lock() == mainowner)
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(mainowner.expired())
+ {
+  buffer.Resize(0);
+  return buffer;
+ }
+ std::shared_ptr<UContainer> mainowner_locked = mainowner.lock();
+ if(!mainowner_locked)
+ {
+  buffer.Resize(0);
+  return buffer;
+ }
+ 
+ std::shared_ptr<UComponent> this_owner_comp = Owner.lock();
+ if(!this_owner_comp)
+ {
+  buffer.Resize(0);
+  return buffer;
+ }
+ std::shared_ptr<UContainer> this_owner_cont = std::dynamic_pointer_cast<UContainer>(this_owner_comp);
+ 
+ if(this_owner_cont == mainowner_locked)
   {
    buffer.Resize(0);
    buffer.Add(Id);
    return buffer;
   }
 
- if(GetOwner()->GetLongId(mainowner,buffer).GetSize() == 0)
+ std::weak_ptr<UContainer> this_owner_weak = GetOwner();
+ if(this_owner_weak.expired())
+ {
+  buffer.Resize(0);
+  return buffer;
+ }
+ std::shared_ptr<UContainer> this_owner_locked = this_owner_weak.lock();
+ if(!this_owner_locked)
+ {
+  buffer.Resize(0);
+  return buffer;
+ }
+ if(this_owner_locked->GetLongId(mainowner,buffer).GetSize() == 0)
   return buffer;
 
  buffer.Add(Id);
@@ -263,7 +337,7 @@ ULongId& UContainer::GetLongId(std::shared_ptr<UContainer> mainowner, ULongId &b
  return buffer;
 }
 
-ULongId UContainer::GetLongId(std::shared_ptr<UContainer> mainowner) const
+ULongId UContainer::GetLongId(std::weak_ptr<UContainer> mainowner) const
 {
  ULongId id;
 
@@ -272,9 +346,9 @@ ULongId UContainer::GetLongId(std::shared_ptr<UContainer> mainowner) const
 
 
 // ������������� ������� ������������ ������, ������������� ������� ���
-std::string& UContainer::GetLongId(std::shared_ptr<UContainer> mainowner, std::string &buffer) const
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+std::string& UContainer::GetLongId(std::weak_ptr<UContainer> mainowner, std::string &buffer) const
 {
- // Use mainowner directly - it's already a shared_ptr, don't create new one from .get()
  return GetLongName(mainowner, buffer);
 }
 
@@ -325,12 +399,17 @@ bool UContainer::SetEnvironment(UEnvironment* environment)
   for(int i=0;i<NumComponents;i++)
   {
    // SAFETY: Check bounds and component validity before calling SetEnvironment
-   if(i >= int(Components.size()) || !Components[i])
+   if(i >= int(Components.size()) || Components[i].expired())
+    continue;
+   
+   // CRITICAL: Components[i] is weak_ptr, need to lock before use
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(!comp_locked)
     continue;
    
    // SAFETY: Check use_count to detect corrupted shared_ptr
    try {
-    size_t use_count = Components[i].use_count();
+    size_t use_count = comp_locked.use_count();
     if(use_count > 1000000 || use_count == 0)
     {
      LOG(WARNING) << "UContainer::SetEnvironment - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
@@ -342,7 +421,7 @@ bool UContainer::SetEnvironment(UEnvironment* environment)
    }
    
    try {
-    res&=Components[i]->SetEnvironment(environment);
+    res&=comp_locked->SetEnvironment(environment);
    } catch (...) {
     // Component may be destroyed or corrupted, skip
     LOG(WARNING) << "UContainer::SetEnvironment - exception setting environment for component " << i << ", skipping";
@@ -610,8 +689,13 @@ unsigned long long UContainer::GetStepDuration(void) const
  int num_components = int(Components.size());
  for(int i=0;i<num_components;i++)
  {
-  if(i < int(Components.size()) && Components[i])
-   res+=Components[i]->GetFullStepDuration();
+  // CRITICAL: Components[i] is weak_ptr, need to lock before use
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    res+=comp_locked->GetFullStepDuration();
+  }
  }
 
  return StepDuration-res;
@@ -640,18 +724,22 @@ double UContainer::GetInstantPerformance(void) const
 // ������� ��������� �������
 void UContainer::BreakOwner(void)
 {
- // Use GetOwner() directly - it already returns shared_ptr, don't create new one from .get()
- std::shared_ptr<UContainer> owner = GetOwner();
- if(owner)
+ // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+ std::weak_ptr<UContainer> owner_weak = GetOwner();
+ if(!owner_weak.expired())
  {
-  try {
-   owner->DelComponent(get_shared_from_this(), false);
-  } catch (const std::bad_weak_ptr&) {
-   // Object is not managed by shared_ptr or already destroyed, skip
-   LOG(WARNING) << "UContainer::BreakOwner - bad_weak_ptr in DelComponent, skipping";
-  } catch (...) {
-   // Ignore other exceptions during destruction
-   LOG(WARNING) << "UContainer::BreakOwner - exception in DelComponent, skipping";
+  std::shared_ptr<UContainer> owner = owner_weak.lock();
+  if(owner)
+  {
+   try {
+    owner->DelComponent(get_shared_from_this(), false);
+   } catch (const std::bad_weak_ptr&) {
+    // Object is not managed by shared_ptr or already destroyed, skip
+    LOG(WARNING) << "UContainer::BreakOwner - bad_weak_ptr in DelComponent, skipping";
+   } catch (...) {
+    // Ignore other exceptions during destruction
+    LOG(WARNING) << "UContainer::BreakOwner - exception in DelComponent, skipping";
+   }
   }
  }
 }
@@ -659,14 +747,24 @@ void UContainer::BreakOwner(void)
 // ������������� ��������� �� �������� ��������� ���� ��������
 // ��������� ��������������� �� ����� ������� �������� ���������
 // 'levels'. ���� levels < 0 �� ��������������� ����������� �� ���� �������
-void UContainer::SetMainOwner(std::shared_ptr<UComponent> mainowner)
+void UContainer::SetMainOwner(std::weak_ptr<UComponent> mainowner)
 {
- UComponent::SetMainOwner(mainowner);
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // UComponent::SetMainOwner expects shared_ptr, so lock the weak_ptr
+ if(!mainowner.expired())
+ {
+  std::shared_ptr<UComponent> mainowner_locked = mainowner.lock();
+  if(mainowner_locked)
+   UComponent::SetMainOwner(mainowner_locked);
+ }
 }
 
-void UContainer::SetMainOwner(std::shared_ptr<UComponent> mainowner, int levels)
+void UContainer::SetMainOwner(std::weak_ptr<UComponent> mainowner, int levels)
 {
- if(MainOwner.lock() == mainowner && !levels)
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ std::shared_ptr<UComponent> mainowner_locked = mainowner.lock();
+ std::shared_ptr<UComponent> current_mainowner = MainOwner.lock();
+ if(current_mainowner == mainowner_locked && !levels)
   return;
 
  MainOwner=mainowner;
@@ -674,17 +772,26 @@ void UContainer::SetMainOwner(std::shared_ptr<UComponent> mainowner, int levels)
  if(!levels)
   return;
 
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++, comps++)
+ // CRITICAL: Lock weak_ptr elements before accessing
+ for(int i=0;i<NumComponents;i++)
  {
+  if(i >= int(Components.size()))
+   break;
+  if(Components[i].expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+  if(!comp_locked)
+   continue;
+  
   // ������������� �������� ��������� ������ ��� �������� �����������
   // � ������� �� ��� �� �����
-  if((*comps)->GetMainOwner() == nullptr)
+  std::weak_ptr<UContainer> comp_mainowner = comp_locked->GetMainOwner();
+  if(comp_mainowner.expired())
   {
    if(levels<0)
-    (*comps)->SetMainOwner(MainOwner.lock(),levels);
+    comp_locked->SetMainOwner(MainOwner,levels);
    else
-    (*comps)->SetMainOwner(MainOwner.lock(),levels-1);
+    comp_locked->SetMainOwner(MainOwner,levels-1);
   }
  }
 }
@@ -706,7 +813,9 @@ bool UContainer::CheckComponent(const NameT &name)
 
 bool UContainer::CheckComponentL(const NameT &name)
 {
- if(GetComponentL(name,true) != 0)
+ // CRITICAL: GetComponentL now returns weak_ptr, need to check expired()
+ std::weak_ptr<UContainer> comp_weak = GetComponentL(name,true);
+ if(!comp_weak.expired())
   return true;
  return false;
 }
@@ -797,12 +906,17 @@ bool UContainer::SetName(const NameT &name)
  if(!ValidateName(name))
   RDK_THROW(EComponentNameInvalid(name));
 
-  if(GetOwner() != 0)
+  // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+  std::weak_ptr<UContainer> owner_weak = GetOwner();
+  if(!owner_weak.expired())
   {
-   if(!GetOwner()->CheckName(name))
-	RDK_THROW(EComponentNameAlreadyExist(name));
-
-   GetOwner()->ModifyLookupComponent(Name, name);
+   std::shared_ptr<UContainer> owner = owner_weak.lock();
+   if(owner)
+   {
+    if(!owner->CheckName(name))
+     RDK_THROW(EComponentNameAlreadyExist(name));
+    owner->ModifyLookupComponent(Name, name);
+   }
   }
  Name.v=name;
  return true;
@@ -812,13 +926,17 @@ bool UContainer::SetName(const NameT &name)
 // (������� ����� ���� ����������).
 NameT& UContainer::GetFullName(NameT &buffer) const
 {
- if(!GetOwner())
+ // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+ std::weak_ptr<UContainer> owner_weak = GetOwner();
+ if(owner_weak.expired())
   {
    buffer+=Name;
    return buffer;
   }
 
- GetOwner()->GetFullName(buffer);
+ std::shared_ptr<UContainer> owner = owner_weak.lock();
+ if(owner)
+  owner->GetFullName(buffer);
  buffer+='.';
  buffer+=Name;
 
@@ -835,8 +953,9 @@ NameT UContainer::GetFullName(void) const
 // (�������� ��� ��������� 'mainowner').
 // ����� ���������� ������ ������, ���� 'mainowner' - �� ��������
 // ���������� ������� �� �� ����� ������ ��������.
-NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, NameT &buffer) const
+NameT& UContainer::GetLongName(const std::weak_ptr<UContainer> &mainowner, NameT &buffer) const
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
  // CRITICAL: Check if this pointer is valid
  if(!this)
  {
@@ -845,24 +964,35 @@ NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, Nam
   return buffer;
  }
  
- auto owner = GetOwner();
- // Use mainowner directly - it's already a shared_ptr, don't create new one from .get()
- if(!owner && owner != mainowner)
-  {
-   buffer.clear();
-   return buffer;
-  }
-
- if(owner == mainowner)
+ // CRITICAL: Lock mainowner to get shared_ptr for comparison
+ if(mainowner.expired())
+ {
+  buffer.clear();
+  return buffer;
+ }
+ std::shared_ptr<UContainer> mainowner_locked = mainowner.lock();
+ if(!mainowner_locked)
+ {
+  buffer.clear();
+  return buffer;
+ }
+ 
+ std::weak_ptr<UContainer> owner_weak = GetOwner();
+ if(owner_weak.expired())
+ {
+  buffer.clear();
+  return buffer;
+ }
+ std::shared_ptr<UContainer> owner = owner_weak.lock();
+ if(!owner)
+ {
+  buffer.clear();
+  return buffer;
+ }
+ 
+ if(owner == mainowner_locked)
   {
    buffer=Name;
-   return buffer;
-  }
-
- // CRITICAL: Check owner before calling GetLongName recursively
- if(!owner)
-  {
-   buffer.clear();
    return buffer;
   }
   
@@ -884,7 +1014,7 @@ NameT& UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner, Nam
  return buffer;
 }
 
-NameT UContainer::GetLongName(const std::shared_ptr<UContainer> &mainowner) const
+NameT UContainer::GetLongName(const std::weak_ptr<UContainer> &mainowner) const
 {
  std::string buf;
  return GetLongName(mainowner,buf);
@@ -954,10 +1084,11 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 // � ���������� ������ ������� ���� ��������� ���� ������ ������
 // false - ������ � ������� ����������
 // true -  ������ � ������� ���������� � ������
-const vector<std::shared_ptr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<std::shared_ptr<UContainer> > &buffer, bool find_all)
+const vector<std::weak_ptr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<std::weak_ptr<UContainer> > &buffer, bool find_all)
 {
+ // CRITICAL: Buffer parameter uses weak_ptr - shared_ptr exists only in UStorage
  int numComp=GetNumComponents();
- std::shared_ptr<UContainer> comp;
+ std::weak_ptr<UContainer> comp;
 
  switch(find_all)
  {
@@ -965,7 +1096,10 @@ const vector<std::shared_ptr<UContainer> >& UContainer::GetComponentsByClassName
    for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
-	if( comp->GetCompClassName() == name )
+	if(comp.expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = comp.lock();
+	if(comp_locked && comp_locked->GetCompClassName() == name)
 	{
 	 buffer.push_back(comp);
 	}
@@ -976,10 +1110,16 @@ const vector<std::shared_ptr<UContainer> >& UContainer::GetComponentsByClassName
    for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
-	comp->GetComponentsByClassName(name, buffer, true);
-	if( comp->GetCompClassName() == name )
+	if(comp.expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = comp.lock();
+	if(comp_locked)
 	{
-	 buffer.push_back(comp);
+	 comp_locked->GetComponentsByClassName(name, buffer, true);
+	 if(comp_locked->GetCompClassName() == name)
+	 {
+	  buffer.push_back(comp);
+	 }
 	}
    }
    break;
@@ -994,15 +1134,23 @@ const vector<std::shared_ptr<UContainer> >& UContainer::GetComponentsByClassName
 // true -  ������ � ������� ���������� � ������
 const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all)
 {
- vector<std::shared_ptr<UContainer> > components;
+ // CRITICAL: GetComponentsByClassName now returns weak_ptr
+ vector<std::weak_ptr<UContainer> > components;
  string compName;
  GetComponentsByClassName(name, components, find_all);
  size_t numComp=components.size();
 
  for(size_t i=0; i<numComp; i++)
  {
-  compName=components[i]->GetLongName(get_shared_from_this(), compName);
-  buffer.push_back(compName);
+  // CRITICAL: Lock weak_ptr before accessing
+  if(components[i].expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked = components[i].lock();
+  if(comp_locked)
+  {
+   compName=comp_locked->GetLongName(std::weak_ptr<UContainer>(get_shared_from_this()), compName);
+   buffer.push_back(compName);
+  }
  }
 
  return buffer;
@@ -1031,10 +1179,16 @@ bool UContainer::SetTimeStep(const UTime &timestep)
  else
   OwnerTimeStep=timestep;
 
- // ��������� �� ���� ����������� �������
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++,comps++)
-  (*comps)->OwnerTimeStep=timestep;
+ // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    comp_locked->OwnerTimeStep=timestep;
+  }
+ }
 
  return true;
 }
@@ -1048,10 +1202,16 @@ void UContainer::ChangeUseIndTimeStepMode(bool value)
  else
   ChangeLookupPropertyType("TimeStep",ptParameter | pgSystem);
 
- // ��������� �� ���� ����������� �������
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++,comps++)
-  (*comps)->ChangeUseIndTimeStepMode(value);
+ // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    comp_locked->ChangeUseIndTimeStepMode(value);
+  }
+ }
 }
 
 // ������������� �������� ���� �������������� ���������� � ���� ��� �������� �����������
@@ -1060,11 +1220,16 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
  if(!SetTimeStep(timestep))
   return false;
 
- // ��������� �� ���� ����������� �������
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++,comps++)
-  if(!(*comps)->SetGlobalTimeStep(timestep))
-   return false;
+ // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked && !comp_locked->SetGlobalTimeStep(timestep))
+    return false;
+  }
+ }
 
  return true;
 }
@@ -1083,9 +1248,16 @@ bool UContainer::SetActivity(const bool &activity)
 //  return true;
 
  Activity.v=true;
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++,comps++)
-  (*comps)->Activity = activity;
+ // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    comp_locked->Activity = activity;
+  }
+ }
 
 // if(activity)
 //  return Reset(); // !!! ��������. �������� ��� �� �����!
@@ -1115,12 +1287,17 @@ bool UContainer::SetId(const UId &id)
   RDK_THROW(EInvalidId(id));
 
 
- if(Owner.lock())
+ // CRITICAL: GetOwner() now returns weak_ptr, need to lock
+ std::weak_ptr<UContainer> owner_weak = GetOwner();
+ if(!owner_weak.expired())
   {
-   if(!GetOwner()->CheckId(id))
-    RDK_THROW(EComponentIdAlreadyExist(id));
-
-   GetOwner()->SetLookupComponent(Name, id);
+   std::shared_ptr<UContainer> owner = owner_weak.lock();
+   if(owner)
+   {
+    if(!owner->CheckId(id))
+     RDK_THROW(EComponentIdAlreadyExist(id));
+    owner->SetLookupComponent(Name, id);
+   }
   }
  Id.v=id;
  return true;
@@ -1242,17 +1419,21 @@ std::shared_ptr<UContainer> UContainer::Alloc(std::shared_ptr<UStorage> stor, bo
 
 // �������� ���� ������ � 'target' � ����������� ���� ���������
 // � �������� ����������
-bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
+bool UContainer::Copy(std::weak_ptr<UContainer> target, std::shared_ptr<UStorage> stor, bool copystate) const
 {
- // Use target directly as shared_ptr<UComponent> - don't create new one with non-owning deleter
- // target is already a shared_ptr, so we can cast it directly
- std::shared_ptr<UComponent> target_component = std::static_pointer_cast<UComponent>(target);
+ // CRITICAL: target is weak_ptr, need to lock before use
+ if(target.expired())
+  return false;
+ std::shared_ptr<UContainer> target_locked = target.lock();
+ if(!target_locked)
+  return false;
+ std::shared_ptr<UComponent> target_component = std::static_pointer_cast<UComponent>(target_locked);
  CopyProperties(target_component, ptParameter);
  
  // Build() may use shared_from_this(), but if target was created from raw pointer (via TakeObject),
  // shared_from_this() will throw bad_weak_ptr. Handle this gracefully.
  try {
-  target->Build();
+  target_locked->Build();
  } catch (const std::bad_weak_ptr&) {
   // Object was created from raw pointer, shared_from_this() not available
   // This is OK - object will work without shared_from_this()
@@ -1268,8 +1449,8 @@ bool UContainer::Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStora
  std::string target_name = "unknown";
  try {
   this_name = GetName();
-  if(target)
-   target_name = target->GetName();
+  if(target_locked)
+   target_name = target_locked->GetName();
  } catch (...) {
   this_name = "<error>";
   target_name = "<error>";
@@ -1299,8 +1480,15 @@ void UContainer::Free(void)
  // SAFETY: Use Components vector directly instead of PComponents pointer
  while(!Components.empty())
  {
-  if(Components[0])
-   DelComponent(Components[0]->GetName(), false); // Don't free, let shared_ptr handle it
+  // CRITICAL: Components[0] is weak_ptr, need to lock before use
+  if(!Components[0].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[0].lock();
+   if(comp_locked)
+    DelComponent(comp_locked->GetName(), false); // Don't free, let shared_ptr handle it
+   else
+    Components.erase(Components.begin()); // Remove expired component
+  }
   else
    Components.erase(Components.begin()); // Remove invalid component
  }
@@ -1330,7 +1518,8 @@ void UContainer::SetObjectIterator(std::shared_ptr<UInstancesStorageElement> val
 /// ������������ ���������� ���������� ������ ����������, �������������� ��� �����������
 void UContainer::AUpdateInternalData(void)
 {
- std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.begin();
+ // CRITICAL: StaticComponents now uses weak_ptr as key
+ std::map<std::weak_ptr<UContainer>, NameT>::iterator I=StaticComponents.begin();
  for(;I!=StaticComponents.end();++I)
  {
   UpdateStaticComponent(I->second, I->first);
@@ -1354,9 +1543,16 @@ int UContainer::GetNumAllComponents(void) const
 {
  int res=NumComponents;
 
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++,comps++)
-  res+=(*comps)->GetNumAllComponents();
+ // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    res+=comp_locked->GetNumAllComponents();
+  }
+ }
 
  return res;
 }
@@ -1366,59 +1562,116 @@ int UContainer::GetNumAllComponents(void) const
 // � �������� ���������� ������� �������
 // ����� ���������� 'true' � ������ ������������
 // � 'false' � ������ ������������� ����
-bool UContainer::CheckComponentType(std::shared_ptr<UContainer> comp) const
+bool UContainer::CheckComponentType(std::weak_ptr<UContainer> comp) const
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation returns false
  return false;
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ��������� Id 'id'
 // ���� id == ForbiddenId �� ���������� ��������� �� ���� ���������
-std::shared_ptr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
+std::weak_ptr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
 {
+ // DIAGNOSTIC: Log entry
+ LOG(INFO) << "GetComponent[DIAG] - ENTRY by ID: id=" << id << " this_name=" << GetName() 
+           << " NumComponents=" << NumComponents << " Components.size()=" << Components.size();
+ 
+ // CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
  if(id == ForbiddenId)
  {
+  LOG(INFO) << "GetComponent[DIAG] - ID is ForbiddenId, returning empty weak_ptr";
   if(nothrow)
-   return 0;
+   return std::weak_ptr<UContainer>();
   RDK_THROW(EComponentIdNotExist(id));
  }
 
- std::shared_ptr<UContainer>* comps=PComponents;
- for(int i=0;i<NumComponents;i++,comps++)
-  if(id == (*comps)->Id)
-   // Return existing shared_ptr directly, don't create new one from .get()
-   // This prevents double destruction when shared_ptr is destroyed
-   return *comps;
+ // CRITICAL: Lock weak_ptr elements before accessing
+ int expired_count = 0;
+ int checked_count = 0;
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i >= int(Components.size()))
+   break;
+  checked_count++;
+  if(Components[i].expired())
+  {
+   expired_count++;
+   continue;
+  }
+  std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+  if(comp_locked && id == comp_locked->Id)
+  {
+   LOG(INFO) << "GetComponent[DIAG] - Found component at index " << i << " name=" << comp_locked->GetName()
+             << " expired=" << Components[i].expired();
+   return Components[i]; // Return weak_ptr from Components vector
+  }
+ }
+ 
+ LOG(INFO) << "GetComponent[DIAG] - Component not found: checked=" << checked_count 
+           << " expired=" << expired_count << " id=" << id;
 
  if(!nothrow)
   RDK_THROW(EComponentIdNotExist(id));
- return 0;
+ return std::weak_ptr<UContainer>();
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ��������� ����� 'name'
-std::shared_ptr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
 {
- return GetComponent(GetComponentId(name,nothrow),nothrow);
+ // DIAGNOSTIC: Log entry
+ LOG(INFO) << "GetComponent[DIAG] - ENTRY by name: name=" << name << " this_name=" << GetName();
+ 
+ // Check lookup table
+ UId id = GetComponentId(name, nothrow);
+ if(id == ForbiddenId)
+ {
+  LOG(INFO) << "GetComponent[DIAG] - Name not found in lookup table: name=" << name;
+  return std::weak_ptr<UContainer>();
+ }
+ 
+ LOG(INFO) << "GetComponent[DIAG] - Found ID in lookup table: name=" << name << " id=" << id;
+ std::weak_ptr<UContainer> result = GetComponent(id, nothrow);
+ 
+ if(result.expired())
+ {
+  LOG(WARNING) << "GetComponent[DIAG] - Component found in lookup table but weak_ptr is expired: name=" << name << " id=" << id;
+ }
+ else
+ {
+  LOG(INFO) << "GetComponent[DIAG] - Successfully found component: name=" << name << " id=" << id;
+ }
+ 
+ return result;
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� �������� Id 'id'.
 // ���� id[0] == ForbiddenId ��� Id ����� ������� ������,
 // �� ���������� ��������� �� ���� ���������
-std::shared_ptr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
 {
- std::shared_ptr<UContainer> comp;
+ std::weak_ptr<UContainer> comp;
 
  if(id.GetSize() == 0)
-  return 0;
+  return std::weak_ptr<UContainer>();
 
  comp=GetComponent(id[0],nothrow);
+ if(comp.expired())
+  return std::weak_ptr<UContainer>();
+ 
  for(int i=1;i<id.GetSize();i++)
   {
-   if(!comp)
-	return 0;
-   comp=comp->GetComponent(id[i],nothrow);
+   if(comp.expired())
+	return std::weak_ptr<UContainer>();
+   std::shared_ptr<UContainer> comp_locked = comp.lock();
+   if(!comp_locked)
+	return std::weak_ptr<UContainer>();
+   comp=comp_locked->GetComponent(id[i],nothrow);
   }
  return comp;
 }
@@ -1426,9 +1679,10 @@ std::shared_ptr<UContainer> UContainer::GetComponentL(const ULongId &id, bool no
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� �������� ����� 'name'
-std::shared_ptr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
 {
- std::shared_ptr<UContainer> comp;
+ std::weak_ptr<UContainer> comp;
  NameT::size_type pi,pj;
 
  pi=name.find_first_of('.');
@@ -1438,13 +1692,17 @@ std::shared_ptr<UContainer> UContainer::GetComponentL(const NameT &name, bool no
  comp=GetComponent(name.substr(0,pi),nothrow);
  while(pi != name.size())
   {
-   if(!comp)
-	return 0;
+   // CRITICAL: Check if weak_ptr is expired and lock it
+   if(comp.expired())
+	return std::weak_ptr<UContainer>();
+   std::shared_ptr<UContainer> comp_locked = comp.lock();
+   if(!comp_locked)
+	return std::weak_ptr<UContainer>();
    pj=pi+1;
    pi=name.find_first_of('.',pj);
    if(pi == NameT::npos)
 	pi=name.size();
-   comp=comp->GetComponent(name.substr(pj,pi-pj),nothrow);
+   comp=comp_locked->GetComponent(name.substr(pj,pi-pj),nothrow);
   }
  return comp;
 }
@@ -1452,48 +1710,98 @@ std::shared_ptr<UContainer> UContainer::GetComponentL(const NameT &name, bool no
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ����������� ������ � ������ ���������
 // ����� ���������� 0, ���� ������ ������� �� ������� �������
-std::shared_ptr<UContainer> UContainer::GetComponentByIndex(int index) const
+std::weak_ptr<UContainer> UContainer::GetComponentByIndex(int index) const
 {
- // Return existing shared_ptr directly, don't create new one from .get()
- // This prevents double destruction when shared_ptr is destroyed
+ // CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
  // SAFETY: Use Components vector size directly instead of NumComponents
  // NumComponents may be out of sync with Components.size()
- if(index >= 0 && index < int(Components.size()) && Components[index])
+ if(index >= 0 && index < int(Components.size()))
+ {
+  // Check if weak_ptr is expired
+  if(Components[index].expired())
+   return std::weak_ptr<UContainer>();
   return Components[index];
- return nullptr;
+ }
+ return std::weak_ptr<UContainer>();
 }
 
 // ��������� �������� ��������� � ���� ������
 // ���������� ��� Id ��� ForbiddenId ���� ���������� ��������
 // ����� ���� ������� ��������� �� ��������� ����������
-void UContainer::BeforeAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+void UContainer::BeforeAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
- ABeforeAddComponent(comp,pointer);
+ // CRITICAL: Lock weak_ptr to get shared_ptr for operations
+ if(comp.expired())
+  RDK_THROW(EAddComponentHaveInvalidType(ForbiddenId));
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  RDK_THROW(EAddComponentHaveInvalidType(ForbiddenId));
+ ABeforeAddComponent(comp_locked,pointer);
 }
 
-void UContainer::AfterAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+void UContainer::AfterAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
- AAfterAddComponent(comp,pointer);
+ // CRITICAL: Lock weak_ptr to get shared_ptr for operations
+ if(comp.expired())
+  return;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return;
+ AAfterAddComponent(comp_locked,pointer);
 }
 
-UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+UId UContainer::AddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
- if(comp->GetOwner().get() == this)
-  return comp->Id;
+ // DIAGNOSTIC: Log weak_ptr state at entry
+ LOG(INFO) << "AddComponent[DIAG] - ENTRY: comp.expired()=" << comp.expired() 
+           << " this_name=" << GetName();
+ 
+ // CRITICAL: Lock weak_ptr to get shared_ptr for operations
+ if(comp.expired())
+ {
+  LOG(ERROR) << "AddComponent[DIAG] - comp is expired, cannot add";
+  RDK_THROW(EAddComponentHaveInvalidType(ForbiddenId));
+ }
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+ {
+  LOG(ERROR) << "AddComponent[DIAG] - comp.lock() returned nullptr, cannot add";
+  RDK_THROW(EAddComponentHaveInvalidType(ForbiddenId));
+ }
+ 
+ // DIAGNOSTIC: Log component info after lock
+ size_t use_count_after_lock = comp_locked.use_count();
+ std::string comp_name_after_lock = comp_locked->GetName();
+ UId comp_id_before = comp_locked->Id;
+ LOG(INFO) << "AddComponent[DIAG] - After lock: comp_name=" << comp_name_after_lock 
+           << " comp_id=" << comp_id_before << " use_count=" << use_count_after_lock;
+ 
+ if(comp_locked->GetOwner().lock().get() == this)
+ {
+  LOG(INFO) << "AddComponent[DIAG] - Component already has this as owner, returning existing ID";
+  return comp_locked->Id;
+ }
 
- if(comp->GetOwner())
-  RDK_THROW(EAddComponentAlreadyHaveOwner(comp->Id));
+ if(!comp_locked->GetOwner().expired())
+ {
+  LOG(ERROR) << "AddComponent[DIAG] - Component already has owner, cannot add";
+  RDK_THROW(EAddComponentAlreadyHaveOwner(comp_locked->Id));
+ }
 
  if(!CheckComponentType(comp))
-  RDK_THROW(EAddComponentHaveInvalidType(comp->Id));
+ {
+  LOG(ERROR) << "AddComponent[DIAG] - Component type check failed";
+  RDK_THROW(EAddComponentHaveInvalidType(comp_locked->Id));
+ }
 
  BeforeAddComponent(comp,pointer);
 
  NameT namebuffer;
 
- if(!CheckName(comp->Name))
-  comp->Name = GenerateName(comp->Name,namebuffer);
+ if(!CheckName(comp_locked->Name))
+  comp_locked->Name = GenerateName(comp_locked->Name,namebuffer);
  UId id=GenerateId();
+ LOG(INFO) << "AddComponent[DIAG] - Generated new ID: " << id << " component_name=" << comp_locked->GetName();
 
  // SAFETY: Use Components vector directly instead of PComponents pointer
  // PComponents may be invalid if Components vector was modified
@@ -1507,11 +1815,15 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
  bool res=true;
  int i=0;
  // SAFETY: Use Components vector directly to avoid issues with invalid PComponents
+ // CRITICAL: Lock weak_ptr elements before accessing
  for(i=0;i<NumComponents;i++)
  {
   if(i >= int(Components.size()))
    break;
-  if(Components[i] && Components[i]->Id == id)
+  if(Components[i].expired())
+   continue;
+  std::shared_ptr<UContainer> elem_locked = Components[i].lock();
+  if(elem_locked && elem_locked->Id == id)
   {
    res=false;
    break;
@@ -1521,59 +1833,89 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
  if(!res)
   RDK_THROW(EComponentIdAlreadyExist(id));
 
- // comp->SetLogger удален - используется glog
- comp->Id = id;
+ // comp_locked->SetLogger удален - используется glog
+ comp_locked->Id = id;
  // Use shared_from_this() instead of safe_shared_cast to avoid creating new shared_ptr with non-owning deleter
  // This ensures that Owner uses the same shared_ptr reference as the container itself
  // All containers should be managed by shared_ptr, so shared_from_this() should always work
- comp->SetOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
+ comp_locked->SetOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
 
  // ��������� ��������� � ������� ������������ ���������
- SetLookupComponent(comp->Name, comp->Id);
+ SetLookupComponent(comp_locked->Name, comp_locked->Id);
+ LOG(INFO) << "AddComponent[DIAG] - Added to lookup table: name=" << comp_locked->GetName() 
+           << " id=" << comp_locked->Id;
 
  // ���������� � ���� ���������
+ // CRITICAL: Add weak_ptr to Components vector (convert shared_ptr to weak_ptr)
+ // DIAGNOSTIC: Check weak_ptr state before AddComponentTable
+ LOG(INFO) << "AddComponent[DIAG] - Before AddComponentTable: comp.expired()=" << comp.expired()
+           << " Components.size()=" << Components.size();
  AddComponentTable(comp,pointer);
+ LOG(INFO) << "AddComponent[DIAG] - After AddComponentTable: Components.size()=" << Components.size()
+           << " NumComponents=" << NumComponents;
 
- comp->OwnerTimeStep=TimeStep;
+ comp_locked->OwnerTimeStep=TimeStep;
 
  // Set MainOwner: if container has MainOwner, use it; otherwise, use container itself
  auto main_owner = MainOwner.lock();
  if(main_owner)
-  comp->SetMainOwner(main_owner);
+  comp_locked->SetMainOwner(std::weak_ptr<UComponent>(main_owner));
  else
   // Container is root, so set MainOwner to container itself
-  comp->SetMainOwner(std::static_pointer_cast<UComponent>(shared_from_this()));
+  comp_locked->SetMainOwner(std::weak_ptr<UComponent>(std::static_pointer_cast<UComponent>(shared_from_this())));
 
- comp->SetEnvironment(Environment);
+ comp_locked->SetEnvironment(Environment);
 
  const std::shared_ptr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
  if((time_step_prop_type & ptPubParameter) == ptPubParameter)
-  comp->ChangeUseIndTimeStepMode(true);
+  comp_locked->ChangeUseIndTimeStepMode(true);
  else
-  comp->ChangeUseIndTimeStepMode(false);
+  comp_locked->ChangeUseIndTimeStepMode(false);
 
  try{
-  AAddComponent(comp,pointer);
-  comp->SharesInit();
+  AAddComponent(comp_locked,pointer);
+  comp_locked->SharesInit();
   AfterAddComponent(comp,pointer);
+  
+  // DIAGNOSTIC: Final check - verify component is in Components vector
+  bool found_in_components = false;
+  for(int j = 0; j < int(Components.size()); j++)
+  {
+   if(Components[j].expired())
+    continue;
+   std::shared_ptr<UContainer> check_comp = Components[j].lock();
+   if(check_comp && check_comp->Id == comp_locked->Id)
+   {
+    found_in_components = true;
+    LOG(INFO) << "AddComponent[DIAG] - Component found in Components vector at index " << j;
+    break;
+   }
+  }
+  if(!found_in_components)
+  {
+   LOG(WARNING) << "AddComponent[DIAG] - Component NOT found in Components vector after AddComponentTable!";
+  }
+  
+  LOG(INFO) << "AddComponent[DIAG] - EXIT: Successfully added component, returning ID=" << comp_locked->Id;
  }
  catch(UException &)
  {
   // �����
+  LOG(ERROR) << "AddComponent[DIAG] - Exception during AAddComponent, cleaning up";
   BeforeDelComponent(comp);
-  comp->SharesUnInit();
+  comp_locked->SharesUnInit();
   // ������� ��������� �� ������� ������������ ���������
-  DelLookupComponent(comp->Name);
+  DelLookupComponent(comp_locked->Name);
 
   // �������� �� ���� ���������
   DelComponentTable(comp);
 
-  comp->Owner.reset();
+  comp_locked->BreakOwner();
   throw;
  }
 
- return comp->Id;
+ return comp_locked->Id;
 }
 
 // ������� �������� ��������� �� ����� �������.
@@ -1597,9 +1939,20 @@ UId UContainer::AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<U
 // ���� ��������, ���� ��������� �� �����������
 void UContainer::DelComponent(const NameT &name, bool canfree)
 {
- std::shared_ptr<UContainer> comp=GetComponentL(name,true);
- if(comp && comp->GetOwner())
-  comp->GetOwner()->DelComponent(comp,canfree);
+ // CRITICAL: GetComponentL now returns weak_ptr
+ std::weak_ptr<UContainer> comp=GetComponentL(name,true);
+ if(comp.expired())
+  return;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return;
+ std::weak_ptr<UContainer> owner = comp_locked->GetOwner();
+ if(!owner.expired())
+ {
+  std::shared_ptr<UContainer> owner_locked = owner.lock();
+  if(owner_locked)
+   owner_locked->DelComponent(comp,canfree);
+ }
 }
 
 // ������������� ������� ��� �������� ����������
@@ -1642,16 +1995,22 @@ void UContainer::DelAllComponentsRaw(void)
     continue;
    }
    
-   // Check if raw pointer is valid
-   void* raw_ptr = Components[i].get();
-   if(!raw_ptr)
+   // CRITICAL: Components[i] is weak_ptr, need to lock before use
+   if(Components[i].expired())
    {
-    LOG(WARNING) << "UContainer::DelAllComponentsRaw - Component " << i << " has null raw pointer, skipping";
+    LOG(WARNING) << "UContainer::DelAllComponentsRaw - Component " << i << " is expired, skipping";
+    continue;
+   }
+   
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(!comp_locked)
+   {
+    LOG(WARNING) << "UContainer::DelAllComponentsRaw - Component " << i << " failed to lock, skipping";
     continue;
    }
    
    // Component seems valid, add to valid_components
-   valid_components.push_back(Components[i]);
+   valid_components.push_back(comp_locked);
   } catch (...) {
    LOG(WARNING) << "UContainer::DelAllComponentsRaw - exception checking component " << i << ", skipping";
    // Don't add to valid_components - this will effectively remove it
@@ -1659,9 +2018,13 @@ void UContainer::DelAllComponentsRaw(void)
   }
  }
  
- // Replace Components with valid_components
- // This ensures we only destroy valid shared_ptr objects
- Components = std::move(valid_components);
+ // CRITICAL: Components is vector<weak_ptr>, but valid_components is vector<shared_ptr>
+ // Convert shared_ptr to weak_ptr
+ Components.clear();
+ for(const auto& comp : valid_components)
+ {
+  Components.push_back(std::weak_ptr<UContainer>(comp));
+ }
  
  try {
   LOG(INFO) << "UContainer::DelAllComponentsRaw - about to clear Components vector";
@@ -1682,28 +2045,48 @@ void UContainer::DelAllComponentsRaw(void)
 
 /// ��������� ��������� ��� ����������� ���������� ������� ��� ��� ������ 'classname'
 /// � ��� 'name'
-void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, std::shared_ptr<UContainer> comp)
+void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, std::weak_ptr<UContainer> comp)
 {
- comp->SetStaticFlag(true);
- comp->Name = name;
- // Use existing shared_ptr directly, don't create new one from raw pointer
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired())
+  return;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return;
+ 
+ comp_locked->SetStaticFlag(true);
+ comp_locked->Name = name;
+ // CRITICAL: StaticComponents now stores weak_ptr
  StaticComponents[comp]=classname;
 
  const std::shared_ptr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
  if((time_step_prop_type & ptPubParameter) == ptPubParameter)
-  comp->ChangeUseIndTimeStepMode(true);
+  comp_locked->ChangeUseIndTimeStepMode(true);
  else
-  comp->ChangeUseIndTimeStepMode(false);
+  comp_locked->ChangeUseIndTimeStepMode(false);
 }
 
 /// ������� ��������� ��� ����������� ����������
-void UContainer::DelStaticComponent(std::shared_ptr<UContainer> comp)
+void UContainer::DelStaticComponent(std::weak_ptr<UContainer> comp)
 {
- // Use existing shared_ptr directly, don't create new one from raw pointer
- std::map<std::shared_ptr<UContainer>, NameT>::iterator I=StaticComponents.find(comp);
- if(I != StaticComponents.end())
-  StaticComponents.erase(I);
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // CRITICAL: StaticComponents now stores weak_ptr, use owner_before for comparison
+ UAStaticContainerMap::iterator I=StaticComponents.begin();
+ for(;I!=StaticComponents.end();++I)
+ {
+  // Compare weak_ptr using owner_before or lock and compare
+  if(!I->first.expired() && !comp.expired())
+  {
+   std::shared_ptr<UContainer> I_locked = I->first.lock();
+   std::shared_ptr<UContainer> comp_locked = comp.lock();
+   if(I_locked == comp_locked)
+   {
+    StaticComponents.erase(I);
+    return;
+   }
+  }
+ }
 }
 
 /// ������� ��������� ��� ����������� ����������
@@ -1716,47 +2099,65 @@ void UContainer::DelAllStaticComponents(void)
 
 /// ���������� ��������� �� static ���������
 /// � ������� 'classname' � ������ 'name'
-std::shared_ptr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
 {
- std::map<std::shared_ptr<UContainer>, NameT>::const_iterator I=StaticComponents.begin();
+ // CRITICAL: StaticComponents now stores weak_ptr
+ UAStaticContainerMap::const_iterator I=StaticComponents.begin();
  for(;I!=StaticComponents.end();++I)
  {
-  if(I->second == classname && I->first->GetName() == name)
-   // Use I->first directly - it's already a shared_ptr, don't create new one from .get()
-   return I->first;
+  if(I->second == classname)
+  {
+   // CRITICAL: Lock weak_ptr to check name
+   if(I->first.expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked = I->first.lock();
+   if(comp_locked && comp_locked->GetName() == name)
+    return I->first; // Return weak_ptr from StaticComponents
+  }
  }
 
- return 0;
+ return std::weak_ptr<UContainer>();
 }
 
 /// ���������� ���������� � ������ ���������
 /// ���� comp �� ����������� ����� ����������, ��� target ����� �������� ��
 /// ����� ���������� storage, ��� target �� ����� ������� � ���� ���������
 /// �� ���������� false � �� ������ ������
-bool UContainer::MoveComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UContainer> target)
+bool UContainer::MoveComponent(std::weak_ptr<UContainer> comp, std::weak_ptr<UContainer> target)
 {
- if(!comp || !target)
+ // CRITICAL: Parameters are weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired() || target.expired())
   return false;
 
- if(comp->GetOwner().get() != this)
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ std::shared_ptr<UContainer> target_locked = target.lock();
+ if(!comp_locked || !target_locked)
   return false;
 
- if(target->GetStorage() != GetStorage())
+ std::weak_ptr<UContainer> comp_owner = comp_locked->GetOwner();
+ if(comp_owner.expired())
+  return false;
+ std::shared_ptr<UContainer> comp_owner_locked = comp_owner.lock();
+ if(comp_owner_locked.get() != this)
   return false;
 
- if(!target->CheckComponentType(comp))
+ if(target_locked->GetStorage() != GetStorage())
   return false;
 
- comp->MovingFlag=true;
+ if(!target_locked->CheckComponentType(comp))
+  return false;
+
+ comp_locked->MovingFlag=true;
  try
  {
   DelComponent(comp,false);
-  if(target->AddComponent(comp) == ForbiddenId)
+  if(target_locked->AddComponent(comp) == ForbiddenId)
    return false;
  }
  catch(...)
  {
-  comp->MovingFlag=false;
+  comp_locked->MovingFlag=false;
   throw;
  }
 
@@ -1768,51 +2169,72 @@ bool UContainer::MoveComponent(std::shared_ptr<UContainer> comp, std::shared_ptr
 // ������ ������ ���� ��������
 void UContainer::GetComponentsList(std::vector<UId> &buffer) const
 {
- std::shared_ptr<UContainer> *pcomps=PComponents;
+ // CRITICAL: PComponents now points to weak_ptr, need to lock before accessing
  buffer.resize(0);
  buffer.reserve(NumComponents);
- for(int i=0;i<NumComponents;i++,pcomps++)
-  buffer.push_back((*pcomps)->Id);
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i >= int(Components.size()))
+   break;
+  if(Components[i].expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+  if(comp_locked)
+   buffer.push_back(comp_locked->Id);
+ }
 }
 
 void UContainer::GetComponentsList(vector<NameT> &buffer) const
 {
- std::shared_ptr<UContainer> *pcomps=PComponents;
+ // CRITICAL: PComponents now points to weak_ptr, need to lock before accessing
  buffer.resize(0);
  buffer.reserve(NumComponents);
- for(int i=0;i<NumComponents;i++,pcomps++)
-  buffer.push_back((*pcomps)->Name);
+ for(int i=0;i<NumComponents;i++)
+ {
+  if(i >= int(Components.size()))
+   break;
+  if(Components[i].expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+  if(comp_locked)
+   buffer.push_back(comp_locked->Name);
+ }
 }
 
 // �������� ��� ���������� ����� ������� � ������ 'comp', ���� ��������.
-void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_ptr<UStorage> stor) const
+void UContainer::CopyComponents(std::weak_ptr<UContainer> comp, std::shared_ptr<UStorage> stor) const
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired())
+  return;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return;
+
  std::shared_ptr<UContainer> bufcomp;
 
  // ������� ������ ���������� �� 'comp'
- comp->DelAllComponents();
+ comp_locked->DelAllComponents();
 
-
- std::shared_ptr<UContainer> * pcomponents=0;
- PointerMapCIteratorT I;
- PointerMapIteratorT J;
- if(NumComponents>0)
-  pcomponents=&PComponents[0];
-
- for(int i=0;i<NumComponents;i++,pcomponents++)
+ // CRITICAL: Lock weak_ptr elements before accessing
+ for(int i=0;i<NumComponents;i++)
   {
-   // SAFETY: Check if (*pcomponents) is valid before using it
-   // If (*pcomponents) has corrupted use_count, operations on it may segfault
-   if(!(*pcomponents))
+   if(i >= int(Components.size()))
+    break;
+   if(Components[i].expired())
+    continue;
+   
+   std::shared_ptr<UContainer> pcomponent = Components[i].lock();
+   if(!pcomponent)
    {
-    LOG(WARNING) << "CopyComponents - Component " << i << " is nullptr, skipping";
+    LOG(WARNING) << "CopyComponents - Component " << i << " lock() returned nullptr, skipping";
     continue;
    }
    
    // SAFETY: Check use_count before accessing component
    size_t comp_use_count = 0;
    try {
-    comp_use_count = (*pcomponents).use_count();
+    comp_use_count = pcomponent.use_count();
     if(comp_use_count > 1000000 || comp_use_count == 0)
     {
      LOG(ERROR) << "CopyComponents - Component " << i << " has suspicious use_count: " << comp_use_count << ", skipping";
@@ -1823,12 +2245,12 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
     continue;
    }
    
-   if((*pcomponents)->GetStaticFlag())
+   if(pcomponent->GetStaticFlag())
     continue;
    // TRACE: Log before recursive Alloc call
    std::string comp_name = "unknown";
    try {
-    comp_name = (*pcomponents)->GetName();
+    comp_name = pcomponent->GetName();
    } catch (...) {
     comp_name = "<error>";
    }
@@ -1837,7 +2259,7 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
    // CRITICAL: Alloc() may return a component that already has an owner
    // We need to handle this case by breaking the owner relationship before AddComponent
    try {
-    bufcomp=(*pcomponents)->Alloc(stor);
+    bufcomp=pcomponent->Alloc(stor);
    } catch (const std::bad_weak_ptr&) {
     LOG(WARNING) << "CopyComponents - bad_weak_ptr in Alloc() for component " << i << " comp_name=" << comp_name << ", skipping";
     continue;
@@ -1847,7 +2269,7 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
    }
    LOG(INFO) << "CopyComponents[TRACE] - Alloc returned for component " << i 
              << ": bufcomp=" << (bufcomp ? bufcomp->GetName() : "null");
-   if(bufcomp && bufcomp->GetOwner())
+   if(bufcomp && !bufcomp->GetOwner().expired())
    {
     LOG(WARNING) << "CopyComponents - component " << comp_name 
                  << " already has owner, breaking owner relationship";
@@ -1871,33 +2293,34 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
     }
    }
    std::shared_ptr<UIPointer> pointer=0;
-   I=FindLookupPointer(*pcomponents);
+   // CRITICAL: FindLookupPointer now takes weak_ptr
+   auto I=FindLookupPointer(std::weak_ptr<UContainer>(pcomponent));
    if(I != PointerLookupTable.end())
    {
-    J=comp->PointerLookupTable.find(I->first);
-    if(J != comp->PointerLookupTable.end())
+    auto J=comp_locked->PointerLookupTable.find(I->first);
+    if(J != comp_locked->PointerLookupTable.end())
      pointer=J->second.Pointer;
    }
 
-   // CRITICAL: AddComponent will set owner and ID, so we don't need to do it manually
+   // CRITICAL: AddComponent now takes weak_ptr - convert bufcomp to weak_ptr
    // But we need to ensure that bufcomp doesn't have an owner before AddComponent
    try {
-    comp->AddComponent(bufcomp,pointer);
+    comp_locked->AddComponent(std::weak_ptr<UContainer>(bufcomp),pointer);
     // After AddComponent, bufcomp has a new ID assigned by AddComponent
     // We don't need to copy the ID from prototype - AddComponent handles it
     // Just set lookup if needed
-    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+    comp_locked->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
    } catch (const EAddComponentAlreadyHaveOwner&) {
     // Component already has owner - this shouldn't happen if BreakOwner() worked
     LOG(ERROR) << "CopyComponents - AddComponent failed: component " << comp_name 
                << " still has owner after BreakOwner()";
     // Try to break owner again and retry
-    if(bufcomp && bufcomp->GetOwner())
+    if(bufcomp && !bufcomp->GetOwner().expired())
     {
      try {
       bufcomp->BreakOwner();
-      comp->AddComponent(bufcomp,pointer);
-      comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+      comp_locked->AddComponent(std::weak_ptr<UContainer>(bufcomp),pointer);
+      comp_locked->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
      } catch (...) {
       LOG(ERROR) << "CopyComponents - Failed to add component " << comp_name << " after retry";
       // Skip this component
@@ -1909,7 +2332,7 @@ void UContainer::CopyComponents(std::shared_ptr<UContainer> comp, std::shared_pt
     LOG(WARNING) << "CopyComponents - ID conflict for component " << comp_name 
                  << ", skipping ID assignment";
     // Component was added but ID conflict occurred - just set lookup
-    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
+    comp_locked->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
    }
   }
  /*
@@ -1981,15 +2404,14 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  if(result>=NumComponents)
   result=NumComponents-1;
 
- // SAFETY: Check if component is still valid before accessing
- if(index >= int(Components.size()) || !Components[index])
+ // CRITICAL: Lock weak_ptr before accessing
+ if(index >= int(Components.size()) || Components[index].expired())
   return false;
 
- // SAFETY: Check if shared_ptr is still valid before copying
- // If object was deleted, shared_ptr may be corrupted
+ std::weak_ptr<UContainer> comp_weak = Components[index];
  std::shared_ptr<UContainer> comp;
  try {
-  comp = Components[index];
+  comp = comp_weak.lock();
   if(!comp) {
    return false;
   }
@@ -2000,7 +2422,7 @@ bool UContainer::ChangeComponentPosition(int index, int step)
    return false;
   }
  } catch (...) {
-  LOG(WARNING) << "UContainer::ChangeComponentPosition - exception accessing Components[index]";
+  LOG(WARNING) << "UContainer::ChangeComponentPosition - exception locking Components[index]";
   return false;
  }
 
@@ -2019,42 +2441,28 @@ bool UContainer::ChangeComponentPosition(int index, int step)
   if(result>index)
   {
    // Move elements forward
-   // SAFETY: Use copy instead of move to avoid issues with custom deleters
-   // shared_ptr is designed for copying, and copying is safer than moving with custom deleters
+   // CRITICAL: Copy weak_ptr elements (weak_ptr is designed for copying)
    for(int i=index;i<result;i++)
    {
     if(i+1 >= NumComponents || i+1 >= int(Components.size()))
      return false;
-    // SAFETY: Check shared_ptr validity before copying
-    if(!Components[i+1])
-    {
-     LOG(WARNING) << "UContainer::ChangeComponentPosition - Components[i+1] is nullptr, aborting";
-     return false;
-    }
-    // Copy shared_ptr instead of move - this is safer with custom deleters
+    // CRITICAL: Copy weak_ptr - no need to lock for copying
     Components[i] = Components[i+1];
    }
-   Components[result] = comp; // Copy instead of move
+   Components[result] = comp_weak; // Copy weak_ptr
   }
   else
   {
    // Move elements backward
-   // SAFETY: Use copy instead of move to avoid issues with custom deleters
-   // shared_ptr is designed for copying, and copying is safer than moving with custom deleters
+   // CRITICAL: Copy weak_ptr elements (weak_ptr is designed for copying)
    for(int i=index;i>result;i--)
    {
     if(i-1 < 0 || i-1 >= int(Components.size()))
      return false;
-    // SAFETY: Check shared_ptr validity before copying
-    if(!Components[i-1])
-    {
-     LOG(WARNING) << "UContainer::ChangeComponentPosition - Components[i-1] is nullptr, aborting";
-     return false;
-    }
-    // Copy shared_ptr instead of move - this is safer with custom deleters
+    // CRITICAL: Copy weak_ptr - no need to lock for copying
     Components[i] = Components[i-1];
    }
-   Components[result] = comp; // Copy instead of move
+   Components[result] = comp_weak; // Copy weak_ptr
   }
  } catch (const std::exception& e) {
   LOG(ERROR) << "UContainer::ChangeComponentPosition - exception during element movement: " << e.what();
@@ -2078,9 +2486,13 @@ bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 
  for(int i=0;i<NumComponents;i++)
  {
-  // Check if component is still valid before accessing
-  if(PComponents[i] && PComponents[i]->GetName() == name)
-   return ChangeComponentPosition(i,step);
+  // CRITICAL: PComponents[i] is weak_ptr, need to lock before use
+  if(i < NumComponents && PComponents && !PComponents[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = PComponents[i].lock();
+   if(comp_locked && comp_locked->GetName() == name)
+    return ChangeComponentPosition(i,step);
+  }
  }
 
  return false;
@@ -2097,9 +2509,16 @@ bool UContainer::SetComponentPosition(int index, int new_position)
 
 bool UContainer::SetComponentPosition(const NameT &name, int new_position)
 {
+ // CRITICAL: PComponents now points to weak_ptr, need to lock before use
  for(int i=0;i<NumComponents;i++)
-  if(PComponents[i]->GetName() == name)
-   return SetComponentPosition(i,new_position);
+ {
+  if(i < int(Components.size()) && !Components[i].expired())
+  {
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked && comp_locked->GetName() == name)
+    return SetComponentPosition(i,new_position);
+  }
+ }
 
  return false;
 }
@@ -2125,26 +2544,35 @@ bool UContainer::IsMoving(void) const
 // ���� 'sublevel' == 0, �� ���������� �������������� ����������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
 ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
-							int sublevel, std::shared_ptr<UContainer> ownerlevel)
+							int sublevel, std::weak_ptr<UContainer> ownerlevel)
 {
  ULongId id;
 
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
+  // CRITICAL: ownerlevel is weak_ptr, need to lock or use get_shared_from_this()
+  std::weak_ptr<UContainer> owner = ownerlevel.expired() ? get_shared_from_this() : ownerlevel;
+  this->GetLongId(owner,id);
   buffer.Add(id);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
-  std::shared_ptr<UContainer> cont=GetComponentByIndex(i);
+  std::weak_ptr<UContainer> cont_weak=GetComponentByIndex(i);
+  if(cont_weak.expired())
+   continue;
+  std::shared_ptr<UContainer> cont=cont_weak.lock();
+  if(!cont)
+   continue;
   std::shared_ptr<UConnector> temp;
   temp=dynamic_pointer_cast<UConnector>(cont);
   if(temp)
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
+   // CRITICAL: ownerlevel is weak_ptr, need to lock or use get_shared_from_this()
+   std::weak_ptr<UContainer> owner = ownerlevel.expired() ? get_shared_from_this() : ownerlevel;
+   cont->GetLongId(owner,id);
    buffer.Add(id);
   }
 
@@ -2165,7 +2593,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
 // ���� 'sublevel' == 0, �� ���������� �������������� ��������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
 ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
-                            int sublevel, std::shared_ptr<UContainer> ownerlevel)
+							int sublevel, std::weak_ptr<UContainer> ownerlevel)
 
 {
  ULongId id;
@@ -2173,20 +2601,29 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
+  // CRITICAL: ownerlevel is weak_ptr, need to lock or use get_shared_from_this()
+  std::weak_ptr<UContainer> owner = ownerlevel.expired() ? get_shared_from_this() : ownerlevel;
+  this->GetLongId(owner,id);
   buffer.Add(id);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
-  std::shared_ptr<UContainer> cont=GetComponentByIndex(i);
+  std::weak_ptr<UContainer> cont_weak=GetComponentByIndex(i);
+  if(cont_weak.expired())
+   continue;
+  std::shared_ptr<UContainer> cont=cont_weak.lock();
+  if(!cont)
+   continue;
   std::shared_ptr<UItem> temp;
   temp=dynamic_pointer_cast<UItem>(cont);
   if(temp)
 //  if(dynamic_cast<UItem*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
+   // CRITICAL: ownerlevel is weak_ptr, need to lock or use get_shared_from_this()
+   std::weak_ptr<UContainer> owner = ownerlevel.expired() ? get_shared_from_this() : ownerlevel;
+   cont->GetLongId(owner,id);
    buffer.Add(id);
   }
 
@@ -2207,27 +2644,35 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
 // ���� 'sublevel' == 0, �� ���������� �������������� �������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
 ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
-                            int sublevel, std::shared_ptr<UContainer> ownerlevel)
+							int sublevel, std::weak_ptr<UContainer> ownerlevel)
 {
  ULongId id;
 
  if(sublevel == -2)
  {
   id.Resize(0);
-  this->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
+  // CRITICAL: ownerlevel is weak_ptr, need to lock or use get_shared_from_this()
+  std::weak_ptr<UContainer> owner = ownerlevel.expired() ? get_shared_from_this() : ownerlevel;
+  this->GetLongId(owner,id);
   buffer.Add(id);
  }
 
  for(int i=0;i<NumComponents;i++)
  {
-  std::shared_ptr<UContainer> cont=GetComponentByIndex(i);
+  std::weak_ptr<UContainer> cont_weak=GetComponentByIndex(i);
+  if(cont_weak.expired())
+   continue;
+  std::shared_ptr<UContainer> cont=cont_weak.lock();
+  if(!cont)
+   continue;
   std::shared_ptr<UNet> temp;
   temp=dynamic_pointer_cast<UNet>(cont);
   if(temp)
-//  if(dynamic_cast<UNet*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:get_shared_from_this(),id);
+   // CRITICAL: ownerlevel is weak_ptr, need to lock or use get_shared_from_this()
+   std::weak_ptr<UContainer> owner = ownerlevel.expired() ? get_shared_from_this() : ownerlevel;
+   cont->GetLongId(owner,id);
    buffer.Add(id);
   }
 
@@ -2247,7 +2692,13 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
 // 'pointerid'
 bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 {
- std::shared_ptr<UContainer> cont=GetComponent(id);
+ // CRITICAL: GetComponent() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=GetComponent(id);
+ if(cont_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> cont=cont_weak.lock();
+ if(!cont)
+  return false;
 
  PointerMapIteratorT K=PointerLookupTable.end();
  PointerMapIteratorT J=PointerLookupTable.begin();
@@ -2279,7 +2730,13 @@ bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 // 'pointername'
 bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 {
- std::shared_ptr<UContainer> cont=GetComponent(name);
+ // CRITICAL: GetComponent() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=GetComponent(name);
+ if(cont_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> cont=cont_weak.lock();
+ if(!cont)
+  return false;
 
  PointerMapIteratorT K=PointerLookupTable.end();;
  PointerMapIteratorT J=PointerLookupTable.begin();
@@ -2311,7 +2768,13 @@ bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 // 'pointerid'
 bool UContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 {
- std::shared_ptr<UContainer> cont=GetComponent(id);
+ // CRITICAL: GetComponent() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=GetComponent(id);
+ if(cont_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> cont=cont_weak.lock();
+ if(!cont)
+  return false;
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
@@ -2333,7 +2796,13 @@ bool UContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 // 'pointername'
 bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 {
- std::shared_ptr<UContainer> cont=GetComponent(name);
+ // CRITICAL: GetComponent() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=GetComponent(name);
+ if(cont_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> cont=cont_weak.lock();
+ if(!cont)
+  return false;
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
@@ -2354,7 +2823,13 @@ bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 // ���������� ��������� ��������� ���������� 'id' �� ���� ������� ��������� ����������
 bool UContainer::ResetComponentAll(const UId &id)
 {
- std::shared_ptr<UContainer> cont=GetComponent(id);
+ // CRITICAL: GetComponent() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=GetComponent(id);
+ if(cont_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> cont=cont_weak.lock();
+ if(!cont)
+  return false;
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
@@ -2374,7 +2849,13 @@ bool UContainer::ResetComponentAll(const UId &id)
 // ���������� ��������� ��������� ���������� 'name' �� ���� ������� ��������� ����������
 bool UContainer::ResetComponentAll(const NameT &name)
 {
- std::shared_ptr<UContainer> cont=GetComponent(name);
+ // CRITICAL: GetComponent() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=GetComponent(name);
+ if(cont_weak.expired())
+  return false;
+ std::shared_ptr<UContainer> cont=cont_weak.lock();
+ if(!cont)
+  return false;
 
  PointerMapIteratorT J=PointerLookupTable.begin();
 
@@ -2398,12 +2879,16 @@ void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 
  if(J != PointerLookupTable.end())
  {
-  std::shared_ptr<UContainer> cont=J->second.Pointer->Get();
+  // CRITICAL: UIPointer::Get() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> cont_weak=J->second.Pointer->Get();
 
-  while(cont)
+  while(!cont_weak.expired())
   {
+   std::shared_ptr<UContainer> cont=cont_weak.lock();
+   if(!cont)
+    break;
    DelComponent(cont,canfree);
-   cont=J->second.Pointer->Get();
+   cont_weak=J->second.Pointer->Get();
   }
  }
 }
@@ -2460,31 +2945,25 @@ bool UContainer::Default(void)
    {
     for(int i=0;i<NumComponents;i++)
     {
-     // SAFETY: Check component validity before calling Default()
-     if(!PComponents[i])
+     // CRITICAL: PComponents[i] is weak_ptr, need to lock before use
+     if(i >= int(Components.size()) || Components[i].expired())
+      continue;
+     std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+     if(!comp_locked)
       continue;
      
      // SAFETY: Wrap Default() call in try-catch to handle corrupted shared_ptr
      try {
       // Check if component is still valid by checking use_count
       // If use_count is extremely large, the control block is likely corrupted
-      size_t use_count = PComponents[i].use_count();
+      size_t use_count = comp_locked.use_count();
       if(use_count > 1000000 || use_count == 0) // Sanity check - normal use_count should be much smaller
       {
        LOG(WARNING) << "UContainer::Default - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
        continue;
       }
       
-      // SAFETY: Check if raw pointer is valid before calling Default()
-      // Default() may segfault if component is destroyed
-      void* raw_ptr = PComponents[i].get();
-      if(!raw_ptr)
-      {
-       LOG(WARNING) << "UContainer::Default - Component " << i << " has null raw pointer, skipping";
-       continue;
-      }
-      
-      // CRITICAL: If use_count is suspiciously high, skip Default() to avoid segfault
+      // CRITICAL: comp_locked is already locked above, use it directly
       // This prevents segfault from corrupted vtables or expired objects
       if(use_count > 1000)
       {
@@ -2492,7 +2971,8 @@ bool UContainer::Default(void)
        continue;
       }
       
-      PComponents[i]->Default();
+      // CRITICAL: comp_locked is already locked above, use it directly
+      comp_locked->Default();
      } catch (const std::bad_weak_ptr&) {
       LOG(WARNING) << "UContainer::Default - bad_weak_ptr for component " << i << ", skipping";
       continue;
@@ -2592,7 +3072,16 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
    if(subcomps)
    {
 	for(int i=0;i<cont->GetNumComponents();i++)
-	 res &= DefaultAll(cont->GetComponentByIndex(i).get(), subcomps);
+	{
+	 // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+	 std::weak_ptr<UContainer> comp_weak=cont->GetComponentByIndex(i);
+	 if(comp_weak.expired())
+	  continue;
+	 std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+	 if(!comp_locked)
+	  continue;
+	 res &= DefaultAll(comp_locked.get(), subcomps);
+	}
    }
   }
   catch(UException &exception)
@@ -2659,32 +3148,26 @@ bool UContainer::Build(void)
   {
    BeforeBuild();
 
-   // SAFETY: Check PComponents validity before iteration
-   if(PComponents && NumComponents > 0)
+   // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+   if(NumComponents > 0)
    {
     for(int i=0;i<NumComponents;i++)
     {
-     // SAFETY: Check component validity before calling Build()
-     if(!PComponents[i])
+     // CRITICAL: Components[i] is weak_ptr, need to lock before use
+     if(i >= int(Components.size()) || Components[i].expired())
+      continue;
+     std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+     if(!comp_locked)
       continue;
      
      // SAFETY: Wrap Build() call in try-catch to handle corrupted shared_ptr
      try {
       // Check if component is still valid by checking use_count
       // If use_count is extremely large, the control block is likely corrupted
-      size_t use_count = PComponents[i].use_count();
+      size_t use_count = comp_locked.use_count();
       if(use_count > 1000000 || use_count == 0) // Sanity check - normal use_count should be much smaller
       {
        LOG(WARNING) << "UContainer::Build - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
-       continue;
-      }
-      
-      // SAFETY: Check if raw pointer is valid before calling Build()
-      // Build() may segfault if component is destroyed
-      void* raw_ptr = PComponents[i].get();
-      if(!raw_ptr)
-      {
-       LOG(WARNING) << "UContainer::Build - Component " << i << " has null raw pointer, skipping";
        continue;
       }
       
@@ -2696,7 +3179,7 @@ bool UContainer::Build(void)
        continue;
       }
       
-      PComponents[i]->Build();
+      comp_locked->Build();
      } catch (const std::bad_weak_ptr&) {
       LOG(WARNING) << "UContainer::Build - bad_weak_ptr for component " << i << ", skipping";
       continue;
@@ -2782,7 +3265,14 @@ bool UContainer::Reset(void)
    }
 
    for(int i=0;i<NumComponents;i++)
-	PComponents[i]->Reset();
+   {
+	// CRITICAL: Components[i] is weak_ptr, need to lock before use
+	if(i >= int(Components.size()) || Components[i].expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+	if(comp_locked)
+	 comp_locked->Reset();
+   }
 
    AReset();
 
@@ -2881,21 +3371,32 @@ bool UContainer::Calculate(void)
 
    BeforeCalculate();
 
-   std::shared_ptr<UContainer> *comps=PComponents;
+   // CRITICAL: PComponents now points to weak_ptr, need to lock each element
    while((i<NumComponents) && !SkipComponentCalculation)
    {
-	if((*comps)->GetStaticFlag())
+	if(i >= int(Components.size()) || Components[i].expired())
 	{
-	 ++i,++comps;
+	 ++i;
 	 continue;
 	}
-	(*comps)->Calculate();
+	std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+	if(!comp_locked)
+	{
+	 ++i;
+	 continue;
+	}
+	if(comp_locked->GetStaticFlag())
+	{
+	 ++i;
+	 continue;
+	}
+	comp_locked->Calculate();
 	if(ComponentReCalculation)
 	{
 	 ComponentReCalculation=false;
 	 std::string temp;
-	 LogMessage(RDK_EX_DEBUG, string("Components recaltulation after ")+(*comps)->GetFullName(temp));
-	 i=0; comps=PComponents;
+	 LogMessage(RDK_EX_DEBUG, string("Components recaltulation after ")+comp_locked->GetFullName(temp));
+	 i=0;
 	}
 	else
 	{
@@ -2904,9 +3405,9 @@ bool UContainer::Calculate(void)
 	 {
 	  ForceSkipComponentCalculation();
 	  std::string temp;
-      LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+("] after ")+(*comps)->GetFullName(temp));
+      LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+("] after ")+comp_locked->GetFullName(temp));
      }
-	 ++i,++comps;
+	 ++i;
 	}
    }
 
@@ -2954,7 +3455,14 @@ bool UContainer::Calculate(void)
    {
 	auto owner3 = Owner.lock(); if(owner3)
 	{
-	 GetOwner()->ForceSkipComponentCalculation();
+	 // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+	 std::weak_ptr<UContainer> owner_weak=GetOwner();
+	 if(!owner_weak.expired())
+	 {
+	  std::shared_ptr<UContainer> owner=owner_weak.lock();
+	  if(owner)
+	   owner->ForceSkipComponentCalculation();
+	 }
 	}
     LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+"]");
    }
@@ -3042,7 +3550,14 @@ void UContainer::Init(void)
 	return;
 
    for(int i=0;i<NumComponents;i++)
-	PComponents[i]->Init();
+   {
+	// CRITICAL: Components[i] is weak_ptr, need to lock before use
+	if(i >= int(Components.size()) || Components[i].expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+	if(comp_locked)
+	 comp_locked->Init();
+   }
 
    AInit();
    InitFlag=true;
@@ -3105,8 +3620,15 @@ void UContainer::UnInit(void)
   {
    AUnInit();
 
-   for(int i=0;i<NumComponents;i++)
-	PComponents[i]->UnInit();
+	for(int i=0;i<NumComponents;i++)
+	{
+	// CRITICAL: Components[i] is weak_ptr, need to lock before use
+	if(i >= int(Components.size()) || Components[i].expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+	if(comp_locked)
+	 comp_locked->UnInit();
+	}
   }
   catch(UException &exception)
   {
@@ -3183,7 +3705,14 @@ bool UContainer::CheckDurationAndSkipComponentCalculation(void)
 {
  if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),StartCalcTime) > ULongTime(MaxCalculationDuration)))
  {
-  GetOwner()->ForceSkipComponentCalculation();
+  // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> owner_weak=GetOwner();
+  if(!owner_weak.expired())
+  {
+   std::shared_ptr<UContainer> owner=owner_weak.lock();
+   if(owner)
+    owner->ForceSkipComponentCalculation();
+  }
   return true;
  }
  return false;
@@ -3261,9 +3790,15 @@ void UContainer::AddController(std::shared_ptr<UController> controller, bool for
  Controllers.push_back(controller);
  if(forchilds)
  {
-  std::shared_ptr<UContainer>* comps=PComponents;
-  for(int i=0;i<NumComponents;i++,comps++)
-   (*comps)->AddController(controller,forchilds);
+  // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+  for(int i=0;i<NumComponents;i++)
+  {
+   if(i >= int(Components.size()) || Components[i].expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    comp_locked->AddController(controller,forchilds);
+  }
  }
 }
 
@@ -3277,9 +3812,15 @@ void UContainer::DelController(std::shared_ptr<UController> controller, bool for
 
  if(forchilds)
  {
-  std::shared_ptr<UContainer>* comps=PComponents;
-  for(int i=0;i<NumComponents;i++,comps++)
-   (*comps)->DelController(controller,forchilds);
+  // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+  for(int i=0;i<NumComponents;i++)
+  {
+   if(i >= int(Components.size()) || Components[i].expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    comp_locked->DelController(controller,forchilds);
+  }
  }
 }
 
@@ -3289,9 +3830,15 @@ void UContainer::DelAllControllers(bool forchilds)
  Controllers.clear();
  if(forchilds)
  {
-  std::shared_ptr<UContainer>* comps=PComponents;
-  for(int i=0;i<NumComponents;i++,comps++)
-   (*comps)->DelAllControllers(forchilds);
+  // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+  for(int i=0;i<NumComponents;i++)
+  {
+   if(i >= int(Components.size()) || Components[i].expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+   if(comp_locked)
+    comp_locked->DelAllControllers(forchilds);
+  }
  }
 }
 
@@ -3314,15 +3861,18 @@ void UContainer::UnLinkAllControllers(bool forchilds)
    Controllers.erase(Controllers.begin());
   }
 
-  if(forchilds && PComponents && NumComponents > 0)
+  if(forchilds && NumComponents > 0)
   {
-   std::shared_ptr<UContainer>* comps=PComponents;
-   for(int i=0;i<NumComponents;i++,comps++)
+   // CRITICAL: PComponents now points to weak_ptr, need to lock each element
+   for(int i=0;i<NumComponents;i++)
    {
-    if(*comps)
+    if(i >= int(Components.size()) || Components[i].expired())
+     continue;
+    std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+    if(comp_locked)
     {
      try {
-      (*comps)->UnLinkAllControllers(forchilds);
+      comp_locked->UnLinkAllControllers(forchilds);
      } catch (...) {
       // Игнорируем исключения при рекурсивном вызове
      }
@@ -3414,8 +3964,9 @@ NameT UContainer::GetPointerLongName(const UIPointer &pointer) const
 }                        */
 
 // ������������ ����� � ������� ���������, ���������������� ��������� ���������
-UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(std::shared_ptr<UContainer> source) const
+UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(std::weak_ptr<UContainer> source) const
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
  for(PointerMapCIteratorT I=PointerLookupTable.begin(),
                       J=PointerLookupTable.end(); I!=J; ++I)
  {
@@ -3447,54 +3998,135 @@ void UContainer::ASharesUnInit(void)
 // ������� ������ ���������� �������� ���������
 // --------------------------
 // ��������� ��������� 'comp' � ������� ���������
-void UContainer::AddComponentTable(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+void UContainer::AddComponentTable(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
- // Use existing shared_ptr directly, don't create new one from raw pointer
+ // DIAGNOSTIC: Log entry
+ LOG(INFO) << "AddComponentTable[DIAG] - ENTRY: comp.expired()=" << comp.expired() 
+           << " this_name=" << GetName() << " Components.size()=" << Components.size();
+ 
+ // CRITICAL: Lock weak_ptr to verify object is alive, then store as weak_ptr
+ if(comp.expired())
+ {
+  LOG(WARNING) << "UContainer::AddComponentTable - comp is expired, cannot add";
+  return;
+ }
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+ {
+  LOG(WARNING) << "UContainer::AddComponentTable - comp.lock() returned nullptr, cannot add";
+  return;
+ }
+ 
+ // DIAGNOSTIC: Log component info before adding
+ size_t use_count_before_add = comp_locked.use_count();
+ std::string comp_name_before_add = comp_locked->GetName();
+ UId comp_id_before_add = comp_locked->Id;
+ LOG(INFO) << "AddComponentTable[DIAG] - Before push_back: comp_name=" << comp_name_before_add 
+           << " comp_id=" << comp_id_before_add << " use_count=" << use_count_before_add
+           << " comp.expired()=" << comp.expired();
+ 
+ // Store as weak_ptr in Components vector
  Components.push_back(comp);
  PComponents=&Components[0];
  NumComponents=int(Components.size());
+ 
+ // DIAGNOSTIC: Verify weak_ptr is still valid after push_back
+ bool expired_after_push = comp.expired();
+ LOG(INFO) << "AddComponentTable[DIAG] - After push_back: Components.size()=" << Components.size()
+           << " NumComponents=" << NumComponents << " comp.expired()=" << expired_after_push;
+           
+ if(expired_after_push)
+ {
+  LOG(ERROR) << "AddComponentTable[DIAG] - WARNING: comp became expired immediately after push_back!";
+ }
 
  if(pointer)
-  pointer->Set(comp);
+  pointer->Set(comp); // UIPointer::Set now accepts weak_ptr
  else
  {
   PointerMapCIteratorT I=FindLookupPointer(comp);
   if(I != PointerLookupTable.end())
   {
-   I->second.Pointer->Del(comp);
+   I->second.Pointer->Del(comp); // UIPointer::Del now accepts weak_ptr
   }
  }
 }
 
-void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
+void UContainer::DelComponentTable(std::weak_ptr<UContainer> comp)
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Lock weak_ptr to get shared_ptr for comparison
+ if(comp.expired())
+ {
+  LOG(WARNING) << "UContainer::DelComponentTable - comp is expired, cannot remove";
+  return;
+ }
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+ {
+  LOG(WARNING) << "UContainer::DelComponentTable - comp.lock() returned nullptr, cannot remove";
+  return;
+ }
+
  int i;
 
  if(NumComponents)
  {
-  // Compare by pointer value, not by shared_ptr equality
-  // This is safe because we're comparing the same object
-  if(PComponents[NumComponents-1].get() == comp.get())
-   Components.resize(NumComponents-1);
-  else
+  // CRITICAL: Lock weak_ptr elements before comparing
+  // Compare by locking and comparing shared_ptr
+  if(NumComponents-1 < int(Components.size()))
   {
-   for(i=0;i<NumComponents;i++)
-    if(PComponents[i].get() == comp.get())
-     break;
-
-   if(i>=NumComponents)
-    return;
-
-   memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(std::shared_ptr<UContainer>));
-   Components.resize(NumComponents-1);
+   std::weak_ptr<UContainer> last_elem = Components[NumComponents-1];
+   if(!last_elem.expired())
+   {
+    std::shared_ptr<UContainer> last_locked = last_elem.lock();
+    if(last_locked == comp_locked)
+    {
+     Components.resize(NumComponents-1);
+     NumComponents=int(Components.size());
+     if(NumComponents>0)
+      PComponents=&Components[0];
+     else
+      PComponents=nullptr;
+     PointerMapCIteratorT I=FindLookupPointer(comp);
+     if(I != PointerLookupTable.end())
+     {
+      I->second.Pointer->Del(comp);
+     }
+     return;
+    }
+   }
   }
+  
+  // Search for matching element
+  for(i=0;i<NumComponents;i++)
+  {
+   if(i >= int(Components.size()))
+    break;
+   if(Components[i].expired())
+    continue;
+   std::shared_ptr<UContainer> elem_locked = Components[i].lock();
+   if(elem_locked == comp_locked)
+    break;
+  }
+
+  if(i>=NumComponents)
+   return;
+
+  // Remove element by shifting
+  for(int j=i; j<NumComponents-1; j++)
+  {
+   if(j+1 < int(Components.size()))
+    Components[j] = Components[j+1];
+  }
+  Components.resize(NumComponents-1);
  }
 
  NumComponents=int(Components.size());
  if(NumComponents>0)
   PComponents=&Components[0];
  else
-  PComponents=0;
+  PComponents=nullptr;
 
  PointerMapCIteratorT I=FindLookupPointer(comp);
  if(I != PointerLookupTable.end())
@@ -3508,18 +4140,33 @@ void UContainer::DelComponentTable(std::shared_ptr<UContainer> comp)
 // ������� ������ ���������� ������������
 // --------------------------
 /// ���������� ����������� �������� �� ���������� ������������ ����������
-UId UContainer::UpdateStaticComponent(const NameT &classname, std::shared_ptr<UContainer> comp)
+UId UContainer::UpdateStaticComponent(const NameT &classname, std::weak_ptr<UContainer> comp)
 {
- // comp->SetLogger удален - используется glog
- comp->SetStorage(Storage);
- comp->SetEnvironment(Environment);
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired())
+  return ForbiddenId;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return ForbiddenId;
+ 
+ // comp_locked->SetLogger удален - используется glog
+ comp_locked->SetStorage(Storage);
+ comp_locked->SetEnvironment(Environment);
  if(GetStorage())
  {
-  comp->SetClass(GetStorage()->FindClassId(classname));
+  comp_locked->SetClass(GetStorage()->FindClassId(classname));
 
+  // CRITICAL: Lock weak_ptr elements before comparing
   for(int i=0;i<NumComponents;i++)
-   if(PComponents[i] == comp)
-	return PComponents[i]->GetId();
+  {
+   if(i >= int(Components.size()))
+    break;
+   if(Components[i].expired())
+    continue;
+   std::shared_ptr<UContainer> elem_locked = Components[i].lock();
+   if(elem_locked == comp_locked)
+    return elem_locked->GetId();
+  }
   return AddComponent(comp);
  }
  return ForbiddenId;
@@ -3527,32 +4174,47 @@ UId UContainer::UpdateStaticComponent(const NameT &classname, std::shared_ptr<UC
 
 // ������� ��������� comp
 // ����� ������������, ��� ��������� ����������� �������
-void UContainer::BeforeDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
+void UContainer::BeforeDelComponent(std::weak_ptr<UContainer> comp, bool canfree)
 {
- ABeforeDelComponent(comp,canfree);
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired())
+  return;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return;
+ ABeforeDelComponent(comp_locked,canfree);
 }
 
-void UContainer::AfterDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
+void UContainer::AfterDelComponent(std::weak_ptr<UContainer> comp, bool canfree)
 {
- AAfterDelComponent(comp,canfree);
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired())
+  return;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return;
+ AAfterDelComponent(comp_locked,canfree);
 }
 
-void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
+void UContainer::DelComponent(std::weak_ptr<UContainer> comp, bool canfree)
 {
- // SAFETY: Check if comp is valid before using it
- // According to backtrace, comp can have corrupted use_count (e.g., -4)
- if(!comp)
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // SAFETY: Lock weak_ptr to get shared_ptr for operations
+ if(comp.expired())
  {
-  LOG(WARNING) << "UContainer::DelComponent - comp is null, skipping";
+  LOG(WARNING) << "UContainer::DelComponent - comp is expired, skipping";
+  return;
+ }
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+ {
+  LOG(WARNING) << "UContainer::DelComponent - comp.lock() returned nullptr, skipping";
   return;
  }
  
  // SAFETY: Check use_count to detect corrupted shared_ptr
- // Negative use_count indicates corrupted control block
  try {
-  size_t use_count = comp.use_count();
-  // Check for corrupted shared_ptr - use_count should never be negative or extremely large
-  // Maximum reasonable use_count is around 100-1000 for normal operations
+  size_t use_count = comp_locked.use_count();
   if(use_count > 1000000 || use_count == 0)
   {
    LOG(WARNING) << "UContainer::DelComponent - comp has suspicious use_count: " << use_count << ", skipping operations";
@@ -3564,64 +4226,64 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
  }
  
  BeforeDelComponent(comp,canfree);
- SharesUnInit();
- ADelComponent(comp);
+ comp_locked->SharesUnInit();
+ ADelComponent(comp); // ADelComponent now takes weak_ptr
 
- // Safely set Environment - comp may be partially destroyed during container destruction
+ // Safely set Environment - comp_locked may be partially destroyed during container destruction
  // SetEnvironment may call UpdateInternalData() which can access Storage
  // We need to ensure Storage is still valid or skip UpdateInternalData()
- // Check if comp is still valid by checking its Class
- // SAFETY: Re-check comp validity after ADelComponent
+ // Check if comp_locked is still valid by checking its Class
+ // SAFETY: Re-check comp_locked validity after ADelComponent
  try {
-  if(comp && comp->GetClass() != ForbiddenId)
+  if(comp_locked && comp_locked->GetClass() != ForbiddenId)
   {
    try {
-    comp->SetEnvironment(0);
+    comp_locked->SetEnvironment(0);
    } catch (...) {
     // Ignore exceptions during destruction
     LOG(WARNING) << "UContainer::DelComponent - exception in SetEnvironment(0), skipping";
    }
   }
  } catch (...) {
-  LOG(WARNING) << "UContainer::DelComponent - exception checking GetClass(), comp may be destroyed, skipping SetEnvironment";
+  LOG(WARNING) << "UContainer::DelComponent - exception checking GetClass(), comp_locked may be destroyed, skipping SetEnvironment";
  }
 
- //if(comp->GetMainOwner() == MainOwner)
- // SAFETY: Re-check comp validity before SetMainOwner
+ //if(comp_locked->GetMainOwner() == MainOwner)
+ // SAFETY: Re-check comp_locked validity before SetMainOwner
  try {
-  if(comp)
+  if(comp_locked)
   {
    try {
-    comp->SetMainOwner(0);
+    comp_locked->SetMainOwner(std::weak_ptr<UComponent>());
    } catch (...) {
     // Ignore exceptions during destruction
     LOG(WARNING) << "UContainer::DelComponent - exception in SetMainOwner(0), skipping";
    }
   }
  } catch (...) {
-  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity, skipping SetMainOwner";
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp_locked validity, skipping SetMainOwner";
  }
 
  // �������� �� ���� ���������
  // ������� ��������� �� ������� ������������ ���������
- // SAFETY: Re-check comp validity before accessing comp->Name
+ // SAFETY: Re-check comp_locked validity before accessing comp_locked->Name
  try {
-  if(comp)
+  if(comp_locked)
   {
    try {
-    DelLookupComponent(comp->Name);
+    DelLookupComponent(comp_locked->Name);
    } catch (...) {
     LOG(WARNING) << "UContainer::DelComponent - exception in DelLookupComponent, skipping";
    }
   }
  } catch (...) {
-  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before DelLookupComponent, skipping";
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp_locked validity before DelLookupComponent, skipping";
  }
 
  // �������� �� ���� ���������
- // SAFETY: Re-check comp validity before DelComponentTable
+ // SAFETY: Re-check comp_locked validity before DelComponentTable
  try {
-  if(comp)
+  if(comp_locked)
   {
    try {
     DelComponentTable(comp);
@@ -3633,23 +4295,23 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
   LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before DelComponentTable, skipping";
  }
 
- // SAFETY: Re-check comp validity before Owner.reset()
+ // SAFETY: Re-check comp_locked validity before Owner.reset()
  try {
-  if(comp)
+  if(comp_locked)
   {
    try {
-    comp->Owner.reset();
+    comp_locked->BreakOwner();
    } catch (...) {
-    LOG(WARNING) << "UContainer::DelComponent - exception in Owner.reset(), skipping";
+    LOG(WARNING) << "UContainer::DelComponent - exception in BreakOwner(), skipping";
    }
   }
  } catch (...) {
-  LOG(WARNING) << "UContainer::DelComponent - exception checking comp validity before Owner.reset(), skipping";
+  LOG(WARNING) << "UContainer::DelComponent - exception checking comp_locked validity before BreakOwner(), skipping";
  }
 
- // SAFETY: Re-check comp validity before AfterDelComponent
+ // SAFETY: Re-check comp_locked validity before AfterDelComponent
  try {
-  if(comp)
+  if(comp_locked)
   {
    try {
     AfterDelComponent(comp,canfree);
@@ -3668,15 +4330,15 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
  // because ReturnObject may try to access Activity property which has invalid Owner pointer
  // Instead, let shared_ptr handle cleanup automatically
  // Only call ReturnObject if we're explicitly removing a component (not during destruction)
- // SAFETY: Re-check comp validity before ReturnObject
+ // SAFETY: Re-check comp_locked validity before ReturnObject
  try {
-  if(canfree && comp && comp->GetClass() != ForbiddenId)
+  if(canfree && comp_locked && comp_locked->GetClass() != ForbiddenId)
  {
   // Get Storage safely - it may be nullptr if Storage is being destroyed
   // Check if we're in destruction phase - if so, skip ReturnObject
   // During destruction, components will be cleaned up automatically by shared_ptr
   try {
-   std::shared_ptr<UStorage> compStorage = comp->GetStorage();
+   std::shared_ptr<UStorage> compStorage = comp_locked->GetStorage();
    if(compStorage)
    {
     // Only return object if it's not being destroyed
@@ -3684,9 +4346,9 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
     // If use_count is 1, object is only owned by Storage, so it's safe to return
     // If use_count > 1, object is still in use, so we should return it
     // But if object is being destroyed (Class == ForbiddenId), skip ReturnObject
-    if(comp->GetClass() != ForbiddenId)
+    if(comp_locked->GetClass() != ForbiddenId)
     {
-     compStorage->ReturnObject(comp);
+     compStorage->ReturnObject(comp_locked);
     }
    }
   } catch (...) {
@@ -3709,18 +4371,22 @@ void UContainer::DelComponent(std::shared_ptr<UContainer> comp, bool canfree)
 // ��� ���������� ��������� ���������� � ���� ������
 // ����� ����� ������ ������ ���� comp ���
 // ������� �������� � ������ ���������
-void UContainer::ABeforeAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+void UContainer::ABeforeAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
-
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation does nothing
 }
 
-void UContainer::AAfterAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+void UContainer::AAfterAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
-
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation does nothing
 }
 
-bool UContainer::AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
+bool UContainer::AAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer)
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation returns true
  return true;
 }
 
@@ -3728,18 +4394,22 @@ bool UContainer::AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr
 // ��� �������� ��������� ���������� �� ����� �������
 // ����� ����� ������ ������ ���� comp
 // ���������� � ������ ���������
-void UContainer::ABeforeDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
+void UContainer::ABeforeDelComponent(std::weak_ptr<UContainer> comp, bool canfree)
 {
-
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation does nothing
 }
 
-void UContainer::AAfterDelComponent(std::shared_ptr<UContainer> comp, bool canfree)
+void UContainer::AAfterDelComponent(std::weak_ptr<UContainer> comp, bool canfree)
 {
-
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation does nothing
 }
 
-bool UContainer::ADelComponent(std::shared_ptr<UContainer> comp)
+bool UContainer::ADelComponent(std::weak_ptr<UContainer> comp)
 {
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ // Default implementation returns true
  return true;
 }
 // --------------------------
@@ -3774,22 +4444,27 @@ UContainer::EIContainer::EIContainer(const UContainer *cont)
  // �������� ������������� ���������� � ������� ������������� ����������
  Id=cont->GetId();
 
- // ������ ��� ��������� ���������� � ������� ������������� ����������
- if(cont->GetOwner())
+ // CRITICAL: GetOwner() and GetMainOwner() now return weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> owner_weak=cont->GetOwner();
+ if(!owner_weak.expired())
  {
-  cont->GetOwner()->GetFullName(OwnerName);
-
-  // ������ ������������� ��������� ���������� � ������� ������������� ����������
-  OwnerId=cont->GetOwner()->GetFullId();
+  std::shared_ptr<UContainer> owner=owner_weak.lock();
+  if(owner)
+  {
+   owner->GetFullName(OwnerName);
+   OwnerId=owner->GetFullId();
+  }
  }
 
- if(cont->GetMainOwner())
+ std::weak_ptr<UContainer> mainowner_weak=cont->GetMainOwner();
+ if(!mainowner_weak.expired())
  {
-  // ������ ��� �������� ��������� ���������� � ������� ������������� ����������
-  cont->GetMainOwner()->GetFullName(MainOwnerName);
-
-  // ������ ������������� �������� ��������� ���������� � ������� ������������� ����������
-  MainOwnerId=cont->GetMainOwner()->GetFullId();
+  std::shared_ptr<UContainer> mainowner=mainowner_weak.lock();
+  if(mainowner)
+  {
+   mainowner->GetFullName(MainOwnerName);
+   MainOwnerId=mainowner->GetFullId();
+  }
  }
 }
 

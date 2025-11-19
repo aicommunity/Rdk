@@ -210,7 +210,10 @@ bool UMatrixFormDialog::SelectMatrix(const std::string &comp_name, const std::st
     }
     else
     {
-        comp=model->GetComponentL<RDK::UNet>(comp_name,true);
+        std::weak_ptr<RDK::UContainer> comp_weak=model->GetComponentL(comp_name,true);
+        if(comp_weak.expired())
+            return false;
+        comp=std::dynamic_pointer_cast<RDK::UNet>(comp_weak.lock());
         if(!comp)
             return false;
     }

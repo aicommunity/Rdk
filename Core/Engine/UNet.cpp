@@ -85,10 +85,16 @@ UNet::~UNet(void)
 // � �������� ���������� ������� �������
 // ����� ���������� 'true' � ������ ������������
 // � 'false' � ������ ������������� ����
-bool UNet::CheckComponentType(std::shared_ptr<UContainer> comp) const
+bool UNet::CheckComponentType(std::weak_ptr<UContainer> comp) const
 {
- return (dynamic_pointer_cast<UItem>(comp) ||
- dynamic_pointer_cast<UNet>(comp) || dynamic_pointer_cast<UConnector>(comp))?true:false;
+ // CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ if(comp.expired())
+  return false;
+ std::shared_ptr<UContainer> comp_locked = comp.lock();
+ if(!comp_locked)
+  return false;
+ return (dynamic_pointer_cast<UItem>(comp_locked) ||
+ dynamic_pointer_cast<UNet>(comp_locked) || dynamic_pointer_cast<UConnector>(comp_locked))?true:false;
 }
 // --------------------------
 
@@ -280,12 +286,30 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  if(itemname.size() == 0)
   item=GetThisAsSharedItem();
  else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+ {
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> item_weak=GetComponentL(itemname,true);
+  if(!item_weak.expired())
+  {
+   std::shared_ptr<UContainer> item_cont=item_weak.lock();
+   if(item_cont)
+    item=dynamic_pointer_cast<UItem>(item_cont);
+  }
+ }
 
  if(connectorname.size() == 0)
   connector=GetThisAsSharedConnector();
  else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
+ {
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> connector_weak=GetComponentL(connectorname,true);
+  if(!connector_weak.expired())
+  {
+   std::shared_ptr<UContainer> connector_cont=connector_weak.lock();
+   if(connector_cont)
+    connector=dynamic_pointer_cast<UConnector>(connector_cont);
+  }
+ }
 
  item->Disconnect(connector);
 
@@ -299,7 +323,16 @@ bool UNet::BreakAllOutgoingLinks(const NameT &itemname)
  if(itemname.size() == 0)
   item=GetThisAsSharedItem();
  else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+ {
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> item_weak=GetComponentL(itemname,true);
+  if(!item_weak.expired())
+  {
+   std::shared_ptr<UContainer> item_cont=item_weak.lock();
+   if(item_cont)
+    item=dynamic_pointer_cast<UItem>(item_cont);
+  }
+ }
 
  if(!item)
   return false;
@@ -314,7 +347,16 @@ bool UNet::BreakAllOutgoingLinks(const NameT &itemname, const NameT &item_proper
  if(itemname.size() == 0)
   item=GetThisAsSharedItem();
  else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+ {
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> item_weak=GetComponentL(itemname,true);
+  if(!item_weak.expired())
+  {
+   std::shared_ptr<UContainer> item_cont=item_weak.lock();
+   if(item_cont)
+    item=dynamic_pointer_cast<UItem>(item_cont);
+  }
+ }
 
  if(!item)
   return false;
@@ -335,34 +377,38 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 void UNet::BreakLinks(std::shared_ptr<UContainer> brklevel)
 {
  // SAFETY: Check PComponents validity before iteration
- if(!PComponents || NumComponents <= 0)
+ if(NumComponents <= 0)
   return;
  
  for(int i=0;i<NumComponents;i++)
   {
-   // SAFETY: Check component validity before dynamic_pointer_cast
-   if(!PComponents[i])
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak = GetComponentByIndex(i);
+   if(comp_weak.expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked = comp_weak.lock();
+   if(!comp_locked)
     continue;
    
    // SAFETY: Wrap dynamic_pointer_cast in try-catch to handle corrupted shared_ptr
    try {
     // Check if component is still valid by checking use_count
     // If use_count is extremely large, the control block is likely corrupted
-    size_t use_count = PComponents[i].use_count();
+    size_t use_count = comp_locked.use_count();
     if(use_count > 1000000) // Sanity check - normal use_count should be much smaller
     {
      LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
      continue;
     }
     
-    std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(PComponents[i]);
+    std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(comp_locked);
     if(item)
     {
      item->DisconnectBy(brklevel);
      continue;
     }
     
-    std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(PComponents[i]);
+    std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(comp_locked);
     if(net)
     {
      net->BreakLinks(brklevel);
@@ -392,7 +438,7 @@ bool UNet::BreakLinks(const ULinksList &linkslist)
 void UNet::BreakLinks(void)
 {
  // SAFETY: Check PComponents validity before iteration
- if(!PComponents || NumComponents <= 0)
+ if(NumComponents <= 0)
  {
   DisconnectAll();
   DisconnectAllItems();
@@ -401,15 +447,19 @@ void UNet::BreakLinks(void)
  
  for(int i=0;i<NumComponents;i++)
  {
-  // SAFETY: Check component validity before dynamic_pointer_cast
-  if(!PComponents[i])
+  // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> comp_weak = GetComponentByIndex(i);
+  if(comp_weak.expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked = comp_weak.lock();
+  if(!comp_locked)
    continue;
   
   // SAFETY: Wrap dynamic_pointer_cast in try-catch to handle corrupted shared_ptr
   try {
    // Check if component is still valid by checking use_count
    // If use_count is extremely large, the control block is likely corrupted
-   size_t use_count = PComponents[i].use_count();
+   size_t use_count = comp_locked.use_count();
    if(use_count > 1000000) // Sanity check - normal use_count should be much smaller
    {
     LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has suspicious use_count: " << use_count << ", skipping";
@@ -424,16 +474,8 @@ void UNet::BreakLinks(void)
     continue;
    }
    
-   // SAFETY: Check if raw pointer is valid before dynamic_pointer_cast
-   // dynamic_pointer_cast can segfault if vtable is corrupted even if get() is not nullptr
-   void* raw_ptr = PComponents[i].get();
-   if(!raw_ptr)
-   {
-    LOG(WARNING) << "UNet::BreakLinks - Component " << i << " has null raw pointer, skipping";
-    continue;
-   }
-   
-   // CRITICAL: If use_count is suspiciously high or low, skip dynamic_pointer_cast entirely
+   // CRITICAL: comp_locked is already locked above, use it directly
+   // If use_count is suspiciously high or low, skip dynamic_pointer_cast entirely
    // This prevents segfault from corrupted vtables or expired objects
    // According to backtrace, segfault occurs when shared_ptr is expired (weak count 0)
    // but use_count may still be > 0, so we need to be very conservative
@@ -443,20 +485,20 @@ void UNet::BreakLinks(void)
     continue;
    }
    
-   std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(PComponents[i]);
+   std::shared_ptr<UNet> net = dynamic_pointer_cast<UNet>(comp_locked);
    if(net)
    {
     net->BreakLinks();
     continue;
    }
    
-   std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(PComponents[i]);
+   std::shared_ptr<UItem> item = dynamic_pointer_cast<UItem>(comp_locked);
    if(item)
    {
     item->DisconnectAll();
    }
    
-   std::shared_ptr<UConnector> connector = dynamic_pointer_cast<UConnector>(PComponents[i]);
+   std::shared_ptr<UConnector> connector = dynamic_pointer_cast<UConnector>(comp_locked);
    if(connector)
    {
     connector->DisconnectAllItems();
@@ -560,8 +602,24 @@ bool UNet::CheckLink(const NameT &itemname, const NameT &item_property_name,
 
 bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int connector_c_index)
 {
- std::shared_ptr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
- std::shared_ptr<UConnector> connector=GetComponentL<UConnector>(connectorname,true);
+ // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> item_weak=GetComponentL(itemname,true);
+ std::shared_ptr<UItem> item;
+ if(!item_weak.expired())
+ {
+  std::shared_ptr<UContainer> item_cont=item_weak.lock();
+  if(item_cont)
+   item=dynamic_pointer_cast<UItem>(item_cont);
+ }
+ // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> connector_weak=GetComponentL(connectorname,true);
+ std::shared_ptr<UConnector> connector;
+ if(!connector_weak.expired())
+ {
+  std::shared_ptr<UContainer> connector_cont=connector_weak.lock();
+  if(connector_cont)
+   connector=std::dynamic_pointer_cast<UConnector>(connector_cont);
+ }
  if(!item)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+itemname);
@@ -587,12 +645,30 @@ bool UNet::SwitchOutputLinks(const UStringLinkSide &item1, const UStringLinkSide
  if(!CheckLongId(item1.Id))
   pitem1=GetThisAsSharedItem();
  else
-  pitem1=dynamic_pointer_cast<UItem>(GetComponentL(item1.Id,true));
+ {
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> item1_weak=GetComponentL(item1.Id,true);
+  if(!item1_weak.expired())
+  {
+   std::shared_ptr<UContainer> item1_cont=item1_weak.lock();
+   if(item1_cont)
+    pitem1=dynamic_pointer_cast<UItem>(item1_cont);
+  }
+ }
 
  if(!CheckLongId(item2.Id))
   pitem2=GetThisAsSharedItem();
  else
-  pitem2=dynamic_pointer_cast<UItem>(GetComponentL(item2.Id,true));
+ {
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> item2_weak=GetComponentL(item2.Id,true);
+  if(!item2_weak.expired())
+  {
+   std::shared_ptr<UContainer> item2_cont=item2_weak.lock();
+   if(item2_cont)
+    pitem2=dynamic_pointer_cast<UItem>(item2_cont);
+  }
+ }
 
  if(!pitem1)
  {
@@ -887,7 +963,17 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
   serstorage->AddNode("Components");
   for(int i=0;i<GetNumComponents();i++)
   {
-   if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponent(serstorage,false,params_type_mask))
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+    continue;
+   std::shared_ptr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(comp_locked);
+   if(!net)
+    continue;
+   if(!net->SaveComponent(serstorage,false,params_type_mask))
    {
 	std::string name;
 	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Sub component not found: ")+GetFullName(name));
@@ -951,7 +1037,17 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
   {
 //   if(!serstorage->AddNode(GetComponentByIndex(i)->GetName()))
 //    continue;
-   if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponent(serstorage,false,type_mask))
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+    continue;
+   std::shared_ptr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(comp_locked);
+   if(!net)
+    continue;
+   if(!net->SaveComponent(serstorage,false,type_mask))
    {
 	std::string name;
 	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Sub component not found: ")+GetFullName(name));
@@ -1023,9 +1119,12 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 	std::shared_ptr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
 	 continue;
-	if(FindStaticComponent(name,nodename) == 0) // ��� �� ��� ������������ ����������� ���������
+	// CRITICAL: FindStaticComponent() now returns weak_ptr, need to check expired()
+	std::weak_ptr<UContainer> static_comp_weak = FindStaticComponent(name,nodename);
+	if(static_comp_weak.expired()) // ��� �� ��� ������������ ����������� ���������
 	{
-	 if(AddComponent(newcont) == ForbiddenId)
+	 UId added_id = AddComponent(std::weak_ptr<UContainer>(newcont));
+	 if(added_id == ForbiddenId)
 	 {
 	  storage->ReturnObject(newcont);
 	  continue;
@@ -1093,7 +1192,17 @@ bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int
   {
    try
    {
-	if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SaveComponentProperties(serstorage,type_mask))
+	// CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+	std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+	if(comp_weak.expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+	if(!comp_locked)
+	 continue;
+	std::shared_ptr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(comp_locked);
+	if(!net)
+	 continue;
+	if(!net->SaveComponentProperties(serstorage,type_mask))
 	{
 	 std::string name;
 	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SaveComponentProperties failed: ")+GetFullName(name));
@@ -1150,12 +1259,22 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
   serstorage->SelectNode("Components");
   for(int i=0;i<GetNumComponents();i++)
   {
-   if(!serstorage->SelectNode(GetComponentByIndex(i)->GetName()))
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+	continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+	continue;
+   if(!serstorage->SelectNode(comp_locked->GetName()))
 	continue;
    std::string nodename=serstorage->GetNodeName();
    try
    {
-	if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->LoadComponentProperties(serstorage))
+	std::shared_ptr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(comp_locked);
+	if(!net)
+	 continue;
+	if(!net->LoadComponentProperties(serstorage))
 	{
 	 std::string name;
 	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+GetFullName(name));
@@ -1194,7 +1313,16 @@ void UNet::SetGlobalComponentPropertyValue(UId classid, const char *paramname, c
 
   for(int i=0;i<GetNumComponents();i++)
   {
-   dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SetGlobalComponentPropertyValue(classid, paramname, buffer);
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+	continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+	continue;
+   std::shared_ptr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(comp_locked);
+   if(net)
+	net->SetGlobalComponentPropertyValue(classid, paramname, buffer);
   }
 }
 
@@ -1205,21 +1333,36 @@ void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, 
   if(classid == ForbiddenId)
    return;
 
-  if(GetClass() == classid && GetOwner() && GetOwner()->GetClass() == owner_classid)
+  // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> owner_weak=GetOwner();
+  if(GetClass() == classid && !owner_weak.expired())
   {
-   try
+   std::shared_ptr<UContainer> owner=owner_weak.lock();
+   if(owner && owner->GetClass() == owner_classid)
    {
-	SetPropertyValue(paramname,buffer);
-   }
-   catch(UIProperty::EPropertyError &exception)
-   {
-	ProcessException(exception);
+    try
+    {
+	 SetPropertyValue(paramname,buffer);
+    }
+    catch(UIProperty::EPropertyError &exception)
+    {
+	 ProcessException(exception);
+    }
    }
   }
 
   for(int i=0;i<GetNumComponents();i++)
   {
-   dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->SetGlobalOwnerComponentPropertyValue(classid, owner_classid, paramname, buffer);
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+    continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+    continue;
+   std::shared_ptr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(comp_locked);
+   if(net)
+    net->SetGlobalOwnerComponentPropertyValue(classid, owner_classid, paramname, buffer);
   }
 }
 
@@ -1329,10 +1472,16 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, std::shared
   }
   else
   {
-   // Use GetOwner() directly - it already returns shared_ptr, don't create new one from .get()
-   auto owner = GetOwner();
-   if(owner)
-    GetLinks(linkslist, std::dynamic_pointer_cast<UContainer>(owner), true, GetThisAsSharedContainer());
+   // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> owner_weak = GetOwner();
+   if(!owner_weak.expired())
+   {
+    std::shared_ptr<UContainer> owner = owner_weak.lock();
+    if(owner)
+     GetLinks(linkslist, std::dynamic_pointer_cast<UContainer>(owner), true, GetThisAsSharedContainer());
+    else
+     GetLinks(linkslist, GetThisAsSharedContainer(), true, GetThisAsSharedContainer());
+   }
    else
     GetLinks(linkslist, GetThisAsSharedContainer(), true, GetThisAsSharedContainer());
   }
@@ -1355,8 +1504,16 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
 
   for(int i=0;i<GetNumComponents();i++)
   {
-   std::shared_ptr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
-   sub_cont->GetLinks(linkslist, GetThisAsSharedContainer(), true, sub_cont);
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+	continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+	continue;
+   std::shared_ptr<UNet> sub_cont=static_pointer_cast<UNet>(comp_locked);
+   if(sub_cont)
+	sub_cont->GetLinks(linkslist, GetThisAsSharedContainer(), true, sub_cont);
   }
   *serstorage<<linkslist;
   serstorage->SelectUp();
@@ -1364,7 +1521,14 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
   serstorage->AddNode("Components");
   for(int i=0;i<GetNumComponents();i++)
   {
-   std::shared_ptr<UNet> sub_cont=static_pointer_cast<UNet>(GetComponentByIndex(i));
+   // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> comp_weak=GetComponentByIndex(i);
+   if(comp_weak.expired())
+	continue;
+   std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+   if(!comp_locked)
+	continue;
+   std::shared_ptr<UNet> sub_cont=static_pointer_cast<UNet>(comp_locked);
    serstorage->AddNode(sub_cont->GetName());
    serstorage->SetNodeAttribute("Class",Storage->FindClassName(sub_cont->GetClass()));
    serstorage->AddNode("Parameters");

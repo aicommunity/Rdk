@@ -153,7 +153,10 @@ void UGraphWidget::AUpdateInterface()
         RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
         //RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock();
 
-        std::shared_ptr<RDK::UContainer> component=model->GetComponentL(current_graph.nameComponent,true);
+        std::weak_ptr<RDK::UContainer> component_weak=model->GetComponentL(current_graph.nameComponent,true);
+        if(component_weak.expired())
+            continue;
+        std::shared_ptr<RDK::UContainer> component=component_weak.lock();
         if(!component)
             continue;
 

@@ -480,7 +480,9 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
     try
     {
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
-        std::shared_ptr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        std::weak_ptr<RDK::UContainer> cont_weak = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        if(cont_weak.expired()) return;
+        std::shared_ptr<RDK::UContainer> cont = cont_weak.lock();
         if(!cont) return;
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
 
@@ -579,7 +581,9 @@ void UComponentLinksWidget::addLinks(QString componentName)
     try
     {
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
-        std::shared_ptr<RDK::UNet> cont = model->GetComponentL<RDK::UNet>(componentName.toLocal8Bit().constData(), true);
+        std::weak_ptr<RDK::UContainer> cont_weak = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        if(cont_weak.expired()) return;
+        std::shared_ptr<RDK::UNet> cont = std::dynamic_pointer_cast<RDK::UNet>(cont_weak.lock());
         if(!cont) return;
         //Model_GetComponentPersonalLinks()
         RDK::UStringLinksList linksList;

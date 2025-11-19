@@ -314,7 +314,10 @@ void UWatchTab::createSelectionDialog(int chartIndex)
         {
             RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
 
-            std::shared_ptr<RDK::UContainer> cont = model->GetComponentL(componentName.toStdString());
+            std::weak_ptr<RDK::UContainer> cont_weak = model->GetComponentL(componentName.toStdString());
+            if(cont_weak.expired())
+                return;
+            std::shared_ptr<RDK::UContainer> cont = cont_weak.lock();
             if(!cont)
                 return;
 

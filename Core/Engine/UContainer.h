@@ -33,20 +33,25 @@ protected: // ������
 
 public:
 virtual ~UIPointer();
-virtual std::shared_ptr<UContainer> Get(void) const=0;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+virtual std::weak_ptr<UContainer> Get(void) const=0;
 
-virtual void Set(std::shared_ptr<UContainer> source)=0;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void Set(std::weak_ptr<UContainer> source)=0;
 
-virtual void Del(std::shared_ptr<UContainer> source)=0;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void Del(std::weak_ptr<UContainer> source)=0;
 
 // ���������, ���������� �� ����� ��������� � ���� ������
 // ���������� 0 ���� ��, � <0 ���� ���
-virtual int Find(std::shared_ptr<const UContainer> cont) const=0;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual int Find(std::weak_ptr<const UContainer> cont) const=0;
 
 // -----------------
 // ���������
 // -----------------
-UIPointer& operator = (std::shared_ptr<UContainer> source)
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+UIPointer& operator = (std::weak_ptr<UContainer> source)
 {
  Set(source);
  return *this;
@@ -81,10 +86,18 @@ typedef long int IndexT;
 typedef UContainer* PUAContainer;
 
 // ������ ���������� �� ����������
-typedef std::vector<std::shared_ptr<UContainer> > UAContainerVector;
+// CRITICAL: Use weak_ptr - shared_ptr exists only in UStorage
+typedef std::vector<std::weak_ptr<UContainer> > UAContainerVector;
 
 // ������ ����������� ���������
-typedef std::map<std::shared_ptr<UContainer>, NameT> UAStaticContainerMap;
+// CRITICAL: Use weak_ptr - shared_ptr exists only in UStorage
+// Custom comparator for weak_ptr in std::map
+struct WeakPtrComparator {
+ bool operator()(const std::weak_ptr<UContainer>& lhs, const std::weak_ptr<UContainer>& rhs) const {
+  return lhs.owner_before(rhs);
+ }
+};
+typedef std::map<std::weak_ptr<UContainer>, NameT, WeakPtrComparator> UAStaticContainerMap;
 
 class RDK_LIB_TYPE UContainer: public UComponent
 {
@@ -167,7 +180,8 @@ int CalcCounter;
 UTime OwnerTimeStep;
 
 // ��������� �� 0-� ������� ������� ���������
-std::shared_ptr<UContainer>* PComponents;
+// CRITICAL: Use weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer>* PComponents;
 
 // ���������� ��������� � ������� ���������
 int NumComponents;
@@ -237,17 +251,20 @@ UContainer& operator=(UContainer&&) noexcept = default;
 // ������ ������� � ���������
 // --------------------------
 // ���������� �������� ����� �������
-std::shared_ptr<UContainer> GetOwner(void) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> GetOwner(void) const;
 
 // ���������� ��������� �� �������� ��������� ���� ��������
-std::shared_ptr<UContainer> GetMainOwner(void) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> GetMainOwner(void) const;
 
 // ���������� ��������� ��������� ����� �������
 std::shared_ptr<UStorage> GetStorage(void) const;
 
 // ���������, �������� �� ������ owner
 // ���������� ����� ������� �� �����-���� ������ ��������
-bool CheckOwner(std::shared_ptr<UContainer> owner) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+bool CheckOwner(std::weak_ptr<UContainer> owner) const;
 
 // ���������� ������ Id �������
 // (������� Id ���� ����������)
@@ -258,10 +275,11 @@ ULongId GetFullId(void) const;
 // (�������� ��� ��������� 'mainowner')
 // ����� ���������� ������ ������, ���� 'mainowner' - �� ��������
 // ���������� ������� �� �� ����� ������ ��������
-ULongId& GetLongId(std::shared_ptr<UContainer> mainowner, ULongId &buffer) const;
-ULongId GetLongId(std::shared_ptr<UContainer> mainowner) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+ULongId& GetLongId(std::weak_ptr<UContainer> mainowner, ULongId &buffer) const;
+ULongId GetLongId(std::weak_ptr<UContainer> mainowner) const;
 // ������������� ������� ������������ ������, ������������� ������� ���
-std::string& GetLongId(std::shared_ptr<UContainer> mainowner, std::string &buffer) const;
+std::string& GetLongId(std::weak_ptr<UContainer> mainowner, std::string &buffer) const;
 
 // ���������� true ���� ������������ ������������� ������� ���������, � ��������� ������ ���������� false
 bool CheckLongId(const ULongId &id) const;
@@ -307,8 +325,9 @@ void BreakOwner(void);
 
 // ��������� ��������������� �� ����� ������� �������� ���������
 // 'levels'. ���� levels < 0 �� ��������������� ����������� �� ���� �������
-void SetMainOwner(std::shared_ptr<UComponent> mainowner);
-void SetMainOwner(std::shared_ptr<UComponent> mainowner, int levels);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+void SetMainOwner(std::weak_ptr<UComponent> mainowner);
+void SetMainOwner(std::weak_ptr<UComponent> mainowner, int levels);
 
 // ��������� ������������ Id 'id' �� ������������ � ������ �������, �������.
 bool CheckId(const UId &id);
@@ -392,8 +411,9 @@ NameT GetFullName(void) const;
 // (�������� ��� ��������� 'mainowner').
 // ����� ���������� ������ ������, ���� 'mainowner' - �� ��������
 // ���������� ������� �� �� ����� ������ ��������
-NameT& GetLongName(const std::shared_ptr<UContainer> &mainowner, NameT &buffer) const;
-NameT GetLongName(const std::shared_ptr<UContainer> &mainowner) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+NameT& GetLongName(const std::weak_ptr<UContainer> &mainowner, NameT &buffer) const;
+NameT GetLongName(const std::weak_ptr<UContainer> &mainowner) const;
 
 /// ����������� ���������� ����� ������� ���������� ������ � ��������� ������������
 /// � �������������.
@@ -454,7 +474,8 @@ const UId& GetPointerId(const NameT &name) const;
 // find_all
 // false - ������ � ������� ����������
 // true -  ������ � ������� ���������� � ������
-const vector<std::shared_ptr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<std::shared_ptr<UContainer> > &buffer, bool find_all=false);
+// CRITICAL: Buffer parameter uses weak_ptr - shared_ptr exists only in UStorage
+const vector<std::weak_ptr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<std::weak_ptr<UContainer> > &buffer, bool find_all=false);
 
 // ������������ ����� ���� ��������� �� ��������� ����� ������
 // � ���������� ������ ������� ���� ��������� ������������ �������� ���� ������ ������
@@ -470,7 +491,8 @@ const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<Name
 // true -  ������ � ������� ���������� � ������
 // ����� ����������� ������������ ������ net
 template<class T>
-const vector<NameT>& GetComponentsNameByClassType(vector<NameT> &buffer, std::shared_ptr<UContainer> net=0, bool find_all=false);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+const vector<NameT>& GetComponentsNameByClassType(vector<NameT> &buffer, std::weak_ptr<UContainer> net=std::weak_ptr<UContainer>(), bool find_all=false);
 // --------------------------
 
 public:
@@ -493,7 +515,8 @@ virtual std::shared_ptr<UContainer> Alloc(std::shared_ptr<UStorage> stor, bool c
 // � �������� ����������
 // ���� 'stor' == 0, �� �������� �������� ��������������
 // � ��� �� ��������� ��� ������������� ���� ������
-virtual bool Copy(std::shared_ptr<UContainer> target, std::shared_ptr<UStorage> stor=0, bool copystate=false) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual bool Copy(std::weak_ptr<UContainer> target, std::shared_ptr<UStorage> stor=0, bool copystate=false) const;
 
 // ������������ ������������ ����� ������� � ��� ���������
 // ��� ����� �����������, ���� Storage == 0
@@ -526,69 +549,122 @@ bool CheckComponentL(const NameT &name);
 // � �������� ���������� ������� �������
 // ����� ���������� 'true' � ������ ������������
 // � 'false' � ������ ������������� ����
-virtual bool CheckComponentType(std::shared_ptr<UContainer> comp) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual bool CheckComponentType(std::weak_ptr<UContainer> comp) const;
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ��������� Id 'id'
 // ���� id == ForbiddenId �� ���������� ��������� �� ���� ���������
 // ���� nothrow == true �� ���������� 0 � �� ������ ����������
-virtual std::shared_ptr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+virtual std::weak_ptr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
 
 template<class T>
-std::shared_ptr<T> GetComponent(const UId &id, bool nothrow=false) const
+std::weak_ptr<T> GetComponent(const UId &id, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponent(id,nothrow));
+ std::weak_ptr<UContainer> weak_comp = GetComponent(id,nothrow);
+ if(weak_comp.expired())
+  return std::weak_ptr<T>();
+ std::shared_ptr<UContainer> shared_comp = weak_comp.lock();
+ if(!shared_comp)
+  return std::weak_ptr<T>();
+ std::shared_ptr<T> casted = std::dynamic_pointer_cast<T>(shared_comp);
+ if(!casted)
+  return std::weak_ptr<T>();
+ return casted;
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ��������� ����� 'name'
-virtual std::shared_ptr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+virtual std::weak_ptr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
 
 template<class T>
-std::shared_ptr<T> GetComponent(const NameT &name, bool nothrow=false) const
+std::weak_ptr<T> GetComponent(const NameT &name, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponent(name,nothrow));
+ std::weak_ptr<UContainer> weak_comp = GetComponent(name,nothrow);
+ if(weak_comp.expired())
+  return std::weak_ptr<T>();
+ std::shared_ptr<UContainer> shared_comp = weak_comp.lock();
+ if(!shared_comp)
+  return std::weak_ptr<T>();
+ std::shared_ptr<T> casted = std::dynamic_pointer_cast<T>(shared_comp);
+ if(!casted)
+  return std::weak_ptr<T>();
+ return casted;
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� �������� Id 'id'
 // ���� id[0] == ForbiddenId ��� Id ����� ������� ������,
 // �� ���������� ��������� �� ���� ���������
-std::shared_ptr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
 
 template<class T>
-std::shared_ptr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
+std::weak_ptr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponentL(id,nothrow));
+ std::weak_ptr<UContainer> weak_comp = GetComponentL(id,nothrow);
+ if(weak_comp.expired())
+  return std::weak_ptr<T>();
+ std::shared_ptr<UContainer> shared_comp = weak_comp.lock();
+ if(!shared_comp)
+  return std::weak_ptr<T>();
+ std::shared_ptr<T> casted = std::dynamic_pointer_cast<T>(shared_comp);
+ if(!casted)
+  return std::weak_ptr<T>();
+ return casted;
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� �������� ����� 'name'
-virtual std::shared_ptr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+virtual std::weak_ptr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
 
 template<class T>
-std::shared_ptr<T> GetComponentL(const NameT &name, bool nothrow=false) const
+std::weak_ptr<T> GetComponentL(const NameT &name, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponentL(name,nothrow));
+ std::weak_ptr<UContainer> weak_comp = GetComponentL(name,nothrow);
+ if(weak_comp.expired())
+  return std::weak_ptr<T>();
+ std::shared_ptr<UContainer> shared_comp = weak_comp.lock();
+ if(!shared_comp)
+  return std::weak_ptr<T>();
+ std::shared_ptr<T> casted = std::dynamic_pointer_cast<T>(shared_comp);
+ if(!casted)
+  return std::weak_ptr<T>();
+ return casted;
 }
 
 // ���������� ��������� �� �������� ���������, �������� � ����
 // ������� �� ����������� ������ � ������ ���������
 // ����� ���������� 0, ���� ������ ������� �� ������� �������
-std::shared_ptr<UContainer> GetComponentByIndex(int index) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> GetComponentByIndex(int index) const;
 
 template<class T>
-std::shared_ptr<T> GetComponentByIndex(int index) const
+std::weak_ptr<T> GetComponentByIndex(int index) const
 {
- return dynamic_pointer_cast<T>(GetComponentByIndex(index));
+ std::weak_ptr<UContainer> weak_comp = GetComponentByIndex(index);
+ if(weak_comp.expired())
+  return std::weak_ptr<T>();
+ std::shared_ptr<UContainer> shared_comp = weak_comp.lock();
+ if(!shared_comp)
+  return std::weak_ptr<T>();
+ std::shared_ptr<T> casted = std::dynamic_pointer_cast<T>(shared_comp);
+ if(!casted)
+  return std::weak_ptr<T>();
+ return casted;
 }
 
 // ��������� �������� ��������� � ���� ������
 // ���������� ��� Id ��� ForbiddenId ���� ���������� ��������
 // ����� ���� ������� ��������� �� ��������� ����������
-virtual void BeforeAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
-virtual void AfterAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
-virtual UId AddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+// CRITICAL: Parameters are weak_ptr - shared_ptr exists only in UStorage
+// Implementation will lock weak_ptr to get shared_ptr before adding to Components
+virtual void BeforeAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+virtual void AfterAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+virtual UId AddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
 
 // ������� �������� ��������� �� ����� �������.
 // ��������� ��������� ������ ����������� ������ � ���� �������.
@@ -614,23 +690,27 @@ void DelAllComponentsRaw(void);
 public:
 /// ��������� ��������� ��� ����������� ���������� ������� ��� ��� ������ 'classname'
 /// � ��� 'name'
-virtual void AddStaticComponent(const NameT &classname, const NameT &name, std::shared_ptr<UContainer> comp);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void AddStaticComponent(const NameT &classname, const NameT &name, std::weak_ptr<UContainer> comp);
 
 /// ������� ��������� ��� ����������� ����������
-virtual void DelStaticComponent(std::shared_ptr<UContainer> comp);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void DelStaticComponent(std::weak_ptr<UContainer> comp);
 
 /// ������� ��������� ��� ����������� ����������
 virtual void DelAllStaticComponents(void);
 
 /// ���������� ��������� �� static ���������
 /// � ������� 'classname' � ������ 'name'
-virtual std::shared_ptr<UContainer> FindStaticComponent(const NameT &classname, const NameT &name) const;
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+virtual std::weak_ptr<UContainer> FindStaticComponent(const NameT &classname, const NameT &name) const;
 
 /// ���������� ���������� � ������ ���������
 /// ���� comp �� ����������� ����� ����������, ��� target ����� �������� ��
 /// ����� ���������� storage, ��� target �� ����� ������� � ���� ���������
 /// �� ���������� false � �� ������ ������
-virtual bool MoveComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UContainer> target);
+// CRITICAL: Parameters are weak_ptr - shared_ptr exists only in UStorage
+virtual bool MoveComponent(std::weak_ptr<UContainer> comp, std::weak_ptr<UContainer> target);
 
 // ���������� ������ ���� � Id ���������, ������������ ���������������
 // � ���� �������
@@ -640,7 +720,8 @@ void GetComponentsList(vector<NameT> &buffer) const;
 
 // �������� ��� ���������� ����� ������� � ������ 'comp', ���� ��������
 // ���� ��������� stor != 0 �� ������������ ���
-virtual void CopyComponents(std::shared_ptr<UContainer> comp, std::shared_ptr<UStorage> stor=0) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void CopyComponents(std::weak_ptr<UContainer> comp, std::shared_ptr<UStorage> stor=0) const;
 
 // ���������� ��������� � ������� �������� index ��� ������ 'name' ����� ���
 // ���� �� ������ �� �������� ����� ���������
@@ -673,8 +754,9 @@ public:
 // ��� ��������� ����.
 // ���� 'sublevel' == 0, �� ���������� �������������� ����������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
 virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
-						  int sublevel=-1, std::shared_ptr<UContainer> ownerlevel=0);
+						  int sublevel=-1, std::weak_ptr<UContainer> ownerlevel=std::weak_ptr<UContainer>());
 
 // ���������� ������ ������� ��������������� ���� ��������� ����.
 // 'sublevel' ����������� ����� ������� ����������� �������� ��� �������
@@ -685,8 +767,9 @@ virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
 // ��� ��������� ����.
 // ���� 'sublevel' == 0, �� ���������� �������������� ��������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
 virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
-							int sublevel=-1, std::shared_ptr<UContainer> ownerlevel=0);
+							int sublevel=-1, std::weak_ptr<UContainer> ownerlevel=std::weak_ptr<UContainer>());
 
 // ���������� ������ ������� ��������������� ���� �������� ����.
 // 'sublevel' ����������� ����� ������� ����������� �������� ��� �������
@@ -697,8 +780,9 @@ virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
 // ��� ��������� ����.
 // ���� 'sublevel' == 0, �� ���������� �������������� �������� ������ ���� ����
 // ��������������� ������� ������ �� ������������.
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
 virtual ULongIdVector& GetNetsList(ULongIdVector &buffer,
-							int sublevel=-1, std::shared_ptr<UContainer> ownerlevel=0);
+							int sublevel=-1, std::weak_ptr<UContainer> ownerlevel=std::weak_ptr<UContainer>());
 // ----------------------
 
 // --------------------------
@@ -839,17 +923,21 @@ protected:
 void DelLookupPointer(const NameT &name);
 
 // ������������ ����� � ������� ���������, ���������������� ��������� ���������
-PointerMapCIteratorT FindLookupPointer(std::shared_ptr<UContainer> source) const;
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+PointerMapCIteratorT FindLookupPointer(std::weak_ptr<UContainer> source) const;
 // --------------------------
 
 // --------------------------
 // ������� ������ ���������� �������� ���������
 // --------------------------
 // ��������� ��������� 'comp' � ������� ���������
-void AddComponentTable(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+// Implementation will lock weak_ptr to get shared_ptr before adding to Components
+void AddComponentTable(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
 
 // ������� ��������� 'comp' �� ������� ���������
-void DelComponentTable(std::shared_ptr<UContainer> comp);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+void DelComponentTable(std::weak_ptr<UContainer> comp);
 // --------------------------
 
 // --------------------------
@@ -887,30 +975,34 @@ void DelLookupComponent(const NameT &name);
 // --------------------------
 protected:
 /// ���������� ����������� �������� �� ���������� ������������ ����������
-UId UpdateStaticComponent(const NameT &classname, std::shared_ptr<UContainer> comp);
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+UId UpdateStaticComponent(const NameT &classname, std::weak_ptr<UContainer> comp);
 
 // ������� ��������� comp
 // ����� ������������, ��� ��������� ����������� �������
-virtual void BeforeDelComponent(std::shared_ptr<UContainer> comp, bool canfree=true);
-virtual void AfterDelComponent(std::shared_ptr<UContainer> comp, bool canfree=true);
-void DelComponent(std::shared_ptr<UContainer> comp, bool canfree);
+// CRITICAL: Parameters are weak_ptr - shared_ptr exists only in UStorage
+virtual void BeforeDelComponent(std::weak_ptr<UContainer> comp, bool canfree=true);
+virtual void AfterDelComponent(std::weak_ptr<UContainer> comp, bool canfree=true);
+void DelComponent(std::weak_ptr<UContainer> comp, bool canfree);
 
 // ��������� ����������� ���������������� ��������
 // ��� ���������� ��������� ���������� � ���� ������
 // ����� ����� ������ ������ ���� comp ���
 // ������� �������� � ������ ���������
 // ����� ���� ������� ��������� �� ��������� ����������
-virtual void ABeforeAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
-virtual void AAfterAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
-virtual bool AAddComponent(std::shared_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+// CRITICAL: Parameters are weak_ptr - shared_ptr exists only in UStorage
+virtual void ABeforeAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+virtual void AAfterAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
+virtual bool AAddComponent(std::weak_ptr<UContainer> comp, std::shared_ptr<UIPointer> pointer=0);
 
 // ��������� ��������������� ���������������� ��������
 // ��� �������� ��������� ���������� �� ����� �������
 // ����� ����� ������ ������ ���� comp
 // ���������� � ������ ���������
-virtual void ABeforeDelComponent(std::shared_ptr<UContainer> comp, bool canfree);
-virtual void AAfterDelComponent(std::shared_ptr<UContainer> comp, bool canfree);
-virtual bool ADelComponent(std::shared_ptr<UContainer> comp);
+// CRITICAL: Parameters are weak_ptr - shared_ptr exists only in UStorage
+virtual void ABeforeDelComponent(std::weak_ptr<UContainer> comp, bool canfree);
+virtual void AAfterDelComponent(std::weak_ptr<UContainer> comp, bool canfree);
+virtual bool ADelComponent(std::weak_ptr<UContainer> comp);
 // --------------------------
 
 // --------------------------
@@ -1114,15 +1206,24 @@ bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_t
 // false - ������ � ������� ����������
 // true -  ������ � ������� ���������� � ������
 template<class T>
-const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, std::shared_ptr<UContainer> net, bool find_all)
+const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, std::weak_ptr<UContainer> net, bool find_all)
 {
  int numComp=int(GetNumComponents());
- std::shared_ptr<UContainer> comp;
- std::shared_ptr<UContainer> root(net);
+ std::weak_ptr<UContainer> comp;
+ std::shared_ptr<UContainer> root;
  string compName;
 
- if(!net)
+ // CRITICAL: Lock weak_ptr to get shared_ptr for operations
+ if(net.expired())
+ {
   root=get_shared_from_this();
+ }
+ else
+ {
+  root = net.lock();
+  if(!root)
+   root=get_shared_from_this();
+ }
 
  switch(find_all)
  {
@@ -1130,9 +1231,16 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
    for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
-	if(dynamic_pointer_cast<T>(comp))
+	// CRITICAL: Lock weak_ptr to get shared_ptr for operations
+	if(comp.expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = comp.lock();
+	if(!comp_locked)
+	 continue;
+	std::shared_ptr<T> casted = dynamic_pointer_cast<T>(comp_locked);
+	if(casted)
 	{
-	 compName=comp->GetLongName(root, compName);
+	 compName=casted->GetLongName(root, compName);
 	 buffer.push_back(compName);
 	}
    }
@@ -1142,10 +1250,17 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
    for(int i=0; i<numComp; i++)
    {
 	comp=GetComponentByIndex(i);
-	comp->GetComponentsNameByClassType<T>(buffer, root, true);
-	if(dynamic_pointer_cast<T>(comp))
+	// CRITICAL: Lock weak_ptr to get shared_ptr for operations
+	if(comp.expired())
+	 continue;
+	std::shared_ptr<UContainer> comp_locked = comp.lock();
+	if(!comp_locked)
+	 continue;
+	comp_locked->GetComponentsNameByClassType<T>(buffer, std::weak_ptr<UContainer>(comp_locked), true);
+	std::shared_ptr<T> casted = dynamic_pointer_cast<T>(comp_locked);
+	if(casted)
 	{
-	 compName=comp->GetLongName(root, compName);
+	 compName=casted->GetLongName(root, compName);
 	 buffer.push_back(compName);
 	}
    }

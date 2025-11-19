@@ -616,9 +616,12 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
          return;
 
     // ���������� ���������
-    std::shared_ptr<RDK::UContainer> container = engine->GetModel()
+    std::weak_ptr<RDK::UContainer> container_weak = engine->GetModel()
                                 ->GetComponentL(ModelScheme->GetLongName(), true);
     // ���� ��������� �� �������
+    if(container_weak.expired())
+        return;
+    std::shared_ptr<RDK::UContainer> container = container_weak.lock();
     if(!container)
         return;
 

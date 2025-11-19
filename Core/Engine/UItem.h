@@ -659,10 +659,17 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, std::shared_p
   }
  }
 
+ // CRITICAL: PComponents now points to weak_ptr, need to lock before accessing
  for(int i=0;i<NumComponents;i++)
  {
-  std::shared_ptr<UItem> item=dynamic_cast<UItem*>(PComponents[i].operator->());
-  item->GetFullItemLinks(linkslist, comp, netlevel);
+  if(i >= int(Components.size()) || Components[i].expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked = Components[i].lock();
+  if(!comp_locked)
+   continue;
+  std::shared_ptr<UItem> item = std::dynamic_pointer_cast<UItem>(comp_locked);
+  if(item)
+   item->GetFullItemLinks(linkslist, comp, netlevel);
  }
 
  return linkslist;

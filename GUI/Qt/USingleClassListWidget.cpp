@@ -259,7 +259,12 @@ void USingleClassListWidget::addComponentSons(std::shared_ptr<RDK::UContainer> c
             // � 0-�� ������� UserRole ������ ���������� ������� ��� ����������
             childItem->setData(0, Qt::UserRole, father+str);
 
-            std::shared_ptr<RDK::UContainer> child = cont->GetComponent(str.toStdString());
+            std::weak_ptr<RDK::UContainer> child_weak = cont->GetComponent(str.toStdString());
+            if(child_weak.expired())
+             continue;
+            std::shared_ptr<RDK::UContainer> child = child_weak.lock();
+            if(!child)
+             continue;
             // � 1-�� ������� UserRole ������ ���������� ��� ������ ����������
             childItem->setData(1, Qt::UserRole, QString::fromStdString(RDK::GetStorageLock()->FindClassName(child->GetClass())));
 

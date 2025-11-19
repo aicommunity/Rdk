@@ -156,9 +156,12 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
       std::shared_ptr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
       if(!newcont)
        continue;
-      if(FindStaticComponent(name,nodename) == 0) // ��� �� ��� ������������ ����������� ���������
+      // CRITICAL: FindStaticComponent() now returns weak_ptr, need to check expired()
+      std::weak_ptr<UContainer> static_comp_weak = FindStaticComponent(name,nodename);
+      if(static_comp_weak.expired()) // ��� �� ��� ������������ ����������� ���������
       {
-       if(AddComponent(newcont) == ForbiddenId)
+       UId added_id = AddComponent(std::weak_ptr<UContainer>(newcont));
+       if(added_id == ForbiddenId)
        {
         storage->ReturnObject(newcont);
         continue;

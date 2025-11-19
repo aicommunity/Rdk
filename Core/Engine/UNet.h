@@ -68,7 +68,7 @@ virtual void Free(void);
 // � �������� ���������� ������� �������
 // ����� ���������� 'true' � ������ ������������
 // � 'false' � ������ ������������� ����
-virtual bool CheckComponentType(std::shared_ptr<UContainer> comp) const;
+virtual bool CheckComponentType(std::weak_ptr<UContainer> comp) const;
 // --------------------------
 
 // --------------------------
@@ -321,9 +321,14 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
   pitem=GetThisAsSharedItem();
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = GetComponentL(item.Id,true);
-  pitem=std::dynamic_pointer_cast<UItem>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = GetComponentL(item.Id,true);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    pitem=std::dynamic_pointer_cast<UItem>(component);
+  }
  }
 
  std::shared_ptr<UConnector> pconnector=0;
@@ -331,9 +336,14 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
   pconnector=GetThisAsSharedConnector();
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = GetComponentL(connector.Id,true);
-  pconnector=std::dynamic_pointer_cast<UConnector>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = GetComponentL(connector.Id,true);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    pconnector=std::dynamic_pointer_cast<UConnector>(component);
+  }
  }
 
  if(!pitem)
@@ -402,9 +412,14 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pitem=GetThisAsSharedItem();
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = GetComponentL(item.Id,true);
-  pitem=std::dynamic_pointer_cast<UItem>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = GetComponentL(item.Id,true);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    pitem=std::dynamic_pointer_cast<UItem>(component);
+  }
  }
 
  std::shared_ptr<UConnector> pconnector=0;
@@ -412,9 +427,14 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pconnector=GetThisAsSharedConnector();
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = GetComponentL(connector.Id,true);
-  pconnector=std::dynamic_pointer_cast<UConnector>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = GetComponentL(connector.Id,true);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    pconnector=std::dynamic_pointer_cast<UConnector>(component);
+  }
  }
 
  if(!pitem)
@@ -446,9 +466,14 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pitem=GetThisAsSharedItem();
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = GetComponentL(item.Id,true);
-  pitem=std::dynamic_pointer_cast<UItem>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = GetComponentL(item.Id,true);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    pitem=std::dynamic_pointer_cast<UItem>(component);
+  }
  }
 
  std::shared_ptr<UConnector> pconnector=0;
@@ -456,9 +481,14 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pconnector=GetThisAsSharedConnector();
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = GetComponentL(connector.Id,true);
-  pconnector=std::dynamic_pointer_cast<UConnector>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = GetComponentL(connector.Id,true);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    pconnector=std::dynamic_pointer_cast<UConnector>(component);
+  }
  }
 
  if(!pitem)
@@ -504,7 +534,11 @@ std::shared_ptr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
 template<typename T>
 std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name, std::shared_ptr<UIPointer> pointer)
 {
- std::shared_ptr<UContainer> found_comp=GetComponent(component_name,true);
+ // CRITICAL: GetComponent now returns weak_ptr, need to lock
+ std::weak_ptr<UContainer> found_comp_weak=GetComponent(component_name,true);
+ std::shared_ptr<UContainer> found_comp;
+ if(!found_comp_weak.expired())
+  found_comp=found_comp_weak.lock();
  std::shared_ptr<T> comp;
  if(found_comp)
  {
@@ -547,7 +581,8 @@ std::shared_ptr<T> UNet::AddMissingComponent(const NameT &component_name, const 
 
  comp->SetName(component_name);
  comp->SetTimeStep(TimeStep);
- if(!AddComponent(comp, pointer))
+ UId added_id = AddComponent(std::weak_ptr<UContainer>(comp), pointer);
+ if(added_id == ForbiddenId)
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - AddComponent failed. ClassName=")+class_name);
   Storage->ReturnObject(comp);
@@ -575,7 +610,16 @@ ULinksListT<T>& UNet::GetLinks(std::shared_ptr<UContainer> cont, ULinksListT<T> 
   std::static_pointer_cast<UConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
 
  for(int i=0;i<cont->GetNumComponents();i++)
-  GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel, exclude_internals,internal_level);
+ {
+  // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> comp_weak=cont->GetComponentByIndex(i);
+  if(comp_weak.expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+  if(!comp_locked)
+   continue;
+  GetLinks(comp_locked, linkslist, netlevel, exclude_internals,internal_level);
+ }
 
  return linkslist;
 }

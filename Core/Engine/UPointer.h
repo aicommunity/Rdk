@@ -66,29 +66,47 @@ std::shared_ptr<UContainer> const GetUEPtr(void) const
 };
 
 // Implement UIPointer API
-std::shared_ptr<UContainer> Get(void) const override
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> Get(void) const override
 { 
- auto ptr = Source.lock();
- return ptr ? std::static_pointer_cast<UContainer>(ptr) : std::shared_ptr<UContainer>();
+ // Source is already weak_ptr<T>, convert to weak_ptr<UContainer>
+ std::shared_ptr<T> locked = Source.lock();
+ if(!locked)
+  return std::weak_ptr<UContainer>();
+ std::shared_ptr<UContainer> cont = std::static_pointer_cast<UContainer>(locked);
+ return std::weak_ptr<UContainer>(cont);
 };
 
-virtual void Del(std::shared_ptr<UContainer> source)
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void Del(std::weak_ptr<UContainer> source)
 {
- if(Source.lock() == source)
+ if(source.expired())
+  return;
+ std::shared_ptr<UContainer> source_locked = source.lock();
+ if(Source.lock() == source_locked)
   Source.reset();
 }
 
 // ���������, ���������� �� ����� ��������� � ���� ������
 // ���������� 0 ���� ��, � <0 ���� ���
-virtual int Find(std::shared_ptr<const UContainer> cont) const
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual int Find(std::weak_ptr<const UContainer> cont) const
 { 
+ if(cont.expired())
+  return -1;
+ std::shared_ptr<const UContainer> cont_locked = cont.lock();
  auto ptr = Source.lock();
- return (ptr && ptr == cont) ? 0 : -1;
+ return (ptr && ptr == cont_locked) ? 0 : -1;
 };
 
-virtual void Set(std::shared_ptr<UContainer> source)
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void Set(std::weak_ptr<UContainer> source)
 {
- Source = std::static_pointer_cast<T>(source);
+ if(source.expired())
+  return;
+ std::shared_ptr<UContainer> source_locked = source.lock();
+ if(source_locked)
+  Source = std::static_pointer_cast<T>(source_locked);
 };
 
 // Override UIPointer methods with std::shared_ptr
@@ -139,12 +157,18 @@ virtual ~UCPointer(void)
 };
 // --------------------------
 
-std::shared_ptr<UContainer> Get(void) const override
+// CRITICAL: Returns weak_ptr - shared_ptr exists only in UStorage
+std::weak_ptr<UContainer> Get(void) const override
 { 
  if(Sources.empty())
-  return std::shared_ptr<UContainer>();
- auto ptr = Sources[0].lock();
- return ptr ? std::static_pointer_cast<UContainer>(ptr) : std::shared_ptr<UContainer>();
+  return std::weak_ptr<UContainer>();
+ // Sources[0] is already weak_ptr<T>, return it as weak_ptr<UContainer>
+ // We need to lock, cast, then convert back to weak_ptr
+ std::shared_ptr<T> locked = Sources[0].lock();
+ if(!locked)
+  return std::weak_ptr<UContainer>();
+ std::shared_ptr<UContainer> cont = std::static_pointer_cast<UContainer>(locked);
+ return std::weak_ptr<UContainer>(cont);
 };
 
 std::shared_ptr<UContainer> const Get(size_t index) const
@@ -155,16 +179,24 @@ std::shared_ptr<UContainer> const Get(size_t index) const
  return ptr ? std::static_pointer_cast<UContainer>(ptr) : std::shared_ptr<UContainer>();
 };
 
-virtual void Set(std::shared_ptr<UContainer> source)
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void Set(std::weak_ptr<UContainer> source)
 {
+ if(source.expired())
+  return;
  if(Find(source) >=0)
   return;
 
- Sources.push_back(std::static_pointer_cast<T>(source));
+ std::shared_ptr<UContainer> source_locked = source.lock();
+ if(source_locked)
+  Sources.push_back(std::static_pointer_cast<T>(source_locked));
 }
 
-virtual void Del(std::shared_ptr<UContainer> source)
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual void Del(std::weak_ptr<UContainer> source)
 {
+ if(source.expired())
+  return;
  int index=Find(source);
 
  if(index<0)
@@ -175,12 +207,19 @@ virtual void Del(std::shared_ptr<UContainer> source)
 
 // ���������, ���������� �� ����� ��������� � ���� ������
 // ���������� 0 ���� ��, � <0 ���� ���
-virtual int Find(std::shared_ptr<const UContainer> cont) const
+// CRITICAL: Parameter is weak_ptr - shared_ptr exists only in UStorage
+virtual int Find(std::weak_ptr<const UContainer> cont) const
 {
+ if(cont.expired())
+  return -1;
+ std::shared_ptr<const UContainer> cont_locked = cont.lock();
+ if(!cont_locked)
+  return -1;
+ 
  for(size_t i=0; i<Sources.size(); i++)
  {
   auto ptr = Sources[i].lock();
-  if(ptr && ptr == cont)
+  if(ptr && ptr == cont_locked)
    return int(i);
  }
  return -1;

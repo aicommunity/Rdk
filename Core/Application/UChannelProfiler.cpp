@@ -395,8 +395,15 @@ void UChannelProfiler::LoadCorePerfomanceData(void)
    std::vector<std::string> comp_names=ComponentsName;
    for(size_t i=0;i<comp_names.size();i++)
    {
-    std::shared_ptr<UNet> component=model->GetComponentL<UNet>(comp_names[i],true);
-	if(component)
+    // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+    std::weak_ptr<UContainer> comp_weak = model->GetComponentL(comp_names[i],true);
+    if(comp_weak.expired())
+     continue;
+    std::shared_ptr<UContainer> comp_cont = comp_weak.lock();
+    if(!comp_cont)
+     continue;
+    std::shared_ptr<UNet> component = std::dynamic_pointer_cast<UNet>(comp_cont);
+    if(component)
      AddComponentPerfomanceData(int(i), component->GetFullStepDuration(), component->GetInterstepsInterval());
    }
    long long full_step=model->GetFullStepDuration();

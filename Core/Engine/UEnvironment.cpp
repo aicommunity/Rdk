@@ -375,9 +375,14 @@ void UEnvironment::SelectCurrentComponent(const NameT &name)
   CurrentComponent=std::dynamic_pointer_cast<UComponent>(Model);
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = Model->GetComponentL(name);
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = Model->GetComponentL(name);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  }
  }
 }
 
@@ -393,9 +398,14 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
   CurrentComponent=std::dynamic_pointer_cast<UComponent>(Model);
  else
  {
-  // Use GetComponentL() directly - it already returns shared_ptr, don't create new one from .get()
-  auto component = Model->GetComponentL(id);
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = Model->GetComponentL(id);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  }
  }
 }
 
@@ -441,8 +451,14 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
  auto current = GetCurrentComponent();
  if(current)
  {
-  auto component = current->GetComponentL(name);
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = current->GetComponentL(name);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  }
  }
 }
 
@@ -458,8 +474,14 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
  auto current = GetCurrentComponent();
  if(current)
  {
-  auto component = current->GetComponentL(id);
-  CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> component_weak = current->GetComponentL(id);
+  if(!component_weak.expired())
+  {
+   std::shared_ptr<UContainer> component = component_weak.lock();
+   if(component)
+    CurrentComponent=std::dynamic_pointer_cast<UComponent>(component);
+  }
  }
 }
 
@@ -588,7 +610,13 @@ bool UEnvironment::CallSourceController(void)
  {
   if(!GetModel())
    return false;
-  std::shared_ptr<UContainer> cont=GetModel()->GetComponentL(SourceControllerName);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> cont_weak=GetModel()->GetComponentL(SourceControllerName);
+  if(cont_weak.expired())
+   return false;
+  std::shared_ptr<UContainer> cont=cont_weak.lock();
+  if(!cont)
+   return false;
 
   std::shared_ptr<UIProperty> iproperty=cont->FindProperty(SourceControllerProperty);
   bool value=true;
@@ -621,9 +649,14 @@ UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &compo
  if(!Model)
   return 0;
 
- UContainer *cont=Model->GetComponentL(component_name,true).get();
- if(!cont)
+ // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+ std::weak_ptr<UContainer> cont_weak=Model->GetComponentL(component_name,true);
+ if(cont_weak.expired())
   return 0;
+ std::shared_ptr<UContainer> cont_shared=cont_weak.lock();
+ if(!cont_shared)
+  return 0;
+ UContainer *cont=cont_shared.get();
 
  std::shared_ptr<UIProperty> prop=cont->FindProperty(property_name);
  if(!prop)
@@ -990,7 +1023,10 @@ bool UEnvironment::ADefault(void)
  else
  {
   std::shared_ptr<UContainer> destcont;
-  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> destcont_weak=GetModel()->GetComponentL(ModelCalculationComponent);
+  if(!destcont_weak.expired())
+   destcont=destcont_weak.lock();
 
   if(!destcont)
    return false;
@@ -1020,7 +1056,10 @@ bool UEnvironment::ABuild(void)
  else
  {
   std::shared_ptr<UContainer> destcont;
-  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> destcont_weak=GetModel()->GetComponentL(ModelCalculationComponent);
+  if(!destcont_weak.expired())
+   destcont=destcont_weak.lock();
 
   if(!destcont)
    return false;
@@ -1059,7 +1098,10 @@ bool UEnvironment::AReset(void)
  else
  {
   std::shared_ptr<UContainer> destcont;
-  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> destcont_weak=GetModel()->GetComponentL(ModelCalculationComponent);
+  if(!destcont_weak.expired())
+   destcont=destcont_weak.lock();
 
   if(!destcont)
    return false;
@@ -1105,7 +1147,10 @@ bool UEnvironment::ACalculate(void)
  else
  {
   std::shared_ptr<UContainer> destcont;
-  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
+  // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> destcont_weak=GetModel()->GetComponentL(ModelCalculationComponent);
+  if(!destcont_weak.expired())
+   destcont=destcont_weak.lock();
 
   if(!destcont)
    return false;

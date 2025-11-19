@@ -222,9 +222,23 @@ int UTest::ProcessTest()
       UPropertyTest testProperty = (*i);
       std::shared_ptr<UComponent> component;
       if (testProperty.component.empty())
-          component = std::shared_ptr<UComponent>(model.Get(), [](UComponent*){}); // Non-owning deleter
+      {
+          // CRITICAL: UELockPtr::Get() returns T*, use GetPtr() for shared_ptr
+          std::shared_ptr<UContainer> model_cont = model.GetPtr();
+          if(model_cont)
+              component = std::dynamic_pointer_cast<UComponent>(model_cont);
+      }
       else
-          component = model->GetComponentL(testProperty.component, true);
+      {
+          // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+          std::weak_ptr<UContainer> comp_weak = model->GetComponentL(testProperty.component, true);
+          if(!comp_weak.expired())
+          {
+              std::shared_ptr<UContainer> comp_cont = comp_weak.lock();
+              if(comp_cont)
+                  component = std::dynamic_pointer_cast<UComponent>(comp_cont);
+          }
+      }
 
       if(!component)
       {

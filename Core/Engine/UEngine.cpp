@@ -3313,13 +3313,18 @@ int UEngine::Model_MoveComponent(const char* component, const char* target)
   if(!target_comp)
    return RDK_E_MODEL_TARGET_COMPONENT_NOT_FOUND;
 
-  if(!comp->GetOwner())
+  // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> owner_weak=comp->GetOwner();
+  if(owner_weak.expired())
+   return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+  std::shared_ptr<UContainer> owner=owner_weak.lock();
+  if(!owner)
    return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
   if(comp == target_comp)
    return RDK_E_MODEL_COMPONENTS_DONT_HAVE_TO_MATCH;
 
-  if(!comp->GetOwner()->MoveComponent(comp, target_comp))
+  if(!owner->MoveComponent(comp, target_comp))
    return RDK_E_MODEL_MOVE_COMPONENTS_FAIL;
 
    AccessCache.clear();
@@ -3377,8 +3382,13 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
    if(!component)
     return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-   // SAFETY: Get owner safely before dynamic_pointer_cast
-   std::shared_ptr<UContainer> owner_ptr = component->GetOwner();
+   // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> owner_weak = component->GetOwner();
+   if(owner_weak.expired())
+   {
+	return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+   }
+   std::shared_ptr<UContainer> owner_ptr = owner_weak.lock();
    if(!owner_ptr)
    {
 	return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
@@ -3432,7 +3442,8 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
    else
     new_component->Name = new_name;
 
-   if(!owner->AddComponent(new_component))
+   RDK::UId added_id = owner->AddComponent(std::weak_ptr<RDK::UContainer>(new_component));
+   if(added_id == RDK::ForbiddenId)
    {
     Storage->ReturnObject(new_component);
     return RDK_E_MODEL_ADD_COMPONENT_FAIL;
@@ -3593,7 +3604,7 @@ const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const
    if(!class_name || !strlen(class_name))
 	return TempString.c_str();
 
-        std::shared_ptr<RDK::UContainer> destcont=FindComponent(stringid);
+   std::shared_ptr<RDK::UContainer> destcont=FindComponent(stringid);
 
    if(!destcont)
 	return TempString.c_str();
@@ -3653,10 +3664,15 @@ int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
    if(!destcont)
     return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-   if(!destcont->GetOwner())
+   // CRITICAL: GetOwner() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> owner_weak=destcont->GetOwner();
+   if(owner_weak.expired())
+    return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
+   std::shared_ptr<UContainer> owner=owner_weak.lock();
+   if(!owner)
     return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
-   if(destcont->GetOwner()->ChangeComponentPosition(destcont->GetName(),step))
+   if(owner->ChangeComponentPosition(destcont->GetName(),step))
 	res=RDK_SUCCESS;
    else
 	res=RDK_E_MODEL_CHANGE_COMPONENT_POSITION_FAIL;
@@ -7407,11 +7423,19 @@ std::shared_ptr<UContainer> UEngine::FindComponent(const char *stringid) const
    if(!longid.GetSize() || longid[0] == ForbiddenId)
     cont=model;
    else
-    cont=model->GetComponentL(longid);
+   {
+    // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+    std::weak_ptr<UContainer> cont_weak=model->GetComponentL(longid);
+    if(!cont_weak.expired())
+     cont=cont_weak.lock();
+   }
   }
   else // ...����� ���������� ��� ���
   {
-   cont=model->GetComponentL(stringid);
+   // CRITICAL: GetComponentL() now returns weak_ptr, need to lock before use
+   std::weak_ptr<UContainer> cont_weak=model->GetComponentL(stringid);
+   if(!cont_weak.expired())
+    cont=cont_weak.lock();
   }
 
  }

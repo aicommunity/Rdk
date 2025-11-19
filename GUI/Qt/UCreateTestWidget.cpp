@@ -80,7 +80,12 @@ void UCreateTestWidget::addProperty()
     if (componentName.isEmpty())
         component = safe_shared_cast<RDK::UComponent>(model.Get());
     else
-        component = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+    {
+        std::weak_ptr<RDK::UContainer> component_weak = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        if(component_weak.expired())
+         return;
+        component = std::dynamic_pointer_cast<RDK::UComponent>(component_weak.lock());
+    }
 
     if(!component) return;
 

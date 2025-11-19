@@ -711,8 +711,14 @@ void UDrawEngineImageWidget::componentDefault()
     else
      object=std::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
 
-    auto owner_ptr = object->GetOwner();
-    std::shared_ptr<RDK::UNet> owner = std::dynamic_pointer_cast<RDK::UNet>(owner_ptr);
+    std::weak_ptr<RDK::UContainer> owner_weak = object->GetOwner();
+    std::shared_ptr<RDK::UNet> owner;
+    if(!owner_weak.expired())
+    {
+     std::shared_ptr<RDK::UContainer> owner_shared = owner_weak.lock();
+     if(owner_shared)
+      owner = std::dynamic_pointer_cast<RDK::UNet>(owner_shared);
+    }
     RDK::UStringLinksList links_list;
 
     if(owner)

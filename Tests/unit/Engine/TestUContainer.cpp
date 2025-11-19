@@ -81,7 +81,9 @@ TEST_F(UContainerTest, ContainerHierarchy) {
     }
     
     parent->AddComponent(child);
-    auto childOwner = child->GetMainOwner();
+    auto childOwner_weak = child->GetMainOwner();
+    ASSERT_FALSE(childOwner_weak.expired()) << "Child's main owner should exist";
+    auto childOwner = childOwner_weak.lock();
     EXPECT_EQ(childOwner, parent) << "Child's main owner should be parent";
 }
 
@@ -110,7 +112,9 @@ TEST_F(UContainerTest, FindComponent) {
     container->AddComponent(child);
     LOG(INFO) << "Added child to container, child use_count=" << child.use_count();
     
-    auto found = container->GetComponent("TestComponent", true);
+    auto found_weak = container->GetComponent("TestComponent", true);
+    ASSERT_FALSE(found_weak.expired());
+    auto found = found_weak.lock();
     ASSERT_NE(found, nullptr);
     EXPECT_EQ(found->GetName(), "TestComponent");
     

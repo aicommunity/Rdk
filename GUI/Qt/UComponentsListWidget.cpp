@@ -377,7 +377,15 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         if (currentDrawPropertyComponentName.isEmpty())
             cont = safe_shared_cast<RDK::UContainer>(model.Get());
         else
-            cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+        {
+            std::weak_ptr<RDK::UContainer> cont_weak = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+            if(cont_weak.expired())
+            {
+             UpdateInterfaceFlag=false;
+             return;
+            }
+            cont = cont_weak.lock();
+        }
 
         if(!cont)
         {
@@ -532,7 +540,9 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             }
 
             std::shared_ptr<RDK::UContainer> child_cont;
-            child_cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+            std::weak_ptr<RDK::UContainer> child_cont_weak = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+            if(!child_cont_weak.expired())
+             child_cont = child_cont_weak.lock();
 
             favoriteItem->setData(1, Qt::UserRole, component_long_name);
             favoriteItem->setData(0, Qt::UserRole, prop_name);
@@ -614,7 +624,12 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
   if (currentDrawPropertyComponentName.isEmpty())
    cont = safe_shared_cast<RDK::UContainer>(model.Get());
   else
-   cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+  {
+   std::weak_ptr<RDK::UContainer> cont_weak = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+   if(cont_weak.expired())
+    return;
+   cont = cont_weak.lock();
+  }
 
   if(!cont)
    return;
@@ -734,7 +749,10 @@ try
 
      std::shared_ptr<RDK::UContainer> cont;
 
-     cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+     std::weak_ptr<RDK::UContainer> cont_weak = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+     if(cont_weak.expired())
+      return;
+     cont = cont_weak.lock();
 
      if(!cont)
       return;
@@ -1192,8 +1210,14 @@ void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
         else
          object=std::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
 
-        auto owner_ptr = object->GetOwner();
-        std::shared_ptr<RDK::UNet> owner = std::dynamic_pointer_cast<RDK::UNet>(owner_ptr);
+        std::weak_ptr<RDK::UContainer> owner_weak = object->GetOwner();
+        std::shared_ptr<RDK::UNet> owner;
+        if(!owner_weak.expired())
+        {
+         std::shared_ptr<RDK::UContainer> owner_shared = owner_weak.lock();
+         if(owner_shared)
+          owner = std::dynamic_pointer_cast<RDK::UNet>(owner_shared);
+        }
         RDK::UStringLinksList links_list;
 
         if(owner)

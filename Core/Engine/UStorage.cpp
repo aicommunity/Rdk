@@ -951,7 +951,19 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
  }
 
  LOG(INFO) << "TakeObject[TRACE] - Calling PushObject to add new object to storage";
+ 
+ // DIAGNOSTIC: Log use_count before PushObject
+ size_t use_count_before_push = obj.use_count();
+ LOG(INFO) << "TakeObject[DIAG] - Before PushObject: use_count=" << use_count_before_push 
+           << " obj_name=" << (obj ? obj->GetName() : "null");
+ 
  PushObject(classid,obj);
+ 
+ // DIAGNOSTIC: Log use_count after PushObject and before return
+ size_t use_count_after_push = obj.use_count();
+ LOG(INFO) << "TakeObject[DIAG] - After PushObject: use_count=" << use_count_after_push 
+           << " obj_name=" << (obj ? obj->GetName() : "null");
+ 
  LOG(INFO) << "TakeObject[TRACE] - EXIT: Returning newly created object: name=" 
            << (obj ? obj->GetName() : "null");
  if (obj) {
@@ -959,6 +971,11 @@ std::shared_ptr<UContainer> UStorage::TakeObject(const UId &classid, const std::
      // obj->SetLogger(safe_shared_cast<ULoggerEnv>(Logger.get()));
      // obj->Activity = true;
  }
+
+ // DIAGNOSTIC: Final use_count check before return
+ size_t use_count_final = obj.use_count();
+ LOG(INFO) << "TakeObject[DIAG] - Final use_count before return: " << use_count_final 
+           << " obj_name=" << (obj ? obj->GetName() : "null");
 
  return obj;
 }
@@ -2388,7 +2405,16 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
  std::pair<std::string,std::string> lib_dep(lib->GetName(),lib->GetVersion());
  dependencies.push_back(lib_dep);
  for(int i=0;i<class_data->GetNumComponents();i++)
-  FindComponentDependencies(FindClassName(class_data->GetComponentByIndex(i)->GetClass()),dependencies);
+ {
+  // CRITICAL: GetComponentByIndex() now returns weak_ptr, need to lock before use
+  std::weak_ptr<UContainer> comp_weak=class_data->GetComponentByIndex(i);
+  if(comp_weak.expired())
+   continue;
+  std::shared_ptr<UContainer> comp_locked=comp_weak.lock();
+  if(!comp_locked)
+   continue;
+  FindComponentDependencies(FindClassName(comp_locked->GetClass()),dependencies);
+ }
 }
 // --------------------------
 
@@ -2401,6 +2427,12 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 // ���� ������ ��� ����������� ����� ��������� �� ���������� false
 void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object)
 {
+ // DIAGNOSTIC: Log entry
+ size_t use_count_before = object.use_count();
+ std::string obj_name = object ? object->GetName() : "null";
+ LOG(INFO) << "PushObject[DIAG] - ENTRY: classid=" << classid << " obj_name=" << obj_name 
+           << " use_count=" << use_count_before;
+ 
  UInstancesStorage &instances=ObjectsStorage[classid];
 
  // UseFlag is set based on use_count()
@@ -2411,6 +2443,12 @@ void UStorage::PushObject(const UId &classid, std::shared_ptr<UContainer> object
  instances.insert(instances.end(),element);
  object->SetClass(classid);
  object->Activity = true;
+ 
+ // DIAGNOSTIC: Log after insertion
+ size_t use_count_after = object.use_count();
+ size_t instances_size = instances.size();
+ LOG(INFO) << "PushObject[DIAG] - After insert: use_count=" << use_count_after 
+           << " instances.size()=" << instances_size << " obj_name=" << obj_name;
 }
 
 // ������� ��� ��������� ������ �� ��������� � ����������

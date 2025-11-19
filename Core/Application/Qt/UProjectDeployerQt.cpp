@@ -2101,7 +2101,13 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
     std::cerr<<"Pred: "<<predictor_class_name.c_str()<<" compname: "<<predictor_component_name.c_str()<<"\n";
 
     std::shared_ptr<UContainer> predictor_container;
-    predictor_container = model->GetComponentL(predictor_names[0]);
+    // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+    std::weak_ptr<UContainer> predictor_weak = model->GetComponentL(predictor_names[0]);
+    if(predictor_weak.expired())
+     return 1;
+    predictor_container = predictor_weak.lock();
+    if(!predictor_container)
+     return 1;
     std::string *sequence_path = predictor_container->AccessPropertyData<std::string>("ImagesDir");
 
     if(sequence_path!=NULL)
@@ -2159,7 +2165,13 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
         }
         capture_class_name = "TCaptureOpenCV";
         capture_component_name = vid_names[0];
-        video_cont = model->GetComponentL(vid_names[0]);
+        // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+        std::weak_ptr<UContainer> video_weak = model->GetComponentL(vid_names[0]);
+        if(video_weak.expired())
+         return 1;
+        video_cont = video_weak.lock();
+        if(!video_cont)
+         return 1;
         bool *video_Activity = video_cont->AccessPropertyData<bool>("Activity");
         bool *video_EnableCapture = video_cont->AccessPropertyData<bool>("EnableCapture");
         std::string *video_CameraPath = video_cont->AccessPropertyData<std::string>("CameraPath");
@@ -2192,7 +2204,13 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
         if(!imseq_names.empty())
         {
-            imseq_cont = model->GetComponentL(imseq_names[0]);
+            // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+            std::weak_ptr<UContainer> imseq_weak = model->GetComponentL(imseq_names[0]);
+            if(imseq_weak.expired())
+             return 1;
+            imseq_cont = imseq_weak.lock();
+            if(!imseq_cont)
+             return 1;
             bool *act = imseq_cont->AccessPropertyData<bool>("Activity");
             //TODO: Brake wrong link
             model->BreakAllOutgoingLinks(imseq_names[0]);
@@ -2210,7 +2228,13 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
         capture_class_name = "TCaptureImageSequence";
         capture_component_name = imseq_names[0];
-        imseq_cont = model->GetComponentL(imseq_names[0]);
+        // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+        std::weak_ptr<UContainer> imseq_weak = model->GetComponentL(imseq_names[0]);
+        if(imseq_weak.expired())
+         return 1;
+        imseq_cont = imseq_weak.lock();
+        if(!imseq_cont)
+         return 1;
         bool *imseq_Activity = imseq_cont->AccessPropertyData<bool>("Activity");
         std::string *imseq_Path = imseq_cont->AccessPropertyData<std::string>("Path");
         bool *imseq_EnableCapture = imseq_cont->AccessPropertyData<bool>("EnableCapture");
@@ -2235,7 +2259,13 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
         if(!vid_names.empty())
         {
-            video_cont = model->GetComponentL(vid_names[0]);
+            // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+            std::weak_ptr<UContainer> video_weak = model->GetComponentL(vid_names[0]);
+            if(video_weak.expired())
+             return 1;
+            video_cont = video_weak.lock();
+            if(!video_cont)
+             return 1;
             bool *act = video_cont->AccessPropertyData<bool>("Activity");
             //TODO: Brake wrong link
             model->BreakAllOutgoingLinks(vid_names[0]);
@@ -2285,7 +2315,13 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
 
     //Here component class found
     std::shared_ptr<UContainer> neural_cont;
-    neural_cont = model->GetComponentL(components_names[0]);
+    // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+    std::weak_ptr<UContainer> neural_weak = model->GetComponentL(components_names[0]);
+    if(neural_weak.expired())
+     return 1;
+    neural_cont = neural_weak.lock();
+    if(!neural_cont)
+     return 1;
 
     bool *nn_Activity = neural_cont->AccessPropertyData<bool>("Activity");
     std::string *nn_ScriptFile;
@@ -2354,7 +2390,13 @@ int UProjectDeployerQt::RunPreparedProject()
     if(!predictor_names.empty())
     {
         std::shared_ptr<UContainer> predictor_container;
-        predictor_container = model->GetComponentL(predictor_names[0]);
+        // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+        std::weak_ptr<UContainer> predictor_weak = model->GetComponentL(predictor_names[0]);
+        if(predictor_weak.expired())
+         return 1;
+        predictor_container = predictor_weak.lock();
+        if(!predictor_container)
+         return 1;
         bool *start_prediction = predictor_container->AccessPropertyData<bool>("StartPredict");
         *start_prediction = true;
     }
@@ -2443,7 +2485,13 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
     }
 
     std::shared_ptr<UContainer> capture_container;
-    capture_container = model->GetComponentL(capture_component_name);
+    // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+    std::weak_ptr<UContainer> capture_weak = model->GetComponentL(capture_component_name);
+    if(capture_weak.expired())
+     return false;
+    capture_container = capture_weak.lock();
+    if(!capture_container)
+     return false;
 
     CaptureLibDescr &lib_descr = capture_tags[capture_class_name];
     if(lib_descr.LibName!=capture_class_name)
@@ -2486,7 +2534,13 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
     }
 
     std::shared_ptr<UContainer> predictor_container;
-    predictor_container = model->GetComponentL(predictor_component_name);
+    // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+    std::weak_ptr<UContainer> predictor_weak = model->GetComponentL(predictor_component_name);
+    if(predictor_weak.expired())
+     return false;
+    predictor_container = predictor_weak.lock();
+    if(!predictor_container)
+     return false;
 
 
     //�������� ������ ������������
@@ -3063,7 +3117,13 @@ void UProjectRunThread::ProjectStateCalculation()
     if(!predictor_names.empty())
     {
         std::shared_ptr<UContainer> predictor_container;
-        predictor_container = model->GetComponentL(predictor_names[0]);
+        // CRITICAL: GetComponentL now returns weak_ptr, need to lock
+        std::weak_ptr<UContainer> predictor_weak = model->GetComponentL(predictor_names[0]);
+        if(predictor_weak.expired())
+         return;
+        predictor_container = predictor_weak.lock();
+        if(!predictor_container)
+         return;
         bool *prediction_ended = predictor_container->AccessPropertyData<bool>("PredictionEnded");
         if(*prediction_ended)
         {
