@@ -425,12 +425,12 @@ void UStorage::ClearClassesStorage(bool force)
 // --------------------------
 // Методы управления хранилищем объектов
 // --------------------------
+// Методы управления хранилищем объектов
+// --------------------------
 // Извлекает объект из хранилища
 // Возвращает указатель на свободный объект по имени класса
 // Выбранный объект помечается как занятый в хранилище
 // Флаг 'Activity' объекта выставляется в true
-// Если свободного объекта не существует он создается и добавляется
-// в хранилище
 UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
@@ -640,19 +640,19 @@ void UStorage::FreeObjectsStorage(bool force)
 	++I;
 //	if(!force)
 //	{
+//	if(!force)
+//	{
 //	 if(Logger)
-//	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
-//	}
    }
   }
 
 //  size_t end_size=instances->second.size();
 //  if(end_size>0)
+//  size_t end_size=instances->second.size();
+//  if(end_size>0)
 //  {
 //   if(Logger)
 //	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
-//  }
-//  instances->second.clear();
   if(Logger)
    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
  }
@@ -796,7 +796,7 @@ void UStorage::DefaultObject(UEPtr<UContainer> object)
 // Методы управления описанием классов
 // --------------------------
 
-// Установка пути к папке с описаниями классов
+// --------------------------
 void UStorage::SetClDescPath(const std::string& value)
 {
     ClDesc = value;
@@ -1018,7 +1018,7 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 // --------------------------
 // Методы управления библиотеками
 // --------------------------
-// Указатель на логгер
+// Методы управления библиотеками
 UEPtr<ULoggerEnv> const UStorage::GetLogger(void) const
 {
  return Logger;
@@ -1409,9 +1409,9 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.
+// Подключает динамическую библиотеку с набором образцов классов.
+// Если бибилиотека с таким именем уже существует то возвращает false.
 // Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
-// Если force_build == true то немедленно осущетсвляет развертывание бибилотеки
-// в хранилище
 bool UStorage::AddCollection(ULibrary *library, bool force_build)
 {
  if(!library)
@@ -1634,7 +1634,7 @@ bool UStorage::BuildStorage(void)
  {
      BuildStorage(0); // сборка статических библиотек
 
-     // Иницилазиация мок-либ
+     // сборка статических библиотек
      if(InitMockLibs())
      {
         BuildStorage(3); // сборка mock-библиотек
@@ -1671,10 +1671,10 @@ bool UStorage::BuildStorage(void)
 
 // Заполняет хранилище данными библиотек конктретного типа
 // Тип библиотеки:
+// Заполняет хранилище данными библиотек конктретного типа
+// Тип библиотеки:
 // 0 - Внутренняя библиотека (собрана вместе с ядром)
 // 1 - Внешняя библиотека (загружена из внешней dll)
-// 2 - Библиотека, созданная во время выполнения
-// 3 - Библиотека-заглушка (все компоненты-заглушки)
 bool UStorage::BuildStorage(int lib_type)
 {
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1778,11 +1778,11 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 
 // --------------------------
 // Скрытые методы управления хранилищем объектов
+// --------------------------
+// Скрытые методы управления хранилищем объектов
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // --------------------------
-// Добавляет уже созданный объект в хранилище
-// Если объект уже принадлежит иному хранилищу то возвращает false
 void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
  UInstancesStorage &instances=ObjectsStorage[classid];
@@ -1798,7 +1798,7 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
-// В случае ошибки возвращает ForbiddenId
+// Выводит уже созданный объект из хранилища и возвращает
 UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
@@ -1823,7 +1823,7 @@ void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
-// Флаг 'Activity' объекта выставляется в false
+// Возвращает объект в хранилище
 void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
@@ -1865,7 +1865,7 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
 // --------------------------
 // Скрытые методы таблицы соответствий классов
 // --------------------------
-// Добавляет класс с именем 'name' в таблицу соответствий
+// Скрытые методы таблицы соответствий классов
 UId UStorage::AddLookupClass(const NameT &name)
 {
  if(ClassesLookupTable.find(name) != ClassesLookupTable.end())
@@ -1891,7 +1891,7 @@ void UStorage::DelLookupClass(const NameT &name)
 // --------------------------
 // Методы для работы с компонентами-заглушками (UMockUnet)
 // --------------------------
-// Добавление функции-создателя свойств для UMockUnet в массив в Storage
+// Методы для работы с компонентами-заглушками (UMockUnet)
 bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
 {
     // Нулевой указатель
@@ -1919,95 +1919,6 @@ const std::list<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
     return FunctionsCrPropMock;
 }
 
-/* *************************************************************************** */
-              /*
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EClassIdNotExist::EClassIdNotExist(UId id)
- : Id(id)
-{
-
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EClassIdNotExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
-}
-// --------------------------
-
-// Попытка работы с классом по имени, отсутствующему в хранилище
-//class UStorage::EClassNameNotExist: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EClassNameNotExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-
-// Некорректное имя класса
-// class UStorage::EInvalidClassName: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EInvalidClassName::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-
-
-
-// Класс с заданным именем уже существует
-//class UStorage::EClassNameAlredyExist: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-       */
-}
-
+} // namespace RDK
 
 #endif
-

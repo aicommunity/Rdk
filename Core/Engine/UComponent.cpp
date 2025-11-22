@@ -27,11 +27,11 @@ UIProperty::~UIProperty()
 }
 
 
-/// ��������, ������������ � ������ ���������� ������� � Environment::Time
+/// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
 //UELockVar<UTimeControl> UComponent::DummyTime;
 
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
 UVariable::UVariable(void)
 {
@@ -59,21 +59,21 @@ UVariable::~UVariable(void)
 // --------------------------
 
 // --------------------------
-// ������ ������� � ������
+// Методы доступа к данным
 // --------------------------
-// ���������� ������ ����� ���� ��������
+// Возвращает только маску типа свойства
 unsigned int UVariable::GetPropertyType(void) const
 {
  return Type & 0x000000FF;
 }
 
-// ���������� ������ ����� ������ ��������
+// Возвращает только маску группы свойства
 unsigned int UVariable::GetPropertyGroup(void) const
 {
  return Type & 0xFFFFFF00;
 }
 
-// ���������� ��������� ��� ���� �������� �� ��������� ����
+// Возвращает строковое имя типа свойства по заданному типу
 std::string UVariable::GetPropertyTypeNameByType(unsigned int type)
 {
  switch (type & 0x000000FF)
@@ -96,7 +96,7 @@ std::string UVariable::GetPropertyTypeNameByType(unsigned int type)
  }
 }
 
-// ���������� ��� �������� �� ���������� �����
+// Возвращает тип свойства по строковому имени
 unsigned int UVariable::GetPropertyTypeByTypeName(const std::string &name)
 {
  if(name == "Properties")
@@ -115,13 +115,13 @@ unsigned int UVariable::GetPropertyTypeByTypeName(const std::string &name)
  return 0;
 }
 
-// ���������� ��������� ��� ���� ��������
+// Возвращает строковое имя типа свойства
 std::string UVariable::GetPropertyTypeName(void) const
 {
  return GetPropertyTypeNameByType(GetPropertyType());
 }
 
-// ��������� ������������ ���� � ������ �������� �����
+// Проверяет соответствие типа и группы свойства маске
 bool UVariable::CheckMask(unsigned int mask) const
 {
  return (GetPropertyType() & mask) && (GetPropertyGroup() & mask);
@@ -131,7 +131,7 @@ bool UVariable::CheckMask(unsigned int mask) const
 
 //class UComponent
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
 UComponent::UComponent(void)
 : StaticFlag(false)
@@ -147,10 +147,10 @@ UComponent::~UComponent(void)
 // --------------------------
 
 // --------------------------
-// ������ ������� � ���������
+// Методы доступа к свойствам
 // --------------------------
-// ���������� ����, ������������ ��������� �������� �����������
-// ��� ������������
+// Возвращает флаг, определяющий компонент является статическим
+// или динамическим
 bool UComponent::GetStaticFlag(void) const
 {
  return StaticFlag;
@@ -166,7 +166,7 @@ bool UComponent::SetStaticFlag(bool value)
 }
 
 
-// ���������� �������� ����� �������.
+// Возвращает владелца этого объекта.
 UEPtr<UComponent> const UComponent::GetOwner(void) const
 {
  return Owner;
@@ -182,7 +182,7 @@ bool UComponent::SetOwner(UEPtr<UComponent> owner)
 }
 
 
-// ���������� ��������� �� �������� ��������� ���� ��������
+// Возвращает указатель на главного владельца этим объектом
 UEPtr<UComponent> const UComponent::GetMainOwner(void) const
 {
  return MainOwner;
@@ -197,7 +197,7 @@ void UComponent::SetMainOwner(UEPtr<UComponent> mainowner)
  }
 }
 
-// ���������� ��������� ��������� ����� �������
+// Возвращает хранилище компонент этого объекта
 UEPtr<UStorage> const UComponent::GetStorage(void) const
 {
  return Storage;
@@ -213,7 +213,7 @@ bool UComponent::SetStorage(UEPtr<UStorage> storage)
  return true;
 }
 
-// ���������� ����� ���������� ����� �������
+// Возвращает среду выполнения этого объекта
 UEPtr<UEnvironment> const UComponent::GetEnvironment(void) const
 {
  return Environment;
@@ -229,7 +229,7 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
  return true;
 }
 
-// ��������� �� ������
+// Указатель на логгер
 UEPtr<ULoggerEnv> const UComponent::GetLogger(void) const
 {
  return Logger;
@@ -246,8 +246,8 @@ bool UComponent::SetLogger(UEPtr<ULoggerEnv> logger)
 }
 
 
-/// ���������� ������ �� ����� ���������� ������� �� Environment.
-/// ���� Environment ����������� �� ���������� ��������� �� ��������
+/// Возвращает ссылку на класс управления времени из Environment.
+/// Если Environment отсутствует то возвращает указатель на заглушку
 /// DummyTime
 const UTimeControl& UComponent::GetTime(void) const
 {
@@ -258,7 +258,7 @@ const UTimeControl& UComponent::GetTime(void) const
 }
 
 
-/// ���������� ��������� �� ����� �� ���������
+/// Возвращает указатель на шрифт по умолчанию
 UAFont* UComponent::GetDefaultFont(void)
 {
  if(!Environment)
@@ -267,7 +267,7 @@ UAFont* UComponent::GetDefaultFont(void)
  return Environment->GetFonts().GetDefaultFont();
 }
 
-/// ���������� �������� �����
+/// Возвращает заданный шрифт
 UAFont* UComponent::GetFont(const string &name, int size)
 {
  if(!Environment)
@@ -279,9 +279,9 @@ UAFont* UComponent::GetFont(const string &name, int size)
 
 
 // --------------------------
-// ������ ���������� �������
+// Методы управления данными
 // --------------------------
-// ������������� ������
+// Идентификатор класса
 UId UComponent::GetClass(void) const
 {
  return Class;
@@ -296,7 +296,7 @@ bool UComponent::SetClass(UId value)
  return true;
 }
 
-// ���������� ��� ������ ����������
+// Возвращает имя класса компоненты
 const NameT UComponent::GetCompClassName(void) const
 {
  return Storage->FindClassName(Class);
@@ -306,9 +306,9 @@ const NameT UComponent::GetCompClassName(void) const
 
 
 // --------------------------
-// ������ ���������� ������
+// Методы управления счетом
 // --------------------------
-// ������� ��������� �������� ������
+// Создает экземпляр описания класса
 UContainerDescription* UComponent::NewDescription(void)
 {
  UContainerDescription* result=new UContainerDescription;
@@ -335,14 +335,14 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  return result;
 }
 
-// ����������� ����� �������
+// Уничтожение этого объекта
 void UComponent::Free(void)
 {
  if(!StaticFlag)
   delete this;
 }
 
-/// ������������ ���������� ���������� ������ ����������, �������������� ��� �����������
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
 void UComponent::UpdateInternalData(void)
 {
  AUpdateInternalData();
@@ -355,14 +355,14 @@ void UComponent::AUpdateInternalData(void)
 // --------------------------
 
 // --------------------------
-// ������ ������� � ����������
+// Методы доступа к параметрам
 // --------------------------
-// ���������� ��������� �� ������ ��������
+// Возвращает указатель на данные свойства
 const UEPtr<UIProperty> UComponent::FindProperty(const NameT &name) const
 {
  VariableMapCIteratorT I=PropertiesLookupTable.end();
 
- // TODO: ������� ��������� ������
+ // TODO: Сначала проверяем алиасы
  if(CheckAlias(name))
   I=PropertiesLookupTable.find(GetPropertyNameByAlias(name));
  else
@@ -378,7 +378,7 @@ UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
 {
  VariableMapCIteratorT I=PropertiesLookupTable.end();
 
- // TODO: ������� ��������� ������
+ // TODO: Сначала проверяем алиасы
  if(CheckAlias(name))
   I=PropertiesLookupTable.find(GetPropertyNameByAlias(name));
  else
@@ -418,7 +418,7 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
  return values;
 }
 
-// ������������� �������� ��������� �� ����� 'name'
+// Устанавливает значение параметра по имени 'name'
 void UComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
  UEPtr<UIProperty> property=FindProperty(name);
@@ -454,8 +454,8 @@ const UComponent::VariableMapT& UComponent::GetPropertiesList(void) const
  return PropertiesLookupTable;
 }
 
-// �������� ��� ��������� ����� ������� � ������ 'comp', ���� ��������.
-// ���������� ������ �������� ���� type
+// Копирует все параметры этого объекта в объект 'comp', если возможно.
+// копируются только свойства типа type
 void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
 {
  USerStorageXML databuffer;
@@ -471,7 +471,7 @@ void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
  }
 }
 
-// ���� ��� �������� �� ��������� �� ����
+// Ищет имя свойства по указателю на него
 const NameT& UComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -483,7 +483,7 @@ const NameT& UComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
  return ForbiddenName;
 }
 
-// ���� ���������� �������� � ������� �� ��������� �� ����
+// Ищет переменную свойства в таблице по указателю на него
 UComponent::VariableMapCIteratorT UComponent::FindPropertyVariable(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -495,7 +495,7 @@ UComponent::VariableMapCIteratorT UComponent::FindPropertyVariable(UEPtr<const U
  return PropertiesLookupTable.end();
 }
 
-// ���� ��� �������� �� ��������� �� ����
+// Ищет тип свойства по указателю на него
 unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -509,11 +509,11 @@ unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 // --------------------------
 
 // --------------------------
-// ������� ������ ���������� �����������
+// Скрытые методы управления параметрами
 // --------------------------
-// ��������� �������� � ������ 'name' � ������� �����������
-// ���������� � ��������� ��� ���������� ������
-// ������ ���������� � ������������� �������
+// Добавляет параметр с именем 'name' в таблицу соотвествий
+// параметров и назначает ему корректный индекс
+// Должна вызываться в конструкторах классов
 void UComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
 {
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
@@ -603,7 +603,7 @@ void UComponent::ClearLookupPropertyTable(void)
 // --------------------------
 // ��������� ����� �������� �������� � ������ 'name' � ������� �����������
 // ����� ������� � ��������� ��� ���������� ������
-// ������ ���������� � ������������� �������
+// --------------------------
 UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 {
  ShareMapIteratorT I=ShareLookupTable.end();
@@ -621,7 +621,7 @@ UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 // --------------------------
 // ������ ���������� ��������
 // --------------------------
-/// ���������� �������
+/// Удаление алисаса
 bool UComponent::AddAlias(const std::string &alias, const std::string &property_name)
 {
  if(CheckAlias(alias))

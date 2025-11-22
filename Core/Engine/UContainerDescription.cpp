@@ -16,11 +16,11 @@ UPropertyDescription::UPropertyDescription(void)
 
 }
 
-// �������� ����� �������
+// Описания общих свойств
 //std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
 
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 UContainerDescription::UContainerDescription(void)
 {
@@ -40,8 +40,8 @@ UContainerDescription::~UContainerDescription(void)
 }
 // --------------------------
 
+// Методы управления общими свойствами
 // --------------------------
-// ������ ���������� ������ ����������
 // --------------------------
 /*
 // �������� ������ ��������
@@ -71,9 +71,9 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 // --------------------------
 
 
+// Методы управления данными
 // --------------------------
-// ������ ���������� �������
-// --------------------------
+// Описание свойства
 // �������� ��������
 const UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
 {
@@ -81,7 +81,7 @@ const UPropertyDescription& UContainerDescription::GetPropertyDescription(const 
 
  if(I == Properties.end())
  {
-//  I=CommonProperties.find(name);
+//  if(I == CommonProperties.end())
 //  if(I == CommonProperties.end())
   {
    UPropertyDescription descr;
@@ -94,7 +94,7 @@ const UPropertyDescription& UContainerDescription::GetPropertyDescription(const 
 
 bool UContainerDescription::SetPropertyDescription(const std::string &name, const UPropertyDescription& value, bool force)
 {
-// if(CheckCommonProperty(name) && !force)
+//  return true;
 //  return true;
 
  Properties[name]=value;
@@ -131,7 +131,7 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::unorde
  return true;
 }
 
-// ���������� ������ ������� (����� � ���������)
+// Обновление данных свойств (вызов к хранилищу)
 void UContainerDescription::CreateProperties()
 {
     RDK::UEPtr<RDK::UContainer> cont;
@@ -220,9 +220,9 @@ void UContainerDescription::DeleteFavorite(const std::string &name)
 // --------------------------
 
 // --------------------------
-// ������ ����� ������ �������
+// Методы ввода вывода данными
 // --------------------------
-// ��������� ������ ������ � XML
+// Сохраняет данные класса в XML
 bool UContainerDescription::Save(USerStorageXML &xml)
 {
  if(!UComponentDescription::Save(xml))
@@ -264,7 +264,7 @@ bool UContainerDescription::Save(USerStorageXML &xml)
  return true;
 }
 
-// ��������� ������ ������ �� XML
+// Загружает данные класса из XML
 bool UContainerDescription::Load(USerStorageXML &xml)
 {
  if(!UComponentDescription::Load(xml))
@@ -320,10 +320,10 @@ bool UContainerDescription::Load(USerStorageXML &xml)
 
 
 // --------------------------
-// ������ ����� ������ ����� ������
+// Методы ввода вывода общих данных
 // --------------------------
 /*
-// ��������� ������ ������ � XML
+// Сохраняет данные класса в XML
 bool UContainerDescription::SaveCommon(USerStorageXML &xml)
 {
  xml.AddNode("Properties");
@@ -343,7 +343,7 @@ bool UContainerDescription::SaveCommon(USerStorageXML &xml)
  return true;
 }
 
-// ��������� ������ ������ �� XML
+// Загружает данные класса из XML
 bool UContainerDescription::LoadCommon(USerStorageXML &xml)
 {
  if(!xml.SelectNode("Properties"))

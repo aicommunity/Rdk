@@ -39,7 +39,7 @@ typedef std::unordered_map<std::string, UEPtr<UContainerDescription> >::iterator
 typedef std::unordered_map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
-// Элемент списка существующих объектов определенного класса
+// Элемент списка существующих объектов определенного класса
 // ������� ������ ������������ �������� ������������� ������
 class RDK_LIB_TYPE UInstancesStorageElement
 {

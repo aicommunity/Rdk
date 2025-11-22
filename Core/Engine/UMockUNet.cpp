@@ -10,40 +10,40 @@ namespace RDK {
 
 /* *************************************************************************** */
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
 UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 {
     std::string comp_name = serstorage->GetNodeName();
     serstorage->SelectNode(comp_name);
 
-    // ��� ����������
+    // Имя компонента
     this->SetName(comp_name);
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
-    // ��������� ��������� � ������
+    // Установка хранилище и логера
     SetStorage(storage);
     SetLogger(storage->GetLogger());
 
-    // ����� ���� ����������� ������� �������� �������
+    // Вызов всех добавленных функций создания свойств
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
     for (std::list<funcCrPropMock>::iterator f = funcs.begin(); f != funcs.end(); ++f)
     {
-        // ����� ������� �������� ������� �� �������
+        // Вызов функций создания свойств по очереди
         (*f)(serstorage, this);
     }
 
-    // ������ ������������� ������� ������� ��������
+    // Список сфомированных свойств текущей заглушки
     VariableMapT CreatedProps = this->GetPropertiesList();
 
-    // ������ ������� �� xml-��
+    // Список свойств из xml-ки
     std::vector<std::pair<std::string,std::string> > PropsNames;
 
-    // ������ �� ���� ��������� ��� ������������ ������ �������
+    // Проход по всем свойствам для формирования списка свойств
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
         serstorage->SelectNode(i);
-        // ���� ����� �� ������ ����������� � ������
+        // Если дошли до секции компонентов и связей
         if(serstorage->GetNodeName() == "Components" || serstorage->GetNodeName() == "Links")
         {
             serstorage->SelectUp();
@@ -63,10 +63,10 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
         serstorage->SelectUp();
     }
 
-    // ��������� ������� �������
+    // Сравнение списков свойств
     for(std::vector<std::pair<std::string,std::string> >::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
     {
-        // �������� �� ������� - �� ���� �� ���� �������
+        // Свойство не найдено - то есть не было создано
         if(CreatedProps.find((*p).first) == CreatedProps.end())
         {
             if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(),  UBasePropCreatorTempl::GetForbiddenInputs().end(),  (*p).first) != UBasePropCreatorTempl::GetForbiddenInputs().end())
@@ -81,7 +81,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
         }
     }
 
-    // ���������� ������������ �������� � XML
+    // Сохранение собственного описания в XML
     ClassDesriptionXML.Destroy();
 
     std::string temp;
@@ -89,7 +89,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     ClassDesriptionXML.Load(temp,"");
 
 
-    // �������� ���������� ����������� � ������
+    // Загрузка внутренних компонентов и связей
     if(!this->LoadComponent(&ClassDesriptionXML,true))
     {
         LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
@@ -98,8 +98,8 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
 }
 
-// ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
-// ���������� ��������� �� xml
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
 bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 {
     if(!serstorage)
@@ -156,7 +156,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
       UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
       if(!newcont)
        continue;
-      if(FindStaticComponent(name,nodename) == 0) // ��� �� ��� ������������ ����������� ���������
+      if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
       {
        if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
        {
