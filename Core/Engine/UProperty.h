@@ -77,39 +77,26 @@ protected: // ������
 int IoType;
 
 protected: // ������ �������������
-/// Mutex for thread-safe access (optional, only for shared properties)
+/// ������� ����� ��������
 UGenericMutex *Mutex;
-
-/// Flag indicating if mutex is needed (for shared properties)
-bool NeedsMutex;
-
-/// Flag indicating if mutex is needed (for shared properties)
-bool NeedsMutex;
-
-/// Flag indicating if mutex is needed (for shared properties)
-bool NeedsMutex;
 
 /// ����� ���������� �������� (��)
 mutable ULongTime UpdateTime;
-explicit UVBaseDataProperty(T * const pdata, bool needs_mutex=false)
+
 public: // ������
 // --------------------------
 // ������������ � �����������
 // --------------------------
 //����������� �������������.
-explicit UVBaseDataProperty(T * const pdata, bool needs_mutex=false)
- : IoType(ipSingle | ipData), Mutex(needs_mutex ? UCreateMutex() : 0), NeedsMutex(needs_mutex), UpdateTime(0)
+explicit UVBaseDataProperty(T * const pdata)
+ : IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
 {
 }
 
 virtual ~UVBaseDataProperty(void)
 {
- if(Mutex)
- {
-  UDestroyMutex(Mutex);
-  Mutex=0;
- }
-}
+ UDestroyMutex(Mutex);
+ Mutex=0;
 }
 // -----------------------------
 
@@ -426,15 +413,15 @@ public: // ������
 // ������������ � �����������
 // --------------------------
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0), CachedConnectedOutput(0)
+  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0),
+  IsConnectedFlag(false), CachedConnectedOutput(0)
 {
-    IsConnectedFlag=false;
 }
 
 UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0), CachedConnectedOutput(0)
+  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0),
+  IsConnectedFlag(false), CachedConnectedOutput(0)
 {
-    IsConnectedFlag=false;
 }
 // -----------------------------
 
@@ -475,13 +462,9 @@ virtual std::string GetItemFullName(int index=0) const;
 /// ��������� ����� ������ � �����
 void ApplyOutputUpdateTime(void) const
 {
- if(!ConnectedOutputs.empty())
- {
-  ULongTime outputTime = ConnectedOutputs[0]->GetUpdateTime();
-  // Only update if output time is newer (avoid unnecessary writes)
-  if(outputTime > this->UpdateTime)
-   this->UpdateTime = outputTime;
- }
+ // Lazy update: only update if connected output's time is newer
+ if(IsConnectedFlag && ConnectedOutputs[0]->GetUpdateTime() > this->UpdateTime)
+  this->UpdateTime=ConnectedOutputs[0]->GetUpdateTime();
 }
 
 // ���������� true ���� ���� ����� �����������
@@ -605,16 +588,16 @@ virtual const T& GetData(void) const
  if(UVProperty<T,OwnerT>::IsConnectedFlag)
  {
   // Use cached pointer to avoid dynamic_cast in hot path
-  if(!CachedConnectedOutput && !ConnectedOutputs.empty())
-   CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
+  if(!UVProperty<T,OwnerT>::CachedConnectedOutput && !UVProperty<T,OwnerT>::ConnectedOutputs.empty())
+   UVProperty<T,OwnerT>::CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(UVProperty<T,OwnerT>::ConnectedOutputs[0]);
   
-  if(CachedConnectedOutput)
+  if(UVProperty<T,OwnerT>::CachedConnectedOutput)
   {
    // Cache data with update time check to avoid unnecessary copies
-   ULongTime outputTime = CachedConnectedOutput->GetUpdateTime();
+   ULongTime outputTime = UVProperty<T,OwnerT>::CachedConnectedOutput->GetUpdateTime();
    if(outputTime > this->UpdateTime)
    {
-    v = CachedConnectedOutput->GetData();
+    v = UVProperty<T,OwnerT>::CachedConnectedOutput->GetData();
     this->UpdateTime = outputTime;
    }
   }
@@ -667,7 +650,7 @@ void DetachFrom(void)
 {
 // this->PData=&v;
  UVProperty<T,OwnerT>::IsConnectedFlag=false;
- CachedConnectedOutput = 0; // Clear cache
+ UVProperty<T,OwnerT>::CachedConnectedOutput = 0; // Clear cache
  UVProperty<T,OwnerT>::DetachFrom();
 }
 
@@ -683,7 +666,7 @@ bool SetPointer(int index, UIPropertyOutput* property)
  //this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
  UVProperty<T,OwnerT>::IsConnectedFlag=true;
  // Cache typed pointer for optimization
- CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(property);
+ UVProperty<T,OwnerT>::CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(property);
  UVProperty<T,OwnerT>::ConnectedOutputs.assign(1,property);
  this->ResetUpdateTime();
  return true;
@@ -696,8 +679,8 @@ bool ResetPointer(int index, UIPropertyOutput* property)
  {
 //  this->PData=&v;
   UVProperty<T,OwnerT>::IsConnectedFlag=false;
+  UVProperty<T,OwnerT>::CachedConnectedOutput = 0; // Clear cache
   UVProperty<T,OwnerT>::ConnectedOutputs.clear();
-  CachedConnectedOutput = 0; // Clear cache
   return true;
  }
  return false;
@@ -879,10 +862,10 @@ bool ResetPointer(int index, UIPropertyOutput* property)
   this->v.erase(it);
  }
 
- if(int(this->ConnectedOutputs.size())>index && index >= 0)
+ if(int(UVProperty<T,OwnerT>::ConnectedOutputs.size())>index && index >= 0)
  {
-  this->ConnectedOutputs.erase(this->ConnectedOutputs.begin()+index);
-  if(this->ConnectedOutputs.empty())
+  UVProperty<T,OwnerT>::ConnectedOutputs.erase(UVProperty<T,OwnerT>::ConnectedOutputs.begin()+index);
+  if(UVProperty<T,OwnerT>::ConnectedOutputs.empty())
    UVProperty<T,OwnerT>::IsConnectedFlag=false;
   return true;
  }
@@ -1077,13 +1060,13 @@ virtual bool CompareElemLanguageType(const UIProperty &dt) const
 // --------------------------
 
 protected:
-const T& UpdateLocalInputData(T& data) const
+ const T& UpdateLocalInputData(T& data) const
 {
- data.resize(this->ConnectedOutputs.size());
+ data.resize(UVProperty<T,OwnerT>::ConnectedOutputs.size());
  size_t i=0;
  for(auto I=data.begin();I != data.end();I++)
  {
-  *I = dynamic_cast<const UVBaseDataProperty<TV>*>(this->ConnectedOutputs[i])->GetData();
+  *I = dynamic_cast<const UVBaseDataProperty<TV>*>(UVProperty<T,OwnerT>::ConnectedOutputs[i])->GetData();
   ++i;
  }
  return data;
@@ -1114,32 +1097,25 @@ public:
 
 // Deprecated: Use UProperty<T, OwnerT, type> directly
 // All property types (Parameters, States, Inputs, Outputs) now use unified UProperty
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-[[deprecated("Use UProperty<T, OwnerT, type> directly. All property types are now unified.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubParameter>
 using ULProperty = UProperty<T, OwnerT, type>;
 
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-[[deprecated("Use UProperty<T, OwnerT, type> directly.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubParameter>
 using UCProperty = UProperty<T, OwnerT, type>;
 
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-[[deprecated("Use UProperty<T, OwnerT, type> directly.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubParameter>
 using UCLProperty = UProperty<T, OwnerT, type>;
 
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-[[deprecated("Use UProperty<T, OwnerT, ptPubOutput> directly. All property types are now unified.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubOutput>
 using UPropertyOutputData = UProperty<T, OwnerT, type>;
 
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-[[deprecated("Use UProperty<std::vector<T>, OwnerT, ptPubOutput> directly.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubOutput>
 using UPropertyOutputCData = UProperty<std::vector<T>, OwnerT, type>;
 
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-[[deprecated("Use UProperty<T, OwnerT, ptPubInput> directly. All property types are now unified.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubInput>
 using UPropertyInputData = UProperty<T, OwnerT, type>;
 
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-[[deprecated("Use UProperty<std::vector<T>, OwnerT, ptPubInput> directly.")]]
+template<typename T, typename OwnerT, unsigned int type = ptPubInput>
 using UPropertyInputCData = UProperty<std::vector<T>, OwnerT, type>;
 
 

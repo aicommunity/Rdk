@@ -71,7 +71,7 @@ enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 // 0x1000 - ���� ����� ������ ������ ����������
 enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
 
-// Combined flags for public property types in component
+// �������� ����� ������������ ��������� ���� � ������
 enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
 
 enum { ipData=1 }; // ipComp removed as legacy (was used for component pointers, now unused)
@@ -93,17 +93,17 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 /// �� ���������� �������):
 /// <RpcRequest>
 ///	    <Id>���������� ������������� �������</Id>
-<Channel>channel number</Channel>
-<Cmd>command name</Cmd>
-<Component>component name</Component>
-<Class>class name</Class>
-<Data>xml-formatted request data, containing xml with nested structures</Data>
+///     <Channel>������ ������</Channel>
+///     <Cmd>��� ���������� �������</Cmd>
+///     <Component>��� ����������</Component>
+///     <Class>��� ������</Class>
+///     <Data>xml-�������� ������ �������, �������� xml � ����������� ����������</Data>
 /// </RpcRequest>
 /// ����� ������������ ����� ������ � ��������� ����:
 /// <RpcResponse>
 ///	    <Id>���������� ������������� �������</Id>
-<Data>xml-formatted response data, containing xml with nested structures</Data>
-<Res>return code for request execution, 0 if request successful</Res>
+///     <Data>xml-�������� ������ �������, �������� xml � ����������� ����������</Data>
+///     <Res>������������� ������������ ������ ��� 0 ���� ����� �������</Res>
 /// </RpcResponse>
 RDK_LIB_TYPE const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int &channel_index);
 // ----------------------------
