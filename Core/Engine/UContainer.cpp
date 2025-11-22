@@ -75,6 +75,7 @@ UContainer::UContainer(void)
   , StepDuration("StepDuration", this)
   , DebugSysEventsMask("DebugSysEventsMask", this, &UContainer::SetDebugSysEventsMask)
   , PComponents(0), NumComponents(0), LastId(0)
+  , CachedComponent(0), CachedComponentId(ForbiddenId), CachedComponentType(typeid(void))
 
 {
  Id = 0;
@@ -1054,6 +1055,12 @@ void UContainer::Free(void)
  while(NumComponents)
  {
   ComponentsIdIndex.erase(PComponents[0]->Id);
+  // Invalidate cache if freeing cached component
+  if(CachedComponent == PComponents[0])
+  {
+   CachedComponent = UEPtr<UContainer>(0);
+   CachedComponentId = ForbiddenId;
+  }
   PComponents[0]->Free();
  }
 
@@ -2792,6 +2799,13 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
  {
   // Remove from index map
   ComponentsIdIndex.erase(comp->Id);
+  
+  // Invalidate cache if removing cached component
+  if(CachedComponent == comp)
+  {
+   CachedComponent = UEPtr<UContainer>(0);
+   CachedComponentId = ForbiddenId;
+  }
   
   if(PComponents[NumComponents-1]==comp)
    {

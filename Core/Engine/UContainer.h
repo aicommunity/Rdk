@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UTime.h"
 #include "UController.h"
 #include <unordered_map>
+#include <typeindex>
 
 namespace RDK {
 
@@ -106,6 +107,11 @@ UAContainerVector Components;
 
 // Index map for O(1) component lookup by ID
 std::unordered_map<UId, size_t> ComponentsIdIndex;
+
+// Cache for last successful dynamic_pointer_cast in GetComponent<T>
+mutable UEPtr<UContainer> CachedComponent;
+mutable UId CachedComponentId;
+mutable std::type_index CachedComponentType;
 
 /// ������� ����������� ���������
 UAStaticContainerMap StaticComponents;
@@ -520,7 +526,31 @@ virtual UEPtr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
 template<class T>
 UEPtr<T> GetComponent(const UId &id, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponent(id,nothrow));
+ // Check cache first
+ if(CachedComponent && CachedComponentId == id)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Get base component
+ UEPtr<UContainer> comp = GetComponent(id, nothrow);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
 // объекте по короткому имени 'name'
@@ -530,7 +560,31 @@ virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) co
 template<class T>
 UEPtr<T> GetComponent(const NameT &name, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponent(name,nothrow));
+ // Get base component by name
+ UEPtr<UContainer> comp = GetComponent(name, nothrow);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Check cache if ID matches
+ if(CachedComponent && CachedComponent == comp)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = comp->Id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
 // объекте по ДЛИННОМУ Id 'id'
@@ -542,7 +596,31 @@ UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
 template<class T>
 UEPtr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponentL(id,nothrow));
+ // Get base component by long ID
+ UEPtr<UContainer> comp = GetComponentL(id, nothrow);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Check cache if ID matches
+ if(CachedComponent && CachedComponent == comp)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = comp->Id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
 // объекте по ДЛИННОМУ имени 'name'
@@ -552,7 +630,31 @@ virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) c
 template<class T>
 UEPtr<T> GetComponentL(const NameT &name, bool nothrow=false) const
 {
- return dynamic_pointer_cast<T>(GetComponentL(name,nothrow));
+ // Get base component by long name
+ UEPtr<UContainer> comp = GetComponentL(name, nothrow);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Check cache if component matches
+ if(CachedComponent && CachedComponent == comp)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = comp->Id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
 // объекте по порядковому индеку в списке компонент
