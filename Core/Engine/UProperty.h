@@ -610,8 +610,12 @@ void SetCheckEquals(bool value)
 // Data access methods (from UPropertyLocal)
 // -----------------------------
 /// Get data implementation (from UPropertyLocal)
-virtual const T& GetData(void) const
+inline virtual const T& GetData(void) const
 {
+ // Fast path for unconnected properties
+ if(!IsConnectedFlag && !this->ExternalDataSource)
+  return v;
+
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
