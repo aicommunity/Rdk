@@ -36,33 +36,33 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
 }
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void TUDrawEngineForm::ABeforeReset(void)
 {
 
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void TUDrawEngineForm::AAfterReset(void)
 {
 
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TUDrawEngineForm::ABeforeCalculate(void)
 {
 
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TUDrawEngineForm::AAfterCalculate(void)
 {
 
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TUDrawEngineForm::AUpdateInterface(void)
 {
  if(!NetXml.GetNumNodes())
@@ -135,13 +135,13 @@ void TUDrawEngineForm::AUpdateInterface(void)
 }
 
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUDrawEngineForm::AClearInterface(void)
 {
  NetXml.Destroy();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUDrawEngineForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("FontFileName",FontFileName);
@@ -154,13 +154,13 @@ void TUDrawEngineForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("RectHeight",DrawEngine.GetRectHeight());
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUDrawEngineForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
- // Имя компонента, содержимое которого будет отображено
+ // РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°, СЃРѕРґРµСЂР¶РёРјРѕРµ РєРѕС‚РѕСЂРѕРіРѕ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРѕ
  ComponentName.clear();
 
- // Xml описание сети
+ // Xml РѕРїРёСЃР°РЅРёРµ СЃРµС‚Рё
  NetXml.Destroy();
 
  StartName.clear();
@@ -182,7 +182,7 @@ void TUDrawEngineForm::ALoadParameters(RDK::USerStorageXML &xml)
  SetNet(ComponentName);
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUDrawEngineForm* TUDrawEngineForm::New(TComponent *owner)
 {
  return new TUDrawEngineForm(owner);
@@ -190,7 +190,7 @@ TUDrawEngineForm* TUDrawEngineForm::New(TComponent *owner)
 // -----------------------------
 
 // -----------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // -----------------------------
 void TUDrawEngineForm::SetNet(const std::string &comp_name)
 {
@@ -229,7 +229,7 @@ void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
 }
 
 
-// Сохраняет положение компонента в заданных координатах
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ Р·Р°РґР°РЅРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
 void TUDrawEngineForm::SaveComponentPosition(const std::string &name)
 {
  if(name == "")
@@ -412,7 +412,7 @@ void __fastcall TUDrawEngineForm::ImageDragOver(TObject *Sender, TObject *Source
  if(Source == UClassesListFrame->StringGrid)
  {
 	 Accept = true;
-	// установка изображения курсора
+	// СѓСЃС‚Р°РЅРѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РєСѓСЂСЃРѕСЂР°
 //	if(State == dsDragLeave)
 //	  Source->DragCursor = crDrag;
 //	if((State == dsDragEnter)  && UClassesListFrame->StringGrid->Row >= 1))
@@ -532,7 +532,7 @@ void __fastcall TUDrawEngineForm::Finishlonglink1Click(TObject *Sender)
  if(StartName.empty() || StopName.empty())
   return;
 
- // Отображаем окно установки связи
+ // РћС‚РѕР±СЂР°Р¶Р°РµРј РѕРєРЅРѕ СѓСЃС‚Р°РЅРѕРІРєРё СЃРІСЏР·Рё
 /* std::string full_start_name;
  std::string full_stop_name;
  if(ComponentName.empty())

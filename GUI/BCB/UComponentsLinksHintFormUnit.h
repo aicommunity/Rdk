@@ -23,18 +23,18 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsLinksHintForm(TComponent* Owner);
 
-	/// Отображает форму
+	/// РћС‚РѕР±СЂР°Р¶Р°РµС‚ С„РѕСЂРјСѓ
 	void __fastcall ShowLinks(const std::string &component_name,
 								const std::string &owner_name,
 								int x, int y);
 
-	/// Расчитывает ширину окна
+	/// Р Р°СЃС‡РёС‚С‹РІР°РµС‚ С€РёСЂРёРЅСѓ РѕРєРЅР°
 	int CalcFormWidth(void);
 
-	/// Расчитывает высоту таблицы отображения входов
+	/// Р Р°СЃС‡РёС‚С‹РІР°РµС‚ РІС‹СЃРѕС‚Сѓ С‚Р°Р±Р»РёС†С‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІС…РѕРґРѕРІ
 	int CalcInputsHeight(void);
 
-	/// Расчитывает высоту таблицы отображения выходов
+	/// Р Р°СЃС‡РёС‚С‹РІР°РµС‚ РІС‹СЃРѕС‚Сѓ С‚Р°Р±Р»РёС†С‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІС‹С…РѕРґРѕРІ
 	int CalcOutputsHeight(void);
 };
 //---------------------------------------------------------------------------

@@ -23,7 +23,7 @@ class MVector: public MMatrix<T,Rows,1>
 {
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MVector(void);
 explicit MVector(T defvalue);
@@ -37,22 +37,22 @@ virtual ~MVector(void);
 // --------------------------
 
 // -----------------------------------
-// Общие методы доступа к параметрам матрицы
+// РћР±С‰РёРµ РјРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј РјР°С‚СЂРёС†С‹
 // -----------------------------------
-/// Возвращает размерность матрицы
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°С‚СЂРёС†С‹
 virtual int GetDimensions(void) const;
 
-/// Возвращает число элементов по всем размерностям
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РІСЃРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЏРј
 virtual MMatrixSize GetMatrixSize(void) const;
 
-/// Устанавливает число элементов по всем размерностям
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РІСЃРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЏРј
 virtual bool Resize(const MMatrixSize &size);
 // -----------------------------------
 
 // --------------------------
-// Операторы управления данными
+// РћРїРµСЂР°С‚РѕСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 MVector<T,Rows>& operator = (const MVector<T,Rows> &copy);
 MVector<T,Rows>& operator = (const MMatrix<T,Rows,1> &copy);
 MVector<T,Rows>& operator = (const MDMatrix<T> &copy);
@@ -62,7 +62,7 @@ MVector<T,Rows>& operator = (T value);
 //void Assign(const T *data);
 void Assign(T value);
 
-// Доступ к элементу
+// Р”РѕСЃС‚СѓРї Рє СЌР»РµРјРµРЅС‚Сѓ
 T& operator () (int i);
 const T& operator () (int i) const;
 // --------------------------
@@ -70,7 +70,7 @@ const T& operator () (int i) const;
 };
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(void)
@@ -127,16 +127,16 @@ MVector<T,Rows>::~MVector(void) {};
 
 
 // -----------------------------------
-// Общие методы доступа к параметрам матрицы
+// РћР±С‰РёРµ РјРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј РјР°С‚СЂРёС†С‹
 // -----------------------------------
-/// Возвращает размерность матрицы
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°С‚СЂРёС†С‹
 template<class T, unsigned Rows>
 int MVector<T,Rows>::GetDimensions(void) const
 {
  return 1;
 }
 
-/// Возвращает число элементов по всем размерностям
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РІСЃРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЏРј
 template<class T, unsigned Rows>
 MMatrixSize MVector<T,Rows>::GetMatrixSize(void) const
 {
@@ -147,7 +147,7 @@ MMatrixSize MVector<T,Rows>::GetMatrixSize(void) const
  return size;
 }
 
-/// Устанавливает число элементов по всем размерностям
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РІСЃРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЏРј
 template<class T, unsigned Rows>
 bool MVector<T,Rows>::Resize(const MMatrixSize &size)
 {
@@ -159,9 +159,9 @@ bool MVector<T,Rows>::Resize(const MMatrixSize &size)
 // -----------------------------------
 
 // --------------------------
-// Операторы управления данными
+// РћРїРµСЂР°С‚РѕСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (const MVector<T,Rows> &copy)
 {
@@ -215,7 +215,7 @@ void MVector<T,Rows>::Assign(T value)
  *this=value;
 }
 
-// Доступ к элементу
+// Р”РѕСЃС‚СѓРї Рє СЌР»РµРјРµРЅС‚Сѓ
 template<class T, unsigned Rows>
 T& MVector<T,Rows>::operator () (int i)
 {
@@ -230,9 +230,9 @@ const T& MVector<T,Rows>::operator () (int i) const
 // --------------------------
 
 // --------------------------
-// Арифметические операторы
+// РђСЂРёС„РјРµС‚РёС‡РµСЃРєРёРµ РѕРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Скалярное произведение векторов
+// РЎРєР°Р»СЏСЂРЅРѕРµ РїСЂРѕРёР·РІРµРґРµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ
 template<class T, unsigned Rows>
 double operator * (const MVector<T,Rows> &M1, const MVector<T,Rows> &M2)
 {
@@ -245,7 +245,7 @@ double operator * (const MVector<T,Rows> &M1, const MVector<T,Rows> &M2)
  return res;
 }
 
-// Векторное произведение векторов
+// Р’РµРєС‚РѕСЂРЅРѕРµ РїСЂРѕРёР·РІРµРґРµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ
 template<class T>
 MVector<T,3> operator ^ (const MVector<T,3> &u, const MVector<T,3> &v)
 {
@@ -257,101 +257,101 @@ MVector<T,3> operator ^ (const MVector<T,3> &u, const MVector<T,3> &v)
 
 
 /*
-  Класс - MVector. Определяет новый тип данных - 3D-вектор.
- Вектор можно создать след. способами:
-  1. MVector<type> v; - Создаётся в-р нулевой длины.
-  2. MVector<type> v( (type)num ); - Создаётся в-р все коорд.
-                                               которого = num.
+  РљР»Р°СЃСЃ - MVector. РћРїСЂРµРґРµР»СЏРµС‚ РЅРѕРІС‹Р№ С‚РёРї РґР°РЅРЅС‹С… - 3D-РІРµРєС‚РѕСЂ.
+ Р’РµРєС‚РѕСЂ РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ СЃР»РµРґ. СЃРїРѕСЃРѕР±Р°РјРё:
+  1. MVector<type> v; - РЎРѕР·РґР°С‘С‚СЃСЏ РІ-СЂ РЅСѓР»РµРІРѕР№ РґР»РёРЅС‹.
+  2. MVector<type> v( (type)num ); - РЎРѕР·РґР°С‘С‚СЃСЏ РІ-СЂ РІСЃРµ РєРѕРѕСЂРґ.
+                                               РєРѕС‚РѕСЂРѕРіРѕ = num.
   3. MVector<type> v( (type)x,(type)y,(type)z );
-      - Создаётся в-р с коорд. x,y,z.
+      - РЎРѕР·РґР°С‘С‚СЃСЏ РІ-СЂ СЃ РєРѕРѕСЂРґ. x,y,z.
   4. MVector<type> v( (MVector<type>)v1 );
-      - Создаётся в-р равный в-ру v1
+      - РЎРѕР·РґР°С‘С‚СЃСЏ РІ-СЂ СЂР°РІРЅС‹Р№ РІ-СЂСѓ v1
  --------------------------------------
 
- В классе перегружены следующие операции:
-   ## Сервисные операторы ##
-   MVector<type> []; - Доступ к коорд. в-ра по их порядк. номеру.
-   ! MVector<type>; - Получение длины вектора ( возвр. type )
-   MVector<type>.Normalize(); - Функция нормирования вектора.
-   Normalize(MVector<type>); - Функция выдачи нормированного вектора.
-   ## Операторы присваивания ##
-   MVector<type> = MVector<type>; - Присваивание в-ра в-ру.
-   MVector<type> = type; - Присваивание всем коорд. в-ра значения type
+ Р’ РєР»Р°СЃСЃРµ РїРµСЂРµРіСЂСѓР¶РµРЅС‹ СЃР»РµРґСѓСЋС‰РёРµ РѕРїРµСЂР°С†РёРё:
+   ## РЎРµСЂРІРёСЃРЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹ ##
+   MVector<type> []; - Р”РѕСЃС‚СѓРї Рє РєРѕРѕСЂРґ. РІ-СЂР° РїРѕ РёС… РїРѕСЂСЏРґРє. РЅРѕРјРµСЂСѓ.
+   ! MVector<type>; - РџРѕР»СѓС‡РµРЅРёРµ РґР»РёРЅС‹ РІРµРєС‚РѕСЂР° ( РІРѕР·РІСЂ. type )
+   MVector<type>.Normalize(); - Р¤СѓРЅРєС†РёСЏ РЅРѕСЂРјРёСЂРѕРІР°РЅРёСЏ РІРµРєС‚РѕСЂР°.
+   Normalize(MVector<type>); - Р¤СѓРЅРєС†РёСЏ РІС‹РґР°С‡Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРЅРѕРіРѕ РІРµРєС‚РѕСЂР°.
+   ## РћРїРµСЂР°С‚РѕСЂС‹ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ ##
+   MVector<type> = MVector<type>; - РџСЂРёСЃРІР°РёРІР°РЅРёРµ РІ-СЂР° РІ-СЂСѓ.
+   MVector<type> = type; - РџСЂРёСЃРІР°РёРІР°РЅРёРµ РІСЃРµРј РєРѕРѕСЂРґ. РІ-СЂР° Р·РЅР°С‡РµРЅРёСЏ type
 
-   ## Логические операторы ##
-   MVector<type> == MVector<type>; - Проверка на равенство.
-   MVector<type> != MVector<type>; - Проверка на неравенство.
-   MVector<type> < type; - Проверка "все коорд. строго меньше".
-   MVector<type> > type; - Проверка "все коорд. строго больше".
+   ## Р›РѕРіРёС‡РµСЃРєРёРµ РѕРїРµСЂР°С‚РѕСЂС‹ ##
+   MVector<type> == MVector<type>; - РџСЂРѕРІРµСЂРєР° РЅР° СЂР°РІРµРЅСЃС‚РІРѕ.
+   MVector<type> != MVector<type>; - РџСЂРѕРІРµСЂРєР° РЅР° РЅРµСЂР°РІРµРЅСЃС‚РІРѕ.
+   MVector<type> < type; - РџСЂРѕРІРµСЂРєР° "РІСЃРµ РєРѕРѕСЂРґ. СЃС‚СЂРѕРіРѕ РјРµРЅСЊС€Рµ".
+   MVector<type> > type; - РџСЂРѕРІРµСЂРєР° "РІСЃРµ РєРѕРѕСЂРґ. СЃС‚СЂРѕРіРѕ Р±РѕР»СЊС€Рµ".
 
-   ## Арифметическии операторы ##
-   - MVector<type>; - Смена знака у всех коорд. в-ра.
-   MVector<type> += MVector<type>; - Добавление к вектору вектора.
-   MVector<type> -= MVector<type>; - Вычитание из вектора вектора.
-   MVector<type> ^= MVector<type>; - Векторное домножение вектора на вектор.
-   MVector<type> *= type; - Умножение в-ра на число
-   MVector<type> /= type; - Деление в-ра на число
-   MVector<type> /= MVector<type>; - Почленное деление в-ра на в-р
-   MVector<type> + MVector<type>; - Сложение векторов.
-   MVector<type> - MVector<type>; - Вычитание векторов.
-   MVector<type> ^ MVector<type>; - Векторное умножение векторов.
-   MVector<type> * MVector<type>; - Скалярное умножение векторов.
-   MVector<type> * type; - Умножение вектора и числа справа.
-   type * MVector<type>; - Умножение вектора и числа слева.
-   MVector<type> / type; - Деление вектора и числа.
-   MVector<type> / MVector<type>; - Почленное деление в-ров
+   ## РђСЂРёС„РјРµС‚РёС‡РµСЃРєРёРё РѕРїРµСЂР°С‚РѕСЂС‹ ##
+   - MVector<type>; - РЎРјРµРЅР° Р·РЅР°РєР° Сѓ РІСЃРµС… РєРѕРѕСЂРґ. РІ-СЂР°.
+   MVector<type> += MVector<type>; - Р”РѕР±Р°РІР»РµРЅРёРµ Рє РІРµРєС‚РѕСЂСѓ РІРµРєС‚РѕСЂР°.
+   MVector<type> -= MVector<type>; - Р’С‹С‡РёС‚Р°РЅРёРµ РёР· РІРµРєС‚РѕСЂР° РІРµРєС‚РѕСЂР°.
+   MVector<type> ^= MVector<type>; - Р’РµРєС‚РѕСЂРЅРѕРµ РґРѕРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂР° РЅР° РІРµРєС‚РѕСЂ.
+   MVector<type> *= type; - РЈРјРЅРѕР¶РµРЅРёРµ РІ-СЂР° РЅР° С‡РёСЃР»Рѕ
+   MVector<type> /= type; - Р”РµР»РµРЅРёРµ РІ-СЂР° РЅР° С‡РёСЃР»Рѕ
+   MVector<type> /= MVector<type>; - РџРѕС‡Р»РµРЅРЅРѕРµ РґРµР»РµРЅРёРµ РІ-СЂР° РЅР° РІ-СЂ
+   MVector<type> + MVector<type>; - РЎР»РѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
+   MVector<type> - MVector<type>; - Р’С‹С‡РёС‚Р°РЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
+   MVector<type> ^ MVector<type>; - Р’РµРєС‚РѕСЂРЅРѕРµ СѓРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
+   MVector<type> * MVector<type>; - РЎРєР°Р»СЏСЂРЅРѕРµ СѓРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
+   MVector<type> * type; - РЈРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂР° Рё С‡РёСЃР»Р° СЃРїСЂР°РІР°.
+   type * MVector<type>; - РЈРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂР° Рё С‡РёСЃР»Р° СЃР»РµРІР°.
+   MVector<type> / type; - Р”РµР»РµРЅРёРµ РІРµРєС‚РѕСЂР° Рё С‡РёСЃР»Р°.
+   MVector<type> / MVector<type>; - РџРѕС‡Р»РµРЅРЅРѕРµ РґРµР»РµРЅРёРµ РІ-СЂРѕРІ
 
-   ## Потоковые операторы ввода-вывода ##
-   ostream << MVector<type>; - Вывод в поток ( как правил cout ), в удобочитаемой форме.
-   istream >> MVector<type>; - Ввод из потока ( как правил cin ), с запросом вида "v=".
-   fstream << MVector<type>; - Вывод в файловый поток.
-   fstream >> MVector<type>; - Ввод из файлового потока.
+   ## РџРѕС‚РѕРєРѕРІС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹ РІРІРѕРґР°-РІС‹РІРѕРґР° ##
+   ostream << MVector<type>; - Р’С‹РІРѕРґ РІ РїРѕС‚РѕРє ( РєР°Рє РїСЂР°РІРёР» cout ), РІ СѓРґРѕР±РѕС‡РёС‚Р°РµРјРѕР№ С„РѕСЂРјРµ.
+   istream >> MVector<type>; - Р’РІРѕРґ РёР· РїРѕС‚РѕРєР° ( РєР°Рє РїСЂР°РІРёР» cin ), СЃ Р·Р°РїСЂРѕСЃРѕРј РІРёРґР° "v=".
+   fstream << MVector<type>; - Р’С‹РІРѕРґ РІ С„Р°Р№Р»РѕРІС‹Р№ РїРѕС‚РѕРє.
+   fstream >> MVector<type>; - Р’РІРѕРґ РёР· С„Р°Р№Р»РѕРІРѕРіРѕ РїРѕС‚РѕРєР°.
  ----------------------------------------
 */
     /*
 template<class DataV>
 class MVector
 {
-public: // Данные
-DataV x,y,z; // Координаты в-ра.
+public: // Р”Р°РЅРЅС‹Рµ
+DataV x,y,z; // РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ-СЂР°.
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 //---------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 //---------------------------
-//  Создаёт в-р нулевой длины.
+//  РЎРѕР·РґР°С‘С‚ РІ-СЂ РЅСѓР»РµРІРѕР№ РґР»РёРЅС‹.
 MVector(void)
 { x=y=z=0; };
 
-// Создаёт в-р все коорд. которого = ksi.
+// РЎРѕР·РґР°С‘С‚ РІ-СЂ РІСЃРµ РєРѕРѕСЂРґ. РєРѕС‚РѕСЂРѕРіРѕ = ksi.
 MVector(DataV ksi)
 { x=y=z=ksi; };
 
-// Создаёт в-р с коорд. xx,yy,zz.
+// РЎРѕР·РґР°С‘С‚ РІ-СЂ СЃ РєРѕРѕСЂРґ. xx,yy,zz.
 MVector(DataV xx,DataV yy,DataV zz)
 { x=xx; y=yy; z=zz; };
 
-// Создаёт в-р равный в-ру v
+// РЎРѕР·РґР°С‘С‚ РІ-СЂ СЂР°РІРЅС‹Р№ РІ-СЂСѓ v
 MVector(const MVector<DataV> &v)
 { x=v.x; y=v.y; z=v.z; }
 //---------------------------
 
 //---------------------------
-// Перегружаемые операторы
+// РџРµСЂРµРіСЂСѓР¶Р°РµРјС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
 //---------------------------
-// ## Сервисные операторы ##
-// Доступ к коорд. в-ра по их порядк. номеру.
+// ## РЎРµСЂРІРёСЃРЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹ ##
+// Р”РѕСЃС‚СѓРї Рє РєРѕРѕСЂРґ. РІ-СЂР° РїРѕ РёС… РїРѕСЂСЏРґРє. РЅРѕРјРµСЂСѓ.
 DataV& operator [](int n)
 {
  return *(&x+n);
 }
 
-// Получение длины вектора
+// РџРѕР»СѓС‡РµРЅРёРµ РґР»РёРЅС‹ РІРµРєС‚РѕСЂР°
 DataV operator !(void) const
 {
  return std::sqrt(x*x+y*y+z*z);
 }
-// Функция нормирования вектора.
+// Р¤СѓРЅРєС†РёСЏ РЅРѕСЂРјРёСЂРѕРІР°РЅРёСЏ РІРµРєС‚РѕСЂР°.
 MVector<DataV>& Normalize(void)
 {
  DataV len=sqrt(x*x+y*y+z*z);
@@ -359,19 +359,19 @@ MVector<DataV>& Normalize(void)
  return *this;
 }
 
-// Функция выдачи нормированного вектора.
+// Р¤СѓРЅРєС†РёСЏ РІС‹РґР°С‡Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРЅРѕРіРѕ РІРµРєС‚РѕСЂР°.
 MVector<DataV> Normalize(const MVector<DataV> &v);
 // #########################
 
-// ## Операторы присваивания ##
-// Присваивание в-ра в-ру.
+// ## РћРїРµСЂР°С‚РѕСЂС‹ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ ##
+// РџСЂРёСЃРІР°РёРІР°РЅРёРµ РІ-СЂР° РІ-СЂСѓ.
 MVector<DataV>& operator = (const MVector<DataV> &v)
 {
  x=v.x; y=v.y; z=v.z;
  return *this;
 }
 
-// Присваивание всем коорд. в-ра значения DataV
+// РџСЂРёСЃРІР°РёРІР°РЅРёРµ РІСЃРµРј РєРѕРѕСЂРґ. РІ-СЂР° Р·РЅР°С‡РµРЅРёСЏ DataV
 MVector<DataV>& operator = (DataV f)
 {
  x=y=z=f;
@@ -380,8 +380,8 @@ MVector<DataV>& operator = (DataV f)
 // ############################
 
 
-// ## Логические операторы ##
-// Проверка на равенство.
+// ## Р›РѕРіРёС‡РµСЃРєРёРµ РѕРїРµСЂР°С‚РѕСЂС‹ ##
+// РџСЂРѕРІРµСЂРєР° РЅР° СЂР°РІРµРЅСЃС‚РІРѕ.
 bool operator == (const MVector<DataV>& v) const
 {
  if(x==v.x && y==v.y && z==v.z)
@@ -390,33 +390,33 @@ bool operator == (const MVector<DataV>& v) const
   return false;
 }
 
-// Проверка на неравенство.
+// РџСЂРѕРІРµСЂРєР° РЅР° РЅРµСЂР°РІРµРЅСЃС‚РІРѕ.
 bool operator != (const MVector<DataV>& v) const
 {
  return !(*this == v);
 }
 
-// Проверка "все коорд. строго меньше".
+// РџСЂРѕРІРµСЂРєР° "РІСЃРµ РєРѕРѕСЂРґ. СЃС‚СЂРѕРіРѕ РјРµРЅСЊС€Рµ".
 bool operator < (DataV v)
 {
  return x<v && y<v && z<v;
 }
 
-// Проверка "все коорд. строго больше".
+// РџСЂРѕРІРµСЂРєР° "РІСЃРµ РєРѕРѕСЂРґ. СЃС‚СЂРѕРіРѕ Р±РѕР»СЊС€Рµ".
 bool operator > (DataV v)
 {
  return x>v && y>v && z>v;
 }
 // ##########################
 
-// ## Арифметическии операторы ##
-// Смена знака у всех коорд. в-ра.
+// ## РђСЂРёС„РјРµС‚РёС‡РµСЃРєРёРё РѕРїРµСЂР°С‚РѕСЂС‹ ##
+// РЎРјРµРЅР° Р·РЅР°РєР° Сѓ РІСЃРµС… РєРѕРѕСЂРґ. РІ-СЂР°.
 MVector<DataV> operator - (void) const
 {
  return MVector<DataV> (-x,-y,-z);
 }
 
-// Добавление к вектору вектора.
+// Р”РѕР±Р°РІР»РµРЅРёРµ Рє РІРµРєС‚РѕСЂСѓ РІРµРєС‚РѕСЂР°.
 MVector<DataV>& operator += (const MVector<DataV> &v)
 {
  x+=v.x;
@@ -425,7 +425,7 @@ MVector<DataV>& operator += (const MVector<DataV> &v)
  return *this;
 }
 
-// Вычитание из вектора вектора.
+// Р’С‹С‡РёС‚Р°РЅРёРµ РёР· РІРµРєС‚РѕСЂР° РІРµРєС‚РѕСЂР°.
 MVector<DataV>& operator -= (const MVector<DataV> &v)
 {
  x-=v.x;
@@ -434,7 +434,7 @@ MVector<DataV>& operator -= (const MVector<DataV> &v)
  return *this;
 }
 
-// Векторное домножение вектора на вектор.
+// Р’РµРєС‚РѕСЂРЅРѕРµ РґРѕРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂР° РЅР° РІРµРєС‚РѕСЂ.
 MVector<DataV>& operator ^= (const MVector<DataV> &v)
 {
  MVector<DataV> temp(*this);
@@ -445,7 +445,7 @@ MVector<DataV>& operator ^= (const MVector<DataV> &v)
  return *this;
 }
 
-// Умножение в-ра на число
+// РЈРјРЅРѕР¶РµРЅРёРµ РІ-СЂР° РЅР° С‡РёСЃР»Рѕ
 MVector<DataV>& operator *= (DataV f)
 {
  x*=f;
@@ -454,7 +454,7 @@ MVector<DataV>& operator *= (DataV f)
  return *this;
 }
 
-// Деление в-ра на число
+// Р”РµР»РµРЅРёРµ РІ-СЂР° РЅР° С‡РёСЃР»Рѕ
 MVector<DataV>& operator /= (DataV f)
 {
  x/=f;
@@ -463,7 +463,7 @@ MVector<DataV>& operator /= (DataV f)
  return *this;
 }
 
-// Почленное деление в-ра на в-р
+// РџРѕС‡Р»РµРЅРЅРѕРµ РґРµР»РµРЅРёРµ РІ-СЂР° РЅР° РІ-СЂ
 MVector<DataV>& operator /= (const MVector<DataV> &v)
 {
  x/=v.x;
@@ -483,7 +483,7 @@ MVector<DataV> Normalize(const MVector<DataV> &v)
  return MVector<DataV>(tmp);
 }
 
-// Сложение векторов.
+// РЎР»РѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
 template<class DataV>
 MVector<DataV> operator + (const MVector<DataV> &u,const MVector<DataV> &v)
 {
@@ -491,21 +491,21 @@ MVector<DataV> operator + (const MVector<DataV> &u,const MVector<DataV> &v)
  return MVector<DataV>(u.x+v.x,u.y+v.y,u.z+v.z);
 }
 
-// Вычитание векторов.
+// Р’С‹С‡РёС‚Р°РЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
 template<class DataV>
 MVector<DataV> operator - (const MVector<DataV> &u,const MVector<DataV> &v)
 {
  return MVector<DataV>(u.x-v.x,u.y-v.y,u.z-v.z);
 }
 
-// Векторное умножение векторов.
+// Р’РµРєС‚РѕСЂРЅРѕРµ СѓРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
 template<class DataV>
 MVector<DataV> operator ^ (const MVector<DataV> &u,const MVector<DataV> &v)
 {
  return MVector<DataV>(u.y*v.z-u.z*v.y,u.z*v.x-u.x*v.z,u.x*v.y-u.y*v.x);
 }
 
-// Скалярное умножение векторов.
+// РЎРєР°Р»СЏСЂРЅРѕРµ СѓРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ.
 template<class DataV>
 DataV operator * (const MVector<DataV> &u,const MVector<DataV> &v)
 {
@@ -513,28 +513,28 @@ DataV operator * (const MVector<DataV> &u,const MVector<DataV> &v)
 }
 
 
-// Умножение вектора и числа справа.
+// РЈРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂР° Рё С‡РёСЃР»Р° СЃРїСЂР°РІР°.
 template<class DataV>
 MVector<DataV> operator * (const MVector<DataV> &v,DataV f)
 {
  return MVector<DataV>(v.x*f,v.y*f,v.z*f);
 }
 
-// Умножение вектора и числа слева.
+// РЈРјРЅРѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂР° Рё С‡РёСЃР»Р° СЃР»РµРІР°.
 template<class DataV>
 MVector<DataV> operator * (DataV f,const MVector<DataV> &v)
 {
  return MVector<DataV>(f*v.x,f*v.y,f*v.z);
 }
 
-// Деление вектора и числа.
+// Р”РµР»РµРЅРёРµ РІРµРєС‚РѕСЂР° Рё С‡РёСЃР»Р°.
 template<class DataV>
 MVector<DataV> operator / (const MVector<DataV> &v,DataV f)
 {
  return MVector<DataV>(v.x/f,v.y/f,v.z/f);
 }
 
-// Покомпонентное деление в-ров
+// РџРѕРєРѕРјРїРѕРЅРµРЅС‚РЅРѕРµ РґРµР»РµРЅРёРµ РІ-СЂРѕРІ
 template<class DataV>
 MVector<DataV> operator / (const MVector<DataV> &u,const MVector<DataV> &v)
 {
@@ -543,8 +543,8 @@ MVector<DataV> operator / (const MVector<DataV> &u,const MVector<DataV> &v)
 // ##############################
 
 
-// ## Потоковые операторы ввода-вывода ##
-// Вывод в массив
+// ## РџРѕС‚РѕРєРѕРІС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹ РІРІРѕРґР°-РІС‹РІРѕРґР° ##
+// Р’С‹РІРѕРґ РІ РјР°СЃСЃРёРІ
 template<class DataV>
 unsigned char* operator >> (const MVector<DataV> &v,unsigned char* p)
 {
@@ -555,7 +555,7 @@ unsigned char* operator >> (const MVector<DataV> &v,unsigned char* p)
  return p+sizeof(DataV)*3;
 }
 
-// Ввод из массива
+// Р’РІРѕРґ РёР· РјР°СЃСЃРёРІР°
 template<class DataV>
 const unsigned char* operator << (MVector<DataV> &v, const unsigned char* p)
 {

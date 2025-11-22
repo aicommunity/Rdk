@@ -8,7 +8,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcCommandInternal::URpcCommandInternal(void)
  : ResponseStatus(0)
@@ -28,14 +28,14 @@ URpcCommandInternal::~URpcCommandInternal(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Методы декодирования
+// РњРµС‚РѕРґС‹ РґРµРєРѕРґРёСЂРѕРІР°РЅРёСЏ
 // --------------------------
-/// Задает строку запроса
+/// Р—Р°РґР°РµС‚ СЃС‚СЂРѕРєСѓ Р·Р°РїСЂРѕСЃР°
 void URpcCommandInternal::SetRequest(const std::string &request)
 {
  Request=request;
@@ -43,19 +43,19 @@ void URpcCommandInternal::SetRequest(const std::string &request)
  PrepareProcess();
 }
 
-/// Строка с xml-данными ответа
+/// РЎС‚СЂРѕРєР° СЃ xml-РґР°РЅРЅС‹РјРё РѕС‚РІРµС‚Р°
 const std::string& URpcCommandInternal::GetResponse(void) const
 {
  return Response;
 }
 
-/// Статус выполнения команды
+/// РЎС‚Р°С‚СѓСЃ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹
 int URpcCommandInternal::GetResponseStatus(void) const
 {
  return ResponseStatus;
 }
 
-/// Инициализирует процесс обработки новой команды
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїСЂРѕС†РµСЃСЃ РѕР±СЂР°Р±РѕС‚РєРё РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹
 void URpcCommandInternal::APrepareProcess(void)
 {
  ResponseStatus = 2001;
@@ -63,7 +63,7 @@ void URpcCommandInternal::APrepareProcess(void)
 }
 
 
-/// Осуществляет декодирование основных данных и заполняет соответствующие поля
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ РѕСЃРЅРѕРІРЅС‹С… РґР°РЅРЅС‹С… Рё Р·Р°РїРѕР»РЅСЏРµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ РїРѕР»СЏ
 bool URpcCommandInternal::ADecodeBasicData(void)
 {
  RDK::USerStorageXML xml;

@@ -6,7 +6,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 ULoggerEnv::ULoggerEnv(void)
 {
@@ -43,9 +43,9 @@ ULoggerEnv::~ULoggerEnv(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Флаг включения режима отладки
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ СЂРµР¶РёРјР° РѕС‚Р»Р°РґРєРё
 bool ULoggerEnv::GetDebugMode(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -61,7 +61,7 @@ bool ULoggerEnv::SetDebugMode(bool value)
  return true;
 }
 
-/// Маска системных событий для логирования
+/// РњР°СЃРєР° СЃРёСЃС‚РµРјРЅС‹С… СЃРѕР±С‹С‚РёР№ РґР»СЏ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 unsigned int ULoggerEnv::GetDebugSysEventsMask(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -78,14 +78,14 @@ bool ULoggerEnv::SetDebugSysEventsMask(unsigned int value)
  return true;
 }
 
-/// Возвращает флаг включения вывода лога в отладчик
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹РІРѕРґР° Р»РѕРіР° РІ РѕС‚Р»Р°РґС‡РёРє
 bool ULoggerEnv::GetDebuggerMessageFlag(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
  return DebuggerMessageFlag;
 }
 
-/// Устанавливает флаг включения вывода лога в отладчик
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С„Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹РІРѕРґР° Р»РѕРіР° РІ РѕС‚Р»Р°РґС‡РёРє
 bool ULoggerEnv::SetDebuggerMessageFlag(bool value)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -96,8 +96,8 @@ bool ULoggerEnv::SetDebuggerMessageFlag(bool value)
  return true;
 }
 
-/// Флаг включения внутренней регистрации событий в лог-файл
-/// true - регистрация включена
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЂРµРіРёСЃС‚СЂР°С†РёРё СЃРѕР±С‹С‚РёР№ РІ Р»РѕРі-С„Р°Р№Р»
+/// true - СЂРµРіРёСЃС‚СЂР°С†РёСЏ РІРєР»СЋС‡РµРЅР°
 bool ULoggerEnv::GetEventsLogMode(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -114,8 +114,8 @@ bool ULoggerEnv::SetEventsLogMode(bool value)
 }
 
 
-/// Флаг включения внутренней регистрации событий в поток вывода
-/// true - регистрация включена
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЂРµРіРёСЃС‚СЂР°С†РёРё СЃРѕР±С‹С‚РёР№ РІ РїРѕС‚РѕРє РІС‹РІРѕРґР°
+/// true - СЂРµРіРёСЃС‚СЂР°С†РёСЏ РІРєР»СЋС‡РµРЅР°
 bool ULoggerEnv::GetCoutLogMode(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -129,7 +129,7 @@ bool ULoggerEnv::SetCoutLogMode(bool value)
  return true;
 }
 
-/// Индекс текущего канала в многоканальной библиотеке
+/// РРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РєР°РЅР°Р»Р° РІ РјРЅРѕРіРѕРєР°РЅР°Р»СЊРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРµ
 int ULoggerEnv::GetChannelIndex(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -157,9 +157,9 @@ bool ULoggerEnv::SetChannelIndex(int value)
 // --------------------------
 
 // --------------------------
-// Методы управления исключениями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёСЃРєР»СЋС‡РµРЅРёСЏРјРё
 // --------------------------
-/// Регистрация среды выполнения
+/// Р РµРіРёСЃС‚СЂР°С†РёСЏ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 bool ULoggerEnv::RegisterEnvironment(UEnvironment* env)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -175,7 +175,7 @@ void ULoggerEnv::UnRegisterEnvironment(void)
  Environment=0;
 }
 
-/// Регистрация глобального логгера
+/// Р РµРіРёСЃС‚СЂР°С†РёСЏ РіР»РѕР±Р°Р»СЊРЅРѕРіРѕ Р»РѕРіРіРµСЂР°
 bool ULoggerEnv::RegisterGlobalLogger(ULoggerEnv* global_logger)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -191,7 +191,7 @@ void ULoggerEnv::UnRegisterGlobalLogger(void)
  GlobalLogger=0;
 }
 
-// Обрабатывает возникшее исключение
+// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РІРѕР·РЅРёРєС€РµРµ РёСЃРєР»СЋС‡РµРЅРёРµ
 void ULoggerEnv::ProcessException(const UException &exception) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -222,13 +222,13 @@ void ULoggerEnv::ProcessException(const UException &exception) const
   RdkDebuggerMessage(result_message.GetMessage());
 
  if(ExceptionPostprocessor && Environment)
-  ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception); // TODO: Нет проверки возвращаемого значения
+  ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception); // TODO: РќРµС‚ РїСЂРѕРІРµСЂРєРё РІРѕР·РІСЂР°С‰Р°РµРјРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
 }
 
-/// Обрабатывает возникшее исключение (Внутренний метод)
+/// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РІРѕР·РЅРёРєС€РµРµ РёСЃРєР»СЋС‡РµРЅРёРµ (Р’РЅСѓС‚СЂРµРЅРЅРёР№ РјРµС‚РѕРґ)
 void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) const
 {
  std::string log_message=exception.GetMessage();
@@ -237,9 +237,9 @@ void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) cons
   std::cout<<log_message<<endl;
  }
 
- if(EventsLogMode) // Если включено, то сохраняем события в файл
+ if(EventsLogMode) // Р•СЃР»Рё РІРєР»СЋС‡РµРЅРѕ, С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј СЃРѕР±С‹С‚РёСЏ РІ С„Р°Р№Р»
  {
-  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(log_message);  // TODO: Проверить на RDK_SUCCESS
+  const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(log_message);  // TODO: РџСЂРѕРІРµСЂРёС‚СЊ РЅР° RDK_SUCCESS
  }
 
  if(LastErrorLevel>type)
@@ -263,7 +263,7 @@ void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) cons
  }
 }
 
-/// Обрабатывает возникшее исключение в режиме гобального логгера
+/// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РІРѕР·РЅРёРєС€РµРµ РёСЃРєР»СЋС‡РµРЅРёРµ РІ СЂРµР¶РёРјРµ РіРѕР±Р°Р»СЊРЅРѕРіРѕ Р»РѕРіРіРµСЂР°
 void ULoggerEnv::ProcessExceptionGlobal(int type, const UException &exception) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -273,7 +273,7 @@ void ULoggerEnv::ProcessExceptionGlobal(int type, const UException &exception) c
 }
 
 
-// Возвращает массив строк лога
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ СЃС‚СЂРѕРє Р»РѕРіР°
 const char* ULoggerEnv::GetLog(int &error_level) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
@@ -290,14 +290,14 @@ const char* ULoggerEnv::GetLog(int &error_level) const
  return TempString.c_str();
 }
 
-/// Возвращает число строк лога
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЃС‚СЂРѕРє Р»РѕРіР°
 int ULoggerEnv::GetNumLogLines(void) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
  return int(LogList.size());
 }
 
-/// Возвращает строку лога с индексом i
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° СЃ РёРЅРґРµРєСЃРѕРј i
 const char* ULoggerEnv::GetLogLine(int i, int &error_level, int &number, time_t &time) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
@@ -316,7 +316,7 @@ const char* ULoggerEnv::GetLogLine(int i, int &error_level, int &number, time_t 
  return TempString.c_str();
 }
 
-/// Возвращает число непрочитанных строк лога
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РЅРµРїСЂРѕС‡РёС‚Р°РЅРЅС‹С… СЃС‚СЂРѕРє Р»РѕРіР°
 int ULoggerEnv::GetNumUnreadLogLines(void) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
@@ -331,8 +331,8 @@ int ULoggerEnv::GetNumUnreadLogLines(void) const
  return size;
 }
 
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡Р°СЃС‚РёС‡РЅС‹Р№ РјР°СЃСЃРёРІ СЃС‚СЂРѕРє Р»РѕРіР° СЃ РјРѕРјРµРЅС‚Р° РїРѕСЃР»РµРґРЅРµРіРѕ СЃС‡РёС‚С‹РІР°РЅРёСЏ Р»РѕРіР°
+// СЌС‚РѕР№ С„СѓРЅРєС†РёРµР№
 const char* ULoggerEnv::GetUnreadLog(int &error_level, int &number, time_t &time)
 {
  UGenericMutexSharedLocker lock(LogMutex);
@@ -376,7 +376,7 @@ const char* ULoggerEnv::GetUnreadLog(int &error_level, int &number, time_t &time
  return TempString.c_str();
 }
 
-// Управление функцией-обработчиком исключений
+// РЈРїСЂР°РІР»РµРЅРёРµ С„СѓРЅРєС†РёРµР№-РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРј РёСЃРєР»СЋС‡РµРЅРёР№
 ULoggerEnv::PExceptionHandler ULoggerEnv::GetExceptionHandler(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -393,7 +393,7 @@ bool ULoggerEnv::SetExceptionHandler(PExceptionHandler value)
  return true;
 }
 
-// Управление функцией-предобработчиком исключений
+// РЈРїСЂР°РІР»РµРЅРёРµ С„СѓРЅРєС†РёРµР№-РїСЂРµРґРѕР±СЂР°Р±РѕС‚С‡РёРєРѕРј РёСЃРєР»СЋС‡РµРЅРёР№
 ULoggerEnv::PExceptionPreprocessor ULoggerEnv::GetExceptionPreprocessor(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -409,7 +409,7 @@ bool ULoggerEnv::SetExceptionPreprocessor(PExceptionPreprocessor value)
  return true;
 }
 
-/// Управление функцией-постобработки исключений
+/// РЈРїСЂР°РІР»РµРЅРёРµ С„СѓРЅРєС†РёРµР№-РїРѕСЃС‚РѕР±СЂР°Р±РѕС‚РєРё РёСЃРєР»СЋС‡РµРЅРёР№
 ULoggerEnv::PExceptionPostprocessor ULoggerEnv::GetExceptionPostprocessor(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -426,8 +426,8 @@ bool ULoggerEnv::SetExceptionPostprocessor(PExceptionPostprocessor value)
  return true;
 }
 
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
+// РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ С…СЂР°РЅРёРјС‹С… РёСЃРєР»СЋС‡РµРЅРёР№
+// Р•СЃР»Рё 0, С‚Рѕ РЅРµРѕРіСЂР°РЅРёС‡РµРЅРЅРѕ
 int ULoggerEnv::GetMaxExceptionsLogSize(void) const
 {
  UGenericMutexSharedLocker lock(LogMutex);
@@ -448,7 +448,7 @@ void ULoggerEnv::SetMaxExceptionsLogSize(int value)
  }
 }
 
-/// Очищает лог
+/// РћС‡РёС‰Р°РµС‚ Р»РѕРі
 void ULoggerEnv::ClearLog(void)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -459,7 +459,7 @@ void ULoggerEnv::ClearLog(void)
  LogIndex=1;
 }
 
-/// Очищает лог прочитанных сообщений
+/// РћС‡РёС‰Р°РµС‚ Р»РѕРі РїСЂРѕС‡РёС‚Р°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 void ULoggerEnv::ClearReadLog(void)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -483,7 +483,7 @@ void ULoggerEnv::ClearReadLog(void)
  LastErrorLevel=INT_MAX;
 }
 
-// Вызов обработчика исключений среды для простой записи данных в лог
+// Р’С‹Р·РѕРІ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РёСЃРєР»СЋС‡РµРЅРёР№ СЃСЂРµРґС‹ РґР»СЏ РїСЂРѕСЃС‚РѕР№ Р·Р°РїРёСЃРё РґР°РЅРЅС‹С… РІ Р»РѕРі
 void ULoggerEnv::LogMessage(int msg_level, const std::string &line, int error_event_number)
 {
  LogMessageEx(msg_level, "", line, error_event_number);
@@ -575,7 +575,7 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
 }
 
 
-/// Сброс логирования
+/// РЎР±СЂРѕСЃ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 void ULoggerEnv::Reset(void)
 {
  if(EventsLogMode)
@@ -585,7 +585,7 @@ void ULoggerEnv::Reset(void)
  }
 }
 
-/// Функция обеспечивает закрытие текущего файла логов и создание нового
+/// Р¤СѓРЅРєС†РёСЏ РѕР±РµСЃРїРµС‡РёРІР°РµС‚ Р·Р°РєСЂС‹С‚РёРµ С‚РµРєСѓС‰РµРіРѕ С„Р°Р№Р»Р° Р»РѕРіРѕРІ Рё СЃРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ
 void ULoggerEnv::RecreateEventsLogFile(void)
 {
  Clear();
@@ -606,7 +606,7 @@ void ULoggerEnv::RecreateEventsLogFile(void)
 //  EventsLogFilePath=log_dir;
 // }
 
- /// Сохраняем лог в файл если это необходимо
+ /// РЎРѕС…СЂР°РЅСЏРµРј Р»РѕРі РІ С„Р°Р№Р» РµСЃР»Рё СЌС‚Рѕ РЅРµРѕР±С…РѕРґРёРјРѕ
 // if(!LogFlag)
 //  EventsLogFlag=false;
 // else
@@ -615,7 +615,7 @@ void ULoggerEnv::RecreateEventsLogFile(void)
 // CalculationNotInProgress->set();
 }
 
-/// Закрывает текущий лог
+/// Р—Р°РєСЂС‹РІР°РµС‚ С‚РµРєСѓС‰РёР№ Р»РѕРі
 //void ULoggerEnv::CloseEventsLogFile(void)
 //{
 // if(!CalculationNotInProgress)

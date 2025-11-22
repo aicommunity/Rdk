@@ -9,9 +9,9 @@
 #pragma resource "*.dfm"
 TUVisualControllerFrame *UVisualControllerFrame;
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Флаг, сообщающий что идет расчет
+// Р¤Р»Р°Рі, СЃРѕРѕР±С‰Р°СЋС‰РёР№ С‡С‚Рѕ РёРґРµС‚ СЂР°СЃС‡РµС‚
 RDK::UELockVar<bool> TUVisualControllerFrame::CalculationModeFlag(false);
 
 __fastcall TUVisualControllerFrame::TUVisualControllerFrame(TComponent* Owner)
@@ -33,9 +33,9 @@ __fastcall TUVisualControllerFrame::~TUVisualControllerFrame(void)
 // --------------------------
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void TUVisualControllerFrame::AfterLoadProject(void)
 {
  try
@@ -61,8 +61,8 @@ void TUVisualControllerFrame::AAfterLoadProject(void)
 
 }
 
-/// Метод, вызываемый перед закрытием проекта
-/// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
+/// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
+/// \details Р’С‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ ABeforeCloseProject() РІ Р±Р»РѕРєРµ РѕР±СЂР°Р±РѕС‚РєРё РёСЃРєР»СЋС‡РµРЅРёР№
 void TUVisualControllerFrame::BeforeCloseProject(void)
 {
  try
@@ -88,7 +88,7 @@ void TUVisualControllerFrame::ABeforeCloseProject(void)
 
 }
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void TUVisualControllerFrame::BeforeReset(void)
 {
  try
@@ -114,7 +114,7 @@ void TUVisualControllerFrame::ABeforeReset(void)
 
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void TUVisualControllerFrame::AfterReset(void)
 {
  try
@@ -142,7 +142,7 @@ void TUVisualControllerFrame::AAfterReset(void)
 
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TUVisualControllerFrame::BeforeCalculate(void)
 {
  try
@@ -168,7 +168,7 @@ void TUVisualControllerFrame::ABeforeCalculate(void)
 {
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TUVisualControllerFrame::AfterCalculate(void)
 {
  try
@@ -193,7 +193,7 @@ void TUVisualControllerFrame::AAfterCalculate(void)
 {
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TUVisualControllerFrame::UpdateInterface(bool force_update)
 {
  unsigned long long current_time=0;
@@ -276,7 +276,7 @@ void TUVisualControllerFrame::AUpdateInterface(void)
 {
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUVisualControllerFrame::ClearInterface(void)
 {
  try
@@ -309,13 +309,13 @@ void TUVisualControllerFrame::AClearInterface(void)
 {
 }
 
-// Возвращает уникальное имя интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 std::string TUVisualControllerFrame::GetName(void)
 {
  return AnsiString(Name).c_str();
 }
 
-// Возвращает полное уникальное имя интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅРѕРµ СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 std::string TUVisualControllerFrame::CalcFullName(void)
 {
  std::string full_name;
@@ -327,19 +327,19 @@ std::string TUVisualControllerFrame::CalcFullName(void)
  return full_name;
 }
 
-// Возвращает имя класса интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РёРЅС‚РµСЂС„РµР№СЃР°
 std::string TUVisualControllerFrame::GetClassName(void)
 {
  return AnsiString(ClassName()).c_str();
 }
 
-// Возвращает интервал обновления интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 long TUVisualControllerFrame::GetUpdateInterval(void)
 {
  return UpdateInterval;
 }
 
-// Задает интервал обновления интерфейса
+// Р—Р°РґР°РµС‚ РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 bool TUVisualControllerFrame::SetUpdateInterval(long value)
 {
  if(value<-1)
@@ -350,13 +350,13 @@ bool TUVisualControllerFrame::SetUpdateInterval(long value)
 }
 
 
-// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° РґР°Р¶Рµ РµСЃР»Рё РѕРЅ РЅРµ РІРёРґРµРЅ
 bool TUVisualControllerFrame::GetAlwaysUpdateFlag(void)
 {
  return AlwaysUpdateFlag;
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
 {
  try
@@ -393,7 +393,7 @@ void TUVisualControllerFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
 {
  try
@@ -427,8 +427,8 @@ void TUVisualControllerFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 
-// Управление длинным именем управляемого компонента
-// Длинное имя управляемого компонента модели (опционально)
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР»РёРЅРЅС‹Рј РёРјРµРЅРµРј СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
+// Р”Р»РёРЅРЅРѕРµ РёРјСЏ СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
 const std::string& TUVisualControllerFrame::GetComponentControlName(void) const
 {
  return ComponentControlName;
@@ -444,26 +444,26 @@ bool TUVisualControllerFrame::SetComponentControlName(const std::string& name)
  return true;
 }
 
-// Служебные методы управления интерфейсом
-/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+// РЎР»СѓР¶РµР±РЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃРѕРј
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void TUVisualControllerFrame::ResetCalculationStepUpdatedFlag(void)
 {
  CalculationStepUpdatedFlag=false;
 }
 
-/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void TUVisualControllerFrame::SetCalculationStepUpdatedFlag(void)
 {
  CalculationStepUpdatedFlag=true;
 }
 
-/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР° РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 bool TUVisualControllerFrame::GetCalculationStepUpdatedFlag(void)
 {
  return CalculationStepUpdatedFlag;
 }
 
-/// Возвращает время обновления интерфейса (мс)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° (РјСЃ)
 unsigned long long TUVisualControllerFrame::GetUpdateTime(void)
 {
  return UpdateTime;

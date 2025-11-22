@@ -18,7 +18,7 @@ ULogger::~ULogger(void)
   UDestroyMutex(LogMutex);
 }
 
-/// Путь до папки с логами
+/// РџСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ Р»РѕРіР°РјРё
 std::string ULogger::GetLogDir(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -36,10 +36,10 @@ bool ULogger::SetLogDir(const std::string &value)
  return true;
 }
 
-/// Режим логгирования
-/// 0 - отключен
-/// 1 - сохранять каждый канал в отдельный файл лога
-/// 2 - сохранять все каналы в единый файл лога
+/// Р РµР¶РёРј Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
+/// 0 - РѕС‚РєР»СЋС‡РµРЅ
+/// 1 - СЃРѕС…СЂР°РЅСЏС‚СЊ РєР°Р¶РґС‹Р№ РєР°РЅР°Р» РІ РѕС‚РґРµР»СЊРЅС‹Р№ С„Р°Р№Р» Р»РѕРіР°
+/// 2 - СЃРѕС…СЂР°РЅСЏС‚СЊ РІСЃРµ РєР°РЅР°Р»С‹ РІ РµРґРёРЅС‹Р№ С„Р°Р№Р» Р»РѕРіР°
 std::string ULogger::GetSuffix(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -56,7 +56,7 @@ bool ULogger::SetSuffix(const std::string &value)
  return true;
 }
 
-/// Инициализирует лог
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Р»РѕРі
 int ULogger::InitLog(void)
 {
  Clear();
@@ -75,7 +75,7 @@ int ULogger::InitLog(void)
  return RDK_SUCCESS;
 }
 
-/// Сохраняет строку в лог
+/// РЎРѕС…СЂР°РЅСЏРµС‚ СЃС‚СЂРѕРєСѓ РІ Р»РѕРі
 int ULogger::WriteMessageToFile(const std::string &str)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -115,7 +115,7 @@ int ULogger::WriteMessageToFile(const std::string &str)
  return RDK_UNHANDLED_EXCEPTION;
 }
 
-/// Закрывает файлы с логами и удаляет связанные файловые переменные
+/// Р—Р°РєСЂС‹РІР°РµС‚ С„Р°Р№Р»С‹ СЃ Р»РѕРіР°РјРё Рё СѓРґР°Р»СЏРµС‚ СЃРІСЏР·Р°РЅРЅС‹Рµ С„Р°Р№Р»РѕРІС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
 int ULogger::Clear(void)
 {
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -129,7 +129,7 @@ int ULogger::Clear(void)
  return RDK_SUCCESS;
 }
 
-/// Возвращает true если файл записи логов открыт
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё С„Р°Р№Р» Р·Р°РїРёСЃРё Р»РѕРіРѕРІ РѕС‚РєСЂС‹С‚
 bool ULogger::IsLogFileCreated(void) const
 {
  UGenericMutexExclusiveLocker lock(LogMutex);

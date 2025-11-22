@@ -11,16 +11,16 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
     ui(new Ui::UComponentLinksWidget)
 {
     ui->setupUi(this);
-    UpdateInterval = 0; //�� ��������� ������ �� ����� ����
-    setAccessibleName("UComponentLinksWidget"); // ��� ������ ��� ������������
+    UpdateInterval = 0; //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    setAccessibleName("UComponentLinksWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->treeWidgetInputs->header()->setVisible(true);
     ui->treeWidgetOutputs->header()->setVisible(true);
 
-    //������ ��������
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCancel, SIGNAL(pressed()), this, SIGNAL(closeWindow()));
-    //�������� �����
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
-    //���������� �����
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonBreakLink, SIGNAL(pressed()), this, SLOT(breakLink()));
 
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()), this, SLOT(output1ItemSelectionChanged()));
@@ -244,7 +244,7 @@ void UComponentLinksWidget::unInit()
     ui->treeWidgetLinks->clear();
 }
 
-///������������ ���������� �����
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UComponentLinksWidget::switchLink()
 {
     QString output1Component, outputName1, output2Component, outputName2;

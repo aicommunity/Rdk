@@ -16,14 +16,14 @@ __fastcall TUWatchFramePage::TUWatchFramePage(TComponent* Owner)
 //---------------------------------------------------------------------------
 
 // ------------------------------
-// Методы управления состоянием
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёРµРј
 // ------------------------------
 void TUWatchFramePage::AUpdateInterface(void)
 {
 	//
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUWatchFramePage::AClearInterface(void)
 {
  ClearPages();
@@ -39,7 +39,7 @@ void TUWatchFramePage::AAfterCalculate(void)
 	//
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUWatchFramePage::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("PageCount",NTWPageControl->PageCount);
@@ -51,7 +51,7 @@ void TUWatchFramePage::ASaveParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUWatchFramePage::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int count=xml.ReadInteger("PageCount",0);
@@ -68,7 +68,7 @@ void TUWatchFramePage::ALoadParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUWatchFramePage* TUWatchFramePage::New(TComponent *owner)
 {
  return new TUWatchFramePage(owner);
@@ -77,16 +77,16 @@ TUWatchFramePage* TUWatchFramePage::New(TComponent *owner)
 
 
 // ------------------------------
-// Методы управления страницами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‚СЂР°РЅРёС†Р°РјРё
 // ------------------------------
-// Удаляет все лишние вкладки (оставляет 1 начальную)
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ Р»РёС€РЅРёРµ РІРєР»Р°РґРєРё (РѕСЃС‚Р°РІР»СЏРµС‚ 1 РЅР°С‡Р°Р»СЊРЅСѓСЋ)
 void TUWatchFramePage::ClearPages(void)
 {
  while(NTWPageControl->PageCount > 1)
   delete NTWPageControl->Pages[NTWPageControl->PageCount-1];
 }
 
-// Добавляет страницу
+// Р”РѕР±Р°РІР»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUWatchFramePage::AddPage(void)
 {
  TTabSheet* tab=new TTabSheet(NTWPageControl);
@@ -100,7 +100,7 @@ void TUWatchFramePage::AddPage(void)
  tab->Caption=String("Page")+IntToStr(NTWPageControl->PageCount);
 }
 
-// Удаляет страницу
+// РЈРґР°Р»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUWatchFramePage::DelPage(int index)
 {
  if(index < NTWPageControl->PageCount && index >= 0)
@@ -108,7 +108,7 @@ void TUWatchFramePage::DelPage(int index)
 
 }
 
-// Переименовывает заголовок страницы
+// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє СЃС‚СЂР°РЅРёС†С‹
 void TUWatchFramePage::RenamePage(int index, String new_name)
 {
  if(index < NTWPageControl->PageCount && index >= 0)

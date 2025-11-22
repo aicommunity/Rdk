@@ -6,7 +6,7 @@ UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
 {
     ui->setupUi(this);
     setAccessibleName("UWatch");
-    //создаем первую вкладку
+    //СЃРѕР·РґР°РµРј РїРµСЂРІСѓСЋ РІРєР»Р°РґРєСѓ
     //createTab();
 }
 
@@ -48,12 +48,12 @@ void UWatch::on_actionCharts_option_triggered()
 
 void UWatch::createTab()
 {
-    // пока что так
+    // РїРѕРєР° С‡С‚Рѕ С‚Р°Рє
     int index = 1;
     if(!tab.empty())
         index = tab.last()->accessibleName().replace("tab_","").toInt()+1;
 
-    //создаем каждую новую вкладку с именем tab + номер
+    //СЃРѕР·РґР°РµРј РєР°Р¶РґСѓСЋ РЅРѕРІСѓСЋ РІРєР»Р°РґРєСѓ СЃ РёРјРµРЅРµРј tab + РЅРѕРјРµСЂ
     tab.push_back(new UWatchTab(this));
 
 
@@ -64,7 +64,7 @@ void UWatch::createTab()
 
 void UWatch::deleteTab(int index)
 {
-    //спрашиваем юзера точно ли он уверен в закрытие вкладки
+    //СЃРїСЂР°С€РёРІР°РµРј СЋР·РµСЂР° С‚РѕС‡РЅРѕ Р»Рё РѕРЅ СѓРІРµСЂРµРЅ РІ Р·Р°РєСЂС‹С‚РёРµ РІРєР»Р°РґРєРё
     QMessageBox messageBox;
     messageBox.setText("Are you sure you want to close the tab?");
     messageBox.setInformativeText("All data will be lost");
@@ -87,10 +87,10 @@ void UWatch::on_tabWidget_tabCloseRequested(int index)
 }
 
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void UWatch::AUpdateInterface(void){}
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void UWatch::AClearInterface(void)
 {
     int count=tab.count();
@@ -102,25 +102,25 @@ void UWatch::AClearInterface(void)
     }
 }
 
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UWatch::AAfterLoadProject(void){}
 
-// Метод, вызываемый перед закрытием проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
 void UWatch::ABeforeCloseProject(void){}
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UWatch::ABeforeReset(void){}
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UWatch::AAfterReset(void){}
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UWatch::ABeforeCalculate(void){}
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UWatch::AAfterCalculate(void){}
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.WriteInteger("TabCount", tab.count());
@@ -136,10 +136,10 @@ void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
     xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих табов
+    // РћС‡РёСЃС‚РєР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… С‚Р°Р±РѕРІ
     int tab_size = tab.size();
     for(int i=0; i < tab_size; i++)
     {

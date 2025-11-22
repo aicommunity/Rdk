@@ -19,7 +19,7 @@ See file license.txt for more information
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UController::UController(void)
  : Component(0)
@@ -34,9 +34,9 @@ UController::~UController(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Флаг разрешения обновления данных контроллера
+// Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РґР°РЅРЅС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
 bool UController::IsEnabled(void) const
 {
  return Enabled;
@@ -51,7 +51,7 @@ bool UController::IsEnabled(bool value)
  return true;
 }
 
-// Возвращает имя компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 std::string UController::GetComponentName(void) const
 {
  std::string result;
@@ -72,9 +72,9 @@ std::string UController::GetComponentName(UContainer *level) const
 // --------------------------
 
 // --------------------------
-// Методы управления интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // --------------------------
-// Связывает интерфейс с компонентом
+// РЎРІСЏР·С‹РІР°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ СЃ РєРѕРјРїРѕРЅРµРЅС‚РѕРј
 bool UController::Link(UContainer* component, bool forchilds)
 {
  if(!component)
@@ -96,7 +96,7 @@ bool UController::Link(UContainer* component, bool forchilds)
  return true;
 }
 
-// Отвязывает интерфейс от компонента
+// РћС‚РІСЏР·С‹РІР°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UController::UnLink(bool forchilds)
 {
  if(!AUnLink(forchilds))
@@ -108,7 +108,7 @@ bool UController::UnLink(bool forchilds)
  return true;
 }
 
-// Обновляет интерфейс
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 bool UController::Update(void)
 {
  if(!Enabled)
@@ -120,13 +120,13 @@ bool UController::Update(void)
  return AUpdate();
 }
 
-// Связывает интерфейс с компонентом
+// РЎРІСЏР·С‹РІР°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ СЃ РєРѕРјРїРѕРЅРµРЅС‚РѕРј
 bool UController::ALink(UContainer* component, bool forchilds)
 {
  return true;
 }
 
-// Отвязывает интерфейс от компонента
+// РћС‚РІСЏР·С‹РІР°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UController::AUnLink(bool forchilds)
 {
  return true;
@@ -138,7 +138,7 @@ UControllerData::UControllerData(void)
 {
 }
 
-/// Задает размер хранимых данных
+/// Р—Р°РґР°РµС‚ СЂР°Р·РјРµСЂ С…СЂР°РЅРёРјС‹С… РґР°РЅРЅС‹С…
 void UControllerData::SetNumPoints(int value)
 {
  if(value<0)
@@ -156,13 +156,13 @@ std::string UControllerData::GetPropertyName(void) const
 }
 
 
-/// Возвращает тип данных
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї РґР°РЅРЅС‹С…
 const type_info& UControllerData::GetDataType(void) const
 {
  if(Property)
   return Property->GetLanguageType();
 
- // TODO: Нет возвращаемого значения
+ // TODO: РќРµС‚ РІРѕР·РІСЂР°С‰Р°РµРјРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ
  throw std::runtime_error("Property is nullptr in UControllerData::GetDataType");
 }
 
@@ -173,7 +173,7 @@ UControllerDataReader::UControllerDataReader(void)
 {
 }
 
-/// Задает длину интервала в секундах
+/// Р—Р°РґР°РµС‚ РґР»РёРЅСѓ РёРЅС‚РµСЂРІР°Р»Р° РІ СЃРµРєСѓРЅРґР°С…
 void UControllerDataReader::SetTimeInterval(double value)
 {
  TimeInterval=value;
@@ -183,21 +183,21 @@ void UControllerDataReader::SetTimeInterval(double value)
   SetNumPoints(100000);
 }
 
-/// Координаты матрицы по которым берутся данные
+/// РљРѕРѕСЂРґРёРЅР°С‚С‹ РјР°С‚СЂРёС†С‹ РїРѕ РєРѕС‚РѕСЂС‹Рј Р±РµСЂСѓС‚СЃСЏ РґР°РЅРЅС‹Рµ
 void UControllerDataReader::SetMatrixCoord(int row, int col)
 {
  MRow=row;
  MCol=col;
 }
 
-// Отвязывает интерфейс от компонента
+// РћС‚РІСЏР·С‹РІР°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UControllerDataReader::AUnLink(bool forchilds)
 {
  PropertyType=0;
  return UControllerData::AUnLink(forchilds);
 }
 
-/// Обновляет хранимые данные добавляя новые
+/// РћР±РЅРѕРІР»СЏРµС‚ С…СЂР°РЅРёРјС‹Рµ РґР°РЅРЅС‹Рµ РґРѕР±Р°РІР»СЏСЏ РЅРѕРІС‹Рµ
 bool UControllerDataReader::AUpdate(void)
 {
  if(!Property)
@@ -279,14 +279,14 @@ bool UControllerDataReader::AUpdate(void)
  return true;
 }
 
-/// Удаляет все хранимые данные
+/// РЈРґР°Р»СЏРµС‚ РІСЃРµ С…СЂР°РЅРёРјС‹Рµ РґР°РЅРЅС‹Рµ
 void UControllerDataReader::Clear(void)
 {
  XData.clear();
  YData.clear();
 }
 
-/// Настраивает точку съема данных
+/// РќР°СЃС‚СЂР°РёРІР°РµС‚ С‚РѕС‡РєСѓ СЃСЉРµРјР° РґР°РЅРЅС‹С…
 bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> property)
 {
  if(Property == property && Component == container)
@@ -344,7 +344,7 @@ bool UControllerDataReader::Configure(UContainer *container, UEPtr<UIProperty> p
  return true;
 }
 
-/// Задает размер хранимых данных
+/// Р—Р°РґР°РµС‚ СЂР°Р·РјРµСЂ С…СЂР°РЅРёРјС‹С… РґР°РЅРЅС‹С…
 void UControllerDataReader::SetNumPoints(int value)
 {
  UControllerData::SetNumPoints(value);
@@ -355,13 +355,13 @@ UControllerDataReaderTimeEvents::UControllerDataReaderTimeEvents(void)
 {
 }
 
-/// Координаты матрицы по которым берутся данные
+/// РљРѕРѕСЂРґРёРЅР°С‚С‹ РјР°С‚СЂРёС†С‹ РїРѕ РєРѕС‚РѕСЂС‹Рј Р±РµСЂСѓС‚СЃСЏ РґР°РЅРЅС‹Рµ
 void UControllerDataReaderTimeEvents::SetMatrixCoord(int row, int col)
 {
  UControllerDataReader::SetMatrixCoord(row, col);
 }
 
-/// Обновляет хранимые данные добавляя новые
+/// РћР±РЅРѕРІР»СЏРµС‚ С…СЂР°РЅРёРјС‹Рµ РґР°РЅРЅС‹Рµ РґРѕР±Р°РІР»СЏСЏ РЅРѕРІС‹Рµ
 bool UControllerDataReaderTimeEvents::AUpdate(void)
 {
  if(!Property)
@@ -407,7 +407,7 @@ bool UControllerDataReaderTimeEvents::AUpdate(void)
     YData.erase(YData.begin());
   }
 
-  // Удаляем лишнее
+  // РЈРґР°Р»СЏРµРј Р»РёС€РЅРµРµ
   if(XData.size()>1)
   {
    double t1=XData.front();

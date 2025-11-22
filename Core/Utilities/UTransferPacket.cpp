@@ -10,9 +10,9 @@ namespace RDK {
 
 unsigned char UPacketPrefix[16]={0x55,0x1a,0x78,0x1b,0x76,0x44,0x11,0x28,0x2a,0x85,0xcc,0x7d,0x89,0x76,0x8f,0x15};
 
-// Методы
+// РњРµС‚РѕРґС‹
 // -------------------------
-// Конструторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // -------------------------
 UTransferPacket::UTransferPacket(void)
 {
@@ -46,9 +46,9 @@ UTransferPacket::~UTransferPacket(void)
 // -------------------------
 
 // -------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // -------------------------
-// Устанавливает номер команды
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРјРµСЂ РєРѕРјР°РЅРґС‹
 bool UTransferPacket::SetCmdId(int cmdid)
 {
  if(CmdId == cmdid)
@@ -58,7 +58,7 @@ bool UTransferPacket::SetCmdId(int cmdid)
  return true;
 }
 
-// Устанавливает число параметров команды
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‡РёСЃР»Рѕ РїР°СЂР°РјРµС‚СЂРѕРІ РєРѕРјР°РЅРґС‹
 bool UTransferPacket::SetNumParams(int numparams)
 {
  if(numparams < 0 || numparams > MAX_NUM_PARAMS)
@@ -80,7 +80,7 @@ bool UTransferPacket::SetNumParams(int numparams)
  return true;
 }
 
-// Устанавливает размер буфера параметра
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РїР°СЂР°РјРµС‚СЂР°
 bool UTransferPacket::SetParamSize(int i, int size)
 {
  if(i<0 || i>=NumParams || size < 0 || size > MAX_PARAM_SIZE)
@@ -90,8 +90,8 @@ bool UTransferPacket::SetParamSize(int i, int size)
  return true;
 }
 
-// Устанавливает значение i-го параметра
-// Меняет текущий размер буфера параметра на требуемое значение
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ i-РіРѕ РїР°СЂР°РјРµС‚СЂР°
+// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РїР°СЂР°РјРµС‚СЂР° РЅР° С‚СЂРµР±СѓРµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ
 bool UTransferPacket::SetParam(int i, const UParamT &value, int istart, int istop)
 {
  if(i<0 || i >= NumParams || istart < 0)
@@ -112,8 +112,8 @@ bool UTransferPacket::SetParam(int i, const UParamT &value, int istart, int isto
  return true;
 }
 
-// Устанавливает значение i-го параметра
-// Меняет текущий размер буфера параметра на требуемое значение
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ i-РіРѕ РїР°СЂР°РјРµС‚СЂР°
+// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РїР°СЂР°РјРµС‚СЂР° РЅР° С‚СЂРµР±СѓРµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ
 bool UTransferPacket::SetParam(int i, const std::string &value)
 {
  if(i<0 || i >= NumParams)
@@ -140,10 +140,10 @@ bool UTransferPacket::SetParam(int i, const std::vector<char> &value)
 
 
 
-// Устанавливает значение i-го параметра
-// декодируя буфер 'value' и возвращает индекс на следующий
-// за последним байтом параметра байт буфера
-// или возвращает -1 в случае ошибки
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ i-РіРѕ РїР°СЂР°РјРµС‚СЂР°
+// РґРµРєРѕРґРёСЂСѓСЏ Р±СѓС„РµСЂ 'value' Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ РЅР° СЃР»РµРґСѓСЋС‰РёР№
+// Р·Р° РїРѕСЃР»РµРґРЅРёРј Р±Р°Р№С‚РѕРј РїР°СЂР°РјРµС‚СЂР° Р±Р°Р№С‚ Р±СѓС„РµСЂР°
+// РёР»Рё РІРѕР·РІСЂР°С‰Р°РµС‚ -1 РІ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё
 int UTransferPacket::DecodeParam(int i, const UParamT &value, int istart)
 {
  int size;
@@ -165,7 +165,7 @@ int UTransferPacket::DecodeParam(int i, const UParamT &value, int istart)
  return istart+size+sizeof(int);
 }
 
-// Пересчитывает контрольную сумму и возвращает ее
+// РџРµСЂРµСЃС‡РёС‚С‹РІР°РµС‚ РєРѕРЅС‚СЂРѕР»СЊРЅСѓСЋ СЃСѓРјРјСѓ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРµ
 unsigned int UTransferPacket::CalcChecksum(void)
 {
  Checksum=CmdId;
@@ -176,7 +176,7 @@ unsigned int UTransferPacket::CalcChecksum(void)
  return Checksum;
 }
 
-// Вычисляет значение int по участку вектора
+// Р’С‹С‡РёСЃР»СЏРµС‚ Р·РЅР°С‡РµРЅРёРµ int РїРѕ СѓС‡Р°СЃС‚РєСѓ РІРµРєС‚РѕСЂР°
 unsigned int UTransferPacket::IntCompose(const UParamT &value, int istart)
 { 
  memcpy((void*)&Temp,&(value[istart]),sizeof(int));
@@ -194,12 +194,12 @@ const UParamT& UTransferPacket::IntDivide(unsigned int value, UParamT &buffer, i
 // -------------------------
 
 // -------------------------
-// Методы загрузки пакета
+// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё РїР°РєРµС‚Р°
 // -------------------------
-// Анализирует полученный буфер и возвращает
-// + число байт недоcтающих для декодирования пакета
-// - число байт лишних в буфере
-// 0 - если декодирование возможно
+// РђРЅР°Р»РёР·РёСЂСѓРµС‚ РїРѕР»СѓС‡РµРЅРЅС‹Р№ Р±СѓС„РµСЂ Рё РІРѕР·РІСЂР°С‰Р°РµС‚
+// + С‡РёСЃР»Рѕ Р±Р°Р№С‚ РЅРµРґРѕcС‚Р°СЋС‰РёС… РґР»СЏ РґРµРєРѕРґРёСЂРѕРІР°РЅРёСЏ РїР°РєРµС‚Р°
+// - С‡РёСЃР»Рѕ Р±Р°Р№С‚ Р»РёС€РЅРёС… РІ Р±СѓС„РµСЂРµ
+// 0 - РµСЃР»Рё РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ РІРѕР·РјРѕР¶РЅРѕ
 int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize)
 {
  if(buffersize < int(sizeof(UPacketPrefix)+sizeof(int)*2))
@@ -228,8 +228,8 @@ int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize, int star
  return IntCompose(buffer,start_index+20)-buffersize;
 }
 
-// Ищет в буфере начало пакета и возвращает индекс начала
-// или -1 если пакет не найден
+// РС‰РµС‚ РІ Р±СѓС„РµСЂРµ РЅР°С‡Р°Р»Рѕ РїР°РєРµС‚Р° Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ РЅР°С‡Р°Р»Р°
+// РёР»Рё -1 РµСЃР»Рё РїР°РєРµС‚ РЅРµ РЅР°Р№РґРµРЅ
 int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
 {
  if(start_index<0 || start_index>=int(buffer.size()))
@@ -245,7 +245,7 @@ int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
  return -1;
 }
 
-// Загружает все данные пакета из массива 'buffer'
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РґР°РЅРЅС‹Рµ РїР°РєРµС‚Р° РёР· РјР°СЃСЃРёРІР° 'buffer'
 bool UTransferPacket::Load(const UParamT &buffer, int start_index)
 {
  int pbuf=sizeof(UPacketPrefix)+sizeof(int)*3;
@@ -295,8 +295,8 @@ bool UTransferPacket::Load(const UParamT &buffer, int start_index)
  return true;
 }
 
-// Сохраняет все данные пакета в массив 'buffer'
-// Память должна быть выделена
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ РґР°РЅРЅС‹Рµ РїР°РєРµС‚Р° РІ РјР°СЃСЃРёРІ 'buffer'
+// РџР°РјСЏС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°
 bool UTransferPacket::Save(UParamT &buffer)
 {
  int pbuf=0;
@@ -325,7 +325,7 @@ bool UTransferPacket::Save(UParamT &buffer)
  return true;
 }
 
-// Возвращает длину пакета в байтах
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅСѓ РїР°РєРµС‚Р° РІ Р±Р°Р№С‚Р°С…
 int UTransferPacket::GetPacketSize(void) const
 {
  int size=0;
@@ -338,9 +338,9 @@ int UTransferPacket::GetPacketSize(void) const
 // -------------------------
 
 // -------------------------
-// Перегруженные операторы
+// РџРµСЂРµРіСЂСѓР¶РµРЅРЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
 // -------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UTransferPacket& UTransferPacket::operator = (const UTransferPacket &packet)
 {
  CmdId=packet.CmdId;
@@ -353,7 +353,7 @@ UTransferPacket& UTransferPacket::operator = (const UTransferPacket &packet)
  return *this;
 }
 
-// Возвращает данные i-го параметра в виде массива 
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ i-РіРѕ РїР°СЂР°РјРµС‚СЂР° РІ РІРёРґРµ РјР°СЃСЃРёРІР° 
 UParamT& UTransferPacket::operator () (int i, UParamT &buffer, int istart)
 {
  if(i<0 || i>= NumParams || istart < 0)
@@ -370,10 +370,10 @@ UParamT& UTransferPacket::operator () (int i, UParamT &buffer, int istart)
 // -------------------------
 
 
-// Класс, обеспечивающий считывание последовательности пакетов из потока
+// РљР»Р°СЃСЃ, РѕР±РµСЃРїРµС‡РёРІР°СЋС‰РёР№ СЃС‡РёС‚С‹РІР°РЅРёРµ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё РїР°РєРµС‚РѕРІ РёР· РїРѕС‚РѕРєР°
 // class UTransferReader
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UTransferReader::UTransferReader(void)
 {
@@ -389,34 +389,34 @@ UTransferReader::~UTransferReader(void)
 // --------------------------
 
 // --------------------------
-// Методы управления списком команд
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРїРёСЃРєРѕРј РєРѕРјР°РЅРґ
 // --------------------------
-/// Очищает список
+/// РћС‡РёС‰Р°РµС‚ СЃРїРёСЃРѕРє
 void UTransferReader::ClearPacketList(void)
 {
  PacketList.clear();
 }
 
-/// Возвращает самый старый пакет и удаляет его из списка
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃР°РјС‹Р№ СЃС‚Р°СЂС‹Р№ РїР°РєРµС‚ Рё СѓРґР°Р»СЏРµС‚ РµРіРѕ РёР· СЃРїРёСЃРєР°
 const UTransferPacket& UTransferReader::GetFirstPacket(void) const
 {
  if(PacketList.empty())
-  throw 1; // Заглушка
+  throw 1; // Р—Р°РіР»СѓС€РєР°
 
  return *PacketList.begin();
 }
 
-/// Удаляет самый старый пакет
+/// РЈРґР°Р»СЏРµС‚ СЃР°РјС‹Р№ СЃС‚Р°СЂС‹Р№ РїР°РєРµС‚
 void UTransferReader::DelFirstPacket(void)
 {
  PacketList.erase(PacketList.begin());
 }
 
-/// Возвращает самый новый пакет и удаляет его из списка
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃР°РјС‹Р№ РЅРѕРІС‹Р№ РїР°РєРµС‚ Рё СѓРґР°Р»СЏРµС‚ РµРіРѕ РёР· СЃРїРёСЃРєР°
 const UTransferPacket& UTransferReader::GetLastPacket(void) const
 {
  if(PacketList.empty())
-  throw 1; // Заглушка
+  throw 1; // Р—Р°РіР»СѓС€РєР°
 
  std::list<UTransferPacket>::const_iterator I=PacketList.end();
  --I;
@@ -424,7 +424,7 @@ const UTransferPacket& UTransferReader::GetLastPacket(void) const
  return *I;
 }
 
-/// Удаляет самый новый пакет
+/// РЈРґР°Р»СЏРµС‚ СЃР°РјС‹Р№ РЅРѕРІС‹Р№ РїР°РєРµС‚
 void UTransferReader::DelLastPacket(void)
 {
  std::list<UTransferPacket>::iterator I=PacketList.end();
@@ -433,13 +433,13 @@ void UTransferReader::DelLastPacket(void)
  PacketList.erase(I);
 }
 
-/// Возвращает ссылку на список пакетов
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СЃРїРёСЃРѕРє РїР°РєРµС‚РѕРІ
 std::list<UTransferPacket>& UTransferReader::GetPacketList(void)
 {
  return PacketList;
 }
 
-/// Возвращает число пакетов в очереди
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РїР°РєРµС‚РѕРІ РІ РѕС‡РµСЂРµРґРё
 int UTransferReader::GetNumPackets(void) const
 {
  return int(PacketList.size());
@@ -447,9 +447,9 @@ int UTransferReader::GetNumPackets(void) const
 // --------------------------
 
 // --------------------------
-// Методы обработки потока
+// РњРµС‚РѕРґС‹ РѕР±СЂР°Р±РѕС‚РєРё РїРѕС‚РѕРєР°
 // --------------------------
-// Обрабатывает очередную порцию данных
+// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РѕС‡РµСЂРµРґРЅСѓСЋ РїРѕСЂС†РёСЋ РґР°РЅРЅС‹С…
 int UTransferReader::ProcessDataPart(const UParamT &buffer)
 {
  ClientBuffer.insert(ClientBuffer.end(),buffer.begin(), buffer.end());
@@ -633,7 +633,7 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
 }
 
 
-/// Прерывает текущю обработку если она была
+/// РџСЂРµСЂС‹РІР°РµС‚ С‚РµРєСѓС‰СЋ РѕР±СЂР°Р±РѕС‚РєСѓ РµСЃР»Рё РѕРЅР° Р±С‹Р»Р°
 void UTransferReader::ResetProcessing(void)
 {
  LastSize=0;

@@ -48,34 +48,34 @@ TUGEngineControlForm *UGEngineControlForm;
 
 using namespace RDK;
 
-/// Экзепляр прототипа декодера команд
+/// Р­РєР·РµРїР»СЏСЂ РїСЂРѕС‚РѕС‚РёРїР° РґРµРєРѕРґРµСЂР° РєРѕРјР°РЅРґ
 RDK::URpcDecoderInternal RdkRpcDecoder;
 
-/// Экзепляр класса диспетчера команд
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РґРёСЃРїРµС‚С‡РµСЂР° РєРѕРјР°РЅРґ
 RDK::URpcDispatcher RdkRpcDispatcher;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 RDK::UApplication RdkApplication;
 
-/// Экземпляр класса контроллера сервера
+/// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЃРµСЂРІРµСЂР°
 UServerControlVcl RdkServerControl;
 URpcDecoderCommonVcl RdkRpcDecoderCommon;
 
 UServerTransportTcpVcl RdkServerTransport;
 
-/// Экземпляр класса контроллера расчета
+/// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЂР°СЃС‡РµС‚Р°
 UEngineControlVcl RdkEngineControl;
 
-/// Экзепляр класса проекта
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРѕРµРєС‚Р°
 RDK::UProject RdkProject;
 
-/// Экземпляр класса менеджера тестов
+/// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РјРµРЅРµРґР¶РµСЂР° С‚РµСЃС‚РѕРІ
 RDK::UTestManager RdkTestManager;
 
-/// Глобальная переменная сигнализирующая о завершении инициализации приложения
+/// Р“Р»РѕР±Р°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ СЃРёРіРЅР°Р»РёР·РёСЂСѓСЋС‰Р°СЏ Рѕ Р·Р°РІРµСЂС€РµРЅРёРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїСЂРёР»РѕР¶РµРЅРёСЏ
 bool ApplicationInitialized=false;
 
-/// Режим работы визарда нового проекта
+/// Р РµР¶РёРј СЂР°Р±РѕС‚С‹ РІРёР·Р°СЂРґР° РЅРѕРІРѕРіРѕ РїСЂРѕРµРєС‚Р°
 int CreateWizardMode=0;
 
 
@@ -114,7 +114,7 @@ bool RdkIsApplicationRunning(void)
  return false;
 }
 
-/// Получение версии приложения
+/// РџРѕР»СѓС‡РµРЅРёРµ РІРµСЂСЃРёРё РїСЂРёР»РѕР¶РµРЅРёСЏ
 bool GetBuildInfo(WORD &v1, WORD &v2, WORD &v3, WORD &v4)
 {
  DWORD VerInfoSize, Dummy;
@@ -247,7 +247,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 {
 // ProjectAutoSaveFlag=true;
 //
-// // Признак наличия открытого проекта
+// // РџСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РѕС‚РєСЂС‹С‚РѕРіРѕ РїСЂРѕРµРєС‚Р°
 // ProjectOpenFlag=false;
 //
  AppWinState=true;
@@ -334,7 +334,7 @@ void __fastcall TUGEngineControlForm::WMServerPing(TMessage &Msg)
 }
 
 
-// Загружает данные положения формы из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ РїРѕР»РѕР¶РµРЅРёСЏ С„РѕСЂРјС‹ РёР· xml
 void TUGEngineControlForm::LoadFormPosition(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeForce("FormPosition");
@@ -358,7 +358,7 @@ void TUGEngineControlForm::LoadFormPosition(RDK::USerStorageXML &xml)
 }
 
 //---------------------------------------------------------------------------
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TUGEngineControlForm::ABeforeCalculate(void)
 {
 /*
@@ -377,23 +377,23 @@ void TUGEngineControlForm::ABeforeCalculate(void)
 */
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TUGEngineControlForm::AAfterCalculate(void)
 {
 }
 
-//метод, вызывающий форму отображения нескольких видео
+//РјРµС‚РѕРґ, РІС‹Р·С‹РІР°СЋС‰РёР№ С„РѕСЂРјСѓ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅРµСЃРєРѕР»СЊРєРёС… РІРёРґРµРѕ
 void  TUGEngineControlForm::RegisterVideoCaptureControlForm(TForm *form)
 {
  CaptureControlForm=form;
 }
 
-//метод, вызывающий разрушение формы отображения нескольких видео
+//РјРµС‚РѕРґ, РІС‹Р·С‹РІР°СЋС‰РёР№ СЂР°Р·СЂСѓС€РµРЅРёРµ С„РѕСЂРјС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅРµСЃРєРѕР»СЊРєРёС… РІРёРґРµРѕ
 void  TUGEngineControlForm::UnRegisterVideoCaptureControlForm(TForm *form)
 {
  if(CaptureControlForm != form)
  {
-  // написать в лог о том, что разрегистрироваться не удалось
+  // РЅР°РїРёСЃР°С‚СЊ РІ Р»РѕРі Рѕ С‚РѕРј, С‡С‚Рѕ СЂР°Р·СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊСЃСЏ РЅРµ СѓРґР°Р»РѕСЃСЊ
 
  }
  CaptureControlForm=0;
@@ -534,7 +534,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
 }
 
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUGEngineControlForm::AClearInterface(void)
 {
 
@@ -545,7 +545,7 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  UDrawEngineFrame1->UClassesListFrame->UpdateInterface(true);
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
@@ -594,7 +594,7 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	}
    }
   }
-  if(!is_saved) // Делаем попытку сохранить данные как данные формы
+  if(!is_saved) // Р”РµР»Р°РµРј РїРѕРїС‹С‚РєСѓ СЃРѕС…СЂР°РЅРёС‚СЊ РґР°РЅРЅС‹Рµ РєР°Рє РґР°РЅРЅС‹Рµ С„РѕСЂРјС‹
   {
    std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
    for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
@@ -612,7 +612,7 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	}
    }
   }
-  if(!is_saved) // Делаем попытку сохранить данные как данные специальной формы
+  if(!is_saved) // Р”РµР»Р°РµРј РїРѕРїС‹С‚РєСѓ СЃРѕС…СЂР°РЅРёС‚СЊ РґР°РЅРЅС‹Рµ РєР°Рє РґР°РЅРЅС‹Рµ СЃРїРµС†РёР°Р»СЊРЅРѕР№ С„РѕСЂРјС‹
   {
    std::map<std::string, TUVisualControllerForm*>::iterator I=SpecialForms.begin();
    for(;I != SpecialForms.end();++I)
@@ -634,7 +634,7 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("PageCount",count);
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int count=xml.ReadInteger("PageCount",0);
@@ -671,7 +671,7 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Создает новый проект
+// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ РїСЂРѕРµРєС‚
 void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
  RdkApplication.CreateProject(file_name, project_config);
@@ -701,10 +701,10 @@ void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TPro
 
 
  ProjectXml.SelectNodeRoot("Project/General");
- // Число входов среды
+ // Р§РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
  ProjectXml.WriteInteger("NumEnvInputs",1);
 
- // Число выходов среды
+ // Р§РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
  ProjectXml.WriteInteger("NumEnvOutputs",1);
 
  ProjectXml.WriteInteger("InputEnvImageWidth",640);
@@ -748,10 +748,10 @@ void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TPro
 
   ProjectXml.WriteInteger(std::string("PredefinedStructure")+suffix,channel.PredefinedStructure);
 
-  // Шаг счета по умолчанию
+  // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
   ProjectXml.WriteInteger(std::string("DefaultTimeStep")+suffix,channel.DefaultTimeStep);
 
-  // Глобальный шаг счета модели
+  // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
   ProjectXml.WriteInteger(std::string("GlobalTimeStep")+suffix,channel.GlobalTimeStep);
 
   ProjectXml.WriteInteger(std::string("CalculationMode")+suffix,channel.CalculationMode);
@@ -818,7 +818,7 @@ void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TPro
  */
 }
 
-// Закрывает существущий проект
+// Р—Р°РєСЂС‹РІР°РµС‚ СЃСѓС‰РµСЃС‚РІСѓС‰РёР№ РїСЂРѕРµРєС‚
 void TUGEngineControlForm::CloseProject(void)
 {
  if(UServerControlForm)
@@ -859,7 +859,7 @@ void TUGEngineControlForm::CloseProject(void)
 */
 }
 
-// Открывает проект
+// РћС‚РєСЂС‹РІР°РµС‚ РїСЂРѕРµРєС‚
 void TUGEngineControlForm::OpenProject(const String &FileName)
 {
  try
@@ -923,10 +923,10 @@ try{
 
  ProjectName=ProjectXml.ReadString("ProjectName","NoName").c_str();
 
- // Число входов среды
+ // Р§РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
  NumEnvInputs=ProjectXml.ReadInteger("NumEnvInputs",1);
 
- // Число выходов среды
+ // Р§РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
  NumEnvOutputs=ProjectXml.ReadInteger("NumEnvOutputs",1);
 
  InputEnvImageWidth=ProjectXml.ReadInteger("InputEnvImageWidth",360);
@@ -945,13 +945,13 @@ try{
   PredefinedStructure[i]=ProjectXml.ReadInteger(std::string("PredefinedStructure_")+RDK::sntoa(i),0);
  }
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  ProjectAutoSaveFlag=ProjectXml.ReadInteger("ProjectAutoSaveFlag",1);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  ProjectAutoSaveStateFlag=ProjectXml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
- // Шаг счета по умолчанию
+ // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  DefaultTimeStep.resize(Core_GetNumChannels());
  DefaultTimeStep[0]=ProjectXml.ReadInteger("DefaultTimeStep",30);
  for(int i=1;i<Core_GetNumChannels();i++)
@@ -959,7 +959,7 @@ try{
   DefaultTimeStep[i]=ProjectXml.ReadInteger(std::string("DefaultTimeStep_")+RDK::sntoa(i),30);
  }
 
- // Глобальный шаг счета модели
+ // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
  GlobalTimeStep.resize(Core_GetNumChannels());
  GlobalTimeStep[0]=ProjectXml.ReadInteger("GlobalTimeStep",30);
  for(int i=1;i<Core_GetNumChannels();i++)
@@ -1047,7 +1047,7 @@ try{
   else
    Env_SetPredefinedStructure(PredefinedStructure[i]);
 
-  // Загрузка описаний классов
+  // Р—Р°РіСЂСѓР·РєР° РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
   UComponentsControlForm->ComponentsControlFrame->LoadCommonClassesDescriptionFromFile("CommonClassesDescription.xml");
   UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
 //  MStorage_LoadCommonClassesDescription(i,"CommonClassesDescription.xml");
@@ -1187,7 +1187,7 @@ catch(...)
 }
 
 
-// Загружает проект с индексом source_id, в движок с индексом cloned_id
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїСЂРѕРµРєС‚ СЃ РёРЅРґРµРєСЃРѕРј source_id, РІ РґРІРёР¶РѕРє СЃ РёРЅРґРµРєСЃРѕРј cloned_id
 void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 {
  if(cloned_id>=Core_GetNumChannels())
@@ -1207,11 +1207,11 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
  PredefinedStructure.resize(Core_GetNumChannels());
  PredefinedStructure[cloned_id]=PredefinedStructure[source_id];
 
- // Шаг счета по умолчанию
+ // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  DefaultTimeStep.resize(Core_GetNumChannels());
  DefaultTimeStep[cloned_id]=DefaultTimeStep[source_id];
 
- // Глобальный шаг счета модели
+ // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
  GlobalTimeStep.resize(Core_GetNumChannels());
  GlobalTimeStep[cloned_id]=GlobalTimeStep[source_id];
 
@@ -1237,7 +1237,7 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 
 
  ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
  int selected_engine=GetSelectedEngineIndex();
@@ -1330,7 +1330,7 @@ catch(...)
 }
 
 
-// Сохраняет проект
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїСЂРѕРµРєС‚
 void TUGEngineControlForm::SaveProject(void)
 {
  UShowProgressBarForm->SetWinTitle(Lang_SaveProjectTitle);
@@ -1419,7 +1419,7 @@ try{
  }
 
  ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
  UShowProgressBarForm->IncBarStatus(2);
@@ -1517,10 +1517,10 @@ try{
   if(i == 0)
   {
    ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure[0]);
-   // Шаг счета по умолчанию
+   // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
    ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep[0]);
 
-   // Глобальный шаг счета модели
+   // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
    ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep[0]);
 
    ProjectXml.WriteInteger("CalculationMode",CalculationMode[0]);
@@ -1533,10 +1533,10 @@ try{
   {
    std::string suffix=RDK::sntoa(i);
    ProjectXml.WriteInteger(std::string("PredefinedStructure_")+suffix,PredefinedStructure[i]);
-   // Шаг счета по умолчанию
+   // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
    ProjectXml.WriteInteger(std::string("DefaultTimeStep_")+suffix,DefaultTimeStep[i]);
 
-   // Глобальный шаг счета модели
+   // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
    ProjectXml.WriteInteger(std::string("GlobalTimeStep_")+suffix,GlobalTimeStep[i]);
 
    ProjectXml.WriteInteger(std::string("CalculationMode_")+suffix,CalculationMode[i]);
@@ -1556,13 +1556,13 @@ try{
 
  ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
- // Число входов среды
+ // Р§РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
  ProjectXml.WriteInteger("NumEnvInputs",NumEnvInputs);
 
- // Число выходов среды
+ // Р§РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
  ProjectXml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
 
  ProjectXml.WriteInteger("ProjectMode",ProjectMode);
@@ -1611,7 +1611,7 @@ catch(...)
 }
 
 
-// Добавляет заданный фрейм типа TUImagesFrame, TUWatchFrame и т.п. на заданную вкладку
+// Р”РѕР±Р°РІР»СЏРµС‚ Р·Р°РґР°РЅРЅС‹Р№ С„СЂРµР№Рј С‚РёРїР° TUImagesFrame, TUWatchFrame Рё С‚.Рї. РЅР° Р·Р°РґР°РЅРЅСѓСЋ РІРєР»Р°РґРєСѓ
 bool TUGEngineControlForm::AddSpecialFrameToPage(TUVisualControllerFrame *frame, TTabSheet* tab, const String &caption)
 {
  if(!frame|| !tab)
@@ -1642,7 +1642,7 @@ bool TUGEngineControlForm::AddSpecialFrameToPage(TUVisualControllerFrame *frame,
  return true;
 }
 
-// Добавляет заданную форму на заданную вкладку
+// Р”РѕР±Р°РІР»СЏРµС‚ Р·Р°РґР°РЅРЅСѓСЋ С„РѕСЂРјСѓ РЅР° Р·Р°РґР°РЅРЅСѓСЋ РІРєР»Р°РґРєСѓ
 bool TUGEngineControlForm::AddSpecialFormToPage(TUVisualControllerForm *form, TTabSheet* tab, const String &caption)
 {
  if(!form|| !tab)
@@ -1662,7 +1662,7 @@ bool TUGEngineControlForm::AddSpecialFormToPage(TUVisualControllerForm *form, TT
  return true;
 }
 
-// Добавляет страницу
+// Р”РѕР±Р°РІР»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 TTabSheet* TUGEngineControlForm::AddSpecialFramePage(const String &type, const String &caption)
 {
  TTabSheet* tab=new TTabSheet(PageControl1);
@@ -1690,7 +1690,7 @@ TTabSheet* TUGEngineControlForm::AddSpecialFramePage(const String &type, const S
  return tab;
 }
 
-// Создает новую вкладку с заданным именем для специальных форм
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ РІРєР»Р°РґРєСѓ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј РґР»СЏ СЃРїРµС†РёР°Р»СЊРЅС‹С… С„РѕСЂРј
 TTabSheet* TUGEngineControlForm::AddSpecialFormPage(const String &type)
 {
  TTabSheet* tab=0;
@@ -1714,7 +1714,7 @@ TTabSheet* TUGEngineControlForm::AddSpecialFormPage(const String &type)
  return tab;
 }
 
-// Ищет вкладку с заданным именем для заданной специальной форме
+// РС‰РµС‚ РІРєР»Р°РґРєСѓ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј РґР»СЏ Р·Р°РґР°РЅРЅРѕР№ СЃРїРµС†РёР°Р»СЊРЅРѕР№ С„РѕСЂРјРµ
 TTabSheet* TUGEngineControlForm::FindSpecialFormPage(const String &type, TUVisualControllerForm* &form)
 {
  TTabSheet* tab=0;
@@ -1745,8 +1745,8 @@ TTabSheet* TUGEngineControlForm::FindSpecialFormPage(const String &type, TUVisua
 }
 
 
-// Создает новую вкладку с заданным именем для формы управления компонентом
-// Если этим копонентом уже управляют, то возвращает указатель на такую вкладку
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ РІРєР»Р°РґРєСѓ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј РґР»СЏ С„РѕСЂРјС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚РѕРј
+// Р•СЃР»Рё СЌС‚РёРј РєРѕРїРѕРЅРµРЅС‚РѕРј СѓР¶Рµ СѓРїСЂР°РІР»СЏСЋС‚, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚Р°РєСѓСЋ РІРєР»Р°РґРєСѓ
 TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &component_name)
 {
  int control_index=FindComponentControlPage(component_name);
@@ -1788,7 +1788,7 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
 }
 
 
-/// Ищет и возвращает указатель на форму или фрейм, соответствующий вкладке с заданным индексом
+/// РС‰РµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„РѕСЂРјСѓ РёР»Рё С„СЂРµР№Рј, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ РІРєР»Р°РґРєРµ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 void TUGEngineControlForm::FindVisualController(int index, TUVisualControllerFrame* &frame, TUVisualControllerForm* &form)
 {
  frame=0;
@@ -1852,7 +1852,7 @@ void TUGEngineControlForm::FindVisualController(int index, TUVisualControllerFra
 
 
 
-// Удаляет страницу
+// РЈРґР°Р»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUGEngineControlForm::DelPage(int index)
 {
  if(index < PageControl1->PageCount && index >= 1)
@@ -1891,22 +1891,22 @@ void TUGEngineControlForm::DelPage(int index)
 
 }
 
-// Переименовывает заголовок страницы
+// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє СЃС‚СЂР°РЅРёС†С‹
 void TUGEngineControlForm::RenamePage(int index, String new_name)
 {
  if(index < PageControl1->PageCount && index >= 1)
   PageControl1->Pages[index]->Caption=new_name;
 }
 
-// Удаляет все лишние вкладки (оставляет 2 начальные)
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ Р»РёС€РЅРёРµ РІРєР»Р°РґРєРё (РѕСЃС‚Р°РІР»СЏРµС‚ 2 РЅР°С‡Р°Р»СЊРЅС‹Рµ)
 void TUGEngineControlForm::ClearPages(void)
 {
  while(PageControl1->PageCount > 1)
   DelPage(PageControl1->PageCount-1);
 }
 
-// Ищет, существует ли уже вкладка, управляющая компонентом с заданным именем
-// Возвращает индекс вкладки или -1, если вкладка не найдена
+// РС‰РµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СѓР¶Рµ РІРєР»Р°РґРєР°, СѓРїСЂР°РІР»СЏСЋС‰Р°СЏ РєРѕРјРїРѕРЅРµРЅС‚РѕРј СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ РІРєР»Р°РґРєРё РёР»Рё -1, РµСЃР»Рё РІРєР»Р°РґРєР° РЅРµ РЅР°Р№РґРµРЅР°
 int TUGEngineControlForm::FindComponentControlPage(const std::string &component_long_name)
 {
  for(int i=1;i<PageControl1->PageCount;i++)
@@ -1934,22 +1934,22 @@ int TUGEngineControlForm::FindComponentControlPage(const std::string &component_
 }
 
 
-/// Добавляет новый пункт в подменю сетевого вещания событиями
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РїСѓРЅРєС‚ РІ РїРѕРґРјРµРЅСЋ СЃРµС‚РµРІРѕРіРѕ РІРµС‰Р°РЅРёСЏ СЃРѕР±С‹С‚РёСЏРјРё
 void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
 {
  owner->Items->Remove(item);
  Broadcasters1->Add(item);
 }
 
-/// Добавляет новый (глобальный) пункт в меню Window после пункта с именем after
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ (РіР»РѕР±Р°Р»СЊРЅС‹Р№) РїСѓРЅРєС‚ РІ РјРµРЅСЋ Window РїРѕСЃР»Рµ РїСѓРЅРєС‚Р° СЃ РёРјРµРЅРµРј after
 void TUGEngineControlForm::AddGlobalWindowMenu(TMenuItem *item, TMenu *owner)
 {
  owner->Items->Remove(item);
  Window1->Insert(10, item);
 }
 
-/// Запуск отдельного канала
-/// если channel_index == -1 то запускает все каналы
+/// Р—Р°РїСѓСЃРє РѕС‚РґРµР»СЊРЅРѕРіРѕ РєР°РЅР°Р»Р°
+/// РµСЃР»Рё channel_index == -1 С‚Рѕ Р·Р°РїСѓСЃРєР°РµС‚ РІСЃРµ РєР°РЅР°Р»С‹
 void TUGEngineControlForm::StartChannel(int channel_index)
 {
  if(!RdkApplication.GetProjectOpenFlag())
@@ -1973,8 +1973,8 @@ void TUGEngineControlForm::StartChannel(int channel_index)
 // UShowProgressBarForm->Hide();
 }
 
-/// Останов отдельного канала
-/// если channel_index == -1 то останавливает все каналы
+/// РћСЃС‚Р°РЅРѕРІ РѕС‚РґРµР»СЊРЅРѕРіРѕ РєР°РЅР°Р»Р°
+/// РµСЃР»Рё channel_index == -1 С‚Рѕ РѕСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЃРµ РєР°РЅР°Р»С‹
 void TUGEngineControlForm::PauseChannel(int channel_index)
 {
  if(!RdkApplication.GetProjectOpenFlag())
@@ -1998,8 +1998,8 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
 // UShowProgressBarForm->Hide();
 }
 
-/// Сброс отдельного канала
-/// если channel_index == -1 то сбрасывает все каналы
+/// РЎР±СЂРѕСЃ РѕС‚РґРµР»СЊРЅРѕРіРѕ РєР°РЅР°Р»Р°
+/// РµСЃР»Рё channel_index == -1 С‚Рѕ СЃР±СЂР°СЃС‹РІР°РµС‚ РІСЃРµ РєР°РЅР°Р»С‹
 void TUGEngineControlForm::ResetChannel(int channel_index)
 {
  if(!RdkApplication.GetProjectOpenFlag())
@@ -2014,16 +2014,16 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 }
 
 /// --------------------------
-/// Методы управления каналами
+/// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєР°РЅР°Р»Р°РјРё
 /// --------------------------
-/// Возвращает число каналов
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РєР°РЅР°Р»РѕРІ
 int TUGEngineControlForm::GetNumChannels(void) const
 {
  return Core_GetNumChannels();
 }
 
-/// Устанавливает число каналов
-/// также выставляет число источников видео
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‡РёСЃР»Рѕ РєР°РЅР°Р»РѕРІ
+/// С‚Р°РєР¶Рµ РІС‹СЃС‚Р°РІР»СЏРµС‚ С‡РёСЃР»Рѕ РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 int TUGEngineControlForm::SetNumChannels(int value)
 {
  Pause1Click(this);
@@ -2034,8 +2034,8 @@ int TUGEngineControlForm::SetNumChannels(int value)
 }
 
 
-/// Добавляет канал в позицию index
-/// Если позиция не существует, то добавляет в конец
+/// Р”РѕР±Р°РІР»СЏРµС‚ РєР°РЅР°Р» РІ РїРѕР·РёС†РёСЋ index
+/// Р•СЃР»Рё РїРѕР·РёС†РёСЏ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, С‚Рѕ РґРѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС†
 int TUGEngineControlForm::AddChannel(int index)
 {
  Pause1Click(this);
@@ -2044,7 +2044,7 @@ int TUGEngineControlForm::AddChannel(int index)
  return 0;
 }
 
-/// Удаляет канал из позиции index
+/// РЈРґР°Р»СЏРµС‚ РєР°РЅР°Р» РёР· РїРѕР·РёС†РёРё index
 int TUGEngineControlForm::DelChannel(int index)
 {
  Pause1Click(this);
@@ -2053,7 +2053,7 @@ int TUGEngineControlForm::DelChannel(int index)
  return 0;
 }
 
-/// ФОрмирование строки с отладочной информацией об объеме используемой памяти
+/// Р¤РћСЂРјРёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕРєРё СЃ РѕС‚Р»Р°РґРѕС‡РЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРµР№ РѕР± РѕР±СЉРµРјРµ РёСЃРїРѕР»СЊР·СѓРµРјРѕР№ РїР°РјСЏС‚Рё
 String TUGEngineControlForm::DebugGenerateMemoryUsageString(void)
 {
  void* AAddressOfLargest(0);
@@ -2397,17 +2397,17 @@ void __fastcall TUGEngineControlForm::AppMinimize(TObject *Sender)
 
  if(MinimizeToTray)
  {
-  //Убираем с панели задач
+  //РЈР±РёСЂР°РµРј СЃ РїР°РЅРµР»Рё Р·Р°РґР°С‡
   TrayIcon->Visible=true;
-  ShowWindow(RdkMainForm->Handle,SW_HIDE);  // Скрываем программу
-  ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
+  ShowWindow(RdkMainForm->Handle,SW_HIDE);  // РЎРєСЂС‹РІР°РµРј РїСЂРѕРіСЂР°РјРјСѓ
+  ShowWindow(Application->Handle,SW_HIDE);  // РЎРєСЂС‹РІР°РµРј РєРЅРѕРїРєСѓ СЃ TaskBar'Р°
   SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
   SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
  }
  else
  {
   RdkMainForm->WindowState=wsMinimized;
-//  ShowWindow(RdkMainForm->Handle,SW_HIDE);  // Скрываем программу
+//  ShowWindow(RdkMainForm->Handle,SW_HIDE);  // РЎРєСЂС‹РІР°РµРј РїСЂРѕРіСЂР°РјРјСѓ
  }
  AppWinState=false;
 }
@@ -2433,11 +2433,11 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Icon->Assign(Application->Icon);
 
- //Исправляем проблему с тем, что путь указан как n:\p\...\р\р\р\..\..\..\р\р\e.exe
+ //РСЃРїСЂР°РІР»СЏРµРј РїСЂРѕР±Р»РµРјСѓ СЃ С‚РµРј, С‡С‚Рѕ РїСѓС‚СЊ СѓРєР°Р·Р°РЅ РєР°Рє n:\p\...\СЂ\СЂ\СЂ\..\..\..\СЂ\СЂ\e.exe
  String ExeName = ExpandFileName(Application->ExeName);
 
  RdkApplication.SetApplicationFileName(AnsiString(ExeName).c_str());
- // Грузим настройки приложения
+ // Р“СЂСѓР·РёРј РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёР»РѕР¶РµРЅРёСЏ
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
  opt_name=opt_name.SubString(0,opt_name.Length()-4);
@@ -2476,7 +2476,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Hint=ProgramName;
 
- //TODO: Разобраться с порядком вызовов
+ //TODO: Р Р°Р·РѕР±СЂР°С‚СЊСЃСЏ СЃ РїРѕСЂСЏРґРєРѕРј РІС‹Р·РѕРІРѕРІ
  RdkRpcDispatcher.SetApplication(&RdkApplication);
  RdkRpcDecoder.SetDispatcher(&RdkRpcDispatcher);
  RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
@@ -2484,7 +2484,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkRpcDecoderCommon.SetDispatcher(&RdkRpcDispatcher);
  RdkServerControl.SetApplication(&RdkApplication);
  RdkServerControl.SetRpcDispatcher(&RdkRpcDispatcher);
- //02.04.2020 - надеюсь, так правильно прописать нужный транспорт
+ //02.04.2020 - РЅР°РґРµСЋСЃСЊ, С‚Р°Рє РїСЂР°РІРёР»СЊРЅРѕ РїСЂРѕРїРёСЃР°С‚СЊ РЅСѓР¶РЅС‹Р№ С‚СЂР°РЅСЃРїРѕСЂС‚
  RdkServerControl.SetServerTransport(&RdkServerTransport);
  RdkApplication.SetServerControl(&RdkServerControl);
  RdkApplication.SetEngineControl(&RdkEngineControl);
@@ -2688,21 +2688,21 @@ void __fastcall TUGEngineControlForm::Watches2Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Sender)
 
 {
- //Получить имя компонента
+ //РџРѕР»СѓС‡РёС‚СЊ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
  std::string c_name = UComponentsListFrame1->GetSelectedComponentLongName();
 
- //Получить имя класса компонента
+ //РџРѕР»СѓС‡РёС‚СЊ РёРјСЏ РєР»Р°СЃСЃР° РєРѕРјРїРѕРЅРµРЅС‚Р°
  const char *pname=Model_GetComponentClassName(c_name.c_str());
  std::string class_name;
  if(pname)
   class_name=pname;
  Engine_FreeBufString(pname);
 
- //Найдем форму нужного компонента
+ //РќР°Р№РґРµРј С„РѕСЂРјСѓ РЅСѓР¶РЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
  std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(class_name);
  if(I != UComponentsListFrame1->ComponentControllers.end() && I->second)
  {
-  //Нашли компонент, проверяем, хочет он быть показанным как таб или отдельно:
+  //РќР°С€Р»Рё РєРѕРјРїРѕРЅРµРЅС‚, РїСЂРѕРІРµСЂСЏРµРј, С…РѕС‡РµС‚ РѕРЅ Р±С‹С‚СЊ РїРѕРєР°Р·Р°РЅРЅС‹Рј РєР°Рє С‚Р°Р± РёР»Рё РѕС‚РґРµР»СЊРЅРѕ:
   if(I->second->ShowTabbedFlag==true)
   {
 	 TTabSheet* tab=AddComponentControlFormPage(c_name);
@@ -2894,7 +2894,7 @@ void __fastcall TUGEngineControlForm::Reset2Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
 {
- // Грузим настройки приложения
+ // Р“СЂСѓР·РёРј РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёР»РѕР¶РµРЅРёСЏ
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
  opt_name=opt_name.SubString(0,opt_name.Length()-4);
@@ -3072,7 +3072,7 @@ void __fastcall TUGEngineControlForm::ApplicationOptions1Click(TObject *Sender)
 {
  if(ApplicationOptionsForm->ShowModal() == mrOk)
  {
-  // Сохраняем настройки приложения
+  // РЎРѕС…СЂР°РЅСЏРµРј РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёР»РѕР¶РµРЅРёСЏ
   String opt_name=ExtractFileName(Application->ExeName);
   if(opt_name.Length()>4)
    opt_name=opt_name.SubString(0,opt_name.Length()-4);
@@ -3299,7 +3299,7 @@ void __fastcall TUGEngineControlForm::ClonetoNewChannel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::VideoSources21Click(TObject *Sender)
 {
-//TR форма отображения нескольких каналов
+//TR С„РѕСЂРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅРµСЃРєРѕР»СЊРєРёС… РєР°РЅР°Р»РѕРІ
 
  CaptureControlForm->Show();
 
@@ -3338,7 +3338,7 @@ void __fastcall TUGEngineControlForm::CreateSimpleProject1Click(TObject *Sender)
   {
    time_t curr_time;
    time(&curr_time);
-  /// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+  /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
    std::string folder=RDK::get_text_time(curr_time, '.', '_');
    path_dialog+=String("\\Autocreate ")+folder.c_str();
    if(RDK::CreateNewDirectory(AnsiString(path_dialog).c_str()) != 0)
@@ -3395,7 +3395,7 @@ void __fastcall TUGEngineControlForm::AutocopyProject1Click(TObject *Sender)
  size_t n=config_path.find_last_not_of("\\/");
  if(config_path.find_last_of("\\/") == config_path.size()-1)
   config_path.resize(n+1);
- /// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
  std::string date_time_str=RDK::get_text_time(curr_time, '.', '_');
  config_path+=std::string(" ")+date_time_str+"\\";
 

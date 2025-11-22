@@ -14,22 +14,22 @@ RDK_LIB_TYPE const char* RDK_CALL RemoteCallInternal(const char *request, int &r
 //RDK_LIB_TYPE const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &channel_index);
 
 
-/// Возвращает набор из имени компонента и индекса канала
-/// Если определен параметр "CC"
-/// Содержимое параметра представляет собой
-/// текст вида: индекс_канала@Имя компонента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅР°Р±РѕСЂ РёР· РёРјРµРЅРё РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РёРЅРґРµРєСЃР° РєР°РЅР°Р»Р°
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "CC"
+/// РЎРѕРґРµСЂР¶РёРјРѕРµ РїР°СЂР°РјРµС‚СЂР° РїСЂРµРґСЃС‚Р°РІР»СЏРµС‚ СЃРѕР±РѕР№
+/// С‚РµРєСЃС‚ РІРёРґР°: РёРЅРґРµРєСЃ_РєР°РЅР°Р»Р°@РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 RDK_LIB_TYPE bool RDK_CALL ExtractCC(USerStorageXML &xml, int &channel_index, std::string &component_name);
 
-/// Возвращает имя компонента
-/// Если определен параметр "Component"
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "Component"
 RDK_LIB_TYPE bool RDK_CALL ExtractComponent(USerStorageXML &xml, std::string &component_name);
 
-/// Возвращает индекса канала
-/// Если определен параметр "Channel"
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃР° РєР°РЅР°Р»Р°
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "Channel"
 RDK_LIB_TYPE bool RDK_CALL ExtractChannel(USerStorageXML &xml, int &channel_index);
 
-/// Возвращает имя команды
-/// Если определен параметр "Cmd"
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјР°РЅРґС‹
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "Cmd"
 RDK_LIB_TYPE bool RDK_CALL ExtractCmd(USerStorageXML &xml, std::string &cmd_name);
 
 }

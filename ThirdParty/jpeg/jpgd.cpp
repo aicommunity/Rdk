@@ -3142,7 +3142,7 @@ unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream
 		const int YR = 19595, YG = 38470, YB = 7471;
 		for (int x = 0; x < image_width; x++)
 		{
-		  int r = pScan_line[x*4+2];    // r и b поменяны местами
+		  int r = pScan_line[x*4+2];    // r Рё b РїРѕРјРµРЅСЏРЅС‹ РјРµСЃС‚Р°РјРё
 		  int g = pScan_line[x*4+1];
 		  int b = pScan_line[x*4+0];
 		  *pDst++ = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
@@ -3152,7 +3152,7 @@ unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream
 	  {
 		for (int x = 0; x < image_width; x++)
 		{
-		  pDst[0] = pScan_line[x*4+2];  // r и b поменяны местами
+		  pDst[0] = pScan_line[x*4+2];  // r Рё b РїРѕРјРµРЅСЏРЅС‹ РјРµСЃС‚Р°РјРё
 		  pDst[1] = pScan_line[x*4+1];
 		  pDst[2] = pScan_line[x*4+0];
 		  pDst += 3;

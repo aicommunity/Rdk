@@ -20,12 +20,12 @@ See file license.txt for more information
 
 namespace RDK {
 
-/// Список статически загруженных библиотек
+/// РЎРїРёСЃРѕРє СЃС‚Р°С‚РёС‡РµСЃРєРё Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… Р±РёР±Р»РёРѕС‚РµРє
 //std::list<ULibrary*> ULibrary::LibraryList;
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 ULibrary::ULibrary(const string &name, const string &version, int type, int revision)
 : Name(name), Version(version), Revision(revision), Type(type), Storage(0)
@@ -49,22 +49,22 @@ ULibrary::~ULibrary(void)
 // --------------------------
 
 // --------------------------
-// Методы управления статически загруженными библиотеками
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‚Р°С‚РёС‡РµСЃРєРё Р·Р°РіСЂСѓР¶РµРЅРЅС‹РјРё Р±РёР±Р»РёРѕС‚РµРєР°РјРё
 // --------------------------
 /*
-/// Возвращает коллекцию статически загруженных библиотек
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»Р»РµРєС†РёСЋ СЃС‚Р°С‚РёС‡РµСЃРєРё Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… Р±РёР±Р»РёРѕС‚РµРє
 const std::list<ULibrary*>& ULibrary::GetLibraryList(void)
 {
  return LibraryList;
 }
 
-/// Очищает коллекцию библиотек
+/// РћС‡РёС‰Р°РµС‚ РєРѕР»Р»РµРєС†РёСЋ Р±РёР±Р»РёРѕС‚РµРє
 void ULibrary::ClearLibraryList(void)
 {
  LibraryList.clear();
 }
 
-/// Проверяет наличие библиотеки по ее имени
+/// РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ Р±РёР±Р»РёРѕС‚РµРєРё РїРѕ РµРµ РёРјРµРЅРё
 bool ULibrary::CheckLibrary(const std::string &name)
 {
  std::list<ULibrary*>::const_iterator I=LibraryList.begin();
@@ -77,21 +77,21 @@ bool ULibrary::CheckLibrary(const std::string &name)
  return false;
 }
 
-/// Добавляет библиотеку в список, если библиотеки с таким именем еще нет в списке
+/// Р”РѕР±Р°РІР»СЏРµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ РІ СЃРїРёСЃРѕРє, РµСЃР»Рё Р±РёР±Р»РёРѕС‚РµРєРё СЃ С‚Р°РєРёРј РёРјРµРЅРµРј РµС‰Рµ РЅРµС‚ РІ СЃРїРёСЃРєРµ
 bool ULibrary::AddUniqueLibrary(ULibrary* const lib)
 {
  if(!lib)
   return false;
 
  if(CheckLibrary(lib->GetName()))
-  return false;  /// Заглушка!! здесь может быть warning исключение
+  return false;  /// Р—Р°РіР»СѓС€РєР°!! Р·РґРµСЃСЊ РјРѕР¶РµС‚ Р±С‹С‚СЊ warning РёСЃРєР»СЋС‡РµРЅРёРµ
 
  LibraryList.push_back(lib);
  return true;
 }
 
-/// Удаляет библиотеку из списка.
-/// Если список становится пуст, то уничтожает его
+/// РЈРґР°Р»СЏРµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ РёР· СЃРїРёСЃРєР°.
+/// Р•СЃР»Рё СЃРїРёСЃРѕРє СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РїСѓСЃС‚, С‚Рѕ СѓРЅРёС‡С‚РѕР¶Р°РµС‚ РµРіРѕ
 void ULibrary::RemoveLibrary(ULibrary* const lib)
 {
  std::list<ULibrary*>::iterator I=LibraryList.begin();
@@ -108,43 +108,43 @@ void ULibrary::RemoveLibrary(ULibrary* const lib)
 // --------------------------
 
 // --------------------------
-// Методы доступа к параметрам библиотеки
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј Р±РёР±Р»РёРѕС‚РµРєРё
 // --------------------------
-// Возвращает имя библиотеки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р±РёР±Р»РёРѕС‚РµРєРё
 const string& ULibrary::GetName(void) const
 {
  return Name;
 }
 
-// Возвращает версию библиотеки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ Р±РёР±Р»РёРѕС‚РµРєРё
 const string& ULibrary::GetVersion(void) const
 {
  return Version;
 }
 
-/// Возвращает ревизию системы контроля версий
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµРІРёР·РёСЋ СЃРёСЃС‚РµРјС‹ РєРѕРЅС‚СЂРѕР»СЏ РІРµСЂСЃРёР№
 int ULibrary::GetRevision(void) const
 {
  return Revision;
 }
 
-/// Возвращает версию ядра, использованного при сборке библиотеки
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ СЏРґСЂР°, РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅРѕРіРѕ РїСЂРё СЃР±РѕСЂРєРµ Р±РёР±Р»РёРѕС‚РµРєРё
 const UEPtr<RDK::UVersion> ULibrary::GetCoreVersion(void) const
 {
  return CoreVersion;
 }
 
 
-/// Тип библиотеки
-/// 0 - Внутренняя библиотека (собрана вместе с ядром)
-/// 1 - Внешняя библиотека (загружена из внешней dll)
-/// 2 - Библиотека, созданная во время выполнения
+/// РўРёРї Р±РёР±Р»РёРѕС‚РµРєРё
+/// 0 - Р’РЅСѓС‚СЂРµРЅРЅСЏСЏ Р±РёР±Р»РёРѕС‚РµРєР° (СЃРѕР±СЂР°РЅР° РІРјРµСЃС‚Рµ СЃ СЏРґСЂРѕРј)
+/// 1 - Р’РЅРµС€РЅСЏСЏ Р±РёР±Р»РёРѕС‚РµРєР° (Р·Р°РіСЂСѓР¶РµРЅР° РёР· РІРЅРµС€РЅРµР№ dll)
+/// 2 - Р‘РёР±Р»РёРѕС‚РµРєР°, СЃРѕР·РґР°РЅРЅР°СЏ РІРѕ РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ
 int ULibrary::GetType(void) const
 {
  return Type;
 }
 
-/// Зависимости библиотеки от других библиотек
+/// Р—Р°РІРёСЃРёРјРѕСЃС‚Рё Р±РёР±Р»РёРѕС‚РµРєРё РѕС‚ РґСЂСѓРіРёС… Р±РёР±Р»РёРѕС‚РµРє
 const std::vector<pair<string, string> > ULibrary::GetDependencies(void) const
 {
  return Dependencies;
@@ -152,9 +152,9 @@ const std::vector<pair<string, string> > ULibrary::GetDependencies(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным загрузки
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј Р·Р°РіСЂСѓР·РєРё
 // --------------------------
-/// Возвращает true если коллекция предоставляет класс с таким именем
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РєРѕР»Р»РµРєС†РёСЏ РїСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РєР»Р°СЃСЃ СЃ С‚Р°РєРёРј РёРјРµРЅРµРј
 bool ULibrary::IsClassNamePresent(const std::string &class_name) const
 {
  for(size_t i=0;i<ClassesList.size();i++)
@@ -163,25 +163,25 @@ bool ULibrary::IsClassNamePresent(const std::string &class_name) const
  return false;
 }
 
-/// Имена классов библиотеки
+/// РРјРµРЅР° РєР»Р°СЃСЃРѕРІ Р±РёР±Р»РёРѕС‚РµРєРё
 const vector<string>& ULibrary::GetClassesList(void) const
 {
  return ClassesList;
 }
 
-// Содержит имена всех успешно загруженных образцов
+// РЎРѕРґРµСЂР¶РёС‚ РёРјРµРЅР° РІСЃРµС… СѓСЃРїРµС€РЅРѕ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РѕР±СЂР°Р·С†РѕРІ
 const vector<string>& ULibrary::GetComplete(void) const
 {
  return Complete;
 }
 
-// Содержит имена всех не загруженных образцов
+// РЎРѕРґРµСЂР¶РёС‚ РёРјРµРЅР° РІСЃРµС… РЅРµ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РѕР±СЂР°Р·С†РѕРІ
 const vector<string>& ULibrary::GetIncomplete(void) const
 {
  return Incomplete;
 }
 
-// Очищает оба списка Complete и Incomplete
+// РћС‡РёС‰Р°РµС‚ РѕР±Р° СЃРїРёСЃРєР° Complete Рё Incomplete
 void ULibrary::ClearIncompleteAndComplete(void)
 {
     Incomplete.clear();
@@ -190,11 +190,11 @@ void ULibrary::ClearIncompleteAndComplete(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным библиотеки
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј Р±РёР±Р»РёРѕС‚РµРєРё
 // --------------------------
-// Заполняет заданное хранилище набором образцов классов.
-// Если класс с заданным именем уже существует, то он пропускается.
-// Возвращает число реально загруженных классов.
+// Р—Р°РїРѕР»РЅСЏРµС‚ Р·Р°РґР°РЅРЅРѕРµ С…СЂР°РЅРёР»РёС‰Рµ РЅР°Р±РѕСЂРѕРј РѕР±СЂР°Р·С†РѕРІ РєР»Р°СЃСЃРѕРІ.
+// Р•СЃР»Рё РєР»Р°СЃСЃ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, С‚Рѕ РѕРЅ РїСЂРѕРїСѓСЃРєР°РµС‚СЃСЏ.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЂРµР°Р»СЊРЅРѕ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РєР»Р°СЃСЃРѕРІ.
 int ULibrary::Upload(UStorage *storage)
 {
  /*Complete.clear();
@@ -213,7 +213,7 @@ int ULibrary::Upload(UStorage *storage)
  CreateClassSamples(Storage);
  count=int(Complete.size());
 
- //Оставление ссылки на Storage для RunTime библиотек
+ //РћСЃС‚Р°РІР»РµРЅРёРµ СЃСЃС‹Р»РєРё РЅР° Storage РґР»СЏ RunTime Р±РёР±Р»РёРѕС‚РµРє
 // if(Type != 2)
 //    Storage=0;
  return count;
@@ -221,11 +221,11 @@ int ULibrary::Upload(UStorage *storage)
 // --------------------------
 
 // --------------------------
-// Методы заполенения бибилиотеки
+// РњРµС‚РѕРґС‹ Р·Р°РїРѕР»РµРЅРµРЅРёСЏ Р±РёР±РёР»РёРѕС‚РµРєРё
 // --------------------------
-/// Проверяет зависимости библиотеки от других библиотек
-/// и возвращает список недостающих библиотек
-/// Возвращает true если все необходимые библиотеки уже загружены
+/// РџСЂРѕРІРµСЂСЏРµС‚ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё Р±РёР±Р»РёРѕС‚РµРєРё РѕС‚ РґСЂСѓРіРёС… Р±РёР±Р»РёРѕС‚РµРє
+/// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РЅРµРґРѕСЃС‚Р°СЋС‰РёС… Р±РёР±Р»РёРѕС‚РµРє
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РІСЃРµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ Р±РёР±Р»РёРѕС‚РµРєРё СѓР¶Рµ Р·Р°РіСЂСѓР¶РµРЅС‹
 bool ULibrary::CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const
 {
  if(!storage)
@@ -258,7 +258,7 @@ bool ULibrary::CheckDependencies(UStorage *storage, std::vector<pair<string, str
  return false;
 }
 
-// Добавляет в хранилище очередной класс
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ С…СЂР°РЅРёР»РёС‰Рµ РѕС‡РµСЂРµРґРЅРѕР№ РєР»Р°СЃСЃ
 bool ULibrary::UploadClass(const UId &classid, UEPtr<UComponent> cont)
 {
  return false;//ULibrary::UploadClass(classid, cont);
@@ -369,8 +369,8 @@ bool ULibrary::UploadClass(const std::string &class_name, const std::string &com
  return true;
 }
 
-/// Удаление заданного класса из списка успешно загруженных
-/// Класс переносится в незагруженные (Incomplete)
+/// РЈРґР°Р»РµРЅРёРµ Р·Р°РґР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР° РёР· СЃРїРёСЃРєР° СѓСЃРїРµС€РЅРѕ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С…
+/// РљР»Р°СЃСЃ РїРµСЂРµРЅРѕСЃРёС‚СЃСЏ РІ РЅРµР·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ (Incomplete)
 void ULibrary::RemoveClassFromCompletedList(const string &name)
 {
  std::vector<std::string>::iterator I;
@@ -388,13 +388,13 @@ void ULibrary::RemoveClassFromCompletedList(const string &name)
   Incomplete.push_back(name);
 }
 
-/// Заполняет библиотеку-заглушку всеми XML описаниями собственных компонентов
+/// Р—Р°РїРѕР»РЅСЏРµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ-Р·Р°РіР»СѓС€РєСѓ РІСЃРµРјРё XML РѕРїРёСЃР°РЅРёСЏРјРё СЃРѕР±СЃС‚РІРµРЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
 void ULibrary::FillMockLibrary(UMockLibrary* lib)
 {
     USerStorageXML ComponentStruct;
     ComponentStruct.Create("stub");
 
-    // Проход по всем успешно созданным классам
+    // РџСЂРѕС…РѕРґ РїРѕ РІСЃРµРј СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅРЅС‹Рј РєР»Р°СЃСЃР°Рј
     for(vector<string>::iterator it = Complete.begin(); it !=  Complete.end(); ++it)
     {
         UEPtr<UComponent> obj;
@@ -419,7 +419,7 @@ void ULibrary::FillMockLibrary(UMockLibrary* lib)
             continue;
         }
 
-        // Сохранение XML всего описания компонента
+        // РЎРѕС…СЂР°РЅРµРЅРёРµ XML РІСЃРµРіРѕ РѕРїРёСЃР°РЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
         if(!cont->SaveComponent(&ComponentStruct, true, ptAny|pgPublic))
         {
             if(Storage->GetLogger())
@@ -439,7 +439,7 @@ void ULibrary::FillMockLibrary(UMockLibrary* lib)
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URuntimeLibrary::URuntimeLibrary(const string &name, const string &version, const string& path)
  : ULibrary(name,version,2), LibPath(path)
@@ -454,20 +454,20 @@ URuntimeLibrary::~URuntimeLibrary(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
 
-/// Возращает путь библиотеки
+/// Р’РѕР·СЂР°С‰Р°РµС‚ РїСѓС‚СЊ Р±РёР±Р»РёРѕС‚РµРєРё
 const std::string& URuntimeLibrary::GetLibPath() const
 {
     return LibPath;
 }
 
-/// Загружает описание компонент из файлов в массив строк
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕРїРёСЃР°РЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚ РёР· С„Р°Р№Р»РѕРІ РІ РјР°СЃСЃРёРІ СЃС‚СЂРѕРє
 bool URuntimeLibrary::LoadCompDescriptions()
 {
-    // Проход по всем существующим xml файлам в папке
-    // с записью их данных в строки ClassesStructures
+    // РџСЂРѕС…РѕРґ РїРѕ РІСЃРµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј xml С„Р°Р№Р»Р°Рј РІ РїР°РїРєРµ
+    // СЃ Р·Р°РїРёСЃСЊСЋ РёС… РґР°РЅРЅС‹С… РІ СЃС‚СЂРѕРєРё ClassesStructures
     std::vector<std::string> comp_descriptions;
 
     if(RDK::FindFilesList(LibPath,"*.xml",true,comp_descriptions))
@@ -476,16 +476,16 @@ bool URuntimeLibrary::LoadCompDescriptions()
     ClassesStructures.resize(comp_descriptions.size());
     for(size_t i = 0 ; i < comp_descriptions.size(); i++)
     {
-        // Парсинг текущего файла
+        // РџР°СЂСЃРёРЅРі С‚РµРєСѓС‰РµРіРѕ С„Р°Р№Р»Р°
         CurrentComponentStruct.LoadFromFile(LibPath+"/"+comp_descriptions[i],"");
-        // Запись описания в строку
+        // Р—Р°РїРёСЃСЊ РѕРїРёСЃР°РЅРёСЏ РІ СЃС‚СЂРѕРєСѓ
         CurrentComponentStruct.Save(ClassesStructures[i]);
     }
 
     return true;
 }
 
-/// Добавляет новый компонент (сохранение в файл)
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ (СЃРѕС…СЂР°РЅРµРЅРёРµ РІ С„Р°Р№Р»)
 bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::string &new_comp_name, UContainer *newclass)
 {
     UEPtr<UContainer> p = newclass;
@@ -496,12 +496,12 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
 
     std::string buff;
 
-    // XML парсер ведет себя проблемно.
-    // И если делать Destroy() не инициализоварованого, то ломается. Поэтому сначала Create заглушки
+    // XML РїР°СЂСЃРµСЂ РІРµРґРµС‚ СЃРµР±СЏ РїСЂРѕР±Р»РµРјРЅРѕ.
+    // Р РµСЃР»Рё РґРµР»Р°С‚СЊ Destroy() РЅРµ РёРЅРёС†РёР°Р»РёР·РѕРІР°СЂРѕРІР°РЅРѕРіРѕ, С‚Рѕ Р»РѕРјР°РµС‚СЃСЏ. РџРѕСЌС‚РѕРјСѓ СЃРЅР°С‡Р°Р»Р° Create Р·Р°РіР»СѓС€РєРё
 	CurrentComponentStruct.Create("stub");
 	CurrentComponentStruct.Destroy();
 
-    // Сохранение XML и добавление нового поля RTname с именем
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ XML Рё РґРѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕРіРѕ РїРѕР»СЏ RTname СЃ РёРјРµРЅРµРј
     if(!cont->SaveComponent(&CurrentComponentStruct, true, ptAny|pgPublic))
         return false;
 
@@ -529,15 +529,15 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
     return true;
 }
 
-/// Удаляет класс из коллекции и Storage
+/// РЈРґР°Р»СЏРµС‚ РєР»Р°СЃСЃ РёР· РєРѕР»Р»РµРєС†РёРё Рё Storage
 bool URuntimeLibrary::DelClass(const std::string &class_name)
 {
     if(class_name.empty())
         return false;
-    // Удаление сущ. класса
+    // РЈРґР°Р»РµРЅРёРµ СЃСѓС‰. РєР»Р°СЃСЃР°
     if(Storage->CheckClass(class_name))
     {
-        // Если класс из другой библиотеки
+        // Р•СЃР»Рё РєР»Р°СЃСЃ РёР· РґСЂСѓРіРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё
         if(Storage->FindCollection(class_name).Get()!= static_cast<ULibrary*>(this))
         {
             if(Storage->GetLogger())
@@ -545,11 +545,11 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
             return false;
         }
 
-        // Может выбросить исключение
+        // РњРѕР¶РµС‚ РІС‹Р±СЂРѕСЃРёС‚СЊ РёСЃРєР»СЋС‡РµРЅРёРµ
         Storage->DelClass(Storage->FindClassId(class_name));
     }
 
-    // Поиск в массиве компонент
+    // РџРѕРёСЃРє РІ РјР°СЃСЃРёРІРµ РєРѕРјРїРѕРЅРµРЅС‚
     for(vector<string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
     {
         CurrentComponentStruct.Load(*it,"");
@@ -565,7 +565,7 @@ bool URuntimeLibrary::DelClass(const std::string &class_name)
     return true;
 }
 
-/// Удаляет директорию библиотеки вместе со всеми файлами
+/// РЈРґР°Р»СЏРµС‚ РґРёСЂРµРєС‚РѕСЂРёСЋ Р±РёР±Р»РёРѕС‚РµРєРё РІРјРµСЃС‚Рµ СЃРѕ РІСЃРµРјРё С„Р°Р№Р»Р°РјРё
 bool URuntimeLibrary::DeleteOwnDirectory(void)
 {
     return (!RDK::DeleteDirectory(LibPath.c_str()));
@@ -573,7 +573,7 @@ bool URuntimeLibrary::DeleteOwnDirectory(void)
 // --------------------------
 
 // --------------------------
-/// Создает компонент из описания xml
+/// РЎРѕР·РґР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РёР· РѕРїРёСЃР°РЅРёСЏ xml
 UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStorageXML &xml)
 {
  UEPtr<UContainer> cont;
@@ -600,8 +600,8 @@ UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStor
  return cont;
 }
 
-// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
-// Не требуется предварительная очистка массива и уборка памяти.
+// Р—Р°РїРѕР»РЅСЏРµС‚ РјР°СЃСЃРёРІ ClassSamples РіРѕС‚РѕРІС‹РјРё СЌРєР·РµРјРїР»СЏСЂР°РјРё РѕР±СЂР°Р·С†РѕРІ Рё РёС… РёРјРµРЅР°РјРё.
+// РќРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° РјР°СЃСЃРёРІР° Рё СѓР±РѕСЂРєР° РїР°РјСЏС‚Рё.
 void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 {
     size_t num_classes = ClassesStructures.size();
@@ -632,10 +632,10 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 
 
 
-// Библиотеки-заглушки
+// Р‘РёР±Р»РёРѕС‚РµРєРё-Р·Р°РіР»СѓС€РєРё
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UMockLibrary::UMockLibrary(const string &name, const string &version, const string& path)
  : ULibrary(name,version,3), LibPath(path)
@@ -648,7 +648,7 @@ UMockLibrary::~UMockLibrary(void)
 
 }
 
-// Добавляет описание компонента в ClassesStructures
+// Р”РѕР±Р°РІР»СЏРµС‚ РѕРїРёСЃР°РЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ ClassesStructures
 bool UMockLibrary::AddNewCompDescription(USerStorageXML& descript)
 {
     std::string added;
@@ -662,7 +662,7 @@ bool UMockLibrary::SaveLibraryToFile()
 {
     std::string all_comps;
 
-    // Сложение всех строчек
+    // РЎР»РѕР¶РµРЅРёРµ РІСЃРµС… СЃС‚СЂРѕС‡РµРє
     for(std::vector<std::string>::iterator it = ClassesStructures.begin(); it != ClassesStructures.end(); ++it)
     {
         all_comps += (*it)+"\n";
@@ -679,11 +679,11 @@ bool UMockLibrary::SaveLibraryToFile()
     CurrentComponentStruct.SetNodeAttribute("Revision", sntoa(Revision));
     CurrentComponentStruct.SetNodeAttribute("CoreVersion",GetGlobalVersion().ToStringFull());
 
-    // XML со всеми компонентами
+    // XML СЃРѕ РІСЃРµРјРё РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё
     USerStorageXML CompStruct;
     CompStruct.Load(all_comps,"");
 
-    // Добавление компонентов в XML библиотеки
+    // Р”РѕР±Р°РІР»РµРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІ XML Р±РёР±Р»РёРѕС‚РµРєРё
     CurrentComponentStruct.LoadToNode(CompStruct,true);
 
     std::string file_name = LibPath + "/" + Name + ".xml";
@@ -696,7 +696,7 @@ void UMockLibrary::LoadFromXML(USerStorageXML& xml)
 {
     xml.SelectRoot();
 
-    // Создание описаний компонентов поочередно
+    // РЎРѕР·РґР°РЅРёРµ РѕРїРёСЃР°РЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РїРѕРѕС‡РµСЂРµРґРЅРѕ
     for(int i = 0, size = xml.GetNumNodes() ; i < size; i++)
     {
         if(!xml.SelectNode(i))
@@ -713,7 +713,7 @@ void UMockLibrary::LoadFromXML(USerStorageXML& xml)
 
 }
 
-/// Создает компонент из описания xml
+/// РЎРѕР·РґР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РёР· РѕРїРёСЃР°РЅРёСЏ xml
 UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage *storage)
 {
     std::string class_name=xml.GetNodeAttribute("Class");
@@ -731,8 +731,8 @@ UEPtr<UContainer> UMockLibrary::CreateClassSample(USerStorageXML &xml, UStorage 
     return cont;
 }
 
-// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
-// Не требуется предварительная очистка массива и уборка памяти.
+// Р—Р°РїРѕР»РЅСЏРµС‚ РјР°СЃСЃРёРІ ClassSamples РіРѕС‚РѕРІС‹РјРё СЌРєР·РµРјРїР»СЏСЂР°РјРё РѕР±СЂР°Р·С†РѕРІ Рё РёС… РёРјРµРЅР°РјРё.
+// РќРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° РјР°СЃСЃРёРІР° Рё СѓР±РѕСЂРєР° РїР°РјСЏС‚Рё.
 void UMockLibrary::CreateClassSamples(UStorage *storage)
 {
     int num_classes = int(ClassesStructures.size());

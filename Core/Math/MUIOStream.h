@@ -26,7 +26,7 @@ namespace RDK {
 
 //namespace IO {
 
-// Вывод частного случая MVector в поток
+// Р’С‹РІРѕРґ С‡Р°СЃС‚РЅРѕРіРѕ СЃР»СѓС‡Р°СЏ MVector РІ РїРѕС‚РѕРє
 template<typename CharT, typename T>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVector<T,3> &data)
 {
@@ -34,7 +34,7 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
  return stream;
 }
 
-// Ввод из потока
+// Р’РІРѕРґ РёР· РїРѕС‚РѕРєР°
 template<typename CharT, typename T>
 std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVector<T,3> &data)
 {
@@ -58,7 +58,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVect
  return stream;
 }
 
-// Вывод общего случая MVector в поток
+// Р’С‹РІРѕРґ РѕР±С‰РµРіРѕ СЃР»СѓС‡Р°СЏ MVector РІ РїРѕС‚РѕРє
 template<typename CharT, typename T, int Rows>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVector<T,Rows> &data)
 {
@@ -74,7 +74,7 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
  return stream;
 }
 
-// Ввод из потока
+// Р’РІРѕРґ РёР· РїРѕС‚РѕРєР°
 template<typename CharT, typename T, int Rows>
 std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVector<T,Rows> &data)
 {
@@ -245,7 +245,7 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
  return stream;
 }
 
-// Ввод из потока
+// Р’РІРѕРґ РёР· РїРѕС‚РѕРєР°
 template<typename CharT,typename T>
 std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MKinematicBody<T> &data)
 {

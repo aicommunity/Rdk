@@ -15,7 +15,7 @@ class UClassDescriptionDisplay;
 }
 
 class UClassFavoritesEditor;
-/// Класс отображения описания конкретного класса
+/// РљР»Р°СЃСЃ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РѕРїРёСЃР°РЅРёСЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РєР»Р°СЃСЃР°
 class UClassDescriptionDisplay : public UVisualControllerWidget
 {
     Q_OBJECT
@@ -24,7 +24,7 @@ private:
     RDK::UEPtr<RDK::UContainerDescription> ClassDescription;
     std::pair<std::string, RDK::UPropertyDescription> CurrentProp;
 
-    // Окно для создания Favorite
+    // РћРєРЅРѕ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ Favorite
     UClassFavoritesEditor *clFavEditor;
 
 public:
@@ -33,27 +33,27 @@ public:
 
     const Ui::UClassDescriptionDisplay* GetUi() const;
 public slots:
-    // Сохранение описания класса
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ РѕРїРёСЃР°РЅРёСЏ РєР»Р°СЃСЃР°
     void SaveDescription();
 
-    // Закрытие
+    // Р—Р°РєСЂС‹С‚РёРµ
     void CloseForm();
 
-    // Изменение класса для отобраежния описания
+    // РР·РјРµРЅРµРЅРёРµ РєР»Р°СЃСЃР° РґР»СЏ РѕС‚РѕР±СЂР°РµР¶РЅРёСЏ РѕРїРёСЃР°РЅРёСЏ
     void ChangeClassDescription(const std::string& class_name);
 
-    // Заполнение списков свойств и Favorites класса
+    // Р—Р°РїРѕР»РЅРµРЅРёРµ СЃРїРёСЃРєРѕРІ СЃРІРѕР№СЃС‚РІ Рё Favorites РєР»Р°СЃСЃР°
     void FillProperties();
     void FillFavorites();
 
     void UpdateDataSelectionType(int type);
 
-    // Сброс GUI
+    // РЎР±СЂРѕСЃ GUI
     void DefaultGUIState();
 
 private slots:
 
-    // Открытие окна для создания Favorite
+    // РћС‚РєСЂС‹С‚РёРµ РѕРєРЅР° РґР»СЏ СЃРѕР·РґР°РЅРёСЏ Favorite
     void createNewFavoriteEditorSlot();
 
 

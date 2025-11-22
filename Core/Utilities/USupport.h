@@ -89,23 +89,23 @@ namespace RDK {
 
 using namespace std;
 
-// Cистемные буферы
+// CРёСЃС‚РµРјРЅС‹Рµ Р±СѓС„РµСЂС‹
 //extern string ustrbuf;
 //extern wstring uwstrbuf;
 
 /*
- Функции возвращают указатель на внутренний буфер
- Значение буфера изменяется при следующем вызове функции библиотеки
+ Р¤СѓРЅРєС†РёРё РІРѕР·РІСЂР°С‰Р°СЋС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ Р±СѓС„РµСЂ
+ Р—РЅР°С‡РµРЅРёРµ Р±СѓС„РµСЂР° РёР·РјРµРЅСЏРµС‚СЃСЏ РїСЂРё СЃР»РµРґСѓСЋС‰РµРј РІС‹Р·РѕРІРµ С„СѓРЅРєС†РёРё Р±РёР±Р»РёРѕС‚РµРєРё
 */
 
-/// Проверка на NaN
+/// РџСЂРѕРІРµСЂРєР° РЅР° NaN
 template<typename NumT>
 bool is_nan(NumT n)
 {
  return n != n;
 }
 
-/// Проверка на Inf
+/// РџСЂРѕРІРµСЂРєР° РЅР° Inf
 template<typename NumT>
 bool is_inf(NumT n)
 {
@@ -113,7 +113,7 @@ bool is_inf(NumT n)
 }
 
 
-// Функция, преобразующая число в строку
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ С‡РёСЃР»Рѕ РІ СЃС‚СЂРѕРєСѓ
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
 {
@@ -160,7 +160,7 @@ wstring wntoa(NumT n,int digs)
  return ntoa(n,digs,res);
 }
 
-// Функция, преобразующая число в шестнадцатиричную строку
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ С‡РёСЃР»Рѕ РІ С€РµСЃС‚РЅР°РґС†Р°С‚РёСЂРёС‡РЅСѓСЋ СЃС‚СЂРѕРєСѓ
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntohex(NumT n, basic_string<CharT> &buf)
 {
@@ -208,7 +208,7 @@ wstring wntohex(NumT n, int digs)
  return ntohex(n,digs, res);
 }
 
-// Функция, преобразующая строку в вещественное число
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ СЃС‚СЂРѕРєСѓ РІ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ С‡РёСЃР»Рѕ
 template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
 {
@@ -218,7 +218,7 @@ double atof(const std::basic_string<CharT> &str)
  return res;
 }
 
-// Функция, преобразующая строку в целое число
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ СЃС‚СЂРѕРєСѓ РІ С†РµР»РѕРµ С‡РёСЃР»Рѕ
 template<typename CharT>
 int atoi(const std::basic_string<CharT> &str)
 {
@@ -228,7 +228,7 @@ int atoi(const std::basic_string<CharT> &str)
  return res;
 }
 
-// Функция, преобразующая шестнадцатиричную строку в целое число
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ С€РµСЃС‚РЅР°РґС†Р°С‚РёСЂРёС‡РЅСѓСЋ СЃС‚СЂРѕРєСѓ РІ С†РµР»РѕРµ С‡РёСЃР»Рѕ
 template<typename CharT, typename T>
 T hextoi(const std::basic_string<CharT> &str)
 {
@@ -238,11 +238,11 @@ T hextoi(const std::basic_string<CharT> &str)
  return res;
 }
 
-// Выделяет дробную часть числа с точностью digs знаков после запятой
+// Р’С‹РґРµР»СЏРµС‚ РґСЂРѕР±РЅСѓСЋ С‡Р°СЃС‚СЊ С‡РёСЃР»Р° СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ digs Р·РЅР°РєРѕРІ РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
 RDK_LIB_TYPE int fraction(double d, int digs);
 
-// Разделяет строку на составлящие через сепаратор 'sep'
-// Возвращает число полученных строк
+// Р Р°Р·РґРµР»СЏРµС‚ СЃС‚СЂРѕРєСѓ РЅР° СЃРѕСЃС‚Р°РІР»СЏС‰РёРµ С‡РµСЂРµР· СЃРµРїР°СЂР°С‚РѕСЂ 'sep'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РїРѕР»СѓС‡РµРЅРЅС‹С… СЃС‚СЂРѕРє
 template<typename CharT>
 int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > &output, CharT sep, int num=0, int *lastpos=0)
 {
@@ -302,31 +302,31 @@ std::basic_string<CharT> concat_strings(const std::vector<std::basic_string<Char
  return "";
 }
 
-/// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
 RDK_LIB_TYPE std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 
-/// Возвращает время в виде понятной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
-/// отображает только те элементы времени, которые необходимы
-/// Если is_full_time==true то время выводится полностью всегда
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYYy MMm DDd HHh MMm SS:MSMSs РёР· РІСЂРµРјРµРЅРё РІ СЃРµРєСѓРЅРґР°С…
+/// РѕС‚РѕР±СЂР°Р¶Р°РµС‚ С‚РѕР»СЊРєРѕ С‚Рµ СЌР»РµРјРµРЅС‚С‹ РІСЂРµРјРµРЅРё, РєРѕС‚РѕСЂС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹
+/// Р•СЃР»Рё is_full_time==true С‚Рѕ РІСЂРµРјСЏ РІС‹РІРѕРґРёС‚СЃСЏ РїРѕР»РЅРѕСЃС‚СЊСЋ РІСЃРµРіРґР°
 RDK_LIB_TYPE std::string get_text_time_from_seconds(double time_data, char date_sep='.', char time_sep=':', bool is_full_time=false);
 
-// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS + добавочная строка additional_line
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY/MM/DD HH:MM:SS,MS + РґРѕР±Р°РІРѕС‡РЅР°СЏ СЃС‚СЂРѕРєР° additional_line
 //std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
 
-// Конвертация string<->wstring
-// !!! Платформенно-зависимая реализация !!!
-// Копипаста с http://habrahabr.ru/blogs/cpp/112997/
-//@brief Сужает широкую строку, используя локализацию loc
-//   @return Возвращает суженную строку или пустую суженную строку, в
-//   случае. если возникла ошибка
+// РљРѕРЅРІРµСЂС‚Р°С†РёСЏ string<->wstring
+// !!! РџР»Р°С‚С„РѕСЂРјРµРЅРЅРѕ-Р·Р°РІРёСЃРёРјР°СЏ СЂРµР°Р»РёР·Р°С†РёСЏ !!!
+// РљРѕРїРёРїР°СЃС‚Р° СЃ http://habrahabr.ru/blogs/cpp/112997/
+//@brief РЎСѓР¶Р°РµС‚ С€РёСЂРѕРєСѓСЋ СЃС‚СЂРѕРєСѓ, РёСЃРїРѕР»СЊР·СѓСЏ Р»РѕРєР°Р»РёР·Р°С†РёСЋ loc
+//   @return Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСѓР¶РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РёР»Рё РїСѓСЃС‚СѓСЋ СЃСѓР¶РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ, РІ
+//   СЃР»СѓС‡Р°Рµ. РµСЃР»Рё РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°
 //RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
 //RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage);
 
 //std::string narrow2(const std::wstring& wstr);
 
-//@brief Расширяет строку, используя локализацию loc
-//   @return Возвращает расширенную строку или пустую расширенную строку, в
-//   случае, если возникла ошибка.
+//@brief Р Р°СЃС€РёСЂСЏРµС‚ СЃС‚СЂРѕРєСѓ, РёСЃРїРѕР»СЊР·СѓСЏ Р»РѕРєР°Р»РёР·Р°С†РёСЋ loc
+//   @return Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РёР»Рё РїСѓСЃС‚СѓСЋ СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ, РІ
+//   СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°.
 //RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
 //RDK_LIB_TYPE std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage);
 
@@ -361,34 +361,34 @@ inline int signum(T x)
 }
 #endif
 
-/// Обрезает лидирующие и завершающие пробелы в строке
+/// РћР±СЂРµР·Р°РµС‚ Р»РёРґРёСЂСѓСЋС‰РёРµ Рё Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РїСЂРѕР±РµР»С‹ РІ СЃС‚СЂРѕРєРµ
 RDK_LIB_TYPE std::string trim_spaces(const std::string &str);
 
-/// Извлекает путь из полного имени файла
+/// РР·РІР»РµРєР°РµС‚ РїСѓС‚СЊ РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_path(const std::string& full_name);
 
-/// Извлекает имя файла из полного имени файла
+/// РР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 
-/// Извлекает имя файла из полного имени файла исключая расширение
+/// РР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р° РёСЃРєР»СЋС‡Р°СЏ СЂР°СЃС€РёСЂРµРЅРёРµ
 RDK_LIB_TYPE std::string extract_file_name_wo_ext(const std::string& full_name);
 
-/// Извлекает расширение файла из имени файла
+/// РР·РІР»РµРєР°РµС‚ СЂР°СЃС€РёСЂРµРЅРёРµ С„Р°Р№Р»Р° РёР· РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
-/// Модифицирует имя файла так, чтобы оно стало относительным относительно заданного пути
+/// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ РёРјСЏ С„Р°Р№Р»Р° С‚Р°Рє, С‡С‚РѕР±С‹ РѕРЅРѕ СЃС‚Р°Р»Рѕ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Рј РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅРѕРіРѕ РїСѓС‚Рё
 RDK_LIB_TYPE string relative_file_path(const string &path, const string &relative_path_base);
 
-/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+/// Р—Р°РјРµРЅСЏРµС‚ РІСЃРµ РІС…РѕР¶РґРµРЅРёСЏ РїРѕРґСЃС‚СЂРѕРєРё find_str РЅР° РїРѕРґСЃС‚СЂРѕРєСѓ replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str);
 
 
 
-/// Загружает файл в строку
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ С„Р°Р№Р» РІ СЃС‚СЂРѕРєСѓ
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer);
 RDK_LIB_TYPE bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer);
 
-/// Сохраняет файл из строки
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С„Р°Р№Р» РёР· СЃС‚СЂРѕРєРё
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer);
 RDK_LIB_TYPE bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffer);
 

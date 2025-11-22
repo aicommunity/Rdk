@@ -11,10 +11,10 @@
 #pragma resource "*.dfm"
 TVideoCaptureOptionsForm *VideoCaptureOptionsForm;
 
-/// Список настройщиков источников видео
+/// РЎРїРёСЃРѕРє РЅР°СЃС‚СЂРѕР№С‰РёРєРѕРІ РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 std::map<int, TVideoCaptureOptionsDesciption> TVideoCaptureOptionsForm::VideoSourceOptionsFrames;
 
-/// Список поддерживаемых источников видео
+/// РЎРїРёСЃРѕРє РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 std::map<int, RDK::UEPtr<TVideoCaptureThread> > TVideoCaptureOptionsForm::VideoSourcePrototypes;
 
 //---------------------------------------------------------------------------
@@ -27,15 +27,15 @@ __fastcall TVideoCaptureOptionsForm::TVideoCaptureOptionsForm(TComponent* Owner)
 }
 //---------------------------------------------------------------------------
 // ---------------------------
-// Методы управления поддерживаемыми источниками видео
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹РјРё РёСЃС‚РѕС‡РЅРёРєР°РјРё РІРёРґРµРѕ
 // ---------------------------
-/// Возвращает список поддерживаемых источников видео
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& TVideoCaptureOptionsForm::GetVideoSourcePrototypes(void)
 {
  return VideoSourcePrototypes;
 }
 
-/// Возвращает список поддерживаемых источников видео
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 bool TVideoCaptureOptionsForm::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread)
 {
  const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
@@ -48,7 +48,7 @@ bool TVideoCaptureOptionsForm::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVi
  return true;
 }
 
-/// Проверяет, существует ли такой видеоисточник
+/// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С‚Р°РєРѕР№ РІРёРґРµРѕРёСЃС‚РѕС‡РЅРёРє
 bool TVideoCaptureOptionsForm::CheckVideoSourcePrototypes(int mode)
 {
  const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
@@ -57,7 +57,7 @@ bool TVideoCaptureOptionsForm::CheckVideoSourcePrototypes(int mode)
  return false;
 }
 
-/// Очищает список поддерживаемых источников видео
+/// РћС‡РёС‰Р°РµС‚ СЃРїРёСЃРѕРє РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 void TVideoCaptureOptionsForm::ClearAllVideoSourcePrototypes(void)
 {
  std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.begin();
@@ -68,13 +68,13 @@ void TVideoCaptureOptionsForm::ClearAllVideoSourcePrototypes(void)
  VideoSourcePrototypes.clear();
 }
 
-/// Возвращает список настройщиков источников видео
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РЅР°СЃС‚СЂРѕР№С‰РёРєРѕРІ РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 std::map<int, TVideoCaptureOptionsDesciption> TVideoCaptureOptionsForm::GetVideoSourceOptionsFrames(void)
 {
  return VideoSourceOptionsFrames;
 }
 
-/// Добавляет новый настройщик источников видео
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РЅР°СЃС‚СЂРѕР№С‰РёРє РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 bool TVideoCaptureOptionsForm::AddVideoSourceOptionsFrame(int mode, TVideoCaptureOptionsDesciption &frame)
 {
  const std::map<int, TVideoCaptureOptionsDesciption>::iterator I=VideoSourceOptionsFrames.find(mode);
@@ -84,7 +84,7 @@ bool TVideoCaptureOptionsForm::AddVideoSourceOptionsFrame(int mode, TVideoCaptur
  return true;
 }
 
-/// Проверяет, существует ли такой настройщик
+/// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С‚Р°РєРѕР№ РЅР°СЃС‚СЂРѕР№С‰РёРє
 bool TVideoCaptureOptionsForm::CheckVideoSourceOptionsFrame(int mode)
 {
  const std::map<int, TVideoCaptureOptionsDesciption>::iterator I=VideoSourceOptionsFrames.find(mode);
@@ -93,7 +93,7 @@ bool TVideoCaptureOptionsForm::CheckVideoSourceOptionsFrame(int mode)
  return true;
 }
 
-/// Очищает список поддерживаемых настройщиков видео
+/// РћС‡РёС‰Р°РµС‚ СЃРїРёСЃРѕРє РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹С… РЅР°СЃС‚СЂРѕР№С‰РёРєРѕРІ РІРёРґРµРѕ
 void TVideoCaptureOptionsForm::ClearAllVideoSourceOptionsFrames(void)
 {
  std::map<int, TVideoCaptureOptionsDesciption>::iterator I=VideoSourceOptionsFrames.begin();
@@ -104,7 +104,7 @@ void TVideoCaptureOptionsForm::ClearAllVideoSourceOptionsFrames(void)
  VideoSourceOptionsFrames.clear();
 }
 
-/// Возвращает активный (выбранный) источник видео
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р°РєС‚РёРІРЅС‹Р№ (РІС‹Р±СЂР°РЅРЅС‹Р№) РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 int TVideoCaptureOptionsForm::GetActiveVideoSourceId(void)
 {
  TTabSheet *tab=PageControl->ActivePage;
@@ -118,7 +118,7 @@ int TVideoCaptureOptionsForm::GetActiveVideoSourceId(void)
  return -1;
 }
 
-/// Возвращает настройщик видеоисточника, соответствующий режиму
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅР°СЃС‚СЂРѕР№С‰РёРє РІРёРґРµРѕРёСЃС‚РѕС‡РЅРёРєР°, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ СЂРµР¶РёРјСѓ
 TVideoCaptureOptionsDesciption* TVideoCaptureOptionsForm::GetCurrentVideoSourceOptionsFrame(int mode)
 {
  std::map<int, TVideoCaptureOptionsDesciption>::iterator I=CurrentVideoSourceOptionsFrames.begin();
@@ -130,7 +130,7 @@ TVideoCaptureOptionsDesciption* TVideoCaptureOptionsForm::GetCurrentVideoSourceO
  return 0;
 }
 
-/// Устанавливает активной вкладку видеоисточника по индексу
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РєС‚РёРІРЅРѕР№ РІРєР»Р°РґРєСѓ РІРёРґРµРѕРёСЃС‚РѕС‡РЅРёРєР° РїРѕ РёРЅРґРµРєСЃСѓ
 bool TVideoCaptureOptionsForm::SelectVideoSourcePage(int mode)
 {
  UpdateInterface(true);
@@ -154,10 +154,10 @@ bool TVideoCaptureOptionsForm::SelectVideoSourcePage(int mode)
 // ---------------------------
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Если force_update == true, то интерфейс обновляется
-// вне зависимости от UpdateInterval
+// Р•СЃР»Рё force_update == true, С‚Рѕ РёРЅС‚РµСЂС„РµР№СЃ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ
+// РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ UpdateInterval
 void TVideoCaptureOptionsForm::AUpdateInterface(void)
 {
  if(!VideoOutputFrame)
@@ -193,25 +193,25 @@ void TVideoCaptureOptionsForm::AUpdateInterface(void)
 
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TVideoCaptureOptionsForm::AClearInterface(void)
 {
 
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TVideoCaptureOptionsForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TVideoCaptureOptionsForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUVisualControllerForm* TVideoCaptureOptionsForm::New(TComponent *owner)
 {
  return new TVideoCaptureOptionsForm(owner);
@@ -222,7 +222,7 @@ void __fastcall TVideoCaptureOptionsForm::ApplyButtonClick(TObject *Sender)
  if(!VideoOutputFrame)
   return;
 
- // Сохраняем параметры
+ // РЎРѕС…СЂР°РЅСЏРµРј РїР°СЂР°РјРµС‚СЂС‹
  std::map<int, TVideoCaptureOptionsDesciption>::iterator I=CurrentVideoSourceOptionsFrames.begin();
  for(;I!=CurrentVideoSourceOptionsFrames.end();++I)
  {
@@ -242,7 +242,7 @@ void __fastcall TVideoCaptureOptionsForm::FormShow(TObject *Sender)
  if(!VideoOutputFrame)
   return;
 
- // Грузим параметры
+ // Р“СЂСѓР·РёРј РїР°СЂР°РјРµС‚СЂС‹
  UpdateInterface();
  std::map<int, TVideoCaptureOptionsDesciption>::iterator I=CurrentVideoSourceOptionsFrames.begin();
  for(;I!=CurrentVideoSourceOptionsFrames.end();++I)

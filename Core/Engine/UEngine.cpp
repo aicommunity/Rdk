@@ -28,34 +28,34 @@ See file license.txt for more information
 #include "UBasePropCreatorMatrix.h"
 
 // --------------------------------------
-// Объявления дополнительных функций
+// РћР±СЉСЏРІР»РµРЅРёСЏ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… С„СѓРЅРєС†РёР№
 // --------------------------------------
-// Возвращает хранилище по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С…СЂР°РЅРёР»РёС‰Рµ РїРѕ РёРЅРґРµРєСЃСѓ
 extern RDK::UStorage* GetStorage(size_t i);
 
-// Возвращает среду по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЂРµРґСѓ РїРѕ РёРЅРґРµРєСЃСѓ
 extern RDK::UEnvironment*  GetEnvironment(size_t i);
 
-// Возвращает движок по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґРІРёР¶РѕРє РїРѕ РёРЅРґРµРєСЃСѓ
 extern RDK::UEngine*  GetEngine(size_t i);
 
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
+// РЎРѕР·РґР°РµС‚ РЅРѕРІРѕРµ С…СЂР°РЅРёР»РёС‰Рµ Рё РїРѕРјРµС‰Р°РµС‚ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С…СЂР°РЅРёР»РёС‰Рµ
 extern RDK::UStorage*  AddNewStorage(void);
 
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ СЃСЂРµРґСѓ Рё РїРѕРјРµС‰Р°РµС‚ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃСЂРµРґСѓ
 extern RDK::UEnvironment*  AddNewEnvironment(void);
 
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
+// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ РґРІРёР¶РѕРє Рё РїРѕРјРµС‰Р°РµС‚ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґРІРёР¶РѕРє
 extern RDK::UEngine*  AddNewEngine(void);
 // --------------------------------------
 
 namespace RDK{
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UEngine::UEngine(void)
  : Storage(0), Environment(0)
@@ -78,12 +78,12 @@ UEngine::~UEngine(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами инициализации
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------------
-/// Режим создания внутренних временных переменных для
-/// возвращаемых значений
-/// 0 - одна переменная для всех методов, возвращающих такой тип
-/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+/// Р РµР¶РёРј СЃРѕР·РґР°РЅРёСЏ РІРЅСѓС‚СЂРµРЅРЅРёС… РІСЂРµРјРµРЅРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… РґР»СЏ
+/// РІРѕР·РІСЂР°С‰Р°РµРјС‹С… Р·РЅР°С‡РµРЅРёР№
+/// 0 - РѕРґРЅР° РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РІСЃРµС… РјРµС‚РѕРґРѕРІ, РІРѕР·РІСЂР°С‰Р°СЋС‰РёС… С‚Р°РєРѕР№ С‚РёРї
+/// 1 - СѓРЅРёРєР°Р»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ СЃ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊСЋ РІС‹Р·РІРѕРІР° С„СѓРЅРєС†РёРё РѕС‡РёСЃС‚РєРё
 int UEngine::GetBufObjectsMode(void) const
 {
  return BufObjectsMode;
@@ -98,7 +98,7 @@ bool UEngine::SetBufObjectsMode(int mode)
  return true;
 }
 
-// Имя файла инициализации
+// РРјСЏ С„Р°Р№Р»Р° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 const string& UEngine::GetOptionsFileName(void) const
 {
  return OptionsFileName;
@@ -113,7 +113,7 @@ bool UEngine::SetOptionsFileName(const string& value)
  return true;
 }
 
-// Имя файла описаний параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const string& UEngine::GetClassesDescriptionFileName(void) const
 {
  return ClassesDescriptionFileName;
@@ -128,7 +128,7 @@ bool UEngine::SetClassesDescriptionFileName(const string& value)
  return true;
 }
 
-// Имя файла описаний общих параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РѕР±С‰РёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const string& UEngine::GetCommonClassesDescriptionFileName(void) const
 {
  return CommonClassesDescriptionFileName;
@@ -145,10 +145,10 @@ bool UEngine::SetCommonClassesDescriptionFileName(const string& value)
 // --------------------------
 
 // --------------------------
-// Методы управления временными переменными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІСЂРµРјРµРЅРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё
 // --------------------------
-/// Создает в списке временных строку новую строку
-/// и возвращает ссылку на нее
+/// РЎРѕР·РґР°РµС‚ РІ СЃРїРёСЃРєРµ РІСЂРµРјРµРЅРЅС‹С… СЃС‚СЂРѕРєСѓ РЅРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ
+/// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РЅРµРµ
 std::string& UEngine::CreateTempString(void) const
 {
  switch (BufObjectsMode)
@@ -187,9 +187,9 @@ std::string& UEngine::CreateTempString(void) const
  return DummyTempString;
 }
 
-/// Возвращает временную строку
-/// по указателю на ее данные
-/// не находит свободные строки!
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+/// РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ РЅР° РµРµ РґР°РЅРЅС‹Рµ
+/// РЅРµ РЅР°С…РѕРґРёС‚ СЃРІРѕР±РѕРґРЅС‹Рµ СЃС‚СЂРѕРєРё!
 std::string& UEngine::FindTempString(const char *str_data) const
 {
  std::map<UEPtr<std::string>,bool>::iterator I,J;
@@ -204,8 +204,8 @@ std::string& UEngine::FindTempString(const char *str_data) const
  return DummyTempString;
 }
 
-/// Удаляет временную строку
-/// по указателю на ее данные
+/// РЈРґР°Р»СЏРµС‚ РІСЂРµРјРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+/// РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ РЅР° РµРµ РґР°РЅРЅС‹Рµ
 void UEngine::DestroyTempString(const char *str_data) const
 {
  if(!str_data)
@@ -227,8 +227,8 @@ void UEngine::DestroyTempString(const char *str_data) const
  }
 }
 
-/// Удаляет временную строку
-/// по ссылке на нее
+/// РЈРґР°Р»СЏРµС‚ РІСЂРµРјРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+/// РїРѕ СЃСЃС‹Р»РєРµ РЅР° РЅРµРµ
 void UEngine::DestroyTempString(const std::string &ref) const
 {
  if(BufObjectsMode == 0)
@@ -247,7 +247,7 @@ void UEngine::DestroyTempString(const std::string &ref) const
  }
 }
 
-/// Удаляет все временные строк
+/// РЈРґР°Р»СЏРµС‚ РІСЃРµ РІСЂРµРјРµРЅРЅС‹Рµ СЃС‚СЂРѕРє
 void UEngine::ClearAllTempStrings(void) const
 {
  std::map<UEPtr<std::string>,bool>::iterator I,J;
@@ -260,7 +260,7 @@ void UEngine::ClearAllTempStrings(void) const
  TempStrings.clear();
 }
 
-/// Возвращает число временных строк
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІСЂРµРјРµРЅРЅС‹С… СЃС‚СЂРѕРє
 int UEngine::GetNumTempStrings(void) const
 {
  if(BufObjectsMode == 0)
@@ -271,15 +271,15 @@ int UEngine::GetNumTempStrings(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к переменным состояния
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїРµСЂРµРјРµРЅРЅС‹Рј СЃРѕСЃС‚РѕСЏРЅРёСЏ
 // --------------------------
-/*// Флаг работы системы
+/*// Р¤Р»Р°Рі СЂР°Р±РѕС‚С‹ СЃРёСЃС‚РµРјС‹
 int UEngine::IsRunned(void)
 {
  return Runned;
 } */
 
-/// Индекс текущего канала в многоканальной библиотеке
+/// РРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РєР°РЅР°Р»Р° РІ РјРЅРѕРіРѕРєР°РЅР°Р»СЊРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРµ
 int UEngine::GetChannelIndex(void) const
 {
  return ChannelIndex;
@@ -302,15 +302,15 @@ bool UEngine::SetChannelIndex(int value)
 
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Возвращает указатель на среду
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃСЂРµРґСѓ
 UEnvironment* UEngine::GetEnvironment(void)
 {
  return Environment;
 }
 
-// Возвращает указатель на модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјРѕРґРµР»СЊ
 UContainer* UEngine::GetModel(void)
 {
  return Environment->GetModel();
@@ -318,9 +318,9 @@ UContainer* UEngine::GetModel(void)
 // --------------------------
 
 // --------------------------
-// Методы управления счетом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Указатель на логгер
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
 UEPtr<ULoggerEnv> const UEngine::GetLogger(void) const
 {
  return Logger;
@@ -349,10 +349,10 @@ bool UEngine::SetLogger(UEPtr<ULoggerEnv> logger)
  return true;
 }
 
-// Инициализирует данные движка
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РґР°РЅРЅС‹Рµ РґРІРёР¶РєР°
 void UEngine::Init(void)
 {
- // Заглушка
+ // Р—Р°РіР»СѓС€РєР°
 }
 
 bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
@@ -442,8 +442,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  return true;
 }
 
-// Деинициализирует данные движка
-// и сохраняет текущие настройки
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РґР°РЅРЅС‹Рµ РґРІРёР¶РєР°
+// Рё СЃРѕС…СЂР°РЅСЏРµС‚ С‚РµРєСѓС‰РёРµ РЅР°СЃС‚СЂРѕР№РєРё
 void UEngine::UnInit(void)
 {
  AccessCache.clear();
@@ -451,11 +451,11 @@ void UEngine::UnInit(void)
 // --------------------------
 
 // --------------------------
-// Методы управления средой
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃСЂРµРґРѕР№
 // --------------------------
-// Методы управления хранилищем
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С…СЂР°РЅРёР»РёС‰РµРј
 // ----------------------------
-// Возвращает число классов в хранилище
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РєР»Р°СЃСЃРѕРІ РІ С…СЂР°РЅРёР»РёС‰Рµ
 int UEngine::Storage_GetNumClasses(void)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -481,7 +481,7 @@ int UEngine::Storage_GetNumClasses(void)
  return 0;
 }
 
-// Возвращает id классов в хранилище. Память должна быть выделена
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ id РєР»Р°СЃСЃРѕРІ РІ С…СЂР°РЅРёР»РёС‰Рµ. РџР°РјСЏС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°
 int UEngine::Storage_GetClassesList(int *buffer) const
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -512,7 +512,7 @@ int UEngine::Storage_GetClassesList(int *buffer) const
 }
 
 
-// Возвращает имена классов в хранилище в виде строки, разделенной запятыми
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјРµРЅР° РєР»Р°СЃСЃРѕРІ РІ С…СЂР°РЅРёР»РёС‰Рµ РІ РІРёРґРµ СЃС‚СЂРѕРєРё, СЂР°Р·РґРµР»РµРЅРЅРѕР№ Р·Р°РїСЏС‚С‹РјРё
 const char* UEngine::Storage_GetClassesNameList(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -551,7 +551,7 @@ const char* UEngine::Storage_GetClassesNameList(void) const
  return 0;
 }
 
- // Возвращает имя класса по его id.
+ // Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РїРѕ РµРіРѕ id.
 const char * UEngine::Storage_GetClassName(int id) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -582,7 +582,7 @@ const char * UEngine::Storage_GetClassName(int id) const
  return 0;
 }
 
-// Возвращает Id класса по его имени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Id РєР»Р°СЃСЃР° РїРѕ РµРіРѕ РёРјРµРЅРё
 int UEngine::Storage_GetClassId(const char *name) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -608,9 +608,9 @@ int UEngine::Storage_GetClassId(const char *name) const
  return ForbiddenId;
 }
 
-// Удаляет образец класса объекта из хранилища
-// Если 'force' == true то принудительно удаляет из хранилища
-// все объекты этого класса
+// РЈРґР°Р»СЏРµС‚ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР° РѕР±СЉРµРєС‚Р° РёР· С…СЂР°РЅРёР»РёС‰Р°
+// Р•СЃР»Рё 'force' == true С‚Рѕ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ СѓРґР°Р»СЏРµС‚ РёР· С…СЂР°РЅРёР»РёС‰Р°
+// РІСЃРµ РѕР±СЉРµРєС‚С‹ СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°
 int UEngine::Storage_DelClass(int classid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -638,7 +638,7 @@ int UEngine::Storage_DelClass(int classid)
  return res;
 }
 
-// Удалаяет все свободные объекты из хранилища
+// РЈРґР°Р»Р°СЏРµС‚ РІСЃРµ СЃРІРѕР±РѕРґРЅС‹Рµ РѕР±СЉРµРєС‚С‹ РёР· С…СЂР°РЅРёР»РёС‰Р°
 int UEngine::Storage_FreeObjectsStorage(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -666,7 +666,7 @@ int UEngine::Storage_FreeObjectsStorage(void)
  return res;
 }
 
-// Удаляет все объекты из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹ РёР· С…СЂР°РЅРёР»РёС‰Р°
 int UEngine::Storage_ClearObjectsStorage(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -694,7 +694,7 @@ int UEngine::Storage_ClearObjectsStorage(void)
  return res;
 }
 
-// Вычисляет суммарное число объектов в хранилище
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЃСѓРјРјР°СЂРЅРѕРµ С‡РёСЃР»Рѕ РѕР±СЉРµРєС‚РѕРІ РІ С…СЂР°РЅРёР»РёС‰Рµ
 int UEngine::Storage_CalcNumObjects(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -770,7 +770,7 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
  return 0;
 }
 
-// Возвращает описание класса по его id в формате xml
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР° РїРѕ РµРіРѕ id РІ С„РѕСЂРјР°С‚Рµ xml
 const char* UEngine::Storage_GetClassDescription(const char* classname)
 {
  std::string& TempString=CreateTempString();
@@ -801,7 +801,7 @@ const char* UEngine::Storage_GetClassDescription(const char* classname)
  return TempString.c_str();
 }
 
-// Устанавливает описание класса по его id, считывая его из формата xml
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР° РїРѕ РµРіРѕ id, СЃС‡РёС‚С‹РІР°СЏ РµРіРѕ РёР· С„РѕСЂРјР°С‚Р° xml
 int UEngine::Storage_SetClassDescription(const char* classname, const char* description)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -811,7 +811,7 @@ int UEngine::Storage_SetClassDescription(const char* classname, const char* desc
   {
    USerStorageXML xml;
    xml.Load(description, classname);
-   Storage->LoadClassDescription(classname,xml); // TODO: Нет проверки на ошибочное чтение
+   Storage->LoadClassDescription(classname,xml); // TODO: РќРµС‚ РїСЂРѕРІРµСЂРєРё РЅР° РѕС€РёР±РѕС‡РЅРѕРµ С‡С‚РµРЅРёРµ
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -830,7 +830,7 @@ int UEngine::Storage_SetClassDescription(const char* classname, const char* desc
  return res;
 }
 
-// Сохраняет описание всех классов в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РІ xml
 const char* UEngine::Storage_SaveClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
@@ -863,7 +863,7 @@ const char* UEngine::Storage_SaveClassesDescription(void)
 ;
 }
 
-// Загружает описание всех классов из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РёР· xml
 int UEngine::Storage_LoadClassesDescription(const char* xmltext)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -897,7 +897,7 @@ int UEngine::Storage_LoadClassesDescription(const char* xmltext)
  return res;
 }
 
-// Сохраняет общее описание всех классов в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РІ xml
 const char* UEngine::Storage_SaveCommonClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
@@ -929,7 +929,7 @@ const char* UEngine::Storage_SaveCommonClassesDescription(void)
  return TempString.c_str();
 }
 
-// Загружает общее описание всех классов из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РёР· xml
 int UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -965,7 +965,7 @@ int UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
  return res;
 }
 
-// Сохраняет описание всех классов в xml включая общее описание
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РІ xml РІРєР»СЋС‡Р°СЏ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ
 const char* UEngine::Storage_SaveAllClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
@@ -1000,7 +1000,7 @@ const char* UEngine::Storage_SaveAllClassesDescription(void)
  return TempString.c_str();
 }
 
-// Загружает описание всех классов из xml включая общее описание
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РёР· xml РІРєР»СЋС‡Р°СЏ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ
 int UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1045,8 +1045,8 @@ int UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
  return res;
 }
 
-// Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
+// РџР°РјСЏС‚СЊ РґР»СЏ buffer РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°!
 const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned int type_mask)
 {
  RDK::USerStorageXML XmlStorage;
@@ -1097,8 +1097,8 @@ const char* UEngine::Storage_GetClassProperties(const char *stringid, unsigned i
  return 0;
 }
 
-// Возвращает полную структуру компонента по идентификатору
-// Память для buffer должна быть выделена!
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅСѓСЋ СЃС‚СЂСѓРєС‚СѓСЂСѓ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
+// РџР°РјСЏС‚СЊ РґР»СЏ buffer РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°!
 const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned int type_mask)
 {
  RDK::USerStorageXML XmlStorage;
@@ -1150,9 +1150,9 @@ const char* UEngine::Storage_GetClassStructure(const char *stringid, unsigned in
 // ----------------------------
 
 // ----------------------------
-// Методы управления коллекциями компонент
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕР»Р»РµРєС†РёСЏРјРё РєРѕРјРїРѕРЅРµРЅС‚
 // ----------------------------
-// Возвращает число библиотек
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ Р±РёР±Р»РёРѕС‚РµРє
 int UEngine::Storage_GetNumClassLibraries(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -1179,7 +1179,7 @@ int UEngine::Storage_GetNumClassLibraries(void) const
 }
 
 
-// Возвращает список библиотек в виде строки, разделенной запятыми
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє Р±РёР±Р»РёРѕС‚РµРє РІ РІРёРґРµ СЃС‚СЂРѕРєРё, СЂР°Р·РґРµР»РµРЅРЅРѕР№ Р·Р°РїСЏС‚С‹РјРё
 const char * UEngine::Storage_GetClassLibrariesList(void) const
 {
  std::string& TempString=CreateTempString();
@@ -1212,8 +1212,8 @@ const char * UEngine::Storage_GetClassLibrariesList(void) const
  return TempString.c_str();
 }
 
-// Возвращает список классов библиотеки в виде строки, разделенной запятыми
-// library_name - имя библиотеки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РєР»Р°СЃСЃРѕРІ Р±РёР±Р»РёРѕС‚РµРєРё РІ РІРёРґРµ СЃС‚СЂРѕРєРё, СЂР°Р·РґРµР»РµРЅРЅРѕР№ Р·Р°РїСЏС‚С‹РјРё
+// library_name - РёРјСЏ Р±РёР±Р»РёРѕС‚РµРєРё
 const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) const
 {
  std::string& TempString=CreateTempString();
@@ -1251,8 +1251,8 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
  return TempString.c_str();
 }
 
-// Возвращает список классов библиотеки в виде строки, разделенной запятыми
-// index - индекс библиотеки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РєР»Р°СЃСЃРѕРІ Р±РёР±Р»РёРѕС‚РµРєРё РІ РІРёРґРµ СЃС‚СЂРѕРєРё, СЂР°Р·РґРµР»РµРЅРЅРѕР№ Р·Р°РїСЏС‚С‹РјРё
+// index - РёРЅРґРµРєСЃ Р±РёР±Р»РёРѕС‚РµРєРё
 const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 {
  std::string& TempString=CreateTempString();
@@ -1291,7 +1291,7 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 }
 
 
-// Возвращает имя библиотеки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р±РёР±Р»РёРѕС‚РµРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 {
  std::string& TempString=CreateTempString();
@@ -1318,7 +1318,7 @@ const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
  return TempString.c_str();
 }
 
-// Возвращает версию библиотеки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ Р±РёР±Р»РёРѕС‚РµРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
 {
  std::string& TempString=CreateTempString();
@@ -1345,8 +1345,8 @@ const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
  return TempString.c_str();
 }
 
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// РЈРґР°Р»СЏРµС‚ РїРѕРґРєР»СЋС‡РµРЅРЅСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ РёР· СЃРїРёСЃРєР° РїРѕ РёРЅРґРµРєСЃСѓ
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 int UEngine::Storage_DelClassLibraryByIndex(int index)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1378,8 +1378,8 @@ int UEngine::Storage_DelClassLibraryByIndex(int index)
  return res;
 }
 
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// РЈРґР°Р»СЏРµС‚ РїРѕРґРєР»СЋС‡РµРЅРЅСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ РёР· СЃРїРёСЃРєР° РїРѕ РёРјРµРЅРё
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 int UEngine::Storage_DelClassLibraryByName(const char *name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1411,8 +1411,8 @@ int UEngine::Storage_DelClassLibraryByName(const char *name)
  return res;
 }
 
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// РЈРґР°Р»СЏРµС‚ РёР· СЃРїРёСЃРєР° РІСЃРµ Р±РёР±Р»РёРѕС‚РµРєРё
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 int UEngine::Storage_DelAllClassLibraries(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1444,7 +1444,7 @@ int UEngine::Storage_DelAllClassLibraries(void)
  return res;
 }
 
-// Загружает коллекцию по имени dll-файла
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РєРѕР»Р»РµРєС†РёСЋ РїРѕ РёРјРµРЅРё dll-С„Р°Р№Р»Р°
 int UEngine::Storage_LoadBinaryCollectionFromFile(const char *filename)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1470,7 +1470,7 @@ int UEngine::Storage_LoadBinaryCollectionFromFile(const char *filename)
  return res;
 }
 
-// Загружает runtime-коллекцию
+// Р—Р°РіСЂСѓР¶Р°РµС‚ runtime-РєРѕР»Р»РµРєС†РёСЋ
 int UEngine::Storage_LoadRuntimeCollectionFromFile(const char *filename)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1521,7 +1521,7 @@ int UEngine::Storage_LoadRuntimeCollectionFromString(const char *buffer)
  return res;
 }
 
-// Сохраняет runtime-коллекцию
+// РЎРѕС…СЂР°РЅСЏРµС‚ runtime-РєРѕР»Р»РµРєС†РёСЋ
 int UEngine::Storage_SaveRuntimeCollectionToFile(const char *filename)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1572,7 +1572,7 @@ int UEngine::Storage_SaveRuntimeCollectionToString(const char *buffer)
  return res;
 }
 
-/// Создает новую runtime-библиотеку
+/// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ runtime-Р±РёР±Р»РёРѕС‚РµРєСѓ
 int UEngine::Storage_CreateRuntimeCollection(const char *collection_name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1601,8 +1601,8 @@ int UEngine::Storage_CreateRuntimeCollection(const char *collection_name)
  return res;
 }
 
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
+// РџРµСЂРµРјРµС‰Р°РµС‚ РѕР±СЉРµРєС‚ РІ Storage РєР°Рє РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃРѕРІ.
+// РћР±СЉРµРєС‚ СѓРґР°Р»СЏРµС‚СЃСЏ РёР· РјРѕРґРµР»Рё
 int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1641,8 +1641,8 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, c
  return res;
 }
 
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
+// Р—Р°РїРѕР»РЅСЏРµС‚ С…СЂР°РЅРёР»РёС‰Рµ РґР°РЅРЅС‹РјРё Р±РёР±Р»РёРѕС‚РµРє
+// РћРїРµСЂР°С†РёСЏ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ СѓРЅРёС‡С‚РѕР¶Р°РµС‚ РјРѕРґРµР»СЊ Рё РѕС‡РёС‰Р°РµС‚ С…СЂР°РЅРёР»РёС‰Рµ
 int UEngine::Storage_BuildStorage(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1678,9 +1678,9 @@ int UEngine::Storage_BuildStorage(void)
 
 
 // ----------------------------
-// Методы управления средой
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃСЂРµРґРѕР№
 // ----------------------------
-// Индекс предарительно заданной модели обработки
+// РРЅРґРµРєСЃ РїСЂРµРґР°СЂРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅРѕР№ РјРѕРґРµР»Рё РѕР±СЂР°Р±РѕС‚РєРё
 int UEngine::Env_GetPredefinedStructure(void) const
 {
  RDK_SYS_TRY
@@ -1736,9 +1736,9 @@ int UEngine::Env_SetPredefinedStructure(int value)
  return res;
 }
 
-// Флаг состояния инициализации
-// true - хранилище готово к использованию
-// false - хранилище не готово
+// Р¤Р»Р°Рі СЃРѕСЃС‚РѕСЏРЅРёСЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
+// true - С…СЂР°РЅРёР»РёС‰Рµ РіРѕС‚РѕРІРѕ Рє РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЋ
+// false - С…СЂР°РЅРёР»РёС‰Рµ РЅРµ РіРѕС‚РѕРІРѕ
 bool UEngine::Env_IsStoragePresent(void) const
 {
  RDK_SYS_TRY
@@ -1763,7 +1763,7 @@ bool UEngine::Env_IsStoragePresent(void) const
  return false;
 }
 
-// Возвращает состояние инициализации
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 bool UEngine::Env_IsInit(void) const
 {
  RDK_SYS_TRY
@@ -1788,7 +1788,7 @@ bool UEngine::Env_IsInit(void) const
  return false;
 }
 
-// Признак наличия сформированной структуры
+// РџСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹
 bool UEngine::Env_IsStructured(void) const
 {
  RDK_SYS_TRY
@@ -1813,7 +1813,7 @@ bool UEngine::Env_IsStructured(void) const
  return false;
 }
 
-// Возвращает состояние внутренего логгирования
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РІРЅСѓС‚СЂРµРЅРµРіРѕ Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 bool UEngine::Env_GetEventsLogMode(void) const
 {
  RDK_SYS_TRY
@@ -1838,7 +1838,7 @@ bool UEngine::Env_GetEventsLogMode(void) const
  return false;
 }
 
-// Включает/выключает внутренне логгирование
+// Р’РєР»СЋС‡Р°РµС‚/РІС‹РєР»СЋС‡Р°РµС‚ РІРЅСѓС‚СЂРµРЅРЅРµ Р»РѕРіРіРёСЂРѕРІР°РЅРёРµ
 int UEngine::Env_SetEventsLogMode(bool value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1867,7 +1867,7 @@ int UEngine::Env_SetEventsLogMode(bool value)
  return res;
 }
 
-// Инициализация среды
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЂРµРґС‹
 int UEngine::Env_Init(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1895,7 +1895,7 @@ int UEngine::Env_Init(void)
  return res;
 }
 
-// Деинициализация среды
+// Р”РµРёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЂРµРґС‹
 int UEngine::Env_UnInit(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1923,7 +1923,7 @@ int UEngine::Env_UnInit(void)
  return res;
 }
 
-// Формирует предварительно заданную модель обработки
+// Р¤РѕСЂРјРёСЂСѓРµС‚ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅСѓСЋ РјРѕРґРµР»СЊ РѕР±СЂР°Р±РѕС‚РєРё
 int UEngine::Env_CreateStructure(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1955,7 +1955,7 @@ int UEngine::Env_CreateStructure(void)
  return res;
 }
 
-// Уничтожает текущую модель обработки
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ РѕР±СЂР°Р±РѕС‚РєРё
 int UEngine::Env_DestroyStructure(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -1987,7 +1987,7 @@ int UEngine::Env_DestroyStructure(void)
  return res;
 }
 
-// Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
+// РЈРґР°Р»СЏРµС‚ РјРѕРґРµР»СЊ Рё РІСЃРµ Р±РёР±Р»РёРѕС‚РµРєРё, РѕС‡РёС‰Р°РµС‚ С…СЂР°РЅРёР»РёС‰Рµ, РїСЂРёРІРѕРґСЏ СЃСЂРµРґСѓ РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 int UEngine::Env_Destroy(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2019,7 +2019,7 @@ int UEngine::Env_Destroy(void)
 }
 
 
-// Инициализирует модель
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РјРѕРґРµР»СЊ
 int UEngine::Env_ModelInit(const char *stringid)
 {
     int res=RDK_UNHANDLED_EXCEPTION;
@@ -2058,7 +2058,7 @@ int UEngine::Env_ModelInit(const char *stringid)
     return res;
 }
 
-// Деинициализирует модель
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РјРѕРґРµР»СЊ
 int UEngine::Env_ModelUnInit(const char *stringid)
 {
     int res=RDK_UNHANDLED_EXCEPTION;
@@ -2098,9 +2098,9 @@ int UEngine::Env_ModelUnInit(const char *stringid)
 }
 
 
-// Метод счета
-// Если stringid == 0 то вычисляет всю модель целиком,
-// иначе вычисляет только указанный компонент модели
+// РњРµС‚РѕРґ СЃС‡РµС‚Р°
+// Р•СЃР»Рё stringid == 0 С‚Рѕ РІС‹С‡РёСЃР»СЏРµС‚ РІСЃСЋ РјРѕРґРµР»СЊ С†РµР»РёРєРѕРј,
+// РёРЅР°С‡Рµ РІС‹С‡РёСЃР»СЏРµС‚ С‚РѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё
 int UEngine::Env_Calculate(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2143,7 +2143,7 @@ int UEngine::Env_Calculate(const char* stringid)
  return res;
 }
 
-// Расчет всей модели в реальном времени
+// Р Р°СЃС‡РµС‚ РІСЃРµР№ РјРѕРґРµР»Рё РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё
 int UEngine::Env_RTCalculate(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2171,7 +2171,7 @@ int UEngine::Env_RTCalculate(void)
 }
 
 
-/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+/// Р Р°СЃС‡РµС‚ РјРѕРґРµР»Рё РїРѕСЂС†РёСЏРјРё РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊСЋ calc_intervsal СЃРµРєСѓРЅРґ СЃ РјР°РєСЃРёРјР°Р»СЊРЅРѕ РІРѕР·РјРѕР¶РЅРѕР№ СЃРєРѕСЂРѕСЃС‚СЊСЋ
 int UEngine::Env_FastCalculate(double calc_interval)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2198,9 +2198,9 @@ int UEngine::Env_FastCalculate(double calc_interval)
  return res;
 }
 
-// Метод сброса счета
-// Если stringid == 0 то сбрасывает всю модель целиком,
-// иначе - только указанный компонент модели
+// РњРµС‚РѕРґ СЃР±СЂРѕСЃР° СЃС‡РµС‚Р°
+// Р•СЃР»Рё stringid == 0 С‚Рѕ СЃР±СЂР°СЃС‹РІР°РµС‚ РІСЃСЋ РјРѕРґРµР»СЊ С†РµР»РёРєРѕРј,
+// РёРЅР°С‡Рµ - С‚РѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё
 int UEngine::Env_Reset(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2244,10 +2244,10 @@ int UEngine::Env_Reset(const char* stringid)
  return res;
 }
 
-/// Метод сброса параметров на значения по умолчанию
-/// Если stringid == 0 то сбрасывает всю модель целиком,
-/// иначе - только указанный компонент модели
-/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+/// РњРµС‚РѕРґ СЃР±СЂРѕСЃР° РїР°СЂР°РјРµС‚СЂРѕРІ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+/// Р•СЃР»Рё stringid == 0 С‚Рѕ СЃР±СЂР°СЃС‹РІР°РµС‚ РІСЃСЋ РјРѕРґРµР»СЊ С†РµР»РёРєРѕРј,
+/// РёРЅР°С‡Рµ - С‚РѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё
+/// Р•СЃР»Рё subcomps == true С‚Рѕ С‚Р°РєР¶Рµ СЃР±СЂР°СЃС‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РІСЃРµС… РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
 int UEngine::Env_Default(const char* stringid, bool subcomps)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2287,7 +2287,7 @@ int UEngine::Env_Default(const char* stringid, bool subcomps)
 
 
 
-// Производит увеличение времени модели на требуемую величину
+// РџСЂРѕРёР·РІРѕРґРёС‚ СѓРІРµР»РёС‡РµРЅРёРµ РІСЂРµРјРµРЅРё РјРѕРґРµР»Рё РЅР° С‚СЂРµР±СѓРµРјСѓСЋ РІРµР»РёС‡РёРЅСѓ
 int UEngine::Env_IncreaseModelTimeByStep(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2314,9 +2314,9 @@ int UEngine::Env_IncreaseModelTimeByStep(void)
  return res;
 }
 
-/// Устанавливает минимальный интервал времени между шагами расчета (мс)
-/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
-/// последней итерации не станет больше чем эта величина
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІСЂРµРјРµРЅРё РјРµР¶РґСѓ С€Р°РіР°РјРё СЂР°СЃС‡РµС‚Р° (РјСЃ)
+/// РС‚РµСЂР°С†РёРё СЂР°СЃС‡РµС‚Р° Р±СѓРґСѓС‚ РїСЂРѕРїСѓСЃРєР°С‚СЊСЃСЏ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° РІСЂРµРјСЏ РїСЂРѕС€РµРґС€РµРµ СЃ РЅР°С‡Р°Р»Р°
+/// РїРѕСЃР»РµРґРЅРµР№ РёС‚РµСЂР°С†РёРё РЅРµ СЃС‚Р°РЅРµС‚ Р±РѕР»СЊС€Рµ С‡РµРј СЌС‚Р° РІРµР»РёС‡РёРЅР°
 int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2344,9 +2344,9 @@ int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
  return res;
 }
 
-/// Возвращает минимальный интервал времени между шагами расчета (мс)
-/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
-/// последней итерации не станет больше чем эта величина
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІСЂРµРјРµРЅРё РјРµР¶РґСѓ С€Р°РіР°РјРё СЂР°СЃС‡РµС‚Р° (РјСЃ)
+/// РС‚РµСЂР°С†РёРё СЂР°СЃС‡РµС‚Р° Р±СѓРґСѓС‚ РїСЂРѕРїСѓСЃРєР°С‚СЊСЃСЏ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° РІСЂРµРјСЏ РїСЂРѕС€РµРґС€РµРµ СЃ РЅР°С‡Р°Р»Р°
+/// РїРѕСЃР»РµРґРЅРµР№ РёС‚РµСЂР°С†РёРё РЅРµ СЃС‚Р°РЅРµС‚ Р±РѕР»СЊС€Рµ С‡РµРј СЌС‚Р° РІРµР»РёС‡РёРЅР°
 unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2372,7 +2372,7 @@ unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
  return 0;
 }
 
-// Время, потраченное на последний RT-расчет
+// Р’СЂРµРјСЏ, РїРѕС‚СЂР°С‡РµРЅРЅРѕРµ РЅР° РїРѕСЃР»РµРґРЅРёР№ RT-СЂР°СЃС‡РµС‚
 double UEngine::Env_GetRTLastDuration(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2398,7 +2398,7 @@ double UEngine::Env_GetRTLastDuration(void) const
  return 0.0;
 }
 
-/// Время, расчитанное в модели за один вызов RTCalculate;
+/// Р’СЂРµРјСЏ, СЂР°СЃС‡РёС‚Р°РЅРЅРѕРµ РІ РјРѕРґРµР»Рё Р·Р° РѕРґРёРЅ РІС‹Р·РѕРІ RTCalculate;
 double UEngine::Env_GetRTModelCalcTime(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2424,7 +2424,7 @@ double UEngine::Env_GetRTModelCalcTime(void) const
  return 0.0;
 }
 
-/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+/// РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ RT СЂР°СЃС‡РµС‚Р° (РѕС‚РЅРѕС€РµРЅРёРµ RTModelCalcTime/RTLastDuration)
 double UEngine::Env_CalcRTPerformance(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2450,9 +2450,9 @@ double UEngine::Env_CalcRTPerformance(void) const
  return 0.0;
 }
 
-// !!! Следующие методы управления текущим компонентом влияют на все
-// методы, обращающиеся к компонентам по строковому id !!!
-// Устанавливает текущий компонент (адресация относительно корня - модели)
+// !!! РЎР»РµРґСѓСЋС‰РёРµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С‚РµРєСѓС‰РёРј РєРѕРјРїРѕРЅРµРЅС‚РѕРј РІР»РёСЏСЋС‚ РЅР° РІСЃРµ
+// РјРµС‚РѕРґС‹, РѕР±СЂР°С‰Р°СЋС‰РёРµСЃСЏ Рє РєРѕРјРїРѕРЅРµРЅС‚Р°Рј РїРѕ СЃС‚СЂРѕРєРѕРІРѕРјСѓ id !!!
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ (Р°РґСЂРµСЃР°С†РёСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєРѕСЂРЅСЏ - РјРѕРґРµР»Рё)
 int UEngine::Env_SelectCurrentComponent(const char *stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2462,14 +2462,14 @@ int UEngine::Env_SelectCurrentComponent(const char *stringid)
   {
    Environment->ResetCurrentComponent();
 
-   // Если первый символ - цифра, то декодруем как строковой id
+   // Р•СЃР»Рё РїРµСЂРІС‹Р№ СЃРёРјРІРѕР» - С†РёС„СЂР°, С‚Рѕ РґРµРєРѕРґСЂСѓРµРј РєР°Рє СЃС‚СЂРѕРєРѕРІРѕР№ id
    if(stringid[0]>=0x30 && stringid[0]<=0x39)
    {
 	ULongId longid;
 	longid.DecodeFromString(stringid);
 	Environment->SelectCurrentComponent(longid);
    }
-   else // ...иначе декодируем как строковое имя
+   else // ...РёРЅР°С‡Рµ РґРµРєРѕРґРёСЂСѓРµРј РєР°Рє СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ
    {
 	Environment->SelectCurrentComponent(stringid);
    }
@@ -2491,7 +2491,7 @@ int UEngine::Env_SelectCurrentComponent(const char *stringid)
  return res;
 }
 
-// Сбрасывает текущий компонент в состояние по умолчению (модель)
+// РЎР±СЂР°СЃС‹РІР°РµС‚ С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РІ СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕ СѓРјРѕР»С‡РµРЅРёСЋ (РјРѕРґРµР»СЊ)
 int UEngine::Env_ResetCurrentComponent(const char *stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2518,8 +2518,8 @@ int UEngine::Env_ResetCurrentComponent(const char *stringid)
  return res;
 }
 
-// Меняет текущий компонент на его родителя (подъем на уровень вверх)
-// Если уже на верхнем уровне, то не делает ничего
+// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° РµРіРѕ СЂРѕРґРёС‚РµР»СЏ (РїРѕРґСЉРµРј РЅР° СѓСЂРѕРІРµРЅСЊ РІРІРµСЂС…)
+// Р•СЃР»Рё СѓР¶Рµ РЅР° РІРµСЂС…РЅРµРј СѓСЂРѕРІРЅРµ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int UEngine::Env_UpCurrentComponent(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2546,8 +2546,8 @@ int UEngine::Env_UpCurrentComponent(void)
  return res;
 }
 
-// Меняет текущий компонент на его дочерний на произвольном уровне вложенности
-// (спуск на N уровней вниз относительно текущего компонента)
+// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° РµРіРѕ РґРѕС‡РµСЂРЅРёР№ РЅР° РїСЂРѕРёР·РІРѕР»СЊРЅРѕРј СѓСЂРѕРІРЅРµ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё
+// (СЃРїСѓСЃРє РЅР° N СѓСЂРѕРІРЅРµР№ РІРЅРёР· РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°)
 int UEngine::Env_DownCurrentComponent(const char *stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2555,14 +2555,14 @@ int UEngine::Env_DownCurrentComponent(const char *stringid)
  {
   try
   {
-   // Если первый символ - цифра, то декодруем как строковой id
+   // Р•СЃР»Рё РїРµСЂРІС‹Р№ СЃРёРјРІРѕР» - С†РёС„СЂР°, С‚Рѕ РґРµРєРѕРґСЂСѓРµРј РєР°Рє СЃС‚СЂРѕРєРѕРІРѕР№ id
    if(stringid[0]>=0x30 && stringid[0]<=0x39)
    {
 	ULongId longid;
 	longid.DecodeFromString(stringid);
 	Environment->DownCurrentComponent(longid);
    }
-   else // ...иначе декодируем как строковое имя
+   else // ...РёРЅР°С‡Рµ РґРµРєРѕРґРёСЂСѓРµРј РєР°Рє СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ
    {
 	Environment->DownCurrentComponent(stringid);
    }
@@ -2584,7 +2584,7 @@ int UEngine::Env_DownCurrentComponent(const char *stringid)
  return res;
 }
 
-// Возвращает длинное имя текущего компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅРЅРѕРµ РёРјСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char* UEngine::Env_GetCurrentComponentName(void) const
 {
  std::string& TempString=CreateTempString();
@@ -2611,7 +2611,7 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
  return TempString.c_str();
 }
 
-// Возвращает длинный строковой id текущего компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅРЅС‹Р№ СЃС‚СЂРѕРєРѕРІРѕР№ id С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char* UEngine::Env_GetCurrentComponentId(void) const
 {
  std::string& TempString=CreateTempString();
@@ -2640,7 +2640,7 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
  return TempString.c_str();
 }
 
-// Возвращает имя текущего каталога для хранения данных
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ С‚РµРєСѓС‰РµРіРѕ РєР°С‚Р°Р»РѕРіР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…
 const char* UEngine::Env_GetCurrentDataDir(void) const
 {
  std::string& TempString=CreateTempString();
@@ -2669,7 +2669,7 @@ const char* UEngine::Env_GetCurrentDataDir(void) const
  return 0;
 }
 
-// Устанавливает имя текущего каталога для хранения данных
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ С‚РµРєСѓС‰РµРіРѕ РєР°С‚Р°Р»РѕРіР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…
 int UEngine::Env_SetCurrentDataDir(const char *dir)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2696,7 +2696,7 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
  return res;
 }
 
-// Возвращает имя каталога бинарных файлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 const char* UEngine::Env_GetSystemDir(void) const
 {
  std::string& TempString=CreateTempString();
@@ -2725,7 +2725,7 @@ const char* UEngine::Env_GetSystemDir(void) const
  return 0;
 }
 
-// Устанавливает имя каталога бинарных файлов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 int UEngine::Env_SetSystemDir(const char *dir)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2751,7 +2751,7 @@ int UEngine::Env_SetSystemDir(const char *dir)
  return res;
 }
 
-/// Возвращает состояние флага отладочного режима среды
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР° РѕС‚Р»Р°РґРѕС‡РЅРѕРіРѕ СЂРµР¶РёРјР° СЃСЂРµРґС‹
 bool UEngine::Env_GetDebugMode(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2777,7 +2777,7 @@ bool UEngine::Env_GetDebugMode(void) const
  return false;
 }
 
-/// Устанавливает состояние флага отладочного режима среды
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР° РѕС‚Р»Р°РґРѕС‡РЅРѕРіРѕ СЂРµР¶РёРјР° СЃСЂРµРґС‹
 int UEngine::Env_SetDebugMode(bool value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2807,7 +2807,7 @@ int UEngine::Env_SetDebugMode(bool value)
  return res;
 }
 
-/// Возвращает маску системных событий для логирования
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃРєСѓ СЃРёСЃС‚РµРјРЅС‹С… СЃРѕР±С‹С‚РёР№ РґР»СЏ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2833,7 +2833,7 @@ unsigned int UEngine::Env_GetDebugSysEventsMask(void) const
  return false;
 }
 
-/// Устанавливает маску системных событий для логирования
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РјР°СЃРєСѓ СЃРёСЃС‚РµРјРЅС‹С… СЃРѕР±С‹С‚РёР№ РґР»СЏ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2864,7 +2864,7 @@ int UEngine::Env_SetDebugSysEventsMask(unsigned int value)
 }
 
 
-/// Возвращает флаг включения вывода лога в отладчик
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹РІРѕРґР° Р»РѕРіР° РІ РѕС‚Р»Р°РґС‡РёРє
 bool UEngine::Env_GetDebuggerMessageFlag(void) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -2890,7 +2890,7 @@ bool UEngine::Env_GetDebuggerMessageFlag(void) const
  return false;
 }
 
-/// Устанавливает флаг включения вывода лога в отладчик
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С„Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹РІРѕРґР° Р»РѕРіР° РІ РѕС‚Р»Р°РґС‡РёРє
 int UEngine::Env_SetDebuggerMessageFlag(bool value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -2920,43 +2920,43 @@ int UEngine::Env_SetDebuggerMessageFlag(bool value)
  return res;
 }
 
-// Задает число входов среды
+// Р—Р°РґР°РµС‚ С‡РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
 void UEngine::Env_SetNumInputImages(int number)
 {
  //GetEnvironment()->SetNumInputImages(number);
 }
 
-// Задает число выходов среды
+// Р—Р°РґР°РµС‚ С‡РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
 void UEngine::Env_SetNumOutputImages(int number)
 {
  //GetEnvironment()->SetNumOutputImages(number);
 }
 
-// Возвращает число входов среды
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
 int UEngine::Env_GetNumInputImages(void)
 {
  return 0;//return GetEnvironment()->GetNumInputImages();
 }
 
-// Возвращает число выходов среды
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
 int UEngine::Env_GetNumOutputImages(void)
 {
  return 0;//return GetEnvironment()->GetNumOutputImages();
 }
 
-// Задает разрешение по умолчанию (рабочее разрешение)
+// Р—Р°РґР°РµС‚ СЂР°Р·СЂРµС€РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (СЂР°Р±РѕС‡РµРµ СЂР°Р·СЂРµС€РµРЅРёРµ)
 void UEngine::Env_SetInputRes(int number, int width, int height)
 {
  //GetEnvironment()->SetInputImageRes(number,width,height);
 }
 
-// Задает флаг отражения входного изображения вокруг горизонтальной оси
+// Р—Р°РґР°РµС‚ С„Р»Р°Рі РѕС‚СЂР°Р¶РµРЅРёСЏ РІС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРєСЂСѓРі РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РѕСЃРё
 void UEngine::Env_SetReflectionXFlag(bool value)
 {
  //GetEnvironment()->SetReflectionXFlag(value);
 }
 
-// Возвращает разрешение по умолчанию (рабочее разрешение)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·СЂРµС€РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (СЂР°Р±РѕС‡РµРµ СЂР°Р·СЂРµС€РµРЅРёРµ)
 int UEngine::Env_GetInputImageWidth(int number)
 {
  return 0;//return GetEnvironment()->GetInputImageWidth(number);
@@ -2972,7 +2972,7 @@ int UEngine::Env_GetInputImageColorModel(int number)
  return 0;//return GetEnvironment()->GetInputImageColorModel(number);
 }
 
-// Возвращает текущее выходное разрешение
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІС‹С…РѕРґРЅРѕРµ СЂР°Р·СЂРµС€РµРЅРёРµ
 int UEngine::Env_GetOutputImageWidth(int number)
 {
  return 0;// return GetEnvironment()->GetOutputImageWidth(number);
@@ -3014,7 +3014,7 @@ unsigned char* UEngine::Env_GetOutputImageY8(int index)
 }
 
 
-/// Инициирует извещение о сбое в работе источника данных
+/// РРЅРёС†РёРёСЂСѓРµС‚ РёР·РІРµС‰РµРЅРёРµ Рѕ СЃР±РѕРµ РІ СЂР°Р±РѕС‚Рµ РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
 int UEngine::Env_CallSourceController(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3045,9 +3045,9 @@ int UEngine::Env_CallSourceController(void)
 }
 
 
-// Методы управления моделью
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РјРѕРґРµР»СЊСЋ
 // ----------------------------
-// Удаляет модель
+// РЈРґР°Р»СЏРµС‚ РјРѕРґРµР»СЊ
 int UEngine::Model_Destroy(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3076,8 +3076,8 @@ int UEngine::Model_Destroy(void)
  return res;
 }
 
-// Создает новую модель по имени класса в хранилище
-// Предварительно удаляет существующую модель
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ РјРѕРґРµР»СЊ РїРѕ РёРјРµРЅРё РєР»Р°СЃСЃР° РІ С…СЂР°РЅРёР»РёС‰Рµ
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ СѓРґР°Р»СЏРµС‚ СЃСѓС‰РµСЃС‚РІСѓСЋС‰СѓСЋ РјРѕРґРµР»СЊ
 int UEngine::Model_Create(const char *classname)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3106,7 +3106,7 @@ int UEngine::Model_Create(const char *classname)
  return res;
 }
 
-// Очищает модель
+// РћС‡РёС‰Р°РµС‚ РјРѕРґРµР»СЊ
 int UEngine::Model_Clear(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3139,7 +3139,7 @@ int UEngine::Model_Clear(void)
  return res;
 }
 
-// Проверяет, существует ли модель
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РјРѕРґРµР»СЊ
 bool UEngine::Model_Check(void)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -3165,7 +3165,7 @@ bool UEngine::Model_Check(void)
  return false;
 }
 
-// Проверяет, существует ли в модели компонент с именем stringid)
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РІ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚ СЃ РёРјРµРЅРµРј stringid)
 bool UEngine::Model_CheckComponent(const char* stringid) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -3197,10 +3197,10 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
  return false;
 }
 
-// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр
-// контейнера с заданным 'classname'
-// если stringid - пустая строка, то добавляет в саму модель
-// Возвращает имя компонента в случае успеха
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ РІС‹Р±СЂР°РЅРЅС‹Р№ РєРѕРЅС‚РµР№РЅРµСЂ РјРѕРґРµР»Рё СЃ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРј 'stringid' СЌРєР·РµРјРїР»СЏСЂ
+// РєРѕРЅС‚РµР№РЅРµСЂР° СЃ Р·Р°РґР°РЅРЅС‹Рј 'classname'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РґРѕР±Р°РІР»СЏРµС‚ РІ СЃР°РјСѓ РјРѕРґРµР»СЊ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р°
 const char* UEngine::Model_AddComponent(const char* stringid, const char *classname)
 {
  std::string& TempString=CreateTempString();
@@ -3229,7 +3229,7 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
    if(destcont->AddComponent(cont))
    {
 	if(!cont->IsInit())
-	 cont->Init(); // TODO: Возможно тут надо учитывать настройки конфигурации?
+	 cont->Init(); // TODO: Р’РѕР·РјРѕР¶РЅРѕ С‚СѓС‚ РЅР°РґРѕ СѓС‡РёС‚С‹РІР°С‚СЊ РЅР°СЃС‚СЂРѕР№РєРё РєРѕРЅС„РёРіСѓСЂР°С†РёРё?
 	else
      cont->Reset();
 	TempString=cont->GetName();
@@ -3253,9 +3253,9 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
  return TempString.c_str();
 }
 
-// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
-// контейнера с заданным 'name'
-// если stringid - пустая строка, то удаляет из самой модели
+// РЈРґР°Р»СЏРµС‚ РёР· РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР° РјРѕРґРµР»Рё СЃ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРј 'stringid' СЌРєР·РµРјРїР»СЏСЂ
+// РєРѕРЅС‚РµР№РЅРµСЂР° СЃ Р·Р°РґР°РЅРЅС‹Рј 'name'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ СѓРґР°Р»СЏРµС‚ РёР· СЃР°РјРѕР№ РјРѕРґРµР»Рё
 int UEngine::Model_DelComponent(const char* stringid, const char *name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3288,10 +3288,10 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
  return res;
 }
 
-/// Перемещает компоненту в другой компонент
-/// Если comp не принадлежит этому компоненту, или target имеет отличный от
-/// этого компонента storage, или target не может принять в себя компонент
-/// то возвращает false и не делает ничего
+/// РџРµСЂРµРјРµС‰Р°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚Сѓ РІ РґСЂСѓРіРѕР№ РєРѕРјРїРѕРЅРµРЅС‚
+/// Р•СЃР»Рё comp РЅРµ РїСЂРёРЅР°РґР»РµР¶РёС‚ СЌС‚РѕРјСѓ РєРѕРјРїРѕРЅРµРЅС‚Сѓ, РёР»Рё target РёРјРµРµС‚ РѕС‚Р»РёС‡РЅС‹Р№ РѕС‚
+/// СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° storage, РёР»Рё target РЅРµ РјРѕР¶РµС‚ РїСЂРёРЅСЏС‚СЊ РІ СЃРµР±СЏ РєРѕРјРїРѕРЅРµРЅС‚
+/// С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false Рё РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int UEngine::Model_MoveComponent(const char* component, const char* target)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3337,8 +3337,8 @@ int UEngine::Model_MoveComponent(const char* component, const char* target)
 }
 
 
-/// Клонирует компонент со всеми содержимым и внутренними связями
-/// Если new_name - пустая строка, то имя назначается автоматически
+/// РљР»РѕРЅРёСЂСѓРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ СЃРѕ РІСЃРµРјРё СЃРѕРґРµСЂР¶РёРјС‹Рј Рё РІРЅСѓС‚СЂРµРЅРЅРёРјРё СЃРІСЏР·СЏРјРё
+/// Р•СЃР»Рё new_name - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РёРјСЏ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё
 int UEngine::Model_CloneComponent(const char* component_name, const char* new_name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3395,8 +3395,8 @@ int UEngine::Model_CloneComponent(const char* component_name, const char* new_na
  return res;
 }
 
-// Возвращает число всех компонент в заданного компоненте 'stringid'
-// если stringid - пустая строка, то возвращает число всех компонент модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ РІ Р·Р°РґР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Рµ 'stringid'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё
 int UEngine::Model_GetNumComponents(const char* stringid)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -3427,8 +3427,8 @@ int UEngine::Model_GetNumComponents(const char* stringid)
  return 0;
 }
 
-// Возвращает массив всех id заданного компонента 'stringid'
-// если stringid - пустая строка, то возвращает массив всех id модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ РІСЃРµС… id Р·Р°РґР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'stringid'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ РІСЃРµС… id РјРѕРґРµР»Рё
 int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3464,8 +3464,8 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
  return res;
 }
 
-// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
-// имена разделяются сипволом ','
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ СЃРїРёСЃРѕРє РёРјРµРЅ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ Р·Р°РґР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'stringid'
+// РёРјРµРЅР° СЂР°Р·РґРµР»СЏСЋС‚СЃСЏ СЃРёРїРІРѕР»РѕРј ','
 const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 {
  std::string& TempString=CreateTempString();
@@ -3509,9 +3509,9 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
  return 0;
 }
 
-// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
-// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
-// Если find_all == true то поиск ведется и во всех сабкомпонентах
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ СЃРїРёСЃРѕРє РёРјРµРЅ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ Р·Р°РґР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'stringid'
+// РёРјРµРЅР° СЂР°Р·РґРµР»СЏСЋС‚СЃСЏ СЃРёРїРІРѕР»РѕРј ',' Рё РёРјРµСЋС‰РёС… РёРјСЏ РєР»Р°СЃСЃР° 'class_name'
+// Р•СЃР»Рё find_all == true С‚Рѕ РїРѕРёСЃРє РІРµРґРµС‚СЃСЏ Рё РІРѕ РІСЃРµС… СЃР°Р±РєРѕРјРїРѕРЅРµРЅС‚Р°С…
 const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
 {
  std::string& TempString=CreateTempString();
@@ -3565,11 +3565,11 @@ const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const
  return 0;
 }
 
-// Перемещает компонент с текущим индексом index или именем 'name' вверх или
-// вниз по списку на заданное число элементов
-// Применяется для изменения порядка расчета компонент
-// Если значение 'step' выводит за границы массива, то компонент устанавливается
-// на эту границу
+// РџРµСЂРµРјРµС‰Р°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ СЃ С‚РµРєСѓС‰РёРј РёРЅРґРµРєСЃРѕРј index РёР»Рё РёРјРµРЅРµРј 'name' РІРІРµСЂС… РёР»Рё
+// РІРЅРёР· РїРѕ СЃРїРёСЃРєСѓ РЅР° Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ
+// РџСЂРёРјРµРЅСЏРµС‚СЃСЏ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ РїРѕСЂСЏРґРєР° СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚
+// Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ 'step' РІС‹РІРѕРґРёС‚ Р·Р° РіСЂР°РЅРёС†С‹ РјР°СЃСЃРёРІР°, С‚Рѕ РєРѕРјРїРѕРЅРµРЅС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ
+// РЅР° СЌС‚Сѓ РіСЂР°РЅРёС†Сѓ
 int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3611,15 +3611,15 @@ int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
 }
 
 
-// Возвращает xml-список длинных идентификаторов всех коннекторов сети.
-// 'sublevel' опеределяет число уровней вложенности подсетей для которых
-// коннекторы будут добавлены в список.
-// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
-// Предварительная очистка буфера не производится.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ xml-СЃРїРёСЃРѕРє РґР»РёРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ СЃРµС‚Рё.
+// 'sublevel' РѕРїРµСЂРµРґРµР»СЏРµС‚ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё РїРѕРґСЃРµС‚РµР№ РґР»СЏ РєРѕС‚РѕСЂС‹С…
+// РєРѕРЅРЅРµРєС‚РѕСЂС‹ Р±СѓРґСѓС‚ РґРѕР±Р°РІР»РµРЅС‹ РІ СЃРїРёСЃРѕРє.
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° Р±СѓС„РµСЂР° РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ.
 const char* UEngine::Model_GetConnectorsList(const char* stringid,
                           int sublevel, const char* owner_level_stringid)
 {
@@ -3663,15 +3663,15 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
  return TempString.c_str();
 }
 
-// Возвращает xml-список длинных идентификаторов всех элементов сети.
-// 'sublevel' опеределяет число уровней вложенности подсетей для которых
-// элементы будут добавлены в список.
-// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
-// Предварительная очистка буфера не производится.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ xml-СЃРїРёСЃРѕРє РґР»РёРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ СЃРµС‚Рё.
+// 'sublevel' РѕРїРµСЂРµРґРµР»СЏРµС‚ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё РїРѕРґСЃРµС‚РµР№ РґР»СЏ РєРѕС‚РѕСЂС‹С…
+// СЌР»РµРјРµРЅС‚С‹ Р±СѓРґСѓС‚ РґРѕР±Р°РІР»РµРЅС‹ РІ СЃРїРёСЃРѕРє.
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ СЌР»РµРјРµРЅС‚РѕРІ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° Р±СѓС„РµСЂР° РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ.
 const char* UEngine::Model_GetItemsList(const char* stringid,
                             int sublevel, const char* owner_level_stringid)
 {
@@ -3714,15 +3714,15 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
  return TempString.c_str();
 }
 
-// Возвращает xml-список длинных идентификаторов всех подсетей сети.
-// 'sublevel' опеределяет число уровней вложенности подсетей для которых
-// подсети будут добавлены в список.
-// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
-// Предварительная очистка буфера не производится.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ xml-СЃРїРёСЃРѕРє РґР»РёРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… РїРѕРґСЃРµС‚РµР№ СЃРµС‚Рё.
+// 'sublevel' РѕРїРµСЂРµРґРµР»СЏРµС‚ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё РїРѕРґСЃРµС‚РµР№ РґР»СЏ РєРѕС‚РѕСЂС‹С…
+// РїРѕРґСЃРµС‚Рё Р±СѓРґСѓС‚ РґРѕР±Р°РІР»РµРЅС‹ РІ СЃРїРёСЃРѕРє.
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… РїРѕРґСЃРµС‚РµР№ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РїРѕРґСЃРµС‚РµР№ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° Р±СѓС„РµСЂР° РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ.
 const char* UEngine::Model_GetNetsList(const char* stringid,
                             int sublevel, const char* owner_level_stringid)
 {
@@ -3765,9 +3765,9 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 }
 
 
-// Возвращает имя компонента по заданному 'stringid'
-// если stringid - пустая строка, то возвращает имя модели
-// Память выделяется и освобождается внутри dll
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ 'stringid'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РјРѕРґРµР»Рё
+// РџР°РјСЏС‚СЊ РІС‹РґРµР»СЏРµС‚СЃСЏ Рё РѕСЃРІРѕР±РѕР¶РґР°РµС‚СЃСЏ РІРЅСѓС‚СЂРё dll
 const char* UEngine::Model_GetComponentName(const char* stringid)
 {
  std::string& TempString=CreateTempString();
@@ -3801,11 +3801,11 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
 }
 
 
-// Возвращает длинное имя компонента по заданному 'stringid'
-// если stringid - пустая строка, то возвращает имя модели
-// Память выделяется и освобождается внутри dll
-// Имя формируется до уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅРЅРѕРµ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ 'stringid'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РјРѕРґРµР»Рё
+// РџР°РјСЏС‚СЊ РІС‹РґРµР»СЏРµС‚СЃСЏ Рё РѕСЃРІРѕР±РѕР¶РґР°РµС‚СЃСЏ РІРЅСѓС‚СЂРё dll
+// РРјСЏ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјСЏ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char* UEngine::Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
  std::string& TempString=CreateTempString();
@@ -3838,11 +3838,11 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
  return TempString.c_str();
 }
 
-// Возвращает длинный id компонента по заданному 'stringid'
-// если stringid - пустая строка, то возвращает имя модели
-// Память выделяется и освобождается внутри dll
-// Имя формируется до уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅРЅС‹Р№ id РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ 'stringid'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РјРѕРґРµР»Рё
+// РџР°РјСЏС‚СЊ РІС‹РґРµР»СЏРµС‚СЃСЏ Рё РѕСЃРІРѕР±РѕР¶РґР°РµС‚СЃСЏ РІРЅСѓС‚СЂРё dll
+// РРјСЏ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјСЏ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
  std::string& TempString=CreateTempString();
@@ -3879,8 +3879,8 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
  return TempString.c_str();
 }
 
-// Возвращает имя класса компонента в хранилище по длинному 'stringid'
-// если stringid - пустая строка, то возвращает имя класса модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ С…СЂР°РЅРёР»РёС‰Рµ РїРѕ РґР»РёРЅРЅРѕРјСѓ 'stringid'
+// РµСЃР»Рё stringid - РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РјРѕРґРµР»Рё
 const char* UEngine::Model_GetComponentClassName(const char* stringid)
 {
  std::string& TempString=CreateTempString();
@@ -3914,7 +3914,7 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
  return TempString.c_str();
 }
 
-// Возвращает список свойств компонента разделенный запятыми
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє СЃРІРѕР№СЃС‚РІ РєРѕРјРїРѕРЅРµРЅС‚Р° СЂР°Р·РґРµР»РµРЅРЅС‹Р№ Р·Р°РїСЏС‚С‹РјРё
 const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
@@ -4016,7 +4016,7 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
 }
 
 
-// Возвращает свойства компонента по идентификатору
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
 const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4061,7 +4061,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
  return 0;
 }
 
-// Возвращает выборочные свойства компонента по идентификатору
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІС‹Р±РѕСЂРѕС‡РЅС‹Рµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
 const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 {
  std::string& TempString=CreateTempString();
@@ -4090,7 +4090,7 @@ const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
  return 0;
 }
 
-// Возвращает свойства компонента по идентификатору с описаниями
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ СЃ РѕРїРёСЃР°РЅРёСЏРјРё
 const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
@@ -4134,7 +4134,7 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
  return 0;
 }
 
-// Возвращает значение свойства компонента по идентификатору компонента и имени свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РёРјРµРЅРё СЃРІРѕР№СЃС‚РІР°
 const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
  std::string& TempString=CreateTempString();
@@ -4168,7 +4168,7 @@ const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, cons
  return 0;
 }
 
-// устанавливает свойства компонента по идентификатору
+// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
 int UEngine::Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4212,7 +4212,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
  return res;
 }
 
-// Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РёРјРµРЅРё СЃРІРѕР№СЃС‚РІР°
 int UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4244,8 +4244,8 @@ int UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *p
 }
 
 
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// включая этот компонент
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РІСЃРµРј РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚Р°Рј РєРѕРјРїРѕРЅРµРЅС‚Р° stringid, РїСЂРѕРёР·РІРѕРґРЅС‹Рј РѕС‚ РєР»Р°СЃСЃР° class_stringid
+// РІРєР»СЋС‡Р°СЏ СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚
 int UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4280,8 +4280,8 @@ int UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const c
  return res;
 }
 
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РІСЃРµРј РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚Р°Рј РєРѕРјРїРѕРЅРµРЅС‚Р° stringid, РїСЂРѕРёР·РІРѕРґРЅС‹Рј РѕС‚ РєР»Р°СЃСЃР° class_stringid
+// Рё РІР»Р°РґРµР»СЊС†РµРј, РїСЂРѕРёР·РІРѕРґРЅС‹Рј РѕС‚ РєР»Р°СЃСЃР° 'class_owner_stringid' РІРєР»СЋС‡Р°СЏ СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚
 int UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4317,7 +4317,7 @@ int UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, co
  return res;
 }
 
-// Возвращает указатель void* на данные свойства компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ void* РЅР° РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р°
 const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const char *property_name)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -4347,7 +4347,7 @@ const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const 
 
 }
 
-// Копирует данные 'data' в заданное свойство компонента
+// РљРѕРїРёСЂСѓРµС‚ РґР°РЅРЅС‹Рµ 'data' РІ Р·Р°РґР°РЅРЅРѕРµ СЃРІРѕР№СЃС‚РІРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UEngine::Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4455,7 +4455,7 @@ int UEngine::Model_BreakLink(const char* stringid1, const char* item_property_na
  return res;
 }
 
-// Разрывает все связи
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё
 int UEngine::Model_BreakAllLinks(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4487,7 +4487,7 @@ int UEngine::Model_BreakAllLinks(void)
  return res;
 }
 /*
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
+// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ РєРѕ РІС…РѕРґСѓ connector_index РєРѕРЅРЅРµРєС‚РѕСЂР° 'connectorid'
 int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_index)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4519,7 +4519,7 @@ int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_i
  return res;
 }*/
 
-// Разрывает все входные и выходные связи выбранного контейнера
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ РІС…РѕРґРЅС‹Рµ Рё РІС‹С…РѕРґРЅС‹Рµ СЃРІСЏР·Рё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР°
 int UEngine::Model_BreakAllComponentLinks(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4551,7 +4551,7 @@ int UEngine::Model_BreakAllComponentLinks(const char* stringid)
  return res;
 }
 
-// Разрывает все входные связи выбранного контейнера
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ РІС…РѕРґРЅС‹Рµ СЃРІСЏР·Рё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР°
 int UEngine::Model_BreakAllComponentInputLinks(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4583,7 +4583,7 @@ int UEngine::Model_BreakAllComponentInputLinks(const char* stringid)
  return res;
 }
 
-// Разрывает все выходные связи выбранного контейнера
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ РІС‹С…РѕРґРЅС‹Рµ СЃРІСЏР·Рё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР°
 int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4610,11 +4610,11 @@ int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
  return res;
 }
 
-// Проверяет, существует ли заданна связь
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё Р·Р°РґР°РЅРЅР° СЃРІСЏР·СЊ
 bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
- return false; // TODO: Метод удалить
+ return false; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  RDK_SYS_TRY
  {
@@ -4627,7 +4627,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
     cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
-   catch (UException &)// Заглушка!! здесь другое исключение
+   catch (UException &)// Р—Р°РіР»СѓС€РєР°!! Р·РґРµСЃСЊ РґСЂСѓРіРѕРµ РёСЃРєР»СЋС‡РµРЅРёРµ
    {
 	return false;
    }
@@ -4666,14 +4666,14 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
 	cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
 	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
    }
-   catch (UException &)// Заглушка!! здесь другое исключение
+   catch (UException &)// Р—Р°РіР»СѓС€РєР°!! Р·РґРµСЃСЊ РґСЂСѓРіРѕРµ РёСЃРєР»СЋС‡РµРЅРёРµ
    {
 	return false;
    }
    if(!cont1 || !cont2)
 	return false;
 
-   return cont1->CheckLink(cont2,item_property_name,connector_property_name, -1); // TODO: -1 заменить на параметр
+   return cont1->CheckLink(cont2,item_property_name,connector_property_name, -1); // TODO: -1 Р·Р°РјРµРЅРёС‚СЊ РЅР° РїР°СЂР°РјРµС‚СЂ
   }
   catch (RDK::UException &exception)
   {
@@ -4691,7 +4691,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
  return false;
 }
 
-/// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
+/// РџРµСЂРµРєР»СЋС‡Р°РµС‚ РІСЃРµ РІС…РѕРґС‹ РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ Рє РІС‹С…РѕРґСѓ РєРѕРјРїРѕРЅРµРЅС‚Р° 1 РЅР° РІС‹С…РѕРґ РєРѕРјРїРѕРЅРµРЅС‚Р° 2
 int UEngine::Model_SwitchOutputLinks(const char* item_name1, const char* item_property_name1, const char* item_name2, const char* item_property_name2)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -4733,9 +4733,9 @@ int UEngine::Model_SwitchOutputLinks(const char* item_name1, const char* item_pr
 
 
 
-// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-// Имена формируются до уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ СЃРІСЏР·Рё РІРЅСѓС‚СЂРё РєРѕРјРїРѕРЅРµРЅС‚Р° stringid РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4777,9 +4777,9 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
  return TempString.c_str();
 }
 
-// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-// Имена применяются с уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то применяется уровень текущего компонента
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РІРЅСѓС‚СЂРё РєРѕРјРїРѕРЅРµРЅС‚Р° stringid РёР· СЃС‚СЂРѕРєРё xml РІ Р±СѓС„РµСЂРµ buffer
+// РРјРµРЅР° РїСЂРёРјРµРЅСЏСЋС‚СЃСЏ СЃ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РїСЂРёРјРµРЅСЏРµС‚СЃСЏ СѓСЂРѕРІРµРЅСЊ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4818,14 +4818,14 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
  return res;
 }
 
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ РІС…РѕРґРЅС‹Рµ СЃРІСЏР·Рё Рє РєРѕРјРїРѕРЅРµРЅС‚Сѓ stringid РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… РїРѕРґСЃРµС‚РµР№ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РїРѕРґСЃРµС‚РµР№ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4871,14 +4871,14 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
  return TempString.c_str();
 }
 
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ РІС‹С…РѕРґРЅС‹Рµ СЃРІСЏР·Рё РёР· РєРѕРјРїРѕРЅРµРЅС‚Р° stringid РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… РїРѕРґСЃРµС‚РµР№ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РїРѕРґСЃРµС‚РµР№ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4924,10 +4924,10 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
  return TempString.c_str();
 }
 
-// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
-// Информация о связях формируется относительно владельца компонента cont!
-// Имена формируются до уровня компонента owner_level_stringid
-// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ РІРЅРµС€РЅРёРµ СЃРІСЏР·Рё c РєРѕРјРїРѕРЅРµРЅС‚РѕРј cont Рё РµРіРѕ РґРѕС‡РµСЂРЅРёРјРё РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃРІСЏР·СЏС… С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РІР»Р°РґРµР»СЊС†Р° РєРѕРјРїРѕРЅРµРЅС‚Р° cont!
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level_stringid
+// Р•СЃР»Рё owner_level_stringid РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid)
 {
  RDK::USerStorageXML XmlStorage;
@@ -4970,10 +4970,10 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
  return TempString.c_str();
 }
 
-// Возвращает число входов у компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІС…РѕРґРѕРІ Сѓ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -5003,10 +5003,10 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
  return 0;*/
 }
 
-// Возвращает размер входа компонента в числе элементов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂ РІС…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ С‡РёСЃР»Рµ СЌР»РµРјРµРЅС‚РѕРІ
 int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 {
-     return 0; // TODO: Метод удалить
+     return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
      /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -5018,7 +5018,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
    if(!cont)
 	return 0;
 
-   return cont->GetInputDataSize(index)[1]; // TODO: Нужно возвращать массив размерностей
+   return cont->GetInputDataSize(index)[1]; // TODO: РќСѓР¶РЅРѕ РІРѕР·РІСЂР°С‰Р°С‚СЊ РјР°СЃСЃРёРІ СЂР°Р·РјРµСЂРЅРѕСЃС‚РµР№
   }
   catch (RDK::UException &exception)
   {
@@ -5036,7 +5036,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
  return 0;*/
 }
 
-// Возвращает размер элемента входа в байтах
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂ СЌР»РµРјРµРЅС‚Р° РІС…РѕРґР° РІ Р±Р°Р№С‚Р°С…
 int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5062,7 +5062,7 @@ int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
  return 0;
 }
 
-// Возвращает размер входа компонента в байтах элементов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂ РІС…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ Р±Р°Р№С‚Р°С… СЌР»РµРјРµРЅС‚РѕРІ
 int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5088,8 +5088,8 @@ int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
  return 0;
 }
 
-// Возвращает указатель на данные входа как на массив байт
-// Только для чтения!
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ РІС…РѕРґР° РєР°Рє РЅР° РјР°СЃСЃРёРІ Р±Р°Р№С‚
+// РўРѕР»СЊРєРѕ РґР»СЏ С‡С‚РµРЅРёСЏ!
 unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int index)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5115,10 +5115,10 @@ unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int in
  return 0;
 }
 
-// Возвращает число выходов у компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ Сѓ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -5148,10 +5148,10 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
  return 0;*/
 }
 
-// Возвращает размер выхода компонента в числе элементов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂ РІС‹С…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ С‡РёСЃР»Рµ СЌР»РµРјРµРЅС‚РѕРІ
 int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -5163,7 +5163,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
    if(!cont)
 	return 0;
 
-   return cont->GetOutputDataSize(index)[1]; // TODO: тут надо передавать полноценную матрицу размеров
+   return cont->GetOutputDataSize(index)[1]; // TODO: С‚СѓС‚ РЅР°РґРѕ РїРµСЂРµРґР°РІР°С‚СЊ РїРѕР»РЅРѕС†РµРЅРЅСѓСЋ РјР°С‚СЂРёС†Сѓ СЂР°Р·РјРµСЂРѕРІ
   }
   catch (RDK::UException &exception)
   {
@@ -5181,7 +5181,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
  return 0;*/
 }
 
-// Возвращает размер выхода компонента в байтах элементов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂ РІС‹С…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ Р±Р°Р№С‚Р°С… СЌР»РµРјРµРЅС‚РѕРІ
 int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5207,11 +5207,11 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
  return 0;
 }
 
-// Возвращает указатель на данные выхода как на массив байт
-// Только для чтения!
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ РІС‹С…РѕРґР° РєР°Рє РЅР° РјР°СЃСЃРёРІ Р±Р°Р№С‚
+// РўРѕР»СЊРєРѕ РґР»СЏ С‡С‚РµРЅРёСЏ!
 unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int index)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -5241,8 +5241,8 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
  return 0;*/
 }
 
-// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ xml
 const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
  RDK::USerStorageXML XmlStorage;
@@ -5285,16 +5285,16 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
  return TempString.c_str();
 }
 
-// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ xml
 int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
 {
  return 0;
 }
 
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· xml
 int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 {
  RDK::USerStorageXML XmlStorage;
@@ -5360,8 +5360,8 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
  return res;
 }
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· xml
 int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
 {
  int res=RDK_SUCCESS;
@@ -5402,7 +5402,7 @@ int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_
  return res;
 }
 
-// Сохраняет все свойства компонента и его дочерних компонент в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ РІ xml
 const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
  RDK::USerStorageXML XmlStorage;
@@ -5449,7 +5449,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
  return TempString.c_str();
 }
 
-// Сохраняет все свойства компонента и его дочерних компонент в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ РІ xml
 int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
 {  /*
  const char* save_data=Model_SaveComponentProperties(stringid,type_mask);
@@ -5474,7 +5474,7 @@ int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const cha
  return 0;
 }
 
-// Загружает все свойства компонента и его дочерних компонент из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ РёР· xml
 int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buffer)
 {
  RDK::USerStorageXML XmlStorage;
@@ -5519,8 +5519,8 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
  return res;
 }
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· xml
 int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
 {/*
  try
@@ -5542,8 +5542,8 @@ int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const c
  return 0;
 }
 
-// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
-// переменные состояния в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РµРіРѕ _РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅС‹С…_ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ xml
 const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 {
  std::string& TempString=CreateTempString();
@@ -5588,7 +5588,7 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
  return TempString.c_str();
 }
 
-// Управляет шагом счета модели по умолчанию
+// РЈРїСЂР°РІР»СЏРµС‚ С€Р°РіРѕРј СЃС‡РµС‚Р° РјРѕРґРµР»Рё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 unsigned int UEngine::Model_GetDefaultTimeStep(void) const
 {
  return DefaultTimeStep;
@@ -5600,7 +5600,7 @@ int UEngine::Model_SetDefaultTimeStep(unsigned int value)
  return RDK_SUCCESS;
 }
 
-// Управляет шагом счета компонента
+// РЈРїСЂР°РІР»СЏРµС‚ С€Р°РіРѕРј СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р°
 unsigned int UEngine::Model_GetTimeStep(const char *stringid) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5656,7 +5656,7 @@ int UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
  return res;
 }
 
-// Устанавливает шаг счета компонента и всех его дочерних компонент
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С€Р°Рі СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
 int UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -5685,7 +5685,7 @@ int UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
  return res;
 }
 
-// Возвращает текущее время модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РјРѕРґРµР»Рё
 unsigned long long UEngine::Model_GetTime(void)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5736,7 +5736,7 @@ double UEngine::Model_GetDoubleTime(void)
  return 0;
 }
 
-// Устанавливает текущее время модели
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РјРѕРґРµР»Рё
 int UEngine::Model_SetTime(unsigned long long value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -5765,7 +5765,7 @@ int UEngine::Model_SetTime(unsigned long long value)
  return res;
 }
 
-// Возвращает реальное время
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ
 unsigned long long UEngine::Model_GetRealTime(void)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5816,7 +5816,7 @@ double UEngine::Model_GetDoubleRealTime(void)
  return 0;
 }
 
-// Устанавливает реальное время
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ
 int UEngine::Model_SetRealTime(unsigned long long value)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5843,7 +5843,7 @@ int UEngine::Model_SetRealTime(unsigned long long value)
  return 0;
 }
 
-// Увеличивает реальное время на заданную величину
+// РЈРІРµР»РёС‡РёРІР°РµС‚ СЂРµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РЅР° Р·Р°РґР°РЅРЅСѓСЋ РІРµР»РёС‡РёРЅСѓ
 int UEngine::Model_IncreaseRealTime(unsigned long long value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -5871,7 +5871,7 @@ int UEngine::Model_IncreaseRealTime(unsigned long long value)
  return res;
 }
 
-// Возвращает мгновенный шаг в реальном времени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРіРЅРѕРІРµРЅРЅС‹Р№ С€Р°Рі РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё
 unsigned long long UEngine::Model_GetRealTimeStep(void)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -5947,7 +5947,7 @@ double UEngine::Model_GetDoubleSourceTime(void) const
  return 0.0;
 }
 
-// Устанавливает время внешних источников данных в днях
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЂРµРјСЏ РІРЅРµС€РЅРёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ РґР°РЅРЅС‹С… РІ РґРЅСЏС…
 int UEngine::Model_SetDoubleSourceTime(double value)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -5973,7 +5973,7 @@ int UEngine::Model_SetDoubleSourceTime(double value)
  return res;
 }
 
-// Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р° Р±РµР· РІСЂРµРјРµРЅРё СЂР°СЃС‡РµС‚Р° РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ (РјСЃ)
 unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6001,8 +6001,8 @@ unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
  return 0;
 }
 
-// Возвращает время, затраченное на обработку объекта
-// (вместе со времени обсчета дочерних объектов) (мс)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ, Р·Р°С‚СЂР°С‡РµРЅРЅРѕРµ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ РѕР±СЉРµРєС‚Р°
+// (РІРјРµСЃС‚Рµ СЃРѕ РІСЂРµРјРµРЅРё РѕР±СЃС‡РµС‚Р° РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ) (РјСЃ)
 unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6031,8 +6031,8 @@ unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) cons
 }
 
 
-// Возвращает мгновенное быстродействие, равное отношению
-// полного затраченного времени к ожидаемому времени шага счета
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРіРЅРѕРІРµРЅРЅРѕРµ Р±С‹СЃС‚СЂРѕРґРµР№СЃС‚РІРёРµ, СЂР°РІРЅРѕРµ РѕС‚РЅРѕС€РµРЅРёСЋ
+// РїРѕР»РЅРѕРіРѕ Р·Р°С‚СЂР°С‡РµРЅРЅРѕРіРѕ РІСЂРµРјРµРЅРё Рє РѕР¶РёРґР°РµРјРѕРјСѓ РІСЂРµРјРµРЅРё С€Р°РіР° СЃС‡РµС‚Р°
 double UEngine::Model_GetInstantPerformance(const char *stringid) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6060,7 +6060,7 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
  return 0.0;
 }
 
-// Время, прошедшее между двумя последними итерациями счета
+// Р’СЂРµРјСЏ, РїСЂРѕС€РµРґС€РµРµ РјРµР¶РґСѓ РґРІСѓРјСЏ РїРѕСЃР»РµРґРЅРёРјРё РёС‚РµСЂР°С†РёСЏРјРё СЃС‡РµС‚Р°
 unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6089,9 +6089,9 @@ unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) co
 }
 // --------------------------
 
-// Возвращает указатель на выход с индексом 'index' компонента 'id'
-// возвращаемое значение имеет фактический тип RDK::MDMatrix*
-// если выход не содержит данных такого типа, то возвращает 0
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґ СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
+// РІРѕР·РІСЂР°С‰Р°РµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ РёРјРµРµС‚ С„Р°РєС‚РёС‡РµСЃРєРёР№ С‚РёРї RDK::MDMatrix*
+// РµСЃР»Рё РІС‹С…РѕРґ РЅРµ СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅС‹С… С‚Р°РєРѕРіРѕ С‚РёРїР°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ 0
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6104,7 +6104,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    if(!cont)
 	return 0;
 
-   // Ищем указатель на выходные данные
+   // РС‰РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
    UEPtr<UIPropertyOutput> output_property=dynamic_pointer_cast<UIPropertyOutput>(cont->FindProperty(property_name));
    if(!output_property)
 	return 0;
@@ -6135,7 +6135,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6147,7 +6147,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    if(!cont)
 	return 0;
 
-   // Ищем указатель на выходные данные
+   // РС‰РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
    UIProperty* output_property=0;
    cont->FindOutputProperty(index, output_property);
    if(!output_property)
@@ -6177,7 +6177,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
  return 0;*/
 }
 
-// Возвращает указатель на выход с индексом 'index' компонента 'id'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґ СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6214,7 +6214,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, cons
 
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
-    return 0; // TODO: Метод удалить
+    return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
 /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6252,7 +6252,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int 
  return 0;*/
 }
 
-// Возвращает указатель на выход с индексом 'index' компонента 'id'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґ СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
 {
  return Model_GetComponentOutput(stringid, property_name);
@@ -6260,7 +6260,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6298,8 +6298,8 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
  return 0;*/
 }
 
-/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
-/// в стрктуру bmp_param
+/// РљРѕРїРёСЂСѓРµС‚ РґР°РЅРЅС‹Рµ Рѕ СЂР°Р·СЂРµС€РµРЅРёРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІС‹С…РѕРґР° СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
+/// РІ СЃС‚СЂРєС‚СѓСЂСѓ bmp_param
 int UEngine::Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6370,8 +6370,8 @@ int UEngine::Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, 
  return res;
 }
 
-/// Копирует изображение выхода с индексом 'index' компонента 'id'
-/// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
+/// РљРѕРїРёСЂСѓРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІС‹С…РѕРґР° СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
+/// РјРµС‚РѕРґ РїСЂРµРґРїРѕР»Р°РіР°РµС‚, С‡С‚Рѕ bmp СѓР¶Рµ РёРјРµРµС‚ РІС‹РґРµР»РµРЅРЅСѓСЋ РїР°РјСЏС‚СЊ РїРѕРґ РёР·РѕР±СЂР¶РµРЅРёРµ С‚СЂРµР±СѓРµРјРѕРіРѕ СЂР°Р·РјРµСЂР°
 int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6448,7 +6448,7 @@ int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, int index, RD
 
 
 
-// Возвращает указатель на вход с индексом 'index' компонента 'id'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС…РѕРґ СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
  //int res=RDK_UNHANDLED_EXCEPTION;
@@ -6484,7 +6484,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
 {
-    return 0; // TODO: Метод удалить
+    return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
 /*
  //int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6522,7 +6522,7 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid,
  return 0;*/
 }
 
-// Замещает изображение выхода с индексом 'index' компонента 'id'
+// Р—Р°РјРµС‰Р°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІС‹С…РѕРґР° СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
 int UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const RDK::UBitmap* bmp, bool reflect)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6565,7 +6565,7 @@ int UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *pr
 
 int UEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* bmp, bool reflect)
 {
- return 0; // TODO: Метод удалить
+ return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
  /*
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6611,7 +6611,7 @@ int UEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, con
  return res;*/
 }
 
-// Замещает изображение входа с индексом 'index' компонента 'id'
+// Р—Р°РјРµС‰Р°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІС…РѕРґР° СЃ РёРЅРґРµРєСЃРѕРј 'index' РєРѕРјРїРѕРЅРµРЅС‚Р° 'id'
 int UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const RDK::UBitmap* const bmp, bool reflect)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6654,7 +6654,7 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *pro
 
 int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect)
 {
-    return 0; // TODO: Метод удалить
+    return 0; // TODO: РњРµС‚РѕРґ СѓРґР°Р»РёС‚СЊ
 /*
  int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
@@ -6702,9 +6702,9 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, cons
 }
 
 // --------------------------
-// Методы управления исключениями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёСЃРєР»СЋС‡РµРЅРёСЏРјРё
 // --------------------------
-// Возвращает массив строк лога
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ СЃС‚СЂРѕРє Р»РѕРіР°
 const char* UEngine::GetLog(int &error_level) const
 {
  std::string& TempString=CreateTempString();
@@ -6731,8 +6731,8 @@ const char* UEngine::GetLog(int &error_level) const
  return TempString.c_str();
 }
 
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡Р°СЃС‚РёС‡РЅС‹Р№ РјР°СЃСЃРёРІ СЃС‚СЂРѕРє Р»РѕРіР° СЃ РјРѕРјРµРЅС‚Р° РїРѕСЃР»РµРґРЅРµРіРѕ СЃС‡РёС‚С‹РІР°РЅРёСЏ Р»РѕРіР°
+// СЌС‚РѕР№ С„СѓРЅРєС†РёРµР№
 const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
 {
  std::string& TempString=CreateTempString();
@@ -6759,7 +6759,7 @@ const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
  return TempString.c_str();
 }
 
-/// Записывает в лог новое сообщение
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ Р»РѕРі РЅРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
 int UEngine::Engine_LogMessage(int log_level, const char *message, int error_event_number)
 {
  if(!Logger)
@@ -6876,7 +6876,7 @@ int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const c
  return res;
 }
 
-// Управление функцией-обработчиком исключений
+// РЈРїСЂР°РІР»РµРЅРёРµ С„СѓРЅРєС†РёРµР№-РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРј РёСЃРєР»СЋС‡РµРЅРёР№
 ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {
  if(!Logger)
@@ -6936,8 +6936,8 @@ int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
  return res;
 }
 
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
+// РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ С…СЂР°РЅРёРјС‹С… РёСЃРєР»СЋС‡РµРЅРёР№
+// Р•СЃР»Рё 0, С‚Рѕ РЅРµРѕРіСЂР°РЅРёС‡РµРЅРЅРѕ
 /*int UEngine::GetMaxExceptionsLogSize(void) const
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -6995,7 +6995,7 @@ int UEngine::SetMaxExceptionsLogSize(int value)
 }     */
 
 
-/// Возвращает число непрочитанных строк лога
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РЅРµРїСЂРѕС‡РёС‚Р°РЅРЅС‹С… СЃС‚СЂРѕРє Р»РѕРіР°
 int UEngine::GetNumUnreadLogLines(void) const
 {
  if(!Logger)
@@ -7024,7 +7024,7 @@ int UEngine::GetNumUnreadLogLines(void) const
  return 0;
 }
 
-/// Возвращает число строк лога
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЃС‚СЂРѕРє Р»РѕРіР°
 int UEngine::GetNumLogLines(void) const
 {
  if(!Logger)
@@ -7053,7 +7053,7 @@ int UEngine::GetNumLogLines(void) const
  return 0;
 }
 
-/// Очищает лог прочитанных сообщений
+/// РћС‡РёС‰Р°РµС‚ Р»РѕРі РїСЂРѕС‡РёС‚Р°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 int UEngine::ClearReadLog(void)
 {
  if(!Logger)
@@ -7087,11 +7087,11 @@ int UEngine::ClearReadLog(void)
 
 
 // --------------------------
-// Методы внутреннего управления движком
+// РњРµС‚РѕРґС‹ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ РґРІРёР¶РєРѕРј
 // --------------------------
-// Обрабатывает возникшее исключение
-/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
-/// иначе возвращает RDK_EXCEPTION_CATCHED
+// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РІРѕР·РЅРёРєС€РµРµ РёСЃРєР»СЋС‡РµРЅРёРµ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ RDK_UNHANDLED_EXCEPTION РµСЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РїРёСЃР°С‚СЊ РґР°РЅРЅС‹Рµ РёСЃРєР»СЋС‡РµРЅРёСЏ
+/// РёРЅР°С‡Рµ РІРѕР·РІСЂР°С‰Р°РµС‚ RDK_EXCEPTION_CATCHED
 int UEngine::ProcessException(UException &exception) const
 {
  if(Logger)
@@ -7113,10 +7113,10 @@ int UEngine::ProcessException(const UException &exception) const
  return RDK_EXCEPTION_CATCHED;
 }
 
-// Создает среду и возвращает указатель на нее.
-// Если задано хранилище 'storage', то связывает его со средой.
-// Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
-// Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
+// РЎРѕР·РґР°РµС‚ СЃСЂРµРґСѓ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РЅРµРµ.
+// Р•СЃР»Рё Р·Р°РґР°РЅРѕ С…СЂР°РЅРёР»РёС‰Рµ 'storage', С‚Рѕ СЃРІСЏР·С‹РІР°РµС‚ РµРіРѕ СЃРѕ СЃСЂРµРґРѕР№.
+// Р•СЃР»Рё С„Р»Р°Рі 'isinit' == true, С‚Рѕ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ С…СЂР°РЅРёР»РёС‰Рµ СЃС‚Р°РЅРґР°СЂС‚РЅС‹РјРё Р±РёР±Р»РёРѕС‚РµРєР°РјРё
+// Р•СЃР»Рё СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ external_libs != 0, РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ С…СЂР°РЅРёР»РёС‰Рµ СЌС‚РёРјРё Р±РёР±РёР»РёРѕС‚РµРєР°РјРё
 void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes, list<ULibrary*>* external_libs)
 {
  if(!Storage)
@@ -7190,7 +7190,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
  }
 }
 
-// Загружает набор предустановленных библиотек
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РЅР°Р±РѕСЂ РїСЂРµРґСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹С… Р±РёР±Р»РёРѕС‚РµРє
 int UEngine::LoadPredefinedLibraries(void)
 {
  RdkLoadPredefinedLibraries(LibrariesList);
@@ -7198,13 +7198,13 @@ int UEngine::LoadPredefinedLibraries(void)
  return 0;
 }
 
-//Загружает функции формирования свойств для фиктивных компонентов из библиотек в хранилище
+//Р—Р°РіСЂСѓР¶Р°РµС‚ С„СѓРЅРєС†РёРё С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ РґР»СЏ С„РёРєС‚РёРІРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РёР· Р±РёР±Р»РёРѕС‚РµРє РІ С…СЂР°РЅРёР»РёС‰Рµ
 int UEngine::LoadPredefinedCrPropFunctions(void)
 {
  if(!Storage)
      return 0;
 
- // Добавление базового набора создателей-свойств
+ // Р”РѕР±Р°РІР»РµРЅРёРµ Р±Р°Р·РѕРІРѕРіРѕ РЅР°Р±РѕСЂР° СЃРѕР·РґР°С‚РµР»РµР№-СЃРІРѕР№СЃС‚РІ
  Storage->AddCrPropMockFunc(UBasePropCreator::BaseCrPropMock);
  Storage->AddCrPropMockFunc(UBasePropCreatorStd::BaseCrPropMock);
  Storage->AddCrPropMockFunc(UBasePropCreatorVector::BaseCrPropMock);
@@ -7214,7 +7214,7 @@ int UEngine::LoadPredefinedCrPropFunctions(void)
  return 0;
 }
 
-// Загружает набор классов
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РЅР°Р±РѕСЂ РєР»Р°СЃСЃРѕРІ
 int UEngine::LoadClasses(void)
 {
  vector<string> variables;
@@ -7233,9 +7233,9 @@ int UEngine::LoadClasses(void)
  return res;
 }
 
-// Загружает набор библиотек и добавляет указатели на нее в массив external_libs
-// возвращает 0 в случае успеха
-// Список имен библиотек берется из ini-файла 'inifile', секция 'section'
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РЅР°Р±РѕСЂ Р±РёР±Р»РёРѕС‚РµРє Рё РґРѕР±Р°РІР»СЏРµС‚ СѓРєР°Р·Р°С‚РµР»Рё РЅР° РЅРµРµ РІ РјР°СЃСЃРёРІ external_libs
+// РІРѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р°
+// РЎРїРёСЃРѕРє РёРјРµРЅ Р±РёР±Р»РёРѕС‚РµРє Р±РµСЂРµС‚СЃСЏ РёР· ini-С„Р°Р№Р»Р° 'inifile', СЃРµРєС†РёСЏ 'section'
 int UEngine::LoadLibraries(void)
 {
  vector<string> variables;
@@ -7256,15 +7256,15 @@ int UEngine::LoadLibraries(void)
 // --------------------------
 
 // --------------------------
-// Методы внутреннего управления консолью
+// РњРµС‚РѕРґС‹ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРЅСЃРѕР»СЊСЋ
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления счетом
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Осуществляет поиск компонента по длинному строковому id
-// Если строковое id не задано, то возвращает указатель на модель
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїРѕРёСЃРє РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РґР»РёРЅРЅРѕРјСѓ СЃС‚СЂРѕРєРѕРІРѕРјСѓ id
+// Р•СЃР»Рё СЃС‚СЂРѕРєРѕРІРѕРµ id РЅРµ Р·Р°РґР°РЅРѕ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјРѕРґРµР»СЊ
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
@@ -7279,7 +7279,7 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
   cont=model;
  else
  {
-  // Если первый символ - цифра, то декодруем как строковой id
+  // Р•СЃР»Рё РїРµСЂРІС‹Р№ СЃРёРјРІРѕР» - С†РёС„СЂР°, С‚Рѕ РґРµРєРѕРґСЂСѓРµРј РєР°Рє СЃС‚СЂРѕРєРѕРІРѕР№ id
   if(stringid[0]>=0x30 && stringid[0]<=0x39)
   {
    longid.DecodeFromString(stringid);
@@ -7288,7 +7288,7 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
    else
     cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
   }
-  else // ...иначе декодируем как имя
+  else // ...РёРЅР°С‡Рµ РґРµРєРѕРґРёСЂСѓРµРј РєР°Рє РёРјСЏ
   {
    cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
   }
@@ -7300,13 +7300,13 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
  return cont;
 }
 
-// Восстановление настроек по умолчанию и сброс процесса счета
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Рё СЃР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°
 bool UEngine::ADefault(void)
 {
- // Имя файла инициализации
+ // РРјСЏ С„Р°Р№Р»Р° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
  OptionsFileName="options.ini";
 
- // Имя секции выбора библиотек компонент
+ // РРјСЏ СЃРµРєС†РёРё РІС‹Р±РѕСЂР° Р±РёР±Р»РёРѕС‚РµРє РєРѕРјРїРѕРЅРµРЅС‚
  ComponentLibrariesSectionName="ComponentLibraries";
 
  ComponentClassesSectionName="ComponentClasses";
@@ -7314,22 +7314,22 @@ bool UEngine::ADefault(void)
  return true;
 }
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// РћР±РµСЃРїРµС‡РёРІР°РµС‚ СЃР±РѕСЂРєСѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РѕР±СЉРµРєС‚Р°
+// РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё РїР°СЂР°РјРµС‚СЂРѕРІ
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ Reset() Рё РІС‹СЃС‚Р°РІР»СЏРµС‚ Ready РІ true
+// РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕР№ СЃР±РѕСЂРєРё
 bool UEngine::ABuild(void)
 {
  return true;
 }
 
-// Сброс процесса счета.
+// РЎР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°.
 bool UEngine::AReset(void)
 {
  return true;
 }
 
-// Выполняет расчет этого объекта
+// Р’С‹РїРѕР»РЅСЏРµС‚ СЂР°СЃС‡РµС‚ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 bool UEngine::ACalculate(void)
 {
  return true;

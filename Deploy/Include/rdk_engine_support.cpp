@@ -6,12 +6,12 @@
 #include "rdk_error_codes.h"
 #include "rdk_exceptions.h"
 
-// Экземпляр менеджера
+// Р­РєР·РµРјРїР»СЏСЂ РјРµРЅРµРґР¶РµСЂР°
 URdkCoreManager RdkCoreManager;
 
-// Менеджер DLL
+// РњРµРЅРµРґР¶РµСЂ DLL
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URdkCoreManager::URdkCoreManager(void)
 {
@@ -51,53 +51,53 @@ URdkCoreManager::~URdkCoreManager(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
 
-// Установка необходимого режима сборки
+// РЈСЃС‚Р°РЅРѕРІРєР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 void URdkCoreManager::SetStorageBuildMode(int mode)
 {
     StorageBuildMode = mode;
 }
 
-// Получение текущего режима сборки
+// РџРѕР»СѓС‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 int URdkCoreManager::GetStorageBuildMode()
 {
     return StorageBuildMode;
 }
 
-// Установка пути к папкам библиотек
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 void URdkCoreManager::SetLibrariesPath(const std::string& value)
 {
     LibrariesPath = value;
 }
 
-// Получение пути к папкам библиотек
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 const std::string URdkCoreManager::GetLibrariesPath(void) const
 {
  return LibrariesPath;
 }
 
-// Установка пути к папке с описаниями классов
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 void URdkCoreManager::SetClDescPath(const std::string &value)
 {
     ClDescPath = value;
 }
 
-// Получение пути к папке с описаниями классов
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 const std::string URdkCoreManager::GetClDescPath(void) const
 {
  return ClDescPath;
 }
 
-// Возвращает имя каталога бинарных файлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 const char* URdkCoreManager::GetSystemDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return SystemDir.c_str();
 }
 
-// Устанавливает имя каталога бинарных файлов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 int URdkCoreManager::SetSystemDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -105,14 +105,14 @@ int URdkCoreManager::SetSystemDir(const char *dir)
  return RDK_SUCCESS;
 }
 
-// Возвращает имя каталога логов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р»РѕРіРѕРІ
 const char* URdkCoreManager::GetLogDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return LogDir.c_str();
 }
 
-// Устанавливает имя каталога логов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р»РѕРіРѕРІ
 int URdkCoreManager::SetLogDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -133,7 +133,7 @@ int URdkCoreManager::SetLogDir(const char *dir)
  return RDK_SUCCESS;
 }
 
-/// Флаг режима отладки
+/// Р¤Р»Р°Рі СЂРµР¶РёРјР° РѕС‚Р»Р°РґРєРё
 bool URdkCoreManager::GetDebugMode(void) const
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -221,14 +221,14 @@ int URdkCoreManager::SetBufObjectsMode(int value)
  return res;
 }
 
-// Очищает коллекцию глобальных шрифтов
+// РћС‡РёС‰Р°РµС‚ РєРѕР»Р»РµРєС†РёСЋ РіР»РѕР±Р°Р»СЊРЅС‹С… С€СЂРёС„С‚РѕРІ
 int URdkCoreManager::ClearFonts(void)
 {
  Fonts.DelAllFonts();
  return RDK_SUCCESS;
 }
 
-// Загружает глобальные шрифты
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РіР»РѕР±Р°Р»СЊРЅС‹Рµ С€СЂРёС„С‚С‹
 int URdkCoreManager::LoadFonts(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -236,7 +236,7 @@ int URdkCoreManager::LoadFonts(void)
  {
   try
   {
-   // Грузим шрифты
+   // Р“СЂСѓР·РёРј С€СЂРёС„С‚С‹
    std::vector<std::string> font_names;
    std::string font_path=SystemDir+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
@@ -273,7 +273,7 @@ int URdkCoreManager::LoadFonts(void)
  return res;
 }
 
-// Загружает новый глобальный шрифт
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РЅРѕРІС‹Р№ РіР»РѕР±Р°Р»СЊРЅС‹Р№ С€СЂРёС„С‚
 bool URdkCoreManager::AddFont(const std::string &font_file_name)
 {
  //int res=RDK_SUCCESS;
@@ -316,14 +316,14 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
  return false;
 }
 
-// Возвращает ссылку на коллекцию шрифтов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РєРѕР»Р»РµРєС†РёСЋ С€СЂРёС„С‚РѕРІ
 RDK::UBitmapFontCollection& URdkCoreManager::GetFonts(void)
 {
  return Fonts;
 }
 
 
-// Имя файла описаний параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const std::string& URdkCoreManager::GetClassesDescriptionFileName(void) const
 {
  return ClassesDescriptionFileName;
@@ -338,7 +338,7 @@ bool URdkCoreManager::SetClassesDescriptionFileName(const std::string& value)
  return true;
 }
 
-// Имя файла описаний общих параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РѕР±С‰РёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const std::string& URdkCoreManager::GetCommonClassesDescriptionFileName(void) const
 {
  return CommonClassesDescriptionFileName;
@@ -353,7 +353,7 @@ bool URdkCoreManager::SetCommonClassesDescriptionFileName(const std::string& val
  return true;
 }
 
-/// Возвращет версию ядра
+/// Р’РѕР·РІСЂР°С‰РµС‚ РІРµСЂСЃРёСЋ СЏРґСЂР°
 const RDK::UVersion& URdkCoreManager::GetVersion(void) const
 {
  return RDK::GetGlobalVersion();
@@ -361,7 +361,7 @@ const RDK::UVersion& URdkCoreManager::GetVersion(void) const
 // --------------------------
 
 // --------------------------
-// Методы управления созданием каналов
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕР·РґР°РЅРёРµРј РєР°РЅР°Р»РѕРІ
 // --------------------------
 bool URdkCoreManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
 							PCreateNewEnvironment fCreateNewEnvironment,
@@ -374,13 +374,13 @@ bool URdkCoreManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreate
  return true;
 }
 
-/// Возвращает число движков
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РґРІРёР¶РєРѕРІ
 int URdkCoreManager::GetNumChannels(void) const
 {
  return NumChannels;
 }
 
-/// Создает требуемое число пустых движков
+/// РЎРѕР·РґР°РµС‚ С‚СЂРµР±СѓРµРјРѕРµ С‡РёСЃР»Рѕ РїСѓСЃС‚С‹С… РґРІРёР¶РєРѕРІ
 int URdkCoreManager::SetNumChannels(int num)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -442,7 +442,7 @@ int URdkCoreManager::SetNumChannels(int num)
  return res;
 }
 
-/// Делает текущим канал с заданным индексом
+/// Р”РµР»Р°РµС‚ С‚РµРєСѓС‰РёРј РєР°РЅР°Р» СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 int URdkCoreManager::SelectChannel(int index)
 {
  if(index<0 || index>=NumChannels)
@@ -485,14 +485,14 @@ int URdkCoreManager::SelectChannel(int index)
  return res;
 }
 
-/// Возвращает индекс текущего выбраного канала
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРѕРіРѕ РєР°РЅР°Р»Р°
 int URdkCoreManager::GetSelectedChannelIndex(void) const
 {
  return SelectedChannelIndex;
 }
 
-/// Добавляет новый движок в позицию index
-/// Если index <0 или >= NumChannels то добавляет в конец
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РґРІРёР¶РѕРє РІ РїРѕР·РёС†РёСЋ index
+/// Р•СЃР»Рё index <0 РёР»Рё >= NumChannels С‚Рѕ РґРѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС†
 int URdkCoreManager::Add(int index)
 {
  if(index<0 || index >= GetNumChannels())
@@ -541,7 +541,7 @@ int URdkCoreManager::Add(int index)
  return RDK_SUCCESS;
 }
 
-/// Удаляет движок из позиции index
+/// РЈРґР°Р»СЏРµС‚ РґРІРёР¶РѕРє РёР· РїРѕР·РёС†РёРё index
 int URdkCoreManager::Del(int index)
 {
  if(index<0 || index >= GetNumChannels())
@@ -613,8 +613,8 @@ int URdkCoreManager::Del(int index)
  return res;
 }
 
-/// Создаает требуемый канал
-/// (если канал уже инициализирован, то не делает ничего
+/// РЎРѕР·РґР°Р°РµС‚ С‚СЂРµР±СѓРµРјС‹Р№ РєР°РЅР°Р»
+/// (РµСЃР»Рё РєР°РЅР°Р» СѓР¶Рµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int URdkCoreManager::ChannelCreate(int index)
 {
  if(index<0 || index>=GetNumChannels())
@@ -629,7 +629,7 @@ int URdkCoreManager::ChannelCreate(int index)
   try
   {
    SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to create channel ")+RDK::sntoa(index));
-   // TODO: здесь инициализация параметров логгера и его запуск
+   // TODO: Р·РґРµСЃСЊ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ Р»РѕРіРіРµСЂР° Рё РµРіРѕ Р·Р°РїСѓСЃРє
    LoggerList[index]=new RDK::ULoggerEnv;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
    LoggerList[index]->SetMaxExceptionsLogSize(0);
@@ -678,7 +678,7 @@ int URdkCoreManager::ChannelCreate(int index)
 
    {
     UGenericMutexExclusiveLocker lock(GlobalMutex);
-    /// Данные текущего выбранного канала
+    /// Р”Р°РЅРЅС‹Рµ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
     Engine=EngineList[SelectedChannelIndex];
     Environment=EnvironmentList[SelectedChannelIndex];
     Storage=StorageList[SelectedChannelIndex];
@@ -708,8 +708,8 @@ int URdkCoreManager::ChannelCreate(int index)
  return res;
 }
 
-/// Уничтожает требуемый движок
-/// (если движок уже уничтожен, то не делает ничего
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ С‚СЂРµР±СѓРµРјС‹Р№ РґРІРёР¶РѕРє
+/// (РµСЃР»Рё РґРІРёР¶РѕРє СѓР¶Рµ СѓРЅРёС‡С‚РѕР¶РµРЅ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int URdkCoreManager::ChannelDestroy(int index)
 {
  if(index<0 || index>=GetNumChannels())
@@ -746,8 +746,8 @@ int URdkCoreManager::ChannelDestroy(int index)
  return RDK_SUCCESS;
 }
 
-// Инициализирует канал (функция должна быть вызвана первой!)
-// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєР°РЅР°Р» (С„СѓРЅРєС†РёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° РїРµСЂРІРѕР№!)
+// Upd: Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° РїРѕСЃР»Рµ SetNumChannels Рё SelectChannel
 int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -806,7 +806,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
  return res;
 }
 
-// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєР°РЅР°Р» (С„СѓРЅРєС†РёСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё РІС‹Р·РѕРІРµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё)
 int URdkCoreManager::ChannelUnInit(int channel_index)
 {
  if(channel_index<0 || channel_index>=NumChannels)
@@ -847,7 +847,7 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
  return res;
 }
 
-/// Уничтожает все
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ РІСЃРµ
 void URdkCoreManager::Destroy(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -924,9 +924,9 @@ void URdkCoreManager::Destroy(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к каналам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј
 // --------------------------
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UEPtr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
 {
  return Engine;
@@ -940,7 +940,7 @@ RDK::UEPtr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
  return EngineList[channel_index];
 }
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UEPtr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
 {
  return Environment;
@@ -954,7 +954,7 @@ RDK::UEPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
  return EnvironmentList[channel_index];
 }
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UEPtr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
 {
  return Storage;
@@ -968,7 +968,7 @@ RDK::UEPtr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
  return StorageList[channel_index];
 }
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(void)
 {
  if(Environment)
@@ -992,15 +992,15 @@ RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 
 
 // --------------------------
-// Методы доступа к каналам с блокировками
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј СЃ Р±Р»РѕРєРёСЂРѕРІРєР°РјРё
 // --------------------------
-/// Метод доступа к глобальному мьютексу
+/// РњРµС‚РѕРґ РґРѕСЃС‚СѓРїР° Рє РіР»РѕР±Р°Р»СЊРЅРѕРјСѓ РјСЊСЋС‚РµРєСЃСѓ
 UGenericMutex* URdkCoreManager::GetGlobalMutex(void)
 {
  return GlobalMutex;
 }
 
-/// Метод доступ к мьютексу
+/// РњРµС‚РѕРґ РґРѕСЃС‚СѓРї Рє РјСЊСЋС‚РµРєСЃСѓ
 UGenericMutex* URdkCoreManager::GetEngineMutex(void)
 {
  if(MutexList.empty())
@@ -1016,7 +1016,7 @@ UGenericMutex* URdkCoreManager::GetEngineMutex(int index)
  return MutexList[index];
 }
 
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1058,7 +1058,7 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(int channel_i
 #endif
 }
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1080,7 +1080,7 @@ RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(int channe
 #endif
 }
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1102,7 +1102,7 @@ RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(int channel_index)
 #endif
 }
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1144,7 +1144,7 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel
 #endif
 }
 
-/// Метод прямой блокировки канала
+/// РњРµС‚РѕРґ РїСЂСЏРјРѕР№ Р±Р»РѕРєРёСЂРѕРІРєРё РєР°РЅР°Р»Р°
 int URdkCoreManager::LockChannel(int index)
 {
  if(RdkCoreManager.LockerList[index])
@@ -1156,7 +1156,7 @@ int URdkCoreManager::LockChannel(int index)
  return RDK_SUCCESS;
 }
 
-/// Метод снятия прямой блокировки канала
+/// РњРµС‚РѕРґ СЃРЅСЏС‚РёСЏ РїСЂСЏРјРѕР№ Р±Р»РѕРєРёСЂРѕРІРєРё РєР°РЅР°Р»Р°
 int URdkCoreManager::UnLockChannel(int index)
 {
  if(!RdkCoreManager.LockerList[index])
@@ -1172,9 +1172,9 @@ int URdkCoreManager::UnLockChannel(int index)
 // --------------------------
 
 // --------------------------
-/// Средства логгирования
+/// РЎСЂРµРґСЃС‚РІР° Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 // --------------------------
-// Возвращает ссылку на указатель на логгер
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
 RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
 {
  return Logger;
@@ -1191,13 +1191,13 @@ RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
  return LoggerList[channel_index];
 }
 
-/// Возвращает ссылку на системный логгер
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СЃРёСЃС‚РµРјРЅС‹Р№ Р»РѕРіРіРµСЂ
 RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
 {
  return &SystemLogger;
 }
 
-/// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ  РЅР° РіР»РѕР±Р°Р»СЊРЅС‹Р№ Р»РѕРіРіРµСЂ (РёРЅС‚РµРіСЂРёСЂСѓРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ СЃРѕ РІСЃРµС… Р»РѕРіРіРµСЂРѕРІ)
 RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
 {
  return &GlobalLogger;
@@ -1205,9 +1205,9 @@ RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы управления
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Меняет текущий выбраный канал
+/// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ РІС‹Р±СЂР°РЅС‹Р№ РєР°РЅР°Р»
 bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
 {
 // UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -1216,7 +1216,7 @@ bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
 
  SelectedChannelIndex=channel_index;
 // ::SelectedEngineIndex=SelectedChannelIndex;
- /// Данные текущего выбранного канала
+ /// Р”Р°РЅРЅС‹Рµ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
  Engine=EngineList[channel_index];
  Environment=EnvironmentList[channel_index];
  Storage=StorageList[channel_index];

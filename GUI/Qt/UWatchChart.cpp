@@ -13,7 +13,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     setAccessibleName("UWatchChart");
     ui->setupUi(this);
 
-    //создаем график, скроллбар и располагаем вертикально
+    //СЃРѕР·РґР°РµРј РіСЂР°С„РёРє, СЃРєСЂРѕР»Р»Р±Р°СЂ Рё СЂР°СЃРїРѕР»Р°РіР°РµРј РІРµСЂС‚РёРєР°Р»СЊРЅРѕ
     verticalLayout = new QVBoxLayout(this);
     chart = new QChart();
     chartView = new UWatchChartView(this);
@@ -26,25 +26,25 @@ UWatchChart::UWatchChart(QWidget *parent) :
     verticalLayout->setSpacing(0);
     verticalLayout->setContentsMargins(0,0,0,0);
 
-    //создаем и настраиваем оси
+    //СЃРѕР·РґР°РµРј Рё РЅР°СЃС‚СЂР°РёРІР°РµРј РѕСЃРё
     axisX = new QValueAxis(this);
     axisY = new QValueAxis(this);
 
-    ///Дефолтные подписи осей и их макс и мин
+    ///Р”РµС„РѕР»С‚РЅС‹Рµ РїРѕРґРїРёСЃРё РѕСЃРµР№ Рё РёС… РјР°РєСЃ Рё РјРёРЅ
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
     axisXrange = 2;
     axisX->setRange(0, axisXrange);
     axisY->setRange(-1, 1);
 
-    //устанавливаем оси
+    //СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕСЃРё
     chart->addAxis(axisX, Qt::AlignBottom);
     chart->addAxis(axisY, Qt::AlignLeft);
 
-    //устанавливаем график в график -_-
+    //СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РіСЂР°С„РёРє РІ РіСЂР°С„РёРє -_-
     chartView->setChart(chart);
 
-    //делаем красивую рамочку для графика
+    //РґРµР»Р°РµРј РєСЂР°СЃРёРІСѓСЋ СЂР°РјРѕС‡РєСѓ РґР»СЏ РіСЂР°С„РёРєР°
     chartView->setFrameStyle(QFrame::Panel |QFrame::StyledPanel);
 
     chartView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -141,17 +141,17 @@ bool UWatchChart::checkZoomed(void)
 void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName,
                               const QString type, int jx, int jy, double time_interval, double y_shift)
 {
-    //создаем новый график и привязываем его к осям
+    //СЃРѕР·РґР°РµРј РЅРѕРІС‹Р№ РіСЂР°С„РёРє Рё РїСЂРёРІСЏР·С‹РІР°РµРј РµРіРѕ Рє РѕСЃСЏРј
     series.push_back(new UWatchSerie());
     chart->addSeries(series.last());
     series.last()->attachAxis(axisX);
     series.last()->attachAxis(axisY);
 
-    //имя графика = имя компонента +  имя свойства
+    //РёРјСЏ РіСЂР°С„РёРєР° = РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° +  РёРјСЏ СЃРІРѕР№СЃС‚РІР°
     series.last()->setName(componentName+ ": " + propertyName +"(" + QString::number(jx)+", "+ QString::number(jy)+")");
     series.last()->setColor(defaultColors[series.count()-1]);
 
-    //записываем параметры источника данных
+    //Р·Р°РїРёСЃС‹РІР°РµРј РїР°СЂР°РјРµС‚СЂС‹ РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
     series.last()->indexChannel = channelIndex;
     series.last()->nameComponent = componentName;
     series.last()->nameProperty = propertyName;
@@ -160,7 +160,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     series.last()->Jy = jy;
     series.last()->YShift = y_shift;
 
-    // Создание DataReadera в ядре для дальнейщего получения данных
+    // РЎРѕР·РґР°РЅРёРµ DataReadera РІ СЏРґСЂРµ РґР»СЏ РґР°Р»СЊРЅРµР№С‰РµРіРѕ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С…
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
     RDK::UControllerDataReader * data=env->RegisterDataReader(componentName.toStdString(),
@@ -250,17 +250,17 @@ void UWatchChart::setAxisYmax(double value)
 
 void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_max)
 {
-    // Если зум в зоне не чувствительности:
-    // изменение по любой из осей меньше 10% от текущего диапазона
+    // Р•СЃР»Рё Р·СѓРј РІ Р·РѕРЅРµ РЅРµ С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚Рё:
+    // РёР·РјРµРЅРµРЅРёРµ РїРѕ Р»СЋР±РѕР№ РёР· РѕСЃРµР№ РјРµРЅСЊС€Рµ 10% РѕС‚ С‚РµРєСѓС‰РµРіРѕ РґРёР°РїР°Р·РѕРЅР°
     if(std::abs(x_max-x_min) < 0.02*(getAxisXmax()-getAxisXmin()) || std::abs(y_max-y_min) < 0.02*(getAxisYmax()-getAxisYmin()))
         return;
 
-    // Если зум обратный, то восстанавливаем начальные значения
+    // Р•СЃР»Рё Р·СѓРј РѕР±СЂР°С‚РЅС‹Р№, С‚Рѕ РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ
     if(x_max < x_min || y_max < y_min)
     {
         restoreInitialAxesState();
     }
-    // В другом случае - зум
+    // Р’ РґСЂСѓРіРѕРј СЃР»СѓС‡Р°Рµ - Р·СѓРј
     else
     {
         //updateTimeIntervals(x_range);
@@ -362,9 +362,9 @@ double  UWatchChart::getInitialAxisYmax()
 
 void UWatchChart::wheelEvent(QWheelEvent *event)
 {
-    //обработка прокрутки колеса мыши
-    /// просто прокрутка = скролл
-    /// ctrl + прокрутка = зум
+    //РѕР±СЂР°Р±РѕС‚РєР° РїСЂРѕРєСЂСѓС‚РєРё РєРѕР»РµСЃР° РјС‹С€Рё
+    /// РїСЂРѕСЃС‚Рѕ РїСЂРѕРєСЂСѓС‚РєР° = СЃРєСЂРѕР»Р»
+    /// ctrl + РїСЂРѕРєСЂСѓС‚РєР° = Р·СѓРј
     int degrees = event->delta();
     if(isCtrlPressed && isAxisYzoomable)
     { 
@@ -392,7 +392,7 @@ void UWatchChart::wheelEvent(QWheelEvent *event)
     emit UpdateTabGuiSignal(false);
 }
 
-//обработка кнопки ctrl
+//РѕР±СЂР°Р±РѕС‚РєР° РєРЅРѕРїРєРё ctrl
 void UWatchChart::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == 16777249) isCtrlPressed = true; //ctrl
@@ -405,10 +405,10 @@ void UWatchChart::keyReleaseEvent(QKeyEvent *event)
 
 void UWatchChart::slotCustomMenuRequested(QPoint pos)
 {
-    // Создаем объект контекстного меню
+    // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
     QMenu * menu = new QMenu(this);
 
-    // Создаём действия для контекстного меню
+    // РЎРѕР·РґР°С‘Рј РґРµР№СЃС‚РІРёСЏ РґР»СЏ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
     QAction * addSeiesAction =      new QAction("Add series", this);
     QAction * seriesOptionAction =  new QAction("Series option", this);
 //    QAction * chartOptionAction =   new QAction("Chart's option", this);
@@ -416,27 +416,27 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     QAction * restoreAxesAction =   new QAction("Restore Axes", this);
 
 
-    /* Подключаем СЛОТы обработчики для действий контекстного меню */
+    /* РџРѕРґРєР»СЋС‡Р°РµРј РЎР›РћРўС‹ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РґР»СЏ РґРµР№СЃС‚РІРёР№ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ */
     connect(addSeiesAction, SIGNAL(triggered()), this, SLOT(addSeriesSlot()));
     connect(seriesOptionAction, SIGNAL(triggered()), this, SLOT(seriesOptionSlot()));
 //    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
     connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
     connect(restoreAxesAction, SIGNAL(triggered()), this, SLOT(restoreAxes()));
 
-    /* Устанавливаем действия в меню */
+    /* РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РґРµР№СЃС‚РІРёСЏ РІ РјРµРЅСЋ */
     menu->addAction(addSeiesAction);
     menu->addAction(seriesOptionAction);
 //    menu->addAction(chartOptionAction);
     menu->addAction(saveJpegAction);
     menu->addAction(restoreAxesAction);
 
-    /* Вызываем контекстное меню */
+    /* Р’С‹Р·С‹РІР°РµРј РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ */
     menu->popup(mapToGlobal(pos));
 }
 
 void UWatchChart::addSeriesSlot()
 {
-    //вызываем окно для добавления новой серии
+    //РІС‹Р·С‹РІР°РµРј РѕРєРЅРѕ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ РЅРѕРІРѕР№ СЃРµСЂРёРё
     emit addSerieSignal(chartIndex);
 }
 
@@ -459,17 +459,17 @@ void UWatchChart::chartOptionSlot()
 void UWatchChart::saveToJpegSlot()
 {
     QPixmap screenShot;
-    screenShot = chartView->grab(); //захватываем только текущую вкладку
-    QString currentDate = QDateTime::currentDateTime().toString("dd-MM-yy HH-mm"); //не ставить . и :, иначе не создает расшираение
+    screenShot = chartView->grab(); //Р·Р°С…РІР°С‚С‹РІР°РµРј С‚РѕР»СЊРєРѕ С‚РµРєСѓС‰СѓСЋ РІРєР»Р°РґРєСѓ
+    QString currentDate = QDateTime::currentDateTime().toString("dd-MM-yy HH-mm"); //РЅРµ СЃС‚Р°РІРёС‚СЊ . Рё :, РёРЅР°С‡Рµ РЅРµ СЃРѕР·РґР°РµС‚ СЂР°СЃС€РёСЂР°РµРЅРёРµ
 
-    //работа с путем к папке screenshot
+    //СЂР°Р±РѕС‚Р° СЃ РїСѓС‚РµРј Рє РїР°РїРєРµ screenshot
     QDir dir = QDir::current();
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
 
-    //проверяем, есть ли папка screenshots
-    //если нет, то создаем
+    //РїСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё РїР°РїРєР° screenshots
+    //РµСЃР»Рё РЅРµС‚, С‚Рѕ СЃРѕР·РґР°РµРј
     if(dir.cd("screenshots"))
     {
         std::cout<<"screenshot folder is exist"<<std::endl;
@@ -483,7 +483,7 @@ void UWatchChart::saveToJpegSlot()
 
     if(screenShot.save((dir.path()+"/"+chart->title()+ " " + currentDate + ".jpeg")))
     {
-        //говорим что все хорошо и где натйи скриншот
+        //РіРѕРІРѕСЂРёРј С‡С‚Рѕ РІСЃРµ С…РѕСЂРѕС€Рѕ Рё РіРґРµ РЅР°С‚Р№Рё СЃРєСЂРёРЅС€РѕС‚
         std::cout<<"chart save succes"<<std::endl;
         QMessageBox messageBox;
         messageBox.setText("Chart save successfully!");
@@ -493,7 +493,7 @@ void UWatchChart::saveToJpegSlot()
         messageBox.setStandardButtons(QMessageBox::Cancel);
         messageBox.exec();
     }
-    else std::cout<<"chart save not succes"<<std::endl;  //что-то не так
+    else std::cout<<"chart save not succes"<<std::endl;  //С‡С‚Рѕ-С‚Рѕ РЅРµ С‚Р°Рє
 }
 
  void UWatchChart::restoreAxes()

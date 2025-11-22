@@ -21,21 +21,21 @@ See file license.txt for more information
 namespace RDK {
 
 // ****************************************************************************
-// Реализация UAFont
+// Р РµР°Р»РёР·Р°С†РёСЏ UAFont
 // ****************************************************************************
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UAFont::UAFont(void)
 {
- // Имя шрифта
+ // РРјСЏ С€СЂРёС„С‚Р°
  Name="Font";
 
- // Высота шрифта в пикселях
+ // Р’С‹СЃРѕС‚Р° С€СЂРёС„С‚Р° РІ РїРёРєСЃРµР»СЏС…
  Height=10;
 
- // Межсимвольный интервал в процентах от высоты шрифта
+ // РњРµР¶СЃРёРјРІРѕР»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІ РїСЂРѕС†РµРЅС‚Р°С… РѕС‚ РІС‹СЃРѕС‚С‹ С€СЂРёС„С‚Р°
  Interval=0;
 
  Scale=1;
@@ -54,9 +54,9 @@ UAFont::~UAFont(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к параметрам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј
 // --------------------------
-// Имя шрифта
+// РРјСЏ С€СЂРёС„С‚Р°
 const string& UAFont::GetName(void) const
 {
  return Name;
@@ -71,13 +71,13 @@ bool UAFont::SetName(const string& name)
  return true;
 }
 
-// Высота шрифта в пикселях
+// Р’С‹СЃРѕС‚Р° С€СЂРёС„С‚Р° РІ РїРёРєСЃРµР»СЏС…
 int UAFont::GetHeight(void) const
 {
  return Height;
 }
 
-// Межсимвольный интервал в процентах от высоты шрифта
+// РњРµР¶СЃРёРјРІРѕР»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІ РїСЂРѕС†РµРЅС‚Р°С… РѕС‚ РІС‹СЃРѕС‚С‹ С€СЂРёС„С‚Р°
 float UAFont::GetInterval(void) const
 {
  return Interval;
@@ -92,7 +92,7 @@ bool UAFont::SetInterval(float value)
  return true;
 }
 
-// Масштаб в % от оригинала
+// РњР°СЃС€С‚Р°Р± РІ % РѕС‚ РѕСЂРёРіРёРЅР°Р»Р°
 float UAFont::GetScale(void) const
 {
  return Scale;
@@ -107,7 +107,7 @@ bool UAFont::SetScale(float value)
  return true;
 }
 
-// Метрический размер шрифта
+// РњРµС‚СЂРёС‡РµСЃРєРёР№ СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р°
 int UAFont::GetSize(void) const
 {
  return Size;
@@ -125,9 +125,9 @@ bool UAFont::SetSize(int size)
 
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Вычисление длины и высоты строки текста
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РґР»РёРЅС‹ Рё РІС‹СЃРѕС‚С‹ СЃС‚СЂРѕРєРё С‚РµРєСЃС‚Р°
 void UAFont::CalcTextSize(const wstring &str, int &width, int &height)
 {
  width=0;
@@ -152,8 +152,8 @@ void UAFont::CalcTextSize(const string &str, int &width, int &height)
  height=Height;
 }
 
-// Вычисление, сколько символов строки, начиная с символа index, войдет по
-// ширине в заданное число пикселей
+// Р’С‹С‡РёСЃР»РµРЅРёРµ, СЃРєРѕР»СЊРєРѕ СЃРёРјРІРѕР»РѕРІ СЃС‚СЂРѕРєРё, РЅР°С‡РёРЅР°СЏ СЃ СЃРёРјРІРѕР»Р° index, РІРѕР№РґРµС‚ РїРѕ
+// С€РёСЂРёРЅРµ РІ Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ РїРёРєСЃРµР»РµР№
 int UAFont::CalcTextLength(const string &str, int index, int width)
 {
  int calc_width, calc_height;
@@ -184,7 +184,7 @@ int UAFont::CalcTextLength(const wstring &str, int index, int width)
  return (pos)?pos:1;
 }
 
-// Отрисовывает заданный символ в текущей позиции канвы
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ Р·Р°РґР°РЅРЅС‹Р№ СЃРёРјРІРѕР» РІ С‚РµРєСѓС‰РµР№ РїРѕР·РёС†РёРё РєР°РЅРІС‹
 bool UAFont::Draw(wchar_t ch, UAGraphics *graphics)
 {
  if(!graphics)
@@ -327,18 +327,18 @@ bool UAFont::DrawRect(const string &str, const UBRect &rect, int align, UAGraphi
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор копирования
+// РћРїРµСЂР°С‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 UAFont& UAFont::operator = (const UAFont &font)
 {
- // Имя шрифта
+ // РРјСЏ С€СЂРёС„С‚Р°
  Name=font.Name;
 
- // Высота шрифта в пикселях
+ // Р’С‹СЃРѕС‚Р° С€СЂРёС„С‚Р° РІ РїРёРєСЃРµР»СЏС…
  Height=font.Height;
 
- // Межсимвольный интервал в процентах от высоты шрифта
+ // РњРµР¶СЃРёРјРІРѕР»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІ РїСЂРѕС†РµРЅС‚Р°С… РѕС‚ РІС‹СЃРѕС‚С‹ С€СЂРёС„С‚Р°
  Interval=font.Interval;
 
  Scale=font.Scale;
@@ -351,10 +351,10 @@ UAFont& UAFont::operator = (const UAFont &font)
 
 
 // ****************************************************************************
-// Реализация UBitmapFont
+// Р РµР°Р»РёР·Р°С†РёСЏ UBitmapFont
 // ****************************************************************************
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBitmapFont::UBitmapFont(void)
  : UAFont()
@@ -373,9 +373,9 @@ UBitmapFont::~UBitmapFont(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к параметрам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј
 // --------------------------
-// Масштаб в % от оригинала
+// РњР°СЃС€С‚Р°Р± РІ % РѕС‚ РѕСЂРёРіРёРЅР°Р»Р°
 bool UBitmapFont::SetScale(float value)
 {
  if(!UAFont::SetScale(value))
@@ -403,9 +403,9 @@ bool UBitmapFont::SetScale(float value)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Возвращает ширину объекта в пикселах
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С€РёСЂРёРЅСѓ РѕР±СЉРµРєС‚Р° РІ РїРёРєСЃРµР»Р°С…
 int UBitmapFont::CalcWidth(wchar_t ch)
 {
  return static_cast<int>(Table[ch].Data.GetWidth()*Scale);
@@ -418,9 +418,9 @@ int UBitmapFont::CalcWidth(char ch)
 // --------------------------
 
 // --------------------------
-// Методы загрузки и сохранения
+// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё Рё СЃРѕС…СЂР°РЅРµРЅРёСЏ
 // --------------------------
-// Загружает данные заданного символа ch из файла
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ Р·Р°РґР°РЅРЅРѕРіРѕ СЃРёРјРІРѕР»Р° ch РёР· С„Р°Р№Р»Р°
 bool UBitmapFont::Load(wchar_t ch, const string &filename)
 {
  basic_ifstream<char> file(filename.c_str(),ios::in | ios::binary);
@@ -453,9 +453,9 @@ bool UBitmapFont::Save(wchar_t ch, const string &filename)
  return true;
 };
 
-// Загружает/сохраняет данные символов с кодами из интервала [ch1,ch2] из файла
-// Область символов в файле описывается прямоугольником rect
-// размер символа size;
+// Р—Р°РіСЂСѓР¶Р°РµС‚/СЃРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ СЃРёРјРІРѕР»РѕРІ СЃ РєРѕРґР°РјРё РёР· РёРЅС‚РµСЂРІР°Р»Р° [ch1,ch2] РёР· С„Р°Р№Р»Р°
+// РћР±Р»Р°СЃС‚СЊ СЃРёРјРІРѕР»РѕРІ РІ С„Р°Р№Р»Рµ РѕРїРёСЃС‹РІР°РµС‚СЃСЏ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєРѕРј rect
+// СЂР°Р·РјРµСЂ СЃРёРјРІРѕР»Р° size;
 bool UBitmapFont::Load(const string &filename, const UBPoint &size, const UBRect &rect, wchar_t ch1, wchar_t ch2)
 {
  basic_ifstream<char> file(filename.c_str(),ios::in | ios::binary);
@@ -498,7 +498,7 @@ bool UBitmapFont::Save(const string &filename, const UBPoint &size, const UBRect
  return true;
 }
 
-// Загружает весь шрифт из файла
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІРµСЃСЊ С€СЂРёС„С‚ РёР· С„Р°Р№Р»Р°
 bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_name, int size)
 {
  std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
@@ -536,12 +536,12 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
    if(!params.empty())
    {
     wchar_t ch(0);
-    //Поправка для qt
+    //РџРѕРїСЂР°РІРєР° РґР»СЏ qt
     if(params[0].size()<2)
     {
         continue;
     }
-    //конец поправки для qt
+    //РєРѕРЅРµС† РїРѕРїСЂР°РІРєРё РґР»СЏ qt
 	if(params[0][0] == '"')
 	{
      ch=params[0][1];
@@ -563,7 +563,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
   }
  }
 
- if(Table.find(wchar_t(' ')) == Table.end()) // Костыль чтобы добавить в старые шрифты пробел
+ if(Table.find(wchar_t(' ')) == Table.end()) // РљРѕСЃС‚С‹Р»СЊ С‡С‚РѕР±С‹ РґРѕР±Р°РІРёС‚СЊ РІ СЃС‚Р°СЂС‹Рµ С€СЂРёС„С‚С‹ РїСЂРѕР±РµР»
  {
   UBitmap &char_bmp=Table[wchar_t(' ')].Data;
   std::map<wchar_t,UBitmapFontSymbol>::iterator I=Table.find(wchar_t('0'));
@@ -582,9 +582,9 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор копирования
+// РћРїРµСЂР°С‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 UBitmapFont& UBitmapFont::operator = (const UBitmapFont &font)
 {
  static_cast<UAFont * const>(this)->operator = (font);
@@ -595,9 +595,9 @@ UBitmapFont& UBitmapFont::operator = (const UBitmapFont &font)
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Отрисовывает заданный символ в текущей позиции канвы
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ Р·Р°РґР°РЅРЅС‹Р№ СЃРёРјРІРѕР» РІ С‚РµРєСѓС‰РµР№ РїРѕР·РёС†РёРё РєР°РЅРІС‹
 void UBitmapFont::DrawSymbol(wchar_t ch, UAGraphics *graphics)
 {
  if(Scale == 1)
@@ -617,14 +617,14 @@ void UBitmapFont::DrawSymbol(char ch, UAGraphics *graphics)
 
 
 
-// Добавляет шрифт
+// Р”РѕР±Р°РІР»СЏРµС‚ С€СЂРёС„С‚
 bool UBitmapFontCollection::AddFont(const string &name, int size, UBitmapFont &font)
 {
  Fonts[name][size]=font;
  return true;
 }
 
-// Удаляет шрифт
+// РЈРґР°Р»СЏРµС‚ С€СЂРёС„С‚
 bool UBitmapFontCollection::DelFont(const string &name)
 {
  return true;
@@ -635,7 +635,7 @@ bool UBitmapFontCollection::DelFont(const string &name, int size)
  return true;
 }
 
-// Возвращает список имен шрифтов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РёРјРµРЅ С€СЂРёС„С‚РѕРІ
 void UBitmapFontCollection::GetFontNames(vector<string> &buffer)
 {
  map<string,FontSizeContainerT>::iterator I,J;
@@ -646,7 +646,7 @@ void UBitmapFontCollection::GetFontNames(vector<string> &buffer)
   buffer.push_back(I->first);
 }
 
-// Возвращает список имен шрифтов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РёРјРµРЅ С€СЂРёС„С‚РѕРІ
 void UBitmapFontCollection::GetFontSizes(const string &name, vector<int> &buffer)
 {
  buffer.clear();
@@ -663,13 +663,13 @@ void UBitmapFontCollection::GetFontSizes(const string &name, vector<int> &buffer
   buffer.push_back(I->first);
 }
 
-// Удаляет все шрифты
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ С€СЂРёС„С‚С‹
 void UBitmapFontCollection::DelAllFonts(void)
 {
  Fonts.clear();
 }
 
-// Возвращает текущий шрифт
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РёР№ С€СЂРёС„С‚
 UAFont* UBitmapFontCollection::GetFont(const string &name, int size)
 {
  map<string,FontSizeContainerT>::iterator I=Fonts.find(name);
@@ -684,7 +684,7 @@ UAFont* UBitmapFontCollection::GetFont(const string &name, int size)
 }
 
 
-// Возвращает шрифт по умолчанию
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С€СЂРёС„С‚ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 UAFont* UBitmapFontCollection::GetDefaultFont(void)
 {
  if(Fonts.begin() != Fonts.end())

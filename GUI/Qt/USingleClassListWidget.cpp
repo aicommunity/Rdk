@@ -27,19 +27,19 @@ USingleClassListWidget::USingleClassListWidget(std::string class_name, QWidget *
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
 
     UpdateInterval = -1;
-    setAccessibleName("USingleClassListWidget"); // ��� ������ ��� ������������
+    setAccessibleName("USingleClassListWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     UpdateInterface(true);
 
-    //��������� �������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(itemSelectionChanged()),
             this, SLOT(componentListItemSelectionChanged()));
 
-    //��������� ��������� propertys
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ propertys
     connect(ui->treeWidgetParameters, SIGNAL(itemSelectionChanged()),
             this, SLOT(parametersListSelectionChanged()));
 
-    // ��������� ������ �����������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     reloadClassTree();
 }
 
@@ -63,13 +63,13 @@ void USingleClassListWidget::ChangeClass(std::string class_name)
 
 void USingleClassListWidget::reloadClassTree()
 {
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
     componentsTree->clear();
 
-    //���������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
 
     rootItem->setText(0, QString::fromStdString(ClassName));
@@ -82,11 +82,11 @@ void USingleClassListWidget::reloadClassTree()
     if(!ClassName.empty() && storage->CheckClass(ClassName))
       try
       {
-        // ����� ��������� ������
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         auto cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(ClassName));
-        // ���������� �������� �� ���� ��� ���������� �����������
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         addComponentSons(cont, "{CompName}", rootItem);
-        // ��������� ���������
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         storage->ReturnObject(cont);
       }
       catch(RDK::UException&)
@@ -95,7 +95,7 @@ void USingleClassListWidget::reloadClassTree()
       }
     componentsTree->setCurrentItem(rootItem);
 
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
 }
@@ -152,14 +152,14 @@ void USingleClassListWidget::reloadPropertys()
 {
     ui->treeWidgetParameters->clear();
 
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value();
 
     try
     {
         UpdateInterfaceFlag=true;
 
-        // ��������� ��������� ������ ��� ����������� ��� �������
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         auto storage = RDK::GetStorageLock();
         RDK::UEPtr<RDK::UContainer> cont = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(selectedClass.toStdString()));
 
@@ -181,7 +181,7 @@ void USingleClassListWidget::reloadPropertys()
             }
         }
 
-        // ���� �� ������ ������ �� treeWidget'��
+        // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
         ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
         ui->treeWidgetParameters->verticalScrollBar()->setValue(paramScrollPosition);
         UpdateInterfaceFlag=false;
@@ -199,7 +199,7 @@ void USingleClassListWidget::reloadPropertys()
         Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 
-    // �������� ������ �������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(ui->treeWidgetParameters->topLevelItemCount())
     {
         ui->treeWidgetParameters->setCurrentItem(
@@ -251,16 +251,16 @@ void USingleClassListWidget::addComponentSons(RDK::UEPtr<RDK::UContainer> cont, 
 
         if(!componentName.isEmpty())
             father = componentName + ".";
-        // ������ �� ���� ���������� �����������
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         foreach(str, componentNames)
         {
             QTreeWidgetItem* childItem = new QTreeWidgetItem(treeWidgetFather);
             childItem->setText(0, str);
-            // � 0-�� ������� UserRole ������ ���������� ������� ��� ����������
+            // пїЅ 0-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ UserRole пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             childItem->setData(0, Qt::UserRole, father+str);
 
             RDK::UEPtr<RDK::UContainer> child = cont->GetComponent(str.toStdString());
-            // � 1-�� ������� UserRole ������ ���������� ��� ������ ����������
+            // пїЅ 1-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ UserRole пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             childItem->setData(1, Qt::UserRole, QString::fromStdString(RDK::GetStorageLock()->FindClassName(child->GetClass())));
 
             addComponentSons(child, father+str, childItem);

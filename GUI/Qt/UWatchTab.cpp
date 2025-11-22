@@ -9,10 +9,10 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
 {
     ui->setupUi(this);
     colSplitter = nullptr;
-    //создаем один график на вкладке
+    //СЃРѕР·РґР°РµРј РѕРґРёРЅ РіСЂР°С„РёРє РЅР° РІРєР»Р°РґРєРµ
     createGridLayout(1,1);
 
-    //время обновления графика
+    //РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РіСЂР°С„РёРєР°
     UpdateInterval = UpdateIntervalMs;
     setAccessibleName("UWatchTab");
 }
@@ -24,7 +24,7 @@ UWatchTab::~UWatchTab()
 
 void UWatchTab::createGraph()
 {
-    //создание 1 графика
+    //СЃРѕР·РґР°РЅРёРµ 1 РіСЂР°С„РёРєР°
     graph.push_back(new UWatchChart(this));
     graph.last()->setChartIndex(graph.count()-1);
 
@@ -63,10 +63,10 @@ void UWatchTab::AUpdateInterface()
         for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
             std::list<double>::iterator buffIX, buffIY;
-            // Считывание данных в серию из DataReadera
+            // РЎС‡РёС‚С‹РІР°РЅРёРµ РґР°РЅРЅС‹С… РІ СЃРµСЂРёСЋ РёР· DataReadera
             ReadSeriesDataSafe(graphIndex,serieIndex,XData,YData);
 
-            // Получение точек для серии
+            // РџРѕР»СѓС‡РµРЅРёРµ С‚РѕС‡РµРє РґР»СЏ СЃРµСЂРёРё
             std::list<double>::iterator itx, ity;
             points.resize(int(XData.size()));
 
@@ -79,7 +79,7 @@ void UWatchTab::AUpdateInterface()
                 i++;
             }
 
-            // Отрисовка текущих точек серии
+            // РћС‚СЂРёСЃРѕРІРєР° С‚РµРєСѓС‰РёС… С‚РѕС‡РµРє СЃРµСЂРёРё
             current_serie->replace(points);
 
             if(!XData.empty())
@@ -127,7 +127,7 @@ void UWatchTab::AUpdateInterface()
         }
         else
         {
-            // Если есть серии
+            // Р•СЃР»Рё РµСЃС‚СЊ СЃРµСЂРёРё
             if(graph[graphIndex]->countSeries())
                 graph[graphIndex]->updateTimeIntervals(1);
         }*/
@@ -136,7 +136,7 @@ void UWatchTab::AUpdateInterface()
 }
 
 
-///Очищает интерфейс
+///РћС‡РёС‰Р°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void UWatchTab::AClearInterface()
 {
  int count=graph.count();
@@ -145,7 +145,7 @@ void UWatchTab::AClearInterface()
 }
 
 
-/// Безопасно считывает данные серии из ядра
+/// Р‘РµР·РѕРїР°СЃРЅРѕ СЃС‡РёС‚С‹РІР°РµС‚ РґР°РЅРЅС‹Рµ СЃРµСЂРёРё РёР· СЏРґСЂР°
 void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata)
 {
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
@@ -186,7 +186,7 @@ void UWatchTab::chartsOptionTriggered()
 
 void UWatchTab::createSplitterGrid(int rowNumber)
 {
-    //создаем вертикальный контейнер, в котором располагаются горизонтальные
+    //СЃРѕР·РґР°РµРј РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ РєРѕРЅС‚РµР№РЅРµСЂ, РІ РєРѕС‚РѕСЂРѕРј СЂР°СЃРїРѕР»Р°РіР°СЋС‚СЃСЏ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹Рµ
 
     colSplitter = new QSplitter(this);
     colSplitter->setOrientation(Qt::Vertical);
@@ -219,7 +219,7 @@ void UWatchTab::deleteGraphs(int new_graph_count)
         delete graph.takeLast();
 
 
-    //удаляем все графики
+    //СѓРґР°Р»СЏРµРј РІСЃРµ РіСЂР°С„РёРєРё
     for (int i = tabRowNumber-1; i >= 0; --i)
     {
         int widget_count = rowSplitter[i]->count();
@@ -230,7 +230,7 @@ void UWatchTab::deleteGraphs(int new_graph_count)
         delete rowSplitter.takeLast();
     }
 
-    //удаляем расположение
+    //СѓРґР°Р»СЏРµРј СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ
     if (colSplitter !=nullptr)
     {
         ui->horizontalLayout->removeWidget(colSplitter);
@@ -242,7 +242,7 @@ void UWatchTab::deleteGraphs(int new_graph_count)
 
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
-    // Очистка лишних графиков (в функцию передается новое кол-во графиков)
+    // РћС‡РёСЃС‚РєР° Р»РёС€РЅРёС… РіСЂР°С„РёРєРѕРІ (РІ С„СѓРЅРєС†РёСЋ РїРµСЂРµРґР°РµС‚СЃСЏ РЅРѕРІРѕРµ РєРѕР»-РІРѕ РіСЂР°С„РёРєРѕРІ)
     deleteGraphs(rowNumber*colNumber);
 
     tabColNumber=colNumber;
@@ -291,11 +291,11 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     QString componentName;
     QString componentProperty;
 
-    //почему то не рабоатет если раскоментить(
+    //РїРѕС‡РµРјСѓ С‚Рѕ РЅРµ СЂР°Р±РѕР°С‚РµС‚ РµСЃР»Рё СЂР°СЃРєРѕРјРµРЅС‚РёС‚СЊ(
     //if(!application)
     //    return;
 
-    //создаем окно для выбора источника данных
+    //СЃРѕР·РґР°РµРј РѕРєРЅРѕ РґР»СЏ РІС‹Р±РѕСЂР° РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
     UComponentPropertySelectionWidget dialog(this, 3,application);
     dialog.setModal(true);
   //  dialog.show();
@@ -306,7 +306,7 @@ void UWatchTab::createSelectionDialog(int chartIndex)
          componentProperty = dialog.componentsList->getSelectedPropertyName();
     }
 
-    //проверяем что у выбран не пустой элемент (если нет модели)
+    //РїСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ Сѓ РІС‹Р±СЂР°РЅ РЅРµ РїСѓСЃС‚РѕР№ СЌР»РµРјРµРЅС‚ (РµСЃР»Рё РЅРµС‚ РјРѕРґРµР»Рё)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
         bool is_int_or_double = false;
@@ -322,23 +322,23 @@ void UWatchTab::createSelectionDialog(int chartIndex)
             if(!prop)
                 return;
 
-            // Если тип double или int
+            // Р•СЃР»Рё С‚РёРї double РёР»Рё int
             if(prop->GetLanguageType() == typeid(double) || prop->GetLanguageType() == typeid(int))
             {
                 is_int_or_double = true;
             }
         }
 
-        // Если тип double или int
+        // Р•СЃР»Рё С‚РёРї double РёР»Рё int
         if(is_int_or_double)
         {
-            //создаем серию для выбранного источника
+            //СЃРѕР·РґР°РµРј СЃРµСЂРёСЋ РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
             graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval, 0.0);
             return;
         }
 
-        // Если тип, где надо выбрать ячейку (ряд и колонку)
+        // Р•СЃР»Рё С‚РёРї, РіРґРµ РЅР°РґРѕ РІС‹Р±СЂР°С‚СЊ СЏС‡РµР№РєСѓ (СЂСЏРґ Рё РєРѕР»РѕРЅРєСѓ)
         // MDMatrix<double>   MDMatrix<int>   MDVector<double>   MDVector<int>
         UMatrixFormDialog* form = new UMatrixFormDialog();
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
@@ -351,7 +351,7 @@ void UWatchTab::createSelectionDialog(int chartIndex)
                 form->SelectedCols = {0};
             }
 
-            //создаем серии для выбранного источника
+            //СЃРѕР·РґР°РµРј СЃРµСЂРёРё РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°
             double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
             for(int i = 0; i < form->SelectedRows.size(); i++)
                 graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRows[i], form->SelectedCols[i], time_interval, 0.0);
@@ -377,7 +377,7 @@ int UWatchTab::getRowNumber()
 }
 
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.DelNodeInternalContent();
@@ -385,7 +385,7 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
     xml.WriteInteger("GridRowCount", tabRowNumber);
     xml.WriteInteger("GraphCount", countGraphs());
 
-    // Пробегаем по списку всех открытых графов и серий в них
+    // РџСЂРѕР±РµРіР°РµРј РїРѕ СЃРїРёСЃРєСѓ РІСЃРµС… РѕС‚РєСЂС‹С‚С‹С… РіСЂР°С„РѕРІ Рё СЃРµСЂРёР№ РІ РЅРёС…
     for (int graphIndex=0; graphIndex < countGraphs(); graphIndex++)
     {
         xml.SelectNodeForce("graph_"+RDK::sntoa(graphIndex));
@@ -421,7 +421,7 @@ void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
     }
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 {
     int grid_cols = xml.ReadInteger("GridColCount", 1);
@@ -431,7 +431,7 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 
     int graph_count = xml.ReadInteger("GraphCount", 0);
 
-    // ошибка в кол-ве созданных графов и указанных в xml-файле
+    // РѕС€РёР±РєР° РІ РєРѕР»-РІРµ СЃРѕР·РґР°РЅРЅС‹С… РіСЂР°С„РѕРІ Рё СѓРєР°Р·Р°РЅРЅС‹С… РІ xml-С„Р°Р№Р»Рµ
     if(graph_count != countGraphs())
         return;
 
@@ -470,11 +470,11 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 
             double time_interval = graph[graphIndex]->getAxisXrange();
 
-            // TODO: 0 - Ошибка. не  будет работать если больше 1 канала.
+            // TODO: 0 - РћС€РёР±РєР°. РЅРµ  Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ РµСЃР»Рё Р±РѕР»СЊС€Рµ 1 РєР°РЅР°Р»Р°.
             graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval, y_shift);
-            // TODO: костыль: серия создается, но может быть сразу удалена, если компонента не существует (при обновлении внутри createSerie)
+            // TODO: РєРѕСЃС‚С‹Р»СЊ: СЃРµСЂРёСЏ СЃРѕР·РґР°РµС‚СЃСЏ, РЅРѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ СЃСЂР°Р·Сѓ СѓРґР°Р»РµРЅР°, РµСЃР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ (РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё РІРЅСѓС‚СЂРё createSerie)
             if(current_seires_index == graph[graphIndex]->countSeries()-1)
-             continue; // Если размер не поменялся то график не был создан, пропускаем
+             continue; // Р•СЃР»Рё СЂР°Р·РјРµСЂ РЅРµ РїРѕРјРµРЅСЏР»СЃСЏ С‚Рѕ РіСЂР°С„РёРє РЅРµ Р±С‹Р» СЃРѕР·РґР°РЅ, РїСЂРѕРїСѓСЃРєР°РµРј
             current_seires_index = graph[graphIndex]->countSeries()-1;
             graph[graphIndex]->setSerieName      (current_seires_index, xml.ReadString("SerieName", "").c_str());
             graph[graphIndex]->setSerieWidth     (current_seires_index, xml.ReadInteger("SerieWidth", 0));

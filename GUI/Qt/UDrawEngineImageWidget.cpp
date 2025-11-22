@@ -16,7 +16,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
  Application=NULL;
     setMinimumSize(QSize(300,350));
 
-    //<контекстное меню>
+    //<РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ>
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     contextMenu = new QMenu(this);
 
@@ -39,7 +39,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionSeparator8 = new QAction(this);
     actionSeparator8->setSeparator(true);
 
-    //события контекстного меню
+    //СЃРѕР±С‹С‚РёСЏ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
     actionViewOrBreakLink = new QAction(contextMenu);
     actionViewOrBreakLink->setText("View/Break link");
     actionCreateLink = new QAction(contextMenu);
@@ -97,7 +97,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionCopyComponentXMLDescription= new QAction(contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");;
 
-    //добавление в меню
+    //РґРѕР±Р°РІР»РµРЅРёРµ РІ РјРµРЅСЋ
     contextMenu->addAction(actionViewOrBreakLink);
     contextMenu->addAction(actionSeparator1);
     contextMenu->addAction(actionCreateLink);
@@ -129,7 +129,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionSeparator8);
     contextMenu->addAction(actionCloneComponent);
 
-    //связи
+    //СЃРІСЏР·Рё
     connect(actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
     connect(actionCreateLink, SIGNAL(triggered(bool)), this, SLOT(componentCreateLink()));
     connect(actionFinishLink, SIGNAL(triggered(bool)), this, SLOT(componentFinishLink()));
@@ -152,11 +152,11 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     connect(actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
-    //</контекстное меню>
+    //</РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ>
 
     setScaledContents(true);
 
-    //<код из билдера>
+    //<РєРѕРґ РёР· Р±РёР»РґРµСЂР°>
     Graph.SetCanvas(&GraphCanvas);
     FontType = "Tahoma";
     FontSize = 15;
@@ -166,7 +166,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     Graph.SetFont(&Font);
     DrawEngine.SetEngine(&Graph);
     DrawEngine.SetFonts(RDK::GetCoreLock()->GetFonts());
-    //</код из билдера>
+    //</РєРѕРґ РёР· Р±РёР»РґРµСЂР°>
     reDrawScheme(true);
     setAcceptDrops(true);
 }
@@ -268,7 +268,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
     QString classname;
     dataStream >> classname;
 
-    // Если конфигурация не открыта, то создать новую
+    // Р•СЃР»Рё РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РЅРµ РѕС‚РєСЂС‹С‚Р°, С‚Рѕ СЃРѕР·РґР°С‚СЊ РЅРѕРІСѓСЋ
     if(!Application->GetProjectOpenFlag())
     {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Config not created. Auto-create one-channel configuration and model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
@@ -290,13 +290,13 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
 
             std::string path_dialog=default_path.toUtf8().data();
 
-            // Создание папки проекта автоматическое либо выбор существующей
+            // РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё РїСЂРѕРµРєС‚Р° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРµ Р»РёР±Рѕ РІС‹Р±РѕСЂ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№
             if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
             {
                 time_t curr_time;
                 time(&curr_time);
 
-                // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+                // Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
                 std::string folder=RDK::get_text_time(curr_time, '.', '_');
                 path_dialog+=std::string("/Autocreate")+folder.c_str();
 
@@ -324,13 +324,13 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
         return;
     }
 
-    //если модель не существует, спросить не создать ли ее
+    //РµСЃР»Рё РјРѕРґРµР»СЊ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, СЃРїСЂРѕСЃРёС‚СЊ РЅРµ СЃРѕР·РґР°С‚СЊ Р»Рё РµРµ
     if(!Model_Check())
     {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model from this class?", QMessageBox::Yes|QMessageBox::Cancel);
         if (reply == QMessageBox::Yes)
         {
-            //создать новую модель
+            //СЃРѕР·РґР°С‚СЊ РЅРѕРІСѓСЋ РјРѕРґРµР»СЊ
             Model_Create(classname.toLocal8Bit());
             selectedComponent = "";
             DrawEngine.SelectSingleComponent(selectedComponent);
@@ -469,7 +469,7 @@ void UDrawEngineImageWidget::selectComponent(QString name)
     }
 }
 
-/// Меняет размер канвы
+/// РњРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РєР°РЅРІС‹
 void UDrawEngineImageWidget::ResizeCanvas(void)
 {
  int rec_width(width()), rec_height(height());
@@ -614,7 +614,7 @@ void UDrawEngineImageWidget::componentRename()
 
         emit updateComponentsList();
         reDrawScheme(true);
-        //выбрать компонент с новым именем
+        //РІС‹Р±СЂР°С‚СЊ РєРѕРјРїРѕРЅРµРЅС‚ СЃ РЅРѕРІС‹Рј РёРјРµРЅРµРј
         selectComponent(ComponentName.isEmpty()? QString::fromStdString(new_name)
                                                : ComponentName + "." + QString::fromStdString(new_name));
         emit componentSelected(myLongName());
@@ -782,13 +782,13 @@ QString UDrawEngineImageWidget::myLongName()
 }
 
 
-/// Устанавливает указатель на ядро
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЏРґСЂРѕ
 void UDrawEngineImageWidget::SetApplication(RDK::UApplication *app)
 {
  Application=app;
 }
 
-/// Возвращается имя выбрано компонента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РёРјСЏ РІС‹Р±СЂР°РЅРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string UDrawEngineImageWidget::GetLongName()
 {
     return myLongName().toUtf8().data();

@@ -34,7 +34,7 @@ __fastcall TVideoOutputForm::~TVideoOutputForm(void)
 }
 
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TVideoOutputForm::ABeforeCalculate(void)
 {
 /* if(!Model_Check())
@@ -57,7 +57,7 @@ void TVideoOutputForm::ABeforeCalculate(void)
  }    */
 }
 
-// Обновляет интерфейс
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void TVideoOutputForm::AUpdateInterface(void)
 {
  for(int i=0;i<GetNumSources();i++)
@@ -66,20 +66,20 @@ void TVideoOutputForm::AUpdateInterface(void)
  }
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TVideoOutputForm::AClearInterface(void)
 {
  ClearSources();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TVideoOutputForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumSources",GetNumSources());
  xml.WriteInteger("MassiveStartChannelsDelay",MassiveStartChannelsDelay);
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TVideoOutputForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumSources",1);
@@ -90,19 +90,19 @@ void TVideoOutputForm::ALoadParameters(RDK::USerStorageXML &xml)
  UpdateInterface();
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TVideoOutputForm* TVideoOutputForm::New(TComponent *owner)
 {
  return new TVideoOutputForm(owner);
 }
 
-// Число источников видео
+// Р§РёСЃР»Рѕ РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕ
 int TVideoOutputForm::GetNumSources(void) const
 {
  return PageControl->PageCount;
 }
 
-// Добавляет новый источник видео
+// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 void TVideoOutputForm::AddSource(void)
 {
  TTabSheet *sheet=new TTabSheet(PageControl);
@@ -131,7 +131,7 @@ void TVideoOutputForm::AddSource(void)
   */
 }
 
-// Добавляет новый источник видео c данными как у выбранного
+// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ c РґР°РЅРЅС‹РјРё РєР°Рє Сѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ
 void TVideoOutputForm::CopySource(void)
 {
  TTabSheet *sheet=new TTabSheet(PageControl);
@@ -167,7 +167,7 @@ void TVideoOutputForm::CopySource(void)
   */
 }
 
-// Удаляет источник видео
+// РЈРґР°Р»СЏРµС‚ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 void TVideoOutputForm::DelSource(int index)
 {
  if(index<0 || index >=int(Sources.size()))
@@ -180,7 +180,7 @@ void TVideoOutputForm::DelSource(int index)
 //  Sources[i]->Parent=PageControl->Pages[i];
 }
 
-// Удаляет все источники видео
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РёСЃС‚РѕС‡РЅРёРєРё РІРёРґРµРѕ
 void TVideoOutputForm::ClearSources(void)
 {
  for(size_t i=0;i<Sources.size();i++)
@@ -192,7 +192,7 @@ void TVideoOutputForm::ClearSources(void)
  Sources.clear();
 }
 
-// Выбирает режим заданного источника
+// Р’С‹Р±РёСЂР°РµС‚ СЂРµР¶РёРј Р·Р°РґР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°
 void TVideoOutputForm::SetSourceType(int index, int mode)
 {
  if(index<0 || index >=int(Sources.size()))
@@ -201,13 +201,13 @@ void TVideoOutputForm::SetSourceType(int index, int mode)
  Sources[index]->Init(mode);
 }
 
-// Возвращает индекс текущего активного источника видео
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ Р°РєС‚РёРІРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° РІРёРґРµРѕ
 int TVideoOutputForm::GetActiveSource(void) const
 {
  return PageControl->ActivePageIndex;
 }
 
-// Возвращает фрейм источника видео
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„СЂРµР№Рј РёСЃС‚РѕС‡РЅРёРєР° РІРёРґРµРѕ
 TVideoOutputFrame* TVideoOutputForm::GetVideoOutputFrame(int index)
 {
  if(index<0 || index >=int(Sources.size()))
@@ -216,7 +216,7 @@ TVideoOutputFrame* TVideoOutputForm::GetVideoOutputFrame(int index)
  return Sources[index];
 }
 
-// Возвращает фрейм активного (выбранного) источника видео
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„СЂРµР№Рј Р°РєС‚РёРІРЅРѕРіРѕ (РІС‹Р±СЂР°РЅРЅРѕРіРѕ) РёСЃС‚РѕС‡РЅРёРєР° РІРёРґРµРѕ
 TVideoOutputFrame* TVideoOutputForm::GetActiveVideoOutputFrame(void)
 {
  if(GetActiveSource()>=0)
@@ -226,7 +226,7 @@ TVideoOutputFrame* TVideoOutputForm::GetActiveVideoOutputFrame(void)
 }
 
 
-// Сохраняет информацию об источниках данных в заданный ini файл
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РёСЃС‚РѕС‡РЅРёРєР°С… РґР°РЅРЅС‹С… РІ Р·Р°РґР°РЅРЅС‹Р№ ini С„Р°Р№Р»
 void TVideoOutputForm::SaveToIni(TMemIniFile *ini, const String &section)
 {
 // ini->WriteInteger(section,"NumSources",GetNumSources());
@@ -236,7 +236,7 @@ void TVideoOutputForm::SaveToIni(TMemIniFile *ini, const String &section)
  }
 }
 
-// Загружает информацию об источниках данных из заданного ini файла
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РёСЃС‚РѕС‡РЅРёРєР°С… РґР°РЅРЅС‹С… РёР· Р·Р°РґР°РЅРЅРѕРіРѕ ini С„Р°Р№Р»Р°
 void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
 {
 // int numsources=ini->ReadInteger(section,"NumSources",0);
@@ -249,7 +249,7 @@ void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
 
 }
 
-// Запускает выбранный источник видео, или все если index == -1
+// Р—Р°РїСѓСЃРєР°РµС‚ РІС‹Р±СЂР°РЅРЅС‹Р№ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ, РёР»Рё РІСЃРµ РµСЃР»Рё index == -1
 void TVideoOutputForm::Start(int index)
 {
  UShowProgressBarForm->SetBarHeader(1,"Starting video sources...");
@@ -272,7 +272,7 @@ void TVideoOutputForm::Start(int index)
  }
 }
 
-// Останавливает выбранный источник видео, или все если index == -1
+// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІС‹Р±СЂР°РЅРЅС‹Р№ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ, РёР»Рё РІСЃРµ РµСЃР»Рё index == -1
 void TVideoOutputForm::Stop(int index)
 {
  UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
@@ -292,8 +292,8 @@ void TVideoOutputForm::Stop(int index)
  }
 }
 
-// Останавливает выбранный источник видео, или все если index == -1
-// Не изменяяет состояние онлайн-источников (камеры)
+// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІС‹Р±СЂР°РЅРЅС‹Р№ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ, РёР»Рё РІСЃРµ РµСЃР»Рё index == -1
+// РќРµ РёР·РјРµРЅСЏСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РѕРЅР»Р°Р№РЅ-РёСЃС‚РѕС‡РЅРёРєРѕРІ (РєР°РјРµСЂС‹)
 void TVideoOutputForm::StopOffline(int index)
 {
  UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");

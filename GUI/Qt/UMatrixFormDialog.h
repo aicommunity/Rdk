@@ -18,17 +18,17 @@ public:
     explicit UMatrixFormDialog(QWidget *parent = nullptr);
     ~UMatrixFormDialog();
 
-    /// Строка и столбец выбранные в матрице
+    /// РЎС‚СЂРѕРєР° Рё СЃС‚РѕР»Р±РµС† РІС‹Р±СЂР°РЅРЅС‹Рµ РІ РјР°С‚СЂРёС†Рµ
     std::vector<int> SelectedRows, SelectedCols;
 
-    /// Имя компонента
+    /// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
     std::string ComponentMatrixName;
 
-    /// Имя свойства
+    /// РРјСЏ СЃРІРѕР№СЃС‚РІР°
     std::string PropertyMatrixName;
 
-    /// Тип свойства
-    /// 0 - неизвестно
+    /// РўРёРї СЃРІРѕР№СЃС‚РІР°
+    /// 0 - РЅРµРёР·РІРµСЃС‚РЅРѕ
     /// 1 - MDMatrix<double>
     /// 2 - MDMatrix<int>
     /// 3 - MDVector<double>
@@ -38,13 +38,13 @@ public:
 
      QTimer updateMatrixDataTimer;
 
-    /// Выбирает матрицу для наблюдения
+    /// Р’С‹Р±РёСЂР°РµС‚ РјР°С‚СЂРёС†Сѓ РґР»СЏ РЅР°Р±Р»СЋРґРµРЅРёСЏ
     bool SelectMatrix(const std::string &comp_name, const std::string &prop_name);
 
 private slots:
     void on_buttonBox_accepted();
 
-    // функция обновления отображения матрицы
+    // С„СѓРЅРєС†РёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РјР°С‚СЂРёС†С‹
     void UpdateMatrixData(void);
 
 

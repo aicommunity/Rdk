@@ -40,7 +40,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     ui->splitter->setStretchFactor(1,0);
 
     UpdateInterval = 0; // don't update by core ticks
-    setAccessibleName("UDrawEngineWidget"); // èìÿ êëàññà äëÿ ñåðèàëèçàöèè
+    setAccessibleName("UDrawEngineWidget"); // Ð¸Ð¼Ñ ÐºÐ»Ð°ÑÑÐ° Ð´Ð»Ñ ÑÐµÑ€Ð¸Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ð¸
     ALoadParameters();
 
     UpdateInterface(true);
@@ -85,7 +85,7 @@ void UDrawEngineWidget::ALoadParameters()
   settings.endGroup();
 }
 
-//ðàñøèðåíèå ñõåìû ïðè ðåñàéçå
+//Ñ€Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð¸Ðµ ÑÑ…ÐµÐ¼Ñ‹ Ð¿Ñ€Ð¸ Ñ€ÐµÑÐ°Ð¹Ð·Ðµ
 void UDrawEngineWidget::resizeEvent(QResizeEvent*)
 {
  if(modelScheme->width()<width() || modelScheme->height()<height())

@@ -5,46 +5,46 @@
 
 namespace RDK {
 
-// Отвечает за создание функции для формирования базовых свойств
+// РћС‚РІРµС‡Р°РµС‚ Р·Р° СЃРѕР·РґР°РЅРёРµ С„СѓРЅРєС†РёРё РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р±Р°Р·РѕРІС‹С… СЃРІРѕР№СЃС‚РІ
 class UBasePropCreatorMatrix: public UBasePropCreatorTempl
 {
 
 public:
-	// Основная функция создания свойств всех возможных типов (добавляется в Storage)
+	// РћСЃРЅРѕРІРЅР°СЏ С„СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ РІСЃРµС… РІРѕР·РјРѕР¶РЅС‹С… С‚РёРїРѕРІ (РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РІ Storage)
     static bool BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-	// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+	// Р¤СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ С„СѓРєРЅС†РёРё РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° (СЃС‚СЂРѕРєР°) СЃРІРѕР№СЃС‚РІР°
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа вектор из MVector<T>
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° РІРµРєС‚РѕСЂ РёР· MVector<T>
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyVectorOfMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа вектор из MDMatrix<T>
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° РІРµРєС‚РѕСЂ РёР· MDMatrix<T>
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа MDMatrix
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MDMatrix
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа MDVector
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MDVector
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMDVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа MVector  size - 2,3,4   тип - double
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MVector  size - 2,3,4   С‚РёРї - double
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа MMatrix [rows,cols] - [3,3][4,4] типы - double, int, bool
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MMatrix [rows,cols] - [3,3][4,4] С‚РёРїС‹ - double, int, bool
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
 };
 
 
-// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+// Р¤СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ С„СѓРєРЅС†РёРё РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° (СЃС‚СЂРѕРєР°) СЃРІРѕР№СЃС‚РІР°
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
@@ -83,8 +83,8 @@ void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK
 	 std::string prop_name = serstorage->GetNodeName();
 
 	 int size=serstorage->GetNumNodes();
-	 // если вектор пуст берем тип - elemType
-	 // если есть элементы берем тип элементов
+	 // РµСЃР»Рё РІРµРєС‚РѕСЂ РїСѓСЃС‚ Р±РµСЂРµРј С‚РёРї - elemType
+	 // РµСЃР»Рё РµСЃС‚СЊ СЌР»РµРјРµРЅС‚С‹ Р±РµСЂРµРј С‚РёРї СЌР»РµРјРµРЅС‚РѕРІ
 	 std::string type;
 	 if(size == 0)
 	 {
@@ -97,13 +97,13 @@ void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK
 		serstorage->SelectUp();
 	 }
 
-	 //вектор из MVector<T>
+	 //РІРµРєС‚РѕСЂ РёР· MVector<T>
 	 if(type.find("MVector",0) == 0)
 	 {
         CreatePropertyVectorOfMVector<PropType, TypeInt>(serstorage,mock_unet, ptype);
 		return;
 	 }
-	 //вектор из MDMatrix<T>
+	 //РІРµРєС‚РѕСЂ РёР· MDMatrix<T>
 	 if(type.find("MDMatrix",0) == 0)
 	 {
         CreatePropertyVectorOfMDMatrix<PropType, TypeInt>(serstorage,mock_unet, ptype);
@@ -113,7 +113,7 @@ void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK
 }
 
 
-// Функция для создания свойства типа вектор из MVector<T>
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° РІРµРєС‚РѕСЂ РёР· MVector<T>
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreatePropertyVectorOfMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
@@ -122,7 +122,7 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMVector(RDK::USerStorageXML* 
     std::string type;
     int size;
 
-    // Если вектор не пустой
+    // Р•СЃР»Рё РІРµРєС‚РѕСЂ РЅРµ РїСѓСЃС‚РѕР№
     if((serstorage->SelectNode("elem")))
     {
         type = serstorage->GetNodeAttribute("Type");
@@ -136,13 +136,13 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMVector(RDK::USerStorageXML* 
     }
 
 
-    // Удаление слова MVector
+    // РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MVector
     size_t pos = type.find("MVector");
     if (pos != std::string::npos)
     {
         type.erase(pos, std::string("MVector").length());
     }
-    // Удаление символов '<' и '>'
+    // РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>'
     type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 
@@ -171,15 +171,15 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMVector(RDK::USerStorageXML* 
     }
 }
 
-// Функция для создания свойства типа вектор из MDMatrix<T>
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° РІРµРєС‚РѕСЂ РёР· MDMatrix<T>
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string prop_name = serstorage->GetNodeName();
 
     int size=serstorage->GetNumNodes();
-    // если вектор пуст берем тип - elemType
-    // если есть элементы берем тип элементов
+    // РµСЃР»Рё РІРµРєС‚РѕСЂ РїСѓСЃС‚ Р±РµСЂРµРј С‚РёРї - elemType
+    // РµСЃР»Рё РµСЃС‚СЊ СЌР»РµРјРµРЅС‚С‹ Р±РµСЂРµРј С‚РёРї СЌР»РµРјРµРЅС‚РѕРІ
     std::string type;
     if(size == 0)
     {
@@ -192,13 +192,13 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML*
         serstorage->SelectUp();
     }
 
-    // Удаление слова MDMatrix
+    // РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MDMatrix
     size_t pos = type.find("MDMatrix");
     if (pos != std::string::npos)
     {
         type.erase(pos, std::string("MDMatrix").length());
     }
-    // Удаление символов '<' и '>'
+    // РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>'
     type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 
@@ -209,20 +209,20 @@ void UBasePropCreatorMatrix::CreatePropertyVectorOfMDMatrix(RDK::USerStorageXML*
     }
 }
 
-// Функция для создания свойства типа MDMatrix
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MDMatrix
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreatePropertyMDMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
 	std::string type = serstorage->GetNodeAttribute("Type");
 	std::string prop_name = serstorage->GetNodeName();
 
-	// Удаление слова MDMatrix
+	// РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MDMatrix
 	size_t pos = type.find("MDMatrix");
 	if (pos != std::string::npos)
 	{
 		type.erase(pos, std::string("MDMatrix").length());
 	}
-	// Удаление символов '<' и '>'
+	// РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>'
 	type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 
@@ -240,20 +240,20 @@ void UBasePropCreatorMatrix::CreatePropertyMDMatrix(RDK::USerStorageXML* serstor
     }
 }
 
-// Функция для создания свойства типа MDVector
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MDVector
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreatePropertyMDVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
     std::string prop_name = serstorage->GetNodeName();
 
-    // Удаление слова MDVector
+    // РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MDVector
     size_t pos = type.find("MDVector");
     if (pos != std::string::npos)
     {
         type.erase(pos, std::string("MDVector").length());
     }
-    // Удаление символов '<' и '>'
+    // РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>'
     type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 
@@ -271,7 +271,7 @@ void UBasePropCreatorMatrix::CreatePropertyMDVector(RDK::USerStorageXML* serstor
     }
 }
 
-// Функция для создания свойства типа MVector  size - 2,3,4   тип - double
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MVector  size - 2,3,4   С‚РёРї - double
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreatePropertyMVector(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
@@ -280,13 +280,13 @@ void UBasePropCreatorMatrix::CreatePropertyMVector(RDK::USerStorageXML* serstora
 
     int size= RDK::atoi(serstorage->GetNodeAttribute("Size"));
 
-    // Удаление слова MVector
+    // РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MVector
     size_t pos = type.find("MVector");
     if (pos != std::string::npos)
     {
         type.erase(pos, std::string("MVector").length());
     }
-    // Удаление символов '<' и '>'
+    // РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>'
     type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 
@@ -315,7 +315,7 @@ void UBasePropCreatorMatrix::CreatePropertyMVector(RDK::USerStorageXML* serstora
      }
 }
 
-// Функция для создания свойства типа MMatrix [rows,cols] - [3,3][4,4] типы - double, int, bool
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° MMatrix [rows,cols] - [3,3][4,4] С‚РёРїС‹ - double, int, bool
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorMatrix::CreatePropertyMMatrix(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
@@ -325,13 +325,13 @@ void UBasePropCreatorMatrix::CreatePropertyMMatrix(RDK::USerStorageXML* serstora
     int rows= RDK::atoi(serstorage->GetNodeAttribute("Rows"));
     int cols= RDK::atoi(serstorage->GetNodeAttribute("Cols"));
 
-    // Удаление слова MMatrix
+    // РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MMatrix
     size_t pos = type.find("MMatrix");
     if (pos != std::string::npos)
     {
         type.erase(pos, std::string("MMatrix").length());
     }
-    // Удаление символов '<' и '>' для выделения символа типа
+    // РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>' РґР»СЏ РІС‹РґРµР»РµРЅРёСЏ СЃРёРјРІРѕР»Р° С‚РёРїР°
     type.erase(std::remove(type.begin(), type.end(), '>'), type.end());
     type.erase(std::remove(type.begin(), type.end(), '<'), type.end());
 

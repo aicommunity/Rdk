@@ -7,13 +7,13 @@
 
 struct TSingleGraph
 {
-    QColor t_graphColor;       //Цвет графика
-    std::string t_graphName;   //Имя графика
-    int indexChannel;          //Индекс канала
-    std::string nameComponent; //Имя компонента
-    std::string nameProperty;  //Имя свойства
-    std::string typeProperty;  //Тип компонента
-    //координаты элемента матрицы
+    QColor t_graphColor;       //Р¦РІРµС‚ РіСЂР°С„РёРєР°
+    std::string t_graphName;   //РРјСЏ РіСЂР°С„РёРєР°
+    int indexChannel;          //РРЅРґРµРєСЃ РєР°РЅР°Р»Р°
+    std::string nameComponent; //РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+    std::string nameProperty;  //РРјСЏ СЃРІРѕР№СЃС‚РІР°
+    std::string typeProperty;  //РўРёРї РєРѕРјРїРѕРЅРµРЅС‚Р°
+    //РєРѕРѕСЂРґРёРЅР°С‚С‹ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹
     int Jx;
     int Jy;
 };

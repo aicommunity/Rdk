@@ -24,7 +24,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Простые типы
+// РџСЂРѕСЃС‚С‹Рµ С‚РёРїС‹
 template<typename T>
 USerStorageXML& USimpleToStorage (USerStorageXML& storage, const T data)
 {
@@ -58,7 +58,7 @@ USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
  return storage;
 }
 
-// Простые вещественные типы
+// РџСЂРѕСЃС‚С‹Рµ РІРµС‰РµСЃС‚РІРµРЅРЅС‹Рµ С‚РёРїС‹
 template<typename T>
 USerStorageXML& USimpleToStorageF(USerStorageXML& storage, const T data, int prec)
 {
@@ -141,7 +141,7 @@ RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long double d
 
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long double &data);
 
-// Указатели
+// РЈРєР°Р·Р°С‚РµР»Рё
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const T *data)
 {
@@ -165,7 +165,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
 
 // std::stringstream stream(storage.GetNodeText().c_str());
 
-// stream>>data; // Заглушка!
+// stream>>data; // Р—Р°РіР»СѓС€РєР°!
 
  return storage;
 }
@@ -173,7 +173,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
 
 
 
-// Пары
+// РџР°СЂС‹
 template<typename T1, typename T2>
 USerStorageXML& operator << (USerStorageXML& storage, const std::pair<T1,T2> &data)
 {
@@ -206,7 +206,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::pair<T1,T2> &data)
  return storage;
 }
 
-// Map-ы
+// Map-С‹
 #ifdef _MSC_VER
 #pragma warning( push )
 #pragma warning (disable: 4700)
@@ -222,7 +222,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
  storage.SetNodeAttribute("Type","std::map");
  storage.SetNodeAttribute("Size",sntoa(data.size()));
 
- // Узнать типы элементов пары (на случай отсутствия элементов внутри)
+ // РЈР·РЅР°С‚СЊ С‚РёРїС‹ СЌР»РµРјРµРЅС‚РѕРІ РїР°СЂС‹ (РЅР° СЃР»СѓС‡Р°Р№ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ СЌР»РµРјРµРЅС‚РѕРІ РІРЅСѓС‚СЂРё)
  T1 first;
  USerStorageXML tempXML;
  tempXML.Destroy();
@@ -305,7 +305,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
-// Списки
+// РЎРїРёСЃРєРё
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
 {
@@ -313,7 +313,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
+ // РЈРєР°Р·Р°С‚СЊ С‚РёРї СЌР»РµРјРµРЅС‚Р° РєРѕРЅС‚РµР№РЅРµСЂР° (РЅР° СЃР»СѓС‡Р°Р№ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ СЌР»РµРјРµРЅС‚РѕРІ РІРЅСѓС‚СЂРё)
  T temp;
  USerStorageXML tempXML;
  tempXML.Destroy();
@@ -379,7 +379,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
  return storage;
 }
 
-// Вектора
+// Р’РµРєС‚РѕСЂР°
 RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
 
@@ -403,13 +403,13 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
 { 
  storage.SetNodeAttribute("Type","std::vector");
 
- // Исключительный случай для конкретного свойства сложного типа
+ // РСЃРєР»СЋС‡РёС‚РµР»СЊРЅС‹Р№ СЃР»СѓС‡Р°Р№ РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ СЃРІРѕР№СЃС‚РІР° СЃР»РѕР¶РЅРѕРіРѕ С‚РёРїР°
  if(storage.GetNodeName() == "PPlanePoints")
  {
   storage.SetNodeAttribute("Type","PPlanePoints");
  }
 
- // Исключительный случай для конкретного свойства сложного типа
+ // РСЃРєР»СЋС‡РёС‚РµР»СЊРЅС‹Р№ СЃР»СѓС‡Р°Р№ РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ СЃРІРѕР№СЃС‚РІР° СЃР»РѕР¶РЅРѕРіРѕ С‚РёРїР°
  if(storage.GetNodeName() == "NetStructure")
  {
   storage.SetNodeAttribute("Type","NetStructure");
@@ -419,7 +419,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
+ // РЈРєР°Р·Р°С‚СЊ С‚РёРї СЌР»РµРјРµРЅС‚Р° РєРѕРЅС‚РµР№РЅРµСЂР° (РЅР° СЃР»СѓС‡Р°Р№ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ СЌР»РµРјРµРЅС‚РѕРІ РІРЅСѓС‚СЂРё)
  T temp;
  USerStorageXML tempXML;
  tempXML.Destroy();
@@ -521,7 +521,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
  return storage;
 }
 
-// C-массивы
+// C-РјР°СЃСЃРёРІС‹
 template<int Size>
 USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size])
 {
@@ -569,7 +569,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size])
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size>Size)
    size=Size;
@@ -620,7 +620,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, double const (&data)[Size]
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
   unsigned int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size>Size)
    size=Size;
@@ -640,7 +640,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, double const (&data)[Size]
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   if(size>Size)
    size=Size;
 
@@ -685,7 +685,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size])
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
   unsigned int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size>Size)
    size=Size;
@@ -705,7 +705,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size])
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   if(size>Size)
    size=Size;
 
@@ -750,7 +750,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint32_t (&data)[Size])
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
   size_t size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size>Size)
    size=Size;
@@ -770,7 +770,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint32_t (&data)[Size])
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   if(size>Size)
    size=Size;
 
@@ -815,7 +815,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint8_t (&data)[Size])
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
   size_t size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size>Size)
    size=Size;
@@ -835,7 +835,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint8_t (&data)[Size])
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   if(size>Size)
    size=Size;
 
@@ -899,7 +899,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, T (&data)[Size])
  else
  if(storage.GetNodeAttribute("Type") == "C-simplearray")
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size>Size)
    size=Size;
@@ -921,7 +921,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, T (&data)[Size])
  return storage;
 }
 
-// C-массивы 2D
+// C-РјР°СЃСЃРёРІС‹ 2D
 template<int Size1, int Size2>
 USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size1][Size2])
 {
@@ -954,8 +954,8 @@ USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size1][
 template<int Size1, int Size2>
 USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size1][Size2])
 {
- unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
- unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
  if(size1>Size1)
   size1=Size1;
@@ -1015,8 +1015,8 @@ USerStorageXML& operator << (USerStorageXML& storage, double const (&data)[Size1
 template<int Size1, int Size2>
 USerStorageXML& operator >> (USerStorageXML& storage, double (&data)[Size1][Size2])
 {
- unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
- unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
  if(size1>Size1)
   size1=Size1;
@@ -1076,8 +1076,8 @@ USerStorageXML& operator << (USerStorageXML& storage, int const (&data)[Size1][S
 template<int Size1, int Size2>
 USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size1][Size2])
 {
- unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
- unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
  if(size1>Size1)
   size1=Size1;
@@ -1137,8 +1137,8 @@ USerStorageXML& operator << (USerStorageXML& storage, uint32_t const (&data)[Siz
 template<int Size1, int Size2>
 USerStorageXML& operator >> (USerStorageXML& storage, uint32_t (&data)[Size1][Size2])
 {
- unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
- unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
  if(size1>Size1)
   size1=Size1;
@@ -1198,8 +1198,8 @@ USerStorageXML& operator << (USerStorageXML& storage, uint8_t const (&data)[Size
 template<int Size1, int Size2>
 USerStorageXML& operator >> (USerStorageXML& storage, uint8_t (&data)[Size1][Size2])
 {
- unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: заменить
- unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: заменить
+ unsigned int size1=RDK::atoi(storage.GetNodeAttribute("Size1")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
+ unsigned int size2=RDK::atoi(storage.GetNodeAttribute("Size2")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
  if(size1>Size1)
   size1=Size1;
@@ -1288,14 +1288,14 @@ USerStorageXML& operator >> (USerStorageXML& storage, T (&data)[Size1][Size2])
  return storage;
 }
 
-// Строки
+// РЎС‚СЂРѕРєРё
 RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::string &data);
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::string &data);
 
 RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::wstring &data);
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::wstring &data);
 
-// Деревья
+// Р”РµСЂРµРІСЊСЏ
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const UTree<T> &data)
 {

@@ -10,8 +10,8 @@
 
 namespace RDK {
 
-/// Макрос для сокращение монотонного кода, не может использоваться в других местах программы
-/// ВНИМАНИЕ! содержит обращение к переменным, созданным вне макроса
+/// РњР°РєСЂРѕСЃ РґР»СЏ СЃРѕРєСЂР°С‰РµРЅРёРµ РјРѕРЅРѕС‚РѕРЅРЅРѕРіРѕ РєРѕРґР°, РЅРµ РјРѕР¶РµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РІ РґСЂСѓРіРёС… РјРµСЃС‚Р°С… РїСЂРѕРіСЂР°РјРјС‹
+/// Р’РќРРњРђРќРР•! СЃРѕРґРµСЂР¶РёС‚ РѕР±СЂР°С‰РµРЅРёРµ Рє РїРµСЂРµРјРµРЅРЅС‹Рј, СЃРѕР·РґР°РЅРЅС‹Рј РІРЅРµ РјР°РєСЂРѕСЃР°
 #define TEST_PROPERTY_WITH_TYPE(type) \
   if(property->GetLanguageType() == typeid(type)) \
   { \
@@ -40,7 +40,7 @@ namespace RDK {
 
 
 // --------------------
-// Методы инициализации
+// РњРµС‚РѕРґС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------
 UTest::UTest(void)
 {
@@ -56,13 +56,13 @@ UTest::UTest(const UEPtr<UApplication> &value)
   stepsMode = true;
 }
 
-/// Возвращает указатель на тестируемое приложение
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
   UEPtr<UApplication> UTest::GetApplication()
 {
   return Application;
 }
 
-/// Задает тестируемое приложение
+/// Р—Р°РґР°РµС‚ С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 void UTest::SetApplication(const UEPtr<UApplication> &value)
 {
   if(Application == value)
@@ -84,10 +84,10 @@ UTest& UTest::operator = (const UTest &copy)
 }
 
 // --------------------
-// Методы тестирования
+// РњРµС‚РѕРґС‹ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 // --------------------
 
-/// Загрузка тестов
+/// Р—Р°РіСЂСѓР·РєР° С‚РµСЃС‚РѕРІ
 int UTest::LoadTest(string testFile)
 {
   testsFileName = testFile;
@@ -146,7 +146,7 @@ int UTest::LoadTest(string testFile)
       testXML.SelectNode("Property", i);
       std::string sValue;
 
-      // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
+      // РµСЃР»Рё РІРЅСѓС‚СЂРё СѓР·Р»Р° РµСЃС‚СЊ xml, С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј СЌС‚Сѓ xml, РµСЃР»Рё РЅРµС‚ С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј РґР°РЅРЅС‹Рµ РёР· СѓР·Р»Р°
       if(testXML.SelectNode(0))
       {
         testXML.SaveFromNode(sValue);
@@ -175,8 +175,8 @@ int UTest::LoadTest(string testFile)
   return RDK_SUCCESS;
 }
 
-/// Проводит тестирование
-/// Возвращает колличество неудачных проперти тестов
+/// РџСЂРѕРІРѕРґРёС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»Р»РёС‡РµСЃС‚РІРѕ РЅРµСѓРґР°С‡РЅС‹С… РїСЂРѕРїРµСЂС‚Рё С‚РµСЃС‚РѕРІ
 int UTest::ProcessTest()
 {
   int returnCode = RDK_SUCCESS;
@@ -282,7 +282,7 @@ int UTest::ProcessTest()
 }
 
 // --------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------
 
 bool UTest::compareProperties(bool value, std::string str, std::string delta)
@@ -385,15 +385,15 @@ bool UTest::compareProperties(MDMatrix<double> value, string str, string delta)
 
 
 // --------------------
-// Методы инициализации
+// РњРµС‚РѕРґС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------
-/// Возвращает указатель на тестируемое приложение
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 UEPtr<UApplication> UTestManager::GetApplication(void)
 {
  return Application;
 }
 
-/// Задает тестируемое приложение
+/// Р—Р°РґР°РµС‚ С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 void UTestManager::SetApplication(const UEPtr<UApplication> &value)
 {
  if(Application == value)
@@ -404,9 +404,9 @@ void UTestManager::SetApplication(const UEPtr<UApplication> &value)
 /// --------------------
 
 // --------------------
-// Методы тестирования
+// РњРµС‚РѕРґС‹ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 // --------------------
-/// Загрузка тестов
+/// Р—Р°РіСЂСѓР·РєР° С‚РµСЃС‚РѕРІ
 int UTestManager::LoadTests(const std::string &file_name)
 {
  if(file_name.empty())
@@ -458,9 +458,9 @@ int UTestManager::LoadTests(const std::string &file_name)
 }
 
 
-/// Проводит тестирование
-/// Записывает в выходной массив результаты тестов
-/// Возвращает код ошибки тестирования
+/// РџСЂРѕРІРѕРґРёС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ РІС‹С…РѕРґРЅРѕР№ РјР°СЃСЃРёРІ СЂРµР·СѓР»СЊС‚Р°С‚С‹ С‚РµСЃС‚РѕРІ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРґ РѕС€РёР±РєРё С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 int UTestManager::ProcessTests(void)
 {
  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::ProcessTests called");
@@ -475,17 +475,17 @@ int UTestManager::ProcessTests(void)
 // --------------------
 
 // --------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------
-/// Декодирует корневой файл описания тестов
-/// Возвращает массив имен файлов с описаниями тестов
+/// Р”РµРєРѕРґРёСЂСѓРµС‚ РєРѕСЂРЅРµРІРѕР№ С„Р°Р№Р» РѕРїРёСЃР°РЅРёСЏ С‚РµСЃС‚РѕРІ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ РёРјРµРЅ С„Р°Р№Р»РѕРІ СЃ РѕРїРёСЃР°РЅРёСЏРјРё С‚РµСЃС‚РѕРІ
 int UTestManager::DecodeMainTestDescriptionFile(std::vector<std::string> &test_file_names)
 {
  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeMainTestDescriptionFile called");
  return RDK_SUCCESS;
 }
 
-/// Декодирует тест
+/// Р”РµРєРѕРґРёСЂСѓРµС‚ С‚РµСЃС‚
 int UTestManager::DecodeTestFile(const std::string &test_file_name, UTest &test)
 {
  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeTestFile called");

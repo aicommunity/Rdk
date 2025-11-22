@@ -1788,7 +1788,9 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
  UInstancesStorage &instances=ObjectsStorage[classid];
 
  UInstancesStorageElement element(object,true);
- instances.insert(instances.end(),element);
+ UInstancesStorageIterator it = instances.insert(instances.end(),element);
+ // Update index map
+ ObjectsIndex[object] = it;
  //list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
  //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
@@ -1805,11 +1807,33 @@ UId UStorage::PopObject(UEPtr<UContainer> object)
  if(instances == ObjectsStorage.end())
   return ForbiddenId;
 
+ // Use index map for O(1) lookup
+ auto index_it = ObjectsIndex.find(object);
+ if(index_it != ObjectsIndex.end())
+ {
+  UInstancesStorageIterator list_it = index_it->second;
+  // Verify iterator is still valid
+  if(list_it != instances->second.end() && list_it->Object == object)
+  {
+   ObjectsIndex.erase(index_it);
+   return PopObject(instances, list_it);
+  }
+  else
+  {
+   // Index is stale, remove it
+   ObjectsIndex.erase(index_it);
+  }
+ }
+
+ // Fallback to linear search if index is missing or stale
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
 						J=instances->second.end(); I!=J; ++I)
  {
   if(I->Object == object)
+  {
+   ObjectsIndex.erase(object); // Remove from index if present
    return PopObject(instances, I);
+  }
  }
 
  return ForbiddenId;
@@ -1835,11 +1859,34 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
  if(instances == ObjectsStorage.end())
   return;
 
- for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
-						J=instances->second.end(); I!=J; ++I)
+ // Use index map for O(log n) lookup
+ auto index_it = ObjectsIndex.find(obj);
+ if(index_it != ObjectsIndex.end())
  {
-  if(I->Object == object)
+  UInstancesStorageIterator list_it = index_it->second;
+  // Verify iterator is still valid
+  if(list_it != instances->second.end() && list_it->Object == obj)
   {
+   // Update index map
+   ObjectsIndex[obj] = list_it;
+   list_it->UseFlag=false;
+   return;
+  }
+  else
+  {
+   // Index is stale, remove it
+   ObjectsIndex.erase(index_it);
+  }
+ }
+
+ // Fallback to linear search if index is missing or stale
+ for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
+                     J=instances->second.end(); I!=J; ++I)
+ {
+  if(I->Object == obj)
+  {
+   // Update index map
+   ObjectsIndex[obj] = I;
    I->UseFlag=false;
    break;
   }
@@ -1851,6 +1898,8 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
 {
  UEPtr<UContainer> object=object_iterator->Object;
 
+ // Remove from index map
+ ObjectsIndex.erase(object);
  instance_iterator->second.erase(object_iterator);
 
  UId classid=object->GetClass();

@@ -47,7 +47,7 @@ void __fastcall TUComponentLinksFrame::Init(int mode, const std::string &compone
  NANetFrameLinks->ViewComponentLongId=component_name1;
 }
 
-// Äîñòóï ê id íàáëþäàåìîãî êîìïîíåíòà
+// Ð”Ð¾ÑÑ‚ÑƒÐ¿ Ðº id Ð½Ð°Ð±Ð»ÑŽÐ´Ð°ÐµÐ¼Ð¾Ð³Ð¾ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ð°
 /*const std::string& TUComponentLinksFrame::GetViewComponentLongId(void) const
 {
  return ViewComponentLongId;
@@ -62,7 +62,7 @@ void TUComponentLinksFrame::SetViewComponentLongId(const std::string& value)
  UpdateInterface();
 }  */
 
-// Âûáîð ðåæèìà îòîáðàæåíèÿ
+// Ð’Ñ‹Ð±Ð¾Ñ€ Ñ€ÐµÐ¶Ð¸Ð¼Ð° Ð¾Ñ‚Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ñ
 void TUComponentLinksFrame::SetMode(int mode)
 {
  if(Mode == mode)
@@ -165,7 +165,7 @@ void TUComponentLinksFrame::SetMode(int mode)
  }
 }
 
-// Îáíîâëåíèå èíòåðôåéñà
+// ÐžÐ±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ðµ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ°
 void TUComponentLinksFrame::AUpdateInterface(void)
 {
  NANetFrameInputs->UpdateInterface();
@@ -174,7 +174,7 @@ void TUComponentLinksFrame::AUpdateInterface(void)
 }
 
 
-// Âîçâðàò èíòåðôåéñà â èñõîäíîå ñîñòîÿíèå
+// Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‚ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð² Ð¸ÑÑ…Ð¾Ð´Ð½Ð¾Ðµ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ
 void TUComponentLinksFrame::AClearInterface(void)
 {
 
@@ -261,7 +261,7 @@ void __fastcall TUComponentLinksFrame::BreakAll(void)
  NANetFrameLinks->UpdateInterface();
 }
 
-// Ïåðåìåùàåò âñå ñâÿçè ñ âûõîäà ïåðâîãî êîìïîíåíòà íà âûõîä âòîðîãî
+// ÐŸÐµÑ€ÐµÐ¼ÐµÑ‰Ð°ÐµÑ‚ Ð²ÑÐµ ÑÐ²ÑÐ·Ð¸ Ñ Ð²Ñ‹Ñ…Ð¾Ð´Ð° Ð¿ÐµÑ€Ð²Ð¾Ð³Ð¾ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ð° Ð½Ð° Ð²Ñ‹Ñ…Ð¾Ð´ Ð²Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾
 void __fastcall TUComponentLinksFrame::SwitchLink(void)
 {
  if(NANetFrameOutputs->StringGrid->Row <= 0 || NANetFrameInputs->StringGrid->Row <= 0)
@@ -313,8 +313,8 @@ void __fastcall TUComponentLinksFrame::SwitchLink(void)
 }
 
 
-// Ñâÿçûâàåò âñå îáúåêòû ïî öåïî÷êå â ïîðÿäêå âîçðàñòàíèÿ id
-// Ïðåäâàðèòåëüíî ðàçðûâàåò âñå ñóùåñòâóþùèå ñâÿçè
+// Ð¡Ð²ÑÐ·Ñ‹Ð²Ð°ÐµÑ‚ Ð²ÑÐµ Ð¾Ð±ÑŠÐµÐºÑ‚Ñ‹ Ð¿Ð¾ Ñ†ÐµÐ¿Ð¾Ñ‡ÐºÐµ Ð² Ð¿Ð¾Ñ€ÑÐ´ÐºÐµ Ð²Ð¾Ð·Ñ€Ð°ÑÑ‚Ð°Ð½Ð¸Ñ id
+// ÐŸÑ€ÐµÐ´Ð²Ð°Ñ€Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ñ€Ð°Ð·Ñ€Ñ‹Ð²Ð°ÐµÑ‚ Ð²ÑÐµ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ðµ ÑÐ²ÑÐ·Ð¸
 void __fastcall TUComponentLinksFrame::ChainLinking(void)
 {
  Model_ChainLinking(NANetFrameLinks->ViewComponentLongId.c_str());
@@ -322,8 +322,8 @@ void __fastcall TUComponentLinksFrame::ChainLinking(void)
  UpdateInterface();
 }
 
-// Ñâÿçûâàåò âñå îáúåêòû ïàðàëëåëüíî ñ âûõîäàìè ìîäåëè
-// Ïðåäâàðèòåëüíî ðàçðûâàåò âñå ñóùåñòâóþùèå ñâÿçè
+// Ð¡Ð²ÑÐ·Ñ‹Ð²Ð°ÐµÑ‚ Ð²ÑÐµ Ð¾Ð±ÑŠÐµÐºÑ‚Ñ‹ Ð¿Ð°Ñ€Ð°Ð»Ð»ÐµÐ»ÑŒÐ½Ð¾ Ñ Ð²Ñ‹Ñ…Ð¾Ð´Ð°Ð¼Ð¸ Ð¼Ð¾Ð´ÐµÐ»Ð¸
+// ÐŸÑ€ÐµÐ´Ð²Ð°Ñ€Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ñ€Ð°Ð·Ñ€Ñ‹Ð²Ð°ÐµÑ‚ Ð²ÑÐµ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ðµ ÑÐ²ÑÐ·Ð¸
 void __fastcall TUComponentLinksFrame::ParallelLinking(void)
 {
  Model_ParallelLinking(NANetFrameLinks->ViewComponentLongId.c_str());

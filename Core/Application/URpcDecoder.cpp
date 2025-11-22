@@ -9,7 +9,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcDecoder::URpcDecoder(URpcDispatcher* dispatcher)
  : Dispatcher(dispatcher), ThreadTerminated(false)
@@ -25,9 +25,9 @@ URpcDecoder::~URpcDecoder(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Устанавливает нового владельца
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІРѕРіРѕ РІР»Р°РґРµР»СЊС†Р°
 void URpcDecoder::SetDispatcher(URpcDispatcher* dispatcher)
 {
  if(Dispatcher == dispatcher)
@@ -36,7 +36,7 @@ void URpcDecoder::SetDispatcher(URpcDispatcher* dispatcher)
  Dispatcher=dispatcher;
 }
 
-/// Метод треда
+/// РњРµС‚РѕРґ С‚СЂРµРґР°
 void URpcDecoder::Process(void)
 {
  int ex_flag=0;
@@ -55,7 +55,7 @@ void URpcDecoder::Process(void)
    boost::mutex::scoped_lock lock(DispatchMutex);
    if(!ProcessCommand(command))
    {
-	// ошибка выполения команды
+	// РѕС€РёР±РєР° РІС‹РїРѕР»РµРЅРёСЏ РєРѕРјР°РЅРґС‹
 	MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
    }
    else
@@ -91,22 +91,22 @@ void URpcDecoder::Process(void)
  }
 }
 
-/// Остановка треда
+/// РћСЃС‚Р°РЅРѕРІРєР° С‚СЂРµРґР°
 void URpcDecoder::StopProcessThread(void)
 {
     ThreadTerminated=true;
     DecoderThread.join();
 }
 
-/// Осуществляет декодирование и вызов команды по текущим данным
-/// Возвращает false если команда не поддерживается
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ Рё РІС‹Р·РѕРІ РєРѕРјР°РЅРґС‹ РїРѕ С‚РµРєСѓС‰РёРј РґР°РЅРЅС‹Рј
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё РєРѕРјР°РЅРґР° РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ
 bool URpcDecoder::ProcessCommand(const UEPtr<URpcCommand> &command)
 {
  return AProcessCommand(command);
 }
 
 
-/// Возвращает указатель на экземпляр приложения
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЌРєР·РµРјРїР»СЏСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
 UEPtr<UApplication> URpcDecoder::GetApplication(void)
 {
  if(!Dispatcher)

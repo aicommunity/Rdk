@@ -19,7 +19,7 @@ __fastcall TUComponentsPerformanceForm::TUComponentsPerformanceForm(TComponent* 
 }
 //---------------------------------------------------------------------------
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUComponentsPerformanceForm* TUComponentsPerformanceForm::New(TComponent *owner)
 {
  return new TUComponentsPerformanceForm(owner);

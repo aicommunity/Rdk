@@ -158,7 +158,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, long double &data)
 }
 
 
-// Вектора
+// Р’РµРєС‚РѕСЂР°
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data)
 {
  storage.SetNodeAttribute("Type","simplevector");
@@ -209,7 +209,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
  }
  else
  {
-  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   data.resize(size);
 
   if(size>0)
@@ -258,7 +258,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
   int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size <= 0)
   {
@@ -279,7 +279,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
  }
  else
  {
-  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   data.resize(size);
 
   if(size>0)
@@ -324,7 +324,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
   int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
 
   if(size <= 0)
   {
@@ -345,7 +345,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
  }
  else
  {
-  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: Р·Р°РјРµРЅРёС‚СЊ
   data.resize(size);
 
   if(size>0)
@@ -361,7 +361,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<int> &data)
 }
 
 
-// Строки
+// РЎС‚СЂРѕРєРё
 //template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::string &data)
 {

@@ -17,9 +17,9 @@ public:
   explicit UComponentPropertyChanger(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UComponentPropertyChanger();
 
-  /// запись файла настроек
+  /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ASaveParameters();
-  /// считывание файла настроек
+  /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ALoadParameters();
 
 public slots:
@@ -40,7 +40,7 @@ private:
   // data
   Ui::UComponentPropertyChanger *ui;
 
-  /// Указатель на диалоговое окошко отображения XML
+  /// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РґРёР°Р»РѕРіРѕРІРѕРµ РѕРєРѕС€РєРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ XML
   UPropertyXMLWidget *propertyXML;
 
   // buffers

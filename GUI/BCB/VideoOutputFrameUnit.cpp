@@ -25,7 +25,7 @@ String TVGrabberLicenseString;
 
 extern UEngineControlVcl RdkEngineControl;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
@@ -36,10 +36,10 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  StartTimerCounter=-1;
 // Capture=0;
 
- // Модуль графики
+ // РњРѕРґСѓР»СЊ РіСЂР°С„РёРєРё
  Graph.SetCanvas(&BmpCanvas);
 
- // Отрисовка геометрии
+ // РћС‚СЂРёСЃРѕРІРєР° РіРµРѕРјРµС‚СЂРёРё
  GeometryGraphics.SetGraphics(&Graph);
 
  x1b=x2b=y1b=y2b=-1;
@@ -117,9 +117,9 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
 }
 
 // ---------------------------
-// Методы управления поддерживаемыми источниками видео
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹РјРё РёСЃС‚РѕС‡РЅРёРєР°РјРё РІРёРґРµРѕ
 // ---------------------------
-/// Создает копию требуемого треда по индексу видеорежима
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ С‚СЂРµР±СѓРµРјРѕРіРѕ С‚СЂРµРґР° РїРѕ РёРЅРґРµРєСЃСѓ РІРёРґРµРѕСЂРµР¶РёРјР°
 RDK::UEPtr<TVideoCaptureThread> TVideoOutputFrame::TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended)
 {
  const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoCaptureOptionsForm->VideoSourcePrototypes.find(mode);
@@ -128,7 +128,7 @@ RDK::UEPtr<TVideoCaptureThread> TVideoOutputFrame::TakeVideoCapureThread(int mod
  return I->second->New(frame, create_suspended);
 }
 
-/// Уничтожает заданный тред
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ Р·Р°РґР°РЅРЅС‹Р№ С‚СЂРµРґ
 void TVideoOutputFrame::ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> thread)
 {
  delete thread;
@@ -136,10 +136,10 @@ void TVideoOutputFrame::ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> 
 // ---------------------------
 
 // -----------------------------
-// Методы управления видеозахватом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёРґРµРѕР·Р°С…РІР°С‚РѕРј
 // -----------------------------
-/// Инициализация захвата в заданном режиме
-/// Если mode == -1 то осуществляет переиницализацию в текущем режиме
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·Р°С…РІР°С‚Р° РІ Р·Р°РґР°РЅРЅРѕРј СЂРµР¶РёРјРµ
+/// Р•СЃР»Рё mode == -1 С‚Рѕ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїРµСЂРµРёРЅРёС†Р°Р»РёР·Р°С†РёСЋ РІ С‚РµРєСѓС‰РµРј СЂРµР¶РёРјРµ
 void TVideoOutputFrame::Init(int mode)
 {
  Pause();
@@ -221,7 +221,7 @@ void TVideoOutputFrame::Init(RDK::USerStorageXML &raw_xml_data)
 {
  int mode=raw_xml_data.ReadInteger("SourceMode",-1);
  if(mode == -1)
-  return; // TODO тут запись в лог
+  return; // TODO С‚СѓС‚ Р·Р°РїРёСЃСЊ РІ Р»РѕРі
 
  Init(mode, raw_xml_data);
 }
@@ -233,14 +233,14 @@ void TVideoOutputFrame::Init(std::string raw_xml_data)
 	Init(xml);
 }
 
-/// Деинициализация захвата
+/// Р”РµРёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·Р°С…РІР°С‚Р°
 void TVideoOutputFrame::UnInit(void)
 {
  Pause();
  DestroyCaptureThread();
 }
 
-/// Запуск захвата
+/// Р—Р°РїСѓСЃРє Р·Р°С…РІР°С‚Р°
 void TVideoOutputFrame::Start(double time)
 {
  if(CaptureThread)
@@ -253,7 +253,7 @@ void TVideoOutputFrame::Start(double time)
  IsStarted=true;
 }
 
-/// Останов захвата
+/// РћСЃС‚Р°РЅРѕРІ Р·Р°С…РІР°С‚Р°
 void TVideoOutputFrame::Pause(double time)
 {
  IsStarted=false;
@@ -266,7 +266,7 @@ void TVideoOutputFrame::Pause(double time)
  }
 }
 
-/// Чтение текущего изображения в bmp
+/// Р§С‚РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ bmp
 bool TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect)
 {
  if(CaptureThread)
@@ -274,9 +274,9 @@ bool TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
  return false;
 }
 //---------------------------------------------------------------------------
-/// Проверяет состояние завхата по id канала
-/// 0 - не активен
-/// 1 - активен
+/// РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ Р·Р°РІС…Р°С‚Р° РїРѕ id РєР°РЅР°Р»Р°
+/// 0 - РЅРµ Р°РєС‚РёРІРµРЅ
+/// 1 - Р°РєС‚РёРІРµРЅ
 int TVideoOutputFrame::CheckCaptureState(void) const
 {
  if(!CaptureThread)
@@ -285,7 +285,7 @@ int TVideoOutputFrame::CheckCaptureState(void) const
  return CaptureThread->CheckCaptureThreadState();
 }
 // -----------------------------
-/// Инициализация первичных настроек
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРµСЂРІРёС‡РЅС‹С… РЅР°СЃС‚СЂРѕРµРє
 void TVideoOutputFrame::InitPrimarySettings(void)
 {
  NetworkStreamingFrame->RecordingTabSheet->TabVisible=false;
@@ -296,7 +296,7 @@ void TVideoOutputFrame::InitPrimarySettings(void)
 
  RecordingFrame->Init();
 
- // Получаем указатели на два динамических пункта меню
+ // РџРѕР»СѓС‡Р°РµРј СѓРєР°Р·Р°С‚РµР»Рё РЅР° РґРІР° РґРёРЅР°РјРёС‡РµСЃРєРёС… РїСѓРЅРєС‚Р° РјРµРЅСЋ
  TMenuItem *parentItem1=0;
  TMenuItem *parentItem2=0;
  for(int i=0; i<RecordingPopupMenu->Items->Count; i++)
@@ -312,7 +312,7 @@ void TVideoOutputFrame::InitPrimarySettings(void)
   }
  }
 
- // Наполняем веткор имен для динамического меню
+ // РќР°РїРѕР»РЅСЏРµРј РІРµС‚РєРѕСЂ РёРјРµРЅ РґР»СЏ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјРµРЅСЋ
  std::vector<std::string> itemList1;
  std::vector<std::string> itemList2;
  itemList1.clear();
@@ -330,11 +330,11 @@ void TVideoOutputFrame::InitPrimarySettings(void)
   itemList2.push_back(AnsiString(RecordingFrame->RecordingMethodComboBox->Items->Strings[i]).c_str());
  }
 
- // Наполняем меню из полученного вектора имен
+ // РќР°РїРѕР»РЅСЏРµРј РјРµРЅСЋ РёР· РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РІРµРєС‚РѕСЂР° РёРјРµРЅ
  DynamicMenuFilling(parentItem1, itemList1);
  DynamicMenuFilling(parentItem2, itemList2);
 
- // Назначаем событие onClick для динамических пунктов меню
+ // РќР°Р·РЅР°С‡Р°РµРј СЃРѕР±С‹С‚РёРµ onClick РґР»СЏ РґРёРЅР°РјРёС‡РµСЃРєРёС… РїСѓРЅРєС‚РѕРІ РјРµРЅСЋ
  for(int i=0; i<parentItem1->Count; i++)
  {
   parentItem1->Items[i]->OnClick=OnClickVideoCodec;
@@ -360,13 +360,13 @@ void TVideoOutputFrame::InitPrimarySettings(void)
 }
 
 //---------------------------------------------------------------------------
-// Возвращает форму управления инициализацией видео
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„РѕСЂРјСѓ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёРµР№ РІРёРґРµРѕ
 /*TVideoGrabberControlForm* TVideoOutputFrame::GetMyVideoGrabberControlForm(void)
 {
  return MyVideoGrabberControlForm;
 }
   */
-// Уничтожает созданный поток
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ СЃРѕР·РґР°РЅРЅС‹Р№ РїРѕС‚РѕРє
 bool TVideoOutputFrame::DestroyCaptureThread(void)
 {
  if(CaptureThread)
@@ -387,7 +387,7 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
 }
 
 	 /*
-// Инициализация фрейма avi-файлом
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР° avi-С„Р°Р№Р»РѕРј
 void TVideoOutputFrame::InitByAvi(const String &filename)
 {
  StopButtonClick(this);
@@ -426,7 +426,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
  UpdateInterface(true);
 }
 
-// Инициализация фрейма bmp-файлом
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР° bmp-С„Р°Р№Р»РѕРј
 void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
 {
  if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
@@ -458,7 +458,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
  UpdateInterface(true);
 }          */
 
-// Устанавливает отдельное изображение
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РѕС‚РґРµР»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
 bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps, bool reflect)
 {
 // BmpSource=bmp;
@@ -499,7 +499,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps, bool refl
 }
 
         /*
-// Инициализация фрейма камерой
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР° РєР°РјРµСЂРѕР№
 void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index)
 {
  StopButtonClick(this);
@@ -533,7 +533,7 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
  UpdateInterface(true);
 }
 
-// Инициализация фрейма IP-камерой
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР° IP-РєР°РјРµСЂРѕР№
 void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String user_name, const String user_password)
 {
  StopButtonClick(this);
@@ -569,7 +569,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
  UpdateInterface(true);
 }
 
-// Инициализация последовательностью изображений
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊСЋ РёР·РѕР±СЂР°Р¶РµРЅРёР№
 bool TVideoOutputFrame::InitByImageSequence(const String &pathname, double fps)
 {
  StopButtonClick(this);
@@ -601,7 +601,7 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname, double fps)
  return true;
 }
 
-// Инициализация http-сервера
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ http-СЃРµСЂРІРµСЂР°
 bool TVideoOutputFrame::InitByHttpServer(int listen_port)
 {
  StopButtonClick(this);
@@ -624,7 +624,7 @@ bool TVideoOutputFrame::InitByHttpServer(int listen_port)
  return true;
 }
 
-// Инициализация общей памяти
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pipe_name)
 {
  StopButtonClick(this);
@@ -667,7 +667,7 @@ bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pi
  return true;
 }        */
 
-// Устанавливает название окна
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅР°Р·РІР°РЅРёРµ РѕРєРЅР°
 bool TVideoOutputFrame::SetTitle(String title)
 {
  if(title == "")
@@ -678,8 +678,8 @@ bool TVideoOutputFrame::SetTitle(String title)
  return true;
 }
 
-// Устанавливает координаты отображаемой зоны
-// Если все координаты == -1 то зона не отображается
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕР№ Р·РѕРЅС‹
+// Р•СЃР»Рё РІСЃРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ == -1 С‚Рѕ Р·РѕРЅР° РЅРµ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ
 bool TVideoOutputFrame::SetFrameRect(int x,int y, int x_width, int y_height, TColor color)
 {
  left=x; top=y; width=x_width; height=y_height;
@@ -688,7 +688,7 @@ bool TVideoOutputFrame::SetFrameRect(int x,int y, int x_width, int y_height, TCo
  return true;
 }
 
-// Обновляет отрисовку окна
+// РћР±РЅРѕРІР»СЏРµС‚ РѕС‚СЂРёСЃРѕРІРєСѓ РѕРєРЅР°
 bool TVideoOutputFrame::UpdateVideo(void)
 {
  Graphics::TBitmap *bmp=Image->Picture->Bitmap;
@@ -765,7 +765,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
  return true;
 }
 
-// Отрисовываем текущее состояние видеопотока
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµРј С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ РІРёРґРµРѕРїРѕС‚РѕРєР°
 void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
 {
 /* if(!bmp)
@@ -801,7 +801,7 @@ void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
  */
 }
 
-// Обновляем список точек
+// РћР±РЅРѕРІР»СЏРµРј СЃРїРёСЃРѕРє С‚РѕС‡РµРє
 void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, TCheckListBox *PointsCheckListBox)
 {
  int ix=GeometryCheckListBox->ItemIndex;
@@ -877,7 +877,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   PointsCheckListBox->ItemIndex=0;
 }
 
-// Метод отрисовки прямоугольной зоны
+// РњРµС‚РѕРґ РѕС‚СЂРёСЃРѕРІРєРё РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ Р·РѕРЅС‹
 void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, int x2,
                                                 int y2, int framewidth, TColor color)
 {
@@ -907,7 +907,7 @@ void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, 
   }
 }
 
-// Добавляет очередной элемент фигуры
+// Р”РѕР±Р°РІР»СЏРµС‚ РѕС‡РµСЂРµРґРЅРѕР№ СЌР»РµРјРµРЅС‚ С„РёРіСѓСЂС‹
 void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
 {
  if(l<0 || t<0)
@@ -924,15 +924,15 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
  UpdateVideo();
 }
 
-/// Возвращает число фигур
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ С„РёРіСѓСЂ
 int TVideoOutputFrame::GetNumFigures(void)
 {
  return GeometryGraphics.GetNumGeometries();
 }
 
 
-/// Добавляет новую фигуру
-/// Функция возвращает индекс фигуры
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІСѓСЋ С„РёРіСѓСЂСѓ
+/// Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С„РёРіСѓСЂС‹
 int TVideoOutputFrame::AddFigure(TColor color)
 {
  GeometryGraphics.SetNumGeometries(GeometryGraphics.GetNumGeometries()+1);
@@ -942,12 +942,12 @@ int TVideoOutputFrame::AddFigure(TColor color)
  GeometryGraphics.Description(index).Color.rgb.g=(color & 0x0000FF00) >> 8;
  GeometryGraphics.Description(index).Color.rgb.b=(color & 0x00FF0000) >> 16;
  GeometryGraphics.Description(index).Name=string("Figure")+RDK::sntoa(index+1,3);
- GeometryGraphics.Description(index).Description=string("Геометрия №")+RDK::sntoa(index+1);
+ GeometryGraphics.Description(index).Description=string("Р“РµРѕРјРµС‚СЂРёСЏ в„–")+RDK::sntoa(index+1);
  GeometryGraphics.Description(index).TargetPoints=true;
  return index;
 }
 
-/// Удаляет фигуру
+/// РЈРґР°Р»СЏРµС‚ С„РёРіСѓСЂСѓ
 void TVideoOutputFrame::DelFigure(int figure_index)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -956,13 +956,13 @@ void TVideoOutputFrame::DelFigure(int figure_index)
  GeometryGraphics.DelGeometry(figure_index);
 }
 
-/// Удаляет все фигуры
+/// РЈРґР°Р»СЏРµС‚ РІСЃРµ С„РёРіСѓСЂС‹
 void TVideoOutputFrame::DelAllFigures(void)
 {
  GeometryGraphics.Clear();
 }
 
-/// Модифицирует имя фигуры
+/// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ РёРјСЏ С„РёРіСѓСЂС‹
 void TVideoOutputFrame::EditFigureName(int figure_index, const std::string &figure_name)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -971,7 +971,7 @@ void TVideoOutputFrame::EditFigureName(int figure_index, const std::string &figu
  GeometryGraphics.Description(FigureIndex).Name=figure_name;
 }
 
-/// Возвращает число точек в фигуре
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ С‚РѕС‡РµРє РІ С„РёРіСѓСЂРµ
 int TVideoOutputFrame::GetNumPoints(int figure_index)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -980,7 +980,7 @@ int TVideoOutputFrame::GetNumPoints(int figure_index)
  return GeometryGraphics.Geometry(figure_index).GetNumVertices();
 }
 
-/// Возвращает точку
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕС‡РєСѓ
 const RDK::MVector<double,2> TVideoOutputFrame::GetPoint(int figure_index, int point_index)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -992,8 +992,8 @@ const RDK::MVector<double,2> TVideoOutputFrame::GetPoint(int figure_index, int p
  return GeometryGraphics.Geometry(figure_index).Vertex(point_index);
 }
 
-/// Добавляет новую точку
-/// Функция возвращает индекс точки
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІСѓСЋ С‚РѕС‡РєСѓ
+/// Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РѕС‡РєРё
 int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<double,2> &point_data)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -1006,9 +1006,9 @@ int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<double,2> &
  return index;
 }
 
-/// Добавляет новую точку
-/// Имя точки задается вручную
-/// Функция возвращает индекс точки
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІСѓСЋ С‚РѕС‡РєСѓ
+/// РРјСЏ С‚РѕС‡РєРё Р·Р°РґР°РµС‚СЃСЏ РІСЂСѓС‡РЅСѓСЋ
+/// Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РѕС‡РєРё
 int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<double,2> &point_data)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -1022,7 +1022,7 @@ int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name,
  return index;
 }
 
-/// Удаляет точку
+/// РЈРґР°Р»СЏРµС‚ С‚РѕС‡РєСѓ
 void TVideoOutputFrame::DelPoint(int figure_index, int point_index)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -1034,7 +1034,7 @@ void TVideoOutputFrame::DelPoint(int figure_index, int point_index)
  GeometryGraphics.Geometry(figure_index).DelVertex(point_index);
 }
 
-/// Удаляет все точки
+/// РЈРґР°Р»СЏРµС‚ РІСЃРµ С‚РѕС‡РєРё
 void TVideoOutputFrame::DelAllPoints(int figure_index)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -1043,7 +1043,7 @@ void TVideoOutputFrame::DelAllPoints(int figure_index)
  GeometryGraphics.Geometry(figure_index).Clear();
 }
 
-/// Модифицирует точку
+/// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ С‚РѕС‡РєСѓ
 void TVideoOutputFrame::EditPoint(int figure_index, int point_index, const RDK::MVector<double,2> &point_data)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -1056,7 +1056,7 @@ void TVideoOutputFrame::EditPoint(int figure_index, int point_index, const RDK::
  GeometryGraphics.Geometry(figure_index).Vertex(point_index)(1)=point_data(1);
 }
 
-/// Модифицирует имя точки
+/// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ РёРјСЏ С‚РѕС‡РєРё
 void TVideoOutputFrame::EditPointName(int figure_index, int point_index, const std::string &point_name)
 {
  if(figure_index < 0 || figure_index >= int(GeometryGraphics.GetNumGeometries()))
@@ -1068,7 +1068,7 @@ void TVideoOutputFrame::EditPointName(int figure_index, int point_index, const s
  GeometryGraphics.Geometry(figure_index).VertexName(point_index)=point_name;
 }
 
-// Устанавливает образец графики
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РѕР±СЂР°Р·РµС† РіСЂР°С„РёРєРё
 void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics)
 {
 // SampleGeometryGraphics=samplegraphics;
@@ -1080,7 +1080,7 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samp
  MyVideoOutputToolsForm->GeometryCheckListBox->ItemIndex=FigureIndex;
 }
 
-/// Флаг повтора воспроизведения сначала после завершения
+/// Р¤Р»Р°Рі РїРѕРІС‚РѕСЂР° РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ СЃРЅР°С‡Р°Р»Р° РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ
 bool TVideoOutputFrame::SetRepeatVideoFlag(bool value)
 {
  RepeatVideoFlag=value;
@@ -1118,9 +1118,9 @@ bool TVideoOutputFrame::SetProcessAllFramesFlag(bool value)
 }
 
 // -------------------------
-// Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
+// РњРµС‚РѕРґС‹ РІРІРѕРґР° РІС‹РІРѕРґР° С‚РѕС‡РµРє РіРµРѕРјРµС‚СЂРёРё РёР· РїР°СЂР°РјРµС‚СЂРѕРІ Рё РїРµСЂРµРјРµРЅРЅС‹С… СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚
 // -------------------------
-// Отправляет набор точек в свойство компонента
+// РћС‚РїСЂР°РІР»СЏРµС‚ РЅР°Р±РѕСЂ С‚РѕС‡РµРє РІ СЃРІРѕР№СЃС‚РІРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TVideoOutputFrame::SendToComponentPropertyMatrix(const std::string &stringid, const std::string &parameter_name, int figure_index)
 {
  if(figure_index<0)
@@ -1138,7 +1138,7 @@ void TVideoOutputFrame::SendToComponentPropertyMatrix(const std::string &stringi
  Model_SetComponentPropertyData(stringid.c_str(), parameter_name.c_str(), &matrix);
 }
 
-// Отправляет набор точек в параметр компонента
+// РћС‚РїСЂР°РІР»СЏРµС‚ РЅР°Р±РѕСЂ С‚РѕС‡РµРє РІ РїР°СЂР°РјРµС‚СЂ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
 {
  if(figure_index<0)
@@ -1149,7 +1149,7 @@ void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, co
 // RDK::WriteParameterValue(stringid, parameter_name, points);
 }
 
-// Отправляет набор точек в переменную состояния компонента
+// РћС‚РїСЂР°РІР»СЏРµС‚ РЅР°Р±РѕСЂ С‚РѕС‡РµРє РІ РїРµСЂРµРјРµРЅРЅСѓСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TVideoOutputFrame::SendToComponentState(const std::string &stringid, const std::string &state_name, int figure_index)
 {
  if(figure_index<0)
@@ -1160,7 +1160,7 @@ void TVideoOutputFrame::SendToComponentState(const std::string &stringid, const 
 // RDK::WriteStateValue(stringid, state_name, points);
 }
 
-// Считывает набор точек из параметра компонента
+// РЎС‡РёС‚С‹РІР°РµС‚ РЅР°Р±РѕСЂ С‚РѕС‡РµРє РёР· РїР°СЂР°РјРµС‚СЂР° РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TVideoOutputFrame::ReceiveFromComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
 {
  std::vector<RDK::MVector<double,2> > points;
@@ -1168,7 +1168,7 @@ void TVideoOutputFrame::ReceiveFromComponentParameter(const std::string &stringi
 // RDK::ReadParameterValue(stringid, parameter_name, points);
 }
 
-// Считывает набор точек из переменной состояния компонента
+// РЎС‡РёС‚С‹РІР°РµС‚ РЅР°Р±РѕСЂ С‚РѕС‡РµРє РёР· РїРµСЂРµРјРµРЅРЅРѕР№ СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TVideoOutputFrame::ReceiveFromComponentState(const std::string &stringid, const std::string &state_name, int figure_index)
 {
  std::vector<RDK::MVector<double,2> > points;
@@ -1178,9 +1178,9 @@ void TVideoOutputFrame::ReceiveFromComponentState(const std::string &stringid, c
 // -------------------------
 
 // -------------------------
-// Методы вывода изображений во входы-выходы компонент
+// РњРµС‚РѕРґС‹ РІС‹РІРѕРґР° РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІРѕ РІС…РѕРґС‹-РІС‹С…РѕРґС‹ РєРѕРјРїРѕРЅРµРЅС‚
 // -------------------------
-// Отправляет изображение в выбранный компонент
+// РћС‚РїСЂР°РІР»СЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ РІС‹Р±СЂР°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
 bool TVideoOutputFrame::SendToComponentIO(void)
 {
  if(LinkedComponentName.empty())
@@ -1217,7 +1217,7 @@ bool TVideoOutputFrame::SendToComponentIO(void)
 }
 // -------------------------
 
-// Динамически наполняет меню
+// Р”РёРЅР°РјРёС‡РµСЃРєРё РЅР°РїРѕР»РЅСЏРµС‚ РјРµРЅСЋ
 void TVideoOutputFrame::DynamicMenuFilling(TMenuItem* target, std::vector<std::string> &itemsList)
 {
  if(!target)
@@ -1240,9 +1240,9 @@ void TVideoOutputFrame::DynamicMenuFilling(TMenuItem* target, std::vector<std::s
 }
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
  int num_channels=Core_GetNumChannels();
@@ -1278,7 +1278,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
    if(num_channels == 1 && FrameIndex==0)
    {
 	if(Model_Check() && SendBmpSource.GetByteLength()>0)
-	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
+	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Р—Р°РіР»СѓС€РєР°!!
    }
    else
    if(FrameIndex<num_channels && MModel_Check(FrameIndex))
@@ -1292,14 +1292,14 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   }
 }
 
-// Метод, вызываемый перед сбросом
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј
 void TVideoOutputFrame::ABeforeReset(void)
 {
  int num_channels=Core_GetNumChannels();
  if(num_channels == 1)
  {
   if(Model_Check() && SendBmpSource.GetByteLength()>0)
-	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
+	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Р—Р°РіР»СѓС€РєР°!!
  }
  else
  {
@@ -1314,7 +1314,7 @@ void TVideoOutputFrame::ABeforeReset(void)
  }
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TVideoOutputFrame::AAfterCalculate(void)
 {
  if(RdkEngineControl.GetThreadMode() == 0)
@@ -1331,7 +1331,7 @@ void TVideoOutputFrame::AAfterCalculate(void)
 }
 
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TVideoOutputFrame::AUpdateInterface(void)
 {
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
@@ -1426,7 +1426,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
  }
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("LinkedComponentName",LinkedComponentName);
@@ -1474,7 +1474,7 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  LinkedComponentName=xml.ReadString("LinkedComponentName","");
@@ -1760,7 +1760,7 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
    corrx1b=corrx2b=corry1b=corry2b=-1;
   }
 
- // Если добавляем геометрический объект, то...
+ // Р•СЃР»Рё РґРѕР±Р°РІР»СЏРµРј РіРµРѕРјРµС‚СЂРёС‡РµСЃРєРёР№ РѕР±СЉРµРєС‚, С‚Рѕ...
  if(PointFlag)
  {
   AddFigureRect(left,top,width,height);
@@ -2254,7 +2254,7 @@ void __fastcall TVideoOutputFrame::SavePicture(String directory, String filename
  delete jpg;
 }
 //---------------------------------------------------------------------------
-// Реакция на клик для динамического меню выбора кодека записи
+// Р РµР°РєС†РёСЏ РЅР° РєР»РёРє РґР»СЏ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјРµРЅСЋ РІС‹Р±РѕСЂР° РєРѕРґРµРєР° Р·Р°РїРёСЃРё
 void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
 {
  TMenuItem *currItem=dynamic_cast<TMenuItem*>(Sender);
@@ -2271,7 +2271,7 @@ void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
  return;
 }
 //---------------------------------------------------------------------------
-// Реакция на клик динамического меню выбора видео кодека записи
+// Р РµР°РєС†РёСЏ РЅР° РєР»РёРє РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјРµРЅСЋ РІС‹Р±РѕСЂР° РІРёРґРµРѕ РєРѕРґРµРєР° Р·Р°РїРёСЃРё
 void __fastcall TVideoOutputFrame::OnClickRecordingMethod(TObject *Sender)
 {
  TMenuItem *currItem=dynamic_cast<TMenuItem*>(Sender);

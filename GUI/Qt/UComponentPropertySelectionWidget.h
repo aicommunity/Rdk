@@ -19,15 +19,15 @@ public:
     UComponentsListWidget *componentsList;
 
 public slots:
-    ///считывание файлов настроек
+    ///СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»РѕРІ РЅР°СЃС‚СЂРѕРµРє
     void readSettings(QString file, QString group = "UComponentPropertySelectionWidget");
-    ///запись файлов настроек
+    ///Р·Р°РїРёСЃСЊ С„Р°Р№Р»РѕРІ РЅР°СЃС‚СЂРѕРµРє
     void writeSettings(QString file, QString group = "UComponentPropertySelectionWidget");
 
 private:
     Ui::UComponentPropertySelectionWidget *ui;
 
-    /// Экзепляр класса приложения
+    /// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
     RDK::UApplication *application;
 };
 

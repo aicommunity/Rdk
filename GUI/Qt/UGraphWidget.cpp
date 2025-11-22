@@ -19,14 +19,14 @@ UGraphWidget::UGraphWidget(QWidget *parent, RDK::UApplication *app) :
     graphPainter = new UGraphPaintWidget(this);
     ui->verticalLayoutGraph->addWidget(graphPainter);
 
-    //Добавление действий по правой кнопке
+    //Р”РѕР±Р°РІР»РµРЅРёРµ РґРµР№СЃС‚РІРёР№ РїРѕ РїСЂР°РІРѕР№ РєРЅРѕРїРєРµ
     addAction(ui->actionSelectOutput);
     addAction(ui->actionChangeCurrenItem);
     addAction(ui->actionDeleteAll);
     addAction(ui->actionDeleteCurrentItem);
     addAction(ui->actionSettings);
 
-    //Соединение действия выше и слотав котором выполняется действие, кпо щелчку
+    //РЎРѕРµРґРёРЅРµРЅРёРµ РґРµР№СЃС‚РІРёСЏ РІС‹С€Рµ Рё СЃР»РѕС‚Р°РІ РєРѕС‚РѕСЂРѕРј РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РґРµР№СЃС‚РІРёРµ, РєРїРѕ С‰РµР»С‡РєСѓ
     connect(ui->actionSelectOutput, SIGNAL(triggered()), this, SLOT(slotActionSelectOutput()));
     connect(ui->actionChangeCurrenItem, SIGNAL(triggered()), graphPainter, SLOT(changeCurrentItem()));
     connect(ui->actionDeleteAll, SIGNAL(triggered()), graphPainter, SLOT(delAllGraph()));
@@ -36,31 +36,31 @@ UGraphWidget::UGraphWidget(QWidget *parent, RDK::UApplication *app) :
 
 
 
-    // Если нажали на кнопку - появляется сигнал
+    // Р•СЃР»Рё РЅР°Р¶Р°Р»Рё РЅР° РєРЅРѕРїРєСѓ - РїРѕСЏРІР»СЏРµС‚СЃСЏ СЃРёРіРЅР°Р»
     //connect(ui->drawOneGraph, SIGNAL(pressed()), this, SIGNAL(drawSmth()));
     //connect(ui->delAllButton, SIGNAL(pressed()), this, SIGNAL(delAllButtonSignal()));
     //connect(ui->changeColor, SIGNAL(pressed()), this, SIGNAL(changeColorSignal()));
     //connect(ui->changeCurrentItem, SIGNAL(pressed()), this, SIGNAL(changeCurrentItemSignal()));
 
-    // Сигнал связывается со слотом
+    // РЎРёРіРЅР°Р» СЃРІСЏР·С‹РІР°РµС‚СЃСЏ СЃРѕ СЃР»РѕС‚РѕРј
     connect(this, SIGNAL(transferDataSignal(int,QVector<double>,QVector<double>)),
             graphPainter, SLOT(setData(int,QVector<double>,QVector<double>)));
     //connect(this, SIGNAL(delAllButtonSignal()), graphPainter, SLOT(delAllGraph()));
     connect(this, SIGNAL(changeCurrentItemSignal()), graphPainter, SLOT(changeCurrentItem()));
 
-    //Изначально не нужно изменять правую границу графика
-    //Пока флаг не изменится
+    //РР·РЅР°С‡Р°Р»СЊРЅРѕ РЅРµ РЅСѓР¶РЅРѕ РёР·РјРµРЅСЏС‚СЊ РїСЂР°РІСѓСЋ РіСЂР°РЅРёС†Сѓ РіСЂР°С„РёРєР°
+    //РџРѕРєР° С„Р»Р°Рі РЅРµ РёР·РјРµРЅРёС‚СЃСЏ
     flagUpdateBordersX=1;
 
     flagUpdateBordersMaxY=1;
     flagUpdateBordersMinY=1;
-    // Задаем интервал слежения
+    // Р—Р°РґР°РµРј РёРЅС‚РµСЂРІР°Р» СЃР»РµР¶РµРЅРёСЏ
     lastNElements = 0;
 
-    double leftLimit = -1; //Начало интервала, где рисуем график по оси Ox
-    double rightLimit =  12; //Конец интервала, где рисуем график по оси Ox
-    double lowerLimit = -2; //Начало интервала, где рисуем график по оси Ox
-    double upperLimit =  2; //Конец интервала, где рисуем график по оси Ox
+    double leftLimit = -1; //РќР°С‡Р°Р»Рѕ РёРЅС‚РµСЂРІР°Р»Р°, РіРґРµ СЂРёСЃСѓРµРј РіСЂР°С„РёРє РїРѕ РѕСЃРё Ox
+    double rightLimit =  12; //РљРѕРЅРµС† РёРЅС‚РµСЂРІР°Р»Р°, РіРґРµ СЂРёСЃСѓРµРј РіСЂР°С„РёРє РїРѕ РѕСЃРё Ox
+    double lowerLimit = -2; //РќР°С‡Р°Р»Рѕ РёРЅС‚РµСЂРІР°Р»Р°, РіРґРµ СЂРёСЃСѓРµРј РіСЂР°С„РёРє РїРѕ РѕСЃРё Ox
+    double upperLimit =  2; //РљРѕРЅРµС† РёРЅС‚РµСЂРІР°Р»Р°, РіРґРµ СЂРёСЃСѓРµРј РіСЂР°С„РёРє РїРѕ РѕСЃРё Ox
     graphPainter->mainStartGraphSettings (leftLimit,rightLimit, lowerLimit, upperLimit,
                                           lableX, lableY);
 
@@ -73,7 +73,7 @@ UGraphWidget::~UGraphWidget()
 
 void UGraphWidget::addDataToGraph(size_t id, std::vector<double>  X1, std::vector<double> Y1)
 {
-    //проверить есть ли массив с нужным id, если нет, то добавить
+    //РїСЂРѕРІРµСЂРёС‚СЊ РµСЃС‚СЊ Р»Рё РјР°СЃСЃРёРІ СЃ РЅСѓР¶РЅС‹Рј id, РµСЃР»Рё РЅРµС‚, С‚Рѕ РґРѕР±Р°РІРёС‚СЊ
     size_t startSizeMas=masX.size();
     if (startSizeMas<id+1)
     {
@@ -81,13 +81,13 @@ void UGraphWidget::addDataToGraph(size_t id, std::vector<double>  X1, std::vecto
         masY.resize(id+1);
     }
 
-    //Изменить размер на нужный
+    //РР·РјРµРЅРёС‚СЊ СЂР°Р·РјРµСЂ РЅР° РЅСѓР¶РЅС‹Р№
     size_t startSizeElem = masX[id].size();
     size_t addSizeElem = X1.size();
     masX[id].resize(int(startSizeElem+addSizeElem));
     masY[id].resize(int(startSizeElem+addSizeElem));
 
-   //Заполнить появившеся место
+   //Р—Р°РїРѕР»РЅРёС‚СЊ РїРѕСЏРІРёРІС€РµСЃСЏ РјРµСЃС‚Рѕ
     for (size_t j=startSizeElem; j<startSizeElem+addSizeElem-1; j++)
     {
         masX[id][int(j)]=X1[j-startSizeElem];
@@ -98,7 +98,7 @@ void UGraphWidget::addDataToGraph(size_t id, std::vector<double>  X1, std::vecto
 
 void UGraphWidget::addDataToGraph(size_t id, double X1, double Y1)
 {
-    //проверить есть ли массив с нужным id, если нет, то добавить
+    //РїСЂРѕРІРµСЂРёС‚СЊ РµСЃС‚СЊ Р»Рё РјР°СЃСЃРёРІ СЃ РЅСѓР¶РЅС‹Рј id, РµСЃР»Рё РЅРµС‚, С‚Рѕ РґРѕР±Р°РІРёС‚СЊ
     size_t startSizeMas=masX.size();
     if (startSizeMas<id+1)
     {
@@ -106,7 +106,7 @@ void UGraphWidget::addDataToGraph(size_t id, double X1, double Y1)
         masY.resize(id+1);
     }
 
-    //Положить элементы в конец каждого массива
+    //РџРѕР»РѕР¶РёС‚СЊ СЌР»РµРјРµРЅС‚С‹ РІ РєРѕРЅРµС† РєР°Р¶РґРѕРіРѕ РјР°СЃСЃРёРІР°
     masX[id].push_back(X1);
     masY[id].push_back(Y1);
 
@@ -149,7 +149,7 @@ void UGraphWidget::AUpdateInterface()
     {
         const TSingleGraph& current_graph=graphPainter->getGraph(i);
 
-        // обратимся к ядру, возьмем матрицу
+        // РѕР±СЂР°С‚РёРјСЃСЏ Рє СЏРґСЂСѓ, РІРѕР·СЊРјРµРј РјР°С‚СЂРёС†Сѓ
         RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
         //RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock();
 
@@ -168,9 +168,9 @@ void UGraphWidget::AUpdateInterface()
 
         double x=Model_GetDoubleRealTime();
 
-        // ее данные положим на этот график
+        // РµРµ РґР°РЅРЅС‹Рµ РїРѕР»РѕР¶РёРј РЅР° СЌС‚РѕС‚ РіСЂР°С„РёРє
         addDataToGraph(i,x,y);
-        //Проверяем нужно ли изменять границы по оси Х
+        //РџСЂРѕРІРµСЂСЏРµРј РЅСѓР¶РЅРѕ Р»Рё РёР·РјРµРЅСЏС‚СЊ РіСЂР°РЅРёС†С‹ РїРѕ РѕСЃРё РҐ
         if (flagUpdateBordersX>0)
         {
             if (lastNElements>0)
@@ -181,17 +181,17 @@ void UGraphWidget::AUpdateInterface()
             else
                 graphPainter->setRightLimitGraph(x+0.1*x);
         }
-        //Проверяем нужно ли изменять границы по оси Y
+        //РџСЂРѕРІРµСЂСЏРµРј РЅСѓР¶РЅРѕ Р»Рё РёР·РјРµРЅСЏС‚СЊ РіСЂР°РЅРёС†С‹ РїРѕ РѕСЃРё Y
         if (flagUpdateBordersMaxY>0)
         {
-            //максимальная граница
+            //РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РіСЂР°РЅРёС†Р°
             if ((1.1*y)>graphPainter->getUpperLimitGraph())
                 graphPainter->setUpperLimitGraph(y+0.1*y);
             //std::cout<<graphPainter->getUpperLimitGraph()<<"   "<<y<<std::endl;
         }
         if (flagUpdateBordersMinY>0)
         {
-            //минимальная граница
+            //РјРёРЅРёРјР°Р»СЊРЅР°СЏ РіСЂР°РЅРёС†Р°
             if ((1.1*y)<graphPainter->getLowerLimitGraph())
                 graphPainter->setLowerLimitGraph(y+0.1*y);
         }
@@ -217,16 +217,16 @@ void UGraphWidget::ASaveParameters()
 
     settings.beginGroup(accessibleName());
 
-    //Сохранение геометрии на экране
+    //РЎРѕС…СЂР°РЅРµРЅРёРµ РіРµРѕРјРµС‚СЂРёРё РЅР° СЌРєСЂР°РЅРµ
     settings.setValue("geometry", saveGeometry());
 
-    //-----------------------------------------------------------Параметры UGraphWidget
+    //-----------------------------------------------------------РџР°СЂР°РјРµС‚СЂС‹ UGraphWidget
     settings.setValue("int_flagUpdateBorders",flagUpdateBordersX);
     settings.setValue("QString_lableX",lableX);
     settings.setValue("Qstring_lableY",lableY);
 
 
-    //-----------------------------------------------------------Параметры UGraphWindow
+    //-----------------------------------------------------------РџР°СЂР°РјРµС‚СЂС‹ UGraphWindow
     settings.setValue("int_currentItem",graphPainter->getCurrentItem());
 
     settings.setValue("double_leftLimitGraph",QVariant(graphPainter->getLeftLimitGraph()));
@@ -234,20 +234,20 @@ void UGraphWidget::ASaveParameters()
     settings.setValue("double_lowerLimitGraph",QVariant(graphPainter->getLowerLimitGraph()));
     settings.setValue("double_upperLimitGraph",QVariant(graphPainter->getUpperLimitGraph()));
 
-    //передать количество элементов  вструктуре
+    //РїРµСЂРµРґР°С‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ  РІСЃС‚СЂСѓРєС‚СѓСЂРµ
     int sizeVectorStruct=graphPainter->getSize();
     settings.setValue("int_sizeVectorStruct",QVariant(sizeVectorStruct));
 
-    //цикл по элементам
+    //С†РёРєР» РїРѕ СЌР»РµРјРµРЅС‚Р°Рј
     for (int j=0; j<sizeVectorStruct; j++)
     {
-        static int graphColor;       //Цвет графика
-        static  std::string graphName;   //Имя графика
-        static  int indexChannel;          //Индекс канала
-        static  std::string nameComponent; //Имя компонента
-        static std::string nameProperty;  //Имя свойства
-        static std::string typeProperty;  //Тип компонента
-        //координаты элемента матрицы
+        static int graphColor;       //Р¦РІРµС‚ РіСЂР°С„РёРєР°
+        static  std::string graphName;   //РРјСЏ РіСЂР°С„РёРєР°
+        static  int indexChannel;          //РРЅРґРµРєСЃ РєР°РЅР°Р»Р°
+        static  std::string nameComponent; //РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+        static std::string nameProperty;  //РРјСЏ СЃРІРѕР№СЃС‚РІР°
+        static std::string typeProperty;  //РўРёРї РєРѕРјРїРѕРЅРµРЅС‚Р°
+        //РєРѕРѕСЂРґРёРЅР°С‚С‹ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹
         static int Jx;
         static int Jy;
 
@@ -262,7 +262,7 @@ void UGraphWidget::ASaveParameters()
                     +"*"+QString::number(graphColor));
     }
 
-    //-----------------------------------------------------------Конец записи параметров
+    //-----------------------------------------------------------РљРѕРЅРµС† Р·Р°РїРёСЃРё РїР°СЂР°РјРµС‚СЂРѕРІ
     settings.endGroup();
 }
 
@@ -277,17 +277,17 @@ void UGraphWidget::ALoadParameters()
 
     settings.beginGroup(accessibleName());
 
-    //**************** Заполнение сохраненными данными элементов
+    //**************** Р—Р°РїРѕР»РЅРµРЅРёРµ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё РґР°РЅРЅС‹РјРё СЌР»РµРјРµРЅС‚РѕРІ
 
     restoreGeometry(settings.value("geometry").toByteArray());
 
-    //-----------------------------------------------------------Параметры UGraphWidget
+    //-----------------------------------------------------------РџР°СЂР°РјРµС‚СЂС‹ UGraphWidget
 
     flagUpdateBordersX=settings.value("int_flagUpdateBorders", -1).toInt();
     lableX=settings.value("QString_lableX", "time").toString();
     lableY=settings.value("QString_lableY", "Selected Output").toString();
 
-    //-----------------------------------------------------------Параметры UGraphWindow
+    //-----------------------------------------------------------РџР°СЂР°РјРµС‚СЂС‹ UGraphWindow
     graphPainter->mainStartGraphSettings (settings.value("double_leftLimitGraph", -1).toDouble(),
                                           settings.value("double_rightLimitGraph", 6).toDouble(),
                                           settings.value("double_lowerLimitGraph", -2).toDouble(),
@@ -295,20 +295,20 @@ void UGraphWidget::ALoadParameters()
                                           lableX,lableY);
 
     int currentItem = settings.value("int_currentItem", -1).toInt();
-    //graphPainter->setCurrentItem(currentItem); написать позже, после создания графиков
+    //graphPainter->setCurrentItem(currentItem); РЅР°РїРёСЃР°С‚СЊ РїРѕР·Р¶Рµ, РїРѕСЃР»Рµ СЃРѕР·РґР°РЅРёСЏ РіСЂР°С„РёРєРѕРІ
 
-    //считать количество элементов  структуре
+    //СЃС‡РёС‚Р°С‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ  СЃС‚СЂСѓРєС‚СѓСЂРµ
     int sizeVectorStruct=settings.value("int_sizeVectorStruct", -1).toInt();
     if (sizeVectorStruct>0)
         for (int j=0; j<sizeVectorStruct; j++)
         {
-            static int graphColor;       //Цвет графика
-            static  std::string graphName;   //Имя графика
-            static  int indexChannel;          //Индекс канала
-            static  std::string nameComponent; //Имя компонента
-            static std::string nameProperty;  //Имя свойства
-            static std::string typeProperty;  //Тип компонента
-            //координаты элемента матрицы
+            static int graphColor;       //Р¦РІРµС‚ РіСЂР°С„РёРєР°
+            static  std::string graphName;   //РРјСЏ РіСЂР°С„РёРєР°
+            static  int indexChannel;          //РРЅРґРµРєСЃ РєР°РЅР°Р»Р°
+            static  std::string nameComponent; //РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+            static std::string nameProperty;  //РРјСЏ СЃРІРѕР№СЃС‚РІР°
+            static std::string typeProperty;  //РўРёРї РєРѕРјРїРѕРЅРµРЅС‚Р°
+            //РєРѕРѕСЂРґРёРЅР°С‚С‹ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹
             static int Jx;
             static int Jy;
 
@@ -329,7 +329,7 @@ void UGraphWidget::ALoadParameters()
                     graphColor = list.at(7).toInt();
 
 
-                    //Заполнение одного элемента вектора - структуры
+                    //Р—Р°РїРѕР»РЅРµРЅРёРµ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІРµРєС‚РѕСЂР° - СЃС‚СЂСѓРєС‚СѓСЂС‹
                     int graph_index=graphPainter->addGraphVisualParameters(graphName,graphColor);
                     graphPainter->setGraphDataSource(graph_index,indexChannel,
                                                      nameComponent,
@@ -338,18 +338,18 @@ void UGraphWidget::ALoadParameters()
             }
             graphPainter->setCurrentItem(currentItem);
         }
-    //**************** Конец заполнения сохраненными данными элементов
+    //**************** РљРѕРЅРµС† Р·Р°РїРѕР»РЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё РґР°РЅРЅС‹РјРё СЌР»РµРјРµРЅС‚РѕРІ
     settings.endGroup();
 }
 
 void UGraphWidget::slotActionSelectOutput()
 {
     std::cout<<"selectDir_clicked"<<std::endl;
-    /*/// Экзепляр класса приложения
+    /*/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
     RDK::UApplication *application;
-    /// true - во время выполнения AUpdateInterface, все остальное время - false
-    /// Устраянет ошибку рекурсивного обновления интерфейса,
-    /// появляющуюся в случае попытки одновременного обновления по требованию интерфейса и по тику ядра.*/
+    /// true - РІРѕ РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ AUpdateInterface, РІСЃРµ РѕСЃС‚Р°Р»СЊРЅРѕРµ РІСЂРµРјСЏ - false
+    /// РЈСЃС‚СЂР°СЏРЅРµС‚ РѕС€РёР±РєСѓ СЂРµРєСѓСЂСЃРёРІРЅРѕРіРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°,
+    /// РїРѕСЏРІР»СЏСЋС‰СѓСЋСЃСЏ РІ СЃР»СѓС‡Р°Рµ РїРѕРїС‹С‚РєРё РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕРіРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ РїРѕ С‚СЂРµР±РѕРІР°РЅРёСЋ РёРЅС‚РµСЂС„РµР№СЃР° Рё РїРѕ С‚РёРєСѓ СЏРґСЂР°.*/
     if(!application)
         return;
     UComponentPropertySelectionWidget dialog(this, 3, application);
@@ -357,7 +357,7 @@ void UGraphWidget::slotActionSelectOutput()
     //if (dialog.exec() && selectedImage)
     if (dialog.exec())
     {
-        //Заполнение одного элемента вектора - структуры
+        //Р—Р°РїРѕР»РЅРµРЅРёРµ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІРµРєС‚РѕСЂР° - СЃС‚СЂСѓРєС‚СѓСЂС‹
         int graph_index=graphPainter->addGraphVisualParameters("first",Qt::green);
         graphPainter->setGraphDataSource(graph_index,dialog.componentsList->getSelectedChannelIndex(),dialog.componentsList->getSelectedComponentLongName().toLocal8Bit().data(),dialog.componentsList->getSelectedPropertyName().toLocal8Bit().data(),"type",0,0);
 

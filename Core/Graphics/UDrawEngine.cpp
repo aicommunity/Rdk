@@ -23,41 +23,41 @@ See file license.txt for more information
 namespace RDK {
 
 // ------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // ------------------------
 UGEDescription::UGEDescription(void)
 {
- // Координаты элемента в пикселях
+ // РљРѕРѕСЂРґРёРЅР°С‚С‹ СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС…
  Position=0;
 
- // Радиус элемента
+ // Р Р°РґРёСѓСЃ СЌР»РµРјРµРЅС‚Р°
  Width = 80; Height=25;
 
- // Цвет контура элемента
+ // Р¦РІРµС‚ РєРѕРЅС‚СѓСЂР° СЌР»РµРјРµРЅС‚Р°
  ContourColor = UColorT(0, 0, 0, 0);
 
- // Толщина контура элемента в пикселях
+ // РўРѕР»С‰РёРЅР° РєРѕРЅС‚СѓСЂР° СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС…
  ContourWidth = 1;
 
  InactiveFontColor=UColorT(100,100,100,0);
 
- // Цвет заливки элемента
+ // Р¦РІРµС‚ Р·Р°Р»РёРІРєРё СЌР»РµРјРµРЅС‚Р°
  FillColor = UColorT(180, 180, 180, 0);
 
  InactiveFillColor=UColorT(210,210,210,0);
 
  LinkColor = UColorT(0, 0, 255, 0);
 
- // Толщина контура связи
+ // РўРѕР»С‰РёРЅР° РєРѕРЅС‚СѓСЂР° СЃРІСЏР·Рё
  LinkWidth = 1;
 
- // Одномерный индекс i
+ // РћРґРЅРѕРјРµСЂРЅС‹Р№ РёРЅРґРµРєСЃ i
  Index = 0;
 
- // 3D индекс (i,j,k)
+ // 3D РёРЅРґРµРєСЃ (i,j,k)
  Position=0;
 
- // Тип элемента
+ // РўРёРї СЌР»РµРјРµРЅС‚Р°
  Type = 0;
 
  Activity=true;
@@ -110,30 +110,30 @@ UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
 
 /* ******************************************************************* */
 // ---------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // ---------------------------
 UDrawEngine::UDrawEngine(void)
 {
 // Net = 0;
  GEngine = 0;
 
- // Цвет фона
+ // Р¦РІРµС‚ С„РѕРЅР°
  BackgroundColor = UColorT(255, 255, 255, 255);
 
  BackgroundLineColor=UColorT(200, 200, 200, 0);
 
- // Цвет выделяемого элемента
+ // Р¦РІРµС‚ РІС‹РґРµР»СЏРµРјРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
  SelectedColor = UColorT(128, 128, 128, 0);
 
  InactiveSelectedColor=UColorT(128, 128, 128, 0);
 
- // Цвет входящих линий
+ // Р¦РІРµС‚ РІС…РѕРґСЏС‰РёС… Р»РёРЅРёР№
  InputLinksColor=UColorT(255, 0, 0, 0);
 
- // Цвет исходящих линий
+ // Р¦РІРµС‚ РёСЃС…РѕРґСЏС‰РёС… Р»РёРЅРёР№
  OutputLinksColor=UColorT(0, 0, 255, 0);
 
- // Цвет линий по умолчанию
+ // Р¦РІРµС‚ Р»РёРЅРёР№ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  DefaultLinksColor=UColorT(180, 180, 180, 0);
 
  BackgroundLineStep=10;
@@ -145,7 +145,7 @@ UDrawEngine::UDrawEngine(void)
 
  Origin=0;
 
- // Размеры элемента в пикселях по умолчанию
+ // Р Р°Р·РјРµСЂС‹ СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС… РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  RectWidth=80;
  RectHeight=25;
 
@@ -161,22 +161,22 @@ UDrawEngine::~UDrawEngine(void)
 // ---------------------------
 
 // ---------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // ---------------------------
-// Коэффициент зуммирования
-// Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y
+// РљРѕСЌС„С„РёС†РёРµРЅС‚ Р·СѓРјРјРёСЂРѕРІР°РЅРёСЏ
+// РџРёРєСЃРµР»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° X,Y=ZoomCoeff*Coord.X,Y
 double UDrawEngine::GetZoomCoeff(void) const
 {
  return ZoomCoeff;
 }
 
-// Начало координат в канве
+// РќР°С‡Р°Р»Рѕ РєРѕРѕСЂРґРёРЅР°С‚ РІ РєР°РЅРІРµ
 MVector<double,3> UDrawEngine::GetOrigin(void) const
 {
  return Origin;
 }
 
-// Размеры элемента в пикселях по умолчанию
+// Р Р°Р·РјРµСЂС‹ СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС… РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 int UDrawEngine::GetRectWidth(void) const
 {
  return RectWidth;
@@ -212,9 +212,9 @@ bool UDrawEngine::GetShowBackgroundLines(void) const
 // ---------------------------
 
 // ---------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // ---------------------------
-// Возвращает указатель на НС
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РќРЎ
 /*UEPtr<UNet> UDrawEngine::GetNet(void)
 {
  return Net;
@@ -225,19 +225,19 @@ const USerStorageXML& UDrawEngine::GetNetXml(void) const
 }
 
 
-// Возвращает элемент таблицы соответствий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЌР»РµРјРµРЅС‚ С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№
 UGEDescription& UDrawEngine::GetDescription(const string &name)
 {
  return Descriptions[name];
 }
 
-// Возвращает всю таблицу соответсвий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЃСЋ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃРІРёР№
 const UDrawEngine::DescriptionsTableT& UDrawEngine::GetDescriptions(void)
 {
  return Descriptions;
 }
 
-// Возвращает указатель на движок отображения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґРІРёР¶РѕРє РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 UEPtr<UAGraphics> UDrawEngine::GetGEngine(void)
 {
  return GEngine;
@@ -250,8 +250,8 @@ bool UDrawEngine::SetNetXml(USerStorageXML &net_xml)
  return true;
 }
 
-// Связывает класс с новой НС
-// Если engine == 0 то возвращает false и не делеает ничего
+// РЎРІСЏР·С‹РІР°РµС‚ РєР»Р°СЃСЃ СЃ РЅРѕРІРѕР№ РќРЎ
+// Р•СЃР»Рё engine == 0 С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false Рё РЅРµ РґРµР»РµР°РµС‚ РЅРёС‡РµРіРѕ
 bool UDrawEngine::SetEngine(UEPtr<UAGraphics> engine)
 {
  if (GEngine == engine)
@@ -265,12 +265,12 @@ bool UDrawEngine::SetEngine(UEPtr<UAGraphics> engine)
  return true;
 }
 
-// Обновляет таблицу соответствий
+// РћР±РЅРѕРІР»СЏРµС‚ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№
 void UDrawEngine::UpdateDescriptions(void)
 {
 }
 
-// Выделяет заданный компонент, сбрасывая флаг выделения с остальных
+// Р’С‹РґРµР»СЏРµС‚ Р·Р°РґР°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚, СЃР±СЂР°СЃС‹РІР°СЏ С„Р»Р°Рі РІС‹РґРµР»РµРЅРёСЏ СЃ РѕСЃС‚Р°Р»СЊРЅС‹С…
 void UDrawEngine::SelectSingleComponent(const string &name)
 {
  DescriptionsTableIteratorT I, J;
@@ -286,7 +286,7 @@ void UDrawEngine::SelectSingleComponent(const string &name)
  }
 }
 
-// Поиск объекта по заданным координатам в изображении
+// РџРѕРёСЃРє РѕР±СЉРµРєС‚Р° РїРѕ Р·Р°РґР°РЅРЅС‹Рј РєРѕРѕСЂРґРёРЅР°С‚Р°Рј РІ РёР·РѕР±СЂР°Р¶РµРЅРёРё
 std::string UDrawEngine::FindComponent(int x, int y)
 {
  DescriptionsTableIteratorT I, J;
@@ -300,7 +300,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
 
 //  name=I->first;
   if(abs(int(x-I->second.Position[0]))<=I->second.Width && abs(int(y-I->second.Position[1]))<=I->second.Height)
-//  if(dist<=I->second.Height)// Заглушка!!
+//  if(dist<=I->second.Height)// Р—Р°РіР»СѓС€РєР°!!
    return I->first;
  }
 
@@ -308,7 +308,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
 }
 
 
-// Перемещает компонента в заданные координаты, с некоторой зоной нечуствительности
+// РџРµСЂРµРјРµС‰Р°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ Р·Р°РґР°РЅРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹, СЃ РЅРµРєРѕС‚РѕСЂРѕР№ Р·РѕРЅРѕР№ РЅРµС‡СѓСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚Рё
 void UDrawEngine::MoveComponent(const string &name, int x, int y)
 {
  DescriptionsTableIteratorT I=Descriptions.find(name);
@@ -323,7 +323,7 @@ void UDrawEngine::MoveComponent(const string &name, int x, int y)
   descr.Position[1]+=(int(y-descr.Position[1])/BackgroundLineStep)*BackgroundLineStep;
 }
 
-// Обновляет размеры всех элементов в соответствии с размерами по умолчанию
+// РћР±РЅРѕРІР»СЏРµС‚ СЂР°Р·РјРµСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СЂР°Р·РјРµСЂР°РјРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 void UDrawEngine::UpdateAllElementsSize(void)
 {
  DescriptionsTableIteratorT I, J;
@@ -338,7 +338,7 @@ void UDrawEngine::UpdateAllElementsSize(void)
 }
 
 
-/// Возвращает рекомендуемый размер канвы
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµРєРѕРјРµРЅРґСѓРµРјС‹Р№ СЂР°Р·РјРµСЂ РєР°РЅРІС‹
 void UDrawEngine::CalcRecommendSize(int &width, int &height)
 {
  if(Descriptions.empty())
@@ -359,7 +359,7 @@ void UDrawEngine::CalcRecommendSize(int &width, int &height)
  }
 }
 
-/// Шрифты
+/// РЁСЂРёС„С‚С‹
 RDK::UBitmapFontCollection& UDrawEngine::GetFonts(void)
 {
  return Fonts;
@@ -372,17 +372,17 @@ void UDrawEngine::SetFonts(RDK::UBitmapFontCollection& value)
 // ---------------------------
 
 // ---------------------------
-// Методы размещения элементов по графическому полю
+// РњРµС‚РѕРґС‹ СЂР°Р·РјРµС‰РµРЅРёСЏ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РіСЂР°С„РёС‡РµСЃРєРѕРјСѓ РїРѕР»СЋ
 // ---------------------------
-// Метод автоматического распределения существующих элементов по полю
+// РњРµС‚РѕРґ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РїРѕР»СЋ
 void UDrawEngine::BuildDestinations(void)
 {
  Descriptions.clear();
  UpdateDestinations();
 }
 
-// Метод автоматического распределения нераспределенных элементов
-// (нераспределенные элементы имеют координаты -1,-1)
+// РњРµС‚РѕРґ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РЅРµСЂР°СЃРїСЂРµРґРµР»РµРЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
+// (РЅРµСЂР°СЃРїСЂРµРґРµР»РµРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹ РёРјРµСЋС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ -1,-1)
 void UDrawEngine::UpdateDestinations(void)
 {
  NetXml.SelectRoot();
@@ -455,15 +455,15 @@ void UDrawEngine::UpdateDestinations(void)
  ParseLinks();
 }
 
-// Устанавливает координаты размещения элемента id
-// Возвращает false если элемент не найден или координаты некорректны
-// Метод не проверяет свободна-ли занимаемая область
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ СЂР°Р·РјРµС‰РµРЅРёСЏ СЌР»РµРјРµРЅС‚Р° id
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё СЌР»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ РёР»Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹
+// РњРµС‚РѕРґ РЅРµ РїСЂРѕРІРµСЂСЏРµС‚ СЃРІРѕР±РѕРґРЅР°-Р»Рё Р·Р°РЅРёРјР°РµРјР°СЏ РѕР±Р»Р°СЃС‚СЊ
 bool UDrawEngine::SetDestination(const string &name, int x, int y)
 {
  return true;
 }
 
-// Заполняет массивы связей компонент
+// Р—Р°РїРѕР»РЅСЏРµС‚ РјР°СЃСЃРёРІС‹ СЃРІСЏР·РµР№ РєРѕРјРїРѕРЅРµРЅС‚
 void UDrawEngine::ParseLinks(void)
 {
  DescriptionsTableIteratorT I,J;
@@ -505,9 +505,9 @@ void UDrawEngine::ParseLinks(void)
 // ---------------------------
 
 // ---------------------------
-// Основные методы отображения
+// РћСЃРЅРѕРІРЅС‹Рµ РјРµС‚РѕРґС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 // ---------------------------
-// Метод перерисовки всех элементов
+// РњРµС‚РѕРґ РїРµСЂРµСЂРёСЃРѕРІРєРё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ
 void UDrawEngine::Draw(void)
 {
  CanvasWidth=GEngine->GetCWidth();
@@ -528,8 +528,8 @@ void UDrawEngine::Draw(void)
   return;
 }
 
-// Метод обновления изображения отдельного элемента сети
-// Возвращает false если элемент не найден
+// РњРµС‚РѕРґ РѕР±РЅРѕРІР»РµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РѕС‚РґРµР»СЊРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° СЃРµС‚Рё
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё СЌР»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ
 bool UDrawEngine::Draw(const string &name)
 {
  DescriptionsTableIteratorT I = Descriptions.find(name);
@@ -541,12 +541,12 @@ bool UDrawEngine::Draw(const string &name)
  return true;
 }
 
-// Метод отображения связей сети
-// links==true - отображает схему связей линиями
-// highlight==true - подсвечивает все компоненты связанные с этим
-// (сам нейрон подсвечивается в случае, если на него есть обратные связи)
-// contour==true - окружает контуром компоненты связанные с этим
-// (в контур могут попасть и не связанные компоненты)
+// РњРµС‚РѕРґ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРІСЏР·РµР№ СЃРµС‚Рё
+// links==true - РѕС‚РѕР±СЂР°Р¶Р°РµС‚ СЃС…РµРјСѓ СЃРІСЏР·РµР№ Р»РёРЅРёСЏРјРё
+// highlight==true - РїРѕРґСЃРІРµС‡РёРІР°РµС‚ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ СЌС‚РёРј
+// (СЃР°Рј РЅРµР№СЂРѕРЅ РїРѕРґСЃРІРµС‡РёРІР°РµС‚СЃСЏ РІ СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РЅР° РЅРµРіРѕ РµСЃС‚СЊ РѕР±СЂР°С‚РЅС‹Рµ СЃРІСЏР·Рё)
+// contour==true - РѕРєСЂСѓР¶Р°РµС‚ РєРѕРЅС‚СѓСЂРѕРј РєРѕРјРїРѕРЅРµРЅС‚С‹ СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ СЌС‚РёРј
+// (РІ РєРѕРЅС‚СѓСЂ РјРѕРіСѓС‚ РїРѕРїР°СЃС‚СЊ Рё РЅРµ СЃРІСЏР·Р°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹)
 bool UDrawEngine::DrawLinks(bool links, bool highlight,
 	bool contour)
 {
@@ -571,7 +571,7 @@ bool UDrawEngine::DrawLinks(bool links, bool highlight,
  return true;
 }
 
-// Метод отображения фона
+// РњРµС‚РѕРґ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ С„РѕРЅР°
 bool UDrawEngine::DrawBackground(void)
 {
  GEngine->SetPenColor(BackgroundColor);
@@ -600,9 +600,9 @@ bool UDrawEngine::DrawBackground(void)
 // ---------------------------
 
 // ---------------------------
-// Вспомогательные методы отображения
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 // ---------------------------
-// Отрисовывает элемент в заданной позиции
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЌР»РµРјРµРЅС‚ РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
 void UDrawEngine::Paint(UGEDescription &ndescr)
 {
  if (!GEngine)
@@ -619,14 +619,14 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  break;
  }
 
- // Отрисовываем индикаторы
+ // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РёРЅРґРёРєР°С‚РѕСЂС‹
  for(size_t i=0;i<ndescr.Indicators.size();i++)
   PaintIndicator(int(ndescr.Position[0]) - ndescr.Width,
 		int(ndescr.Position[1]) + ndescr.Height + ndescr.ContourWidth, ndescr.Width * 2,
 		ndescr.Height / 2, ndescr.Indicators[i], 1, (i<FullIndicatorColors.size())?FullIndicatorColors[i]:BackgroundColor,
 		(i<EmptyIndicatorColors.size())?EmptyIndicatorColors[i]:BackgroundColor);
 
- // Отрисовываем имя
+ // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РёРјСЏ
  UColorT font_color;
  if(ndescr.Activity)
   font_color=ndescr.ContourColor;
@@ -652,7 +652,7 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает конечный элемент (NAItem*) с центром в заданной позиции
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РєРѕРЅРµС‡РЅС‹Р№ СЌР»РµРјРµРЅС‚ (NAItem*) СЃ С†РµРЅС‚СЂРѕРј РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
 void UDrawEngine::PaintItem(UGEDescription &ndescr)
 {
  UBRect rect;
@@ -700,7 +700,7 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает элемент-сеть (UNet*) с центром в заданной позиции
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЌР»РµРјРµРЅС‚-СЃРµС‚СЊ (UNet*) СЃ С†РµРЅС‚СЂРѕРј РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
 void UDrawEngine::PaintNet(UGEDescription &ndescr)
 {
  int shift=0;
@@ -747,12 +747,12 @@ void UDrawEngine::PaintNet(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает индикатор с заданными параметрами
-// Направление direction задается следующим образом
-// 1 - индикатор заполняется слева направо
-// 2 - индикатор заполняется справа налево
-// 3 - индикатор заполняется сверху вниз
-// 4 - индикатор заполняется снизу вверх
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РёРЅРґРёРєР°С‚РѕСЂ СЃ Р·Р°РґР°РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё
+// РќР°РїСЂР°РІР»РµРЅРёРµ direction Р·Р°РґР°РµС‚СЃСЏ СЃР»РµРґСѓСЋС‰РёРј РѕР±СЂР°Р·РѕРј
+// 1 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+// 2 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃРїСЂР°РІР° РЅР°Р»РµРІРѕ
+// 3 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃРІРµСЂС…Сѓ РІРЅРёР·
+// 4 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃРЅРёР·Сѓ РІРІРµСЂС…
 void UDrawEngine::PaintIndicator(int x, int y, int width, int height,
     double precent, int direction, UColorT full, UColorT empty)
 {
@@ -791,7 +791,7 @@ void UDrawEngine::PaintIndicator(int x, int y, int width, int height,
  }
 }
 
-// Отрисовывает связь
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЃРІСЏР·СЊ
 void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
     bool links, bool highlight, bool contour)
 {
@@ -867,7 +867,7 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
  }
   */
 }
-// Отрисовывает окружность
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РѕРєСЂСѓР¶РЅРѕСЃС‚СЊ
 // ---------------------------
 
 }

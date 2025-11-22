@@ -131,7 +131,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
   ui->lineEditProjectDirectory->setText("");
  }
 
- // îáíîâëÿåì èíòåðôåéñ â ñîîòâåòñòâèè ñ ProjectConfig
+ // Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹Ñ Ð² ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÑ‚Ð²Ð¸Ð¸ Ñ ProjectConfig
  ui->lineEditProjectName->setText(ProjectConfig.ProjectName.c_str());//codec->toUnicode(ProjectConfig.ProjectName.c_str()));
 
  ui->plainTextEditProjectDescription->setPlainText(codec->toUnicode(ProjectConfig.ProjectDescription.c_str()));
@@ -212,7 +212,7 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
 
 
 
- // êàíàëû...
+ // ÐºÐ°Ð½Ð°Ð»Ñ‹...
  ui->checkBoxSettingToAllChannels->setChecked(false);
  ui->spinBoxChannelsNumber->setValue(ProjectConfig.NumChannels);
  int listSize = ui->listWidgetChannels->count();
@@ -582,7 +582,7 @@ void UCreateConfigurationWizardWidget::channelSelectionChanged(int channel_index
 
 void UCreateConfigurationWizardWidget::browseNewProjectDirectory()
 {
-    // Äèðåêòîðèÿ ïðîåêòîâ
+    // Ð”Ð¸Ñ€ÐµÐºÑ‚Ð¾Ñ€Ð¸Ñ Ð¿Ñ€Ð¾ÐµÐºÑ‚Ð¾Ð²
     QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
     QDir path1(default_path);
     if(!path1.exists(default_path))

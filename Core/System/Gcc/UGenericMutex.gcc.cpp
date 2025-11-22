@@ -160,8 +160,8 @@ UGenericEventGcc::UGenericEventGcc()
  Event=neosmart::CreateEvent(true,true);
  //Event=CreateEvent(0,FALSE,TRUE,0);
 
- // Может быть удобно реализовать с помощью
- // condition variables и pthread_cond_timedwait
+ // РњРѕР¶РµС‚ Р±С‹С‚СЊ СѓРґРѕР±РЅРѕ СЂРµР°Р»РёР·РѕРІР°С‚СЊ СЃ РїРѕРјРѕС‰СЊСЋ
+ // condition variables Рё pthread_cond_timedwait
 }
 
 UGenericEventGcc::~UGenericEventGcc()

@@ -18,7 +18,7 @@ public:
     explicit UPropertyXMLWidget(QWidget *parent = 0);
     virtual ~UPropertyXMLWidget();
 
-    /// флаг должен определять тип Property
+    /// С„Р»Р°Рі РґРѕР»Р¶РµРЅ РѕРїСЂРµРґРµР»СЏС‚СЊ С‚РёРї Property
     ///
     /// true - parameter
     /// false -  state
@@ -32,13 +32,13 @@ public slots:
 private:
     Ui::UPropertyXMLWidget *ui;
 
-    /// маска типа и группы свойства
+    /// РјР°СЃРєР° С‚РёРїР° Рё РіСЂСѓРїРїС‹ СЃРІРѕР№СЃС‚РІР°
     int propertyMask;
 
-    /// флаг инициализации виджета
+    /// С„Р»Р°Рі РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РІРёРґР¶РµС‚Р°
     bool isInit;
 
-    ///имя компонента, свойство которого отображается
+    ///РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°, СЃРІРѕР№СЃС‚РІРѕ РєРѕС‚РѕСЂРѕРіРѕ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ
     QString componentName;
 };
 

@@ -30,20 +30,20 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     channelsSelectionVisible = false;
 
     UpdateInterval = -1;
-    setAccessibleName("UComponentsListWidget"); // ��� ������ ��� ������������
+    setAccessibleName("UComponentsListWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //readSettings(app, settingsGroup);
 
     UpdateInterface(true);
 
-    //��������� �������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(itemSelectionChanged()),
             this, SLOT(componentListItemSelectionChanged()));
 
-    //��������� ����������� �������� ������ �� ���������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(drawSelectedComponent(QModelIndex)));
 
-    //��������� ��������� propertys
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ propertys
     connect(ui->treeWidgetParameters, SIGNAL(itemSelectionChanged()),
             this, SLOT(parametersListSelectionChanged()));
     connect(ui->treeWidgetState, SIGNAL(itemSelectionChanged()),
@@ -60,10 +60,10 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->treeWidgetFavorites, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
             this, SLOT(favoritesListItemChanged(QTreeWidgetItem *, int )));
 
-    //��������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
 
-    //����������� ���� ��� ������ �����������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QAction *actionSeparator1 = new QAction(this);
     actionSeparator1->setSeparator(true);
     QAction *actionSeparator2 = new QAction(this);
@@ -93,7 +93,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     componentsTree->addAction(ui->actionComponentGUI);
     componentsTree->addAction(actionSeparator5);
     componentsTree->addAction(ui->actionReloadTree);
-    ui->actionComponentGUI->setEnabled(false); // ��� ����������, �� ����� ������ � enable
+    ui->actionComponentGUI->setEnabled(false); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ enable
     connect(ui->actionComponentMoveUp, SIGNAL(triggered()), this, SLOT(componentMoveUp()));
     connect(ui->actionComponentMoveDown, SIGNAL(triggered()), this, SLOT(componentMoveDown()));
     connect(ui->actionComponentRename, SIGNAL(triggered()), this, SLOT(componentRename()));
@@ -149,19 +149,19 @@ void UComponentsListWidget::AUpdateInterface()
     QString oldRootItem = currentDrawComponentName,
             oldSelectedItem = selectedComponentLongName;
 
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
     componentsTree->clear();
 
-    //���������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
     rootItem->setText(0, "Model");
     rootItem->setExpanded(false);
     addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
 
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
 
@@ -290,16 +290,16 @@ int UComponentsListWidget::getSelectedChannelIndex()
     return currentChannel;
 }
 
-/// ����� ������ ������
-/// 0 - ������ ������ � ������� �������
-/// 1 - ������ � ���������� �������� �������
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UComponentsListWidget::setChannelMode(int mode)
 {
  channelMode=mode;
 }
 
-/// ���������� ����� �������� ������
-/// ������������ ��� ����������� ����������
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UComponentsListWidget::getWorkChannelIndex()
 {
  return (channelMode == 0)?Core_GetSelectedChannelIndex():currentChannel;
@@ -328,7 +328,7 @@ void UComponentsListWidget::componentListItemSelectionChanged()
 
     reloadPropertys();
 
-    // ������� ����� �������� �������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     emit componentSelected(selectedComponentLongName);
 }
 
@@ -361,7 +361,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     ui->treeWidgetOutputs->clear();
     ui->treeWidgetFavorites->clear();
 
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value(),
         stateScrollPosition = ui->treeWidgetState->verticalScrollBar()->value(),
         inputsScrollPosition = ui->treeWidgetInputs->verticalScrollBar()->value(),
@@ -558,7 +558,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
         }
 
-        // ���� �� ������ ������ �� treeWidget'��
+        // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
         ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
         ui->treeWidgetParameters->verticalScrollBar()->setValue(paramScrollPosition);
         ui->treeWidgetState->verticalScrollBar()->setMaximum(stateScrollPosition);
@@ -1004,7 +1004,7 @@ void UComponentsListWidget::redrawChannelsList()
   }
 }
 
-/// ������� �� ���������� ������ ���������� �������� �����
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
 {
  std::string::size_type data_i=value.find_first_of("\n");
@@ -1015,7 +1015,7 @@ std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
  return value;
 }
 
-/// ������� �� ���������� ������ ���������� � ����������� �������� �����
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
 {
  std::string::size_type data_i=value.find_first_of("\n");
@@ -1032,8 +1032,8 @@ std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
  return value;
 }
 
-/// ���� � ���������� ������ ���� ���� �� ���� ������� ������, �� �������� �����
-/// �� "[SEE BELOW]"
+/// пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅ "[SEE BELOW]"
 std::string& UComponentsListWidget::PreparePropertyValueToListView(std::string &value)
 {
  EraseRangeEndls(value);

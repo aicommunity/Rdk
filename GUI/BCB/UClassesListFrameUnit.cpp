@@ -24,12 +24,12 @@ __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 }
 //---------------------------------------------------------------------------
 
-// Отрисовка фрейма
+// РћС‚СЂРёСЃРѕРІРєР° С„СЂРµР№РјР°
 void TUClassesListFrame::AUpdateInterface(void)
 {
  std::string search=AnsiString(Trim(SearchEdit->Text)).c_str();
 
- // Список RT библиотек
+ // РЎРїРёСЃРѕРє RT Р±РёР±Р»РёРѕС‚РµРє
  RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
  std::string buff;
  storage->GetLibsNameListByType(buff,2);
@@ -43,7 +43,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   const char * stringBuff;
   stringBuff = Storage_GetLibraryClassNames(RTlibsNames[i].c_str());
 
-  // Если нет классов
+  // Р•СЃР»Рё РЅРµС‚ РєР»Р°СЃСЃРѕРІ
   if((stringBuff[0] == '\0'))
   {
    Engine_FreeBufString(stringBuff);
@@ -234,7 +234,7 @@ void TUClassesListFrame::AUpdateInterface(void)
 }
 
 
-/// Отрисовывает список классов в выбранной библиотеке
+/// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЃРїРёСЃРѕРє РєР»Р°СЃСЃРѕРІ РІ РІС‹Р±СЂР°РЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРµ
 void TUClassesListFrame::DrawClassesList(int library_index, TStringGrid *classes_string_grid)
 {
   if(library_index>=0)
@@ -305,7 +305,7 @@ void TUClassesListFrame::DrawClassesList(const std::string &library_name, TStrin
 
 
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUClassesListFrame::AClearInterface(void)
 {
  LibrariesListNames.clear();
@@ -316,7 +316,7 @@ void TUClassesListFrame::AClearInterface(void)
  ClassNames.clear();
 }
 
-// Возвращает имя выбранного класса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
 String TUClassesListFrame::GetSelectedName(void)
 {
  if(PageControl->ActivePage == LibsTabSheet)
@@ -335,7 +335,7 @@ String TUClassesListFrame::GetSelectedName(void)
  return String("");
 }
 
-/// Устанавливает имя выбранного класса
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
 void TUClassesListFrame::SetSelectedName(const String &name)
 {
  std::string sname=AnsiString(name).c_str();
@@ -345,7 +345,7 @@ void TUClassesListFrame::SetSelectedName(const String &name)
 /*  TTreeNode* sel=TreeView->Selected;
   if(sel && sel->Parent)
    return sel->Text; */
-  // TODO: Реализовать!
+  // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ!
  }
  else
  if(PageControl->ActivePage == NameTabSheet)
@@ -379,7 +379,7 @@ void TUClassesListFrame::SetSelectedName(const String &name)
  UpdateInterface();
 }
 
-// Возвращает имя выбранной библиотеки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё
 String TUClassesListFrame::GetSelectedLibraryName(void)
 {
  if(PageControl->ActivePage == LibsTabSheet)
@@ -404,7 +404,7 @@ String TUClassesListFrame::GetSelectedLibraryName(void)
 
 
 
-/// Создает новый класс в выбранной Runtime library
+/// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ РєР»Р°СЃСЃ РІ РІС‹Р±СЂР°РЅРЅРѕР№ Runtime library
 bool TUClassesListFrame::AddClassToRuntimeLibrary(const std::string &object_prototype_name, const std::string &class_name, const std::string &library_name)
 {
  Storage_CreateClass(object_prototype_name.c_str(),class_name.c_str(),library_name.c_str());
@@ -637,18 +637,18 @@ void __fastcall TUClassesListFrame::CreateNewClass1Click(TObject *Sender)
 {
  RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
- // Если нет модели
+ // Р•СЃР»Рё РЅРµС‚ РјРѕРґРµР»Рё
  if(!engine || !engine->GetModel() || !engine->GetModel()->GetStorage())
   return;
 
- // Выделенный компонент
+ // Р’С‹РґРµР»РµРЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
  RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
 								->GetComponentL(NewComponentName, true);
- // Если компонент не выделен
+ // Р•СЃР»Рё РєРѕРјРїРѕРЅРµРЅС‚ РЅРµ РІС‹РґРµР»РµРЅ
  if(!container)
   return;
 
- // Имя текущей выбранной библиотеки (если выбрана)
+ // РРјСЏ С‚РµРєСѓС‰РµР№ РІС‹Р±СЂР°РЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё (РµСЃР»Рё РІС‹Р±СЂР°РЅР°)
  std::string lib_name=AnsiString(LibsListStringGrid->Cells[1][LibsListStringGrid->Row]).c_str();
 
  String class_name = InputBox("Class name", "Please enter new class name", "");

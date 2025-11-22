@@ -19,7 +19,7 @@ using namespace std;
 //#include "Bcb/Application.bcb.cpp"
 #endif
 
-extern void ExceptionHandler(int channel_index); // TODO: Потом ее куда то убрать
+extern void ExceptionHandler(int channel_index); // TODO: РџРѕС‚РѕРј РµРµ РєСѓРґР° С‚Рѕ СѓР±СЂР°С‚СЊ
 
 namespace RDK {
 
@@ -31,7 +31,7 @@ po::variables_map CmdVariablesMap;
 #endif
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UApplication::UApplication(void)
 {
@@ -65,9 +65,9 @@ UApplication::~UApplication(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-/// Название приложения
+/// РќР°Р·РІР°РЅРёРµ РїСЂРёР»РѕР¶РµРЅРёСЏ
 const std::string& UApplication::GetProgramName(void) const
 {
  return ProgramName;
@@ -78,7 +78,7 @@ void UApplication::SetProgramName(const std::string &value)
  ProgramName = value;
 }
 
-/// Имя файла приложения
+/// РРјСЏ С„Р°Р№Р»Р° РїСЂРёР»РѕР¶РµРЅРёСЏ
 const std::string& UApplication::GetApplicationFileName(void) const
 {
  return ApplicationFileName;
@@ -92,7 +92,7 @@ bool UApplication::SetApplicationFileName(const std::string& value)
  return true;
 }
 
-/// Рабочий каталог
+/// Р Р°Р±РѕС‡РёР№ РєР°С‚Р°Р»РѕРі
 const std::string& UApplication::GetWorkDirectory(void) const
 {
  return WorkDirectory;
@@ -108,7 +108,7 @@ bool UApplication::SetWorkDirectory(const std::string& value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РєРѕРЅС„РёРіСѓСЂР°С†РёР№ (РѕР±С‹С‡РЅРѕ /Bin/Configs)
 const std::string& UApplication::GetConfigsMainPath(void) const
 {
  return ConfigsMainPath;
@@ -122,7 +122,7 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ Р±РёР±Р»РёРѕС‚РµРєР°РјРё (РІ РґР°РЅРЅРѕРј РїСѓС‚Рё СЃС„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РґРІРµ РїР°РїРєРё - MockLibs, RTlibs)
 const std::string& UApplication::GetLibrariesPath(void) const
 {
  return LibrariesPath;
@@ -136,7 +136,7 @@ bool UApplication::SetLibrariesPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с описаниями классов
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 const std::string& UApplication::GetClDescPath(void) const
 {
  return ClDescPath;
@@ -150,7 +150,7 @@ bool UApplication::SetClDescPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РєРѕРЅС„РёРіСѓСЂР°С†РёР№ (РѕР±С‹С‡РЅРѕ /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
  return DatabaseMainPath;
@@ -164,7 +164,7 @@ bool UApplication::SetDatabaseMainPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РєРѕРЅС„РёРіСѓСЂР°С†РёР№ (РѕР±С‹С‡РЅРѕ /Bin/Configs)
 const std::string& UApplication::GetStorageMountPoint(void) const
 {
  return StorageMountPoint;
@@ -179,7 +179,7 @@ bool UApplication::SetStorageMountPoint(const std::string &value)
 }
 
 
-/// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РјРѕРґРµР»РµР№  (РѕР±С‹С‡РЅРѕ /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
 {
  return ModelsMainPath;
@@ -220,7 +220,7 @@ bool UApplication::SetUserId(int value)
 }
 
 
-// Признак наличия открытого проекта
+// РџСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РѕС‚РєСЂС‹С‚РѕРіРѕ РїСЂРѕРµРєС‚Р°
 bool UApplication::GetProjectOpenFlag(void) const
 {
  return ProjectOpenFlag;
@@ -233,7 +233,7 @@ bool UApplication::SetProjectOpenFlag(bool value)
  return true;
 }
 
-// Путь до папки проекта
+// РџСѓС‚СЊ РґРѕ РїР°РїРєРё РїСЂРѕРµРєС‚Р°
 const std::string& UApplication::GetProjectPath(void) const
 {
  return ProjectPath;
@@ -251,7 +251,7 @@ bool UApplication::SetProjectPath(const std::string& value)
  return true;
 }
 
-// Имя файла проекта
+// РРјСЏ С„Р°Р№Р»Р° РїСЂРѕРµРєС‚Р°
 const std::string& UApplication::GetProjectFileName(void) const
 {
  return ProjectFileName;
@@ -266,7 +266,7 @@ bool UApplication::SetProjectFileName(const std::string& value)
  return true;
 }
 
-/// Список последних открытых проектов
+/// РЎРїРёСЃРѕРє РїРѕСЃР»РµРґРЅРёС… РѕС‚РєСЂС‹С‚С‹С… РїСЂРѕРµРєС‚РѕРІ
 const std::list<std::string>& UApplication::GetLastProjectsList(void) const
 {
  return LastProjectsList;
@@ -280,7 +280,7 @@ bool UApplication::SetLastProjectsList(const std::list<std::string>& value)
  return true;
 }
 
-/// Размер истории последних открытых проектов
+/// Р Р°Р·РјРµСЂ РёСЃС‚РѕСЂРёРё РїРѕСЃР»РµРґРЅРёС… РѕС‚РєСЂС‹С‚С‹С… РїСЂРѕРµРєС‚РѕРІ
 int UApplication::GetLastProjectsListMaxSize(void) const
 {
  return LastProjectsListMaxSize;
@@ -294,26 +294,26 @@ bool UApplication::SetLastProjectsListMaxSize(int value)
  return true;
 }
 
-/// Заголовок приложения
+/// Р—Р°РіРѕР»РѕРІРѕРє РїСЂРёР»РѕР¶РµРЅРёСЏ
 const std::string& UApplication::GetAppCaption(void) const
 {
  return AppCaption;
 }
 
-// Файл настроек проекта
+// Р¤Р°Р№Р» РЅР°СЃС‚СЂРѕРµРє РїСЂРѕРµРєС‚Р°
 const RDK::USerStorageXML& UApplication::GetProjectXml(void) const
 {
  return ProjectXml;
 }
 
-// Файл настроек интефрейса
+// Р¤Р°Р№Р» РЅР°СЃС‚СЂРѕРµРє РёРЅС‚РµС„СЂРµР№СЃР°
 const RDK::USerStorageXML& UApplication::GetInterfaceXml(void) const
 {
  return InterfaceXml;
 }
 
 
-/// Каталог логов
+/// РљР°С‚Р°Р»РѕРі Р»РѕРіРѕРІ
 std::string UApplication::GetLogDir(void) const
 {
  return Core_GetLogDir();
@@ -333,7 +333,7 @@ bool UApplication::SetLogDir(const std::string& value)
  return false;
 }
 
-/// Флаг включения отладочного режима логирования
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РѕС‚Р»Р°РґРѕС‡РЅРѕРіРѕ СЂРµР¶РёРјР° Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 bool UApplication::GetDebugMode(void) const
 {
  return Core_GetDebugMode();
@@ -349,7 +349,7 @@ bool UApplication::SetDebugMode(bool value)
 }
 
 
-/// Текущий каталог логов (с учетом переопределения в проекте)
+/// РўРµРєСѓС‰РёР№ РєР°С‚Р°Р»РѕРі Р»РѕРіРѕРІ (СЃ СѓС‡РµС‚РѕРј РїРµСЂРµРѕРїСЂРµРґРµР»РµРЅРёСЏ РІ РїСЂРѕРµРєС‚Рµ)
 std::string UApplication::CalcCurrentLogDir(void) const
 {
  std::string log_dir;
@@ -403,13 +403,13 @@ std::string UApplication::CalcCurrentLogDir(void) const
  return log_dir;
 }
 
-/// Флаг, выставляется если включен режим тестирования
+/// Р¤Р»Р°Рі, РІС‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РµСЃР»Рё РІРєР»СЋС‡РµРЅ СЂРµР¶РёРј С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 bool UApplication::IsTestMode(void) const
 {
  return TestMode;
 }
 
-/// Имя файла с описанием тестов
+/// РРјСЏ С„Р°Р№Р»Р° СЃ РѕРїРёСЃР°РЅРёРµРј С‚РµСЃС‚РѕРІ
 const std::string& UApplication::GetTestsDescriptionFileName(void) const
 {
  return TestsDescriptionFileName;
@@ -422,19 +422,19 @@ void UApplication::SetTestsDescriptionFileName(const std::string& value)
  TestsDescriptionFileName=value;
 }
 
-/// Признак требования завершить работу приложения после тестирования
+/// РџСЂРёР·РЅР°Рє С‚СЂРµР±РѕРІР°РЅРёСЏ Р·Р°РІРµСЂС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ РїРѕСЃР»Рµ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 bool UApplication::IsCloseAfterTest(void) const
 {
  return CloseAfterTest;
 }
 
-/// Приложение инициализированно
+/// РџСЂРёР»РѕР¶РµРЅРёРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅРѕ
 bool UApplication::IsInit(void) const
 {
  return AppIsInit;
 }
 
-/// Фиксированный путь до логов
+/// Р¤РёРєСЃРёСЂРѕРІР°РЅРЅС‹Р№ РїСѓС‚СЊ РґРѕ Р»РѕРіРѕРІ
 const std::string& UApplication::GetFixedLogPath(void) const
 {
  return FixedLogPath;
@@ -449,11 +449,11 @@ bool UApplication::SetFixedLogPath(const std::string& value)
  return true;
 }
 
-/// Режим записи логов
-/// 0 - запись по умолчанию (логи создаются заново при каждом вызове Reset в папке конфигурации)
-/// 1 - файл лога создается заново только при открытии каждой новой конфигурации. В папке конфигурации
-/// 2 - файл лога создается заново только при открытии каждой новой конфигурации. В системной папке
-/// 3 - файл лога создается единожды на весь период работы приложения в системной папке
+/// Р РµР¶РёРј Р·Р°РїРёСЃРё Р»РѕРіРѕРІ
+/// 0 - Р·Р°РїРёСЃСЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (Р»РѕРіРё СЃРѕР·РґР°СЋС‚СЃСЏ Р·Р°РЅРѕРІРѕ РїСЂРё РєР°Р¶РґРѕРј РІС‹Р·РѕРІРµ Reset РІ РїР°РїРєРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё)
+/// 1 - С„Р°Р№Р» Р»РѕРіР° СЃРѕР·РґР°РµС‚СЃСЏ Р·Р°РЅРѕРІРѕ С‚РѕР»СЊРєРѕ РїСЂРё РѕС‚РєСЂС‹С‚РёРё РєР°Р¶РґРѕР№ РЅРѕРІРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё. Р’ РїР°РїРєРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
+/// 2 - С„Р°Р№Р» Р»РѕРіР° СЃРѕР·РґР°РµС‚СЃСЏ Р·Р°РЅРѕРІРѕ С‚РѕР»СЊРєРѕ РїСЂРё РѕС‚РєСЂС‹С‚РёРё РєР°Р¶РґРѕР№ РЅРѕРІРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё. Р’ СЃРёСЃС‚РµРјРЅРѕР№ РїР°РїРєРµ
+/// 3 - С„Р°Р№Р» Р»РѕРіР° СЃРѕР·РґР°РµС‚СЃСЏ РµРґРёРЅРѕР¶РґС‹ РЅР° РІРµСЃСЊ РїРµСЂРёРѕРґ СЂР°Р±РѕС‚С‹ РїСЂРёР»РѕР¶РµРЅРёСЏ РІ СЃРёСЃС‚РµРјРЅРѕР№ РїР°РїРєРµ
 int UApplication::GetLogCreationMode(void) const
 {
  return LogCreationMode;
@@ -471,7 +471,7 @@ bool UApplication::SetLogCreationMode(int mode)
  return true;
 }
 
-/// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
+/// РЈСЂРѕРІРµРЅСЊ СЃРѕРѕР±С‰РµРЅРёСЏ РІ Р»РѕРіРіРµСЂРµ РїСЂРё РїРѕСЏРІР»РµРЅРёРё РєРѕС‚РѕСЂРѕРіРѕ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ РѕСЃС‚Р°РЅРѕРІ СЂР°СЃС‡РµС‚Р°
 int UApplication::GetCalcStopLogLevel(void) const
 {
  return CalcStopLogLevel;
@@ -489,7 +489,7 @@ bool UApplication::SetCalcStopLogLevel(int log_level)
     return true;
 }
 
-/// Включение вывода сообщений в cout
+/// Р’РєР»СЋС‡РµРЅРёРµ РІС‹РІРѕРґР° СЃРѕРѕР±С‰РµРЅРёР№ РІ cout
 bool UApplication::GetCoutLogMode(void) const
 {
  return CoutLogMode;
@@ -505,10 +505,10 @@ bool UApplication::SetCoutLogMode(bool value)
 }
 
 
-/// Установка необходимого режима сборки
+/// РЈСЃС‚Р°РЅРѕРІРєР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 void UApplication::SetStorageBuildMode(int mode)
 {
- // пересборка не нужна
+ // РїРµСЂРµСЃР±РѕСЂРєР° РЅРµ РЅСѓР¶РЅР°
  if(StorageBuildMode == mode)
      return;
 
@@ -524,13 +524,13 @@ void UApplication::SetStorageBuildMode(int mode)
  }
 }
 
-/// Получение текущего режима сборки
+/// РџРѕР»СѓС‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 int UApplication::GetStorageBuildMode()
 {
  return StorageBuildMode;
 }
 // --------------------------
-/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+/// РЎРѕР·РґР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµРє-Р·Р°РіР»СѓС€РµРє РёР· СЃС‚Р°С‚РёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј С„Р°Р№Р»РѕРІ
 void UApplication::CreateSaveMockLibs()
 {
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
@@ -539,17 +539,17 @@ void UApplication::CreateSaveMockLibs()
     storage->SaveMockLibs();
 }
 // --------------------------
-// Методы инициализации
+// РњРµС‚РѕРґС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------------
-/// Предоставляет доступ к диспетчеру команд
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РґРёСЃРїРµС‚С‡РµСЂСѓ РєРѕРјР°РЅРґ
 /*
 UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
 {
  return RpcDispatcher;
 }
 
-/// Устанавливает новый диспетчер команд
-/// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РґРёСЃРїРµС‚С‡РµСЂ РєРѕРјР°РЅРґ
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РґРёСЃРїРµС‚С‡РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
 {
  if(RpcDispatcher == value)
@@ -562,14 +562,14 @@ bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  return true;
 }
 */
-/// Предоставляет доступ к контроллеру движка
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РєРѕРЅС‚СЂРѕР»Р»РµСЂСѓ РґРІРёР¶РєР°
 UEPtr<UEngineControl> UApplication::GetEngineControl(void)
 {
  return EngineControl;
 }
 
-/// Устанавливает новый контроллер движка
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РґРІРёР¶РєР°
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
 {
  if(EngineControl == value)
@@ -586,31 +586,31 @@ bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
  return true;
 }
 
-/// Предоставляет доступ к проекту
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РїСЂРѕРµРєС‚Сѓ
 /*UEPtr<UProject> UApplication::GetProject(void)
 {
  return Project;
 } */
 
-/// Устанавливает новый проект
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РїСЂРѕРµРєС‚
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetProject(const UEPtr<UProject> &value)
 {
  if(Project == value)
   return true;
 
- // TODO: Здесь какие-то завершающие действия со старым проектом.
+ // TODO: Р—РґРµСЃСЊ РєР°РєРёРµ-С‚Рѕ Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РґРµР№СЃС‚РІРёСЏ СЃРѕ СЃС‚Р°СЂС‹Рј РїСЂРѕРµРєС‚РѕРј.
  Project=value;
  return true;
 }
 
-/// Возвращает конфигурацию проекта
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РїСЂРѕРµРєС‚Р°
 const TProjectConfig& UApplication::GetProjectConfig(void) const
 {
  return Project->GetConfig();
 }
 
-/// Устанавливает новую конфигурацию проекта
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІСѓСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РїСЂРѕРµРєС‚Р°
 bool UApplication::SetProjectConfig(const TProjectConfig& value)
 {
  if(!Project)
@@ -623,20 +623,20 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
  return true;
 }
 
-/// Предоставляет доступ к контроллеру серверной части
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РєРѕРЅС‚СЂРѕР»Р»РµСЂСѓ СЃРµСЂРІРµСЂРЅРѕР№ С‡Р°СЃС‚Рё
 UEPtr<UServerControl> UApplication::GetServerControl(void) const
 {
  return ServerControl;
 }
 
-/// Устанавливает новый контроллер сервера
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ СЃРµСЂРІРµСЂР°
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
 {
  if(ServerControl == value)
   return true;
 
- // TODO: Здесь какие-то завершающие действия со старым сервером
+ // TODO: Р—РґРµСЃСЊ РєР°РєРёРµ-С‚Рѕ Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РґРµР№СЃС‚РІРёСЏ СЃРѕ СЃС‚Р°СЂС‹Рј СЃРµСЂРІРµСЂРѕРј
  if(ServerControl)
   ServerControl->SetApplication(0);
  ServerControl=value;
@@ -644,8 +644,8 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
  return true;
 }
 
-/// Менеджер тестов
-/// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
+/// РњРµРЅРµРґР¶РµСЂ С‚РµСЃС‚РѕРІ
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РјРµРЅРµРґР¶РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 UEPtr<UTestManager> UApplication::GetTestManager(void)
 {
  return TestManager;
@@ -664,7 +664,7 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
  return true;
 }
 
-/// Деплоер проекта (под кончретную задачу)
+/// Р”РµРїР»РѕРµСЂ РїСЂРѕРµРєС‚Р° (РїРѕРґ РєРѕРЅС‡СЂРµС‚РЅСѓСЋ Р·Р°РґР°С‡Сѓ)
 UEPtr<UProjectDeployer> UApplication::GetProjectDeployer(void)
 {
  return ProjectDeployer;
@@ -718,7 +718,7 @@ bool UApplication::SetStandartXMLInCatalog(void)
     return true;
 }
 
-/// Инициализирует приложение
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ
 bool UApplication::Init(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
@@ -757,7 +757,7 @@ bool UApplication::Init(void)
  return true;
 }
 
-/// Деинициализирует приложение
+/// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ
 bool UApplication::UnInit(void)
 {
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
@@ -777,11 +777,11 @@ bool UApplication::UnInit(void)
 }
 
 
-/// Проводит тестирование приложения, если менеджер тестов инициализирован и
-/// тестовый режим включен
-/// Возвращает код ошибки тестирования.
-/// Если exit_request == true,
-/// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
+/// РџСЂРѕРІРѕРґРёС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РїСЂРёР»РѕР¶РµРЅРёСЏ, РµСЃР»Рё РјРµРЅРµРґР¶РµСЂ С‚РµСЃС‚РѕРІ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ Рё
+/// С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј РІРєР»СЋС‡РµРЅ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРґ РѕС€РёР±РєРё С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ.
+/// Р•СЃР»Рё exit_request == true,
+/// С‚Рѕ РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё РјРµС‚РѕРґР° РїСЂРёР»РѕР¶РµРЅРёРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р·Р°РєСЂС‹С‚Рѕ СЃ РІРѕР·РІСЂР°С‰РµРЅРЅС‹Рј РєРѕРґРѕРј РѕС€РёР±РєРё
 int UApplication::Test(bool &exit_request)
 {
  exit_request=false;
@@ -808,7 +808,7 @@ int UApplication::Test(bool &exit_request)
  return test_result_code;
 }
 
-/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїР°СЂСЃРёРЅРі РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё Рё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰СѓСЋ РЅР°СЃС‚СЂРѕР№РєСѓ РїСЂРёР»РѕР¶РµРЅРёРµ
 void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineArgs)
 {
   InitCmdParser();
@@ -842,7 +842,7 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
 }
 
 #ifndef __BORLANDC__
-/// Осуществляет парсинг командной строки и записывает результаты в CommandLineArgs
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїР°СЂСЃРёРЅРі РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё Рё Р·Р°РїРёСЃС‹РІР°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РІ CommandLineArgs
 void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 {
   InitCmdParser();
@@ -876,9 +876,9 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 // --------------------------
 
 // --------------------------
-// Методы управления проектом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕРµРєС‚РѕРј
 // --------------------------
-/// Создает проект (через сохранение и открытие)
+/// РЎРѕР·РґР°РµС‚ РїСЂРѕРµРєС‚ (С‡РµСЂРµР· СЃРѕС…СЂР°РЅРµРЅРёРµ Рё РѕС‚РєСЂС‹С‚РёРµ)
 bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
  CloseProject();
@@ -965,19 +965,19 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  return CreateProject(file_name,project_config);
 }
 
-/// Обновляет проект по новой конфигурации
+/// РћР±РЅРѕРІР»СЏРµС‚ РїСЂРѕРµРєС‚ РїРѕ РЅРѕРІРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 {
  if(!ProjectOpenFlag)
   return false;
 
- // Если необходима перезагрузка конфигурации, то выполняем перезагрузку
+ // Р•СЃР»Рё РЅРµРѕР±С…РѕРґРёРјР° РїРµСЂРµР·Р°РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё, С‚Рѕ РІС‹РїРѕР»РЅСЏРµРј РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ
  bool is_reload_needed(false);
 
  const TProjectConfig old_project_config=Project->GetConfig();
  Project->SetConfig(project_config);
 
- // Первый проход. Определяем необходима ли перезагрузка конфигурации
+ // РџРµСЂРІС‹Р№ РїСЂРѕС…РѕРґ. РћРїСЂРµРґРµР»СЏРµРј РЅРµРѕР±С…РѕРґРёРјР° Р»Рё РїРµСЂРµР·Р°РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 
  if(old_project_config.ProjectName != project_config.ProjectName)
  {
@@ -1181,7 +1181,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  }
 
- // Если необходима перезагрузка конфигурации то выполняем
+ // Р•СЃР»Рё РЅРµРѕР±С…РѕРґРёРјР° РїРµСЂРµР·Р°РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё С‚Рѕ РІС‹РїРѕР»РЅСЏРµРј
  if(is_reload_needed)
  {
   if(!SaveProject())
@@ -1193,7 +1193,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
   return true;
  }
 
- // ... иначе применяем отдельные настройки
+ // ... РёРЅР°С‡Рµ РїСЂРёРјРµРЅСЏРµРј РѕС‚РґРµР»СЊРЅС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё
  if(old_project_config.ProjectName != project_config.ProjectName)
  {
  }
@@ -1221,17 +1221,17 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.ProjectMode != project_config.ProjectMode)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.ProjectType != project_config.ProjectType)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.MultiThreadingMode != project_config.MultiThreadingMode)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.CalcSourceTimeMode != project_config.CalcSourceTimeMode)
@@ -1340,45 +1340,45 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.NumChannels != project_config.NumChannels)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
- // обработка каналов
+ // РѕР±СЂР°Р±РѕС‚РєР° РєР°РЅР°Р»РѕРІ
  for(int i=0;i<project_config.NumChannels;i++)
  {
   if(old_project_config.ChannelsConfig[i].ModelMode != project_config.ChannelsConfig[i].ModelMode)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].PredefinedStructure != project_config.ChannelsConfig[i].PredefinedStructure)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].ModelFileName != project_config.ChannelsConfig[i].ModelFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].ParametersFileName != project_config.ChannelsConfig[i].ParametersFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].StatesFileName != project_config.ChannelsConfig[i].StatesFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].ClassName != project_config.ChannelsConfig[i].ClassName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].GlobalTimeStep != project_config.ChannelsConfig[i].GlobalTimeStep)
@@ -1454,7 +1454,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  return SaveProject();
 }
 
-/// Открывает проект
+/// РћС‚РєСЂС‹РІР°РµС‚ РїСЂРѕРµРєС‚
 bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
@@ -1518,8 +1518,8 @@ try{
 	RDK_ASSERT_LOG(MEnv_Init(i));
    }
 
-   // TODO: Реалиовать загрузку описаний классов
-   // Загрузка описаний классов
+   // TODO: Р РµР°Р»РёРѕРІР°С‚СЊ Р·Р°РіСЂСѓР·РєСѓ РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
+   // Р—Р°РіСЂСѓР·РєР° РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
@@ -1641,7 +1641,7 @@ catch(RDK::UException &exception)
  return true;
 }
 
-/// Сохраняет проект
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РїСЂРѕРµРєС‚
 bool UApplication::SaveProject(void)
 {
  if(!ProjectOpenFlag)
@@ -1757,7 +1757,7 @@ bool UApplication::SaveProjectAs(const std::string &filename)
  return true;
 }
 
-/// Закрывает проект
+/// Р—Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРµРєС‚
 bool UApplication::CloseProject(void)
 {
  if(!ProjectOpenFlag)
@@ -1801,13 +1801,13 @@ bool UApplication::CloseProject(void)
  return true;
 }
 
-/// Клонирует проект в новое расположение
+/// РљР»РѕРЅРёСЂСѓРµС‚ РїСЂРѕРµРєС‚ РІ РЅРѕРІРѕРµ СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ
 bool UApplication::CloneProject(const std::string &filename)
 {
  return true;
 }
 
-/// Переименовывает папку проекта
+/// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ РїР°РїРєСѓ РїСЂРѕРµРєС‚Р°
 bool UApplication::RenameProject(const std::string &filename)
 {
  if(!ProjectOpenFlag)
@@ -1893,7 +1893,7 @@ bool UApplication::CopyProject(const std::string &new_path)
  return true;
 }
 
-/// Сохраняет только файл настроек проекта
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С‚РѕР»СЊРєРѕ С„Р°Р№Р» РЅР°СЃС‚СЂРѕРµРє РїСЂРѕРµРєС‚Р°
 bool UApplication::SaveProjectConfig(void)
 {
  if(!ProjectOpenFlag)
@@ -1927,9 +1927,9 @@ bool UApplication::SaveProjectConfig(void)
 
 
 // --------------------------
-// Методы управления движком
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґРІРёР¶РєРѕРј
 // --------------------------
-/// Управление числом каналов
+/// РЈРїСЂР°РІР»РµРЅРёРµ С‡РёСЃР»РѕРј РєР°РЅР°Р»РѕРІ
 int UApplication::GetNumChannels(void) const
 {
  return EngineControl->GetNumChannels();
@@ -1986,7 +1986,7 @@ if (index == 0)
  return true;
 }
 
-/// Клонирует канал source_id в cloned_id
+/// РљР»РѕРЅРёСЂСѓРµС‚ РєР°РЅР°Р» source_id РІ cloned_id
 bool UApplication::CloneChannel(int source_id, int cloned_id)
 {
  if(source_id<0 || cloned_id <0)
@@ -2006,7 +2006,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
   TProjectChannelConfig &source_channel=config.ChannelsConfig[source_id];
   TProjectChannelConfig &cloned_channel=config.ChannelsConfig[cloned_id];
 
-  // Меняем номера индексов в именах файлов модели, параметров и состояний
+  // РњРµРЅСЏРµРј РЅРѕРјРµСЂР° РёРЅРґРµРєСЃРѕРІ РІ РёРјРµРЅР°С… С„Р°Р№Р»РѕРІ РјРѕРґРµР»Рё, РїР°СЂР°РјРµС‚СЂРѕРІ Рё СЃРѕСЃС‚РѕСЏРЅРёР№
   if(cloned_id>0)
    cloned_channel.ModelFileName=std::string("model_")+sntoa(cloned_id+1)+".xml";
   else
@@ -2113,33 +2113,33 @@ catch(...)
 // --------------------------
 
 // --------------------------
-// Методы управления счетом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::StartChannel(int channel_index)
 {
  EngineControl->StartChannel(channel_index);
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::PauseChannel(int channel_index)
 {
  EngineControl->PauseChannel(channel_index);
 }
 
-/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::ResetChannel(int channel_index)
 {
  EngineControl->ResetChannel(channel_index);
 }
 
-/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+/// Р”РµР»Р°РµС‚ С€Р°Рі СЂР°СЃС‡РµС‚Р° РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::StepChannel(int channel_index)
 {
  EngineControl->StepChannel(channel_index);
 }
 
-/// Возвращает true если канал запущен
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РєР°РЅР°Р» Р·Р°РїСѓС‰РµРЅ
 bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
@@ -2147,7 +2147,7 @@ bool UApplication::IsChannelStarted(int channel_index)
  return (EngineControl->CheckCalcState(channel_index) == UEngineControl::csRunning);
 }
 
-/// Проверяет состояние расчета по id канала
+/// РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЂР°СЃС‡РµС‚Р° РїРѕ id РєР°РЅР°Р»Р°
 UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
@@ -2157,7 +2157,7 @@ UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 // --------------------------
 
 // --------------------------
-// Методы загрузки сохранения данных в файл
+// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С… РІ С„Р°Р№Р»
 // --------------------------
 bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_name)
 {
@@ -2363,7 +2363,7 @@ bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string &file_n
  return res;
 }
 
-/// Загружает историю проектов из файла
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ РёСЃС‚РѕСЂРёСЋ РїСЂРѕРµРєС‚РѕРІ РёР· С„Р°Р№Р»Р°
 void UApplication::LoadProjectsHistory(void)
 {
  std::string opt_name=extract_file_name(ApplicationFileName);
@@ -2385,7 +2385,7 @@ void UApplication::LoadProjectsHistory(void)
  }
 }
 
-/// Сохраняет историю проектов в файл
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РёСЃС‚РѕСЂРёСЋ РїСЂРѕРµРєС‚РѕРІ РІ С„Р°Р№Р»
 void UApplication::SaveProjectsHistory(void)
 {
  RDK::UIniFile<char> history_ini;
@@ -2404,7 +2404,7 @@ void UApplication::SaveProjectsHistory(void)
  history_ini.SaveToFile(WorkDirectory+opt_name);
 }
 
-/// Флаг принудительного сохранения конфигураций в старом формате
+/// Р¤Р»Р°Рі РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РєРѕРЅС„РёРіСѓСЂР°С†РёР№ РІ СЃС‚Р°СЂРѕРј С„РѕСЂРјР°С‚Рµ
 bool UApplication::IsUseNewXmlFormatProjectFile(void) const
 {
  return UseNewXmlFormatProjectFile;
@@ -2421,8 +2421,8 @@ bool UApplication::ChangeUseNewXmlFormatProjectFile(bool value)
  return true;
 }
 
-/// Флаг включения нового представления файловой структуры конфигурации
-/// (только при сохранении данных конфигурации в новом формате)
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РЅРѕРІРѕРіРѕ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЏ С„Р°Р№Р»РѕРІРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
+/// (С‚РѕР»СЊРєРѕ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РґР°РЅРЅС‹С… РєРѕРЅС„РёРіСѓСЂР°С†РёРё РІ РЅРѕРІРѕРј С„РѕСЂРјР°С‚Рµ)
 bool UApplication::IsUseNewProjectFilesStructure(void) const
 {
  return UseNewProjectFilesStructure;
@@ -2441,9 +2441,9 @@ bool UApplication::ChangeUseNewProjectFilesStructure(bool value)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы управления счетом
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-/// Сохраняет точки в истории изменений конфигурации
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С‚РѕС‡РєРё РІ РёСЃС‚РѕСЂРёРё РёР·РјРµРЅРµРЅРёР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 bool UApplication::FixSavePoint(USerStorageXML &xml)
 {
     xml.SelectNodeRoot("History");
@@ -2470,7 +2470,7 @@ bool UApplication::FixSavePoint(USerStorageXML &xml)
     return true;
 }
 
-/// Включает и выключает тестовый режим
+/// Р’РєР»СЋС‡Р°РµС‚ Рё РІС‹РєР»СЋС‡Р°РµС‚ С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј
 void UApplication::ChangeTestModeState(bool state)
 {
  if(TestMode == state)
@@ -2484,7 +2484,7 @@ void UApplication::ChangeTestModeState(bool state)
 }
 
 
-/// Инициализация парсера командной строки
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂСЃРµСЂР° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 void UApplication::InitCmdParser(void)
 {
 #ifndef __BORLANDC__
@@ -2520,13 +2520,13 @@ int UApplication::ParseArgs(const std::vector<std::string> &args, std::map<std::
 } */
 
 
-/// Вычисляет заголовок приложения
+/// Р’С‹С‡РёСЃР»СЏРµС‚ Р·Р°РіРѕР»РѕРІРѕРє РїСЂРёР»РѕР¶РµРЅРёСЏ
 void UApplication::CalcAppCaption(void)
 {
  AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
 }
 
-/// Обновляет состояние средств логгирования
+/// РћР±РЅРѕРІР»СЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃСЂРµРґСЃС‚РІ Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 void UApplication::UpdateLoggers(void)
 {
  RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
@@ -2540,9 +2540,9 @@ void UApplication::UpdateLoggers(void)
 
 
 
-/// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
-/// Если сохранение не удалось, то старый файл остается как был.
-/// Если сохранение удалось, то временный файл заменяет старый
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С„Р°Р№Р» РёР· СЃС‚СЂРѕРєРё, С‡РµСЂРµР· РІСЂРµРјРµРЅРЅС‹Р№ С„Р°Р№Р». Р”РµР»Р°РµС‚ n_pass РїРѕРїС‹С‚РѕРє СЃРѕС…СЂР°РЅРёС‚СЊ СЃ С‡С‚РµРЅРёРµРј СЂРµР·СѓР»СЊС‚Р°С‚Р° Рё СЃСЂР°Р·РІРЅРµРЅРёРµРј СЃ РѕСЂРёРіРёРЅР°Р»РѕРј.
+/// Р•СЃР»Рё СЃРѕС…СЂР°РЅРµРЅРёРµ РЅРµ СѓРґР°Р»РѕСЃСЊ, С‚Рѕ СЃС‚Р°СЂС‹Р№ С„Р°Р№Р» РѕСЃС‚Р°РµС‚СЃСЏ РєР°Рє Р±С‹Р».
+/// Р•СЃР»Рё СЃРѕС…СЂР°РЅРµРЅРёРµ СѓРґР°Р»РѕСЃСЊ, С‚Рѕ РІСЂРµРјРµРЅРЅС‹Р№ С„Р°Р№Р» Р·Р°РјРµРЅСЏРµС‚ СЃС‚Р°СЂС‹Р№
 bool UApplication::SaveFileSafe(const std::string &file_name, const std::string &buffer, const std::string &temp_file_name, int n_pass)
 {
  if(temp_file_name.empty())

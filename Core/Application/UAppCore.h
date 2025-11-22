@@ -10,38 +10,38 @@ namespace RDK {
 typedef void (*ProgressBarCallback)(int complete_percent, const std::string &text);
 
 
-/// Класс начальной инициализации
+/// РљР»Р°СЃСЃ РЅР°С‡Р°Р»СЊРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class UProjectDeployerT>
 class RDK_LIB_TYPE UAppCore
 {
 public:
- /// Экзепляр прототипа декодера команд
+ /// Р­РєР·РµРїР»СЏСЂ РїСЂРѕС‚РѕС‚РёРїР° РґРµРєРѕРґРµСЂР° РєРѕРјР°РЅРґ
  DecoderT rpcDecoder;
 
- /// Экзепляр класса диспетчера команд
+ /// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РґРёСЃРїРµС‚С‡РµСЂР° РєРѕРјР°РЅРґ
  DispatcherT rpcDispatcher;
 
- /// Экземпляр класса контроллера сервера
+ /// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЃРµСЂРІРµСЂР°
  ServerControlT serverControl;
 
- /// Экземпляр класса транспорта
+ /// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° С‚СЂР°РЅСЃРїРѕСЂС‚Р°
  ServerTransportT serverTransport;
 
  DecoderCommonT rpcDecoderCommon;
 
- /// Экземпляр класса контроллера расчета
+ /// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЂР°СЃС‡РµС‚Р°
  EngineControlT engineControl;
 
- /// Экзепляр класса проекта
+ /// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРѕРµРєС‚Р°
  ProjectT project;
 
- /// Экзепляр класса приложения
+ /// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
  ApplicationT application;
 
- /// Экземпляр класса менеджера тестов
+ /// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РјРµРЅРµРґР¶РµСЂР° С‚РµСЃС‚РѕРІ
  TestManagerT rdkTestManager;
 
- /// Экземпляр класса доставки конфигураций
+ /// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РґРѕСЃС‚Р°РІРєРё РєРѕРЅС„РёРіСѓСЂР°С†РёР№
  UProjectDeployerT projectDeployer;
 
 public:
@@ -97,10 +97,10 @@ public:
  UAppCore(ProgressBarCallback func);
  ~UAppCore(void);
 
- /// Инициализация
+ /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
  int Init(const std::string &application_file_name, const std::string &ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[]);
 
- /// Пост-инициализация
+ /// РџРѕСЃС‚-РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
  int PostInit(void);
 };
 
@@ -125,7 +125,7 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  serverTransport.SetApplication(&application);
  serverControl.SetServerTransport(&serverTransport);
 
- //Внутрь прописывается по идее само
+ //Р’РЅСѓС‚СЂСЊ РїСЂРѕРїРёСЃС‹РІР°РµС‚СЃСЏ РїРѕ РёРґРµРµ СЃР°РјРѕ
  application.SetProjectDeployer(&projectDeployer);
 
  //application.SetRpcDispatcher(&rpcDispatcher);
@@ -151,14 +151,14 @@ UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, D
  application.UnInit();
 }
 
-/// Инициализация
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::Init(const std::string &application_file_name, const std::string& ini_file_name, const std::string &log_dir, const std::string &default_user_name, int argc, char *argv[])
 {
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(0, "Launching application: load application config...");
 
- // Инициализация из стартового ini файла
+ // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РёР· СЃС‚Р°СЂС‚РѕРІРѕРіРѕ ini С„Р°Р№Р»Р°
  RDK::UIniFile<char> projectIniFile;
 
 
@@ -174,9 +174,9 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  programName=projectIniFile("General","ProgramName",RDK_APP_NAME);
  configsMainPath=projectIniFile("General", "ConfigsMainPath", "../../Configs/");
  neverSleepOnMMThreadContention=atoi(projectIniFile("General","NeverSleepOnMMThreadContention","0"));
- logDir=projectIniFile("Log","Dir",""); // TODO: Аналог Log/FixedLogPath
+ logDir=projectIniFile("Log","Dir",""); // TODO: РђРЅР°Р»РѕРі Log/FixedLogPath
  if(logDir.empty())
-  logDir=projectIniFile("Log","FixedLogPath",""); // TODO: Аналог Log/Dir
+  logDir=projectIniFile("Log","FixedLogPath",""); // TODO: РђРЅР°Р»РѕРі Log/Dir
  logCreationMode=atoi(projectIniFile("Log","LogCreationMode","0"));
  calcStopLogLevel=atoi(projectIniFile("Log","CalcStopLogLevel","1"));
 
@@ -255,7 +255,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  if(FuncProgressBarCallback)
   FuncProgressBarCallback(15, "Launching application: core initialization...");
 
- // Инициализация из стартового ini файла
+ // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РёР· СЃС‚Р°СЂС‚РѕРІРѕРіРѕ ini С„Р°Р№Р»Р°
  RDK::UIniFile<char> userIniFile;
 
 
@@ -285,7 +285,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  return 0;
 }
 
-/// Пост-инициализация
+/// РџРѕСЃС‚-РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::PostInit(void)
 {

@@ -1052,7 +1052,10 @@ bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copys
 void UContainer::Free(void)
 {
  while(NumComponents)
+ {
+  ComponentsIdIndex.erase(PComponents[0]->Id);
   PComponents[0]->Free();
+ }
 
  if(Storage)
  {
@@ -1134,6 +1137,16 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
   RDK_THROW(EComponentIdNotExist(id));
  }
 
+ // Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.find(id);
+ if(it != ComponentsIdIndex.end())
+ {
+  size_t index = it->second;
+  if(index < size_t(NumComponents) && PComponents[index]->Id == id)
+   return PComponents[index];
+ }
+
+ // Fallback to linear search if index is out of sync
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
@@ -2756,6 +2769,8 @@ void UContainer::AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> poin
  Components.push_back(comp);
  PComponents=&Components[0];
  NumComponents=int(Components.size());
+ // Update index map
+ ComponentsIdIndex[comp->Id] = NumComponents - 1;
 
  if(pointer)
   pointer->Set(comp);
@@ -2775,10 +2790,15 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
 
  if(NumComponents)
  {
+  // Remove from index map
+  ComponentsIdIndex.erase(comp->Id);
+  
   if(PComponents[NumComponents-1]==comp)
+   {
    Components.resize(NumComponents-1);
+   }
   else
-  {
+   {
    for(i=0;i<NumComponents;i++)
     if(PComponents[i] == comp)
      break;
@@ -2786,6 +2806,9 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
    if(i>=NumComponents)
     return;
 
+   // Update index map for remaining components
+   for(int j=i+1;j<NumComponents;j++)
+    ComponentsIdIndex[PComponents[j]->Id] = j-1;
    memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(UEPtr<UContainer>));
    Components.resize(NumComponents-1);
   }
@@ -2918,7 +2941,8 @@ void UContainer::AUpdateMainOwner(void)
 // --------------------------
 
 /* Классы исключений */
-// class EIContainer
+// class EIContainer
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

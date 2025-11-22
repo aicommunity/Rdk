@@ -4,8 +4,8 @@
 #ifndef RDK_ERROR_CODES
 #define RDK_ERROR_CODES
 
-#define RDK_UNHANDLED_EXCEPTION 0x01000000 // Не удалось записать исключение в лог
-#define RDK_EXCEPTION_CATCHED 0x01000001 // Произошло исключение и информация о нем была записана в лог
+#define RDK_UNHANDLED_EXCEPTION 0x01000000 // РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РїРёСЃР°С‚СЊ РёСЃРєР»СЋС‡РµРЅРёРµ РІ Р»РѕРі
+#define RDK_EXCEPTION_CATCHED 0x01000001 // РџСЂРѕРёР·РѕС€Р»Рѕ РёСЃРєР»СЋС‡РµРЅРёРµ Рё РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ РЅРµРј Р±С‹Р»Р° Р·Р°РїРёСЃР°РЅР° РІ Р»РѕРі
 #define RDK_SUCCESS 0
 #define RDK_NOT_IMPLEMENTED 1
 

@@ -21,14 +21,14 @@ __fastcall TUWatchForm::TUWatchForm(TComponent* Owner)
 //---------------------------------------------------------------------------
 
 // ------------------------------
-// Методы управления состоянием
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёРµРј
 // ------------------------------
 void TUWatchForm::AUpdateInterface(void)
 {
 
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUWatchForm::AClearInterface(void)
 {
  ClearPages();
@@ -43,7 +43,7 @@ void TUWatchForm::AAfterCalculate(void)
 {
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUWatchForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("PageCount",PageControl->PageCount);
@@ -55,7 +55,7 @@ void TUWatchForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUWatchForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int count=xml.ReadInteger("PageCount",0);
@@ -72,7 +72,7 @@ void TUWatchForm::ALoadParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUWatchForm* TUWatchForm::New(TComponent *owner)
 {
  return new TUWatchForm(owner);
@@ -81,9 +81,9 @@ TUWatchForm* TUWatchForm::New(TComponent *owner)
 
 
 // ------------------------------
-// Методы управления страницами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‚СЂР°РЅРёС†Р°РјРё
 // ------------------------------
-// Удаляет все лишние вкладки (оставляет 1 начальную)
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ Р»РёС€РЅРёРµ РІРєР»Р°РґРєРё (РѕСЃС‚Р°РІР»СЏРµС‚ 1 РЅР°С‡Р°Р»СЊРЅСѓСЋ)
 void TUWatchForm::ClearPages(void)
 {
  while(PageControl->PageCount > 0)
@@ -92,7 +92,7 @@ void TUWatchForm::ClearPages(void)
   AddPage();
 }
 
-// Добавляет страницу
+// Р”РѕР±Р°РІР»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUWatchForm::AddPage(void)
 {
  TTabSheet* tab=new TTabSheet(PageControl);
@@ -106,7 +106,7 @@ void TUWatchForm::AddPage(void)
  tab->Caption=String("Page")+IntToStr(PageControl->PageCount);
 }
 
-// Удаляет страницу
+// РЈРґР°Р»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUWatchForm::DelPage(int index)
 {
  if(index < PageControl->PageCount && index >= 0)
@@ -114,7 +114,7 @@ void TUWatchForm::DelPage(int index)
 
 }
 
-// Переименовывает заголовок страницы
+// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє СЃС‚СЂР°РЅРёС†С‹
 void TUWatchForm::RenamePage(int index, String new_name)
 {
  if(index < PageControl->PageCount && index >= 0)
@@ -140,13 +140,13 @@ void __fastcall TUWatchForm::ToolButton2Click(TObject *Sender)
 {
  vector<string> listvals;
 
- // Подготовка формы запроса имени
+ // РџРѕРґРіРѕС‚РѕРІРєР° С„РѕСЂРјС‹ Р·Р°РїСЂРѕСЃР° РёРјРµРЅРё
  UListInputForm->PresentSelect=false;
  UListInputForm->MustInput=true;
  UListInputForm->Sort=false;
 
- UListInputForm->Init("Список имен открытых окно наблюдения",listvals,"");
- // ...подготовка формы запроса завершена
+ UListInputForm->Init("РЎРїРёСЃРѕРє РёРјРµРЅ РѕС‚РєСЂС‹С‚С‹С… РѕРєРЅРѕ РЅР°Р±Р»СЋРґРµРЅРёСЏ",listvals,"");
+ // ...РїРѕРґРіРѕС‚РѕРІРєР° С„РѕСЂРјС‹ Р·Р°РїСЂРѕСЃР° Р·Р°РІРµСЂС€РµРЅР°
 
  if(UListInputForm->ShowModal() != mrOk)
   return;

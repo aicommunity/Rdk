@@ -46,16 +46,16 @@ __fastcall TUImagesFrame::~TUImagesFrame(void)
 
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Устанавливает размер ячейки
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂР°Р·РјРµСЂ СЏС‡РµР№РєРё
 void TUImagesFrame::SetCellRes(int width, int height)
 {
  DrawGrid->DefaultColWidth=width;
  DrawGrid->DefaultRowHeight=height;
 }
 
-// Устанавливает число ячеек
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‡РёСЃР»Рѕ СЏС‡РµРµРє
 void TUImagesFrame::SetNumCells(int width, int height)
 {
  if(DrawGrid->ColCount == width && DrawGrid->RowCount == height &&
@@ -103,7 +103,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  }
 }
 
-// Возвращает число ячеек
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЏС‡РµРµРє
 int TUImagesFrame::GetNumCellWidth(void)
 {
  return DrawGrid->ColCount;
@@ -114,7 +114,7 @@ int TUImagesFrame::GetNumCellHeight(void)
  return DrawGrid->RowCount;
 }
 
-// Флаг отражения вокруг оси X изображений при выводе
+// Р¤Р»Р°Рі РѕС‚СЂР°Р¶РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё X РёР·РѕР±СЂР°Р¶РµРЅРёР№ РїСЂРё РІС‹РІРѕРґРµ
 bool TUImagesFrame::GetReflectionXFlag(void)
 {
  return ReflectionXFlag;
@@ -125,7 +125,7 @@ void TUImagesFrame::SetReflectionXFlag(bool value)
  ReflectionXFlag=value;
 }
 
-// Флаг необходимости отображения кадров видеопотока
+// Р¤Р»Р°Рі РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєР°РґСЂРѕРІ РІРёРґРµРѕРїРѕС‚РѕРєР°
 void TUImagesFrame::SetIsShowCapturedFrames(bool value)
 {
  IsShowCapturedFrames = value;
@@ -136,7 +136,7 @@ bool TUImagesFrame::GetIsShowCapturedFrames(void)
  return IsShowCapturedFrames;
 }
 
-// Диаметр точки на изображении
+// Р”РёР°РјРµС‚СЂ С‚РѕС‡РєРё РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
 int TUImagesFrame::SetPointSize(int value)
 {
  if(value < 1)
@@ -151,7 +151,7 @@ int TUImagesFrame::GetPointSize(void)
  return PointSize;
 }
 
-// Цвет точки на изображении
+// Р¦РІРµС‚ С‚РѕС‡РєРё РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
 void TUImagesFrame::SetPointColor(RDK::UColorT value)
 {
  PointColor = value;
@@ -162,13 +162,13 @@ RDK::UColorT TUImagesFrame::GetPointColor(void)
  return PointColor;
 }
 
-// Заданные на изображении точки
+// Р—Р°РґР°РЅРЅС‹Рµ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё С‚РѕС‡РєРё
 std::vector<RDK::UBPoint> &TUImagesFrame::GetOnScreenPoints(int col, int row)
 {
  return OnScreenPoints[col][row];
 }
 
-// Заданные на изображении точки
+// Р—Р°РґР°РЅРЅС‹Рµ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё С‚РѕС‡РєРё
 std::vector<RDK::UColorT> &TUImagesFrame::GetOnScreenPointsColors(int col, int row)
 {
  return OnScreenPointsColors[col][row];
@@ -180,13 +180,13 @@ int TUImagesFrame::GetLastUpdatedPoint(int col, int row)
 }
 // --------------------------
 
-// Заданные на изображении точки
+// Р—Р°РґР°РЅРЅС‹Рµ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё С‚РѕС‡РєРё
 std::vector<RDK::UBPoint> &TUImagesFrame::GetExternalPoints(int col, int row)
 {
  return ExternalPoints[col][row];
 }
 
-// Заданные на изображении точки
+// Р—Р°РґР°РЅРЅС‹Рµ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё С‚РѕС‡РєРё
 std::vector<RDK::UColorT> &TUImagesFrame::GetExternalPointsColors(int col, int row)
 {
  return ExternalPointsColors[col][row];
@@ -194,9 +194,9 @@ std::vector<RDK::UColorT> &TUImagesFrame::GetExternalPointsColors(int col, int r
 // --------------------------
 
 // --------------------------
-// Методы управления изображениями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё
 // --------------------------
-// Связывает ячейку с идентификатором компонента
+// РЎРІСЏР·С‹РІР°РµС‚ СЏС‡РµР№РєСѓ СЃ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРј РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, std::string index, int channel_id)
 {
  if(i <0 || j<0 || i>= NumCols || j>= NumRows)
@@ -226,7 +226,7 @@ void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, s
 }
 
 
-// Устанавливает заданное изображение в ячейку с координатами i,j
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·Р°РґР°РЅРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ СЏС‡РµР№РєСѓ СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё i,j
 bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 {
  if(i <0 || j<0 || i>= NumCols || j>= NumRows)
@@ -420,7 +420,7 @@ bool TUImagesFrame::SetImage(int i, int j, int width, int height, int colormodel
  return true;
 }
 
-// Устанавливает заданное изображение в текущую ячейку
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·Р°РґР°РЅРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С‚РµРєСѓС‰СѓСЋ СЏС‡РµР№РєСѓ
 /*bool TImagesFrame::SetBitmap(RDK::UBitmap &bitmap)
 {
  return SetBitmap(DrawGrid->Col,DrawGrid->Row,bitmap);
@@ -431,7 +431,7 @@ bool TUImagesFrame::SetImage(const TImage *image)
  return SetImage(DrawGrid->Col,DrawGrid->Row,image);
 }
 
-// Возвращает координаты текущей ячейки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РµРєСѓС‰РµР№ СЏС‡РµР№РєРё
 int TUImagesFrame::GetX(void)
 {
  return DrawGrid->Col;
@@ -442,7 +442,7 @@ int TUImagesFrame::GetY(void)
  return DrawGrid->Row;
 }
 
-// Возвращает изображение в выбранной ячейке
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ РІС‹Р±СЂР°РЅРЅРѕР№ СЏС‡РµР№РєРµ
 Graphics::TBitmap* TUImagesFrame::GetImage(int i, int j)
 {
  if(i <0 || j<0 || i>= NumCols || j>= NumRows)
@@ -451,7 +451,7 @@ Graphics::TBitmap* TUImagesFrame::GetImage(int i, int j)
  return Images[i][j]->Picture->Bitmap;
 }
 
-// Возвращает изображение в текущей ячейке
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С‚РµРєСѓС‰РµР№ СЏС‡РµР№РєРµ
 Graphics::TBitmap* TUImagesFrame::GetImage(void)
 {
  if(DrawGrid->Col>=0 && DrawGrid->Col<int(Images.size())
@@ -461,7 +461,7 @@ Graphics::TBitmap* TUImagesFrame::GetImage(void)
  return 0;
 }
 
-// Сохраняет изображение в файл
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С„Р°Р№Р»
 bool TUImagesFrame::SaveToBitmap(int i, int j)
 {
  if(DrawGrid->Col < 0 || DrawGrid->Row <0)
@@ -494,7 +494,7 @@ bool TUImagesFrame::SaveToJpg(int i, int j)
 // --------------------------
 
 // --------------------------
-// Методы управления фреймом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„СЂРµР№РјРѕРј
 // --------------------------
 void TUImagesFrame::ABeforeCalculate(void)
 {
@@ -506,11 +506,11 @@ void TUImagesFrame::AAfterCalculate(void)
 
 }
 
-// Захват отдельного кадра
+// Р—Р°С…РІР°С‚ РѕС‚РґРµР»СЊРЅРѕРіРѕ РєР°РґСЂР°
 void TUImagesFrame::ManualUpdate(void)
 {
  bool CurrentShowCapturedMode = IsShowCapturedFrames;
- // Флаг необходимости отображения кадров видеопотока
+ // Р¤Р»Р°Рі РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєР°РґСЂРѕРІ РІРёРґРµРѕРїРѕС‚РѕРєР°
  IsShowCapturedFrames = true;
 
  UpdateInterface(true);
@@ -695,7 +695,7 @@ void TUImagesFrame::AUpdateInterface(void)
   FullImage->Top=0;
   FullImage->Left=0;
 
-  // Отрисовка точек на изображении
+  // РћС‚СЂРёСЃРѕРІРєР° С‚РѕС‡РµРє РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
   if(IsShowPoints)
   {
    DrawPoints(FullImage->Picture->Bitmap, ExternalPoints[DrawGrid->Col][DrawGrid->Row], ExternalPointsColors[DrawGrid->Col][DrawGrid->Row]);
@@ -707,7 +707,7 @@ void TUImagesFrame::AUpdateInterface(void)
  Sleep(0);
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUImagesFrame::AClearInterface(void)
 {
  SetNumCells(0,0);
@@ -717,7 +717,7 @@ void TUImagesFrame::AClearInterface(void)
  FullImage->Update();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
@@ -755,7 +755,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  Images.clear();
@@ -838,7 +838,7 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
 }
 //---------------------------------------------------------------------------
 
-// Отрисовка точек на изображении
+// РћС‚СЂРёСЃРѕРІРєР° С‚РѕС‡РµРє РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
 void TUImagesFrame::DrawPoints(TBitmap *bitmap, std::vector<RDK::UBPoint> &points, std::vector<RDK::UColorT> &colors)
 {
  int point_radius = PointSize>>1;
@@ -1050,7 +1050,7 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
   x2=X;
   y2=Y;
 
-  // Задаём точку на изображении
+  // Р—Р°РґР°С‘Рј С‚РѕС‡РєСѓ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
   {
    if(Button == mbRight)
 	return;
@@ -1136,7 +1136,7 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
  if(DrawGrid->Col<0 || DrawGrid->Row<0)
   return;
 
- // Заглушка!!
+ // Р—Р°РіР»СѓС€РєР°!!
  MouseClickComponents[0][0].first="Tracker";
  MouseClickComponents[0][0].second="MouseClickPoint";
 
@@ -1243,7 +1243,7 @@ void __fastcall TUImagesFrame::SetPointsMode2Click(TObject *Sender)
 
 void __fastcall TUImagesFrame::DeleteLastPoint2Click(TObject *Sender)
 {
-  // Удаляем последнюю заданную точку на изображении
+  // РЈРґР°Р»СЏРµРј РїРѕСЃР»РµРґРЅСЋСЋ Р·Р°РґР°РЅРЅСѓСЋ С‚РѕС‡РєСѓ РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
   if(!IsSetPointsMode)
    return;
 
@@ -1255,7 +1255,7 @@ void __fastcall TUImagesFrame::DeleteLastPoint2Click(TObject *Sender)
 
 void __fastcall TUImagesFrame::DeleteAllPoints2Click(TObject *Sender)
 {
-  // Удаляем все точки на изображении
+  // РЈРґР°Р»СЏРµРј РІСЃРµ С‚РѕС‡РєРё РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё
   if(!IsSetPointsMode)
    return;
 

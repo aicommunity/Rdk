@@ -15,21 +15,21 @@ UGraphPaintWidget::~UGraphPaintWidget()
     delete ui;
 }
 
-// Определяет границы графика по оси абсцисс
-// Подписывает наименование осей
+// РћРїСЂРµРґРµР»СЏРµС‚ РіСЂР°РЅРёС†С‹ РіСЂР°С„РёРєР° РїРѕ РѕСЃРё Р°Р±СЃС†РёСЃСЃ
+// РџРѕРґРїРёСЃС‹РІР°РµС‚ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ РѕСЃРµР№
 void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLimit,
                                            double lowerLimit, double upperLimit,
                                            const QString& nameX, const QString& nameY)
 {
     //std::cout<<"MainSettings"<<std::endl;
-    ui->widget->clearGraphs();//очищаем все графики
+    ui->widget->clearGraphs();//РѕС‡РёС‰Р°РµРј РІСЃРµ РіСЂР°С„РёРєРё
 
     leftLimitGraph=leftLimit;
     rightLimitGraph=rightLimit;
     lowerLimitGraph=lowerLimit;
     upperLimitGraph=upperLimit;
 
-    //Применем начальные параметры
+    //РџСЂРёРјРµРЅРµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹
     ui->widget->xAxis->setLabel(nameX);
     ui->widget->yAxis->setLabel(nameY);
     ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
@@ -42,9 +42,9 @@ void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLi
 }
 \
 
-// Изменяет параметры цвета и имени одного и графиков
-// Если график новый - добавляет его в вектор следующим элементом
-// Изменяет номер "активного" графика на изменяемый
+// РР·РјРµРЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ С†РІРµС‚Р° Рё РёРјРµРЅРё РѕРґРЅРѕРіРѕ Рё РіСЂР°С„РёРєРѕРІ
+// Р•СЃР»Рё РіСЂР°С„РёРє РЅРѕРІС‹Р№ - РґРѕР±Р°РІР»СЏРµС‚ РµРіРѕ РІ РІРµРєС‚РѕСЂ СЃР»РµРґСѓСЋС‰РёРј СЌР»РµРјРµРЅС‚РѕРј
+// РР·РјРµРЅСЏРµС‚ РЅРѕРјРµСЂ "Р°РєС‚РёРІРЅРѕРіРѕ" РіСЂР°С„РёРєР° РЅР° РёР·РјРµРЅСЏРµРјС‹Р№
 int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QColor myColor)
 {
     size_t myID=vectorGraph.size();
@@ -126,7 +126,7 @@ void UGraphPaintWidget::delAllGraph(void)
     currentItem=-1;
 }
 
-//Определяет форму графика (передает массивы)
+//РћРїСЂРµРґРµР»СЏРµС‚ С„РѕСЂРјСѓ РіСЂР°С„РёРєР° (РїРµСЂРµРґР°РµС‚ РјР°СЃСЃРёРІС‹)
 void UGraphPaintWidget::setData(int id, QVector<double> X, QVector<double> Y)
 {
     ui->widget->graph(id)->setData(X,Y);
@@ -220,7 +220,7 @@ void UGraphPaintWidget::redrawGraph(void)
 
 
 
-//---------------------------------------------------Выдача параметров
+//---------------------------------------------------Р’С‹РґР°С‡Р° РїР°СЂР°РјРµС‚СЂРѕРІ
 
 
 int  UGraphPaintWidget::getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameComponent,
@@ -288,7 +288,7 @@ double UGraphPaintWidget::getLowerLimitGraph(void) const
     //std::cout<<lowerLimitGraph<<std::endl;
 }
 
-//---------------------------------------------------Занесение параметров
+//---------------------------------------------------Р—Р°РЅРµСЃРµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ
 
 void UGraphPaintWidget::setCurrentItem(int myCurrentItem)
 {
@@ -359,9 +359,9 @@ int UGraphPaintWidget::delCurrentItemGraph()
     if (currentItem>=0)
     {
         ui->widget->removeGraph(currentItem);
-        //удаляем нужный жлемент структуры
+        //СѓРґР°Р»СЏРµРј РЅСѓР¶РЅС‹Р№ Р¶Р»РµРјРµРЅС‚ СЃС‚СЂСѓРєС‚СѓСЂС‹
         vectorGraph.erase(vectorGraph.begin()+currentItem);
-        //перестать выделять текущий график
+        //РїРµСЂРµСЃС‚Р°С‚СЊ РІС‹РґРµР»СЏС‚СЊ С‚РµРєСѓС‰РёР№ РіСЂР°С„РёРє
         if (vectorGraph.size()<1)
             currentItem=-1;
         else

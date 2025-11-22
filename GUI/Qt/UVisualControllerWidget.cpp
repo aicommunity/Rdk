@@ -1,6 +1,6 @@
 #include "UVisualControllerWidget.h"
 
-// Флаг, сообщающий что идет расчет
+// Р¤Р»Р°Рі, СЃРѕРѕР±С‰Р°СЋС‰РёР№ С‡С‚Рѕ РёРґРµС‚ СЂР°СЃС‡РµС‚
 RDK::UELockVar<bool> UVisualControllerWidget::CalculationModeFlag(false);
 
 UVisualControllerWidget::UVisualControllerWidget(QWidget *parent, RDK::UApplication *app):QWidget(parent)
@@ -8,14 +8,14 @@ UVisualControllerWidget::UVisualControllerWidget(QWidget *parent, RDK::UApplicat
     application = app;
     UpdateInterfaceFlag=false;
     AlwaysUpdateFlag=false;
-    UpdateInterval=1000; // по умолчанию, интервал обновления виджета 1с.
+    UpdateInterval=1000; // РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ, РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РІРёРґР¶РµС‚Р° 1СЃ.
     CalculationStepUpdatedFlag=false;
     CheckModelFlag=true;
 
-    /// Время последнего обновления
+    /// Р’СЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ
     LastUpdateTime=0;
 
-    /// Время, потраченное на обновление интерфейса
+    /// Р’СЂРµРјСЏ, РїРѕС‚СЂР°С‡РµРЅРЅРѕРµ РЅР° РѕР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
     UpdateTime=0;
 
     RDK::UIVisualControllerStorage::AddInterface(this);
@@ -27,9 +27,9 @@ UVisualControllerWidget::~UVisualControllerWidget()
 }
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UVisualControllerWidget::AfterLoadProject(void)
 {
     try
@@ -55,8 +55,8 @@ void UVisualControllerWidget::AAfterLoadProject(void)
 //  throw RDK::UException();
 }
 
-/// Метод, вызываемый перед закрытием проекта
-/// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
+/// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
+/// \details Р’С‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ ABeforeCloseProject() РІ Р±Р»РѕРєРµ РѕР±СЂР°Р±РѕС‚РєРё РёСЃРєР»СЋС‡РµРЅРёР№
 void UVisualControllerWidget::BeforeCloseProject(void)
 {
  try
@@ -82,7 +82,7 @@ void UVisualControllerWidget::ABeforeCloseProject(void)
 
 }
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UVisualControllerWidget::BeforeReset(void)
 {
     try
@@ -108,7 +108,7 @@ void UVisualControllerWidget::ABeforeReset(void)
 
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UVisualControllerWidget::AfterReset(void)
 {
     try
@@ -136,7 +136,7 @@ void UVisualControllerWidget::AAfterReset(void)
 
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UVisualControllerWidget::BeforeCalculate(void)
 {
     try
@@ -162,7 +162,7 @@ void UVisualControllerWidget::ABeforeCalculate(void)
 {
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UVisualControllerWidget::AfterCalculate(void)
 {
     try
@@ -187,7 +187,7 @@ void UVisualControllerWidget::AAfterCalculate(void)
 {
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void UVisualControllerWidget::UpdateInterface(bool force_update)
 {
  if(UpdateInterfaceFlag)
@@ -207,7 +207,7 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
                 //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                 return;
             }
-            //не обновляется если отец невидим и е проставлен AlwaysUpdateFlag
+            //РЅРµ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ РµСЃР»Рё РѕС‚РµС† РЅРµРІРёРґРёРј Рё Рµ РїСЂРѕСЃС‚Р°РІР»РµРЅ AlwaysUpdateFlag
             if(!parentWidget() || (!AlwaysUpdateFlag && !(parentWidget()->isVisible())) || (UpdateInterval<0 && CalculationModeFlag))
             {
                 //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
@@ -283,15 +283,15 @@ void UVisualControllerWidget::AUpdateInterface(void)
 
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void UVisualControllerWidget::ClearInterface(void)
 {
     try
     {
         AClearInterface();
         //ComponentControlName.clear();
-        //Длинное имя управляемого компонента модели (опционально)
-        //std::string ComponentControlName; - удалено из .h
+        //Р”Р»РёРЅРЅРѕРµ РёРјСЏ СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
+        //std::string ComponentControlName; - СѓРґР°Р»РµРЅРѕ РёР· .h
         UpdateInterface(true);
     }
     catch (RDK::UException &exception)
@@ -313,13 +313,13 @@ void UVisualControllerWidget::AClearInterface(void)
 
 }
 
-// Возвращает уникальное имя интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UVisualControllerWidget::GetName(void)
 {
     return accessibleName().toLocal8Bit().constData();
 }
 
-// Возвращает имя класса интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UVisualControllerWidget::GetClassName(void)
 {
     return typeid(this).name();
@@ -342,13 +342,13 @@ std::string UVisualControllerWidget::CalcFullName(void)
 }
 
 
-// Возвращает интервал обновления интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 long UVisualControllerWidget::GetUpdateInterval(void)
 {
     return UpdateInterval;
 }
 
-// Задает интервал обновления интерфейса
+// Р—Р°РґР°РµС‚ РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 bool UVisualControllerWidget::SetUpdateInterval(long value)
 {
     if(value<0)
@@ -359,13 +359,13 @@ bool UVisualControllerWidget::SetUpdateInterval(long value)
 }
 
 
-// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° РґР°Р¶Рµ РµСЃР»Рё РѕРЅ РЅРµ РІРёРґРµРЅ
 bool UVisualControllerWidget::GetAlwaysUpdateFlag(void)
 {
     return AlwaysUpdateFlag;
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
@@ -400,7 +400,7 @@ void UVisualControllerWidget::ASaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
@@ -434,8 +434,8 @@ void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 
-// Управление длинным именем управляемого компонента
-// Длинное имя управляемого компонента модели (опционально)
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР»РёРЅРЅС‹Рј РёРјРµРЅРµРј СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
+// Р”Р»РёРЅРЅРѕРµ РёРјСЏ СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
 /*const std::string& UVisualControllerWidget::GetComponentControlName(void) const
 {
     return ComponentControlName;
@@ -451,26 +451,26 @@ void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)
     return true;
 }*/
 
-// Служебные методы управления интерфейсом
-/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+// РЎР»СѓР¶РµР±РЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃРѕРј
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void UVisualControllerWidget::ResetCalculationStepUpdatedFlag(void)
 {
     CalculationStepUpdatedFlag=false;
 }
 
-/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void UVisualControllerWidget::SetCalculationStepUpdatedFlag(void)
 {
     CalculationStepUpdatedFlag=true;
 }
 
-/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР° РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 bool UVisualControllerWidget::GetCalculationStepUpdatedFlag(void)
 {
     return CalculationStepUpdatedFlag;
 }
 
-/// Возвращает время обновления интерфейса (мс)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° (РјСЃ)
 unsigned long long UVisualControllerWidget::GetUpdateTime(void)
 {
     return UpdateTime;

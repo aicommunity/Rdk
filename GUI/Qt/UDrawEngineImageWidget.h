@@ -14,13 +14,13 @@
 #include <QDragMoveEvent>
 #include <QMenu>
 
-/// UDrawEngineImageWidget class - виджет отрисовки сети, основан на RDK::UDrawEngine
+/// UDrawEngineImageWidget class - РІРёРґР¶РµС‚ РѕС‚СЂРёСЃРѕРІРєРё СЃРµС‚Рё, РѕСЃРЅРѕРІР°РЅ РЅР° RDK::UDrawEngine
 ///
-/// Содержит изображение сети, строящееся с помощью RDK::UDrawEngine,
-/// не является наследником UVisualControllerWidget, как следствие,
-/// не записывается в ядро, вся связь с ядром осуществляется через отца (UDrawEngineWidget).
-/// Содержит сигналы адресованные к списку компонентов модели, но не содержит
-/// указателя на список, сигналы связываются в UGEngineControllWidget.
+/// РЎРѕРґРµСЂР¶РёС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ СЃРµС‚Рё, СЃС‚СЂРѕСЏС‰РµРµСЃСЏ СЃ РїРѕРјРѕС‰СЊСЋ RDK::UDrawEngine,
+/// РЅРµ СЏРІР»СЏРµС‚СЃСЏ РЅР°СЃР»РµРґРЅРёРєРѕРј UVisualControllerWidget, РєР°Рє СЃР»РµРґСЃС‚РІРёРµ,
+/// РЅРµ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ РІ СЏРґСЂРѕ, РІСЃСЏ СЃРІСЏР·СЊ СЃ СЏРґСЂРѕРј РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ С‡РµСЂРµР· РѕС‚С†Р° (UDrawEngineWidget).
+/// РЎРѕРґРµСЂР¶РёС‚ СЃРёРіРЅР°Р»С‹ Р°РґСЂРµСЃРѕРІР°РЅРЅС‹Рµ Рє СЃРїРёСЃРєСѓ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РјРѕРґРµР»Рё, РЅРѕ РЅРµ СЃРѕРґРµСЂР¶РёС‚
+/// СѓРєР°Р·Р°С‚РµР»СЏ РЅР° СЃРїРёСЃРѕРє, СЃРёРіРЅР°Р»С‹ СЃРІСЏР·С‹РІР°СЋС‚СЃСЏ РІ UGEngineControllWidget.
 
 class UDrawEngineImageWidget : public QLabel
 {
@@ -30,7 +30,7 @@ public:
     explicit UDrawEngineImageWidget(QWidget *parent = 0);
     virtual ~UDrawEngineImageWidget();
 
-    //События мыши
+    //РЎРѕР±С‹С‚РёСЏ РјС‹С€Рё
     void mousePressEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
@@ -41,31 +41,31 @@ public:
 
     void dragEvent();
 
-    //расширение схемы при ресайзе
+    //СЂР°СЃС€РёСЂРµРЅРёРµ СЃС…РµРјС‹ РїСЂРё СЂРµСЃР°Р№Р·Рµ
     void resizeEvent(QResizeEvent*);
 
-    /// перерисовка схему с флагом принудительной перезагрузки схемы текущего отображения
+    /// РїРµСЂРµСЂРёСЃРѕРІРєР° СЃС…РµРјСѓ СЃ С„Р»Р°РіРѕРј РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕР№ РїРµСЂРµР·Р°РіСЂСѓР·РєРё СЃС…РµРјС‹ С‚РµРєСѓС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
     void reDrawScheme(bool shouldReloadXml, bool no_resize_canvas=false);
 
-    /// Задание имени отрисовываемого компонента и перерисовка схема
+    /// Р—Р°РґР°РЅРёРµ РёРјРµРЅРё РѕС‚СЂРёСЃРѕРІС‹РІР°РµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РїРµСЂРµСЂРёСЃРѕРІРєР° СЃС…РµРјР°
     void setComponentName(QString name);
 
-    /// Выбор компонента на схеме
+    /// Р’С‹Р±РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚Р° РЅР° СЃС…РµРјРµ
     void selectComponent(QString name);
 
-    /// Меняет размер канвы
+    /// РњРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РєР°РЅРІС‹
     void ResizeCanvas(void);
 
-    /// Устанавливает указатель на ядро
+    /// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЏРґСЂРѕ
     void SetApplication(RDK::UApplication *app);
 
-    /// Возвращается имя выбрано компонента
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РёРјСЏ РІС‹Р±СЂР°РЅРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
     const std::string GetLongName();
 
     void classDescription(const std::string& class_name);
 
 public slots:
-    //Контекстное меню
+    //РљРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ
     void componentViewOrBreakLink();
     void componentCreateLink();
     void componentFinishLink();
@@ -100,7 +100,7 @@ signals:
     void switchLinks(QString firstComponentName, QString secondComponentName);
 
 private:
-    //некоторые события контекстного меню
+    //РЅРµРєРѕС‚РѕСЂС‹Рµ СЃРѕР±С‹С‚РёСЏ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
     QAction *actionViewOrBreakLink;
     QAction *actionCreateLink;
     QAction *actionFinishLink;
@@ -113,56 +113,56 @@ private:
     QAction *actionCancelSwitching;
     QAction *actionCloneComponent;
 
-    ///имя компонента для создания связй/перемещения
+    ///РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІСЏР·Р№/РїРµСЂРµРјРµС‰РµРЅРёСЏ
     QString firstComponentToConnection;
 
-    ///сохраняет положение компонента в модели
+    ///СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РјРѕРґРµР»Рё
     void saveComponentPosition(std::string name);
 
-    ///Выбранный компонент
+    ///Р’С‹Р±СЂР°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
     std::string selectedComponent;
 
-    ///Перемещение
+    ///РџРµСЂРµРјРµС‰РµРЅРёРµ
     QString startMoveComponent;
     QString endMoveComponent;
 
-    ///Переключение
+    ///РџРµСЂРµРєР»СЋС‡РµРЅРёРµ
     QString startSwitchComponent;
     QString endSwitchComponent;
 
     ///Popup Menu
     QMenu *contextMenu;
 
-    ///Метод возвращающий полное имя выбранного компонента
+    ///РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°СЋС‰РёР№ РїРѕР»РЅРѕРµ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
     QString myLongName();
 
-    //<код из билдера>
-    /// Имя компонента, содержимое которого будет отображено
+    //<РєРѕРґ РёР· Р±РёР»РґРµСЂР°>
+    /// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°, СЃРѕРґРµСЂР¶РёРјРѕРµ РєРѕС‚РѕСЂРѕРіРѕ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРѕ
     QString ComponentName;
 
-    /// Класс рисования структуры сети
+    /// РљР»Р°СЃСЃ СЂРёСЃРѕРІР°РЅРёСЏ СЃС‚СЂСѓРєС‚СѓСЂС‹ СЃРµС‚Рё
     RDK::UDrawEngine DrawEngine;
 
-    /// Графический движок
+    /// Р“СЂР°С„РёС‡РµСЃРєРёР№ РґРІРёР¶РѕРє
     RDK::UGraphics Graph;
 
-    /// Тип шрифта
+    /// РўРёРї С€СЂРёС„С‚Р°
     std::string FontType;
 
-    /// Размер шрифта
+    /// Р Р°Р·РјРµСЂ С€СЂРёС„С‚Р°
     int FontSize;
 
-    /// Шрифт
+    /// РЁСЂРёС„С‚
     RDK::UBitmapFont Font;
 
-    /// Канва рисования
+    /// РљР°РЅРІР° СЂРёСЃРѕРІР°РЅРёСЏ
     RDK::UBitmap GraphCanvas;
 
-    /// Xml описание сети
+    /// Xml РѕРїРёСЃР°РЅРёРµ СЃРµС‚Рё
     RDK::USerStorageXML NetXml;
-    //</код из билдера>
+    //</РєРѕРґ РёР· Р±РёР»РґРµСЂР°>
 
-    /// Укзатель на ядро
+    /// РЈРєР·Р°С‚РµР»СЊ РЅР° СЏРґСЂРѕ
     RDK::UApplication* Application;
 
 };

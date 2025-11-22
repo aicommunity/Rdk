@@ -242,7 +242,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVertex<T, Rows> &da
 template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
 {
- //Временные переменные
+ //Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
  std::vector<MVector<T,Rows> > varVertexVector;
  std::vector<std::string> varNames;
 
@@ -290,7 +290,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T, Rows> &
 template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 {
- //Временные переменные
+ //Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
  std::vector<MVector<T,Rows> > varVertices;
  std::vector<std::string> varVerticesNames;
  std::vector<MBorder> varBorders;
@@ -324,8 +324,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 }
 
 /*
-/// Предупреждение: эта функция предполагает, что в строке содержится матрица
-/// той же размерности, что и принимающая переменная
+/// РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ: СЌС‚Р° С„СѓРЅРєС†РёСЏ РїСЂРµРґРїРѕР»Р°РіР°РµС‚, С‡С‚Рѕ РІ СЃС‚СЂРѕРєРµ СЃРѕРґРµСЂР¶РёС‚СЃСЏ РјР°С‚СЂРёС†Р°
+/// С‚РѕР№ Р¶Рµ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё, С‡С‚Рѕ Рё РїСЂРёРЅРёРјР°СЋС‰Р°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ
 template<typename T>
 bool VarFromStrRaw(const std::string &str, MDMatrix<T> &value)
 {

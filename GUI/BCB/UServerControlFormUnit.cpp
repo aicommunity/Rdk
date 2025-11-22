@@ -34,13 +34,13 @@ using namespace RDK;
 
 TUServerControlForm *UServerControlForm;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 
-/// Экземпляр класса контроллера расчета
+/// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЂР°СЃС‡РµС‚Р°
 extern UEngineControlVcl RdkEngineControl;
 
-//Задает адрес и порт входящего интерфейса сервера
+//Р—Р°РґР°РµС‚ Р°РґСЂРµСЃ Рё РїРѕСЂС‚ РІС…РѕРґСЏС‰РµРіРѕ РёРЅС‚РµСЂС„РµР№СЃР° СЃРµСЂРІРµСЂР°
 void UServerTransportTcpVcl::SetServerBinding(std::string &interface_address, int port)
 {
  if(interface_address == GetServerBindingInterfaceAddress() &&
@@ -49,32 +49,32 @@ void UServerTransportTcpVcl::SetServerBinding(std::string &interface_address, in
  UServerControlForm->SetServerBinding(interface_address, port);
 }
 
-//Получение адреса интерфейса управления сервером
+//РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 std::string UServerTransportTcpVcl::GetServerBindingInterfaceAddress()
 {
  return UServerControlForm->GetServerBindingInterfaceAddress();
 }
 
-//Получение адреса интерфейса управления сервером
+//РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 int UServerTransportTcpVcl::GetServerBindingPort(void) const
 {
  return UServerControlForm->GetServerBindingPort();
 }
 
-///Инициировать остановку сервера, отключить все приемники
+///РРЅРёС†РёРёСЂРѕРІР°С‚СЊ РѕСЃС‚Р°РЅРѕРІРєСѓ СЃРµСЂРІРµСЂР°, РѕС‚РєР»СЋС‡РёС‚СЊ РІСЃРµ РїСЂРёРµРјРЅРёРєРё
 void UServerTransportTcpVcl::ServerStop()
 {
  UServerControlForm->ServerStop();
 }
 
-/// Инициировать запуск сервера
+/// РРЅРёС†РёРёСЂРѕРІР°С‚СЊ Р·Р°РїСѓСЃРє СЃРµСЂРІРµСЂР°
 void UServerTransportTcpVcl::ServerStart()
 {
  UServerControlForm->ServerStart();
 }
 
-/// Читает входящие байты из выбранного источника, контекст привязки
-/// всегда определяется строкой вне зависимости от типа транспорта
+/// Р§РёС‚Р°РµС‚ РІС…РѕРґСЏС‰РёРµ Р±Р°Р№С‚С‹ РёР· РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°, РєРѕРЅС‚РµРєСЃС‚ РїСЂРёРІСЏР·РєРё
+/// РІСЃРµРіРґР° РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ СЃС‚СЂРѕРєРѕР№ РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° С‚СЂР°РЅСЃРїРѕСЂС‚Р°
 int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
 {
  if(UServerControlForm->IdTCPServer->Active && !bind.empty())
@@ -92,7 +92,7 @@ int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<uns
 
 	if(current_bind == bind)
 	{
-	  /// Это все уедет в транспорт, в платформозависимую часть
+	  /// Р­С‚Рѕ РІСЃРµ СѓРµРґРµС‚ РІ С‚СЂР°РЅСЃРїРѕСЂС‚, РІ РїР»Р°С‚С„РѕСЂРјРѕР·Р°РІРёСЃРёРјСѓСЋ С‡Р°СЃС‚СЊ
 	  TIdBytes VBuffer;
 	  int length=context->Connection->IOHandler->InputBuffer->Size;
 	  if(length>0)
@@ -103,9 +103,9 @@ int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<uns
 	   memcpy(&bytes[0],&VBuffer[0],length);
 	   bytes.resize(length);
 	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
-	   //Отпустить список
+	   //РћС‚РїСѓСЃС‚РёС‚СЊ СЃРїРёСЃРѕРє
 	   UServerControlForm->IdTCPServer->Contexts->UnlockList();
-	   //Вернуть длину
+	   //Р’РµСЂРЅСѓС‚СЊ РґР»РёРЅСѓ
 	   return length;
 	   break;
 	  }
@@ -125,7 +125,7 @@ int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<uns
  return 0;
 }
 
-/// Отправить ответ на команду соответствующему получателю
+/// РћС‚РїСЂР°РІРёС‚СЊ РѕС‚РІРµС‚ РЅР° РєРѕРјР°РЅРґСѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРјСѓ РїРѕР»СѓС‡Р°С‚РµР»СЋ
 void UServerTransportTcpVcl::SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr)
 {
   TByteDynArray arr;
@@ -148,7 +148,7 @@ void UServerTransportTcpVcl::SendResponseBuffer(std::vector<unsigned char> buffe
 	if(current_bind == responce_addr)
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
-	 //context->Connection->IOHandler->WriteBufferFlush();  //Это было закомменчено до меня
+	 //context->Connection->IOHandler->WriteBufferFlush();  //Р­С‚Рѕ Р±С‹Р»Рѕ Р·Р°РєРѕРјРјРµРЅС‡РµРЅРѕ РґРѕ РјРµРЅСЏ
 	}
    }
 
@@ -163,7 +163,7 @@ void UServerTransportTcpVcl::SendResponseBuffer(std::vector<unsigned char> buffe
 }
 
 
-//Задает адрес и порт входящего интерфейса сервера
+//Р—Р°РґР°РµС‚ Р°РґСЂРµСЃ Рё РїРѕСЂС‚ РІС…РѕРґСЏС‰РµРіРѕ РёРЅС‚РµСЂС„РµР№СЃР° СЃРµСЂРІРµСЂР°
 void UServerTransportHttpVcl::SetServerBinding(std::string &interface_address, int port)
 {
  if(interface_address == GetServerBindingInterfaceAddress() &&
@@ -172,32 +172,32 @@ void UServerTransportHttpVcl::SetServerBinding(std::string &interface_address, i
  UServerControlForm->SetServerBinding(interface_address, port);
 }
 
-//Получение адреса интерфейса управления сервером
+//РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 std::string UServerTransportHttpVcl::GetServerBindingInterfaceAddress()
 {
  return UServerControlForm->GetServerBindingInterfaceAddress();
 }
 
-//Получение адреса интерфейса управления сервером
+//РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 int UServerTransportHttpVcl::GetServerBindingPort(void) const
 {
  return UServerControlForm->GetServerBindingPort();
 }
 
-///Инициировать остановку сервера, отключить все приемники
+///РРЅРёС†РёРёСЂРѕРІР°С‚СЊ РѕСЃС‚Р°РЅРѕРІРєСѓ СЃРµСЂРІРµСЂР°, РѕС‚РєР»СЋС‡РёС‚СЊ РІСЃРµ РїСЂРёРµРјРЅРёРєРё
 void UServerTransportHttpVcl::ServerStop()
 {
  UServerControlForm->ServerStopHttp();
 }
 
-/// Инициировать запуск сервера
+/// РРЅРёС†РёРёСЂРѕРІР°С‚СЊ Р·Р°РїСѓСЃРє СЃРµСЂРІРµСЂР°
 void UServerTransportHttpVcl::ServerStart()
 {
  UServerControlForm->ServerStartHttp();
 }
 
-/// Читает входящие байты из выбранного источника, контекст привязки
-/// всегда определяется строкой вне зависимости от типа транспорта
+/// Р§РёС‚Р°РµС‚ РІС…РѕРґСЏС‰РёРµ Р±Р°Р№С‚С‹ РёР· РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°, РєРѕРЅС‚РµРєСЃС‚ РїСЂРёРІСЏР·РєРё
+/// РІСЃРµРіРґР° РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ СЃС‚СЂРѕРєРѕР№ РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° С‚СЂР°РЅСЃРїРѕСЂС‚Р°
 int UServerTransportHttpVcl::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
 {
  if(UServerControlForm->IdTCPServer->Active && !bind.empty())
@@ -215,7 +215,7 @@ int UServerTransportHttpVcl::ReadIncomingBytes(std::string &bind, std::vector<un
 
 	if(current_bind == bind)
 	{
-	  /// Это все уедет в транспорт, в платформозависимую часть
+	  /// Р­С‚Рѕ РІСЃРµ СѓРµРґРµС‚ РІ С‚СЂР°РЅСЃРїРѕСЂС‚, РІ РїР»Р°С‚С„РѕСЂРјРѕР·Р°РІРёСЃРёРјСѓСЋ С‡Р°СЃС‚СЊ
 	  TIdBytes VBuffer;
 	  int length=context->Connection->IOHandler->InputBuffer->Size;
 	  if(length>0)
@@ -226,9 +226,9 @@ int UServerTransportHttpVcl::ReadIncomingBytes(std::string &bind, std::vector<un
 	   memcpy(&bytes[0],&VBuffer[0],length);
 	   bytes.resize(length);
 	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
-	   //Отпустить список
+	   //РћС‚РїСѓСЃС‚РёС‚СЊ СЃРїРёСЃРѕРє
 	   UServerControlForm->IdTCPServer->Contexts->UnlockList();
-	   //Вернуть длину
+	   //Р’РµСЂРЅСѓС‚СЊ РґР»РёРЅСѓ
 	   return length;
 	   break;
 	  }
@@ -248,7 +248,7 @@ int UServerTransportHttpVcl::ReadIncomingBytes(std::string &bind, std::vector<un
  return 0;
 }
 
-/// Отправить ответ на команду соответствующему получателю
+/// РћС‚РїСЂР°РІРёС‚СЊ РѕС‚РІРµС‚ РЅР° РєРѕРјР°РЅРґСѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРјСѓ РїРѕР»СѓС‡Р°С‚РµР»СЋ
 void UServerTransportHttpVcl::SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr)
 {
   TByteDynArray arr;
@@ -271,7 +271,7 @@ void UServerTransportHttpVcl::SendResponseBuffer(std::vector<unsigned char> buff
 	if(current_bind == responce_addr)
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
-	 //context->Connection->IOHandler->WriteBufferFlush();  //Это было закомменчено до меня
+	 //context->Connection->IOHandler->WriteBufferFlush();  //Р­С‚Рѕ Р±С‹Р»Рѕ Р·Р°РєРѕРјРјРµРЅС‡РµРЅРѕ РґРѕ РјРµРЅСЏ
 	}
    }
 
@@ -287,9 +287,9 @@ void UServerTransportHttpVcl::SendResponseBuffer(std::vector<unsigned char> buff
 
 
 // --------------------------
-// Методы управления вещателями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРµС‰Р°С‚РµР»СЏРјРё
 // --------------------------
-/// Регистрирует удаленный приемник метаданных
+/// Р РµРіРёСЃС‚СЂРёСЂСѓРµС‚ СѓРґР°Р»РµРЅРЅС‹Р№ РїСЂРёРµРјРЅРёРє РјРµС‚Р°РґР°РЅРЅС‹С…
 int UServerControlVcl::RegisterMetadataReceiver(const std::string &address, int port)
 {
  UnRegisterMetadataReceiver(address, port);
@@ -320,7 +320,7 @@ int UServerControlVcl::RegisterMetadataReceiver(const std::string &address, int 
  return 0;
 }
 
-/// Удаляет удаленный приемник метаданных
+/// РЈРґР°Р»СЏРµС‚ СѓРґР°Р»РµРЅРЅС‹Р№ РїСЂРёРµРјРЅРёРє РјРµС‚Р°РґР°РЅРЅС‹С…
 int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, int port)
 {
  TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
@@ -342,9 +342,9 @@ int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, in
 
 
 // --------------------------
-/// Управление числом каналов
-/// Выполнение вспомогательных методов
-/// Вызывается из UApplication
+/// РЈРїСЂР°РІР»РµРЅРёРµ С‡РёСЃР»РѕРј РєР°РЅР°Р»РѕРІ
+/// Р’С‹РїРѕР»РЅРµРЅРёРµ РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹С… РјРµС‚РѕРґРѕРІ
+/// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· UApplication
 // --------------------------
 bool UServerControlVcl::ASetNumChannels(int old_num)
 {
@@ -457,15 +457,15 @@ bool UServerControlVcl::ADeleteChannel(int index)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------------
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UServerControlVcl::AfterReset(void)
 {
  UServerControl::AfterReset();
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UServerControlVcl::AfterCalculate(void)
 {
  UServerControl::AfterCalculate();
@@ -474,7 +474,7 @@ void UServerControlVcl::AfterCalculate(void)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcDecoderCommonVcl::URpcDecoderCommonVcl(void)
 {
@@ -488,16 +488,16 @@ URpcDecoderCommonVcl::~URpcDecoderCommonVcl(void)
 // --------------------------
 
 // --------------------------
-// Методы управления командами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјР°РЅРґР°РјРё
 // --------------------------
-/// Проверяет, поддерживается ли команда диспетчером
-/// ожидает, что команда уже декодирована иначе всегда возвращает false
+/// РџСЂРѕРІРµСЂСЏРµС‚, РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ Р»Рё РєРѕРјР°РЅРґР° РґРёСЃРїРµС‚С‡РµСЂРѕРј
+/// РѕР¶РёРґР°РµС‚, С‡С‚Рѕ РєРѕРјР°РЅРґР° СѓР¶Рµ РґРµРєРѕРґРёСЂРѕРІР°РЅР° РёРЅР°С‡Рµ РІСЃРµРіРґР° РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool URpcDecoderCommonVcl::IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const
 {
  return URpcDecoderCommon::IsCmdSupported(command);
 }
 
-/// Создает копию этого декодера
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РґРµРєРѕРґРµСЂР°
 URpcDecoderCommonVcl* URpcDecoderCommonVcl::New(void)
 {
  return new URpcDecoderCommonVcl;
@@ -724,7 +724,7 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
 
 }
 
-/// Отправляет ответ на команду
+/// РћС‚РїСЂР°РІР»СЏРµС‚ РѕС‚РІРµС‚ РЅР° РєРѕРјР°РЅРґСѓ
 /*void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
@@ -755,9 +755,9 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
 
 //void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 //{
- ///Это все напрямую улетит в транспорт, когда будет готов его прототип и дочерний класс
- ///видимо будет размещен в этом файле, ведь транспорт только про содержимое
- ///не должен знать, а адрес отправителя - очень даже
+ ///Р­С‚Рѕ РІСЃРµ РЅР°РїСЂСЏРјСѓСЋ СѓР»РµС‚РёС‚ РІ С‚СЂР°РЅСЃРїРѕСЂС‚, РєРѕРіРґР° Р±СѓРґРµС‚ РіРѕС‚РѕРІ РµРіРѕ РїСЂРѕС‚РѕС‚РёРї Рё РґРѕС‡РµСЂРЅРёР№ РєР»Р°СЃСЃ
+ ///РІРёРґРёРјРѕ Р±СѓРґРµС‚ СЂР°Р·РјРµС‰РµРЅ РІ СЌС‚РѕРј С„Р°Р№Р»Рµ, РІРµРґСЊ С‚СЂР°РЅСЃРїРѕСЂС‚ С‚РѕР»СЊРєРѕ РїСЂРѕ СЃРѕРґРµСЂР¶РёРјРѕРµ
+ ///РЅРµ РґРѕР»Р¶РµРЅ Р·РЅР°С‚СЊ, Р° Р°РґСЂРµСЃ РѕС‚РїСЂР°РІРёС‚РµР»СЏ - РѕС‡РµРЅСЊ РґР°Р¶Рµ
  /*
  if(IdTCPServer->Active && !dest.empty())
  {
@@ -791,39 +791,39 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
  */
 //}
 
-/// Устанавливает параметры сервера
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ СЃРµСЂРІРµСЂР°
 bool TUServerControlForm::SetServerBinding(const std::string &interface_address, int port)
 {
- //TODO: Это теперь должно вызываться только напрямую из транвпорта
+ //TODO: Р­С‚Рѕ С‚РµРїРµСЂСЊ РґРѕР»Р¶РЅРѕ РІС‹Р·С‹РІР°С‚СЊСЃСЏ С‚РѕР»СЊРєРѕ РЅР°РїСЂСЏРјСѓСЋ РёР· С‚СЂР°РЅРІРїРѕСЂС‚Р°
 
  IdTCPServer->Active=false;
  IdTCPServer->Bindings->Items[0]->Port=port;
  IdTCPServer->Bindings->Items[0]->IP=interface_address.c_str();
 
- //02.04.2020 Закомментировано
+ //02.04.2020 Р—Р°РєРѕРјРјРµРЅС‚РёСЂРѕРІР°РЅРѕ
  //if(RdkApplication.GetServerControl()->GetAutoStartFlag())
  // ServerStartButtonClick(this);
 
  return true;
 }
 
-/// Возвращает параметры сервера
-//Вызов только через интерфейс транспорта, потом мб уберется совсем
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ СЃРµСЂРІРµСЂР°
+//Р’С‹Р·РѕРІ С‚РѕР»СЊРєРѕ С‡РµСЂРµР· РёРЅС‚РµСЂС„РµР№СЃ С‚СЂР°РЅСЃРїРѕСЂС‚Р°, РїРѕС‚РѕРј РјР± СѓР±РµСЂРµС‚СЃСЏ СЃРѕРІСЃРµРј
 std::string TUServerControlForm::GetServerBindingInterfaceAddress(void)
 {
 
  return AnsiString(IdTCPServer->Bindings->Items[0]->IP).c_str();
 }
-//Вызов только через интерфейс транспорта, потом мб уберется совсем
+//Р’С‹Р·РѕРІ С‚РѕР»СЊРєРѕ С‡РµСЂРµР· РёРЅС‚РµСЂС„РµР№СЃ С‚СЂР°РЅСЃРїРѕСЂС‚Р°, РїРѕС‚РѕРј РјР± СѓР±РµСЂРµС‚СЃСЏ СЃРѕРІСЃРµРј
 int TUServerControlForm::GetServerBindingPort(void) const
 {
  return IdTCPServer->Bindings->Items[0]->Port;
 }
 
-/// Устанавливает параметры сервера
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ СЃРµСЂРІРµСЂР°
 bool TUServerControlForm::SetHttpServerBinding(const std::string &interface_address, int port)
 {
- //TODO: Это теперь должно вызываться только напрямую из транспорта
+ //TODO: Р­С‚Рѕ С‚РµРїРµСЂСЊ РґРѕР»Р¶РЅРѕ РІС‹Р·С‹РІР°С‚СЊСЃСЏ С‚РѕР»СЊРєРѕ РЅР°РїСЂСЏРјСѓСЋ РёР· С‚СЂР°РЅСЃРїРѕСЂС‚Р°
 
  IdHTTPServer->Active = false;
  if(IdHTTPServer->Bindings->Count!=1)
@@ -839,14 +839,14 @@ bool TUServerControlForm::SetHttpServerBinding(const std::string &interface_addr
  return true;
 }
 
-/// Возвращает параметры сервера
-//Вызов только через интерфейс транспорта, потом мб уберется совсем
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ СЃРµСЂРІРµСЂР°
+//Р’С‹Р·РѕРІ С‚РѕР»СЊРєРѕ С‡РµСЂРµР· РёРЅС‚РµСЂС„РµР№СЃ С‚СЂР°РЅСЃРїРѕСЂС‚Р°, РїРѕС‚РѕРј РјР± СѓР±РµСЂРµС‚СЃСЏ СЃРѕРІСЃРµРј
 std::string TUServerControlForm::GetHttpServerBindingInterfaceAddress(void)
 {
 
  return AnsiString(IdHTTPServer->Bindings->operator [](0)->IP).c_str();
 }
-//Вызов только через интерфейс транспорта, потом мб уберется совсем
+//Р’С‹Р·РѕРІ С‚РѕР»СЊРєРѕ С‡РµСЂРµР· РёРЅС‚РµСЂС„РµР№СЃ С‚СЂР°РЅСЃРїРѕСЂС‚Р°, РїРѕС‚РѕРј РјР± СѓР±РµСЂРµС‚СЃСЏ СЃРѕРІСЃРµРј
 int TUServerControlForm::GetHttpServerBindingPort(void) const
 {
  return IdHTTPServer->Bindings->operator [](0)->Port;
@@ -855,21 +855,21 @@ int TUServerControlForm::GetHttpServerBindingPort(void) const
 
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void TUServerControlForm::AAfterReset(void)
 {
 // RDK::dynamic_pointer_cast<UServerControlVcl>(RdkApplication.GetServerControl())->AfterReset();
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TUServerControlForm::AAfterCalculate(void)
 {
 // RDK::dynamic_pointer_cast<UServerControlVcl>(RdkApplication.GetServerControl())->AfterCalculate();
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TUServerControlForm::AUpdateInterface(void)
 {
  PerformanceChart->Series[0]->Clear();
@@ -954,14 +954,14 @@ void TUServerControlForm::AUpdateInterface(void)
  }
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUServerControlForm::AClearInterface(void)
 {
  ServerStopButtonClick(this);
 }
 
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
 /*
@@ -983,8 +983,8 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  }
 }
 
-// Загружает параметры интерфейса из xml
-/// TODO: Этот код должен частично мигрировать RdkApplication.GetServerControl()
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
+/// TODO: Р­С‚РѕС‚ РєРѕРґ РґРѕР»Р¶РµРЅ С‡Р°СЃС‚РёС‡РЅРѕ РјРёРіСЂРёСЂРѕРІР°С‚СЊ RdkApplication.GetServerControl()
 void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  RdkApplication.GetServerControl()->SetAverageIterations(xml.ReadInteger("AverageIterations",RdkApplication.GetServerControl()->GetAverageIterations()));
@@ -1014,10 +1014,10 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
 
 // -----------------------------
-// Обработчики команд сервера
+// РћР±СЂР°Р±РѕС‚С‡РёРєРё РєРѕРјР°РЅРґ СЃРµСЂРІРµСЂР°
 // -----------------------------
-/// Возвращает тип источника видео для канала
-/// в соответствии с режимами VideoOutputFrame
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї РёСЃС‚РѕС‡РЅРёРєР° РІРёРґРµРѕ РґР»СЏ РєР°РЅР°Р»Р°
+/// РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СЂРµР¶РёРјР°РјРё VideoOutputFrame
 int TUServerControlForm::GetChannelVideoSource(int channel_id)
 {
 #ifdef RDK_VIDEO
@@ -1031,8 +1031,8 @@ int TUServerControlForm::GetChannelVideoSource(int channel_id)
 #endif
 }
 
-/// Задает источник видео для канала
-/// в соответствии с режимами VideoOutputFrame
+/// Р—Р°РґР°РµС‚ РёСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ РґР»СЏ РєР°РЅР°Р»Р°
+/// РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СЂРµР¶РёРјР°РјРё VideoOutputFrame
 int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 {
 #ifdef RDK_VIDEO
@@ -1066,7 +1066,7 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 }
 
 
-/// Проверяет подключен ли видеоисточник
+/// РџСЂРѕРІРµСЂСЏРµС‚ РїРѕРґРєР»СЋС‡РµРЅ Р»Рё РІРёРґРµРѕРёСЃС‚РѕС‡РЅРёРє
 int TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
 {
 #ifdef RDK_VIDEO
@@ -1082,18 +1082,18 @@ int TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
 #endif
 }
 
-/// Загружает проект аналитики для канала
-/// или загружает проект для всех каналов, если channel_id<0
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ РїСЂРѕРµРєС‚ Р°РЅР°Р»РёС‚РёРєРё РґР»СЏ РєР°РЅР°Р»Р°
+/// РёР»Рё Р·Р°РіСЂСѓР¶Р°РµС‚ РїСЂРѕРµРєС‚ РґР»СЏ РІСЃРµС… РєР°РЅР°Р»РѕРІ, РµСЃР»Рё channel_id<0
 int TUServerControlForm::LoadProject(int channel_id, const std::string &project_file_name)
 {
  //UGEngineControlForm->OpenProject(project_file_name.c_str());
  return 0;
 }
 
-/// Сохраняет проект
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РїСЂРѕРµРєС‚
 int TUServerControlForm::SaveProject(void)
 {
- //Это тоже надо бы с осторожностью
+ //Р­С‚Рѕ С‚РѕР¶Рµ РЅР°РґРѕ Р±С‹ СЃ РѕСЃС‚РѕСЂРѕР¶РЅРѕСЃС‚СЊСЋ
  UGEngineControlForm->SaveProject();
  return 0;
 }
@@ -1148,7 +1148,7 @@ void TUServerControlForm::ServerStop()
 
 void TUServerControlForm::ServerStart()
 {
-//return; // TODO: запуск отключен.
+//return; // TODO: Р·Р°РїСѓСЃРє РѕС‚РєР»СЋС‡РµРЅ.
  ServerRestartTimer->Enabled=true;
  try
  {
@@ -1225,8 +1225,8 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  int new_num_channels=StrToInt(NumberOfChannelsLabeledEdit->Text);
  if(new_num_channels < 1)
   return;
- ///01.04.2020 - закрываю, потому что вообще непонятно, насколько допустимо в
- ///реалиях 2020 так делать
+ ///01.04.2020 - Р·Р°РєСЂС‹РІР°СЋ, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РІРѕРѕР±С‰Рµ РЅРµРїРѕРЅСЏС‚РЅРѕ, РЅР°СЃРєРѕР»СЊРєРѕ РґРѕРїСѓСЃС‚РёРјРѕ РІ
+ ///СЂРµР°Р»РёСЏС… 2020 С‚Р°Рє РґРµР»Р°С‚СЊ
  /*
  if(new_num_channels != Core_GetNumChannels())
  {
@@ -1235,12 +1235,12 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
   ///RdkApplication.SetNumChannels(new_num_channels);
   ////////////////////////////////////
-//  SetNumChannels(Core_GetNumChannels());///Это было раньше закрыто
+//  SetNumChannels(Core_GetNumChannels());///Р­С‚Рѕ Р±С‹Р»Рѕ СЂР°РЅСЊС€Рµ Р·Р°РєСЂС‹С‚Рѕ
  }*/
 
 // UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
- ///А это уберется
+ ///Рђ СЌС‚Рѕ СѓР±РµСЂРµС‚СЃСЏ
  ///SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
 
  RdkApplication.GetServerControl()->SetServerName(AnsiString(ServerNameLabeledEdit->Text).c_str());
@@ -1330,22 +1330,22 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 //  return;
 // ResetEvent(ServerReceivingNotInProgress);
 
-//Хз как сделать здесь... событие не хочется пробрасывать по цепочке, через базовые классы
-//по типу UServerControl, так как потеряем контекст (TIdContext *AContext)
-//поэтому делаем хитрый финт ушами: сначала парсим сообщение в функции в UServerTransportTcpVcl,
-//где по факту просто пробиваем его в форму, и в похожей на эту функцию парсим
-//как вариант, обращаемся к компоненту форму
-//потом распарсенное сообщение отдаем в UServerControl  для обработки, по необходимости
-//спуская часть работы на UServerControlVcl
+//РҐР· РєР°Рє СЃРґРµР»Р°С‚СЊ Р·РґРµСЃСЊ... СЃРѕР±С‹С‚РёРµ РЅРµ С…РѕС‡РµС‚СЃСЏ РїСЂРѕР±СЂР°СЃС‹РІР°С‚СЊ РїРѕ С†РµРїРѕС‡РєРµ, С‡РµСЂРµР· Р±Р°Р·РѕРІС‹Рµ РєР»Р°СЃСЃС‹
+//РїРѕ С‚РёРїСѓ UServerControl, С‚Р°Рє РєР°Рє РїРѕС‚РµСЂСЏРµРј РєРѕРЅС‚РµРєСЃС‚ (TIdContext *AContext)
+//РїРѕСЌС‚РѕРјСѓ РґРµР»Р°РµРј С…РёС‚СЂС‹Р№ С„РёРЅС‚ СѓС€Р°РјРё: СЃРЅР°С‡Р°Р»Р° РїР°СЂСЃРёРј СЃРѕРѕР±С‰РµРЅРёРµ РІ С„СѓРЅРєС†РёРё РІ UServerTransportTcpVcl,
+//РіРґРµ РїРѕ С„Р°РєС‚Сѓ РїСЂРѕСЃС‚Рѕ РїСЂРѕР±РёРІР°РµРј РµРіРѕ РІ С„РѕСЂРјСѓ, Рё РІ РїРѕС…РѕР¶РµР№ РЅР° СЌС‚Сѓ С„СѓРЅРєС†РёСЋ РїР°СЂСЃРёРј
+//РєР°Рє РІР°СЂРёР°РЅС‚, РѕР±СЂР°С‰Р°РµРјСЃСЏ Рє РєРѕРјРїРѕРЅРµРЅС‚Сѓ С„РѕСЂРјСѓ
+//РїРѕС‚РѕРј СЂР°СЃРїР°СЂСЃРµРЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РѕС‚РґР°РµРј РІ UServerControl  РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё, РїРѕ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё
+//СЃРїСѓСЃРєР°СЏ С‡Р°СЃС‚СЊ СЂР°Р±РѕС‚С‹ РЅР° UServerControlVcl
 
-//Распарсить сообщение:
+//Р Р°СЃРїР°СЂСЃРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ:
 
 try
 {
  std::string bind=AnsiString(AContext->Binding->PeerIP.c_str()).c_str();
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
- //Убираем отсюда всю обработку, пусть это и грозит потерей контекста
+ //РЈР±РёСЂР°РµРј РѕС‚СЃСЋРґР° РІСЃСЋ РѕР±СЂР°Р±РѕС‚РєСѓ, РїСѓСЃС‚СЊ СЌС‚Рѕ Рё РіСЂРѕР·РёС‚ РїРѕС‚РµСЂРµР№ РєРѕРЅС‚РµРєСЃС‚Р°
  RdkApplication.GetServerControl()->ProcessIncomingData( bind, RdkApplication.GetServerControl()->GetServerTransport() );
 
 }
@@ -1422,7 +1422,7 @@ void __fastcall TUServerControlForm::HttpApplyButtonClick(TObject *Sender)
 
  RdkApplication.SetProjectConfig(config);
 
- ///Это наверное будет работать так:
+ ///Р­С‚Рѕ РЅР°РІРµСЂРЅРѕРµ Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ С‚Р°Рє:
  RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
 }
 //---------------------------------------------------------------------------
@@ -1487,7 +1487,7 @@ void __fastcall TUServerControlForm::TcpApplyButtonClick(TObject *Sender)
  config.ServerInterfacePort=new_port;
  RdkApplication.SetProjectConfig(config);
 
- ///Это наверное будет работать так:
+ ///Р­С‚Рѕ РЅР°РІРµСЂРЅРѕРµ Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ С‚Р°Рє:
  RdkApplication.GetServerControl()->GetServerTransport()->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
 }
 //---------------------------------------------------------------------------
@@ -1515,7 +1515,7 @@ void __fastcall TUServerControlForm::IdHTTPServerDisconnect(TIdContext *AContext
  //t->DisconnectClient(bind);
 
  RdkApplication.GetServerControl()->GetServerTransportHttp()->ClientDisconnect(bind);
- //  ^^ TODO: нужно но не собирается в билдере
+ //  ^^ TODO: РЅСѓР¶РЅРѕ РЅРѕ РЅРµ СЃРѕР±РёСЂР°РµС‚СЃСЏ РІ Р±РёР»РґРµСЂРµ
  Log_LogMessage(RDK_EX_INFO, (std::string("Http client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
 }
@@ -1541,14 +1541,14 @@ void __fastcall TUServerControlForm::IdHTTPServerCommandGet(TIdContext *AContext
 		  TIdHTTPRequestInfo *ARequestInfo, TIdHTTPResponseInfo *AResponseInfo)
 
 {
-//Получить имя пользователя и пароль
+//РџРѕР»СѓС‡РёС‚СЊ РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Рё РїР°СЂРѕР»СЊ
 
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
 
  String login = config.HttpServerLogin.c_str();
  String password = config.HttpServerPassword.c_str();
 
-//Проверка соответствия пришедших данных настройкам
+//РџСЂРѕРІРµСЂРєР° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёСЏ РїСЂРёС€РµРґС€РёС… РґР°РЅРЅС‹С… РЅР°СЃС‚СЂРѕР№РєР°Рј
  if((ARequestInfo->AuthExists)&&(ARequestInfo->AuthUsername==login)&&(ARequestInfo->AuthPassword==password))
  {
   //enum THTTPCommandType : unsigned char { hcUnknown, hcHEAD, hcGET, hcPOST, hcDELETE, hcPUT, hcTRACE, hcOPTION };
@@ -1565,13 +1565,13 @@ void __fastcall TUServerControlForm::IdHTTPServerCommandGet(TIdContext *AContext
 
 	std::string data_string = AnsiString(str).c_str();
 
-	//Распарсить сообщение:
+	//Р Р°СЃРїР°СЂСЃРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ:
 	try
 	{
 	 std::string bind=AnsiString(AContext->Binding->PeerIP.c_str()).c_str();
 	 bind+=":";
 	 bind+=RDK::sntoa(AContext->Binding->PeerPort);
-	 //Убираем отсюда всю обработку, пусть это и грозит потерей контекста
+	 //РЈР±РёСЂР°РµРј РѕС‚СЃСЋРґР° РІСЃСЋ РѕР±СЂР°Р±РѕС‚РєСѓ, РїСѓСЃС‚СЊ СЌС‚Рѕ Рё РіСЂРѕР·РёС‚ РїРѕС‚РµСЂРµР№ РєРѕРЅС‚РµРєСЃС‚Р°
 	 RdkApplication.GetServerControl()->ProcessIncomingData( bind, RdkApplication.GetServerControl()->GetServerTransport() );
 	}
 	catch(...)

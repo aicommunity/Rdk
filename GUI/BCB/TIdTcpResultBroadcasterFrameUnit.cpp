@@ -15,7 +15,7 @@ TIdTcpResultBroadcasterFrame *IdTcpResultBroadcasterFrame;
 //---------------------------------------------------------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TTcpResultBroadcasterThread::TTcpResultBroadcasterThread(TIdTcpResultBroadcasterFrame * frame, bool CreateSuspended)
 : TResultBroadcasterThread(CreateSuspended), Frame(frame)
@@ -41,7 +41,7 @@ __fastcall TTcpResultBroadcasterThread::~TTcpResultBroadcasterThread(void)
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 std::string TTcpResultBroadcasterThread::GetAddress(void) const
 {
@@ -211,9 +211,9 @@ __fastcall TIdTcpResultBroadcasterFrame::~TIdTcpResultBroadcasterFrame(void)
 //---------------------------------------------------------------------------
 
 // --------------------------
-// Методы управления фреймом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„СЂРµР№РјРѕРј
 // --------------------------
-/// Инициализация канала связи в соответствии с настройками
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєР°РЅР°Р»Р° СЃРІСЏР·Рё РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё
 bool TIdTcpResultBroadcasterFrame::Init(void)
 {
  if(!Thread)
@@ -243,7 +243,7 @@ bool TIdTcpResultBroadcasterFrame::UnInit(void)
 }
 
 
-/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+/// Р¤СѓРЅРєС†РёСЏ РґРѕР±Р°РІР»РµРЅРёСЏ РјРµС‚Р°РґР°РЅРЅС‹С… РІ РѕС‡РµСЂРµРґСЊ РЅР° РѕС‚РїСЂР°РІРєСѓ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё
 bool TIdTcpResultBroadcasterFrame::AddMetadata(int channel_index, double time_stamp)
 {
  if(!EnableXmlTranslationCheckBox->Checked)
@@ -358,13 +358,13 @@ void TIdTcpResultBroadcasterFrame::AUpdateInterface(void)
 
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TIdTcpResultBroadcasterFrame::AClearInterface(void)
 {
  UnInit();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TIdTcpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("ServerAddress",AnsiString(ServerAddressLabeledEdit->Text).c_str());
@@ -374,7 +374,7 @@ void TIdTcpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
 // xml.WriteInteger("ChannelIndex",StrToInt(ChannelIndexLabeledEdit->Text));
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TIdTcpResultBroadcasterFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  ServerAddressLabeledEdit->Text=xml.ReadString("ServerAddress","").c_str();
@@ -386,7 +386,7 @@ void TIdTcpResultBroadcasterFrame::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterFrame::New(TComponent *owner)
 {
  return new TIdTcpResultBroadcasterFrame(owner);

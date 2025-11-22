@@ -6,13 +6,13 @@
 
 namespace RDK {
 
-// Преобразует UBitmap в HBITMAP
+// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ UBitmap РІ HBITMAP
 void* operator >> (const UBitmap &bmp, HBITMAP &bmphandle);
 
-// Преобразует HBITMAP в UBitmap 
+// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ HBITMAP РІ UBitmap 
 UBitmap& operator << (UBitmap &bmp, const HBITMAP bmphandle);
 
-// Устанавливает в UBitmap разрешение такое же как у HBITMAP
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІ UBitmap СЂР°Р·СЂРµС€РµРЅРёРµ С‚Р°РєРѕРµ Р¶Рµ РєР°Рє Сѓ HBITMAP
 UBitmap& ULoadBitmapRes(UBitmap &bmp, const HBITMAP bmphandle);
 
 }

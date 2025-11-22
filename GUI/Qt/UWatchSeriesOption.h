@@ -19,7 +19,7 @@ using namespace QtCharts;
 class UWatchTab;
 
 //////////////////////////////////////////////////////////////////////
-// Один отдельно взятый график с одной или несколькими сериями данных
+// РћРґРёРЅ РѕС‚РґРµР»СЊРЅРѕ РІР·СЏС‚С‹Р№ РіСЂР°С„РёРє СЃ РѕРґРЅРѕР№ РёР»Рё РЅРµСЃРєРѕР»СЊРєРёРјРё СЃРµСЂРёСЏРјРё РґР°РЅРЅС‹С…
 //////////////////////////////////////////////////////////////////////
 
 class UWatchSeriesOption : public QDialog
@@ -48,27 +48,27 @@ private:
     Ui::UWatchSeriesOption *ui;
     UWatchTab *WatchTab;
 
-   //void loadGraphsName();//загрузить имена графиков
-    void updateGraphsSeries(int currentChartIndex); //обновить имена серий выбранного графика в листе серий
+   //void loadGraphsName();//Р·Р°РіСЂСѓР·РёС‚СЊ РёРјРµРЅР° РіСЂР°С„РёРєРѕРІ
+    void updateGraphsSeries(int currentChartIndex); //РѕР±РЅРѕРІРёС‚СЊ РёРјРµРЅР° СЃРµСЂРёР№ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РіСЂР°С„РёРєР° РІ Р»РёСЃС‚Рµ СЃРµСЂРёР№
 
-    void updateSeriesProperties(int currentSerieIndex); //Обновить свойства для выбранной серии
+    void updateSeriesProperties(int currentSerieIndex); //РћР±РЅРѕРІРёС‚СЊ СЃРІРѕР№СЃС‚РІР° РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕР№ СЃРµСЂРёРё
     void updateSeriesNameProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesColorProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesWidthProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesLineTypeProp(int currentChartIndex,int currentSerieIndex);
     void updateSeriesYShift(int currentChartIndex,int currentSerieIndex);
 
-    void updateChartList(); //обновить имена в лист графиков
+    void updateChartList(); //РѕР±РЅРѕРІРёС‚СЊ РёРјРµРЅР° РІ Р»РёСЃС‚ РіСЂР°С„РёРєРѕРІ
     void updateLayoutBox();
-    void updateParameters(int chartIndex);//обновить параметры выбранного в листе графика
-    void createLayout(); //создать новое расположение
-    void saveChartParameters(); //сохранить изменения
+    void updateParameters(int chartIndex);//РѕР±РЅРѕРІРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РІ Р»РёСЃС‚Рµ РіСЂР°С„РёРєР°
+    void createLayout(); //СЃРѕР·РґР°С‚СЊ РЅРѕРІРѕРµ СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ
+    void saveChartParameters(); //СЃРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ
 
 
-    //сохранить параметры
+    //СЃРѕС…СЂР°РЅРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹
     void saveParemeters();
 
-    //массивы цветов и типов линий
+    //РјР°СЃСЃРёРІС‹ С†РІРµС‚РѕРІ Рё С‚РёРїРѕРІ Р»РёРЅРёР№
     const QColor defaultColors[15]={Qt::red, Qt::darkRed, Qt::yellow, Qt::darkYellow, Qt::green,
                                     Qt::darkGreen, Qt::cyan, Qt::darkCyan, Qt::blue, Qt::darkBlue,
                                     Qt::magenta,Qt::darkMagenta, Qt::gray, Qt::darkGray, Qt::black};

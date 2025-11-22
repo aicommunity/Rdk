@@ -67,34 +67,34 @@ std::vector<std::string> ClassNames;
 bool RepaintNeeded;
 
 public:
-/// Имя компонента на схеме для добавления в выбранную библиотеку
+/// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РЅР° СЃС…РµРјРµ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ РІ РІС‹Р±СЂР°РЅРЅСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ
 std::string NewComponentName;
 
 public:
 
-// Отрисовка фрейма
+// РћС‚СЂРёСЃРѕРІРєР° С„СЂРµР№РјР°
 void AUpdateInterface(void);
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 virtual void AClearInterface(void);
 
-// Возвращает id выбранного класса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ id РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
 //int GetSelectedId(void);
 
-// Возвращает имя выбранного класса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
 String GetSelectedName(void);
 
-/// Устанавливает имя выбранного класса
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
 void SetSelectedName(const String &name);
 
-// Возвращает имя выбранной библиотеки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё
 String GetSelectedLibraryName(void);
 
-/// Отрисовывает список классов в выбранной библиотеке
+/// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЃРїРёСЃРѕРє РєР»Р°СЃСЃРѕРІ РІ РІС‹Р±СЂР°РЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРµ
 void DrawClassesList(int library_index, TStringGrid *classes_string_grid);
 void DrawClassesList(const std::string &library_name, TStringGrid *classes_string_grid);
 
-/// Создает новый класс в выбранной Runtime library
+/// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ РєР»Р°СЃСЃ РІ РІС‹Р±СЂР°РЅРЅРѕР№ Runtime library
 bool AddClassToRuntimeLibrary(const std::string &object_prototype_name, const std::string &class_name, const std::string &library_name);
 };
 //---------------------------------------------------------------------------

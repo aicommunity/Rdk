@@ -5,7 +5,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UServerTransport::UServerTransport(void)
 {
@@ -18,7 +18,7 @@ UServerTransport::~UServerTransport(void)
 }
 // --------------------------
 
-/// Кодирует строку в вектор
+/// РљРѕРґРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ РІ РІРµРєС‚РѕСЂ
 void UServerTransport::ConvertStringToVector(const std::string &source, UParamT &dest)
 {
  dest.resize(source.size());
@@ -26,7 +26,7 @@ void UServerTransport::ConvertStringToVector(const std::string &source, UParamT 
   memcpy(&dest[0],source.c_str(),source.size());
 }
 
-/// Возвращает указатель на экземпляр приложения
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЌРєР·РµРјРїР»СЏСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
 UEPtr<UApplication> UServerTransport::GetApplication(void)
 {
  return Application;
@@ -41,7 +41,7 @@ bool UServerTransport::SetApplication(UEPtr<UApplication> value)
  return true;
 }
 
-/// Кодирует вектор в строку
+/// РљРѕРґРёСЂСѓРµС‚ РІРµРєС‚РѕСЂ РІ СЃС‚СЂРѕРєСѓ
 void UServerTransport::ConvertVectorToString(const UParamT &source, std::string &dest)
 {
  dest.resize(source.size());
@@ -56,20 +56,20 @@ void UServerTransport::ProcessIncomingData(std::string &bind, std::vector<URpcCo
   {
    command_list.clear();
   }
-  //Сим вычитываем байты в буфер
+  //РЎРёРј РІС‹С‡РёС‚С‹РІР°РµРј Р±Р°Р№С‚С‹ РІ Р±СѓС„РµСЂ
   int length = this->ReadIncomingBytes(bind, client_buffer);
   if(length>0)
   {
-   //Берем интерпретатор байтов в пакеты
+   //Р‘РµСЂРµРј РёРЅС‚РµСЂРїСЂРµС‚Р°С‚РѕСЂ Р±Р°Р№С‚РѕРІ РІ РїР°РєРµС‚С‹
    std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
-   //Если не нашли - выходим
+   //Р•СЃР»Рё РЅРµ РЅР°С€Р»Рё - РІС‹С…РѕРґРёРј
    if(I == PacketReaders.end())
    {
 //  SetEvent(CommandQueueUnlockEvent);
 //  SetEvent(ServerReceivingNotInProgress);
 	return;
    }
-   //Что-тот процессится //TODO: Понять, что там внутри
+   //Р§С‚Рѕ-С‚РѕС‚ РїСЂРѕС†РµСЃСЃРёС‚СЃСЏ //TODO: РџРѕРЅСЏС‚СЊ, С‡С‚Рѕ С‚Р°Рј РІРЅСѓС‚СЂРё
    I->second.ProcessDataPart2(client_buffer);
    //LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
    MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
@@ -89,7 +89,7 @@ void UServerTransport::ProcessIncomingData(std::string &bind, std::vector<URpcCo
 	 CurrentProcessedCommand.IsDecoded=false;
 	 if(!CurrentProcessedCommand.DecodeBasicData())
 	 {
-	  // TODO: пишем в лог ошибку декодирования
+	  // TODO: РїРёС€РµРј РІ Р»РѕРі РѕС€РёР±РєСѓ РґРµРєРѕРґРёСЂРѕРІР°РЅРёСЏ
 	  Log_LogMessage(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
 	 }
 	 else
@@ -101,14 +101,14 @@ void UServerTransport::ProcessIncomingData(std::string &bind, std::vector<URpcCo
   }
 }
 
-/// Читает входящие байты из выбранного источника, контекст привязки
-/// всегда определяется строкой вне зависимости от типа транспорта
+/// Р§РёС‚Р°РµС‚ РІС…РѕРґСЏС‰РёРµ Р±Р°Р№С‚С‹ РёР· РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°, РєРѕРЅС‚РµРєСЃС‚ РїСЂРёРІСЏР·РєРё
+/// РІСЃРµРіРґР° РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ СЃС‚СЂРѕРєРѕР№ РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° С‚СЂР°РЅСЃРїРѕСЂС‚Р°
 int UServerTransport::ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes)
 {
  return 0;
 }
 
-/// Отправить ответ на команду соответствующему получателю
+/// РћС‚РїСЂР°РІРёС‚СЊ РѕС‚РІРµС‚ РЅР° РєРѕРјР°РЅРґСѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРјСѓ РїРѕР»СѓС‡Р°С‚РµР»СЋ
 void UServerTransport::SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr)
 {
 
@@ -144,40 +144,40 @@ bool UServerTransport::ServerIsActive()
  return false;
 }
 
-//Получение адреса интерфейса управления сервером
+//РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 std::string UServerTransport::GetServerBindingInterfaceAddress(void)
 {
  return std::string("");
 }
 
-//Получение адреса интерфейса управления сервером
+//РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 int UServerTransport::GetServerBindingPort(void) const
 {
  return 0;
 }
 
-///Инициировать остановку сервера, отключить все приемники
+///РРЅРёС†РёРёСЂРѕРІР°С‚СЊ РѕСЃС‚Р°РЅРѕРІРєСѓ СЃРµСЂРІРµСЂР°, РѕС‚РєР»СЋС‡РёС‚СЊ РІСЃРµ РїСЂРёРµРјРЅРёРєРё
 void UServerTransport::ServerStop()
 {
 
 }
 
-///Инициировать остановку сервера, отключить все приемники
+///РРЅРёС†РёРёСЂРѕРІР°С‚СЊ РѕСЃС‚Р°РЅРѕРІРєСѓ СЃРµСЂРІРµСЂР°, РѕС‚РєР»СЋС‡РёС‚СЊ РІСЃРµ РїСЂРёРµРјРЅРёРєРё
 void UServerTransport::ServerStart()
 {
 
 }
 
 // --------------------------
-// Общие методы управления контроллером
+// РћР±С‰РёРµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј
 // --------------------------
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 /*void UServerTransport::SaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UServerTransport::LoadParameters(RDK::USerStorageXML &xml)
 {
 

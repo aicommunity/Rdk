@@ -14,7 +14,7 @@
 #include "UComponentsLinksHintFormUnit.h"
 
 
-/// Ýêçåïëÿð êëàññà ïðèëîæåíèÿ
+/// Ð­ÐºÐ·ÐµÐ¿Ð»ÑÑ€ ÐºÐ»Ð°ÑÑÐ° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
 extern RDK::UApplication RdkApplication;
 
 //---------------------------------------------------------------------------
@@ -48,33 +48,33 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
 }
 
 // -----------------------------
-// Ìåòîäû óïðàâëåíèÿ âèçóàëüíûì èíòåðôåéñîì
+// ÐœÐµÑ‚Ð¾Ð´Ñ‹ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ñ Ð²Ð¸Ð·ÑƒÐ°Ð»ÑŒÐ½Ñ‹Ð¼ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ¾Ð¼
 // -----------------------------
-// Ìåòîä, âûçûâàåìûé ïåðåä ñáðîñîì ìîäåëè
+// ÐœÐµÑ‚Ð¾Ð´, Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼Ñ‹Ð¹ Ð¿ÐµÑ€ÐµÐ´ ÑÐ±Ñ€Ð¾ÑÐ¾Ð¼ Ð¼Ð¾Ð´ÐµÐ»Ð¸
 void TUDrawEngineFrame::ABeforeReset(void)
 {
 
 }
 
-// Ìåòîä, âûçûâàåìûé ïîñëå ñáðîñà ìîäåëè
+// ÐœÐµÑ‚Ð¾Ð´, Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼Ñ‹Ð¹ Ð¿Ð¾ÑÐ»Ðµ ÑÐ±Ñ€Ð¾ÑÐ° Ð¼Ð¾Ð´ÐµÐ»Ð¸
 void TUDrawEngineFrame::AAfterReset(void)
 {
 
 }
 
-// Ìåòîä, âûçûâàåìûé ïåðåä øàãîì ðàñ÷åòà
+// ÐœÐµÑ‚Ð¾Ð´, Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼Ñ‹Ð¹ Ð¿ÐµÑ€ÐµÐ´ ÑˆÐ°Ð³Ð¾Ð¼ Ñ€Ð°ÑÑ‡ÐµÑ‚Ð°
 void TUDrawEngineFrame::ABeforeCalculate(void)
 {
 
 }
 
-// Ìåòîä, âûçûâàåìûé ïîñëå øàãà ðàñ÷åòà
+// ÐœÐµÑ‚Ð¾Ð´, Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼Ñ‹Ð¹ Ð¿Ð¾ÑÐ»Ðµ ÑˆÐ°Ð³Ð° Ñ€Ð°ÑÑ‡ÐµÑ‚Ð°
 void TUDrawEngineFrame::AAfterCalculate(void)
 {
 
 }
 
-// Îáíîâëåíèå èíòåðôåéñà
+// ÐžÐ±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ðµ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ°
 void TUDrawEngineFrame::AUpdateInterface(void)
 {
  if(!Model_Check())
@@ -166,7 +166,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
  UClassesListFrame->UpdateInterface();
 }
 
-// Âîçâðàò èíòåðôåéñà â èñõîäíîå ñîñòîÿíèå
+// Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‚ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð² Ð¸ÑÑ…Ð¾Ð´Ð½Ð¾Ðµ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ
 void TUDrawEngineFrame::AClearInterface(void)
 {
  NetXml.Destroy();
@@ -174,7 +174,7 @@ void TUDrawEngineFrame::AClearInterface(void)
 // BalloonHint1->HideHint();
 }
 
-// Ñîõðàíÿåò ïàðàìåòðû èíòåðôåéñà â xml
+// Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÑ‚ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð² xml
 void TUDrawEngineFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("FontFileName",FontFileName);
@@ -188,13 +188,13 @@ void TUDrawEngineFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteBool("ShowLinksDetail",ShowLinkDetailCheckBox->Checked);
 }
 
-// Çàãðóæàåò ïàðàìåòðû èíòåðôåéñà èç xml
+// Ð—Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÑ‚ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð¸Ð· xml
 void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
- // Èìÿ êîìïîíåíòà, ñîäåðæèìîå êîòîðîãî áóäåò îòîáðàæåíî
+ // Ð˜Ð¼Ñ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ð°, ÑÐ¾Ð´ÐµÑ€Ð¶Ð¸Ð¼Ð¾Ðµ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾ Ð±ÑƒÐ´ÐµÑ‚ Ð¾Ñ‚Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¾
  ComponentName.clear();
 
- // Xml îïèñàíèå ñåòè
+ // Xml Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ ÑÐµÑ‚Ð¸
  NetXml.Destroy();
 
  StartName.clear();
@@ -220,7 +220,7 @@ void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
 // -----------------------------
 
 // -----------------------------
-// Ìåòîäû óïðàâëåíèÿ äàííûìè
+// ÐœÐµÑ‚Ð¾Ð´Ñ‹ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ñ Ð´Ð°Ð½Ð½Ñ‹Ð¼Ð¸
 // -----------------------------
 void TUDrawEngineFrame::SetNet(const std::string &comp_name)
 {
@@ -258,7 +258,7 @@ void TUDrawEngineFrame::SelectComponent(const std::string &comp_name)
 }
 
 
-// Ñîõðàíÿåò ïîëîæåíèå êîìïîíåíòà â çàäàííûõ êîîðäèíàòàõ
+// Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÑ‚ Ð¿Ð¾Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ð° Ð² Ð·Ð°Ð´Ð°Ð½Ð½Ñ‹Ñ… ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚Ð°Ñ…
 void TUDrawEngineFrame::SaveComponentPosition(const std::string &name)
 {
  if(name == "")
@@ -277,7 +277,7 @@ void TUDrawEngineFrame::SaveComponentPosition(const std::string &name)
   Model_SetComponentParameterValue(name.c_str(), "Coord", buffer.c_str());
 }
 
-/// Ïðèìåíÿåò òåêóùèé øðèôò
+/// ÐŸÑ€Ð¸Ð¼ÐµÐ½ÑÐµÑ‚ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ ÑˆÑ€Ð¸Ñ„Ñ‚
 void TUDrawEngineFrame::ApplyFont(void)
 {
  if(FontTypeComboBox->Text.Length() != 0)
@@ -484,7 +484,7 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
   {
    time_t curr_time;
    time(&curr_time);
-  /// Âîçâðàùàåò âðåìÿ â âèäå ïîíÿòíîé ñòðîêè âèäà YYYY.MM.DD HH:MM:SS
+  /// Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°ÐµÑ‚ Ð²Ñ€ÐµÐ¼Ñ Ð² Ð²Ð¸Ð´Ðµ Ð¿Ð¾Ð½ÑÑ‚Ð½Ð¾Ð¹ ÑÑ‚Ñ€Ð¾ÐºÐ¸ Ð²Ð¸Ð´Ð° YYYY.MM.DD HH:MM:SS
    std::string folder=RDK::get_text_time(curr_time, '.', '_');
    path_dialog+=String("\\Autocreate ")+folder.c_str();
    if(RDK::CreateNewDirectory(AnsiString(path_dialog).c_str()) != 0)
@@ -523,12 +523,12 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
   return;
  }
 
- //åñëè ìîäåëü íå ñóùåñòâóåò, ñïðîñèòü íå ñîçäàòü ëè åå
+ //ÐµÑÐ»Ð¸ Ð¼Ð¾Ð´ÐµÐ»ÑŒ Ð½Ðµ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚, ÑÐ¿Ñ€Ð¾ÑÐ¸Ñ‚ÑŒ Ð½Ðµ ÑÐ¾Ð·Ð´Ð°Ñ‚ÑŒ Ð»Ð¸ ÐµÐµ
  if(!Model_Check())
  {
   if(Application->MessageBox(L"Model not exist. Create new model from this class?",L"Info",MB_YESNO) == ID_YES)
   {
-   //ñîçäàòü íîâóþ ìîäåëü
+   //ÑÐ¾Ð·Ð´Ð°Ñ‚ÑŒ Ð½Ð¾Ð²ÑƒÑŽ Ð¼Ð¾Ð´ÐµÐ»ÑŒ
    Model_Create(classname.c_str());
    if(ComponentsListFrame)
 	ComponentsListFrame->UpdateInterface();

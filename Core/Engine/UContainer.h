@@ -104,6 +104,9 @@ private: // Таблица компонент
 // ������� ���������
 UAContainerVector Components;
 
+// Index map for O(1) component lookup by ID
+std::unordered_map<UId, size_t> ComponentsIdIndex;
+
 /// ������� ����������� ���������
 UAStaticContainerMap StaticComponents;
 

@@ -17,9 +17,9 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Ìåòîäû UTimeStamp
+// ĞœĞµÑ‚Ğ¾Ğ´Ñ‹ UTimeStamp
 // --------------------------
-// Êîíñòğóêòîğû è äåñòğóêòîğû
+// ĞšĞ¾Ğ½ÑÑ‚Ñ€ÑƒĞºÑ‚Ğ¾Ñ€Ñ‹ Ğ¸ Ğ´ĞµÑÑ‚Ñ€ÑƒĞºÑ‚Ğ¾Ñ€Ñ‹
 // --------------------------
 UTimeStamp::UTimeStamp(void)
  : Hours(0), Minutes(0), Seconds(0), Frames(0), FPS(25)
@@ -54,9 +54,9 @@ UTimeStamp::~UTimeStamp(void)
 // --------------------------
 
 // --------------------------
-// Îïåğàòîğû
+// ĞĞ¿ĞµÑ€Ğ°Ñ‚Ğ¾Ñ€Ñ‹
 // --------------------------
-// Îïåğàòîğ ïğèñâàèâàíèÿ
+// ĞĞ¿ĞµÑ€Ğ°Ñ‚Ğ¾Ñ€ Ğ¿Ñ€Ğ¸ÑĞ²Ğ°Ğ¸Ğ²Ğ°Ğ½Ğ¸Ñ
 UTimeStamp& UTimeStamp::operator = (const UTimeStamp &copy)
 {
  Hours=copy.Hours;
@@ -81,7 +81,7 @@ UTimeStamp& UTimeStamp::operator = (double seconds)
  return *this;
 }
 
-// Àğèôìåòè÷åñêèå îïåğàòîğû
+// ĞÑ€Ğ¸Ñ„Ğ¼ĞµÑ‚Ğ¸Ñ‡ĞµÑĞºĞ¸Ğµ Ğ¾Ğ¿ĞµÑ€Ğ°Ñ‚Ğ¾Ñ€Ñ‹
 UTimeStamp& UTimeStamp::operator -= (const UTimeStamp &copy)
 {
  double sec=(*this)()-copy();
@@ -159,7 +159,7 @@ UTimeStamp operator + (double seconds,const UTimeStamp &copy)
  return res;
 }
 
-// Îïåğàòîğ ïğåîáğàçîâàíèÿ â ñåêóíäû
+// ĞĞ¿ĞµÑ€Ğ°Ñ‚Ğ¾Ñ€ Ğ¿Ñ€ĞµĞ¾Ğ±Ñ€Ğ°Ğ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ Ğ² ÑĞµĞºÑƒĞ½Ğ´Ñ‹
 double UTimeStamp::operator() (void) const
 {
  return (double(abs(Hours))*3600.0+double(Minutes)*60.0+double(Seconds)
@@ -204,8 +204,8 @@ bool UTimeStamp::operator > (const UTimeStamp &copy)
 }
 
 
-// Îïåğàòîğû ââîäà âûâîäà â ñòğîêó
-// Ğàçäåëèòåëü ':'
+// ĞĞ¿ĞµÑ€Ğ°Ñ‚Ğ¾Ñ€Ñ‹ Ğ²Ğ²Ğ¾Ğ´Ğ° Ğ²Ñ‹Ğ²Ğ¾Ğ´Ğ° Ğ² ÑÑ‚Ñ€Ğ¾ĞºÑƒ
+// Ğ Ğ°Ğ·Ğ´ĞµĞ»Ğ¸Ñ‚ĞµĞ»ÑŒ ':'
 string& UTimeStamp::operator >> (string &str) const
 {
  str=sntoa(Hours,3);

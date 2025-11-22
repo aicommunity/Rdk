@@ -21,7 +21,7 @@ public:
     virtual bool Load(const std::string &dll_name);
     virtual bool isLoaded();
 
-    /// WINAPI принудительно выгрузит бибилиотеку, даже если она ещё где-то использщуется
+    /// WINAPI РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РІС‹РіСЂСѓР·РёС‚ Р±РёР±РёР»РёРѕС‚РµРєСѓ, РґР°Р¶Рµ РµСЃР»Рё РѕРЅР° РµС‰С‘ РіРґРµ-С‚Рѕ РёСЃРїРѕР»СЊР·С‰СѓРµС‚СЃСЏ
     virtual bool UnLoad(void);
     virtual void * Resolve(const std::string &symbol);
     virtual std::string GetErrorString();

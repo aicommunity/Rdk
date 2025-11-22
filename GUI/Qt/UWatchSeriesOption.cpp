@@ -60,7 +60,7 @@ void UWatchSeriesOption::on_removeSerieButton_clicked()
 {
     if(!WatchTab)
      return;
-    //удаляем в выбранном графике выбранную среию
+    //СѓРґР°Р»СЏРµРј РІ РІС‹Р±СЂР°РЅРЅРѕРј РіСЂР°С„РёРєРµ РІС‹Р±СЂР°РЅРЅСѓСЋ СЃСЂРµРёСЋ
     int currentChartIndex = ui->graphsList->currentRow();
     int currentSerieIndex = ui->graphsSeriesList->currentRow();
     if(currentSerieIndex<0)
@@ -86,7 +86,7 @@ void UWatchSeriesOption::updateChartList()
 {
  if(!WatchTab)
   return;
-    //обновляем имена в списке графиков
+    //РѕР±РЅРѕРІР»СЏРµРј РёРјРµРЅР° РІ СЃРїРёСЃРєРµ РіСЂР°С„РёРєРѕРІ
     int current_row = ui->graphsList->currentRow();
     ui->graphsList->clear();
     int chartsAmount = WatchTab->countGraphs();
@@ -110,7 +110,7 @@ void UWatchSeriesOption::updateLayoutBox()
 {
     if(!WatchTab)
      return;
-    //настраиваем поля выбора кол-ва колонок и строк
+    //РЅР°СЃС‚СЂР°РёРІР°РµРј РїРѕР»СЏ РІС‹Р±РѕСЂР° РєРѕР»-РІР° РєРѕР»РѕРЅРѕРє Рё СЃС‚СЂРѕРє
     int colNumber = WatchTab->getColNumber();
     int rowNumber = WatchTab->getRowNumber();
     if (colNumber && rowNumber)
@@ -126,13 +126,13 @@ void UWatchSeriesOption::updateParameters(int chartIndex)
      return;
     ui->graphNameEditor->setText(WatchTab->getChart(chartIndex)->getChartTitle());
 
-    /*ДОДЕЛАТЬ*/
+    /*Р”РћР”Р•Р›РђРўР¬*/
     ui->legendVisibilitSB->setDisabled(true);
     ui->tittleVisibilityCB->setDisabled(true);
     //ui->legendVisibilitSB->setTristate(WatchTab->getChart(currentRow)->)
-    //добавить видимость легенды и названия
+    //РґРѕР±Р°РІРёС‚СЊ РІРёРґРёРјРѕСЃС‚СЊ Р»РµРіРµРЅРґС‹ Рё РЅР°Р·РІР°РЅРёСЏ
 
-    //загрузка параметров графика и его осей
+    //Р·Р°РіСЂСѓР·РєР° РїР°СЂР°РјРµС‚СЂРѕРІ РіСЂР°С„РёРєР° Рё РµРіРѕ РѕСЃРµР№
     ui->axisXNameEditor->setText(WatchTab->getChart(chartIndex)->getAxisXName());
     ui->axisYNameEditor->setText(WatchTab->getChart(chartIndex)->getAxisYName());
 
@@ -153,22 +153,22 @@ void UWatchSeriesOption::createLayout()
     if(!WatchTab)
      return;
 
-    //спрашиваем юзера, точно ли он хочет изменить параметры сетки
-    //но не спрашиваем если там нет серий
+    //СЃРїСЂР°С€РёРІР°РµРј СЋР·РµСЂР°, С‚РѕС‡РЅРѕ Р»Рё РѕРЅ С…РѕС‡РµС‚ РёР·РјРµРЅРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ СЃРµС‚РєРё
+    //РЅРѕ РЅРµ СЃРїСЂР°С€РёРІР°РµРј РµСЃР»Рё С‚Р°Рј РЅРµС‚ СЃРµСЂРёР№
     if (WatchTab->getChart(0)->countSeries() == 0)
     {
         ;
     }
     else
     {
-        // Если сетка графиков уменьшается (прозойдет удаление графиков)
+        // Р•СЃР»Рё СЃРµС‚РєР° РіСЂР°С„РёРєРѕРІ СѓРјРµРЅСЊС€Р°РµС‚СЃСЏ (РїСЂРѕР·РѕР№РґРµС‚ СѓРґР°Р»РµРЅРёРµ РіСЂР°С„РёРєРѕРІ)
         QString grid_reduce = "";
         if(ui->chartColNumber_spin->value()*ui->chartRowNumber_spin->value() < WatchTab->getRowNumber()*WatchTab->getColNumber())
             grid_reduce =   "New layout contains fewer charts than it was, so "
                             + QString::number(WatchTab->getRowNumber()*WatchTab->getColNumber() - ui->chartColNumber_spin->value()*ui->chartRowNumber_spin->value()) +
                             " charts will be deleted";
 
-        //спрашиваем юзера точно ли он уверен
+        //СЃРїСЂР°С€РёРІР°РµРј СЋР·РµСЂР° С‚РѕС‡РЅРѕ Р»Рё РѕРЅ СѓРІРµСЂРµРЅ
         QMessageBox messageBox;
         messageBox.setText("Are you sure you want to change Grid layout params?");
         messageBox.setInformativeText
@@ -185,7 +185,7 @@ void UWatchSeriesOption::createLayout()
         if(messageBox.exec() != QMessageBox::Yes) return;
     }
 
-    //создание нового расположения
+    //СЃРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ СЂР°СЃРїРѕР»РѕР¶РµРЅРёСЏ
     int colNumber = ui->chartColNumber_spin->value();
     int rowNumber = ui->chartRowNumber_spin->value();
 
@@ -197,7 +197,7 @@ void UWatchSeriesOption::saveChartParameters()
     if(!WatchTab)
      return;
 
-    //сохранение всех параметров
+    //СЃРѕС…СЂР°РЅРµРЅРёРµ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ
    int index = ui->graphsList->currentRow();
    if (index == -1) return;
 
@@ -222,7 +222,7 @@ void UWatchSeriesOption::loadGraphsName()
 {
     if(!WatchTab)
      return;
-    //загружаем имена графиков
+    //Р·Р°РіСЂСѓР¶Р°РµРј РёРјРµРЅР° РіСЂР°С„РёРєРѕРІ
     for (int i = 0; i < WatchTab->countGraphs(); i++)
     {
         ui->graphsList->addItem(WatchTab->getChart(i)->getChartTitle());
@@ -238,7 +238,7 @@ void UWatchSeriesOption::updateGraphsSeries(int currentChartIndex)
     if(currentChartIndex < 0 || currentChartIndex >= WatchTab->countGraphs())
      return;
 
-    //загружаем имена серий выбранного графика
+    //Р·Р°РіСЂСѓР¶Р°РµРј РёРјРµРЅР° СЃРµСЂРёР№ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РіСЂР°С„РёРєР°
     ui->graphsSeriesList->clear();
     for (int i = 0; i < WatchTab->getChart(currentChartIndex)->countSeries(); i++)
     {
@@ -249,7 +249,7 @@ void UWatchSeriesOption::updateGraphsSeries(int currentChartIndex)
 
 void UWatchSeriesOption::updateSeriesProperties(int currentSerieIndex)
 {
-    //загружаем свойства выбранной серии
+    //Р·Р°РіСЂСѓР¶Р°РµРј СЃРІРѕР№СЃС‚РІР° РІС‹Р±СЂР°РЅРЅРѕР№ СЃРµСЂРёРё
     if(currentSerieIndex == -1) return;
     int currentChartIndex = ui->graphsList->currentRow();
 
@@ -316,7 +316,7 @@ void UWatchSeriesOption::saveParemeters()
 {
     saveChartParameters();
 
-    //сохранение параметров
+    //СЃРѕС…СЂР°РЅРµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ
     int currentChartIndex = ui->graphsList->currentRow();
     int currentSerieIndex = ui->graphsSeriesList->currentRow();
 

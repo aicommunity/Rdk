@@ -79,8 +79,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     drawEngineSbWindow->show();
     drawEngineSbWindow->showMaximized();
 
-    // связывание схемы модели и списка отображения компонентов модели
-    //  схема -> список
+    // СЃРІСЏР·С‹РІР°РЅРёРµ СЃС…РµРјС‹ РјРѕРґРµР»Рё Рё СЃРїРёСЃРєР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РјРѕРґРµР»Рё
+    //  СЃС…РµРјР° -> СЃРїРёСЃРѕРє
     connect(propertyChanger->componentsList, SIGNAL(componentDoubleClick(QString)),
             drawEngine, SLOT(componentDoubleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),
@@ -88,7 +88,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
             drawEngine, SLOT(updateScheme(bool)));
 
-    //  список -> схема
+    //  СЃРїРёСЃРѕРє -> СЃС…РµРјР°
     connect(drawEngine, SIGNAL(componentSelectedFromScheme(QString)),
             propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
     connect(drawEngine, SIGNAL(componentDoubleClickFromScheme(QString)),
@@ -101,13 +101,13 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     componentLinks = new UComponentLinksWidget(this, application);
     componentLinks->hide();
 
-    // связывание схемы модели и окна отображения связей
-    //  связи -> схема
+    // СЃРІСЏР·С‹РІР°РЅРёРµ СЃС…РµРјС‹ РјРѕРґРµР»Рё Рё РѕРєРЅР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРІСЏР·РµР№
+    //  СЃРІСЏР·Рё -> СЃС…РµРјР°
     connect(componentLinks, SIGNAL(updateScheme(bool)), drawEngine, SLOT(updateScheme(bool)));
 
-    //  схема -> связи
-    // обнако слоты находятся в окне главного интерфейса, так как необходимо сначала создать
-    // диалоговые окна (QDialog) для отображения виджета связей
+    //  СЃС…РµРјР° -> СЃРІСЏР·Рё
+    // РѕР±РЅР°РєРѕ СЃР»РѕС‚С‹ РЅР°С…РѕРґСЏС‚СЃСЏ РІ РѕРєРЅРµ РіР»Р°РІРЅРѕРіРѕ РёРЅС‚РµСЂС„РµР№СЃР°, С‚Р°Рє РєР°Рє РЅРµРѕР±С…РѕРґРёРјРѕ СЃРЅР°С‡Р°Р»Р° СЃРѕР·РґР°С‚СЊ
+    // РґРёР°Р»РѕРіРѕРІС‹Рµ РѕРєРЅР° (QDialog) РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІРёРґР¶РµС‚Р° СЃРІСЏР·РµР№
     connect(drawEngine, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(drawEngine, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
     connect(drawEngine, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
@@ -275,7 +275,7 @@ void UGEngineControlWidget::switchLinksForTwoComponents(QString firstComponentNa
 
 void UGEngineControlWidget::actionLoadConfig()
 {
-    // Директория проектов
+    // Р”РёСЂРµРєС‚РѕСЂРёСЏ РїСЂРѕРµРєС‚РѕРІ
     QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
     QDir path1(default_path);
     if(!path1.exists(default_path))
@@ -380,7 +380,7 @@ void UGEngineControlWidget::actionCreateSimple()
 {
   try
   {
-    // Закрытие проекта
+    // Р—Р°РєСЂС‹С‚РёРµ РїСЂРѕРµРєС‚Р°
     if(application->GetProjectOpenFlag())
     {
         if(QMessageBox::question(this, "Info", "Close current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
@@ -391,7 +391,7 @@ void UGEngineControlWidget::actionCreateSimple()
         application->CloseProject();
     }
 
-    // Директория проектов
+    // Р”РёСЂРµРєС‚РѕСЂРёСЏ РїСЂРѕРµРєС‚РѕРІ
     QString default_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
     QDir path1(default_path);
     if(!path1.exists(default_path))
@@ -414,13 +414,13 @@ void UGEngineControlWidget::actionCreateSimple()
 
     std::string path_dialog=default_path.toUtf8().data();
 
-    // Создание папки проекта автоматическое либо выбор существующей
+    // РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё РїСЂРѕРµРєС‚Р° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРµ Р»РёР±Рѕ РІС‹Р±РѕСЂ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№
     if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
     {
         time_t curr_time;
         time(&curr_time);
 
-        // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+        // Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
         std::string folder=RDK::get_text_time(curr_time, '.', '_');
         path_dialog+=std::string("/Autocreate")+folder.c_str();
 
@@ -542,7 +542,7 @@ void UGEngineControlWidget::actionAutoCopyConfig()
     if(config_path.find_last_of("\\/") == config_path.size()-1)
         config_path.resize(n+1);
 
-    // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+    // Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
     std::string date_time_str=RDK::get_text_time(curr_time, '.', '_');
     config_path+=std::string(" ")+date_time_str+"/";
 
@@ -664,13 +664,13 @@ void UGEngineControlWidget::actionReloadParameters()
 {
     application->ReloadParameters();
 }
-//int ts; // костыль
+//int ts; // РєРѕСЃС‚С‹Р»СЊ
 void UGEngineControlWidget::actionStart()
 {
   try
   {
     startChannel(-1);
-    //ts = startTimer(150); // костыль
+    //ts = startTimer(150); // РєРѕСЃС‚С‹Р»СЊ
 //    ui->statusBar->showMessage("Calculation in progress");
   }
   catch(RDK::UException& e)
@@ -686,7 +686,7 @@ void UGEngineControlWidget::actionStart()
 void UGEngineControlWidget::actionPause()
 {
     pauseChannel(-1);
-    //killTimer(ts); // костыль
+    //killTimer(ts); // РєРѕСЃС‚С‹Р»СЊ
 //    ui->statusBar->showMessage("Calculation at pause");
 }
 
@@ -789,7 +789,7 @@ void UGEngineControlWidget::actionWatchWindow()
     }
 
     graphWindow->activateWindow();
-    //отобразить *graphWindowWidget
+    //РѕС‚РѕР±СЂР°Р·РёС‚СЊ *graphWindowWidget
 //    ui->dockWidgetGraph->show();*/
 }
 
@@ -810,7 +810,7 @@ void UGEngineControlWidget::actionProfiling()
     profilingWindow->showNormal();
     profilingWindow->activateWindow();*/
 
-    //отобразить *graphWindowWidget
+    //РѕС‚РѕР±СЂР°Р·РёС‚СЊ *graphWindowWidget
 //    ui->dockWidgetGraph->show();
 }
 
@@ -909,14 +909,14 @@ void UGEngineControlWidget::calcOneStepChannel(int chanelIndex)
     application->StepChannel(chanelIndex);
 }
 
-/// Добавляет новый виджет в imagesVector
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РІРёРґР¶РµС‚ РІ imagesVector
 void UGEngineControlWidget::addImagesWidged()
 {
     int index = 1;
     if(!imagesVector.empty())
         index = imagesVector.back()->accessibleName().replace("Images_","").toInt()+1;
 
-    //создаем каждую новый виджет с именем Images + номер
+    //СЃРѕР·РґР°РµРј РєР°Р¶РґСѓСЋ РЅРѕРІС‹Р№ РІРёРґР¶РµС‚ СЃ РёРјРµРЅРµРј Images + РЅРѕРјРµСЂ
     imagesVector.push_back(new UImagesWidget(this));
     imagesVector.back()->setAccessibleName(QString("Images_")+RDK::sntoa(index).c_str());
     imagesVector.back()->setWindowTitle(QString("Images_")+RDK::sntoa(index).c_str());
@@ -927,14 +927,14 @@ void UGEngineControlWidget::addImagesWidged()
     imagesSbWindow->show();
     imagesSbWindow->showMaximized();
 
-    // когда закрывается вкладка Watches, необходиом грамотно очистить вектор
+    // РєРѕРіРґР° Р·Р°РєСЂС‹РІР°РµС‚СЃСЏ РІРєР»Р°РґРєР° Watches, РЅРµРѕР±С…РѕРґРёРѕРј РіСЂР°РјРѕС‚РЅРѕ РѕС‡РёСЃС‚РёС‚СЊ РІРµРєС‚РѕСЂ
     connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delImagesWidgetSlot(QObject*)) );
 }
 
 void UGEngineControlWidget::delImagesWidgetSlot(QObject* obj)
 {
-    // Виджет Watches уже удален на данный момент
-    // он не виден в отличие от других, необходиом его вычислить и удалить из массива
+    // Р’РёРґР¶РµС‚ Watches СѓР¶Рµ СѓРґР°Р»РµРЅ РЅР° РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚
+    // РѕРЅ РЅРµ РІРёРґРµРЅ РІ РѕС‚Р»РёС‡РёРµ РѕС‚ РґСЂСѓРіРёС…, РЅРµРѕР±С…РѕРґРёРѕРј РµРіРѕ РІС‹С‡РёСЃР»РёС‚СЊ Рё СѓРґР°Р»РёС‚СЊ РёР· РјР°СЃСЃРёРІР°
     int index = -1;
     for(size_t i=0;i<imagesVector.size(); i++)
     {
@@ -947,7 +947,7 @@ void UGEngineControlWidget::delImagesWidgetSlot(QObject* obj)
     delImagesWidged(size_t(index));
 }
 
-/// Удаляет виджет из imagesVector по имени
+/// РЈРґР°Р»СЏРµС‚ РІРёРґР¶РµС‚ РёР· imagesVector РїРѕ РёРјРµРЅРё
 void UGEngineControlWidget::delImagesWidged(size_t index)
 {
  if(index>=imagesVector.size())
@@ -958,14 +958,14 @@ void UGEngineControlWidget::delImagesWidged(size_t index)
 }
 
 
-/// Добавляет новый виджет отображения графиков
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РІРёРґР¶РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РіСЂР°С„РёРєРѕРІ
 void UGEngineControlWidget::addWatchesWidged()
 {
     int index = 1;
     if(!watchesVector.empty())
         index = watchesVector.back()->accessibleName().replace("Watches_","").toInt()+1;
 
-    //создаем каждую новый виджет с именем Watches + номер
+    //СЃРѕР·РґР°РµРј РєР°Р¶РґСѓСЋ РЅРѕРІС‹Р№ РІРёРґР¶РµС‚ СЃ РёРјРµРЅРµРј Watches + РЅРѕРјРµСЂ
     watchesVector.push_back(new UWatchTab(this));
     watchesVector.back()->setAccessibleName(QString("Watches_")+RDK::sntoa(index).c_str());
     watchesVector.back()->setWindowTitle(QString("Watches_")+RDK::sntoa(index).c_str());
@@ -976,14 +976,14 @@ void UGEngineControlWidget::addWatchesWidged()
     imagesSbWindow->show();
     imagesSbWindow->showMaximized();
 
-    // когда закрывается вкладка Watches, необходиом грамотно очистить вектор
+    // РєРѕРіРґР° Р·Р°РєСЂС‹РІР°РµС‚СЃСЏ РІРєР»Р°РґРєР° Watches, РЅРµРѕР±С…РѕРґРёРѕРј РіСЂР°РјРѕС‚РЅРѕ РѕС‡РёСЃС‚РёС‚СЊ РІРµРєС‚РѕСЂ
     connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delWatchesWidgetSlot(QObject*)) );
 }
 
 void UGEngineControlWidget::delWatchesWidgetSlot(QObject* obj)
 {
-    // Виджет Watches уже удален на данный момент
-    // он не виден в отличие от других, необходиом его вычислить и удалить из массива
+    // Р’РёРґР¶РµС‚ Watches СѓР¶Рµ СѓРґР°Р»РµРЅ РЅР° РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚
+    // РѕРЅ РЅРµ РІРёРґРµРЅ РІ РѕС‚Р»РёС‡РёРµ РѕС‚ РґСЂСѓРіРёС…, РЅРµРѕР±С…РѕРґРёРѕРј РµРіРѕ РІС‹С‡РёСЃР»РёС‚СЊ Рё СѓРґР°Р»РёС‚СЊ РёР· РјР°СЃСЃРёРІР°
     int index = -1;
     for(size_t i=0;i<watchesVector.size(); i++)
     {
@@ -996,7 +996,7 @@ void UGEngineControlWidget::delWatchesWidgetSlot(QObject* obj)
     delWatchesWidged(size_t(index));
 }
 
-/// Удаляет виджет отображения графиков
+/// РЈРґР°Р»СЏРµС‚ РІРёРґР¶РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РіСЂР°С„РёРєРѕРІ
 void UGEngineControlWidget::delWatchesWidged(size_t index)
 {
     if(index>=watchesVector.size())
@@ -1122,7 +1122,7 @@ void UGEngineControlWidget::updateChannelsVisibility()
     }
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void UGEngineControlWidget::AUpdateInterface(void)
 {
  QString caption_line=(application->GetProgramName()+" ").c_str();
@@ -1139,12 +1139,12 @@ void UGEngineControlWidget::AUpdateInterface(void)
   this->setWindowTitle(caption_line);
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void UGEngineControlWidget::AClearInterface(void)
 {
  AUpdateInterface();
 
- //Очистка Watches окон и Images окон
+ //РћС‡РёСЃС‚РєР° Watches РѕРєРѕРЅ Рё Images РѕРєРѕРЅ
     int count=int(watchesVector.size());
     for(int i=count-1;i>=0;i--)
         delete watchesVector[i];
@@ -1160,18 +1160,18 @@ void UGEngineControlWidget::AClearInterface(void)
     QList<QMdiSubWindow *> SubWindows = ui->mdiArea->findChildren<QMdiSubWindow *>();
     foreach(QWidget * widget, SubWindows)
     {
-        // Игнорируем UDrawEngineWidget
+        // РРіРЅРѕСЂРёСЂСѓРµРј UDrawEngineWidget
         if(dynamic_cast<SubWindowCloseIgnore*>(widget))
             continue;
 
-        // Остальные удаляем (Images, Watches)
+        // РћСЃС‚Р°Р»СЊРЅС‹Рµ СѓРґР°Р»СЏРµРј (Images, Watches)
         QMdiSubWindow* wid = dynamic_cast<QMdiSubWindow*>(widget);
         if(wid!=nullptr)
             delete widget;
     }
 }
 
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UGEngineControlWidget::AAfterLoadProject(void)
 {
  UpdateInterface();
@@ -1181,37 +1181,37 @@ void UGEngineControlWidget::AAfterLoadProject(void)
   statusPanel->ChangeAutoupdateProperties(false);
 }
 
-// Метод, вызываемый перед закрытием проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
 
 }
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UGEngineControlWidget::ABeforeReset(void)
 {
 
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UGEngineControlWidget::AAfterReset(void)
 {
 
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UGEngineControlWidget::ABeforeCalculate(void)
 {
 
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UGEngineControlWidget::AAfterCalculate(void)
 {
 
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.WriteInteger("WatchesCount", int(watchesVector.size()));
@@ -1235,10 +1235,10 @@ void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
     xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих Watches
+    // РћС‡РёСЃС‚РєР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… Watches
     size_t watches_size = watchesVector.size();
     for(size_t i=0; i < watches_size; i++)
     {
@@ -1261,7 +1261,7 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
     xml.SelectUp();
 
 
-    // Очистка существующих Images
+    // РћС‡РёСЃС‚РєР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… Images
     size_t images_size = imagesVector.size();
     for(size_t i=0; i < images_size; i++)
     {

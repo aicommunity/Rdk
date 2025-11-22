@@ -22,12 +22,12 @@
 #pragma resource "*.dfm"
 TUEngineMonitorFrame *UEngineMonitorFrame;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 TEngineMonitorThread::TEngineMonitorThread(RDK::UEngineControl* engine_control)
  : RDK::UEngineStateThread(engine_control)
@@ -41,14 +41,14 @@ TEngineMonitorThread::~TEngineMonitorThread(void)
 
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным состояния модулей
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј СЃРѕСЃС‚РѕСЏРЅРёСЏ РјРѕРґСѓР»РµР№
 // --------------------------
-/// Возвращает вектор состояний источников видеозахвата
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёР№ РёСЃС‚РѕС‡РЅРёРєРѕРІ РІРёРґРµРѕР·Р°С…РІР°С‚Р°
 std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 {
  return VideoCaptureStates;
@@ -57,9 +57,9 @@ std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
-/// Возвращает класс-владелец потока
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєР»Р°СЃСЃ-РІР»Р°РґРµР»РµС† РїРѕС‚РѕРєР°
 UEngineControlVcl* TEngineMonitorThread::GetEngineControl(void)
 {
  return dynamic_cast<UEngineControlVcl*>(EngineControl);
@@ -67,7 +67,7 @@ UEngineControlVcl* TEngineMonitorThread::GetEngineControl(void)
 
 void TEngineMonitorThread::AdditionExecute(void)
 {
-  // Определяем состояние тредов захвата видео
+  // РћРїСЂРµРґРµР»СЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ С‚СЂРµРґРѕРІ Р·Р°С…РІР°С‚Р° РІРёРґРµРѕ
 #ifdef RDK_VIDEO
   std::vector<int> video_capture_states;
 
@@ -121,7 +121,7 @@ void TEngineMonitorThread::AdditionExecute(void)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 TEngineThread::TEngineThread(RDK::UEngineControl* engine_control, int channel_index)
  : RDK::UEngineControlThread(engine_control, channel_index)
@@ -135,14 +135,14 @@ TEngineThread::~TEngineThread(void)
 
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
-/// Возвращает класс-владелец потока
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєР»Р°СЃСЃ-РІР»Р°РґРµР»РµС† РїРѕС‚РѕРєР°
 UEngineControlVcl* TEngineThread::GetEngineControl(void)
 {
  return dynamic_cast<UEngineControlVcl*>(EngineControl);
@@ -177,7 +177,7 @@ void TEngineThread::ABeforeCalculate(void)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UEngineControlVcl::UEngineControlVcl(void)
 {
@@ -191,21 +191,21 @@ UEngineControlVcl::~UEngineControlVcl(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Создание нового треда расчета
+/// РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ С‚СЂРµРґР° СЂР°СЃС‡РµС‚Р°
 RDK::UEngineControlThread* UEngineControlVcl::CreateEngineThread(RDK::UEngineControl* engine_control, int channel_index)
 {
  return new TEngineThread(engine_control, channel_index);
 }
 
-/// Создание нового треда расчета
+/// РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ С‚СЂРµРґР° СЂР°СЃС‡РµС‚Р°
 RDK::UEngineStateThread* UEngineControlVcl::CreateEngineStateThread(RDK::UEngineControl* engine_control)
 {
  return new TEngineMonitorThread(engine_control);
 }
 
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UEngineControlVcl::StartChannel(int channel_index)
 {
  RDK::UEngineControl::StartChannel(channel_index);
@@ -228,7 +228,7 @@ void UEngineControlVcl::StartChannel(int channel_index)
 
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UEngineControlVcl::PauseChannel(int channel_index)
 {
  RDK::UEngineControl::PauseChannel(channel_index);
@@ -326,19 +326,19 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  StatusBar->Update();
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUEngineMonitorFrame::AClearInterface(void)
 {
 
 
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUEngineMonitorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
@@ -346,7 +346,7 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
 
 //---------------------------------------------------------------------------
-/// Доступ к треду мониторинга состояния модулей сервера
+/// Р”РѕСЃС‚СѓРї Рє С‚СЂРµРґСѓ РјРѕРЅРёС‚РѕСЂРёРЅРіР° СЃРѕСЃС‚РѕСЏРЅРёСЏ РјРѕРґСѓР»РµР№ СЃРµСЂРІРµСЂР°
 const TEngineMonitorThread* TUEngineMonitorFrame::GetEngineMonitorThread(void) const
 {
  return dynamic_cast<TEngineMonitorThread*>(RdkApplication.GetEngineControl()->GetEngineStateThread());

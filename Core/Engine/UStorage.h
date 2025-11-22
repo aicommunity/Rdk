@@ -134,6 +134,11 @@ protected: // Список объектов
 // ������ ��������
 UObjectsStorage ObjectsStorage;
 
+// Index map for O(log n) object lookup by UEPtr<UContainer>
+// Maps object pointer to iterator in the corresponding UInstancesStorage list
+// Using std::map because UEPtr doesn't have hash function for std::unordered_map
+std::map<UEPtr<UContainer>, UInstancesStorageIterator> ObjectsIndex;
+
 // ��������� �������������� Id �������� �������
 UId LastClassId;
 

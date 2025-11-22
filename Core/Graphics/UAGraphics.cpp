@@ -23,11 +23,11 @@ namespace RDK {
 using namespace std;
 
 /* ***************************************************************************
- Реализация UAGraphics
+ Р РµР°Р»РёР·Р°С†РёСЏ UAGraphics
 *************************************************************************** */
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UAGraphics::UAGraphics(void)
 {
@@ -47,9 +47,9 @@ UAGraphics::~UAGraphics(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Разрешение канвы рисования
+// Р Р°Р·СЂРµС€РµРЅРёРµ РєР°РЅРІС‹ СЂРёСЃРѕРІР°РЅРёСЏ
 int UAGraphics::GetCWidth(void) const
 {
  return CWidth;
@@ -60,14 +60,14 @@ int UAGraphics::GetCHeight(void) const
  return CHeight;
 }
 
-// Устанавливает шрифт
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С€СЂРёС„С‚
 bool UAGraphics::SetFont(UAFont* font)
 {
  Font=font;
  return true;
 }
 
-// Возвращает текущий шрифт
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РёР№ С€СЂРёС„С‚
 UAFont* UAGraphics::GetFont(void)
 {
  return Font;
@@ -75,33 +75,33 @@ UAFont* UAGraphics::GetFont(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к атрибутам инструментов рисования
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє Р°С‚СЂРёР±СѓС‚Р°Рј РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ СЂРёСЃРѕРІР°РЅРёСЏ
 // --------------------------
-// Возвращает цвет пера
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С†РІРµС‚ РїРµСЂР°
 const UColorT& UAGraphics::GetPenColor(void) const
 {
  return PenColor;
 }
 
-// Возвращает толщину пера
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕР»С‰РёРЅСѓ РїРµСЂР°
 int UAGraphics::GetPenWidth(void) const
 {
  return PenWidth;
 }
 
-// Возвращает X координату пера
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ X РєРѕРѕСЂРґРёРЅР°С‚Сѓ РїРµСЂР°
 int UAGraphics::GetPenX(void) const
 {
  return PenX;
 }
 
-// Возвращает Y координату пера
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Y РєРѕРѕСЂРґРёРЅР°С‚Сѓ РїРµСЂР°
 int UAGraphics::GetPenY(void) const
 {
  return PenY;
 }
 
-// Устанавливает цвет пера
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С†РІРµС‚ РїРµСЂР°
 void UAGraphics::SetPenColor(const UColorT &color)
 {
  if(PenColor == color)
@@ -110,7 +110,7 @@ void UAGraphics::SetPenColor(const UColorT &color)
  PenColor=color;
 }
 
-// Устанавливает толщину пера
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РѕР»С‰РёРЅСѓ РїРµСЂР°
 bool UAGraphics::SetPenWidth(int width)
 {
  if(PenWidth == width)
@@ -124,7 +124,7 @@ bool UAGraphics::SetPenWidth(int width)
  return true;
 }
 
-// Позиционирует перо в точку x,y
+// РџРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚ РїРµСЂРѕ РІ С‚РѕС‡РєСѓ x,y
 void UAGraphics::SetPenPos(int x, int y)
 {
  PenX=x;

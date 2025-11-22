@@ -32,7 +32,7 @@ void UWatchChartOption::updateChartList()
 {
  if(!WatchTab)
   return;
-    //îáíîâëÿåì èìåíà â ñïèñêå ãðàôèêîâ
+    //Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð¸Ð¼ÐµÐ½Ð° Ð² ÑÐ¿Ð¸ÑÐºÐµ Ð³Ñ€Ð°Ñ„Ð¸ÐºÐ¾Ð²
     ui->allChartsList->clear();
     int chartsAmount = WatchTab->countGraphs();
 
@@ -48,7 +48,7 @@ void UWatchChartOption::updateLayoutBox()
 {
     if(!WatchTab)
      return;
-    //íàñòðàèâàåì ïîëÿ âûáîðà êîë-âà êîëîíîê è ñòðîê
+    //Ð½Ð°ÑÑ‚Ñ€Ð°Ð¸Ð²Ð°ÐµÐ¼ Ð¿Ð¾Ð»Ñ Ð²Ñ‹Ð±Ð¾Ñ€Ð° ÐºÐ¾Ð»-Ð²Ð° ÐºÐ¾Ð»Ð¾Ð½Ð¾Ðº Ð¸ ÑÑ‚Ñ€Ð¾Ðº
     int colNumber = WatchTab->getColNumber();
     int rowNumber = WatchTab->getRowNumber();
     if (colNumber && rowNumber)
@@ -64,13 +64,13 @@ void UWatchChartOption::updateParameters(int chartIndex)
      return;
     ui->graphNameEditor->setText(WatchTab->getChart(chartIndex)->getChartTitle());
 
-    /*ÄÎÄÅËÀÒÜ*/
+    /*Ð”ÐžÐ”Ð•Ð›ÐÐ¢Ð¬*/
     ui->legendVisibilitSB->setDisabled(true);
     ui->tittleVisibilityCB->setDisabled(true);
     //ui->legendVisibilitSB->setTristate(WatchTab->getChart(currentRow)->)
-    //äîáàâèòü âèäèìîñòü ëåãåíäû è íàçâàíèÿ
+    //Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð²Ð¸Ð´Ð¸Ð¼Ð¾ÑÑ‚ÑŒ Ð»ÐµÐ³ÐµÐ½Ð´Ñ‹ Ð¸ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ñ
 
-    //çàãðóçêà ïàðàìåòðîâ ãðàôèêà è åãî îñåé
+    //Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ° Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð² Ð³Ñ€Ð°Ñ„Ð¸ÐºÐ° Ð¸ ÐµÐ³Ð¾ Ð¾ÑÐµÐ¹
     ui->axisXNameEditor->setText(WatchTab->getChart(chartIndex)->getAxisXName());
     ui->axisYNameEditor->setText(WatchTab->getChart(chartIndex)->getAxisYName());
 
@@ -91,22 +91,22 @@ void UWatchChartOption::createLayout()
     if(!WatchTab)
      return;
 
-    //ñïðàøèâàåì þçåðà, òî÷íî ëè îí õî÷åò èçìåíèòü ïàðàìåòðû ñåòêè
-    //íî íå ñïðàøèâàåì åñëè òàì íåò ñåðèé
+    //ÑÐ¿Ñ€Ð°ÑˆÐ¸Ð²Ð°ÐµÐ¼ ÑŽÐ·ÐµÑ€Ð°, Ñ‚Ð¾Ñ‡Ð½Ð¾ Ð»Ð¸ Ð¾Ð½ Ñ…Ð¾Ñ‡ÐµÑ‚ Ð¸Ð·Ð¼ÐµÐ½Ð¸Ñ‚ÑŒ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ ÑÐµÑ‚ÐºÐ¸
+    //Ð½Ð¾ Ð½Ðµ ÑÐ¿Ñ€Ð°ÑˆÐ¸Ð²Ð°ÐµÐ¼ ÐµÑÐ»Ð¸ Ñ‚Ð°Ð¼ Ð½ÐµÑ‚ ÑÐµÑ€Ð¸Ð¹
     if (WatchTab->getChart(0)->countSeries() == 0)
     {
         ;
     }
     else
     {
-        // Åñëè ñåòêà ãðàôèêîâ óìåíüøàåòñÿ (ïðîçîéäåò óäàëåíèå ãðàôèêîâ)
+        // Ð•ÑÐ»Ð¸ ÑÐµÑ‚ÐºÐ° Ð³Ñ€Ð°Ñ„Ð¸ÐºÐ¾Ð² ÑƒÐ¼ÐµÐ½ÑŒÑˆÐ°ÐµÑ‚ÑÑ (Ð¿Ñ€Ð¾Ð·Ð¾Ð¹Ð´ÐµÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ð¸Ðµ Ð³Ñ€Ð°Ñ„Ð¸ÐºÐ¾Ð²)
         QString grid_reduce = "";
         if(ui->chartColNumber_spin->value()*ui->chartRowNumber_spin->value() < WatchTab->getRowNumber()*WatchTab->getColNumber())
             grid_reduce =   "New layout contains fewer charts than it was, so "
                             + QString::number(WatchTab->getRowNumber()*WatchTab->getColNumber() - ui->chartColNumber_spin->value()*ui->chartRowNumber_spin->value()) +
                             " charts will be deleted";
 
-        //ñïðàøèâàåì þçåðà òî÷íî ëè îí óâåðåí
+        //ÑÐ¿Ñ€Ð°ÑˆÐ¸Ð²Ð°ÐµÐ¼ ÑŽÐ·ÐµÑ€Ð° Ñ‚Ð¾Ñ‡Ð½Ð¾ Ð»Ð¸ Ð¾Ð½ ÑƒÐ²ÐµÑ€ÐµÐ½
         QMessageBox messageBox;
         messageBox.setText("Are you sure you want to change Grid layout params?");
         messageBox.setInformativeText
@@ -123,7 +123,7 @@ void UWatchChartOption::createLayout()
         if(messageBox.exec() != QMessageBox::Yes) return;
     }
 
-    //ñîçäàíèå íîâîãî ðàñïîëîæåíèÿ
+    //ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ðµ Ð½Ð¾Ð²Ð¾Ð³Ð¾ Ñ€Ð°ÑÐ¿Ð¾Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
     int colNumber = ui->chartColNumber_spin->value();
     int rowNumber = ui->chartRowNumber_spin->value();
 
@@ -135,7 +135,7 @@ void UWatchChartOption::saveParameters()
     if(!WatchTab)
      return;
 
-    //ñîõðàíåíèå âñåõ ïàðàìåòðîâ
+    //ÑÐ¾Ñ…Ñ€Ð°Ð½ÐµÐ½Ð¸Ðµ Ð²ÑÐµÑ… Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð²
    int index = ui->allChartsList->currentRow();
    if (index == -1) return;
 

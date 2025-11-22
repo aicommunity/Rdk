@@ -23,7 +23,7 @@ public:		// User declarations
 
 void AUpdateInterface(void);
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual TUComponentLinksForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------

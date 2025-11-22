@@ -133,7 +133,7 @@ void UCreateTestWidget::createTest()
     storage.SetNodeAttribute("Delta", (*it)->data(4, Qt::DisplayRole).toString().toLocal8Bit().constData());
     std::string nodeValue = (*it)->data(3, Qt::DisplayRole).toString().toLocal8Bit().constData();
 
-    // êîñòûëü
+    // ÐºÐ¾ÑÑ‚Ñ‹Ð»ÑŒ
     if(nodeValue.size() > 0 && nodeValue[0] == '<')
     {
       RDK::USerStorageXML nodeData;

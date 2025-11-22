@@ -19,10 +19,10 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Отправляет данные объекта UBitmap в IplImage
+// РћС‚РїСЂР°РІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РѕР±СЉРµРєС‚Р° UBitmap РІ IplImage
 void operator >> (UBitmap &source, IplImage* &target);
 
-// Отправляет данные объекта IplImage в UBitmap
+// РћС‚РїСЂР°РІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РѕР±СЉРµРєС‚Р° IplImage РІ UBitmap
 void operator << (UBitmap &target, const IplImage *source);
 }
 //---------------------------------------------------------------------------

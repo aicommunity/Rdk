@@ -13,29 +13,29 @@
 
 struct TServerMetadata
 {
-/// Временная метка результата
+/// Р’СЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР° СЂРµР·СѓР»СЊС‚Р°С‚Р°
 RDK::ULongTime TimeStamp;
 
-/// Идентификатор сервера
+/// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃРµСЂРІРµСЂР°
 std::string ServerId;
 
-/// Идентификатор канала
+/// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєР°РЅР°Р»Р°
 std::string ChannelId;
 
-/// Индекс канала
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р°
 int ChannelIndex;
 
-/// Метаданные Xml
+/// РњРµС‚Р°РґР°РЅРЅС‹Рµ Xml
 std::string Metadata;
 };
 
 class TResultBroadcasterThread: public TThread
 {
-protected: // Параметры
-/// Данные для отправки в билижайшую сессию
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// Р”Р°РЅРЅС‹Рµ РґР»СЏ РѕС‚РїСЂР°РІРєРё РІ Р±РёР»РёР¶Р°Р№С€СѓСЋ СЃРµСЃСЃРёСЋ
 std::list<TServerMetadata> MetaList;
 
-/// Флаг разрешения отправки
+/// Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕС‚РїСЂР°РІРєРё
 RDK::UELockVar<bool> SendEnableFlag;
 
 public:
@@ -51,16 +51,16 @@ std::string SendString;
 RDK::UTransferPacket SendPacket;
 std::vector<unsigned char> SendBuffer;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TResultBroadcasterThread(bool CreateSuspended);
 virtual __fastcall ~TResultBroadcasterThread(void);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual bool __fastcall GenerateSendString(void);
 
@@ -71,10 +71,10 @@ virtual bool __fastcall PeriodicallyActions(void);
 
 virtual void __fastcall Execute(void);
 
-/// Добавляет метаданные в очередь
+/// Р”РѕР±Р°РІР»СЏРµС‚ РјРµС‚Р°РґР°РЅРЅС‹Рµ РІ РѕС‡РµСЂРµРґСЊ
 virtual bool __fastcall AddMetadataSafe(int channel_index, double time_stamp, const std::string &component_name, const std::string &property_name);
 
-/// Флаг разрешения отправки
+/// Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕС‚РїСЂР°РІРєРё
 bool GetSendEnableFlag(void) const;
 bool SetSendEnableFlag(bool value);
 // --------------------------
@@ -83,12 +83,12 @@ bool SetSendEnableFlag(bool value);
 #pragma warn -8130
 class TBroadcasterForm: public TUVisualControllerForm, public RDK::UBroadcasterInterface
 {
-protected: // Параметры
-/// Флаг, определяющий разрешение на использование этого вещателя
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// Р¤Р»Р°Рі, РѕРїСЂРµРґРµР»СЏСЋС‰РёР№ СЂР°Р·СЂРµС€РµРЅРёРµ РЅР° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ СЌС‚РѕРіРѕ РІРµС‰Р°С‚РµР»СЏ
 bool BroadcastEnableFlag;
 
-protected: // Данные
-/// Указатель на контроллер движка
+protected: // Р”Р°РЅРЅС‹Рµ
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РєРѕРЅС‚СЂРѕР»Р»РµСЂ РґРІРёР¶РєР°
 RDK::UEngineControl *EngineControl;
 
 public:
@@ -99,28 +99,28 @@ virtual __fastcall ~TBroadcasterForm(void);
 // ---------------------------
 
 // ---------------------------
-// Методы доступа к параметрам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј
 // ---------------------------
 bool GetBroadcastEnableFlag(void) const;
 bool SetBroadcastEnableFlag(bool value);
 // ---------------------------
 
 // ---------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // ---------------------------
-/// Управление контроллером движка
-/// Движок должен быть задан до регистрации или включения вещателя
+/// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј РґРІРёР¶РєР°
+/// Р”РІРёР¶РѕРє РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ Р·Р°РґР°РЅ РґРѕ СЂРµРіРёСЃС‚СЂР°С†РёРё РёР»Рё РІРєР»СЋС‡РµРЅРёСЏ РІРµС‰Р°С‚РµР»СЏ
 RDK::UEngineControl *GetEngineControl(void);
 bool SetEngineControl(RDK::UEngineControl *engine_control);
 
 bool RegisterToEngineControl(void);
 bool UnRegisterFromEngineControl(void);
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void ASaveParameters(RDK::USerStorageXML &xml);
 virtual void AASaveParameters(RDK::USerStorageXML &xml)=0;
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void ALoadParameters(RDK::USerStorageXML &xml);
 virtual void AALoadParameters(RDK::USerStorageXML &xml)=0;
 // ---------------------------

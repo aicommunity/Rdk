@@ -69,7 +69,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
 //  return storage;
 
  int size=0;
- std::string str=storage.GetNodeAttribute("Size"); // TODO: заменить
+ std::string str=storage.GetNodeAttribute("Size"); // TODO: Р·Р°РјРµРЅРёС‚СЊ
  if(!str.empty())
   size=atoi(str);
 
