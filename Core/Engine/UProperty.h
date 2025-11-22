@@ -1230,28 +1230,9 @@ public:
  }
 };
 
-// Deprecated: Use UProperty<T, OwnerT, type> directly
-// All property types (Parameters, States, Inputs, Outputs) now use unified UProperty
-template<typename T, typename OwnerT, unsigned int type = ptPubParameter>
-using ULProperty = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type = ptPubParameter>
-using UCProperty = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type = ptPubParameter>
-using UCLProperty = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type = ptPubOutput>
-using UPropertyOutputData = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type = ptPubOutput>
-using UPropertyOutputCData = UProperty<std::vector<T>, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type = ptPubInput>
-using UPropertyInputData = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type = ptPubInput>
-using UPropertyInputCData = UProperty<std::vector<T>, OwnerT, type>;
+// Deprecated aliases have been removed. Use UProperty<T, OwnerT, type> directly.
+// All property types (Parameters, States, Inputs, Outputs) now use unified UProperty.
+// For container properties, use UProperty<std::vector<T>, OwnerT, type>.
 
 
 

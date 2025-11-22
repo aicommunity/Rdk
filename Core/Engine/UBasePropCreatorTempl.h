@@ -46,11 +46,11 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
     unsigned int io_type    = RDK::atoi(serstorage->GetNodeAttribute("IoType"));
     if(prop_type == "Parameters")
     {
-     CreatorT::template CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet,p_type);
+     CreatorT::template CreateProperty<UProperty,ptPubParameter>(serstorage,mock_unet,p_type);
     }
     else if(prop_type == "State")
     {
-     CreatorT::template CreateProperty<ULProperty,ptPubState>(serstorage,mock_unet,p_type);
+     CreatorT::template CreateProperty<UProperty,ptPubState>(serstorage,mock_unet,p_type);
     }
     else if(prop_type == "Input")
     {
@@ -61,17 +61,17 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
       continue;
      }
      // Unified Input property creation
-     // ULProperty is now just an alias for UProperty (all types are unified)
+     // All property types now use UProperty directly
      // Check only ipData (ipComp removed as legacy)
      if((io_type & (ipRange  | ipData)) == (ipRange  | ipData))
      {
       // Vector property
-      CreatorT::template CreateProperty<ULProperty,ptPubInput>(serstorage,mock_unet,p_type);
+      CreatorT::template CreateProperty<UProperty,ptPubInput>(serstorage,mock_unet,p_type);
       serstorage->SelectUp();
       continue;
      }
      // Regular property
-     CreatorT::template CreateProperty<ULProperty,ptPubInput>(serstorage,mock_unet,p_type);
+     CreatorT::template CreateProperty<UProperty,ptPubInput>(serstorage,mock_unet,p_type);
     }
     else if(prop_type == "Output")
     {
@@ -82,8 +82,8 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
       continue;
      }
      // Unified Output property creation
-     // ULProperty is now just an alias for UProperty (all types are unified)
-     CreatorT::template CreateProperty<ULProperty,ptPubOutput>(serstorage,mock_unet,p_type);
+     // All property types now use UProperty directly
+     CreatorT::template CreateProperty<UProperty,ptPubOutput>(serstorage,mock_unet,p_type);
     }
    }
    catch(UComponent::EPropertyNameAlreadyExist& )
