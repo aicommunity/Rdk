@@ -24,11 +24,11 @@ namespace RDK {
 
 /* *********************************************************************** */
 /* *********************************************************************** */
-// Элемент списка существующих объектов определенного класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // class UInstancesStorageElement
-// Методы
+// пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UInstancesStorageElement::UInstancesStorageElement(void)
  : UseFlag(false)
@@ -53,21 +53,21 @@ UInstancesStorageElement::~UInstancesStorageElement(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Оператор присваивания
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UInstancesStorageElement& UInstancesStorageElement::operator = (const UInstancesStorageElement &copy)
 {
- // Указатель на объект
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  Object=copy.Object;
 
- // Признак того свободен ли объект
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  UseFlag=copy.UseFlag;
 
  return *this;
 }
 
-// Операторы сравнения
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UInstancesStorageElement::operator < (const UInstancesStorageElement &value)
 {
  return Object<value.Object;
@@ -102,9 +102,9 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 /* *************************************************************************** */
 // Class UStorage
 /* *************************************************************************** */
-// Методы
+// пїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UStorage::UStorage(void)
 {
@@ -118,7 +118,7 @@ UStorage::~UStorage(void)
   ClearObjectsStorage(true);
   ClearClassesStorage(true);
 
-  // Удаление всех библиотек
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   for(int i =0; i < int(CollectionList.size());i++)
   {
       DelCollection(i);
@@ -149,9 +149,9 @@ UStorage::~UStorage(void)
 // --------------------------
 
 // --------------------------
-// Методы управления свойствами
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает последний использованный Id классов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Id пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UId UStorage::GetLastClassId(void) const
 {
  return LastClassId;
@@ -159,21 +159,21 @@ UId UStorage::GetLastClassId(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к таблицам соотвествий
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Возвращает Id класса по его имени
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Id пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 const UId& UStorage::FindClassId(const NameT &name) const
 {
- map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
+ auto I=ClassesLookupTable.find(name);
  if(I == ClassesLookupTable.end())
   throw EClassNameNotExist(name);
  return I->second;
 }
 
-// Возвращает имя класса по его Id
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ Id
 const NameT UStorage::FindClassName(const UId &id) const
 {
- for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
+ for(auto I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end();I != J;++I)
  {
   if(I->second == id)
@@ -185,10 +185,10 @@ const NameT UStorage::FindClassName(const UId &id) const
 
 
 // --------------------------
-// Методы управления хранилищем классов
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Добавляет образец класса объекта в хранилище
-// Возвращает id класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ id пїЅпїЅпїЅпїЅпїЅпїЅ
 UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid)
 {
 // UEPtr<UStorage> storage=classtemplate->GetStorage();
@@ -206,13 +206,13 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &clas
  factory->SetClassId(id);
  LastClassId=id;
 
- // Заглушка!!! Это некоррректно, имени-то нет.
+ // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!!! пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅ.
 // ClassesDescription[FindClassName(id)]=classtemplate->NewDescription();
 
  return id;
 }
 
-// Добавляет образец класса объекта в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
@@ -221,15 +221,15 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &c
  UId id=AddClass(factory,classid);
  ClassesLookupTable[classname]=id;
 
- // теперь ClassDescription не сохраняется
+ // пїЅпїЅпїЅпїЅпїЅпїЅ ClassDescription пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // ClassesDescription[classname]=factory->NewDescription();
 // ClassesDescription[classname]->SetClassNameValue(classname);
  return id;
 }
 
-// Удаляет образец класса объекта из хранилища
-// Если 'force' == true то принудительно удаляет из хранилища
-// все объекты этого класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅ 'force' == true пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::DelClass(const UId &classid, bool force)
 {
  UObjectsStorageIterator temp=ObjectsStorage.find(classid);
@@ -237,7 +237,7 @@ void UStorage::DelClass(const UId &classid, bool force)
  if(!force)
  {
   FreeObjectsStorageByClass(classid);
-  // Если после очистки у класса не осталось объектов
+  // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   if(temp != ObjectsStorage.end() && temp->second.empty())
       ObjectsStorage.erase(temp);
   if(temp != ObjectsStorage.end() && temp->second.size() > 0)
@@ -271,8 +271,7 @@ void UStorage::DelClass(const UId &classid, bool force)
  }
 
 
- for(map<NameT,UId>::iterator I=ClassesLookupTable.begin(),
-							  J=ClassesLookupTable.end(); I!=J; ++I)
+ for(auto I=ClassesLookupTable.begin(), J=ClassesLookupTable.end(); I!=J; ++I)
  {
   if(I->second == classid)
   {
@@ -286,7 +285,7 @@ void UStorage::DelClass(const UId &classid, bool force)
   lib->RemoveClassFromCompletedList(name);
 }
 
-// Проверяет наличие образца класса объекта в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::CheckClass(const UId &classid) const
 {
  if(ClassesStorage.find(classid) == ClassesStorage.end())
@@ -297,14 +296,14 @@ bool UStorage::CheckClass(const UId &classid) const
 
 bool UStorage::CheckClass(const string &classname) const
 {
- map<NameT,UId>::const_iterator I=ClassesLookupTable.find(classname);
+ auto I=ClassesLookupTable.find(classname);
  if(I == ClassesLookupTable.end())
   return false;
  return true;
 
 }
 
-// Возвращает образец класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
@@ -321,14 +320,14 @@ UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string
  return GetComponentFactory(id);
 }
 
-// Возвращает число классов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UStorage::GetNumClasses(void) const
 {
  return int(ClassesStorage.size());
 }
 
-// Возвращает список идентификаторов всех классов хранилища
-// Буфер 'buffer' будет очищен от предыдущих значений
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ 'buffer' пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::GetClassIdList(std::vector<UId> &buffer) const
 {
  buffer.resize(0);
@@ -337,18 +336,15 @@ void UStorage::GetClassIdList(std::vector<UId> &buffer) const
   buffer.push_back(I->first);
 }
 
-// Возвращает список имен всех классов хранилища
-// Буфер 'buffer' будет очищен от предыдущих значений
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ 'buffer' пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::GetClassNameList(vector<NameT> &buffer) const
 {
- map<NameT,UId>::const_iterator I,J;
-
- I=ClassesLookupTable.begin();
- J=ClassesLookupTable.end();
+ 
  buffer.resize(0);
  buffer.reserve(ClassesLookupTable.size());
 
- for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
+ for(auto I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end(); I!=J; ++I)
  {
   buffer.push_back(I->first);
@@ -357,7 +353,7 @@ void UStorage::GetClassNameList(vector<NameT> &buffer) const
 
 
 
-// Удаляет все не используемые образцы классов из хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::FreeClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
@@ -371,7 +367,7 @@ void UStorage::FreeClassesStorage(bool force)
  }
 }
 
-// Удаляет все образцы классов из хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::ClearClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
@@ -425,14 +421,14 @@ void UStorage::ClearClassesStorage(bool force)
 // --------------------------
 
 // --------------------------
-// Методы управления хранилищем объектов
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Извлекает объект из хранилища
-// Возвращает указатель на свободный объект по имени класса
-// Выбранный объект помечается как занятый в хранилище
-// Флаг 'Activity' объекта выставляется в true
-// Если свободного объекта не существует он создается и добавляется
-// в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅ 'Activity' пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ true
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
@@ -444,7 +440,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
  if(instances != ObjectsStorage.end())
  {
-  UInstancesStorageElement* element=0;// Заглушка!! instances->FindFree();
+  UInstancesStorageElement* element=0;// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!! instances->FindFree();
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
               J=instances->second.end(); I!=J; ++I)
   {
@@ -475,7 +471,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  }
 
 
- // Если свободного объекта не нашли
+ // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  UEPtr<UContainer> obj;
  if(prototype)
  {
@@ -506,7 +502,7 @@ UEPtr<UComponent> UStorage::TakeObject(const NameT &classname, const UEPtr<UComp
 }
 
 
-// Возвращает Id класса, отвечающий объекту 'object'
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Id пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ 'object'
 UId UStorage::FindClass(UEPtr<UComponent> object) const
 {
  if(!object)
@@ -515,7 +511,7 @@ UId UStorage::FindClass(UEPtr<UComponent> object) const
  return object->GetClass();
 }
 
-// Проверяет существует ли объект 'object' в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 'object' пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::CheckObject(UEPtr<UContainer> object) const
 {
  if(!object)
@@ -534,7 +530,7 @@ bool UStorage::CheckObject(UEPtr<UContainer> object) const
  return false;
 }
 
-// Ищет фабрику, непосредственно хранящую заданный компонент
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> object)
 {
  if(!object)
@@ -553,7 +549,7 @@ UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> objec
  return 0;
 }
 
-// Вычисляет суммарное число объектов в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UStorage::CalcNumObjects(void) const
 {
  int result=0;
@@ -580,7 +576,7 @@ size_t UStorage::CalcNumObjects(const string &classname) const
 }
 
 
-// Удаляет все свободные объекты из хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::FreeObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
@@ -660,7 +656,7 @@ void UStorage::FreeObjectsStorage(bool force)
  }
 }
 
-// Удаляет все свободные объекты заданного класса из хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::FreeObjectsStorageByClass(const UId &classid)
 {
     UObjectsStorageIterator instances=ObjectsStorage.find(classid);
@@ -733,7 +729,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
 
 }
 
-// Удаляет все объекты из хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::ClearObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
@@ -757,7 +753,7 @@ void UStorage::ClearObjectsStorage(bool force)
  FreeObjectsStorage(force);
 }
 
-// Удаляет все объекты заданного класса из хранилища
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::ClearObjectsStorageByClass(const UId &classid)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
@@ -770,7 +766,7 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
  ObjectsStorage.erase(instances);
 }
 
-/// Устанавливает состояние уже выданного компонента в состояние по умолчанию
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::DefaultObject(UEPtr<UContainer> object)
 {
  if(object->GetStorage() != this)
@@ -795,23 +791,23 @@ void UStorage::DefaultObject(UEPtr<UContainer> object)
 // --------------------------
 
 // --------------------------
-// Методы управления описанием классов
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 
-// Установка пути к папке с описаниями классов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::SetClDescPath(const std::string& value)
 {
     ClDesc = value;
 }
 
-// Получение пути к папке с описаниями классов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string UStorage::GetClDescPath() const
 {
     return ClDesc;
 }
 
-// Получение пути к папке с описанием конкретного класса
-// Также создаёт необходимые папки
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
 {
     std::string path = "";
@@ -820,7 +816,7 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
     if(lib)
     {
         path = ClDesc;
-        // т.к. RDK::CreateNewDirectory делает mkdir, а не mkpath, необходимо по очереди создавать папки
+        // пїЅ.пїЅ. RDK::CreateNewDirectory пїЅпїЅпїЅпїЅпїЅпїЅ mkdir, пїЅ пїЅпїЅ mkpath, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if(RDK::CreateNewDirectory(path.c_str())==0)
         {
             path += lib->GetName()+"/";
@@ -838,7 +834,7 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
     return "";
 }
 
-// Возвращает XML описание класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
@@ -854,8 +850,8 @@ const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::stri
  return I->second;
 }
 
-// Устанавливает XML описание класса
-// Класс в хранилище должен существовать
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description)
 {
  UClassesStorageIterator I=ClassesStorage.find(FindClassId(classname));
@@ -866,7 +862,7 @@ void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UCo
  ClassesDescription[classname]=description;
 }
 
-// Загрузка описаний классов из xml-описаний
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::LoadClassesDescription()
 {
     std::vector<string> lib_names;
@@ -894,7 +890,7 @@ void UStorage::LoadClassesDescription()
     }
 }
 
-// Сохраняет описание класса в файл на диск
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
 void UStorage::SaveClassDescriptionToFile(const std::string &classname)
 {
     UEPtr<UContainerDescription> cl_desc = GetClassDescription(classname, true);
@@ -912,21 +908,21 @@ void UStorage::SaveClassDescriptionToFile(const std::string &classname)
     }
 }
 
-// Сохраняет описание класса в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 void UStorage::SaveClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
  GetClassDescription(classname)->Save(xml);
 }
 
-// Загружает описание класса из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 void UStorage::LoadClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
  GetClassDescription(classname)->Load(xml);
 }
 
-// Сохраняет описание всех классов в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 void UStorage::SaveClassesDescription(USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
@@ -937,7 +933,7 @@ void UStorage::SaveClassesDescription(USerStorageXML &xml)
  }
 }
 
-// Загружает описание всех классов из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 void UStorage::LoadClassesDescription(USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
@@ -949,13 +945,13 @@ void UStorage::LoadClassesDescription(USerStorageXML &xml)
  }
 }
 
-// Сохраняет общее описание всех классов в xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
 bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
 {
  xml.AddNode("Default");
 
  xml.AddNode("Properties");
- std::map<std::string, UPropertyDescription>::const_iterator I=CommonDescriptions.begin();
+ auto I=CommonDescriptions.begin();
  while(I != CommonDescriptions.end())
  {
   xml.AddNode(I->first);
@@ -972,7 +968,7 @@ bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
  return true;
 }
 
-// Загружает общее описание всех классов из xml
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
 bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 {
  if(xml.SelectNode("Default"))
@@ -1018,9 +1014,9 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 
 
 // --------------------------
-// Методы управления библиотеками
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Указатель на логгер
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<ULoggerEnv> const UStorage::GetLogger(void) const
 {
  return Logger;
@@ -1035,19 +1031,19 @@ bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
  return true;
 }
 
-// Возвращает библиотеку по индексу
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<ULibrary> UStorage::GetCollection(int index)
 {
  return CollectionList[index];
 }
 
-// Возвращает число библиотек
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UStorage::GetNumCollections(void) const
 {
  return int(CollectionList.size());
 }
 
-// Возвращает библиотеку по имени
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 UEPtr<ULibrary> UStorage::GetCollection(const string &name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
@@ -1060,19 +1056,19 @@ UEPtr<ULibrary> UStorage::GetCollection(const string &name)
  return 0;
 }
 
-// Возвращает имя библиотеки по индексу
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const string& UStorage::GetCollectionName(int index)
 {
  return CollectionList[index]->GetName();
 }
 
-// Возвращает версию библиотеки по индексу
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const string& UStorage::GetCollectionVersion(int index)
 {
  return CollectionList[index]->GetVersion();
 }
 
-// Очищает списки Complete и Incomplete во всех библиотеках
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Complete пїЅ Incomplete пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::ClearAllLibsClassesNameArrays(void)
 {
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1082,8 +1078,8 @@ void UStorage::ClearAllLibsClassesNameArrays(void)
     }
 }
 
-// Возвращается строку имен библиотек конкретного типа, разделенных запятой
-// Буфер 'buffer' будет очищен от предыдущих значений
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅ 'buffer' пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::GetLibsNameListByType(std::string &buffer, int type) const
 {
     buffer.clear();
@@ -1100,13 +1096,13 @@ void UStorage::GetLibsNameListByType(std::string &buffer, int type) const
          buffer.erase(buffer.length()-1);
 }
 
-/// Непосредственно добавялет новый образец класса в хранилище
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
 {
     if(new_class_name.empty())
         return false;
 
-    // Библиотека куда добавляеться класс
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	URuntimeLibrary *library = 0;
 
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1119,7 +1115,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         }
     }
 
-    // Если не найдена или это не runtime библиотека
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ runtime пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!library || (library->GetType()!=2))
     {
         if(Logger)
@@ -1127,19 +1123,19 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         return false;
     }
 
-    // Проверка на существование класса
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if(CheckClass(new_class_name))
     {
-        // Разрешена ли замена
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         if(force_replace)
         {
-            // Библиотека где класс уже существует
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             URuntimeLibrary *lib = static_cast<URuntimeLibrary*>(FindCollection(new_class_name).Get());
             if(!lib)
                 return false;
             try
             {
-                //Сначала удаляем из нужной
+                //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 if(!lib->DelClass(new_class_name))
                     return false;
             }
@@ -1155,8 +1151,8 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
               Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
               return false;
             }
-            // Добавление в нужную
-            // AddNewClass сам запишет в Logger описания ошибок
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+            // AddNewClass пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Logger пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             if(!library->AddNewClass(new_class_name, new_comp_name, newclass))
                 return false;
         }
@@ -1166,7 +1162,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         }
     }
     else
-    {   // AddNewClass сам запишет в Logger описания ошибок
+    {   // AddNewClass пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Logger пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         if(!library->AddNewClass(new_class_name, new_comp_name, newclass))
             return false;
     }
@@ -1174,7 +1170,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
     return true;
 }
 
-/// Удаляет образец класса из RT коллекции
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ RT пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::DelClassFromCollection(const std::string &class_name, const std::string &lib_name)
 {
 	URuntimeLibrary *library = 0;
@@ -1187,14 +1183,14 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
             library = static_cast<URuntimeLibrary*>(lib.Get());
         }
     }
-    // Если не найдена или это не runtime библиотека
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ runtime пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!library || (library->GetType()!=2))
     {
         if(Logger)
             Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
         return false;
     }
-    // Удаление компонента
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     try
     {
         if(!library->DelClass(class_name))
@@ -1215,7 +1211,7 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
     return true;
 }
 
-/// Создает новую библиотеку с заданным именем
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
 {
     if(lib_name.empty())
@@ -1232,14 +1228,14 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
         return false;
     }
 
-    //Создание папки библиотеки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
 	URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
 
     if(AddCollection(lib))
 	{
-        //Создание папки библиотеки
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if(RDK::CreateNewDirectory(lib->GetLibPath().c_str())==0)
 		{
          lib->Upload(this);
@@ -1262,7 +1258,7 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     }
 }
 
-/// Удаляет runtime-библиотеку вместе с папкой
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 {
     int index = -1;
@@ -1284,10 +1280,10 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
     }
 
     std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
-    // Если имя действительно runtime-библиотеки
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if((*I)->GetType() == 2)
     {
-        // Неудачная попытка удаления папки
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if(!static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory())
         {
             if(Logger)
@@ -1299,7 +1295,7 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 
         try
         {
-        // внутри DelClass() может выбросить исключения (EObjectStorageNotEmpty или EClassIdNotExist)
+        // пїЅпїЅпїЅпїЅпїЅпїЅ DelClass() пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (EObjectStorageNotEmpty пїЅпїЅпїЅ EClassIdNotExist)
         DelAbandonedClasses();
         }
         catch(EObjectStorageNotEmpty &ex)
@@ -1324,31 +1320,31 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
     }
 }
 
-// Установка пути к папкам библиотек
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::SetLibrariesPath(const std::string& value)
 {
     LibrariesPath = value;
 }
 
-// Получение пути к папкам библиотек
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 const std::string UStorage::GetLibrariesPath() const
 {
     return LibrariesPath;
 }
 
-/// Инициализация существующих динамических библиотек
-/// Вызывается в Engine один раз
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Engine пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 void UStorage::InitRTlibs(void)
 {
-    // Считывание имен библиотек из папки RTlibs
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ RTlibs
     std::string lib_path = LibrariesPath + "RTlibs";
 
-    //Создание папки, если требуется
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(RDK::CreateNewDirectory(lib_path.c_str()))
         return;
 
-    // Проход по всем существующим xml файлам в папке
-    // с записью их данных в строки ClassesStructures
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ xml пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
+    // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ClassesStructures
     std::vector<std::string> lib_names;
 
     if(RDK::FindFilesList(lib_path,"*",false,lib_names))
@@ -1364,14 +1360,14 @@ void UStorage::InitRTlibs(void)
     }
 }
 
-/// Загружает runtime-библиотеку по её имени
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 {
-    // Создание новой runtime-библиотеки
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(lib_name.empty())
         return false;
 
-    // уже существует
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(GetCollection(lib_name) != 0)
     {
         if(Logger)
@@ -1379,12 +1375,12 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
         return false;
     }
 
-    //Создание папки библиотеки
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
     URuntimeLibrary* lib = new URuntimeLibrary(lib_name,"",lib_path);
 
-    // Загрузка описаний компонентов внутри библиотеки
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(!lib->LoadCompDescriptions())
     {
         if(Logger)
@@ -1409,11 +1405,11 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 }
 
 
-// Подключает динамическую библиотеку с набором образцов классов.
-// Если бибилиотека с таким именем уже существует то возвращает false.
-// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
-// Если force_build == true то немедленно осущетсвляет развертывание бибилотеки
-// в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+// пїЅпїЅпїЅпїЅ force_build == true пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::AddCollection(ULibrary *library, bool force_build)
 {
  if(!library)
@@ -1434,8 +1430,8 @@ bool UStorage::AddCollection(ULibrary *library, bool force_build)
  return true;
 }
 
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 bool UStorage::DelCollection(int index)
 {
  if(index < 0 || index >= int(CollectionList.size()))
@@ -1453,7 +1449,7 @@ bool UStorage::DelCollection(int index)
 
 bool UStorage::InitMockLibs(void)
 {
-    // Папка с библиотеками-заглушками и файл
+    // пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
     std::string lib_path = LibrariesPath + "/MockLibs/";
     std::string lib_list_file = lib_path + "0_LibList.xml";
 
@@ -1467,20 +1463,20 @@ bool UStorage::InitMockLibs(void)
 
     USerStorageXML CompDesctips;
 
-    // Создание библиотек поочередно
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     for(int i = 0, size = LibList.GetNumNodes() ; i < size; i++)
     {
         if(!LibList.SelectNode(i))
             continue;
         std::string lib_name = LibList.GetNodeText();
 
-        // Если такая библиотека-заглушка есть
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         if(lib_name.empty() || GetCollection(lib_name) != 0)
             continue;
 
         UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
 
-        // Заполнение описаний классов
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if(!CompDesctips.LoadFromFile(lib_path+"/"+lib_name+".xml","MockLib"))
         {
             if(Logger)
@@ -1507,13 +1503,13 @@ bool UStorage::CreateMockLibs(void)
     if(Logger)
         Logger->LogMessage(RDK_EX_DEBUG, std::string("Creating Mock Libraries from Static Libraries"));
 
-    // Создание библиотек-заглушек из статических библиотек
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     for(size_t i=0;i<CollectionList.size();i++)
     {
         UEPtr<ULibrary> lib=CollectionList[i];
         if(lib && lib->GetType()==0)
         {
-            // Создание папки библиотеки, если требуется
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             std::string lib_path = LibrariesPath + "MockLibs/";
 
             if(RDK::CreateNewDirectory(lib_path.c_str()))
@@ -1523,16 +1519,16 @@ bool UStorage::CreateMockLibs(void)
                 return false;
             }
 
-            // имя библиотеки-заглушки
+            // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             std::string lib_name = lib->GetName()+"_Mock";
 
-            // Если такая библиотека-заглушка есть
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             if(GetCollection(lib_name) != 0)
                 continue;
 
             UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
 
-            // Заполнение описаний классов
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             lib->FillMockLibrary(lib_mock);
 
             if(!AddCollection(lib_mock))
@@ -1550,20 +1546,20 @@ bool UStorage::SaveMockLibs(void)
     if(Logger)
         Logger->LogMessage(RDK_EX_DEBUG, std::string("Starting saving Mock Libraries to files"));
 
-    // Сохранения списка библиотек-заглушек по порядку (такой же как в CollectionList)
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅ CollectionList)
     USerStorageXML LibList;
     LibList.Create("LibraryList");
 
     std::string lib_name = "";
 
-    // Сохранение библиотек в отдельные файлы
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     for(size_t i=0;i<CollectionList.size();i++)
     {
         UEPtr<ULibrary> lib=CollectionList[i];
 
         if(lib && lib->GetType()==3)
         {
-            // Библиотека куда добавляется класс
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             UMockLibrary *library = 0;
             library = dynamic_cast<UMockLibrary*>(lib.Get());
 
@@ -1583,8 +1579,8 @@ bool UStorage::SaveMockLibs(void)
     return true;
 }
 
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 bool UStorage::DelCollection(const string &name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
@@ -1597,8 +1593,8 @@ bool UStorage::DelCollection(const string &name)
  return true;
 }
 
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 bool UStorage::DelAllCollections(void)
 {
  CollectionList.clear();
@@ -1606,20 +1602,20 @@ bool UStorage::DelAllCollections(void)
  return true;
 }
 
-// Уставнока необходимого режима сборки
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::SetBuildMode(int mode)
 {
     BuildMode = mode;
 }
 
-// Получение текущего режима сборки
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int UStorage::GetBuildMode()
 {
     return BuildMode;
 }
 
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 bool UStorage::BuildStorage(void)
 {
  ClearAllLibsClassesNameArrays();
@@ -1627,19 +1623,19 @@ bool UStorage::BuildStorage(void)
  {
  case 1:
  {
-     BuildStorage(0); // сборка статических библиотек
-     BuildStorage(2); // сборка runtime-библиотек
+     BuildStorage(0); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+     BuildStorage(2); // пїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
      break;
  }
 
  case 2:
  {
-     BuildStorage(0); // сборка статических библиотек
+     BuildStorage(0); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-     // Иницилазиация мок-либ
+     // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅпїЅ
      if(InitMockLibs())
      {
-        BuildStorage(3); // сборка mock-библиотек
+        BuildStorage(3); // пїЅпїЅпїЅпїЅпїЅпїЅ mock-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
      }
      else
      {
@@ -1647,15 +1643,15 @@ bool UStorage::BuildStorage(void)
              Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
      }
 
-     BuildStorage(2); // сборка runtime-библиотек
+     BuildStorage(2); // пїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
      break;
  }
  case 3:
  {
-     // Иницилазиация мок-либ
+     // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅпїЅ
      if(InitMockLibs())
      {
-        BuildStorage(3); // сборка mock-библиотек
+        BuildStorage(3); // пїЅпїЅпїЅпїЅпїЅпїЅ mock-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
      }
      else
      {
@@ -1663,7 +1659,7 @@ bool UStorage::BuildStorage(void)
              Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
      }
 
-     BuildStorage(2); // сборка runtime-библиотек
+     BuildStorage(2); // пїЅпїЅпїЅпїЅпїЅпїЅ runtime-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
      break;
  }
  }
@@ -1671,12 +1667,12 @@ bool UStorage::BuildStorage(void)
  return true;
 }
 
-// Заполняет хранилище данными библиотек конктретного типа
-// Тип библиотеки:
-// 0 - Внутренняя библиотека (собрана вместе с ядром)
-// 1 - Внешняя библиотека (загружена из внешней dll)
-// 2 - Библиотека, созданная во время выполнения
-// 3 - Библиотека-заглушка (все компоненты-заглушки)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ:
+// 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ)
+// 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ dll)
+// 2 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// 3 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 bool UStorage::BuildStorage(int lib_type)
 {
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1723,8 +1719,8 @@ bool UStorage::BuildStorage(int lib_type)
     return true;
 }
 
-/// Удаляет все образцы классов, для которых нет библиотек
-/// а также все связанные образцы
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::DelAbandonedClasses(void)
 {
  UClassesStorageIterator I=ClassesStorage.begin(),J;
@@ -1737,7 +1733,7 @@ void UStorage::DelAbandonedClasses(void)
  }
 }
 
-/// Возвращает указатель на библиотеку класса по имени класса
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 UEPtr<ULibrary> UStorage::FindCollection(const std::string &class_name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
@@ -1755,8 +1751,8 @@ UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 }
 
 
-/// Формирует список зависимостей класса компонента от библиотек
-/// Метод не очищает переданный список библиотек, а только пополняет его
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 void UStorage::FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
 {
  UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(GetComponentFactory(class_name));
@@ -1779,12 +1775,12 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления хранилищем объектов
-// Выводит уже созданный объект из хранилища и возвращает
-// его classid
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ classid
 // --------------------------
-// Добавляет уже созданный объект в хранилище
-// Если объект уже принадлежит иному хранилищу то возвращает false
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ false
 void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
  UInstancesStorage &instances=ObjectsStorage[classid];
@@ -1798,9 +1794,9 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
  object->SetStorage(this);
 }
 
-// Выводит уже созданный объект из хранилища и возвращает
-// его classid
-// В случае ошибки возвращает ForbiddenId
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅ classid
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ForbiddenId
 UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
@@ -1817,15 +1813,15 @@ UId UStorage::PopObject(UEPtr<UContainer> object)
  return ForbiddenId;
 }
 
-// Перемещает объект в другое хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 {
  newstorage->PushObject(PopObject(object),object);
 }
 
-// Возвращает объект в хранилище
-// Выбранный объект помечается как свободный в хранилище
-// Флаг 'Activity' объекта выставляется в false
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅ 'Activity' пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ false
 void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
@@ -1848,7 +1844,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
  }
 }
 
-// В случае ошибки возвращает ForbiddenId
+// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ForbiddenId
 UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator)
 {
  UEPtr<UContainer> object=object_iterator->Object;
@@ -1865,9 +1861,9 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
 
 
 // --------------------------
-// Скрытые методы таблицы соответствий классов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
-// Добавляет класс с именем 'name' в таблицу соответствий
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 'name' пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 UId UStorage::AddLookupClass(const NameT &name)
 {
  if(ClassesLookupTable.find(name) != ClassesLookupTable.end())
@@ -1878,10 +1874,10 @@ UId UStorage::AddLookupClass(const NameT &name)
  return LastClassId+1;
 }
 
-// Удаляет класс с именем 'name' из таблицы соотвествий
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 'name' пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UStorage::DelLookupClass(const NameT &name)
 {
- map<NameT,UId>::iterator I=ClassesLookupTable.find(name);
+ auto I=ClassesLookupTable.find(name);
 
  if(I == ClassesLookupTable.end())
   throw EClassNameNotExist(name);
@@ -1891,19 +1887,19 @@ void UStorage::DelLookupClass(const NameT &name)
 // --------------------------
 
 // --------------------------
-// Методы для работы с компонентами-заглушками (UMockUnet)
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (UMockUnet)
 // --------------------------
-// Добавление функции-создателя свойств для UMockUnet в массив в Storage
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ UMockUnet пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Storage
 bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
 {
-    // Нулевой указатель
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(func_ptr == 0)
     {
         if(Logger)
             Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add null function to FunctionsCrPropMock list in Storage");
         return false;
     }
-    // Если уже существует
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if(std::find(FunctionsCrPropMock.begin(), FunctionsCrPropMock.end(), func_ptr) != FunctionsCrPropMock.end())
     {
         if(Logger)
@@ -1915,7 +1911,7 @@ bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
     return true;
 }
 
-// Получение массива функций-создателей свойств для UMockUnet
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ UMockUnet
 const std::list<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
 {
     return FunctionsCrPropMock;
@@ -1924,7 +1920,7 @@ const std::list<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
 /* *************************************************************************** */
               /*
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UStorage::EClassIdNotExist::EClassIdNotExist(UId id)
  : Id(id)
@@ -1934,19 +1930,19 @@ UStorage::EClassIdNotExist::EClassIdNotExist(UId id)
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UStorage::EClassIdNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
 }
 // --------------------------
 
-// Попытка работы с классом по имени, отсутствующему в хранилище
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //class UStorage::EClassNameNotExist: public EError
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
 : Name(name)
@@ -1955,19 +1951,19 @@ UStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UStorage::EClassNameNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }
 // --------------------------
 
-// Некорректное имя класса
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 // class UStorage::EInvalidClassName: public EError
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
 : Name(name)
@@ -1976,9 +1972,9 @@ UStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UStorage::EInvalidClassName::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
@@ -1987,10 +1983,10 @@ std::string UStorage::EInvalidClassName::CreateLogMessage(void) const
 
 
 
-// Класс с заданным именем уже существует
+// пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //class UStorage::EClassNameAlredyExist: public EError
 // --------------------------
-// Конструкторы и деструкторы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // --------------------------
 UStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name)
 : Name(name)
@@ -1999,9 +1995,9 @@ UStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 // --------------------------
-// Формирует строку лога об исключении
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 std::string UStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;

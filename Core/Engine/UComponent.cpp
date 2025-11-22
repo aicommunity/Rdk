@@ -646,9 +646,20 @@ void UComponent::DelAlias(const std::string &alias)
 /// �������� ������� ������
 bool UComponent::CheckAlias(const std::string &alias) const
 {
- std::map<std::string, std::string>::const_iterator I=Aliases.find(alias);
+ // Use cache for repeated lookups
+ if(CachedAliasName == alias)
+  return true;
+ 
+ auto I=Aliases.find(alias);
  if(I == Aliases.end())
+ {
+  CachedAliasName.clear();
   return false;
+ }
+ 
+ // Cache the result
+ CachedAliasName = alias;
+ CachedAliasValue = I->second;
  return true;
 }
 

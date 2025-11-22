@@ -2,6 +2,7 @@
 #define UCONTAINER_DESCRIPTION_CPP
 
 #include <map>
+#include <unordered_map>
 #include <string>
 #include "UContainerDescription.h"
 #include "UXMLEnvSerialize.h"
@@ -103,9 +104,9 @@ bool UContainerDescription::SetPropertyDescription(const std::string &name, cons
 
 
 // ������� �������� �� ����� ��������, ���� �� ���� � ����� ���������
-bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
+bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
 {
- std::map<std::string, UPropertyDescription>::const_iterator I=common_descriptions.find(name);
+ auto I=common_descriptions.find(name);
 
  if(I != common_descriptions.begin())
   Properties.erase(name);
@@ -114,14 +115,13 @@ bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std
 }
 
 // ������� ��� �������� �� ����� ��������, ���� ��� ���� � ����� ���������
-bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions)
+bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions)
 {
- std::map<std::string, UPropertyDescription>::iterator I,J;
- for(J=Properties.begin();J != Properties.end();)
+ for(auto J=Properties.begin();J != Properties.end();)
  {
   if(common_descriptions.find(J->first) != common_descriptions.end())
   {
-   I=J; ++I;
+   auto I=J; ++I;
    Properties.erase(J);
    J=I;
   }

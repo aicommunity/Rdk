@@ -161,6 +161,10 @@ VariableMapT PropertiesLookupTable;
 mutable NameT CachedPropertyName;
 mutable UEPtr<UIProperty> CachedProperty;
 
+/// Cache for alias lookup (optimization for repeated alias lookups)
+mutable NameT CachedAliasName;
+mutable NameT CachedAliasValue;
+
 protected:
 // ������� ������������ Id � ������ ��������
 ShareMapT ShareLookupTable;
