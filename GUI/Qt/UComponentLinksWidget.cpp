@@ -11,16 +11,16 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
     ui(new Ui::UComponentLinksWidget)
 {
     ui->setupUi(this);
-    UpdateInterval = 0; //не обновлять виджет по тикам ядра
-    setAccessibleName("UComponentLinksWidget"); // имя класса для сериализации
+    UpdateInterval = 0; //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    setAccessibleName("UComponentLinksWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->treeWidgetInputs->header()->setVisible(true);
     ui->treeWidgetOutputs->header()->setVisible(true);
 
-    //сигнал закрытия
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCancel, SIGNAL(pressed()), this, SIGNAL(closeWindow()));
-    //создание связи
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
-    //разрушение связи
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonBreakLink, SIGNAL(pressed()), this, SLOT(breakLink()));
 
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()), this, SLOT(output1ItemSelectionChanged()));
@@ -244,7 +244,7 @@ void UComponentLinksWidget::unInit()
     ui->treeWidgetLinks->clear();
 }
 
-///переключение выделенной связи
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UComponentLinksWidget::switchLink()
 {
     QString output1Component, outputName1, output2Component, outputName2;
@@ -487,7 +487,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
         bool is_new_outputs(false);
         bool is_new_inputs(false);
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
         {
             if (i->second.CheckMask(ptPubInput))
             {
@@ -507,16 +507,14 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
              break;
         }
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end();)
+        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end();)
         {
             if (i->second.CheckMask(ptPubInput) && is_new_inputs)
             {
              std::string::size_type k=i->first.find("DataInput");
              if(k == 0)
              {
-              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
-              varMap.erase(i);
-              i=j;
+              i = varMap.erase(i);
              }
              else
               ++i;
@@ -527,9 +525,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
              std::string::size_type k=i->first.find("DataOutput");
              if(k == 0)
              {
-              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
-              varMap.erase(i);
-              i=j;
+              i = varMap.erase(i);
              }
              else
               ++i;
@@ -541,7 +537,7 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
         }
 
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
         {
             if (i->second.CheckMask(firstTypeMask))
             {

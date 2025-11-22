@@ -386,7 +386,7 @@ virtual std::string GetOwnerClassName(void) const
 // ����� - ����������� ��������
 // �� �������� ������� ������ ����
 template<typename T,class OwnerT>
-class UVProperty: public UVBaseProperty<T,OwnerT>
+class UVProperty: public UVBaseDataProperty<T>
 {
 //friend class OwnerT;
 public: // ���� ������� �����-������
@@ -397,6 +397,13 @@ protected: // ������
 // ������ �����-������
 GetterRT GetterR;
 SetterRT SetterR;
+
+protected: // Owner and variable (from UVBaseProperty)
+// Owner component
+OwnerT* Owner;
+
+// Iterator to property lookup table entry in component\'s PropertiesLookupTable
+UComponent::VariableMapCIteratorT Variable;
 
 protected:
 /// ������ �� ������� ��������-�������� ������
@@ -412,20 +419,31 @@ std::vector<UIPropertyOutput*> ConnectedOutputs;
 /// Cached typed pointer to first connected output (optimization to avoid dynamic_cast in hot path)
 mutable UVBaseDataProperty<T>* CachedConnectedOutput;
 
+protected: // Local storage (from UPropertyLocal)
+/// Flag to check if value equals before setting (from UPropertyLocal)
+bool CheckEqualsFlag;
+
+/// Local storage for property value (from UPropertyLocal)
+mutable T v;
+
 public: // ������
 // --------------------------
 // ������������ � �����������
 // --------------------------
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0),
-  IsConnectedFlag(false), CachedConnectedOutput(0)
+  UVBaseDataProperty<T>(0), Owner(owner), GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0),
+  IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
 }
 
 UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0),
-  IsConnectedFlag(false), CachedConnectedOutput(0)
+  UVBaseDataProperty<T>(pdata), Owner(owner), GetterR(0), SetterR(setmethod), ExternalDataSource(0),
+  IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
 }
 // -----------------------------
 
@@ -449,9 +467,49 @@ void DetachFrom(void)
 // -----------------------------
 
 // -----------------------------
-// ������ ���������� ����������� �������
+// Property information methods (from UVBaseProperty)
 // -----------------------------
-/// ���������� ��� ������������� ����������
+/// Set iterator to property lookup table entry
+virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
+{
+ Variable=var;
+}
+
+/// Get owner component as UContainer
+virtual UContainer* GetOwner(void) const
+{
+ return dynamic_cast<UContainer*>(Owner);
+}
+
+/// Get property name
+virtual const std::string& GetName(void) const
+{
+ return Variable->first;
+}
+
+/// Get property type
+virtual unsigned int GetType(void) const
+{
+ return Variable->second.Type;
+}
+
+/// Get owner component name
+virtual std::string GetOwnerName(void) const
+{
+ return (Owner)?Owner->GetName():std::string("");
+}
+
+/// Get owner component class name
+virtual std::string GetOwnerClassName(void) const
+{
+ return typeid(Owner).name();
+}
+// -----------------------------
+
+// -----------------------------
+//  
+// -----------------------------
+///  
 virtual UItem* GetItem(int index=0);
 
 /// ���������� ��� ������������� ������
@@ -529,6 +587,79 @@ UVProperty<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
+}
+// -----------------------------
+
+// -----------------------------
+// Check equals flag methods (from UPropertyLocal)
+// -----------------------------
+/// Check if value equals check is enabled
+bool IsCheckEquals(void) const
+{
+ return CheckEqualsFlag;
+}
+
+/// Set value equals check flag
+void SetCheckEquals(bool value)
+{
+ CheckEqualsFlag=value;
+}
+// -----------------------------
+
+// -----------------------------
+// Data access methods (from UPropertyLocal)
+// -----------------------------
+/// Get data implementation (from UPropertyLocal)
+virtual const T& GetData(void) const
+{
+ if(this->ExternalDataSource)
+  return this->ExternalDataSource->GetData();
+
+ if(IsConnectedFlag)
+ {
+  // Use cached pointer to avoid dynamic_cast in hot path
+  if(!CachedConnectedOutput && !ConnectedOutputs.empty())
+   CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
+  
+  if(CachedConnectedOutput)
+  {
+   // Cache data with update time check to avoid unnecessary copies
+   ULongTime outputTime = CachedConnectedOutput->GetUpdateTime();
+   if(outputTime > this->UpdateTime)
+   {
+    v = CachedConnectedOutput->GetData();
+    this->UpdateTime = outputTime;
+   }
+  }
+ }
+
+ return v;
+}
+
+/// Set data implementation (from UPropertyLocal)
+virtual void SetData(const T &value)
+{
+ if(this->ExternalDataSource)
+ {
+  this->ExternalDataSource->SetData(value);
+  return;
+ }
+
+ if(IsConnectedFlag)
+  return;
+
+ if(CheckEqualsFlag && value == v)
+  return;
+
+ if(this->Owner)
+ {
+  if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+   throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
+ }
+
+ v=value;
+ this->RenewUpdateTime();
+ return;
 }
 // -----------------------------
 };
@@ -627,7 +758,7 @@ virtual void SetData(const T &value)
  if(this->Owner)
  {
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+   throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
  }
 
  v=value;
@@ -818,7 +949,7 @@ virtual void SetData(const T &value)
    while(I != J)
    {
     if(!(this->Owner->*VSetterR)(*I))
-     throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+     throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
 
     ++I;
    }
@@ -826,7 +957,7 @@ virtual void SetData(const T &value)
   else
   {
    if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+    throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
   }
  }
 
@@ -908,7 +1039,7 @@ const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) cons
 {
  const T& data = GetData();
  if(i>=data.size())
-  throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+  throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
                                0,int(data.size()),int(i));
 
  return data[i];
@@ -918,13 +1049,13 @@ const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) cons
 bool operator () (size_t i, const typename UProperty<T, OwnerT, type, true>::TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
-  throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+  throw EPropertySetterFail(this->GetOwnerName(),this->GetName());
 
  if(this->IsConnectedFlag)
   return false;
 
  if(i>=this->v.size())
-  throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+  throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
                                0,int(this->v.size()),int(i));
 
  this->v[i]=value;
