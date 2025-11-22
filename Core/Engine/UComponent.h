@@ -21,6 +21,8 @@ See file license.txt for more information
 #include "UTime.h"
 #include "ULoggerEnv.h"
 #include "../Graphics/UFont.h"
+#include <unordered_map>
+#include <map>
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
@@ -111,9 +113,9 @@ class RDK_LIB_TYPE UComponent: public UModule
 {
 friend class UStorage;
 public: // ���� ������
-typedef std::map<NameT,UVariable> VariableMapT;
-typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
-typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
+typedef std::unordered_map<NameT,UVariable> VariableMapT;
+typedef std::unordered_map<NameT,UVariable>::iterator VariableMapIteratorT;
+typedef std::unordered_map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
 
 typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
 typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
@@ -154,6 +156,10 @@ protected: // ��������� ��������
 //protected: // ��������� ��������
 // ������� ������������ ���� � Id ���������� �������
 VariableMapT PropertiesLookupTable;
+
+/// Cache for last found property (optimization for repeated lookups)
+mutable NameT CachedPropertyName;
+mutable UEPtr<UIProperty> CachedProperty;
 
 protected:
 // ������� ������������ Id � ������ ��������

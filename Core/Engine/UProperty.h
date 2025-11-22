@@ -88,15 +88,19 @@ public: // ������
 // ������������ � �����������
 // --------------------------
 //����������� �������������.
-explicit UVBaseDataProperty(T * const pdata)
- : IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
+// Constructor with optional mutex creation
+explicit UVBaseDataProperty(T * const pdata, bool needs_mutex = false)
+ : IoType(ipSingle | ipData), Mutex(needs_mutex ? UCreateMutex() : nullptr), UpdateTime(0)
 {
 }
 
 virtual ~UVBaseDataProperty(void)
 {
- UDestroyMutex(Mutex);
- Mutex=0;
+ if(Mutex)
+ {
+  UDestroyMutex(Mutex);
+  Mutex=0;
+ }
 }
 // -----------------------------
 
