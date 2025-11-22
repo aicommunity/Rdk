@@ -546,7 +546,7 @@ virtual bool IsNewData(void) const
 // -----------------------------
 // ������ ����������
 // --------------------------
-operator T (void) const
+inline operator T (void) const
 {
  ApplyOutputUpdateTime();
  return this->GetData();
@@ -558,32 +558,32 @@ const T& operator () (void) const
  return this->GetData();
 }
 
-T* operator -> (void)
+inline T* operator -> (void)
 {
  ApplyOutputUpdateTime();
  return const_cast<T*>(&this->GetData());
 }
 
-const T* operator -> (void) const
+inline const T* operator -> (void) const
 {
  ApplyOutputUpdateTime();
  return &this->GetData();
 }
 
-T& operator * (void)
+inline T& operator * (void)
 {
  ApplyOutputUpdateTime();
  return const_cast<T&>(this->GetData());
 }
 
-const T& operator * (void) const
+inline const T& operator * (void) const
 {
  ApplyOutputUpdateTime();
  return this->GetData();
 }
 
 // �������� ������������
-UVProperty<T,OwnerT>& operator = (const T &value)
+inline UVProperty<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
@@ -610,7 +610,7 @@ void SetCheckEquals(bool value)
 // Data access methods (from UPropertyLocal)
 // -----------------------------
 /// Get data implementation (from UPropertyLocal)
-inline virtual const T& GetData(void) const
+inline const T& GetData(void) const
 {
  // Fast path for unconnected properties
  if(!IsConnectedFlag && !this->ExternalDataSource)
