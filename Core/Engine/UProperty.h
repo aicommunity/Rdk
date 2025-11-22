@@ -68,26 +68,26 @@ using namespace std;
 #pragma warning( disable : 4700)
 #endif
 
-// ����� - ���� ��� �������
+// Класс - база для свойств
 template<typename T>
 class UVBaseDataProperty: public UIPropertyOutput
 {
-protected: // ������
-// ��� �����
+protected: // Данные
+// Тип входа
 int IoType;
 
-protected: // ������ �������������
-/// ������� ����� ��������
+protected: // Данные синхронизации
+/// Мьютекс этого свойства
 UGenericMutex *Mutex;
 
-/// ����� ���������� �������� (��)
+/// Время обновления свойства (мс)
 mutable ULongTime UpdateTime;
 
-public: // ������
+public: // Методы
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
-//����������� �������������.
+//Конструктор инициализации.
 // Constructor with optional mutex creation
 explicit UVBaseDataProperty(T * const pdata, bool needs_mutex = false)
  : IoType(ipSingle | ipData), Mutex(needs_mutex ? UCreateMutex() : nullptr), UpdateTime(0)
@@ -106,7 +106,7 @@ virtual ~UVBaseDataProperty(void)
 
 // -----------------------------
 // ������ ������������
-// -----------------------------
+// Модифицирует данные
 // ���������� ������ �� ������
 virtual const T& GetData(void) const=0;
 
@@ -182,7 +182,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
  return false;
 }
 
-// ����� ������ �������� �������� �� ������
+// Method reads property value from stream
 virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
  T temp;
@@ -254,7 +254,7 @@ bool ReadFromMemory(const void *buffer)
  SetData(*temp);
  return true;
 }
-// -----------------------------
+// --------------------------
 
 // --------------------------
 // ������ ���������� �������
@@ -276,7 +276,7 @@ virtual void SetUpdateTime(ULongTime value)
 // UGenericLocker locker(Mutex);
  UpdateTime=value;
 }
-// --------------------------
+// -----------------------------
 
 // -----------------------------
 // �������� ������� ������ ��� ��������� ������
@@ -289,7 +289,7 @@ virtual bool AttachTo(UVBaseDataProperty<T>* prop)
 virtual void DetachFrom(void)
 {
 }
-// -----------------------------
+// Скрытые методы управления данными
 
 protected:
 // --------------------------
@@ -306,22 +306,22 @@ void ResetUpdateTime(void)
 {
  UpdateTime=0;
 }
-// --------------------------
+// Класс - база для свойств
 };
 
 
-// ����� - ���� ��� �������
+// Данные
 template<typename T,class OwnerT>
 class UVBaseProperty: public UVBaseDataProperty<T>
 {
-protected: // ������
+protected: // Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
 // �������� ��������
 OwnerT* Owner;
 
-// ��������� �� ��������-��������� ������ �� ���� �������� � ������������ ����������
+// --------------------------
 UComponent::VariableMapCIteratorT Variable;
 
-public: // ������
+public: //Конструктор инициализации.
 // --------------------------
 // ������������ � �����������
 // --------------------------
@@ -341,7 +341,7 @@ UVBaseProperty(OwnerT * const owner, T * const pdata) :
 }
 // -----------------------------
 
-// -----------------------------
+// свойстве в родительском компоненте
 // ������ ������������
 // -----------------------------
 // ����� ������������� �������� ��������� �� ��������-��������� ������ �� ����
@@ -380,16 +380,16 @@ virtual std::string GetOwnerClassName(void) const
 {
  return typeid(Owner).name();
 }
-// -----------------------------
+// Не содержит данного внутри себя
 };
 
 // ����� - ����������� ��������
-// �� �������� ������� ������ ����
+//friend class OwnerT;
 template<typename T,class OwnerT>
 class UVProperty: public UVBaseDataProperty<T>
 {
 //friend class OwnerT;
-public: // ���� ������� �����-������
+public: // Данные
 typedef const T& (OwnerT::*GetterRT)(void) const;
 typedef bool (OwnerT::*SetterRT)(const T&);
 
@@ -399,31 +399,31 @@ GetterRT GetterR;
 SetterRT SetterR;
 
 protected: // Owner and variable (from UVBaseProperty)
-// Owner component
+/// Флаг наличия подключения
 OwnerT* Owner;
 
-// Iterator to property lookup table entry in component\'s PropertiesLookupTable
+/// Указатель на подключенный выход
 UComponent::VariableMapCIteratorT Variable;
 
 protected:
-/// ������ �� ������� ��������-�������� ������
+// --------------------------
 UVBaseDataProperty<T>* ExternalDataSource;
 
 protected:
-/// ���� ������� �����������
+/*Getter(0), Setter(0), */
 bool IsConnectedFlag;
 
 /// ��������� �� ������������ �����
 std::vector<UIPropertyOutput*> ConnectedOutputs;
 
-/// Cached typed pointer to first connected output (optimization to avoid dynamic_cast in hot path)
+/*Getter(0), Setter(0), */
 mutable UVBaseDataProperty<T>* CachedConnectedOutput;
 
 protected: // Local storage (from UPropertyLocal)
-/// Flag to check if value equals before setting (from UPropertyLocal)
+// -----------------------------
 bool CheckEqualsFlag;
 
-/// Local storage for property value (from UPropertyLocal)
+// Привязка внешней ссылки как источника данных
 mutable T v;
 
 public: // ������
@@ -447,7 +447,7 @@ UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
 }
 // -----------------------------
 
-// -----------------------------
+/// Возвращает имя подключенного выхода
 // �������� ������� ������ ��� ��������� ������
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
@@ -469,7 +469,7 @@ void DetachFrom(void)
 // -----------------------------
 // Property information methods (from UVBaseProperty)
 // -----------------------------
-/// Set iterator to property lookup table entry
+/// Возвращает true, если на подключенном выходе новые данные
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 {
  Variable=var;
@@ -529,7 +529,7 @@ void ApplyOutputUpdateTime(void) const
   this->UpdateTime=ConnectedOutputs[0]->GetUpdateTime();
 }
 
-// ���������� true ���� ���� ����� �����������
+/* ************************************************************************* */
 bool IsConnected(void) const
 {
  return IsConnectedFlag;
@@ -540,12 +540,12 @@ virtual bool IsNewData(void) const
 {
  return (!ConnectedOutputs.empty())?this->ConnectedOutputs[0]->GetUpdateTime()>this->UpdateTime:true;
 }
-// -----------------------------
+//protected:
 
 
 // -----------------------------
 // ������ ����������
-// -----------------------------
+// --------------------------
 operator T (void) const
 {
  ApplyOutputUpdateTime();
@@ -621,7 +621,7 @@ inline virtual const T& GetData(void) const
 
  if(IsConnectedFlag)
  {
-  // Use cached pointer to avoid dynamic_cast in hot path
+  //  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
   if(!CachedConnectedOutput && !ConnectedOutputs.empty())
    CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
   
@@ -640,7 +640,7 @@ inline virtual const T& GetData(void) const
  return v;
 }
 
-/// Set data implementation (from UPropertyLocal)
+// Устанавливает указатель на данные входа
 virtual void SetData(const T &value)
 {
  if(this->ExternalDataSource)
@@ -665,7 +665,7 @@ virtual void SetData(const T &value)
  this->RenewUpdateTime();
  return;
 }
-// -----------------------------
+/* ************************************************************************* */
 };
 
 class UItem;
@@ -679,7 +679,7 @@ template<typename T,class OwnerT, unsigned int type>
 class UPropertyLocal: public UVProperty<T,OwnerT>
 {
 protected:
-/// ���� �������� �������� �������� �� ��������� ����������� ��������
+// Конструкторы и деструкторы
 bool CheckEqualsFlag;
 
 public:
@@ -688,9 +688,9 @@ public:
 mutable T v;
 
 public:
-// --------------------------
+// -----------------------------
 // ������������ � �����������
-// --------------------------
+// -----------------------------
 public:
 UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v()
@@ -716,7 +716,7 @@ void SetCheckEquals(bool value)
 // -----------------------------
 
 // -----------------------------
-// ��������� �������
+// -----------------------------
 // -----------------------------
 // ������� ��������
 virtual const T& GetData(void) const
@@ -726,7 +726,7 @@ virtual const T& GetData(void) const
 
  if(UVProperty<T,OwnerT>::IsConnectedFlag)
  {
-  // Use cached pointer to avoid dynamic_cast in hot path
+  // Типы методов ввода-вывода
   if(!UVProperty<T,OwnerT>::CachedConnectedOutput && !UVProperty<T,OwnerT>::ConnectedOutputs.empty())
    UVProperty<T,OwnerT>::CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(UVProperty<T,OwnerT>::ConnectedOutputs[0]);
   
@@ -853,7 +853,7 @@ UProperty(const UProperty<T,OwnerT,type> &v) {}
 // -----------------------------
 
 // -----------------------------
-// ���������
+// Выход за границы массива C (container) property
 // -----------------------------
 public:
 // �������� ������������

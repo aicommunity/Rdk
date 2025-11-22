@@ -39,11 +39,11 @@ typedef std::unordered_map<std::string, UEPtr<UContainerDescription> >::iterator
 typedef std::unordered_map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
-/* *********************************************************************** */
+// Элемент списка существующих объектов определенного класса
 // ������� ������ ������������ �������� ������������� ������
 class RDK_LIB_TYPE UInstancesStorageElement
 {
-public: // ������
+public: // Указатель на объект
 // ��������� �� ������
 UEPtr<UContainer> Object;
 
@@ -51,9 +51,9 @@ UEPtr<UContainer> Object;
 bool UseFlag;
 
 
-public: // ������
+public: // --------------------------
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 UInstancesStorageElement(void);
 UInstancesStorageElement(const UInstancesStorageElement &copy);
@@ -61,9 +61,9 @@ UInstancesStorageElement(const UEPtr<UContainer> &object, bool useflag);
 virtual ~UInstancesStorageElement(void);
 // --------------------------
 
+// Операторы
 // --------------------------
-// ���������
-// --------------------------
+// Оператор присваивания
 // �������� ������������
 UInstancesStorageElement& operator = (const UInstancesStorageElement &copy);
 
@@ -88,7 +88,7 @@ typedef std::unordered_map<UId, UInstancesStorage>::iterator UObjectsStorageIter
 typedef std::unordered_map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 
 class UMockUNet;
-// ��������� �� �������, ������� ������� ��� ��������� ��������
+// согласно описанию USerStorageXML для UMockUNet
 // �������� �������� USerStorageXML ��� UMockUNet
 typedef bool (*funcCrPropMock)(USerStorageXML*, UMockUNet*);
 
@@ -97,8 +97,8 @@ typedef bool (*funcCrPropMock)(USerStorageXML*, UMockUNet*);
 
 class RDK_LIB_TYPE UStorage
 {
-//friend class UContainer;
-protected: // ��������� ��������
+// Системные свойства
+protected: // Таблица соответствий имен и Id образцов классов
 // ������� ������������ ���� � Id �������� �������
 std::unordered_map<std::string,UId> ClassesLookupTable;
 
@@ -108,20 +108,20 @@ UClassesStorage ClassesStorage;
 /// ��������� ������ ��� �����������
 mutable UEPtr<ULoggerEnv> Logger;
 
-protected: // �������� �������
+protected: // XML описания всех классов хранилища
 // XML �������� ���� ������� ���������
 UClassesDescription ClassesDescription;
 
 /// �������� ����� ������� ���������
 std::unordered_map<std::string, UPropertyDescription> CommonDescriptions;
 
-protected: // �������� ���������
+protected: // Массив доступных библиотек
 // ������ ��������� ���������
 UClassLibraryList CollectionList;
 
 
-/// ������� ������������ ����� ������� ������� � ���������
-/// ����� ��� <��� ������, ��� ��� ����������>
+/// имеет вид <имя класса, имя его библиотеки>
+//std::map<std::string, std::string> ClassLibraryLookupTable;
 //std::map<std::string, std::string> ClassLibraryLookupTable;
 
 // ������ ���� ����������� �������
@@ -130,18 +130,18 @@ vector<string> CompletedClassNames;
 // ������ ���� �� ����������� �������
 vector<string> IncompletedClassNames;
 
-protected: // �������� ��������
+protected: // Список объектов
 // ������ ��������
 UObjectsStorage ObjectsStorage;
 
 // ��������� �������������� Id �������� �������
 UId LastClassId;
 
-// ������ ������ ���������:
-// 1 -  ������� ������. ������ ����������� ���������, ����� ������������. ��� ���������� ������� (�� ��������)
-// 2 -  ����������� ������. ������ �����������, ���������-��������, ����� ������������.
-//      ��� ����������, ������� ������ ��������� �������� - �������.
-//      ��������� (������� ���� � �����������-��������, �� ��� ������ � ���������) - ��������.
+// 1 -  обычная сборка. Сборка статических библиотек, затем динамических. Все компоненты рабочие (не заглушки)
+// 2 -  поочередная сборка. Сборка статических, библиотек-заглушек, затем динамических.
+//      Все компоненты, которые смогли собраться рабочими - рабочие.
+//      Остальные (которые есть в библиотеках-заглушка, но нет сейчас в хранилище) - заглушки.
+// 3 -  сборка только заглушек. Сборка библиотек-заглушек, затем динамических. Все компоненты заглушки (не рабочие)
 // 3 -  ������ ������ ��������. ������ ���������-��������, ����� ������������. ��� ���������� �������� (�� �������)
 int BuildMode;
 
@@ -159,23 +159,23 @@ protected: // ��������� ����������
 
 public: // ������
 
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 UStorage(void);
 virtual ~UStorage(void);
 // --------------------------
 
+// Методы управления свойствами
 // --------------------------
-// ������ ���������� ����������
-// --------------------------
+// Возвращает последний использованный Id классов
 // ���������� ��������� �������������� Id �������
 UId GetLastClassId(void) const;
 // --------------------------
 
+// Методы доступа к таблицам соотвествий
 // --------------------------
-// ������ ������� � �������� �����������
-// --------------------------
+// Возвращает Id класса по его имени
 // ���������� Id ������ �� ��� �����
 const UId& FindClassId(const std::string &name) const;
 
@@ -183,17 +183,17 @@ const UId& FindClassId(const std::string &name) const;
 const NameT FindClassName(const UId &id) const;
 // --------------------------
 
+// Методы управления хранилищем классов
 // --------------------------
-// ������ ���������� ���������� �������
-// --------------------------
-// ��������� ������� ������ ������� � ���������
-// ���������� id ������
+// Добавляет образец класса объекта в хранилище
+// Возвращает id класса
+// Если classid == ForbiddenId, то id назначается автоматически
 // ���� classid == ForbiddenId, �� id ����������� �������������
 virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid=ForbiddenId);
 virtual UId AddClass(UEPtr<UComponentAbstractFactory> factory, const std::string &classname, const UId &classid=ForbiddenId);
 
-// ������� ������� ������ ������� �� ���������
-// ���� 'force' == true �� ������������� ������� �� ���������
+// Если 'force' == true то принудительно удаляет из хранилища
+// все объекты этого класса
 // ��� ������� ����� ������
 virtual void DelClass(const UId &classid, bool force=false);
 
@@ -208,33 +208,33 @@ virtual UEPtr<UComponentAbstractFactory> GetComponentFactory(const std::string &
 // ���������� ����� �������
 int GetNumClasses(void) const;
 
-// ���������� ������ ��������������� ���� ������� ���������
+// Буфер 'buffer' будет очищен от предыдущих значений
 // ����� 'buffer' ����� ������ �� ���������� ��������
 virtual void GetClassIdList(std::vector<UId> &buffer) const;
 
-// ���������� ������ ���� ���� ������� ���������
+// Буфер 'buffer' будет очищен от предыдущих значений
 // ����� 'buffer' ����� ������ �� ���������� ��������
 virtual void GetClassNameList(std::vector<std::string> &buffer) const;
 
-// ������� ��� �� ������������ ������� ������� �� ���������
-/// ���� force == true �� ������� ���� ���� ��������� �������� �� ������
+/// Если force == true то удаляет даже если хранилище объектов не пустое
+/// и подавляет соответствующее исключение
 /// � ��������� ��������������� ����������
 virtual void FreeClassesStorage(bool force=false);
 
-/// ������� ��� ������� ������� �� ���������
-/// ���� force == true �� ������� ���� ���� ��������� �������� �� ������
+/// Если force == true то удаляет даже если хранилище объектов не пустое
+/// и подавляет соответствующее исключение
 /// � ��������� ��������������� ����������
 virtual void ClearClassesStorage(bool force=false);
 // --------------------------
 
+// Методы управления хранилищем объектов
 // --------------------------
-// ������ ���������� ���������� ��������
-// --------------------------
-// ��������� ������ �� ���������
-// ���������� ��������� �� ��������� ������ �� ����� ������
-// ��������� ������ ���������� ��� ������� � ���������
-// ���� 'Activity' ������� ������������ � true
-// ���� ���������� ������� �� ���������� �� ��������� � �����������
+// Извлекает объект из хранилища
+// Возвращает указатель на свободный объект по имени класса
+// Выбранный объект помечается как занятый в хранилище
+// Флаг 'Activity' объекта выставляется в true
+// Если свободного объекта не существует он создается и добавляется
+// в хранилище
 // � ���������
 virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
 virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
@@ -259,14 +259,14 @@ virtual int CalcNumObjects(void) const;
 virtual int CalcNumObjects(const UId &classid) const;
 virtual size_t CalcNumObjects(const string &classname) const;
 
-// ������� ��� ��������� ������� �� ���������
+/// Если force == true то удаляет даже если объекты используются
 /// ���� force == true �� ������� ���� ���� ������� ������������
 virtual void FreeObjectsStorage(bool force=false);
 
 // ������� ��� ��������� ������� ��������� ������ �� ���������
 virtual void FreeObjectsStorageByClass(const UId &classid);
 
-// ������� ��� ������� �� ���������
+/// Если force == true то удаляет даже если объекты используются
 /// ���� force == true �� ������� ���� ���� ������� ������������
 virtual void ClearObjectsStorage(bool force=false);
 
@@ -277,23 +277,23 @@ virtual void ClearObjectsStorageByClass(const UId &classid);
 virtual void DefaultObject(UEPtr<UContainer> object);
 // --------------------------
 
+// Методы управления описанием классов
 // --------------------------
-// ������ ���������� ��������� �������
-// --------------------------
+// Установка пути к папке с описаниями классов
 // ��������� ���� � ����� � ���������� �������
 void SetClDescPath(const std::string& value);
 
 // ��������� ���� � ����� � ���������� �������
 const std::string GetClDescPath() const;
 
-// ��������� ���� � ����� � ��������� ����������� ������
+// Также создаёт необходимые папки
 // ����� ������ ����������� �����
 const std::string GetCreateClDescPath(const std::string& class_name);
 
 // ���������� XML �������� ������
 const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
 
-// ������������� XML �������� ������
+// Класс в хранилище должен существовать
 // ����� � ��������� ������ ������������
 void SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description);
 
@@ -324,9 +324,9 @@ virtual bool SaveCommonClassesDescription(USerStorageXML &xml);
 virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // --------------------------
 
+// Методы управления библиотеками
 // --------------------------
-// ������ ���������� ������������
-// --------------------------
+// Указатель на логгер
 // ��������� �� ������
 UEPtr<ULoggerEnv> const GetLogger(void) const;
 virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
@@ -346,15 +346,15 @@ const string& GetCollectionName(int index);
 // ���������� ������ ���������� �� �������
 const string& GetCollectionVersion(int index);
 
-// ������� ������ Complete � Incomplete �� ���� �����������
+// Нужно перед сборкой
 // ����� ����� �������
 void ClearAllLibsClassesNameArrays(void);
 
-// ������������ ������ ���� ��������� ����������� ����, ����������� �������
+// Буфер 'buffer' будет очищен от предыдущих значений
 // ����� 'buffer' ����� ������ �� ���������� ��������
 void GetLibsNameListByType(std::string &buffer, int type) const;
 
-// ��������������� ��������� ����� ������� ������ � ���������
+//virtual bool AddClass(UContainer *newclass);
 //virtual bool AddClass(UContainer *newclass);
 
 // ��������� ���� � ������ ���������
@@ -363,15 +363,15 @@ void SetLibrariesPath(const std::string& value);
 // ��������� ���� � ������ ���������
 const std::string GetLibrariesPath() const;
 
-//������ � RT-������������
-/// ������������� ������������ ������������ ���������
+/// Инициализация существующих динамических библиотек
+/// Вызывается в Engine один раз. Добавляет библиотеки в CollectionList (сборки компонентов нет)
 /// ���������� � Engine ���� ���. ��������� ���������� � CollectionList (������ ����������� ���)
 void InitRTlibs(void);
 
 /// ��������� runtime-���������� �� � ����� (��� �������� �����������)
 virtual bool LoadRuntimeCollection(const std::string &lib_name);
 
-/// ��������� ����� ������� ������ � ��������� (����� ��������� � ����)
+/// Если класс с таким именем существует возможно перезапись при force_replace = true
 /// ���� ����� � ����� ������ ���������� �������� ���������� ��� force_replace = true
 virtual bool AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name);
 
@@ -384,34 +384,34 @@ virtual bool CreateRuntimeCollection(const std::string &lib_name);
 /// ������� runtime-���������� ������ � ������
 bool DeleteRuntimeCollection(const std::string &lib_name);
 
-// ���������� ������������ ���������� � ������� �������� �������.
-// ���� ����������� � ����� ������ ��� ���������� �� ���������� false.
-// ��������������� �� ������������ ������ ����������� ����� �� ���������� �������.
-// ���� force_build == true �� ���������� ������������ ������������� ����������
+// Если бибилиотека с таким именем уже существует то возвращает false.
+// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
+// Если force_build == true то немедленно осущетсвляет развертывание бибилотеки
+// в хранилище
 // � ���������
 virtual bool AddCollection(ULibrary *library, bool force_build=false);
 
-// ������� ������������ ���������� �� ������ �� �������
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
 // ��������������� �� ������������ ������ ����� �� ���������� �������.
 virtual bool DelCollection(int index);
 
-// ��������� ��� ��������� � ����� MockLibs ���������� � CollectionList
+// В правильном порядке (порядок опредлен в конкретном файле)
 // � ���������� ������� (������� �������� � ���������� �����)
 bool InitMockLibs(void);
 
-// �������� ���� ���������-�������� (������� �� ����������)
+// из статических библиотек
 // �� ����������� ���������
 bool CreateMockLibs(void);
 
-// ��������� ��� ����������-�������� � ����� Rtv-VideoAnalytics/Bin/MockLibs � ���� XML ������
+// Также сохраняет порядок библиотек в виде отдельного файла
 // ����� ��������� ������� ��������� � ���� ���������� �����
 bool SaveMockLibs(void);
 
-// ������� ������������ ���������� �� ������ �� �����
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
 // ��������������� �� ������������ ������ ����� �� ���������� �������.
 bool DelCollection(const string &name);
 
-// ������� �� ������ ��� ����������
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
 // ��������������� �� ������������ ������ ����� �� ���������� �������.
 virtual bool DelAllCollections(void);
 
@@ -424,15 +424,15 @@ int GetBuildMode();
 // ��������� ��������� ������� ���������
 virtual bool BuildStorage(void);
 
-// ��������� ��������� ������� ��������� ������������ ����
-// ��� ����������:
-// 0 - ���������� ���������� (������� ������ � �����)
-// 1 - ������� ���������� (��������� �� ������� dll)
-// 2 - ����������, ��������� �� ����� ����������
+// Тип библиотеки:
+// 0 - Внутренняя библиотека (собрана вместе с ядром)
+// 1 - Внешняя библиотека (загружена из внешней dll)
+// 2 - Библиотека, созданная во время выполнения
+// 3 - Библиотека-заглушка (все компоненты-заглушки)
 // 3 - ����������-�������� (��� ����������-��������)
 virtual bool BuildStorage(int lib_type);
 
-/// ������� ��� ������� �������, ��� ������� ��� ���������
+/// а также все связанные образцы
 /// � ����� ��� ��������� �������
 virtual void DelAbandonedClasses(void);
 
@@ -440,33 +440,33 @@ virtual void DelAbandonedClasses(void);
 virtual UEPtr<ULibrary> FindCollection(const std::string &class_name);
 virtual UEPtr<ULibrary> FindCollection(const UId &classid);
 
-/// ��������� ������ ������������ ������ ���������� �� ���������
+/// Метод не очищает переданный список библиотек, а только пополняет его
 /// ����� �� ������� ���������� ������ ���������, � ������ ��������� ���
 virtual void FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
 // --------------------------
 
+// Методы для работы с компонентами-заглушками (UMockUnet)
 // --------------------------
-// ������ ��� ������ � ������������-���������� (UMockUnet)
-// --------------------------
+// Добавление функции-создателя свойств для UMockUnet в массив в Storage
 // ���������� �������-��������� ������� ��� UMockUnet � ������ � Storage
 bool AddCrPropMockFunc(funcCrPropMock func_ptr);
 
 // ��������� ������� �������-���������� ������� ��� UMockUnet
 const std::list<funcCrPropMock> &GetFunctionsCrPropMock() const;
 
+// Скрытые методы управления хранилищем объектов
+// Выводит уже созданный объект из хранилища и возвращает
+// его classid
 // --------------------------
-// ������� ������ ���������� ���������� ��������
-// ������� ��� ��������� ������ �� ��������� � ����������
-// ��� classid
 // --------------------------
 protected:
-// ��������� ��� ��������� ������ � ���������
+// Если объект уже принадлежит иному хранилищу то возвращает false
 // ���� ������ ��� ����������� ����� ��������� �� ���������� false
 virtual void PushObject(const UId &classid, UEPtr<UContainer> object);
 
 public:
-// ������� ��� ��������� ������ �� ��������� � ����������
-// ��� classid
+// его classid
+// В случае ошибки возвращает ForbiddenId
 // � ������ ������ ���������� ForbiddenId
 virtual UId PopObject(UEPtr<UContainer> object);
 
@@ -475,8 +475,8 @@ protected:
 virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
 
 public:
-// ���������� ������ � ���������
-// ��������� ������ ���������� ��� ��������� � ���������
+// Выбранный объект помечается как свободный в хранилище
+// Флаг 'Activity' объекта выставляется в false
 // ���� 'Activity' ������� ������������ � false
 virtual void ReturnObject(UEPtr<UComponent> object);
 
@@ -486,8 +486,8 @@ virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstances
 // --------------------------
 
 
+// Скрытые методы таблицы соответствий классов
 // --------------------------
-// ������� ������ ������� ������������ �������
 // --------------------------
 protected:
 // ��������� ����� � ������ 'name' � ������� ������������
@@ -498,8 +498,8 @@ virtual void DelLookupClass(const std::string &name);
 // --------------------------
 
 
+// Исключения
 // --------------------------
-// ����������
 // --------------------------
 public:
 class IException: public UException {};
@@ -599,20 +599,20 @@ UEPtr<T> UStorage::TakeObject(const string &classname, const UEPtr<UComponent> &
 // ������� ������ � ������� �� �������������� classid ������������� � ���������
 class UStorage::EClassIdNotExist: public EError
 {
-public: // ������
+public: // Ошибочный идентификатор
 // ��������� �������������
 UId Id;
 
-public: // ������
+public: // --------------------------
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 EClassIdNotExist(UId id);
 // --------------------------
 
+// Методы формирования лога
 // --------------------------
-// ������ ������������ ����
-// --------------------------
+// Формирует строку лога об исключении
 // ��������� ������ ���� �� ����������
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
@@ -621,20 +621,20 @@ virtual std::string CreateLogMessage(void) const;
 // ������� ������ � ������� �� �����, �������������� � ���������
 class UStorage::EClassNameNotExist: public EError
 {
-public: // ������
+public: // Ошибочный идентификатор
 // ��������� �������������
 std::string Name;
 
-public: // ������
+public: // --------------------------
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 EClassNameNotExist(const std::string &name);
 // --------------------------
 
+// Методы формирования лога
 // --------------------------
-// ������ ������������ ����
-// --------------------------
+// Формирует строку лога об исключении
 // ��������� ������ ���� �� ����������
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
@@ -643,20 +643,20 @@ virtual std::string CreateLogMessage(void) const;
 // ������������ ��� ������
 class UStorage::EInvalidClassName: public EError
 {
-public: // ������
+public: // Ошибочный идентификатор
 // ��������� �������������
 std::string Name;
 
-public: // ������
+public: // --------------------------
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 EInvalidClassName(const std::string &name);
 // --------------------------
 
+// Методы формирования лога
 // --------------------------
-// ������ ������������ ����
-// --------------------------
+// Формирует строку лога об исключении
 // ��������� ������ ���� �� ����������
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
@@ -665,20 +665,20 @@ virtual std::string CreateLogMessage(void) const;
 // ����� � �������� ������ ��� ����������
 class UStorage::EClassNameAlreadyExist: public EError
 {
-public: // ������
+public: // Ошибочное имя
 // ��������� ���
 std::string Name;
 
-public: // ������
+public: // --------------------------
+// Конструкторы и деструкторы
 // --------------------------
-// ������������ � �����������
 // --------------------------
 EClassNameAlreadyExist(const std::string &name);
 // --------------------------
 
+// Методы формирования лога
 // --------------------------
-// ������ ������������ ����
-// --------------------------
+// Формирует строку лога об исключении
 // ��������� ������ ���� �� ����������
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
