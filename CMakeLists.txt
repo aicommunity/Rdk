@@ -129,4 +129,8 @@ endif()
 
 # Вывод артефактов уже задан глобально в корневом CMakeLists
 
+# Add tests subdirectory if BUILD_TESTING is enabled
+if(BUILD_TESTING)
+  add_subdirectory(Tests)
+endif()
  
