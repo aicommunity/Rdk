@@ -867,9 +867,9 @@ bool UContainer::SetTimeStep(const UTime &timestep)
 void UContainer::ChangeUseIndTimeStepMode(bool value)
 {
  if(value)
-  ChangeLookupPropertyType("TimeStep",ptPubParameter | pgSystem);
+  ChangeLookupPropertyType("TimeStep",ptPubSysParameter);
  else
-  ChangeLookupPropertyType("TimeStep",ptParameter | pgSystem);
+  ChangeLookupPropertyType("TimeStep",ptSysParameter);
 
  // ��������� �� ���� ����������� �������
  UEPtr<UContainer>* comps=PComponents;

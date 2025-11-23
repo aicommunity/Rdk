@@ -1,4 +1,6 @@
 #include "UVisualControllerMainWidget.h"
+#include <QGuiApplication>
+#include <QScreen>
 
 // Флаг, сообщающий что идет расчет
 RDK::UELockVar<bool> UVisualControllerMainWidget::CalculationModeFlag(false);
@@ -450,10 +452,11 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
 {
     xml.SelectNodeForce("FormPosition");
  //   QRect Screen = QApplication::desktop()->availableGeometry();
-    int num_screens = QApplication::desktop()->numScreens();
+    auto screens = QGuiApplication::screens();
+    int num_screens = screens.size();
     std::vector<QRect> screen_sizes(num_screens);
     for(int i=0;i<int(screen_sizes.size());i++)
-       screen_sizes[i] = QApplication::desktop()->availableGeometry(i);
+       screen_sizes[i] = screens[i]->availableGeometry();
 
 
     int value_x=0, value_y=0;

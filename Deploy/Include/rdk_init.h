@@ -2,6 +2,15 @@
 #define RDK_INIT_H
 
 #include "rdk_error_codes.h"
+#include "initdll_defs.h"
+
+// Suppress redefinition warnings for macros that may be defined via -D in command line
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-macro-redefined"
+#ifndef RDK_APP_NAME
+#define RDK_APP_NAME "RDK"
+#endif
+#pragma GCC diagnostic pop
 
 #ifdef __cplusplus
 extern "C"  {
@@ -54,6 +63,10 @@ typedef int bool;
 #define RDK_ASSERT_LOG(FUNCTION_RESULT) (RDK::AssertLog(FUNCTION_RESULT,__FUNCTION__,__FILE__,__LINE__),FUNCTION_RESULT)
 
 
+#ifndef RDK_APP_NAME
+#define RDK_APP_NAME "RDK"
+#endif
+
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type
@@ -61,7 +74,7 @@ typedef int bool;
 // 0x2 - Переменная состояния
 // 0x4 - Временная переменная
 // 0x8 - Вход
-enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
+enum : unsigned int {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 
 // Варианты групп свойства (битовая маска) pg - Property Group
 // 0x100 - Общедоступный
@@ -69,15 +82,25 @@ enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 // 0x400 - Входные данные
 // 0x800 - Выходные данные
 // 0x1000 - Флаг смены режима работы компонента
-enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
+enum : unsigned int {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
 
 // Наиболее часто используемые сочетания типа и группы
-enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
+constexpr unsigned int ptPubParameter = static_cast<unsigned int>(ptParameter) | static_cast<unsigned int>(pgPublic);
+constexpr unsigned int ptPubState = static_cast<unsigned int>(ptState) | static_cast<unsigned int>(pgPublic);
+constexpr unsigned int ptPubInput = static_cast<unsigned int>(ptInput) | static_cast<unsigned int>(pgPublic);
+constexpr unsigned int ptPubOutput = static_cast<unsigned int>(ptOutput) | static_cast<unsigned int>(pgPublic);
+// Combined flags for system property types
+constexpr unsigned int ptSysParameter = static_cast<unsigned int>(ptParameter) | static_cast<unsigned int>(pgSystem);
+constexpr unsigned int ptPubSysParameter = static_cast<unsigned int>(ptParameter) | static_cast<unsigned int>(pgPublic) | static_cast<unsigned int>(pgSystem);
+constexpr unsigned int ptPubSysState = static_cast<unsigned int>(ptState) | static_cast<unsigned int>(pgPublic) | static_cast<unsigned int>(pgSystem);
+// Combined flags for any type with public group
+constexpr unsigned int ptAnyPub = static_cast<unsigned int>(ptAny) | static_cast<unsigned int>(pgPublic);
 
-enum { ipData=1 }; // ipComp removed as legacy (was used for component pointers, now unused)
-enum { ipSingle=16, ipRange=32, ipList=64 };
-enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
-       ipDataList=ipData|ipList };
+enum : unsigned int { ipData=1 }; // ipComp removed as legacy (was used for component pointers, now unused)
+enum : unsigned int { ipSingle=16, ipRange=32, ipList=64 };
+constexpr unsigned int ipDataSingle = static_cast<unsigned int>(ipData) | static_cast<unsigned int>(ipSingle);
+constexpr unsigned int ipDataRange = static_cast<unsigned int>(ipData) | static_cast<unsigned int>(ipRange);
+constexpr unsigned int ipDataList = static_cast<unsigned int>(ipData) | static_cast<unsigned int>(ipList);
 #endif
 
 // ----------------------------
@@ -886,12 +909,12 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentPropertyData(int channel_index, con
 
 // ���������� ��������� ���������� �� ��������������
 // Возвращает параметры компонента по идентификатору
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
-RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentParameters(int channel_index, const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask=ptPubParameter);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentParameters(int channel_index, const char *stringid, unsigned int type_mask=ptPubParameter);
 
 // ���������� ��������� ���������� �� �������������� � ����������
 // Возвращает параметры компонента по идентификатору с описаниями
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask=ptPubParameter);
 
 // ���������� ���������� ��������� ���������� �� ��������������
 // Возвращает выборочные параметры компонента по идентификатору
@@ -1036,8 +1059,8 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *st
 
 // ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
-RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptPubParameter);
+RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *stringid, unsigned int params_type_mask=ptPubParameter);
 
 // ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -1068,10 +1091,10 @@ RDK_LIB_TYPE int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stri
 
 // ��������� ��� ��������� ���������� � ��� �������� ��������� � xml
 // Сохраняет все параметры компонента и его дочерних компонент в xml
-RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask=ptPubParameter);
 
 // ��������� ��� ��������� ���������� � ��� �������� ��������� � xml
-RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponentParameters(int channel_index, const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponentParameters(int channel_index, const char *stringid, unsigned int type_mask=ptPubParameter);
 // ��������� ��� ��������� ���������� � ��� �������� ��������� �� xml
 // Загружает все параметры компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer);
@@ -1178,19 +1201,22 @@ RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetInterstepsInterval(int channe
 // --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
-RDK_LIB_TYPE const // если выход не содержит данных такого типа, то возвращает 0void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name);
+RDK_LIB_TYPE const // если выход не содержит данных такого типа, то возвращает 0
+void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex(const char *stringid, int index);
 
 // ���������� ��������� �� ����� � �������� 'index' ���������� 'id'
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-RDK_LIB_TYPE const // возвращаемое значение имеет фактический тип RDK::UBitmap*void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name);
+RDK_LIB_TYPE const // возвращаемое значение имеет фактический тип RDK::UBitmap*
+void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index);
 
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL MModel_GetComponentOutput(int channel_index, const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL MModel_GetComponentOutputByIndex(int channel_index, const char *stringid, int index);
 
 // ���������� ��������� �� ����� � �������� 'index' ���������� 'id'
-RDK_LIB_TYPE const // Возвращает указатель на выход с индексом 'index' компонента 'id' void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
+RDK_LIB_TYPE const // Возвращает указатель на выход с индексом 'index' компонента 'id'
+ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index);
 
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name);
@@ -1198,24 +1224,28 @@ RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOu
 
 /// �������� ������ � ���������� ����������� ������ � �������� 'index' ���������� 'id'
 /// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
-RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /// в стрктуру bmp_param void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /// в стрктуру bmp_param
+ void* bmp_param);
 RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int channel_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
 RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
 RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int channel_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
 
 /// �������� ����������� ������ � �������� 'index' ���������� 'id'
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
-RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размераvoid* bmp);
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
+void* bmp);
 RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp);
 RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index, /*RDK::UBitmap**/void* bmp);
 RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, /*RDK::UBitmap**/void* bmp);
 
 // ���������� ��������� �� ���� � �������� 'index' ���������� 'id'
-RDK_LIB_TYPE const // Возвращает указатель на вход с индексом 'index' компонента 'id' void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name);
+RDK_LIB_TYPE const // Возвращает указатель на вход с индексом 'index' компонента 'id'
+ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(const char *stringid, int index);
 
 // �������� ����������� ������ � �������� 'index' ���������� 'id'
-RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const // Замещает изображение выхода с индексом 'index' компонента 'id' void* const bmp, bool reflect=false);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const // Замещает изображение выхода с индексом 'index' компонента 'id'
+ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE int RDK_CALL MModel_SetComponentBitmapOutput(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE int RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 
@@ -1223,7 +1253,8 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stri
 RDK_LIB_TYPE int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 
 // �������� ����������� ����� � �������� 'index' ���������� 'id'
-RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const // Замещает изображение входа с индексом 'index' компонента 'id' void* const bmp, bool reflect=false);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const // Замещает изображение входа с индексом 'index' компонента 'id'
+ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE int RDK_CALL MModel_SetComponentBitmapInput(int channel_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 /*RDK::UBitmap* */

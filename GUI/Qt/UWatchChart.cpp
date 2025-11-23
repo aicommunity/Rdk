@@ -365,7 +365,7 @@ void UWatchChart::wheelEvent(QWheelEvent *event)
     //обработка прокрутки колеса мыши
     /// просто прокрутка = скролл
     /// ctrl + прокрутка = зум
-    int degrees = event->delta();
+    int degrees = event->angleDelta().y() / 8; // Convert from 1/8 degree units to degrees
     if(isCtrlPressed && isAxisYzoomable)
     { 
         if(degrees>0)

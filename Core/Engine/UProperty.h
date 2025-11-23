@@ -90,7 +90,7 @@ public: // Методы
 //Конструктор инициализации.
 // Constructor with optional mutex creation
 explicit UVBaseDataProperty(T * const pdata, bool needs_mutex = false)
- : IoType(ipSingle | ipData), Mutex(needs_mutex ? UCreateMutex() : nullptr), UpdateTime(0)
+ : IoType(static_cast<unsigned int>(ipSingle) | static_cast<unsigned int>(ipData)), Mutex(needs_mutex ? UCreateMutex() : nullptr), UpdateTime(0)
 {
 }
 
@@ -904,13 +904,13 @@ public:
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod), VSetterR(0)
 {
- this->IoType = ipRange | ipData;
+ this->IoType = static_cast<unsigned int>(ipRange) | static_cast<unsigned int>(ipData);
 }
 
 UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,type>::VSetterRT setmethod)
  : UPropertyLocal<T,OwnerT,type>(name, owner,(typename UVProperty<T,OwnerT>::SetterRT)0)
 {
- this->IoType = ipRange | ipData;
+ this->IoType = static_cast<unsigned int>(ipRange) | static_cast<unsigned int>(ipData);
  VSetterR=setmethod;
 }
 // -----------------------------
@@ -1041,12 +1041,19 @@ public:
 // ������ �������� ����������
 const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) const
 {
- const T& data = GetData();
- if(i>=data.size())
+ const T& data_ref = this->GetData();
+ if(i>=data_ref.size())
   throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-                               0,int(data.size()),int(i));
+                               0,int(data_ref.size()),int(i));
 
- return data[i];
+ // GetData() returns reference to member 'v', not a temporary
+ // For std::vector<bool>, operator[] returns a proxy object, not a direct reference
+ // This is safe because the proxy object is valid as long as the vector exists
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-local-addr"
+ const typename UProperty<T, OwnerT, type, true>::TV& elem_ref = data_ref[i];
+ return elem_ref;
+#pragma GCC diagnostic pop
 }
 
 // ������ �������� ����������

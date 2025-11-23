@@ -401,9 +401,7 @@ bool UCurlFtpClientTestWidget::UnpackZipFolder(const QString &local_zip_folder, 
     if(!dst_dir.exists())
         dst_dir.mkpath(dst_dir.path());
 
-    QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
-
-    zip_process.start(cmd);
+    zip_process.start("unzip", QStringList() << "-o" << local_zip_folder << "-d" << local_dst_folder);
     while(!zip_process.waitForFinished(2))
     {
         QCoreApplication::processEvents();
@@ -414,9 +412,7 @@ bool UCurlFtpClientTestWidget::UnpackZipFolder(const QString &local_zip_folder, 
 bool UCurlFtpClientTestWidget::UnpackZipFile(const QString &local_zip_folder, const QString& local_dst_folder)
 {
     //TODO: Убедиться, что файл залетает куда надо после распаковки
-    QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
-
-    zip_process.start(cmd);
+    zip_process.start("unzip", QStringList() << "-o" << local_zip_folder << "-d" << local_dst_folder);
     while(!zip_process.waitForFinished(2))
     {
         QCoreApplication::processEvents();

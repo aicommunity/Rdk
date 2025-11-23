@@ -37,7 +37,7 @@ UVariable::UVariable(void)
 {
  Property=0;
  DelEnable=true;
- Type=ptParameter & pgPublic;
+ Type=static_cast<unsigned int>(ptParameter) & static_cast<unsigned int>(pgPublic);
 }
 
 UVariable::UVariable(UEPtr<UIProperty> prop, unsigned int type)

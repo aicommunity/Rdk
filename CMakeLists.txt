@@ -94,9 +94,6 @@ target_compile_definitions(${TARGET_NAME}
   PUBLIC
     RDK_QT
     LIBRDK_LIBRARY_EXPORT
-    RDK_LIB_TYPE=
-    RDK_CALL=
-    RDK_APP_NAME=\"RDK\"
     RDK_USE_SQL
 )
 

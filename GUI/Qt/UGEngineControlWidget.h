@@ -277,7 +277,7 @@ private:
 class SubWindowCloseIgnore: public QMdiSubWindow
 {
 public:
-    explicit SubWindowCloseIgnore(QWidget *parent = 0, Qt::WindowFlags flags = 0):QMdiSubWindow(parent, flags){}
+    explicit SubWindowCloseIgnore(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags()):QMdiSubWindow(parent, flags){}
 protected:
     void closeEvent(QCloseEvent *event){event->ignore();}
 };

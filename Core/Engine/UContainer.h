@@ -113,6 +113,7 @@ mutable UEPtr<UContainer> CachedComponent;
 mutable UId CachedComponentId;
 mutable std::type_index CachedComponentType;
 
+/// Маска для фильтрации системных событий компонента
 /// ������� ����������� ���������
 UAStaticContainerMap StaticComponents;
 
@@ -120,43 +121,37 @@ UAStaticContainerMap StaticComponents;
 std::vector<UEPtr<UController> > Controllers;
 
 public: // Имя объекта
-// ��� �������
-UProperty<NameT, UContainer, ptParameter | pgSystem> Name;
+UProperty<NameT, UContainer, ptSysParameter> Name;
 
-// Id �������
-UProperty<UId, UContainer, ptParameter | pgSystem> Id;
+// Id объекта
+UProperty<UId, UContainer, ptSysParameter> Id;
 
 // true - расчет объекта будет выполняться
 // false - расчет объекта будет игнорироваться
-// false - ������ ������� ����� ��������������
-UProperty<bool,  UContainer, ptParameter | pgPublic> Activity;
+UProperty<bool,  UContainer, ptPubParameter> Activity;
 
 // Реальный шаг = 1./TimeStep
-// �������� ��� = 1./TimeStep
-UProperty<UTime,  UContainer, ptParameter | pgSystem> TimeStep;
+UProperty<UTime,  UContainer, ptSysParameter> TimeStep;
 
 /// в миллисекундах.
 /// Если время расчета превышено, то расчет последующих дочерних компонент
 /// не выполняется
 /// Если значение параметра <0, то нет ограничений
-/// ���� �������� ��������� <0, �� ��� �����������
-UProperty<long long, UContainer, ptParameter | pgPublic> MaxCalculationDuration;
+UProperty<long long, UContainer, ptPubParameter> MaxCalculationDuration;
 
 /// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
 /// Если значение параметра <0, то нет ограничений
-/// ���� �������� ��������� <0, �� ��� �����������
-UProperty<long long, UContainer, ptParameter | pgPublic> CalculationDurationThreshold;
+UProperty<long long, UContainer, ptPubParameter> CalculationDurationThreshold;
 
 public: // Координата компонента в пространстве сети
-// ���������� ���������� � ������������ ����
-UProperty<RDK::MVector<double,3>, UContainer, ptParameter | pgPublic> Coord;
+UProperty<RDK::MVector<double,3>, UContainer, ptPubParameter> Coord;
 
 // (без учета времени обсчета дочерних объектов) (мс)
-// (��� ����� ������� ������� �������� ��������) (��)
-UProperty<unsigned long long, UContainer, ptState | pgPublic | pgSystem> StepDuration;
+UProperty<unsigned long long, UContainer, ptPubSysState> StepDuration;
 
 /// ����� ��������������� �������� ������ ��������� ���������� ����������
-UProperty<unsigned int, UContainer, ptParameter | pgPublic | pgSystem> DebugSysEventsMask;
+/// Маска для фильтрации системных событий компонента
+UProperty<unsigned int, UContainer, ptPubParameter | static_cast<unsigned int>(pgSystem)> DebugSysEventsMask;
 
 protected: // Время, прошедшее между двумя последними итерациями счета
 // �����, ��������� ����� ����� ���������� ���������� �����

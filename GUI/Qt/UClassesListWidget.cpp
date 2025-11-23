@@ -5,6 +5,7 @@
 #include <QDrag>
 #include <QDebug>
 #include <QPushButton>
+#include <QBrush>
 
 UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app), ModelScheme(nullptr),
@@ -47,7 +48,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     {
         QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
         if(RTclassesNames.indexOf(str)!=-1)
-            item->setTextColor(Qt::darkCyan);
+            item->setForeground(QBrush(Qt::darkCyan));
         item->setText(str);
         ui->listWidgetStorageByName->addItem(item);
     }
@@ -70,7 +71,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
             item->setExpanded(true);
             item->setText(0, str);
             if(isRTlib)
-                item->setTextColor(0,Qt::darkBlue);
+                item->setForeground(0, QBrush(Qt::darkBlue));
             stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
             QStringList libClasses = QString(stringBuff).split(",");
             Engine_FreeBufString(stringBuff);
@@ -82,7 +83,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
                      QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                      classItem->setText(0, className);
                      if(isRTlib)
-                         classItem->setTextColor(0,Qt::darkCyan);
+                         classItem->setForeground(0, QBrush(Qt::darkCyan));
                 }
             }
         }
@@ -348,10 +349,10 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
                 QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
 
                 if(MockClassesNames.indexOf(str)!=-1)
-                    item->setTextColor(Qt::darkYellow);
+                    item->setForeground(QBrush(Qt::darkYellow));
 
                 if(RTclassesNames.indexOf(str)!=-1)
-                    item->setTextColor(Qt::darkCyan);
+                    item->setForeground(QBrush(Qt::darkCyan));
                 item->setText(str);
                 ui->listWidgetStorageByName->addItem(item);
             }
@@ -440,9 +441,9 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 item->setExpanded(true);
                 item->setText(0, str);
                 if(isMocklib)
-                    item->setTextColor(0,Qt::darkMagenta);
+                    item->setForeground(0, QBrush(Qt::darkMagenta));
                 if(isRTlib)
-                    item->setTextColor(0,Qt::darkBlue);
+                    item->setForeground(0, QBrush(Qt::darkBlue));
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
                 QStringList libClasses = QString(stringBuff).split(",");
                 Engine_FreeBufString(stringBuff);
@@ -454,9 +455,9 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
                          if(isMocklib)
-                             classItem->setTextColor(0,Qt::darkYellow);
+                             classItem->setForeground(0, QBrush(Qt::darkYellow));
                          if(isRTlib)
-                             classItem->setTextColor(0,Qt::darkCyan);
+                             classItem->setForeground(0, QBrush(Qt::darkCyan));
                     }
                 }
 
@@ -468,9 +469,9 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                 item->setExpanded(true);
                 item->setText(0, str);
                 if(isMocklib)
-                    item->setTextColor(0,Qt::darkMagenta);
+                    item->setForeground(0, QBrush(Qt::darkMagenta));
                 if(isRTlib)
-                    item->setTextColor(0,Qt::darkBlue);
+                    item->setForeground(0, QBrush(Qt::darkBlue));
                 stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
                 QStringList libClasses = QString(stringBuff).split(",");
                 Engine_FreeBufString(stringBuff);
@@ -483,9 +484,9 @@ void UClassesListWidget::tab1_textChanged(const QString &arg1)
                          QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
                          classItem->setText(0, className);
                          if(isMocklib)
-                             classItem->setTextColor(0,Qt::darkYellow);
+                             classItem->setForeground(0, QBrush(Qt::darkYellow));
                          if(isRTlib)
-                             classItem->setTextColor(0,Qt::darkCyan);
+                             classItem->setForeground(0, QBrush(Qt::darkCyan));
                     }
                 }
                 if (!isLibFind)

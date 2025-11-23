@@ -420,7 +420,7 @@ void ULibrary::FillMockLibrary(UMockLibrary* lib)
         }
 
         // Сохранение XML всего описания компонента
-        if(!cont->SaveComponent(&ComponentStruct, true, ptAny|pgPublic))
+        if(!cont->SaveComponent(&ComponentStruct, true, ptAnyPub))
         {
             if(Storage->GetLogger())
                 Storage->GetLogger()->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Error while saving XML description of class " + *it);
@@ -502,7 +502,7 @@ bool URuntimeLibrary::AddNewClass(const std::string &new_class_name, const std::
 	CurrentComponentStruct.Destroy();
 
     // Сохранение XML и добавление нового поля RTname с именем
-    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptAny|pgPublic))
+    if(!cont->SaveComponent(&CurrentComponentStruct, true, ptAnyPub))
         return false;
 
     CurrentComponentStruct.SelectNode(cont->GetName());

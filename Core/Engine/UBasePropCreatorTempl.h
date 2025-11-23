@@ -63,7 +63,7 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
      // Unified Input property creation
      // All property types now use UProperty directly
      // Check only ipData (ipComp removed as legacy)
-     if((io_type & (ipRange  | ipData)) == (ipRange  | ipData))
+     if((io_type & ipDataRange) == ipDataRange)
      {
       // Vector property
       CreatorT::template CreateProperty<UProperty,ptPubInput>(serstorage,mock_unet,p_type);

@@ -5,7 +5,8 @@
 #include <vector>
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
 #include <boost/thread/mutex.hpp>
 
 #include "../../Deploy/Include/rdk.h"

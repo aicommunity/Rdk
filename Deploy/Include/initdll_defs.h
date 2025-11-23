@@ -3,6 +3,10 @@
 
 #define RDK_CORE
 
+// Suppress redefinition warnings for macros that may be defined via -D in command line
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-macro-redefined"
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4100)
 #pragma warning(disable : 4355)
@@ -27,54 +31,110 @@
  #endif
 #endif
 
+#ifndef RDK_LIB_TYPE
 #if defined(__BORLANDC__)
 	#if defined(LIBRDK_LIBRARY_EXPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE __declspec(dllexport)
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL __cdecl
+		#endif
 	#elif defined(LIBRDK_LIBRARY_IMPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE __declspec(dllimport)
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL __cdecl
+		#endif
 	#else
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL
+		#endif
 	#endif
 #elif defined (QT_VERSION)
 	#if defined(LIBRDK_LIBRARY_EXPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE Q_DECL_EXPORT
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL
+		#endif
 	#elif defined(LIBRDK_LIBRARY_IMPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE Q_DECL_IMPORT
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL
+		#endif
 	#else
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL
+		#endif
 	#endif
 #elif defined(__GNUC__)
+	#ifndef RDK_LIB_TYPE
 	#define RDK_LIB_TYPE
+	#endif
+	#ifndef RDK_CALL
 	#define RDK_CALL
+	#endif
 #elif defined(_MSC_VER)
     #if defined(LIBRDK_LIBRARY_EXPORT)
+        #ifndef RDK_LIB_TYPE
         #define RDK_LIB_TYPE __declspec(dllexport)
+        #endif
+        #ifndef RDK_CALL
         #define RDK_CALL __cdecl
+        #endif
     #elif defined(LIBRDK_LIBRARY_IMPORT)
+        #ifndef RDK_LIB_TYPE
         #define RDK_LIB_TYPE __declspec(dllimport)
+        #endif
+        #ifndef RDK_CALL
         #define RDK_CALL __cdecl
+        #endif
     #else
+        #ifndef RDK_LIB_TYPE
         #define RDK_LIB_TYPE
+        #endif
+        #ifndef RDK_CALL
         #define RDK_CALL
+        #endif
     #endif
 #else
 	#if defined(LIBRDK_LIBRARY_EXPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE __declspec(dllexport)
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL __cdecl
+		#endif
 	#elif defined(LIBRDK_LIBRARY_IMPORT)
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE __declspec(dllimport)
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL __cdecl
+		#endif
 	#else
+		#ifndef RDK_LIB_TYPE
 		#define RDK_LIB_TYPE
+		#endif
+		#ifndef RDK_CALL
 		#define RDK_CALL
+		#endif
 	#endif
 #endif
+#endif // RDK_LIB_TYPE
+
+#pragma GCC diagnostic pop
 
 #if __cplusplus >= 201103L
     #include <cstdint>
