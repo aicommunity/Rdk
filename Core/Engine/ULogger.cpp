@@ -57,8 +57,25 @@ bool ULogger::SetSuffix(const std::string &value)
 }
 
 /// Инициализирует лог
+/// With glog, this ensures the log directory exists (glog initialization is done in UApplication::Init)
 int ULogger::InitLog(void)
 {
+#ifdef RDK_USE_GLOG
+ // With glog, directory creation is handled during glog initialization
+ // Just ensure the directory exists if specified
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ if(!LogDir.Get().empty())
+ {
+  if(CreateNewDirectory(LogDir.Get().c_str()) != 0)
+  {
+   LogEnabledFlag=false;
+   RdkDebuggerMessage(std::string("Failed to create log directory ")+LogDir.Get());
+   return RDK_E_LOGGER_CANT_CREATE_LOG_PATH;
+  }
+ }
+ return RDK_SUCCESS;
+#else
+ // Old implementation
  Clear();
 
  UGenericMutexExclusiveLocker lock(LogMutex);
@@ -73,11 +90,21 @@ int ULogger::InitLog(void)
  }
 
  return RDK_SUCCESS;
+#endif
 }
 
 /// Сохраняет строку в лог
+/// With glog, this is a compatibility stub - actual logging is done through glog
 int ULogger::WriteMessageToFile(const std::string &str)
 {
+#ifdef RDK_USE_GLOG
+ // With glog, logging is handled through ProcessException/ProcessExceptionRaw
+ // This method is kept for compatibility but does nothing
+ // The message should already be logged via glog
+ (void)str; // Suppress unused parameter warning
+ return RDK_SUCCESS;
+#else
+ // Old implementation for fallback
  UGenericMutexExclusiveLocker lock(LogMutex);
  try
  {
@@ -113,6 +140,7 @@ int ULogger::WriteMessageToFile(const std::string &str)
   crush_file<<"ULogger::WriteMessageToFile unexcepted catch! "<<"Message="<<str<<endl;
  }
  return RDK_UNHANDLED_EXCEPTION;
+#endif
 }
 
 /// Закрывает файлы с логами и удаляет связанные файловые переменные
@@ -130,10 +158,16 @@ int ULogger::Clear(void)
 }
 
 /// Возвращает true если файл записи логов открыт
+/// With glog, this always returns true as glog handles file creation
 bool ULogger::IsLogFileCreated(void) const
 {
+#ifdef RDK_USE_GLOG
+ // With glog, files are always available (glog manages them)
+ return true;
+#else
  UGenericMutexExclusiveLocker lock(LogMutex);
  return (EventsLogFile)?true:false;
+#endif
 }
 
 

@@ -2,6 +2,7 @@
 #include "ULoggerEnv.h"
 #include "UContainer.h"
 #include "UEnvironment.h"
+#include "../../Deploy/Include/rdk_logging.h"
 
 namespace RDK {
 
@@ -225,13 +226,23 @@ void ULoggerEnv::ProcessException(const UException &exception) const
   ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception); // TODO: Нет проверки возвращаемого значения
 
  if(ExceptionHandler)
+ {
+  // Call ExceptionHandler with ChannelIndex to notify GUI
+  // This adds the channel index to UnsentLogChannelIndexes for ProcessLog()
   ExceptionHandler(ChannelIndex);
+ }
 }
 
 /// Обрабатывает возникшее исключение (Внутренний метод)
 void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) const
 {
  std::string log_message=exception.GetMessage();
+ 
+#ifdef RDK_USE_GLOG
+ // Use glog for logging
+ RDK_LOG_BY_LEVEL(type, log_message);
+#else
+ // Fallback to old logging
  if(CoutLogMode)
  {
   std::cout<<log_message<<endl;
@@ -241,6 +252,7 @@ void ULoggerEnv::ProcessExceptionRaw(int type, const UException &exception) cons
  {
   const_cast<ULoggerEnv* const>(this)->WriteMessageToFile(log_message);  // TODO: Проверить на RDK_SUCCESS
  }
+#endif
 
  if(LastErrorLevel>type)
   LastErrorLevel=type;
@@ -498,6 +510,64 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
 {
  try
  {
+#ifdef RDK_USE_GLOG
+  // Skip debug messages if debug mode is off
+  if(msg_level == RDK_EX_DEBUG && !DebugMode)
+  {
+   return;
+  }
+  
+  // Call ProcessException for proper formatting and GUI widget support
+  // ProcessExceptionRaw will use glog (via RDK_LOG_BY_LEVEL) instead of file I/O
+  // This ensures messages are properly formatted with channel prefix and added to LogList
+  switch (msg_level)
+  {
+   case RDK_EX_UNKNOWN:
+   case RDK_EX_FATAL:
+   {
+    EStringFatal ex(line,error_event_number);
+    ex.SetObjectName(object_name);
+    ProcessException(ex);
+    return; // ProcessException handles everything including glog logging
+   }
+   case RDK_EX_ERROR:
+   {
+    EStringError ex(line,error_event_number);
+    ex.SetObjectName(object_name);
+    ProcessException(ex);
+    return;
+   }
+   case RDK_EX_WARNING:
+   {
+    EStringWarning ex(line,error_event_number);
+    ex.SetObjectName(object_name);
+    ProcessException(ex);
+    return;
+   }
+   case RDK_EX_INFO:
+   {
+    EStringInfo ex(line,error_event_number);
+    ex.SetObjectName(object_name);
+    ProcessException(ex);
+    return;
+   }
+   case RDK_EX_DEBUG:
+   {
+    EStringDebug ex(line,error_event_number);
+    ex.SetObjectName(object_name);
+    ProcessException(ex);
+    return;
+   }
+   case RDK_EX_APP:
+   {
+    EStringApp ex(line,error_event_number);
+    ex.SetObjectName(object_name);
+    ProcessException(ex);
+    return;
+   }
+  }
+#else
+  // Old implementation
   switch (msg_level)
   {
   case RDK_EX_UNKNOWN:
@@ -559,6 +629,7 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
   }
   break;
   }
+#endif
  }
  catch(...)
  {
@@ -578,16 +649,28 @@ void ULoggerEnv::LogMessageEx(int msg_level, const std::string &object_name, con
 /// Сброс логирования
 void ULoggerEnv::Reset(void)
 {
+#ifdef RDK_USE_GLOG
+ // With glog, Reset just clears the LogList
+ // glog handles file rotation automatically
+ ClearLog();
+#else
  if(EventsLogMode)
  {
   Clear();
   InitLog();
  }
+#endif
 }
 
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
 void ULoggerEnv::RecreateEventsLogFile(void)
 {
+#ifdef RDK_USE_GLOG
+ // With glog, file rotation is handled automatically
+ // This method is kept for compatibility but just ensures the log directory exists
+ InitLog();
+#else
+ // Old implementation
  Clear();
 // std::string log_dir;
 // if(EngineControl && EngineControl->GetApplication())
@@ -604,6 +687,7 @@ void ULoggerEnv::RecreateEventsLogFile(void)
 // else
 // {
 //  EventsLogFilePath=log_dir;
+#endif
 // }
 
  /// Сохраняем лог в файл если это необходимо

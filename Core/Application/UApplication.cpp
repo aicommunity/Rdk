@@ -11,6 +11,9 @@
 #include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
 
 using namespace std;
 
@@ -721,6 +724,42 @@ bool UApplication::SetStandartXMLInCatalog(void)
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
+#ifdef RDK_USE_GLOG
+ // Initialize glog
+ google::InitGoogleLogging(RDK_APP_NAME);
+ 
+ // Set log directory from GetLogDir() if available
+ std::string log_dir = GetLogDir();
+ if(!log_dir.empty())
+ {
+  FLAGS_log_dir = log_dir;
+ }
+ else
+ {
+  // Default to EventsLog directory
+  std::string default_log_dir = WorkDirectory + "/EventsLog/";
+  FLAGS_log_dir = default_log_dir;
+ }
+ 
+ // Set log level based on DebugMode
+ if(GetLogger() && GetLogger()->GetDebugMode())
+ {
+  FLAGS_minloglevel = google::GLOG_INFO;
+  FLAGS_v = 1; // Enable VLOG(1) for debug messages
+ }
+ else
+ {
+  FLAGS_minloglevel = google::GLOG_WARNING; // Only warnings and above
+  FLAGS_v = 0; // Disable VLOG
+ }
+ 
+ // Enable log prefix with timestamp and file info
+ FLAGS_log_prefix = true;
+ 
+ // Install failure signal handler
+ google::InstallFailureSignalHandler();
+#endif
+
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
  Core_SetBufObjectsMode(1);
@@ -772,6 +811,10 @@ bool UApplication::UnInit(void)
  GetCoreLock()->Destroy();
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
+#ifdef RDK_USE_GLOG
+ // Shutdown glog
+ google::ShutdownGoogleLogging();
+#endif
  AppIsInit = false;
  return true;
 }

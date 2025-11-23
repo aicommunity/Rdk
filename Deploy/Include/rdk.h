@@ -15,6 +15,7 @@
 #define RDK_H
 
 #include "myrdk.h"
+#include "rdk_logging.h"
 #include "../../Core/Graphics/Graphics.h"
 #include "../../Core/Engine/Engine.h"
 

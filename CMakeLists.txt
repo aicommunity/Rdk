@@ -120,6 +120,39 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
 
+# Google glog for logging
+find_package(glog QUIET)
+if(NOT glog_FOUND)
+  # Try to find glog using pkg-config or standard paths
+  find_path(GLOG_INCLUDE_DIR glog/logging.h
+    PATHS
+      /usr/include
+      /usr/local/include
+      /opt/homebrew/include
+  )
+  find_library(GLOG_LIBRARY
+    NAMES glog
+    PATHS
+      /usr/lib
+      /usr/local/lib
+      /opt/homebrew/lib
+  )
+  if(GLOG_INCLUDE_DIR AND GLOG_LIBRARY)
+    add_library(glog::glog UNKNOWN IMPORTED)
+    set_target_properties(glog::glog PROPERTIES
+      IMPORTED_LOCATION "${GLOG_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIR}"
+    )
+    set(glog_FOUND TRUE)
+  endif()
+endif()
+if(glog_FOUND)
+  target_link_libraries(${TARGET_NAME} PUBLIC glog::glog)
+  target_compile_definitions(${TARGET_NAME} PUBLIC RDK_USE_GLOG)
+else()
+  message(WARNING "glog not found. Logging will use fallback implementation.")
+endif()
+
 if (RDK_USE_OPENCV AND OpenCV_FOUND)
   target_link_libraries(${TARGET_NAME} PUBLIC ${OpenCV_LIBS})
 endif()
