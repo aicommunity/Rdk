@@ -3,6 +3,12 @@
 
 #include "UAppCore.h"
 #include "UProject.h"
+#include <memory>
+#include <unordered_map>
+
+#ifndef __BORLANDC__
+namespace boost { namespace program_options { class variables_map; } }
+#endif
 #include "UIVisualController.h"
 #include "URpcDispatcherQueues.h"
 #include "URpcDispatcher.h"
@@ -141,6 +147,20 @@ bool LoggingInitialized;
 
 /// Отложенный путь до основной папки логов (если логгер ещё не инициализирован)
 std::string PendingPrimaryLogDir;
+
+struct LogRoutingOverrides
+{
+  int GlobalLevel = -1;
+  int Verbosity = -1;
+  std::unordered_map<int, int> ChannelLevels;
+};
+
+LogRoutingOverrides EnvLogOverrides;
+LogRoutingOverrides CliLogOverrides;
+std::shared_ptr<Logging::ILogSink> GuiSinkHandle;
+std::shared_ptr<Logging::ILogSink> FileSinkHandle;
+std::shared_ptr<Logging::ILogSink> JsonSinkHandle;
+std::string ActiveJsonSinkPath;
 
 protected: // Модули приложения
 /// Диспетчер команд
@@ -515,6 +535,17 @@ void UpdateLoggers(void);
 std::string GetWorkLogDir(void) const;
 std::string GetLogFileBaseName(void) const;
 void ApplyPrimaryLogDestination(const std::string& directory);
+void LoadEnvLogOverrides(void);
+void ApplyLogRouting(const TProjectConfig& config);
+void ApplyCliLogOverrides(const std::vector<std::string>& args);
+#ifndef __BORLANDC__
+void ApplyCliLogOverrides(const boost::program_options::variables_map& vm);
+#endif
+void RegisterChannelOverrideToken(const std::string& token, LogRoutingOverrides& target);
+int ParseSeverityToken(const std::string& token, int fallback) const;
+int DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const;
+int ResolveChannelLevel(int channel_index, int base_level) const;
+int ResolveVerbosityLevel(int base_level) const;
 
 /// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
 /// Если сохранение не удалось, то старый файл остается как был.

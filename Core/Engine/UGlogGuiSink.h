@@ -6,9 +6,7 @@
 #include <string>
 #include <vector>
 
-#ifdef RDK_USE_GLOG
-#include <glog/logging.h>
-#endif
+#include "../../Deploy/Include/rdk_logging.h"
 
 namespace RDK
 {
@@ -19,23 +17,12 @@ struct UGlogGuiMessage
  std::string Text;
 };
 
-class UGlogGuiSink
-#ifdef RDK_USE_GLOG
-    : public google::LogSink
-#endif
+class UGlogGuiSink: public Logging::ILogSink
 {
 public:
  static UGlogGuiSink& Instance();
 
-#ifdef RDK_USE_GLOG
- void send(google::LogSeverity severity,
-           const char* full_filename,
-           const char* base_filename,
-           int line,
-           const struct ::tm* tm_time,
-           const char* message,
-           size_t message_len) override;
-#endif
+ void Consume(const Logging::LogItem& item) override;
 
  std::vector<UGlogGuiMessage> ReadMessages(std::size_t max_count = 256);
  void Clear();

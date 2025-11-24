@@ -17,24 +17,10 @@ UGlogGuiSink::UGlogGuiSink()
  TotalMessages = 0;
 }
 
-#ifdef RDK_USE_GLOG
-void UGlogGuiSink::send(google::LogSeverity severity,
-                        const char* full_filename,
-                        const char* base_filename,
-                        int line,
-                        const struct ::tm* tm_time,
-                        const char* message,
-                        size_t message_len)
+void UGlogGuiSink::Consume(const Logging::LogItem& item)
 {
- std::string formatted = google::LogSink::ToString(severity,
-                                                   base_filename,
-                                                   line,
-                                                   tm_time,
-                                                   message,
-                                                   message_len);
- PushMessage(severity, formatted);
+ PushMessage(item.Severity, item.Message);
 }
-#endif
 
 void UGlogGuiSink::PushMessage(int severity, const std::string& text)
 {

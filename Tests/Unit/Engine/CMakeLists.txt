@@ -11,3 +11,6 @@ add_subdirectory(UContainer)
 
 # Unit tests for UStorage
 add_subdirectory(UStorage)
+
+# Logging tests
+add_subdirectory(Logging)

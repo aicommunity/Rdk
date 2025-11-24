@@ -5,6 +5,198 @@
 #include "rdk_cpp_initdll.h"
 #include "rdk_error_codes.h"
 #include "rdk_exceptions.h"
+#include "rdk_logging.h"
+
+#include <algorithm>
+#include <ctime>
+#include <memory>
+#include <mutex>
+#include <unordered_map>
+#include <vector>
+
+namespace
+{
+
+std::mutex gChannelConfigMutex;
+RDK::Logging::ChannelRuntimeConfig gDefaultChannelConfig{RDK_EX_WARNING, 0};
+std::unordered_map<int, RDK::Logging::ChannelRuntimeConfig> gChannelConfigs;
+
+#ifdef RDK_USE_GLOG
+class FanoutSink: public google::LogSink
+{
+public:
+  static FanoutSink& Instance()
+  {
+    static FanoutSink instance;
+    return instance;
+  }
+
+  void Register(const std::shared_ptr<RDK::Logging::ILogSink>& sink)
+  {
+    if(!sink)
+      return;
+    std::lock_guard<std::mutex> lock(Mutex);
+    auto it = std::find(Sinks.begin(), Sinks.end(), sink);
+    if(it == Sinks.end())
+    {
+      Sinks.push_back(sink);
+      AttachIfNeededLocked();
+    }
+  }
+
+  void Unregister(const std::shared_ptr<RDK::Logging::ILogSink>& sink)
+  {
+    if(!sink)
+      return;
+    std::lock_guard<std::mutex> lock(Mutex);
+    auto it = std::remove(Sinks.begin(), Sinks.end(), sink);
+    if(it != Sinks.end())
+    {
+      Sinks.erase(it, Sinks.end());
+      DetachIfNeededLocked();
+    }
+  }
+
+  void send(google::LogSeverity severity,
+            const char* full_filename,
+            const char* base_filename,
+            int line,
+            const struct ::tm* tm_time,
+            const char* message,
+            size_t message_len) override
+  {
+    RDK::Logging::LogItem item;
+    item.Severity = severity;
+    item.Verbosity = 0;
+    item.BaseFilename = base_filename ? base_filename : "";
+    item.Line = line;
+    if(tm_time)
+    {
+      std::tm tm_copy = *tm_time;
+      item.Timestamp = std::mktime(&tm_copy);
+    }
+    else
+    {
+      item.Timestamp = std::time(nullptr);
+    }
+    if(message && message_len > 0)
+      item.Message.assign(message, message_len);
+
+    std::vector<std::shared_ptr<RDK::Logging::ILogSink>> sinks_snapshot;
+    {
+      std::lock_guard<std::mutex> lock(Mutex);
+      sinks_snapshot = Sinks;
+    }
+    for(const auto& sink : sinks_snapshot)
+      sink->Consume(item);
+  }
+
+  void WaitTillSent() override
+  {
+    std::vector<std::shared_ptr<RDK::Logging::ILogSink>> sinks_snapshot;
+    {
+      std::lock_guard<std::mutex> lock(Mutex);
+      sinks_snapshot = Sinks;
+    }
+    for(const auto& sink : sinks_snapshot)
+      sink->Flush();
+  }
+
+private:
+  void AttachIfNeededLocked()
+  {
+    if(!Attached && !Sinks.empty())
+    {
+      google::AddLogSink(this);
+      Attached = true;
+    }
+  }
+
+  void DetachIfNeededLocked()
+  {
+    if(Attached && Sinks.empty())
+    {
+      google::RemoveLogSink(this);
+      Attached = false;
+    }
+  }
+
+  std::mutex Mutex;
+  std::vector<std::shared_ptr<RDK::Logging::ILogSink>> Sinks;
+  bool Attached = false;
+};
+#endif
+
+int NormalizeSeverityValue(int msg_level)
+{
+  if(msg_level == RDK_EX_APP)
+    return RDK_EX_INFO;
+  if(msg_level == RDK_EX_UNKNOWN)
+    return RDK_EX_INFO;
+  if(msg_level < RDK_EX_FATAL)
+    return RDK_EX_FATAL;
+  if(msg_level > RDK_EX_DEBUG)
+    return RDK_EX_DEBUG;
+  return msg_level;
+}
+
+RDK::Logging::ChannelRuntimeConfig ResolveChannelConfig(int channel_index)
+{
+  std::lock_guard<std::mutex> lock(gChannelConfigMutex);
+  auto it = gChannelConfigs.find(channel_index);
+  if(it != gChannelConfigs.end())
+    return it->second;
+  return gDefaultChannelConfig;
+}
+
+} // namespace
+
+namespace RDK::Logging
+{
+
+void ResetChannelRuntimeConfig(const ChannelRuntimeConfig& default_config)
+{
+  std::lock_guard<std::mutex> lock(gChannelConfigMutex);
+  gDefaultChannelConfig = default_config;
+  gChannelConfigs.clear();
+}
+
+void SetChannelRuntimeConfig(int channel_index, const ChannelRuntimeConfig& config)
+{
+  std::lock_guard<std::mutex> lock(gChannelConfigMutex);
+  gChannelConfigs[channel_index] = config;
+}
+
+void RegisterLogSink(const std::shared_ptr<ILogSink>& sink)
+{
+#ifdef RDK_USE_GLOG
+  FanoutSink::Instance().Register(sink);
+#else
+  (void)sink;
+#endif
+}
+
+void UnregisterLogSink(const std::shared_ptr<ILogSink>& sink)
+{
+#ifdef RDK_USE_GLOG
+  FanoutSink::Instance().Unregister(sink);
+#else
+  (void)sink;
+#endif
+}
+
+bool ChannelFilterAllows(const ChannelDescriptor& channel, int msg_level, int verbose_level)
+{
+  const auto cfg = ResolveChannelConfig(channel.Index);
+  const int normalized = NormalizeSeverityValue(msg_level);
+  if(normalized > cfg.MinSeverity)
+    return false;
+  if(normalized == RDK_EX_DEBUG && verbose_level > cfg.MaxVerbosity)
+    return false;
+  return true;
+}
+
+} // namespace RDK::Logging
 
 // Экземпляр менеджера
 URdkCoreManager RdkCoreManager;
@@ -118,7 +310,7 @@ int URdkCoreManager::SetLogDir(const char *dir)
 
  if(LogDir == dir)
   return RDK_SUCCESS;
- SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Changing log directory to ") + dir);
  LogDir=dir;
  for(size_t i=0;i<LoggerList.size();i++)
  {
@@ -238,16 +430,16 @@ int URdkCoreManager::LoadFonts(void)
    std::vector<std::string> font_names;
    std::string font_path=SystemDir+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path);
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Loading fonts form ") + font_path);
 
    ClearFonts();
    RDK::UBitmapFont font;
    for(size_t i=0;i<font_names.size();i++)
    {
     if(AddFont(font_path+font_names[i]))
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]);
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Loaded font ") + font_names[i]);
     else
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Failed to load font ")+font_names[i]);
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Failed to load font ") + font_names[i]);
    }
    res=RDK_SUCCESS;
   }
@@ -626,7 +818,7 @@ int URdkCoreManager::ChannelCreate(int index)
  {
   try
   {
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to create channel ")+RDK::sntoa(index));
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Preparing to create channel ") + RDK::sntoa(index));
    // TODO: здесь инициализация параметров логгера и его запуск
    LoggerList[index]=new RDK::UExceptionLogger;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
@@ -682,7 +874,7 @@ int URdkCoreManager::ChannelCreate(int index)
     Logger=LoggerList[SelectedChannelIndex];
    }
 
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(index)+" has been created");
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Channel ") + RDK::sntoa(index) + " has been created");
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -755,7 +947,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    if(channel_index<0 || channel_index>=NumChannels)
     return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to initialize channel ")+RDK::sntoa(channel_index));
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Preparing to initialize channel ") + RDK::sntoa(channel_index));
    res=RDK_ASSERT_LOG(ChannelUnInit(channel_index));
    if(res != RDK_SUCCESS)
    {
@@ -781,7 +973,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    res=RDK_ASSERT_LOG(MEnv_Init(channel_index));
    if(res != RDK_SUCCESS)
     return res;
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(channel_index)+" has been initialized successfully");
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Channel ") + RDK::sntoa(channel_index) + " has been initialized successfully");
   }
   catch (RDK::UException &exception)
   {
@@ -851,9 +1043,9 @@ void URdkCoreManager::Destroy(void)
 
  for(int i=0;i<NumChannels;i++)
  {
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Prepearing to Uninitialize channel ") + RDK::sntoa(i));
   ChannelUnInit(i);
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Channel ") + RDK::sntoa(i) + std::string(" has been successfully uninitialized"));
  }
 
  RDK_SYS_TRY
@@ -863,7 +1055,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<EnvironmentList.size();i++)
 	if(EnvironmentList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted environment ") + RDK::sntoa(i));
      delete EnvironmentList[i];
     }
 
@@ -872,7 +1064,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<StorageList.size();i++)
 	if(StorageList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted storage ") + RDK::sntoa(i));
      delete StorageList[i];
     }
 
@@ -881,7 +1073,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<EngineList.size();i++)
 	if(EngineList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted engine ") + RDK::sntoa(i));
      delete EngineList[i];
     }
 
@@ -890,7 +1082,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<LoggerList.size();i++)
 	if(LoggerList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted channel logger ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted channel logger ") + RDK::sntoa(i));
      delete LoggerList[i];
     }
    LoggerList.resize(0);

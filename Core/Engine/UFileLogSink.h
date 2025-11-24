@@ -5,17 +5,12 @@
 #include <mutex>
 #include <string>
 
-#ifdef RDK_USE_GLOG
-#include <glog/logging.h>
-#endif
+#include "../../Deploy/Include/rdk_logging.h"
 
 namespace RDK
 {
 
-class UFileLogSink
-#ifdef RDK_USE_GLOG
-    : public google::LogSink
-#endif
+class UFileLogSink: public Logging::ILogSink
 {
 public:
  static UFileLogSink& Instance();
@@ -24,36 +19,25 @@ public:
  void Disable();
  bool IsEnabled() const;
 
-#ifdef RDK_USE_GLOG
- void send(google::LogSeverity severity,
-           const char* full_filename,
-           const char* base_filename,
-           int line,
-           const struct ::tm* tm_time,
-           const char* message,
-           size_t message_len) override;
-
- void WaitTillSent() override;
-#endif
+ void Consume(const Logging::LogItem& item) override;
+ void Flush() override;
 
 private:
  UFileLogSink();
  ~UFileLogSink();
 
-#ifdef RDK_USE_GLOG
  void OpenStreamLocked();
  void CloseStreamLocked();
  std::string BuildFilePathUnlocked() const;
-#endif
+ std::string FormatMessage(const Logging::LogItem& item) const;
+ std::string SeverityToString(int severity) const;
 
  mutable std::mutex SinkMutex;
  std::string TargetDirectory;
  std::string BaseName;
  bool Enabled;
 
-#ifdef RDK_USE_GLOG
  std::ofstream Stream;
-#endif
 };
 
 }

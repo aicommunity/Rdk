@@ -3,8 +3,6 @@
 #include <filesystem>
 #include <system_error>
 
-namespace fs = std::filesystem;
-
 namespace RDK
 {
 
@@ -30,22 +28,18 @@ void UFileLogSink::Configure(const std::string& directory, const std::string& ba
  TargetDirectory = directory;
  BaseName = base_name.empty() ? std::string("rdk") : base_name;
  Enabled = true;
-#ifdef RDK_USE_GLOG
  std::error_code ec;
  if(!TargetDirectory.empty())
-  fs::create_directories(TargetDirectory, ec);
+  std::filesystem::create_directories(TargetDirectory, ec);
  CloseStreamLocked();
  OpenStreamLocked();
-#endif
 }
 
 void UFileLogSink::Disable()
 {
  std::lock_guard<std::mutex> lock(SinkMutex);
  Enabled=false;
-#ifdef RDK_USE_GLOG
  CloseStreamLocked();
-#endif
 }
 
 bool UFileLogSink::IsEnabled() const
@@ -54,31 +48,21 @@ bool UFileLogSink::IsEnabled() const
  return Enabled;
 }
 
-#ifdef RDK_USE_GLOG
-void UFileLogSink::send(google::LogSeverity severity,
-                        const char* full_filename,
-                        const char* base_filename,
-                        int line,
-                        const struct ::tm* tm_time,
-                        const char* message,
-                        size_t message_len)
+void UFileLogSink::Consume(const Logging::LogItem& item)
 {
  std::lock_guard<std::mutex> lock(SinkMutex);
  if(!Enabled)
   return;
+
+ if(!Stream.is_open())
+  OpenStreamLocked();
  if(!Stream.is_open())
   return;
 
- std::string formatted = google::LogSink::ToString(severity,
-                                                   base_filename,
-                                                   line,
-                                                   tm_time,
-                                                   message,
-                                                   message_len);
- Stream << formatted << std::endl;
+ Stream << FormatMessage(item) << std::endl;
 }
 
-void UFileLogSink::WaitTillSent()
+void UFileLogSink::Flush()
 {
  std::lock_guard<std::mutex> lock(SinkMutex);
  if(Stream.is_open())
@@ -89,7 +73,7 @@ void UFileLogSink::OpenStreamLocked()
 {
  if(!Enabled)
   return;
- std::string file_path = BuildFilePathUnlocked();
+ const std::string file_path = BuildFilePathUnlocked();
  if(file_path.empty())
   return;
  Stream.open(file_path, std::ios::out | std::ios::app);
@@ -106,14 +90,40 @@ std::string UFileLogSink::BuildFilePathUnlocked() const
  if(TargetDirectory.empty())
   return std::string();
  std::string normalized = TargetDirectory;
- char last = normalized.back();
- if(last != '/' && last != '\\')
-  normalized.push_back('/');
- normalized += BaseName;
+ if(!normalized.empty())
+ {
+  char last = normalized.back();
+  if(last != '/' && last != '\\')
+   normalized.push_back('/');
+ }
+ normalized += BaseName.empty() ? std::string("rdk") : BaseName;
  normalized += ".work.log";
  return normalized;
 }
-#endif
+
+std::string UFileLogSink::SeverityToString(int severity) const
+{
+ switch(severity)
+ {
+  case RDK_EX_FATAL: return "FATAL";
+  case RDK_EX_ERROR: return "ERROR";
+  case RDK_EX_WARNING: return "WARNING";
+  case RDK_EX_INFO: return "INFO";
+  case RDK_EX_APP: return "APP";
+  case RDK_EX_DEBUG: return "DEBUG";
+  default: return "INFO";
+ }
+}
+
+std::string UFileLogSink::FormatMessage(const Logging::LogItem& item) const
+{
+ std::string line = "[" + SeverityToString(item.Severity) + "]";
+ if(!item.BaseFilename.empty())
+  line += "[" + item.BaseFilename + ":" + std::to_string(item.Line) + "]";
+ line += " ";
+ line += item.Message;
+ return line;
+}
 
 }
 

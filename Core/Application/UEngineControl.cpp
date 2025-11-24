@@ -8,6 +8,7 @@
 #include "UBroadcasterInterface.h"
 #include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_logging.h"
 
 namespace RDK {
 
@@ -328,7 +329,7 @@ void UEngineControl::PauseChannel(int channel_index)
 	 EngineControlThreads[i]->Pause();
 	 if(!EngineControlThreads[i]->WaitForCalculationComplete())
 	 {
-	  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_WARNING, (std::string("UEngineControl::PauseChannel - Calculation complete waiting timed out. Channel: ")+sntoa(i)).c_str());
+	  RLOG(RDK_EX_WARNING, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::PauseChannel - Calculation complete waiting timed out. Channel: ") + sntoa(i));
 	 }
 	}
    }
@@ -342,7 +343,7 @@ void UEngineControl::PauseChannel(int channel_index)
 
 	if(!EngineControlThreads[channel_index]->WaitForCalculationComplete())
 	{
-	 MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_WARNING, (std::string("UEngineControl::PauseChannel - Calculation complete waiting timed out. Channel: ")+sntoa(channel_index)).c_str());
+	 RLOG(RDK_EX_WARNING, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::PauseChannel - Calculation complete waiting timed out. Channel: ") + sntoa(channel_index));
 	}
 
    bool all_stopped=true;
@@ -449,12 +450,12 @@ void UEngineControl::StepChannel(int channel_index)
  }
  catch(std::exception &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::StepChannel:SendMetadata - ")+ex.what()).c_str());
+  RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::StepChannel:SendMetadata - ") + ex.what());
   throw;
  }
  catch(...)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::StepChannel:SendMetadata - unhandled exception");
+  RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", "UEngineControl::StepChannel:SendMetadata - unhandled exception");
   throw;
  }
  RDK::UIVisualControllerStorage::AfterCalculate();
@@ -475,11 +476,11 @@ void UEngineControl::StepChannel(int channel_index)
  }
  catch(std::exception &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:Calculate profiler stats - ")+ex.what()).c_str());
+  RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::TimerExecute:Calculate profiler stats - ") + ex.what());
  }
  catch(...)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
+  RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
   throw;
  }
 }
@@ -512,7 +513,7 @@ void UEngineControl::TimerExecute(void)
 	{
 	 if(EngineControlThreads[i]->WaitForCalculationComplete(int(model_full_step_duration)) == false)
 	 {
-	  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, (std::string("Calculation doesn't complete for channel #")+sntoa(i)+std::string(" for =")+sntoa(model_full_step_duration)+" ms").c_str());
+	  RLOG(RDK_EX_DEBUG, RDK_GLOB_MESSAGE, "glob", std::string("Calculation doesn't complete for channel #") + sntoa(i) + std::string(" for =") + sntoa(model_full_step_duration) + " ms");
 	 }
 	}
    }
@@ -527,11 +528,11 @@ void UEngineControl::TimerExecute(void)
   }
   catch(std::exception &ex)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:SendMetadata - ")+ex.what()).c_str());
+   RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::TimerExecute:SendMetadata - ") + ex.what());
   }
   catch(...)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:SendMetadata - unhandled exception");
+   RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", "UEngineControl::TimerExecute:SendMetadata - unhandled exception");
   }
 //  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
@@ -549,11 +550,11 @@ void UEngineControl::TimerExecute(void)
   }
   catch(std::exception &ex)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::TimerExecute:Calculate profiler stats - ")+ex.what()).c_str());
+   RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::TimerExecute:Calculate profiler stats - ") + ex.what());
   }
   catch(...)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
+   RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
   }
 
   if(GuiUpdateMode == 1)
@@ -838,7 +839,7 @@ bool UEngineControl::DeleteChannel(int index)
 
  if(del_res != RDK_SUCCESS)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControl::DeleteChannel FAILED: ChNum=")+sntoa(index)).c_str());
+  RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", std::string("UEngineControl::DeleteChannel FAILED: ChNum=") + sntoa(index));
   return false;
  }
  int new_num=Core_GetNumChannels();

@@ -11,12 +11,20 @@
 #include "UApplication.h"
 
 #include <algorithm>
+#include <cctype>
+#include <cstdlib>
 #include <filesystem>
+#include <optional>
+#include <limits>
+#include <sstream>
 #include <system_error>
+#include <vector>
 
 #include "../Engine/UFileLogSink.h"
 #include "../Engine/UGlogGuiSink.h"
+#include "../Engine/UJsonLogSink.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_logging.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
 #ifdef RDK_USE_GLOG
 #include <glog/logging.h>
@@ -46,6 +54,94 @@ std::string EnsureDirectoryAndNormalize(const std::string& dir)
  std::error_code ec;
  std::filesystem::create_directories(normalized, ec);
  return normalized;
+}
+
+std::string TrimCopy(const std::string& value)
+{
+ auto start = value.find_first_not_of(" \t");
+ if(start == std::string::npos)
+  return {};
+ auto end = value.find_last_not_of(" \t");
+ return value.substr(start, end - start + 1);
+}
+
+std::string ToLowerCopy(std::string value)
+{
+ std::transform(value.begin(), value.end(), value.begin(),
+                [](unsigned char ch){ return static_cast<char>(std::tolower(ch)); });
+ return value;
+}
+
+int ClampSeverityValue(int severity)
+{
+ if(severity < RDK_EX_FATAL)
+  return RDK_EX_FATAL;
+ if(severity > RDK_EX_DEBUG)
+  return RDK_EX_DEBUG;
+ return severity;
+}
+
+int ParseSeverityString(const std::string& token, int fallback)
+{
+ std::string normalized = ToLowerCopy(TrimCopy(token));
+ if(normalized.empty())
+  return fallback;
+
+ if(normalized == "fatal")
+  return RDK_EX_FATAL;
+ if(normalized == "error")
+  return RDK_EX_ERROR;
+ if(normalized == "warn" || normalized == "warning")
+  return RDK_EX_WARNING;
+ if(normalized == "info")
+  return RDK_EX_INFO;
+ if(normalized == "app")
+  return RDK_EX_APP;
+ if(normalized == "debug" || normalized == "trace")
+  return RDK_EX_DEBUG;
+
+ char* end_ptr = nullptr;
+ long numeric = std::strtol(normalized.c_str(), &end_ptr, 10);
+ if(end_ptr && *end_ptr == '\0')
+  return ClampSeverityValue(static_cast<int>(numeric));
+
+ return fallback;
+}
+
+int ParseVerbosityString(const std::string& token, int fallback)
+{
+ std::string trimmed = TrimCopy(token);
+ if(trimmed.empty())
+  return fallback;
+ char* end_ptr = nullptr;
+ long numeric = std::strtol(trimmed.c_str(), &end_ptr, 10);
+ if(end_ptr && *end_ptr == '\0')
+ {
+  if(numeric < 0)
+   return 0;
+  if(numeric > 10)
+   return 10;
+  return static_cast<int>(numeric);
+ }
+ return fallback;
+}
+
+int ParseChannelIdentifier(const std::string& token)
+{
+ std::string key = ToLowerCopy(TrimCopy(token));
+ if(key == "sys" || key == "system")
+  return RDK_SYS_MESSAGE;
+ if(key == "glob" || key == "global")
+  return RDK_GLOB_MESSAGE;
+ if(key == "default")
+  return RDK::Logging::kDefaultChannel.Index;
+
+ char* end_ptr = nullptr;
+ long numeric = std::strtol(key.c_str(), &end_ptr, 10);
+ if(end_ptr && *end_ptr == '\0')
+  return static_cast<int>(numeric);
+
+ return std::numeric_limits<int>::max();
 }
 
 }
@@ -99,6 +195,8 @@ UApplication::UApplication(void)
 
 
  // DebugMode=false;
+
+ LoadEnvLogOverrides();
 }
 
 UApplication::~UApplication(void)
@@ -442,6 +540,267 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
  google::SetLogDestination(google::GLOG_ERROR, prefix.c_str());
  google::SetLogDestination(google::GLOG_FATAL, prefix.c_str());
 #endif
+
+ if(Project)
+ {
+  ApplyLogRouting(Project->GetConfig());
+ }
+ else
+ {
+  TProjectConfig default_config;
+  ApplyLogRouting(default_config);
+ }
+
+ const char* json_path_env = std::getenv("RDK_LOG_JSON_PATH");
+ const std::string desired_json_path = json_path_env ? std::string(json_path_env) : std::string();
+ if(desired_json_path.empty())
+ {
+  if(JsonSinkHandle)
+  {
+   Logging::UnregisterLogSink(JsonSinkHandle);
+   JsonSinkHandle.reset();
+   ActiveJsonSinkPath.clear();
+  }
+ }
+ else if(desired_json_path != ActiveJsonSinkPath)
+ {
+  if(JsonSinkHandle)
+  {
+   Logging::UnregisterLogSink(JsonSinkHandle);
+   JsonSinkHandle.reset();
+  }
+  auto new_sink = UJsonLogSink::Create(desired_json_path);
+  if(new_sink)
+  {
+   JsonSinkHandle = new_sink;
+   ActiveJsonSinkPath = desired_json_path;
+   Logging::RegisterLogSink(JsonSinkHandle);
+  }
+ }
+}
+
+void UApplication::LoadEnvLogOverrides(void)
+{
+ EnvLogOverrides = {};
+
+ if(const char* level = std::getenv("RDK_LOG_LEVEL"))
+  EnvLogOverrides.GlobalLevel = ParseSeverityToken(level, EnvLogOverrides.GlobalLevel);
+
+ if(const char* sys_level = std::getenv("RDK_LOG_SYS_LEVEL"))
+  RegisterChannelOverrideToken(std::string("sys:") + sys_level, EnvLogOverrides);
+
+ if(const char* glob_level = std::getenv("RDK_LOG_GLOB_LEVEL"))
+  RegisterChannelOverrideToken(std::string("glob:") + glob_level, EnvLogOverrides);
+
+ if(const char* channels = std::getenv("RDK_LOG_CHANNELS"))
+ {
+  std::stringstream stream(channels);
+  std::string token;
+  while(std::getline(stream, token, ','))
+   RegisterChannelOverrideToken(token, EnvLogOverrides);
+ }
+
+ if(const char* verbosity = std::getenv("RDK_LOG_VERBOSITY"))
+  EnvLogOverrides.Verbosity = ParseVerbosityString(verbosity, EnvLogOverrides.Verbosity);
+}
+
+void UApplication::ApplyCliLogOverrides(const std::vector<std::string>& args)
+{
+ auto parse_inline = [&](const std::string& flag, const std::string& token) -> std::optional<std::string>
+ {
+  const std::string prefix = flag + "=";
+  if(token.rfind(prefix, 0) == 0)
+   return token.substr(prefix.size());
+  return std::nullopt;
+ };
+
+ for(size_t i=0; i<args.size(); ++i)
+ {
+  const std::string& token = args[i];
+
+  if(token == "--log-level" && i + 1 < args.size())
+  {
+   CliLogOverrides.GlobalLevel = ParseSeverityToken(args[++i], CliLogOverrides.GlobalLevel);
+   continue;
+  }
+  if(auto value = parse_inline("--log-level", token))
+  {
+   CliLogOverrides.GlobalLevel = ParseSeverityToken(*value, CliLogOverrides.GlobalLevel);
+   continue;
+  }
+
+  if(token == "--log-verbosity" && i + 1 < args.size())
+  {
+   CliLogOverrides.Verbosity = ParseVerbosityString(args[++i], CliLogOverrides.Verbosity);
+   continue;
+  }
+  if(auto value = parse_inline("--log-verbosity", token))
+  {
+   CliLogOverrides.Verbosity = ParseVerbosityString(*value, CliLogOverrides.Verbosity);
+   continue;
+  }
+
+  auto handle_channel_flag = [&](const std::string& flag, const std::string& channel_tag) -> bool
+  {
+   if(token == flag && i + 1 < args.size())
+   {
+    RegisterChannelOverrideToken(channel_tag + ":" + args[++i], CliLogOverrides);
+    return true;
+   }
+   if(auto value = parse_inline(flag, token))
+   {
+    RegisterChannelOverrideToken(channel_tag + ":" + *value, CliLogOverrides);
+    return true;
+   }
+   return false;
+  };
+
+  if(handle_channel_flag("--log-sys-level", "sys"))
+   continue;
+  if(handle_channel_flag("--log-glob-level", "glob"))
+   continue;
+
+  if(token == "--log-channel-level" && i + 1 < args.size())
+  {
+   RegisterChannelOverrideToken(args[++i], CliLogOverrides);
+   continue;
+  }
+  if(auto value = parse_inline("--log-channel-level", token))
+  {
+   RegisterChannelOverrideToken(*value, CliLogOverrides);
+   continue;
+  }
+ }
+}
+
+#ifndef __BORLANDC__
+void UApplication::ApplyCliLogOverrides(const boost::program_options::variables_map& vm)
+{
+ if(vm.count("log-level"))
+  CliLogOverrides.GlobalLevel = ParseSeverityToken(vm["log-level"].as<std::string>(), CliLogOverrides.GlobalLevel);
+
+ if(vm.count("log-verbosity"))
+  CliLogOverrides.Verbosity = ParseVerbosityString(std::to_string(vm["log-verbosity"].as<int>()), CliLogOverrides.Verbosity);
+
+ if(vm.count("log-sys-level"))
+  RegisterChannelOverrideToken(std::string("sys:") + vm["log-sys-level"].as<std::string>(), CliLogOverrides);
+
+ if(vm.count("log-glob-level"))
+  RegisterChannelOverrideToken(std::string("glob:") + vm["log-glob-level"].as<std::string>(), CliLogOverrides);
+
+ if(vm.count("log-channel-level"))
+ {
+  const auto values = vm["log-channel-level"].as<std::vector<std::string>>();
+  for(const auto& entry : values)
+   RegisterChannelOverrideToken(entry, CliLogOverrides);
+ }
+}
+#endif
+
+void UApplication::RegisterChannelOverrideToken(const std::string& token, LogRoutingOverrides& target)
+{
+ if(token.find(',') != std::string::npos)
+ {
+  std::stringstream stream(token);
+  std::string part;
+  while(std::getline(stream, part, ','))
+   RegisterChannelOverrideToken(part, target);
+  return;
+ }
+
+ const auto separator = token.find_first_of(":=");
+ if(separator == std::string::npos)
+  return;
+
+ const std::string channel_part = token.substr(0, separator);
+ const std::string level_part = token.substr(separator + 1);
+ const int channel_index = ParseChannelIdentifier(channel_part);
+ if(channel_index == std::numeric_limits<int>::max())
+  return;
+
+ const int severity = ParseSeverityToken(level_part, -1);
+ if(severity >= 0)
+  target.ChannelLevels[channel_index] = severity;
+}
+
+int UApplication::ParseSeverityToken(const std::string& token, int fallback) const
+{
+ return ParseSeverityString(token, fallback);
+}
+
+int UApplication::DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const
+{
+ if(debug_mode)
+  return RDK_EX_DEBUG;
+ if(events_log_mode)
+  return RDK_EX_INFO;
+ return RDK_EX_WARNING;
+}
+
+int UApplication::ResolveChannelLevel(int channel_index, int base_level) const
+{
+ int level = base_level;
+ if(EnvLogOverrides.GlobalLevel >= 0)
+  level = EnvLogOverrides.GlobalLevel;
+
+ auto apply_specific = [&](const LogRoutingOverrides& overrides)
+ {
+  const auto it = overrides.ChannelLevels.find(channel_index);
+  if(it != overrides.ChannelLevels.end())
+   level = it->second;
+ };
+
+ apply_specific(EnvLogOverrides);
+
+ if(CliLogOverrides.GlobalLevel >= 0)
+  level = CliLogOverrides.GlobalLevel;
+
+ apply_specific(CliLogOverrides);
+
+ return level;
+}
+
+int UApplication::ResolveVerbosityLevel(int base_level) const
+{
+ int verbosity = base_level;
+ if(EnvLogOverrides.Verbosity >= 0)
+  verbosity = EnvLogOverrides.Verbosity;
+ if(CliLogOverrides.Verbosity >= 0)
+  verbosity = CliLogOverrides.Verbosity;
+ if(verbosity < 0)
+  return 0;
+ return verbosity;
+}
+
+void UApplication::ApplyLogRouting(const TProjectConfig& config)
+{
+ const int base_system_level = DetermineBaseLogLevel(config.EventsLogMode, config.DebugMode);
+ const int base_default_level = base_system_level;
+ const int base_verbosity = ResolveVerbosityLevel(config.DebugMode ? 1 : 0);
+
+ RDK::Logging::ResetChannelRuntimeConfig(
+  RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(RDK::Logging::kDefaultChannel.Index, base_default_level), base_verbosity});
+
+ RDK::Logging::SetChannelRuntimeConfig(
+  RDK_SYS_MESSAGE,
+  RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(RDK_SYS_MESSAGE, base_system_level), base_verbosity});
+
+ RDK::Logging::SetChannelRuntimeConfig(
+  RDK_GLOB_MESSAGE,
+  RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(RDK_GLOB_MESSAGE, base_system_level), base_verbosity});
+
+ const int num_channels = static_cast<int>(config.ChannelsConfig.size());
+ for(int i=0; i<num_channels; ++i)
+ {
+  const auto& channel_cfg = config.ChannelsConfig[i];
+  const bool channel_debug = channel_cfg.DebugMode || config.DebugMode;
+  const bool channel_info = channel_cfg.EventsLogMode || config.EventsLogMode;
+  const int base_channel_level = DetermineBaseLogLevel(channel_info, channel_debug);
+  const int channel_verbosity = ResolveVerbosityLevel(channel_debug ? 1 : 0);
+  RDK::Logging::SetChannelRuntimeConfig(
+   i,
+   RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(i, base_channel_level), channel_verbosity});
+ }
 }
 
 
@@ -800,17 +1159,20 @@ bool UApplication::Init(void)
  // Enable log prefix with timestamp and file info
  FLAGS_log_prefix = true;
  
- // Install failure signal handler
- google::InstallFailureSignalHandler();
- google::AddLogSink(&UGlogGuiSink::Instance());
- google::AddLogSink(&UFileLogSink::Instance());
+// Install failure signal handler
+google::InstallFailureSignalHandler();
 #endif
+
+ GuiSinkHandle = std::shared_ptr<Logging::ILogSink>(&UGlogGuiSink::Instance(), [](Logging::ILogSink*){});
+ Logging::RegisterLogSink(GuiSinkHandle);
+ FileSinkHandle = std::shared_ptr<Logging::ILogSink>(&UFileLogSink::Instance(), [](Logging::ILogSink*){});
+ Logging::RegisterLogSink(FileSinkHandle);
 
  LoggingInitialized=true;
  UpdateLoggers();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application initialization has been started.");
+ RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Version: ") + GetCoreVersion().ToStringFull());
  Core_SetBufObjectsMode(1);
 
 // SetLogDir(font_path);
@@ -826,15 +1188,15 @@ bool UApplication::Init(void)
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been finished.");
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application initialization has been finished.");
 
  /*if(CommandLineArgs.size()<2)
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Command line parameters not found.");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Command line parameters not found.");
  else
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Parsing command line parameters: ")+concat_strings(CommandLineArgs,std::string(" "))).c_str());
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Parsing command line parameters: ") + concat_strings(CommandLineArgs, std::string(" ")));
   ProcessCommandLineArgs();
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Finished parsing command line parameters");
  }*/
  SetStandartXMLInCatalog();
 
@@ -845,7 +1207,7 @@ bool UApplication::Init(void)
 /// Деинициализирует приложение
 bool UApplication::UnInit(void)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application uninitialization has been started.");
  if(EngineControl)
  {
   EngineControl->PauseChannel(-1);
@@ -856,10 +1218,24 @@ bool UApplication::UnInit(void)
  EngineControl->UnInit();
  GetCoreLock()->Destroy();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application uninitialization has been finished.");
+ if(JsonSinkHandle)
+ {
+  Logging::UnregisterLogSink(JsonSinkHandle);
+  JsonSinkHandle.reset();
+  ActiveJsonSinkPath.clear();
+ }
+ if(FileSinkHandle)
+ {
+  Logging::UnregisterLogSink(FileSinkHandle);
+  FileSinkHandle.reset();
+ }
+ if(GuiSinkHandle)
+ {
+  Logging::UnregisterLogSink(GuiSinkHandle);
+  GuiSinkHandle.reset();
+ }
 #ifdef RDK_USE_GLOG
- google::RemoveLogSink(&UFileLogSink::Instance());
- google::RemoveLogSink(&UGlogGuiSink::Instance());
  google::ShutdownGoogleLogging();
 #endif
  UFileLogSink::Instance().Disable();
@@ -885,15 +1261,15 @@ int UApplication::Test(bool &exit_request)
   {
    if(TestManager->LoadTests(TestsDescriptionFileName) != RDK_SUCCESS)
    {
-	MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Failed to load tests!");
+	RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Failed to load tests!");
 	test_result_code=1000;
 	ChangeTestModeState(false);
 	return test_result_code;
    }
 
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Testing started");
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Testing started");
    test_result_code=TestManager->ProcessTests();
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Testing finished with code: ")+sntoa(test_result_code)).c_str());
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Testing finished with code: ") + sntoa(test_result_code));
   }
  }
  ChangeTestModeState(false);
@@ -906,6 +1282,8 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
   InitCmdParser();
   if(commandLineArgs.empty())
     return;
+
+  ApplyCliLogOverrides(commandLineArgs);
 
   std::vector<std::string>::iterator I=find(commandLineArgs.begin(),commandLineArgs.end(),"--test");
   if(I != commandLineArgs.end())
@@ -931,6 +1309,8 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
     CloseAfterTest=true;
   else
     CloseAfterTest=false;
+
+  UpdateLoggers();
 }
 
 #ifndef __BORLANDC__
@@ -946,7 +1326,7 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
   }
   catch(po::unknown_option &ex)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_WARNING,ex.what());
+   RLOG(RDK_EX_WARNING, RDK_GLOB_MESSAGE, "glob", ex.what());
    throw ex;
    return;
   }
@@ -963,6 +1343,9 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 	CloseAfterTest=false;
   else
 	CloseAfterTest=true;
+
+  ApplyCliLogOverrides(CmdVariablesMap);
+  UpdateLoggers();
 }
 #endif
 // --------------------------
@@ -1547,11 +1930,11 @@ bool UApplication::OpenProject(const std::string &filename)
  bool is_loaded(false);
  if(!ProjectXml.LoadFromFile(filename,""))
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_WARNING, (std::string("Can't read project file ")+filename).c_str());
+  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Can't read project file ") + filename);
   return false;
  }
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Open configuration ")+filename+"...").c_str());
+RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Open configuration ") + filename + "...");
  SetProjectPath(extract_file_path(filename));
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
@@ -1621,7 +2004,7 @@ try{
 	 is_loaded=LoadModelFromFile(i,channel_config.ModelFileName);
 
 	if(!is_loaded)
-	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open model file: ")+channel_config.ModelFileName).c_str());
+	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open model file: ") + channel_config.ModelFileName);
    }
 
 
@@ -1633,7 +2016,7 @@ try{
 	 is_loaded=LoadParametersFromFile(i,channel_config.ParametersFileName);
 
  	if(!is_loaded)
-	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open parameters file: ")+channel_config.ParametersFileName).c_str());
+	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open parameters file: ") + channel_config.ParametersFileName);
    }
 
    if(config.ProjectAutoSaveStatesFlag)
@@ -1646,7 +2029,7 @@ try{
 	  is_loaded=LoadStatesFromFile(i,channel_config.StatesFileName);
 
 	 if(!is_loaded)
-	  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open states file: ")+channel_config.StatesFileName).c_str());
+	  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open states file: ") + channel_config.StatesFileName);
 	}
    }
 
@@ -1666,7 +2049,7 @@ try{
   }
   catch(RDK::UException &exception)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
+   RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject(Load Channel) Exception: (Name=") + std::string(Name.c_str()) + std::string(") ") + exception.what());
   }
   Sleep(0);
  }
@@ -1687,7 +2070,7 @@ try{
    is_loaded=InterfaceXml.LoadFromFile(config.InterfaceFileName,"Interfaces");
 
   if(!is_loaded)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open interface file: ")+config.InterfaceFileName).c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open interface file: ") + config.InterfaceFileName);
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
@@ -1704,7 +2087,7 @@ try{
 catch(RDK::UException &exception)
 {
 // UShowProgressBarForm->Hide();
- MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject Exception: (Name=") + Name + std::string(") ") + exception.what());
 }
 
  std::list<std::string> last_list=LastProjectsList;
@@ -1719,7 +2102,7 @@ catch(RDK::UException &exception)
 
  SaveProjectsHistory();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been opened.").c_str());
+RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been opened.");
  return true;
 }
 
@@ -1762,7 +2145,7 @@ try
  }
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save interface file: ")+config.InterfaceFileName).c_str());
+ RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save interface file: ") + config.InterfaceFileName);
 
  for(int i=0;i<config.NumChannels;i++)
  {
@@ -1775,7 +2158,7 @@ try
    is_saved=SaveModelToFile(i, channel_config.ModelFileName);
 
   if(!is_saved)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save model file: ")+channel_config.ModelFileName).c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save model file: ") + channel_config.ModelFileName);
 
   if(extract_file_path(channel_config.ParametersFileName).empty())
    is_saved=SaveParametersToFile(i, ProjectPath+channel_config.ParametersFileName);
@@ -1783,7 +2166,7 @@ try
    is_saved=SaveParametersToFile(i,channel_config.ParametersFileName);
 
   if(!is_saved)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save parameters file: ")+channel_config.ParametersFileName).c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save parameters file: ") + channel_config.ParametersFileName);
 
   channel_config.UseIndTimeStepFlag=GetEnvironmentLock()->GetUseIndTimeStepFlag();
 
@@ -1795,7 +2178,7 @@ try
 	is_saved=SaveStatesToFile(i, channel_config.StatesFileName);
 
    if(!is_saved)
-    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save states file: ")+channel_config.StatesFileName).c_str());
+    RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save states file: ") + channel_config.StatesFileName);
   }
 
 
@@ -1808,27 +2191,27 @@ try
  is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save configuration: ")+ProjectFileName).c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save configuration: ") + ProjectFileName);
  else
  {
   std::string filename=ProjectPath+ProjectFileName;
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been saved.").c_str());
+  RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been saved.");
  }
 
  is_saved=HistoryXml.SaveToFile(ProjectPath+"History.xml");
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save history file: ")+ProjectFileName).c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save history file: ") + ProjectFileName);
  else
  {
   std::string filename=ProjectPath+"history.xml";
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("History file ")+filename+" has been saved.").c_str());
+  RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("History file ") + filename + " has been saved.");
  }
 
 }
 catch(RDK::UException &exception)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject Exception: (Name=") + Name + std::string(") ") + exception.what());
 }
 
  return true;
@@ -1879,7 +2262,7 @@ bool UApplication::CloseProject(void)
   Storage_FreeObjectsStorage();
  }
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been closed.").c_str());
+RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been closed.");
  return true;
 }
 
@@ -1993,11 +2376,11 @@ bool UApplication::SaveProjectConfig(void)
 
   is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
   if(!is_saved)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save project config file: ")+ProjectFileName).c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save project config file: ") + ProjectFileName);
  }
  catch(RDK::UException &exception)
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProjectConfig Exception: (Name=") + Name + std::string(") ") + exception.what());
  }
 
  return true;
@@ -2177,7 +2560,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
 }
 catch(RDK::UException &exception)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenCloneChannel Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenCloneChannel Exception: (Name=") + Name + std::string(") ") + exception.what());
 }
 catch(...)
 {
@@ -2245,7 +2628,7 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
  std::string data;
  if(!LoadFile(file_name,data))
  {
-  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load model file: ")+file_name).c_str());
+  RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("Failed to load model file: ") + file_name);
   return false;
  }
 
@@ -2271,14 +2654,14 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string &file_na
   Engine_FreeBufString(p_buf);
   if(SaveBuffer.empty())
   {
-   MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("SaveModelToFile in")+file_name+" error: model size iz zero! File not changed.").c_str());
+   RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("SaveModelToFile in") + file_name + " error: model size iz zero! File not changed.");
    return false;
   }
 
   if(SaveBuffer[0]!='<')
   {
    SaveBuffer[0]='<';
-   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveModelToFile in")+file_name+" warning: first symbol INVALID. Fixed.").c_str());
+   RLOG(RDK_EX_WARNING, channel_index, nullptr, std::string("SaveModelToFile in") + file_name + " warning: first symbol INVALID. Fixed.");
   }
 
   res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
@@ -2294,7 +2677,7 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string &
  std::string data;
  if(!LoadFile(file_name,data))
  {
-  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load parameters file: ")+file_name).c_str());
+  RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("Failed to load parameters file: ") + file_name);
   return false;
  }
 
@@ -2319,14 +2702,14 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string &fi
   Engine_FreeBufString(p_buf);
   if(SaveBuffer.empty())
   {
-   MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("SaveParametersToFile in")+file_name+" error: model size iz zero! File not changed.").c_str());
+   RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("SaveParametersToFile in") + file_name + " error: model size iz zero! File not changed.");
    return false;
   }
 
   if(SaveBuffer[0]!='<')
   {
    SaveBuffer[0]='<';
-   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveParametersToFile in")+file_name+" warning: first symbol INVALID. Fixed.").c_str());
+   RLOG(RDK_EX_WARNING, channel_index, nullptr, std::string("SaveParametersToFile in") + file_name + " warning: first symbol INVALID. Fixed.");
   }
 
   res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
@@ -2556,9 +2939,9 @@ void UApplication::ChangeTestModeState(bool state)
 
  TestMode=state;
  if(TestMode == true)
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is ON.");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Test mode is ON.");
  else
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is OFF.");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Test mode is OFF.");
 }
 
 
@@ -2577,6 +2960,11 @@ void UApplication::InitCmdParser(void)
     ("mask", po::value<unsigned>(), "Property mask")
     ("save_model_bmp", po::value<string>(), "Component name")
     ("session", po::value<unsigned>(), "Session Id")
+    ("log-level", po::value<string>(), "Global log severity (fatal|error|warning|info|debug)")
+    ("log-verbosity", po::value<int>(), "Maximum verbosity for debug logging (VLOG level)")
+    ("log-channel-level", po::value<std::vector<std::string>>()->composing(), "Channel overrides in the form index:level")
+    ("log-sys-level", po::value<string>(), "System channel log severity override")
+    ("log-glob-level", po::value<string>(), "Global channel log severity override")
 ;
 #endif
 }
@@ -2656,7 +3044,7 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
   bool is_saved=SaveFile(temp_file_name,buffer);
   if(!is_saved)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" save attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" save attepmt #") + sntoa(i + 1) + " FAILED.");
    continue;
   }
 
@@ -2664,13 +3052,13 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
   bool is_loaded=LoadFile(temp_file_name,temp_buffer);
   if(!is_loaded)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" test load attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" test load attepmt #") + sntoa(i + 1) + " FAILED.");
    continue;
   }
 
   if(buffer != temp_buffer)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" compare attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" compare attepmt #") + sntoa(i + 1) + " FAILED.");
    continue;
   }
   is_temp_saved=true;
@@ -2679,7 +3067,7 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
 
  if(!is_temp_saved)
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" all ")+sntoa(n_pass)+" attepmts FAILED.").c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" all ") + sntoa(n_pass) + " attepmts FAILED.");
   return false;
  }
 
@@ -2688,7 +3076,7 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
  if(!copy_error)
   return true;
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+temp_file_name+std::string(" copy to ")+file_name+std::string(" FAILED with error code ")+sntoa(copy_error)).c_str());
+RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + temp_file_name + std::string(" copy to ") + file_name + std::string(" FAILED with error code ") + sntoa(copy_error));
  return false;
 }
 // --------------------------
