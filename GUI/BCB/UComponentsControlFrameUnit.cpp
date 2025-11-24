@@ -62,7 +62,7 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
  }
  catch(Exception &exception)
  {
-  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  RDK::Logging::ChannelLog(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 
 }
@@ -101,7 +101,7 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  }
  catch(Exception &exception)
  {
-  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  RDK::Logging::ChannelLog(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 

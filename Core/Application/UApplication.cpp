@@ -533,12 +533,11 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
   return;
 
 #ifdef RDK_USE_GLOG
- FLAGS_log_dir = normalized;
- std::string prefix = normalized + GetLogFileBaseName();
- google::SetLogDestination(google::GLOG_INFO, prefix.c_str());
- google::SetLogDestination(google::GLOG_WARNING, prefix.c_str());
- google::SetLogDestination(google::GLOG_ERROR, prefix.c_str());
- google::SetLogDestination(google::GLOG_FATAL, prefix.c_str());
+ // Disable standard glog file output - we use custom sinks for formatting
+ // Ensure log_dir remains empty to prevent glog from creating files automatically
+ FLAGS_log_dir = "";
+ FLAGS_logtostderr = true;
+ FLAGS_alsologtostderr = false;
 #endif
 
  if(Project)
@@ -1128,21 +1127,18 @@ bool UApplication::Init(void)
  Core_SetSystemDir(font_path.c_str());
  SetWorkDirectory(font_path);
 #ifdef RDK_USE_GLOG
+ // Disable standard glog file output - we use custom sinks for formatting
+ // Set logtostderr=true so glog writes to stderr (intercepted by our custom sink) instead of creating files
+ FLAGS_logtostderr = true;
+ FLAGS_alsologtostderr = false;
+ FLAGS_log_prefix = false; // Disable glog's default prefix (we format ourselves)
+ FLAGS_log_dir = ""; // Disable glog's automatic file creation - we use custom sinks for all file output
+ 
  // Initialize glog
  google::InitGoogleLogging(RDK_APP_NAME);
  
- // Set log directory from GetLogDir() if available
- std::string log_dir = GetLogDir();
- if(!log_dir.empty())
- {
-  FLAGS_log_dir = log_dir;
- }
- else
- {
-  // Default to EventsLog directory
-  std::string default_log_dir = GetWorkLogDir();
-  FLAGS_log_dir = default_log_dir;
- }
+ // Ensure log_dir remains empty after initialization
+ FLAGS_log_dir = "";
  
  // Set log level based on DebugMode
  if(GetLogger() && GetLogger()->GetDebugMode())
@@ -1155,9 +1151,6 @@ bool UApplication::Init(void)
   FLAGS_minloglevel = google::GLOG_WARNING; // Only warnings and above
   FLAGS_v = 0; // Disable VLOG
  }
- 
- // Enable log prefix with timestamp and file info
- FLAGS_log_prefix = true;
  
 // Install failure signal handler
 google::InstallFailureSignalHandler();
@@ -3008,15 +3001,11 @@ void UApplication::UpdateLoggers(void)
  ApplyPrimaryLogDestination(primary_dir);
 
 #ifdef RDK_USE_GLOG
- if(ProjectOpenFlag && MirrorLogsToWorkDirFlag)
- {
-  std::string mirror_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
-  UFileLogSink::Instance().Configure(mirror_dir, GetLogFileBaseName());
- }
- else
- {
-  UFileLogSink::Instance().Disable();
- }
+ // Configure file sink for primary log directory (config directory when project is open)
+ UFileLogSink::Instance().Configure(primary_dir, GetLogFileBaseName());
+ 
+ // If mirroring is enabled, we could add a second sink here, but for now
+ // we only write to the primary directory (config directory)
 #endif
 }
 

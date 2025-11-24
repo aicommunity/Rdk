@@ -157,63 +157,10 @@ std::string UException::GenerateLogPrefix(void) const
 {
  std::string result;
 
- std::time_t ex_time=GetTime();
- tm time_result;
- tm* time_struct(0);
-
-#if defined(_MSC_VER)
- localtime_s(&time_result,&ex_time);
- time_struct=&time_result;
-#elif defined(__STDC_LIB_EXT1__)
- time_struct=localtime_s(&ex_time,&time_result);
-#else
- time_struct=localtime(&ex_time); // TODO: Possible unsafe!!
- memcpy(&time_result,time_struct,sizeof(time_result));
-#endif
-
- if(!time_struct)
-  return result;
-
- result+=sntoa(time_struct->tm_mday,2);
- result+="/";
- result+=sntoa(time_struct->tm_mon+1,2);
- result+="/";
- result+=sntoa(time_struct->tm_year+1900,4);
- result+=" ";
-
- result+=sntoa(time_struct->tm_hour,2);
- result+=":";
- result+=sntoa(time_struct->tm_min,2);
- result+=":";
- result+=sntoa(time_struct->tm_sec,2);
- result+=".";
- result+=sntoa(TimeMsecs/1000,3);
- result+=" ";
-
- result+=sntoa(GetType());
- result+="> [";
- if(Number != 0)
- {
-  result+=sntoa(Number);
-  result+=": ";
- }
- result+=typeid(*this).name();
- result+="]";
-
- if(!ExFileName.empty())
- {
-  result+="> ";
-  result+=ExFileName;
-  result+=":";
-  result+=sntoa(ExLineNumber);
-  result+="> ";
- }
-
  if(!ObjectName.empty())
  {
-  result+=" ";
-  result+=ObjectName;
-  result+="> ";
+  result += ObjectName;
+  result += "> ";
  }
 
  return result;

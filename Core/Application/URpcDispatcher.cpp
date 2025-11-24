@@ -133,11 +133,11 @@ void URpcDispatcher::Dispatch(void)
   switch(ex_flag)
   {
   case 1:
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - std::exception - ")+ex_info).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - std::exception - ")+ex_info).c_str());
   break;
 
   case 2:
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - RDK::UException - ")+ex_info).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - RDK::UException - ")+ex_info).c_str());
   break;
   }
   ex_flag=0;
@@ -169,7 +169,7 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsi
   else
    return true;
  }
- MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: SyncDispatchCommand - Processing Wait Timeout")+RDK::sntoa(cmd_id)).c_str());
+ RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: SyncDispatchCommand - Processing Wait Timeout")+RDK::sntoa(cmd_id)).c_str());
  return false;
 }
 // --------------------------
@@ -185,7 +185,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   if(!command->DecodeBasicData())
   {
    // Ошибка декодирования
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, "RPC Dispatcher: DecodeBasicData Fail.");
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, "RPC Dispatcher: DecodeBasicData Fail.");
    PushToProcessedQueue(command);
    return;
   }
@@ -194,7 +194,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   if(channel_index<-1 || channel_index>=int(Decoders.size()))
   {
    // Ошибка - некорректный индекс канала
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - Incorrect channel index.")+sntoa(channel_index)).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - Incorrect channel index.")+sntoa(channel_index)).c_str());
    PushToProcessedQueue(command);
    return;
   }
@@ -206,7 +206,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
    if(!CommonDecoder)
    {
 	// Ошибка - не задан главный декодер сервера
-	MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: Common decored don't set")).c_str());
+	RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: Common decored don't set")).c_str());
 	return;
    }
 
@@ -216,7 +216,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
 	if(!CommonDecoder->PushCommand(command,common_cmd_id))
 	{
 	 // Ошибка постановки команды в очередь на обработку
-	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand to common decoder failed")+RDK::sntoa(common_cmd_id)).c_str());
+	 RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand to common decoder failed")+RDK::sntoa(common_cmd_id)).c_str());
 	}
    return;
    }
@@ -229,7 +229,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))
   {
    // Ошибка постановки команды в очередь на обработку
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand Failed")+RDK::sntoa(cmd_id)).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand Failed")+RDK::sntoa(cmd_id)).c_str());
   }
 }
 

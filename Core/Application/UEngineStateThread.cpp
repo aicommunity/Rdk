@@ -210,17 +210,17 @@ void UEngineStateThread::Execute(void)
   catch(UException &ex)
   {
    CalculationNotInProgress->set();
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
   }
   catch(std::exception &ex)
   {
    CalculationNotInProgress->set();
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
   }
   catch(...)
   {
    CalculationNotInProgress->set();
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
   }
 
   CalculationNotInProgress->set();

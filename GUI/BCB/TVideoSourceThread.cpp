@@ -532,7 +532,7 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp,
 {
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::ReadSourceSafe: SourceUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::ReadSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
  time_stamp=LastTimeStamp;
@@ -551,7 +551,7 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
 {
  if(WaitForSingleObject(SourceWriteUnlock,10000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
  }
 
@@ -562,7 +562,7 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
 
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
 
@@ -580,7 +580,7 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_st
 {
  if(WaitForSingleObject(SourceWriteUnlock,10000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
  }
 
@@ -588,7 +588,7 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_st
 
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
 
@@ -607,7 +607,7 @@ bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
 {
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::SetLastTimeStampSafe: SourceUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::SetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return false;
  }
 
@@ -623,7 +623,7 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 {
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::GetLastTimeStampSafe: SourceUnlock timeout!").c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::GetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return 0.0;
  }
 
@@ -1541,7 +1541,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 	}
 	else
 	{
-	 MLog_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
+	 RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
 	 Stop(0);
 	}
 
@@ -1549,7 +1549,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPlayerOpened(System::TObject* Sender)
 {
- MLog_LogMessage(ChannelIndex, RDK_EX_DEBUG, std::string("VideoGrabber player opened").c_str());
+ RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_DEBUG, std::string("VideoGrabber player opened").c_str());
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint)
@@ -1583,7 +1583,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 	  TLogType LogType, String Severity, String InfoMsg)
 {
  if(LogType != 82 || Severity != "ERROR")
-  MLog_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+  RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
  else
   return;
 
@@ -1601,7 +1601,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
 {
- MLog_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
+ RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
  LastStartTime=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
 
@@ -2438,7 +2438,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
   VideoGrabber->StartPreview();
 //  VideoGrabber->StartSynchronized();
  }
- MLog_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture ")+AnsiString(Url).c_str()).c_str());
+ RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture ")+AnsiString(Url).c_str()).c_str());
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture(void)
@@ -2446,7 +2446,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture(void)
  if(VideoGrabber)
   VideoGrabber->Stop();
 
- MLog_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture ")+AnsiString(Url).c_str()).c_str());
+ RDK::Logging::ChannelLog(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture ")+AnsiString(Url).c_str()).c_str());
 }
 // --------------------------
 

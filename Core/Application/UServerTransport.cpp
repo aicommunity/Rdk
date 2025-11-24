@@ -72,7 +72,7 @@ void UServerTransport::ProcessIncomingData(std::string &bind, std::vector<URpcCo
    //Что-тот процессится //TODO: Понять, что там внутри
    I->second.ProcessDataPart2(client_buffer);
    //LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
    while(I->second.GetNumPackets()>0)
    {
 	UTransferPacket packet=I->second.GetFirstPacket();
@@ -90,7 +90,7 @@ void UServerTransport::ProcessIncomingData(std::string &bind, std::vector<URpcCo
 	 if(!CurrentProcessedCommand.DecodeBasicData())
 	 {
 	  // TODO: пишем в лог ошибку декодирования
-	  Log_LogMessage(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
+	  RDK::Logging::SystemLog(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
 	 }
 	 else
 	 {

@@ -510,7 +510,7 @@ void UServerControl::SendCommandResponse(UServerTransport *transport, std::strin
  std::string str;
  str.resize(packet.GetParamSize(0));
  memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
- Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+ RDK::Logging::SystemLog(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
 }
 
 void UServerControl::ProcessCommandQueue(UServerTransport *transport)
@@ -562,7 +562,7 @@ void UServerControl::ProcessIncomingData(std::string &bind, UServerTransport *tr
 	   GetRpcDispatcher()->PushCommand(pcmd);
 //	   else
 //	    delete pcmd;
-       //Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
+       //RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+commands[i].Request).c_str());
   }
  }
  //02.04.2020 - Это мб неверно
@@ -577,13 +577,13 @@ void UServerControl::ProcessIncomingDataString(std::string &command_data,UServer
  if(!CurrentProcessedCommand.DecodeBasicData())
  {
   // TODO: пишем в лог ошибку декодирования
-  Log_LogMessage(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
+  RDK::Logging::SystemLog(RDK_EX_DEBUG, std::string("Command decode error!").c_str());
  }
  else
  {
   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
   GetRpcDispatcher()->PushCommand(pcmd);
-  Log_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+  RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
  }
 }
 

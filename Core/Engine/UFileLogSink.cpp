@@ -2,6 +2,8 @@
 
 #include <filesystem>
 #include <system_error>
+#include <iomanip>
+#include <sstream>
 
 namespace RDK
 {
@@ -115,12 +117,26 @@ std::string UFileLogSink::SeverityToString(int severity) const
  }
 }
 
+std::string UFileLogSink::FormatTimestamp(std::time_t timestamp) const
+{
+ std::tm* time_struct = std::localtime(&timestamp);
+ if(!time_struct)
+  return std::string();
+
+ std::ostringstream oss;
+ oss << std::setfill('0')
+     << std::setw(2) << time_struct->tm_mday << "/"
+     << std::setw(2) << (time_struct->tm_mon + 1) << "/"
+     << std::setw(4) << (time_struct->tm_year + 1900) << " "
+     << std::setw(2) << time_struct->tm_hour << ":"
+     << std::setw(2) << time_struct->tm_min << ":"
+     << std::setw(2) << time_struct->tm_sec;
+ return oss.str();
+}
+
 std::string UFileLogSink::FormatMessage(const Logging::LogItem& item) const
 {
- std::string line = "[" + SeverityToString(item.Severity) + "]";
- if(!item.BaseFilename.empty())
-  line += "[" + item.BaseFilename + ":" + std::to_string(item.Line) + "]";
- line += " ";
+ std::string line = FormatTimestamp(item.Timestamp) + " [" + SeverityToString(item.Severity) + "] ";
  line += item.Message;
  return line;
 }

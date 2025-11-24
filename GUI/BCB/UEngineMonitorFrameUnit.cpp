@@ -368,15 +368,15 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  }
  catch(RDK::UException &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorFrame::TimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorFrame::TimerTimer - ")+ex.what()).c_str());
  }
  catch(std::exception &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorFrame::TimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorFrame::TimerTimer - ")+ex.what()).c_str());
  }
  catch(...)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "TUEngineMonitorFrame::TimerTimer - unhandled exception");
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "TUEngineMonitorFrame::TimerTimer - unhandled exception");
  }
 }
 //---------------------------------------------------------------------------

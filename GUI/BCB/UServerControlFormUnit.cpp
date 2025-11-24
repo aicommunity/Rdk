@@ -102,7 +102,7 @@ int UServerTransportTcpVcl::ReadIncomingBytes(std::string &bind, std::vector<uns
 	   bytes.resize(length);
 	   memcpy(&bytes[0],&VBuffer[0],length);
 	   bytes.resize(length);
-	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+	   RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
 	   //Отпустить список
 	   UServerControlForm->IdTCPServer->Contexts->UnlockList();
 	   //Вернуть длину
@@ -225,7 +225,7 @@ int UServerTransportHttpVcl::ReadIncomingBytes(std::string &bind, std::vector<un
 	   bytes.resize(length);
 	   memcpy(&bytes[0],&VBuffer[0],length);
 	   bytes.resize(length);
-	   Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+	   RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
 	   //Отпустить список
 	   UServerControlForm->IdTCPServer->Contexts->UnlockList();
 	   //Вернуть длину
@@ -313,7 +313,7 @@ int UServerControlVcl::RegisterMetadataReceiver(const std::string &address, int 
    broadcaster->XmlComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
    broadcaster->EnableXmlTranslationCheckBox->Checked=true;
    broadcaster->ConnectButtonClick(UServerControlForm);
-   Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
+   RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
   }
  }
 
@@ -333,7 +333,7 @@ int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, in
   {
    IdTcpResultBroadcasterForm->DelBroadcaster(index);
   }
-  Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
  }
 
  return 0;
@@ -749,7 +749,7 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
 	 std::string str;
 	str.resize(packet.GetParamSize(0));
 	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
-	Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+	RDK::Logging::SystemLog(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
 } */
 
 
@@ -775,7 +775,7 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
 	if(current_bind == client_binding)
 	{
 	 SendCommandResponse(context, dest, binary_data);
-	 Log_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+string(" To: ")+current_bind).c_str());
+	 RDK::Logging::SystemLog(RDK_EX_DEBUG,(string("Response Sent: ")+string(" To: ")+current_bind).c_str());
 	 break;
 	}
    }
@@ -1157,11 +1157,11 @@ void TUServerControlForm::ServerStart()
  }
  catch(EIdSocketError &ex)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
  catch(EIdCouldNotBindSocket &ex2)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
  }
  this->UpdateInterface();
 // TcpServer->Active=true;
@@ -1194,11 +1194,11 @@ void TUServerControlForm::ServerStartHttp()
  }
  catch(EIdSocketError &ex)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
  catch(EIdCouldNotBindSocket &ex2)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
  }
  this->UpdateInterface();
 }
@@ -1294,7 +1294,7 @@ try
 }
 catch (...)
 {
- Log_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
+ RDK::Logging::SystemLog(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
 // throw;
 }
 // SetEvent(CommandQueueUnlockEvent);
@@ -1319,7 +1319,7 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
 
  RdkApplication.GetServerControl()->GetServerTransport()->ClientDisconnect(bind);
 
- Log_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -1351,7 +1351,7 @@ try
 }
 catch(...)
 {
-Log_LogMessage(RDK_EX_DEBUG, std::string("UServerControl data processing error").c_str());
+RDK::Logging::SystemLog(RDK_EX_DEBUG, std::string("UServerControl data processing error").c_str());
 }
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
@@ -1367,7 +1367,7 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
  RdkApplication.GetServerControl()->GetServerTransport()->ClientConnect(bind);
- Log_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
  this->UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -1396,7 +1396,7 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 
 void __fastcall TUServerControlForm::IdHTTPServerAuthorization(TObject *Sender, TIdAuthentication *Authentication, bool &Handled)
 {
- Log_LogMessage(RDK_EX_INFO, (std::string((AnsiString("HTTP Server authorization attempt with login: ")+Authentication->Username + AnsiString(" and password: ")+Authentication->Password).c_str()).c_str()));
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string((AnsiString("HTTP Server authorization attempt with login: ")+Authentication->Username + AnsiString(" and password: ")+Authentication->Password).c_str()).c_str()));
 }
 //---------------------------------------------------------------------------
 
@@ -1447,11 +1447,11 @@ void __fastcall TUServerControlForm::HttpStartButtonClick(TObject *Sender)
  }
  catch(EIdSocketError &ex)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
  catch(EIdCouldNotBindSocket &ex2)
  {
-  Log_LogMessage(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_ERROR, AnsiString(ex2.ToString()).c_str());
  }
  this->UpdateInterface();
 
@@ -1499,7 +1499,7 @@ void __fastcall TUServerControlForm::IdHTTPServerConnect(TIdContext *AContext)
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
  RdkApplication.GetServerControl()->GetServerTransportHttp()->ClientConnect(bind);
- Log_LogMessage(RDK_EX_INFO, (std::string("Http client connected: ")+bind).c_str());
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Http client connected: ")+bind).c_str());
  this->UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -1516,7 +1516,7 @@ void __fastcall TUServerControlForm::IdHTTPServerDisconnect(TIdContext *AContext
 
  RdkApplication.GetServerControl()->GetServerTransportHttp()->ClientDisconnect(bind);
  //  ^^ TODO: нужно но не собирается в билдере
- Log_LogMessage(RDK_EX_INFO, (std::string("Http client Disconnected: ")+bind).c_str());
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Http client Disconnected: ")+bind).c_str());
  this->UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -1531,7 +1531,7 @@ void __fastcall TUServerControlForm::HttpCommandTimerTimer(TObject *Sender)
  }
  catch (...)
  {
-  Log_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
+  RDK::Logging::SystemLog(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
  // throw;
  }
 }
@@ -1576,7 +1576,7 @@ void __fastcall TUServerControlForm::IdHTTPServerCommandGet(TIdContext *AContext
 	}
 	catch(...)
 	{
-	 Log_LogMessage(RDK_EX_DEBUG, std::string("UServerControl data processing error").c_str());
+	 RDK::Logging::SystemLog(RDK_EX_DEBUG, std::string("UServerControl data processing error").c_str());
 	}
 	//  Memo1.Lines.Add(LLine);
 	//  AContext.Connection.IOHandler.WriteLn('OK');
@@ -1587,7 +1587,7 @@ void __fastcall TUServerControlForm::IdHTTPServerCommandGet(TIdContext *AContext
  }
  else
  {
-  Log_LogMessage(RDK_EX_DEBUG, std::string("Request failed because of wrong authentification data").c_str());
+  RDK::Logging::SystemLog(RDK_EX_DEBUG, std::string("Request failed because of wrong authentification data").c_str());
   AResponseInfo->ResponseNo = 401;
   AResponseInfo->ResponseText = "Wrong authorization login/password";
  }

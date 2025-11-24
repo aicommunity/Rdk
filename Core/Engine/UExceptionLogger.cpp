@@ -13,27 +13,6 @@ DECLARE_int32(minloglevel);
 DECLARE_int32(v);
 #endif
 
-namespace
-{
-std::string BuildSeverityPrefix(int type)
-{
- switch(type)
- {
- case RDK_EX_FATAL:
-  return "[FATAL] ";
- case RDK_EX_ERROR:
-  return "[ERROR] ";
- case RDK_EX_WARNING:
-  return "[WARNING] ";
- case RDK_EX_DEBUG:
-  return "[DEBUG] ";
- case RDK_EX_APP:
-  return "[APP] ";
- default:
-  return std::string();
- }
-}
-}
 
 namespace RDK
 {
@@ -174,7 +153,11 @@ bool UExceptionLogger::SetExceptionPostprocessor(PExceptionPostprocessor value)
 
 void UExceptionLogger::WriteLog(int severity, const std::string &message) const
 {
- RDK_LOG_BY_LEVEL(severity, message);
+ int channel = ChannelIndex;
+ if(channel < 0 && channel != RDK_SYS_MESSAGE && channel != RDK_GLOB_MESSAGE)
+  channel = RDK_SYS_MESSAGE;
+
+ RDK::Logging::ChannelLog(channel, severity, message);
 }
 
 void UExceptionLogger::ProcessException(const UException &exception) const
@@ -189,23 +172,19 @@ void UExceptionLogger::ProcessException(const UException &exception) const
    processed_exception=&temp_ex;
  }
 
- std::string ch_prefix;
- if(ChannelIndex>=0)
-  ch_prefix=sntoa(ChannelIndex);
- else
-  ch_prefix="S";
-
- std::string message = BuildSeverityPrefix(processed_exception->GetType()) + ch_prefix + std::string("> ") + processed_exception->what();
-
- WriteLog(processed_exception->GetType(), message);
-
- if(ChannelIndex >= 0 && GlobalLogger && GlobalLogger!=this)
- {
-  GlobalLogger->ProcessExceptionGlobal(processed_exception->GetType(), *processed_exception);
- }
+ WriteLog(processed_exception->GetType(), processed_exception->what());
 
  if(DebuggerMessageFlag)
-  RdkDebuggerMessage(message);
+ {
+  std::string debug_message;
+  if(ChannelIndex == RDK_SYS_MESSAGE)
+   debug_message = std::string("[S] ") + processed_exception->what();
+  else if(ChannelIndex == RDK_GLOB_MESSAGE)
+   debug_message = std::string("[G] ") + processed_exception->what();
+  else
+   debug_message = std::string("[") + sntoa(ChannelIndex) + std::string("] ") + processed_exception->what();
+  RdkDebuggerMessage(debug_message);
+ }
 
  if(ExceptionPostprocessor && Environment)
   ExceptionPostprocessor(Environment,Environment->GetModel(), *processed_exception);
@@ -213,13 +192,7 @@ void UExceptionLogger::ProcessException(const UException &exception) const
 
 void UExceptionLogger::ProcessExceptionGlobal(int type, const UException &exception) const
 {
- std::string ch_prefix;
- if(ChannelIndex>=0)
-  ch_prefix=sntoa(ChannelIndex);
- else
-  ch_prefix="G";
- std::string message = BuildSeverityPrefix(type) + ch_prefix + std::string("> ") + exception.what();
- WriteLog(type, message);
+ WriteLog(type, exception.what());
 }
 
 void UExceptionLogger::LogMessage(int msg_level, const std::string &line, int error_event_number)
@@ -309,8 +282,8 @@ bool UExceptionLogger::SetLogDir(const std::string &value)
   return true;
  LogDirectory=value;
 #ifdef RDK_USE_GLOG
- if(!LogDirectory.empty())
-  FLAGS_log_dir = LogDirectory;
+ // Do not set FLAGS_log_dir here - we use custom sinks for file output
+ // FLAGS_log_dir is kept empty to prevent glog from creating files automatically
 #endif
  if(!LogDirectory.empty())
  {

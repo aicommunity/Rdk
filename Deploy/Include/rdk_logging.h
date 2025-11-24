@@ -5,165 +5,20 @@
 
 #include <atomic>
 #include <cstdint>
-#include <functional>
 #include <ctime>
+#include <functional>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 
-#ifdef RDK_USE_GLOG
+#ifndef RDK_USE_GLOG
+#error "RDK logging now requires Google glog. Define RDK_USE_GLOG before including rdk_logging.h"
+#endif
+
 #include <glog/logging.h>
 DECLARE_int32(minloglevel);
 DECLARE_int32(v);
-
-// Map RDK log levels to glog levels
-#define RDK_LOG_FATAL(msg) LOG(FATAL) << msg
-#define RDK_LOG_ERROR(msg) LOG(ERROR) << msg
-#define RDK_LOG_WARNING(msg) LOG(WARNING) << msg
-#define RDK_LOG_INFO(msg) LOG(INFO) << msg
-#define RDK_LOG_APP(msg) LOG(INFO) << "[APP] " << msg
-
-// Debug logging with conditional compilation
-// Note: DebugMode check should be done at call site if needed
-#define RDK_LOG_DEBUG(msg) VLOG(1) << msg
-
-// Helper macros for logging with object/method context
-#define RDK_LOG_FATAL_EX(obj, method, msg) LOG(FATAL) << "[" << obj << "::" << method << "] " << msg
-#define RDK_LOG_ERROR_EX(obj, method, msg) LOG(ERROR) << "[" << obj << "::" << method << "] " << msg
-#define RDK_LOG_WARNING_EX(obj, method, msg) LOG(WARNING) << "[" << obj << "::" << method << "] " << msg
-#define RDK_LOG_INFO_EX(obj, method, msg) LOG(INFO) << "[" << obj << "::" << method << "] " << msg
-#define RDK_LOG_DEBUG_EX(obj, method, msg) VLOG(1) << "[" << obj << "::" << method << "] " << msg
-#define RDK_LOG_APP_EX(obj, method, msg) LOG(INFO) << "[APP][" << obj << "::" << method << "] " << msg
-
-// Map RDK exception types to glog levels
-inline void RDK_LOG_BY_LEVEL(int msg_level, const std::string& msg) {
-  switch (msg_level) {
-    case RDK_EX_FATAL:
-      LOG(FATAL) << msg;
-      break;
-    case RDK_EX_ERROR:
-      LOG(ERROR) << msg;
-      break;
-    case RDK_EX_WARNING:
-      LOG(WARNING) << msg;
-      break;
-    case RDK_EX_INFO:
-      LOG(INFO) << msg;
-      break;
-    case RDK_EX_DEBUG:
-      VLOG(1) << msg;
-      break;
-    case RDK_EX_APP:
-      LOG(INFO) << "[APP] " << msg;
-      break;
-    default:
-      LOG(INFO) << msg;
-      break;
-  }
-}
-
-inline void RDK_LOG_BY_LEVEL_EX(int msg_level, const std::string& object_name, const std::string& method_name, const std::string& msg) {
-  std::string prefix = "[" + object_name + "::" + method_name + "] ";
-  switch (msg_level) {
-    case RDK_EX_FATAL:
-      LOG(FATAL) << prefix << msg;
-      break;
-    case RDK_EX_ERROR:
-      LOG(ERROR) << prefix << msg;
-      break;
-    case RDK_EX_WARNING:
-      LOG(WARNING) << prefix << msg;
-      break;
-    case RDK_EX_INFO:
-      LOG(INFO) << prefix << msg;
-      break;
-    case RDK_EX_DEBUG:
-      VLOG(1) << prefix << msg;
-      break;
-    case RDK_EX_APP:
-      LOG(INFO) << "[APP]" << prefix << msg;
-      break;
-    default:
-      LOG(INFO) << prefix << msg;
-      break;
-  }
-}
-
-#else
-// Fallback implementation when glog is not available
-// These will be replaced with old logging system calls
-#include <iostream>
-#include <string>
-
-#define RDK_LOG_FATAL(msg) std::cerr << "[FATAL] " << msg << std::endl
-#define RDK_LOG_ERROR(msg) std::cerr << "[ERROR] " << msg << std::endl
-#define RDK_LOG_WARNING(msg) std::cerr << "[WARNING] " << msg << std::endl
-#define RDK_LOG_INFO(msg) std::cout << "[INFO] " << msg << std::endl
-#define RDK_LOG_DEBUG(msg) std::cout << "[DEBUG] " << msg << std::endl
-#define RDK_LOG_APP(msg) std::cout << "[APP] " << msg << std::endl
-
-#define RDK_LOG_FATAL_EX(obj, method, msg) std::cerr << "[FATAL][" << obj << "::" << method << "] " << msg << std::endl
-#define RDK_LOG_ERROR_EX(obj, method, msg) std::cerr << "[ERROR][" << obj << "::" << method << "] " << msg << std::endl
-#define RDK_LOG_WARNING_EX(obj, method, msg) std::cerr << "[WARNING][" << obj << "::" << method << "] " << msg << std::endl
-#define RDK_LOG_INFO_EX(obj, method, msg) std::cout << "[INFO][" << obj << "::" << method << "] " << msg << std::endl
-#define RDK_LOG_DEBUG_EX(obj, method, msg) std::cout << "[DEBUG][" << obj << "::" << method << "] " << msg << std::endl
-#define RDK_LOG_APP_EX(obj, method, msg) std::cout << "[APP][" << obj << "::" << method << "] " << msg << std::endl
-
-inline void RDK_LOG_BY_LEVEL(int msg_level, const std::string& msg) {
-  switch (msg_level) {
-    case RDK_EX_FATAL:
-      std::cerr << "[FATAL] " << msg << std::endl;
-      break;
-    case RDK_EX_ERROR:
-      std::cerr << "[ERROR] " << msg << std::endl;
-      break;
-    case RDK_EX_WARNING:
-      std::cerr << "[WARNING] " << msg << std::endl;
-      break;
-    case RDK_EX_INFO:
-      std::cout << "[INFO] " << msg << std::endl;
-      break;
-    case RDK_EX_DEBUG:
-      std::cout << "[DEBUG] " << msg << std::endl;
-      break;
-    case RDK_EX_APP:
-      std::cout << "[APP] " << msg << std::endl;
-      break;
-    default:
-      std::cout << "[UNKNOWN] " << msg << std::endl;
-      break;
-  }
-}
-
-inline void RDK_LOG_BY_LEVEL_EX(int msg_level, const std::string& object_name, const std::string& method_name, const std::string& msg) {
-  std::string prefix = "[" + object_name + "::" + method_name + "] ";
-  switch (msg_level) {
-    case RDK_EX_FATAL:
-      std::cerr << "[FATAL]" << prefix << msg << std::endl;
-      break;
-    case RDK_EX_ERROR:
-      std::cerr << "[ERROR]" << prefix << msg << std::endl;
-      break;
-    case RDK_EX_WARNING:
-      std::cerr << "[WARNING]" << prefix << msg << std::endl;
-      break;
-    case RDK_EX_INFO:
-      std::cout << "[INFO]" << prefix << msg << std::endl;
-      break;
-    case RDK_EX_DEBUG:
-      std::cout << "[DEBUG]" << prefix << msg << std::endl;
-      break;
-    case RDK_EX_APP:
-      std::cout << "[APP]" << prefix << msg << std::endl;
-      break;
-    default:
-      std::cout << "[UNKNOWN]" << prefix << msg << std::endl;
-      break;
-  }
-}
-
-#endif // RDK_USE_GLOG
 
 namespace RDK::Logging
 {
@@ -201,6 +56,15 @@ public:
 inline constexpr ChannelDescriptor kSystemChannel{RDK_SYS_MESSAGE, "sys"};
 inline constexpr ChannelDescriptor kGlobalChannel{RDK_GLOB_MESSAGE, "glob"};
 inline constexpr ChannelDescriptor kDefaultChannel{kSystemChannel.Index, kSystemChannel.Name};
+
+inline const char* ChannelTag(int channel_index)
+{
+  if(channel_index == RDK_SYS_MESSAGE)
+    return kSystemChannel.Name;
+  if(channel_index == RDK_GLOB_MESSAGE)
+    return kGlobalChannel.Name;
+  return nullptr;
+}
 
 namespace detail
 {
@@ -258,22 +122,52 @@ inline bool IsSeverityEnabled(int msg_level, int verbose_level)
 
 inline std::string BuildChannelPrefix(const ChannelDescriptor& channel)
 {
-  if(channel.Index == 0 && (!channel.Name || channel.Name[0] == '\0'))
-    return {};
+  std::string label;
+  if(channel.Index == kSystemChannel.Index)
+  {
+    label = "S";
+  }
+  else if(channel.Index == kGlobalChannel.Index)
+  {
+    label = "G";
+  }
+  else
+  {
+    label = std::to_string(channel.Index);
+  }
 
   std::string prefix{"["};
-  if(channel.Name && channel.Name[0] != '\0')
-  {
-    prefix.append(channel.Name);
-    if(channel.Index != 0)
-      prefix.push_back('#');
-  }
-  if(channel.Index != 0)
-  {
-    prefix.append(std::to_string(channel.Index));
-  }
+  prefix.append(label);
   prefix.append("] ");
   return prefix;
+}
+
+inline void EmitToGlog(int msg_level, const std::string& text)
+{
+  switch (msg_level)
+  {
+    case RDK_EX_FATAL:
+      LOG(FATAL) << text;
+      break;
+    case RDK_EX_ERROR:
+      LOG(ERROR) << text;
+      break;
+    case RDK_EX_WARNING:
+      LOG(WARNING) << text;
+      break;
+    case RDK_EX_INFO:
+      LOG(INFO) << text;
+      break;
+    case RDK_EX_DEBUG:
+      VLOG(1) << text;
+      break;
+    case RDK_EX_APP:
+      LOG(INFO) << "[APP] " << text;
+      break;
+    default:
+      LOG(INFO) << text;
+      break;
+  }
 }
 
 } // namespace detail
@@ -293,21 +187,36 @@ inline void DispatchLazy(const ChannelDescriptor& channel, int msg_level, int ve
     return;
 
   auto payload = detail::ToString(builder());
-  if(channel.Index != 0 || (channel.Name && channel.Name[0] != '\0'))
-  {
-    auto prefix = detail::BuildChannelPrefix(channel);
-    RDK_LOG_BY_LEVEL(msg_level, prefix + payload);
-  }
-  else
-  {
-    RDK_LOG_BY_LEVEL(msg_level, payload);
-  }
+  auto prefix = detail::BuildChannelPrefix(channel);
+  std::string final_message = prefix + payload;
+  detail::EmitToGlog(msg_level, final_message);
 }
 
 template <typename Builder>
 inline void DispatchLazy(const ChannelDescriptor& channel, int msg_level, Builder&& builder)
 {
   DispatchLazy(channel, msg_level, 0, std::forward<Builder>(builder));
+}
+
+template <typename Message>
+inline void ChannelLog(int channel_index, int msg_level, Message&& message)
+{
+  const ChannelDescriptor descriptor{channel_index, ChannelTag(channel_index)};
+  DispatchLazy(descriptor, msg_level, [&]() -> std::string {
+    return detail::ToString(std::forward<Message>(message));
+  });
+}
+
+template <typename Message>
+inline void SystemLog(int msg_level, Message&& message)
+{
+  ChannelLog(kSystemChannel.Index, msg_level, std::forward<Message>(message));
+}
+
+template <typename Message>
+inline void GlobalLog(int msg_level, Message&& message)
+{
+  ChannelLog(kGlobalChannel.Index, msg_level, std::forward<Message>(message));
 }
 
 } // namespace RDK::Logging
@@ -346,28 +255,6 @@ inline void DispatchLazy(const ChannelDescriptor& channel, int msg_level, Builde
       RLOG((level), (channel_index), (channel_tag), (expr)); \
     } \
   } while (0)
-
-#define RDK_LOG_LAZY(level, expr) \
-  RLOG((level), RDK::Logging::kSystemChannel.Index, RDK::Logging::kSystemChannel.Name, (expr))
-
-#define RDK_LOG_IF(level, condition, expr) \
-  RLOG_IF((level), RDK::Logging::kSystemChannel.Index, RDK::Logging::kSystemChannel.Name, (condition), (expr))
-
-#define RDK_LOG_EVERY_N(level, n, expr) \
-  RLOG_COUNTED((level), RDK::Logging::kSystemChannel.Index, RDK::Logging::kSystemChannel.Name, (n), (expr))
-
-#define RDK_CHANNEL_LOG(level, channel_index, channel_name, expr) \
-  RLOG((level), (channel_index), (channel_name), (expr))
-
-#define RDK_CHANNEL_LOG_LAZY(level, channel_index, channel_name, expr) \
-  RLOG((level), (channel_index), (channel_name), (expr))
-
-#define RDK_VLOG_LAZY(verbosity, expr) \
-  VRLOG((verbosity), RDK::Logging::kSystemChannel.Index, RDK::Logging::kSystemChannel.Name, (expr))
-
-#define RDK_CHANNEL_VLOG_LAZY(verbosity, channel_index, channel_name, expr) \
-  VRLOG((verbosity), (channel_index), (channel_name), (expr))
-
 
 #endif // RDK_LOGGING_H
 

@@ -562,11 +562,11 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
 
@@ -602,11 +602,11 @@ void UComponentLinksWidget::addLinks(QString componentName)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
 

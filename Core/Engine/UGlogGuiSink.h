@@ -36,6 +36,9 @@ private:
  UGlogGuiSink& operator=(const UGlogGuiSink&) = delete;
 
  void PushMessage(int severity, const std::string& text);
+ std::string FormatMessage(const Logging::LogItem& item) const;
+ std::string FormatTimestamp(std::time_t timestamp) const;
+ std::string SeverityToString(int severity) const;
 
  mutable std::mutex QueueMutex;
  std::deque<UGlogGuiMessage> Messages;

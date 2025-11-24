@@ -20,19 +20,19 @@ namespace RDK {
       if(compareProperties(*(reinterpret_cast<type*>(data)), \
                            testProperty.value, testProperty.delta)) \
       { \
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("SUCCESS - porperty: "+ testProperty.component + "." + testProperty.property).c_str()); \
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("SUCCESS - porperty: "+ testProperty.component + "." + testProperty.property).c_str()); \
         continue; \
       } \
       else \
       { \
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! expected value is: "+ testProperty.value).c_str()); \
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! expected value is: "+ testProperty.value).c_str()); \
         ++returnCode; \
         continue; \
       } \
     } \
     catch(boost::bad_lexical_cast &e) \
     { \
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error, application can't parse value, message :" + e.what()).c_str()); \
+      RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error, application can't parse value, message :" + e.what()).c_str()); \
       ++returnCode; \
       continue; \
     } \
@@ -94,13 +94,13 @@ int UTest::LoadTest(string testFile)
   RDK::USerStorageXML testXML;
   if(!testXML.LoadFromFile(testFile, "TestCase"))
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestCase> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestCase> in Xml file").c_str());
     return 1;
   }
 
   if(!testXML.SelectNode("Header"))
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <Header> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <Header> in Xml file").c_str());
     return 2;
   }
 
@@ -123,7 +123,7 @@ int UTest::LoadTest(string testFile)
   }
   catch(boost::bad_lexical_cast &e)
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " calcDuration empty, boost::lexical_cast error, message :" + e.what()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " calcDuration empty, boost::lexical_cast error, message :" + e.what()).c_str());
     calcDuration = 0;
   }
 
@@ -134,7 +134,7 @@ int UTest::LoadTest(string testFile)
   }
   else
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <ConfigFilePath> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <ConfigFilePath> in Xml file").c_str());
     return 3;
   }
 
@@ -170,7 +170,7 @@ int UTest::LoadTest(string testFile)
   }
   else
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestProperties> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestProperties> in Xml file").c_str());
   }
   return RDK_SUCCESS;
 }
@@ -183,7 +183,7 @@ int UTest::ProcessTest()
 
   try
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
 
     Application->OpenProject(testProjectFileName);
     /*std::vector<string> strs;
@@ -213,7 +213,7 @@ int UTest::ProcessTest()
 
     if(!model)
     {
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Model doesn't exist! Testing terminated!").c_str());
+      RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Model doesn't exist! Testing terminated!").c_str());
       return -1;
     }
 
@@ -228,7 +228,7 @@ int UTest::ProcessTest()
 
       if(!component)
       {
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - component: "+ testProperty.component +", doesn't exist!").c_str());
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - component: "+ testProperty.component +", doesn't exist!").c_str());
         ++returnCode;
         continue;
       }
@@ -237,7 +237,7 @@ int UTest::ProcessTest()
 
       if(!property)
       {
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", doesn't exist!").c_str());
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", doesn't exist!").c_str());
         ++returnCode;
         continue;
       }
@@ -246,7 +246,7 @@ int UTest::ProcessTest()
 
       if(!data)
       {
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", is NULL!").c_str());
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", is NULL!").c_str());
         ++returnCode;
         continue;
       }
@@ -263,19 +263,19 @@ int UTest::ProcessTest()
 
 //      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
 
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
+      RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
 
     }
   }
   catch(RDK::UException& e)
   {
     ++returnCode;
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
   }
   catch(std::exception& e)
   {
     ++returnCode;
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
   }
 
   return returnCode;
@@ -411,14 +411,14 @@ int UTestManager::LoadTests(const std::string &file_name)
 {
  if(file_name.empty())
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "Tests description file name is empty!");
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "Tests description file name is empty!");
   return 1001;
  }
 
  RDK::USerStorageXML testsXML;
  if(!testsXML.LoadFromFile(file_name, "UTestCases"))
  {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (file_name + " UTestManager::LoadTest: can't find <UTestCases> in Xml file").c_str());
+   RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (file_name + " UTestManager::LoadTest: can't find <UTestCases> in Xml file").c_str());
    return 1002;
  }
 
@@ -440,7 +440,7 @@ int UTestManager::LoadTests(const std::string &file_name)
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);
  if(decode_main_file_res != RDK_SUCCESS)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode main file tests description file FAILED! Error code: ")+sntoa(decode_main_file_res)).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode main file tests description file FAILED! Error code: ")+sntoa(decode_main_file_res)).c_str());
   return 1002;
  }
 
@@ -450,7 +450,7 @@ int UTestManager::LoadTests(const std::string &file_name)
   int decode_res=DecodeTestFile(test_file_names[i],test);
   if(decode_res != RDK_SUCCESS)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode test file ")+test_file_names[i]+std::string(" FAILED! Error code: ")+sntoa(decode_res)).c_str());
+   RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode test file ")+test_file_names[i]+std::string(" FAILED! Error code: ")+sntoa(decode_res)).c_str());
    return 1003;
   }
  }*/
@@ -463,7 +463,7 @@ int UTestManager::LoadTests(const std::string &file_name)
 /// Возвращает код ошибки тестирования
 int UTestManager::ProcessTests(void)
 {
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::ProcessTests called");
+ RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::ProcessTests called");
 
  int returnCode = RDK_SUCCESS;
 
@@ -481,14 +481,14 @@ int UTestManager::ProcessTests(void)
 /// Возвращает массив имен файлов с описаниями тестов
 int UTestManager::DecodeMainTestDescriptionFile(std::vector<std::string> &test_file_names)
 {
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeMainTestDescriptionFile called");
+ RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeMainTestDescriptionFile called");
  return RDK_SUCCESS;
 }
 
 /// Декодирует тест
 int UTestManager::DecodeTestFile(const std::string &test_file_name, UTest &test)
 {
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeTestFile called");
+ RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeTestFile called");
  return RDK_SUCCESS;
 }
 

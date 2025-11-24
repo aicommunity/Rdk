@@ -49,15 +49,15 @@ void UIVisualControllerStorage::AfterLoadProject(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -76,15 +76,15 @@ void UIVisualControllerStorage::BeforeCloseProject(void)
    }
    catch(RDK::UException &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -102,15 +102,15 @@ void UIVisualControllerStorage::BeforeReset(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -127,15 +127,15 @@ void UIVisualControllerStorage::AfterReset(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -154,15 +154,15 @@ void UIVisualControllerStorage::BeforeCalculate(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
  }
@@ -180,15 +180,15 @@ void UIVisualControllerStorage::AfterCalculate(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -206,15 +206,15 @@ void UIVisualControllerStorage::UpdateInterface(bool force_update)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),begin_time);
@@ -232,15 +232,15 @@ void UIVisualControllerStorage::ClearInterface(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -257,15 +257,15 @@ void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -282,15 +282,15 @@ void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -308,15 +308,15 @@ void UIVisualControllerStorage::ResetCalculationStepUpdatedFlag(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -333,15 +333,15 @@ void UIVisualControllerStorage::SetCalculationStepUpdatedFlag(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
@@ -393,15 +393,15 @@ void UIControllerStorage::AfterLoadProject(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -418,15 +418,15 @@ void UIControllerStorage::BeforeCloseProject(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -443,15 +443,15 @@ void UIControllerStorage::BeforeReset(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -468,15 +468,15 @@ void UIControllerStorage::AfterReset(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -494,15 +494,15 @@ void UIControllerStorage::BeforeCalculate(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
  }
@@ -520,15 +520,15 @@ void UIControllerStorage::AfterCalculate(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -545,15 +545,15 @@ void UIControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -570,15 +570,15 @@ void UIControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }

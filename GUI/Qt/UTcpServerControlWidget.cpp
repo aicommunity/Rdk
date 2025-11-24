@@ -92,7 +92,7 @@ void UTcpServerControlWidget::TcpCommandTimerTick()
  }
  catch(...)
  {
-  Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+  RDK::Logging::SystemLog(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
  }
 }
 */

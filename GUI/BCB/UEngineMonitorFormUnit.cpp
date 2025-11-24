@@ -163,11 +163,11 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  }
  catch(std::exception &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorForm::LogTimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("TUEngineMonitorForm::LogTimerTimer - ")+ex.what()).c_str());
  }
  catch(...)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "TUEngineMonitorForm::LogTimerTimer - unhandled exception");
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "TUEngineMonitorForm::LogTimerTimer - unhandled exception");
  }
 }
 //---------------------------------------------------------------------------

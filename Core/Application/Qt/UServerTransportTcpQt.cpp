@@ -211,7 +211,7 @@ void UServerTransportTcpQt::CommandQueueTimerTimeout()
     }
     catch(...)
     {
-     Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+     RDK::Logging::SystemLog(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
     }
 }
 
@@ -223,7 +223,7 @@ void UServerTransportTcpQt::timerEvent(QTimerEvent *event)
     }
     catch(...)
     {
-     Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+     RDK::Logging::SystemLog(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
     }
 }
 
@@ -268,7 +268,7 @@ void UServerTransportTcpQt::ServerStop()
  }
  serverSockets.clear();
  server->close();
- Log_LogMessage(RDK_EX_DEBUG, (std::string("Server finished listening.")).c_str());
+ RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Server finished listening.")).c_str());
 }
 
 /// Инициировать запуск сервера
@@ -280,7 +280,7 @@ void UServerTransportTcpQt::ServerStart()
         ha.setAddress(QString(server_address.c_str()));
 
         server->listen(ha, server_port);
-        Log_LogMessage(RDK_EX_DEBUG, (std::string("Server is listening on address = \"")+server_address+std::string("\" port = \"")+QString::number(server_port).toUtf8().constData()+std::string("\"")).c_str());
+        RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Server is listening on address = \"")+server_address+std::string("\" port = \"")+QString::number(server_port).toUtf8().constData()+std::string("\"")).c_str());
     }
 }
 
@@ -315,7 +315,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
       in.readBytes(buffer, length);
       bytes.resize(length);
       memcpy(&bytes[0],buffer,length);
-      //Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+QString::number(length).toUtf8().constData()).c_str());
+      //RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+QString::number(length).toUtf8().constData()).c_str());
       return length;
      }
     }
@@ -354,7 +354,7 @@ int UServerTransportTcpQt::ReadIncomingBytes(std::string &bind, std::vector<unsi
        bytes.resize(length);
        memcpy(&bytes[0],&VBuffer[0],length);
        bytes.resize(length);
-       Log_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+       RDK::Logging::SystemLog(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
        //Отпустить список
        UServerControlForm->IdTCPServer->Contexts->UnlockList();
        //Вернуть длину
@@ -499,7 +499,7 @@ int UServerControlQt::RegisterMetadataReceiver(const std::string &address, int p
    broadcaster->XmlComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
    broadcaster->EnableXmlTranslationCheckBox->Checked=true;
    broadcaster->ConnectButtonClick(UServerControlForm);
-   Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
+   RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
   }
  }
  */
@@ -521,7 +521,7 @@ int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int
   {
    IdTcpResultBroadcasterForm->DelBroadcaster(index);
   }
-  Log_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
  }
  */
  return 0;
@@ -905,7 +905,7 @@ void UTcpServerControlWidget::TcpCommandTimerTick()
  }
  catch(...)
  {
-  Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+  RDK::Logging::SystemLog(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
  }
 }
 

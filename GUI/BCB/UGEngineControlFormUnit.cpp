@@ -434,14 +434,14 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
  if(LastMaxMemory == 0)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
   LastMaxMemory=max_memory;
   LastMaxBlock=max_block;
  }
  else
  if(LastMaxMemory > max_memory || LastMaxBlock > max_block)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE,RDK_EX_DEBUG, AnsiString(memory_usage).c_str());
   LastMaxMemory=max_memory;
   LastMaxBlock=max_block;
  }
@@ -872,7 +872,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  catch(Exception &exception)
  {
   // UShowProgressBarForm->Hide();
-  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Open project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  RDK::Logging::ChannelLog(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Open project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
  catch(...)
  {
@@ -1349,7 +1349,7 @@ try
 catch(Exception &exception)
 {
  UShowProgressBarForm->Hide();
- MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("GUI-SaveProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
+ RDK::Logging::ChannelLog(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("GUI-SaveProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
 }
 catch(...)
 {
@@ -2504,8 +2504,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.ProcessCommandLineArgs(args);
  RdkApplication.Init();
  VersionString=GetBuildInfoAsString();
- MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(String("Application Version: ")+VersionString).c_str());
- MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+ RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(String("Application Version: ")+VersionString).c_str());
+ RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
 
  if(RdkApplication.IsTestMode())
  {
@@ -2594,9 +2594,9 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
  if(FileExists(AutoexecProjectFileName))
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+  RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
   OpenProject(AutoexecProjectFileName);
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+  RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
   AutoexecProjectFileName="";
  }
  else
@@ -2608,9 +2608,9 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
    std::string last_project_name=last_projects.front();
    if(FileExists(last_project_name.c_str()))
    {
-	MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+	RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
 	OpenProject(last_project_name.c_str());
-	MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
+	RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, AnsiString(DebugGenerateMemoryUsageString()).c_str());
    }
   }
  }
@@ -3155,7 +3155,7 @@ void __fastcall TUGEngineControlForm::ApplicationEventsException(TObject *Sender
   std::string message=AnsiString("Unhandled exception: "+E->Message).c_str();
   message+=" in class ";
   message+=AnsiString(Sender->ToString()).c_str();
-  MLog_LogMessage(0, RDK_EX_ERROR, message.c_str());
+  RDK::Logging::ChannelLog(0, RDK_EX_ERROR, message.c_str());
  }
  else
   ShowMessage(E->Message);

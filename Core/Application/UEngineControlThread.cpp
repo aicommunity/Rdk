@@ -316,17 +316,17 @@ void UEngineControlThread::Execute(void)
   }
   catch(RDK::UException &ex)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_FATAL, (std::string("UEngineControlThread::Execute rased exception: ")+ex.what()).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE,RDK_EX_FATAL, (std::string("UEngineControlThread::Execute rased exception: ")+ex.what()).c_str());
    Terminated=true;
   }
   catch(std::exception &ex)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_FATAL, (std::string("UEngineControlThread::Execute rased exception: ")+ex.what()).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE,RDK_EX_FATAL, (std::string("UEngineControlThread::Execute rased exception: ")+ex.what()).c_str());
    Terminated=true;
   }
   catch(...)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_FATAL, "UEngineControlThread::Execute rased unhandled exception");
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE,RDK_EX_FATAL, "UEngineControlThread::Execute rased unhandled exception");
    Terminated=true;
   }
  }

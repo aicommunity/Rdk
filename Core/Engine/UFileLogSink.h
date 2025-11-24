@@ -31,6 +31,7 @@ private:
  std::string BuildFilePathUnlocked() const;
  std::string FormatMessage(const Logging::LogItem& item) const;
  std::string SeverityToString(int severity) const;
+ std::string FormatTimestamp(std::time_t timestamp) const;
 
  mutable std::mutex SinkMutex;
  std::string TargetDirectory;
