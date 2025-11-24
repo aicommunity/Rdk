@@ -16,7 +16,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "ULibrary.h"
 #include "../System/rdk_system.h"
-#include "ULoggerEnv.h"
+#include "UExceptionLogger.h"
 #include "UController.h"
 
 namespace RDK {
@@ -126,7 +126,7 @@ unsigned long long CurrentTime,LastDuration, ProcEndTime, LastStepStartTime;
 double RTModelCalcTime;
 
 /// Экземпляр класса для логирования
-mutable UEPtr<ULoggerEnv> Logger;
+mutable UEPtr<UExceptionLogger> Logger;
 
 /// Флаг, выставляемый если достигнут конец расчета (по MaxCalcTime)
 bool CalcFinishedFlag;
@@ -200,8 +200,8 @@ double CalcRTPerformance(void) const;
 // Методы управления данными среды
 // --------------------------
 // Указатель на логгер
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+UEPtr<UExceptionLogger> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
 // Возвращает указатель на хранилище
 virtual UStorage* GetStorage(void);

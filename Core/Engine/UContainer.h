@@ -255,7 +255,7 @@ bool CheckLongId(const std::string &id) const;
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 
 // ��������� �� ������
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
 // ����� ����������� ���������� �����
 virtual void ProcessException(UException &exception);

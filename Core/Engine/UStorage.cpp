@@ -1019,12 +1019,12 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 // Методы управления библиотеками
 // --------------------------
 // Методы управления библиотеками
-UEPtr<ULoggerEnv> const UStorage::GetLogger(void) const
+UEPtr<UExceptionLogger> const UStorage::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UStorage::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;

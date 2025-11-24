@@ -4,6 +4,12 @@
 #pragma hdrstop
 
 #include "UEngineMonitorFormUnit.h"
+
+#include "../../Core/Engine/UGlogGuiSink.h"
+
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
 #include "TUVisualController.h"
 #include "UGEngineControlFormUnit.h"
 
@@ -63,6 +69,37 @@ TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
 
 
 
+namespace
+{
+int MapGuiSeverity(const RDK::UGlogGuiMessage &message)
+{
+ int level=RDK_EX_INFO;
+#ifdef RDK_USE_GLOG
+ switch(message.Severity)
+ {
+ case google::GLOG_FATAL:
+  level=RDK_EX_FATAL;
+  break;
+ case google::GLOG_ERROR:
+  level=RDK_EX_ERROR;
+  break;
+ case google::GLOG_WARNING:
+  level=RDK_EX_WARNING;
+  break;
+ default:
+  level=RDK_EX_INFO;
+  break;
+ }
+#endif
+ if(message.Text.find("[APP]") != std::string::npos)
+  level=RDK_EX_APP;
+ else
+ if(message.Text.find("[DEBUG]") != std::string::npos)
+  level=RDK_EX_DEBUG;
+ return level;
+}
+}
+
 void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 {
  try
@@ -70,20 +107,10 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   if(!RdkApplication.IsInit())
    return;
 
-  std::list<std::string> log=RdkApplication.GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
-
-  for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)
+ const std::vector<RDK::UGlogGuiMessage> log = RDK::UGlogGuiSink::Instance().ReadMessages(512);
+ for(std::vector<RDK::UGlogGuiMessage>::const_iterator I=log.begin(); I != log.end();++I)
   {
-   int log_level=-1;
-   std::string::size_type pos1=I->find_first_of('>');
-   if(pos1 != std::string::npos)
-   {
-	std::string::size_type pos2=I->find_first_of('>',pos1+1);
-	if(pos2 != std::string::npos && pos2 > 0)
-	{
-	 log_level=RDK::atoi(I->substr(pos2-1,1));
-	}
-   }
+  int log_level=MapGuiSeverity(*I);
 
    TColor color;
    switch(log_level)
@@ -120,7 +147,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
     color=clBlack;
    }
 
-   AddColorText(EngineMonitorFrame->RichEdit, I->c_str(), color);
+  AddColorText(EngineMonitorFrame->RichEdit, I->Text.c_str(), color);
   }
   while(EngineMonitorFrame->RichEdit->Lines->Count>1000)
   {

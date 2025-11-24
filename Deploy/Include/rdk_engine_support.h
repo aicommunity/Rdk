@@ -29,13 +29,13 @@ std::vector<UGenericMutex*> MutexList;
 std::vector<RDK::UELockPtr<RDK::UEngine>*> LockerList;
 
 /// Массив логгеров
-std::vector<RDK::ULoggerEnv*> LoggerList;
+std::vector<RDK::UExceptionLogger*> LoggerList;
 
 /// Системный логгер
-RDK::ULoggerEnv SystemLogger;
+RDK::UExceptionLogger SystemLogger;
 
 /// Глобальный логгер (интегрирует информацию со всех логгеров)
-RDK::ULoggerEnv GlobalLogger;
+RDK::UExceptionLogger GlobalLogger;
 
 UGenericMutex* GlobalMutex;
 
@@ -46,7 +46,7 @@ RDK::UELockVar<int> SelectedChannelIndex;
 RDK::UELockVar<int> NumChannels;
 
 /// Данные текущего выбранного канала
-RDK::UEPtr<RDK::ULoggerEnv> Logger;
+RDK::UEPtr<RDK::UExceptionLogger> Logger;
 RDK::UEPtr<RDK::UEngine> Engine;
 RDK::UEPtr<RDK::UEnvironment> Environment;
 RDK::UEPtr<RDK::UStorage> Storage;
@@ -300,16 +300,16 @@ int UnLockChannel(int index);
 /// Средства логгирования
 // --------------------------
 // Возвращает ссылку на указатель на логгер текущего канала
-RDK::UEPtr<RDK::ULoggerEnv>& GetLogger(void);
+RDK::UEPtr<RDK::UExceptionLogger>& GetLogger(void);
 
 // Возвращает указатель на логгер выбранного канала, или SystemLogger
-RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int channel_index);
+RDK::UEPtr<RDK::UExceptionLogger> GetLogger(int channel_index);
 
 /// Возвращает указатель на системный логгер
-RDK::UEPtr<RDK::ULoggerEnv> GetSystemLogger(void);
+RDK::UEPtr<RDK::UExceptionLogger> GetSystemLogger(void);
 
 /// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
-RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
+RDK::UEPtr<RDK::UExceptionLogger> GetGlobalLogger(void);
 // --------------------------
 
 

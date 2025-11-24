@@ -30,7 +30,6 @@ URdkCoreManager::URdkCoreManager(void)
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
  GlobalLogger.SetDebugMode(DebugMode);
  GlobalLogger.SetDebuggerMessageFlag(false);
- GlobalLogger.SetEventsLogMode(true);
  SystemLogger.RegisterGlobalLogger(&GlobalLogger);
  SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
  SystemLogger.SetDebugMode(DebugMode);
@@ -119,8 +118,7 @@ int URdkCoreManager::SetLogDir(const char *dir)
 
  if(LogDir == dir)
   return RDK_SUCCESS;
- if(GlobalLogger.IsLogFileCreated())
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
+ SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
  LogDir=dir;
  for(size_t i=0;i<LoggerList.size();i++)
  {
@@ -630,9 +628,8 @@ int URdkCoreManager::ChannelCreate(int index)
   {
    SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to create channel ")+RDK::sntoa(index));
    // TODO: здесь инициализация параметров логгера и его запуск
-   LoggerList[index]=new RDK::ULoggerEnv;
+   LoggerList[index]=new RDK::UExceptionLogger;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
-   LoggerList[index]->SetMaxExceptionsLogSize(0);
    LoggerList[index]->SetLogDir(LogDir);
    LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
    LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());
@@ -1175,12 +1172,12 @@ int URdkCoreManager::UnLockChannel(int index)
 /// Средства логгирования
 // --------------------------
 // Возвращает ссылку на указатель на логгер
-RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
+RDK::UEPtr<RDK::UExceptionLogger>& URdkCoreManager::GetLogger(void)
 {
  return Logger;
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
+RDK::UEPtr<RDK::UExceptionLogger> URdkCoreManager::GetLogger(int channel_index)
 {
  if(channel_index == RDK_SYS_MESSAGE)
   return &SystemLogger;
@@ -1192,13 +1189,13 @@ RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
 }
 
 /// Возвращает ссылку на системный логгер
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
+RDK::UEPtr<RDK::UExceptionLogger> URdkCoreManager::GetSystemLogger(void)
 {
  return &SystemLogger;
 }
 
 /// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
+RDK::UEPtr<RDK::UExceptionLogger> URdkCoreManager::GetGlobalLogger(void)
 {
  return &GlobalLogger;
 }

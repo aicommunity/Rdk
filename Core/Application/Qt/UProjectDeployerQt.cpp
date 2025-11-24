@@ -1,4 +1,6 @@
 #include "UProjectDeployerQt.h"
+
+#include "../../Engine/UGlogGuiSink.h"
 #include "../UApplication.h"
 
 namespace RDK{
@@ -1889,45 +1891,54 @@ int UProjectDeployerQt::PrepareProject(std::string &response)
     return 0;
 }
 
+namespace
+{
+int MapGuiSeverity(const RDK::UGlogGuiMessage &message, const QString &line)
+{
+ int level=RDK_EX_INFO;
+#ifdef RDK_USE_GLOG
+ switch(message.Severity)
+ {
+ case google::GLOG_FATAL:
+  level=RDK_EX_FATAL;
+  break;
+ case google::GLOG_ERROR:
+  level=RDK_EX_ERROR;
+  break;
+ case google::GLOG_WARNING:
+  level=RDK_EX_WARNING;
+  break;
+ default:
+  level=RDK_EX_INFO;
+  break;
+ }
+#endif
+ if(line.contains("[APP]"))
+  level=RDK_EX_APP;
+ else
+ if(line.contains("[DEBUG]"))
+  level=RDK_EX_DEBUG;
+ return level;
+}
+}
+
 int UProjectDeployerQt::AnalyzeLogForErrors(std::string &problem_string)
 {
-    std::list<std::string> gui_unsent_log = Application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
+ const std::vector<RDK::UGlogGuiMessage> gui_unsent_log = RDK::UGlogGuiSink::Instance().ReadMessages(256);
 
-    for(std::string log_entry: gui_unsent_log)
-    {
-        QString msg_line = log_entry.c_str();
-        //Take string and split into parts
-        int sys_info_end = msg_line.indexOf("] ", 0)+1;//index of first space of message
+ for(const RDK::UGlogGuiMessage &log_entry: gui_unsent_log)
+ {
+  QString msg_line = QString::fromLocal8Bit(log_entry.Text.c_str());
+  const int error_level = MapGuiSeverity(log_entry, msg_line);
+  if(error_level==RDK_EX_FATAL || error_level==RDK_EX_ERROR)
+  {
+   problem_string = msg_line.toUtf8().constData();
+   return (error_level==RDK_EX_FATAL) ? RDK_EX_FATAL : RDK_EX_ERROR;
+  }
+ }
 
-        if(sys_info_end>=0)
-        {
-            //Process line taking into account lines saved previously
-            QString sys_info_line = msg_line.left(sys_info_end);
-            QString message_data = msg_line.right(msg_line.length()-sys_info_end);
-            QStringList str_parts = sys_info_line.split(" ");
-
-            //QString src_info = str_parts[0];
-            //src_info = src_info.replace(">", "").trimmed();
-            //QString date_info = str_parts[1];
-            //QString time_info = str_parts[2];
-            QString error_level_i = str_parts[3];
-            int error_level = error_level_i.replace(">", "").trimmed().toInt();
-            //QString error_level_s = str_parts[4];
-            //Unknown, Fatal, Error levels
-            if(error_level>=0 && error_level<=2)
-            {
-                //std::cerr<<message_data.toUtf8().constData()<<"\n\n";
-                problem_string = message_data.toUtf8().constData();
-                //Found fatal error, nothing needed to read any longer
-                return error_level;
-            }
-        }
-
-    }
-
-   //std::string log_path = Application->Get
-   problem_string = "No error occured";
-   return -1;
+ problem_string = "No error occured";
+ return -1;
 }
 
 int UProjectDeployerQt::GetPreparationResult(std::string &response)

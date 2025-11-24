@@ -19,7 +19,7 @@ See file license.txt for more information
 #include "UEPtr.h"
 #include "UContainerDescription.h"
 #include "UTime.h"
-#include "ULoggerEnv.h"
+#include "UExceptionLogger.h"
 #include "../Graphics/UFont.h"
 #include <unordered_map>
 #include <map>
@@ -150,7 +150,7 @@ UEPtr<UStorage> Storage;
 UEPtr<UEnvironment> Environment;
 
 // ��������� �� ������
-UEPtr<ULoggerEnv> Logger;
+UEPtr<UExceptionLogger> Logger;
 
 protected: // Идентификатор класса
 // ������������� ������
@@ -216,8 +216,8 @@ UEPtr<UEnvironment> const GetEnvironment(void) const;
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 
 /// Возвращает указатель на шрифт по умолчанию
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+UEPtr<UExceptionLogger> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
 /// ���������� ������ �� ����� ���������� ������� �� Environment.
 // --------------------------

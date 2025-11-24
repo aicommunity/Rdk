@@ -57,7 +57,6 @@ UEngineControl* EngineControl;
 
 protected: // Данные логгирования
 /// Экземпляр класса логирования
-ULogger Logger;
 /// Файл для сохранения логов
 //RDK::UEPtr<std::ofstream> EventsLogFile;
 
@@ -71,7 +70,6 @@ ULogger Logger;
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
-std::list<std::string> GuiUnsentLog;
 
 public:
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
@@ -146,23 +144,8 @@ virtual void AdditionExecute(void);
 /// Закрывает текущий лог
 //void CloseEventsLogFile(void);
 
-/// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
-/// Очищается каждый раз при запросе этой переменной
-std::list<std::string> ReadGuiUnsentLog(void);
-
 /// Прерывает исполнение потока
 virtual void Terminate(void);
-
-// Общедоступные данные логгирования
-static UGenericMutex*& GetRdkExceptionHandlerMutex(void);
-static std::list<int>& GetUnsentLogChannelIndexes(void);
-// --------------------------
-
-// --------------------------
-// Вспомогательные методы
-// --------------------------
-void ProcessLog(void);
-// --------------------------
 
 };
 

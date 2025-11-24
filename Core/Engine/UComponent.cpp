@@ -230,12 +230,12 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
 }
 
 // Указатель на логгер
-UEPtr<ULoggerEnv> const UComponent::GetLogger(void) const
+UEPtr<UExceptionLogger> const UComponent::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UComponent::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UComponent::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;

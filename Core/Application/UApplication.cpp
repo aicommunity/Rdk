@@ -9,6 +9,8 @@
 #endif
 
 #include "UApplication.h"
+
+#include "../Engine/UGlogGuiSink.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
 #ifdef RDK_USE_GLOG
@@ -22,7 +24,10 @@ using namespace std;
 //#include "Bcb/Application.bcb.cpp"
 #endif
 
-extern void ExceptionHandler(int channel_index); // TODO: Потом ее куда то убрать
+void ExceptionHandler(int channel_index)
+{
+ (void)channel_index;
+}
 
 namespace RDK {
 
@@ -503,7 +508,9 @@ bool UApplication::SetCoutLogMode(bool value)
  if(CoutLogMode == value)
   return true;
  CoutLogMode=value;
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetCoutLogMode(CoutLogMode);
+#ifdef RDK_USE_GLOG
+ FLAGS_alsologtostderr = CoutLogMode ? 1 : 0;
+#endif
  return true;
 }
 
@@ -620,9 +627,6 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
   return false;
  if(!Project->SetConfig(value))
   return false;
-
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(value.EventsLogFlag);
-// EngineControl->GetEngineStateThread()->SetLogFlag(value.EventsLogFlag);
  return true;
 }
 
@@ -758,6 +762,7 @@ bool UApplication::Init(void)
  
  // Install failure signal handler
  google::InstallFailureSignalHandler();
+ google::AddLogSink(&UGlogGuiSink::Instance());
 #endif
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
@@ -812,7 +817,7 @@ bool UApplication::UnInit(void)
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
 #ifdef RDK_USE_GLOG
- // Shutdown glog
+ google::RemoveLogSink(&UGlogGuiSink::Instance());
  google::ShutdownGoogleLogging();
 #endif
  AppIsInit = false;
@@ -1257,11 +1262,6 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  {
  }
 
- if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
- {
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(project_config.EventsLogFlag);
- }
-
  if(old_project_config.ProjectMode != project_config.ProjectMode)
  {
   // нет действий - приводит к повторному открытию конфигурации ранее
@@ -1473,11 +1473,6 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
    MLog_SetDebuggerMessageFlag(i,project_config.ChannelsConfig[i].DebuggerMessageFlag);
   }
 
-  if(old_project_config.ChannelsConfig[i].EventsLogMode != project_config.ChannelsConfig[i].EventsLogMode)
-  {
-   MLog_SetEventsLogMode(i,project_config.ChannelsConfig[i].EventsLogMode);
-  }
-
   if(old_project_config.ChannelsConfig[i].ChannelName != project_config.ChannelsConfig[i].ChannelName)
   {
   }
@@ -1518,9 +1513,6 @@ bool UApplication::OpenProject(const std::string &filename)
   UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(config.EventsLogFlag);
- if(LogCreationMode != 3)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
 // EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
 // EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);
@@ -1566,7 +1558,6 @@ try{
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
-   Log_SetEventsLogMode(config.EventsLogMode);
    Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
@@ -1860,8 +1851,6 @@ bool UApplication::RenameProject(const std::string &filename)
   return false;
 
  PauseChannel(-1);
- bool events_log_mode=GetProjectConfig().EventsLogFlag;
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(false);
 
  std::string resfilename=filename;
 
@@ -1870,7 +1859,6 @@ bool UApplication::RenameProject(const std::string &filename)
  if(filename.find_last_of("\\/") != filename.size()-1)
   resfilename+="/";
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(events_log_mode);
  if(res == 0)
  {
   SetProjectPath(resfilename);
@@ -2076,7 +2064,6 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
    Model_SetDefaultTimeStep(cloned_channel.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
-   Log_SetEventsLogMode(config.EventsLogMode);
    Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
@@ -2573,10 +2560,6 @@ void UApplication::CalcAppCaption(void)
 void UApplication::UpdateLoggers(void)
 {
  RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
- if(EngineControl && EngineControl->GetEngineStateThread())
- {
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
- }
 //  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
 }
 

@@ -217,12 +217,12 @@ double UEnvironment::CalcRTPerformance(void) const
 // Методы управления данными среды
 // --------------------------
 // Указатель на логгер
-UEPtr<ULoggerEnv> const UEnvironment::GetLogger(void) const
+UEPtr<UExceptionLogger> const UEnvironment::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UEnvironment::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UEnvironment::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;
@@ -495,14 +495,6 @@ bool UEnvironment::SetChannelIndex(int value)
   return true;
 
  ChannelIndex=value;
-/*
- Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
- if(EventsLogMode && IsInit())
- {
-  Logger.Clear();
-  Logger.InitLog();
- }
-  */
  return true;
 }
 
@@ -1051,8 +1043,6 @@ bool UEnvironment::AReset(void)
  LastStepStartTime=0;
  Time.SetTime(0);
 
- if(Logger)
-  Logger->Reset();
  RTModelCalcTime=0;
 
  for(size_t i=0;i<DataReaders.size();i++)

@@ -321,12 +321,12 @@ UContainer* UEngine::GetModel(void)
 // Методы управления счетом
 // --------------------------
 // Указатель на логгер
-UEPtr<ULoggerEnv> const UEngine::GetLogger(void) const
+UEPtr<UExceptionLogger> const UEngine::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UEngine::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UEngine::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;
@@ -343,7 +343,6 @@ bool UEngine::SetLogger(UEPtr<ULoggerEnv> logger)
  Logger->SetChannelIndex(ChannelIndex);
  if(Environment)
  {
-  Logger->ClearLog();
   Logger->RegisterEnvironment(Environment);
  }
  return true;
@@ -367,7 +366,6 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 
  if(Logger)
  {
-  Logger->ClearLog();
   Logger->RegisterEnvironment(Environment);
   Logger->SetChannelIndex(ChannelIndex);
  }
@@ -1814,59 +1812,6 @@ bool UEngine::Env_IsStructured(void) const
 }
 
 // Возвращает состояние внутренего логгирования
-bool UEngine::Env_GetEventsLogMode(void) const
-{
- RDK_SYS_TRY
- {
-  try
-  {
-   return Logger->GetEventsLogMode();
-  }
-  catch (RDK::UException &exception)
-  {
-   ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return false;
-}
-
-// Включает/выключает внутренне логгирование
-int UEngine::Env_SetEventsLogMode(bool value)
-{
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   if(!Logger->SetEventsLogMode(value))
-	res=RDK_E_LOGGER_SET_EVENTS_LOG_MODE_FAIL;
-   else
-    res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return res;
-}
-
 // Инициализация среды
 int UEngine::Env_Init(void)
 {
@@ -6704,61 +6649,6 @@ int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, cons
 // --------------------------
 // Методы управления исключениями
 // --------------------------
-// Возвращает массив строк лога
-const char* UEngine::GetLog(int &error_level) const
-{
- std::string& TempString=CreateTempString();
- //int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   TempString=Logger->GetLog(error_level);
-  }
-  catch (RDK::UException &exception)
-  {
-   ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return TempString.c_str();
-}
-
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
-const char* UEngine::GetUnreadLog(int &error_level, int &number, time_t &time)
-{
- std::string& TempString=CreateTempString();
- //int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   TempString=Logger->GetUnreadLog(error_level, number, time);
-  }
-  catch (RDK::UException &exception)
-  {
-   ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return TempString.c_str();
-}
-
 /// Записывает в лог новое сообщение
 int UEngine::Engine_LogMessage(int log_level, const char *message, int error_event_number)
 {
@@ -6877,7 +6767,7 @@ int UEngine::Engine_LogMessageEx(int msg_level, const char *object_name, const c
 }
 
 // Управление функцией-обработчиком исключений
-ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
+UExceptionLogger::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {
  if(!Logger)
   return 0;
@@ -6905,7 +6795,7 @@ ULoggerEnv::PExceptionHandler UEngine::GetExceptionHandler(void) const
  return 0;
 }
 
-int UEngine::SetExceptionHandler(ULoggerEnv::PExceptionHandler value)
+int UEngine::SetExceptionHandler(UExceptionLogger::PExceptionHandler value)
 {
  if(!Logger)
   return RDK_E_LOGGER_NOT_FOUND;
@@ -6993,97 +6883,6 @@ int UEngine::SetMaxExceptionsLogSize(int value)
  }
  return res;
 }     */
-
-
-/// Возвращает число непрочитанных строк лога
-int UEngine::GetNumUnreadLogLines(void) const
-{
- if(!Logger)
-  return 0;
-
- //int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   return Logger->GetNumUnreadLogLines();
-  }
-  catch (RDK::UException &exception)
-  {
-   ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return 0;
-}
-
-/// Возвращает число строк лога
-int UEngine::GetNumLogLines(void) const
-{
- if(!Logger)
-  return 0;
-
- //int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   return Logger->GetNumLogLines();
-  }
-  catch (RDK::UException &exception)
-  {
-   ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return 0;
-}
-
-/// Очищает лог прочитанных сообщений
-int UEngine::ClearReadLog(void)
-{
- if(!Logger)
-  return RDK_E_LOGGER_NOT_FOUND;
-
- int res=RDK_UNHANDLED_EXCEPTION;
- RDK_SYS_TRY
- {
-  try
-  {
-   Logger->ClearReadLog();
-   res=RDK_SUCCESS;
-  }
-  catch (RDK::UException &exception)
-  {
-   res=ProcessException(exception);
-  }
-  catch (std::exception &exception)
-  {
-   res=ProcessException(RDK::UExceptionWrapperStd(exception));
-  }
- }
- RDK_SYS_CATCH
- {
-  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
- }
- return res;
-}
-// --------------------------
-
 
 
 // --------------------------

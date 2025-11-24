@@ -165,17 +165,6 @@ RDK_LIB_TYPE const char* RDK_CALL Ver_CompilerVersion(void);
 /// Возвращает версию opencv (если используется)
 //RDK_LIB_TYPE const char* RDK_CALL Ver_OpenCvVersion(void);
 
-// ----------------------------
-// ----------------------------
-// Функции логирования
-// ----------------------------
-RDK_LIB_TYPE bool RDK_CALL Log_GetEventsLogMode(void);
-RDK_LIB_TYPE bool RDK_CALL MLog_GetEventsLogMode(int channel_index);
-
-// ��������/��������� ��������� ������������
-RDK_LIB_TYPE int RDK_CALL Log_SetEventsLogMode(bool value);
-RDK_LIB_TYPE int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value);
-
 /// ���������� ��������� ����� ����������� ������ �����
 RDK_LIB_TYPE bool RDK_CALL Log_GetDebugMode(void);
 RDK_LIB_TYPE bool RDK_CALL MLog_GetDebugMode(int channel_index);
@@ -207,17 +196,6 @@ RDK_LIB_TYPE void* RDK_CALL MLog_GetExceptionHandler(int channel_index);
 RDK_LIB_TYPE int RDK_CALL Log_SetExceptionHandler(void* value);
 RDK_LIB_TYPE int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value);
 
-// ���������� ������ ����� ����
-RDK_LIB_TYPE const char* RDK_CALL Log_GetLog(int &error_level);
-RDK_LIB_TYPE const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level);
-
-// ���������� ��������� ������ ����� ���� � ������� ���������� ���������� ����
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-RDK_LIB_TYPE const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned long long &time);
-RDK_LIB_TYPE const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int &number, unsigned long long &time);
-RDK_LIB_TYPE const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time);
-RDK_LIB_TYPE const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level, int &number, unsigned long long &time);
-
 // ���������� � ��� ����� ���������
 RDK_LIB_TYPE int RDK_CALL Log_LogMessage(int log_level, const char *message);
 RDK_LIB_TYPE int RDK_CALL MLog_LogMessage(int channel_index, int log_level, const char *message);
@@ -225,19 +203,6 @@ RDK_LIB_TYPE int RDK_CALL MLog_LogMessage(int channel_index, int log_level, cons
 // ���������� � ��� ����� ��������� � ����� ������
 RDK_LIB_TYPE int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_event_number);
 RDK_LIB_TYPE int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *message, int error_event_number);
-
-/// ���������� ����� ������������� ����� ����
-RDK_LIB_TYPE int RDK_CALL Log_GetNumUnreadLogLines(void);
-RDK_LIB_TYPE int RDK_CALL MLog_GetNumUnreadLogLines(int channel_index);
-
-/// ���������� ����� ����� ����
-RDK_LIB_TYPE int RDK_CALL Log_GetNumLogLines(void);
-RDK_LIB_TYPE int RDK_CALL MLog_GetNumLogLines(int channel_index);
-
-/// ������� ��� ����������� ���������
-RDK_LIB_TYPE int RDK_CALL Log_ClearReadLog(void);
-RDK_LIB_TYPE int RDK_CALL MLog_ClearReadLog(int channel_index);
-// ----------------------------
 
 // ----------------------------
 // ----------------------------
@@ -640,16 +605,6 @@ RDK_LIB_TYPE bool RDK_CALL MEnv_IsStructured(int channel_index);
 // ������������� �����
 RDK_LIB_TYPE int RDK_CALL Env_Init(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_Init(int channel_index);
-
-// ���������� ��������� ���������� ������������
-// Возвращает состояние внутренего логгирования
-// deprecated. use Log_GetEventsLogMode
-//RDK_LIB_TYPE bool RDK_CALL Env_GetEventsLogMode(void);
-
-// ��������/��������� ��������� ������������
-// Включает/выключает внутренне логгирование
-// deprecated. Use Log_SetEventsLogMode
-//RDK_LIB_TYPE int RDK_CALL Env_SetEventsLogMode(bool value);
 
 // ��������������� �����
 RDK_LIB_TYPE int RDK_CALL Env_UnInit(void);

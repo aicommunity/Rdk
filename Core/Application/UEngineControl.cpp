@@ -263,9 +263,6 @@ void UEngineControl::StartChannel(int channel_index)
  if(channel_index>=GetNumChannels())
   return;
 
- if(Application && Application->GetLogCreationMode() == 0)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
-// EngineStateThread->RecreateEventsLogFile();
  switch(ThreadMode)
  {
  case 0:
@@ -368,9 +365,6 @@ void UEngineControl::PauseChannel(int channel_index)
  break;
  }
 
- if(Application && Application->GetLogCreationMode() == 0)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
-// EngineStateThread->CloseEventsLogFile();
 }
 
 /// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
@@ -379,9 +373,6 @@ void UEngineControl::ResetChannel(int channel_index)
  if(channel_index>=GetNumChannels())
   return;
 
- if(Application && Application->GetLogCreationMode() == 0)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
-// EngineStateThread->RecreateEventsLogFile();
  if(channel_index == -1)
  {
   if(!Model_Check())

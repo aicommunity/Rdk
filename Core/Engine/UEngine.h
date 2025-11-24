@@ -79,7 +79,7 @@ protected: // Данные
 UIniFile<char> Options;
 
 // Логгер
-RDK::UEPtr<ULoggerEnv> Logger;
+RDK::UEPtr<UExceptionLogger> Logger;
 
 // Хранилище
 RDK::UEPtr<UStorage> Storage;
@@ -215,8 +215,8 @@ virtual UContainer* GetModel(void);
 // Методы пишут в лог по необходимости
 // --------------------------
 // Указатель на логгер
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+UEPtr<UExceptionLogger> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
 // Инициализирует данные движка
 virtual void Init(void);
@@ -369,12 +369,6 @@ virtual bool Env_IsInit(void) const;
 
 // Признак наличия сформированной структуры
 virtual bool Env_IsStructured(void) const;
-
-// Возвращает состояние внутренего логгирования
-virtual bool Env_GetEventsLogMode(void) const;
-
-// Включает/выключает внутренне логгирование
-virtual int Env_SetEventsLogMode(bool value);
 
 // Инициализация среды
 virtual int Env_Init(void);
@@ -929,13 +923,6 @@ virtual int Model_SetComponentBitmapInput(const char *stringid, int index, const
 // --------------------------
 // Методы управления исключениями
 // --------------------------
-// Возвращает массив строк лога
-const char* GetLog(int &error_level) const;
-
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
-const char* GetUnreadLog(int &error_level, int &number, time_t &time);
-
 /// Записывает в лог новое сообщение
 int Engine_LogMessage(int log_level, const char *message, int error_event_number=0);
 int Engine_LogMessage(int msg_level, const char *method_name, const char *message, int error_event_number=0);
@@ -943,29 +930,9 @@ int Engine_LogMessageEx(int msg_level, const char *object_name, const char *mess
 int Engine_LogMessageEx(int msg_level, const char *object_name, const char *method_name, const char *message, int error_event_number=0);
 
 // Управление функцией-обработчиком исключений
-ULoggerEnv::PExceptionHandler GetExceptionHandler(void) const;
-int SetExceptionHandler(ULoggerEnv::PExceptionHandler value);
+UExceptionLogger::PExceptionHandler GetExceptionHandler(void) const;
+int SetExceptionHandler(UExceptionLogger::PExceptionHandler value);
 
-/// Очищает лог
-int ClearLog(void);
-
-/// Возвращает число непрочитанных строк лога
-int GetNumUnreadLogLines(void) const;
-
-/// Возвращает число строк лога
-int GetNumLogLines(void) const;
-
-// Возвращает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывания лога этой функцией
-const char* GetUnreadLogLine(int &error_level);
-
-/// Очищает лог прочитанных сообщений
-int ClearReadLog(void);
-// --------------------------
-
-// --------------------------
-// Методы управления движком
-// --------------------------
 public:
 // Обрабатывает возникшее исключение
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения

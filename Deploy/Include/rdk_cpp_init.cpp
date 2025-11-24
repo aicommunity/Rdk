@@ -22,12 +22,12 @@ RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void)
 }
 
 // Возвращает указатель на логгер
-RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void)
+RDK::UEPtr<RDK::UExceptionLogger> RDK_CALL GetLogger(void)
 {
  return RdkCoreManager.GetLogger();
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index)
+RDK::UEPtr<RDK::UExceptionLogger> RDK_CALL GetLogger(int channel_index)
 {
  return RdkCoreManager.GetLogger(channel_index);
 }

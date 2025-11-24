@@ -18,8 +18,8 @@ const RDK::UVersion& RDK_CALL GetCoreVersion(void);
 RDK_LIB_TYPE RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void);
 
 // Возвращает указатель на логгер
-RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void);
-RDK_LIB_TYPE RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UExceptionLogger> RDK_CALL GetLogger(void);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UExceptionLogger> RDK_CALL GetLogger(int channel_index);
 
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);

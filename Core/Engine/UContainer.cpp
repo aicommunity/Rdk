@@ -237,7 +237,7 @@ bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
 }
 
 // Указатель на логгер
-bool UContainer::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UContainer::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(!UComponent::SetLogger(logger))
   return false;

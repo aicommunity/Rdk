@@ -1,5 +1,12 @@
 #include "ULoggerWidget.h"
 
+#include "../../Core/Engine/UGlogGuiSink.h"
+#include "../../Deploy/Include/rdk_error_codes.h"
+
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
+
 ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
     UVisualControllerWidget(parent, app)
 {
@@ -21,25 +28,51 @@ ULoggerWidget::~ULoggerWidget()
     delete textEdit;
 }
 
+namespace
+{
+int MapLogSeverity(const RDK::UGlogGuiMessage& message)
+{
+ int level=RDK_EX_INFO;
+#ifdef RDK_USE_GLOG
+ switch(message.Severity)
+ {
+ case google::GLOG_FATAL:
+  level=RDK_EX_FATAL;
+  break;
+ case google::GLOG_ERROR:
+  level=RDK_EX_ERROR;
+  break;
+ case google::GLOG_WARNING:
+  level=RDK_EX_WARNING;
+  break;
+ case google::GLOG_INFO:
+ default:
+  level=RDK_EX_INFO;
+  break;
+ }
+#endif
+
+ if(message.Text.find("[APP]") != std::string::npos)
+  level=RDK_EX_APP;
+ else
+ if(message.Text.find("[DEBUG]") != std::string::npos)
+  level=RDK_EX_DEBUG;
+
+ return level;
+}
+}
+
 void ULoggerWidget::AUpdateInterface()
 {
-    if(!application) return;
-    std::list<std::string> log = application->GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
+ if(!application)
+  return;
 
-    for(std::list<std::string>::iterator i = log.begin(); i != log.end(); ++i)
-    {
-     int log_level=-1;
-     std::string::size_type pos1=i->find_first_of('>');
-     if(pos1 != std::string::npos)
-     {
-      std::string::size_type pos2=i->find_first_of('>',pos1+1);
-      if(pos2 != std::string::npos && pos2 > 0)
-      {
-       log_level=RDK::atoi(i->substr(pos2-1,1));
-      }
-     }
-     AddString(log_level,QString::fromLocal8Bit(i->c_str()));
-    }
+ const std::vector<RDK::UGlogGuiMessage> messages = RDK::UGlogGuiSink::Instance().ReadMessages(512);
+ for(const RDK::UGlogGuiMessage& message : messages)
+ {
+  const int severity = MapLogSeverity(message);
+  AddString(severity, QString::fromLocal8Bit(message.Text.c_str()));
+ }
 }
 
 void ULoggerWidget::AddString(int log_level, const QString &string)

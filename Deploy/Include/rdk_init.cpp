@@ -17,6 +17,9 @@ namespace RDK {
 #include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
 #include "../../Core/System/UGenericMutex.h"
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
 
 namespace RDK {
 
@@ -25,7 +28,7 @@ namespace RDK {
 /// ����� ���������� RDK_EXCEPTION_CATCHED
 int RDK_CALL ProcessException(int channel_index, const UException &ex)
 {
- UEPtr<ULoggerEnv> logger=RdkCoreManager.GetLogger(channel_index);
+ UEPtr<UExceptionLogger> logger=RdkCoreManager.GetLogger(channel_index);
  if(!logger)
   return RDK_UNHANDLED_EXCEPTION;
  logger->ProcessException(ex);
@@ -135,37 +138,6 @@ const char* RDK_CALL Ver_OpenCvVersion(void)
 }*/
 // ----------------------------
 
-// ----------------------------
-// ������� �����������
-// ----------------------------
-// ���������� ��������� ���������� ������������
-bool RDK_CALL Log_GetEventsLogMode(void)
-{
- return RdkCoreManager.GetLogger()->GetEventsLogMode();
-}
-
-bool RDK_CALL MLog_GetEventsLogMode(int channel_index)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return false;
-
- return RdkCoreManager.GetLogger(channel_index)->GetEventsLogMode();
-}
-
-// ��������/��������� ��������� ������������
-int RDK_CALL Log_SetEventsLogMode(bool value)
-{
- return RdkCoreManager.GetLogger()->SetEventsLogMode(value);
-}
-
-int RDK_CALL MLog_SetEventsLogMode(int channel_index, bool value)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
-
- return RdkCoreManager.GetLogger(channel_index)->SetEventsLogMode(value);
-}
-
 /// ���������� ��������� ����� ����������� ������ �����
 bool RDK_CALL Log_GetDebugMode(void)
 {
@@ -268,7 +240,7 @@ void* RDK_CALL MLog_GetExceptionHandler(int channel_index)
 
 int RDK_CALL Log_SetExceptionHandler(void* value)
 {
- return RdkCoreManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value));
+ return RdkCoreManager.GetLogger()->SetExceptionHandler(reinterpret_cast<RDK::UExceptionLogger::PExceptionHandler>(value));
 }
 
 int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
@@ -276,26 +248,13 @@ int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
  if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- if(!RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::ULoggerEnv::PExceptionHandler>(value)))
+ if(!RdkCoreManager.GetLogger(channel_index)->SetExceptionHandler(reinterpret_cast<RDK::UExceptionLogger::PExceptionHandler>(value)))
   return RDK_E_LOGGER_SET_EXCEPTION_HANDLER_FAIL;
 
  return RDK_SUCCESS;
 }
 
 // ���������� ������ ����� ����
-const char* RDK_CALL Log_GetLog(int &error_level)
-{
- return RdkCoreManager.GetLogger()->GetLog(error_level);
-}
-
-const char* RDK_CALL MLog_GetLog(int channel_index, int &error_level)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return 0;
-
- return RdkCoreManager.GetLogger(channel_index)->GetLog(error_level);
-}
-
 // ���������� � ��� ����� ���������
 int RDK_CALL Log_LogMessage(int log_level, const char *message)
 {
@@ -330,83 +289,7 @@ int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *mes
 
 // ���������� ��������� ������ ����� ���� � ������� ���������� ���������� ����
 // ���� ��������
-const char* RDK_CALL Log_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
-{
- time_t read_time;
- const char* res=RdkCoreManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
-}
-
-const char* RDK_CALL MLog_GetUnreadLog(int channel_index, int &error_level, int &number, unsigned long long &time)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return 0;
- time_t read_time;
- const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
-}
-
-const char* RDK_CALL Log_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
-{
- time_t read_time;
- const char* res=RdkCoreManager.GetLogger()->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
-}
-
-const char* RDK_CALL MLog_GetUnreadLogUnsafe(int channel_index, int &error_level, int &number, unsigned long long &time)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return 0;
- time_t read_time;
- const char* res=RdkCoreManager.GetLogger(channel_index)->GetUnreadLog(error_level, number, read_time);
- time=read_time;
- return res;
-}
-
 /// ���������� ����� ������������� ����� ����
-int RDK_CALL Log_GetNumUnreadLogLines(void)
-{
- return RdkCoreManager.GetLogger()->GetNumUnreadLogLines();
-}
-
-int RDK_CALL MLog_GetNumUnreadLogLines(int channel_index)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return 0;
- return RdkCoreManager.GetLogger(channel_index)->GetNumUnreadLogLines();
-}
-
-/// ���������� ����� ����� ����
-int RDK_CALL Log_GetNumLogLines(void)
-{
- return RdkCoreManager.GetLogger()->GetNumLogLines();
-}
-
-int RDK_CALL MLog_GetNumLogLines(int channel_index)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return 0;
- return RdkCoreManager.GetLogger(channel_index)->GetNumLogLines();
-}
-
-
-/// ������� ��� ����������� ���������
-int RDK_CALL Log_ClearReadLog(void)
-{
- RdkCoreManager.GetLogger()->ClearReadLog();
- return RDK_SUCCESS;
-}
-
-int RDK_CALL MLog_ClearReadLog(int channel_index)
-{
- if(channel_index<RDK_GLOB_MESSAGE|| channel_index>=Core_GetNumChannels())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
- RdkCoreManager.GetLogger(channel_index)->ClearReadLog();
- return RDK_SUCCESS;
-}
 // ----------------------------
 
 // ----------------------------
@@ -1230,28 +1113,6 @@ bool RDK_CALL MEnv_IsStructured(int channel_index)
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
   return false;
  return RdkCoreManager.GetEngineLock(channel_index)->Env_IsStructured();
-}
-
-// ���������� ��������� ���������� ������������
-bool RDK_CALL Env_GetEventsLogMode(void)
-{
- return Log_GetEventsLogMode();
-}
-
-bool RDK_CALL MEnv_GetEventsLogMode(int channel_index)
-{
- return MLog_GetEventsLogMode(channel_index);
-}
-
-// ��������/��������� ��������� ������������
-int RDK_CALL Env_SetEventsLogMode(bool value)
-{
- return Log_SetEventsLogMode(value);
-}
-
-int RDK_CALL MEnv_SetEventsLogMode(int channel_index, bool value)
-{
- return MLog_SetEventsLogMode(channel_index,value);
 }
 
 // ������������� �����
@@ -2855,16 +2716,6 @@ int RDK_CALL MEngine_SetExceptionHandler(int channel_index, void* value)
 }
 
 // ���������� ������ ����� ����
-const char* RDK_CALL Engine_GetLog(int &error_level)
-{
- return Log_GetLog(error_level);
-}
-
-const char* RDK_CALL MEngine_GetLog(int channel_index, int &error_level)
-{
- return MLog_GetLog(channel_index, error_level);
-}
-
 // ���������� � ��� ����� ���������
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
@@ -2889,59 +2740,6 @@ int RDK_CALL MEngine_LogMessageEx(int channel_index, int log_level, const char *
 
 // ���������� ��������� ������ ����� ���� � ������� ���������� ���������� ����
 // ���� ��������
-const char* RDK_CALL Engine_GetUnreadLog(int &error_level, int &number, unsigned long long &time)
-{
- return Log_GetUnreadLog(error_level, number, time);
-}
-
-const char* RDK_CALL MEngine_GetUnreadLog(int channel_index, int &error_level, int &number, unsigned long long &time)
-{
- return MLog_GetUnreadLog(channel_index, error_level, number, time);
-}
-
-const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level, int &number, unsigned long long &time)
-{
- return Log_GetUnreadLogUnsafe(error_level, number, time);
-}
-
-const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int channel_index, int &error_level, int &number, unsigned long long &time)
-{
- return MLog_GetUnreadLogUnsafe(channel_index, error_level, number, time);
-}
-
-/// ���������� ����� ������������� ����� ����
-int RDK_CALL Engine_GetNumUnreadLogLines(void)
-{
- return Log_GetNumUnreadLogLines();
-}
-
-int RDK_CALL MEngine_GetNumUnreadLogLines(int channel_index)
-{
- return MLog_GetNumUnreadLogLines(channel_index);
-}
-
-/// ���������� ����� ����� ����
-int RDK_CALL Engine_GetNumLogLines(void)
-{
- return Log_GetNumLogLines();
-}
-
-int RDK_CALL MEngine_GetNumLogLines(int channel_index)
-{
- return MLog_GetNumLogLines(channel_index);
-}
-
-
-/// ������� ��� ����������� ���������
-int RDK_CALL Engine_ClearReadLog(void)
-{
- return Log_ClearReadLog();
-}
-
-int RDK_CALL MEngine_ClearReadLog(int channel_index)
-{
- return MLog_ClearReadLog(channel_index);
-}
 // ----------------------------
 
 

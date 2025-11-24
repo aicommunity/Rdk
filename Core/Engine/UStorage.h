@@ -106,7 +106,7 @@ std::unordered_map<std::string,UId> ClassesLookupTable;
 UClassesStorage ClassesStorage;
 
 /// ��������� ������ ��� �����������
-mutable UEPtr<ULoggerEnv> Logger;
+mutable UEPtr<UExceptionLogger> Logger;
 
 protected: // XML описания всех классов хранилища
 // XML �������� ���� ������� ���������
@@ -333,8 +333,8 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // --------------------------
 // Указатель на логгер
 // ��������� �� ������
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+UEPtr<UExceptionLogger> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
 // ���������� ���������� �� �������
 UEPtr<ULibrary> GetCollection(int index);
