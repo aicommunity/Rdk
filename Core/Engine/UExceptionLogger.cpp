@@ -199,7 +199,7 @@ void UExceptionLogger::ProcessException(const UException &exception) const
 
  WriteLog(processed_exception->GetType(), message);
 
- if(GlobalLogger && GlobalLogger!=this)
+ if(ChannelIndex >= 0 && GlobalLogger && GlobalLogger!=this)
  {
   GlobalLogger->ProcessExceptionGlobal(processed_exception->GetType(), *processed_exception);
  }

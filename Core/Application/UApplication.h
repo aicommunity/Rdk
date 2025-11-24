@@ -133,6 +133,15 @@ int CalcStopLogLevel;
 /// Включение вывода сообщений в cout
 bool CoutLogMode;
 
+/// Дублировать ли логи в рабочую директорию при открытой конфигурации
+bool MirrorLogsToWorkDirFlag;
+
+/// Флаг инициализации инфраструктуры логирования
+bool LoggingInitialized;
+
+/// Отложенный путь до основной папки логов (если логгер ещё не инициализирован)
+std::string PendingPrimaryLogDir;
+
 protected: // Модули приложения
 /// Диспетчер команд
 UEPtr<URpcDispatcher> RpcDispatcher;
@@ -503,6 +512,9 @@ void CalcAppCaption(void);
 
 /// Обновляет состояние средств логгирования
 void UpdateLoggers(void);
+std::string GetWorkLogDir(void) const;
+std::string GetLogFileBaseName(void) const;
+void ApplyPrimaryLogDestination(const std::string& directory);
 
 /// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
 /// Если сохранение не удалось, то старый файл остается как был.

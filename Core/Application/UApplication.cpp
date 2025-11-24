@@ -10,12 +10,45 @@
 
 #include "UApplication.h"
 
+#include <algorithm>
+#include <filesystem>
+#include <system_error>
+
+#include "../Engine/UFileLogSink.h"
 #include "../Engine/UGlogGuiSink.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
 #ifdef RDK_USE_GLOG
 #include <glog/logging.h>
 #endif
+
+namespace
+{
+
+std::string NormalizeLogDir(const std::string& dir)
+{
+ if(dir.empty())
+  return dir;
+
+ std::string normalized = dir;
+ std::replace(normalized.begin(), normalized.end(), '\\', '/');
+ if(!normalized.empty() && normalized.back() != '/')
+  normalized.push_back('/');
+ return normalized;
+}
+
+std::string EnsureDirectoryAndNormalize(const std::string& dir)
+{
+ if(dir.empty())
+  return dir;
+
+ std::string normalized = NormalizeLogDir(dir);
+ std::error_code ec;
+ std::filesystem::create_directories(normalized, ec);
+ return normalized;
+}
+
+}
 
 using namespace std;
 
@@ -60,6 +93,8 @@ UApplication::UApplication(void)
  UserName="";
  UserId=-1;
  SetCoutLogMode(false);
+ MirrorLogsToWorkDirFlag=true;
+ LoggingInitialized=false;
  //SetStandartXMLInCatalog();
 
 
@@ -111,8 +146,7 @@ bool UApplication::SetWorkDirectory(const std::string& value)
  if(WorkDirectory == value)
   return true;
  WorkDirectory=value;
- if(FixedLogPath.empty())
-  UpdateLoggers();
+ UpdateLoggers();
  return true;
 }
 
@@ -236,8 +270,14 @@ bool UApplication::GetProjectOpenFlag(void) const
 
 bool UApplication::SetProjectOpenFlag(bool value)
 {
+ if(ProjectOpenFlag == value)
+  return true;
+
  ProjectOpenFlag=value;
+ if(!ProjectOpenFlag)
+  MirrorLogsToWorkDirFlag=true;
  CalcAppCaption();
+ UpdateLoggers();
  return true;
 }
 
@@ -252,8 +292,7 @@ bool UApplication::SetProjectPath(const std::string& value)
  if(ProjectPath == value)
   return true;
  ProjectPath=value;
- if(LogCreationMode == 0 || LogCreationMode == 1)
-  UpdateLoggers();
+ UpdateLoggers();
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
  return true;
@@ -332,10 +371,9 @@ bool UApplication::SetLogDir(const std::string& value)
  if(value == Core_GetLogDir())
   return true;
 
-// LogDir=value;
  if(Core_SetLogDir(value.c_str()) == RDK_SUCCESS)
  {
-  UpdateLoggers();
+  SetFixedLogPath(value);
   return true;
  }
  return false;
@@ -360,56 +398,52 @@ bool UApplication::SetDebugMode(bool value)
 /// Текущий каталог логов (с учетом переопределения в проекте)
 std::string UApplication::CalcCurrentLogDir(void) const
 {
- std::string log_dir;
- switch(LogCreationMode)
- {
- case 0:
- case 1:
- {
-  if(Project && Project->GetConfig().OverrideLogParameters && !ProjectPath.empty())
-  {
-   log_dir=ProjectPath+"EventsLog/";
-  }
-  else
-  {
-   if(FixedLogPath.empty())
-   {
-    log_dir=Core_GetLogDir();
-    if(log_dir.empty())
-     log_dir=WorkDirectory+"EventsLog/";
-   }
-   else
-   {
-    log_dir=FixedLogPath;
-   }
-   if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
-    log_dir+="/";
-  }
- }
- break;
+ if(!ProjectPath.empty())
+  return ProjectPath + "EventsLog/";
 
- case 2:
- case 3:
- {
-  if(FixedLogPath.empty())
-  {
-   log_dir=Core_GetLogDir();
-   if(log_dir.empty())
-    log_dir=WorkDirectory+"EventsLog/";
-  }
-  else
-  {
-   log_dir=FixedLogPath;
-  }
-  if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
-   log_dir+="/";
- }
- break;
- }
+ if(!FixedLogPath.empty())
+  return FixedLogPath;
 
-
- return log_dir;
+ return GetWorkLogDir();
 }
+
+
+std::string UApplication::GetWorkLogDir(void) const
+{
+ if(WorkDirectory.empty())
+  return std::string("EventsLog/");
+
+ std::string base = WorkDirectory;
+ char last = base.empty() ? 0 : base.back();
+ if(last != '/' && last != '\\')
+  base.push_back('/');
+ base += "EventsLog/";
+ return base;
+}
+
+std::string UApplication::GetLogFileBaseName(void) const
+{
+ if(!ProgramName.empty())
+  return ProgramName;
+ return std::string(RDK_APP_NAME);
+}
+
+void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
+{
+ std::string normalized = NormalizeLogDir(directory);
+ if(normalized.empty())
+  return;
+
+#ifdef RDK_USE_GLOG
+ FLAGS_log_dir = normalized;
+ std::string prefix = normalized + GetLogFileBaseName();
+ google::SetLogDestination(google::GLOG_INFO, prefix.c_str());
+ google::SetLogDestination(google::GLOG_WARNING, prefix.c_str());
+ google::SetLogDestination(google::GLOG_ERROR, prefix.c_str());
+ google::SetLogDestination(google::GLOG_FATAL, prefix.c_str());
+#endif
+}
+
 
 /// Флаг, выставляется если включен режим тестирования
 bool UApplication::IsTestMode(void) const
@@ -454,6 +488,7 @@ bool UApplication::SetFixedLogPath(const std::string& value)
   return true;
 
  FixedLogPath=value;
+ UpdateLoggers();
  return true;
 }
 
@@ -627,6 +662,8 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
   return false;
  if(!Project->SetConfig(value))
   return false;
+ MirrorLogsToWorkDirFlag=value.EventsLogFlag;
+ UpdateLoggers();
  return true;
 }
 
@@ -728,6 +765,9 @@ bool UApplication::SetStandartXMLInCatalog(void)
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
+ std::string font_path=extract_file_path(ApplicationFileName);
+ Core_SetSystemDir(font_path.c_str());
+ SetWorkDirectory(font_path);
 #ifdef RDK_USE_GLOG
  // Initialize glog
  google::InitGoogleLogging(RDK_APP_NAME);
@@ -741,7 +781,7 @@ bool UApplication::Init(void)
  else
  {
   // Default to EventsLog directory
-  std::string default_log_dir = WorkDirectory + "/EventsLog/";
+  std::string default_log_dir = GetWorkLogDir();
   FLAGS_log_dir = default_log_dir;
  }
  
@@ -763,15 +803,16 @@ bool UApplication::Init(void)
  // Install failure signal handler
  google::InstallFailureSignalHandler();
  google::AddLogSink(&UGlogGuiSink::Instance());
+ google::AddLogSink(&UFileLogSink::Instance());
 #endif
+
+ LoggingInitialized=true;
+ UpdateLoggers();
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
  Core_SetBufObjectsMode(1);
 
- std::string font_path=extract_file_path(ApplicationFileName);
- Core_SetSystemDir(font_path.c_str());
- SetWorkDirectory(font_path);
 // SetLogDir(font_path);
  MLog_SetExceptionHandler(RDK_GLOB_MESSAGE,(void*)ExceptionHandler);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
@@ -817,9 +858,12 @@ bool UApplication::UnInit(void)
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
 #ifdef RDK_USE_GLOG
+ google::RemoveLogSink(&UFileLogSink::Instance());
  google::RemoveLogSink(&UGlogGuiSink::Instance());
  google::ShutdownGoogleLogging();
 #endif
+ UFileLogSink::Instance().Disable();
+ LoggingInitialized=false;
  AppIsInit = false;
  return true;
 }
@@ -962,8 +1006,9 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
   }
  }
 
- ProjectOpenFlag=true;
- ProjectPath=extract_file_path(file_name);
+ SetProjectPath(extract_file_path(file_name));
+ MirrorLogsToWorkDirFlag=project_config.EventsLogFlag;
+ SetProjectOpenFlag(true);
  Project->SetConfig(project_config);
  Project->SetForceNewConfigFilesStructure(true);
  Project->SetProjectPath(ProjectPath);
@@ -1049,6 +1094,8 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
  {
+  MirrorLogsToWorkDirFlag=project_config.EventsLogFlag;
+  UpdateLoggers();
  }
 
  if(old_project_config.ProjectMode != project_config.ProjectMode)
@@ -1505,7 +1552,7 @@ bool UApplication::OpenProject(const std::string &filename)
  }
 
  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Open configuration ")+filename+"...").c_str());
- ProjectPath=extract_file_path(filename);
+ SetProjectPath(extract_file_path(filename));
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
  Project->ReadFromXml(ProjectXml);
@@ -1531,7 +1578,8 @@ try{
 
  if(LoadFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription))
  {
-  Project->SetConfig(config);
+ Project->SetConfig(config);
+ MirrorLogsToWorkDirFlag=config.EventsLogFlag;
   Project->ResetModified();
  }
 
@@ -1647,7 +1695,7 @@ try{
 
  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
- ProjectOpenFlag=true;
+ SetProjectOpenFlag(true);
  EngineControl->StartEngineStateThread();
 
  RDK::UIVisualControllerStorage::UpdateInterface();
@@ -2559,8 +2607,29 @@ void UApplication::CalcAppCaption(void)
 /// Обновляет состояние средств логгирования
 void UApplication::UpdateLoggers(void)
 {
- RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
-//  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
+ std::string primary_dir = EnsureDirectoryAndNormalize(CalcCurrentLogDir());
+ if(primary_dir.empty())
+  return;
+
+ PendingPrimaryLogDir = primary_dir;
+ RdkCoreManager.SetLogDir(primary_dir.c_str());
+
+ if(!LoggingInitialized)
+  return;
+
+ ApplyPrimaryLogDestination(primary_dir);
+
+#ifdef RDK_USE_GLOG
+ if(ProjectOpenFlag && MirrorLogsToWorkDirFlag)
+ {
+  std::string mirror_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
+  UFileLogSink::Instance().Configure(mirror_dir, GetLogFileBaseName());
+ }
+ else
+ {
+  UFileLogSink::Instance().Disable();
+ }
+#endif
 }
 
 
