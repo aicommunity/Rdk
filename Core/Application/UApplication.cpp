@@ -616,6 +616,15 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
  }
 
  std::string work_dir_normalized = NormalizeLogDir(GetWorkLogDir());
+ 
+ // Ensure glog always writes to the working directory to prevent message loss
+#ifdef RDK_USE_GLOG
+ if(work_dir_normalized.empty())
+  FLAGS_log_dir.clear();
+ else
+  FLAGS_log_dir = StripTrailingSeparators(work_dir_normalized);
+#endif
+
  bool is_project_dir = !ProjectPath.empty() &&
                        normalized != work_dir_normalized;
 
