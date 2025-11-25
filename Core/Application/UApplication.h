@@ -5,6 +5,7 @@
 #include "UProject.h"
 #include <memory>
 #include <unordered_map>
+#include <ctime>
 
 #ifndef __BORLANDC__
 namespace boost { namespace program_options { class variables_map; } }
@@ -157,8 +158,9 @@ struct LogRoutingOverrides
 
 LogRoutingOverrides EnvLogOverrides;
 LogRoutingOverrides CliLogOverrides;
-std::shared_ptr<Logging::ILogSink> GuiSinkHandle;
+std::shared_ptr<Logging::ILogSink> ProjectLogMirrorHandle;
 std::shared_ptr<Logging::ILogSink> JsonSinkHandle;
+std::time_t CurrentLogSessionStart;
 std::string ActiveJsonSinkPath;
 
 protected: // Модули приложения
@@ -183,6 +185,9 @@ UEPtr<UProjectDeployer> ProjectDeployer;
 protected: // Временные переменные
 /// Название приложения
 std::string ProgramName;
+
+/// Имя приложения без пробелов для логов
+mutable std::string CachedLogBaseName;
 
 /// Заголовок приложения
 std::string AppCaption;
@@ -532,7 +537,7 @@ void CalcAppCaption(void);
 /// Обновляет состояние средств логгирования
 void UpdateLoggers(void);
 std::string GetWorkLogDir(void) const;
-std::string GetLogFileBaseName(void) const;
+const std::string& GetLogFileBaseName(void) const;
 void ApplyPrimaryLogDestination(const std::string& directory);
 void LoadEnvLogOverrides(void);
 void ApplyLogRouting(const TProjectConfig& config);

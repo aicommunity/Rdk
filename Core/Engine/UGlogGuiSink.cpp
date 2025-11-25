@@ -1,5 +1,7 @@
 #include "UGlogGuiSink.h"
 
+#include "UGlogFileTail.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
@@ -20,13 +22,28 @@ UGlogGuiSink::UGlogGuiSink()
  TotalMessages = 0;
 }
 
-void UGlogGuiSink::Consume(const Logging::LogItem& item)
+void UGlogGuiSink::StartSession(const std::string& directory, const std::string& base_name, std::time_t session_start)
 {
- std::string formatted = FormatMessage(item);
- PushMessage(item.Severity, formatted);
+ std::lock_guard<std::mutex> lock(FileMutex);
+ if(directory.empty())
+ {
+  FileTail.reset();
+  return;
+ }
+ if(!FileTail)
+  FileTail = std::make_unique<UGlogFileTail>();
+ FileTail->Reset(directory, base_name, session_start);
 }
 
-void UGlogGuiSink::PushMessage(int severity, const std::string& text)
+void UGlogGuiSink::AddDirectory(const std::string& directory)
+{
+ std::lock_guard<std::mutex> lock(FileMutex);
+ if(!FileTail || directory.empty())
+  return;
+ FileTail->AddDirectory(directory);
+}
+
+void UGlogGuiSink::PushMessage(int severity, const std::string& text) const
 {
  std::lock_guard<std::mutex> lock(QueueMutex);
  Messages.push_back({severity, text});
@@ -37,19 +54,25 @@ void UGlogGuiSink::PushMessage(int severity, const std::string& text)
  ++TotalMessages;
 }
 
-std::vector<UGlogGuiMessage> UGlogGuiSink::ReadMessages(std::size_t max_count)
+std::vector<UGlogGuiMessage> UGlogGuiSink::ReadMessages(std::size_t max_count) const
 {
+ DrainFileMessages();
  std::vector<UGlogGuiMessage> buffer;
- std::lock_guard<std::mutex> lock(QueueMutex);
- if(Messages.empty())
-  return buffer;
-
- const std::size_t take_count = std::min(max_count, Messages.size());
- buffer.reserve(take_count);
- for(std::size_t i=0; i<take_count; ++i)
  {
-  buffer.push_back(Messages.front());
-  Messages.pop_front();
+  std::lock_guard<std::mutex> lock(QueueMutex);
+  if(max_count == 0 || max_count >= Messages.size())
+  {
+   buffer.assign(Messages.begin(), Messages.end());
+   Messages.clear();
+  }
+  else
+  {
+   buffer.reserve(max_count);
+   auto it = Messages.begin();
+   for(std::size_t i=0; i<max_count && it != Messages.end(); ++i, ++it)
+    buffer.push_back(*it);
+   Messages.erase(Messages.begin(), Messages.begin() + static_cast<long>(max_count));
+  }
  }
  return buffer;
 }
@@ -115,11 +138,23 @@ std::string UGlogGuiSink::SeverityToString(int severity) const
  }
 }
 
-std::string UGlogGuiSink::FormatMessage(const Logging::LogItem& item) const
+void UGlogGuiSink::DrainFileMessages() const
 {
- std::string line = FormatTimestamp(item.Timestamp) + " [" + SeverityToString(item.Severity) + "] ";
- line += item.Message;
- return line;
+ std::unique_lock<std::mutex> lock(FileMutex);
+ if(!FileTail)
+  return;
+ auto new_entries = FileTail->CollectNewMessages();
+ lock.unlock();
+
+ for(const auto& entry : new_entries)
+ {
+  std::string line = FormatTimestamp(entry.Timestamp);
+  line.append(" [");
+  line.append(SeverityToString(entry.Severity));
+  line.append("] ");
+  line.append(entry.Text);
+  PushMessage(entry.Severity, line);
+ }
 }
 
 }

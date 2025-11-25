@@ -19,8 +19,10 @@
 #include <sstream>
 #include <system_error>
 #include <vector>
+#include <ctime>
 
 #include "../Engine/UGlogGuiSink.h"
+#include "../Engine/UGlogMirrorSink.h"
 #include "../Engine/UJsonLogSink.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../Deploy/Include/rdk_logging.h"
@@ -42,6 +44,18 @@ std::string NormalizeLogDir(const std::string& dir)
  if(!normalized.empty() && normalized.back() != '/')
   normalized.push_back('/');
  return normalized;
+}
+
+std::string RemoveSpaces(const std::string& str)
+{
+ std::string result;
+ result.reserve(str.size());
+ for(char c : str)
+ {
+  if(c != ' ')
+   result.push_back(c);
+ }
+ return result;
 }
 
 std::string EnsureDirectoryAndNormalize(const std::string& dir)
@@ -69,25 +83,6 @@ std::string StripTrailingSeparators(std::string path)
  }
  return path;
 }
-
-#ifdef RDK_USE_GLOG
-void ConfigureGlogDestinations(const std::string& normalized_dir, const std::string& base_name)
-{
- if(normalized_dir.empty())
-  return;
-
- std::string dir_without_slash = StripTrailingSeparators(normalized_dir);
- if(dir_without_slash.empty())
-  dir_without_slash = ".";
- FLAGS_log_dir = dir_without_slash;
-
- const std::string prefix = normalized_dir + base_name;
- google::SetLogDestination(google::INFO, prefix.c_str());
- google::SetLogDestination(google::WARNING, prefix.c_str());
- google::SetLogDestination(google::ERROR, prefix.c_str());
- google::SetLogDestination(google::FATAL, prefix.c_str());
-}
-#endif
 
 std::string TrimCopy(const std::string& value)
 {
@@ -226,10 +221,10 @@ UApplication::UApplication(void)
  LoggingInitialized=false;
  //SetStandartXMLInCatalog();
 
-
  // DebugMode=false;
 
  LoadEnvLogOverrides();
+ CurrentLogSessionStart = std::time(nullptr);
 }
 
 UApplication::~UApplication(void)
@@ -250,6 +245,7 @@ const std::string& UApplication::GetProgramName(void) const
 void UApplication::SetProgramName(const std::string &value)
 {
  ProgramName = value;
+ CachedLogBaseName.clear();
 }
 
 /// Имя файла приложения
@@ -552,11 +548,26 @@ std::string UApplication::GetWorkLogDir(void) const
  return base;
 }
 
-std::string UApplication::GetLogFileBaseName(void) const
+const std::string& UApplication::GetLogFileBaseName(void) const
 {
+ if(!CachedLogBaseName.empty())
+  return CachedLogBaseName;
+ 
+ std::string base_name;
  if(!ProgramName.empty())
-  return ProgramName;
- return std::string(RDK_APP_NAME);
+  base_name = ProgramName;
+ else
+ {
+  base_name = std::string(RDK_APP_NAME);
+  // Если RDK_APP_NAME не переопределён (равен "RDK"), используем "NeuroModeler" как fallback
+  if(base_name == "RDK")
+   base_name = "NeuroModeler";
+ }
+ CachedLogBaseName = RemoveSpaces(base_name);
+ // Если после удаления пробелов получилось "RDK", используем "NeuroModeler" как fallback
+ if(CachedLogBaseName == "RDK")
+  CachedLogBaseName = "NeuroModeler";
+ return CachedLogBaseName;
 }
 
 void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
@@ -565,11 +576,7 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
  if(normalized.empty())
   return;
 
-#ifdef RDK_USE_GLOG
- ConfigureGlogDestinations(normalized, GetLogFileBaseName());
- FLAGS_logtostderr = false;
- FLAGS_alsologtostderr = false;
-#endif
+ UGlogGuiSink::Instance().AddDirectory(normalized);
 
  if(Project)
  {
@@ -606,6 +613,26 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
    ActiveJsonSinkPath = desired_json_path;
    Logging::RegisterLogSink(JsonSinkHandle);
   }
+ }
+
+ std::string work_dir_normalized = NormalizeLogDir(GetWorkLogDir());
+ bool is_project_dir = !ProjectPath.empty() &&
+                       normalized != work_dir_normalized;
+
+ if(is_project_dir)
+ {
+  if(!ProjectLogMirrorHandle)
+  {
+   ProjectLogMirrorHandle = std::shared_ptr<Logging::ILogSink>(&UGlogMirrorSink::Instance(), [](Logging::ILogSink*){});
+   Logging::RegisterLogSink(ProjectLogMirrorHandle);
+  }
+  UGlogMirrorSink::Instance().Configure(normalized, GetLogFileBaseName(), CurrentLogSessionStart);
+ }
+ else if(ProjectLogMirrorHandle)
+ {
+  Logging::UnregisterLogSink(ProjectLogMirrorHandle);
+  ProjectLogMirrorHandle.reset();
+  UGlogMirrorSink::Instance().Disable();
  }
 }
 
@@ -1157,6 +1184,14 @@ bool UApplication::Init(void)
  std::string font_path=extract_file_path(ApplicationFileName);
  Core_SetSystemDir(font_path.c_str());
  SetWorkDirectory(font_path);
+ CurrentLogSessionStart = std::time(nullptr);
+ // Инициализируем кэш имени приложения для логов
+ GetLogFileBaseName();
+ std::string work_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
+ if(!work_log_dir.empty())
+ {
+  UGlogGuiSink::Instance().StartSession(work_log_dir, GetLogFileBaseName(), CurrentLogSessionStart);
+ }
 #ifdef RDK_USE_GLOG
  std::string initial_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
  FLAGS_logtostderr = false;
@@ -1167,10 +1202,10 @@ bool UApplication::Init(void)
  else
   FLAGS_log_dir = StripTrailingSeparators(initial_log_dir);
 
- google::InitGoogleLogging(RDK_APP_NAME);
+ google::InitGoogleLogging(GetLogFileBaseName().c_str());
  
- std::string configured_dir = initial_log_dir.empty() ? NormalizeLogDir(GetWorkLogDir()) : initial_log_dir;
- ConfigureGlogDestinations(configured_dir, GetLogFileBaseName());
+ if(!initial_log_dir.empty())
+  UGlogGuiSink::Instance().AddDirectory(initial_log_dir);
  
  // Set log level based on DebugMode
  if(GetLogger() && GetLogger()->GetDebugMode())
@@ -1187,9 +1222,6 @@ bool UApplication::Init(void)
 // Install failure signal handler
 google::InstallFailureSignalHandler();
 #endif
-
- GuiSinkHandle = std::shared_ptr<Logging::ILogSink>(&UGlogGuiSink::Instance(), [](Logging::ILogSink*){});
- Logging::RegisterLogSink(GuiSinkHandle);
 
  LoggingInitialized=true;
  UpdateLoggers();
@@ -1248,11 +1280,12 @@ bool UApplication::UnInit(void)
   JsonSinkHandle.reset();
   ActiveJsonSinkPath.clear();
  }
- if(GuiSinkHandle)
+ if(ProjectLogMirrorHandle)
  {
-  Logging::UnregisterLogSink(GuiSinkHandle);
-  GuiSinkHandle.reset();
+  Logging::UnregisterLogSink(ProjectLogMirrorHandle);
+  ProjectLogMirrorHandle.reset();
  }
+ UGlogMirrorSink::Instance().Disable();
 #ifdef RDK_USE_GLOG
  google::ShutdownGoogleLogging();
 #endif

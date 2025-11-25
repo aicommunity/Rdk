@@ -2,6 +2,7 @@
 #define UGLOGGUISINK_H
 
 #include <deque>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -17,14 +18,16 @@ struct UGlogGuiMessage
  std::string Text;
 };
 
-class UGlogGuiSink: public Logging::ILogSink
+class UGlogFileTail;
+
+class UGlogGuiSink
 {
 public:
  static UGlogGuiSink& Instance();
 
- void Consume(const Logging::LogItem& item) override;
-
- std::vector<UGlogGuiMessage> ReadMessages(std::size_t max_count = 256);
+ void StartSession(const std::string& directory, const std::string& base_name, std::time_t session_start);
+ void AddDirectory(const std::string& directory);
+ std::vector<UGlogGuiMessage> ReadMessages(std::size_t max_count = 256) const;
  void Clear();
  void SetMaxMessages(std::size_t value);
  std::size_t PendingMessages() const;
@@ -35,15 +38,18 @@ private:
  UGlogGuiSink(const UGlogGuiSink&) = delete;
  UGlogGuiSink& operator=(const UGlogGuiSink&) = delete;
 
- void PushMessage(int severity, const std::string& text);
- std::string FormatMessage(const Logging::LogItem& item) const;
+ void DrainFileMessages() const;
+ void PushMessage(int severity, const std::string& text) const;
  std::string FormatTimestamp(std::time_t timestamp) const;
  std::string SeverityToString(int severity) const;
 
  mutable std::mutex QueueMutex;
- std::deque<UGlogGuiMessage> Messages;
+ mutable std::deque<UGlogGuiMessage> Messages;
  std::size_t MaxMessages;
- std::size_t TotalMessages;
+ mutable std::size_t TotalMessages;
+
+ mutable std::mutex FileMutex;
+ mutable std::unique_ptr<UGlogFileTail> FileTail;
 };
 
 }
