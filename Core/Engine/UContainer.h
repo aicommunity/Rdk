@@ -173,6 +173,11 @@ UEPtr<UContainer>* PComponents;
 // ���������� ��������� � ������� ���������
 int NumComponents;
 
+// Cache for active (non-static) components to optimize Calculate() loop
+// Updated when components are added/removed or static flag changes
+std::vector<UEPtr<UContainer>> ActiveComponents;
+bool ActiveComponentsCacheValid;
+
 //UEPtr<UInstancesStorageElement> ObjectIterator;
 //UEPtr<UInstancesStorageElement> ObjectIterator;
 
@@ -868,6 +873,9 @@ virtual bool CheckDurationAndSkipComponentCalculation(void);
 
 // ������������� ���������� � ��������� ������� �������
 virtual void UpdateComputationOrder(void);
+
+/// Invalidates active components cache (called when component static flag changes)
+void InvalidateActiveComponentsCache(void);
 // --------------------------
 
 // Скрытые методы управления счетом
@@ -930,6 +938,9 @@ void AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // ������� ��������� 'comp' �� ������� ���������
 void DelComponentTable(UEPtr<UContainer> comp);
+
+// Updates cache of active (non-static) components for optimized Calculate() loop
+void UpdateActiveComponentsCache(void);
 // --------------------------
 
 // Скрытые методы управления общими (shared) переменными

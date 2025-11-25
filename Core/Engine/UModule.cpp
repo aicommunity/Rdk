@@ -261,6 +261,7 @@ bool UModule::AAfterCalculate(void)
  return true;
 }
 
+// Выполняет расчет этого объекта
 bool UModule::ACalculate(void)
 {
  return true;

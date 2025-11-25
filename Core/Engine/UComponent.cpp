@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "UComponentDescription.h"
 #include "UEnvException.h"
+#include "UContainer.h"
 
 namespace RDK {
 
@@ -162,6 +163,17 @@ bool UComponent::SetStaticFlag(bool value)
   return true;
 
  StaticFlag=value;
+ 
+ // Invalidate active components cache in parent container
+ if(Owner)
+ {
+  UEPtr<UContainer> owner_container = dynamic_pointer_cast<UContainer>(Owner);
+  if(owner_container)
+  {
+   owner_container->InvalidateActiveComponentsCache();
+  }
+ }
+ 
  return true;
 }
 
