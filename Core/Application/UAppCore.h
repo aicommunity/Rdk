@@ -4,6 +4,8 @@
 #include "../Utilities/USupport.h"
 #include "../Utilities/UIniFile.h"
 #include "../../Deploy/Include/rdk_application.h"
+#include <algorithm>
+#include <cstdlib>
 
 namespace RDK {
 
@@ -50,6 +52,8 @@ public:
  int autoexecLastProjectFlag;
  int hideAdminForm;
  int startMinimized;
+ double calcTimeIntervalSec;
+ int exitAfterCalcFlag;
 
  std::string mainFormName;
  int minimizeToTray;
@@ -108,6 +112,8 @@ template<class ApplicationT, class EngineControlT, class ProjectT, class ServerC
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::UAppCore(void)
 {
  FuncProgressBarCallback=0;
+ calcTimeIntervalSec=0.0;
+ exitAfterCalcFlag=0;
  rdkTestManager.SetApplication(&application);
  rpcDispatcher.SetApplication(&application);
 
@@ -166,6 +172,11 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  startProjectName = projectIniFile("General", "AutoexecProjectFileName", "");
  autoStartProjectFlag = RDK::atoi(projectIniFile("General", "AutoStartProjectFlag", "0"));
  autoexecLastProjectFlag = RDK::atoi(projectIniFile("General", "AutoexecLastProjectFlag", "0"));
+ {
+  auto calc_token = projectIniFile("General", "CalcTimeIntervalSec", "0");
+  calcTimeIntervalSec = std::max(0.0, std::atof(calc_token.c_str()));
+ }
+ exitAfterCalcFlag = RDK::atoi(projectIniFile("General", "ExitAfterCalcFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
 

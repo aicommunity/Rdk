@@ -158,7 +158,6 @@ struct LogRoutingOverrides
 LogRoutingOverrides EnvLogOverrides;
 LogRoutingOverrides CliLogOverrides;
 std::shared_ptr<Logging::ILogSink> GuiSinkHandle;
-std::shared_ptr<Logging::ILogSink> FileSinkHandle;
 std::shared_ptr<Logging::ILogSink> JsonSinkHandle;
 std::string ActiveJsonSinkPath;
 

@@ -20,7 +20,6 @@
 #include <system_error>
 #include <vector>
 
-#include "../Engine/UFileLogSink.h"
 #include "../Engine/UGlogGuiSink.h"
 #include "../Engine/UJsonLogSink.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
@@ -55,6 +54,40 @@ std::string EnsureDirectoryAndNormalize(const std::string& dir)
  std::filesystem::create_directories(normalized, ec);
  return normalized;
 }
+
+std::string StripTrailingSeparators(std::string path)
+{
+ while(!path.empty())
+ {
+  char suffix = path.back();
+  if(suffix == '/' || suffix == '\\')
+  {
+   path.pop_back();
+   continue;
+  }
+  break;
+ }
+ return path;
+}
+
+#ifdef RDK_USE_GLOG
+void ConfigureGlogDestinations(const std::string& normalized_dir, const std::string& base_name)
+{
+ if(normalized_dir.empty())
+  return;
+
+ std::string dir_without_slash = StripTrailingSeparators(normalized_dir);
+ if(dir_without_slash.empty())
+  dir_without_slash = ".";
+ FLAGS_log_dir = dir_without_slash;
+
+ const std::string prefix = normalized_dir + base_name;
+ google::SetLogDestination(google::INFO, prefix.c_str());
+ google::SetLogDestination(google::WARNING, prefix.c_str());
+ google::SetLogDestination(google::ERROR, prefix.c_str());
+ google::SetLogDestination(google::FATAL, prefix.c_str());
+}
+#endif
 
 std::string TrimCopy(const std::string& value)
 {
@@ -533,10 +566,8 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
   return;
 
 #ifdef RDK_USE_GLOG
- // Disable standard glog file output - we use custom sinks for formatting
- // Ensure log_dir remains empty to prevent glog from creating files automatically
- FLAGS_log_dir = "";
- FLAGS_logtostderr = true;
+ ConfigureGlogDestinations(normalized, GetLogFileBaseName());
+ FLAGS_logtostderr = false;
  FLAGS_alsologtostderr = false;
 #endif
 
@@ -1127,18 +1158,19 @@ bool UApplication::Init(void)
  Core_SetSystemDir(font_path.c_str());
  SetWorkDirectory(font_path);
 #ifdef RDK_USE_GLOG
- // Disable standard glog file output - we use custom sinks for formatting
- // Set logtostderr=true so glog writes to stderr (intercepted by our custom sink) instead of creating files
- FLAGS_logtostderr = true;
+ std::string initial_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
+ FLAGS_logtostderr = false;
  FLAGS_alsologtostderr = false;
- FLAGS_log_prefix = false; // Disable glog's default prefix (we format ourselves)
- FLAGS_log_dir = ""; // Disable glog's automatic file creation - we use custom sinks for all file output
- 
- // Initialize glog
+ FLAGS_log_prefix = true;
+ if(initial_log_dir.empty())
+  FLAGS_log_dir.clear();
+ else
+  FLAGS_log_dir = StripTrailingSeparators(initial_log_dir);
+
  google::InitGoogleLogging(RDK_APP_NAME);
  
- // Ensure log_dir remains empty after initialization
- FLAGS_log_dir = "";
+ std::string configured_dir = initial_log_dir.empty() ? NormalizeLogDir(GetWorkLogDir()) : initial_log_dir;
+ ConfigureGlogDestinations(configured_dir, GetLogFileBaseName());
  
  // Set log level based on DebugMode
  if(GetLogger() && GetLogger()->GetDebugMode())
@@ -1158,8 +1190,6 @@ google::InstallFailureSignalHandler();
 
  GuiSinkHandle = std::shared_ptr<Logging::ILogSink>(&UGlogGuiSink::Instance(), [](Logging::ILogSink*){});
  Logging::RegisterLogSink(GuiSinkHandle);
- FileSinkHandle = std::shared_ptr<Logging::ILogSink>(&UFileLogSink::Instance(), [](Logging::ILogSink*){});
- Logging::RegisterLogSink(FileSinkHandle);
 
  LoggingInitialized=true;
  UpdateLoggers();
@@ -1218,11 +1248,6 @@ bool UApplication::UnInit(void)
   JsonSinkHandle.reset();
   ActiveJsonSinkPath.clear();
  }
- if(FileSinkHandle)
- {
-  Logging::UnregisterLogSink(FileSinkHandle);
-  FileSinkHandle.reset();
- }
  if(GuiSinkHandle)
  {
   Logging::UnregisterLogSink(GuiSinkHandle);
@@ -1231,7 +1256,6 @@ bool UApplication::UnInit(void)
 #ifdef RDK_USE_GLOG
  google::ShutdownGoogleLogging();
 #endif
- UFileLogSink::Instance().Disable();
  LoggingInitialized=false;
  AppIsInit = false;
  return true;
@@ -2999,14 +3023,6 @@ void UApplication::UpdateLoggers(void)
   return;
 
  ApplyPrimaryLogDestination(primary_dir);
-
-#ifdef RDK_USE_GLOG
- // Configure file sink for primary log directory (config directory when project is open)
- UFileLogSink::Instance().Configure(primary_dir, GetLogFileBaseName());
- 
- // If mirroring is enabled, we could add a second sink here, but for now
- // we only write to the primary directory (config directory)
-#endif
 }
 
 
