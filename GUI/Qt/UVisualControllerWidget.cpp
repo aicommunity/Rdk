@@ -1,4 +1,5 @@
 #include "UVisualControllerWidget.h"
+#include "UGuiTelemetry.h"
 
 // Флаг, сообщающий что идет расчет
 RDK::UELockVar<bool> UVisualControllerWidget::CalculationModeFlag(false);
@@ -251,7 +252,10 @@ void UVisualControllerWidget::UpdateInterface(bool force_update)
         }
         UpdateInterfaceFlag=true;
  //       current_time=RDK::GetCurrentStartupTime();
+        NMSDK::UGuiTelemetryScope telemetryScope(QStringLiteral("UI.Update"),
+                                                  accessibleName());
         AUpdateInterface();
+        telemetryScope.Stop();
     }
     catch (RDK::UException &exception)
     {

@@ -16,6 +16,15 @@ struct TSingleGraph
     //координаты элемента матрицы
     int Jx;
     int Jy;
+    bool Online;
+
+    TSingleGraph()
+        : indexChannel(-1)
+        , Jx(0)
+        , Jy(0)
+        , Online(true)
+    {
+    }
 };
 
 #endif // TSINGLEGRAPH_H

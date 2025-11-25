@@ -2,6 +2,8 @@
 #define U_GRAPH_PAINT_WIDGET_H
 #include "UStructSingleGraph.h"
 #include <QWidget>
+#include <vector>
+#include <QVector>
 
 namespace Ui {
 class UGraphPaintWidget;
@@ -106,6 +108,10 @@ class UGraphPaintWidget : public QWidget
         ///Удаляет текущий график
         int delCurrentItemGraph(void);
 
+        void updateSeries(int id, const QVector<double> &x, const QVector<double> &y);
+        void setGraphAvailability(int id, bool online);
+        void requestReplot();
+        void commitFrame();
 
 
     public slots:
@@ -126,6 +132,7 @@ class UGraphPaintWidget : public QWidget
 
     private:
         Ui::UGraphPaintWidget *ui;
+        bool pendingReplot;
 };
 
 #endif // OU_GRAPH_PAINT_WIDGET_H

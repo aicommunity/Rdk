@@ -2,10 +2,12 @@
 #include "ui_UGraphWidget.h"
 #include "ui_UGraphPaintWidget.h"
 #include <iostream>
+#include <QPen>
 
 UGraphPaintWidget::UGraphPaintWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::UGraphPaintWidget)
+    ui(new Ui::UGraphPaintWidget),
+    pendingReplot(false)
 {
     ui->setupUi(this);
 }
@@ -54,7 +56,8 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QC
     vectorGraph.push_back(newTSingleGraph);
     //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
+    ui->widget->graph(int(myID))->setPen(newTSingleGraph.t_graphColor);
+    pendingReplot = true;
     return int(myID);
 }
 
@@ -88,7 +91,8 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, in
     vectorGraph.push_back(newTSingleGraph);
     //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
+    ui->widget->graph(int(myID))->setPen(newTSingleGraph.t_graphColor);
+    pendingReplot = true;
     return int(myID);
 }
 
@@ -101,7 +105,8 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
     vectorGraph.push_back(newTSingleGraph);
     //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
+    ui->widget->graph(int(myID))->setPen(newTSingleGraph.t_graphColor);
+    pendingReplot = true;
     return int(myID);
 }
 
@@ -109,12 +114,15 @@ void UGraphPaintWidget::setGraphDataSource(int graph_index, int channel_index, c
                                       const std::string &propertyName,
                                       const std::string &type, int jx, int jy)
 {
+    if (graph_index < 0 || graph_index >= int(vectorGraph.size()))
+        return;
     vectorGraph[graph_index].indexChannel=channel_index;
     vectorGraph[graph_index].nameComponent=componentName;
     vectorGraph[graph_index].nameProperty=propertyName;
     vectorGraph[graph_index].typeProperty=type;
     vectorGraph[graph_index].Jx=jx;
     vectorGraph[graph_index].Jy=jy;
+    vectorGraph[graph_index].Online=true;
 }
 
 
@@ -124,13 +132,14 @@ void UGraphPaintWidget::delAllGraph(void)
     ui->widget->clearGraphs();
     ui->widget->replot();
     currentItem=-1;
+    pendingReplot = false;
 }
 
 //Определяет форму графика (передает массивы)
 void UGraphPaintWidget::setData(int id, QVector<double> X, QVector<double> Y)
 {
-    ui->widget->graph(id)->setData(X,Y);
-    //currentItem=id;
+    updateSeries(id, X, Y);
+    commitFrame();
 }
 
 void UGraphPaintWidget::changeCurrentItem(void)
@@ -215,6 +224,44 @@ void UGraphPaintWidget::redrawGraph(void)
 {
     ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
     ui->widget->yAxis->setRange(lowerLimitGraph, upperLimitGraph);
+    requestReplot();
+    commitFrame();
+}
+
+void UGraphPaintWidget::updateSeries(int id, const QVector<double> &X, const QVector<double> &Y)
+{
+    if (id < 0 || id >= ui->widget->graphCount())
+        return;
+    ui->widget->graph(id)->setData(X, Y);
+    pendingReplot = true;
+}
+
+void UGraphPaintWidget::setGraphAvailability(int id, bool online)
+{
+    if (id < 0 || id >= int(vectorGraph.size()) || id >= ui->widget->graphCount())
+        return;
+
+    if (vectorGraph[id].Online == online)
+        return;
+
+    vectorGraph[id].Online = online;
+    QPen pen = ui->widget->graph(id)->pen();
+    pen.setStyle(online ? Qt::SolidLine : Qt::DashLine);
+    pen.setColor(vectorGraph[id].t_graphColor);
+    ui->widget->graph(id)->setPen(pen);
+    pendingReplot = true;
+}
+
+void UGraphPaintWidget::requestReplot()
+{
+    pendingReplot = true;
+}
+
+void UGraphPaintWidget::commitFrame()
+{
+    if (!pendingReplot)
+        return;
+    pendingReplot = false;
     ui->widget->replot();
 }
 

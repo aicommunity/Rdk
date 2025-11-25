@@ -1,4 +1,5 @@
 #include "UVisualControllerMainWidget.h"
+#include "UGuiModelSnapshot.h"
 #include <QGuiApplication>
 #include <QScreen>
 
@@ -21,6 +22,7 @@ UVisualControllerMainWidget::UVisualControllerMainWidget(QWidget *parent, RDK::U
     UpdateTime=0;
 
     RDK::UIVisualControllerStorage::AddInterface(this);
+    NMSDK::UGuiModelSnapshot::Instance().Start();
 }
 
 UVisualControllerMainWidget::~UVisualControllerMainWidget()

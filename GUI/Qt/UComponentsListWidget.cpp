@@ -10,6 +10,10 @@
 #include <QMessageBox>
 #include <QClipboard>
 #include <QScrollBar>
+#include <QSignalBlocker>
+#include <QVBoxLayout>
+
+#include "UGuiTelemetry.h"
 
 UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
     UVisualControllerWidget(parent, app),
@@ -20,8 +24,18 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     ui->setupUi(this);
 
     componentsTree = new UComponentListTreeWidget(this);
-    //ui->verticalLayoutTreeWidget->setMargin(0);
-    ui->horizontalLayoutTreeWidget->addWidget(componentsTree);
+    QWidget *treeContainer = new QWidget(this);
+    QVBoxLayout *treeLayout = new QVBoxLayout(treeContainer);
+    treeLayout->setContentsMargins(0,0,0,0);
+    filterLineEdit = new QLineEdit(treeContainer);
+    filterLineEdit->setObjectName(QStringLiteral("componentsFilterLineEdit"));
+    filterLineEdit->setPlaceholderText(tr("Фильтр компонентов..."));
+    filterLineEdit->setClearButtonEnabled(true);
+    treeLayout->addWidget(filterLineEdit);
+    treeLayout->addWidget(componentsTree);
+    ui->horizontalLayoutTreeWidget->addWidget(treeContainer);
+    connect(filterLineEdit, &QLineEdit::textChanged,
+            this, &UComponentsListWidget::handleFilterTextChanged);
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
 
@@ -32,6 +46,12 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     UpdateInterval = -1;
     setAccessibleName("UComponentsListWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //readSettings(app, settingsGroup);
+
+    renderedSnapshotVersion = 0;
+    lastSnapshot = NMSDK::UGuiModelSnapshot::Instance().CurrentSnapshot();
+    componentFilterText.clear();
+    connect(&NMSDK::UGuiModelSnapshot::Instance(), &NMSDK::UGuiModelSnapshot::SnapshotUpdated,
+            this, &UComponentsListWidget::handleSnapshotUpdated);
 
     UpdateInterface(true);
 
@@ -146,22 +166,23 @@ void UComponentsListWidget::updateComponentsListFromScheme()
 
 void UComponentsListWidget::AUpdateInterface()
 {
-    QString oldRootItem = currentDrawComponentName,
-            oldSelectedItem = selectedComponentLongName;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UComponentsList"), accessibleName());
 
-    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
+    QString oldRootItem = currentDrawComponentName;
+    QString oldSelectedItem = selectedComponentLongName;
+
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
     componentsTree->clear();
 
-    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
     rootItem->setText(0, "Model");
-    rootItem->setExpanded(false);
+    rootItem->setData(0, Qt::UserRole, QString());
+    rootItem->setExpanded(true);
     addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
 
-    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
+    applyFilter(rootItem);
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
 
@@ -170,7 +191,6 @@ void UComponentsListWidget::AUpdateInterface()
       redrawChannelsList();
     }
 }
-
 void UComponentsListWidget::AClearInterface()
 {
  componentsTree->clear();
@@ -761,6 +781,7 @@ try
       property->ReadFromMemory(&value);
      }
 }
+
 catch (RDK::UException &exception)
 {
     RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
@@ -770,6 +791,93 @@ catch (std::exception &exception)
     RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
 
+}
+
+void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+                                                  const QStringList &,
+                                                  const QStringList &,
+                                                  const QStringList &)
+{
+    lastSnapshot = snapshot;
+    if (!snapshot)
+        return;
+
+    if (UpdateInterfaceFlag) {
+        QMetaObject::invokeMethod(this, [this]() { UpdateInterface(true); }, Qt::QueuedConnection);
+    } else {
+        UpdateInterface(true);
+    }
+}
+
+void UComponentsListWidget::handleFilterTextChanged(const QString &text)
+{
+    componentFilterText = text.trimmed();
+    applyFilter(componentsTree->invisibleRootItem());
+}
+
+void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
+{
+    if (!snapshot)
+        return;
+
+    const int scrollMax = componentsTree->verticalScrollBar()->maximum();
+    const int scrollPos = componentsTree->verticalScrollBar()->value();
+
+    QSignalBlocker blocker(componentsTree);
+    componentsTree->clear();
+
+    auto *rootItem = new QTreeWidgetItem(componentsTree);
+    rootItem->setText(0, tr("Model"));
+    rootItem->setData(0, Qt::UserRole, QString());
+    rootItem->setExpanded(true);
+
+    QHash<QString, QTreeWidgetItem*> items;
+    items.insert(QString(), rootItem);
+
+    const auto componentNames = snapshot->Components.keys();
+    for (const QString &name : componentNames) {
+        const auto summary = snapshot->Components.value(name);
+        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
+        if (!parent)
+            parent = rootItem;
+        auto *item = new QTreeWidgetItem(parent);
+        item->setText(0, summary.ShortName);
+        item->setToolTip(0, summary.LongName + QStringLiteral("\n") + summary.ClassName);
+        item->setData(0, Qt::UserRole, summary.LongName);
+        items.insert(summary.LongName, item);
+    }
+
+    applyFilter(rootItem);
+    componentsTree->verticalScrollBar()->setMaximum(scrollMax);
+    componentsTree->verticalScrollBar()->setValue(scrollPos);
+
+    if(channelsSelectionVisible)
+    {
+      redrawChannelsList();
+    }
+}
+
+bool UComponentsListWidget::applyFilter(QTreeWidgetItem *item)
+{
+    if (!item)
+        return false;
+
+    bool matches = componentFilterText.isEmpty()
+            || item->text(0).contains(componentFilterText, Qt::CaseInsensitive)
+            || item->data(0, Qt::UserRole).toString().contains(componentFilterText, Qt::CaseInsensitive);
+
+    bool childMatches = false;
+    for (int i = 0; i < item->childCount(); ++i) {
+        childMatches |= applyFilter(item->child(i));
+    }
+
+    const bool isRoot = item->data(0, Qt::UserRole).toString().isEmpty();
+    const bool visible = matches || childMatches || isRoot;
+    item->setHidden(!visible);
+    if (visible && matches && !isRoot) {
+        item->setExpanded(true);
+    }
+    return visible;
 }
 
 void UComponentsListWidget::componentSelectedFromScheme(QString name)

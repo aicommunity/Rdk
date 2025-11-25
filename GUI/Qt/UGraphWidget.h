@@ -6,6 +6,7 @@
 #include "qcustomplot.h"
 #include "UGraphPaintWidget.h"
 #include "UComponentPropertySelectionWidget.h"
+#include <vector>
 
 
 namespace Ui {
@@ -16,11 +17,23 @@ class UGraphWidget : public UVisualControllerWidget
 {
         Q_OBJECT
 
-        /// Вектор X, в которых хранятся массивы точек, по которым строятся графики
-        std::vector<QVector<double> > masX;
+        struct GraphSeriesBuffer
+        {
+            QVector<double> X;
+            QVector<double> Y;
+            bool Available;
 
-        /// Вектор Y, в которых хранятся массивы точек, по которым строятся графики
-        std::vector<QVector<double> > masY;
+            GraphSeriesBuffer()
+                : Available(true)
+            {
+                X.reserve(1024);
+                Y.reserve(1024);
+            }
+
+            void Append(double xValue, double yValue, int capacity);
+        };
+
+        std::vector<GraphSeriesBuffer> SeriesBuffers;
 
         /// Флаг обновления правой границы графика
         /// Если он -1, то не обновляется
@@ -80,10 +93,10 @@ class UGraphWidget : public UVisualControllerWidget
         ///Ее данные положим на этот график
         virtual void AUpdateInterface();
 
-        /// Запись файла настроек
-        virtual void ASaveParameters();
-        /// Считывание файла настроек
-        virtual void ALoadParameters();
+        /// Сохранение параметров в Interface.xml
+        void ASaveParameters(RDK::USerStorageXML &xml) override;
+        /// Загрузка параметров из Interface.xml
+        void ALoadParameters(RDK::USerStorageXML &xml) override;
 
 signals:
 
@@ -109,6 +122,13 @@ public slots:
 private:
         Ui::UGraphWidget* ui;
         UGraphPaintWidget* graphPainter;
+        void ensureBuffer(size_t index);
+        int maxBufferLength() const;
+
+        void SaveLegacySettings() const;
+        bool LoadLegacySettings();
+        void SaveXmlSnapshot(RDK::USerStorageXML &xml) const;
+        bool LoadFromXml(RDK::USerStorageXML &xml);
 };
 
 #endif // U_GRAPH_WIDGET_H

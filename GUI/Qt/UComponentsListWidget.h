@@ -3,7 +3,9 @@
 
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
+#include "UGuiModelSnapshot.h"
 
+#include <QLineEdit>
 #include <QTreeWidgetItem>
 #include <QMouseEvent>
 #include <QModelIndex>
@@ -141,6 +143,11 @@ public slots:
 
     void parametersListItemChanged(QTreeWidgetItem *item, int column);
     void favoritesListItemChanged(QTreeWidgetItem *item, int column);
+    void handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+                               const QStringList &added,
+                               const QStringList &removed,
+                               const QStringList &changed);
+    void handleFilterTextChanged(const QString &text);
 
 
     /// Отправляет событие отрисовки выбранного компонента
@@ -224,7 +231,14 @@ private:
     /// Перерисовка виджета со списком каналов
     void redrawChannelsList();
 
+    void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
+    bool applyFilter(QTreeWidgetItem *item);
+
     Ui::UComponentsListWidget *ui;
+    QLineEdit *filterLineEdit;
+    quint64 renderedSnapshotVersion;
+    NMSDK::UGuiSnapshotPtr lastSnapshot;
+    QString componentFilterText;
 };
 
 
