@@ -8,7 +8,8 @@
 
 UWatchChart::UWatchChart(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::UWatchChart)
+    ui(new Ui::UWatchChart),
+    pendingUpdate(false)
 {
     setAccessibleName("UWatchChart");
     ui->setupUi(this);
@@ -216,11 +217,13 @@ void UWatchChart::setAxisYname(QString name)
 void UWatchChart::setAxisXmin(double value)
 {
     axisX->setMin(value);
+    requestUpdate();
 }
 
 void UWatchChart::setAxisXmax(double value)
 {
     axisX->setMax(value);
+    requestUpdate();
 }
 
 bool UWatchChart::getIsAxisXtrackable(void) const
@@ -241,11 +244,26 @@ void UWatchChart::updateTimeIntervals(double value)
 void UWatchChart::setAxisYmin(double value)
 {
     axisY->setMin(value);
+    requestUpdate();
 }
 
 void UWatchChart::setAxisYmax(double value)
 {
     axisY->setMax(value);
+    requestUpdate();
+}
+
+void UWatchChart::requestUpdate()
+{
+    pendingUpdate = true;
+}
+
+void UWatchChart::commitUpdate()
+{
+    if (pendingUpdate) {
+        pendingUpdate = false;
+        chartView->update();
+    }
 }
 
 void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_max)

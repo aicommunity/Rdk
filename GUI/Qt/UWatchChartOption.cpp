@@ -1,7 +1,7 @@
 #include "UWatchChartOption.h"
 #include "ui_UWatchChartOption.h"
-
 #include "UWatch.h"
+#include "UGuiTelemetry.h"
 
 UWatchChartOption::UWatchChartOption(QWidget *parent) :
     QDialog(parent),
@@ -163,6 +163,7 @@ void UWatchChartOption::on_allChartsList_currentRowChanged(int currentRow)
 
 void UWatchChartOption::on_okButton_clicked()
 {
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UWatchChartOption"), QStringLiteral("SaveAndClose"));
     saveParameters();
     close();
     destroy();
@@ -171,6 +172,7 @@ void UWatchChartOption::on_okButton_clicked()
 
 void UWatchChartOption::on_applyButton_clicked()
 {
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UWatchChartOption"), QStringLiteral("Apply"));
     saveParameters();
     updateChartList();
 }

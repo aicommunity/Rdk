@@ -1,7 +1,7 @@
 #include "UWatchSeriesOption.h"
 #include "ui_UWatchSeriesOption.h"
-
 #include "UWatch.h"
+#include "UGuiTelemetry.h"
 
 
 UWatchSeriesOption::UWatchSeriesOption(QWidget *parent) :
@@ -26,14 +26,16 @@ UWatchSeriesOption::~UWatchSeriesOption()
 
 void UWatchSeriesOption::on_okButton_clicked()
 {
-   saveParemeters();
-   close();
-   destroy();
-   delete this;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UWatchSeriesOption"), QStringLiteral("SaveAndClose"));
+    saveParemeters();
+    close();
+    destroy();
+    delete this;
 }
 
 void UWatchSeriesOption::on_applyButton_clicked()
 {
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UWatchSeriesOption"), QStringLiteral("Apply"));
     saveParemeters();
     int currentChartIndex = ui->graphsList->currentRow();
     updateGraphsSeries(currentChartIndex);

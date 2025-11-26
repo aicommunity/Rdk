@@ -280,44 +280,84 @@ void UGraphWidget::slotActionDeleteCurrentItem()
 
 void UGraphWidget::slotActionSettings()
 {
-    std::cout<<"call dialod cliced"<<std::endl;
-    if(!application)
+    if(!application || !graphPainter)
         return;
 
-    //UGraphControlDialog settingsDialog(this, flagUpdateBordersX, 1);
-    UGraphControlDialog settingsDialog(this);
+    UGraphControlDialog settingsDialog(this, graphPainter);
     settingsDialog.setAxisXChangeData(flagUpdateBordersX);
     settingsDialog.setAxisMaxYChangeData(flagUpdateBordersMaxY);
     settingsDialog.setAxisMinYChangeData(flagUpdateBordersMinY);
     settingsDialog.setDecimalPlaces(1);
     settingsDialog.setDisplayInterval(lastNElements);
-    settingsDialog.setLableX(lableX);
-    settingsDialog.setLableY(lableY);
-    if (settingsDialog.exec())
+    settingsDialog.setLabelX(lableX);
+    settingsDialog.setLabelY(lableY);
+
+    if (settingsDialog.exec() == QDialog::Accepted)
     {
-        lastNElements = settingsDialog.getDoubleSpinBoxData();
+        lastNElements = static_cast<int>(settingsDialog.getDisplayInterval());
         flagUpdateBordersX = settingsDialog.getAxisXChangeData();
         flagUpdateBordersMaxY = settingsDialog.getAxisMaxYChangeData();
         flagUpdateBordersMinY = settingsDialog.getAxisMinYChangeData();
-        lableX = settingsDialog.getLableX();
-        lableY = settingsDialog.getLableY();
+        lableX = settingsDialog.getLabelX();
+        lableY = settingsDialog.getLabelY();
         graphPainter->setLables(lableX, lableY);
-        int color = settingsDialog.getColor();
-        graphPainter->setColorCurrentItem(color);
 
-        if(settingsDialog.getDelInf())
+        const int selectedIndex = settingsDialog.getSelectedGraphIndex();
+        if (selectedIndex >= 0 && selectedIndex < graphPainter->getSize())
         {
-            int a = graphPainter->delCurrentItemGraph();
-            if(a>=0)
+            // Изменение цвета
+            const int colorIndex = settingsDialog.getColorIndex();
+            if (colorIndex >= 0)
             {
-                if (SeriesBuffers.size() > static_cast<size_t>(a)) {
-                    SeriesBuffers.erase(SeriesBuffers.begin() + a);
+                graphPainter->setCurrentItem(selectedIndex);
+                graphPainter->setColorCurrentItem(colorIndex);
+            }
+
+            // Изменение имени графика
+            if (settingsDialog.isGraphNameChanged())
+            {
+                const QString newName = settingsDialog.getGraphName();
+                if (!newName.isEmpty())
+                {
+                    graphPainter->setGraphName(selectedIndex, newName.toStdString());
                 }
-                graphPainter->commitFrame();
+            }
+
+            // Изменение источника данных
+            if (settingsDialog.isGraphDataSourceChanged())
+            {
+                int channelIndex;
+                QString componentName, propertyName;
+                int jx, jy;
+                settingsDialog.getGraphDataSource(channelIndex, componentName, propertyName, jx, jy);
+                graphPainter->setGraphDataSource(selectedIndex,
+                                                channelIndex,
+                                                componentName.toStdString(),
+                                                propertyName.toStdString(),
+                                                "type",
+                                                jx,
+                                                jy);
+            }
+        }
+
+        // Удаление графика
+        if(settingsDialog.shouldDeleteGraph())
+        {
+            const int graphToDelete = settingsDialog.getSelectedGraphIndex();
+            if (graphToDelete >= 0 && graphToDelete < graphPainter->getSize())
+            {
+                graphPainter->setCurrentItem(graphToDelete);
+                int deletedIndex = graphPainter->delCurrentItemGraph();
+                if(deletedIndex >= 0)
+                {
+                    if (SeriesBuffers.size() > static_cast<size_t>(deletedIndex)) {
+                        SeriesBuffers.erase(SeriesBuffers.begin() + deletedIndex);
+                    }
+                    graphPainter->commitFrame();
+                }
             }
         }
     }
-
 }
 
 void UGraphWidget::SaveLegacySettings() const

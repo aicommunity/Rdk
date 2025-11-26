@@ -392,6 +392,20 @@ void UGraphPaintWidget::setColorCurrentItem(int color)
     }
 }
 
+void UGraphPaintWidget::setGraphName(int graphIndex, const std::string &name)
+{
+    if (graphIndex >= 0 && graphIndex < int(vectorGraph.size()))
+    {
+        vectorGraph[graphIndex].t_graphName = name;
+        // Обновим легенду, если она используется
+        if (graphIndex < ui->widget->graphCount())
+        {
+            ui->widget->graph(graphIndex)->setName(QString::fromStdString(name));
+            pendingReplot = true;
+        }
+    }
+}
+
 void UGraphPaintWidget::setLables(QString lableX, QString lableY)
 {
     ui->widget->xAxis->setLabel(lableX);

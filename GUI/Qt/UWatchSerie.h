@@ -26,6 +26,12 @@ public:
     //координаты элемента матрицы
     int Jx;
     int Jy;
+
+    // Статус серии (активна/неактивна)
+    bool isOnline = true;
+
+    // Установить статус серии (влияет на визуальное отображение)
+    void setOnlineStatus(bool online);
 };
 
 #endif // UWATCHSERIE_H

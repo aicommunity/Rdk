@@ -100,6 +100,9 @@ class UGraphPaintWidget : public QWidget
         ///Устанавливает цвет текущего графика
         void setColorCurrentItem(int color);
 
+        ///Устанавливает имя графика по индексу
+        void setGraphName(int graphIndex, const std::string &name);
+
         ///Устанавливает подписи по осям Х и У
         void setLables(QString lableX,QString  lableY);
 

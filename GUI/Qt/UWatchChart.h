@@ -90,6 +90,10 @@ public:
     void restoreInitialAxesState();
     bool checkZoomed(void);
 
+    // Методы для батчинга обновлений
+    void requestUpdate();
+    void commitUpdate();
+
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
                      const QString type, int jx, int jy, double time_interval, double y_shift);
@@ -140,6 +144,9 @@ private:
 
     bool isCtrlPressed = false;
     int chartIndex; //что бы график знал какой он по счету в векторе графиков
+
+    // Флаг для батчинга обновлений
+    bool pendingUpdate = false;
 
 
 

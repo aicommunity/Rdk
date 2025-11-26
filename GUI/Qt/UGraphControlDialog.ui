@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>799</width>
-    <height>479</height>
+    <width>800</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Graph Settings</string>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -25,9 +25,9 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>390</x>
+     <x>400</x>
      <y>430</y>
-     <width>341</width>
+     <width>381</width>
      <height>32</height>
     </rect>
    </property>
@@ -134,7 +134,7 @@
      <string>Label Y</string>
     </property>
    </widget>
-   <widget class="QTextEdit" name="textEditLableY">
+   <widget class="QLineEdit" name="lineEditLabelY">
     <property name="geometry">
      <rect>
       <x>90</x>
@@ -143,11 +143,8 @@
       <height>21</height>
      </rect>
     </property>
-    <property name="verticalScrollBarPolicy">
-     <enum>Qt::ScrollBarAlwaysOff</enum>
-    </property>
    </widget>
-   <widget class="QTextEdit" name="textEditlableX">
+   <widget class="QLineEdit" name="lineEditLabelX">
     <property name="geometry">
      <rect>
       <x>90</x>
@@ -155,9 +152,6 @@
       <width>201</width>
       <height>21</height>
      </rect>
-    </property>
-    <property name="verticalScrollBarPolicy">
-     <enum>Qt::ScrollBarAlwaysOff</enum>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBoxAxisMinY">
@@ -184,13 +178,101 @@
     </rect>
    </property>
    <property name="title">
-    <string>Function Graph Settings</string>
+    <string>Graph Settings</string>
    </property>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="labelGraphsList">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>30</y>
+      <width>121</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Graphs:</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="graphsListWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>351</width>
+      <height>101</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelGraphName">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>160</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Graph Name:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditGraphName">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>160</y>
+      <width>271</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelDataSource">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>190</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Data Source:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelDataSourceInfo">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>210</y>
+      <width>351</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Component.Property [Jx, Jy]</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonChangeDataSource">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>190</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Change...</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>250</y>
       <width>55</width>
       <height>16</height>
      </rect>
@@ -201,14 +283,14 @@
      </font>
     </property>
     <property name="text">
-     <string>Color</string>
+     <string>Color:</string>
     </property>
    </widget>
    <widget class="QListWidget" name="colorListWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
+      <y>270</y>
       <width>141</width>
       <height>111</height>
      </rect>
@@ -298,6 +380,19 @@
       <string>Dark Yellow</string>
      </property>
     </item>
+   </widget>
+   <widget class="QPushButton" name="pushButtonDeleteGraph">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>390</y>
+      <width>141</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete Graph</string>
+    </property>
    </widget>
   </widget>
  </widget>

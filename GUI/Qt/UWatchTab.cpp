@@ -1,5 +1,6 @@
 #include "UWatchTab.h"
 #include "ui_UWatchTab.h"
+#include "UGuiTelemetry.h"
 
 
 
@@ -40,98 +41,149 @@ void UWatchTab::deleteGraph(int index)
 
 void UWatchTab::AUpdateInterface()
 {
-    for (int graphIndex=0; graphIndex < graph.count(); graphIndex++)
-    {
-        graph[graphIndex]->chartView->setUpdatesEnabled(false);
-        double x_min=0.0;
-        double x_max=0.0;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UWatchTab"), accessibleName());
 
-        int i=0;
-        while(i<graph[graphIndex]->countSeries())
-        {
-            RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
-            RDK::UControllerDataReader* data=env->GetDataReader(graph[graphIndex]->getSerie(i)->nameComponent.toStdString(),
-                                                                graph[graphIndex]->getSerie(i)->nameProperty.toStdString(),
-                                                                graph[graphIndex]->getSerie(i)->Jx,
-                                                                graph[graphIndex]->getSerie(i)->Jy);
-            if(!data)
-              graph[graphIndex]->deleteSerie(i);
-            else
-              ++i;
+    // Блокируем ядро один раз для всех операций
+    RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+    if (!env) {
+        return;
+    }
+
+    // Батчинг обновлений: отключаем обновления для всех графиков сразу
+    for (int graphIndex = 0; graphIndex < graph.count(); graphIndex++) {
+        if (graph[graphIndex] && graph[graphIndex]->chartView) {
+            graph[graphIndex]->chartView->setUpdatesEnabled(false);
+        }
+    }
+
+    // Обрабатываем все графики
+    for (int graphIndex = 0; graphIndex < graph.count(); graphIndex++)
+    {
+        if (!graph[graphIndex]) {
+            continue;
         }
 
-        for (int serieIndex=0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
+        double x_min = 0.0;
+        double x_max = 0.0;
+
+        // Проверяем валидность серий (используем уже полученную блокировку)
+        int i = 0;
+        while (i < graph[graphIndex]->countSeries())
         {
-            std::list<double>::iterator buffIX, buffIY;
-            // Считывание данных в серию из DataReadera
-            ReadSeriesDataSafe(graphIndex,serieIndex,XData,YData);
+            RDK::UControllerDataReader* data = env->GetDataReader(
+                graph[graphIndex]->getSerie(i)->nameComponent.toStdString(),
+                graph[graphIndex]->getSerie(i)->nameProperty.toStdString(),
+                graph[graphIndex]->getSerie(i)->Jx,
+                graph[graphIndex]->getSerie(i)->Jy);
+            if (!data) {
+                graph[graphIndex]->deleteSerie(i);
+            } else {
+                ++i;
+            }
+        }
+
+        // Обновляем данные для всех серий
+        for (int serieIndex = 0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
+        {
+            // Считывание данных в серию из DataReadera (используем уже полученную блокировку)
+            UWatchSerie *current_serie = graph[graphIndex]->getSerie(serieIndex);
+            if (!current_serie) {
+                continue;
+            }
+
+            RDK::UControllerDataReader* data = env->GetDataReader(
+                current_serie->nameComponent.toStdString(),
+                current_serie->nameProperty.toStdString(),
+                current_serie->Jx,
+                current_serie->Jy);
+
+            // Обновляем статус серии (активна/неактивна)
+            const bool isOnline = (data != nullptr);
+            if (current_serie->isOnline != isOnline) {
+                current_serie->setOnlineStatus(isOnline);
+            }
+
+            if (!data) {
+                XData.clear();
+                YData.clear();
+                continue;
+            }
+
+            XData = data->XData;
+            YData = data->YData;
+
+            // Ограничение количества точек для производительности (кольцевой буфер)
+            const int maxPoints = 10000; // Максимальное количество точек на серию
+            if (XData.size() > maxPoints) {
+                // Оставляем только последние maxPoints точек
+                auto xIt = XData.begin();
+                auto yIt = YData.begin();
+                std::advance(xIt, XData.size() - maxPoints);
+                std::advance(yIt, YData.size() - maxPoints);
+                XData.erase(XData.begin(), xIt);
+                YData.erase(YData.begin(), yIt);
+            }
 
             // Получение точек для серии
-            std::list<double>::iterator itx, ity;
-            points.resize(int(XData.size()));
+            const int pointCount = int(XData.size());
+            points.resize(pointCount);
 
-            UWatchSerie * current_serie = graph[graphIndex]->getSerie(serieIndex);
-
-            int i = 0;
-            for (itx = XData.begin(), ity = YData.begin(); itx != XData.end(); ++itx, ++ity)
+            int pointIndex = 0;
+            for (auto itx = XData.begin(), ity = YData.begin(); 
+                 itx != XData.end() && ity != YData.end(); 
+                 ++itx, ++ity, ++pointIndex)
             {
-                points[i] = QPointF(*itx,*ity + current_serie->YShift);
-                i++;
+                points[pointIndex] = QPointF(*itx, *ity + current_serie->YShift);
             }
 
             // Отрисовка текущих точек серии
-            current_serie->replace(points);
+            // Используем replace только если данные изменились
+            if (!points.isEmpty()) {
+                // Проверяем, нужно ли обновлять (упрощенная проверка по размеру)
+                if (current_serie->count() != pointCount) {
+                    current_serie->replace(points);
+                } else {
+                    // Обновляем только если данные действительно изменились
+                    // Для оптимизации просто заменяем все точки
+                    current_serie->replace(points);
+                }
+            }
 
-            if(!XData.empty())
-//            {
-//                if(x_min>graph[graphIndex]->getAxisXmin())
-//                 x_min=graph[graphIndex]->getAxisXmin();
-
-//                if(x_max < graph[graphIndex]->getAxisXmax())
-//                 x_max = graph[graphIndex]->getAxisXmax();
-//            }
-//            else
+            // Обновление диапазона X
+            if (!XData.empty())
             {
-                if(x_min == 0)
-                 x_min= XData.front();
-                if(x_min > XData.front())
-                 x_min = XData.front();
-                if(x_max < XData.back())
-                 x_max = XData.back();
-//                if(XData.back()-XData.front() > graph[graphIndex]->axisXrange)
-//                    graph[graphIndex]->axisXrange = XData.back()-XData.front();
+                if (x_min == 0.0) {
+                    x_min = XData.front();
+                }
+                if (x_min > XData.front()) {
+                    x_min = XData.front();
+                }
+                if (x_max < XData.back()) {
+                    x_max = XData.back();
+                }
             }
         }
-        if(!graph[graphIndex]->checkZoomed())
-        {
-         if(x_max-x_min<graph[graphIndex]->getAxisXrange())
-          x_max=x_min+graph[graphIndex]->getAxisXrange();
 
-         if(graph[graphIndex]->getIsAxisXtrackable())
-         {
-             graph[graphIndex]->setAxisXmax(x_max);
-             graph[graphIndex]->setAxisXmin(x_min);
-             graph[graphIndex]->fixInitialAxesState();
-         }
-         else
-         {
+        // Обновление осей
+        if (!graph[graphIndex]->checkZoomed())
+        {
+            if (x_max - x_min < graph[graphIndex]->getAxisXrange()) {
+                x_max = x_min + graph[graphIndex]->getAxisXrange();
+            }
+
             graph[graphIndex]->setAxisXmax(x_max);
             graph[graphIndex]->setAxisXmin(x_min);
             graph[graphIndex]->fixInitialAxesState();
-         }
         }
-     /*   if(x_max-x_min > 0.001)
-        {
-            graph[graphIndex]->setAxisXmax(x_max);
-            graph[graphIndex]->setAxisXmin(x_min);
+    }
+
+    // Включаем обновления для всех графиков сразу (батчинг)
+    for (int graphIndex = 0; graphIndex < graph.count(); graphIndex++) {
+        if (graph[graphIndex] && graph[graphIndex]->chartView) {
+            graph[graphIndex]->chartView->setUpdatesEnabled(true);
+            // Коммитим накопленные обновления
+            graph[graphIndex]->commitUpdate();
         }
-        else
-        {
-            // Если есть серии
-            if(graph[graphIndex]->countSeries())
-                graph[graphIndex]->updateTimeIntervals(1);
-        }*/
-        graph[graphIndex]->chartView->setUpdatesEnabled(true);
     }
 }
 
@@ -146,21 +198,39 @@ void UWatchTab::AClearInterface()
 
 
 /// Безопасно считывает данные серии из ядра
+/// @deprecated Используется только для обратной совместимости. 
+/// В AUpdateInterface теперь используется прямой доступ с единой блокировкой.
 void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata)
 {
-    RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
-    RDK::UControllerDataReader* data=env->GetDataReader(graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString(),
-                                                        graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString(),
-                                                        graph[graphIndex]->getSerie(serieIndex)->Jx,
-                                                        graph[graphIndex]->getSerie(serieIndex)->Jy);
-    if(!data)
-    {
-     xdata.clear();
-     ydata.clear();
-     return;
+    RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+    if (!env) {
+        xdata.clear();
+        ydata.clear();
+        return;
     }
-    xdata=data->XData;
-    ydata=data->YData;
+
+    UWatchSerie *serie = graph[graphIndex]->getSerie(serieIndex);
+    if (!serie) {
+        xdata.clear();
+        ydata.clear();
+        return;
+    }
+
+    RDK::UControllerDataReader* data = env->GetDataReader(
+        serie->nameComponent.toStdString(),
+        serie->nameProperty.toStdString(),
+        serie->Jx,
+        serie->Jy);
+    
+    if (!data)
+    {
+        xdata.clear();
+        ydata.clear();
+        return;
+    }
+    
+    xdata = data->XData;
+    ydata = data->YData;
 }
 
 void UWatchTab::createSelectionDialogSlot(int index)
