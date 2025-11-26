@@ -1,10 +1,6 @@
 #include "UGuiTelemetry.h"
 
-#include <QByteArray>
-#include <QThread>
 #include <mutex>
-
-#include <rdk_logging.h>
 
 namespace {
 std::mutex gTelemetryMutex;
@@ -32,13 +28,8 @@ void UGuiTelemetrySink::Emit(const QString& category, const QString& name, qint6
         return;
     }
 
-    const QByteArray buffer = QStringLiteral("GUI|%1|%2|%3ms|thread=%4")
-                                  .arg(category, name)
-                                  .arg(durationMs)
-                                  .arg(reinterpret_cast<qulonglong>(QThread::currentThreadId()), 0, 16)
-                                  .toLocal8Bit();
-
-    RDK::Logging::SystemLog(RDK_EX_DEBUG, buffer.constData());
+    // По умолчанию телеметрия не логируется, чтобы не засорять системный лог.
+    // Пользователь может задать callback через UGuiTelemetrySink::SetCallback.
 }
 
 UGuiTelemetryScope::UGuiTelemetryScope(const QString& category, const QString& name)
