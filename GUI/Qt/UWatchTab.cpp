@@ -240,7 +240,7 @@ void UWatchTab::createSelectionDialogSlot(int index)
 
 void UWatchTab::seriesOptionTriggered()
 {
-    seriesOption = new UWatchSeriesOption(this);
+    seriesOption = new UWatchSeriesOption(this, application);
     seriesOption->setWindowTitle("Series option");
     //seriesOption->setModal(true);
     seriesOption->show();
