@@ -555,7 +555,7 @@ void UComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<U
  P.Property->SetVariable(it);
 }
 
-// �������� ��� ���������
+// Изменяет тип свойства
 bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
@@ -567,8 +567,8 @@ bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
  return true;
 }
 
-// ������� �������� � ������ 'name' �� ������� �����������
-// ����������
+// Удаляет свойство из таблицы 'name' по имени свойства
+// Удаляет
 void UComponent::DelLookupProperty(const NameT &name)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
@@ -604,7 +604,7 @@ void UComponent::DelLookupProperty(const NameT &name)
  }
 }
 
-// ������� ��� ������� ������������
+// Очищает всю таблицу свойств
 void UComponent::ClearLookupPropertyTable(void)
 {
  while(PropertiesLookupTable.begin() != PropertiesLookupTable.end())
@@ -621,10 +621,10 @@ void UComponent::ClearLookupPropertyTable(void)
 // --------------------------
 
 // --------------------------
-// ������� ������ ���������� ������ ����������
+// Функции работы с таблицей свойств свойств
 // --------------------------
-// ��������� ����� �������� �������� � ������ 'name' � ������� �����������
-// ����� ������� � ��������� ��� ���������� ������
+// Добавляет новое свойство свойства в таблицу 'name' по имени свойства
+// Возвращает идентификатор в таблице для добавленного свойства
 // --------------------------
 UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 {
@@ -641,7 +641,7 @@ UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 // --------------------------
 
 // --------------------------
-// ������ ���������� ��������
+// Функции работы с алиасами
 // --------------------------
 /// Удаление алисаса
 bool UComponent::AddAlias(const std::string &alias, const std::string &property_name)
@@ -656,7 +656,7 @@ bool UComponent::AddAlias(const std::string &alias, const std::string &property_
  return true;
 }
 
-/// �������� �������
+/// Удаляет алиас
 void UComponent::DelAlias(const std::string &alias)
 {
  std::map<std::string, std::string>::iterator I=Aliases.find(alias);
@@ -665,7 +665,7 @@ void UComponent::DelAlias(const std::string &alias)
  Aliases.erase(I);
 }
 
-/// �������� ������� ������
+/// Проверяет наличие алиаса
 bool UComponent::CheckAlias(const std::string &alias) const
 {
  // Use cache for repeated lookups
@@ -685,7 +685,7 @@ bool UComponent::CheckAlias(const std::string &alias) const
  return true;
 }
 
-/// ��������� ����� �������� �� ������
+/// Возвращает имя свойства по алиасу
 const std::string& UComponent::GetPropertyNameByAlias(const std::string &alias) const
 {
  std::map<std::string, std::string>::const_iterator I=Aliases.find(alias);

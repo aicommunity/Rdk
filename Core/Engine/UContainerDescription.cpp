@@ -44,12 +44,12 @@ UContainerDescription::~UContainerDescription(void)
 // --------------------------
 // --------------------------
 /*
-// �������� ������ ��������
+// Возвращает описание свойства
 const UPropertyDescription& UContainerDescription::GetCommonProperty(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
- // ��������! ����� ���������� ���� �� �������
+ // Внимание! Нужно проверить что есть в массиве
 
  return I->second;
 }
@@ -61,7 +61,7 @@ bool UContainerDescription::SetCommonProperty(const std::string &name, const UPr
  return true;
 }
 
-// ��������� ������� ������ �������� � �������� ������
+// Проверяет наличие описания свойства в массиве свойств
 bool UContainerDescription::CheckCommonProperty(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
@@ -74,7 +74,7 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 // Методы управления данными
 // --------------------------
 // Описание свойства
-// �������� ��������
+// Возвращает описание
 const UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
@@ -103,7 +103,7 @@ bool UContainerDescription::SetPropertyDescription(const std::string &name, cons
 }
 
 
-// ������� �������� �� ����� ��������, ���� �� ���� � ����� ���������
+// Удаляет описание из списка свойств, если оно есть в списке общих
 bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
 {
  auto I=common_descriptions.find(name);
@@ -114,7 +114,7 @@ bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::unorder
  return true;
 }
 
-// ������� ��� �������� �� ����� ��������, ���� ��� ���� � ����� ���������
+// Удаляет все описания из списка свойств, если они есть в списке общих
 bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions)
 {
  for(auto J=Properties.begin();J != Properties.end();)

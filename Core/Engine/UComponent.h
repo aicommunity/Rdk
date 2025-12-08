@@ -68,19 +68,19 @@ typedef USerStorage UVariableData;
 class UIProperty;
 class UIShare;
 
-// ��������� ������� ���������
+// Описание структуры свойства
 struct RDK_LIB_TYPE UVariable
 {
-// ��������� �� ��������
+// Указатель на свойство
 UEPtr<UIProperty> Property;
 
-// ���� ���������� �������� ������ �� ������� ��������� Property
+// Флаг разрешения удаления свойства при удалении из таблицы свойства Property
 bool DelEnable;
 
 // Младшие 8 бит на собственно тип:
 // Старшие 24 на принадлежность группе
 // (показан их отсчет от 0):
-// (������� �� ������ �� 0):
+// (отсчет от нуля от 0):
 unsigned int Type;
 
 // Конструкторы и деструкторы
@@ -96,22 +96,22 @@ virtual ~UVariable(void);
 // Методы доступа к данным
 // --------------------------
 // Возвращает только маску типа свойства
-// ���������� ������ ����� ���� ��������
+// Возвращает маску типа для типа свойства
 unsigned int GetPropertyType(void) const;
 
-// ���������� ������ ����� ������ ��������
+// Возвращает маску типа для группы свойства
 unsigned int GetPropertyGroup(void) const;
 
-// ���������� ��������� ��� ���� �������� �� ��������� ����
+// Возвращает строку имени для типа свойства по переданному типу
 static std::string GetPropertyTypeNameByType(unsigned int type);
 
-// ���������� ��� �������� �� ���������� �����
+// Возвращает тип свойства по переданному имени
 static unsigned int GetPropertyTypeByTypeName(const std::string &name);
 
-// ���������� ��������� ��� ���� ��������
+// Возвращает строку имени для типа свойства
 std::string GetPropertyTypeName(void) const;
 
-// ��������� ������������ ���� � ������ �������� �����
+// Проверяет соответствие маски типа в маске типа свойства свойства
 bool CheckMask(unsigned int mask) const;
 // --------------------------
 };
@@ -120,7 +120,7 @@ bool CheckMask(unsigned int mask) const;
 class RDK_LIB_TYPE UComponent: public UModule
 {
 friend class UStorage;
-public: // ���� ������
+public: // Флаг статики
 typedef std::unordered_map<NameT,UVariable> VariableMapT;
 typedef std::unordered_map<NameT,UVariable>::iterator VariableMapIteratorT;
 typedef std::unordered_map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
@@ -129,32 +129,32 @@ typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
 typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
 typedef std::map<UId,UEPtr<UIShare> >::const_iterator ShareMapCIteratorT;
 
-public: // ������ �������� ����������
+public: // Указатель компонента компонента
 class IException: public UException {};
 
 protected: // Флаг, определяющий компонент является статическим
 // или динамическим
-// ��� ������������
+// Флаг статики
 bool StaticFlag;
 
-// ��������� �� ��������� ���� ��������
+// Указатель на родительский все свойства
 UEPtr<UComponent> Owner;
 
 // Автоматически устанавливается для всех дочерних объектов
-// ������������� ��������������� ��� ���� �������� ��������
+// Устанавливается автоматически для всех дочерних компонентов компонента
 UEPtr<UComponent> MainOwner;
 
-// ��������� �� ��������� ��������� ����� �������
+// Указатель на родительский компонент всех компонентов
 UEPtr<UStorage> Storage;
 
-// ��������� �� ����� ���������� ����� �������
+// Указатель на текущий компонент всех компонентов
 UEPtr<UEnvironment> Environment;
 
-// ��������� �� ������
+// Указатель на логгер
 UEPtr<UExceptionLogger> Logger;
 
 protected: // Идентификатор класса
-// ������������� ������
+// Идентификатор класса
 UId Class;
 
 //UId Id;
@@ -162,7 +162,7 @@ UId Class;
 
 protected: //protected: // Системные свойства
 // Таблица соответствий имен и Id параметров объекта
-// ������� ������������ ���� � Id ���������� �������
+// Таблица соответствий имен и Id параметров свойства
 VariableMapT PropertiesLookupTable;
 
 // Таблица соответствий Id и общего свойства
@@ -174,7 +174,7 @@ mutable NameT CachedAliasName;
 mutable NameT CachedAliasValue;
 
 protected:
-// ������� ������������ Id � ������ ��������
+// Таблица соответствий Id и указателя свойства
 ShareMapT ShareLookupTable;
 
 protected: // Конструкторы и деструкторы
@@ -182,7 +182,7 @@ protected: // Конструкторы и деструкторы
 std::map<std::string, std::string> Aliases;
 
 
-protected: // ��������� ����������
+protected: // Указатель компонента
 
 public: // Методы доступа к свойствам
 // --------------------------
@@ -193,22 +193,22 @@ virtual ~UComponent(void);
 // --------------------------
 
 // --------------------------
-// ������ ������� � ���������
+// Функции доступа к данным
 // --------------------------
 // Возвращает указатель на главного владельца этим объектом
-// ��� ������������
+// Флаг статики
 bool GetStaticFlag(void) const;
 virtual bool SetStaticFlag(bool value);
 
-// ���������� �������� ����� �������
+// Возвращает указатель всех компонентов
 UEPtr<UComponent> const GetOwner(void) const;
 virtual bool SetOwner(UEPtr<UComponent> owner);
 
-// ���������� ��������� �� �������� ��������� ���� ��������
+// Возвращает указатель на родительский компонент всех свойств компонента
 UEPtr<UComponent> const GetMainOwner(void) const;
 virtual void SetMainOwner(UEPtr<UComponent> mainowner);
 
-// ���������� ��������� ��������� ����� �������
+// Возвращает указатель компонента всех компонентов
 UEPtr<UStorage> const GetStorage(void) const;
 virtual bool SetStorage(UEPtr<UStorage> storage);
 
@@ -220,7 +220,7 @@ virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 UEPtr<UExceptionLogger> const GetLogger(void) const;
 virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
-/// ���������� ������ �� ����� ���������� ������� �� Environment.
+/// Возвращает строку на имя компонента компонента из Environment.
 // --------------------------
 /// DummyTime
 const UTimeControl& GetTime(void) const;
@@ -228,7 +228,7 @@ const UTimeControl& GetTime(void) const;
 // --------------------------
 UAFont* GetDefaultFont(void);
 
-/// ���������� �������� �����
+/// Возвращает указатель шрифта
 UAFont* GetFont(const string &name, int size);
 // --------------------------
 
@@ -240,17 +240,17 @@ UId GetClass(void) const;
 bool SetClass(UId value);
 
 
-// ���������� ��� ������ ����������
+// Возвращает имя класса компонента
 const NameT GetCompClassName(void) const;
 // --------------------------
 
 // --------------------------
 // Уничтожение этого объекта
 // --------------------------
-// ������� ��������� ����� ������
+// Функции создания нового компонента
 virtual UComponent* New(void)=0;
 
-// ������� ��������� �������� ������
+// Функция создания нового описания компонента
 virtual UContainerDescription* NewDescription(void);
 virtual UContainerDescription* ANewDescription(UComponentDescription* description);
 
@@ -264,29 +264,29 @@ virtual void AUpdateInternalData(void);
 // --------------------------
 
 // --------------------------
-// ������ ������� � ����������
+// Функции доступа к свойствам
 // --------------------------
 public:
-// ���������� ��������� �� ������ ��������
+// Возвращает указатель на указатель свойства
 const UEPtr<UIProperty> FindProperty(const NameT &name) const;
 UEPtr<UIProperty> FindProperty(const NameT &name);
 
-// ���������� �������� ��������� �� ����� 'name'
+// Возвращает данные свойства свойства по имени 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;
 
-// ���������� �������� ��������� �� ����� 'name'
+// Возвращает данные свойства свойства по имени 'name'
 template<typename T>
 const T* AccessPropertyData(const NameT &name) const;
 
 template<typename T>
 T* AccessPropertyData(const NameT &name);
 
-// ������������� �������� ��������� �� ����� 'name'
+// Устанавливает данные свойства свойства по имени 'name'
 void SetProperty(const NameT &name, UEPtr<UVariableData> values);
 void SetPropertyValue(const NameT &name, const std::string &values);
 
-// ���������� ������ Id ����������, ������������ ���������������
+// Возвращает строку Id свойства, соответствующего указателю
 // Ищет переменную свойства в таблице по указателю на него
 const UComponent::VariableMapT& GetPropertiesList(void) const;
 
@@ -305,15 +305,15 @@ virtual void CopyProperties(UEPtr<UComponent> comp, unsigned int type) const;
 // --------------------------
 
 // Изменяет тип параметра
-// ������� ������ ���������� �����������
+// Функции работы с таблицей свойств
 // --------------------------
 public:
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
-// ������ ���������� � ������������� �������
+// Функции работы с таблицей свойств
 void AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
 
-// �������� ��� ���������
+// Изменяет тип свойства
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
 
 protected:
@@ -329,49 +329,49 @@ void ClearLookupPropertyTable(void);
 // --------------------------
 // Методы управления алиасами
 public:
-// ��������� ����� �������� �������� � ������ 'name' � ������� �����������
+// Добавляет новое свойство свойства в таблицу 'name' по имени свойства
 /// Добавление алисаса
-// ������ ���������� � ������������� �������
+// Функции работы с таблицей свойств
 UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
 /// Удаление алисаса
 
 // --------------------------
-// ������ ���������� ��������
+// Функции работы с алиасами
 /// Проверка наличия алиаса
 protected:
-/// ���������� �������
+/// Добавляет алиас
 bool AddAlias(const std::string &alias, const std::string &property_name);
 
 // --------------------------
 void DelAlias(const std::string &alias);
 
 public:
-/// �������� ������� ������
+/// Проверяет наличие алиаса
 bool CheckAlias(const std::string &alias) const;
 
-/// ��������� ����� �������� �� ������
+/// Возвращает имя свойства по алиасу
 const std::string& GetPropertyNameByAlias(const std::string &alias) const;
 // --------------------------
 
 
-public: // ����������
+public: // Ошибка
 struct EEnvironmentNotExist: public EError
 {
 };
 
-// ��� �������� �� �������
+// Для свойства по имени
 struct EPropertyNameNotExist: public ENameNotExist
 {
 explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
-// ��� �������� ��� ����������
+// Для свойства не существует
 struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
 explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {}
 };
 
-// ��� ������ �� �������
+// Для алиаса по имени
 struct EAliasNameNotExist: public ENameNotExist
 {
 explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {}
@@ -387,11 +387,11 @@ static UComponent* NewStaticFunc()
 
 class UItem;
 
-// ����� ������������ �������
+// Метод базового свойства
 class RDK_LIB_TYPE UIProperty
 {
 public:
-// ����� ������������� �������� ��������� �� ��������-��������� ������ �� ����
+// Метод устанавливает значение свойства из итератора-хранилища данных на имя
 // Метод возвращает указатель компонента-владельца свойства
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)=0;
 
@@ -413,14 +413,14 @@ virtual std::string GetOwnerClassName(void) const=0;
 // Метод копирует значение данных свойства из области памяти
 virtual bool Save(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 
-// ����� ������ �������� �������� �� ������
+// Метод чтения значения свойства из потока
 virtual bool Load(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 
-// ����� ���������� ��������� �� ������� ������, ���������� ������ ��������
+// Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void)=0;
 
-// ����� �������� �������� ������ �������� �� ������� ������
-// �������� ���������� ����������� ��������� ���� ������
+// Метод чтения значения свойства данных свойства из области памяти
+// Читает данные из переданной области памяти для свойства свойства
 // Возвращает языковой тип хранимого свойства для одного элемента
 virtual bool ReadFromMemory(const void *buffer)=0;
 
@@ -437,32 +437,32 @@ virtual const type_info& GetElemLanguageType(void) const=0;
 virtual bool CompareElemLanguageType(const UIProperty &dt) const=0;
 
 /// Устанавливает время обновления данных свойства
-// ������ ���������� �������
+// Функции работы со временем
 // --------------------------
 /// Сбрасывает время обновления до нуля
 virtual int GetIoType(void) const=0;
 
-/// ���������� ����� ���������� ������ �������� (��)
+/// Возвращает время обновления свойства свойства (мс)
 virtual ULongTime GetUpdateTime(void) const=0;
 
 // Исключения
 virtual void SetUpdateTime(ULongTime value)=0;
 
-/// ���������� ����� ���������� �� ����
+/// Возвращает время обновления на ноль
 virtual void ResetUpdateTime(void)=0;
 /// Имя компонента владельца
 
 virtual ~UIProperty();
 
-public: // ����������
-// ��������� � �������������������� ������ ��������
+public: // Ошибка
+// Ошибка в неправильном значении свойства свойства
 struct EPropertyError: public EError
 {
-protected: // ������ ����������
-/// ��� ���������� ���������
+protected: // Имя компонента
+/// Имя компонента компонента
 std::string OwnerName;
 
-/// ��� ��������
+/// Имя свойства
 std::string PropertyName;
 
 public:
@@ -470,14 +470,14 @@ EPropertyError(const std::string &owner_name, const std::string &property_name)
 : EError(), OwnerName(owner_name), PropertyName(property_name) {}
 virtual ~EPropertyError(void) throw() {}
 
-// ��������� ������ ���� �� ����������
+// Создает строку сообщения для ошибки
 virtual std::string CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" ")+OwnerName+std::string(":")+PropertyName;
 }
 };
 
-// ��������� � �������������������� ������ ��������
+// Ошибка в неправильном значении свойства свойства
 struct EPropertyZeroPtr: public EPropertyError
 {
 public:
@@ -485,7 +485,7 @@ EPropertyZeroPtr(const std::string &owner_name, const std::string &property_name
 : EPropertyError(owner_name, property_name) {}
 };
 
-// ����� Getter �������� ��������
+// Метод Getter значения свойства
 struct EPropertyGetterFail: public EPropertyError
 {
 public:
@@ -493,7 +493,7 @@ EPropertyGetterFail(const std::string &owner_name, const std::string &property_n
 : EPropertyError(owner_name, property_name) {}
 };
 
-// ����� Setter �������� ��������
+// Метод Setter значения свойства
 struct EPropertySetterFail: public EPropertyError
 {
 public:
@@ -511,7 +511,7 @@ class UItem;
 class RDK_LIB_TYPE UIPropertyInput: public UIProperty
 {
 public:
- /// ������������ � �����������
+ /// Конструкторы и деструкторы
  UIPropertyInput(void);
  virtual ~UIPropertyInput(void);
 
@@ -530,27 +530,27 @@ public:
  /// Возвращает true если вход имеет подключение
  virtual bool SetPointer(int index, UIPropertyOutput* property)=0;
 
- /// ���������� ��������� �� ������
+ /// Возвращает указатель на указатель
  virtual bool ResetPointer(int index, UIPropertyOutput* property)=0;
 
  // Данные
  virtual bool IsNewData(void) const=0;
 
- /// ���������� true ���� ���� ����� �����������
+ /// Возвращает true если есть подключенные выходы
  virtual bool IsConnected(void) const=0;
 };
 
 class RDK_LIB_TYPE UIPropertyOutput: public UIPropertyInput
 {
-protected: // ������
- /// ��������� �� ����������-��������� ������
+protected: // Указатель
+ /// Указатель на подключенные-выходные данные
  std::vector<UItem*> Connectors;
 
- /// ����� ������ ����������-���������� ������
+ /// Список имен подключенных-подключенных данных
  std::vector<std::string> ConnectorInputNames;
 
 public:
- /// ������������ � �����������
+ /// Конструкторы и деструкторы
  UIPropertyOutput(void);
  virtual ~UIPropertyOutput(void);
 
@@ -560,10 +560,10 @@ public:
  /// Обновить указатели свойств-входов
  virtual UConnector* GetConnector(int index);
 
- /// ���������� ��� ������������� ����� ����������-���������
+ /// Возвращает имя для подключенного выхода подключенных-данных
  virtual std::string GetConnectorInputName(int index) const;
 
- /// ���������� ��������� �� �������� ������������� ����� ����������-���������
+ /// Возвращает указатель на указатель подключенного выхода подключенных-данных
  virtual UIPropertyInput* GetConnectorProperty(int index);
 
  // Метод возвращает Id общего свойства
@@ -571,24 +571,24 @@ public:
 };
 
 
-// ����� ���������� ������ ����������
+// Метод базового класса свойства
 class RDK_LIB_TYPE UIShare
 {
 public:
  // Метод деинициализации общего свойства
 // virtual int GetId(void) const=0;
 
- // ����� ���������� ��������� ��� ������-��������� ������ ��������
+ // Метод возвращает указатель на имя для компонента-хранилища данных свойства
 // Возвращает значение параметра по имени 'name'
 
- // ����� ������������� ������ ��������
+ // Метод инициализирует компонент свойства
  virtual bool Init(UEPtr<UComponent> main_owner)=0;
 
- // ����� ��������������� ������ ��������
+ // Метод деинициализирует компонент свойства
  virtual bool UnInit(void)=0;
 };
 
-// ���������� �������� ��������� �� ����� 'name'
+// Возвращает данные свойства свойства по имени 'name'
 template<typename T>
 const T* UComponent::AccessPropertyData(const NameT &name) const
 {

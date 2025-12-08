@@ -109,39 +109,39 @@ virtual ~UVBaseDataProperty(void)
 // -----------------------------
 
 // -----------------------------
-// ������ ������������
+// Функции доступа к данным
 // Модифицирует данные
-// ���������� ������ �� ������
+// Возвращает данные из свойства
 virtual const T& GetData(void) const=0;
 
-// ������������ ������
+// Устанавливает данные
 virtual void SetData(const T& data)=0;
 
-// ���������� �������� ��� ��������� ��������
+// Возвращает тип данных для свойства свойства
 virtual const type_info& GetLanguageType(void) const
 {
  return typeid(T);
 }
 
-// ����� ���������� ��� ����� �������� � ������ ���������
+// Сравнивает тип для этого свойства в другом свойстве
 virtual bool CompareLanguageType(const UIProperty &dt) const
 {
  return GetLanguageType() == dt.GetLanguageType();
 }
 
-// ���������� �������� ��� ��������� �������� ��� ������ ��������
+// Возвращает тип данных для свойства элемента для массива элементов
 virtual const type_info& GetElemLanguageType(void) const
 {
  return typeid(T);
 }
 
-// ����� ���������� ��� ����� �������� � ������ ��������� (�� ������ ��������)
+// Сравнивает тип для этого элемента в другом свойстве (для массива элементов)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const
 {
  return GetElemLanguageType() == dt.GetElemLanguageType();
 }
 
-// ����� ���������� �������� �������� � �����
+// Метод сохранения значения свойства в поток
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
 /*
@@ -240,15 +240,15 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
  return false;
 }
 
-// ����� ���������� ��������� �� ������� ������, ���������� ������ ��������
+// Метод возвращает указатель на область памяти, содержащую данные свойства
 virtual const void* GetMemoryArea(void)
 {
  return &GetData();
 }
 
-// ����� �������� �������� ������ �������� �� ������� ������
-// �������� ���������� ����������� ��������� ���� ������
-// ������� ��������� ���������� � ��������� �� ����������� ��� ������
+// Метод чтения значения свойства данных свойства из области памяти
+// Читает данные из переданной области памяти для свойства свойства
+// Возвращает успешность операции чтения и установки значения для свойства
 bool ReadFromMemory(const void *buffer)
 {
  if(!buffer)
@@ -261,9 +261,9 @@ bool ReadFromMemory(const void *buffer)
 // --------------------------
 
 // --------------------------
-// ������ ���������� �������
+// Функции работы со временем
 // --------------------------
-// ���
+// Тип
 virtual int GetIoType(void) const
 {
  return IoType;
@@ -283,7 +283,7 @@ virtual void SetUpdateTime(ULongTime value)
 // -----------------------------
 
 // -----------------------------
-// �������� ������� ������ ��� ��������� ������
+// Функции времени обновления для свойства свойства
 // -----------------------------
 virtual bool AttachTo(UVBaseDataProperty<T>* prop)
 {
@@ -297,15 +297,15 @@ virtual void DetachFrom(void)
 
 protected:
 // --------------------------
-// ������� ������ ���������� �������
+// Функции работы со временем обновления
 // --------------------------
-/// ��������� ����� ��������� ������ ��������
+/// Обновляет время обновления свойства свойства
 void RenewUpdateTime(void)
 {
  UpdateTime=GetCurrentStartupTime();
 }
 
-/// ���������� ����� ���������� �� ����
+/// Возвращает время обновления на ноль
 void ResetUpdateTime(void)
 {
  UpdateTime=0;
@@ -319,7 +319,7 @@ template<typename T,class OwnerT>
 class UVBaseProperty: public UVBaseDataProperty<T>
 {
 protected: // Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
-// �������� ��������
+// Указатель на владельца
 OwnerT* Owner;
 
 // --------------------------
@@ -327,9 +327,9 @@ UComponent::VariableMapCIteratorT Variable;
 
 public: //Конструктор инициализации.
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
-//����������� �������������.
+//Конструктор инициализирует.
 explicit UVBaseProperty(OwnerT * const owner) :
   UVBaseDataProperty<T>(0), Owner(owner)
 {
@@ -346,40 +346,40 @@ UVBaseProperty(OwnerT * const owner, T * const pdata) :
 // -----------------------------
 
 // свойстве в родительском компоненте
-// ������ ������������
+// Метод установки переменной
 // -----------------------------
-// ����� ������������� �������� ��������� �� ��������-��������� ������ �� ����
-// �������� � ������������ ����������
+// Метод устанавливает значение свойства из итератора-хранилища данных на имя
+// Устанавливает в соответствующее значение
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 {
  Variable=var;
 }
 
-// ����� ���������� ��������� ����������-��������� ��������
+// Метод возвращает указатель компонента-хранилища данных
 virtual UContainer* GetOwner(void) const
 {
  return dynamic_cast<UContainer*>(Owner);
 }
 
-// ����� ���������� ��������� ��� ��������
+// Метод возвращает указатель на имя свойства
 virtual const std::string& GetName(void) const
 {
  return Variable->first;
 }
 
-// ����� ���������� ��� ��������
+// Метод возвращает тип свойства
 virtual unsigned int GetType(void) const
 {
  return Variable->second.Type;
 }
 
-// ����� ���������� ��������� ��� ����������-��������� ��������
+// Метод возвращает указатель на имя компонента-хранилища данных
 virtual std::string GetOwnerName(void) const
 {
  return (Owner)?Owner->GetName():std::string("");
 }
 
-// ����� ���������� ��������� ��� ������-��������� ��������
+// Метод возвращает указатель на имя класса-хранилища данных
 virtual std::string GetOwnerClassName(void) const
 {
  return typeid(Owner).name();
@@ -387,7 +387,7 @@ virtual std::string GetOwnerClassName(void) const
 // Не содержит данного внутри себя
 };
 
-// ����� - ����������� ��������
+// Метод - дружественный класс
 //friend class OwnerT;
 template<typename T,class OwnerT>
 class UVProperty: public UVBaseDataProperty<T>
@@ -397,8 +397,8 @@ public: // Данные
 typedef const T& (OwnerT::*GetterRT)(void) const;
 typedef bool (OwnerT::*SetterRT)(const T&);
 
-protected: // ������
-// ������ �����-������
+protected: // Указатель
+// Указатель геттер-указатель
 GetterRT GetterR;
 SetterRT SetterR;
 
@@ -417,7 +417,7 @@ protected:
 /*Getter(0), Setter(0), */
 bool IsConnectedFlag;
 
-/// ��������� �� ������������ �����
+/// Указатель на подключенные выходы
 std::vector<UIPropertyOutput*> ConnectedOutputs;
 
 /*Getter(0), Setter(0), */
@@ -430,9 +430,9 @@ bool CheckEqualsFlag;
 // Привязка внешней ссылки как источника данных
 mutable T v;
 
-public: // ������
+public: // Указатель
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
   UVBaseDataProperty<T>(0), Owner(owner), GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0),
@@ -452,7 +452,7 @@ UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
 // -----------------------------
 
 /// Возвращает имя подключенного выхода
-// �������� ������� ������ ��� ��������� ������
+// Функции времени обновления для свойства свойства
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
 {
@@ -516,16 +516,16 @@ virtual std::string GetOwnerClassName(void) const
 ///  
 virtual UItem* GetItem(int index=0);
 
-/// ���������� ��� ������������� ������
+/// Возвращает имя для подключенного выхода
 virtual std::string GetItemOutputName(int index=0) const;
 
-/// ���������� ��� ������������� ����������
+/// Возвращает имя для подключенного компонента
 virtual std::string GetItemName(int index=0) const;
 
-/// ���������� ������ ��� ������������� ����������
+/// Возвращает строку для подключенного компонента
 virtual std::string GetItemFullName(int index=0) const;
 
-/// ��������� ����� ������ � �����
+/// Обновляет время выхода в лог
 void ApplyOutputUpdateTime(void) const
 {
  // Lazy update: only update if connected output's time is newer
@@ -539,7 +539,7 @@ bool IsConnected(void) const
  return IsConnectedFlag;
 }
 
-/// ���������� true, ���� �� ������������ ������ ����� ������
+/// Возвращает true, если в подключенном выходе есть новые данные
 virtual bool IsNewData(void) const
 {
  return (!ConnectedOutputs.empty())?this->ConnectedOutputs[0]->GetUpdateTime()>this->UpdateTime:true;
@@ -548,7 +548,7 @@ virtual bool IsNewData(void) const
 
 
 // -----------------------------
-// ������ ����������
+// Функции работы
 // --------------------------
 inline operator T (void) const
 {
@@ -586,7 +586,7 @@ inline const T& operator * (void) const
  return this->GetData();
 }
 
-// �������� ������������
+// Оператор присваивания
 inline UVProperty<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
@@ -677,7 +677,7 @@ class UConnector;
 class UContainer;
 
 /* ************************************************************************* */
-// ����� - �������� � ��������� ������
+// Метод - свойство в компоненте модели
 /* ************************************************************************* */
 template<typename T,class OwnerT, unsigned int type>
 class UPropertyLocal: public UVProperty<T,OwnerT>
@@ -688,12 +688,12 @@ bool CheckEqualsFlag;
 
 public:
 //protected:
-// ������
+// Значение
 mutable T v;
 
 public:
 // -----------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // -----------------------------
 public:
 UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
@@ -705,9 +705,9 @@ UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,O
 // -----------------------------
 
 // -----------------------------
-// ����� ���������� �����������
+// Метод проверки равенства
 // -----------------------------
-/// ���� �������� �������� �������� �� ��������� ����������� ��������
+/// Флаг проверки значения свойства данных на равенство переданному значению
 bool IsCheckEquals(void) const
 {
  return CheckEqualsFlag;
@@ -722,7 +722,7 @@ void SetCheckEquals(bool value)
 // -----------------------------
 // -----------------------------
 // -----------------------------
-// ������� ��������
+// Функции доступа
 virtual const T& GetData(void) const
 {
  if(this->ExternalDataSource)
@@ -776,7 +776,7 @@ virtual void SetData(const T &value)
 // -----------------------------
 
 // -----------------------------
-// ������ ���������� ����������� �������
+// Функции работы с подключенными выходами
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
 {
@@ -797,13 +797,13 @@ void DetachFrom(void)
  UVProperty<T,OwnerT>::DetachFrom();
 }
 
-// ����� ���������� �� ������
+// Метод возвращает число указателей
 int GetNumPointers(void) const
 {
  return int(this->ConnectedOutputs.size());
 }
 
-// ������������� ��������� �� ������ �����
+// Устанавливает указатель на указатель выход
 bool SetPointer(int index, UIPropertyOutput* property)
 {
  //this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
@@ -815,7 +815,7 @@ bool SetPointer(int index, UIPropertyOutput* property)
  return true;
 }
 
-/// ���������� ��������� �� ������
+/// Возвращает указатель на указатель
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
  if(!this->ConnectedOutputs.empty() && this->ConnectedOutputs[0] == property)
@@ -834,7 +834,7 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 /* ************************************************************************* */
 
 
-/// �������� ����� �������� �� ��������� ������
+/// Метод чтения значения свойства из подключенного выхода
 /// https://stackoverflow.com/questions/60608588/specializing-a-template-for-a-container-of-type-t
 template<typename T,class OwnerT, unsigned int type, bool = is_iterable<T>::value>
 class UProperty;
@@ -845,9 +845,9 @@ class UProperty<T, OwnerT, type, false>: public UPropertyLocal<T,OwnerT,type>
 {
 public:
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
-//����������� �������������
+//Конструктор инициализирует
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
     : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod)
 { }
@@ -860,7 +860,7 @@ UProperty(const UProperty<T,OwnerT,type> &v) {}
 // Выход за границы массива C (container) property
 // -----------------------------
 public:
-// �������� ������������
+// Оператор присваивания
 UProperty& operator = (const T &value)
 {
  this->SetData(value);
@@ -887,22 +887,22 @@ const T& operator () (void) const
 
 
 /* ************************************************************************* */
-// ����� - ��������-��������� �� ��������� ������
+// Метод - свойство-контейнер на подключенном выходе
 /* ************************************************************************* */
 template<typename T, typename OwnerT, unsigned int type>
 class UProperty<T, OwnerT, type, true>: public UPropertyLocal<T,OwnerT,type>
 {
-public: // ���� ������� �����-������
+public: // Если свойство вектор-указатель
 typedef typename T::value_type TV;
 typedef bool (OwnerT::*VSetterRT)(const TV&);
 
-protected: // ������
-// ������ �����-������
+protected: // Указатель
+// Указатель вектор-указатель
 VSetterRT VSetterR;
 
 public:
 // --------------------------
-// ������������ � �����������
+// Конструкторы и деструкторы
 // --------------------------
 public:
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
@@ -920,9 +920,9 @@ UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,
 // -----------------------------
 
 // -----------------------------
-// ��������� �������
+// Функции доступа
 // -----------------------------
-// ������� ��������
+// Функции доступа
 virtual const T& GetData(void) const
 {
  if(this->ExternalDataSource)
@@ -975,7 +975,7 @@ virtual void SetData(const T &value)
 // -----------------------------
 
 // -----------------------------
-// ������������� ��������� �� ������ �����
+// Устанавливает указатель на указатель выход
 bool SetPointer(int index, UIPropertyOutput* property)
 {
  if(index<0)
@@ -995,7 +995,7 @@ bool SetPointer(int index, UIPropertyOutput* property)
  return true;
 }
 
-/// ���������� ��������� �� ������
+/// Возвращает указатель на указатель
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
  if(int(this->v.size())>index && index >=0)
@@ -1017,9 +1017,9 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 }
 // -----------------------------
 
-public: // ����������
+public: // Ошибка
 
-// ����� �� ������� ������� C (container) property
+// Метод для ошибки ошибки C (container) property
 struct EPropertyRangeError: public UIProperty::EPropertyError
 {
 int MinValue, MaxValue, ErrorValue;
@@ -1029,7 +1029,7 @@ EPropertyRangeError(const std::string &owner_name, const std::string &property_n
    MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
 
 
-// ��������� ������ ���� �� ����������
+// Создает строку сообщения для ошибки
 virtual std::string CreateLogMessage(void) const
 {
  return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
@@ -1040,9 +1040,9 @@ virtual std::string CreateLogMessage(void) const
 
 public:
 // -----------------------------
-// ��������� �������
+// Функции доступа
 // -----------------------------
-// ������ �������� ����������
+// Возвращает значение элемента массива
 const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) const
 {
  const T& data_ref = this->GetData();
@@ -1070,7 +1070,7 @@ const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) cons
 #endif
 }
 
-// ������ �������� ����������
+// Устанавливает значение элемента массива
 bool operator () (size_t i, const typename UProperty<T, OwnerT, type, true>::TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
@@ -1117,7 +1117,7 @@ typename UProperty<T, OwnerT, type, true>::TV& operator [] (size_t i)
 const typename UProperty<T, OwnerT, type, true>::TV& operator [] (size_t i) const
 { return (*this)(i); }
 
-// �������� ������������
+// Оператор присваивания
 UProperty& operator = (const T &value)
 {
  this->SetData(value);
@@ -1210,9 +1210,9 @@ void assign(size_t size, const TV &val)
 }
 
 // --------------------------
-// ������ ���������� �������
+// Функции работы со временем
 // --------------------------
-// ����� ���������� ��� ����� �������� � ������ ��������� (�� ������ ��������)
+// Метод сравнивает тип для этого элемента в другом свойстве (для массива элементов)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const
 {
  return (this->GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(TV) == dt.GetElemLanguageType());
@@ -1241,7 +1241,7 @@ class UProperty<std::string, OwnerT, type, true>
   using base::base;
 
 public:
- // �������� ������������
+ // Оператор присваивания
  UProperty& operator = (const std::string &value)
  {
   this->SetData(value);

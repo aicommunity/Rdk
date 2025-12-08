@@ -259,13 +259,13 @@ bool UEnvironment::SetStorage(UStorage *storage)
  return true;
 }
 
-// ���������� ��������� �� ������
+// Возвращает модель из ядра
 UEPtr<UContainer> UEnvironment::GetModel(void)
 {
  return Model;
 }
 
-// ������� ����� ������ �� ��������� �� ����� ������
+// Создает новую модель в Environment по имени класса
 bool UEnvironment::CreateModel(const NameT& classname)
 {
  if(!IsInit())
@@ -303,7 +303,7 @@ bool UEnvironment::CreateModel(const NameT& classname)
  return true;
 }
 
-// ������� ����� ������ �� ��������� �� id ������
+// Создает новую модель в Environment по id класса
 bool UEnvironment::CreateModel(const UId& classid)
 {
  if(!IsInit())
@@ -341,7 +341,7 @@ bool UEnvironment::CreateModel(const UId& classid)
  return true;
 }
 
-// ���������� ������� ������
+// Уничтожает модель модели
 bool UEnvironment::DestroyModel(void)
 {
  if(!Model)
@@ -356,7 +356,7 @@ bool UEnvironment::DestroyModel(void)
  return true;
 }
 
-/// �������������� ������
+/// Инициализирует модель
 void UEnvironment::ModelInit(void)
 {
     if(!Model)
@@ -365,7 +365,7 @@ void UEnvironment::ModelInit(void)
     Model->Init();
 }
 
-/// ���������������� ������
+/// Деинициализирует модель
 void UEnvironment::ModelUnInit(void)
 {
     if(!Model)
@@ -378,20 +378,20 @@ void UEnvironment::ModelUnInit(void)
 // --------------------------
 
 // --------------------------
-// ������ ���������� �������������
+// Функции работы с компонентами
 // --------------------------
 // --------------------------
 
 // --------------------------
-// ��������� ������� � ������ �����
+// Функции работы с текущим компонентом
 // --------------------------
-// ���������� ��������� �� ������� ��������� ������
+// Возвращает компонент из текущего компонента модели
 UEPtr<UContainer> UEnvironment::GetCurrentComponent(void)
 {
  return CurrentComponent;
 }
 
-// ������������� ��������� �� ������� ��������� ������
+// Устанавливает компонент на текущий компонент модели
 void UEnvironment::SelectCurrentComponent(const NameT &name)
 {
  if(!IsInit())
@@ -420,7 +420,7 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
   CurrentComponent=Model->GetComponentL(id);
 }
 
-// ������������� ��������� �� ������� ��������� ������ �� ���� ������
+// Устанавливает компонент на текущий компонент модели в состояние сброса
 void UEnvironment::ResetCurrentComponent(void)
 {
  if(!IsInit())
@@ -432,8 +432,8 @@ void UEnvironment::ResetCurrentComponent(void)
  CurrentComponent=Model;
 }
 
-// ������������� ��������� �� ������� ��������� ������ �� ������������ ���������
-// (������� �� ������� �����). ���� ��� ��������� �� ������, �� �� ������ ������
+// Устанавливает компонент на текущий компонент модели на родительский компонент
+// (переход к родительскому компоненту). Если он не имеет родителя, то не делает ничего
 void UEnvironment::UpCurrentComponent(void)
 {
  if(!IsInit())
@@ -448,8 +448,8 @@ void UEnvironment::UpCurrentComponent(void)
  CurrentComponent=CurrentComponent->GetOwner();
 }
 
-// ������������� ��������� �� ������� ��������� ������ �� �������� ��������� ��
-// ����� ������ (������� �� ������� ����).
+// Устанавливает компонент на текущий компонент модели на дочерний компонент по
+// имени компонента (переход к дочернему компоненту).
 void UEnvironment::DownCurrentComponent(const NameT &name)
 {
  if(!IsInit())
@@ -472,7 +472,7 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
  CurrentComponent=GetCurrentComponent()->GetComponentL(id);
 }
 
-/// ����� �����
+/// Время модели
 const UTimeControl& UEnvironment::GetTime(void) const
 {
  return Time;
@@ -483,7 +483,7 @@ UTimeControl& UEnvironment::GetTime(void)
  return Time;
 }
 
-/// ������ �������� ������ � �������������� ����������
+/// Возвращает индекс канала модели в соответствующем массиве
 int UEnvironment::GetChannelIndex(void) const
 {
  return ChannelIndex;
@@ -498,7 +498,7 @@ bool UEnvironment::SetChannelIndex(int value)
  return true;
 }
 
-/// ������
+/// Шрифты
 RDK::UBitmapFontCollection& UEnvironment::GetFonts(void)
 {
  return Fonts;
@@ -510,13 +510,13 @@ bool UEnvironment::SetFonts(const RDK::UBitmapFontCollection& value)
  return true;
 }
 
-/// ���������� ����� ��������� predefined structures
+/// Возвращает список всех predefined structures
 const std::map<int, UEnvPredefinedStructDescription>& UEnvironment::GetPredefinedStructures(void) const
 {
  return PredefinedStructures;
 }
 
-/// ���������� ��������� predefined structure �� id
+/// Возвращает описание predefined structure по id
 UEnvPredefinedStructDescription UEnvironment::GetPredefinedStructureDescription(int id) const
 {
  std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(id);
@@ -536,7 +536,7 @@ bool UEnvironment::AddPredefinedStructure(const UEnvPredefinedStructDescription 
  return true;
 }
 
-/// ��������� ������� predefined structure �� id
+/// Удаляет описание predefined structure по id
 void UEnvironment::DelPredefinedStructure(int id)
 {
  std::map<int, UEnvPredefinedStructDescription>::iterator I=PredefinedStructures.find(id);
@@ -546,7 +546,7 @@ void UEnvironment::DelPredefinedStructure(int id)
  PredefinedStructures.erase(I);
 }
 
-/// ������� ��� predefined structures
+/// Очищает все predefined structures
 void UEnvironment::ClearPredefinedStructures(void)
 {
  PredefinedStructures.clear();
@@ -555,11 +555,11 @@ void UEnvironment::ClearPredefinedStructures(void)
 
 
 // --------------------------
-// ������ ���������� �������������
+// Функции работы с контроллерами
 // --------------------------
-/// ������������� ���������� � ���������� ��������� ������ �������� �����
-/// ������������ ������ � ���� � ������
-/// ��������� ������
+/// Регистрирует контроллер источника в указанном компоненте модели источника данных
+/// Соответствующий объект в лог в лог
+/// Вызывает контроллер
 bool UEnvironment::RegisterSourceController(const std::string &component_name, const std::string &property_name)
 {
  if(!IsInit())
@@ -606,9 +606,9 @@ bool UEnvironment::CallSourceController(void)
 
 
 // --------------------------
-// ������ ���������� ������������ ������
+// Функции работы с читателями данных
 // --------------------------
-/// ������������ ����� ����� ����� ������ (���� MDMatrix)
+/// Регистрирует читатель данных для элемента матрицы (тип MDMatrix)
 UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
  for(size_t i=0;i<DataReaders.size();i++)
@@ -643,7 +643,7 @@ UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &compo
  return data;
 }
 
-/// ������� ����������� ����� ����� ������ (���� MDMatrix)
+/// Удаляет регистрацию читателя данных для элемента матрицы (тип MDMatrix)
 void UEnvironment::UnRegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
  for(size_t i=0;i<DataReaders.size();i++)
@@ -662,7 +662,7 @@ void UEnvironment::UnRegisterDataReader(const std::string &component_name, const
  }
 }
 
-/// ������� ����������� ���� ����� ����� ������ (���� MDMatrix)
+/// Удаляет регистрацию всех читателей данных для элементов матрицы (тип MDMatrix)
 void UEnvironment::UnRegisterAllDataReaders(void)
 {
  for(size_t i=0;i<DataReaders.size();i++)
@@ -686,9 +686,9 @@ UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_
 // --------------------------
 
 // --------------------------
-// ������ ���������� ������
+// Функции работы с временем
 // --------------------------
-// ���������� ���������� ������� ������ �� ��������� ��������
+// Увеличивает текущее время модели на шаг расчета
 void UEnvironment::IncreaseModelTimeByStep(void)
 {
  if(!IsInit())
@@ -704,16 +704,16 @@ void UEnvironment::IncreaseModelTimeByStep(void)
 // --------------------------
 
 // --------------------------
-// ������ ������������� �����
+// Функции работы со Storage
 // --------------------------
 // --------------------------
 
 // --------------------------
-// ������ ������� � ������ ���������
+// Функции создания и уничтожения модели
 // --------------------------
 // Уничтожает текущую модель обработки
-// true - ��������� ������ � �������������
-// false - ��������� �� ������
+// true - Storage присутствует в Environment
+// false - Storage отсутствует
 bool UEnvironment::IsStoragePresent(void) const
 {
  return StoragePresent;
@@ -721,9 +721,9 @@ bool UEnvironment::IsStoragePresent(void) const
 // --------------------------
 
 // --------------------------
-// ������ ����������
+// Функции структурирования
 // --------------------------
-// ��������� �������������� �������� ������ ���������
+// Выполняет построение структурированной структуры модели компонента
 bool UEnvironment::CreateStructure(void)
 {
  if(Structured)
@@ -742,7 +742,7 @@ bool UEnvironment::CreateStructure(void)
  return true;
 }
 
-// ���������� ������� ������ ���������
+// Уничтожает структуру модели компонента
 bool UEnvironment::DestroyStructure(void)
 {
  if(!Structured)
@@ -758,13 +758,13 @@ bool UEnvironment::DestroyStructure(void)
  return true;
 }
 
-/// ����, ������������ ���� ��������� ����� ������� (�� MaxCalcTime)
+/// Флаг, указывающий что расчет модели был завершен (по MaxCalcTime)
 bool UEnvironment::IsCalcFinished(void) const
 {
  return CalcFinishedFlag;
 }
 
-// ������ ������ � �������� �������
+// Вызов расчета в режиме реального времени
 void UEnvironment::RTCalculate(void)
 {
  if(!IsInit())
@@ -780,7 +780,7 @@ void UEnvironment::RTCalculate(void)
  CurrentTime=GetCurrentStartupTime();
 // Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
- // ���� ������ ��� ������� ����� Reset
+ // Если время равно нулю то вызывается функция Reset
  if(Time.GetTime() == 0)
  {
   Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
@@ -855,7 +855,7 @@ void UEnvironment::RTCalculate(void)
  RTModelCalcTime=model_stop_calc_time-model_start_calc_time;
 }
 
-/// ������ ������ �������� ������������� calc_intervsal ������ � ����������� ��������� ���������
+/// Вызов расчета модели с заданным интервалом calc_interval расчета в миллисекундах времени
 void UEnvironment::FastCalculate(double calc_interval)
 {
  if(!IsInit())
@@ -871,7 +871,7 @@ void UEnvironment::FastCalculate(double calc_interval)
  CurrentTime=GetCurrentStartupTime();
 // Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
- // ���� ������ ��� ������� ����� Reset
+ // Если время равно нулю то вызывается функция Reset
  if(Time.GetTime() == 0)
  {
   Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
@@ -940,9 +940,9 @@ void UEnvironment::FastCalculate(double calc_interval)
 
 
 // --------------------------
-// ������� ������ ���������� ������
+// Функции автоматической инициализации модели
 // Восстановление настроек по умолчанию и сброс процесса счета
-// ������������� �����
+// Инициализирует Environment
 void UEnvironment::AInit(void)
 {
  ModelCalculationComponent.Resize(0);
@@ -950,7 +950,7 @@ void UEnvironment::AInit(void)
  return;
 }
 
-// ��������������� �����
+// Деинициализирует Environment
 void UEnvironment::AUnInit(void)
 {
  ModelUnInit();
@@ -958,7 +958,7 @@ void UEnvironment::AUnInit(void)
  return;
 }
 
-// ��������� �������������� �������� ������ ���������
+// Выполняет построение структурированной структуры модели компонента
 bool UEnvironment::ACreateStructure(void)
 {
  RdkCreatePredefinedStructure(this, PredefinedStructure);
@@ -966,13 +966,13 @@ bool UEnvironment::ACreateStructure(void)
 }
 
 
-// ���������� ������� ������ ���������
+// Уничтожает структуру модели компонента
 bool UEnvironment::ADestroyStructure(void)
 {
  return true;
 }
 
-// �������������� �������� �� ��������� � ����� �������� �����
+// Инициализирует значения по умолчанию для свойств и всех дочерних компонентов
 bool UEnvironment::ADefault(void)
 {
  if(!Model)
@@ -1004,10 +1004,10 @@ bool UEnvironment::ADefault(void)
  return true;
 }
 
-// ������������ ������ ���������� ��������� �������
-// ����� ��������� ����������
-// ������������� �������� ����� Reset() � ���������� Ready � true
-// � ������ �������� ������
+// Выполняет построение структуры модели компонента
+// для текущего компонента модели
+// Выполняет вызов функции Reset() и устанавливает Ready в true
+// в случае успешного построения модели
 bool UEnvironment::ABuild(void)
 {
  if(!Model)
@@ -1033,7 +1033,7 @@ bool UEnvironment::ABuild(void)
  return true;
 }
 
-// ����� �������� �����.
+// Вызов сброса модели.
 bool UEnvironment::AReset(void)
 {
  CalcFinishedFlag=false;
@@ -1071,10 +1071,10 @@ bool UEnvironment::AReset(void)
  return true;
 }
 
-// ��������� ������ ����� �������
+// Вызывает расчет модели компонента
 bool UEnvironment::ACalculate(void)
 {
- // ���� ������ ��� ������� ����� Reset
+ // Если время равно нулю то вызывается функция Reset
  if(Time.GetTime() == 0)
  {
   Time.SetSourceStartLocalTime(0);
@@ -1089,7 +1089,7 @@ bool UEnvironment::ACalculate(void)
  if(!Model)
   return true;
 
- // ���������, ���������� �� ����� �������� ������� ����� ���������� �����
+ // Проверяет, прошло ли с момента последнего расчета времени больше чем интервал
  if(MinInterstepsInterval>0 && CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
   return true;
 
@@ -1117,8 +1117,8 @@ bool UEnvironment::ACalculate(void)
  //for(size_t i=0;i<DataReaders.size();i++)
  // DataReaders[i]->Update();
 
- // ���� �� ������� ��� ������, �� ����������� ����� ������ �����,
- // ����� �� �������, ��� ���������� ������ ��� ��������� ����� ������
+ // Если не задан для расчета то рассчитывается вся модель целиком,
+ // иначе рассчитывается только указанный компонент и его дочерние компоненты
  if(ModelCalculationComponent.GetSize() == 0)
   IncreaseModelTimeByStep();
 

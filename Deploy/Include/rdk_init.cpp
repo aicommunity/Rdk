@@ -24,8 +24,8 @@ namespace RDK {
 namespace RDK {
 
 
-/// ���������� RDK_UNHANDLED_EXCEPTION ���� �� ������� �������� ������ ����������
-/// ����� ���������� RDK_EXCEPTION_CATCHED
+/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось обработать исключение
+/// Иначе возвращает RDK_EXCEPTION_CATCHED
 int RDK_CALL ProcessException(int channel_index, const UException &ex)
 {
  UEPtr<UExceptionLogger> logger=RdkCoreManager.GetLogger(channel_index);
@@ -35,15 +35,15 @@ int RDK_CALL ProcessException(int channel_index, const UException &ex)
  return RDK_EXCEPTION_CATCHED;
 }
 
-/// ���������� � ���������� ������� ���������, ���� result != RDK_SUCCESS
-/// �������� ������ ���� ������� ���������� �����
+/// Выводит в отладчик сообщение об ошибке, если result != RDK_SUCCESS
+/// Выводит строку с кодом ошибки в отладчик
 void AssertDebugger(int result, const char* function, const char* file, int line)
 {
  if(result != 0)
   RdkDebuggerMessage(std::string("Assertion in ")+std::string(function)+std::string(" in ")+extract_file_name(file)+std::string(":")+sntoa(line)+std::string(" code=")+sntoa(result));
 }
 
-/// ���������� � ��� ���������, ���� result != RDK_SUCCESS
+/// Выводит в лог сообщение, если result != RDK_SUCCESS
 void AssertLog(int result, const char* function, const char* file, int line)
 {
  if(result != 0)
@@ -65,14 +65,14 @@ extern RDK::UEngine* CreateNewEngine(void);
 /*****************************************************************************/
 
 // ----------------------------
-// ������� RPC
-// � ������� ���� ������� �������� ������� ����� ������� ����������,
-// ������������ ��������� ������
+// Функции RPC
+// В данном разделе определены функции которые вызываются через внешний интерфейс,
+// соответствующие процедуры ядра
 // ----------------------------
-/// ��������� ������ � ���������� xml-�������� ������
-/// request - xml �������� �������
-/// return_value - ������������ �������� ��� ��� �������, ������� ��� �����
-/// ��� ��������� ���������� 0
+/// Выполняет запрос и возвращает xml-результат запроса
+/// request - xml строка запроса
+/// return_value - возвращаемое значение для этой функции, которое может быть кодом ошибки
+/// или успешным результатом, если успешно возвращает 0
 const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int &channel_index)
 {
  return RDK::RemoteCallInternal(request, return_value, channel_index);
@@ -80,54 +80,54 @@ const char* RDK_CALL Core_RemoteCall(const char *request, int &return_value, int
 // ----------------------------
 
 // ----------------------------
-// ������� ����������� ������
+// Функции версии ядра
 // ----------------------------
-/// ���������� �������� ������ ����
+/// Возвращает номер версии ядра
 int RDK_CALL Ver_CoreMajor(void)
 {
  return RdkCoreManager.GetVersion().Major;
 }
 
-/// ���������� �������� ������ ����
+/// Возвращает номер версии ядра
 int RDK_CALL Ver_CoreMinor(void)
 {
  return RdkCoreManager.GetVersion().Minor;
 }
 
-/// ���������� ������ ����� ����
+/// Возвращает номер ревизии ядра
 int RDK_CALL Ver_CoreRevision(void)
 {
  return RdkCoreManager.GetVersion().Revision;
 }
 
-/// ���������� ������ ������ ���� � ���� ������
+/// Возвращает строку версии ядра в формате строки
 const char* RDK_CALL Ver_Core(void)
 {
  return RdkCoreManager.GetVersion().ToString().c_str();
 }
 
-/// ���������� ������ ���� � ����������
-/// ���������� >0 ���� ������ ���� ������,
-/// ���������� <0 ���� ������ ���� ������,
-/// ���������� 0 � ������ ����������.
+/// Сравнивает версию ядра с переданной
+/// Возвращает >0 если версия ядра больше,
+/// Возвращает <0 если версия ядра меньше,
+/// Возвращает 0 в случае равенства.
 int RDK_CALL Ver_CoreCompare(int major, int minor, int revision)
 {
  return RdkCoreManager.GetVersion().CompareCore(major, minor, revision);
 }
 
-/// ���������� ��� ����������� ����
+/// Возвращает имя компилятора ядра
 const char* RDK_CALL Ver_CompilerName(void)
 {
  return RdkCoreManager.GetVersion().CompilerName.c_str();
 }
 
-/// ���������� ������ ����������� ����
+/// Возвращает версию компилятора ядра
 const char* RDK_CALL Ver_CompilerVersion(void)
 {
  return RdkCoreManager.GetVersion().CompilerVersion.c_str();
 }
 /*
-/// ���������� ������ opencv (���� ������������)
+/// Возвращает версию opencv (если используется)
 const char* RDK_CALL Ver_OpenCvVersion(void)
 {
 #ifdef CV_VERSION
@@ -138,7 +138,7 @@ const char* RDK_CALL Ver_OpenCvVersion(void)
 }*/
 // ----------------------------
 
-/// ���������� ��������� ����� ����������� ������ �����
+/// Возвращает текущий режим отладки логгера ядра
 bool RDK_CALL Log_GetDebugMode(void)
 {
  return RdkCoreManager.GetLogger()->GetDebugMode();
@@ -151,7 +151,7 @@ bool RDK_CALL MLog_GetDebugMode(int channel_index)
  return RdkCoreManager.GetLogger(channel_index)->GetDebugMode();
 }
 
-/// ������������� ��������� ����� ����������� ������ �����
+/// Устанавливает текущий режим отладки логгера ядра
 int RDK_CALL Log_SetDebugMode(bool value)
 {
  return RdkCoreManager.GetLogger()->SetDebugMode(value);
@@ -164,7 +164,7 @@ int RDK_CALL MLog_SetDebugMode(int channel_index, bool value)
  return RdkCoreManager.GetLogger(channel_index)->SetDebugMode(value);
 }
 
-/// ���������� ����� ��������� ������� ��� �����������
+/// Возвращает маску системных событий для отладки
 unsigned int RDK_CALL Log_GetDebugSysEventsMask(void)
 {
  return RdkCoreManager.GetLogger()->GetDebugSysEventsMask();
@@ -178,7 +178,7 @@ unsigned int RDK_CALL MLog_GetDebugSysEventsMask(int channel_index)
  return RdkCoreManager.GetLogger(channel_index)->GetDebugSysEventsMask();
 }
 
-/// ������������� ����� ��������� ������� ��� �����������
+/// Устанавливает маску системных событий для отладки
 int RDK_CALL Log_SetDebugSysEventsMask(unsigned int value)
 {
  return RdkCoreManager.GetLogger()->SetDebugSysEventsMask(value);
@@ -192,7 +192,7 @@ int RDK_CALL MLog_SetDebugSysEventsMask(int channel_index, unsigned int value)
  return RdkCoreManager.GetLogger(channel_index)->SetDebugSysEventsMask(value);
 }
 
-/// ���������� ���� ��������� ������ ���� � ��������
+/// Возвращает флаг вывода сообщений в отладчик
 bool RDK_CALL Log_GetDebuggerMessageFlag(void)
 {
  return RdkCoreManager.GetLogger()->GetDebuggerMessageFlag();
@@ -206,7 +206,7 @@ bool RDK_CALL MLog_GetDebuggerMessageFlag(int channel_index)
  return RdkCoreManager.GetLogger(channel_index)->GetDebuggerMessageFlag();
 }
 
-/// ������������� ���� ��������� ������ ���� � ��������
+/// Устанавливает флаг вывода сообщений в отладчик
 int RDK_CALL Log_SetDebuggerMessageFlag(bool value)
 {
  if(!RdkCoreManager.GetLogger()->SetDebuggerMessageFlag(value))
@@ -224,7 +224,7 @@ int RDK_CALL MLog_SetDebuggerMessageFlag(int channel_index, bool value)
  return RDK_SUCCESS;
 }
 
-// ���������� ��������-������������ ����������
+// Возвращает обработчик-исключений исключений
 void* RDK_CALL Log_GetExceptionHandler(void)
 {
  return (void*)RdkCoreManager.GetLogger()->GetExceptionHandler();
@@ -254,8 +254,8 @@ int RDK_CALL MLog_SetExceptionHandler(int channel_index, void* value)
  return RDK_SUCCESS;
 }
 
-// ���������� ������ ����� ����
-// ���������� � ��� ����� ���������
+// Записывает строку в лог ядра
+// Записывает в лог сообщение
 int RDK_CALL Log_LogMessage(int log_level, const char *message)
 {
  RdkCoreManager.GetLogger()->LogMessage(log_level, message);
@@ -271,7 +271,7 @@ int RDK_CALL MLog_LogMessage(int channel_index, int log_level, const char *messa
  return RDK_SUCCESS;
 }
 
-// ���������� � ��� ����� ��������� � ����� ������
+// Записывает в лог сообщение с номером события
 int RDK_CALL Log_LogMessageEx(int log_level, const char *message, int error_event_number)
 {
  RdkCoreManager.GetLogger()->LogMessage(log_level, message,error_event_number);
@@ -287,15 +287,15 @@ int RDK_CALL MLog_LogMessageEx(int channel_index, int log_level, const char *mes
  return RDK_SUCCESS;
 }
 
-// ���������� ��������� ������ ����� ���� � ������� ���������� ���������� ����
-// ���� ��������
-/// ���������� ����� ������������� ����� ����
+// Возвращает текущую строку версии ядра в формате строки версии
+// для отладки
+/// Возвращает строку версии компилятора ядра
 // ----------------------------
 
 // ----------------------------
-// ������ �������������
+// Функции системных директорий
 // ----------------------------
-// ���������� ��� �������� �������� ������
+// Возвращает путь к системной директории ядра
 const char* RDK_CALL Core_GetSystemDir(void)
 {
  return RdkCoreManager.GetSystemDir();
@@ -306,7 +306,7 @@ const char* RDK_CALL GetSystemDir(void)
  return Core_GetSystemDir();
 }
 
-// ������������� ��� �������� �������� ������
+// Устанавливает путь к системной директории ядра
 int RDK_CALL Core_SetSystemDir(const char *dir)
 {
  return RdkCoreManager.SetSystemDir(dir);
@@ -317,25 +317,25 @@ int RDK_CALL SetSystemDir(const char *dir)
  return Core_SetSystemDir(dir);
 }
 
-// ���������� ��� �������� �������� ������
+// Возвращает путь к директории логов ядра
 const char* RDK_CALL Core_GetLogDir(void)
 {
  return RdkCoreManager.GetLogDir();
 }
 
-// ������������� ��� �������� �������� ������
+// Устанавливает путь к директории логов ядра
 int RDK_CALL Core_SetLogDir(const char *dir)
 {
  return RdkCoreManager.SetLogDir(dir);
 }
 
-// ���������� ���������� ��������� ��������� ����������� ������
+// Возвращает текущий режим отладки системных сообщений логгера ядра
 bool RDK_CALL Core_GetDebugMode(void)
 {
  return RdkCoreManager.GetDebugMode();
 }
 
-// ������������� ���������� ��������� ��������� ����������� ������
+// Устанавливает текущий режим отладки системных сообщений логгера ядра
 int RDK_CALL Core_SetDebugMode(bool value)
 {
  return RdkCoreManager.SetDebugMode(value);
@@ -353,25 +353,25 @@ int RDK_CALL Core_SetDebuggerMessageFlag(bool value)
  return RdkCoreManager.SetDebuggerMessageFlag(value);
 }
 
-// ������� ���������� ������
+// Очищает загруженные шрифты
 int RDK_CALL Core_ClearFonts(void)
 {
  return RdkCoreManager.ClearFonts();
 }
 
-// ��������� ���������� ������
+// Загружает загруженные шрифты
 int RDK_CALL Core_LoadFonts(void)
 {
  return RdkCoreManager.LoadFonts();
 }
 
-// ���������� ����� �������
+// Возвращает число каналов
 int RDK_CALL Core_GetNumChannels(void)
 {
  return RdkCoreManager.GetNumChannels();
 }
 
-// ������� ��������� ����� �������
+// Устанавливает число каналов ядра
 // num > 0
 int RDK_CALL Core_SetNumChannels(int num)
 {
@@ -415,9 +415,9 @@ int RDK_CALL SetNumChannels(int num)
  return Core_SetNumChannels(num);
 }
 
-// ��������� ������ � ������� ��������� �������
-// ���� ������� ����� ��� �������� ��������� ��
-// ��������� � �����
+// Добавляет канал в список существующих каналов
+// Если канал уже есть для данного индекса то
+// добавление не происходит
 int RDK_CALL Core_AddChannel(int index)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -449,7 +449,7 @@ int RDK_CALL Core_AddChannel(int index)
  return res;
 }
 
-// ������� ������ �� �������
+// Удаляет канал из списка
 int RDK_CALL Core_DelChannel(int index)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -476,20 +476,20 @@ int RDK_CALL Core_DelChannel(int index)
  return res;
 }
 
-// ���������� ������ �������� ���������� ������
+// Возвращает индекс текущего выбранного канала
 int RDK_CALL Core_GetSelectedChannelIndex(void)
 {
  return RdkCoreManager.GetSelectedChannelIndex();
 }
 
-// ����������� ������� ��������� �� ������ � �������� �������
-// � ������ �������� ������, ��������� ������������� ����������������� �� 0 ������
+// Устанавливает индекс выбранного канала на переданный индекс
+// В случае некорректного индекса, устанавливает автоматически выбранный на 0 канал
 int RDK_CALL Core_SelectChannel(int index)
 {
  return RdkCoreManager.SelectChannel(index);
 }
 
-/// ��������� ����� �� ������ ������� UnlockEngine
+/// Блокирует канал до вызова функции UnlockEngine
 int RDK_CALL Core_LockChannel(void)
 {
  return MCore_LockChannel(RdkCoreManager.GetSelectedChannelIndex());
@@ -524,7 +524,7 @@ int RDK_CALL MCore_LockChannel(int index)
  return res;
 }
 
-/// ������������ �����
+/// Разблокирует канал
 int RDK_CALL Core_UnLockChannel(void)
 {
  return MCore_UnLockChannel(RdkCoreManager.GetSelectedChannelIndex());
@@ -599,7 +599,7 @@ int RDK_CALL MCore_ChannelInit(int channel_index, int predefined_structure, void
  return RdkCoreManager.ChannelInit(channel_index, predefined_structure, exception_handler);
 }
 
-// ���������������� ������ (������� ������������� ���������� ��� ������ �������������)
+// Деинициализирует канал (освобождает выделенную память для всех компонентов)
 int RDK_CALL Core_ChannelUnInit(void)
 {
  return MCore_ChannelUnInit(Core_GetSelectedChannelIndex());
@@ -610,7 +610,7 @@ int RDK_CALL MCore_ChannelUnInit(int channel_index)
  return RdkCoreManager.ChannelUnInit(channel_index);
 }
 
-/// ��������� ��������������� �� ������
+/// Проверяет инициализированность канала
 bool RDK_CALL Core_IsChannelInit(void)
 {
  return (RdkCoreManager.GetEngine())?true:false;
@@ -624,10 +624,10 @@ bool RDK_CALL MCore_IsChannelInit(int channel_index)
  return (RdkCoreManager.GetEngine(channel_index))?true:false;
 }
 
-/// ����� �������� ���������� ��������� ���������� ���
-/// ������������ ��������
-/// 0 - ���� ���������� ��� ���� �������, ������������ ����� ���
-/// 1 - ���������� ���������� � �������������� ������� ������� �������
+/// Режим работы буфера временных строковых объектов
+/// Возвращаемое значение
+/// 0 - если объекты удаляются при вызове функции, возвращающей строку или
+/// 1 - если объекты удаляются при следующем вызове функции расчета расчета
 int RDK_CALL Core_GetBufObjectsMode(void)
 {
  return RdkCoreManager.GetBufObjectsMode();
@@ -638,7 +638,7 @@ int RDK_CALL Core_SetBufObjectsMode(int mode)
  return RdkCoreManager.SetBufObjectsMode(mode);
 }
 
-/// ������������ �������� ������ ������, �� ��������� ���������
+/// Освобождает память строки буфера, на которую указывает указатель
 int RDK_CALL Engine_FreeBufString(const char *pointer)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -747,7 +747,7 @@ int RDK_CALL MEngine_FreeBufStringUnsafe(int channel_index,const char *pointer)
  return res;
 }
 
-/// ���������� ����� �������� ����� ������
+/// Возвращает число выделенных строк буфера
 int RDK_CALL Engine_GetNumBufStrings(void)
 {
  return RdkCoreManager.GetEngineLock()->GetNumTempStrings();
@@ -760,7 +760,7 @@ int RDK_CALL MEngine_GetNumBufStrings(int channel_index)
  return RdkCoreManager.GetEngineLock()->GetNumTempStrings();
 }
 
-/// ������ � ��������
+/// Мьютекс для синхронизации
 void* RDK_CALL Engine_GetMutex(void)
 {
  return RdkCoreManager.GetEngineMutex();
@@ -773,59 +773,59 @@ void* RDK_CALL MEngine_GetMutex(int index)
 // ----------------------------
 
 // --------------------------
-// ������ ���������� ����������
+// Функции работы со Storage
 // ----------------------------
-// ���������� ����� ������� � ���������
+// Возвращает число классов в Storage
 int RDK_CALL Storage_GetNumClasses(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetNumClasses();
 }
 
-// ���������� id ������� � ���������. ������ ������ ���� ��������
+// Возвращает id классов в массиве. Массив должен быть выделен
 int RDK_CALL Storage_GetClassesList(int *buffer)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassesList(buffer);
 }
 
-// ���������� ����� ������� � ��������� � ���� ������ ����������� ��������
+// Возвращает строку классов в массиве в формате строки разделенных пробелами
 const char * RDK_CALL Storage_GetClassesNameList(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassesNameList();
 }
 
-// ���������� ��� ������ �� ��� id.
+// Возвращает имя класса по его id.
 const char * RDK_CALL Storage_GetClassName(int id)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassName(id);
 }
 
-// ���������� Id ������ �� ��� �����
+// Возвращает Id класса по его имени
 int RDK_CALL Storage_GetClassId(const char *name)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassId(name);
 }
 
-// ������� ������� ������ ������� �� ���������
-// ���������� false ���� classid �� ������,
-// ��� ������������ ������� ����� ������
+// Удаляет класс из Storage по идентификатору
+// Возвращает false если classid не найден,
+// или успешно удален класс был удален
 int RDK_CALL Storage_DelClass(int classid)
 {
  return RdkCoreManager.GetEngineLock()->Storage_DelClass(classid);
 }
 
-// �������� ��� ��������� ������� �� ���������
+// Освобождает память объектов Storage из Storage
 int RDK_CALL Storage_FreeObjectsStorage(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_FreeObjectsStorage();
 }
 
-// ������� ��� ������� �� ���������
+// Очищает все объекты из Storage
 int RDK_CALL Storage_ClearObjectsStorage(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_ClearObjectsStorage();
 }
 
-// ��������� ��������� ����� �������� � ���������
+// Вычисляет текущее число объектов в Storage
 int RDK_CALL Storage_CalcNumObjects(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_CalcNumObjects();
@@ -841,25 +841,25 @@ int RDK_CALL Storage_CalcNumObjectsByName(const char* classname)
  return RdkCoreManager.GetEngineLock()->Storage_CalcNumObjectsByName(classname);
 }
 
-// ���������� �������� ������ �� ��� id � ������� xml
+// Возвращает описание класса по его id в формате xml
 const char* RDK_CALL Storage_GetClassDescription(const char* classname)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassDescription(classname);
 }
 
-// ������������� �������� ������ �� ��� id, �������� ��� �� ������� xml
+// Устанавливает описание класса по его id, передавая его в формате xml
 int RDK_CALL Storage_SetClassDescription(const char* classname, const char* description)
 {
  return RdkCoreManager.GetEngineLock()->Storage_SetClassDescription(classname, description);
 }
 
-// ��������� �������� ���� ������� � xml
+// Сохраняет описание всех классов в xml
 const char* RDK_CALL Storage_SaveClassesDescription(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_SaveClassesDescription();
 }
 
-// ��������� �������� ���� ������� �� xml
+// Загружает описание всех классов из xml
 int RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
 {
  return RdkCoreManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext);
@@ -873,13 +873,13 @@ int RDK_CALL MStorage_LoadClassesDescription(int channel_index, const char* xmlt
  return RdkCoreManager.GetEngineLock(channel_index)->Storage_LoadClassesDescription(xmltext);
 }
 
-// ��������� ����� �������� ���� ������� � xml
+// Сохраняет строку описания всех классов в xml
 const char* RDK_CALL Storage_SaveCommonClassesDescription(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_SaveCommonClassesDescription();
 }
 
-// ��������� ����� �������� ���� ������� �� xml
+// Загружает строку описания всех классов из xml
 int RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
 {
  return RdkCoreManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext);
@@ -894,13 +894,13 @@ int RDK_CALL MStorage_LoadCommonClassesDescription(int channel_index, const char
 }
 
 
-// ��������� �������� ���� ������� � xml ������� ����� ��������
+// Сохраняет описание всех классов в xml включая все библиотеки
 const char* RDK_CALL Storage_SaveAllClassesDescription(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_SaveAllClassesDescription();
 }
 
-// ��������� �������� ���� ������� �� xml ������� ����� ��������
+// Загружает описание всех классов из xml включая все библиотеки
 int RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
 {
  return RdkCoreManager.GetEngineLock()->Storage_LoadAllClassesDescription(xmltext);
@@ -934,59 +934,59 @@ const char* RDK_CALL MStorage_GetClassStructure(int channel_index, const char *s
 // ----------------------------
 
 // ----------------------------
-// ������ ���������� ����������� ���������
+// Функции работы с библиотеками классов
 // ----------------------------
-// ���������� ����� ���������
+// Возвращает число библиотек
 int RDK_CALL Storage_GetNumClassLibraries(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetNumClassLibraries();
 }
 
-// ���������� ������ ��������� � ���� ������, ����������� ��������
+// Возвращает строку библиотек в формате строки, разделенных пробелами
 const char* RDK_CALL Storage_GetClassLibrariesList(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassLibrariesList();
 }
 
-// ���������� ������ ������� ���������� � ���� ������, ����������� ��������
-// library_name - ��� ����������
+// Возвращает строку имен классов библиотеки в формате строки, разделенных пробелами
+// library_name - имя библиотеки
 const char* RDK_CALL Storage_GetLibraryClassNames(const char *library_name)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetLibraryClassNames(library_name);
 }
 
-// ���������� ������ ������� ���������� � ���� ������, ����������� ��������
-// index - ������ ����������
+// Возвращает строку имен классов библиотеки в формате строки, разделенных пробелами
+// index - индекс библиотеки
 const char* RDK_CALL Storage_GetLibraryClassNamesByIndex(int index)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetLibraryClassNamesByIndex(index);
 }
 
-// ���������� ��� ���������� �� �������
+// Возвращает имя библиотеки по индексу
 const char * RDK_CALL Storage_GetClassLibraryNameByIndex(int index)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassLibraryNameByIndex(index);
 }
 
-// ���������� ������ ���������� �� �������
+// Возвращает версию библиотеки по индексу
 const char * RDK_CALL Storage_GetClassLibraryVersionByIndex(int index)
 {
  return RdkCoreManager.GetEngineLock()->Storage_GetClassLibraryVersionByIndex(index);
 }
 
-/// ������� ����� runtime-����������
+/// Создает новую runtime-коллекцию
 int RDK_CALL Storage_CreateRuntimeCollection(const char *collection_name)
 {
  return RdkCoreManager.GetEngineLock()->Storage_CreateRuntimeCollection(collection_name);
 }
 
-// ��������� ��������� �� ����� dll-�����
+// Загружает библиотеку классов из файла dll-файла
 int RDK_CALL Storage_LoadBinaryCollectionFromFile(const char *filename)
 {
  return RdkCoreManager.GetEngineLock()->Storage_LoadBinaryCollectionFromFile(filename);
 }
 
-// ��������� runtime-���������
+// Загружает runtime-коллекцию
 int RDK_CALL Storage_LoadRuntimeCollectionFromFile(const char *filename)
 {
  return RdkCoreManager.GetEngineLock()->Storage_LoadRuntimeCollectionFromFile(filename);
@@ -997,7 +997,7 @@ int RDK_CALL Storage_LoadRuntimeCollectionFromString(const char *buffer)
  return RdkCoreManager.GetEngineLock()->Storage_LoadRuntimeCollectionFromString(buffer);
 }
 
-// ��������� runtime-���������
+// Сохраняет runtime-коллекцию
 int RDK_CALL Storage_SaveRuntimeCollectionToFile(const char *filename)
 {
  return RdkCoreManager.GetEngineLock()->Storage_SaveRuntimeCollectionToFile(filename);
@@ -1008,36 +1008,36 @@ int RDK_CALL Storage_SaveRuntimeCollectionToString(const char *buffer)
  return RdkCoreManager.GetEngineLock()->Storage_SaveRuntimeCollectionToString(buffer);
 }
 
-// ������� ������������ ���������� �� ������ �� �������
-// ��������������� �� ������������ ������ ����� �� ���������� �������.
+// Удаляет библиотеку классов из Storage по индексу
+// Освобождает выделенную память для всех компонентов из библиотеки.
 int RDK_CALL Storage_DelClassLibraryByIndex(int index)
 {
  return RdkCoreManager.GetEngineLock()->Storage_DelClassLibraryByIndex(index);
 }
 
-// ������� ������������ ���������� �� ������ �� �����
-// ��������������� �� ������������ ������ ����� �� ���������� �������.
+// Удаляет библиотеку классов из Storage по имени
+// Освобождает выделенную память для всех компонентов из библиотеки.
 int RDK_CALL Storage_DelClassLibraryByName(const char *name)
 {
  return RdkCoreManager.GetEngineLock()->Storage_DelClassLibraryByName(name);
 }
 
-// ������� �� ������ ��� ����������
-// ��������������� �� ������������ ������ ����� �� ���������� �������.
+// Удаляет все библиотеки из Storage
+// Освобождает выделенную память для всех компонентов из библиотеки.
 int RDK_CALL Storage_DelAllClassLibraries(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_DelAllClassLibraries();
 }
 
-// ���������� ������ � Storage ��� ������� �������.
-// ������ ��������� �� ������
+// Создает класс в Storage для данного компонента.
+// Массив должен быть выделен
 int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname, const char *collection_name)
 {
  return RdkCoreManager.GetEngineLock()->Storage_CreateClass(stringid, classname, collection_name);
 }
 
-// ��������� ��������� ������� ���������
-// �������� �������������� ���������� ������ � ������� ���������
+// Выполняет построение структуры Storage
+// Создает соответствующие объекты Storage в структуре Storage
 int RDK_CALL Storage_BuildStorage(void)
 {
  return RdkCoreManager.GetEngineLock()->Storage_BuildStorage();
@@ -1046,9 +1046,9 @@ int RDK_CALL Storage_BuildStorage(void)
 
 
 // ----------------------------
-// ������ ���������� ������
+// Функции работы с Environment
 // ----------------------------
-// ������ ������������� �������� ������ ���������
+// Возвращает предопределенную структуру модели компонента
 int RDK_CALL Env_GetPredefinedStructure(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetPredefinedStructure();
@@ -1073,9 +1073,9 @@ int RDK_CALL MEnv_SetPredefinedStructure(int channel_index, int value)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_SetPredefinedStructure(value);
 }
 
-// ���� ��������� �������������
-// true - ��������� ������ � �������������
-// false - ��������� �� ������
+// Флаг наличия Storage
+// true - Storage присутствует в Environment
+// false - Storage отсутствует
 bool RDK_CALL Env_IsStoragePresent(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_IsStoragePresent();
@@ -1088,7 +1088,7 @@ bool RDK_CALL MEnv_IsStoragePresent(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_IsStoragePresent();
 }
 
-// ���������� ��������� �������������
+// Возвращает текущий инициализирован
 bool RDK_CALL Env_IsInit(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_IsInit();
@@ -1102,7 +1102,7 @@ bool RDK_CALL MEnv_IsInit(int channel_index)
 }
 
 
-// ������� ������� �������������� ���������
+// Проверяет наличие структурированной структуры
 bool RDK_CALL Env_IsStructured(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_IsStructured();
@@ -1115,7 +1115,7 @@ bool RDK_CALL MEnv_IsStructured(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_IsStructured();
 }
 
-// ������������� �����
+// Инициализирует Environment
 int RDK_CALL Env_Init(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_Init();
@@ -1128,7 +1128,7 @@ int RDK_CALL MEnv_Init(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_Init();
 }
 
-// ��������������� �����
+// Деинициализирует Environment
 int RDK_CALL Env_UnInit(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_UnInit();
@@ -1141,7 +1141,7 @@ int RDK_CALL MEnv_UnInit(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_UnInit();
 }
 
-// ��������� �������������� �������� ������ ���������
+// Выполняет построение структурированной структуры модели компонента
 int RDK_CALL Env_CreateStructure(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_CreateStructure();
@@ -1154,7 +1154,7 @@ int RDK_CALL MEnv_CreateStructure(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_CreateStructure();
 }
 
-// ���������� ������� ������ ���������
+// Уничтожает структуру модели компонента
 int RDK_CALL Env_DestroyStructure(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_DestroyStructure();
@@ -1167,7 +1167,7 @@ int RDK_CALL MEnv_DestroyStructure(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_DestroyStructure();
 }
 
-// ������� ������ � ��� ����������, ������� ���������, ������� ����� � �������� ���������
+// Уничтожает модель в том компоненте, который создан, который был в структуре компонента
 int RDK_CALL Env_Destroy(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_Destroy();
@@ -1181,7 +1181,7 @@ int RDK_CALL MEnv_Destroy(int channel_index)
 }
 
 
-// �������������� ������
+// Инициализирует модель
 int RDK_CALL Env_ModelInit(const char *stringid)
 {
     return RdkCoreManager.GetEngineLock()->Env_ModelInit(stringid);
@@ -1194,7 +1194,7 @@ int RDK_CALL MEnv_ModelInit(int channel_index, const char *stringid)
     return RdkCoreManager.GetEngineLock(channel_index)->Env_ModelInit(stringid);
 }
 
-// ���������������� ������
+// Деинициализирует модель
 int RDK_CALL Env_ModelUnInit(const char *stringid)
 {
     return RdkCoreManager.GetEngineLock()->Env_ModelUnInit(stringid);
@@ -1207,9 +1207,9 @@ int RDK_CALL MEnv_ModelUnInit(int channel_index, const char *stringid)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_ModelUnInit(stringid);
 }
 
-// ����� �����
-// ���� stringid == 0 �� ��������� ��� ������ �������,
-// ����� ��������� ������ ��������� ��������� ������
+// Вызов расчета
+// Если stringid == 0 то рассчитывает для корневого компонента,
+// иначе рассчитывает только указанный компонент и его подкомпоненты
 int RDK_CALL Env_Calculate(const char* stringid)
 {
 #ifdef RDK_UNSAFE_CALCULATE
@@ -1235,7 +1235,7 @@ int RDK_CALL MEnv_CalculateUnsafe(int channel_index, const char* stringid)
  return RdkCoreManager.GetEngine(channel_index)->Env_Calculate(stringid);
 }
 
-// ������ ���� ������ � �������� �������
+// Вызов RT расчета в режиме реального времени
 int RDK_CALL Env_RTCalculate(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_RTCalculate();
@@ -1250,7 +1250,7 @@ int RDK_CALL MEnv_RTCalculate(int channel_index)
 }
 
 
-/// ������ ������ �������� ������������� calc_intervsal ������ � ����������� ��������� ���������
+/// Вызов расчета модели с заданным интервалом calc_interval расчета в миллисекундах времени
 int RDK_CALL Env_FastCalculate(double calc_interval)
 {
  return RdkCoreManager.GetEngineLock()->Env_FastCalculate(calc_interval);
@@ -1264,9 +1264,9 @@ int RDK_CALL MEnv_FastCalculate(int channel_index, double calc_interval)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_FastCalculate(calc_interval);
 }
 
-// ����� ������ �����
-// ���� stringid == 0 �� ���������� ��� ������ �������,
-// ����� - ������ ��������� ��������� ������
+// Вызов сброса модели
+// Если stringid == 0 то сбрасывает для корневого компонента,
+// иначе - только указанный компонент и его подкомпоненты
 int RDK_CALL Env_Reset(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Env_Reset(stringid);
@@ -1279,10 +1279,10 @@ int RDK_CALL MEnv_Reset(int channel_index, const char* stringid)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_Reset(stringid);
 }
 
-/// ����� ������ ���������� �� �������� �� ���������
-/// ���� stringid == 0 �� ���������� ��� ������ �������,
-/// ����� - ������ ��������� ��������� ������
-/// ���� subcomps == true �� ����� ���������� ��������� ���� �������� ���������
+/// Вызов установки значений по умолчанию для свойств компонента
+/// Если stringid == 0 то устанавливает для корневого компонента,
+/// иначе - только указанный компонент и его подкомпоненты
+/// Если subcomps == true то также устанавливает значения для всех дочерних компонентов
 int RDK_CALL Env_Default(const char* stringid, bool subcomps)
 {
  return RdkCoreManager.GetEngineLock()->Env_Default(stringid,subcomps);
@@ -1295,15 +1295,15 @@ int RDK_CALL MEnv_Default(int channel_index, const char* stringid, bool subcomps
  return RdkCoreManager.GetEngineLock(channel_index)->Env_Default(stringid,subcomps);
 }
 
-// ���������� ���������� ������� ������ �� ��������� ��������
+// Увеличивает текущее время модели на шаг расчета
 int RDK_CALL Env_IncreaseModelTimeByStep(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_IncreaseModelTimeByStep();
 }
 
-/// ������������� ����������� �������� ������� ����� ������ ������� (��)
-/// �������� ������� ����� ������������ �� ��� ���, ���� ����� ��������� � ������
-/// ��������� �������� �� ������ ������ ��� ��� ��������
+/// Устанавливает минимальный интервал времени между шагами расчета модели (мс)
+/// Минимальный интервал будет использоваться на том шаге, если шаг выполнился быстрее чем интервал
+/// Увеличивает время выполнения на недостающее время до интервала
 int RDK_CALL Env_SetMinInterstepsInterval(unsigned long long value)
 {
  return RdkCoreManager.GetEngineLock()->Env_SetMinInterstepsInterval(value);
@@ -1316,9 +1316,9 @@ int RDK_CALL MEnv_SetMinInterstepsInterval(int channel_index, unsigned long long
  return RdkCoreManager.GetEngineLock(channel_index)->Env_SetMinInterstepsInterval(value);
 }
 
-/// ���������� ����������� �������� ������� ����� ������ ������� (��)
-/// �������� ������� ����� ������������ �� ��� ���, ���� ����� ��������� � ������
-/// ��������� �������� �� ������ ������ ��� ��� ��������
+/// Возвращает минимальный интервал времени между шагами расчета модели (мс)
+/// Минимальный интервал будет использоваться на том шаге, если шаг выполнился быстрее чем интервал
+/// Увеличивает время выполнения на недостающее время до интервала
 unsigned long long RDK_CALL Env_GetMinInterstepsInterval(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetMinInterstepsInterval();
@@ -1332,7 +1332,7 @@ unsigned long long RDK_CALL Env_GetMinInterstepsInterval(int channel_index)
 }
 
 
-// �����, ����������� �� ��������� RT-������
+// Время, затраченное на последний RT-расчет
 double RDK_CALL Env_GetRTLastDuration(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetRTLastDuration();
@@ -1346,7 +1346,7 @@ double RDK_CALL MEnv_GetRTLastDuration(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_GetRTLastDuration();
 }
 
-/// �����, ����������� � ������ �� ���� ����� RTCalculate;
+/// Время, затраченное в сумме на все вызовы RTCalculate;
 double RDK_CALL Env_GetRTModelCalcTime(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetRTModelCalcTime();
@@ -1360,7 +1360,7 @@ double RDK_CALL MEnv_GetRTModelCalcTime(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_GetRTModelCalcTime();
 }
 
-/// ������������������ RT ������� (��������� RTModelCalcTime/RTLastDuration)
+/// Производительность RT расчета (вычисляет RTModelCalcTime/RTLastDuration)
 double RDK_CALL Env_CalcRTPerformance(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_CalcRTPerformance();
@@ -1374,13 +1374,13 @@ double RDK_CALL MEnv_CalcRTPerformance(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_CalcRTPerformance();
 }
 
-// ���������� ��� �������� �������� ��� �������� ������
+// Возвращает путь к директории данных для текущего канала
 const char* RDK_CALL Env_GetCurrentDataDir(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetCurrentDataDir();
 }
 
-// ������������� ��� �������� �������� ��� �������� ������
+// Устанавливает путь к директории данных для текущего канала
 int RDK_CALL Env_SetCurrentDataDir(const char *dir)
 {
  return RdkCoreManager.GetEngineLock()->Env_SetCurrentDataDir(dir);
@@ -1459,50 +1459,50 @@ bool RDK_CALL MEnv_SetDebuggerMessageFlag(int channel_index, bool value)
 }
 
 // ***********************************************
-// ������ ���������� ������� �����������
-// !!! ��������� ������ ������ �� ���
-// ������, ������������ � ����������� �� ���������� id !!!
+// Функции работы с текущим компонентом
+// !!! ВНИМАНИЕ: эти функции работают по stringid
+// компонента, определенного в Environment по stringid id !!!
 // ***********************************************
-// ������������� ������� ��������� (��������� ������������ ����� - ������)
+// Устанавливает текущий компонент (переданный stringid - компонент)
 int RDK_CALL Env_SelectCurrentComponent(const char *stringid)
 {
  return RdkCoreManager.GetEngineLock()->Env_SelectCurrentComponent(stringid);
 }
 
-// ���������� ������� ��������� � ��������� �� ��������� (������)
+// Возвращает текущий компонент в состояние по умолчанию (сброс)
 int RDK_CALL Env_ResetCurrentComponent(const char *stringid)
 {
  return RdkCoreManager.GetEngineLock()->Env_ResetCurrentComponent(stringid);
 }
 
-// ������ ������� ��������� �� ��� �������� (������ �� ������� �����)
-// ���� ��� �� ������� ������, �� �� ������ ������
+// Переходит текущий компонент на уровень выше (переход к родительскому компоненту)
+// Если он не имеет родителя, то не делает ничего
 int RDK_CALL Env_UpCurrentComponent(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_UpCurrentComponent();
 }
 
-// ������ ������� ��������� �� ��� �������� �� ������������ ������ �����������
-// (����� �� N ������� ���� ������������ �������� ����������)
+// Переходит текущий компонент на уровень ниже к указанному дочернему компоненту
+// (переход на N уровень если передано имя дочернего компонента)
 int RDK_CALL Env_DownCurrentComponent(const char *stringid)
 {
  return RdkCoreManager.GetEngineLock()->Env_DownCurrentComponent(stringid);
 }
 
-// ���������� ������� ��� �������� ����������
+// Возвращает имя текущего компонента
 const char* RDK_CALL Env_GetCurrentComponentName(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetCurrentComponentName();
 }
 
-// ���������� ������� ��������� id �������� ����������
+// Возвращает текущий компонент id компонента компонента
 const char* RDK_CALL Env_GetCurrentComponentId(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_GetCurrentComponentId();
 }
 // ***********************************************
 
-/// ���������� ��������� � ���� � ������ ��������� ������
+/// Вызывает контроллер источника в текущем компоненте модели
 int RDK_CALL Env_CallSourceController(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_CallSourceController();
@@ -1517,9 +1517,9 @@ int RDK_CALL MEnv_CallSourceController(int channel_index)
 // --------------------------
 
 // --------------------------
-// ������ ���������� �������
+// Функции работы с моделью
 // ----------------------------
-// ������� ������
+// Уничтожает модель
 int RDK_CALL Model_Destroy(void)
 {
  return RdkCoreManager.GetEngineLock()->Model_Destroy();
@@ -1532,8 +1532,8 @@ int RDK_CALL MModel_Destroy(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_Destroy();
 }
 
-// ������� ����� ������ �� ����� ������ � ���������
-// �������������� ������� ������������ ������
+// Создает новую модель из класса класса в Environment
+// Соответствующий объект создается в структуре модели
 int RDK_CALL Model_Create(const char *classname)
 {
  return RdkCoreManager.GetEngineLock()->Model_Create(classname);
@@ -1546,7 +1546,7 @@ int RDK_CALL MModel_Create(int channel_index, const char *classname)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_Create(classname);
 }
 
-// ������� ������
+// Очищает модель
 int RDK_CALL Model_Clear(void)
 {
  return RdkCoreManager.GetEngineLock()->Model_Clear();
@@ -1560,7 +1560,7 @@ int RDK_CALL MModel_Clear(int channel_index)
 }
 
 
-// ���������, ���������� �� ������
+// Проверяет, корректность модели
 bool RDK_CALL Model_Check(void)
 {
  if(!RdkCoreManager.GetEngine())
@@ -1578,7 +1578,7 @@ bool RDK_CALL MModel_Check(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_Check();
 }
 
-// ���������, ���������� �� � ������ ��������� � ������ stringid)
+// Проверяет, корректность в указанном компоненте с именем stringid)
 bool RDK_CALL Model_CheckComponent(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_CheckComponent(stringid);
@@ -1591,10 +1591,10 @@ bool RDK_CALL MModel_CheckComponent(int channel_index, const char* stringid)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CheckComponent(stringid);
 }
 
-// ��������� � ��������� ��������� ������ � ��������������� 'stringid' ���������
-// ���������� � �������� 'classname'
-// ���� stringid - ������ ������, �� ��������� � ���� ������
-// ���������� ��� ���������� � ������ ������
+// Добавляет в модель новый компонент в компоненте с 'stringid' компонентом
+// Создается с именем 'classname'
+// Если stringid - корневой компонент, то добавляет в корень модели
+// Возвращает stringid для добавленного в модель компонента
 const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname)
 {
  return RdkCoreManager.GetEngineLock()->Model_AddComponent(stringid, classname);
@@ -1607,9 +1607,9 @@ const char* RDK_CALL MModel_AddComponent(int channel_index, const char* stringid
  return RdkCoreManager.GetEngineLock(channel_index)->Model_AddComponent(stringid, classname);
 }
 
-// ������� �� ���������� ���������� ������ � ��������������� 'stringid' ���������
-// ���������� � �������� 'name'
-// ���� stringid - ������ ������, �� ������� �� ����� ������
+// Удаляет из модели существующий компонент в компоненте с 'stringid' компонентом
+// Удаляется с именем 'name'
+// Если stringid - корневой компонент, то удаляет из корня модели
 int RDK_CALL Model_DelComponent(const char* stringid, const char *name)
 {
  return RdkCoreManager.GetEngineLock()->Model_DelComponent(stringid, name);
@@ -1622,8 +1622,8 @@ int RDK_CALL MModel_DelComponent(int channel_index, const char* stringid, const 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_DelComponent(stringid, name);
 }
 
-// ������� ����� ��� ������������� ���������� 'stringid'
-// ���������� ��� ���������� ����������
+// Создает копию для клонирования компонента 'stringid'
+// Возвращает stringid для клонированного компонента
 int RDK_CALL Model_CloneComponent(const char* component_name, const char* new_name)
 {
  return RdkCoreManager.GetEngineLock()->Model_CloneComponent(component_name,new_name);
@@ -1636,10 +1636,10 @@ int RDK_CALL MModel_CloneComponent(int channel_index, const char* component_name
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CloneComponent(component_name,new_name);
 }
 
-/// ���������� ���������� � ������ ���������
-/// ���� comp �� ����������� ����� ����������, ��� target ����� �������� ��
-/// ����� ���������� storage, ��� target �� ����� ������� � ���� ���������
-/// �� ���������� false � �� ������ ������
+/// Перемещает компонент в другую модель
+/// Если comp не принадлежит текущей модели компонента, или target имеет отличный от
+/// текущей модели storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
 int RDK_CALL Model_MoveComponent(const char* component, const char* target)
 {
  return RdkCoreManager.GetEngineLock()->Model_MoveComponent(component, target);

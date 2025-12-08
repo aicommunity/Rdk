@@ -735,7 +735,7 @@ const NameT& UContainer::GetComponentName(const UId &id) const
  return I->first;
 }
 
-// ���������� Id ��������� ���������� �� ��� �����
+// Возвращает Id компонента компонента по его имени
 const UId& UContainer::GetComponentId(const NameT &name, bool no_throw) const
 {
  auto I=CompsLookupTable.find(name);
@@ -749,7 +749,7 @@ const UId& UContainer::GetComponentId(const NameT &name, bool no_throw) const
  return I->second;
 }
 
-// ���������� ��� ���������� ��������� �� ��� Id
+// Возвращает имя указателя компонента по его Id
 const NameT& UContainer::GetPointerName(const UId &id) const
 {
  PointerMapCIteratorT I,J;
@@ -765,7 +765,7 @@ const NameT& UContainer::GetPointerName(const UId &id) const
  return I->first;
 }
 
-// ���������� Id ���������� ��������� �� ��� �����
+// Возвращает Id указателя компонента по его имени
 const UId& UContainer::GetPointerId(const NameT &name) const
 {
  PointerMapCIteratorT I=PointerLookupTable.find(name);
@@ -778,7 +778,7 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 // и возвращает вектор длинных имен компонент либо пустой вектор
 // false - искать в текущей компоненте
 // true -  искать в текущей компоненте и глубже
-// true -  ������ � ������� ���������� � ������
+// true -  искать в текущей компоненте и глубже
 const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all)
 {
  int numComp=GetNumComponents();
@@ -816,7 +816,7 @@ const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const Nam
 // и возвращает вектор длинных имен компонент либо пустой вектор
 // false - искать в текущей компоненте
 // true -  искать в текущей компоненте и глубже
-// true -  ������ � ������� ���������� � ������
+// true -  искать в текущей компоненте и глубже
 const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all)
 {
  vector<UEPtr<UContainer> > components;
@@ -837,7 +837,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name,
 // Методы управления общедоступными свойствами
 // --------------------------
 // Устанавливает величину шага интегрирования
-// ������������� �������� ���� ��������������
+// Устанавливает величину шага интегрирования
 const UTime& UContainer::GetTimeStep(void) const
 {
  return TimeStep.v;
@@ -855,7 +855,7 @@ bool UContainer::SetTimeStep(const UTime &timestep)
  else
   OwnerTimeStep=timestep;
 
- // ��������� �� ���� ����������� �������
+ // Указатель на все дочерние компоненты
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   (*comps)->OwnerTimeStep=timestep;
@@ -864,7 +864,7 @@ bool UContainer::SetTimeStep(const UTime &timestep)
 }
 
 /// Предназначено только для вызова из UEnvironment
-/// ������������� ������ ��� ������ �� UEnvironment
+/// Предназначено только для вызова из UEnvironment
 void UContainer::ChangeUseIndTimeStepMode(bool value)
 {
  if(value)
@@ -872,19 +872,19 @@ void UContainer::ChangeUseIndTimeStepMode(bool value)
  else
   ChangeLookupPropertyType("TimeStep",ptSysParameter);
 
- // ��������� �� ���� ����������� �������
+ // Указатель на все дочерние компоненты
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   (*comps)->ChangeUseIndTimeStepMode(value);
 }
 
-// ������������� �������� ���� �������������� ���������� � ���� ��� �������� �����������
+// Устанавливает величину шага интегрирования компонента в лог для всех дочерних компонентов
 bool UContainer::SetGlobalTimeStep(UTime timestep)
 {
  if(!SetTimeStep(timestep))
   return false;
 
- // ��������� �� ���� ����������� �������
+ // Указатель на все дочерние компоненты
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(!(*comps)->SetGlobalTimeStep(timestep))
@@ -895,7 +895,7 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
 
 
 
-// ������������� ���� ���������� �������
+// Устанавливает флаг активности компонента
 const bool& UContainer::GetActivity(void) const
 {
  return Activity.v;
@@ -912,7 +912,7 @@ bool UContainer::SetActivity(const bool &activity)
   (*comps)->Activity = activity;
 
 //  return Reset(); // !!! Заглушка. Возможно это не нужно!
-//  return Reset(); // !!! ��������. �������� ��� �� �����!
+//  return Reset(); // !!! Заглушка. Возможно это не нужно!
 
  Activity.v=activity;
  StepDuration=0;
@@ -924,7 +924,7 @@ bool UContainer::SetActivity(const bool &activity)
  return true;
 }
 
-// Id �������
+// Id компонента
 UId UContainer::GetId(void) const
 {
  return Id.v;
@@ -933,7 +933,7 @@ UId UContainer::GetId(void) const
 bool UContainer::SetId(const UId &id)
 {
  if(id == ForbiddenId)
-  return true;// ��������!! ��� ���! throwEForbiddenId(id);
+  return true;// Заглушка!! Не трогать! throwEForbiddenId(id);
 
  if(id < 0)
   RDK_THROW(EInvalidId(id));
@@ -954,7 +954,7 @@ bool UContainer::SetId(const UId &id)
 /// Если время расчета превышено, то расчет последующих дочерних компонент
 /// не выполняется
 /// Если значение параметра <0, то нет ограничений
-/// ���� �������� ��������� <0, �� ��� �����������
+/// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetMaxCalculationDuration(void) const
 {
  return MaxCalculationDuration.v;
@@ -968,7 +968,7 @@ bool UContainer::SetMaxCalculationDuration(const long long &value)
 
 /// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
 /// Если значение параметра <0, то нет ограничений
-/// ���� �������� ��������� <0, �� ��� �����������
+/// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetCalculationDurationThreshold(void) const
 {
  return CalculationDurationThreshold.v;
@@ -981,7 +981,7 @@ bool UContainer::SetCalculationDurationThreshold(const long long& value)
 }
 
 
-/// ����� ��������������� �������� ������ ��������� ���������� ����������
+/// Маска системных событий для отладки компонента компонента компонента компонента
 const unsigned int& UContainer::GetDebugSysEventsMask(void) const
 {
  return DebugSysEventsMask.v;
@@ -995,7 +995,7 @@ bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
 
 /// Может быть отрицательрным если память освобождалась.
 /// Актуально если включен флаг MemoryMonitor
-/// ��������� ���� ������� ���� MemoryMonitor
+/// Актуально если включен флаг MemoryMonitor
 long long UContainer::GetMemoryUsageDiff(void) const
 {
  return MemoryUsageDiff;
@@ -1003,7 +1003,7 @@ long long UContainer::GetMemoryUsageDiff(void) const
 
 /// Может быть отрицательрным если кусок увеличился.
 /// Актуально если включен флаг MemoryMonitor
-/// ��������� ���� ������� ���� MemoryMonitor
+/// Актуально если включен флаг MemoryMonitor
 long long UContainer::GetMaxMemoryBlockDiff(void) const
 {
  return MaxMemoryBlockDiff;
@@ -1016,7 +1016,7 @@ long long UContainer::GetMaxMemoryBlockDiff(void) const
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-// � ��� �� ��������� ��� ������������� ���� ������
+// в том же хранилище где располагается этот объект
 UEPtr<UContainer> UContainer::Alloc(UEPtr<UStorage> stor, bool copystate)
 {
  UEPtr<UContainer> copy;
@@ -1036,7 +1036,7 @@ UEPtr<UContainer> UContainer::Alloc(UEPtr<UStorage> stor, bool copystate)
 }
 
 // и значений параметров
-// � �������� ����������
+// и значений параметров
 bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
 {
  CopyProperties(target, ptParameter);
@@ -1050,7 +1050,7 @@ bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copys
 }
 
 // или вызов деструктора, если Storage == 0
-// ��� ����� �����������, ���� Storage == 0
+// или вызов деструктора, если Storage == 0
 void UContainer::Free(void)
 {
  while(NumComponents)
@@ -1076,7 +1076,7 @@ void UContainer::Free(void)
 }
 
 	  /*
-// ��������� �� ���� ������ � ���������
+// Указатель на все объекты в хранилище
 UEPtr<UInstancesStorageElement> UContainer::GetObjectIterator(void)
 {
  return ObjectIterator;
@@ -1089,7 +1089,7 @@ void UContainer::SetObjectIterator(UEPtr<UInstancesStorageElement> value)
  ObjectIterator=value;
 }       */
 
-/// ������������ ���������� ���������� ������ ����������, �������������� ��� �����������
+/// Обновляет внутренние данные компонента компонента, соответствующие для обновления
 void UContainer::AUpdateInternalData(void)
 {
  std::map<UEPtr<UContainer>, NameT>::iterator I=StaticComponents.begin();
@@ -1103,7 +1103,7 @@ void UContainer::AUpdateInternalData(void)
 // Методы доступа к компонентам
 // --------------------------
 // Возвращает число дочерних компонент
-// ���������� ����� �������� ���������
+// Возвращает число дочерних компонент
 int UContainer::GetNumComponents(void) const
 {
  return NumComponents;
@@ -1111,7 +1111,7 @@ int UContainer::GetNumComponents(void) const
 
 
 // (включая все компоненты дочерних компонент)
-// (������� ��� ���������� �������� ���������)
+// (включая все компоненты дочерних компонент)
 int UContainer::GetNumAllComponents(void) const
 {
  int res=NumComponents;
@@ -1127,7 +1127,7 @@ int UContainer::GetNumAllComponents(void) const
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-// � 'false' � ������ ������������� ����
+// и 'false' в случае некорректного типа
 bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
 {
  return false;
@@ -1135,7 +1135,7 @@ bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
 
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-// ���� id == ForbiddenId �� ���������� ��������� �� ���� ���������
+// Если id == ForbiddenId то возвращает указатель на этот компонент
 UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool no_throw) const
 {
  if(id == ForbiddenId)
@@ -1166,7 +1166,7 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool no_throw) const
 }
 
 // объекте по короткому имени 'name'
-// ������� �� ��������� ����� 'name'
+// объекте по короткому имени 'name'
 UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool no_throw) const
 {
  return GetComponent(GetComponentId(name,no_throw),no_throw);
@@ -1175,7 +1175,7 @@ UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool no_throw) con
 // объекте по ДЛИННОМУ Id 'id'.
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-// �� ���������� ��������� �� ���� ���������
+// то возвращает указатель на этот компонент
 UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool no_throw) const
 {
  UEPtr<UContainer> comp;
@@ -1195,7 +1195,7 @@ UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool no_throw) co
 
 
 // объекте по ДЛИННОМУ имени 'name'
-// ������� �� �������� ����� 'name'
+// объекте по ДЛИННОМУ имени 'name'
 UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool no_throw) const
 {
  UEPtr<UContainer> comp;
@@ -1221,7 +1221,7 @@ UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool no_throw) co
 
 // объекте по порядковому индеку в списке компонент
 // Метод возвращает 0, если индекс выходит за границы массива
-// ����� ���������� 0, ���� ������ ������� �� ������� �������
+// Метод возвращает 0, если индекс выходит за границы массива
 UEPtr<UContainer> UContainer::GetComponentByIndex(int index) const
 {
  return Components[index];
@@ -1229,7 +1229,7 @@ UEPtr<UContainer> UContainer::GetComponentByIndex(int index) const
 
 // Возвращает его Id или ForbiddenId если добавление неудачно
 // Может быть передан указатель на локальную переменную
-// ����� ���� ������� ��������� �� ��������� ����������
+// Может быть передан указатель на локальную переменную
 void UContainer::BeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 {
  ABeforeAddComponent(comp,pointer);
@@ -1275,10 +1275,10 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
  comp->Id = id;
  comp->SetOwner(this);
 
- // ��������� ��������� � ������� ������������ ���������
+ // Устанавливает компонент в таблицу соответствия компонентов
  SetLookupComponent(comp->Name, comp->Id);
 
- // ���������� � ���� ���������
+ // Добавляет в таблицу компонентов
  AddComponentTable(comp,pointer);
 
  comp->OwnerTimeStep=TimeStep;
@@ -1302,13 +1302,13 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
  }
  catch(UException &)
  {
-  // �����
+  // Удаление
   BeforeDelComponent(comp);
   comp->SharesUnInit();
-  // ������� ��������� �� ������� ������������ ���������
+  // Удаляет компонент из таблицы соответствия компонентов
   DelLookupComponent(comp->Name);
 
-  // �������� �� ���� ���������
+  // Удаляет из таблицы компонентов
   DelComponentTable(comp);
 
   comp->Owner=0;
@@ -1324,7 +1324,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-// ���� ��������, ���� ��������� �� �����������
+// либо повисает, если хранилище не установлено
 /*void UContainer::DelComponent(const UId &id, bool canfree)
 {
  UEPtr<UContainer> comp=GetComponent(id);
@@ -1336,7 +1336,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-// ���� ��������, ���� ��������� �� �����������
+// либо повисает, если хранилище не установлено
 void UContainer::DelComponent(const NameT &name, bool canfree)
 {
  UEPtr<UContainer> comp=GetComponentL(name,true);
@@ -1344,7 +1344,7 @@ void UContainer::DelComponent(const NameT &name, bool canfree)
   comp->GetOwner()->DelComponent(comp,canfree);
 }
 
-// ������������� ������� ��� �������� ����������
+// Устанавливает удаление для всех дочерних компонентов
 void UContainer::DelAllComponents(void)
 {
  DelAllComponentsRaw();
@@ -1373,7 +1373,7 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
   comp->ChangeUseIndTimeStepMode(false);
 }
 
-/// ������� ��������� ��� ����������� ����������
+/// Удаляет компонент для статических компонентов
 void UContainer::DelStaticComponent(UEPtr<UContainer> comp)
 {
  std::map<UEPtr<UContainer>, NameT>::iterator I=StaticComponents.find(comp);
@@ -1381,14 +1381,14 @@ void UContainer::DelStaticComponent(UEPtr<UContainer> comp)
   StaticComponents.erase(I);
 }
 
-/// ������� ��������� ��� ����������� ����������
+/// Удаляет компонент для статических компонентов
 void UContainer::DelAllStaticComponents(void)
 {
  StaticComponents.clear();
 }
 
 /// с классом 'classname' и именем 'name'
-/// � ������� 'classname' � ������ 'name'
+/// с классом 'classname' и именем 'name'
 UEPtr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const NameT &name) const
 {
  std::map<UEPtr<UContainer>, NameT>::const_iterator I=StaticComponents.begin();
@@ -1404,7 +1404,7 @@ UEPtr<UContainer> UContainer::FindStaticComponent(const NameT &classname, const 
 /// Если comp не принадлежит этому компоненту, или target имеет отличный от
 /// этого компонента storage, или target не может принять в себя компонент
 /// то возвращает false и не делает ничего
-/// �� ���������� false � �� ������ ������
+/// то возвращает false и не делает ничего
 bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
 {
  if(!comp || !target)
@@ -1437,7 +1437,7 @@ bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
 
 // в этом объекте
 // Память должна быть выделена
-// ������ ������ ���� ��������
+// Память должна быть выделена
 void UContainer::GetComponentsList(std::vector<UId> &buffer) const
 {
  UEPtr<UContainer> *pcomps=PComponents;
@@ -1456,12 +1456,12 @@ void UContainer::GetComponentsList(vector<NameT> &buffer) const
   buffer.push_back((*pcomps)->Name);
 }
 
-// �������� ��� ���������� ����� ������� � ������ 'comp', ���� ��������.
+// Копирует для копирования все компоненты в компонент 'comp', если нужно.
 void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) const
 {
  UEPtr<UContainer> bufcomp;
 
- // ������� ������ ���������� �� 'comp'
+ // Удаляет все компоненты из 'comp'
  comp->DelAllComponents();
 
 
@@ -1490,7 +1490,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
   }
  /*
- // ������� ������ ���������� �� 'comp'
+ // Удаляет все компоненты из 'comp'
  for(int i=0;i<comp->GetNumComponents();i++)
  {
   bufcomp=comp->GetComponentByIndex(i);
@@ -1530,7 +1530,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
 // Применяется для изменения порядка расчета компонент
 // Если значение 'step' выводит за границы массива, то компонент устанавливается
 // на эту границу
-// �� ��� �������
+// на эту границу
 bool UContainer::ChangeComponentPosition(int index, int step)
 {
  if(index<0 || index >= NumComponents)
@@ -1573,7 +1573,7 @@ bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 
 // заданную позицию
 // Применяется для изменения порядка расчета компонент
-// ����������� ��� ��������� ������� ������� ���������
+// Применяется для изменения порядка расчета компонент
 bool UContainer::SetComponentPosition(int index, int new_position)
 {
  int step=new_position-index;
@@ -1589,7 +1589,7 @@ bool UContainer::SetComponentPosition(const NameT &name, int new_position)
  return false;
 }
 
-/// ����, ������������ �� ����� ����������� ����������
+/// Флаг, соответствующий на флаг перемещения компонентов
 bool UContainer::IsMoving(void) const
 {
  return MovingFlag;
@@ -1608,7 +1608,7 @@ bool UContainer::IsMoving(void) const
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
-// ��������������� ������� ������ �� ������������.
+// Предварительная очистка буфера не производится.
 ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
 							int sublevel, UEPtr<UContainer> ownerlevel)
 {
@@ -1648,7 +1648,7 @@ ULongIdVector& UContainer::GetConnectorsList(ULongIdVector &buffer,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
-// ��������������� ������� ������ �� ������������.
+// Предварительная очистка буфера не производится.
 ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
                             int sublevel, UEPtr<UContainer> ownerlevel)
 
@@ -1690,7 +1690,7 @@ ULongIdVector& UContainer::GetItemsList(ULongIdVector &buffer,
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
-// ��������������� ������� ������ �� ������������.
+// Предварительная очистка буфера не производится.
 ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
                             int sublevel, UEPtr<UContainer> ownerlevel)
 {
@@ -1836,7 +1836,7 @@ bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
  return true;
 }
 
-// ���������� ��������� ��������� ���������� 'id' �� ���� ������� ��������� ����������
+// Возвращает указатель компонента компонента компонента 'id' на все указатели компонента компонента компонента
 bool UContainer::ResetComponentAll(const UId &id)
 {
  UEPtr<UContainer> cont=GetComponent(id);
@@ -1856,7 +1856,7 @@ bool UContainer::ResetComponentAll(const UId &id)
  return true;
 }
 
-// ���������� ��������� ��������� ���������� 'name' �� ���� ������� ��������� ����������
+// Возвращает указатель компонента компонента компонента 'name' на все указатели компонента компонента компонента
 bool UContainer::ResetComponentAll(const NameT &name)
 {
  UEPtr<UContainer> cont=GetComponent(name);
@@ -1876,7 +1876,7 @@ bool UContainer::ResetComponentAll(const NameT &name)
  return true;
 }
 
-// ������� ��� ���������� ����������� � ��������� ������ ��������� ����������
+// Удаляет для удаления компонентов в компоненте таблицы компонента компонента компонента
 void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 {
  PointerMapIteratorT J=PointerLookupTable.find(pointername);
@@ -1899,7 +1899,7 @@ void UContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 // --------------------------
 // Метод инициализации общих переменных. Вызывается автоматически при добавлении
 // объекта владельцу
-// ������� ���������
+// Инициализирует шары
 void UContainer::SharesInit(void)
 {
  if(!ShareLookupTable.empty())
@@ -1913,7 +1913,7 @@ void UContainer::SharesInit(void)
 }
 
 // объекта из владельца
-// ������� �� ���������
+// Деинициализирует шары
 void UContainer::SharesUnInit(void)
 {
  ASharesUnInit();
@@ -1930,7 +1930,7 @@ void UContainer::SharesUnInit(void)
 // Методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
-// �������������� �������� �� ��������� � ����� �������� �����
+// Восстановление настроек по умолчанию и сброс процесса счета
 bool UContainer::Default(void)
 {
  RDK_SYS_TRY
@@ -1944,7 +1944,7 @@ bool UContainer::Default(void)
 
    // из прообраза
    // отмена фичи - рефакторин ядра на абстрактную фаьбрику
-   /*UEPtr<UContainer> original; // ������ ���� - ���������� ���� �� ����������� ��������
+   /*UEPtr<UContainer> original; // Оригинал класс - оригинал класс на оригинальном компоненте
    if(Storage)
  original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));*/
 
@@ -2008,7 +2008,7 @@ bool UContainer::Default(void)
 }
 
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
-/// ���� subcomps == true �� ����� ���������� ��������� ���� �������� ���������
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
 bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
 {
  if(!cont)
@@ -2071,13 +2071,13 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
 // после настройки параметров
 // Автоматически вызывает метод Reset() и выставляет Ready в true
 // в случае успешной сборки
-// � ������ �������� ������
+// в случае успешной сборки
 bool UContainer::Build(void)
 {
  if(Ready)
   return true;
 
- if(!Storage) // TODO: ����� � ������ ���� ��������� �� ������.
+ if(!Storage) // TODO: Заглушка в случае если хранилище не установлено.
   return true;
 
  RDK_SYS_TRY
@@ -2136,7 +2136,7 @@ bool UContainer::Build(void)
  return true;
 }
 
-// ����� �������� �����.
+// Метод сброса компонента.
 bool UContainer::Reset(void)
 {
  RDK_SYS_TRY
@@ -2146,9 +2146,9 @@ bool UContainer::Reset(void)
    LogDebugSysMessage(RDK_SYS_DEBUG_RESET, RDK_SYS_MESSAGE_ENTER);
    Build();
    SharesInit(); // шары остаются не инициализированных. возможно причина в статических дочерних компонентах в них
-   // ���� �������� �� ������������������. �������� ������� � ����������� �������� ����������� � ���
+   // шары остаются не инициализированных. возможно причина в статических дочерних компонентах в них
 
-   // Init(); // ��������
+   // Init(); // Заглушка
    BeforeReset();
 
    if(!IsInit())
@@ -2215,7 +2215,7 @@ bool UContainer::Reset(void)
  return true;
 }
 
-// ��������� ������ ����� �������
+// Выполняет расчет компонента компонента
 bool UContainer::Calculate(void)
 {
  if(!Activity)
@@ -2224,7 +2224,7 @@ bool UContainer::Calculate(void)
  {
   try
   {
-   Init(); // ��������
+   Init(); // Заглушка
 
    #ifdef RDK_ENABLE_CALC_LOGGING
    if(!Owner)
@@ -2356,7 +2356,7 @@ bool UContainer::Calculate(void)
    }
    #endif
 
-   // ������������ �����������
+   // Инициализирует контроллеры
    size_t numcontrollers=Controllers.size();
 
    if(numcontrollers>0)
@@ -2414,7 +2414,7 @@ bool UContainer::Calculate(void)
 }
 
 
-// ��������� ��������� ������������� ����� �������
+// Инициализирует компонент компонента компонента компонента
 void UContainer::Init(void)
 {
  if(!Activity)
@@ -2473,7 +2473,7 @@ void UContainer::Init(void)
  }
 }
 
-// ��������� ��������������� ����� �������
+// Деинициализирует компонент компонента компонента компонента
 void UContainer::UnInit(void)
 {
  if(!IsInit())
@@ -2527,7 +2527,7 @@ void UContainer::UnInit(void)
  }
  InitFlag=false;
 }
-// ��������� ��������� MainOwner ����� ������� ����� �������
+// Обновляет указатель MainOwner компонента компонента компонента компонента
 void UContainer::UpdateMainOwner(void)
 {
  if(!MainOwner)
@@ -2537,14 +2537,14 @@ void UContainer::UpdateMainOwner(void)
 }
 
 // компонент на этом шаге счета
-// ��������� �� ���� ���� �����
+// компонент на этом шаге счета
 void UContainer::ForceSkipComponentCalculation(void)
 {
  SkipComponentCalculation=true;
 }
 
 // компонент на этом шаге счета сначала
-// ��������� �� ���� ���� ����� �������
+// компонент на этом шаге счета сначала
 void UContainer::ForceComponentReCalculation(void)
 {
  ComponentReCalculation=true;
@@ -2552,7 +2552,7 @@ void UContainer::ForceComponentReCalculation(void)
 
 /// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
 /// то прерывает обсчет остальной цепочки дочерних компонент
-/// �� ��������� ������ ��������� ������� �������� ���������
+/// то прерывает обсчет остальной цепочки дочерних компонент
 bool UContainer::CheckDurationAndSkipComponentCalculation(void)
 {
  if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),StartCalcTime) > ULongTime(MaxCalculationDuration)))
@@ -2563,7 +2563,7 @@ bool UContainer::CheckDurationAndSkipComponentCalculation(void)
  return false;
 }
 
-// ������������� ���������� � ��������� ������� �������
+// Устанавливает порядок компонента в компоненте таблицы компонента
 void UContainer::UpdateComputationOrder(void)
 {
 
@@ -2586,7 +2586,7 @@ void UContainer::AUnInit(void)
 // --------------------------
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
-// ��� ���������� �� 'newname'
+// имя компонента на 'newname'
 void UContainer::ModifyLookupComponent(const NameT &oldname,
                                         const NameT &newname)
 {
@@ -2602,7 +2602,7 @@ void UContainer::ModifyLookupComponent(const NameT &oldname,
 }
 
 // для компонента с именем 'name'
-// ��� ���������� � ������ 'name'
+// для компонента с именем 'name'
 void UContainer::SetLookupComponent(const NameT &name, const UId &id)
 {
  CompsLookupTable[name]=id;
@@ -2611,7 +2611,7 @@ void UContainer::SetLookupComponent(const NameT &name, const UId &id)
 }
 
 // компонента с именем 'name'
-// ���������� � ������ 'name'
+// компонента с именем 'name'
 void UContainer::DelLookupComponent(const NameT &name)
 {
  auto I=CompsLookupTable.find(name);
@@ -2626,7 +2626,7 @@ void UContainer::DelLookupComponent(const NameT &name)
 // Удаление контроллеров лежит на вызывающем модуле
 // --------------------------
 // Добавляет новый контроллер
-// ��������� ����� ����������
+// Добавляет новый контроллер
 void UContainer::AddController(UEPtr<UController> controller, bool forchilds)
 {
  if(CheckController(controller))
@@ -2641,7 +2641,7 @@ void UContainer::AddController(UEPtr<UController> controller, bool forchilds)
  }
 }
 
-// ������� ���������� �� ������
+// Удаляет контроллер из таблицы
 void UContainer::DelController(UEPtr<UController> controller, bool forchilds)
 {
  vector<UEPtr<UController> >::iterator I=find(Controllers.begin(),Controllers.end(),controller);
@@ -2657,7 +2657,7 @@ void UContainer::DelController(UEPtr<UController> controller, bool forchilds)
  }
 }
 
-// ������� ��� �����������
+// Удаляет для удаления
 void UContainer::DelAllControllers(bool forchilds)
 {
  Controllers.clear();
@@ -2669,7 +2669,7 @@ void UContainer::DelAllControllers(bool forchilds)
  }
 }
 
-// ���������� ���������� ���� ������������
+// Возвращает указатель контроллеров всех контроллеров
 void UContainer::UnLinkAllControllers(bool forchilds)
 {
  while(Controllers.begin() != Controllers.end())
@@ -2684,7 +2684,7 @@ void UContainer::UnLinkAllControllers(bool forchilds)
 }
 
 
-// ���������, ���������� �� ���������� � ������
+// Проверяет, существует ли контроллер в таблице
 bool UContainer::CheckController(UEPtr<UController> controller) const
 {
  if(find(Controllers.begin(),Controllers.end(),controller) != Controllers.end())
@@ -2692,13 +2692,13 @@ bool UContainer::CheckController(UEPtr<UController> controller) const
  return false;
 }
 
-// ���������� ����� ������������
+// Возвращает число контроллеров
 size_t UContainer::GetNumControllers(void) const
 {
  return Controllers.size();
 }
 
-// ���������� ���������� �� �������
+// Возвращает указатель на индекс
 UEPtr<UController> UContainer::GetController(int index)
 {
  return Controllers[index];
@@ -2709,7 +2709,7 @@ UEPtr<UController> UContainer::GetController(int index)
 // --------------------------
 // Добавляет указатель в таблицу соотвествий
 // Должна вызываться в конструкторах классов
-// ������ ���������� � ������������� �������
+// Должна вызываться в конструкторах классов
 UId UContainer::AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer)
 {
  UPVariable P(1,pointer);
@@ -2728,7 +2728,7 @@ UId UContainer::AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer)
  return P.Id;
 }
 
-// ������� ��������� � ID 'id' �� ������� �����������
+// Удаляет указатель с ID 'id' из таблицы соответствия
 void UContainer::DelLookupPointer(const NameT &name)
 {
  PointerMapIteratorT I=PointerLookupTable.find(name);
@@ -2740,7 +2740,7 @@ void UContainer::DelLookupPointer(const NameT &name)
  PointerLookupTable.erase(I);
 }
 /*
-// ���������� ������ ��� ��������� ��� �������� RDK, � �������� '*'
+// Возвращает строку для указателя для компонента RDK, в формате '*'
 NameT UContainer::GetPointerLongName(const UIPointer &pointer) const
 {
 
@@ -2762,7 +2762,7 @@ NameT UContainer::GetPointerLongName(const UIPointer &pointer) const
  return "";
 }                        */
 
-// ������������ ����� � ������� ���������, ���������������� ��������� ���������
+// Возвращает строку в таблице указателей, соответствующую указателю компонента
 UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(UEPtr<UContainer> source) const
 {
  for(PointerMapCIteratorT I=PointerLookupTable.begin(),
@@ -2780,13 +2780,13 @@ UContainer::PointerMapCIteratorT UContainer::FindLookupPointer(UEPtr<UContainer>
 // --------------------------
 // Метод инициализации общих переменных. Вызывается автоматически при добавлении
 // объекта владельцу
-// ������� ���������
+// Инициализирует шары
 void UContainer::ASharesInit(void)
 {
 }
 
 // объекта из владельца
-// ������� �� ���������
+// Деинициализирует шары
 void UContainer::ASharesUnInit(void)
 {
 }
@@ -2820,7 +2820,7 @@ void UContainer::InvalidateActiveComponentsCache(void)
 // Скрытые методы управления таблицей компонент
 // --------------------------
 // Добавляет компонент 'comp' в таблицу компонент
-// ��������� ��������� 'comp' � ������� ���������
+// Добавляет компонент 'comp' в таблицу компонент
 void UContainer::AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 {
  Components.push_back(comp);
@@ -2901,7 +2901,7 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
 // Скрытые методы управления компонентами
 // --------------------------
 /// Производит необходимые операции по добавлению статического компонента
-/// ���������� ����������� �������� �� ���������� ������������ ����������
+/// Производит необходимые операции по добавлению статического компонента
 UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp)
 {
  comp->SetLogger(GetLogger());
@@ -2920,7 +2920,7 @@ UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> 
 }
 
 // Метод предполагает, что компонент принадлежит объекту
-// ����� ������������, ��� ��������� ����������� �������
+// Метод предполагает, что компонент принадлежит объекту
 void UContainer::BeforeDelComponent(UEPtr<UContainer> comp, bool canfree)
 {
  ABeforeDelComponent(comp,canfree);
@@ -2943,10 +2943,10 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
  comp->SetMainOwner(0);
 
  // Удаляем компонент из таблицы соответствий владельца
- // ������� ��������� �� ������� ������������ ���������
+ // Удаляет компонент из таблицы соответствия компонентов
  DelLookupComponent(comp->Name);
 
- // �������� �� ���� ���������
+ // Удаляет из таблицы компонентов
  DelComponentTable(comp);
 
  comp->Owner=0;
@@ -2965,7 +2965,7 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-// ������� �������� � ������ ���������
+// успешно добавлен в список компонент
 void UContainer::ABeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 {
 
@@ -2984,7 +2984,7 @@ bool UContainer::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-// ���������� � ������ ���������
+// существует в списке компонент
 void UContainer::ABeforeDelComponent(UEPtr<UContainer> comp, bool canfree)
 {
 
@@ -3004,7 +3004,7 @@ bool UContainer::ADelComponent(UEPtr<UContainer> comp)
 // Скрытые методы управления счетом
 // --------------------------
 // Обновляет состояние MainOwner после расчета этого объекта
-// ��������� ��������� MainOwner ����� ������� ����� �������
+// Обновляет указатель MainOwner компонента компонента компонента компонента
 void UContainer::AUpdateMainOwner(void)
 {
 }
@@ -3026,27 +3026,27 @@ UContainer::EIContainer::EIContainer(const UContainer *cont)
  if(!cont)
   return;
 
- // �������� ��� ���������� � ������� ������������� ����������
+ // Копирует имя компонента в таблицу соответствия компонентов
  Name=cont->GetName();
 
- // �������� ������������� ���������� � ������� ������������� ����������
+ // Копирует идентификатор компонента в таблицу соответствия компонентов
  Id=cont->GetId();
 
- // ������ ��� ��������� ���������� � ������� ������������� ����������
+ // Устанавливает для родительского компонента в таблицу соответствия компонентов
  if(cont->GetOwner())
  {
   cont->GetOwner()->GetFullName(OwnerName);
 
-  // ������ ������������� ��������� ���������� � ������� ������������� ����������
+  // Устанавливает идентификатор родительского компонента в таблицу соответствия компонентов
   OwnerId=cont->GetOwner()->GetFullId();
  }
 
  if(cont->GetMainOwner())
  {
-  // ������ ��� �������� ��������� ���������� � ������� ������������� ����������
+  // Устанавливает для главного владельца компонента в таблицу соответствия компонентов
   cont->GetMainOwner()->GetFullName(MainOwnerName);
 
-  // ������ ������������� �������� ��������� ���������� � ������� ������������� ����������
+  // Устанавливает идентификатор главного владельца компонента в таблицу соответствия компонентов
   MainOwnerId=cont->GetMainOwner()->GetFullId();
  }
 }
@@ -3054,22 +3054,22 @@ UContainer::EIContainer::EIContainer(const UContainer *cont)
 
 UContainer::EIContainer::EIContainer(const EIContainer &copy)
 {
- // �������� ��� ���������� � ������� ������������� ����������
+ // Копирует имя компонента в таблицу соответствия компонентов
  Name=copy.Name;
 
- // �������� ������������� ���������� � ������� ������������� ����������
+ // Копирует идентификатор компонента в таблицу соответствия компонентов
  Id=copy.Id;
 
- // ������ ��� ��������� ���������� � ������� ������������� ����������
+ // Устанавливает для родительского компонента в таблицу соответствия компонентов
  OwnerName=copy.OwnerName;
 
- // ������ ������������� ��������� ���������� � ������� ������������� ����������
+ // Устанавливает идентификатор родительского компонента в таблицу соответствия компонентов
  OwnerId=copy.OwnerId;
 
- // ������ ��� �������� ��������� ���������� � ������� ������������� ����������
+ // Устанавливает для главного владельца компонента в таблицу соответствия компонентов
  MainOwnerName=copy.MainOwnerName;
 
- // ������ ������������� �������� ��������� ���������� � ������� ������������� ����������
+ // Устанавливает идентификатор главного владельца компонента в таблицу соответствия компонентов
  MainOwnerId=copy.MainOwnerId;
 }
 
@@ -3083,14 +3083,14 @@ UContainer::EIContainer::~EIContainer(void)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-// ��������� ������ ���� �� ����������
+// Создает строку сообщения для ошибки
 std::string UContainer::EIContainer::CreateLogMessage(void) const
 {
  string result;
 
  if(OwnerName.size()>0)
  {
-  // ������ ��� ���������� � ������� ������������� ����������
+  // Устанавливает для компонента в таблицу соответствия компонентов
   result+=" Component=";
   result+=OwnerName;
   result+=".";
@@ -3099,14 +3099,14 @@ std::string UContainer::EIContainer::CreateLogMessage(void) const
  else
  if(Name.size()>0)
  {
-  // �������� ��� ���������� � ������� ������������� ����������
+  // Копирует имя компонента в таблицу соответствия компонентов
   result+=" Component=";
   result+=Name;
  }
 /*
  if(MainOwnerName != OwnerName && MainOwnerName.size()>0)
  {
-  // ������ ��� �������� ��������� ���������� � ������� ������������� ����������
+  // Устанавливает для главного владельца компонента в таблицу соответствия компонентов
   result+=" MainOwnerName=";
   result+=MainOwnerName;
  }
@@ -3136,10 +3136,10 @@ UContainer::EICalculateContainer::EICalculateContainer(const UContainer *cont, c
  if(!subcont)
   return;
 
- // �������� ��� ���������� � ������� ������������� ����������
+ // Копирует имя компонента в таблицу соответствия компонентов
  SubName=subcont->GetName();
 
- // �������� ������������� ���������� � ������� ������������� ����������
+ // Копирует идентификатор компонента в таблицу соответствия компонентов
  SubId=subcont->GetId();
 }
 
@@ -3159,7 +3159,7 @@ UContainer::EICalculateContainer::~EICalculateContainer(void)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-// ��������� ������ ���� �� ����������
+// Создает строку сообщения для ошибки
 std::string UContainer::EICalculateContainer::CreateLogMessage(void) const
 {
  string result=UContainer::EIContainer::CreateLogMessage();
@@ -3201,7 +3201,7 @@ UContainer::EComponentSystemException::~EComponentSystemException(void) throw()
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-// ��������� ������ ���� �� ����������
+// Создает строку сообщения для ошибки
 std::string UContainer::EComponentSystemException::CreateLogMessage(void) const
 {
  return ESystemException::CreateLogMessage()+EICalculateContainer::CreateLogMessage();
@@ -3209,7 +3209,7 @@ std::string UContainer::EComponentSystemException::CreateLogMessage(void) const
 // --------------------------
 
 
-/// ������� �������������� ������ ��� �����������
+/// Формирует форматированную строку для логирования
 bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result)
 {
  USerStorageXML xml;
