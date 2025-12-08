@@ -1049,11 +1049,15 @@ const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) cons
  // GetData() returns reference to member 'v', not a temporary
  // For std::vector<bool>, operator[] returns a proxy object, not a direct reference
  // This is safe because the proxy object is valid as long as the vector exists
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-local-addr"
+#endif
  const typename UProperty<T, OwnerT, type, true>::TV& elem_ref = data_ref[i];
  return elem_ref;
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 }
 
 // ������ �������� ����������

@@ -4,8 +4,10 @@
 #define RDK_CORE
 
 // Suppress redefinition warnings for macros that may be defined via -D in command line
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wbuiltin-macro-redefined"
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4100)
@@ -134,7 +136,9 @@
 #endif
 #endif // RDK_LIB_TYPE
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 #if __cplusplus >= 201103L
     #include <cstdint>

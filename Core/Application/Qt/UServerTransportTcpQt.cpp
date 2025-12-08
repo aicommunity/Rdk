@@ -503,13 +503,12 @@ int UServerControlQt::RegisterMetadataReceiver(const std::string &address, int p
   }
  }
  */
- return 0;
+return 0;
 }
 
 /// Удаляет удаленный приемник метаданных
 int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int port)
 {
- return 0;
  /*
  TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
  if(broadcaster)
@@ -524,7 +523,7 @@ int UServerControlQt::UnRegisterMetadataReceiver(const std::string &address, int
   RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
  }
  */
- return 0;
+return 0;
 }
 // --------------------------
 

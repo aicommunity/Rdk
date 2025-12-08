@@ -2313,8 +2313,8 @@ void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target
  if(thickness < 0 || y < 0 || y >= Height)
   return;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
- int thicksize=thickness*LineByteLength;
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
+ int thicksize=thickness*line_byte_length;
  UBColor *p=0;
  unsigned *p2=0;
 
@@ -2391,7 +2391,7 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
  if(y+thickness >= Height)
   thickness=Height-y;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
 
  if(target)
   {
@@ -2402,9 +2402,9 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
     }
 
    target->SetRes(Width,Height-thickness,ColorModel);
-   memcpy(target->Data,Data,y*LineByteLength);
-   memcpy(target->Data+y*LineByteLength,Data+(y+thickness)*LineByteLength,
-										   (Height-y-thickness)*LineByteLength);
+   memcpy(target->Data,Data,y*line_byte_length);
+   memcpy(target->Data+y*line_byte_length,Data+(y+thickness)*line_byte_length,
+										   (Height-y-thickness)*line_byte_length);
   }
  else
   {
@@ -2414,8 +2414,8 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
 	 return;
 	}
 
-   memmove(Data+y*LineByteLength, Data+(y+thickness)*LineByteLength,
-								   (Height-y-thickness)*LineByteLength);
+   memmove(Data+y*line_byte_length, Data+(y+thickness)*line_byte_length,
+								   (Height-y-thickness)*line_byte_length);
    Height-=thickness;
    ByteLength=Height*LineByteLength;
    Length=Width*Height;
@@ -2433,11 +2433,11 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
  if(thickness < 0 || x < 0 || x >= Width)
   return;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
  int nLineByteLength=CalcLineByteLength(Width+thickness,ColorModel);
 // if(nLineByteLength % 2)
 //  ++nLineByteLength;
- int PixelByteLength=LineByteLength/Width;
+ int pixel_byte_length=line_byte_length/Width;
 
  if(target)
   {
@@ -2445,13 +2445,13 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
 
    p=Data; pend=Data+ByteLength;
    p2=target->Data;
-   for(;p<pend;p+=LineByteLength,p2+=nLineByteLength)
+   for(;p<pend;p+=line_byte_length,p2+=nLineByteLength)
     {
-     memcpy(p2,p,x*PixelByteLength);
-     memcpy(p2+(x+thickness)*PixelByteLength,p+x*PixelByteLength,(Width-x)*PixelByteLength);
+     memcpy(p2,p,x*pixel_byte_length);
+     memcpy(p2+(x+thickness)*pixel_byte_length,p+x*pixel_byte_length,(Width-x)*pixel_byte_length);
     }
 
-   p=p2=target->Data+x*PixelByteLength;
+   p=p2=target->Data+x*pixel_byte_length;
    height=target->Height;
   }
  else
@@ -2459,9 +2459,9 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
    MemoryLength=nLineByteLength*Height;
    out=p2=new UBColor[MemoryLength];
    p=Data; pend=Data+ByteLength;
-   for(;p<pend;p+=LineByteLength,p2+=nLineByteLength)
+   for(;p<pend;p+=line_byte_length,p2+=nLineByteLength)
     {
-     memcpy(p2,p,x*PixelByteLength);
+     memcpy(p2,p,x*pixel_byte_length);
      memcpy(p2+(x+thickness)*PixelByteLength,p+x*PixelByteLength,(Width-x)*PixelByteLength);
     }
    delete []Data;
@@ -2544,9 +2544,9 @@ void UBitmap::RemoveVertLine(int x, int thickness, UBitmap *target)
  if(x+thickness >= Width)
   thickness=Width-x;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
  int nLineByteLength=CalcLineByteLength(Width-thickness,ColorModel);
- int PixelByteLength=LineByteLength/Width;
+ int pixel_byte_length=line_byte_length/Width;
 
  if(target)
   {
@@ -2554,18 +2554,18 @@ void UBitmap::RemoveVertLine(int x, int thickness, UBitmap *target)
 
    p=Data; pend=Data+ByteLength;
    p2=target->Data;
-   for(;p<pend;p+=LineByteLength,p2+=(Width-thickness)*PixelByteLength)
+   for(;p<pend;p+=line_byte_length,p2+=(Width-thickness)*pixel_byte_length)
     {
-     memcpy(p2,p,x*PixelByteLength);
-     memcpy(p2+x*PixelByteLength,p+(x+thickness)*PixelByteLength,(Width-x-thickness)*PixelByteLength);
+     memcpy(p2,p,x*pixel_byte_length);
+     memcpy(p2+x*pixel_byte_length,p+(x+thickness)*pixel_byte_length,(Width-x-thickness)*pixel_byte_length);
     }
   }
  else
   {
-   p=Data+x*PixelByteLength; pend=Data+ByteLength;
-   p2=Data+(x+thickness)*PixelByteLength;
-   for(;p2<pend;p+=(Width-thickness)*PixelByteLength,p2+=LineByteLength)
-    memmove(p,p2,(Width-thickness)*PixelByteLength);
+   p=Data+x*pixel_byte_length; pend=Data+ByteLength;
+   p2=Data+(x+thickness)*pixel_byte_length;
+   for(;p2<pend;p+=(Width-thickness)*pixel_byte_length,p2+=line_byte_length)
+    memmove(p,p2,(Width-thickness)*pixel_byte_length);
 
    Width-=thickness;
    Length=Width*Height;
@@ -5773,6 +5773,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
 	left_value=Data[min].Int;
    }
 
+   right_value=Data[max].Int; // Initialize to default value
    for(j=i;j<=max;j++)
 	if(Data[j].Int != 0)
     {
@@ -5784,7 +5785,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
    if(j >= max)
    {
     right=max;
-    right_value=Data[max].Int;
+	right_value=Data[max].Int;
    }
    // Нашли левую и правую ненулевые границы дырки
    for(j=left+1;j<=right-1;j++)

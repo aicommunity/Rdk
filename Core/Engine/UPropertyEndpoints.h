@@ -734,7 +734,7 @@ operator unsigned long long (void) const
 unsigned long long& operator ++ (void)
 {
  if(this->SetterR)
-  SetData(this->v+1);
+  this->SetData(this->v+1);
  else
   ++this->v;
  return this->v;
@@ -744,7 +744,7 @@ unsigned long long operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
-  SetData(this->v+1);
+  this->SetData(this->v+1);
  else
   this->v++;
  return temp;
@@ -753,7 +753,7 @@ unsigned long long operator ++ (int)
 unsigned long long& operator -- (void)
 {
  if(this->SetterR)
-  SetData(this->v-1);
+  this->SetData(this->v-1);
  else
   --this->v;
  return this->v;
@@ -763,7 +763,7 @@ unsigned long long operator -- (int)
 {
  unsigned int temp=this->v;
  if(this->SetterR)
-  SetData(this->v-1);
+  this->SetData(this->v-1);
  else
   this->v--;
  return temp;

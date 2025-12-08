@@ -383,10 +383,10 @@ bool UProjectDeployProcessingThread::DownloadZip(const QString &remote_url, cons
     if(rename)
     {
      int id=0;
-     QFileInfo fi(download_filename);
+     QFileInfo fi_rename(download_filename);
      do
      {
-       download_filename = fi.path()+"/"+"temp_"+QString::number(id);
+       download_filename = fi_rename.path()+"/"+"temp_"+QString::number(id);
        id+=1;
      }
      while(QFileInfo(download_filename).exists());
@@ -2299,12 +2299,12 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
     neural_cont = model->GetComponentL(components_names[0]);
 
     bool *nn_Activity = neural_cont->AccessPropertyData<bool>("Activity");
-    std::string *nn_ScriptFile;
+    std::string *nn_ScriptFile = nullptr;
     if(file_tags[class_name].LibScriptFileTagName!="")
         nn_ScriptFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibScriptFileTagName.c_str());
     std::string *nn_WeightsFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibWeightFileTagName.c_str());
-    std::string *nn_ConfigFile;
-    int *nn_ClassCount;
+    std::string *nn_ConfigFile = nullptr;
+    int *nn_ClassCount = nullptr;
     if(file_tags[class_name].LibConfigFileTagName!="")
         nn_ConfigFile = neural_cont->AccessPropertyData<std::string>(file_tags[class_name].LibConfigFileTagName.c_str());
 
@@ -2319,10 +2319,10 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
         *nn_UseFullPath = true;
 
     *nn_Activity = true;
-    if(file_tags[class_name].LibScriptFileTagName!="")
+    if(file_tags[class_name].LibScriptFileTagName!="" && nn_ScriptFile)
         *nn_ScriptFile = absolute_script_file.toUtf8().constData();
     *nn_WeightsFile = absolute_weights_file.toUtf8().constData();
-    if(file_tags[class_name].LibConfigFileTagName!="")
+    if(file_tags[class_name].LibConfigFileTagName!="" && nn_ConfigFile)
         *nn_ConfigFile = absolute_config_file.toUtf8().constData();
     if(file_tags[class_name].LibClassCountTagName!="")
     {
@@ -2424,8 +2424,8 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
     if(capture_class_name=="")
     {
        state=-1;
-       frame_id=-1;
-       max_frame_id=-1;
+       frame_id=static_cast<unsigned long long>(-1);
+       max_frame_id=static_cast<unsigned long long>(-1);
        lastError = "Capture class name indefined";
        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
@@ -2434,8 +2434,8 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
     if(capture_component_name=="")
     {
        state=-1;
-       frame_id=-1;
-       max_frame_id=-1;
+       frame_id=static_cast<unsigned long long>(-1);
+       max_frame_id=static_cast<unsigned long long>(-1);
        lastError = "Capture component name indefined";
        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
@@ -2446,8 +2446,8 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
     if(!model)
     {
        state=-1;
-       frame_id=-1;
-       max_frame_id=-1;
+       frame_id=static_cast<unsigned long long>(-1);
+       max_frame_id=static_cast<unsigned long long>(-1);
        lastError = "RTVModel access error";
        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
@@ -2460,7 +2460,7 @@ bool UProjectDeployerQt::GetCaptureStateVideoAnalysis(int &state, unsigned long 
     if(lib_descr.LibName!=capture_class_name)
     {
        state=-1;
-       frame_id=-1;
+       frame_id=static_cast<unsigned long long>(-1);
        lastError = "Capture class description access error";
        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
@@ -2489,8 +2489,8 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
     if(!model)
     {
        state=-1;
-       frame_id=-1;
-       max_frame_id=-1;
+       frame_id=static_cast<unsigned long long>(-1);
+       max_frame_id=static_cast<unsigned long long>(-1);
        lastError = "RTVModel access error";
        UpdateTaskStateInDb(task_id, TS_Error, -1.0f);
        return false;
@@ -2765,7 +2765,7 @@ int UProjectDeployerQt::GetUploadState()
 }
 
 ///Обновить статус задачи в базе данных
-void UProjectDeployerQt::UpdateTaskStateInDb(int task_id, const DatabaseTaskStatus &status, float progress, const QString &start_time, const QString& end_time)
+void UProjectDeployerQt::UpdateTaskStateInDb(int task_id_param, const DatabaseTaskStatus &status, float progress, const QString &start_time, const QString& end_time)
 {
     QString preparation_request="";
     preparation_request+="UPDATE vid_an.task_list ";
@@ -2782,7 +2782,7 @@ void UProjectDeployerQt::UpdateTaskStateInDb(int task_id, const DatabaseTaskStat
     {
         preparation_request+=",task_end='"+end_time+"'";
     }
-    preparation_request+=" WHERE task_id="+QString::number(task_id)+";";
+    preparation_request+=" WHERE task_id="+QString::number(task_id_param)+";";
 
     QSqlQuery q(*db);
     q.prepare(preparation_request);

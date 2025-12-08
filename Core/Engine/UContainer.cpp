@@ -736,12 +736,12 @@ const NameT& UContainer::GetComponentName(const UId &id) const
 }
 
 // ���������� Id ��������� ���������� �� ��� �����
-const UId& UContainer::GetComponentId(const NameT &name, bool nothrow) const
+const UId& UContainer::GetComponentId(const NameT &name, bool no_throw) const
 {
  auto I=CompsLookupTable.find(name);
  if(I == CompsLookupTable.end())
  {
-  if(nothrow)
+  if(no_throw)
    return ForbiddenId;
   RDK_THROW(EComponentNameNotExist(name));
  }
@@ -1136,11 +1136,11 @@ bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
 // ���� id == ForbiddenId �� ���������� ��������� �� ���� ���������
-UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
+UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool no_throw) const
 {
  if(id == ForbiddenId)
  {
-  if(nothrow)
+  if(no_throw)
    return 0;
   RDK_THROW(EComponentIdNotExist(id));
  }
@@ -1160,35 +1160,35 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
   if(id == (*comps)->Id)
    return *comps;
 
- if(!nothrow)
+ if(!no_throw)
   RDK_THROW(EComponentIdNotExist(id));
  return 0;
 }
 
 // объекте по короткому имени 'name'
 // ������� �� ��������� ����� 'name'
-UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
+UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool no_throw) const
 {
- return GetComponent(GetComponentId(name,nothrow),nothrow);
+ return GetComponent(GetComponentId(name,no_throw),no_throw);
 }
 
 // объекте по ДЛИННОМУ Id 'id'.
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
 // �� ���������� ��������� �� ���� ���������
-UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
+UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool no_throw) const
 {
  UEPtr<UContainer> comp;
 
  if(id.GetSize() == 0)
   return 0;
 
- comp=GetComponent(id[0],nothrow);
+ comp=GetComponent(id[0],no_throw);
  for(int i=1;i<id.GetSize();i++)
   {
    if(!comp)
 	return 0;
-   comp=comp->GetComponent(id[i],nothrow);
+   comp=comp->GetComponent(id[i],no_throw);
   }
  return comp;
 }
@@ -1196,16 +1196,16 @@ UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) con
 
 // объекте по ДЛИННОМУ имени 'name'
 // ������� �� �������� ����� 'name'
-UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
+UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool no_throw) const
 {
  UEPtr<UContainer> comp;
  NameT::size_type pi,pj;
 
  pi=name.find_first_of('.');
  if(pi == NameT::npos)
-  return GetComponent(name,nothrow);
+  return GetComponent(name,no_throw);
 
- comp=GetComponent(name.substr(0,pi),nothrow);
+ comp=GetComponent(name.substr(0,pi),no_throw);
  while(pi != name.size())
   {
    if(!comp)
@@ -1214,7 +1214,7 @@ UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) con
    pi=name.find_first_of('.',pj);
    if(pi == NameT::npos)
 	pi=name.size();
-   comp=comp->GetComponent(name.substr(pj,pi-pj),nothrow);
+   comp=comp->GetComponent(name.substr(pj,pi-pj),no_throw);
   }
  return comp;
 }
@@ -2220,7 +2220,6 @@ bool UContainer::Calculate(void)
 {
  if(!Activity)
   return true;
- int i=0;
  RDK_SYS_TRY
  {
   try
@@ -2302,7 +2301,9 @@ bool UContainer::Calculate(void)
 
    LogPropertiesBeforeCalc();
 
+   #ifdef RDK_ENABLE_CALC_TIME_CHECKS
    unsigned long long acalc_start_time=GetCurrentStartupTime();
+   #endif
    if(!Owner)
    {
 	ACalculate();
@@ -2325,7 +2326,7 @@ bool UContainer::Calculate(void)
    else
    if(TimeStep > OwnerTimeStep)
    {
-	for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
+	for(int calc_iter=int(TimeStep/OwnerTimeStep);calc_iter>=0;--calc_iter)
 	 ACalculate();
    }
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
@@ -2361,7 +2362,7 @@ bool UContainer::Calculate(void)
    if(numcontrollers>0)
    {
 	UEPtr<UController>* controllers=&Controllers[0];
-    for(size_t i=0;i<numcontrollers;i++,controllers++)
+    for(size_t ctrl_idx=0;ctrl_idx<numcontrollers;ctrl_idx++,controllers++)
 	{
 	 (*controllers)->Update();
 	}

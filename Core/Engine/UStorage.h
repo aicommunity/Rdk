@@ -296,7 +296,7 @@ const std::string GetClDescPath() const;
 const std::string GetCreateClDescPath(const std::string& class_name);
 
 // ���������� XML �������� ������
-const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool nothrow=false) const;
+const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname, bool no_throw=false) const;
 
 // Класс в хранилище должен существовать
 // ����� � ��������� ������ ������������

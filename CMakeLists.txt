@@ -65,9 +65,18 @@ list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyInput\\.
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyOutput\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UShare\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyIO\\.cpp$")
-# 3) Исключаем HTTP транспорт и специфичный Qt контрол до проверки зависимостей
-list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/UServerTransportHttp\\.cpp$")
+# 3) Исключаем специфичный Qt контрол до проверки зависимостей
+# UServerTransportHttp.cpp возвращен в компиляцию, так как класс используется в UServerControl
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UEngineControlQt\\.cpp$")
+# 4) Исключаем jpge.cpp и jpgd.cpp, так как они включены в JpegIntegration.cpp через #include
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/ThirdParty/jpeg/jpge\\.cpp$")
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/ThirdParty/jpeg/jpgd\\.cpp$")
+# 5) Исключаем UDllLoader.qt.cpp, так как он включен в rdk_system.qt.cpp через #include
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Qt/UDllLoader\\.qt\\.cpp$")
+# 6) Исключаем GCC-специфичные файлы на Windows
+if(WIN32)
+  list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/USharedMemoryLoader\\.gcc\\.cpp$")
+endif()
 # Подключаем Qt-зависимый деплойер всегда (NeuroModeler его использует)
 # (ранее был условным по RDK_USE_SQL)
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UProjectDeployerQt\\.cpp$")
@@ -81,6 +90,11 @@ list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/rdk_system\\.
 if (UNIX)
   list(APPEND RDK_STATIC_SOURCES
     ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_exceptions.ansi.cpp
+  )
+elseif(WIN32)
+  # Добавляем реализацию GetSystemExceptionData для Windows
+  list(APPEND RDK_STATIC_SOURCES
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_exceptions.win.cpp
   )
 endif()
 
@@ -104,21 +118,29 @@ target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Network)
 # QtSql требуется UProjectDeployerQt
 find_package(Qt5 REQUIRED COMPONENTS Sql)
 target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Sql)
-find_package(Boost QUIET COMPONENTS program_options)
-if(Boost_FOUND)
-  target_link_libraries(${TARGET_NAME} PUBLIC Boost::program_options)
-endif()
 
-# Boost.Thread для потоков в Core/Application
-find_package(Boost QUIET COMPONENTS thread)
+# Boost libraries (required components)
+find_package(Boost QUIET COMPONENTS program_options thread filesystem system chrono atomic)
 if(Boost_FOUND)
-  target_link_libraries(${TARGET_NAME} PUBLIC Boost::thread)
+  target_link_libraries(${TARGET_NAME} PUBLIC 
+    Boost::program_options 
+    Boost::thread 
+    Boost::filesystem 
+    Boost::system
+    Boost::chrono
+    Boost::atomic
+  )
 endif()
 
 # rdk_rpc.cpp добавлен напрямую в target_sources выше
 
 find_package(Threads REQUIRED)
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
+
+# Winsock для Windows (используется в UGlogMirrorSink.cpp)
+if(WIN32)
+  target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
+endif()
 
 # Google glog for logging
 find_package(glog QUIET)

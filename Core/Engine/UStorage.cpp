@@ -271,12 +271,12 @@ void UStorage::DelClass(const UId &classid, bool force)
  }
 
 
- for(auto I=ClassesLookupTable.begin(),
-							  J=ClassesLookupTable.end(); I!=J; ++I)
+ for(auto lookup_iter=ClassesLookupTable.begin(),
+							  lookup_end=ClassesLookupTable.end(); lookup_iter!=lookup_end; ++lookup_iter)
  {
-  if(I->second == classid)
-  {
-   ClassesLookupTable.erase(I);
+  if(lookup_iter->second == classid)
+   {
+    ClassesLookupTable.erase(lookup_iter);
    break;
   }
  }
@@ -346,10 +346,10 @@ void UStorage::GetClassNameList(vector<NameT> &buffer) const
  buffer.resize(0);
  buffer.reserve(ClassesLookupTable.size());
 
- for(auto I=ClassesLookupTable.begin(),
-									J=ClassesLookupTable.end(); I!=J; ++I)
+ for(auto lookup_iter=ClassesLookupTable.begin(),
+									lookup_end=ClassesLookupTable.end(); lookup_iter!=lookup_end; ++lookup_iter)
  {
-  buffer.push_back(I->first);
+  buffer.push_back(lookup_iter->first);
  }
 }
 
@@ -837,13 +837,13 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
 }
 
 // Возвращает XML описание класса
-const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
+const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool no_throw) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
  if(I == ClassesDescription.end())
  {
-  if(nothrow)
+  if(no_throw)
    return 0;
   else
    throw EClassNameNotExist(classname);

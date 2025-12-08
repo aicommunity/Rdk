@@ -145,6 +145,8 @@ bool MirrorLogsToWorkDirFlag;
 
 /// Флаг инициализации инфраструктуры логирования
 bool LoggingInitialized;
+/// Флаг инициализации Google Logging (glog)
+bool GoogleLoggingInitialized;
 
 /// Отложенный путь до основной папки логов (если логгер ещё не инициализирован)
 std::string PendingPrimaryLogDir;

@@ -5,12 +5,16 @@
 #include "initdll_defs.h"
 
 // Suppress redefinition warnings for macros that may be defined via -D in command line
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wbuiltin-macro-redefined"
+#endif
 #ifndef RDK_APP_NAME
 #define RDK_APP_NAME "RDK"
 #endif
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 #ifdef __cplusplus
 extern "C"  {

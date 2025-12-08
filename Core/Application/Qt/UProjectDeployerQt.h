@@ -52,7 +52,7 @@ struct CaptureLibDescr
  }
 };
 
-static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
+static inline size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 {
   struct FtpFile *out = (struct FtpFile *)stream;
   if(!out->stream) {
@@ -61,7 +61,7 @@ static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
     if(!out->stream)
     {
         std::cerr<<"Stream out failure";
-        return -1; /* failure, can't open file to write */
+        return static_cast<size_t>(-1); /* failure, can't open file to write */
     }
   }
 

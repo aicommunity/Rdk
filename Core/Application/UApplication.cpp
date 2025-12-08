@@ -219,6 +219,7 @@ UApplication::UApplication(void)
  SetCoutLogMode(false);
  MirrorLogsToWorkDirFlag=true;
  LoggingInitialized=false;
+ GoogleLoggingInitialized=false;
  //SetStandartXMLInCatalog();
 
  // DebugMode=false;
@@ -1211,7 +1212,8 @@ bool UApplication::Init(void)
  else
   FLAGS_log_dir = StripTrailingSeparators(initial_log_dir);
 
- google::InitGoogleLogging(GetLogFileBaseName().c_str());
+google::InitGoogleLogging(GetLogFileBaseName().c_str());
+GoogleLoggingInitialized = true;
  
  if(!initial_log_dir.empty())
   UGlogGuiSink::Instance().AddDirectory(initial_log_dir);
@@ -1296,7 +1298,11 @@ bool UApplication::UnInit(void)
  }
  UGlogMirrorSink::Instance().Disable();
 #ifdef RDK_USE_GLOG
- google::ShutdownGoogleLogging();
+if (GoogleLoggingInitialized)
+{
+  google::ShutdownGoogleLogging();
+  GoogleLoggingInitialized = false;
+}
 #endif
  LoggingInitialized=false;
  AppIsInit = false;

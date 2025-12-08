@@ -62,7 +62,6 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
  bool accept = false;
  bool done = false;
  int x0(point1.X), y0(point1.Y), x1(point2.X), y1(point2.Y);
- double x,y;
  int counter=100000;
 
  out_point1=point1;
@@ -89,6 +88,7 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
     outcodeOut = outcode1;
 
    // Найдём точку пересечения отрезка с границей прямоугольника
+   double x = x0, y = y0; // Initialize to avoid uninitialized variable warning
    if(UG_EDGE_CODE_TOP & outcodeOut)
    {
 	x = x0 + (x1 - x0) * (rect.Y2() - y0) / (y1 - y0);
@@ -556,10 +556,10 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
  do{
   pos=points.front();
   // Поиск соседних точек
-  int y=pos/CWidth;
-  int x=pos-y*CWidth;
+  int local_y=pos/CWidth;
+  int local_x=pos-local_y*CWidth;
 
-  if(x-1>=0)
+  if(local_x-1>=0)
   {
    CData=Canvas->GetData()+(pos-1)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -570,7 +570,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
     points.push_back(pos-1);
    }
   }
-  if(x+1<CWidth)
+  if(local_x+1<CWidth)
   {
    CData=Canvas->GetData()+(pos+1)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -581,7 +581,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
     points.push_back(pos+1);
    }
   }
-  if(y+1<CHeight)
+  if(local_y+1<CHeight)
   {
    CData=Canvas->GetData()+(pos+CWidth)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -592,7 +592,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
     points.push_back(pos+CWidth);
    }
   }
-  if(y-1>=0)
+  if(local_y-1>=0)
   {
    CData=Canvas->GetData()+(pos-CWidth)*3;
    if(memcmp(CData,&BorderColor,3))

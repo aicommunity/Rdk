@@ -148,8 +148,8 @@ int UProjectDeployer::GetStandaloneTask()
 bool UProjectDeployer::GetCaptureState(int &state, unsigned long long& frame_id, unsigned long long &max_frame_id)
 {
     state=-1;
-    frame_id=-1;
-    max_frame_id=-1;
+    frame_id=static_cast<unsigned long long>(-1);
+    max_frame_id=static_cast<unsigned long long>(-1);
     return false;
 }
 ///Обрабатывает накопившийся с последнего вызова лог

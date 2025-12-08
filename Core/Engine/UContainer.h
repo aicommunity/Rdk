@@ -67,6 +67,8 @@ struct RDK_LIB_TYPE UPVariable
 // --------------------------
 UPVariable(void);
 UPVariable(UId id, UEPtr<UIPointer> prop);
+UPVariable(const UPVariable&) = default;
+UPVariable& operator=(const UPVariable&) = default;
 virtual ~UPVariable(void);
 // --------------------------
 };
@@ -218,6 +220,10 @@ std::vector<std::string> PropertiesForDetailedLog;
 // --------------------------
 public:
 UContainer(void);
+// Удаляем конструктор копирования и оператор присваивания
+// Копирование должно выполняться через метод Copy()
+UContainer(const UContainer&) = delete;
+UContainer& operator=(const UContainer&) = delete;
 virtual ~UContainer(void);
 // --------------------------
 
@@ -430,7 +436,7 @@ public:
 const NameT& GetComponentName(const UId &id) const;
 
 // ���������� Id ��������� ���������� �� ��� �����
-const UId& GetComponentId(const NameT &name, bool nothrow=false) const;
+const UId& GetComponentId(const NameT &name, bool no_throw=false) const;
 
 // ���������� ��� ���������� ��������� �� ��� Id
 const NameT& GetPointerName(const UId &id) const;
@@ -521,10 +527,10 @@ virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 // Если id == ForbiddenId то возвращает указатель на этот компонент
 // Если nothrow == true то возвращает 0 и не кидает исключение
 // ���� nothrow == true �� ���������� 0 � �� ������ ����������
-virtual UEPtr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
+virtual UEPtr<UContainer> GetComponent(const UId &id, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponent(const UId &id, bool nothrow=false) const
+UEPtr<T> GetComponent(const UId &id, bool no_throw=false) const
 {
  // Check cache first
  if(CachedComponent && CachedComponentId == id)
@@ -536,7 +542,7 @@ UEPtr<T> GetComponent(const UId &id, bool nothrow=false) const
  }
  
  // Get base component
- UEPtr<UContainer> comp = GetComponent(id, nothrow);
+ UEPtr<UContainer> comp = GetComponent(id, no_throw);
  if(!comp)
   return UEPtr<T>(0);
  
@@ -555,13 +561,13 @@ UEPtr<T> GetComponent(const UId &id, bool nothrow=false) const
 
 // объекте по короткому имени 'name'
 // ������� �� ��������� ����� 'name'
-virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
+virtual UEPtr<UContainer> GetComponent(const NameT &name, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponent(const NameT &name, bool nothrow=false) const
+UEPtr<T> GetComponent(const NameT &name, bool no_throw=false) const
 {
  // Get base component by name
- UEPtr<UContainer> comp = GetComponent(name, nothrow);
+ UEPtr<UContainer> comp = GetComponent(name, no_throw);
  if(!comp)
   return UEPtr<T>(0);
  
@@ -591,10 +597,10 @@ UEPtr<T> GetComponent(const NameT &name, bool nothrow=false) const
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
 // �� ���������� ��������� �� ���� ���������
-UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
+UEPtr<UContainer> GetComponentL(const ULongId &id, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
+UEPtr<T> GetComponentL(const ULongId &id, bool no_throw=false) const
 {
  // Get base component by long ID
  UEPtr<UContainer> comp = GetComponentL(id, nothrow);
@@ -625,13 +631,13 @@ UEPtr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
 
 // объекте по ДЛИННОМУ имени 'name'
 // ������� �� �������� ����� 'name'
-virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
+virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponentL(const NameT &name, bool nothrow=false) const
+UEPtr<T> GetComponentL(const NameT &name, bool no_throw=false) const
 {
  // Get base component by long name
- UEPtr<UContainer> comp = GetComponentL(name, nothrow);
+ UEPtr<UContainer> comp = GetComponentL(name, no_throw);
  if(!comp)
   return UEPtr<T>(0);
  

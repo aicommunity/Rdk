@@ -53,6 +53,16 @@ UVariable::UVariable(const UVariable &copy)
  Type=copy.Type;
 }
 
+UVariable& UVariable::operator=(const UVariable& copy)
+{
+ if(this != &copy)
+ {
+  Property=copy.Property;
+  DelEnable=copy.DelEnable;
+  Type=copy.Type;
+ }
+ return *this;
+}
 
 UVariable::~UVariable(void)
 {

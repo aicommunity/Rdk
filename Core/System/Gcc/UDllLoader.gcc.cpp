@@ -1,6 +1,8 @@
 #ifndef UDLL_LOADER_GCC_CPP
 #define UDLL_LOADER_GCC_CPP
 
+#ifndef _WIN32
+
 #include "../UDllLoader.h"
 #include <dlfcn.h>
 #include <string>
@@ -91,4 +93,6 @@ std::string UDllLoaderGcc::GetErrorString()
     return dlerror();
 }
 
-#endif
+#endif // _WIN32
+
+#endif // UDLL_LOADER_GCC_CPP

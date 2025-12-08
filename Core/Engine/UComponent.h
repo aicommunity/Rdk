@@ -89,6 +89,7 @@ unsigned int Type;
 UVariable(void);
 UVariable(UEPtr<UIProperty> prop, unsigned int type=0);
 UVariable(const UVariable &copy);
+UVariable& operator=(const UVariable& copy);
 virtual ~UVariable(void);
 // --------------------------
 

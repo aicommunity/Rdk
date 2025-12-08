@@ -629,7 +629,6 @@ bool NCC2D::SimpleCalculate(void)
  // Считаем среднее входного изображения для всех u,v
  k=0;
  int sum=0;
- long long res=0;
 
 
  unsigned char *pInput=Input;
@@ -739,7 +738,7 @@ bool NCC2D::SimpleCalculate(void)
   {
    Result[k]=-1;
    long long iSumNorm=0;
-   long long res=0;
+   long long corr_res=0;
    long long isumaverage;
    if(SubAverageFlag)
     isumaverage=ISumAverage[k];
@@ -749,23 +748,23 @@ bool NCC2D::SimpleCalculate(void)
    int* ttemplate=&Template[0];
 
 
-   unsigned char *pInput=Input+j*CStep*IWidth+i*CStep;
+   unsigned char *pInputLocal=Input+j*CStep*IWidth+i*CStep;
    for(int n=j*CStep;n<THeight+j*CStep;n++)
    {
-    for(int m=i*CStep;m<TWidth+i*CStep;m++,pInput++)
+    for(int m=i*CStep;m<TWidth+i*CStep;m++,pInputLocal++)
     {
-     long long sub=(*pInput)*size-isumaverage;
-     res+=sub*(*ttemplate);
+     long long sub=(*pInputLocal)*size-isumaverage;
+     corr_res+=sub*(*ttemplate);
      iSumNorm+=sub*sub;
 
      ++ttemplate;
     }
-    pInput+=IWidth-TWidth;
+    pInputLocal+=IWidth-TWidth;
    }
 
    double sq1=double(iSumNorm),sq2=double(TSumNorm);
    if(sq1 != 0 && sq2 != 0)
-    Result[k]=double(res)/sqrtl(sq1*sq2);
+    Result[k]=static_cast<double>(corr_res)/static_cast<double>(sqrtl(sq1*sq2));
    else
     Result[k]=1;
    if(MaxResult<Result[k])
@@ -797,27 +796,27 @@ bool NCC2D::SimpleCalculate(void)
   {
    Result[k]=-1;
    int iSumNorm=0;
-//   int res=0;
+   long long corr_res=0;
    int diffwidth=IWidth-TWidth;
 
    int* ttemplate=&Template[0];
 
 
-   unsigned char *pInput=Input+WorkIY*IWidth+j*CStep*IWidth+i*CStep+WorkIX;
+   unsigned char *pInputLocal2=Input+WorkIY*IWidth+j*CStep*IWidth+i*CStep+WorkIX;
    for(int n=0;n<THeight;++n)
    {
-    for(int m=0;m<TWidth;++m,++pInput,++ttemplate)
+    for(int m=0;m<TWidth;++m,++pInputLocal2,++ttemplate)
     {
-     iSumNorm+=int(*pInput)*int(*pInput);
-     res+=int(*pInput)*(*ttemplate);
+     iSumNorm+=int(*pInputLocal2)*int(*pInputLocal2);
+     corr_res+=int(*pInputLocal2)*(*ttemplate);
     }
-    pInput+=diffwidth;
+    pInputLocal2+=diffwidth;
    }
 
    double sq1=double(iSumNorm),sq2=double(TSumNorm);
    if(sq1 != 0 && sq2 != 0)
    {
-    Result[k]=double(res)/sqrtl(fabs(sq1*sq2));
+    Result[k]=static_cast<double>(corr_res)/static_cast<double>(sqrtl(fabs(sq1*sq2)));
    }
    else
     Result[k]=1;

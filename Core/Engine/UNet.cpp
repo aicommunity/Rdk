@@ -741,8 +741,8 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 	{
 	 if(SetComponentProperties(serstorage))
 	 {
-	  std::string name;
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
+	  std::string full_name;
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(full_name));
 //	  return false;
 	 }
 	}
@@ -884,8 +884,8 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
 	{
 	 if(SetComponentProperties(serstorage))
 	 {
-	  std::string name;
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
+	  std::string full_name;
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(full_name));
 //	  return false;
 	 }
 	}
@@ -907,8 +907,8 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
    {
 	if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->LoadComponentProperties(serstorage))
 	{
-	 std::string name;
-	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+GetFullName(name));
+	 std::string full_name;
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+GetFullName(full_name));
 //	 return false;
 	}
    }

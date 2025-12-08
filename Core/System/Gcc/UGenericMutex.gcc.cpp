@@ -2,6 +2,8 @@
 #define UGENERIC_MUTEX_GCC_CPP
 // ---------------------------------------------------------------------------
 
+#ifndef _WIN32
+
 #include "../UGenericMutex.h"
 #include <pthread.h>
 #include <iostream>
@@ -222,5 +224,7 @@ void UDestroyEvent(UGenericEvent* event)
   delete event;
 }
 
-#endif
+#endif // _WIN32
+
+#endif // UGENERIC_MUTEX_GCC_CPP
 

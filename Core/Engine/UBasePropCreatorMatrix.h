@@ -85,26 +85,26 @@ void UBasePropCreatorMatrix::CreateProperty(RDK::USerStorageXML* serstorage, RDK
 	 int size=serstorage->GetNumNodes();
 	 // если вектор пуст берем тип - elemType
 	 // если есть элементы берем тип элементов
-	 std::string type;
+	 std::string elem_type;
 	 if(size == 0)
 	 {
-		type = serstorage->GetNodeAttribute("elemType");
+		elem_type = serstorage->GetNodeAttribute("elemType");
 	 }
 	 else
 	 {
 		serstorage->SelectNode("elem",size-1);
-		type = serstorage->GetNodeAttribute("Type");
+		elem_type = serstorage->GetNodeAttribute("Type");
 		serstorage->SelectUp();
 	 }
 
 	 //вектор из MVector<T>
-	 if(type.find("MVector",0) == 0)
+	 if(elem_type.find("MVector",0) == 0)
 	 {
         CreatePropertyVectorOfMVector<PropType, TypeInt>(serstorage,mock_unet, ptype);
 		return;
 	 }
 	 //вектор из MDMatrix<T>
-	 if(type.find("MDMatrix",0) == 0)
+	 if(elem_type.find("MDMatrix",0) == 0)
 	 {
         CreatePropertyVectorOfMDMatrix<PropType, TypeInt>(serstorage,mock_unet, ptype);
 		return;

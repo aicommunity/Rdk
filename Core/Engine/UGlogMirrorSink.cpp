@@ -5,7 +5,12 @@
 #include <iomanip>
 #include <sstream>
 #include <thread>
+#ifdef _WIN32
+#include <winsock2.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 
 namespace RDK
 {
@@ -15,8 +20,21 @@ namespace
 std::string DetectHostTag()
 {
   char buffer[256];
+#ifdef _WIN32
+  WSADATA wsaData;
+  if(WSAStartup(MAKEWORD(2, 2), &wsaData) == 0)
+  {
+    if(gethostname(buffer, sizeof(buffer)) == 0)
+    {
+      WSACleanup();
+      return std::string(buffer);
+    }
+    WSACleanup();
+  }
+#else
   if(gethostname(buffer, sizeof(buffer)) == 0)
     return std::string(buffer);
+#endif
   return std::string("host");
 }
 
@@ -52,7 +70,11 @@ void UGlogMirrorSink::Configure(const std::string& directory,
   BaseName = base_name.empty() ? std::string("rdk") : base_name;
   HostTag = DetectHostTag();
   TimeTag = FormatSessionTag(session_start);
+#ifdef _WIN32
+  ProcessId = static_cast<int>(_getpid());
+#else
   ProcessId = static_cast<int>(::getpid());
+#endif
   LevelFiles.clear();
   Enabled = !TargetDirectory.empty();
 }

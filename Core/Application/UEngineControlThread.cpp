@@ -421,7 +421,7 @@ void UEngineControlThread::Reset(void)
 bool UEngineControlThread::SetPriority(int priority_id)
 {
 #ifdef WIN32
- BOOL res;
+ BOOL res = FALSE;
  HANDLE th = Thread.native_handle();
 
  switch (priority_id)
@@ -443,6 +443,9 @@ bool UEngineControlThread::SetPriority(int priority_id)
 	break;
 	case RDK_THREAD_PRIORITY_IDLE:
 	 res = SetThreadPriority(th, THREAD_PRIORITY_LOWEST);
+	break;
+	default:
+	 res = FALSE;
 	break;
 	}
 

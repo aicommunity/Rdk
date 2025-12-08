@@ -597,8 +597,8 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::stringstream ss;
     ss<<rs<<"|-|"<<le;
     response = ss.str();
-    exit(0);
     return_value=0;
+    exit(0);
   }
  }
 
