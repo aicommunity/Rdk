@@ -603,7 +603,7 @@ template<class T>
 UEPtr<T> GetComponentL(const ULongId &id, bool no_throw=false) const
 {
  // Get base component by long ID
- UEPtr<UContainer> comp = GetComponentL(id, nothrow);
+ UEPtr<UContainer> comp = GetComponentL(id, no_throw);
  if(!comp)
   return UEPtr<T>(0);
  
