@@ -29,6 +29,9 @@ static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream)
           " bytes from file\n", nread);*/
   return retcode;
 }
+#ifdef _MSC_VER
+#pragma warning(disable:4505)
+#endif
 
 class UCurlFtpClientTestWidget : public UVisualControllerWidget
 {

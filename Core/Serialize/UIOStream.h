@@ -80,13 +80,16 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
 {
  size_t size=data.size();
  int i=0;
+ typename std::basic_istream<CharT>::int_type chInt;
  CharT ch;
 
- ch=stream.get();
+ chInt = stream.get();
+ ch = static_cast<CharT>(chInt);
  if(ch != '{')
   return stream;
 
- ch=stream.get();
+ chInt = stream.get();
+ ch = static_cast<CharT>(chInt);
  if(ch == '}')
   return stream;
  else
@@ -102,7 +105,8 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
    data.push_back(temp);
   }
   ++i;
-  ch=stream.get();
+ chInt = stream.get();
+ ch = static_cast<CharT>(chInt);
  } while(ch != '}');
 
  data.resize(i);

@@ -70,12 +70,12 @@ void UWatchTab::AUpdateInterface()
         int i = 0;
         while (i < graph[graphIndex]->countSeries())
         {
-            RDK::UControllerDataReader* data = env->GetDataReader(
+            RDK::UControllerDataReader* data_reader = env->GetDataReader(
                 graph[graphIndex]->getSerie(i)->nameComponent.toStdString(),
                 graph[graphIndex]->getSerie(i)->nameProperty.toStdString(),
                 graph[graphIndex]->getSerie(i)->Jx,
                 graph[graphIndex]->getSerie(i)->Jy);
-            if (!data) {
+            if (!data_reader) {
                 graph[graphIndex]->deleteSerie(i);
             } else {
                 ++i;
@@ -91,26 +91,26 @@ void UWatchTab::AUpdateInterface()
                 continue;
             }
 
-            RDK::UControllerDataReader* data = env->GetDataReader(
+            RDK::UControllerDataReader* data_reader = env->GetDataReader(
                 current_serie->nameComponent.toStdString(),
                 current_serie->nameProperty.toStdString(),
                 current_serie->Jx,
                 current_serie->Jy);
 
             // Обновляем статус серии (активна/неактивна)
-            const bool isOnline = (data != nullptr);
+            const bool isOnline = (data_reader != nullptr);
             if (current_serie->isOnline != isOnline) {
                 current_serie->setOnlineStatus(isOnline);
             }
 
-            if (!data) {
+            if (!data_reader) {
                 XData.clear();
                 YData.clear();
                 continue;
             }
 
-            XData = data->XData;
-            YData = data->YData;
+            XData = data_reader->XData;
+            YData = data_reader->YData;
 
             // Ограничение количества точек для производительности (кольцевой буфер)
             const int maxPoints = 10000; // Максимальное количество точек на серию
@@ -216,21 +216,21 @@ void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<dou
         return;
     }
 
-    RDK::UControllerDataReader* data = env->GetDataReader(
+    RDK::UControllerDataReader* data_reader = env->GetDataReader(
         serie->nameComponent.toStdString(),
         serie->nameProperty.toStdString(),
         serie->Jx,
         serie->Jy);
     
-    if (!data)
+    if (!data_reader)
     {
         xdata.clear();
         ydata.clear();
         return;
     }
     
-    xdata = data->XData;
-    ydata = data->YData;
+    xdata = data_reader->XData;
+    ydata = data_reader->YData;
 }
 
 void UWatchTab::createSelectionDialogSlot(int index)

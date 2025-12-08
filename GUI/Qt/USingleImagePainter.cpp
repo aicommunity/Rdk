@@ -55,7 +55,7 @@ bool USingleImagePainter::isDrawable() const
   return drawable;
 }
 
-void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygons)
+void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygonsList)
 {
   if(isPolygonModified)
   {
@@ -65,7 +65,7 @@ void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygons)
   }
   else
   {
-    this->polygons = polygons;
+    this->polygons = polygonsList;
   }
 }
 

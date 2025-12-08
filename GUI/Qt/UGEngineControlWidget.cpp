@@ -1030,34 +1030,34 @@ void UGEngineControlWidget::writeSettings()
 {
     if(!application) return;
 
-    QSettings settings(QString::fromLocal8Bit(
+    QSettings projectSettings(QString::fromLocal8Bit(
                          application->GetProjectPath().c_str())+"settings.qt",
                        QSettings::IniFormat);
-    settings.beginGroup(accessibleName());
+    projectSettings.beginGroup(accessibleName());
 
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("state",    saveState());
+    projectSettings.setValue("geometry", saveGeometry());
+    projectSettings.setValue("state",    saveState());
 
     if(imagesWindow)
     {
-      settings.setValue("ImagesGeometry", imagesWindow->saveGeometry());
-      settings.setValue("ImagesState",    imagesWindow->saveState());
+      projectSettings.setValue("ImagesGeometry", imagesWindow->saveGeometry());
+      projectSettings.setValue("ImagesState",    imagesWindow->saveState());
     }
 
-    settings.endGroup();
+    projectSettings.endGroup();
 }
 
 void UGEngineControlWidget::readSettings()
 {
     if(!application) return;
 
-    QSettings settings(QString::fromLocal8Bit(
+    QSettings projectSettings(QString::fromLocal8Bit(
                          application->GetProjectPath().c_str())+"settings.qt",
                        QSettings::IniFormat);
-    settings.beginGroup(accessibleName());
+    projectSettings.beginGroup(accessibleName());
 
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("state").toByteArray());
+    restoreGeometry(projectSettings.value("geometry").toByteArray());
+    restoreState(projectSettings.value("state").toByteArray());
 
     if(!imagesWindow)
     {
@@ -1065,10 +1065,10 @@ void UGEngineControlWidget::readSettings()
         imagesWindow->setCentralWidget(images);
     }
     imagesWindow->resize(images->size());
-    imagesWindow->restoreGeometry(settings.value("ImagesGeometry").toByteArray());
-    imagesWindow->restoreState(settings.value("ImagesState").toByteArray());
+    imagesWindow->restoreGeometry(projectSettings.value("ImagesGeometry").toByteArray());
+    imagesWindow->restoreState(projectSettings.value("ImagesState").toByteArray());
 
-    settings.endGroup();
+    projectSettings.endGroup();
 }
 
 void UGEngineControlWidget::on_mdiArea_destroyed(QObject *arg1)

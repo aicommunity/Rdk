@@ -475,7 +475,6 @@ void UServerTransportTcpQt::DisconnectClient(std::string &bind)
 /// Регистрирует удаленный приемник метаданных
 int UServerControlQt::RegisterMetadataReceiver(const std::string &address, int port)
 {
- return 0;
  /*
 
  UnRegisterMetadataReceiver(address, port);

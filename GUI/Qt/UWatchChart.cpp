@@ -164,14 +164,14 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     // Создание DataReadera в ядре для дальнейщего получения данных
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
-    RDK::UControllerDataReader * data=env->RegisterDataReader(componentName.toStdString(),
-                                                              propertyName.toStdString(),
-                                                              jx,
-                                                              jy);
-    if(data)
+    RDK::UControllerDataReader * data_reader = env->RegisterDataReader(componentName.toStdString(),
+                                                                       propertyName.toStdString(),
+                                                                       jx,
+                                                                       jy);
+    if(data_reader)
     {
-        series.last()->data_reader = data;
-        data->SetTimeInterval(time_interval);
+        series.last()->data_reader = data_reader;
+        data_reader->SetTimeInterval(time_interval);
     }
     emit UpdateTabGuiSignal(false);
 }

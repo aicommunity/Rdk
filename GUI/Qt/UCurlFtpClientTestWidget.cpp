@@ -6,6 +6,10 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4505 4456)
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,7 +27,7 @@ static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
     //open file for writing
     out->stream = fopen(out->filename, "wb");
     if(!out->stream)
-      return -1; // failure, can't open file to write
+      return static_cast<size_t>(-1); // failure, can't open file to write
   }
   return fwrite(buffer, size, nmemb, out->stream);
 }
@@ -209,10 +213,10 @@ void UCurlFtpClientTestWidget::onPushButtonReceiveFileClick()
  if(rename)
  {
   int id=0;
-  QFileInfo fi(download_filename);
+  QFileInfo fiTemp(download_filename);
   do
   {
-    download_filename = fi.path()+"/"+"temp_"+QString::number(id);
+    download_filename = fiTemp.path()+"/"+"temp_"+QString::number(id);
     id+=1;
   }
   while(QFileInfo(download_filename).exists());
@@ -345,10 +349,10 @@ bool UCurlFtpClientTestWidget::DownloadZip(const QString &remote_url, const QStr
     if(rename)
     {
      int id=0;
-     QFileInfo fi(download_filename);
+     QFileInfo fiTemp(download_filename);
      do
      {
-       download_filename = fi.path()+"/"+"temp_"+QString::number(id);
+       download_filename = fiTemp.path()+"/"+"temp_"+QString::number(id);
        id+=1;
      }
      while(QFileInfo(download_filename).exists());
@@ -459,5 +463,9 @@ void UCurlFtpClientTestWidget::pushButtonModelExampleClicked()
     }
     qDebug()<<"Unpack SUCCESS";
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif //UCurlFtpClientTestWidget_CPP

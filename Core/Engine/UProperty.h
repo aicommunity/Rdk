@@ -32,6 +32,10 @@ See file license.txt for more information
 #include "UComponent.h"
 #include "../System/rdk_system.h"
 
+#ifdef _MSC_VER
+#pragma warning(disable:4172)
+#endif
+
 namespace RDK {
 
 namespace detail
@@ -1053,10 +1057,16 @@ const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) cons
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-local-addr"
 #endif
- const typename UProperty<T, OwnerT, type, true>::TV& elem_ref = data_ref[i];
- return elem_ref;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4172)
+#endif
+ return data_ref[i];
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
 }
 

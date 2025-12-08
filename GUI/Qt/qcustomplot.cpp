@@ -24,6 +24,10 @@
 ****************************************************************************/
 
 #include "qcustomplot.h"
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:5054 4458)
+#endif
 
 
 
@@ -23536,3 +23540,6 @@ QPen QCPItemBracket::mainPen() const
     return mSelected ? mSelectedPen : mPen;
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

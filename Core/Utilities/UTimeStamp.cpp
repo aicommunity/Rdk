@@ -229,9 +229,9 @@ UTimeStamp& UTimeStamp::operator << (const string &str)
   return *this;
 
  Hours=RDK::atoi(seps[0]);
- Minutes=RDK::atoi(seps[1]);
- Seconds=RDK::atoi(seps[2]);
- Frames=RDK::atoi(seps[3]);
+ Minutes=static_cast<unsigned char>(RDK::atoi(seps[1]));
+ Seconds=static_cast<unsigned char>(RDK::atoi(seps[2]));
+ Frames=static_cast<unsigned char>(RDK::atoi(seps[3]));
 
  return *this;
 }

@@ -211,23 +211,23 @@ void UComponentLinksWidget::initWidget(QString singleComponentName)
     UpdateInterface(true);
 }
 
-void UComponentLinksWidget::initWidget(QString firstComponentName, QString secondComponentName)
+void UComponentLinksWidget::initWidget(QString firstComponentNameParam, QString secondComponentNameParam)
 {
-    this->firstComponentName = firstComponentName;
-    this->secondComponentName = secondComponentName;
-    ui->labelOutputsComponentName->setText(firstComponentName);
-    ui->labelInputsComponentName->setText(secondComponentName);
+    this->firstComponentName = firstComponentNameParam;
+    this->secondComponentName = secondComponentNameParam;
+    ui->labelOutputsComponentName->setText(firstComponentNameParam);
+    ui->labelInputsComponentName->setText(secondComponentNameParam);
     //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
     mode = 2;
     UpdateInterface(true);
 }
 
-void UComponentLinksWidget::initWidget(QString firstComponentName, QString secondComponentName, int dlg_mode)
+void UComponentLinksWidget::initWidget(QString firstComponentNameParam, QString secondComponentNameParam, int dlg_mode)
 {
-    this->firstComponentName = firstComponentName;
-    this->secondComponentName = secondComponentName;
-    ui->labelOutputsComponentName->setText(firstComponentName);
-    ui->labelInputsComponentName->setText(secondComponentName);
+    this->firstComponentName = firstComponentNameParam;
+    this->secondComponentName = secondComponentNameParam;
+    ui->labelOutputsComponentName->setText(firstComponentNameParam);
+    ui->labelInputsComponentName->setText(secondComponentNameParam);
     //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(switchLink()));
     mode = dlg_mode;
     UpdateInterface(true);

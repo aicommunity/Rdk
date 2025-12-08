@@ -235,7 +235,7 @@ T hextoi(const std::basic_string<CharT> &str)
  basic_stringstream<CharT> stream(str);
  int res(0);
  stream>>hex>>res;
- return res;
+ return static_cast<T>(res);
 }
 
 // Выделяет дробную часть числа с точностью digs знаков после запятой

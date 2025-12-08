@@ -17,6 +17,8 @@
 
 #ifdef _MSC_VER
 #pragma warning (disable : 4611) // warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable
+#pragma warning (push)
+#pragma warning (disable : 4458)
 #endif
 
 // Set to 1 to enable freq. domain chroma upsampling on images using H2V2 subsampling (0=faster nearest neighbor sampling).
@@ -3314,3 +3316,7 @@ unsigned char *decompress_jpeg_image_from_file(const char *pSrc_filename, int *w
 }
 
 } // namespace jpgd
+
+#ifdef _MSC_VER
+#pragma warning (pop)
+#endif

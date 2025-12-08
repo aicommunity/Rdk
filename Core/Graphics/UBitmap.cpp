@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4244)
+#endif
 /* ***********************************************************
 @Copyright Alexsandr V. Bakhshiev, 2005.
 E-mail:        alexab@ailab.ru
@@ -5443,7 +5447,6 @@ bool UBHistogram::SetNumPixels(int value)
  return true;
 }
 // --------------------------
-
 // --------------------------
 // Методы счета
 // --------------------------
@@ -5933,6 +5936,10 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
 // --------------------------
 
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif
 
