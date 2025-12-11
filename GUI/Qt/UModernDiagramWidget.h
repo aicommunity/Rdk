@@ -31,6 +31,24 @@ public slots:
     void Reload();
     /// Установить масштаб по содержимому
     void FitToView();
+    /// Обработка двойного клика из списка компонентов
+    void componentDoubleClick(QString name);
+    /// Обработка одиночного клика из списка компонентов
+    void componentSingleClick(QString name);
+    /// Обновление схемы
+    void updateScheme(bool reloadXml);
+    /// Выбор компонента по имени
+    void selectComponent(QString name);
+
+signals:
+    /// Компонент выбран (одиночный клик)
+    void componentSelected(QString name);
+    /// Двойной клик по компоненту (сигнал для внешних обработчиков)
+    void componentDoubleClicked(QString name);
+    /// Выход на уровень выше
+    void componentStapBack();
+    /// Обновление списка компонентов
+    void updateComponentsList();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

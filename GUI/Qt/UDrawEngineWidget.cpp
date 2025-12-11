@@ -43,6 +43,12 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     auto layoutModern = new QVBoxLayout(ui->modernContainer);
     layoutModern->setContentsMargins(0,0,0,0);
     layoutModern->addWidget(modernScheme);
+    
+    // Подключение сигналов от современной диаграммы
+    connect(modernScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
+    connect(modernScheme, SIGNAL(componentDoubleClicked(QString)), this, SIGNAL(componentDoubleClickFromScheme(QString)));
+    connect(modernScheme, SIGNAL(componentStapBack()), this, SIGNAL(componentStapBackFromScheme()));
+    connect(modernScheme, SIGNAL(updateComponentsList()), this, SIGNAL(updateComponentsListFromScheme()));
 
     ui->splitter->setStretchFactor(0,1);
     ui->splitter->setStretchFactor(1,0);
@@ -113,13 +119,13 @@ void UDrawEngineWidget::componentDoubleClick(QString name)
 void UDrawEngineWidget::componentSingleClick(QString name)
 {
     modelScheme->selectComponent(name);
-    //updateScheme(true);
+    modernScheme->componentSingleClick(name);
 }
 
 void UDrawEngineWidget::updateScheme(bool reloadXml)
 {
  modelScheme->reDrawScheme(reloadXml);
- modernScheme->Reload();
+ modernScheme->updateScheme(reloadXml);
 }
 
 void UDrawEngineWidget::updateClassesList()

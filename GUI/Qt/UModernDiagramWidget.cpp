@@ -128,6 +128,16 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             m_owner->saveCoord(fullName, scenePos() - minPos);
         }
     }
+    else if(change == QGraphicsItem::ItemSelectedHasChanged && m_owner)
+    {
+        // Отслеживаем изменение выбора компонента
+        if(value.toBool())
+        {
+            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
+                                                                  : m_owner->m_componentName + "." + nodeName;
+            emit m_owner->componentSelected(fullName);
+        }
+    }
     return QGraphicsRectItem::itemChange(change, value);
 }
 
@@ -501,6 +511,7 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
         if(deleted)
         {
             Reload();
+            emit updateComponentsList();
         }
         event->accept();
         return;
@@ -693,6 +704,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 newPath = m_owner->m_componentName + "." + node->nodeName;
             m_owner->SetComponentName(newPath);
             m_owner->Reload();
+            emit m_owner->componentDoubleClicked(newPath);
             event->accept();
             return;
         }
@@ -706,14 +718,56 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             if(pathParts.size() > 0)
             {
                 pathParts.removeLast();
-                QString newPath = pathParts.join(".");
-                m_owner->SetComponentName(newPath);
-                m_owner->Reload();
-                event->accept();
-                return;
+            QString newPath = pathParts.join(".");
+            m_owner->SetComponentName(newPath);
+            m_owner->Reload();
+            emit m_owner->componentStapBack();
+            event->accept();
+            return;
             }
         }
     }
     QGraphicsScene::mouseDoubleClickEvent(event);
+}
+
+// --------------------------- Slots ---------------------------
+
+void UModernDiagramWidget::componentDoubleClick(QString name)
+{
+    SetComponentName(name);
+    Reload();
+}
+
+void UModernDiagramWidget::componentSingleClick(QString name)
+{
+    selectComponent(name);
+}
+
+void UModernDiagramWidget::updateScheme(bool reloadXml)
+{
+    Q_UNUSED(reloadXml);
+    Reload();
+}
+
+void UModernDiagramWidget::selectComponent(QString name)
+{
+    // Найти компонент в текущем пути
+    QString componentName = name;
+    if(!m_componentName.isEmpty() && name.startsWith(m_componentName + "."))
+    {
+        componentName = name.mid(m_componentName.size() + 1);
+    }
+    else if(!m_componentName.isEmpty() && name == m_componentName)
+    {
+        // Если имя совпадает с текущим путём, значит мы на верхнем уровне
+        return;
+    }
+    
+    // Найти узел и выделить его
+    if(auto it = m_nodeByName.find(componentName); it != m_nodeByName.end())
+    {
+        m_scene->clearSelection();
+        it.value()->setSelected(true);
+    }
 }
 
