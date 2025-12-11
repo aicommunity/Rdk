@@ -4,6 +4,7 @@
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
 #include "UClassesListWidget.h"
+#include "UModernDiagramWidget.h"
 
 #include <rdk_application.h>
 
@@ -55,6 +56,7 @@ signals:
 private:
 
     UDrawEngineImageWidget *modelScheme;
+    UModernDiagramWidget *modernScheme;
     UClassesListWidget *classesList;
 
     Ui::UDrawEngineWidget *ui;
