@@ -82,6 +82,7 @@ private:
     void clearScene();
     void layoutGrid();
     NodeItem* pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos);
+    NodeItem* pickNode(const QPointF& scenePos) const;
     void buildLinks();
 
     // UI

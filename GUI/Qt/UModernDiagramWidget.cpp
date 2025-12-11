@@ -20,6 +20,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 private:
     UModernDiagramWidget* m_owner;
 };
@@ -352,6 +353,16 @@ UModernDiagramWidget::NodeItem* UModernDiagramWidget::pickPort(const QPointF& sc
     return nullptr;
 }
 
+UModernDiagramWidget::NodeItem* UModernDiagramWidget::pickNode(const QPointF& scenePos) const
+{
+    for(auto* node : m_nodes)
+    {
+        if(node->contains(node->mapFromScene(scenePos)))
+            return node;
+    }
+    return nullptr;
+}
+
 void UModernDiagramWidget::buildLinks()
 {
     const char* xmlRaw = Model_GetComponentInternalLinks(m_componentName.toStdString().c_str(), nullptr);
@@ -664,5 +675,45 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
     QGraphicsScene::mouseReleaseEvent(event);
+}
+
+void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        // Проверяем, попали ли мы в узел
+        auto* node = m_owner->pickNode(event->scenePos());
+        if(node)
+        {
+            // Вход внутрь компонента: добавляем имя узла к пути
+            QString newPath;
+            if(m_owner->m_componentName.isEmpty())
+                newPath = node->nodeName;
+            else
+                newPath = m_owner->m_componentName + "." + node->nodeName;
+            m_owner->SetComponentName(newPath);
+            m_owner->Reload();
+            event->accept();
+            return;
+        }
+    }
+    else if(event->button() == Qt::RightButton)
+    {
+        // Правый двойной клик по холсту: поднимаемся на уровень выше
+        if(!m_owner->m_componentName.isEmpty())
+        {
+            QStringList pathParts = m_owner->m_componentName.split(".");
+            if(pathParts.size() > 0)
+            {
+                pathParts.removeLast();
+                QString newPath = pathParts.join(".");
+                m_owner->SetComponentName(newPath);
+                m_owner->Reload();
+                event->accept();
+                return;
+            }
+        }
+    }
+    QGraphicsScene::mouseDoubleClickEvent(event);
 }
 
