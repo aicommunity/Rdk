@@ -212,7 +212,8 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->addWidget(m_mainView);
-    mainLayout->addWidget(m_miniMap);
+    // Миникарта скрыта
+    m_miniMap->hide();
 }
 
 UModernDiagramWidget::~UModernDiagramWidget() = default;
