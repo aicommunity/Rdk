@@ -129,6 +129,10 @@ private:
     // Coord scaling (scene units per kernel unit)
     // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
     double m_coordScale = 30.0;
+    
+    // Минимальная позиция, использованная для нормализации при загрузке
+    // Нужна для правильной денормализации координат при сохранении
+    QPointF m_normalizationOffset;
 
     // Context menu
     QMenu* m_contextMenu;

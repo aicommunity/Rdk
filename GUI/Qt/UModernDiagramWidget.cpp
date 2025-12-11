@@ -15,6 +15,14 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QMainWindow>
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QFileDialog>
+#include <QDir>
+#include <QDataStream>
+#include <QMimeData>
+#include <ctime>
 #include "UClassDescriptionDisplay.h"
 #include "UQuickLinkDialog.h"
 #include "../Core/Engine/UStorage.h"
@@ -44,7 +52,10 @@ class ModernGraphicsView : public QGraphicsView
 {
 public:
     ModernGraphicsView(UModernDiagramWidget* owner, QGraphicsScene* scene)
-        : QGraphicsView(scene), m_owner(owner) {}
+        : QGraphicsView(scene), m_owner(owner)
+    {
+        setAcceptDrops(true);
+    }
 protected:
     bool viewportEvent(QEvent *event) override
     {
@@ -57,6 +68,194 @@ protected:
         }
         return QGraphicsView::viewportEvent(event);
     }
+    
+    void dragEnterEvent(QDragEnterEvent *event) override
+    {
+        if(event->mimeData()->hasFormat("Component"))
+        {
+            event->setDropAction(Qt::MoveAction);
+            event->accept();
+        }
+        else
+        {
+            event->ignore();
+        }
+    }
+    
+    void dragMoveEvent(QDragMoveEvent *event) override
+    {
+        if(event->mimeData()->hasFormat("Component"))
+        {
+            event->setDropAction(Qt::MoveAction);
+            event->accept();
+        }
+        else
+        {
+            event->ignore();
+        }
+    }
+    
+    void dropEvent(QDropEvent *event) override
+    {
+        if(!event->mimeData()->hasFormat("Component"))
+        {
+            event->ignore();
+            return;
+        }
+        
+        if(!m_owner || !m_owner->m_application)
+        {
+            event->ignore();
+            return;
+        }
+        
+        QByteArray itemData = event->mimeData()->data("Component");
+        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+        QString classname;
+        dataStream >> classname;
+        
+        if(classname.isEmpty())
+        {
+            event->ignore();
+            return;
+        }
+        
+        // Если конфигурация не открыта, то создать новую
+        if(!m_owner->m_application->GetProjectOpenFlag())
+        {
+            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", 
+                "Config not created. Auto-create one-channel configuration and model from this component?", 
+                QMessageBox::Yes|QMessageBox::Cancel);
+            if (reply == QMessageBox::Yes)
+            {
+                std::string file_name;
+                
+                QString default_path = QString::fromLocal8Bit(
+                    (m_owner->m_application->GetWorkDirectory() + "/../../Configs/").c_str());
+                QDir path1(default_path);
+                if(!path1.exists(default_path))
+                {
+                    default_path = QString::fromLocal8Bit(
+                        (m_owner->m_application->GetWorkDirectory() + "/../../../Configs/").c_str());
+                    QDir path2(default_path);
+                    if(!path2.exists(default_path))
+                    {
+                        default_path = QString::fromLocal8Bit(
+                            m_owner->m_application->GetWorkDirectory().c_str());
+                    }
+                }
+                
+                std::string path_dialog = default_path.toUtf8().data();
+                
+                // Создание папки проекта автоматическое либо выбор существующей
+                if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", 
+                    QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+                {
+                    time_t curr_time;
+                    time(&curr_time);
+                    
+                    // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+                    std::string folder = RDK::get_text_time(curr_time, '.', '_');
+                    path_dialog += std::string("/Autocreate") + folder.c_str();
+                    
+                    if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
+                    {
+                        event->ignore();
+                        return;
+                    }
+                }
+                else
+                {
+                    path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), 
+                        default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
+                }
+                
+                if(path_dialog.empty())
+                {
+                    event->ignore();
+                    return;
+                }
+                
+                file_name = path_dialog + "/Project.ini";
+                
+                m_owner->m_application->CreateProject(file_name, classname.toLocal8Bit().constData());
+                
+                m_owner->Reload();
+                emit m_owner->componentSelected(QString());
+                emit m_owner->updateComponentsList();
+            }
+            event->accept();
+            return;
+        }
+        
+        // Если модель не существует, спросить не создать ли ее
+        if(!Model_Check())
+        {
+            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", 
+                "Model not exist. Create new model from this class?", 
+                QMessageBox::Yes|QMessageBox::Cancel);
+            if (reply == QMessageBox::Yes)
+            {
+                // Создать новую модель
+                Model_Create(classname.toLocal8Bit());
+                m_owner->Reload();
+                emit m_owner->componentSelected(QString());
+                emit m_owner->updateComponentsList();
+            }
+            event->accept();
+            return;
+        }
+        
+        // Создать компонент
+        const char* pname = Model_AddComponent(m_owner->m_componentName.toLocal8Bit(), classname.toLocal8Bit());
+        if(pname)
+        {
+            std::string name = pname;
+            Engine_FreeBufString(pname);
+            
+            // Преобразовать координаты drop из view в сцену
+            QPointF scenePos = mapToScene(event->pos());
+            
+            // Сохранить абсолютные координаты
+            // При создании нового компонента координаты еще не нормализованы, так как сцена еще не перезагружена
+            // Но нужно учесть текущее смещение нормализации
+            QPointF absoluteScenePos = scenePos + m_owner->m_normalizationOffset;
+            QString fullName = QString::fromStdString(name);
+            m_owner->saveCoord(fullName, absoluteScenePos);
+            
+            // Перезагрузить сцену для обновления всех компонентов и связей
+            m_owner->Reload();
+            
+            // Найти созданный узел и выделить его
+            QString shortName = QString::fromStdString(name);
+            if(!m_owner->m_componentName.isEmpty())
+            {
+                // Если мы внутри компонента, нужно извлечь короткое имя
+                QString prefix = m_owner->m_componentName + ".";
+                if(shortName.startsWith(prefix))
+                {
+                    shortName = shortName.mid(prefix.length());
+                }
+            }
+            
+            auto* node = m_owner->m_nodeByName.value(shortName, nullptr);
+            if(node)
+            {
+                m_owner->m_scene->clearSelection();
+                node->setSelected(true);
+            }
+            
+            emit m_owner->componentSelected(QString::fromStdString(name));
+            emit m_owner->updateComponentsList();
+            
+            event->accept();
+        }
+        else
+        {
+            event->ignore();
+        }
+    }
+    
 private:
     UModernDiagramWidget* m_owner;
 };
@@ -133,12 +332,15 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                 link->updateGeometry();
         }
         // Сохранить координаты
+        // Важно: сохраняем абсолютные координаты (с учетом визуальной нормализации)
         if(m_owner)
         {
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                   : m_owner->m_componentName + "." + nodeName;
-            QPointF minPos = m_owner->currentMinScenePos();
-            m_owner->saveCoord(fullName, scenePos() - minPos);
+            // Денормализуем координаты перед сохранением (возвращаем к абсолютным)
+            // Используем сохраненное смещение нормализации
+            QPointF absoluteScenePos = scenePos() + m_owner->m_normalizationOffset;
+            m_owner->saveCoord(fullName, absoluteScenePos);
         }
     }
     else if(change == QGraphicsItem::ItemSelectedHasChanged && m_owner)
@@ -285,6 +487,7 @@ void UModernDiagramWidget::clearScene()
     m_scene->clear();
     m_tempLink = nullptr;
     m_dragSourceNode = nullptr;
+    m_normalizationOffset = QPointF(0, 0);
 }
 
 void UModernDiagramWidget::buildScene()
@@ -300,15 +503,10 @@ void UModernDiagramWidget::buildScene()
     bool coordsLoaded = false;
     QPointF minKernel(0,0);
     bool minSet=false;
+    // Сначала загружаем все координаты и находим минимальную
     for(const QString& comp : components)
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
-        const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
-        QString cls = QString::fromUtf8(clsRaw ? clsRaw : "");
-        Engine_FreeBufString(clsRaw);
-
-        auto* node = new NodeItem(this, comp, cls);
-        QPointF loaded;
         QPointF kernelPos;
         if(loadCoord(fullName, kernelPos))
         {
@@ -323,7 +521,29 @@ void UModernDiagramWidget::buildScene()
                 if(kernelPos.x() < minKernel.x()) minKernel.setX(kernelPos.x());
                 if(kernelPos.y() < minKernel.y()) minKernel.setY(kernelPos.y());
             }
-            loaded = scenePosFromKernel(kernelPos); // позже нормализуем
+        }
+    }
+    
+    // Теперь создаем узлы с нормализованными координатами для визуального отображения
+    // Но сохраняем абсолютные координаты в ядре
+    QPointF minScenePos = coordsLoaded ? scenePosFromKernel(minKernel) : QPointF(0,0);
+    // Сохраняем смещение нормализации для правильной денормализации при сохранении
+    m_normalizationOffset = minScenePos;
+    for(const QString& comp : components)
+    {
+        QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
+        const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
+        QString cls = QString::fromUtf8(clsRaw ? clsRaw : "");
+        Engine_FreeBufString(clsRaw);
+
+        auto* node = new NodeItem(this, comp, cls);
+        QPointF loaded;
+        QPointF kernelPos;
+        if(loadCoord(fullName, kernelPos))
+        {
+            // Используем абсолютные координаты из ядра, но нормализуем для визуального отображения
+            QPointF absoluteScenePos = scenePosFromKernel(kernelPos);
+            loaded = absoluteScenePos - minScenePos;
         }
         else
         {
@@ -335,15 +555,8 @@ void UModernDiagramWidget::buildScene()
         node->setPos(loaded);
         idx++;
     }
-
-    if(coordsLoaded)
-    {
-        // нормализуем сцену, чтобы левый верхний был в (0,0)
-        QPointF minPos = scenePosFromKernel(minKernel);
-        for(auto* n : m_nodes)
-            n->setPos(n->scenePos() - minPos);
-    }
-    else
+    
+    if(!coordsLoaded)
     {
         // нет координат из ядра — оставляем как есть и не перезаписываем в ядро,
         // чтобы при первом отображении не было автосжатия старого вида
