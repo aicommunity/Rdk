@@ -103,7 +103,8 @@ private:
     QList<LinkItem*> m_links;
 
     // Coord scaling (scene units per kernel unit)
-    double m_coordScale = 1.0;
+    // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
+    double m_coordScale = 30.0;
 
     QPointF scenePosFromKernel(const QPointF& kernel) const;
     QPointF kernelPosFromScene(const QPointF& scene) const;
