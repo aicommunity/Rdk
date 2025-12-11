@@ -49,6 +49,12 @@ signals:
     void componentStapBack();
     /// Обновление списка компонентов
     void updateComponentsList();
+    /// Просмотр/разрыв связи
+    void viewLinks(QString componentName);
+    /// Создание связи между двумя компонентами
+    void createLinks(QString firstComponentName, QString secondComponentName);
+    /// Переключение связи между двумя компонентами
+    void switchLinks(QString firstComponentName, QString secondComponentName);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -123,6 +129,56 @@ private:
     // Coord scaling (scene units per kernel unit)
     // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
     double m_coordScale = 30.0;
+
+    // Context menu
+    QMenu* m_contextMenu;
+    QAction* m_actionViewOrBreakLink;
+    QAction* m_actionCreateLink;
+    QAction* m_actionFinishLink;
+    QAction* m_actionCancelLink;
+    QAction* m_actionStartMoving;
+    QAction* m_actionFinishMoving;
+    QAction* m_actionCancelMoving;
+    QAction* m_actionSwitchLink;
+    QAction* m_actionFinishSwitching;
+    QAction* m_actionCancelSwitching;
+    QAction* m_actionCloneComponent;
+    QAction* m_actionQuickLink;
+    
+    // Context menu state
+    QString m_firstComponentToConnection;
+    QString m_startMoveComponent;
+    QString m_startSwitchComponent;
+    NodeItem* m_contextMenuNode;
+
+    void createContextMenu();
+    QString getSelectedComponentLongName() const;
+    
+    // Context menu slots
+private slots:
+    void componentViewOrBreakLink();
+    void componentCreateLink();
+    void componentFinishLink();
+    void componentCancelLink();
+    void componentStartMoving();
+    void componentFinishMoving();
+    void componentCancelMoving();
+    void componentStartSwitching();
+    void componentFinishSwitching();
+    void componentCancelSwitching();
+    void componentRename();
+    void actionClassDescriptionTriggered();
+    void componentDelete();
+    void componentCopyNameToClipboard();
+    void componentCopyLongNameToClipboard();
+    void componentCopyClassNameToClipboard();
+    void componentReset();
+    void componentCalculate();
+    void componentDefault();
+    void componentGUI();
+    void componentCopyXMLDescription();
+    void componentCloneComponent();
+    void componentQuickLink();
 
     QPointF scenePosFromKernel(const QPointF& kernel) const;
     QPointF kernelPosFromScene(const QPointF& scene) const;
