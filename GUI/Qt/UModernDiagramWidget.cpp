@@ -218,7 +218,7 @@ protected:
             
             // Сохранить абсолютные координаты
             // При создании нового компонента координаты еще не нормализованы, так как сцена еще не перезагружена
-            // Но нужно учесть текущее смещение нормализации
+            // Но нужно учесть текущее смещение нормализации для правильного сохранения
             QPointF absoluteScenePos = scenePos + m_owner->m_normalizationOffset;
             QString fullName = QString::fromStdString(name);
             m_owner->saveCoord(fullName, absoluteScenePos);
@@ -337,9 +337,16 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
         {
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                   : m_owner->m_componentName + "." + nodeName;
-            // Денормализуем координаты перед сохранением (возвращаем к абсолютным)
-            // Используем сохраненное смещение нормализации
-            QPointF absoluteScenePos = scenePos() + m_owner->m_normalizationOffset;
+            // Сохраняем координаты напрямую из scenePos() без учета нормализации
+            // Нормализация применяется только для визуального отображения, координаты в ядре должны быть абсолютными
+            QPointF normalizedPos = scenePos();
+            // Денормализуем: scenePos() уже нормализован, добавляем offset для получения абсолютных координат
+            QPointF absoluteScenePos = normalizedPos + m_owner->m_normalizationOffset;
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                (std::string("[ModernDiagram] item move ") + fullName.toStdString() + 
+                 " scenePos=(" + std::to_string(normalizedPos.x()) + "," + std::to_string(normalizedPos.y()) + ")" +
+                 " offset=(" + std::to_string(m_owner->m_normalizationOffset.x()) + "," + std::to_string(m_owner->m_normalizationOffset.y()) + ")" +
+                 " absoluteScene=(" + std::to_string(absoluteScenePos.x()) + "," + std::to_string(absoluteScenePos.y()) + ")").c_str(), 0);
             m_owner->saveCoord(fullName, absoluteScenePos);
         }
     }
@@ -461,6 +468,8 @@ void UModernDiagramWidget::SetComponentName(const QString& name)
 
 void UModernDiagramWidget::Reload()
 {
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+        (std::string("[ModernDiagram] Reload START componentName=") + m_componentName.toStdString()).c_str(), 0);
     clearScene();
     buildScene();
     QRectF bounds = m_scene->itemsBoundingRect();
@@ -492,18 +501,28 @@ void UModernDiagramWidget::clearScene()
 
 void UModernDiagramWidget::buildScene()
 {
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+        (std::string("[ModernDiagram] buildScene START componentName=") + m_componentName.toStdString()).c_str(), 0);
     if(!m_application)
+    {
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+            "[ModernDiagram] buildScene SKIP - no application", 0);
         return;
+    }
 
     const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
-    QStringList components = QString::fromUtf8(compRaw ? compRaw : "").split(",", Qt::SkipEmptyParts);
+    QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
+    QStringList components = compListStr.split(",", Qt::SkipEmptyParts);
     Engine_FreeBufString(compRaw);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+        (std::string("[ModernDiagram] buildScene components count=") + std::to_string(components.size()) +
+         " list=" + compListStr.toStdString()).c_str(), 0);
 
     int idx = 0;
     bool coordsLoaded = false;
     QPointF minKernel(0,0);
     bool minSet=false;
-    // Сначала загружаем все координаты и находим минимальную
+    // Сначала загружаем все координаты и находим минимальную для визуальной нормализации
     for(const QString& comp : components)
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
@@ -524,11 +543,18 @@ void UModernDiagramWidget::buildScene()
         }
     }
     
-    // Теперь создаем узлы с нормализованными координатами для визуального отображения
-    // Но сохраняем абсолютные координаты в ядре
+    // Вычисляем смещение для визуальной нормализации (только для отображения)
+    // Это смещение НЕ сохраняется в ядре и пересчитывается при каждой загрузке
     QPointF minScenePos = coordsLoaded ? scenePosFromKernel(minKernel) : QPointF(0,0);
-    // Сохраняем смещение нормализации для правильной денормализации при сохранении
+    // Сохраняем смещение нормализации ДО создания узлов, чтобы оно было доступно при сохранении координат
+    // ВАЖНО: это смещение используется только для визуального отображения, координаты в ядре остаются абсолютными
     m_normalizationOffset = minScenePos;
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+        (std::string("[ModernDiagram] buildScene componentName=") + m_componentName.toStdString() +
+         " minKernel=(" + std::to_string(minKernel.x()) + "," + std::to_string(minKernel.y()) + ")" +
+         " minScenePos=(" + std::to_string(minScenePos.x()) + "," + std::to_string(minScenePos.y()) + ")" +
+         " normalizationOffset=(" + std::to_string(m_normalizationOffset.x()) + "," + std::to_string(m_normalizationOffset.y()) + ")").c_str(), 0);
+    
     for(const QString& comp : components)
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
@@ -541,9 +567,14 @@ void UModernDiagramWidget::buildScene()
         QPointF kernelPos;
         if(loadCoord(fullName, kernelPos))
         {
-            // Используем абсолютные координаты из ядра, но нормализуем для визуального отображения
+            // Используем абсолютные координаты из ядра, нормализуем только для визуального отображения
             QPointF absoluteScenePos = scenePosFromKernel(kernelPos);
             loaded = absoluteScenePos - minScenePos;
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                (std::string("[ModernDiagram] buildScene node ") + comp.toStdString() +
+                 " kernel=(" + std::to_string(kernelPos.x()) + "," + std::to_string(kernelPos.y()) + ")" +
+                 " absoluteScene=(" + std::to_string(absoluteScenePos.x()) + "," + std::to_string(absoluteScenePos.y()) + ")" +
+                 " normalized=(" + std::to_string(loaded.x()) + "," + std::to_string(loaded.y()) + ")").c_str(), 0);
         }
         else
         {
@@ -776,6 +807,8 @@ QPointF UModernDiagramWidget::kernelPosFromScene(const QPointF& scene) const
 
 bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) const
 {
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+        (std::string("[ModernDiagram] loadCoord called for ") + fullName.toStdString()).c_str(), 0);
     const char* coordRaw = Model_GetComponentParameterValue(fullName.toStdString().c_str(), "Coord");
     if(!coordRaw)
     {
