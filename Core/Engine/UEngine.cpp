@@ -4676,6 +4676,328 @@ int UEngine::Model_SwitchOutputLinks(const char* item_name1, const char* item_pr
  return res;
 }
 
+// --------------------------
+// Методы управления алиасами свойств
+// --------------------------
+int UEngine::Model_AddPropertyAlias(const char* stringid, const char* alias, const char* component_path,
+                                    const char* property_name, unsigned int property_type)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!alias || !property_name)
+    return RDK_E_INVALID_ARGUMENT;
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return RDK_E_MODEL_NOT_FOUND;
+
+   std::string comp_path = component_path ? component_path : "";
+   bool temp_res=net->AddPropertyAlias(alias, comp_path, property_name, property_type);
+   if(!temp_res)
+    return RDK_E_MODEL_ADD_PROPERTY_ALIAS_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Model_DelPropertyAlias(const char* stringid, const char* alias)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!alias)
+    return RDK_E_INVALID_ARGUMENT;
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return RDK_E_MODEL_NOT_FOUND;
+
+   net->DelPropertyAlias(alias);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Model_ClearPropertyAliases(const char* stringid)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return RDK_E_MODEL_NOT_FOUND;
+
+   net->ClearPropertyAliases();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+bool UEngine::Model_CheckPropertyAlias(const char* stringid, const char* alias)
+{
+ bool result = false;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!alias)
+    return false;
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return false;
+
+   result = net->CheckPropertyAlias(alias);
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return result;
+}
+
+const char* UEngine::Model_GetPropertyAlias(const char* stringid, const char* alias)
+{
+ RDK::USerStorageXML XmlStorage;
+ std::string& TempString=CreateTempString();
+ RDK_SYS_TRY
+ {
+  try
+  {
+   TempString="";
+   if(!alias)
+    return TempString.c_str();
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return TempString.c_str();
+
+   const UPropertyAlias* aliasPtr = net->GetPropertyAlias(alias);
+   if(!aliasPtr)
+    return TempString.c_str();
+
+   XmlStorage.Create("PropertyAlias");
+   XmlStorage << *aliasPtr;
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return TempString.c_str();
+}
+
+const char* UEngine::Model_GetPropertyAliases(const char* stringid)
+{
+ RDK::USerStorageXML XmlStorage;
+ std::string& TempString=CreateTempString();
+ RDK_SYS_TRY
+ {
+  try
+  {
+   TempString="";
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return TempString.c_str();
+
+   const UNet::PropertyAliasMapT& aliases = net->GetPropertyAliases();
+   XmlStorage.Create("PropertyAliases");
+   XmlStorage << aliases;
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return TempString.c_str();
+}
+
+const char* UEngine::Model_GetPropertyAliasesByType(const char* stringid, unsigned int type_mask)
+{
+ RDK::USerStorageXML XmlStorage;
+ std::string& TempString=CreateTempString();
+ RDK_SYS_TRY
+ {
+  try
+  {
+   TempString="";
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return TempString.c_str();
+
+   std::vector<UPropertyAlias> aliases = net->GetPropertyAliasesByType(type_mask);
+   XmlStorage.Create("PropertyAliases");
+   XmlStorage.SetNodeAttribute("Type", "PropertyAliasVector");
+   XmlStorage.SetNodeAttribute("Size", sntoa(static_cast<unsigned int>(aliases.size())));
+   for(size_t i = 0; i < aliases.size(); i++)
+   {
+    XmlStorage.AddNode("Alias");
+    XmlStorage << aliases[i];
+    XmlStorage.SelectUp();
+   }
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return TempString.c_str();
+}
+
+int UEngine::Model_CreateLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!item_alias || !connector_alias)
+    return RDK_E_INVALID_ARGUMENT;
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return RDK_E_MODEL_NOT_FOUND;
+
+   bool temp_res=net->CreateLinkByAlias(item_alias, connector_alias);
+   if(!temp_res)
+    return RDK_E_MODEL_CREATE_LINK_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int UEngine::Model_BreakLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!item_alias || !connector_alias)
+    return RDK_E_INVALID_ARGUMENT;
+
+   UEPtr<RDK::UNet> net=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!net)
+    return RDK_E_MODEL_NOT_FOUND;
+
+   bool temp_res=net->BreakLinkByAlias(item_alias, connector_alias);
+   if(!temp_res)
+    return RDK_E_MODEL_BREAK_LINK_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+// --------------------------
 
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer

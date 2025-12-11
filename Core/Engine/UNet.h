@@ -20,7 +20,15 @@ namespace RDK {
 
 class RDK_LIB_TYPE UNet: public UItem
 {
+public: // Типы данных для алиасов свойств
+typedef std::map<std::string, UPropertyAlias> PropertyAliasMapT;
+typedef std::map<std::string, UPropertyAlias>::iterator PropertyAliasMapIteratorT;
+typedef std::map<std::string, UPropertyAlias>::const_iterator PropertyAliasMapCIteratorT;
+
 protected: // Основные свойства
+/// Карта алиасов свойств вложенных компонентов
+/// Ключ - имя алиаса, значение - описание алиаса
+PropertyAliasMapT PropertyAliases;
 
 public: // Методы
 // --------------------------
@@ -158,6 +166,56 @@ bool SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
 						const NameT &itemname2, const NameT &output_name2);
 // ----------------------
 
+// ----------------------
+// Методы управления алиасами свойств вложенных компонентов
+// ----------------------
+public:
+/// Добавляет алиас свойства вложенного компонента
+/// @param alias - имя алиаса (отображаемое имя порта)
+/// @param component_path - путь к компоненту (например: "SubNet.Neuron1" или "" для текущего)
+/// @param property_name - имя свойства в целевом компоненте
+/// @param property_type - тип свойства (ptPubInput, ptPubOutput и т.д.), если 0 - определяется автоматически
+/// @return true если алиас успешно добавлен
+bool AddPropertyAlias(const std::string& alias, const std::string& component_path,
+                      const std::string& property_name, unsigned int property_type = 0);
+
+/// Удаляет алиас свойства
+void DelPropertyAlias(const std::string& alias);
+
+/// Удаляет все алиасы свойств
+void ClearPropertyAliases(void);
+
+/// Проверяет наличие алиаса
+bool CheckPropertyAlias(const std::string& alias) const;
+
+/// Возвращает алиас по имени (или nullptr если не найден)
+const UPropertyAlias* GetPropertyAlias(const std::string& alias) const;
+
+/// Возвращает карту всех алиасов
+const PropertyAliasMapT& GetPropertyAliases(void) const;
+
+/// Возвращает все алиасы определенного типа (входы или выходы)
+std::vector<UPropertyAlias> GetPropertyAliasesByType(unsigned int type_mask) const;
+
+/// Создает связь с использованием алиасов
+/// @param item_alias - алиас выхода (источника)
+/// @param connector_alias - алиас входа (приемника)
+/// @return true если связь успешно создана
+bool CreateLinkByAlias(const std::string& item_alias, const std::string& connector_alias);
+
+/// Разрывает связь с использованием алиасов
+bool BreakLinkByAlias(const std::string& item_alias, const std::string& connector_alias);
+
+/// Разрешает алиас в полный путь (ComponentPath.PropertyName)
+/// Если alias не найден, возвращает сам alias без изменений
+std::string ResolveAlias(const std::string& alias) const;
+
+protected:
+/// Определяет тип свойства по пути к компоненту и имени свойства
+unsigned int DetectPropertyType(const std::string& component_path, const std::string& property_name) const;
+// ----------------------
+
+public:
 // --------------------------
 // Методы сериализации компонент
 // --------------------------

@@ -66,6 +66,10 @@ UGEDescription::UGEDescription(void)
  NumOutputs=0;
  Highlight=false;
 
+ // Инициализация параметров портов
+ ShowPorts=false;
+ PortHeight=14;
+ PortRadius=5;
 }
 
 UGEDescription::UGEDescription(const UGEDescription &copy)
@@ -100,6 +104,13 @@ UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
  Highlight=copy.Highlight;
  Indicators=copy.Indicators;
  InactiveFontColor=copy.InactiveFontColor;
+
+ // Копирование портов
+ InputPorts=copy.InputPorts;
+ OutputPorts=copy.OutputPorts;
+ ShowPorts=copy.ShowPorts;
+ PortHeight=copy.PortHeight;
+ PortRadius=copy.PortRadius;
 
  return *this;
 }
@@ -814,45 +825,66 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
    GEngine->SetPenColor(DefaultLinksColor);
   }
 
-
-
   if(!out.Highlight && !in.Highlight)
    GEngine->SetPenColor(DefaultLinksColor);
 
   GEngine->SetPenWidth(out.LinkWidth);
-  RDK::MVector<double,3> &c_out=out.Position;
-  RDK::MVector<double,3> &c_in=in.Position;
-  double x_diff=fabs(c_out[0]-c_in[0]), y_diff=fabs(c_out[1]-c_in[1]);
-  if(c_out[0]<c_in[0] && x_diff>y_diff)
+
+  // Если у обоих компонентов включен режим показа портов,
+  // соединяем порты напрямую (пока упрощенная версия - первый выход к первому входу)
+  bool usePortConnection = out.ShowPorts && in.ShowPorts &&
+                           !out.OutputPorts.empty() && !in.InputPorts.empty();
+
+  if(usePortConnection)
   {
-   GEngine->Line(int(c_out[0]) + out.Width, int(c_out[1]), int(c_in[0]) - in.Width, int(c_in[1]));
-   GEngine->Rect(int(in.Position[0]) - in.Width - out.LinkWidth,
-			int(c_in[1]) - out.LinkWidth,
-			int(c_in[0]) - in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
+   // Получаем координаты первого выходного порта источника
+   int outX, outY;
+   GetPortCenter(out, out.OutputPorts[0], outX, outY);
+
+   // Получаем координаты первого входного порта приемника
+   int inX, inY;
+   GetPortCenter(in, in.InputPorts[0], inX, inY);
+
+   // Рисуем связь между портами
+   PaintLinkBetweenPorts(outX, outY, inX, inY, out.LinkWidth);
   }
   else
-  if(c_out[1]<c_in[1] && x_diff<=y_diff)
   {
-   GEngine->Line(int(c_out[0]), int(c_out[1]) + out.Height, int(c_in[0]), int(c_in[1]) - in.Height);
-   GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
-			int(c_in[1]) - in.Height - out.LinkWidth,
-			int(c_in[0]) + out.LinkWidth, int(c_in[1]) - in.Height + out.LinkWidth, true);
-  }
-  else
-  if(c_out[0]>=c_in[0] && x_diff>y_diff)
-  {
-   GEngine->Line(int(c_out[0]) - out.Width, int(c_out[1]), int(c_in[0]) + in.Width, int(c_in[1]));
-   GEngine->Rect(int(in.Position[0]) + in.Width - out.LinkWidth,
-			int(c_in[1]) - out.LinkWidth,
-			int(c_in[0]) + in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
-  }
-  else
-  if(c_out[1]>=c_in[1] && x_diff<=y_diff)
-  {
-   GEngine->Line(int(c_out[0]), int(c_out[1]) - out.Height, int(c_in[0]), int(c_in[1]) + in.Height);
-   GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
-			int(c_in[1]) + in.Height - out.LinkWidth,
-			int(c_in[0]) + out.LinkWidth, int(c_in[1]) + in.Height + out.LinkWidth, true);
+   // Стандартная отрисовка связей между центрами блоков
+   RDK::MVector<double,3> &c_out=out.Position;
+   RDK::MVector<double,3> &c_in=in.Position;
+   double x_diff=fabs(c_out[0]-c_in[0]), y_diff=fabs(c_out[1]-c_in[1]);
+   if(c_out[0]<c_in[0] && x_diff>y_diff)
+   {
+    GEngine->Line(int(c_out[0]) + out.Width, int(c_out[1]), int(c_in[0]) - in.Width, int(c_in[1]));
+    GEngine->Rect(int(in.Position[0]) - in.Width - out.LinkWidth,
+             int(c_in[1]) - out.LinkWidth,
+             int(c_in[0]) - in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
+   }
+   else
+   if(c_out[1]<c_in[1] && x_diff<=y_diff)
+   {
+    GEngine->Line(int(c_out[0]), int(c_out[1]) + out.Height, int(c_in[0]), int(c_in[1]) - in.Height);
+    GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
+             int(c_in[1]) - in.Height - out.LinkWidth,
+             int(c_in[0]) + out.LinkWidth, int(c_in[1]) - in.Height + out.LinkWidth, true);
+   }
+   else
+   if(c_out[0]>=c_in[0] && x_diff>y_diff)
+   {
+    GEngine->Line(int(c_out[0]) - out.Width, int(c_out[1]), int(c_in[0]) + in.Width, int(c_in[1]));
+    GEngine->Rect(int(in.Position[0]) + in.Width - out.LinkWidth,
+             int(c_in[1]) - out.LinkWidth,
+             int(c_in[0]) + in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
+   }
+   else
+   if(c_out[1]>=c_in[1] && x_diff<=y_diff)
+   {
+    GEngine->Line(int(c_out[0]), int(c_out[1]) - out.Height, int(c_in[0]), int(c_in[1]) + in.Height);
+    GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
+             int(c_in[1]) + in.Height - out.LinkWidth,
+             int(c_in[0]) + out.LinkWidth, int(c_in[1]) + in.Height + out.LinkWidth, true);
+   }
   }
  }
 /*
@@ -867,7 +899,192 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
  }
   */
 }
-// Отрисовывает окружность
+
+// Отрисовывает связь между двумя портами с использованием кривых Безье
+void UDrawEngine::PaintLinkBetweenPorts(int x1, int y1, int x2, int y2, int lineWidth)
+{
+ if(!GEngine)
+  return;
+
+ GEngine->SetPenWidth(lineWidth);
+
+ // Вычисляем контрольные точки для плавной кривой
+ int dx = abs(x2 - x1);
+ int controlOffset = std::max(30, dx / 3);
+
+ // Рисуем кривую Безье (упрощенно - через несколько сегментов)
+ // Для простоты используем ломаную линию с горизонтальными отрезками
+ if(dx > 50)
+ {
+  // Горизонтальный отрезок от источника
+  int midX = (x1 + x2) / 2;
+  GEngine->Line(x1, y1, midX, y1);
+  // Вертикальный переход
+  GEngine->Line(midX, y1, midX, y2);
+  // Горизонтальный отрезок к приемнику
+  GEngine->Line(midX, y2, x2, y2);
+ }
+ else
+ {
+  // Прямая линия для близких компонентов
+  GEngine->Line(x1, y1, x2, y2);
+ }
+
+ // Рисуем маркер на конце связи (стрелка упрощенная)
+ int arrowSize = 4;
+ GEngine->Rect(x2 - arrowSize, y2 - arrowSize/2, x2, y2 + arrowSize/2, true);
+}
+
+// Отрисовывает порты компонента
+void UDrawEngine::PaintPorts(UGEDescription &ndescr)
+{
+ if(!GEngine || !ndescr.ShowPorts)
+  return;
+
+ // Рассчитываем позиции портов если еще не сделано
+ CalcPortPositions(ndescr);
+
+ int baseX = int(ndescr.Position[0]);
+ int baseY = int(ndescr.Position[1]);
+
+ // Отрисовываем входные порты (слева)
+ for(size_t i = 0; i < ndescr.InputPorts.size(); i++)
+ {
+  int portX = baseX - ndescr.Width;
+  int portY = baseY - ndescr.Height + ndescr.InputPorts[i].YOffset;
+  PaintPort(ndescr.InputPorts[i], portX, portY, ndescr.PortRadius, true);
+ }
+
+ // Отрисовываем выходные порты (справа)
+ for(size_t i = 0; i < ndescr.OutputPorts.size(); i++)
+ {
+  int portX = baseX + ndescr.Width;
+  int portY = baseY - ndescr.Height + ndescr.OutputPorts[i].YOffset;
+  PaintPort(ndescr.OutputPorts[i], portX, portY, ndescr.PortRadius, false);
+ }
+}
+
+// Отрисовывает один порт
+void UDrawEngine::PaintPort(const UGEPort &port, int x, int y, int radius, bool isInput)
+{
+ if(!GEngine)
+  return;
+
+ // Устанавливаем цвет порта
+ GEngine->SetPenColor(port.Color);
+
+ // Рисуем круг порта
+ GEngine->Circle(x, y, radius, port.IsConnected);
+
+ // Рисуем имя порта
+ if(!port.Name.empty())
+ {
+  GEngine->SetPenColor(UColorT(0, 0, 0));
+  int textX = isInput ? x + radius + 3 : x - radius - 3;
+  int textY = y - 5;
+
+  if(!isInput)
+  {
+   // Для выходных портов текст справа от порта, выравнивание вправо
+   // (упрощенный вариант - просто смещаем влево)
+   textX = x - radius - 3 - static_cast<int>(port.Name.length()) * 6;
+  }
+
+  GEngine->Text(port.Name.c_str(), textX, textY);
+ }
+}
+
+// Вычисляет позиции портов для компонента
+void UDrawEngine::CalcPortPositions(UGEDescription &ndescr)
+{
+ int portSpacing = ndescr.PortHeight;
+ int startOffset = 10 + ndescr.PortRadius;
+
+ // Вычисляем позиции для входных портов
+ for(size_t i = 0; i < ndescr.InputPorts.size(); i++)
+ {
+  ndescr.InputPorts[i].YOffset = startOffset + static_cast<int>(i) * portSpacing;
+ }
+
+ // Вычисляем позиции для выходных портов
+ for(size_t i = 0; i < ndescr.OutputPorts.size(); i++)
+ {
+  ndescr.OutputPorts[i].YOffset = startOffset + static_cast<int>(i) * portSpacing;
+ }
+
+ // Автоматически подстраиваем высоту компонента под количество портов
+ int maxPorts = std::max(ndescr.InputPorts.size(), ndescr.OutputPorts.size());
+ int requiredHeight = startOffset + maxPorts * portSpacing + ndescr.PortRadius;
+ if(requiredHeight > ndescr.Height && ndescr.ShowPorts)
+ {
+  ndescr.Height = requiredHeight;
+ }
+}
+
+// Поиск порта по заданным координатам
+UGEPort* UDrawEngine::FindPortAtPosition(int x, int y, std::string& out_component_name)
+{
+ for(DescriptionsTableIteratorT it = Descriptions.begin(); it != Descriptions.end(); ++it)
+ {
+  UGEDescription& desc = it->second;
+  if(!desc.ShowPorts)
+   continue;
+
+  int baseX = int(desc.Position[0]);
+  int baseY = int(desc.Position[1]);
+  int hitRadius = desc.PortRadius + 3; // Немного расширяем зону попадания
+
+  // Проверяем входные порты
+  for(size_t i = 0; i < desc.InputPorts.size(); i++)
+  {
+   int portX = baseX - desc.Width;
+   int portY = baseY - desc.Height + desc.InputPorts[i].YOffset;
+
+   int dx = x - portX;
+   int dy = y - portY;
+   if(dx*dx + dy*dy <= hitRadius*hitRadius)
+   {
+    out_component_name = it->first;
+    return &desc.InputPorts[i];
+   }
+  }
+
+  // Проверяем выходные порты
+  for(size_t i = 0; i < desc.OutputPorts.size(); i++)
+  {
+   int portX = baseX + desc.Width;
+   int portY = baseY - desc.Height + desc.OutputPorts[i].YOffset;
+
+   int dx = x - portX;
+   int dy = y - portY;
+   if(dx*dx + dy*dy <= hitRadius*hitRadius)
+   {
+    out_component_name = it->first;
+    return &desc.OutputPorts[i];
+   }
+  }
+ }
+
+ out_component_name.clear();
+ return nullptr;
+}
+
+// Возвращает координаты центра порта
+void UDrawEngine::GetPortCenter(const UGEDescription &ndescr, const UGEPort &port, int &x, int &y)
+{
+ int baseX = int(ndescr.Position[0]);
+ int baseY = int(ndescr.Position[1]);
+
+ if(port.IsInput)
+ {
+  x = baseX - ndescr.Width;
+ }
+ else
+ {
+  x = baseX + ndescr.Width;
+ }
+ y = baseY - ndescr.Height + port.YOffset;
+}
 // ---------------------------
 
 }

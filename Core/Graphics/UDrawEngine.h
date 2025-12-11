@@ -25,6 +25,48 @@ See file license.txt for more information
 namespace RDK {
 
 /*
+    Структура, описывающая порт компонента (вход или выход)
+    Используется для визуализации точек подключения на компонентах
+*/
+struct RDK_LIB_TYPE UGEPort
+{
+    /// Имя порта (может быть алиас или имя свойства)
+    std::string Name;
+
+    /// Полный путь к свойству (ComponentPath.PropertyName)
+    std::string FullPath;
+
+    /// true = вход, false = выход
+    bool IsInput;
+
+    /// Есть ли активное подключение к этому порту
+    bool IsConnected;
+
+    /// Вертикальное смещение порта относительно верхней границы компонента
+    int YOffset;
+
+    /// Цвет порта (может зависеть от типа данных)
+    UColorT Color;
+
+    /// Тип свойства (ptPubInput, ptPubOutput и т.д.)
+    unsigned int PropertyType;
+
+    // Конструктор по умолчанию
+    UGEPort()
+        : IsInput(true), IsConnected(false), YOffset(0),
+          Color(0, 0, 0), PropertyType(0)
+    {}
+
+    // Конструктор с параметрами
+    UGEPort(const std::string& name, const std::string& fullPath, bool isInput,
+            bool isConnected = false, unsigned int propType = 0)
+        : Name(name), FullPath(fullPath), IsInput(isInput),
+          IsConnected(isConnected), YOffset(0), Color(0, 0, 0),
+          PropertyType(propType)
+    {}
+};
+
+/*
     Структура, описывающая объект UContainer как визуальный элемент
 */
 struct RDK_LIB_TYPE UGEDescription
@@ -86,6 +128,25 @@ int LinkWidth;
 
 // Флаг выделения компонента
 bool Highlight;
+// ------------------------
+
+// ------------------------
+// Порты компонента
+// ------------------------
+// Входные порты (отображаются слева)
+std::vector<UGEPort> InputPorts;
+
+// Выходные порты (отображаются справа)
+std::vector<UGEPort> OutputPorts;
+
+// Флаг включения отображения портов
+bool ShowPorts;
+
+// Высота одного порта в пикселях
+int PortHeight;
+
+// Радиус круга порта в пикселях
+int PortRadius;
 // ------------------------
 
 // ------------------------
@@ -328,6 +389,9 @@ void PaintNet(UGEDescription &ndescr);
 void PaintLink(UGEDescription &out, UGEDescription &in,
                bool links=true, bool highlight=true, bool contour=true);
 
+// Отрисовывает связь между двумя портами
+void PaintLinkBetweenPorts(int x1, int y1, int x2, int y2, int lineWidth);
+
 
 // Отрисовывает индикатор с заданными параметрами
 // Направление direction задается следующим образом
@@ -338,7 +402,22 @@ void PaintLink(UGEDescription &out, UGEDescription &in,
 void PaintIndicator(int x,int y, int width, int height,
                    double precent, int direction, UColorT full, UColorT empty);
 
-// Отрисовывает окружность
+// Отрисовывает порты компонента
+void PaintPorts(UGEDescription &ndescr);
+
+// Отрисовывает один порт
+void PaintPort(const UGEPort &port, int x, int y, int radius, bool isInput);
+
+// Вычисляет позиции портов для компонента
+void CalcPortPositions(UGEDescription &ndescr);
+
+// Поиск порта по заданным координатам
+// Возвращает указатель на порт или nullptr если не найден
+// out_component_name заполняется именем компонента-владельца порта
+UGEPort* FindPortAtPosition(int x, int y, std::string& out_component_name);
+
+// Возвращает координаты центра порта
+void GetPortCenter(const UGEDescription &ndescr, const UGEPort &port, int &x, int &y);
 // ---------------------------
 };
 

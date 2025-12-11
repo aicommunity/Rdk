@@ -948,6 +948,48 @@ RDK_LIB_TYPE bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const ch
 RDK_LIB_TYPE int RDK_CALL Model_SwitchOutputLinks(const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2);
 RDK_LIB_TYPE int RDK_CALL MModel_SwitchOutputLinks(int channel_index, const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2);
 
+// --------------------------
+// Методы управления алиасами свойств
+// --------------------------
+/// Добавляет алиас свойства вложенного компонента
+RDK_LIB_TYPE int RDK_CALL Model_AddPropertyAlias(const char* stringid, const char* alias, const char* component_path,
+                                                  const char* property_name, unsigned int property_type);
+RDK_LIB_TYPE int RDK_CALL MModel_AddPropertyAlias(int channel_index, const char* stringid, const char* alias,
+                                                   const char* component_path, const char* property_name, unsigned int property_type);
+
+/// Удаляет алиас свойства
+RDK_LIB_TYPE int RDK_CALL Model_DelPropertyAlias(const char* stringid, const char* alias);
+RDK_LIB_TYPE int RDK_CALL MModel_DelPropertyAlias(int channel_index, const char* stringid, const char* alias);
+
+/// Удаляет все алиасы свойств
+RDK_LIB_TYPE int RDK_CALL Model_ClearPropertyAliases(const char* stringid);
+RDK_LIB_TYPE int RDK_CALL MModel_ClearPropertyAliases(int channel_index, const char* stringid);
+
+/// Проверяет наличие алиаса
+RDK_LIB_TYPE bool RDK_CALL Model_CheckPropertyAlias(const char* stringid, const char* alias);
+RDK_LIB_TYPE bool RDK_CALL MModel_CheckPropertyAlias(int channel_index, const char* stringid, const char* alias);
+
+/// Возвращает информацию об алиасе в формате XML
+RDK_LIB_TYPE const char* RDK_CALL Model_GetPropertyAlias(const char* stringid, const char* alias);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetPropertyAlias(int channel_index, const char* stringid, const char* alias);
+
+/// Возвращает все алиасы компонента в формате XML
+RDK_LIB_TYPE const char* RDK_CALL Model_GetPropertyAliases(const char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetPropertyAliases(int channel_index, const char* stringid);
+
+/// Возвращает все алиасы определенного типа (входы или выходы) в формате XML
+RDK_LIB_TYPE const char* RDK_CALL Model_GetPropertyAliasesByType(const char* stringid, unsigned int type_mask);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetPropertyAliasesByType(int channel_index, const char* stringid, unsigned int type_mask);
+
+/// Создает связь с использованием алиасов
+RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias);
+RDK_LIB_TYPE int RDK_CALL MModel_CreateLinkByAlias(int channel_index, const char* stringid, const char* item_alias, const char* connector_alias);
+
+/// Разрывает связь с использованием алиасов
+RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias);
+RDK_LIB_TYPE int RDK_CALL MModel_BreakLinkByAlias(int channel_index, const char* stringid, const char* item_alias, const char* connector_alias);
+// --------------------------
+
 // ��������� ��� ����� ������ ���������� stringid � ���� xml � ����� buffer
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid

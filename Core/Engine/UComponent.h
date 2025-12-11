@@ -68,6 +68,54 @@ typedef USerStorage UVariableData;
 class UIProperty;
 class UIShare;
 
+/// Структура описания алиаса свойства вложенного компонента
+/// Позволяет создавать "порты" верхнего уровня для входов/выходов глубоко вложенных компонентов
+struct RDK_LIB_TYPE UPropertyAlias
+{
+    /// Имя алиаса (отображаемое имя порта на верхнем уровне)
+    std::string AliasName;
+
+    /// Путь к компоненту относительно владельца (например: "SubNet.Neuron1" или "" для текущего)
+    std::string ComponentPath;
+
+    /// Имя свойства в целевом компоненте
+    std::string PropertyName;
+
+    /// Тип свойства (ptPubInput, ptPubOutput и т.д.)
+    unsigned int PropertyType;
+
+    // Конструкторы
+    UPropertyAlias(void)
+        : PropertyType(0)
+    {}
+
+    UPropertyAlias(const std::string& alias, const std::string& comp_path,
+                   const std::string& prop_name, unsigned int prop_type)
+        : AliasName(alias), ComponentPath(comp_path),
+          PropertyName(prop_name), PropertyType(prop_type)
+    {}
+
+    /// Возвращает полный путь к свойству (ComponentPath.PropertyName)
+    std::string GetFullPropertyPath() const
+    {
+        if(ComponentPath.empty())
+            return PropertyName;
+        return ComponentPath + "." + PropertyName;
+    }
+
+    /// Проверяет, является ли алиас входом
+    bool IsInput() const
+    {
+        return (PropertyType & ptInput) != 0;
+    }
+
+    /// Проверяет, является ли алиас выходом
+    bool IsOutput() const
+    {
+        return (PropertyType & ptOutput) != 0;
+    }
+};
+
 // Описание структуры свойства
 struct RDK_LIB_TYPE UVariable
 {

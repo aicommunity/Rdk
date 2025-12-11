@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "UNet.h"
 #include "UXMLEnvSerialize.h"
+#include "UComponent.h"
 
 namespace RDK {
 
@@ -634,6 +635,14 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
    serstorage->SelectUp();
   }
 
+  // Сохраняем алиасы свойств
+  if(!PropertyAliases.empty())
+  {
+   serstorage->AddNode("PropertyAliases");
+   *serstorage << PropertyAliases;
+   serstorage->SelectUp();
+  }
+
   serstorage->AddNode("Components");
   for(int i=0;i<GetNumComponents();i++)
   {
@@ -802,6 +811,13 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    serstorage->SelectNode("Links");
    if(!SetComponentInternalLinks(serstorage,0))
 	return false;
+   serstorage->SelectUp();
+  }
+
+  // Загружаем алиасы свойств
+  if(serstorage->SelectNode("PropertyAliases"))
+  {
+   *serstorage >> PropertyAliases;
    serstorage->SelectUp();
   }
 
@@ -1116,6 +1132,242 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
  return true;
 }
 // --------------------------
+
+// ----------------------
+// Методы управления алиасами свойств вложенных компонентов
+// ----------------------
+bool UNet::AddPropertyAlias(const std::string& alias, const std::string& component_path,
+                            const std::string& property_name, unsigned int property_type)
+{
+ // Проверяем, не существует ли уже такой алиас
+ if(CheckPropertyAlias(alias))
+ {
+  LogMessageEx(RDK_EX_WARNING, __FUNCTION__, std::string("Property alias already exists: ") + alias);
+  return false;
+ }
+
+ // Если тип не указан, пытаемся определить автоматически
+ unsigned int detected_type = property_type;
+ if(detected_type == 0)
+ {
+  detected_type = DetectPropertyType(component_path, property_name);
+  if(detected_type == 0)
+  {
+   LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+                std::string("Cannot detect property type for alias: ") + alias +
+                std::string(" (") + component_path + "." + property_name + ")");
+   return false;
+  }
+ }
+
+ // Создаем и добавляем алиас
+ UPropertyAlias new_alias(alias, component_path, property_name, detected_type);
+ PropertyAliases[alias] = new_alias;
+
+ return true;
+}
+
+void UNet::DelPropertyAlias(const std::string& alias)
+{
+ PropertyAliasMapIteratorT it = PropertyAliases.find(alias);
+ if(it != PropertyAliases.end())
+ {
+  PropertyAliases.erase(it);
+ }
+}
+
+void UNet::ClearPropertyAliases(void)
+{
+ PropertyAliases.clear();
+}
+
+bool UNet::CheckPropertyAlias(const std::string& alias) const
+{
+ return PropertyAliases.find(alias) != PropertyAliases.end();
+}
+
+const UPropertyAlias* UNet::GetPropertyAlias(const std::string& alias) const
+{
+ PropertyAliasMapCIteratorT it = PropertyAliases.find(alias);
+ if(it != PropertyAliases.end())
+ {
+  return &(it->second);
+ }
+ return nullptr;
+}
+
+const UNet::PropertyAliasMapT& UNet::GetPropertyAliases(void) const
+{
+ return PropertyAliases;
+}
+
+std::vector<UPropertyAlias> UNet::GetPropertyAliasesByType(unsigned int type_mask) const
+{
+ std::vector<UPropertyAlias> result;
+ for(PropertyAliasMapCIteratorT it = PropertyAliases.begin(); it != PropertyAliases.end(); ++it)
+ {
+  if((it->second.PropertyType & type_mask) != 0)
+  {
+   result.push_back(it->second);
+  }
+ }
+ return result;
+}
+
+bool UNet::CreateLinkByAlias(const std::string& item_alias, const std::string& connector_alias)
+{
+ // Разрешаем алиасы в полные пути
+ std::string item_path = ResolveAlias(item_alias);
+ std::string connector_path = ResolveAlias(connector_alias);
+
+ // Получаем алиасы для определения имен свойств
+ const UPropertyAlias* item_alias_ptr = GetPropertyAlias(item_alias);
+ const UPropertyAlias* connector_alias_ptr = GetPropertyAlias(connector_alias);
+
+ std::string item_comp_path, item_prop_name;
+ std::string conn_comp_path, conn_prop_name;
+
+ if(item_alias_ptr)
+ {
+  item_comp_path = item_alias_ptr->ComponentPath;
+  item_prop_name = item_alias_ptr->PropertyName;
+ }
+ else
+ {
+  // Если алиас не найден, пробуем разбить как "component.property"
+  size_t dot_pos = item_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   item_comp_path = item_path.substr(0, dot_pos);
+   item_prop_name = item_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   item_prop_name = item_path;
+  }
+ }
+
+ if(connector_alias_ptr)
+ {
+  conn_comp_path = connector_alias_ptr->ComponentPath;
+  conn_prop_name = connector_alias_ptr->PropertyName;
+ }
+ else
+ {
+  // Если алиас не найден, пробуем разбить как "component.property"
+  size_t dot_pos = connector_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   conn_comp_path = connector_path.substr(0, dot_pos);
+   conn_prop_name = connector_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   conn_prop_name = connector_path;
+  }
+ }
+
+ return CreateLink(item_comp_path, item_prop_name, conn_comp_path, conn_prop_name);
+}
+
+bool UNet::BreakLinkByAlias(const std::string& item_alias, const std::string& connector_alias)
+{
+ // Получаем алиасы для определения имен свойств
+ const UPropertyAlias* item_alias_ptr = GetPropertyAlias(item_alias);
+ const UPropertyAlias* connector_alias_ptr = GetPropertyAlias(connector_alias);
+
+ std::string item_comp_path, item_prop_name;
+ std::string conn_comp_path, conn_prop_name;
+
+ if(item_alias_ptr)
+ {
+  item_comp_path = item_alias_ptr->ComponentPath;
+  item_prop_name = item_alias_ptr->PropertyName;
+ }
+ else
+ {
+  std::string item_path = item_alias;
+  size_t dot_pos = item_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   item_comp_path = item_path.substr(0, dot_pos);
+   item_prop_name = item_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   item_prop_name = item_path;
+  }
+ }
+
+ if(connector_alias_ptr)
+ {
+  conn_comp_path = connector_alias_ptr->ComponentPath;
+  conn_prop_name = connector_alias_ptr->PropertyName;
+ }
+ else
+ {
+  std::string connector_path = connector_alias;
+  size_t dot_pos = connector_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   conn_comp_path = connector_path.substr(0, dot_pos);
+   conn_prop_name = connector_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   conn_prop_name = connector_path;
+  }
+ }
+
+ return BreakLink(item_comp_path, item_prop_name, conn_comp_path, conn_prop_name);
+}
+
+std::string UNet::ResolveAlias(const std::string& alias) const
+{
+ const UPropertyAlias* alias_ptr = GetPropertyAlias(alias);
+ if(alias_ptr)
+ {
+  return alias_ptr->GetFullPropertyPath();
+ }
+ return alias;
+}
+
+unsigned int UNet::DetectPropertyType(const std::string& component_path, const std::string& property_name) const
+{
+ // Получаем компонент по пути
+ UEPtr<UContainer> comp;
+ if(component_path.empty())
+ {
+  comp = const_cast<UNet*>(this);
+ }
+ else
+ {
+  comp = GetComponentL(component_path, true);
+ }
+
+ if(!comp)
+ {
+  return 0;
+ }
+
+ // Ищем свойство в компоненте
+ UEPtr<UIProperty> prop = comp->FindProperty(property_name);
+ if(!prop)
+ {
+  return 0;
+ }
+
+ // Получаем тип свойства из таблицы свойств
+ const UContainer::VariableMapT& props = comp->GetPropertiesList();
+ UContainer::VariableMapCIteratorT it = props.find(property_name);
+ if(it != props.end())
+ {
+  return it->second.Type;
+ }
+
+ return 0;
+}
+// ----------------------
 
 
 }

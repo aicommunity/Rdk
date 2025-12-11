@@ -89,6 +89,9 @@ public slots:
     void componentCopyXMLDescription();
     void componentCloneComponent();
 
+    // Слот для быстрого создания связи через диалог
+    void componentQuickLink();
+
 signals:
     void componentSelected(QString name); //single click
     void componentDoubleClick(QString name);
@@ -113,8 +116,45 @@ private:
     QAction *actionCancelSwitching;
     QAction *actionCloneComponent;
 
+    // Действия для быстрого соединения портов
+    QAction *actionQuickLink;
+
     ///имя компонента для создания связй/перемещения
     QString firstComponentToConnection;
+
+    // ----------------------
+    // Drag & Drop связей между портами
+    // ----------------------
+    /// Флаг активности перетаскивания связи от порта
+    bool isDraggingFromPort;
+
+    /// Имя компонента, с которого начато перетаскивание
+    QString dragSourceComponent;
+
+    /// Указатель на исходный порт (выход)
+    RDK::UGEPort* dragSourcePort;
+
+    /// Текущие координаты курсора при перетаскивании
+    int dragCurrentX;
+    int dragCurrentY;
+
+    /// Временное изображение для отрисовки линии перетаскивания
+    QImage dragOverlayImage;
+
+    /// Начинает перетаскивание связи от порта
+    void startDragFromPort(const QString& componentName, RDK::UGEPort* port);
+
+    /// Обновляет отрисовку временной линии связи
+    void updateDragLine(int x, int y);
+
+    /// Завершает перетаскивание и создает связь
+    bool finishDragToPort(int x, int y);
+
+    /// Отменяет перетаскивание
+    void cancelDrag();
+
+    /// Отрисовывает временную линию связи
+    void paintDragLine();
 
     ///сохраняет положение компонента в модели
     void saveComponentPosition(std::string name);

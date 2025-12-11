@@ -731,6 +731,43 @@ virtual bool Model_CheckLink(const char* stringid1, const char* item_property_na
 /// Переключает все входы подключенные к выходу компонента 1 на выход компонента 2
 virtual int Model_SwitchOutputLinks(const char* item_name1, const char* item_property_name1, const char* item_name2, const char* item_property_name2);
 
+// --------------------------
+// Методы управления алиасами свойств
+// --------------------------
+/// Добавляет алиас свойства вложенного компонента
+/// @param stringid - идентификатор сети
+/// @param alias - имя алиаса
+/// @param component_path - путь к компоненту (например: "SubNet.Neuron1")
+/// @param property_name - имя свойства в целевом компоненте
+/// @param property_type - тип свойства (0 = автоопределение)
+virtual int Model_AddPropertyAlias(const char* stringid, const char* alias, const char* component_path,
+                                   const char* property_name, unsigned int property_type = 0);
+
+/// Удаляет алиас свойства
+virtual int Model_DelPropertyAlias(const char* stringid, const char* alias);
+
+/// Удаляет все алиасы свойств
+virtual int Model_ClearPropertyAliases(const char* stringid);
+
+/// Проверяет наличие алиаса
+virtual bool Model_CheckPropertyAlias(const char* stringid, const char* alias);
+
+/// Возвращает информацию об алиасе в формате XML
+virtual const char* Model_GetPropertyAlias(const char* stringid, const char* alias);
+
+/// Возвращает все алиасы компонента в формате XML
+virtual const char* Model_GetPropertyAliases(const char* stringid);
+
+/// Возвращает все алиасы определенного типа (входы или выходы) в формате XML
+virtual const char* Model_GetPropertyAliasesByType(const char* stringid, unsigned int type_mask);
+
+/// Создает связь с использованием алиасов
+virtual int Model_CreateLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias);
+
+/// Разрывает связь с использованием алиасов
+virtual int Model_BreakLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias);
+// --------------------------
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента

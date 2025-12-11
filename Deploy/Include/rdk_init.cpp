@@ -2110,6 +2110,120 @@ int RDK_CALL MModel_SwitchOutputLinks(int channel_index, const char* item_name_1
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SwitchOutputLinks(item_name_1, item_property_name1, item_name_2, item_property_name2);
 }
 
+// --------------------------
+// Методы управления алиасами свойств
+// --------------------------
+int RDK_CALL Model_AddPropertyAlias(const char* stringid, const char* alias, const char* component_path,
+                                    const char* property_name, unsigned int property_type)
+{
+ return RdkCoreManager.GetEngineLock()->Model_AddPropertyAlias(stringid, alias, component_path, property_name, property_type);
+}
+
+int RDK_CALL MModel_AddPropertyAlias(int channel_index, const char* stringid, const char* alias,
+                                     const char* component_path, const char* property_name, unsigned int property_type)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_AddPropertyAlias(stringid, alias, component_path, property_name, property_type);
+}
+
+int RDK_CALL Model_DelPropertyAlias(const char* stringid, const char* alias)
+{
+ return RdkCoreManager.GetEngineLock()->Model_DelPropertyAlias(stringid, alias);
+}
+
+int RDK_CALL MModel_DelPropertyAlias(int channel_index, const char* stringid, const char* alias)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_DelPropertyAlias(stringid, alias);
+}
+
+int RDK_CALL Model_ClearPropertyAliases(const char* stringid)
+{
+ return RdkCoreManager.GetEngineLock()->Model_ClearPropertyAliases(stringid);
+}
+
+int RDK_CALL MModel_ClearPropertyAliases(int channel_index, const char* stringid)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_ClearPropertyAliases(stringid);
+}
+
+bool RDK_CALL Model_CheckPropertyAlias(const char* stringid, const char* alias)
+{
+ return RdkCoreManager.GetEngineLock()->Model_CheckPropertyAlias(stringid, alias);
+}
+
+bool RDK_CALL MModel_CheckPropertyAlias(int channel_index, const char* stringid, const char* alias)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return false;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CheckPropertyAlias(stringid, alias);
+}
+
+const char* RDK_CALL Model_GetPropertyAlias(const char* stringid, const char* alias)
+{
+ return RdkCoreManager.GetEngineLock()->Model_GetPropertyAlias(stringid, alias);
+}
+
+const char* RDK_CALL MModel_GetPropertyAlias(int channel_index, const char* stringid, const char* alias)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return "";
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetPropertyAlias(stringid, alias);
+}
+
+const char* RDK_CALL Model_GetPropertyAliases(const char* stringid)
+{
+ return RdkCoreManager.GetEngineLock()->Model_GetPropertyAliases(stringid);
+}
+
+const char* RDK_CALL MModel_GetPropertyAliases(int channel_index, const char* stringid)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return "";
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetPropertyAliases(stringid);
+}
+
+const char* RDK_CALL Model_GetPropertyAliasesByType(const char* stringid, unsigned int type_mask)
+{
+ return RdkCoreManager.GetEngineLock()->Model_GetPropertyAliasesByType(stringid, type_mask);
+}
+
+const char* RDK_CALL MModel_GetPropertyAliasesByType(int channel_index, const char* stringid, unsigned int type_mask)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return "";
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_GetPropertyAliasesByType(stringid, type_mask);
+}
+
+int RDK_CALL Model_CreateLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias)
+{
+ return RdkCoreManager.GetEngineLock()->Model_CreateLinkByAlias(stringid, item_alias, connector_alias);
+}
+
+int RDK_CALL MModel_CreateLinkByAlias(int channel_index, const char* stringid, const char* item_alias, const char* connector_alias)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_CreateLinkByAlias(stringid, item_alias, connector_alias);
+}
+
+int RDK_CALL Model_BreakLinkByAlias(const char* stringid, const char* item_alias, const char* connector_alias)
+{
+ return RdkCoreManager.GetEngineLock()->Model_BreakLinkByAlias(stringid, item_alias, connector_alias);
+}
+
+int RDK_CALL MModel_BreakLinkByAlias(int channel_index, const char* stringid, const char* item_alias, const char* connector_alias)
+{
+ if(channel_index<0 || channel_index>=Core_GetNumChannels())
+  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+ return RdkCoreManager.GetEngineLock(channel_index)->Model_BreakLinkByAlias(stringid, item_alias, connector_alias);
+}
+// --------------------------
+
 // ��������� ��� ����� ������ ���������� stringid � ���� xml � ����� buffer
 // ����� ����������� �� ������ ���������� owner_level_stringid
 // ���� owner_level_stringid �� �����, �� ����� ����������� �� ������ �������� ����������
