@@ -8,6 +8,7 @@
 #include <QGraphicsPathItem>
 #include <QTimer>
 #include <QPointer>
+#include <QPoint>
 #include <rdk_init.h>
 #include <rdk_application.h>
 #include "../Core/Engine/UXMLEnvSerialize.h"
@@ -66,7 +67,14 @@ private:
     {
         QPointF pos;
         bool isInput;
-        QString name;
+        QString name;           // Имя порта (например, "Output", "ChannelInputs")
+        QString fullPath;       // Полный путь для вложенных портов (например, "SubComp.Output")
+        QString componentName;  // Имя компонента-владельца
+        QString displayName;    // Отображаемое имя (для tooltip)
+        
+        Port() : isInput(false) {}
+        Port(const QPointF& p, bool input, const QString& n) 
+            : pos(p), isInput(input), name(n), componentName(n), displayName(n) {}
     };
 
     class NodeItem : public QGraphicsRectItem
@@ -76,13 +84,23 @@ private:
         QRectF boundingRect() const override;
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
         QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+        void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+        void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+        void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
         QPointF scenePortPos(bool output) const;
+        const Port* getPortAtPosition(const QPointF& localPos) const;
+        QVector<Port> getNestedPorts(bool isInput, bool includeNested) const;
         QVector<Port> inputs;
         QVector<Port> outputs;
         QString nodeName;
         QString className;
     private:
         UModernDiagramWidget* m_owner;
+        mutable const Port* m_hoveredPort;
+        QTimer* m_tooltipTimer;
+        QPointF m_lastTooltipPos;
+        QString m_lastTooltipText;
+        void updateTooltip();
     };
 
     class LinkItem : public QGraphicsPathItem
@@ -106,6 +124,7 @@ private:
     void clearScene();
     void layoutGrid();
     NodeItem* pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos);
+    const Port* pickPortDetailed(const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos);
     NodeItem* pickNode(const QPointF& scenePos) const;
     void buildLinks();
 
@@ -117,7 +136,8 @@ private:
     // Drag state
     LinkItem* m_tempLink;
     NodeItem* m_dragSourceNode;
-    QPointF   m_dragSourcePort;
+    const Port* m_dragSourcePort;
+    QPointF   m_dragSourcePortPos;
 
     // Data
     RDK::UApplication* m_application;

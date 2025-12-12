@@ -22,12 +22,16 @@
 #include <QDir>
 #include <QDataStream>
 #include <QMimeData>
+#include <QToolTip>
+#include <QGraphicsSceneHoverEvent>
 #include <ctime>
+#include <sstream>
 #include "UClassDescriptionDisplay.h"
 #include "UQuickLinkDialog.h"
 #include "../Core/Engine/UStorage.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UNet.h"
+#include "../../Deploy/Include/rdk_init.h"
 #include "../Core/Application/UIVisualController.h"
 #include <sstream>
 
@@ -267,14 +271,168 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     , nodeName(name)
     , className(cls)
     , m_owner(owner)
+    , m_hoveredPort(nullptr)
+    , m_tooltipTimer(new QTimer())
 {
-    setRect(-60, -30, 120, 60);
+    m_tooltipTimer->setSingleShot(false);
+    m_tooltipTimer->setInterval(300);  // Обновляем tooltip каждые 300 мс, чтобы он не скрывался автоматически
+    QObject::connect(m_tooltipTimer, &QTimer::timeout, [this]() {
+        if(m_hoveredPort && m_owner)
+        {
+            updateTooltip();
+        }
+    });
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    setAcceptHoverEvents(true);
 
-    inputs.append({QPointF(rect().left(), 0), true, QStringLiteral("In")});
-    outputs.append({QPointF(rect().right(), 0), false, QStringLiteral("Out")});
+    // Константы для размеров
+    const double minWidth = 180.0;  // Увеличено в 1.5 раза (120 * 1.5)
+    const double minHeight = 40.0;  // Минимальная высота для текста
+    const double portSpacing = 20.0;
+    const double topMargin = 30.0;  // Отступ сверху для текста
+    const double bottomMargin = 10.0;  // Отступ снизу
+    const double sideMargin = 10.0;  // Отступ для портов от края
+
+    // Загружаем реальные порты компонента
+    if(m_owner && m_owner->m_application)
+    {
+        QString fullName = m_owner->m_componentName.isEmpty() ? name : m_owner->m_componentName + "." + name;
+        
+        // Загружаем входные порты
+        const char* inputProps = Model_GetComponentPropertiesLookupList(
+            fullName.toStdString().c_str(), ptPubInput | ptInput);
+        if(inputProps)
+        {
+            QStringList inputList = QString::fromUtf8(inputProps).split(",", Qt::SkipEmptyParts);
+            for(const QString& prop : inputList)
+            {
+                QStringList parts = prop.split(":");
+                if(parts.size() >= 1)
+                {
+                    QString propName = parts[0].trimmed();
+                    Port port;
+                    port.isInput = true;
+                    port.name = propName;
+                    port.componentName = name;
+                    port.fullPath = propName;
+                    port.displayName = propName;
+                    inputs.append(port);
+                }
+            }
+            Engine_FreeBufString(inputProps);
+        }
+        
+        // Если нет входных портов, добавляем дефолтный
+        if(inputs.isEmpty())
+        {
+            Port defaultInput;
+            defaultInput.isInput = true;
+            defaultInput.name = QStringLiteral("In");
+            defaultInput.componentName = name;
+            defaultInput.fullPath = QStringLiteral("In");
+            defaultInput.displayName = QStringLiteral("In");
+            inputs.append(defaultInput);
+        }
+        
+        // Загружаем выходные порты
+        const char* outputProps = Model_GetComponentPropertiesLookupList(
+            fullName.toStdString().c_str(), ptPubOutput | ptOutput);
+        if(outputProps)
+        {
+            QStringList outputList = QString::fromUtf8(outputProps).split(",", Qt::SkipEmptyParts);
+            for(const QString& prop : outputList)
+            {
+                QStringList parts = prop.split(":");
+                if(parts.size() >= 1)
+                {
+                    QString propName = parts[0].trimmed();
+                    Port port;
+                    port.isInput = false;
+                    port.name = propName;
+                    port.componentName = name;
+                    port.fullPath = propName;
+                    port.displayName = propName;
+                    outputs.append(port);
+                }
+            }
+            Engine_FreeBufString(outputProps);
+        }
+        
+        // Если нет выходных портов, добавляем дефолтный
+        if(outputs.isEmpty())
+        {
+            Port defaultOutput;
+            defaultOutput.isInput = false;
+            defaultOutput.name = QStringLiteral("Out");
+            defaultOutput.componentName = name;
+            defaultOutput.fullPath = QStringLiteral("Out");
+            defaultOutput.displayName = QStringLiteral("Out");
+            outputs.append(defaultOutput);
+        }
+    }
+    else
+    {
+        // Fallback: используем дефолтные порты
+        Port defaultInput;
+        defaultInput.isInput = true;
+        defaultInput.name = QStringLiteral("In");
+        defaultInput.componentName = name;
+        defaultInput.fullPath = QStringLiteral("In");
+        defaultInput.displayName = QStringLiteral("In");
+        inputs.append(defaultInput);
+        
+        Port defaultOutput;
+        defaultOutput.isInput = false;
+        defaultOutput.name = QStringLiteral("Out");
+        defaultOutput.componentName = name;
+        defaultOutput.fullPath = QStringLiteral("Out");
+        defaultOutput.displayName = QStringLiteral("Out");
+        outputs.append(defaultOutput);
+    }
+    
+    // Вычисляем необходимую высоту на основе количества портов
+    int maxPorts = qMax(inputs.size(), outputs.size());
+    double requiredHeight = topMargin + bottomMargin;
+    if(maxPorts > 0)
+    {
+        requiredHeight += (maxPorts - 1) * portSpacing;
+    }
+    requiredHeight = qMax(requiredHeight, minHeight);
+    
+    // Устанавливаем размер прямоугольника (центр в (0,0))
+    double width = minWidth;
+    double height = requiredHeight;
+    setRect(-width/2, -height/2, width, height);
+    
+    // Распределяем входные порты
+    if(inputs.size() == 1)
+    {
+        inputs[0].pos = QPointF(rect().left(), 0);
+    }
+    else if(inputs.size() > 1)
+    {
+        double startY = -height/2 + topMargin;
+        for(int i = 0; i < inputs.size(); ++i)
+        {
+            inputs[i].pos = QPointF(rect().left(), startY + i * portSpacing);
+        }
+    }
+    
+    // Распределяем выходные порты
+    if(outputs.size() == 1)
+    {
+        outputs[0].pos = QPointF(rect().right(), 0);
+    }
+    else if(outputs.size() > 1)
+    {
+        double startY = -height/2 + topMargin;
+        for(int i = 0; i < outputs.size(); ++i)
+        {
+            outputs[i].pos = QPointF(rect().right(), startY + i * portSpacing);
+        }
+    }
 }
 
 QRectF UModernDiagramWidget::NodeItem::boundingRect() const
@@ -301,14 +459,20 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
 
     painter->setBrush(Qt::white);
     for (const Port& p : inputs) {
-        painter->setPen(QPen(QColor(50, 150, 50), 1.0));
-        painter->drawEllipse(p.pos, 4, 4);
-        painter->drawText(p.pos + QPointF(6, -2), p.name);
+        bool isHovered = (m_hoveredPort == &p);
+        QColor portColor = isHovered ? QColor(100, 200, 100) : QColor(50, 150, 50);
+        double portSize = isHovered ? 5.0 : 4.0;
+        painter->setPen(QPen(portColor, isHovered ? 2.0 : 1.0));
+        painter->drawEllipse(p.pos, portSize, portSize);
+        // Имя порта показывается только в tooltip при наведении
     }
     for (const Port& p : outputs) {
-        painter->setPen(QPen(QColor(50, 100, 200), 1.0));
-        painter->drawEllipse(p.pos, 4, 4);
-        painter->drawText(p.pos + QPointF(-28, -2), p.name);
+        bool isHovered = (m_hoveredPort == &p);
+        QColor portColor = isHovered ? QColor(100, 150, 255) : QColor(50, 100, 200);
+        double portSize = isHovered ? 5.0 : 4.0;
+        painter->setPen(QPen(portColor, isHovered ? 2.0 : 1.0));
+        painter->drawEllipse(p.pos, portSize, portSize);
+        // Имя порта показывается только в tooltip при наведении
     }
 }
 
@@ -361,6 +525,210 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
         }
     }
     return QGraphicsRectItem::itemChange(change, value);
+}
+
+const UModernDiagramWidget::Port* UModernDiagramWidget::NodeItem::getPortAtPosition(const QPointF& localPos) const
+{
+    const double portRadius = 6.0;
+    const QVector<Port>* portLists[] = {&inputs, &outputs};
+    for(const QVector<Port>* ports : portLists)
+    {
+        for(const Port& port : *ports)
+        {
+            QPointF diff = localPos - port.pos;
+            double dist = std::sqrt(diff.x() * diff.x() + diff.y() * diff.y());
+            if(dist <= portRadius)
+                return &port;
+        }
+    }
+    return nullptr;
+}
+
+QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPorts(bool isInput, bool includeNested) const
+{
+    QVector<Port> result;
+    if(!m_owner || !m_owner->m_application)
+        return result;
+    
+    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+    
+    // Получаем порты текущего компонента
+    unsigned int mask = isInput ? (ptPubInput | ptInput) : (ptPubOutput | ptOutput);
+    const char* propsList = Model_GetComponentPropertiesLookupList(fullName.toStdString().c_str(), mask);
+    if(propsList)
+    {
+        QStringList props = QString::fromUtf8(propsList).split(",", Qt::SkipEmptyParts);
+        for(const QString& prop : props)
+        {
+            QStringList parts = prop.split(":");
+            if(parts.size() >= 1)
+            {
+                QString propName = parts[0].trimmed();
+                Port port;
+                port.isInput = isInput;
+                port.name = propName;
+                port.componentName = nodeName;
+                port.fullPath = propName;
+                port.displayName = nodeName + "." + propName;
+                result.append(port);
+            }
+        }
+        Engine_FreeBufString(propsList);
+    }
+    
+    // Если нужно включить вложенные порты
+    if(includeNested)
+    {
+        const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+        if(compList)
+        {
+            QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+            for(const QString& comp : components)
+            {
+                QString nestedFullName = fullName + "." + comp;
+                const char* nestedProps = Model_GetComponentPropertiesLookupList(
+                    nestedFullName.toStdString().c_str(), mask);
+                if(nestedProps)
+                {
+                    QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
+                    for(const QString& prop : nestedPropsList)
+                    {
+                        QStringList parts = prop.split(":");
+                        if(parts.size() >= 1)
+                        {
+                            QString propName = parts[0].trimmed();
+                            Port port;
+                            port.isInput = isInput;
+                            port.name = propName;
+                            port.componentName = comp;
+                            port.fullPath = comp + "." + propName;
+                            port.displayName = nodeName + "." + comp + "." + propName;
+                            result.append(port);
+                        }
+                    }
+                    Engine_FreeBufString(nestedProps);
+                }
+            }
+            Engine_FreeBufString(compList);
+        }
+    }
+    
+    return result;
+}
+
+void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsRectItem::hoverEnterEvent(event);
+    m_hoveredPort = getPortAtPosition(event->pos());
+    update();
+    if(m_hoveredPort)
+    {
+        m_lastTooltipPos = event->pos();
+        m_tooltipTimer->start();
+        updateTooltip();
+    }
+}
+
+void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsRectItem::hoverMoveEvent(event);
+    const Port* port = getPortAtPosition(event->pos());
+    bool portChanged = (port != m_hoveredPort);
+    if(portChanged)
+    {
+        m_hoveredPort = port;
+        update();
+        if(port)
+        {
+            m_tooltipTimer->start();
+            updateTooltip();
+        }
+        else
+        {
+            m_tooltipTimer->stop();
+            QToolTip::hideText();
+        }
+    }
+    else if(port)
+    {
+        // Обновляем позицию tooltip при движении мыши
+        m_lastTooltipPos = event->pos();
+        updateTooltip();
+    }
+}
+
+void UModernDiagramWidget::NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsRectItem::hoverLeaveEvent(event);
+    m_hoveredPort = nullptr;
+    m_tooltipTimer->stop();
+    QToolTip::hideText();
+    update();
+}
+
+void UModernDiagramWidget::NodeItem::updateTooltip()
+{
+    if(!m_hoveredPort || !m_owner)
+    {
+        QToolTip::hideText();
+        return;
+    }
+    
+    bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+    
+    QString tooltipText;
+    
+    if(!shiftPressed)
+    {
+        // Без Shift: показываем только имя текущего порта
+        tooltipText = nodeName + ":\n";
+        tooltipText += "  - " + m_hoveredPort->name + "\n";
+        tooltipText += "\n(Удерживайте Shift для просмотра всех доступных портов)";
+    }
+    else
+    {
+        // С Shift: показываем все доступные порты того же типа (включая вложенные)
+        QVector<Port> availablePorts = getNestedPorts(m_hoveredPort->isInput, true);
+        
+        tooltipText = nodeName + " - доступные " + (m_hoveredPort->isInput ? "входные" : "выходные") + " порты:\n";
+        
+        if(availablePorts.isEmpty())
+        {
+            tooltipText += "  - " + m_hoveredPort->name + "\n";
+        }
+        else
+        {
+            QString currentComponent;
+            bool firstGroup = true;
+            for(const Port& p : availablePorts)
+            {
+                if(p.componentName != currentComponent)
+                {
+                    if(!firstGroup)
+                        tooltipText += "\n";
+                    tooltipText += p.componentName + ":\n";
+                    currentComponent = p.componentName;
+                    firstGroup = false;
+                }
+                // Выделяем текущий порт
+                if(p.name == m_hoveredPort->name && p.componentName == nodeName)
+                    tooltipText += "  > " + p.name + " (текущий)\n";
+                else
+                    tooltipText += "  - " + p.name + "\n";
+            }
+        }
+    }
+    
+    // Используем последнюю позицию мыши или текущую позицию порта
+    QPointF scenePos = m_lastTooltipPos.isNull() ? 
+                       mapToScene(m_hoveredPort->pos) : 
+                       mapToScene(m_lastTooltipPos);
+    QPoint globalPos = m_owner->m_mainView->mapToGlobal(
+        m_owner->m_mainView->mapFromScene(scenePos));
+    
+    // Периодически обновляем tooltip, чтобы он не скрывался автоматически
+    QToolTip::showText(globalPos, tooltipText, m_owner->m_mainView);
+    m_lastTooltipText = tooltipText;
 }
 
 UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, bool useOutput, bool useInput)
@@ -611,29 +979,27 @@ void UModernDiagramWidget::layoutGrid()
 
 UModernDiagramWidget::NodeItem* UModernDiagramWidget::pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos)
 {
-    for(auto* node : m_nodes)
+    NodeItem* node = nullptr;
+    const Port* port = pickPortDetailed(scenePos, requireInput, node, portPos);
+    return node;
+}
+
+const UModernDiagramWidget::Port* UModernDiagramWidget::pickPortDetailed(
+    const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos)
+{
+    const double portRadius = 8.0;
+    for(auto* n : m_nodes)
     {
-        auto test = [&](const QVector<Port>& ports)->bool{
-            for(const Port& p: ports)
-            {
-                QPointF pScene = node->mapToScene(p.pos);
-                if(QLineF(pScene, scenePos).length() < 8.0)
-                {
-                    portPos = pScene;
-                    return true;
-                }
-            }
-            return false;
-        };
-        if(requireInput)
+        QPointF localPos = n->mapFromScene(scenePos);
+        const Port* port = n->getPortAtPosition(localPos);
+        if(port && port->isInput == requireInput)
         {
-            if(test(node->inputs)) return node;
-        }
-        else
-        {
-            if(test(node->outputs)) return node;
+            node = n;
+            portPos = n->mapToScene(port->pos);
+            return port;
         }
     }
+    node = nullptr;
     return nullptr;
 }
 
@@ -904,11 +1270,13 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(event->button() == Qt::LeftButton)
     {
         QPointF portPos;
-        auto* node = m_owner->pickPort(event->scenePos(), false, portPos);
-        if(node)
+        UModernDiagramWidget::NodeItem* node = nullptr;
+        const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, node, portPos);
+        if(node && port)
         {
             m_owner->m_dragSourceNode = node;
-            m_owner->m_dragSourcePort = portPos;
+            m_owner->m_dragSourcePort = port;
+            m_owner->m_dragSourcePortPos = portPos;
             m_owner->m_tempLink = new UModernDiagramWidget::LinkItem(node, event->scenePos());
             m_owner->m_scene->addItem(m_owner->m_tempLink);
             event->accept();
@@ -953,22 +1321,55 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if(m_owner->m_tempLink)
     {
         QPointF portPos;
-        auto* target = m_owner->pickPort(event->scenePos(), true, portPos);
-        if(target && target != m_owner->m_dragSourceNode)
+        UModernDiagramWidget::NodeItem* targetNode = nullptr;
+        const UModernDiagramWidget::Port* targetPort = m_owner->pickPortDetailed(event->scenePos(), true, targetNode, portPos);
+        if(targetNode && targetPort && m_owner->m_dragSourceNode && m_owner->m_dragSourcePort &&
+           targetNode != m_owner->m_dragSourceNode)
         {
             m_owner->m_scene->removeItem(m_owner->m_tempLink);
             delete m_owner->m_tempLink;
-            auto* finalLink = new UModernDiagramWidget::LinkItem(m_owner->m_dragSourceNode, target, true, true);
+            auto* finalLink = new UModernDiagramWidget::LinkItem(m_owner->m_dragSourceNode, targetNode, true, true);
             m_owner->m_scene->addItem(finalLink);
             m_owner->m_links.append(finalLink);
             m_owner->m_tempLink = nullptr;
-            // Создание связи в ядре через имена (упрощённо: берём первые порты)
+            
+            // Создание связи в ядре с использованием конкретных портов
             QString srcName = m_owner->m_dragSourceNode->nodeName;
-            QString dstName = target->nodeName;
+            QString dstName = targetNode->nodeName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
-            Model_CreateLinkByName(fullSrc.toStdString().c_str(), "Out",
-                                   fullDst.toStdString().c_str(), "In");
+            
+            // Используем полные пути для вложенных портов
+            QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ? 
+                             m_owner->m_dragSourcePort->name : m_owner->m_dragSourcePort->fullPath;
+            QString dstProp = targetPort->fullPath.isEmpty() ? 
+                             targetPort->name : targetPort->fullPath;
+            
+            // Если порт принадлежит вложенному компоненту, добавляем путь компонента
+            if(!m_owner->m_dragSourcePort->componentName.isEmpty() && 
+               m_owner->m_dragSourcePort->componentName != srcName)
+            {
+                srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
+            }
+            if(!targetPort->componentName.isEmpty() && 
+               targetPort->componentName != dstName)
+            {
+                dstProp = targetPort->componentName + "." + dstProp;
+            }
+            
+            int result = Model_CreateLinkByName(fullSrc.toStdString().c_str(), srcProp.toStdString().c_str(),
+                                               fullDst.toStdString().c_str(), dstProp.toStdString().c_str());
+            if(result != RDK_SUCCESS)
+            {
+                QMessageBox::warning(m_owner, "Error", 
+                    QString("Failed to create link: %1.%2 -> %3.%4")
+                    .arg(fullSrc, srcProp, fullDst, dstProp));
+            }
+            else
+            {
+                m_owner->Reload();
+                emit m_owner->updateComponentsList();
+            }
         }
         else
         {
@@ -977,6 +1378,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_tempLink = nullptr;
         }
         m_owner->m_dragSourceNode = nullptr;
+        m_owner->m_dragSourcePort = nullptr;
         event->accept();
         return;
     }
