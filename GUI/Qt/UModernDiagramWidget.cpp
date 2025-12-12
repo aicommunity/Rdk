@@ -22,7 +22,6 @@
 #include <QDir>
 #include <QDataStream>
 #include <QMimeData>
-#include <QToolTip>
 #include <QGraphicsSceneHoverEvent>
 #include <ctime>
 #include <sstream>
@@ -272,20 +271,61 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     , className(cls)
     , m_owner(owner)
     , m_hoveredPort(nullptr)
-    , m_tooltipTimer(new QTimer())
+    , m_portListWidgetProxy(nullptr)
+    , m_portListWidget(nullptr)
+    , m_hideTimer(new QTimer())
 {
-    m_tooltipTimer->setSingleShot(false);
-    m_tooltipTimer->setInterval(300);  // Обновляем tooltip каждые 300 мс, чтобы он не скрывался автоматически
-    QObject::connect(m_tooltipTimer, &QTimer::timeout, [this]() {
-        if(m_hoveredPort && m_owner)
-        {
-            updateTooltip();
-        }
-    });
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
     setAcceptHoverEvents(true);
+    
+    // Создаем QTreeWidget для отображения портов
+    m_portListWidget = new QTreeWidget();
+    m_portListWidget->setHeaderHidden(true);
+    m_portListWidget->setRootIsDecorated(true);
+    m_portListWidget->setAlternatingRowColors(true);
+    m_portListWidget->setMaximumHeight(300);
+    m_portListWidget->setMinimumWidth(250);
+    m_portListWidget->setMaximumWidth(350);
+    m_portListWidget->setStyleSheet(
+        "QTreeWidget {"
+        "  font-size: 10pt;"
+        "  background-color: white;"
+        "  border: 1px solid #888;"
+        "  border-radius: 4px;"
+        "}"
+        "QTreeWidget::item {"
+        "  padding: 2px;"
+        "  color: black;"
+        "}"
+        "QTreeWidget::item:selected {"
+        "  background-color: #e0e0e0;"
+        "  color: black;"
+        "}"
+    );
+    
+    // Таймер для отложенного скрытия списка портов
+    m_hideTimer->setSingleShot(true);
+    m_hideTimer->setInterval(1000); // 1 секунда после ухода курсора
+    QObject::connect(m_hideTimer, &QTimer::timeout, [this]()
+    {
+        if(m_portListWidget && (m_portListWidget->underMouse() || m_portListWidget->hasFocus()))
+        {
+            // Пока мышь или фокус внутри списка, откладываем скрытие
+            m_hideTimer->start(300);
+            return;
+        }
+        hidePortListWidget();
+    });
+    
+    // Создаем прокси для встраивания виджета в сцену
+    if(m_owner && m_owner->m_scene)
+    {
+        m_portListWidgetProxy = m_owner->m_scene->addWidget(m_portListWidget);
+        m_portListWidgetProxy->setVisible(false);
+        m_portListWidgetProxy->setZValue(1000);  // Поднимаем на передний план
+    }
 
     // Константы для размеров
     const double minWidth = 180.0;  // Увеличено в 1.5 раза (120 * 1.5)
@@ -435,6 +475,17 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     }
 }
 
+UModernDiagramWidget::NodeItem::~NodeItem()
+{
+    // Удаляем виджет списка портов
+    // QGraphicsProxyWidget удалится автоматически при удалении из сцены
+    if(m_portListWidget)
+    {
+        delete m_portListWidget;
+        m_portListWidget = nullptr;
+    }
+}
+
 QRectF UModernDiagramWidget::NodeItem::boundingRect() const
 {
     return rect().adjusted(-4, -4, 4, 4);
@@ -453,9 +504,15 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     painter->drawRoundedRect(rect(), 6, 6);
 
     painter->setPen(Qt::black);
+    // Имя компонента вверху
     painter->drawText(rect().adjusted(4, 4, -4, -4),
                      Qt::AlignTop | Qt::AlignLeft,
-                     nodeName + "\n" + className);
+                     nodeName);
+    // Класс компонента в квадратных скобках внизу
+    QString classNameText = "[" + className + "]";
+    painter->drawText(rect().adjusted(4, 4, -4, -4),
+                     Qt::AlignBottom | Qt::AlignLeft,
+                     classNameText);
 
     painter->setBrush(Qt::white);
     for (const Port& p : inputs) {
@@ -621,11 +678,10 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
     QGraphicsRectItem::hoverEnterEvent(event);
     m_hoveredPort = getPortAtPosition(event->pos());
     update();
+    if(m_hideTimer) m_hideTimer->stop();
     if(m_hoveredPort)
     {
-        m_lastTooltipPos = event->pos();
-        m_tooltipTimer->start();
-        updateTooltip();
+        showPortListWidget(mapToScene(event->pos()));
     }
 }
 
@@ -640,20 +696,43 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
         update();
         if(port)
         {
-            m_tooltipTimer->start();
-            updateTooltip();
+            QPointF scenePos = mapToScene(event->pos());
+            bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+            updatePortListWidget(port->isInput, shiftPressed);
+            if(m_portListWidgetProxy)
+            {
+                m_portListWidgetProxy->setPos(scenePos + QPointF(20, 20));
+            }
         }
         else
         {
-            m_tooltipTimer->stop();
-            QToolTip::hideText();
+            hidePortListWidget();
         }
     }
-    else if(port)
+    else if(port && m_portListWidgetProxy)
     {
-        // Обновляем позицию tooltip при движении мыши
-        m_lastTooltipPos = event->pos();
-        updateTooltip();
+        // Обновляем позицию виджета при движении мыши
+        QPointF scenePos = mapToScene(event->pos());
+        QPointF widgetPos = scenePos + QPointF(20, 20);
+        
+        // Проверяем границы viewport и корректируем позицию при необходимости
+        if(m_owner && m_owner->m_mainView)
+        {
+            QRectF viewportRect = m_owner->m_mainView->mapToScene(m_owner->m_mainView->viewport()->rect()).boundingRect();
+            QRectF widgetRect(widgetPos, QSizeF(m_portListWidget->width(), m_portListWidget->height()));
+            
+            if(widgetRect.right() > viewportRect.right())
+            {
+                widgetPos.setX(scenePos.x() - m_portListWidget->width() - 20);
+            }
+            
+            if(widgetRect.bottom() > viewportRect.bottom())
+            {
+                widgetPos.setY(scenePos.y() - m_portListWidget->height() - 20);
+            }
+        }
+        
+        m_portListWidgetProxy->setPos(widgetPos);
     }
 }
 
@@ -661,74 +740,118 @@ void UModernDiagramWidget::NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *e
 {
     QGraphicsRectItem::hoverLeaveEvent(event);
     m_hoveredPort = nullptr;
-    m_tooltipTimer->stop();
-    QToolTip::hideText();
+    if(m_hideTimer)
+        m_hideTimer->start();
     update();
 }
 
-void UModernDiagramWidget::NodeItem::updateTooltip()
+void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
 {
-    if(!m_hoveredPort || !m_owner)
-    {
-        QToolTip::hideText();
+    if(!m_hoveredPort || !m_owner || !m_portListWidgetProxy)
         return;
+    
+    if(m_hideTimer)
+        m_hideTimer->stop();
+
+    bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+    updatePortListWidget(m_hoveredPort->isInput, shiftPressed);
+    
+    // Позиционируем виджет рядом с курсором
+    QPointF widgetPos = scenePos + QPointF(20, 20);
+    
+    // Проверяем границы viewport и корректируем позицию при необходимости
+    if(m_owner && m_owner->m_mainView)
+    {
+        QRectF viewportRect = m_owner->m_mainView->mapToScene(m_owner->m_mainView->viewport()->rect()).boundingRect();
+        QRectF widgetRect(widgetPos, QSizeF(m_portListWidget->width(), m_portListWidget->height()));
+        
+        // Если виджет выходит за правую границу, позиционируем слева от курсора
+        if(widgetRect.right() > viewportRect.right())
+        {
+            widgetPos.setX(scenePos.x() - m_portListWidget->width() - 20);
+        }
+        
+        // Если виджет выходит за нижнюю границу, позиционируем выше курсора
+        if(widgetRect.bottom() > viewportRect.bottom())
+        {
+            widgetPos.setY(scenePos.y() - m_portListWidget->height() - 20);
+        }
     }
     
-    bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
-    
-    QString tooltipText;
-    
-    if(!shiftPressed)
+    m_portListWidgetProxy->setPos(widgetPos);
+    m_portListWidgetProxy->setVisible(true);
+}
+
+void UModernDiagramWidget::NodeItem::hidePortListWidget()
+{
+    if(m_portListWidgetProxy)
     {
-        // Без Shift: показываем только имя текущего порта
-        tooltipText = nodeName + ":\n";
-        tooltipText += "  - " + m_hoveredPort->name + "\n";
-        tooltipText += "\n(Удерживайте Shift для просмотра всех доступных портов)";
+        m_portListWidgetProxy->setVisible(false);
+    }
+}
+
+void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool includeNested)
+{
+    if(!m_portListWidget || !m_hoveredPort)
+        return;
+    
+    m_portListWidget->clear();
+    
+    // Получаем список портов
+    QVector<Port> availablePorts = getNestedPorts(isInput, includeNested);
+    
+    if(availablePorts.isEmpty())
+    {
+        // Если портов нет, показываем только текущий порт
+        QTreeWidgetItem* rootItem = new QTreeWidgetItem(m_portListWidget);
+        rootItem->setText(0, nodeName);
+        QTreeWidgetItem* portItem = new QTreeWidgetItem(rootItem);
+        portItem->setText(0, m_hoveredPort->name + " (текущий)");
+        rootItem->setExpanded(true);
+        m_portListWidget->setCurrentItem(portItem);
     }
     else
     {
-        // С Shift: показываем все доступные порты того же типа (включая вложенные)
-        QVector<Port> availablePorts = getNestedPorts(m_hoveredPort->isInput, true);
+        // Группируем порты по компонентам
+        QMap<QString, QTreeWidgetItem*> componentItems;
+        QTreeWidgetItem* currentPortItem = nullptr;
         
-        tooltipText = nodeName + " - доступные " + (m_hoveredPort->isInput ? "входные" : "выходные") + " порты:\n";
-        
-        if(availablePorts.isEmpty())
+        for(const Port& p : availablePorts)
         {
-            tooltipText += "  - " + m_hoveredPort->name + "\n";
-        }
-        else
-        {
-            QString currentComponent;
-            bool firstGroup = true;
-            for(const Port& p : availablePorts)
+            QTreeWidgetItem* compItem = nullptr;
+            if(componentItems.contains(p.componentName))
             {
-                if(p.componentName != currentComponent)
-                {
-                    if(!firstGroup)
-                        tooltipText += "\n";
-                    tooltipText += p.componentName + ":\n";
-                    currentComponent = p.componentName;
-                    firstGroup = false;
-                }
-                // Выделяем текущий порт
-                if(p.name == m_hoveredPort->name && p.componentName == nodeName)
-                    tooltipText += "  > " + p.name + " (текущий)\n";
-                else
-                    tooltipText += "  - " + p.name + "\n";
+                compItem = componentItems[p.componentName];
             }
+            else
+            {
+                compItem = new QTreeWidgetItem(m_portListWidget);
+                compItem->setText(0, p.componentName);
+                componentItems[p.componentName] = compItem;
+            }
+            
+            QTreeWidgetItem* portItem = new QTreeWidgetItem(compItem);
+            QString portText = p.name;
+            if(p.name == m_hoveredPort->name && p.componentName == nodeName)
+            {
+                portText += " (текущий)";
+                currentPortItem = portItem;
+            }
+            portItem->setText(0, portText);
+        }
+        
+        // Разворачиваем все элементы
+        for(QTreeWidgetItem* item : componentItems.values())
+        {
+            item->setExpanded(true);
+        }
+        
+        // Выделяем текущий порт
+        if(currentPortItem)
+        {
+            m_portListWidget->setCurrentItem(currentPortItem);
         }
     }
-    
-    // Используем последнюю позицию мыши или текущую позицию порта
-    QPointF scenePos = m_lastTooltipPos.isNull() ? 
-                       mapToScene(m_hoveredPort->pos) : 
-                       mapToScene(m_lastTooltipPos);
-    QPoint globalPos = m_owner->m_mainView->mapToGlobal(
-        m_owner->m_mainView->mapFromScene(scenePos));
-    
-    // Периодически обновляем tooltip, чтобы он не скрывался автоматически
-    QToolTip::showText(globalPos, tooltipText, m_owner->m_mainView);
-    m_lastTooltipText = tooltipText;
 }
 
 UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, bool useOutput, bool useInput)

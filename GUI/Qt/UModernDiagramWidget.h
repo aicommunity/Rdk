@@ -6,9 +6,11 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QGraphicsPathItem>
+#include <QGraphicsProxyWidget>
 #include <QTimer>
 #include <QPointer>
 #include <QPoint>
+#include <QTreeWidget>
 #include <rdk_init.h>
 #include <rdk_application.h>
 #include "../Core/Engine/UXMLEnvSerialize.h"
@@ -81,6 +83,7 @@ private:
     {
     public:
         NodeItem(class UModernDiagramWidget* owner, const QString& name, const QString& cls);
+        ~NodeItem() override;
         QRectF boundingRect() const override;
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
         QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
@@ -97,10 +100,12 @@ private:
     private:
         UModernDiagramWidget* m_owner;
         mutable const Port* m_hoveredPort;
-        QTimer* m_tooltipTimer;
-        QPointF m_lastTooltipPos;
-        QString m_lastTooltipText;
-        void updateTooltip();
+        QGraphicsProxyWidget* m_portListWidgetProxy;
+        QTreeWidget* m_portListWidget;
+        QTimer* m_hideTimer;
+        void showPortListWidget(const QPointF& scenePos);
+        void hidePortListWidget();
+        void updatePortListWidget(bool isInput, bool includeNested);
     };
 
     class LinkItem : public QGraphicsPathItem
