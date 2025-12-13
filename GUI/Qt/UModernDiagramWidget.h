@@ -92,6 +92,8 @@ private:
         void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
         QPointF scenePortPos(bool output) const;
         const Port* getPortAtPosition(const QPointF& localPos) const;
+        // Принудительно обновляет hover-состояние по координате сцены (для периодического опроса)
+        void refreshHoverAtScenePos(const QPointF& scenePos);
         QVector<Port> getNestedPorts(bool isInput, bool includeNested) const;
         QVector<Port> inputs;
         QVector<Port> outputs;
@@ -103,9 +105,14 @@ private:
         QGraphicsProxyWidget* m_portListWidgetProxy;
         QTreeWidget* m_portListWidget;
         QTimer* m_hideTimer;
+    public:
+        // Доступ к членам для проверки состояния дерева портов
+        friend class ModernScene;
+    public:
         void showPortListWidget(const QPointF& scenePos);
         void hidePortListWidget();
         void updatePortListWidget(bool isInput, bool includeNested);
+        void onPortItemActivated(QTreeWidgetItem* item, int column);
     };
 
     class LinkItem : public QGraphicsPathItem
@@ -114,7 +121,7 @@ private:
         // Финальная линия между узлами
         LinkItem(class NodeItem* src, class NodeItem* dst, bool useOutput=true, bool useInput=true);
         // Временная линия до курсора
-        LinkItem(class NodeItem* src, const QPointF& tempEnd);
+        LinkItem(class NodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
         void updateGeometry(const QPointF& cursorOverride = QPointF());
     private:
         class NodeItem* m_src;
@@ -123,6 +130,7 @@ private:
         bool m_useInput;
         bool m_isTemp;
         QPointF m_tempEnd;
+        QPointF m_startPos; // Начальная позиция для временной линии
     };
 
     void buildScene();
@@ -138,11 +146,17 @@ private:
     QGraphicsView*  m_mainView;
     QGraphicsView*  m_miniMap;
 
-    // Drag state
+    // Drag state (for port-to-port drag & drop)
     LinkItem* m_tempLink;
     NodeItem* m_dragSourceNode;
     const Port* m_dragSourcePort;
     QPointF   m_dragSourcePortPos;
+    
+    // Active connection state (for tree widget selection)
+    NodeItem* m_activeSourceNode;
+    const Port* m_activeSourcePort;
+    QPointF m_activeSourcePortPos;
+    LinkItem* m_activeTempLink;
 
     // Data
     RDK::UApplication* m_application;
