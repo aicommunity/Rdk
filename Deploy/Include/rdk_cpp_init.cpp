@@ -149,6 +149,22 @@ RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int channel_index, 
 {
  return RdkCoreManager.GetModelLockTimeout(channel_index,timeout);
 }
+
+// Возвращает указатель на текущую модель с shared (read-only) блокировкой
+RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLock(void)
+{
+ return RdkCoreManager.GetModelReadLock();
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLock(int channel_index)
+{
+ return RdkCoreManager.GetModelReadLock(channel_index);
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetModelReadLockTimeout(channel_index, timeout);
+}
 // --------------------------
 
 

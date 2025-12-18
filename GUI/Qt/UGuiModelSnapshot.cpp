@@ -4,10 +4,12 @@
 #include <QHash>
 #include <QSet>
 #include <QMetaObject>
+#include <QMutexLocker>
 #include <QtConcurrent/QtConcurrent>
 #include <vector>
 
 #include <rdk_init.h>
+#include "../Core/Math/MDMatrix.h"
 
 #include "UGuiTelemetry.h"
 
@@ -84,6 +86,56 @@ void UGuiModelSnapshot::ensureRunning() const
     }
 }
 
+void UGuiModelSnapshot::SubscribeProperty(const UGuiPropertyKey& key)
+{
+    QMutexLocker locker(&SubscriptionsMutex);
+    PropertySubscriptions.insert(key);
+}
+
+void UGuiModelSnapshot::UnsubscribeProperty(const UGuiPropertyKey& key)
+{
+    QMutexLocker locker(&SubscriptionsMutex);
+    PropertySubscriptions.remove(key);
+}
+
+void UGuiModelSnapshot::ClearPropertySubscriptions()
+{
+    QMutexLocker locker(&SubscriptionsMutex);
+    PropertySubscriptions.clear();
+}
+
+bool UGuiModelSnapshot::GetPropertyValue(const UGuiPropertyKey& key, double& outValue) const
+{
+    ensureRunning();
+    QReadLocker locker(&SnapshotLock);
+    if (!SnapshotValue)
+        return false;
+
+    auto it = SnapshotValue->PropertyValues.constFind(key);
+    if (it == SnapshotValue->PropertyValues.constEnd())
+        return false;
+
+    if (!it->Available)
+        return false;
+
+    outValue = it->NumericValue;
+    return true;
+}
+
+bool UGuiModelSnapshot::IsPropertyAvailable(const UGuiPropertyKey& key) const
+{
+    ensureRunning();
+    QReadLocker locker(&SnapshotLock);
+    if (!SnapshotValue)
+        return false;
+
+    auto it = SnapshotValue->PropertyValues.constFind(key);
+    if (it == SnapshotValue->PropertyValues.constEnd())
+        return false;
+
+    return it->Available;
+}
+
 void UGuiModelSnapshot::HandleRefresh()
 {
     if (RefreshScheduled)
@@ -112,9 +164,14 @@ void UGuiModelSnapshot::RefreshSnapshot()
         RDK::UEPtr<RDK::UNet> net(model.Get());
         RDK::UEPtr<RDK::UContainer> root(net);
         CollectComponent(root, root, QString(), *nextSnapshot);
+
+        // Collect property values while we have the lock
+        CollectPropertyValues(*nextSnapshot);
     }
 
     nextSnapshot->Version = ++VersionCounter;
+
+    bool hasPropertyUpdates = !nextSnapshot->PropertyValues.isEmpty();
 
     {
         QWriteLocker locker(&SnapshotLock);
@@ -149,6 +206,72 @@ void UGuiModelSnapshot::RefreshSnapshot()
     }
 
     emit SnapshotUpdated(nextSnapshot, added, removed, changed);
+
+    if (hasPropertyUpdates) {
+        emit PropertyValuesUpdated(nextSnapshot);
+    }
+}
+
+void UGuiModelSnapshot::CollectPropertyValues(UGuiSnapshot& snapshot)
+{
+    // Copy subscriptions under lock to avoid holding the lock during kernel access
+    QSet<UGuiPropertyKey> subscriptions;
+    {
+        QMutexLocker locker(&SubscriptionsMutex);
+        subscriptions = PropertySubscriptions;
+    }
+
+    if (subscriptions.isEmpty())
+        return;
+
+    for (const UGuiPropertyKey& key : subscriptions) {
+        UGuiPropertyValue propValue;
+        propValue.Available = ReadPropertyValue(key, propValue.NumericValue);
+        propValue.UpdateTime = snapshot.Version;
+        snapshot.PropertyValues.insert(key, propValue);
+    }
+}
+
+bool UGuiModelSnapshot::ReadPropertyValue(const UGuiPropertyKey& key, double& outValue)
+{
+    // This method is called while holding the model lock
+    // Get model for the specified channel
+    RDK::UEPtr<RDK::UContainer> model = RDK::GetModel(key.ChannelIndex);
+    if (!model)
+        return false;
+
+    // Find component by name
+    RDK::UEPtr<RDK::UContainer> component = model->GetComponentL(
+        key.ComponentName.toLocal8Bit().constData(), true);
+    if (!component)
+        return false;
+
+    // Try to read as MDMatrix<double>
+    RDK::MDMatrix<double>* matrix = component->AccessPropertyData<RDK::MDMatrix<double>>(
+        key.PropertyName.toStdString());
+    if (matrix) {
+        if (matrix->GetCols() > key.Jx && matrix->GetRows() > key.Jy) {
+            outValue = (*matrix)(key.Jy, key.Jx);
+            return true;
+        }
+        return false;
+    }
+
+    // Try to read as double directly
+    double* directValue = component->AccessPropertyData<double>(key.PropertyName.toStdString());
+    if (directValue) {
+        outValue = *directValue;
+        return true;
+    }
+
+    // Try to read as int
+    int* intValue = component->AccessPropertyData<int>(key.PropertyName.toStdString());
+    if (intValue) {
+        outValue = static_cast<double>(*intValue);
+        return true;
+    }
+
+    return false;
 }
 
 void UGuiModelSnapshot::CollectComponent(const RDK::UEPtr<RDK::UContainer>& component,

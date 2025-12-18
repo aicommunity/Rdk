@@ -99,14 +99,14 @@ private:
         QVector<Port> outputs;
         QString nodeName;
         QString className;
-    private:
+    public:
+        // Доступ к членам для UModernDiagramWidget::clearScene() и ModernScene
         UModernDiagramWidget* m_owner;
         mutable const Port* m_hoveredPort;
         QGraphicsProxyWidget* m_portListWidgetProxy;
         QTreeWidget* m_portListWidget;
         QTimer* m_hideTimer;
-    public:
-        // Доступ к членам для проверки состояния дерева портов
+        
         friend class ModernScene;
     public:
         void showPortListWidget(const QPointF& scenePos);

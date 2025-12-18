@@ -391,7 +391,13 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     try
     {
      UpdateInterfaceFlag=true;
-        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+        // Use timeout to avoid blocking UI for too long during calculation
+        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 100);
+        if (!model) {
+            // Lock acquisition timed out - skip this update
+            UpdateInterfaceFlag=false;
+            return;
+        }
 
         RDK::UEPtr<RDK::UContainer> cont;
         if (currentDrawPropertyComponentName.isEmpty())
@@ -624,7 +630,10 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
  {
   if(UpdateInterfaceFlag)
    return;
-  RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+  // Use timeout to avoid blocking UI during calculation
+  RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 500);
+  if (!model)
+   return; // Lock acquisition timed out
 
   RDK::UEPtr<RDK::UContainer> cont;
   if (currentDrawPropertyComponentName.isEmpty())
@@ -746,7 +755,10 @@ try
      }
 
 
-     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+     // Use timeout to avoid blocking UI during calculation
+     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 500);
+     if (!model)
+      return; // Lock acquisition timed out
 
      RDK::UEPtr<RDK::UContainer> cont;
 
@@ -1067,7 +1079,10 @@ void UComponentsListWidget::setUpdateInterval(long value)
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
 {
- RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock<RDK::UEngine>(getWorkChannelIndex());
+ // Use timeout to avoid blocking UI during calculation
+ RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), 100);
+ if (!engine)
+  return; // Lock acquisition timed out
     const char * stringBuff = MModel_GetComponentsNameList(getWorkChannelIndex(), componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);

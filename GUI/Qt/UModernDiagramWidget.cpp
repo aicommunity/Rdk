@@ -519,8 +519,9 @@ UModernDiagramWidget::NodeItem::~NodeItem()
         m_hideTimer = nullptr;
     }
     
-    // Удаляем прокси виджет из сцены перед удалением самого виджета
-    // Проверяем, что прокси виджет еще существует и не был удален
+    // Если указатели обнулены (clearScene() был вызван), то сцена
+    // сама удалит прокси-виджет и виджет списка портов.
+    // Удаляем только если указатели ещё валидны (индивидуальное удаление узла).
     if(m_portListWidgetProxy)
     {
         if(m_owner && m_owner->m_scene)
@@ -531,13 +532,14 @@ UModernDiagramWidget::NodeItem::~NodeItem()
                 m_owner->m_scene->removeItem(m_portListWidgetProxy);
             }
         }
+        // Удаление прокси-виджета также удалит m_portListWidget (он принадлежит прокси)
         delete m_portListWidgetProxy;
         m_portListWidgetProxy = nullptr;
+        m_portListWidget = nullptr;  // Уже удалён вместе с прокси
     }
-    
-    // Удаляем виджет списка портов
-    if(m_portListWidget)
+    else if(m_portListWidget)
     {
+        // Прокси не был создан - удаляем виджет напрямую
         delete m_portListWidget;
         m_portListWidget = nullptr;
     }
@@ -1291,10 +1293,26 @@ void UModernDiagramWidget::FitToView()
 
 void UModernDiagramWidget::clearScene()
 {
+    // Перед очисткой сцены обнуляем указатели на прокси-виджеты,
+    // чтобы предотвратить двойное удаление в деструкторе NodeItem.
+    // Сцена владеет прокси-виджетами и удалит их при clear().
+    for(auto* node : m_nodes)
+    {
+        if(node)
+        {
+            node->m_portListWidgetProxy = nullptr;
+            node->m_portListWidget = nullptr;  // Принадлежит прокси, будет удалён вместе с ним
+            if(node->m_hideTimer)
+            {
+                node->m_hideTimer->stop();
+            }
+        }
+    }
+    
     m_nodes.clear();
     m_nodeByName.clear();
     m_links.clear();
-    m_scene->clear();
+    m_scene->clear();  // Удаляет все элементы, включая NodeItem и прокси-виджеты
     m_tempLink = nullptr;
     m_dragSourceNode = nullptr;
     m_activeTempLink = nullptr;

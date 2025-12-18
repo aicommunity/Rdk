@@ -63,6 +63,12 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int channel_index);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(unsigned timeout);
 RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int channel_index, unsigned timeout);
+
+// Возвращает указатель на текущую модель с shared (read-only) блокировкой
+// Позволяет нескольким читателям одновременный доступ
+RDK_LIB_TYPE RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLock(void);
+RDK_LIB_TYPE RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLock(int channel_index);
+RDK_LIB_TYPE RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLockTimeout(int channel_index, unsigned timeout);
 // --------------------------
 
 // --------------------------
@@ -115,6 +121,25 @@ template<class T>
 RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout)
 {
  return RdkCoreManager.GetModelLockTimeout<T>(channel_index,timeout);
+}
+
+// Возвращает указатель на текущую модель с shared (read-only) блокировкой
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLock(void)
+{
+ return RdkCoreManager.GetModelReadLock<T>(RdkCoreManager.GetSelectedChannelIndex());
+}
+
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLock(int channel_index)
+{
+ return RdkCoreManager.GetModelReadLock<T>(channel_index);
+}
+
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetModelReadLockTimeout<T>(channel_index,timeout);
 }
 
 template<class T>

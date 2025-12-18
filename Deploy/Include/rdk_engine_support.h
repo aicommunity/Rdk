@@ -277,6 +277,12 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int channel_index);
 RDK::UELockPtr<RDK::UContainer> GetModelLockTimeout(unsigned timeout);
 RDK::UELockPtr<RDK::UContainer> GetModelLockTimeout(int channel_index, unsigned timeout);
 
+// Возвращает указатель на текущую модель с shared (read-only) блокировкой
+// Позволяет нескольким читателям одновременный доступ
+RDK::UESharedLockPtr<RDK::UContainer> GetModelReadLock(void);
+RDK::UESharedLockPtr<RDK::UContainer> GetModelReadLock(int channel_index);
+RDK::UESharedLockPtr<RDK::UContainer> GetModelReadLockTimeout(int channel_index, unsigned timeout);
+
 template<class T>
 RDK::UELockPtr<T> GetEngineLock(int channel_index);
 
@@ -288,6 +294,12 @@ RDK::UELockPtr<T> GetModelLock(int channel_index);
 
 template<class T>
 RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout);
+
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLock(int channel_index);
+
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLockTimeout(int channel_index, unsigned timeout);
 
 /// Метод прямой блокировки канала
 int LockChannel(int index);
@@ -359,6 +371,26 @@ RDK::UELockPtr<T> URdkCoreManager::GetModelLockTimeout(int channel_index, unsign
  return RDK::UELockPtr<T>(0,GetModel(channel_index));
 #else
  return (channel_index<int(MutexList.size()))?RDK::UELockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)), timeout):RDK::UELockPtr<T>(0,0);
+#endif
+}
+
+template<class T>
+RDK::UESharedLockPtr<T> URdkCoreManager::GetModelReadLock(int channel_index)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<T>(0,GetModel(channel_index));
+#else
+ return (channel_index<int(MutexList.size()))?RDK::UESharedLockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index))):RDK::UESharedLockPtr<T>(0,0);
+#endif
+}
+
+template<class T>
+RDK::UESharedLockPtr<T> URdkCoreManager::GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<T>(0,GetModel(channel_index));
+#else
+ return (channel_index<int(MutexList.size()))?RDK::UESharedLockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)), timeout):RDK::UESharedLockPtr<T>(0,0);
 #endif
 }
 

@@ -1333,6 +1333,38 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel
 #endif
 }
 
+// Возвращает указатель на текущую модель с shared (read-only) блокировкой
+RDK::UESharedLockPtr<RDK::UContainer> URdkCoreManager::GetModelReadLock(void)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<RDK::UContainer>(0,GetModel());
+#else
+ return RDK::UESharedLockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel());
+#endif
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> URdkCoreManager::GetModelReadLock(int channel_index)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<RDK::UContainer>(0,GetModel(channel_index));
+#else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UESharedLockPtr<RDK::UContainer>(0,0);
+ return RDK::UESharedLockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index));
+#endif
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> URdkCoreManager::GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<RDK::UContainer>(0,GetModel(channel_index));
+#else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UESharedLockPtr<RDK::UContainer>(0,0);
+ return RDK::UESharedLockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
+#endif
+}
+
 /// Метод прямой блокировки канала
 int URdkCoreManager::LockChannel(int index)
 {

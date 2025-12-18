@@ -2,6 +2,7 @@
 #include "ui_UGraphWidget.h"
 #include "UGraphControlDialog.h"
 #include "UGuiTelemetry.h"
+#include "UGuiModelSnapshot.h"
 #include <iostream>
 
 
@@ -80,10 +81,15 @@ UGraphWidget::UGraphWidget(QWidget *parent, RDK::UApplication *app) :
     graphPainter->mainStartGraphSettings (leftLimit,rightLimit, lowerLimit, upperLimit,
                                           lableX, lableY);
 
+    // Connect to snapshot updates for lock-free property value access
+    connect(&NMSDK::UGuiModelSnapshot::Instance(), &NMSDK::UGuiModelSnapshot::PropertyValuesUpdated,
+            this, &UGraphWidget::onPropertyValuesUpdated);
 }
 
 UGraphWidget::~UGraphWidget()
 {
+    // Unsubscribe from all property updates
+    clearPropertySubscriptions();
     delete ui;
 }
 
@@ -140,6 +146,15 @@ void UGraphWidget::setGraphDataSource(int graph_index, int channel_index,
                                       const std::string &type, int jx, int jy)
 {
     graphPainter->setGraphDataSource(graph_index, channel_index, componentName, propertyName, type, jx, jy);
+
+    // Subscribe to property updates for lock-free access
+    NMSDK::UGuiPropertyKey key;
+    key.ComponentName = QString::fromStdString(componentName);
+    key.PropertyName = QString::fromStdString(propertyName);
+    key.ChannelIndex = channel_index;
+    key.Jx = jx;
+    key.Jy = jy;
+    NMSDK::UGuiModelSnapshot::Instance().SubscribeProperty(key);
 }
 
 void UGraphWidget::setCurrentItem(int myCurrentItem)
@@ -150,8 +165,10 @@ void UGraphWidget::setCurrentItem(int myCurrentItem)
 void UGraphWidget::AUpdateInterface()
 {
     NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UGraphWidget.Update"), accessibleName());
-    RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
-    if(!model)
+
+    // Use lock-free snapshot access instead of GetModelLock
+    NMSDK::UGuiSnapshotPtr snapshot = NMSDK::UGuiModelSnapshot::Instance().CurrentSnapshot();
+    if (!snapshot)
         return;
 
     const int seriesCount = graphPainter->getSize();
@@ -165,15 +182,12 @@ void UGraphWidget::AUpdateInterface()
         bool available = false;
         double y=0.0;
 
-        RDK::UEPtr<RDK::UContainer> component=model->GetComponentL(current_graph.nameComponent,true);
-        if(component)
-        {
-            RDK::MDMatrix<double>* m=component->AccessPropertyData<RDK::MDMatrix<double> >(current_graph.nameProperty);
-            if(m && m->GetCols()>current_graph.Jx && m->GetRows()>current_graph.Jy)
-            {
-                y=(*m)(current_graph.Jy,current_graph.Jx);
-                available = true;
-            }
+        // Build property key and get value from snapshot (lock-free)
+        NMSDK::UGuiPropertyKey key = buildPropertyKey(current_graph);
+        auto it = snapshot->PropertyValues.constFind(key);
+        if (it != snapshot->PropertyValues.constEnd() && it->Available) {
+            y = it->NumericValue;
+            available = true;
         }
 
         graphPainter->setGraphAvailability(i, available);
@@ -210,6 +224,50 @@ void UGraphWidget::AUpdateInterface()
     graphPainter->commitFrame();
 }
 
+void UGraphWidget::onPropertyValuesUpdated(NMSDK::UGuiSnapshotPtr /*snapshot*/)
+{
+    // Trigger interface update when new property values are available
+    // This is called from the snapshot daemon thread via Qt signal/slot
+    if (isVisible()) {
+        UpdateInterface(false);
+    }
+}
+
+void UGraphWidget::updatePropertySubscriptions()
+{
+    NMSDK::UGuiModelSnapshot& snapshot = NMSDK::UGuiModelSnapshot::Instance();
+
+    const int seriesCount = graphPainter->getSize();
+    for (int i = 0; i < seriesCount; ++i) {
+        const TSingleGraph& graph = graphPainter->getGraph(i);
+        NMSDK::UGuiPropertyKey key = buildPropertyKey(graph);
+        snapshot.SubscribeProperty(key);
+    }
+}
+
+void UGraphWidget::clearPropertySubscriptions()
+{
+    NMSDK::UGuiModelSnapshot& snapshot = NMSDK::UGuiModelSnapshot::Instance();
+
+    const int seriesCount = graphPainter->getSize();
+    for (int i = 0; i < seriesCount; ++i) {
+        const TSingleGraph& graph = graphPainter->getGraph(i);
+        NMSDK::UGuiPropertyKey key = buildPropertyKey(graph);
+        snapshot.UnsubscribeProperty(key);
+    }
+}
+
+NMSDK::UGuiPropertyKey UGraphWidget::buildPropertyKey(const TSingleGraph& graph) const
+{
+    NMSDK::UGuiPropertyKey key;
+    key.ComponentName = QString::fromStdString(graph.nameComponent);
+    key.PropertyName = QString::fromStdString(graph.nameProperty);
+    key.ChannelIndex = graph.indexChannel;
+    key.Jx = graph.Jx;
+    key.Jy = graph.Jy;
+    return key;
+}
+
 UGraphPaintWidget *UGraphWidget::getGraphPainter() const
 {
     return graphPainter;
@@ -224,6 +282,9 @@ void UGraphWidget::ASaveParameters(RDK::USerStorageXML &xml)
 
 void UGraphWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
+    // Clear existing subscriptions before loading new configuration
+    clearPropertySubscriptions();
+
     bool loaded = LoadFromXml(xml);
     if (!loaded) {
         loaded = LoadLegacySettings();
@@ -268,6 +329,14 @@ void UGraphWidget::slotActionSelectOutput()
 
 void UGraphWidget::slotActionDeleteCurrentItem()
 {
+    // Get graph info before deletion to unsubscribe
+    const int currentIndex = graphPainter->getCurrentItem();
+    if (currentIndex >= 0 && currentIndex < graphPainter->getSize()) {
+        const TSingleGraph& graph = graphPainter->getGraph(currentIndex);
+        NMSDK::UGuiPropertyKey key = buildPropertyKey(graph);
+        NMSDK::UGuiModelSnapshot::Instance().UnsubscribeProperty(key);
+    }
+
     int a = graphPainter->delCurrentItemGraph();
     if(a>=0)
     {
@@ -475,6 +544,9 @@ bool UGraphWidget::LoadLegacySettings()
     graphPainter->setLables(lableX, lableY);
     SeriesBuffers.resize(static_cast<size_t>(graphPainter->getSize()));
 
+    // Register property subscriptions for all loaded graphs
+    updatePropertySubscriptions();
+
     settings.endGroup();
     return graphPainter->getSize() > 0;
 }
@@ -615,6 +687,9 @@ bool UGraphWidget::LoadFromXml(RDK::USerStorageXML &xml)
     graphPainter->setCurrentItem(xml.ReadInteger("CurrentItem", 0));
     graphPainter->setLables(lableX, lableY);
     SeriesBuffers.resize(static_cast<size_t>(graphPainter->getSize()));
+
+    // Register property subscriptions for all loaded graphs
+    updatePropertySubscriptions();
 
     return anyLoaded && graphPainter->getSize() > 0;
 }

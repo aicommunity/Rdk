@@ -6,6 +6,7 @@
 #include "qcustomplot.h"
 #include "UGraphPaintWidget.h"
 #include "UComponentPropertySelectionWidget.h"
+#include "UGuiModelSnapshot.h"
 #include <vector>
 
 
@@ -118,6 +119,9 @@ public slots:
         void slotActionDeleteCurrentItem();
         void slotActionSettings();
 
+private slots:
+        /// Handle snapshot property value updates (lock-free)
+        void onPropertyValuesUpdated(NMSDK::UGuiSnapshotPtr snapshot);
 
 private:
         Ui::UGraphWidget* ui;
@@ -129,6 +133,15 @@ private:
         bool LoadLegacySettings();
         void SaveXmlSnapshot(RDK::USerStorageXML &xml) const;
         bool LoadFromXml(RDK::USerStorageXML &xml);
+
+        /// Register property subscriptions for all graph data sources
+        void updatePropertySubscriptions();
+
+        /// Unsubscribe from all properties
+        void clearPropertySubscriptions();
+
+        /// Build property key from graph data source
+        NMSDK::UGuiPropertyKey buildPropertyKey(const TSingleGraph& graph) const;
 };
 
 #endif // U_GRAPH_WIDGET_H
