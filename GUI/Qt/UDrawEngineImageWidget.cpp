@@ -1,5 +1,6 @@
 #include "UDrawEngineImageWidget.h"
 #include "UQuickLinkDialog.h"
+#include "UStyleManager.h"
 
 #include <QDebug>
 #include <QByteArray>
@@ -992,7 +993,8 @@ void UDrawEngineImageWidget::paintDragLine()
     // Рисуем временную линию на текущем изображении
     QPixmap currentPixmap = *pixmap();
     QPainter painter(&currentPixmap);
-    painter.setPen(QPen(QColor(100, 100, 255, 200), 2, Qt::DashLine));
+    UStyleManager* style = UStyleManager::instance();
+    painter.setPen(QPen(style->getDragLineColor(), style->getLinkWidth(), Qt::DashLine));
 
     // Рисуем линию с изгибом (упрощенный вариант)
     int dx = abs(dragCurrentX - startX);
@@ -1018,8 +1020,8 @@ void UDrawEngineImageWidget::paintDragLine()
         RDK::UGEDescription& hoverDesc = DrawEngine.GetDescription(hoverComponentName);
         DrawEngine.GetPortCenter(hoverDesc, *hoverPort, hoverX, hoverY);
 
-        painter.setBrush(QColor(0, 255, 0, 128));
-        painter.setPen(QPen(QColor(0, 200, 0), 2));
+        painter.setBrush(style->getPortHighlightColor());
+        painter.setPen(QPen(style->getPortInputHoverColor(), 2));
         painter.drawEllipse(QPoint(hoverX, hoverY), hoverDesc.PortRadius + 2, hoverDesc.PortRadius + 2);
     }
 

@@ -107,9 +107,8 @@ public:
     bool isAxisYzoomable = true;    //зум по оси У (ctrl+крокрутка)
     bool isAxisYscrollable = true;  //скролл оси У
 
-    //доступные цвета для серий
-    const QColor defaultColors[15]={Qt::red, Qt::darkRed, Qt::yellow, Qt::darkYellow, Qt::green, Qt::darkGreen, Qt::cyan, Qt::darkCyan,
-                                   Qt::blue, Qt::darkBlue, Qt::magenta,Qt::darkMagenta, Qt::gray, Qt::darkGray, Qt::black};
+    //доступные цвета для серий (из UStyleManager)
+    QColor getDefaultColor(int index) const;
 
 
 private:

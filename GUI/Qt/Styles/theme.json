@@ -1,0 +1,74 @@
+{
+  "name": "Default Theme",
+  "description": "NeuroModeler default color theme based on UModernDiagramWidget",
+  
+  "node": {
+    "fill": "#F5F5F5",
+    "fillSelected": "#DCF0FF",
+    "border": "#4678C8",
+    "borderWidth": 1.5,
+    "cornerRadius": 6.0
+  },
+  
+  "port": {
+    "inputNormal": "#329632",
+    "inputHover": "#64C864",
+    "outputNormal": "#3264C8",
+    "outputHover": "#6496FF",
+    "radius": 4.0,
+    "hoverRadius": 5.0
+  },
+  
+  "link": {
+    "solid": "#5078C8",
+    "dashed": "#78A0DC",
+    "width": 2.0
+  },
+  
+  "drag": {
+    "lineColor": "#6464FFC8",
+    "portHighlight": "#00C80096"
+  },
+  
+  "text": {
+    "primary": "#000000",
+    "secondary": "#646464"
+  },
+  
+  "general": {
+    "background": "#FFFFFF",
+    "backgroundAlt": "#F5F5F5",
+    "accent": "#4678C8",
+    "selection": "#E0E0E0"
+  },
+  
+  "chart": {
+    "background": "#FFFFFF",
+    "axis": "#333333",
+    "grid": "#E0E0E0",
+    "title": "#333333",
+    "label": "#666666",
+    "seriesColors": [
+      "#E63946",
+      "#8B0000",
+      "#F4D35E",
+      "#DAA520",
+      "#2A9D8F",
+      "#006400",
+      "#00CED1",
+      "#008B8B",
+      "#4678C8",
+      "#00008B",
+      "#E040FB",
+      "#8B008B",
+      "#808080",
+      "#404040",
+      "#000000"
+    ]
+  },
+  
+  "disabled": {
+    "text": "#999999"
+  }
+}
+

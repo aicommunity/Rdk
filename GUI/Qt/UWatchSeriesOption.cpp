@@ -3,6 +3,7 @@
 #include "UWatch.h"
 #include "UGuiTelemetry.h"
 #include "UComponentPropertySelectionWidget.h"
+#include "UStyleManager.h"
 #include <QPixmap>
 #include <QIcon>
 #include <QMessageBox>
@@ -615,7 +616,7 @@ void UWatchSeriesOption::updateGraphsSeries(int currentChartIndex)
         // Добавляем индикацию статуса (активна/неактивна)
         if (!serie->isOnline) {
             // Неактивная серия - серый цвет текста
-            item->setForeground(QBrush(QColor(Qt::gray)));
+            item->setForeground(QBrush(UStyleManager::instance()->getDisabledTextColor()));
             item->setToolTip(tr("Series is offline (data source unavailable)"));
         } else {
             item->setToolTip(tr("Component: %1\nProperty: %2\nIndices: [%3, %4]")

@@ -1,5 +1,6 @@
 #include "UWatchChart.h"
 #include "ui_UWatchChart.h"
+#include "UStyleManager.h"
 #include <QVBoxLayout>
 #include <iostream>
 
@@ -65,6 +66,10 @@ UWatchChart::~UWatchChart()
     delete ui;
 }
 
+QColor UWatchChart::getDefaultColor(int index) const
+{
+    return UStyleManager::instance()->getChartSeriesColor(index);
+}
 
 void UWatchChart::setChartTitle(QString title)
 {
@@ -83,7 +88,7 @@ void UWatchChart::setSerieName(int serieIndex, QString name)
 
 void UWatchChart::setSerieColor(int serieIndex, int colorIndex)
 {
-     series[serieIndex]->setColor(defaultColors[colorIndex]);
+     series[serieIndex]->setColor(getDefaultColor(colorIndex));
 }
 
 void UWatchChart::setSerieLineType(int serieIndex, Qt::PenStyle lineType)
@@ -150,7 +155,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
 
     //имя графика = имя компонента +  имя свойства
     series.last()->setName(componentName+ ": " + propertyName +"(" + QString::number(jx)+", "+ QString::number(jy)+")");
-    series.last()->setColor(defaultColors[series.count()-1]);
+    series.last()->setColor(getDefaultColor(series.count()-1));
 
     //записываем параметры источника данных
     series.last()->indexChannel = channelIndex;

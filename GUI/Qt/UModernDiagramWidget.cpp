@@ -1,4 +1,5 @@
 #include "UModernDiagramWidget.h"
+#include "UStyleManager.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -295,22 +296,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     m_portListWidget->setMaximumHeight(300);
     m_portListWidget->setMinimumWidth(250);
     m_portListWidget->setMaximumWidth(350);
-    m_portListWidget->setStyleSheet(
-        "QTreeWidget {"
-        "  font-size: 10pt;"
-        "  background-color: white;"
-        "  border: 1px solid #888;"
-        "  border-radius: 4px;"
-        "}"
-        "QTreeWidget::item {"
-        "  padding: 2px;"
-        "  color: black;"
-        "}"
-        "QTreeWidget::item:selected {"
-        "  background-color: #e0e0e0;"
-        "  color: black;"
-        "}"
-    );
+    m_portListWidget->setStyleSheet(UStyleManager::instance()->getTreeWidgetStyleSheet());
     
     // Таймер для отложенного скрытия списка портов
     m_hideTimer->setSingleShot(true);
@@ -556,13 +542,14 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     Q_UNUSED(option);
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    QColor fill = isSelected() ? QColor(220, 240, 255) : QColor(245, 245, 245);
-    QColor border = QColor(70, 120, 200);
-    painter->setPen(QPen(border, 1.5));
+    UStyleManager* style = UStyleManager::instance();
+    QColor fill = isSelected() ? style->getNodeFillSelectedColor() : style->getNodeFillColor();
+    QColor border = style->getNodeBorderColor();
+    painter->setPen(QPen(border, style->getNodeBorderWidth()));
     painter->setBrush(fill);
-    painter->drawRoundedRect(rect(), 6, 6);
+    painter->drawRoundedRect(rect(), style->getNodeCornerRadius(), style->getNodeCornerRadius());
 
-    painter->setPen(Qt::black);
+    painter->setPen(style->getTextColor());
     // Имя компонента вверху
     painter->drawText(rect().adjusted(4, 4, -4, -4),
                      Qt::AlignTop | Qt::AlignLeft,
@@ -576,16 +563,16 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     painter->setBrush(Qt::white);
     for (const Port& p : inputs) {
         bool isHovered = (m_hoveredPort == &p);
-        QColor portColor = isHovered ? QColor(100, 200, 100) : QColor(50, 150, 50);
-        double portSize = isHovered ? 5.0 : 4.0;
+        QColor portColor = isHovered ? style->getPortInputHoverColor() : style->getPortInputColor();
+        double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
         painter->setPen(QPen(portColor, isHovered ? 2.0 : 1.0));
         painter->drawEllipse(p.pos, portSize, portSize);
         // Имя порта показывается только в tooltip при наведении
     }
     for (const Port& p : outputs) {
         bool isHovered = (m_hoveredPort == &p);
-        QColor portColor = isHovered ? QColor(100, 150, 255) : QColor(50, 100, 200);
-        double portSize = isHovered ? 5.0 : 4.0;
+        QColor portColor = isHovered ? style->getPortOutputHoverColor() : style->getPortOutputColor();
+        double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
         painter->setPen(QPen(portColor, isHovered ? 2.0 : 1.0));
         painter->drawEllipse(p.pos, portSize, portSize);
         // Имя порта показывается только в tooltip при наведении
@@ -1152,7 +1139,8 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, bool useO
     , m_useInput(useInput)
     , m_isTemp(false)
 {
-    setPen(QPen(QColor(80, 120, 200), 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    UStyleManager* style = UStyleManager::instance();
+    setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
     updateGeometry();
 }
@@ -1167,7 +1155,8 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, const QPointF& tempEnd, 
     , m_tempEnd(tempEnd)
     , m_startPos(startPos)
 {
-    setPen(QPen(QColor(120, 160, 220), 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+    UStyleManager* style = UStyleManager::instance();
+    setPen(QPen(style->getLinkTempColor(), style->getLinkWidth(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
     updateGeometry(tempEnd);
 }
