@@ -667,6 +667,18 @@ void UModernDiagramWidget::NodeItem::refreshHoverAtScenePos(const QPointF& scene
     {
         m_hoveredPort = port;
         update();
+        
+        // Если порт изменился, закрываем все открытые деревья портов других узлов
+        if(port && m_owner)
+        {
+            for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+            {
+                if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                {
+                    node->hidePortListWidget();
+                }
+            }
+        }
     }
 
     if(port)
@@ -764,6 +776,17 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
     if(m_hideTimer) m_hideTimer->stop();
     if(m_hoveredPort)
     {
+        // Закрываем все открытые деревья портов других узлов перед открытием нового
+        if(m_owner)
+        {
+            for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+            {
+                if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                {
+                    node->hidePortListWidget();
+                }
+            }
+        }
         showPortListWidget(mapToScene(event->pos()));
     }
 }
@@ -779,12 +802,25 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
         update();
         if(port)
         {
+            // Закрываем все открытые деревья портов других узлов перед открытием нового
+            if(m_owner)
+            {
+                for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+                {
+                    if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                    {
+                        node->hidePortListWidget();
+                    }
+                }
+            }
+            
             QPointF scenePos = mapToScene(event->pos());
             bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
             updatePortListWidget(port->isInput, shiftPressed);
             if(m_portListWidgetProxy)
             {
                 m_portListWidgetProxy->setPos(scenePos + QPointF(20, 20));
+                m_portListWidgetProxy->setVisible(true);
             }
         }
         else
@@ -832,6 +868,15 @@ void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
 {
     if(!m_hoveredPort || !m_owner || !m_portListWidgetProxy)
         return;
+    
+    // Закрываем все открытые деревья портов других узлов перед открытием нового
+    for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+    {
+        if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+        {
+            node->hidePortListWidget();
+        }
+    }
     
     if(m_hideTimer)
         m_hideTimer->stop();
@@ -948,6 +993,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             // Сбрасываем состояние
             m_owner->m_activeSourceNode = nullptr;
             m_owner->m_activeSourcePort = nullptr;
+            m_owner->m_isLineFrozen = false;
             
             // Закрываем все открытые деревья портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -996,6 +1042,9 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             // Создаем временную линию с сохраненной позицией порта
             m_owner->m_activeTempLink = new LinkItem(this, cursorScenePos, m_owner->m_activeSourcePortPos);
             m_owner->m_scene->addItem(m_owner->m_activeTempLink);
+            
+            // Сбрасываем состояние заморозки при создании новой связи
+            m_owner->m_isLineFrozen = false;
             
             // Обновляем геометрию линии сразу после создания
             m_owner->m_activeTempLink->updateGeometry(cursorScenePos);
@@ -1167,6 +1216,8 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     , m_activeSourceNode(nullptr)
     , m_activeSourcePort(nullptr)
     , m_activeTempLink(nullptr)
+    , m_isLineFrozen(false)
+    , m_frozenTargetPortPos(0, 0)
     , m_application(nullptr)
     , m_contextMenu(nullptr)
     , m_actionViewOrBreakLink(nullptr)
@@ -1246,6 +1297,11 @@ void UModernDiagramWidget::clearScene()
     m_scene->clear();
     m_tempLink = nullptr;
     m_dragSourceNode = nullptr;
+    m_activeTempLink = nullptr;
+    m_activeSourceNode = nullptr;
+    m_activeSourcePort = nullptr;
+    m_isLineFrozen = false;
+    m_frozenTargetPortPos = QPointF(0, 0);
     m_normalizationOffset = QPointF(0, 0);
 }
 
@@ -1525,6 +1581,7 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
         m_activeTempLink = nullptr;
         m_activeSourceNode = nullptr;
         m_activeSourcePort = nullptr;
+        m_isLineFrozen = false;
         
         // Закрываем все открытые деревья портов
         for(NodeItem* node : m_nodes)
@@ -1686,41 +1743,84 @@ void ModernScene::pollHover()
     QGraphicsView* view = views().first();
     QPointF scenePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
 
-    // Проверяем, находится ли мышь над входным портом или над открытым деревом портов
-    bool shouldFreezeLine = false;
+    // Обновляем состояние заморозки соединения
     if(m_owner->m_activeTempLink)
     {
-        // Проверяем, находится ли мышь над входным портом
+        const double portFreezeRadius = 35.0; // Радиус буферной зоны вокруг порта (пиксели)
+        const double widgetFreezeDistance = 60.0; // Расстояние до окна дерева портов (пиксели)
+        
+        bool shouldFreezeLine = false;
+        QPointF targetPortPos;
+        
+        // Проверяем буферную зону вокруг входного порта
         QPointF portPos;
         UModernDiagramWidget::NodeItem* portNode = nullptr;
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(scenePos, true, portNode, portPos);
         if(port && port->isInput)
         {
-            shouldFreezeLine = true;
+            double distToPort = QLineF(scenePos, portPos).length();
+            if(distToPort <= portFreezeRadius)
+            {
+                shouldFreezeLine = true;
+                targetPortPos = portPos;
+            }
         }
         
-        // Проверяем, находится ли мышь над открытым деревом портов
+        // Проверяем буферную зону вокруг окна дерева портов
         if(!shouldFreezeLine)
         {
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
             {
                 if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
                 {
-                    QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(node->m_portListWidgetProxy->boundingRect()).boundingRect();
-                    if(widgetRect.contains(scenePos))
+                    QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                        node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                    QRectF expandedRect = widgetRect.adjusted(-widgetFreezeDistance, -widgetFreezeDistance, 
+                                                                  widgetFreezeDistance, widgetFreezeDistance);
+                    if(expandedRect.contains(scenePos))
                     {
-                        shouldFreezeLine = true;
-                        break;
+                        // Находим ближайший входной порт этого узла
+                        QPointF nearestInputPortPos;
+                        double minDist = std::numeric_limits<double>::max();
+                        bool foundPort = false;
+                        for(const UModernDiagramWidget::Port& p : node->inputs)
+                        {
+                            QPointF pPos = node->mapToScene(p.pos);
+                            double dist = QLineF(scenePos, pPos).length();
+                            if(dist < minDist)
+                            {
+                                minDist = dist;
+                                nearestInputPortPos = pPos;
+                                foundPort = true;
+                            }
+                        }
+                        if(foundPort && minDist <= portFreezeRadius)
+                        {
+                            shouldFreezeLine = true;
+                            targetPortPos = nearestInputPortPos;
+                            break;
+                        }
                     }
                 }
             }
         }
         
-        // Обновляем временную линию только если мышь не над входным портом или деревом
-        if(!shouldFreezeLine)
+        // Обновляем состояние заморозки
+        m_owner->m_isLineFrozen = shouldFreezeLine;
+        if(shouldFreezeLine)
         {
-            m_owner->m_activeTempLink->updateGeometry(scenePos);
+            m_owner->m_frozenTargetPortPos = targetPortPos;
         }
+        
+        // Обновляем геометрию временной линии
+        QPointF targetPos = m_owner->m_isLineFrozen ? 
+                            m_owner->m_frozenTargetPortPos : scenePos;
+        m_owner->m_activeTempLink->updateGeometry(targetPos);
+    }
+    else
+    {
+        // Сбрасываем состояние заморозки, если нет активной связи
+        m_owner->m_isLineFrozen = false;
     }
 
     // Обновляем hover для всех узлов
@@ -1740,6 +1840,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_owner->m_activeTempLink = nullptr;
         m_owner->m_activeSourceNode = nullptr;
         m_owner->m_activeSourcePort = nullptr;
+        m_owner->m_isLineFrozen = false;
         
         // Закрываем все открытые деревья портов
         for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -1809,40 +1910,76 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     // Обновляем временную линию активной связи из дерева портов
     if(m_owner->m_activeTempLink)
     {
-        // Проверяем, находится ли мышь над входным портом или над открытым деревом портов
-        bool shouldFreezeLine = false;
+        const double portFreezeRadius = 35.0; // Радиус буферной зоны вокруг порта (пиксели)
+        const double widgetFreezeDistance = 60.0; // Расстояние до окна дерева портов (пиксели)
         
-        // Проверяем, находится ли мышь над входным портом
+        bool shouldFreezeLine = false;
+        QPointF targetPortPos;
+        
+        // Проверяем буферную зону вокруг входного порта
         QPointF portPos;
         UModernDiagramWidget::NodeItem* portNode = nullptr;
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), true, portNode, portPos);
         if(port && port->isInput)
         {
-            shouldFreezeLine = true;
+            double distToPort = QLineF(event->scenePos(), portPos).length();
+            if(distToPort <= portFreezeRadius)
+            {
+                shouldFreezeLine = true;
+                targetPortPos = portPos;
+            }
         }
         
-        // Проверяем, находится ли мышь над открытым деревом портов
+        // Проверяем буферную зону вокруг окна дерева портов
         if(!shouldFreezeLine)
         {
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
             {
                 if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
                 {
-                    QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(node->m_portListWidgetProxy->boundingRect()).boundingRect();
-                    if(widgetRect.contains(event->scenePos()))
+                    QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                        node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                    QRectF expandedRect = widgetRect.adjusted(-widgetFreezeDistance, -widgetFreezeDistance, 
+                                                              widgetFreezeDistance, widgetFreezeDistance);
+                    if(expandedRect.contains(event->scenePos()))
                     {
-                        shouldFreezeLine = true;
-                        break;
+                        // Находим ближайший входной порт этого узла
+                        QPointF nearestInputPortPos;
+                        double minDist = std::numeric_limits<double>::max();
+                        bool foundPort = false;
+                        for(const UModernDiagramWidget::Port& p : node->inputs)
+                        {
+                            QPointF pPos = node->mapToScene(p.pos);
+                            double dist = QLineF(event->scenePos(), pPos).length();
+                            if(dist < minDist)
+                            {
+                                minDist = dist;
+                                nearestInputPortPos = pPos;
+                                foundPort = true;
+                            }
+                        }
+                        if(foundPort && minDist <= portFreezeRadius)
+                        {
+                            shouldFreezeLine = true;
+                            targetPortPos = nearestInputPortPos;
+                            break;
+                        }
                     }
                 }
             }
         }
         
-        // Обновляем временную линию только если мышь не над входным портом или деревом
-        if(!shouldFreezeLine)
+        // Обновляем состояние заморозки
+        m_owner->m_isLineFrozen = shouldFreezeLine;
+        if(shouldFreezeLine)
         {
-            m_owner->m_activeTempLink->updateGeometry(event->scenePos());
+            m_owner->m_frozenTargetPortPos = targetPortPos;
         }
+        
+        // Обновляем геометрию временной линии
+        QPointF targetPos = m_owner->m_isLineFrozen ? 
+                            m_owner->m_frozenTargetPortPos : event->scenePos();
+        m_owner->m_activeTempLink->updateGeometry(targetPos);
         
         event->accept();
         return;
@@ -1902,6 +2039,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             // Сбрасываем состояние
             m_owner->m_activeSourceNode = nullptr;
             m_owner->m_activeSourcePort = nullptr;
+            m_owner->m_isLineFrozen = false;
             
             // Закрываем все открытые деревья портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -2014,6 +2152,9 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 m_owner->m_activeTempLink = new UModernDiagramWidget::LinkItem(portNode, portPos, portPos);
                 m_owner->m_scene->addItem(m_owner->m_activeTempLink);
                 
+                // Сбрасываем состояние заморозки при создании новой связи
+                m_owner->m_isLineFrozen = false;
+                
                 // Закрываем все открытые деревья портов
                 for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
                 {
@@ -2067,6 +2208,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 // Сбрасываем состояние
                 m_owner->m_activeSourceNode = nullptr;
                 m_owner->m_activeSourcePort = nullptr;
+                m_owner->m_isLineFrozen = false;
                 
                 // Закрываем все открытые деревья портов
                 for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)

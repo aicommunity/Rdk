@@ -157,6 +157,8 @@ private:
     const Port* m_activeSourcePort;
     QPointF m_activeSourcePortPos;
     LinkItem* m_activeTempLink;
+    bool m_isLineFrozen;  // Флаг, указывающий, что соединение "заморожено" на порту
+    QPointF m_frozenTargetPortPos;  // Позиция порта, к которому "прилипло" соединение
 
     // Data
     RDK::UApplication* m_application;
