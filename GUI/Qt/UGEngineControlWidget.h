@@ -97,6 +97,9 @@ public slots:
     // settings
     void readSettings();
     void writeSettings();
+    
+    // Theme switching
+    void switchToTheme(const QString& themeName);
 
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
@@ -170,6 +173,9 @@ private slots:
     void on_actionImages_triggered();
 
 private:
+    // Helper methods
+    void createThemeMenu();
+    
     // data
     Ui::UGEngineControllWidget *ui;
 

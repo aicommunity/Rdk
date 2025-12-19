@@ -1,5 +1,6 @@
 #include "UGEngineControlWidget.h"
 #include "ui_UGEngineControllWidget.h"
+#include "UStyleManager.h"
 
 
 #include <rdk_application.h>
@@ -15,6 +16,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QInputDialog>
+#include <QActionGroup>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -228,6 +230,9 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     clDesc->hide();
 
     connect(ui->actionClDesc, SIGNAL(triggered(bool)), this, SLOT(actionClDesc()));
+    
+    // Theme switcher menu
+    createThemeMenu();
 
     readSettings();
 
@@ -1303,5 +1308,64 @@ void UGEngineControlWidget::on_actionWatches_triggered()
 void UGEngineControlWidget::on_actionImages_triggered()
 {
  addImagesWidged();
+}
+
+void UGEngineControlWidget::createThemeMenu()
+{
+    // Create Theme submenu in Window menu
+    QMenu* themeMenu = new QMenu(tr("Theme"), this);
+    
+    QActionGroup* themeGroup = new QActionGroup(this);
+    themeGroup->setExclusive(true);
+    
+    QAction* lightThemeAction = themeMenu->addAction(tr("Light"));
+    lightThemeAction->setCheckable(true);
+    lightThemeAction->setChecked(true); // Default theme
+    themeGroup->addAction(lightThemeAction);
+    
+    QAction* darkThemeAction = themeMenu->addAction(tr("Dark"));
+    darkThemeAction->setCheckable(true);
+    themeGroup->addAction(darkThemeAction);
+    
+    // Connect theme actions
+    connect(lightThemeAction, &QAction::triggered, this, [this]() {
+        switchToTheme("Modern Light");
+    });
+    
+    connect(darkThemeAction, &QAction::triggered, this, [this]() {
+        switchToTheme("Modern Dark");
+    });
+    
+    // Add theme menu to Window menu
+    ui->menuWindow->addSeparator();
+    ui->menuWindow->addMenu(themeMenu);
+}
+
+void UGEngineControlWidget::switchToTheme(const QString& themeName)
+{
+    UStyleManager* styleManager = UStyleManager::instance();
+    QApplication* app = qobject_cast<QApplication*>(QCoreApplication::instance());
+    
+    if (styleManager->switchTheme(themeName, app))
+    {
+        // Force update of all widgets
+        for (QWidget* widget : QApplication::allWidgets())
+        {
+            widget->style()->unpolish(widget);
+            widget->style()->polish(widget);
+            widget->update();
+        }
+        
+        // Update the modern diagram widget if it exists
+        if (drawEngine)
+        {
+            drawEngine->update();
+        }
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("Theme Error"),
+            tr("Failed to switch to theme: %1").arg(themeName));
+    }
 }
 

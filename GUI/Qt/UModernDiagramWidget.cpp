@@ -543,39 +543,122 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     painter->setRenderHint(QPainter::Antialiasing, true);
 
     UStyleManager* style = UStyleManager::instance();
-    QColor fill = isSelected() ? style->getNodeFillSelectedColor() : style->getNodeFillColor();
-    QColor border = style->getNodeBorderColor();
+    double cornerRadius = style->getNodeCornerRadius();
+    
+    // Рисуем тень под узлом
+    QColor shadowColor = style->getShadowColor();
+    double shadowBlur = style->getShadowBlur();
+    double shadowOffsetY = style->getShadowOffsetY();
+    
+    if (shadowColor.alpha() > 0)
+    {
+        QRectF shadowRect = rect().adjusted(2, 2, 2, 2).translated(0, shadowOffsetY);
+        painter->setPen(Qt::NoPen);
+        
+        // Многослойная тень для эффекта размытия
+        for (int i = 3; i >= 0; --i)
+        {
+            QColor layerColor = shadowColor;
+            layerColor.setAlpha(shadowColor.alpha() * (4 - i) / 8);
+            painter->setBrush(layerColor);
+            QRectF layerRect = shadowRect.adjusted(-i*2, -i*2, i*2, i*2);
+            painter->drawRoundedRect(layerRect, cornerRadius + i, cornerRadius + i);
+        }
+    }
+    
+    // Градиентный фон узла
+    QLinearGradient gradient = style->getNodeGradient(rect());
+    if (isSelected())
+    {
+        // Для выделенного узла используем специальный цвет
+        gradient.setColorAt(0, style->getNodeFillSelectedColor());
+        gradient.setColorAt(1, style->getNodeFillSelectedColor().darker(105));
+    }
+    
+    // Рисуем основной прямоугольник узла
+    QColor border = isSelected() ? style->getAccentColor() : style->getNodeBorderColor();
     painter->setPen(QPen(border, style->getNodeBorderWidth()));
-    painter->setBrush(fill);
-    painter->drawRoundedRect(rect(), style->getNodeCornerRadius(), style->getNodeCornerRadius());
+    painter->setBrush(gradient);
+    painter->drawRoundedRect(rect(), cornerRadius, cornerRadius);
+    
+    // Рисуем светлую линию сверху для эффекта объёма
+    painter->setPen(QPen(QColor(255, 255, 255, 80), 1));
+    QRectF topLine = rect().adjusted(cornerRadius, 1, -cornerRadius, 0);
+    topLine.setHeight(0);
+    painter->drawLine(topLine.topLeft(), topLine.topRight());
 
+    // Текст: имя компонента
+    QFont nameFont = painter->font();
+    nameFont.setWeight(QFont::DemiBold);
+    painter->setFont(nameFont);
     painter->setPen(style->getTextColor());
-    // Имя компонента вверху
-    painter->drawText(rect().adjusted(4, 4, -4, -4),
+    painter->drawText(rect().adjusted(10, 8, -10, -8),
                      Qt::AlignTop | Qt::AlignLeft,
                      nodeName);
-    // Класс компонента в квадратных скобках внизу
+    
+    // Класс компонента в квадратных скобках внизу (меньший размер, вторичный цвет)
+    QFont classFont = painter->font();
+    classFont.setWeight(QFont::Normal);
+    classFont.setPointSizeF(classFont.pointSizeF() * 0.85);
+    painter->setFont(classFont);
+    painter->setPen(style->getTextSecondaryColor());
     QString classNameText = "[" + className + "]";
-    painter->drawText(rect().adjusted(4, 4, -4, -4),
+    painter->drawText(rect().adjusted(10, 8, -10, -8),
                      Qt::AlignBottom | Qt::AlignLeft,
                      classNameText);
 
-    painter->setBrush(Qt::white);
+    // Входные порты
     for (const Port& p : inputs) {
         bool isHovered = (m_hoveredPort == &p);
         QColor portColor = isHovered ? style->getPortInputHoverColor() : style->getPortInputColor();
         double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
-        painter->setPen(QPen(portColor, isHovered ? 2.0 : 1.0));
+        
+        // Заливка порта
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(portColor);
         painter->drawEllipse(p.pos, portSize, portSize);
-        // Имя порта показывается только в tooltip при наведении
+        
+        // Белая обводка для контраста
+        painter->setPen(QPen(style->getBackgroundAltColor(), 1.5));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawEllipse(p.pos, portSize, portSize);
+        
+        // Подсветка при hover
+        if (isHovered)
+        {
+            QColor glowColor = portColor;
+            glowColor.setAlpha(60);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(glowColor);
+            painter->drawEllipse(p.pos, portSize + 4, portSize + 4);
+        }
     }
+    
+    // Выходные порты
     for (const Port& p : outputs) {
         bool isHovered = (m_hoveredPort == &p);
         QColor portColor = isHovered ? style->getPortOutputHoverColor() : style->getPortOutputColor();
         double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
-        painter->setPen(QPen(portColor, isHovered ? 2.0 : 1.0));
+        
+        // Заливка порта
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(portColor);
         painter->drawEllipse(p.pos, portSize, portSize);
-        // Имя порта показывается только в tooltip при наведении
+        
+        // Белая обводка для контраста
+        painter->setPen(QPen(style->getBackgroundAltColor(), 1.5));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawEllipse(p.pos, portSize, portSize);
+        
+        // Подсветка при hover
+        if (isHovered)
+        {
+            QColor glowColor = portColor;
+            glowColor.setAlpha(60);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(glowColor);
+            painter->drawEllipse(p.pos, portSize + 4, portSize + 4);
+        }
     }
 }
 

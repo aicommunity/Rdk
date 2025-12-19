@@ -88,6 +88,35 @@ void UStyleManager::setDefaults()
     
     // Цвет для отключенных элементов
     m_disabledText = QColor(153, 153, 153);       // #999999
+    
+    // Градиенты (современная светлая тема)
+    m_nodeGradientTop = QColor(255, 255, 255);    // #FFFFFF
+    m_nodeGradientBottom = QColor(248, 250, 252); // #F8FAFC
+    m_buttonGradientTop = QColor(91, 141, 239);   // #5B8DEF
+    m_buttonGradientBottom = QColor(79, 123, 232);// #4F7BE8
+    m_dockTitleGradientTop = QColor(91, 141, 239);// #5B8DEF
+    m_dockTitleGradientBottom = QColor(79, 123, 232); // #4F7BE8
+    m_headerGradientTop = QColor(248, 250, 252);  // #F8FAFC
+    m_headerGradientBottom = QColor(241, 245, 249); // #F1F5F9
+    
+    // Эффекты теней
+    m_shadowColor = QColor(0, 0, 0, 26);          // #0000001A
+    m_shadowBlur = 12.0;
+    m_shadowOffsetX = 0.0;
+    m_shadowOffsetY = 4.0;
+    
+    // Эффекты свечения
+    m_glowColor = QColor(91, 141, 239, 64);       // #5B8DEF40
+    m_glowRadius = 6.0;
+    
+    // Цвета статусов
+    m_successColor = QColor(16, 185, 129);        // #10B981
+    m_warningColor = QColor(245, 158, 11);        // #F59E0B
+    m_errorColor = QColor(239, 68, 68);           // #EF4444
+    m_infoColor = QColor(91, 141, 239);           // #5B8DEF
+    
+    // Имя темы
+    m_themeName = "Modern Light";
 }
 
 bool UStyleManager::loadTheme(const QString& themeJsonPath)
@@ -189,7 +218,42 @@ bool UStyleManager::loadTheme(const QString& themeJsonPath)
         m_disabledText = parseColor(disabled, "text", m_disabledText);
     }
     
-    qDebug() << "UStyleManager: Theme loaded from" << themeJsonPath;
+    // Parse gradients
+    if (root.contains("gradients"))
+    {
+        QJsonObject gradients = root["gradients"].toObject();
+        m_nodeGradientTop = parseColor(gradients, "nodeTop", m_nodeGradientTop);
+        m_nodeGradientBottom = parseColor(gradients, "nodeBottom", m_nodeGradientBottom);
+        m_buttonGradientTop = parseColor(gradients, "buttonTop", m_buttonGradientTop);
+        m_buttonGradientBottom = parseColor(gradients, "buttonBottom", m_buttonGradientBottom);
+        m_dockTitleGradientTop = parseColor(gradients, "dockTitleTop", m_dockTitleGradientTop);
+        m_dockTitleGradientBottom = parseColor(gradients, "dockTitleBottom", m_dockTitleGradientBottom);
+        m_headerGradientTop = parseColor(gradients, "headerTop", m_headerGradientTop);
+        m_headerGradientBottom = parseColor(gradients, "headerBottom", m_headerGradientBottom);
+    }
+    
+    // Parse effects
+    if (root.contains("effects"))
+    {
+        QJsonObject effects = root["effects"].toObject();
+        m_shadowColor = parseColor(effects, "shadowColor", m_shadowColor);
+        m_shadowBlur = parseDouble(effects, "shadowBlur", m_shadowBlur);
+        m_shadowOffsetX = parseDouble(effects, "shadowOffsetX", m_shadowOffsetX);
+        m_shadowOffsetY = parseDouble(effects, "shadowOffsetY", m_shadowOffsetY);
+        m_glowColor = parseColor(effects, "glowColor", m_glowColor);
+        m_glowRadius = parseDouble(effects, "glowRadius", m_glowRadius);
+    }
+    
+    // Parse status colors
+    m_successColor = parseColor(root, "success", m_successColor);
+    m_warningColor = parseColor(root, "warning", m_warningColor);
+    m_errorColor = parseColor(root, "error", m_errorColor);
+    m_infoColor = parseColor(root, "info", m_infoColor);
+    
+    // Parse theme name
+    m_themeName = root["name"].toString(m_themeName);
+    
+    qDebug() << "UStyleManager: Theme loaded from" << themeJsonPath << "(" << m_themeName << ")";
     return true;
 }
 
@@ -305,5 +369,103 @@ QColor UStyleManager::getChartSeriesColor(int index) const
     
     // Циклический доступ к цветам
     return m_chartSeriesColors[index % m_chartSeriesColors.size()];
+}
+
+QLinearGradient UStyleManager::getNodeGradient(const QRectF& rect) const
+{
+    QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+    gradient.setColorAt(0, m_nodeGradientTop);
+    gradient.setColorAt(1, m_nodeGradientBottom);
+    return gradient;
+}
+
+QLinearGradient UStyleManager::getButtonGradient(const QRectF& rect) const
+{
+    QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+    gradient.setColorAt(0, m_buttonGradientTop);
+    gradient.setColorAt(1, m_buttonGradientBottom);
+    return gradient;
+}
+
+QLinearGradient UStyleManager::getDockTitleGradient(const QRectF& rect) const
+{
+    QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+    gradient.setColorAt(0, m_dockTitleGradientTop);
+    gradient.setColorAt(1, m_dockTitleGradientBottom);
+    return gradient;
+}
+
+QLinearGradient UStyleManager::getHeaderGradient(const QRectF& rect) const
+{
+    QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+    gradient.setColorAt(0, m_headerGradientTop);
+    gradient.setColorAt(1, m_headerGradientBottom);
+    return gradient;
+}
+
+QString UStyleManager::getStylesPath() const
+{
+    if (!m_stylesPath.isEmpty())
+        return m_stylesPath;
+    
+    // Find Styles directory relative to Bin/ (not Bin/Platform/Linux/)
+    QString appDir = QCoreApplication::applicationDirPath();
+    
+    // If we're in Bin/Platform/Linux/, go up to Bin/Styles/
+    if (appDir.contains("/Platform/"))
+    {
+        QDir dir(appDir);
+        dir.cdUp(); // Bin/Platform/
+        dir.cdUp(); // Bin/
+        return dir.absolutePath() + "/Styles/";
+    }
+    else
+    {
+        // Fallback: try relative to application directory
+        return appDir + "/Styles/";
+    }
+}
+
+bool UStyleManager::switchTheme(const QString& themeName, QApplication* app)
+{
+    QString stylesPath = getStylesPath();
+    
+    QString qssFile, jsonFile;
+    
+    if (themeName == "dark" || themeName == "Modern Dark")
+    {
+        qssFile = stylesPath + "dark.qss";
+        jsonFile = stylesPath + "dark-theme.json";
+    }
+    else // default to light
+    {
+        qssFile = stylesPath + "default.qss";
+        jsonFile = stylesPath + "theme.json";
+    }
+    
+    // Reset to defaults first
+    setDefaults();
+    
+    // Load new theme
+    bool themeLoaded = loadTheme(jsonFile);
+    bool qssLoaded = loadStyleSheet(qssFile);
+    
+    if (themeLoaded && qssLoaded && app)
+    {
+        applyGlobalStyleSheet(app);
+        m_stylesPath = stylesPath; // Cache the path
+        qDebug() << "UStyleManager: Switched to theme:" << m_themeName << "from" << stylesPath;
+        return true;
+    }
+    
+    qWarning() << "UStyleManager: Failed to switch theme to:" << themeName;
+    qWarning() << "  QSS file:" << qssFile << (QFile::exists(qssFile) ? "exists" : "NOT FOUND");
+    qWarning() << "  JSON file:" << jsonFile << (QFile::exists(jsonFile) ? "exists" : "NOT FOUND");
+    return false;
+}
+
+QStringList UStyleManager::getAvailableThemes() const
+{
+    return QStringList() << "Modern Light" << "Modern Dark";
 }
 

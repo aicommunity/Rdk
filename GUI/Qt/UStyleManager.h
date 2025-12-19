@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QJsonObject>
 #include <QVector>
+#include <QLinearGradient>
 
 /**
  * @brief Синглтон для централизованного управления стилями приложения.
@@ -22,6 +23,11 @@ public:
     bool loadTheme(const QString& themeJsonPath);
     bool loadStyleSheet(const QString& qssPath);
     void applyGlobalStyleSheet(QApplication* app);
+    
+    // Переключение темы
+    bool switchTheme(const QString& themeName, QApplication* app);
+    QStringList getAvailableThemes() const;
+    QString getStylesPath() const;
     
     // Получение stylesheet для виджетов
     QString getStyleSheet() const { return m_styleSheet; }
@@ -73,6 +79,33 @@ public:
     
     // Цвет для отключенных/неактивных элементов
     QColor getDisabledTextColor() const { return m_disabledText; }
+    
+    // Градиенты
+    QLinearGradient getNodeGradient(const QRectF& rect) const;
+    QLinearGradient getButtonGradient(const QRectF& rect) const;
+    QLinearGradient getDockTitleGradient(const QRectF& rect) const;
+    QLinearGradient getHeaderGradient(const QRectF& rect) const;
+    QColor getNodeGradientTop() const { return m_nodeGradientTop; }
+    QColor getNodeGradientBottom() const { return m_nodeGradientBottom; }
+    
+    // Эффекты теней
+    QColor getShadowColor() const { return m_shadowColor; }
+    double getShadowBlur() const { return m_shadowBlur; }
+    double getShadowOffsetX() const { return m_shadowOffsetX; }
+    double getShadowOffsetY() const { return m_shadowOffsetY; }
+    
+    // Эффекты свечения
+    QColor getGlowColor() const { return m_glowColor; }
+    double getGlowRadius() const { return m_glowRadius; }
+    
+    // Цвета статусов
+    QColor getSuccessColor() const { return m_successColor; }
+    QColor getWarningColor() const { return m_warningColor; }
+    QColor getErrorColor() const { return m_errorColor; }
+    QColor getInfoColor() const { return m_infoColor; }
+    
+    // Имя текущей темы
+    QString getThemeName() const { return m_themeName; }
     
 private:
     UStyleManager();
@@ -134,6 +167,36 @@ private:
     
     // Disabled colors
     QColor m_disabledText;
+    
+    // Gradient colors
+    QColor m_nodeGradientTop;
+    QColor m_nodeGradientBottom;
+    QColor m_buttonGradientTop;
+    QColor m_buttonGradientBottom;
+    QColor m_dockTitleGradientTop;
+    QColor m_dockTitleGradientBottom;
+    QColor m_headerGradientTop;
+    QColor m_headerGradientBottom;
+    
+    // Shadow effects
+    QColor m_shadowColor;
+    double m_shadowBlur;
+    double m_shadowOffsetX;
+    double m_shadowOffsetY;
+    
+    // Glow effects
+    QColor m_glowColor;
+    double m_glowRadius;
+    
+    // Status colors
+    QColor m_successColor;
+    QColor m_warningColor;
+    QColor m_errorColor;
+    QColor m_infoColor;
+    
+    // Theme name and paths
+    QString m_themeName;
+    QString m_stylesPath;
 };
 
 #endif // USTYLEMANAGER_H
