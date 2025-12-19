@@ -31,6 +31,8 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UAppl
   setProperty->setText("Set");
   setProperty->setMenu(setPropertyMenu);
   setProperty->setPopupMode(QToolButton::MenuButtonPopup);
+  // Увеличиваем ширину кнопки в 2 раза
+  setProperty->setMinimumWidth(setProperty->sizeHint().width() * 2);
   ui->toolBarControll->addWidget(setProperty);
   ui->toolBarControll->addAction(ui->actionReload);
   ui->toolBarControll->addAction(ui->actionShowXML);

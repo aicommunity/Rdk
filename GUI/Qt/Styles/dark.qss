@@ -124,6 +124,42 @@ QToolButton:checked {
     color: #61AFEF;
 }
 
+/* QToolButton with dropdown menu */
+QToolButton::menu-button {
+    width: 20px;
+    border-left: 1px solid #3E4451;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #21252B;
+    padding: 0px;
+    color: #ABB2BF;
+}
+
+QToolButton::menu-button:hover {
+    background-color: #2C313A;
+    border-left-color: #61AFEF;
+    color: #61AFEF;
+}
+
+QToolButton::menu-button:pressed {
+    background-color: #61AFEF;
+    border-left-color: #61AFEF;
+    color: #21252B;
+}
+
+QToolButton::menu-arrow {
+    image: none;
+    width: 0px;
+    height: 0px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #ABB2BF;
+    border-bottom: none;
+    margin: 2px;
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+}
+
 /* ===== Dock Widgets ===== */
 QDockWidget {
     titlebar-close-icon: url(none);
