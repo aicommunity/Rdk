@@ -175,6 +175,8 @@ bool UComponent::SetStaticFlag(bool value)
  StaticFlag=value;
  
  // Invalidate active components cache in parent container
+ // Note: Static flag changes are rare, so full cache invalidation is acceptable
+ // Incremental updates are used for more frequent operations (add/remove components)
  if(Owner)
  {
   UEPtr<UContainer> owner_container = dynamic_pointer_cast<UContainer>(Owner);

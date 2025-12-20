@@ -36,15 +36,9 @@ UModule::~UModule(void)
 // Методы доступа к свойствам
 // --------------------------
 // Флаг готовности объекта к счету
-bool UModule::IsReady(void) const
-{
- return Ready;
-}
+// Moved to header as inline functions
 // Флаг готовности объекта к начальной инициализации
-bool UModule::IsInit(void) const
-{
- return InitFlag;
-}
+// Moved to header as inline functions
 // --------------------------
 
 // --------------------------

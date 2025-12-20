@@ -41,9 +41,15 @@ virtual ~UModule(void);
 // Методы доступа к свойствам
 // --------------------------
 /// Флаг готовности объекта к счету
-bool IsReady(void) const;
+inline bool IsReady(void) const
+{
+ return Ready;
+}
 /// Флаг готовности объекта к начальной инициализации
-bool IsInit(void) const;
+inline bool IsInit(void) const
+{
+ return InitFlag;
+}
 // --------------------------
 
 // --------------------------

@@ -882,6 +882,12 @@ virtual void UpdateComputationOrder(void);
 
 /// Invalidates active components cache (called when component static flag changes)
 void InvalidateActiveComponentsCache(void);
+
+/// Adds component to active cache (incremental update)
+void AddToActiveCache(UEPtr<UContainer> comp);
+
+/// Removes component from active cache (incremental update)
+void RemoveFromActiveCache(UEPtr<UContainer> comp);
 // --------------------------
 
 // Скрытые методы управления счетом

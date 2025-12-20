@@ -2086,8 +2086,25 @@ bool UContainer::Build(void)
   {
    BeforeBuild();
 
+   // Use cached active components for optimized Build() loop
+   // Build static components first if needed, then active components
    for(int i=0;i<NumComponents;i++)
-	PComponents[i]->Build();
+   {
+	if(PComponents[i]->GetStaticFlag())
+	 PComponents[i]->Build();
+   }
+   
+   // Build active (non-static) components using cache
+   if(!ActiveComponentsCacheValid)
+   {
+	UpdateActiveComponentsCache();
+   }
+   
+   size_t active_size = ActiveComponents.size();
+   for(size_t idx = 0; idx < active_size; idx++)
+   {
+	ActiveComponents[idx]->Build();
+   }
 
    ABuild();
    Ready=true;
@@ -2157,8 +2174,25 @@ bool UContainer::Reset(void)
 	return true; // TODO //false;
    }
 
+   // Use cached active components for optimized Reset() loop
+   // Reset static components first if needed, then active components
    for(int i=0;i<NumComponents;i++)
-	PComponents[i]->Reset();
+   {
+	if(PComponents[i]->GetStaticFlag())
+	 PComponents[i]->Reset();
+   }
+   
+   // Reset active (non-static) components using cache
+   if(!ActiveComponentsCacheValid)
+   {
+	UpdateActiveComponentsCache();
+   }
+   
+   size_t active_size = ActiveComponents.size();
+   for(size_t idx = 0; idx < active_size; idx++)
+   {
+	ActiveComponents[idx]->Reset();
+   }
 
    AReset();
 
@@ -2234,7 +2268,8 @@ bool UContainer::Calculate(void)
 
    LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_ENTER);
    #endif
-   if(!IsInit())
+   // Inline check for InitFlag (hot path optimization)
+   if(!InitFlag)
    {
 	#ifdef RDK_ENABLE_CALC_LOGGING
 	LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_ININIT_FAIL);
@@ -2246,7 +2281,11 @@ bool UContainer::Calculate(void)
    InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
    LastCalcTime=tempstepduration;
 
-   Build();
+   // Only call Build() if not ready - avoid redundant calls in hot path
+   if(!IsReady())
+   {
+	Build();
+   }
 
 //   unsigned long long largest_free_block_before(0);
 //   unsigned long long largest_free_block_before(0);
@@ -2258,6 +2297,13 @@ bool UContainer::Calculate(void)
    {
     UpdateActiveComponentsCache();
    }
+   
+   // Cache time check flags to avoid repeated property access
+   #ifdef RDK_ENABLE_CALC_TIME_CHECKS
+   bool check_max_duration = (MaxCalculationDuration >= 0);
+   #else
+   bool check_max_duration = false;
+   #endif
    
    size_t active_size = ActiveComponents.size();
    size_t active_idx = 0;
@@ -2282,15 +2328,18 @@ bool UContainer::Calculate(void)
 	else
 	{
 	 #ifdef RDK_ENABLE_CALC_TIME_CHECKS
-	 unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),StartCalcTime);
-	 if((MaxCalculationDuration >= 0) && (calc_duration > ULongTime(MaxCalculationDuration)))
+	 if(check_max_duration)
 	 {
-	  ForceSkipComponentCalculation();
-	  #ifdef RDK_ENABLE_CALC_LOGGING
-	  std::string temp;
-      LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+("] after ")+comp->GetFullName(temp));
-	  #endif
-     }
+	  unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),StartCalcTime);
+	  if(calc_duration > ULongTime(MaxCalculationDuration))
+	 {
+	   ForceSkipComponentCalculation();
+	   #ifdef RDK_ENABLE_CALC_LOGGING
+	   std::string temp;
+       LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+("] after ")+comp->GetFullName(temp));
+	   #endif
+	  }
+	 }
 	 #endif
 	 ++active_idx;
 	}
@@ -2303,6 +2352,7 @@ bool UContainer::Calculate(void)
 
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
    unsigned long long acalc_start_time=GetCurrentStartupTime();
+   bool check_acalc_duration = check_max_duration;
    #endif
    if(!Owner)
    {
@@ -2330,15 +2380,17 @@ bool UContainer::Calculate(void)
 	 ACalculate();
    }
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
-   unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),acalc_start_time);
-
-   if((MaxCalculationDuration >= 0) && (calc_duration > ULongTime(MaxCalculationDuration)))
+   if(check_acalc_duration)
    {
-	if(Owner)
+	unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),acalc_start_time);
+	if(calc_duration > ULongTime(MaxCalculationDuration))
 	{
-	 GetOwner()->ForceSkipComponentCalculation();
+	 if(Owner)
+	 {
+	  GetOwner()->ForceSkipComponentCalculation();
+	 }
+     LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+"]");
 	}
-    LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+"]");
    }
    #endif
 
@@ -2357,14 +2409,12 @@ bool UContainer::Calculate(void)
    #endif
 
    // Инициализирует контроллеры
-   size_t numcontrollers=Controllers.size();
-
-   if(numcontrollers>0)
+   // Optimized loop using iterators instead of indices
+   if(!Controllers.empty())
    {
-	UEPtr<UController>* controllers=&Controllers[0];
-    for(size_t ctrl_idx=0;ctrl_idx<numcontrollers;ctrl_idx++,controllers++)
+	for(auto it = Controllers.begin(); it != Controllers.end(); ++it)
 	{
-	 (*controllers)->Update();
+	 (*it)->Update();
 	}
    }
    AfterCalculate();
@@ -2817,6 +2867,41 @@ void UContainer::InvalidateActiveComponentsCache(void)
  ActiveComponentsCacheValid = false;
 }
 
+// Adds component to active cache (incremental update)
+void UContainer::AddToActiveCache(UEPtr<UContainer> comp)
+{
+ if(!comp || comp->GetStaticFlag())
+  return;
+ 
+ // Check if already in cache
+ for(size_t i = 0; i < ActiveComponents.size(); i++)
+ {
+  if(ActiveComponents[i] == comp)
+   return;
+ }
+ 
+ ActiveComponents.push_back(comp);
+}
+
+// Removes component from active cache (incremental update)
+void UContainer::RemoveFromActiveCache(UEPtr<UContainer> comp)
+{
+ if(!comp)
+  return;
+ 
+ // Remove from cache if present
+ for(size_t i = 0; i < ActiveComponents.size(); i++)
+ {
+  if(ActiveComponents[i] == comp)
+  {
+   // Swap with last element and pop (O(1) instead of O(n))
+   ActiveComponents[i] = ActiveComponents.back();
+   ActiveComponents.pop_back();
+   return;
+  }
+ }
+}
+
 // Скрытые методы управления таблицей компонент
 // --------------------------
 // Добавляет компонент 'comp' в таблицу компонент
@@ -2829,8 +2914,16 @@ void UContainer::AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> poin
  // Update index map
  ComponentsIdIndex[comp->Id] = NumComponents - 1;
 
- // Invalidate active components cache
- ActiveComponentsCacheValid = false;
+ // Incrementally update active components cache
+ if(ActiveComponentsCacheValid && !comp->GetStaticFlag())
+ {
+  AddToActiveCache(comp);
+ }
+ else
+ {
+  // Invalidate cache if not valid or component is static
+  ActiveComponentsCacheValid = false;
+ }
 
  if(pointer)
   pointer->Set(comp);
@@ -2860,8 +2953,16 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
    CachedComponentId = ForbiddenId;
   }
   
-  // Invalidate active components cache
-  ActiveComponentsCacheValid = false;
+  // Incrementally update active components cache
+  if(ActiveComponentsCacheValid)
+  {
+   RemoveFromActiveCache(comp);
+  }
+  else
+  {
+   // Cache is invalid, will be rebuilt when needed
+   ActiveComponentsCacheValid = false;
+  }
   
   if(PComponents[NumComponents-1]==comp)
    {
