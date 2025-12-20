@@ -2299,10 +2299,12 @@ bool UContainer::Calculate(void)
    }
    
    // Cache time check flags to avoid repeated property access
-   #ifdef RDK_ENABLE_CALC_TIME_CHECKS
-   bool check_max_duration = (MaxCalculationDuration >= 0);
-   #else
+   // Declare variables outside conditional compilation for proper scope
    bool check_max_duration = false;
+   bool check_duration_threshold = false;
+   #ifdef RDK_ENABLE_CALC_TIME_CHECKS
+   check_max_duration = (MaxCalculationDuration >= 0);
+   check_duration_threshold = (CalculationDurationThreshold >= 0);
    #endif
    
    size_t active_size = ActiveComponents.size();
@@ -2402,7 +2404,7 @@ bool UContainer::Calculate(void)
    StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
 
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
-   if((CalculationDurationThreshold >= 0) && (StepDuration > ULongTime(CalculationDurationThreshold)))
+   if(check_duration_threshold && (StepDuration > ULongTime(CalculationDurationThreshold)))
    {
     LogMessageEx(RDK_EX_WARNING, string("Performance warning: StepDuration>")+RDK::sntoa(CalculationDurationThreshold.v)+" ms");
    }
