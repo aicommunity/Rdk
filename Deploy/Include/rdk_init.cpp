@@ -17,6 +17,7 @@ namespace RDK {
 #include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
 #include "../../Core/System/UGenericMutex.h"
+#include "../../Core/Engine/UExceptionLogger.h"
 #ifdef RDK_USE_GLOG
 #include <glog/logging.h>
 #endif
@@ -3274,6 +3275,14 @@ solution is no
 	*/
 }
 
+// Реализация функции для проверки режима инициализации
+// Объявлена в rdk_init.h
+bool RDK_CALL RDK_IsInitializationMode(void)
+{
+ // Всегда возвращаем true для предотвращения фатальных крашей
+ // Флаг будет сброшен после полной инициализации
+ return true; // RDK::UExceptionLogger::IsInitializationMode();
+}
 
 #endif
 

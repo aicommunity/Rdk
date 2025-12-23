@@ -800,6 +800,48 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
         Engine_FreeBufString(propsList);
     }
     
+    // Добавляем алиасы свойств из UNet (если компонент является UNet)
+    try
+    {
+        RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
+        if(model)
+        {
+            RDK::UEPtr<RDK::UContainer> component;
+            if(fullName.isEmpty())
+                component = model;
+            else
+                component = model->GetComponentL(fullName.toStdString(), true);
+            
+            if(component)
+            {
+                RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
+                if(net)
+                {
+                    // Получаем алиасы нужного типа
+                    // Константы типов свойств определены в rdk_init.h в глобальном пространстве имен
+                    unsigned int aliasTypeMask = isInput ? (ptInput | ptPubInput) : (ptOutput | ptPubOutput);
+                    std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
+                    
+                    for(const auto& alias : aliases)
+                    {
+                        Port port;
+                        port.isInput = isInput;
+                        port.name = QString::fromStdString(alias.AliasName);
+                        port.componentName = nodeName;
+                        // Для алиаса fullPath содержит полный путь к свойству
+                        port.fullPath = QString::fromStdString(alias.GetFullPropertyPath());
+                        port.displayName = QString::fromStdString(alias.AliasName) + " [Alias]";
+                        result.append(port);
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        // Игнорируем ошибки при получении алиасов
+    }
+    
     // Если нужно включить вложенные порты
     if(includeNested)
     {
@@ -2173,31 +2215,95 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
             
-            // Используем полные пути для вложенных портов
-            QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ? 
-                             m_owner->m_dragSourcePort->name : m_owner->m_dragSourcePort->fullPath;
-            QString dstProp = targetPort->fullPath.isEmpty() ? 
-                             targetPort->name : targetPort->fullPath;
+            // Проверяем, являются ли порты алиасами (по пометке [Alias] в displayName)
+            bool srcIsAlias = m_owner->m_dragSourcePort->displayName.contains("[Alias]");
+            bool dstIsAlias = targetPort->displayName.contains("[Alias]");
             
-            // Если порт принадлежит вложенному компоненту, добавляем путь компонента
-            if(!m_owner->m_dragSourcePort->componentName.isEmpty() && 
-               m_owner->m_dragSourcePort->componentName != srcName)
+            int result = RDK_SUCCESS;
+            
+            // Если оба порта - алиасы, пытаемся использовать CreateLinkByAlias
+            // Примечание: CreateLinkByAlias работает только если оба алиаса находятся в одной сети
+            // Если они в разных сетях, используем обычный метод создания связи
+            if(srcIsAlias && dstIsAlias && fullSrc == fullDst)
             {
-                srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
+                try
+                {
+                    RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
+                    if(model)
+                    {
+                        RDK::UEPtr<RDK::UNet> srcNet = RDK::dynamic_pointer_cast<RDK::UNet>(
+                            model->GetComponentL(fullSrc.toStdString(), true));
+                        if(srcNet && srcNet->CheckPropertyAlias(m_owner->m_dragSourcePort->name.toStdString()) &&
+                           srcNet->CheckPropertyAlias(targetPort->name.toStdString()))
+                        {
+                            // Используем CreateLinkByAlias (оба алиаса в одной сети)
+                            bool linkCreated = srcNet->CreateLinkByAlias(
+                                m_owner->m_dragSourcePort->name.toStdString(),
+                                targetPort->name.toStdString());
+                            if(linkCreated)
+                            {
+                                result = RDK_SUCCESS;
+                            }
+                            else
+                            {
+                                // ошибка при создании связи по алиасам
+                                result = -1;
+                            }
+                        }
+                        else
+                        {
+                            // алиасы не найдены или находятся в другой сети
+                            result = -1;
+                        }
+                    }
+                    else
+                    {
+                        // не удалось получить модель
+                        result = -1;
+                    }
+                }
+                catch(...)
+                {
+                    // любое исключение трактуем как ошибку создания связи по алиасам
+                    result = -1;
+                }
             }
-            if(!targetPort->componentName.isEmpty() && 
-               targetPort->componentName != dstName)
+            else
             {
-                dstProp = targetPort->componentName + "." + dstProp;
+                // Не используем алиасы, переходим к обычному методу
+                result = -1;
             }
             
-            int result = Model_CreateLinkByName(fullSrc.toStdString().c_str(), srcProp.toStdString().c_str(),
-                                               fullDst.toStdString().c_str(), dstProp.toStdString().c_str());
+            // Если не удалось использовать алиасы, используем обычный метод
             if(result != RDK_SUCCESS)
             {
+                // Используем полные пути для вложенных портов
+                QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ? 
+                                 m_owner->m_dragSourcePort->name : m_owner->m_dragSourcePort->fullPath;
+                QString dstProp = targetPort->fullPath.isEmpty() ? 
+                                 targetPort->name : targetPort->fullPath;
+                
+                // Если порт принадлежит вложенному компоненту, добавляем путь компонента
+                if(!m_owner->m_dragSourcePort->componentName.isEmpty() && 
+                   m_owner->m_dragSourcePort->componentName != srcName)
+                {
+                    srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
+                }
+                if(!targetPort->componentName.isEmpty() && 
+                   targetPort->componentName != dstName)
+                {
+                    dstProp = targetPort->componentName + "." + dstProp;
+                }
+                
+                result = Model_CreateLinkByName(fullSrc.toStdString().c_str(), srcProp.toStdString().c_str(),
+                                               fullDst.toStdString().c_str(), dstProp.toStdString().c_str());
+            }
+            if(result != RDK_SUCCESS)
+            {
+                // На этом этапе мы можем не знать конкретные src/dst свойства, поэтому выводим только имена компонентов
                 QMessageBox::warning(m_owner, "Error", 
-                    QString("Failed to create link: %1.%2 -> %3.%4")
-                    .arg(fullSrc, srcProp, fullDst, dstProp));
+                    QString("Failed to create link between %1 and %2")
+                    .arg(fullSrc, fullDst));
             }
             else
             {

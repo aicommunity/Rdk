@@ -1969,7 +1969,43 @@ bool UContainer::Default(void)
   }
   catch(UException &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Расширенное логирование: добавляем тип исключения и его числовые коды
+   std::string full_name;
+   GetFullName(full_name);
+
+   // Формируем сообщение один раз (what() уже включает CreateLogMessage)
+   const char* what_str = nullptr;
+   try
+   {
+    what_str = exception.what();
+   }
+   catch(...)
+   {
+    what_str = "unknown UException";
+   }
+
+   std::string log_line = full_name + " throws exception: " + (what_str ? what_str : "");
+   log_line += std::string(" [ex_type=") + sntoa(exception.GetType())
+            + std::string(", ex_number=") + sntoa(exception.GetNumber())
+            + std::string(", ex_rtti=") + typeid(exception).name() + "]";
+
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, log_line);
+
+   // Дополнительное целевое логирование для ADC / Neuron‑классов,
+   // чтобы их ошибки было легче диагностировать в GUI‑логе.
+   // Не меняет поведение, только добавляет отдельную строку.
+   if(full_name == "ADC"
+      || full_name.find("ADC.") != std::string::npos
+      || full_name.find("Neuron") != std::string::npos
+      || full_name.find("NPNeuron") != std::string::npos)
+   {
+    std::string short_detail = std::string("Build detail for ")
+                             + full_name
+                             + ": type=" + sntoa(exception.GetType())
+                             + ", number=" + sntoa(exception.GetNumber())
+                             + ", rtti=" + typeid(exception).name();
+    Logger->LogMessageEx(RDK_EX_INFO, "BuildDetail", short_detail);
+   }
 //   throw;
   }
   catch(std::exception &exception)
@@ -2030,7 +2066,26 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
   }
   catch(UException &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Расширенное логирование: добавляем тип исключения и его числовые коды
+   std::string full_name;
+   GetFullName(full_name);
+
+   const char* what_str = nullptr;
+   try
+   {
+    what_str = exception.what();
+   }
+   catch(...)
+   {
+    what_str = "unknown UException";
+   }
+
+   std::string log_line = full_name + " throws exception: " + (what_str ? what_str : "");
+   log_line += std::string(" [ex_type=") + sntoa(exception.GetType())
+            + std::string(", ex_number=") + sntoa(exception.GetNumber())
+            + std::string(", ex_rtti=") + typeid(exception).name() + "]";
+
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, log_line);
 //   throw;
   }
   catch(std::exception &exception)

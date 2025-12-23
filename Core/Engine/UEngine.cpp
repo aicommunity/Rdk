@@ -356,8 +356,17 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 {
+ // Устанавливаем флаг режима инициализации в самом начале
+ // чтобы предотвратить фатальные краши при обработке исключений
+ if(Logger)
+  UExceptionLogger::SetInitializationMode(true);
+
  if(!Default())
+ {
+  if(Logger)
+   UExceptionLogger::SetInitializationMode(false);
   return false;
+ }
 
  AccessCache.clear();
 
@@ -373,7 +382,11 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  Environment->SetLogger(Logger);
 
  if(!Storage)
+ {
+  if(Logger)
+   UExceptionLogger::SetInitializationMode(false);
   return false;
+ }
  Storage->SetLogger(Logger);
 
 
@@ -406,6 +419,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
+ // Флаг уже установлен в начале Init(), продолжаем
  CreateEnvironment(true,&ClassesList, &LibrariesList);
 
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
@@ -7246,6 +7260,11 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
  if(!Environment)
   return;
 
+ // Устанавливаем флаг режима инициализации для предотвращения фатальных крашей
+ // Это предотвратит вызов LOG(FATAL) который приводит к abort()
+ if(Logger)
+  UExceptionLogger::SetInitializationMode(true);
+
  RDK_SYS_TRY
  {
   try
@@ -7253,10 +7272,16 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
    Environment->Default();
 
    if(!Environment->SetStorage(Storage) || !isinit)
+   {
+	// Сбрасываем флаг перед выходом
+	if(Logger)
+	 UExceptionLogger::SetInitializationMode(false);
 	return;
+   }
 
    if(external_classes != 0)
    {
+
 	list<UContainer*>::iterator I,J;
 	I=external_classes->begin();
 	J=external_classes->end();
@@ -7265,11 +7290,47 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 		UEPtr<UComponent> cont = *I;
 		cont->SetLogger(Storage->GetLogger());
 		cont->SetStorage(Storage);
-		cont->Build();
-		UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
-		Storage->AddClass(factory);
+		
+		// Обрабатываем ошибки Build() чтобы они не прерывали инициализацию
+		try
+		{
+		 cont->Build();
+		 UEPtr<UVirtualMethodFactory> factory = new UVirtualMethodFactory(cont);
+		 Storage->AddClass(factory);
+		}
+		catch (const RDK::UException& ex)
+		{
+		 if (Logger)
+		 {
+		  Logger->LogMessage(RDK_EX_WARNING, __FUNCTION__, 
+		   std::string("Component build failed (non-fatal): ") + ex.what());
+		 }
+		 // Продолжаем инициализацию, пропуская этот компонент
+		}
+		catch (const std::exception& ex)
+		{
+		 if (Logger)
+		 {
+		  Logger->LogMessage(RDK_EX_WARNING, __FUNCTION__, 
+		   std::string("Component build failed (non-fatal): ") + ex.what());
+		 }
+		 // Продолжаем инициализацию, пропуская этот компонент
+		}
+		catch (...)
+		{
+		 if (Logger)
+		 {
+		  Logger->LogMessage(RDK_EX_WARNING, __FUNCTION__, 
+		   "Component build failed (non-fatal): unknown exception");
+		 }
+		 // Продолжаем инициализацию, пропуская этот компонент
+		}
 	 ++I;
 	}
+	
+	// Сбрасываем флаг режима инициализации
+	if(Logger)
+	 UExceptionLogger::SetInitializationMode(false);
    }
 
    if(external_libs != 0)
@@ -7309,6 +7370,10 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
  {
   ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ 
+ // Сбрасываем флаг режима инициализации после завершения
+ if(Logger)
+  UExceptionLogger::SetInitializationMode(false);
 }
 
 // Загружает набор предустановленных библиотек

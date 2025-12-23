@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QInputDialog>
 #include <QActionGroup>
+#include <QTabBar>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -75,11 +76,72 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     propertyChanger = new UComponentPropertyChanger(this, application);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
 
+    // Функция для применения стилей к QTabBar в QMdiArea
+    auto applyMdiAreaTabBarStyles = [this]() {
+        QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
+        if (tabBar) {
+            QString tabBarStyle = 
+                "QTabBar::tab {"
+                "    background-color: #F1F5F9;"
+                "    border: 1px solid #E2E8F0;"
+                "    border-bottom: none;"
+                "    padding: 10px 8px;"
+                "    margin-right: 2px;"
+                "    margin-left: 0px;"
+                "    margin-top: 0px;"
+                "    margin-bottom: 0px;"
+                "    border-top-left-radius: 8px;"
+                "    border-top-right-radius: 8px;"
+                "    color: #64748B;"
+                "    font-weight: 500;"
+                "    min-height: 0px;"
+                "}"
+                "QTabBar::tab:selected {"
+                "    background-color: #EFF6FF;"
+                "    color: #1E40AF;"
+                "    border-top: 1px solid #5B8DEF;"
+                "    border-left: 1px solid #5B8DEF;"
+                "    border-right: 1px solid #5B8DEF;"
+                "    border-bottom: 3px solid #3B82F6;"
+                "    border-top-left-radius: 8px;"
+                "    border-top-right-radius: 8px;"
+                "    margin-left: 0px;"
+                "    margin-right: 2px;"
+                "    margin-top: 0px;"
+                "    margin-bottom: 0px;"
+                "    padding: 10px 8px;"
+                "    font-weight: 600;"
+                "}"
+                "QTabBar::tab:hover:!selected {"
+                "    background-color: #EEF2FF;"
+                "    color: #4338CA;"
+                "}"
+                "QTabBar::close-button {"
+                "    margin-left: -8px;"
+                "    margin-right: 2px;"
+                "    subcontrol-position: right;"
+                "    subcontrol-origin: padding;"
+                "    width: 16px;"
+                "    height: 16px;"
+                "}";
+            tabBar->setStyleSheet(tabBarStyle);
+        }
+    };
+    
     drawEngine = new UDrawEngineWidget(this, application);
     QMdiSubWindow *drawEngineSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
     drawEngineSbWindow->setWidget(drawEngine);
     drawEngineSbWindow->show();
     drawEngineSbWindow->showMaximized();
+    
+    // Применяем стили к QTabBar в QMdiArea программно после создания первого окна
+    QTimer::singleShot(0, this, applyMdiAreaTabBarStyles);
+    
+    // Также применяем стили при активации subWindow (когда QTabBar может быть пересоздан)
+    connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [applyMdiAreaTabBarStyles](QMdiSubWindow* window) {
+        Q_UNUSED(window);
+        QTimer::singleShot(0, applyMdiAreaTabBarStyles);
+    });
 
     // связывание схемы модели и списка отображения компонентов модели
     //  схема -> список

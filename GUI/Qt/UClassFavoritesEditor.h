@@ -31,10 +31,17 @@ signals:
 
 private slots:
     void CreateFavorite();
-
+    void ValidatePath();
+    void ShowPathPreview();
 
 private:
     Ui::UClassFavoritesEditor *ui;
+    
+    // Валидация пути к свойству
+    bool ValidatePropertyPath(const QString& path, QString& errorMessage);
+    
+    // Предпросмотр разрешенного пути
+    QString PreviewResolvedPath(const QString& path);
 };
 
 #endif // UCLASSFAVORITESEDITOR_H

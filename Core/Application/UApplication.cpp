@@ -24,6 +24,7 @@
 #include "../Engine/UGlogGuiSink.h"
 #include "../Engine/UGlogMirrorSink.h"
 #include "../Engine/UJsonLogSink.h"
+#include "../Engine/UExceptionLogger.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../Deploy/Include/rdk_logging.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
@@ -1246,11 +1247,18 @@ google::InstallFailureSignalHandler();
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
  Core_LoadFonts();
 
+ // Устанавливаем флаг режима инициализации перед инициализацией движка
+ // чтобы предотвратить фатальные краши при обработке исключений
+ RDK::UExceptionLogger::SetInitializationMode(true);
+
  EngineControl->Init();
  RDK::GetCoreLock()->SetLibrariesPath(LibrariesPath);
  RDK::GetCoreLock()->SetClDescPath(ClDescPath);
 
  UApplication::SetNumChannels(1);
+ 
+ // Сбрасываем флаг режима инициализации после инициализации каналов
+ RDK::UExceptionLogger::SetInitializationMode(false);
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();

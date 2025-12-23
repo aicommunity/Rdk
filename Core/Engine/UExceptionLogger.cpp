@@ -17,6 +17,10 @@ DECLARE_int32(v);
 namespace RDK
 {
 
+// Статический флаг режима инициализации
+// По умолчанию true, чтобы предотвратить краши при ранней инициализации
+static bool g_initialization_mode = true;
+
 UExceptionLogger::UExceptionLogger()
 : DebugMode(false)
 , DebugSysEventsMask(0)
@@ -172,7 +176,15 @@ void UExceptionLogger::ProcessException(const UException &exception) const
    processed_exception=&temp_ex;
  }
 
- WriteLog(processed_exception->GetType(), processed_exception->what());
+ // Если это ошибка построения компонента во время инициализации,
+ // downgrade до ERROR чтобы не вызывать abort()
+ int severity = processed_exception->GetType();
+ if (severity == RDK_EX_FATAL && IsInitializationMode())
+ {
+  severity = RDK_EX_ERROR;
+ }
+
+ WriteLog(severity, processed_exception->what());
 
  if(DebuggerMessageFlag)
  {
@@ -209,6 +221,12 @@ void UExceptionLogger::LogMessageEx(int msg_level, const std::string &object_nam
 {
  if(msg_level == RDK_EX_DEBUG && !GetDebugMode())
   return;
+
+ // Если идет инициализация, downgrade FATAL до ERROR чтобы не вызывать abort()
+ if (msg_level == RDK_EX_FATAL && IsInitializationMode())
+ {
+  msg_level = RDK_EX_ERROR;
+ }
 
  switch (msg_level)
  {
@@ -267,6 +285,16 @@ void UExceptionLogger::LogMessageEx(int msg_level, const std::string &object_nam
 void UExceptionLogger::LogMessageEx(int msg_level, const std::string &object_name, const std::string &method_name, const std::string &line, int error_event_number)
 {
  LogMessageEx(msg_level, object_name, method_name + std::string(" - ") + line, error_event_number);
+}
+
+bool UExceptionLogger::IsInitializationMode(void)
+{
+ return g_initialization_mode;
+}
+
+void UExceptionLogger::SetInitializationMode(bool mode)
+{
+ g_initialization_mode = mode;
 }
 
 std::string UExceptionLogger::GetLogDir(void) const

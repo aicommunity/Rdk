@@ -22,6 +22,9 @@ extern "C"  {
 typedef int bool;
 #endif
 
+// Функция для проверки режима инициализации (предотвращает фатальные краши)
+RDK_LIB_TYPE bool RDK_CALL RDK_IsInitializationMode(void);
+
 #ifndef RDK_EX_UNKNOWN
 #define RDK_EX_UNKNOWN 0 // Unknown exception
 #define RDK_EX_FATAL 1 // Fatal error (correction impossible)

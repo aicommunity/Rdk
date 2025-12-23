@@ -43,6 +43,18 @@ bool UNet::CheckComponentType(UEPtr<UContainer> comp) const
  return (dynamic_pointer_cast<UItem>(comp) ||
  dynamic_pointer_cast<UNet>(comp) || dynamic_pointer_cast<UConnector>(comp))?true:false;
 }
+
+bool UNet::ABuild(void)
+{
+    // Вызываем базовую реализацию
+    if (!UModule::ABuild())
+        return false;
+    
+    // Загружаем алиасы свойств из описания класса
+    LoadPropertyAliasesFromDescription();
+    
+    return true;
+}
 // --------------------------
 
 // --------------------------
@@ -1199,6 +1211,42 @@ const UPropertyAlias* UNet::GetPropertyAlias(const std::string& alias) const
 const UNet::PropertyAliasMapT& UNet::GetPropertyAliases(void) const
 {
  return PropertyAliases;
+}
+
+void UNet::LoadPropertyAliasesFromDescription()
+{
+    if (!Storage)
+        return;
+    
+    // Получаем описание класса
+    std::string className = Storage->FindClassName(GetClass());
+    if (className.empty())
+        return;
+    
+    UEPtr<UContainerDescription> descr = Storage->GetClassDescription(className, true);
+    if (!descr)
+        return;
+    
+    // Получаем все алиасы из Favorites
+    std::vector<std::pair<std::string, std::string>> aliases = descr->GetPropertyAliases();
+    
+    // Добавляем алиасы в UNet
+    for (const auto& aliasPair : aliases)
+    {
+        const std::string& aliasName = aliasPair.first;
+        const std::string& fullPath = aliasPair.second;
+        
+        // Разбираем путь на компонент и свойство
+        std::string componentPath, propertyName;
+        if (descr->ParseFavoritePath(fullPath, componentPath, propertyName))
+        {
+            // Определяем тип свойства автоматически
+            unsigned int propertyType = DetectPropertyType(componentPath, propertyName);
+            
+            // Добавляем алиас (метод проверит, не существует ли уже такой алиас)
+            AddPropertyAlias(aliasName, componentPath, propertyName, propertyType);
+        }
+    }
 }
 
 std::vector<UPropertyAlias> UNet::GetPropertyAliasesByType(unsigned int type_mask) const

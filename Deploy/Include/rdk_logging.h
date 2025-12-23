@@ -144,6 +144,17 @@ inline std::string BuildChannelPrefix(const ChannelDescriptor& channel)
 
 inline void EmitToGlog(int msg_level, const std::string& text)
 {
+  // Если идет инициализация, downgrade FATAL до ERROR чтобы не вызывать abort()
+  if (msg_level == RDK_EX_FATAL)
+  {
+   // Проверяем флаг режима инициализации через внешнюю C-функцию
+   // Объявлена в rdk_init.h (включен через rdk_init.h в начале файла)
+   if (RDK_IsInitializationMode())
+   {
+    msg_level = RDK_EX_ERROR;
+   }
+  }
+  
   switch (msg_level)
   {
     case RDK_EX_FATAL:

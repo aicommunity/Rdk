@@ -77,6 +77,9 @@ virtual void Free(void);
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
 virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
+
+// Переопределение ABuild для загрузки алиасов из описания класса
+virtual bool ABuild(void);
 // --------------------------
 
 // --------------------------
@@ -209,6 +212,10 @@ bool BreakLinkByAlias(const std::string& item_alias, const std::string& connecto
 /// Разрешает алиас в полный путь (ComponentPath.PropertyName)
 /// Если alias не найден, возвращает сам alias без изменений
 std::string ResolveAlias(const std::string& alias) const;
+
+/// Загружает алиасы свойств из описания класса (UContainerDescription)
+/// Вызывается автоматически при инициализации компонента
+void LoadPropertyAliasesFromDescription();
 
 protected:
 /// Определяет тип свойства по пути к компоненту и имени свойства

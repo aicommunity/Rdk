@@ -360,13 +360,15 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     currentDrawPropertyComponentName = selectedComponentLongName;
 
     std::map<std::string, std::string> Favorites;
+    // описание класса компонента, нужно ниже для проверки алиасов избранных свойств
+    RDK::UEPtr<RDK::UContainerDescription> class_desc;
 
     //Class
     const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
 
     if(className)
     {
-        auto class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
+        class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
 
         if(class_desc)
             Favorites = class_desc->GetFavorites();
@@ -536,21 +538,51 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             QString favoritePath = QString::fromLocal8Bit(i->second.c_str());
             favoritePath.replace("{CompName}", currentDrawPropertyComponentName);
 
-            favoriteItem->setText(0, favoriteName);
+            // Проверяем, является ли это алиасом
+            bool isAlias = class_desc && class_desc->IsFavoriteAlias(i->first);
+            if (isAlias)
+            {
+                // Добавляем пометку "[Alias]" к имени
+                favoriteItem->setText(0, favoriteName + " [Alias]");
+            }
+            else
+            {
+                favoriteItem->setText(0, favoriteName);
+            }
+
             favoriteItem->setText(1, favoritePath);
 
             favoriteItem->setToolTip(0, favoritePath);
             favoriteItem->setToolTip(1, favoritePath);
 
-            // Parse path
-            QStringList vals = favoritePath.split(":");
-
+            // Parse path - для алиасов путь может быть в формате "ComponentPath.PropertyName"
             QString component_long_name;
             QString prop_name;
-            if(vals.size()==2)
+            
+            if (isAlias && class_desc)
             {
-                component_long_name = vals[0];
-                prop_name = vals[1];
+                // Для алиаса разбираем путь через ParseFavoritePath
+                std::string componentPath, propertyName;
+                if (class_desc->ParseFavoritePath(i->second, componentPath, propertyName))
+                {
+                    // Формируем полный путь: текущий компонент + путь к вложенному компоненту
+                    component_long_name = currentDrawPropertyComponentName;
+                    if (!componentPath.empty())
+                    {
+                        component_long_name += "." + QString::fromStdString(componentPath);
+                    }
+                    prop_name = QString::fromStdString(propertyName);
+                }
+            }
+            else
+            {
+                // Старый формат: "ComponentName:PropertyName"
+                QStringList vals = favoritePath.split(":");
+                if(vals.size()==2)
+                {
+                    component_long_name = vals[0];
+                    prop_name = vals[1];
+                }
             }
 
             RDK::UEPtr<RDK::UContainer> child_cont;
@@ -743,15 +775,50 @@ try
      if(!item)
         return;
 
-     // Parse path
-     QStringList vals = item->text(1).split(":");
+     // Получаем описание класса для проверки алиасов
+     const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
+     RDK::UEPtr<RDK::UContainerDescription> class_desc;
+     if(className)
+     {
+         class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
+         Engine_FreeBufString(className);
+     }
 
+     QString favoritePath = item->text(1);
+     QString favoriteName = item->text(0);
+     // Убираем пометку [Alias] если есть
+     favoriteName = favoriteName.replace(" [Alias]", "");
+     
+     // Parse path
      QString component_long_name;
      QString prop_name;
-     if(vals.size()==2)
+     
+     bool isAlias = class_desc && class_desc->IsFavoriteAlias(favoriteName.toStdString());
+     if (isAlias && class_desc)
      {
-         component_long_name = vals[0];
-         prop_name = vals[1];
+         // Для алиаса разбираем путь через ParseFavoritePath
+         std::string componentPath, propertyName;
+         std::string pathStd = favoritePath.toStdString();
+         if (class_desc->ParseFavoritePath(pathStd, componentPath, propertyName))
+         {
+             // Формируем полный путь: текущий компонент + путь к вложенному компоненту
+             component_long_name = currentDrawPropertyComponentName;
+             if (!componentPath.empty())
+             {
+                 component_long_name += "." + QString::fromStdString(componentPath);
+             }
+             prop_name = QString::fromStdString(propertyName);
+         }
+     }
+     else
+     {
+         // Старый формат: "ComponentName:PropertyName"
+         QStringList vals = favoritePath.split(":");
+         if(vals.size()==2)
+         {
+             component_long_name = vals[0];
+             prop_name = vals[1];
+         }
      }
 
 

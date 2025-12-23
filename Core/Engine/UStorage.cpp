@@ -1356,6 +1356,15 @@ void UStorage::InitRTlibs(void)
         return;
     }
 
+    // Пустая директория - это нормально, не ошибка
+    if (lib_names.empty())
+    {
+        if (Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, 
+                "RTlibs directory is empty, skipping library loading");
+        return;
+    }
+
     for(size_t i = 0 ; i < lib_names.size(); i++)
     {
        LoadRuntimeCollection(lib_names[i]);

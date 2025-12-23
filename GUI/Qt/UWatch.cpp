@@ -1,11 +1,69 @@
 #include "UWatch.h"
 #include "ui_UWatch.h"
+#include <QDebug>
+#include <QTabBar>
+#include <QTimer>
 
 UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
     : UVisualControllerMainWidget(parent, app), ui(new Ui::UWatch)
 {
     ui->setupUi(this);
     setAccessibleName("UWatch");
+    
+    // Отладка: проверяем objectName виджета
+    qDebug() << "UWatch::UWatch - tabWidget objectName:" << ui->tabWidget->objectName();
+    qDebug() << "UWatch::UWatch - tabWidget tabShape:" << ui->tabWidget->tabShape();
+    qDebug() << "UWatch::UWatch - tabWidget tabsClosable:" << ui->tabWidget->tabsClosable();
+    
+    // Применяем стили с задержкой, чтобы они применились после глобального stylesheet
+    // Используем QTimer::singleShot для отложенного применения
+    QTimer::singleShot(0, this, [this]() {
+        QTabBar* tabBar = ui->tabWidget->tabBar();
+        if (tabBar) {
+            qDebug() << "UWatch::UWatch - Found QTabBar, applying direct styles";
+            qDebug() << "UWatch::UWatch - tabBar styleSheet before:" << tabBar->styleSheet();
+            
+            // Применяем стили напрямую к QTabBar для прямоугольных вкладок
+            // Высота вкладок соответствует высоте заголовков списка компонентов (padding: 10px)
+            // Активные вкладки имеют яркий фон для лучшей видимости
+            QString tabBarStyle = 
+                "QTabBar::tab {"
+                "    padding: 10px 28px 10px 20px;"
+                "    margin-left: 0px;"
+                "    margin-right: 2px;"
+                "    margin-top: 0px;"
+                "    margin-bottom: 0px;"
+                "    min-height: 0px;"
+                "}"
+                "QTabBar::tab:selected {"
+                "    background-color: #EFF6FF;"
+                "    color: #1E40AF;"
+                "    border: 1px solid #5B8DEF;"
+                "    border-bottom: 3px solid #3B82F6;"
+                "    margin-left: 0px;"
+                "    margin-right: 2px;"
+                "    margin-top: 0px;"
+                "    margin-bottom: 0px;"
+                "    font-weight: 600;"
+                "}"
+                "QTabBar::close-button {"
+                "    margin-left: -8px;"
+                "    margin-right: 2px;"
+                "    subcontrol-position: right;"
+                "    subcontrol-origin: padding;"
+                "    width: 16px;"
+                "    height: 16px;"
+                "}";
+            
+            // Применяем стили напрямую к QTabBar
+            tabBar->setStyleSheet(tabBarStyle);
+            qDebug() << "UWatch::UWatch - Applied stylesheet directly to QTabBar";
+            qDebug() << "UWatch::UWatch - tabBar styleSheet after:" << tabBar->styleSheet();
+        } else {
+            qWarning() << "UWatch::UWatch - Could not find QTabBar!";
+        }
+    });
+    
     //создаем первую вкладку
     //createTab();
 }

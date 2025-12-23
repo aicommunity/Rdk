@@ -87,6 +87,26 @@ const std::map<std::string, std::string>& GetFavorites();
 void AddNewFavorite(const std::string& name, const std::string& path);
 
 void DeleteFavorite(const std::string& name);
+
+// Методы работы с алиасами в Favorites
+// Проверяет, является ли Favorite алиасом (путь содержит точку, что указывает на вложенное свойство)
+bool IsFavoriteAlias(const std::string& name) const;
+
+// Разбирает путь Favorite на компонент и свойство
+// Формат: "ComponentPath.PropertyName" или "{CompName}:ComponentPath.PropertyName"
+// Возвращает true, если путь успешно разобран
+bool ParseFavoritePath(const std::string& path, std::string& componentPath, std::string& propertyName) const;
+
+// Добавляет алиас в формате для UNet
+// aliasName - имя алиаса (например, "LTZoneOutput")
+// componentPath - путь к компоненту (например, "LTZone")
+// propertyName - имя свойства (например, "Output")
+// propertyType - тип свойства (ptOutput, ptInput, etc.)
+void AddPropertyAlias(const std::string& aliasName, const std::string& componentPath, 
+                      const std::string& propertyName, unsigned int propertyType = 0);
+
+// Получает все алиасы из Favorites в формате для UNet
+std::vector<std::pair<std::string, std::string>> GetPropertyAliases() const;
 // --------------------------
 
 // --------------------------

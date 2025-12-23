@@ -217,6 +217,86 @@ void UContainerDescription::DeleteFavorite(const std::string &name)
     Favorites.erase(name);
 }
 
+bool UContainerDescription::IsFavoriteAlias(const std::string& name) const
+{
+    auto it = Favorites.find(name);
+    if (it == Favorites.end())
+        return false;
+    
+    const std::string& path = it->second;
+    // Алиас определяется наличием точки в пути (указывает на вложенное свойство)
+    // Или наличием двоеточия с последующей точкой
+    return path.find('.') != std::string::npos;
+}
+
+bool UContainerDescription::ParseFavoritePath(const std::string& path, 
+                                               std::string& componentPath, 
+                                               std::string& propertyName) const
+{
+    // Формат: "ComponentPath.PropertyName" или "{CompName}:ComponentPath.PropertyName"
+    std::string workingPath = path;
+    
+    // Убираем {CompName}: если есть
+    size_t colonPos = workingPath.find(':');
+    if (colonPos != std::string::npos)
+    {
+        workingPath = workingPath.substr(colonPos + 1);
+    }
+    
+    // Ищем последнюю точку (разделитель между путем компонента и именем свойства)
+    size_t dotPos = workingPath.rfind('.');
+    if (dotPos == std::string::npos)
+    {
+        // Нет точки - это не путь к вложенному свойству
+        return false;
+    }
+    
+    componentPath = workingPath.substr(0, dotPos);
+    propertyName = workingPath.substr(dotPos + 1);
+    
+    return !componentPath.empty() && !propertyName.empty();
+}
+
+void UContainerDescription::AddPropertyAlias(const std::string& aliasName, 
+                                               const std::string& componentPath,
+                                               const std::string& propertyName, 
+                                               unsigned int propertyType)
+{
+    // Формируем путь в формате Favorite: "ComponentPath.PropertyName"
+    std::string path = componentPath;
+    if (!path.empty() && !propertyName.empty())
+    {
+        path += "." + propertyName;
+    }
+    else if (!propertyName.empty())
+    {
+        path = propertyName;
+    }
+    
+    // Добавляем в Favorites
+    Favorites[aliasName] = path;
+}
+
+std::vector<std::pair<std::string, std::string>> UContainerDescription::GetPropertyAliases() const
+{
+    std::vector<std::pair<std::string, std::string>> aliases;
+    
+    for (const auto& fav : Favorites)
+    {
+        if (IsFavoriteAlias(fav.first))
+        {
+            std::string componentPath, propertyName;
+            if (ParseFavoritePath(fav.second, componentPath, propertyName))
+            {
+                // Возвращаем пару: (имя алиаса, полный путь)
+                aliases.push_back(std::make_pair(fav.first, fav.second));
+            }
+        }
+    }
+    
+    return aliases;
+}
+
 // --------------------------
 
 // --------------------------

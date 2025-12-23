@@ -212,19 +212,30 @@ QTabBar::tab {
     background-color: #F1F5F9;
     border: 1px solid #E2E8F0;
     border-bottom: none;
-    padding: 10px 20px;
+    padding: 10px 28px 10px 20px;
     margin-right: 2px;
+    margin-left: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
     color: #64748B;
     font-weight: 500;
+    min-height: 0px;
 }
 
 QTabBar::tab:selected {
-    background-color: #FFFFFF;
+    background-color: #EFF6FF;
     color: #1E40AF;
-    border-bottom: 3px solid #5B8DEF;
-    margin-bottom: -1px;
+    border: 1px solid #5B8DEF;
+    border-bottom: 3px solid #3B82F6;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-left: 0px;
+    margin-right: 2px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-weight: 600;
 }
 
 QTabBar::tab:hover:!selected {
@@ -234,6 +245,93 @@ QTabBar::tab:hover:!selected {
 
 QTabBar::tab:first {
     margin-left: 4px;
+}
+
+QTabBar::close-button {
+    /* Явно поджимаем иконку к тексту вкладки (~8 px ближе, чем по умолчанию);
+       выравнивание и отступ от правого края остаются под контролем темы */
+    margin-left: -8px;
+    margin-right: 2px;
+    subcontrol-position: right;
+    subcontrol-origin: padding;
+    width: 16px;
+    height: 16px;
+}
+
+/* QMdiArea использует свой собственный QTabBar, нужно явно указать стили */
+QMdiArea QTabBar::tab {
+    background-color: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-bottom: none;
+    padding: 10px 8px;
+    margin-right: 2px;
+    margin-left: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    color: #64748B;
+    font-weight: 500;
+    min-height: 0px;
+}
+
+QMdiArea QTabBar::tab:selected {
+    background-color: #EFF6FF;
+    color: #1E40AF;
+    border-top: 1px solid #5B8DEF;
+    border-left: 1px solid #5B8DEF;
+    border-right: 1px solid #5B8DEF;
+    border-bottom: 3px solid #3B82F6;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-left: 0px;
+    margin-right: 2px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding: 10px 8px;
+    font-weight: 600;
+}
+
+QMdiArea QTabBar::tab:hover:!selected {
+    background-color: #EEF2FF;
+    color: #4338CA;
+}
+
+QMdiArea QTabBar::close-button {
+    margin-left: -8px;
+    margin-right: 2px;
+    subcontrol-position: right;
+    subcontrol-origin: padding;
+    width: 16px;
+    height: 16px;
+}
+
+/* Специфичные стили для UWatch::tabWidget с треугольными вкладками */
+QTabWidget[objectName="tabWidget"] QTabBar::tab {
+    padding: 10px 40px 10px 20px;
+}
+
+QTabWidget[objectName="tabWidget"] QTabBar::close-button {
+    margin-left: -8px;
+    margin-right: 8px;
+    subcontrol-position: right;
+    subcontrol-origin: padding;
+    width: 16px;
+    height: 16px;
+}
+
+/* Альтернативный селектор для всех треугольных вкладок с кнопками закрытия */
+QTabWidget[tabShape="Triangular"] QTabBar::tab {
+    padding: 10px 40px 10px 20px;
+}
+
+QTabWidget[tabShape="Triangular"] QTabBar::close-button {
+    margin-left: -8px;
+    margin-right: 8px;
+    subcontrol-position: right;
+    subcontrol-origin: padding;
+    width: 16px;
+    height: 16px;
 }
 
 /* ===== Tree Widget / Tree View ===== */
