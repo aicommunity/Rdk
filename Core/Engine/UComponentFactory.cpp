@@ -2,6 +2,7 @@
 #define UCOMPONENT_FACTORY_CPP
 
 #include "UComponentFactory.h"
+#include "UStorage.h"
 
 namespace RDK
 {
@@ -30,6 +31,9 @@ namespace RDK
 
   UEPtr<UContainer> obj = Component->New();
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   Component->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
@@ -42,6 +46,9 @@ namespace RDK
 
   UEPtr<UContainer> obj = Component->New();
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
@@ -81,6 +88,9 @@ void UVirtualMethodFactory::FreeComponent()
   UEPtr<UComponent> obj = Method();
   dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   return obj;
  }
@@ -89,6 +99,9 @@ void UVirtualMethodFactory::FreeComponent()
  {
   UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   obj->Name = DefaultComponentName;
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, Storage);

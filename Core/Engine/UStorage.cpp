@@ -885,9 +885,24 @@ void UStorage::LoadClassesDescription()
             std::string class_name = cl_desc_xml.GetNodeText();
             cl_desc_xml.SelectRoot();
 
-            SetClassDescription(class_name, new RDK::UContainerDescription());
-
-            LoadClassDescription(class_name,cl_desc_xml);
+            // Пропускаем классы, которых нет в storage (могут быть устаревшие описания)
+            try
+            {
+                SetClassDescription(class_name, new RDK::UContainerDescription());
+                LoadClassDescription(class_name,cl_desc_xml);
+            }
+            catch(const EClassNameNotExist&)
+            {
+                if(Logger)
+                    Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, 
+                        std::string("Skipping description for non-existent class: ") + class_name);
+                // Продолжаем загрузку других классов
+            }
+            catch(...)
+            {
+                // Пробрасываем другие исключения дальше
+                throw;
+            }
         }
     }
 }
