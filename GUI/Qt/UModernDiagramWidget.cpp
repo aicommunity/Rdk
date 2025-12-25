@@ -856,6 +856,21 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
     // На верхнем уровне (m_componentName.isEmpty()) propertyName уже является относительным путем
     QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
     
+    // Диагностическое логирование для верхнего уровня
+    static int logCount = 0;
+    bool isTopLevel = m_owner && m_owner->m_componentName.isEmpty();
+    bool shouldLog = isTopLevel && isInput && logCount < 20;
+    
+    if(shouldLog)
+    {
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+            (std::string("[ModernDiagram] determinePortCategory TOP LEVEL: propertyName='") + propertyName.toStdString() +
+             "' isInput=" + (isInput ? "true" : "false") +
+             " nodeName='" + nodeName.toStdString() +
+             "' fullName='" + fullName.toStdString() + "'").c_str(), 0);
+        logCount++;
+    }
+    
     // Убеждаемся, что fullName не пустое перед запросом дочерних компонентов
     if(!fullName.isEmpty())
     {
@@ -864,6 +879,13 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
         {
             QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
             Engine_FreeBufString(compList);
+            
+            if(shouldLog)
+            {
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                    (std::string("[ModernDiagram] determinePortCategory: found ") + std::to_string(components.size()) +
+                     " child components: " + components.join(",").toStdString()).c_str(), 0);
+            }
             
             if(!components.isEmpty())
             {
@@ -874,6 +896,12 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
                 {
                     if(propertyName.startsWith(comp + ".") || propertyName == comp)
                     {
+                        if(shouldLog)
+                        {
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                                (std::string("[ModernDiagram] determinePortCategory: matched child component '") +
+                                 comp.toStdString() + "' -> returning Child").c_str(), 0);
+                        }
                         return PortCategory::Child;
                     }
                 }
@@ -891,6 +919,12 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
                             // Если первая часть после nodeName является дочерним компонентом - это Child
                             if(components.contains(firstPart))
                             {
+                                if(shouldLog)
+                                {
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                                        (std::string("[ModernDiagram] determinePortCategory: firstPart '") +
+                                         firstPart.toStdString() + "' is child component -> returning Child").c_str(), 0);
+                                }
                                 return PortCategory::Child;
                             }
                         }
@@ -1473,6 +1507,21 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
     
+    // Диагностическое логирование для верхнего уровня
+    static int logCount = 0;
+    bool isTopLevel = m_owner->m_componentName.isEmpty();
+    bool shouldLog = isTopLevel && logCount < 10;
+    
+    if(shouldLog)
+    {
+        const char* catStr = (category == PortCategory::Own) ? "Own" : 
+                            (category == PortCategory::Child) ? "Child" : "Alias";
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+            (std::string("[ModernDiagram] hasConnectionsToInputCategory TOP LEVEL: category=") + catStr +
+             " nodeName='" + nodeName.toStdString() + "'").c_str(), 0);
+        logCount++;
+    }
+    
     // Получаем список портов категории
     QVector<Port> categoryPorts;
     if(category == PortCategory::Own)
@@ -1486,6 +1535,13 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     else if(category == PortCategory::Alias)
     {
         categoryPorts = getAliasInputPorts();
+    }
+    
+    if(shouldLog)
+    {
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+            (std::string("[ModernDiagram] hasConnectionsToInputCategory: categoryPorts.size()=") +
+             std::to_string(categoryPorts.size())).c_str(), 0);
     }
     
     // Для категории Own не возвращаем false сразу, если портов нет
@@ -1545,6 +1601,13 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             
             if(isOurComponent)
             {
+                if(shouldLog && logCount < 10)
+                {
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                        (std::string("[ModernDiagram] hasConnectionsToInputCategory: checking connection connName='") +
+                         connName.toStdString() + "' connId='" + connId.toStdString() + "'").c_str(), 0);
+                }
+                
                 // Извлекаем имя свойства из connName
                 // connName может быть просто именем свойства или "Component.Property"
                 QString propName = connName;
@@ -1604,6 +1667,12 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                             // Дополнительная проверка: убеждаемся, что это действительно дочерний компонент
                             if(port.fullPath.contains(port.componentName + "."))
                             {
+                                if(shouldLog && logCount < 10)
+                                {
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                                        (std::string("[ModernDiagram] hasConnectionsToInputCategory: MATCH Child port.componentName='") +
+                                         port.componentName.toStdString() + "' connName='" + connName.toStdString() + "' -> returning true").c_str(), 0);
+                                }
                                 return true;
                             }
                         }
@@ -3007,21 +3076,82 @@ void UModernDiagramWidget::buildLinks()
             QString dstNodeName = dstNode->nodeName;
             QString connIdStr = QString::fromStdString(connId);
             
+            // Диагностическое логирование для верхнего уровня
+            bool isTopLevel = m_componentName.isEmpty();
+            if(isTopLevel && loggedPairs < 20)
+            {
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                    (std::string("[ModernDiagram] TOP LEVEL link: m_componentName='") + m_componentName.toStdString() +
+                     "' connName='" + connName.toStdString() +
+                     "' connId='" + connIdStr.toStdString() +
+                     "' dstNodeName='" + dstNodeName.toStdString() +
+                     "' itemName='" + itemName.toStdString() + "'").c_str(), 0);
+            }
+            
             // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
             // и не требует нормализации через удаление dstNodeName
-            if(m_componentName.isEmpty())
+            // НО: если connName - это просто имя свойства (без точки), а connId содержит путь к дочернему компоненту,
+            // нужно извлечь путь из connId относительно dstNodeName
+            if(isTopLevel)
             {
-                // Если connId указывает на dstNode, используем connName как есть
-                // (он уже является относительным путем, например "Dendrite1_1.ExcSynapse1")
-                if(connIdStr == dstNodeName || 
-                   connIdStr.endsWith("." + dstNodeName))
+                // Если connId указывает на dstNode напрямую (без дочерних компонентов), используем connName как есть
+                if(connIdStr == dstNodeName)
                 {
                     normalizedConnName = connName;
+                    if(loggedPairs < 20)
+                    {
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                            (std::string("[ModernDiagram] TOP LEVEL: using connName as-is (connId == dstNode): '") +
+                             normalizedConnName.toStdString() + "'").c_str(), 0);
+                    }
+                }
+                // Если connId содержит путь к дочернему компоненту (начинается с dstNodeName + ".")
+                else if(connIdStr.startsWith(dstNodeName + "."))
+                {
+                    // Извлекаем путь к дочернему компоненту из connId
+                    QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
+                    // Если connName не содержит точки (просто имя свойства), используем путь из connId
+                    if(!connName.contains('.'))
+                    {
+                        normalizedConnName = pathFromConnId + "." + connName;
+                        if(loggedPairs < 20)
+                        {
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                                (std::string("[ModernDiagram] TOP LEVEL: extracted path from connId: '") +
+                                 normalizedConnName.toStdString() + "' (connId='" + connIdStr.toStdString() + "')").c_str(), 0);
+                        }
+                    }
+                    // Если connName уже содержит путь, используем его
+                    else
+                    {
+                        normalizedConnName = connName;
+                        if(loggedPairs < 20)
+                        {
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                                (std::string("[ModernDiagram] TOP LEVEL: using connName with path: '") +
+                                 normalizedConnName.toStdString() + "'").c_str(), 0);
+                        }
+                    }
                 }
                 // Если connName начинается с dstNodeName, извлекаем часть после nodeName
                 else if(connName.startsWith(dstNodeName + "."))
                 {
                     normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                    if(loggedPairs < 20)
+                    {
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                            (std::string("[ModernDiagram] TOP LEVEL: extracted after dstNodeName: '") +
+                             normalizedConnName.toStdString() + "'").c_str(), 0);
+                    }
+                }
+                else
+                {
+                    if(loggedPairs < 20)
+                    {
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                            (std::string("[ModernDiagram] TOP LEVEL: no normalization applied, using original: '") +
+                             normalizedConnName.toStdString() + "'").c_str(), 0);
+                    }
                 }
             }
             else
@@ -3056,6 +3186,19 @@ void UModernDiagramWidget::buildLinks()
             }
             
             PortCategory dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
+            
+            // Диагностическое логирование категорий
+            if(isTopLevel && loggedPairs < 20)
+            {
+                const char* srcCatStr = (srcCategory == PortCategory::Own) ? "Own" : 
+                                       (srcCategory == PortCategory::Child) ? "Child" : "Alias";
+                const char* dstCatStr = (dstCategory == PortCategory::Own) ? "Own" : 
+                                       (dstCategory == PortCategory::Child) ? "Child" : "Alias";
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
+                    (std::string("[ModernDiagram] TOP LEVEL categories: srcCategory=") + srcCatStr +
+                     " dstCategory=" + dstCatStr +
+                     " normalizedConnName='" + normalizedConnName.toStdString() + "'").c_str(), 0);
+            }
             
             // Создаем LinkItem с категориями портов
             auto* l = new LinkItem(srcNode, dstNode, srcCategory, dstCategory);
