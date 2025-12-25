@@ -100,6 +100,8 @@ private:
         void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
         void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
         QPointF scenePortPos(bool output) const;
+        QPointF scenePortPosByCategory(bool output, PortCategory category) const;
+        PortCategory determinePortCategory(const QString& propertyName, bool isInput) const;
         const Port* getPortAtPosition(const QPointF& localPos) const;
         // Принудительно обновляет hover-состояние по координате сцены (для периодического опроса)
         void refreshHoverAtScenePos(const QPointF& scenePos);
@@ -127,6 +129,13 @@ private:
         QVector<Port> getOwnOutputPorts() const;
         QVector<Port> getChildOutputPorts() const;
         QVector<Port> getAliasOutputPorts() const;
+        QVector<Port> getOwnInputPorts() const;
+        QVector<Port> getChildInputPorts() const;
+        QVector<Port> getAliasInputPorts() const;
+        
+        // Методы для проверки наличия соединений к портам категории
+        bool hasConnectionsToInputCategory(PortCategory category) const;
+        bool hasConnectionsToOutputCategory(PortCategory category) const;
     };
 
     class LinkItem : public QGraphicsPathItem
@@ -134,6 +143,8 @@ private:
     public:
         // Финальная линия между узлами
         LinkItem(class NodeItem* src, class NodeItem* dst, bool useOutput=true, bool useInput=true);
+        // Финальная линия с указанием категорий портов
+        LinkItem(class NodeItem* src, class NodeItem* dst, PortCategory srcCategory, PortCategory dstCategory);
         // Временная линия до курсора
         LinkItem(class NodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
         void updateGeometry(const QPointF& cursorOverride = QPointF());
@@ -145,6 +156,9 @@ private:
         bool m_isTemp;
         QPointF m_tempEnd;
         QPointF m_startPos; // Начальная позиция для временной линии
+        PortCategory m_srcCategory;  // Категория исходного порта (если известна)
+        PortCategory m_dstCategory;   // Категория целевого порта (если известна)
+        bool m_hasCategories;        // Флаг, указывающий, что категории заданы
     };
 
     void buildScene();
