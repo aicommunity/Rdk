@@ -851,6 +851,45 @@ QPointF UModernDiagramWidget::NodeItem::scenePortPosByCategory(bool output, Port
 
 UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePortCategory(const QString& propertyName, bool isInput) const
 {
+    // Сначала проверяем, содержит ли propertyName путь к дочернему компоненту
+    // Это имеет приоритет, так как соединения к дочерним компонентам должны определяться как Child
+    QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
+    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+    if(compList)
+    {
+        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+        Engine_FreeBufString(compList);
+        
+        // Проверяем, начинается ли propertyName с любого дочернего компонента
+        // Это важно для многоуровневых путей (например, "Dendrite1_1.ExcSynapse1.SynapticInputs")
+        for(const QString& comp : components)
+        {
+            if(propertyName.startsWith(comp + ".") || propertyName == comp)
+            {
+                return PortCategory::Child;
+            }
+        }
+        
+        // Если propertyName начинается с nodeName, проверяем часть после nodeName
+        if(propertyName.startsWith(nodeName + "."))
+        {
+            QString afterNodeName = propertyName.mid(nodeName.length() + 1);
+            if(!afterNodeName.isEmpty())
+            {
+                QStringList parts = afterNodeName.split('.');
+                if(!parts.isEmpty())
+                {
+                    QString firstPart = parts.first();
+                    // Если первая часть после nodeName является дочерним компонентом - это Child
+                    if(components.contains(firstPart))
+                    {
+                        return PortCategory::Child;
+                    }
+                }
+            }
+        }
+    }
+    
     // Извлекаем имя свойства (может быть "Property" или "Component.Property")
     QString propName = propertyName;
     if(propName.contains('.'))
@@ -872,13 +911,28 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
     }
     
     // Затем проверяем дочерние компоненты
+    // Проверяем точное совпадение с портами из getChildInputPorts/getChildOutputPorts
     QVector<Port> childPorts = isInput ? getChildInputPorts() : getChildOutputPorts();
     for(const Port& port : childPorts)
     {
+        // Проверяем различные форматы сопоставления
         if(port.name == propName || 
            port.fullPath == propertyName ||
            port.fullPath.endsWith("." + propName) ||
            propertyName.contains(port.componentName + "." + propName))
+        {
+            return PortCategory::Child;
+        }
+        
+        // Проверяем, начинается ли propertyName с пути к дочернему компоненту
+        if(propertyName.startsWith(port.componentName + "."))
+        {
+            return PortCategory::Child;
+        }
+        
+        // Проверяем, содержит ли propertyName путь к дочернему компоненту
+        if(propertyName.contains("." + port.componentName + ".") ||
+           propertyName.startsWith(port.componentName + "."))
         {
             return PortCategory::Child;
         }
@@ -897,9 +951,15 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
     }
     
     // Если свойство не найдено ни в одной категории, определяем по имени:
-    // Если содержит точку - это дочерний компонент, иначе - собственное свойство
+    // Если содержит точку и начинается с nodeName - проверяем, является ли первый компонент дочерним
     if(propertyName.contains('.'))
     {
+        // Если не начинается с nodeName, это может быть дочерний компонент
+        if(!propertyName.startsWith(nodeName + "."))
+        {
+            return PortCategory::Child;
+        }
+        // Если начинается с nodeName, но не нашли в категориях - по умолчанию Child
         return PortCategory::Child;
     }
     
@@ -1418,7 +1478,9 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
         categoryPorts = getAliasInputPorts();
     }
     
-    if(categoryPorts.isEmpty())
+    // Для категории Own не возвращаем false сразу, если портов нет
+    // Соединения могут быть к свойствам, которые не отображаются в списке портов
+    if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
     
     // Получаем все связи компонента
@@ -1520,36 +1582,115 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                 // Сравниваем с полным путем свойства и именем
                 for(const Port& port : categoryPorts)
                 {
-                    // Проверяем точное совпадение имени
-                    if(port.name == propName)
+                    if(category == PortCategory::Child)
                     {
-                        // Для дочерних компонентов проверяем, что путь содержит имя компонента
-                        if(category == PortCategory::Child)
+                        // Для дочерних компонентов connName должен содержать путь к дочернему компоненту
+                        // Например: "SubComponent.Input" или "Neuron.SynapticInputs"
+                        if(connName.contains(port.componentName + "." + propName) ||
+                           connName == port.componentName + "." + propName ||
+                           connName.endsWith("." + port.componentName + "." + propName) ||
+                           (connName.contains('.') && connName.startsWith(port.componentName + ".")))
                         {
-                            if(connName.contains(port.componentName + "." + propName) ||
-                               connName == port.componentName + "." + propName ||
-                               connName.endsWith("." + port.componentName + "." + propName))
-                            {
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            // Для Own и Alias проверяем, что это не дочерний компонент
-                            if(!connName.contains('.') || connName == propName)
+                            // Дополнительная проверка: убеждаемся, что это действительно дочерний компонент
+                            if(port.fullPath.contains(port.componentName + "."))
                             {
                                 return true;
                             }
                         }
                     }
-                    // Проверяем полный путь
-                    if(port.fullPath == connName || 
-                       port.fullPath == propName ||
-                       port.fullPath.endsWith("." + propName) ||
-                       connName.endsWith("." + port.name) ||
-                       (category == PortCategory::Child && connName.contains(port.componentName)))
+                    else if(category == PortCategory::Own)
+                    {
+                        // Для собственных свойств connName не должен содержать точку (или быть просто именем свойства)
+                        // И имя должно совпадать
+                        if(port.name == propName)
+                        {
+                            // Если connName не содержит точки, это собственное свойство
+                            if(!connName.contains('.'))
+                            {
+                                return true;
+                            }
+                            // Если содержит точку, но это не путь к дочернему компоненту (например, "Component.Property" где Component == nodeName)
+                            if(connName.contains('.'))
+                            {
+                                QStringList parts = connName.split('.');
+                                // Если первая часть - это имя компонента, а вторая - имя свойства, это собственное свойство
+                                if(parts.size() == 2 && parts.first() == nodeName && parts.last() == propName)
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                        // Проверяем полный путь
+                        if(port.fullPath == connName || port.fullPath == propName)
+                        {
+                            return true;
+                        }
+                    }
+                    else if(category == PortCategory::Alias)
+                    {
+                        // Для алиасов проверяем по имени и полному пути
+                        if(port.name == propName || 
+                           port.fullPath == connName ||
+                           port.fullPath == propName ||
+                           port.fullPath.endsWith("." + propName))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                
+                // Для категории Own: если портов нет, но connName соответствует формату Own, считаем соединение найденным
+                if(category == PortCategory::Own && categoryPorts.isEmpty())
+                {
+                    // Проверяем формат connName: если не содержит точки или имеет формат nodeName.Property, это Own
+                    if(!connName.contains('.'))
                     {
                         return true;
+                    }
+                    if(connName.contains('.'))
+                    {
+                        QStringList parts = connName.split('.');
+                        // Если первая часть - это имя компонента, и это не путь к дочернему компоненту
+                        if(parts.size() >= 2 && parts.first() == nodeName)
+                        {
+                            // Проверяем, является ли вторая часть дочерним компонентом
+                            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+                            const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+                            if(compList)
+                            {
+                                QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+                                Engine_FreeBufString(compList);
+                                
+                                // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
+                                if(!components.contains(parts[1]))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Для категории Child: проверяем многоуровневые пути
+                if(category == PortCategory::Child)
+                {
+                    // connName может иметь формат nodeName.ChildComponent... или просто ChildComponent...
+                    // Проверяем, начинается ли connName с пути к дочернему компоненту
+                    QString checkName = connName;
+                    if(checkName.startsWith(nodeName + "."))
+                    {
+                        checkName = checkName.mid(nodeName.length() + 1);
+                    }
+                    
+                    // Проверяем, начинается ли checkName с имени дочернего компонента
+                    for(const Port& port : categoryPorts)
+                    {
+                        if(checkName.startsWith(port.componentName + ".") || 
+                           checkName == port.componentName ||
+                           connName.contains(port.componentName + "."))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -1581,7 +1722,9 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
         categoryPorts = getAliasOutputPorts();
     }
     
-    if(categoryPorts.isEmpty())
+    // Для категории Own не возвращаем false сразу, если портов нет
+    // Соединения могут быть к свойствам, которые не отображаются в списке портов
+    if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
     
     // Получаем все связи компонента
@@ -1675,45 +1818,124 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                     }
                 }
             }
-                
-                // Проверяем, относится ли свойство к категории
-                // Сравниваем с полным путем свойства и именем
-                for(const Port& port : categoryPorts)
+            
+            // Проверяем, относится ли свойство к категории
+            // Сравниваем с полным путем свойства и именем
+            for(const Port& port : categoryPorts)
                 {
-                    // Проверяем точное совпадение имени
-                    if(port.name == propName)
+                    if(category == PortCategory::Child)
                     {
-                        // Для дочерних компонентов проверяем, что путь содержит имя компонента
-                        if(category == PortCategory::Child)
+                        // Для дочерних компонентов itemName должен содержать путь к дочернему компоненту
+                        // Например: "SubComponent.Output" или "Neuron.Output"
+                        if(itemName.contains(port.componentName + "." + propName) ||
+                           itemName == port.componentName + "." + propName ||
+                           itemName.endsWith("." + port.componentName + "." + propName) ||
+                           (itemName.contains('.') && itemName.startsWith(port.componentName + ".")))
                         {
-                            if(itemName.contains(port.componentName + "." + propName) ||
-                               itemName == port.componentName + "." + propName ||
-                               itemName.endsWith("." + port.componentName + "." + propName))
-                            {
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            // Для Own и Alias проверяем, что это не дочерний компонент
-                            if(!itemName.contains('.') || itemName == propName)
+                            // Дополнительная проверка: убеждаемся, что это действительно дочерний компонент
+                            if(port.fullPath.contains(port.componentName + "."))
                             {
                                 return true;
                             }
                         }
                     }
-                    // Проверяем полный путь
-                    if(port.fullPath == itemName || 
-                       port.fullPath == propName ||
-                       port.fullPath.endsWith("." + propName) ||
-                       itemName.endsWith("." + port.name) ||
-                       (category == PortCategory::Child && itemName.contains(port.componentName)))
+                    else if(category == PortCategory::Own)
+                    {
+                        // Для собственных свойств itemName не должен содержать точку (или быть просто именем свойства)
+                        // И имя должно совпадать
+                        if(port.name == propName)
+                        {
+                            // Если itemName не содержит точки, это собственное свойство
+                            if(!itemName.contains('.'))
+                            {
+                                return true;
+                            }
+                            // Если содержит точку, но это не путь к дочернему компоненту (например, "Component.Property" где Component == nodeName)
+                            if(itemName.contains('.'))
+                            {
+                                QStringList parts = itemName.split('.');
+                                // Если первая часть - это имя компонента, а вторая - имя свойства, это собственное свойство
+                                if(parts.size() == 2 && parts.first() == nodeName && parts.last() == propName)
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                        // Проверяем полный путь
+                        if(port.fullPath == itemName || port.fullPath == propName)
+                        {
+                            return true;
+                        }
+                    }
+                    else if(category == PortCategory::Alias)
+                    {
+                        // Для алиасов проверяем по имени и полному пути
+                        if(port.name == propName || 
+                           port.fullPath == itemName ||
+                           port.fullPath == propName ||
+                           port.fullPath.endsWith("." + propName))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                
+                // Для категории Own: если портов нет, но itemName соответствует формату Own, считаем соединение найденным
+                if(category == PortCategory::Own && categoryPorts.isEmpty())
+                {
+                    // Проверяем формат itemName: если не содержит точки или имеет формат nodeName.Property, это Own
+                    if(!itemName.contains('.'))
                     {
                         return true;
                     }
+                    if(itemName.contains('.'))
+                    {
+                        QStringList parts = itemName.split('.');
+                        // Если первая часть - это имя компонента, и это не путь к дочернему компоненту
+                        if(parts.size() >= 2 && parts.first() == nodeName)
+                        {
+                            // Проверяем, является ли вторая часть дочерним компонентом
+                            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+                            const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+                            if(compList)
+                            {
+                                QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+                                Engine_FreeBufString(compList);
+                                
+                                // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
+                                if(!components.contains(parts[1]))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Для категории Child: проверяем многоуровневые пути
+                if(category == PortCategory::Child && !categoryPorts.isEmpty())
+                {
+                    // itemName может иметь формат nodeName.ChildComponent... или просто ChildComponent...
+                    // Проверяем, начинается ли itemName с пути к дочернему компоненту
+                    QString checkName = itemName;
+                    if(checkName.startsWith(nodeName + "."))
+                    {
+                        checkName = checkName.mid(nodeName.length() + 1);
+                    }
+                    
+                    // Проверяем, начинается ли checkName с имени дочернего компонента
+                    for(const Port& port : categoryPorts)
+                    {
+                        if(checkName.startsWith(port.componentName + ".") || 
+                           checkName == port.componentName ||
+                           itemName.contains(port.componentName + "."))
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
-    }
+        }
     
     return false;
 }
@@ -2768,7 +2990,52 @@ void UModernDiagramWidget::buildLinks()
             
             // Определяем категории портов по именам свойств
             PortCategory srcCategory = srcNode->determinePortCategory(itemName, false);
-            PortCategory dstCategory = dstNode->determinePortCategory(connName, true);
+            
+            // Для определения категории входного порта нужно нормализовать connName относительно dstNode
+            // connName может быть в любом формате, нужно извлечь часть, относящуюся к dstNode
+            QString normalizedConnName = connName;
+            QString dstNodeName = dstNode->nodeName;
+            QString connIdStr = QString::fromStdString(connId);
+            
+            // Пытаемся извлечь относительный путь из connName
+            // Проверяем различные возможные форматы пути
+            if(connName.startsWith(dstNodeName + "."))
+            {
+                // connName начинается с dstNodeName, извлекаем часть после nodeName
+                normalizedConnName = connName.mid(dstNodeName.length() + 1);
+            }
+            else if(!m_componentName.isEmpty())
+            {
+                // Проверяем, начинается ли connName с полного пути через m_componentName
+                QString fullPath = m_componentName + "." + dstNodeName;
+                if(connName.startsWith(fullPath + "."))
+                {
+                    normalizedConnName = connName.mid(fullPath.length() + 1);
+                }
+                else
+                {
+                    // Если connId указывает на dstNode, используем connName как есть
+                    // (он уже является относительным путем)
+                    if(connIdStr == dstNodeName || 
+                       connIdStr.endsWith("." + dstNodeName) ||
+                       connIdStr == fullPath ||
+                       connIdStr.endsWith("." + fullPath))
+                    {
+                        normalizedConnName = connName;
+                    }
+                }
+            }
+            else
+            {
+                // Если connId указывает на dstNode, используем connName как есть
+                if(connIdStr == dstNodeName || 
+                   connIdStr.endsWith("." + dstNodeName))
+                {
+                    normalizedConnName = connName;
+                }
+            }
+            
+            PortCategory dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
             
             // Создаем LinkItem с категориями портов
             auto* l = new LinkItem(srcNode, dstNode, srcCategory, dstCategory);

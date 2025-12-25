@@ -488,12 +488,12 @@
             </layout>
            </item>
            <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <layout class="QHBoxLayout" name="horizontalLayout_18">
             <property name="topMargin">
              <number>0</number>
             </property>
             <item>
-             <spacer name="horizontalSpacer_8">
+             <spacer name="horizontalSpacer_9">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>

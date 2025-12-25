@@ -991,7 +991,7 @@ void UDrawEngineImageWidget::paintDragLine()
     DrawEngine.GetPortCenter(desc, *dragSourcePort, startX, startY);
 
     // Рисуем временную линию на текущем изображении
-    QPixmap currentPixmap = *pixmap();
+    QPixmap currentPixmap = grab();
     QPainter painter(&currentPixmap);
     UStyleManager* style = UStyleManager::instance();
     painter.setPen(QPen(style->getDragLineColor(), style->getLinkWidth(), Qt::DashLine));

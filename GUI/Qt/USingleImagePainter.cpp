@@ -354,8 +354,8 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
         {
           const QLineF polyLine(*firstPI, *secondPI);
 
-          if(QLineF::BoundedIntersection == polyLine.intersect(pointHLine, NULL)
-             || QLineF::BoundedIntersection == polyLine.intersect(pointVLine, NULL))
+          if(QLineF::BoundedIntersection == polyLine.intersects(pointHLine, nullptr)
+             || QLineF::BoundedIntersection == polyLine.intersects(pointVLine, nullptr))
           {
             additionPoint.first = secondPI;
             additionPoint.second = point;
