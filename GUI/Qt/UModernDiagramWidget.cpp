@@ -28,6 +28,7 @@
 #include <QKeySequence>
 #include <QEvent>
 #include <QMouseEvent>
+#include <cmath>
 #include <ctime>
 #include <sstream>
 #include "UClassDescriptionDisplay.h"
@@ -396,41 +397,39 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
             inputs.append(defaultInput);
         }
         
-        // Загружаем выходные порты
-        const char* outputProps = Model_GetComponentPropertiesLookupList(
-            fullName.toStdString().c_str(), ptPubOutput | ptOutput);
-        if(outputProps)
-        {
-            QStringList outputList = QString::fromUtf8(outputProps).split(",", Qt::SkipEmptyParts);
-            for(const QString& prop : outputList)
-            {
-                QStringList parts = prop.split(":");
-                if(parts.size() >= 1)
-                {
-                    QString propName = parts[0].trimmed();
-                    Port port;
-                    port.isInput = false;
-                    port.name = propName;
-                    port.componentName = name;
-                    port.fullPath = propName;
-                    port.displayName = propName;
-                    outputs.append(port);
-                }
-            }
-            Engine_FreeBufString(outputProps);
-        }
+        // Загружаем выходные порты по категориям
+        // Всегда создаем три порта: собственные, дочерние и алиасы
+        // Если портов нет, порт все равно создается, но будет отображаться серым
         
-        // Если нет выходных портов, добавляем дефолтный
-        if(outputs.isEmpty())
-        {
-            Port defaultOutput;
-            defaultOutput.isInput = false;
-            defaultOutput.name = QStringLiteral("Out");
-            defaultOutput.componentName = name;
-            defaultOutput.fullPath = QStringLiteral("Out");
-            defaultOutput.displayName = QStringLiteral("Out");
-            outputs.append(defaultOutput);
-        }
+        // 1. Собственные выходные свойства компонента
+        Port ownPort;
+        ownPort.isInput = false;
+        ownPort.name = QStringLiteral("Own");
+        ownPort.componentName = name;
+        ownPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
+        ownPort.displayName = QStringLiteral("Собственные");
+        ownPort.category = PortCategory::Own;
+        outputs.append(ownPort);
+        
+        // 2. Выходные свойства дочерних компонентов
+        Port childPort;
+        childPort.isInput = false;
+        childPort.name = QStringLiteral("Children");
+        childPort.componentName = name;
+        childPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
+        childPort.displayName = QStringLiteral("Дочерние");
+        childPort.category = PortCategory::Child;
+        outputs.append(childPort);
+        
+        // 3. Выходные свойства алиасов
+        Port aliasPort;
+        aliasPort.isInput = false;
+        aliasPort.name = QStringLiteral("Aliases");
+        aliasPort.componentName = name;
+        aliasPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
+        aliasPort.displayName = QStringLiteral("Алиасы");
+        aliasPort.category = PortCategory::Alias;
+        outputs.append(aliasPort);
     }
     else
     {
@@ -637,18 +636,84 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     // Выходные порты
     for (const Port& p : outputs) {
         bool isHovered = (m_hoveredPort == &p);
-        QColor portColor = isHovered ? style->getPortOutputHoverColor() : style->getPortOutputColor();
+        
+        // Проверяем, есть ли порты для этой категории
+        bool hasPorts = false;
+        if (p.category == PortCategory::Own)
+        {
+            hasPorts = !getOwnOutputPorts().isEmpty();
+        }
+        else if (p.category == PortCategory::Child)
+        {
+            hasPorts = !getChildOutputPorts().isEmpty();
+        }
+        else if (p.category == PortCategory::Alias)
+        {
+            hasPorts = !getAliasOutputPorts().isEmpty();
+        }
+        
+        // Если портов нет, используем серый цвет (недоступный)
+        QColor portColor;
+        if (!hasPorts)
+        {
+            portColor = QColor(150, 150, 150);  // Серый цвет для недоступных портов
+        }
+        else
+        {
+            portColor = isHovered ? style->getPortOutputHoverColor() : style->getPortOutputColor();
+        }
+        
         double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
         
         // Заливка порта
         painter->setPen(Qt::NoPen);
         painter->setBrush(portColor);
-        painter->drawEllipse(p.pos, portSize, portSize);
+        
+        // Рисуем разные формы в зависимости от категории порта
+        if (p.category == PortCategory::Own)
+        {
+            // Круг для собственных свойств
+            painter->drawEllipse(p.pos, portSize, portSize);
+        }
+        else if (p.category == PortCategory::Child)
+        {
+            // Квадрат для свойств дочерних компонентов
+            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize, 
+                             portSize * 2, portSize * 2);
+            painter->drawRect(squareRect);
+        }
+        else if (p.category == PortCategory::Alias)
+        {
+            // Треугольник для алиасов (вписанный в круг)
+            QPolygonF triangle;
+            double angleStep = 2.0 * M_PI / 3.0;  // 120 градусов между точками
+            for(int i = 0; i < 3; ++i)
+            {
+                double angle = i * angleStep - M_PI / 2.0;  // Начинаем сверху
+                triangle << QPointF(p.pos.x() + portSize * cos(angle),
+                                    p.pos.y() + portSize * sin(angle));
+            }
+            painter->drawPolygon(triangle);
+        }
+        else
+        {
+            // Fallback: круг по умолчанию
+            painter->drawEllipse(p.pos, portSize, portSize);
+        }
         
         // Белая обводка для контраста
         painter->setPen(QPen(style->getBackgroundAltColor(), 1.5));
         painter->setBrush(Qt::NoBrush);
-        painter->drawEllipse(p.pos, portSize, portSize);
+        if (p.category == PortCategory::Own || p.category == PortCategory::Alias)
+        {
+            painter->drawEllipse(p.pos, portSize, portSize);
+        }
+        else if (p.category == PortCategory::Child)
+        {
+            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize, 
+                             portSize * 2, portSize * 2);
+            painter->drawRect(squareRect);
+        }
         
         // Подсветка при hover
         if (isHovered)
@@ -882,6 +947,145 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
     return result;
 }
 
+QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnOutputPorts() const
+{
+    QVector<Port> result;
+    if(!m_owner || !m_owner->m_application)
+        return result;
+    
+    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+    
+    // Получаем собственные выходные свойства компонента (без точки в пути)
+    const char* outputProps = Model_GetComponentPropertiesLookupList(
+        fullName.toStdString().c_str(), ptPubOutput | ptOutput);
+    if(outputProps)
+    {
+        QStringList outputList = QString::fromUtf8(outputProps).split(",", Qt::SkipEmptyParts);
+        for(const QString& prop : outputList)
+        {
+            QStringList parts = prop.split(":");
+            if(parts.size() >= 1)
+            {
+                QString propName = parts[0].trimmed();
+                // Собственные свойства не содержат точки в пути
+                if(!propName.contains('.'))
+                {
+                    Port port;
+                    port.isInput = false;
+                    port.name = propName;
+                    port.componentName = nodeName;
+                    port.fullPath = propName;
+                    port.displayName = propName;
+                    port.category = PortCategory::Own;
+                    result.append(port);
+                }
+            }
+        }
+        Engine_FreeBufString(outputProps);
+    }
+    
+    return result;
+}
+
+QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildOutputPorts() const
+{
+    QVector<Port> result;
+    if(!m_owner || !m_owner->m_application)
+        return result;
+    
+    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+    
+    // Получаем список дочерних компонентов
+    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+    if(compList)
+    {
+        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+        for(const QString& comp : components)
+        {
+            QString nestedFullName = fullName + "." + comp;
+            const char* nestedProps = Model_GetComponentPropertiesLookupList(
+                nestedFullName.toStdString().c_str(), ptPubOutput | ptOutput);
+            if(nestedProps)
+            {
+                QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
+                for(const QString& prop : nestedPropsList)
+                {
+                    QStringList parts = prop.split(":");
+                    if(parts.size() >= 1)
+                    {
+                        QString propName = parts[0].trimmed();
+                        Port port;
+                        port.isInput = false;
+                        port.name = propName;
+                        port.componentName = comp;
+                        port.fullPath = comp + "." + propName;
+                        port.displayName = nodeName + "." + comp + "." + propName;
+                        port.category = PortCategory::Child;
+                        result.append(port);
+                    }
+                }
+                Engine_FreeBufString(nestedProps);
+            }
+        }
+        Engine_FreeBufString(compList);
+    }
+    
+    return result;
+}
+
+QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutputPorts() const
+{
+    QVector<Port> result;
+    if(!m_owner || !m_owner->m_application)
+        return result;
+    
+    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+    
+    // Получаем алиасы свойств из UNet (если компонент является UNet)
+    try
+    {
+        RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
+        if(model)
+        {
+            RDK::UEPtr<RDK::UContainer> component;
+            if(fullName.isEmpty())
+                component = model;
+            else
+                component = model->GetComponentL(fullName.toStdString(), true);
+            
+            if(component)
+            {
+                RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
+                if(net)
+                {
+                    // Получаем алиасы выходных свойств
+                    unsigned int aliasTypeMask = ptOutput | ptPubOutput;
+                    std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
+                    
+                    for(const auto& alias : aliases)
+                    {
+                        Port port;
+                        port.isInput = false;
+                        port.name = QString::fromStdString(alias.AliasName);
+                        port.componentName = nodeName;
+                        // Для алиаса fullPath содержит полный путь к свойству
+                        port.fullPath = QString::fromStdString(alias.GetFullPropertyPath());
+                        port.displayName = QString::fromStdString(alias.AliasName) + " [Alias]";
+                        port.category = PortCategory::Alias;
+                        result.append(port);
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        // Игнорируем ошибки при получении алиасов
+    }
+    
+    return result;
+}
+
 void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsRectItem::hoverEnterEvent(event);
@@ -890,18 +1094,44 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
     if(m_hideTimer) m_hideTimer->stop();
     if(m_hoveredPort)
     {
-        // Закрываем все открытые деревья портов других узлов перед открытием нового
-        if(m_owner)
+        // Для категоризированных выходных портов проверяем, есть ли порты для этой категории
+        bool shouldShowPortList = true;
+        if(!m_hoveredPort->isInput && m_hoveredPort->fullPath.isEmpty() && 
+           (m_hoveredPort->category == PortCategory::Own || 
+            m_hoveredPort->category == PortCategory::Child || 
+            m_hoveredPort->category == PortCategory::Alias))
         {
-            for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+            bool hasPorts = false;
+            if (m_hoveredPort->category == PortCategory::Own)
             {
-                if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                hasPorts = !getOwnOutputPorts().isEmpty();
+            }
+            else if (m_hoveredPort->category == PortCategory::Child)
+            {
+                hasPorts = !getChildOutputPorts().isEmpty();
+            }
+            else if (m_hoveredPort->category == PortCategory::Alias)
+            {
+                hasPorts = !getAliasOutputPorts().isEmpty();
+            }
+            shouldShowPortList = hasPorts;
+        }
+        
+        if(shouldShowPortList)
+        {
+            // Закрываем все открытые деревья портов других узлов перед открытием нового
+            if(m_owner)
+            {
+                for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
                 {
-                    node->hidePortListWidget();
+                    if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                    {
+                        node->hidePortListWidget();
+                    }
                 }
             }
+            showPortListWidget(mapToScene(event->pos()));
         }
-        showPortListWidget(mapToScene(event->pos()));
     }
 }
 
@@ -916,25 +1146,56 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
         update();
         if(port)
         {
-            // Закрываем все открытые деревья портов других узлов перед открытием нового
-            if(m_owner)
+            // Для категоризированных выходных портов проверяем, есть ли порты для этой категории
+            bool shouldShowPortList = true;
+            if(!port->isInput && port->fullPath.isEmpty() && 
+               (port->category == PortCategory::Own || 
+                port->category == PortCategory::Child || 
+                port->category == PortCategory::Alias))
             {
-                for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+                bool hasPorts = false;
+                if (port->category == PortCategory::Own)
                 {
-                    if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
-                    {
-                        node->hidePortListWidget();
-                    }
+                    hasPorts = !getOwnOutputPorts().isEmpty();
                 }
+                else if (port->category == PortCategory::Child)
+                {
+                    hasPorts = !getChildOutputPorts().isEmpty();
+                }
+                else if (port->category == PortCategory::Alias)
+                {
+                    hasPorts = !getAliasOutputPorts().isEmpty();
+                }
+                shouldShowPortList = hasPorts;
             }
             
-            QPointF scenePos = mapToScene(event->pos());
-            bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
-            updatePortListWidget(port->isInput, shiftPressed);
-            if(m_portListWidgetProxy)
+            if(shouldShowPortList)
             {
-                m_portListWidgetProxy->setPos(scenePos + QPointF(20, 20));
-                m_portListWidgetProxy->setVisible(true);
+                // Закрываем все открытые деревья портов других узлов перед открытием нового
+                if(m_owner)
+                {
+                    for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+                    {
+                        if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                        {
+                            node->hidePortListWidget();
+                        }
+                    }
+                }
+                
+                QPointF scenePos = mapToScene(event->pos());
+                bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+                updatePortListWidget(port->isInput, shiftPressed);
+                if(m_portListWidgetProxy)
+                {
+                    m_portListWidgetProxy->setPos(scenePos + QPointF(20, 20));
+                    m_portListWidgetProxy->setVisible(true);
+                }
+            }
+            else
+            {
+                // Порт недоступен, скрываем дерево портов если оно было открыто
+                hidePortListWidget();
             }
         }
         else
@@ -982,6 +1243,31 @@ void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
 {
     if(!m_hoveredPort || !m_owner || !m_portListWidgetProxy)
         return;
+    
+    // Для категоризированных выходных портов проверяем, есть ли порты для этой категории
+    if(!m_hoveredPort->isInput && m_hoveredPort->fullPath.isEmpty() && 
+       (m_hoveredPort->category == PortCategory::Own || 
+        m_hoveredPort->category == PortCategory::Child || 
+        m_hoveredPort->category == PortCategory::Alias))
+    {
+        bool hasPorts = false;
+        if (m_hoveredPort->category == PortCategory::Own)
+        {
+            hasPorts = !getOwnOutputPorts().isEmpty();
+        }
+        else if (m_hoveredPort->category == PortCategory::Child)
+        {
+            hasPorts = !getChildOutputPorts().isEmpty();
+        }
+        else if (m_hoveredPort->category == PortCategory::Alias)
+        {
+            hasPorts = !getAliasOutputPorts().isEmpty();
+        }
+        
+        // Если портов нет, не показываем дерево портов
+        if (!hasPorts)
+            return;
+    }
     
     // Закрываем все открытые деревья портов других узлов перед открытием нового
     for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -1182,8 +1468,37 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
     
     m_portListWidget->clear();
     
-    // Получаем список портов
-    QVector<Port> availablePorts = getNestedPorts(isInput, includeNested);
+    // Получаем список портов с фильтрацией по категории (для выходных портов)
+    QVector<Port> availablePorts;
+    if(!isInput && m_hoveredPort->fullPath.isEmpty() && 
+       (m_hoveredPort->category == PortCategory::Own || 
+        m_hoveredPort->category == PortCategory::Child || 
+        m_hoveredPort->category == PortCategory::Alias))
+    {
+        // Если это категоризированный выходной порт, фильтруем по категории
+        if(m_hoveredPort->category == PortCategory::Own)
+        {
+            availablePorts = getOwnOutputPorts();
+        }
+        else if(m_hoveredPort->category == PortCategory::Child)
+        {
+            availablePorts = getChildOutputPorts();
+        }
+        else if(m_hoveredPort->category == PortCategory::Alias)
+        {
+            availablePorts = getAliasOutputPorts();
+        }
+        else
+        {
+            // Fallback: используем все порты
+            availablePorts = getNestedPorts(isInput, includeNested);
+        }
+    }
+    else
+    {
+        // Для входных портов или обычных выходных портов используем стандартную логику
+        availablePorts = getNestedPorts(isInput, includeNested);
+    }
     
     if(availablePorts.isEmpty())
     {
@@ -1999,6 +2314,43 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, node, portPos);
         if(node && port)
         {
+            // Если это категоризированный выходной порт (с пустым fullPath), показываем дерево портов
+            if(!port->isInput && port->fullPath.isEmpty() && 
+               (port->category == UModernDiagramWidget::PortCategory::Own || 
+                port->category == UModernDiagramWidget::PortCategory::Child || 
+                port->category == UModernDiagramWidget::PortCategory::Alias))
+            {
+                // Проверяем, есть ли порты для этой категории
+                bool hasPorts = false;
+                if (port->category == UModernDiagramWidget::PortCategory::Own)
+                {
+                    hasPorts = !node->getOwnOutputPorts().isEmpty();
+                }
+                else if (port->category == UModernDiagramWidget::PortCategory::Child)
+                {
+                    hasPorts = !node->getChildOutputPorts().isEmpty();
+                }
+                else if (port->category == UModernDiagramWidget::PortCategory::Alias)
+                {
+                    hasPorts = !node->getAliasOutputPorts().isEmpty();
+                }
+                
+                // Показываем дерево портов только если есть порты для этой категории
+                if (hasPorts)
+                {
+                    node->showPortListWidget(event->scenePos());
+                    event->accept();
+                    return;
+                }
+                else
+                {
+                    // Порт недоступен, ничего не делаем
+                    event->accept();
+                    return;
+                }
+            }
+            
+            // Для обычных портов начинаем drag & drop
             m_owner->m_dragSourceNode = node;
             m_owner->m_dragSourcePort = port;
             m_owner->m_dragSourcePortPos = portPos;

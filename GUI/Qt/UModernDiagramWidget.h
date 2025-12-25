@@ -65,6 +65,14 @@ protected:
 private:
     friend class ModernScene;
     friend class ModernGraphicsView;
+    
+    /// Категория порта для категоризации выходных портов
+    enum class PortCategory {
+        Own,        // Собственные свойства компонента
+        Child,      // Свойства дочерних компонентов
+        Alias       // Алиасы свойств
+    };
+    
     struct Port
     {
         QPointF pos;
@@ -73,10 +81,11 @@ private:
         QString fullPath;       // Полный путь для вложенных портов (например, "SubComp.Output")
         QString componentName;  // Имя компонента-владельца
         QString displayName;    // Отображаемое имя (для tooltip)
+        PortCategory category;  // Категория порта (для выходных портов)
         
-        Port() : isInput(false) {}
+        Port() : isInput(false), category(PortCategory::Own) {}
         Port(const QPointF& p, bool input, const QString& n) 
-            : pos(p), isInput(input), name(n), componentName(n), displayName(n) {}
+            : pos(p), isInput(input), name(n), componentName(n), displayName(n), category(PortCategory::Own) {}
     };
 
     class NodeItem : public QGraphicsRectItem
@@ -113,6 +122,11 @@ private:
         void hidePortListWidget();
         void updatePortListWidget(bool isInput, bool includeNested);
         void onPortItemActivated(QTreeWidgetItem* item, int column);
+        
+        // Методы для получения портов по категориям
+        QVector<Port> getOwnOutputPorts() const;
+        QVector<Port> getChildOutputPorts() const;
+        QVector<Port> getAliasOutputPorts() const;
     };
 
     class LinkItem : public QGraphicsPathItem
