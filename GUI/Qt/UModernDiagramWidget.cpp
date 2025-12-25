@@ -853,37 +853,47 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
 {
     // Сначала проверяем, содержит ли propertyName путь к дочернему компоненту
     // Это имеет приоритет, так как соединения к дочерним компонентам должны определяться как Child
+    // На верхнем уровне (m_componentName.isEmpty()) propertyName уже является относительным путем
     QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(compList)
+    
+    // Убеждаемся, что fullName не пустое перед запросом дочерних компонентов
+    if(!fullName.isEmpty())
     {
-        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-        Engine_FreeBufString(compList);
-        
-        // Проверяем, начинается ли propertyName с любого дочернего компонента
-        // Это важно для многоуровневых путей (например, "Dendrite1_1.ExcSynapse1.SynapticInputs")
-        for(const QString& comp : components)
+        const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+        if(compList)
         {
-            if(propertyName.startsWith(comp + ".") || propertyName == comp)
+            QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+            Engine_FreeBufString(compList);
+            
+            if(!components.isEmpty())
             {
-                return PortCategory::Child;
-            }
-        }
-        
-        // Если propertyName начинается с nodeName, проверяем часть после nodeName
-        if(propertyName.startsWith(nodeName + "."))
-        {
-            QString afterNodeName = propertyName.mid(nodeName.length() + 1);
-            if(!afterNodeName.isEmpty())
-            {
-                QStringList parts = afterNodeName.split('.');
-                if(!parts.isEmpty())
+                // Проверяем, начинается ли propertyName с любого дочернего компонента
+                // Это важно для многоуровневых путей (например, "Dendrite1_1.ExcSynapse1.SynapticInputs")
+                // На верхнем уровне propertyName уже относительный (например, "Dendrite1_1.ExcSynapse1")
+                for(const QString& comp : components)
                 {
-                    QString firstPart = parts.first();
-                    // Если первая часть после nodeName является дочерним компонентом - это Child
-                    if(components.contains(firstPart))
+                    if(propertyName.startsWith(comp + ".") || propertyName == comp)
                     {
                         return PortCategory::Child;
+                    }
+                }
+                
+                // Если propertyName начинается с nodeName, проверяем часть после nodeName
+                if(propertyName.startsWith(nodeName + "."))
+                {
+                    QString afterNodeName = propertyName.mid(nodeName.length() + 1);
+                    if(!afterNodeName.isEmpty())
+                    {
+                        QStringList parts = afterNodeName.split('.');
+                        if(!parts.isEmpty())
+                        {
+                            QString firstPart = parts.first();
+                            // Если первая часть после nodeName является дочерним компонентом - это Child
+                            if(components.contains(firstPart))
+                            {
+                                return PortCategory::Child;
+                            }
+                        }
                     }
                 }
             }
@@ -2997,41 +3007,51 @@ void UModernDiagramWidget::buildLinks()
             QString dstNodeName = dstNode->nodeName;
             QString connIdStr = QString::fromStdString(connId);
             
-            // Пытаемся извлечь относительный путь из connName
-            // Проверяем различные возможные форматы пути
-            if(connName.startsWith(dstNodeName + "."))
-            {
-                // connName начинается с dstNodeName, извлекаем часть после nodeName
-                normalizedConnName = connName.mid(dstNodeName.length() + 1);
-            }
-            else if(!m_componentName.isEmpty())
-            {
-                // Проверяем, начинается ли connName с полного пути через m_componentName
-                QString fullPath = m_componentName + "." + dstNodeName;
-                if(connName.startsWith(fullPath + "."))
-                {
-                    normalizedConnName = connName.mid(fullPath.length() + 1);
-                }
-                else
-                {
-                    // Если connId указывает на dstNode, используем connName как есть
-                    // (он уже является относительным путем)
-                    if(connIdStr == dstNodeName || 
-                       connIdStr.endsWith("." + dstNodeName) ||
-                       connIdStr == fullPath ||
-                       connIdStr.endsWith("." + fullPath))
-                    {
-                        normalizedConnName = connName;
-                    }
-                }
-            }
-            else
+            // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
+            // и не требует нормализации через удаление dstNodeName
+            if(m_componentName.isEmpty())
             {
                 // Если connId указывает на dstNode, используем connName как есть
+                // (он уже является относительным путем, например "Dendrite1_1.ExcSynapse1")
                 if(connIdStr == dstNodeName || 
                    connIdStr.endsWith("." + dstNodeName))
                 {
                     normalizedConnName = connName;
+                }
+                // Если connName начинается с dstNodeName, извлекаем часть после nodeName
+                else if(connName.startsWith(dstNodeName + "."))
+                {
+                    normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                }
+            }
+            else
+            {
+                // Для вложенных уровней проверяем различные возможные форматы пути
+                if(connName.startsWith(dstNodeName + "."))
+                {
+                    // connName начинается с dstNodeName, извлекаем часть после nodeName
+                    normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                }
+                else
+                {
+                    // Проверяем, начинается ли connName с полного пути через m_componentName
+                    QString fullPath = m_componentName + "." + dstNodeName;
+                    if(connName.startsWith(fullPath + "."))
+                    {
+                        normalizedConnName = connName.mid(fullPath.length() + 1);
+                    }
+                    else
+                    {
+                        // Если connId указывает на dstNode, используем connName как есть
+                        // (он уже является относительным путем)
+                        if(connIdStr == dstNodeName || 
+                           connIdStr.endsWith("." + dstNodeName) ||
+                           connIdStr == fullPath ||
+                           connIdStr.endsWith("." + fullPath))
+                        {
+                            normalizedConnName = connName;
+                        }
+                    }
                 }
             }
             
