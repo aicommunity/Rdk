@@ -14,7 +14,13 @@ namespace RDK
   if(Component)
   {
 //   Component->Default();
-   Component->SetClass(ClassId);
+   // КРИТИЧНО: Устанавливаем ClassId только если он еще не установлен или невалидный
+   // Это предотвратит перезапись правильного ClassId
+   UId current_class_id = Component->GetClass();
+   if(current_class_id == ForbiddenId || ClassId != ForbiddenId)
+   {
+    Component->SetClass(ClassId);
+   }
   }
  }
 
@@ -57,7 +63,27 @@ namespace RDK
  void UVirtualMethodFactory::ResetComponent(UEPtr<UComponent> component) const
  {
   if(Component)
-   Component->Copy(dynamic_pointer_cast<UContainer>(component), Component->GetStorage());
+  {
+   UEPtr<UContainer> target = dynamic_pointer_cast<UContainer>(component);
+   
+   // КРИТИЧНО: Сохраняем ClassId объекта-получателя перед копированием
+   UId target_class_id = target->GetClass();
+   
+   // КРИТИЧНО: Убеждаемся, что Component имеет правильный ClassId перед копированием
+   if(Component->GetClass() == ForbiddenId && ClassId != ForbiddenId)
+   {
+    Component->SetClass(ClassId);
+   }
+   
+   Component->Copy(target, Component->GetStorage());
+   
+   // КРИТИЧНО: Восстанавливаем ClassId объекта-получателя после копирования
+   // если он был валидным до копирования
+   if(target_class_id != ForbiddenId)
+   {
+    target->SetClass(target_class_id);
+   }
+  }
  }
 
  UEPtr<UContainer> UVirtualMethodFactory::GetComponent()

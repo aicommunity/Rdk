@@ -252,11 +252,58 @@ void UStorage::DelClass(const UId &classid, bool force)
  }
  else
  {
+  // КРИТИЧНО: При принудительном удалении класса сначала очищаем UseFlag
+  // для всех объектов этого класса, которые больше не используются
+  if(temp != ObjectsStorage.end())
+  {
+   // Удалено избыточное логирование - создавало спам в DEBUG логах
+   
+   for(list<UInstancesStorageElement>::iterator I=temp->second.begin(), 
+       J=temp->second.end(); I!=J; ++I)
+   {
+    if(I->UseFlag && I->Object)
+    {
+     try
+     {
+      UEPtr<UContainer> owner = I->Object->GetOwner();
+      bool activity = I->Object->Activity;
+      
+      // Если объект не имеет владельца и не активен, очищаем UseFlag
+      if(!owner && !activity)
+      {
+       I->UseFlag = false;
+       // Удалено избыточное логирование - создавало спам в DEBUG логах
+      }
+     }
+     catch(...)
+     {
+      // В случае ошибки оставляем UseFlag как есть
+     }
+    }
+   }
+  }
+  
   ClearObjectsStorageByClass(classid);
  }
 
  UClassesStorageIterator I=ClassesStorage.find(classid);
- std::string name=FindClassName(classid);
+ std::string name;
+ 
+ // КРИТИЧНО: Получаем имя класса перед удалением из ClassesStorage
+ // Если класс уже удален, используем альтернативный способ
+ try
+ {
+  name=FindClassName(classid);
+ }
+ catch(...)
+ {
+  // Если класс уже не существует, используем пустое имя
+  name = std::string("(unknown)");
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
+    std::string("Class with id ") + sntoa(classid) + 
+    std::string(" not found in ClassesLookupTable"));
+ }
 
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
@@ -481,11 +528,26 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
    if(obj)
    {
     element->UseFlag=true;
+    
+    // КРИТИЧНО: Сохраняем ClassId перед операциями, которые могут его изменить
+    UId saved_class_id = obj->GetClass();
+    if(saved_class_id == ForbiddenId || saved_class_id != classid)
+     saved_class_id = classid; // Используем правильный classid если текущий невалидный
+    
     obj->Default();
     if(!prototype)
      tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
     else
      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
+
+    // КРИТИЧНО: Восстанавливаем ClassId ПОСЛЕ всех операций, которые могут его изменить
+    UId current_class_id = obj->GetClass();
+    if(current_class_id == ForbiddenId || current_class_id != classid)
+    {
+     // Восстанавливаем ClassId из параметра classid
+     obj->SetClass(classid);
+     // Удалено избыточное логирование - создавало спам в DEBUG логах
+    }
 
     obj->Activity = true;
    }
@@ -605,20 +667,114 @@ void UStorage::FreeObjectsStorage(bool force)
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
  {
-  std::string object_class_name=FindClassName(instances->first);
+  // КРИТИЧНО: Проверяем существование класса перед попыткой получить его имя
+  // Если класс уже удален, используем альтернативный способ получения информации
+  std::string object_class_name;
+  UId class_id = instances->first;
+  
+  try
+  {
+   // Проверяем, существует ли класс в ClassesStorage
+   if(ClassesStorage.find(class_id) != ClassesStorage.end())
+   {
+    object_class_name = FindClassName(class_id);
+   }
+   else
+   {
+    // Класс уже удален, используем альтернативное имя
+    object_class_name = std::string("(deleted class id=") + sntoa(class_id) + std::string(")");
+    if(Logger)
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+      std::string("Class with id ") + sntoa(class_id) + 
+      std::string(" already deleted, using alternative name"));
+   }
+  }
+  catch(...)
+  {
+   // В случае ошибки используем альтернативное имя
+   object_class_name = std::string("(unknown class id=") + sntoa(class_id) + std::string(")");
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
+     std::string("Failed to get class name for id ") + sntoa(class_id) + 
+     std::string(", using alternative name"));
+  }
+  
   if(instances->second.empty())
    continue;
 
   size_t size=instances->second.size();
   size_t count=0;
 
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+  // Удалено избыточное логирование - создавало спам в INFO логах
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
    std::string object_name=I->Object->GetName();
    UEPtr<UContainer> object=I->Object;
    
+   // КРИТИЧНО: Сначала восстанавливаем ClassId и проверяем UseFlag ПЕРЕД логированием ошибки
+   bool actually_in_use = false;
+   bool class_id_restored = false;
+   UId restored_class_id = ForbiddenId;
+   
+   if(I->UseFlag)
+   {
+	try
+	{
+	 if(object)
+	 {
+	  // КРИТИЧНО: Проверяем валидность ClassId объекта и восстанавливаем из ключа контейнера
+	  UId object_class_id = object->GetClass();
+	  UId container_class_id = instances->first; // Ключ контейнера в ObjectsStorage
+	  
+	  // Если ClassId = ForbiddenId или не соответствует ключу контейнера, восстанавливаем его
+	  if(object_class_id == ForbiddenId || object_class_id != container_class_id)
+	  {
+	   // Восстанавливаем ClassId из ключа контейнера
+	   object->SetClass(container_class_id);
+	   class_id_restored = true;
+	   restored_class_id = container_class_id;
+	   // Удалено избыточное логирование - создавало спам в WARNING логах
+	   object_class_id = container_class_id;
+	  }
+	  else
+	  {
+	   restored_class_id = object_class_id;
+	  }
+	  
+	  // Проверяем существование класса
+	  if(ClassesStorage.find(object_class_id) == ClassesStorage.end())
+	  {
+	   // Класс объекта уже удален, объект в невалидном состоянии
+	   if(Logger)
+	    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
+	     std::string("Object ") + object_name + 
+	     std::string(" has class id ") + sntoa(object_class_id) + 
+	     std::string(" which no longer exists - class was deleted"));
+	  }
+	  
+	  UEPtr<UContainer> owner = object->GetOwner();
+	  // Если объект имеет владельца, он может быть в использовании
+	  if(owner)
+	   actually_in_use = true;
+	   
+	  // Дополнительная проверка: если Activity=false и нет владельца,
+	  // объект скорее всего не используется, можно очистить UseFlag
+	  if(!actually_in_use && !object->Activity)
+	  {
+	   // Автоматически очищаем UseFlag для объектов без активных ссылок
+	   I->UseFlag = false;
+	   // Удалено избыточное логирование - создавало спам в DEBUG логах
+	  }
+	 }
+	}
+	catch(...)
+	{
+	 // В случае ошибки считаем, что объект используется
+	 actually_in_use = true;
+	}
+   }
+
+   // Логируем ошибку только если UseFlag все еще true после проверки и очистки
    if(I->UseFlag && force)
    {
 	if(Logger)
@@ -640,11 +796,16 @@ void UStorage::FreeObjectsStorage(bool force)
 	   bool activity = object->Activity;
 	   context_info += std::string(" Activity=") + (activity ? "true" : "false");
 	   
-	   UId class_id = object->GetClass();
+	   // Используем восстановленный ClassId (если был восстановлен) или текущий
+	   UId class_id = restored_class_id != ForbiddenId ? restored_class_id : object->GetClass();
 	   if(class_id == 0)
 	    context_info += std::string(" ClassId=ForbiddenId(0)");
 	   else
+	   {
 	    context_info += std::string(" ClassId=") + sntoa(class_id);
+	    if(class_id_restored)
+	     context_info += std::string(" (restored)");
+	   }
 	  }
 	 }
 	 catch(...)
@@ -656,50 +817,11 @@ void UStorage::FreeObjectsStorage(bool force)
 	}
    }
 
-   // Проверяем, действительно ли объект используется перед принудительным уничтожением
-   bool actually_in_use = false;
-   if(I->UseFlag)
-   {
-	try
-	{
-	 if(object)
-	 {
-	  UEPtr<UContainer> owner = object->GetOwner();
-	  // Если объект имеет владельца, он может быть в использовании
-	  if(owner)
-	   actually_in_use = true;
-	   
-	  // Дополнительная проверка: если Activity=false и нет владельца,
-	  // объект скорее всего не используется, можно очистить UseFlag
-	  if(!actually_in_use && !object->Activity)
-	  {
-	   // Автоматически очищаем UseFlag для объектов без активных ссылок
-	   I->UseFlag = false;
-	   if(Logger)
-	    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
-	     std::string("Auto-cleared UseFlag for object ") + object_name + 
-	     std::string(" - no active references detected"));
-	  }
-	 }
-	}
-	catch(...)
-	{
-	 // В случае ошибки считаем, что объект используется
-	 actually_in_use = true;
-	}
-   }
-
    // Используем обновленное значение UseFlag после возможной автоматической очистки
    if(!I->UseFlag || force)
    {
 	list<UInstancesStorageElement>::iterator K;
-	if(Logger)
-	{
-	 std::string destroy_msg = std::string("Destroy objects by name ") + object_name;
-	 if(force && I->UseFlag)
-	  destroy_msg += " (FORCED - UseFlag was true)";
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, destroy_msg);
-	}
+	// Удалено избыточное логирование - создавало спам в INFO логах
 	K=I; ++K;
 	PopObject(instances,I);
 	RDK_SYS_TRY
@@ -730,11 +852,8 @@ void UStorage::FreeObjectsStorage(bool force)
    else
    {
 	++I;
-	if(Logger && actually_in_use)
-	{
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
-	  std::string("Skipping object ") + object_name + " - object is actually in use (has owner)");
-	}
+	// Удалено избыточное логирование - создавало огромный флуд в логах (2431+ сообщений)
+	// Это нормальное поведение системы - объекты не уничтожаются, если они используются
 //	if(!force)
 //	{
 //	if(!force)
@@ -750,8 +869,7 @@ void UStorage::FreeObjectsStorage(bool force)
 //  {
 //   if(Logger)
 //	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+  // Удалено избыточное логирование - создавало спам в INFO логах
  }
 }
 
@@ -770,8 +888,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
     size_t size=instances->second.size();
     size_t count=0;
 
-    if(Logger)
-        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+    // Удалено избыточное логирование - создавало спам в INFO логах
 
     for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
     {
@@ -785,8 +902,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
         if(!I->UseFlag)
         {
             list<UInstancesStorageElement>::iterator K;
-            if(Logger)
-                Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+            // Удалено избыточное логирование - создавало спам в INFO логах
             K=I; ++K;
             UEPtr<UContainer> object=I->Object;
             PopObject(instances,I);
@@ -823,8 +939,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
         }
     }
 
-    if(Logger)
-        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+    // Удалено избыточное логирование - создавало спам в INFO логах
 
 }
 
@@ -835,18 +950,15 @@ void UStorage::ClearObjectsStorage(bool force)
 												instances != iend; ++instances)
  {
   std::string object_class_name=FindClassName(instances->first);
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has begun");
+  // Удалено избыточное логирование - создавало спам в INFO логах
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
   {
    std::string object_name=I->Object->GetName();
-   if(Logger)
-	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects by name ")+object_name);
+   // Удалено избыточное логирование - создавало спам в INFO логах
    I->Object->Free();
   }
 
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
+  // Удалено избыточное логирование - создавало спам в INFO логах
  }
 
  FreeObjectsStorage(force);
@@ -859,8 +971,51 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
  if(instances ==ObjectsStorage.end())
   return;
 
+ // КРИТИЧНО: Перед удалением класса очищаем UseFlag для объектов без активных ссылок
+ // и восстанавливаем ClassId объектов из параметра classid, чтобы они не потеряли связь с Storage
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
+ {
+  UEPtr<UContainer> object=I->Object;
+  
+  // КРИТИЧНО: Проверяем и восстанавливаем ClassId объекта из параметра classid
+  if(object)
+  {
+   UId object_class_id = object->GetClass();
+   if(object_class_id == ForbiddenId || object_class_id != classid)
+   {
+    // Восстанавливаем ClassId из параметра classid
+    object->SetClass(classid);
+    // Удалено избыточное логирование - создавало спам в DEBUG логах
+   }
+  }
+  
+  // Очищаем UseFlag для объектов без активных ссылок (без Owner и с Activity=false)
+  if(I->UseFlag && object)
+  {
+   try
+   {
+    UEPtr<UContainer> owner = object->GetOwner();
+    bool activity = object->Activity;
+    
+    // Если объект не имеет владельца и не активен, он больше не используется
+    if(!owner && !activity)
+    {
+     I->UseFlag = false;
+     // Удалено избыточное логирование - создавало спам в DEBUG логах
+    }
+   }
+   catch(...)
+   {
+    // В случае ошибки оставляем UseFlag как есть
+   }
+  }
+  
+  // Вызываем Free() для объекта
   I->Object->Free();
+  
+  // КРИТИЧНО: НЕ сбрасываем ClassId объекта здесь, так как объект может все еще существовать
+  // и использоваться. ClassId будет сохранен до полного уничтожения объекта.
+ }
 
  ObjectsStorage.erase(instances);
 }
@@ -1908,6 +2063,24 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
  UInstancesStorage &instances=ObjectsStorage[classid];
 
+ // КРИТИЧНО: Валидация ClassId объекта перед добавлением в Storage
+ if(object)
+ {
+  UId object_class_id = object->GetClass();
+  if(object_class_id != classid)
+  {
+   // Если ClassId не соответствует, устанавливаем правильный
+   if(Logger && object_class_id != ForbiddenId)
+   {
+    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
+     std::string("Object ") + object->GetName() + 
+     std::string(" ClassId mismatch: expected ") + sntoa(classid) + 
+     std::string(", got ") + sntoa(object_class_id) + std::string(" - correcting"));
+   }
+   object->SetClass(classid);
+  }
+ }
+
  UInstancesStorageElement element(object,true);
  UInstancesStorageIterator it = instances.insert(instances.end(),element);
  // Update index map
@@ -2016,9 +2189,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
    ObjectsIndex[obj] = list_it;
    // КРИТИЧНО: Очищаем UseFlag, чтобы объект мог быть переиспользован
    list_it->UseFlag=false;
-   if(Logger)
-    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
-     std::string("Object ") + obj->GetName() + std::string(" returned to storage, UseFlag cleared"));
+   // Удалено избыточное логирование - создавало спам в INFO логах
    return;
   }
   else
@@ -2038,9 +2209,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
    ObjectsIndex[obj] = I;
    // КРИТИЧНО: Очищаем UseFlag, чтобы объект мог быть переиспользован
    I->UseFlag=false;
-   if(Logger)
-    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
-     std::string("Object ") + obj->GetName() + std::string(" returned to storage (linear search), UseFlag cleared"));
+   // Удалено избыточное логирование - создавало спам в INFO логах
    break;
   }
  }

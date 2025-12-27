@@ -1039,6 +1039,10 @@ UEPtr<UContainer> UContainer::Alloc(UEPtr<UStorage> stor, bool copystate)
 // и значений параметров
 bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
 {
+ // КРИТИЧНО: Сохраняем ClassId объекта-получателя перед копированием
+ // чтобы он не был перезаписан неправильным значением из источника
+ UId target_class_id = target->GetClass();
+ 
  CopyProperties(target, ptParameter);
  target->Build();
 
@@ -1046,6 +1050,14 @@ bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copys
   CopyProperties(target, ptState);
 
  CopyComponents(target,stor);
+ 
+ // КРИТИЧНО: Восстанавливаем ClassId объекта-получателя после копирования
+ // чтобы он не был изменен операциями копирования
+ if(target_class_id != ForbiddenId)
+ {
+  target->SetClass(target_class_id);
+ }
+ 
  return true;
 }
 

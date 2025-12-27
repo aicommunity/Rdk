@@ -998,11 +998,7 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             QPointF normalizedPos = scenePos();
             // Денормализуем: scenePos() уже нормализован, добавляем offset для получения абсолютных координат
             QPointF absoluteScenePos = normalizedPos + m_owner->m_normalizationOffset;
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                (std::string("[ModernDiagram] item move ") + fullName.toStdString() + 
-                 " scenePos=(" + std::to_string(normalizedPos.x()) + "," + std::to_string(normalizedPos.y()) + ")" +
-                 " offset=(" + std::to_string(m_owner->m_normalizationOffset.x()) + "," + std::to_string(m_owner->m_normalizationOffset.y()) + ")" +
-                 " absoluteScene=(" + std::to_string(absoluteScenePos.x()) + "," + std::to_string(absoluteScenePos.y()) + ")").c_str(), 0);
+            // Удалено избыточное логирование - создавало спам в INFO логах
             m_owner->saveCoord(fullName, absoluteScenePos);
         }
     }
@@ -2692,8 +2688,7 @@ void UModernDiagramWidget::SetComponentName(const QString& name)
 
 void UModernDiagramWidget::Reload()
 {
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-        (std::string("[ModernDiagram] Reload START componentName=") + m_componentName.toStdString()).c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
     clearScene();
     buildScene();
     QRectF bounds = m_scene->itemsBoundingRect();
@@ -2746,12 +2741,10 @@ void UModernDiagramWidget::clearScene()
 
 void UModernDiagramWidget::buildScene()
 {
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-        (std::string("[ModernDiagram] buildScene START componentName=") + m_componentName.toStdString()).c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
     if(!m_application)
     {
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-            "[ModernDiagram] buildScene SKIP - no application", 0);
+        // Удалено избыточное логирование - создавало спам в INFO логах
         return;
     }
 
@@ -2759,9 +2752,7 @@ void UModernDiagramWidget::buildScene()
     QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
     QStringList components = compListStr.split(",", Qt::SkipEmptyParts);
     Engine_FreeBufString(compRaw);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-        (std::string("[ModernDiagram] buildScene components count=") + std::to_string(components.size()) +
-         " list=" + compListStr.toStdString()).c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
 
     int idx = 0;
     bool coordsLoaded = false;
@@ -2794,11 +2785,7 @@ void UModernDiagramWidget::buildScene()
     // Сохраняем смещение нормализации ДО создания узлов, чтобы оно было доступно при сохранении координат
     // ВАЖНО: это смещение используется только для визуального отображения, координаты в ядре остаются абсолютными
     m_normalizationOffset = minScenePos;
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-        (std::string("[ModernDiagram] buildScene componentName=") + m_componentName.toStdString() +
-         " minKernel=(" + std::to_string(minKernel.x()) + "," + std::to_string(minKernel.y()) + ")" +
-         " minScenePos=(" + std::to_string(minScenePos.x()) + "," + std::to_string(minScenePos.y()) + ")" +
-         " normalizationOffset=(" + std::to_string(m_normalizationOffset.x()) + "," + std::to_string(m_normalizationOffset.y()) + ")").c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
     
     for(const QString& comp : components)
     {
@@ -2815,11 +2802,7 @@ void UModernDiagramWidget::buildScene()
             // Используем абсолютные координаты из ядра, нормализуем только для визуального отображения
             QPointF absoluteScenePos = scenePosFromKernel(kernelPos);
             loaded = absoluteScenePos - minScenePos;
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                (std::string("[ModernDiagram] buildScene node ") + comp.toStdString() +
-                 " kernel=(" + std::to_string(kernelPos.x()) + "," + std::to_string(kernelPos.y()) + ")" +
-                 " absoluteScene=(" + std::to_string(absoluteScenePos.x()) + "," + std::to_string(absoluteScenePos.y()) + ")" +
-                 " normalized=(" + std::to_string(loaded.x()) + "," + std::to_string(loaded.y()) + ")").c_str(), 0);
+            // Удалено избыточное логирование - создавало спам в INFO логах
         }
         else
         {
@@ -2896,29 +2879,20 @@ void UModernDiagramWidget::buildLinks()
     if(!xmlRaw)
         return;
     std::string raw(xmlRaw ? xmlRaw : "");
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-        (std::string("[ModernDiagram] links xml bytes=") + std::to_string(raw.size())).c_str(), 0);
-    if(!raw.empty())
-    {
-        std::string sample = raw.substr(0, 2000);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-            (std::string("[ModernDiagram] links xml sample=") + sample).c_str(), 0);
-    }
+    // Удалено избыточное логирование - создавало спам в INFO логах
 
     RDK::USerStorageXML xml;
     if(!xml.Load(raw, "Links"))
     {
         Engine_FreeBufString(xmlRaw);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-            "[ModernDiagram] links parse failed", 0);
+        // Удалено избыточное логирование - создавало спам в INFO логах
         return;
     }
 
     RDK::UStringLinksList linkslist;
     xml >> linkslist;
     Engine_FreeBufString(xmlRaw);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-        (std::string("[ModernDiagram] links parsed count=") + std::to_string(linkslist.GetSize())).c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
 
     QPointF minPos = currentMinScenePos();
 
@@ -2969,15 +2943,7 @@ void UModernDiagramWidget::buildLinks()
             const auto& connSide = link.Connector[c];
             QString connName = QString::fromStdString(connSide.Name);
             std::string connId = connSide.Id;
-            if(loggedPairs < 50)
-            {
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-                    (std::string("[ModernDiagram] link raw srcName=") + itemName.toStdString() +
-                     " srcId=" + itemId +
-                     " dstName=" + connName.toStdString() +
-                     " dstId=" + connId).c_str(), 0);
-                loggedPairs++;
-            }
+            // Удалено избыточное логирование - создавало спам в INFO логах
             NodeItem* srcNode = resolveNode(itemName);
             NodeItem* dstNode = resolveNode(connName);
             if(!srcNode)
@@ -2987,14 +2953,7 @@ void UModernDiagramWidget::buildLinks()
             if(!srcNode || !dstNode)
             {
                 skipped++;
-                if(loggedSkip < 30) // ограничим шум
-                {
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-                        (std::string("[ModernDiagram] link skip src=") + itemName.toStdString() +
-                         " dst=" + connName.toStdString() + " srcOk=" + (srcNode?"1":"0") +
-                         " dstOk=" + (dstNode?"1":"0")).c_str(), 0);
-                    loggedSkip++;
-                }
+                // Удалено избыточное логирование - создавало спам в INFO логах
                 continue;
             }
             
@@ -3078,13 +3037,10 @@ void UModernDiagramWidget::buildLinks()
             m_scene->addItem(l);
             m_links.append(l);
             added++;
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-                (std::string("[ModernDiagram] link add ") + itemName.toStdString() + " -> " + connName.toStdString()).c_str(), 0);
+            // Удалено избыточное логирование - создавало спам в INFO логах
         }
     }
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-        (std::string("[ModernDiagram] links summary added=") + std::to_string(added) +
-         " skipped=" + std::to_string(skipped)).c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
 }
 
 void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
@@ -3150,13 +3106,11 @@ QPointF UModernDiagramWidget::kernelPosFromScene(const QPointF& scene) const
 
 bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) const
 {
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-        (std::string("[ModernDiagram] loadCoord called for ") + fullName.toStdString()).c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
     const char* coordRaw = Model_GetComponentParameterValue(fullName.toStdString().c_str(), "Coord");
     if(!coordRaw)
     {
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-            (std::string("[ModernDiagram] coord missing for ") + fullName.toStdString()).c_str(), 0);
+        // Удалено избыточное логирование - создавало спам в INFO логах
         return false;
     }
     std::string coordBuf(coordRaw);
@@ -3167,10 +3121,7 @@ bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) c
         if(iss >> x >> y >> z)
         {
             QPointF kernel(x,y);
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-                (std::string("[ModernDiagram] load coord (plain) ") + fullName.toStdString() +
-                 " kernel=(" + std::to_string(kernel.x()) + "," +
-                 std::to_string(kernel.y()) + ")").c_str(), 0);
+            // Удалено избыточное логирование - создавало спам в INFO логах
             outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
             Engine_FreeBufString(coordRaw);
             return true;
@@ -3181,18 +3132,13 @@ bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) c
     Engine_FreeBufString(coordRaw);
     if(!ok)
     {
-        std::string sample = coordBuf.substr(0, 120);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG,
-            (std::string("[ModernDiagram] coord parse fail for ") + fullName.toStdString() +
-             " raw=" + sample).c_str(), 0);
+        // Удалено избыточное логирование - создавало спам в INFO логах
         return false;
     }
     RDK::MVector<double,3> pos;
     xml >> pos;
     QPointF kernel(pos[0], pos[1]);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, (std::string("[ModernDiagram] load coord ") +
-        fullName.toStdString() + " kernel=(" + std::to_string(kernel.x()) + "," +
-        std::to_string(kernel.y()) + ")").c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
     outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
     return true;
 }
@@ -3203,9 +3149,7 @@ void UModernDiagramWidget::saveCoord(const QString& fullName, const QPointF& sce
     // нормализация: гарантируем неотрицательные координаты в ядре
     if(kernelPos.x() < 0) kernelPos.setX(0);
     if(kernelPos.y() < 0) kernelPos.setY(0);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, (std::string("[ModernDiagram] save coord ") +
-        fullName.toStdString() + " kernel=(" + std::to_string(kernelPos.x()) + "," +
-        std::to_string(kernelPos.y()) + ")").c_str(), 0);
+    // Удалено избыточное логирование - создавало спам в INFO логах
     RDK::USerStorageXML xml;
     xml.Create("Coord");
     RDK::MVector<double,3> posVec;
