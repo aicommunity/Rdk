@@ -3089,17 +3089,20 @@ void UModernDiagramWidget::buildLinks()
 
 void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
 {
-    // Обработка Esc для отмены активной связи
-    if(event->key() == Qt::Key_Escape && m_activeTempLink)
+    // Обработка Esc для отмены активной связи и закрытия окон со списком портов
+    if(event->key() == Qt::Key_Escape)
     {
-        m_scene->removeItem(m_activeTempLink);
-        delete m_activeTempLink;
-        m_activeTempLink = nullptr;
-        m_activeSourceNode = nullptr;
-        m_activeSourcePort = nullptr;
-        m_isLineFrozen = false;
+        if(m_activeTempLink)
+        {
+            m_scene->removeItem(m_activeTempLink);
+            delete m_activeTempLink;
+            m_activeTempLink = nullptr;
+            m_activeSourceNode = nullptr;
+            m_activeSourcePort = nullptr;
+            m_isLineFrozen = false;
+        }
         
-        // Закрываем все открытые деревья портов
+        // Закрываем все открытые деревья портов (даже если нет активной связи)
         for(NodeItem* node : m_nodes)
         {
             node->hidePortListWidget();
@@ -3471,6 +3474,56 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
     }
+    
+    // Проверяем, был ли клик на фоне (не на узле, не на порте, не на окне со списком портов)
+    bool clickedOnBackground = true;
+    
+    // Проверяем, попали ли в узел
+    auto* node = m_owner->pickNode(event->scenePos());
+    if(node)
+    {
+        clickedOnBackground = false;
+    }
+    
+    // Проверяем, попали ли в порт
+    if(clickedOnBackground)
+    {
+        QPointF portPos;
+        UModernDiagramWidget::NodeItem* portNode = nullptr;
+        const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, portNode, portPos);
+        if(port)
+        {
+            clickedOnBackground = false;
+        }
+    }
+    
+    // Проверяем, попали ли в окно со списком портов
+    if(clickedOnBackground)
+    {
+        for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+        {
+            if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+            {
+                QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                    node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                if(widgetRect.contains(event->scenePos()))
+                {
+                    clickedOnBackground = false;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Если клик на фоне, закрываем все окна со списком портов
+    if(clickedOnBackground)
+    {
+        for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+        {
+            node->hidePortListWidget();
+        }
+    }
+    
     QGraphicsScene::mousePressEvent(event);
 }
 

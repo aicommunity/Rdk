@@ -35,6 +35,23 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
+         <widget class="QWidget" name="tabModern">
+          <attribute name="title">
+           <string>Modern Diagram</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutModern">
+           <item>
+            <widget class="QWidget" name="modernContainer" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="tabClassic">
           <attribute name="title">
            <string>Classic</string>
@@ -76,23 +93,6 @@
                </rect>
               </property>
              </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="tabModern">
-          <attribute name="title">
-           <string>Modern Diagram</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayoutModern">
-           <item>
-            <widget class="QWidget" name="modernContainer" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
             </widget>
            </item>
           </layout>
