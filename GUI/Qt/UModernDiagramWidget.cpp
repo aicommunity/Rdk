@@ -77,14 +77,95 @@ protected:
             auto* wheel = static_cast<QWheelEvent*>(event);
             const double factor = wheel->angleDelta().y() > 0 ? 1.15 : 0.87;
             
-            // Масштабирование относительно позиции курсора
-            QPointF scenePos = mapToScene(wheel->pos());
+            // 1. Сохраняем позицию курсора в координатах сцены до масштабирования
+            QPointF cursorViewportPos = wheel->position();
+            QPointF scenePosBefore = mapToScene(cursorViewportPos.toPoint());
+            
+            // 2. Применяем масштабирование
             scale(factor, factor);
             
-            // Корректируем позицию, чтобы точка под курсором осталась на месте
-            QPointF newScenePos = mapToScene(wheel->pos());
-            QPointF delta = scenePos - newScenePos;
-            translate(delta.x(), delta.y());
+            // 3. Вычисляем новую позицию курсора в координатах сцены после масштабирования
+            QPointF scenePosAfter = mapToScene(cursorViewportPos.toPoint());
+            
+            // 4. Корректируем позицию, чтобы точка под курсором осталась на месте
+            QPointF delta = scenePosBefore - scenePosAfter;
+            QPointF currentCenter = mapToScene(viewport()->rect().center());
+            QPointF newCenter = currentCenter + delta;
+            centerOn(newCenter);
+            
+            // 5. Проверяем видимость диаграммы и корректируем при необходимости
+            if(m_owner && m_owner->m_scene)
+            {
+                QRectF sceneBounds = m_owner->m_scene->itemsBoundingRect();
+                if(!sceneBounds.isNull())
+                {
+                    // Получаем видимую область в координатах сцены после первой корректировки
+                    QRectF viewportRect = viewport()->rect();
+                    QPointF topLeft = mapToScene(viewportRect.topLeft().toPoint());
+                    QPointF bottomRight = mapToScene(viewportRect.bottomRight().toPoint());
+                    QRectF visibleRect(topLeft, bottomRight);
+                    
+                    // Проверяем, помещается ли вся диаграмма в видимую область
+                    bool fitsInView = visibleRect.contains(sceneBounds);
+                    
+                    if(!fitsInView)
+                    {
+                        // Диаграмма не помещается - центрируем относительно курсора
+                        centerOn(scenePosBefore);
+                    }
+                    else
+                    {
+                        // Диаграмма помещается, но может быть частично за границами
+                        // Корректируем позицию для сохранения видимости, если это возможно
+                        QPointF finalCenter = newCenter;
+                        bool needsAdjustment = false;
+                        
+                        // Проверяем и корректируем по горизонтали
+                        if(sceneBounds.left() < visibleRect.left())
+                        {
+                            // Диаграмма выходит за левую границу - сдвигаем вправо
+                            double shiftX = visibleRect.left() - sceneBounds.left();
+                            finalCenter.setX(finalCenter.x() + shiftX);
+                            needsAdjustment = true;
+                        }
+                        else if(sceneBounds.right() > visibleRect.right())
+                        {
+                            // Диаграмма выходит за правую границу - сдвигаем влево
+                            double shiftX = sceneBounds.right() - visibleRect.right();
+                            finalCenter.setX(finalCenter.x() - shiftX);
+                            needsAdjustment = true;
+                        }
+                        
+                        // Проверяем и корректируем по вертикали
+                        if(sceneBounds.top() < visibleRect.top())
+                        {
+                            // Диаграмма выходит за верхнюю границу - сдвигаем вниз
+                            double shiftY = visibleRect.top() - sceneBounds.top();
+                            finalCenter.setY(finalCenter.y() + shiftY);
+                            needsAdjustment = true;
+                        }
+                        else if(sceneBounds.bottom() > visibleRect.bottom())
+                        {
+                            // Диаграмма выходит за нижнюю границу - сдвигаем вверх
+                            double shiftY = sceneBounds.bottom() - visibleRect.bottom();
+                            finalCenter.setY(finalCenter.y() - shiftY);
+                            needsAdjustment = true;
+                        }
+                        
+                        // Применяем корректировку только если она не слишком большая
+                        // (чтобы не нарушать позицию относительно курсора слишком сильно)
+                        if(needsAdjustment)
+                        {
+                            QPointF centerDelta = finalCenter - newCenter;
+                            double maxShift = qMin(visibleRect.width(), visibleRect.height()) * 0.2; // Максимум 20% от размера viewport
+                            if(centerDelta.manhattanLength() < maxShift)
+                            {
+                                centerOn(finalCenter);
+                            }
+                        }
+                    }
+                }
+            }
             
             return true;
         }

@@ -224,7 +224,7 @@ private:
         bool isValid = false;
     };
     QHash<QString, ViewState> m_viewStates;  // Состояние viewport для каждого компонента
-    static constexpr double DEFAULT_SCALE = 2.5;  // Начальный масштаб по умолчанию
+    static constexpr double DEFAULT_SCALE = 1.0;  // Начальный масштаб по умолчанию (уменьшен в 2.5 раза от предыдущего значения 2.5)
     
     // Кнопка сброса масштаба
     QPushButton* m_resetZoomButton;
