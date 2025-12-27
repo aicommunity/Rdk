@@ -86,7 +86,12 @@ void UDrawEngineWidget::ASaveParameters()
   settings.setValue("labelModelScheme_w", QVariant(modelScheme->width()));
   settings.setValue("labelModelScheme_h", QVariant(modelScheme->height()));
   settings.endGroup();
-
+  
+  // Сохраняем состояние viewport для современной диаграммы
+  if(modernScheme)
+  {
+    modernScheme->SaveViewState();
+  }
 }
 
 void UDrawEngineWidget::ALoadParameters()
@@ -101,6 +106,12 @@ void UDrawEngineWidget::ALoadParameters()
 //  modelScheme->setFixedSize(settings.value("labelModelScheme_w").toInt(),
 //                               settings.value("labelModelScheme_h").toInt());
   settings.endGroup();
+  
+  // Загружаем состояние viewport для современной диаграммы
+  if(modernScheme)
+  {
+    modernScheme->LoadViewState();
+  }
 }
 
 //расширение схемы при ресайзе

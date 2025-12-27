@@ -28,6 +28,7 @@
 #include <QKeySequence>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QResizeEvent>
 #include <cmath>
 #include <ctime>
 #include <sstream>
@@ -75,7 +76,16 @@ protected:
         {
             auto* wheel = static_cast<QWheelEvent*>(event);
             const double factor = wheel->angleDelta().y() > 0 ? 1.15 : 0.87;
+            
+            // Масштабирование относительно позиции курсора
+            QPointF scenePos = mapToScene(wheel->pos());
             scale(factor, factor);
+            
+            // Корректируем позицию, чтобы точка под курсором осталась на месте
+            QPointF newScenePos = mapToScene(wheel->pos());
+            QPointF delta = scenePos - newScenePos;
+            translate(delta.x(), delta.y());
+            
             return true;
         }
         return QGraphicsView::viewportEvent(event);
@@ -2851,6 +2861,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     , m_actionCloneComponent(nullptr)
     , m_actionQuickLink(nullptr)
     , m_contextMenuNode(nullptr)
+    , m_resetZoomButton(nullptr)
 {
     m_mainView->setRenderHint(QPainter::Antialiasing, true);
     m_mainView->setDragMode(QGraphicsView::RubberBandDrag);
@@ -2870,6 +2881,37 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     // Миникарта скрыта
     m_miniMap->hide();
     
+    // Создание кнопки сброса масштаба
+    m_resetZoomButton = new QPushButton(this);
+    m_resetZoomButton->setText("⟲");
+    m_resetZoomButton->setToolTip("Сбросить масштаб");
+    m_resetZoomButton->setFixedSize(32, 32);
+    m_resetZoomButton->setStyleSheet(
+        "QPushButton {"
+        "    background-color: rgba(255, 255, 255, 200);"
+        "    border: 1px solid #ccc;"
+        "    border-radius: 4px;"
+        "    font-size: 18px;"
+        "}"
+        "QPushButton:hover {"
+        "    background-color: rgba(240, 240, 240, 220);"
+        "}"
+        "QPushButton:pressed {"
+        "    background-color: rgba(220, 220, 220, 240);"
+        "}"
+    );
+    m_resetZoomButton->raise();
+    connect(m_resetZoomButton, &QPushButton::clicked, this, &UModernDiagramWidget::onResetZoomClicked);
+    
+    // Позиционируем кнопку при первом создании
+    QTimer::singleShot(0, this, [this]() {
+        if(m_resetZoomButton)
+        {
+            int margin = 10;
+            m_resetZoomButton->move(width() - m_resetZoomButton->width() - margin, margin);
+        }
+    });
+    
     createContextMenu();
 }
 
@@ -2887,16 +2929,19 @@ void UModernDiagramWidget::SetComponentName(const QString& name)
 
 void UModernDiagramWidget::Reload()
 {
+    // Сохраняем текущее состояние viewport перед перезагрузкой
+    // Сохраняем только если сцена уже содержит элементы (компонент был загружен ранее)
+    if(!m_componentName.isEmpty() && !m_scene->items().isEmpty())
+    {
+        saveCurrentViewState();
+    }
+    
     // Удалено избыточное логирование - создавало спам в INFO логах
     clearScene();
     buildScene();
-    QRectF bounds = m_scene->itemsBoundingRect();
-    if(!bounds.isNull())
-    {
-        QRectF padded = bounds.adjusted(-200, -200, 200, 200);
-        m_scene->setSceneRect(padded);
-        m_mainView->fitInView(padded, Qt::KeepAspectRatio);
-    }
+    
+    // Восстанавливаем состояние viewport для текущего компонента
+    restoreViewState(m_componentName);
 }
 
 void UModernDiagramWidget::FitToView()
@@ -3254,6 +3299,18 @@ void UModernDiagramWidget::rebuildLinks()
     
     // Перестраиваем связи
     buildLinks();
+}
+
+void UModernDiagramWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    
+    // Позиционируем кнопку сброса масштаба в правом верхнем углу
+    if(m_resetZoomButton)
+    {
+        int margin = 10;
+        m_resetZoomButton->move(width() - m_resetZoomButton->width() - margin, margin);
+    }
 }
 
 void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
@@ -4740,6 +4797,9 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         auto* node = m_owner->pickNode(event->scenePos());
         if(node)
         {
+            // Сохраняем состояние текущего компонента перед переходом
+            m_owner->saveCurrentViewState();
+            
             // Вход внутрь компонента: добавляем имя узла к пути
             QString newPath;
             if(m_owner->m_componentName.isEmpty())
@@ -4758,6 +4818,9 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         // Правый двойной клик по холсту: поднимаемся на уровень выше
         if(!m_owner->m_componentName.isEmpty())
         {
+            // Сохраняем состояние текущего компонента перед переходом
+            m_owner->saveCurrentViewState();
+            
             QStringList pathParts = m_owner->m_componentName.split(".");
             if(pathParts.size() > 0)
             {
@@ -4778,6 +4841,9 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void UModernDiagramWidget::componentDoubleClick(QString name)
 {
+    // Сохраняем состояние текущего компонента перед переходом
+    saveCurrentViewState();
+    
     SetComponentName(name);
     Reload();
 }
@@ -5301,5 +5367,164 @@ void UModernDiagramWidget::componentQuickLink()
             }
         }
     }
+}
+
+// --------------------------- Viewport State Management ---------------------------
+
+void UModernDiagramWidget::saveCurrentViewState()
+{
+    if(m_componentName.isEmpty() || !m_mainView)
+        return;
+    
+    ViewState state;
+    QTransform transform = m_mainView->transform();
+    state.scale = transform.m11();  // Масштаб по X (обычно равен масштабу по Y)
+    state.center = m_mainView->mapToScene(m_mainView->viewport()->rect().center());
+    state.isValid = true;
+    
+    m_viewStates[m_componentName] = state;
+}
+
+void UModernDiagramWidget::restoreViewState(const QString& componentName)
+{
+    if(componentName.isEmpty() || !m_mainView || m_scene->items().isEmpty())
+        return;
+    
+    // Проверяем, есть ли сохраненное состояние для этого компонента
+    if(m_viewStates.contains(componentName))
+    {
+        const ViewState& state = m_viewStates[componentName];
+        if(state.isValid)
+        {
+            // Восстанавливаем масштаб
+            m_mainView->resetTransform();
+            m_mainView->scale(state.scale, state.scale);
+            
+            // Восстанавливаем центр
+            m_mainView->centerOn(state.center);
+            return;
+        }
+    }
+    
+    // Если сохраненного состояния нет, устанавливаем начальный масштаб 2.5x
+    QRectF bounds = m_scene->itemsBoundingRect();
+    if(!bounds.isNull())
+    {
+        QRectF padded = bounds.adjusted(-200, -200, 200, 200);
+        m_scene->setSceneRect(padded);
+        
+        // Устанавливаем начальный масштаб 2.5x
+        m_mainView->resetTransform();
+        m_mainView->scale(DEFAULT_SCALE, DEFAULT_SCALE);
+        
+        // Центрируем на содержимом
+        m_mainView->centerOn(bounds.center());
+        
+        // Сохраняем это состояние
+        ViewState state;
+        state.scale = DEFAULT_SCALE;
+        state.center = bounds.center();
+        state.isValid = true;
+        m_viewStates[componentName] = state;
+    }
+}
+
+void UModernDiagramWidget::resetZoom()
+{
+    if(!m_mainView || m_scene->items().isEmpty())
+        return;
+    
+    QRectF bounds = m_scene->itemsBoundingRect();
+    if(!bounds.isNull())
+    {
+        // Сбрасываем масштаб к начальному значению 2.5x
+        m_mainView->resetTransform();
+        m_mainView->scale(DEFAULT_SCALE, DEFAULT_SCALE);
+        
+        // Центрируем на содержимом
+        m_mainView->centerOn(bounds.center());
+        
+        // Обновляем сохраненное состояние
+        if(!m_componentName.isEmpty())
+        {
+            ViewState state;
+            state.scale = DEFAULT_SCALE;
+            state.center = bounds.center();
+            state.isValid = true;
+            m_viewStates[m_componentName] = state;
+        }
+    }
+}
+
+void UModernDiagramWidget::onResetZoomClicked()
+{
+    resetZoom();
+}
+
+void UModernDiagramWidget::SaveViewState()
+{
+    if(!m_application)
+        return;
+    
+    // Сохраняем текущее состояние перед сохранением
+    saveCurrentViewState();
+    
+    QSettings settings(QString::fromLocal8Bit(
+                         m_application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup("UModernDiagramWidget_ViewStates");
+    
+    // Сохраняем количество состояний
+    settings.setValue("count", m_viewStates.size());
+    
+    // Сохраняем каждое состояние
+    int index = 0;
+    for(auto it = m_viewStates.begin(); it != m_viewStates.end(); ++it, ++index)
+    {
+        QString key = QString("component_%1").arg(index);
+        settings.setValue(key + "_name", it.key());
+        settings.setValue(key + "_scale", it.value().scale);
+        settings.setValue(key + "_center_x", it.value().center.x());
+        settings.setValue(key + "_center_y", it.value().center.y());
+        settings.setValue(key + "_valid", it.value().isValid);
+    }
+    
+    settings.endGroup();
+}
+
+void UModernDiagramWidget::LoadViewState()
+{
+    if(!m_application)
+        return;
+    
+    QSettings settings(QString::fromLocal8Bit(
+                         m_application->GetProjectPath().c_str())+"settings.qt",
+                       QSettings::IniFormat);
+    settings.beginGroup("UModernDiagramWidget_ViewStates");
+    
+    int count = settings.value("count", 0).toInt();
+    m_viewStates.clear();
+    
+    // Загружаем каждое состояние
+    for(int i = 0; i < count; ++i)
+    {
+        QString key = QString("component_%1").arg(i);
+        QString name = settings.value(key + "_name").toString();
+        if(!name.isEmpty())
+        {
+            ViewState state;
+            state.scale = settings.value(key + "_scale", DEFAULT_SCALE).toDouble();
+            state.center.setX(settings.value(key + "_center_x", 0.0).toDouble());
+            state.center.setY(settings.value(key + "_center_y", 0.0).toDouble());
+            state.isValid = settings.value(key + "_valid", false).toBool();
+            
+            if(state.isValid)
+            {
+                m_viewStates[name] = state;
+            }
+        }
+    }
+    
+    settings.endGroup();
 }
 

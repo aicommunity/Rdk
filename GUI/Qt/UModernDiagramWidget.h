@@ -11,6 +11,9 @@
 #include <QPointer>
 #include <QPoint>
 #include <QTreeWidget>
+#include <QHash>
+#include <QPushButton>
+#include <QSettings>
 #include <rdk_init.h>
 #include <rdk_application.h>
 #include "../Core/Engine/UXMLEnvSerialize.h"
@@ -42,6 +45,10 @@ public slots:
     void updateScheme(bool reloadXml);
     /// Выбор компонента по имени
     void selectComponent(QString name);
+    /// Сохранение состояния viewport в QSettings
+    void SaveViewState();
+    /// Загрузка состояния viewport из QSettings
+    void LoadViewState();
 
 signals:
     /// Компонент выбран (одиночный клик)
@@ -61,6 +68,7 @@ signals:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     friend class ModernScene;
@@ -209,6 +217,18 @@ private:
     // Нужна для правильной денормализации координат при сохранении
     QPointF m_normalizationOffset;
 
+    // Viewport state management
+    struct ViewState {
+        double scale = 1.0;
+        QPointF center;
+        bool isValid = false;
+    };
+    QHash<QString, ViewState> m_viewStates;  // Состояние viewport для каждого компонента
+    static constexpr double DEFAULT_SCALE = 2.5;  // Начальный масштаб по умолчанию
+    
+    // Кнопка сброса масштаба
+    QPushButton* m_resetZoomButton;
+
     // Context menu
     QMenu* m_contextMenu;
     QAction* m_actionViewOrBreakLink;
@@ -258,12 +278,18 @@ private slots:
     void componentCopyXMLDescription();
     void componentCloneComponent();
     void componentQuickLink();
+    void onResetZoomClicked();
 
     QPointF scenePosFromKernel(const QPointF& kernel) const;
     QPointF kernelPosFromScene(const QPointF& scene) const;
     bool loadCoord(const QString& fullName, QPointF& outPos) const;
     void saveCoord(const QString& fullName, const QPointF& scenePos) const;
     QPointF currentMinScenePos() const;
+    
+    // Viewport state management methods
+    void saveCurrentViewState();
+    void restoreViewState(const QString& componentName);
+    void resetZoom();
 };
 
 #endif // UMODERNDIAGRAMWIDGET_H
