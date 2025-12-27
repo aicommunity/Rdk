@@ -20,11 +20,21 @@ ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
     layout->addWidget(textEdit);
     layout->setMargin(0);
 
+    // Create timer for independent log updates regardless of calculation mode
+    updateTimer = new QTimer(this);
+    updateTimer->setInterval(200); // Same interval as UpdateInterval
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(onUpdateTimer()));
+    updateTimer->start();
+
     UpdateInterface(true);
 }
 
 ULoggerWidget::~ULoggerWidget()
 {
+    if(updateTimer)
+    {
+        updateTimer->stop();
+    }
     delete textEdit;
 }
 
@@ -73,6 +83,13 @@ void ULoggerWidget::AUpdateInterface()
   const int severity = MapLogSeverity(message);
   AddString(severity, QString::fromLocal8Bit(message.Text.c_str()));
  }
+}
+
+void ULoggerWidget::onUpdateTimer()
+{
+    // Update logs directly, bypassing UpdateInterface() checks
+    // This allows logs to update even when not in calculation mode
+    AUpdateInterface();
 }
 
 void ULoggerWidget::AddString(int log_level, const QString &string)

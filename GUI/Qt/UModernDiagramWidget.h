@@ -168,6 +168,7 @@ private:
     const Port* pickPortDetailed(const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos);
     NodeItem* pickNode(const QPointF& scenePos) const;
     void buildLinks();
+    void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
 
     // UI
     QGraphicsScene* m_scene;

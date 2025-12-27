@@ -329,7 +329,22 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         // Подключаем обработку двойного клика
         QObject::connect(m_portListWidget, &QTreeWidget::itemDoubleClicked,
                         [this](QTreeWidgetItem* item, int column) {
+                            // Логируем событие двойного клика (используем qDebug для гарантированного вывода)
+                            qDebug() << "itemDoubleClicked signal received";
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                                "itemDoubleClicked signal received", 0);
                             // Двойной клик всегда активирует порт
+                            onPortItemActivated(item, column);
+                        });
+        
+        // Подключаем обработку активации элемента (двойной клик или Enter)
+        QObject::connect(m_portListWidget, &QTreeWidget::itemActivated,
+                        [this](QTreeWidgetItem* item, int column) {
+                            // Логируем событие активации (используем qDebug для гарантированного вывода)
+                            qDebug() << "itemActivated signal received";
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                                "itemActivated signal received", 0);
+                            // Активация всегда обрабатывает порт
                             onPortItemActivated(item, column);
                         });
         
@@ -341,21 +356,71 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         enterShortcut->setContext(Qt::WindowShortcut);
         enterShortcut2->setContext(Qt::WindowShortcut);
         QObject::connect(enterShortcut, &QShortcut::activated, [this]() {
-            if(m_portListWidget && m_portListWidget->currentItem() && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
+            qDebug() << "Enter shortcut activated";
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                "Enter shortcut activated", 0);
+            if(m_portListWidget && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
             {
-                onPortItemActivated(m_portListWidget->currentItem(), 0);
+                QTreeWidgetItem* currentItem = m_portListWidget->currentItem();
+                if(currentItem)
+                {
+                    QString logMsg = QString("Enter shortcut: currentItem found, calling onPortItemActivated. Item has parent: %1")
+                        .arg(currentItem->parent() ? "yes" : "no");
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                    onPortItemActivated(currentItem, 0);
+                }
+                else
+                {
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                        "Enter shortcut: currentItem is null", 0);
+                }
+            }
+            else
+            {
+                QString warnMsg = QString("Enter shortcut: Conditions not met (widget=%1, proxy=%2, visible=%3)")
+                    .arg(m_portListWidget ? "yes" : "no")
+                    .arg(m_portListWidgetProxy ? "yes" : "no")
+                    .arg(m_portListWidgetProxy && m_portListWidgetProxy->isVisible() ? "yes" : "no");
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warnMsg.toStdString().c_str(), 0);
             }
         });
         QObject::connect(enterShortcut2, &QShortcut::activated, [this]() {
-            if(m_portListWidget && m_portListWidget->currentItem() && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
+            qDebug() << "Enter (numpad) shortcut activated";
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                "Enter (numpad) shortcut activated", 0);
+            if(m_portListWidget && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
             {
-                onPortItemActivated(m_portListWidget->currentItem(), 0);
+                QTreeWidgetItem* currentItem = m_portListWidget->currentItem();
+                if(currentItem)
+                {
+                    QString logMsg = QString("Enter (numpad) shortcut: currentItem found, calling onPortItemActivated. Item has parent: %1")
+                        .arg(currentItem->parent() ? "yes" : "no");
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                    onPortItemActivated(currentItem, 0);
+                }
+                else
+                {
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                        "Enter (numpad) shortcut: currentItem is null", 0);
+                }
+            }
+            else
+            {
+                QString warnMsg = QString("Enter (numpad) shortcut: Conditions not met (widget=%1, proxy=%2, visible=%3)")
+                    .arg(m_portListWidget ? "yes" : "no")
+                    .arg(m_portListWidgetProxy ? "yes" : "no")
+                    .arg(m_portListWidgetProxy && m_portListWidgetProxy->isVisible() ? "yes" : "no");
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warnMsg.toStdString().c_str(), 0);
             }
         });
         
-        // Добавляем обработку одинарного клика для выходных портов
+        // Добавляем обработку одинарного клика для выходных и входных портов
         QObject::connect(m_portListWidget, &QTreeWidget::itemClicked,
                         [this](QTreeWidgetItem* item, int column) {
+                            // Логируем событие клика
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                                "itemClicked signal received", 0);
+                            
                             // Для выходных портов одинарный клик начинает соединение
                             if(item && item->parent() != nullptr)
                             {
@@ -365,12 +430,44 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                                     QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
                                     bool isInput = portData["isInput"].toBool();
                                     QString portName = portData["name"].toString();
+                                    
+                                    QString logMsg = QString("itemClicked: %1 port '%2', activeTempLink=%3")
+                                        .arg(isInput ? "input" : "output")
+                                        .arg(portName)
+                                        .arg(m_owner && m_owner->m_activeTempLink ? "yes" : "no");
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+                                    
                                     // Для выходных портов начинаем соединение
                                     if(!isInput && !portName.isEmpty())
                                     {
+                                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                                            "itemClicked: Calling onPortItemActivated for output port", 0);
                                         onPortItemActivated(item, column);
                                     }
+                                    // Для входных портов завершаем соединение, если оно активно
+                                    else if(isInput && !portName.isEmpty() && m_owner && m_owner->m_activeTempLink)
+                                    {
+                                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                                            "itemClicked: Calling onPortItemActivated for input port", 0);
+                                        onPortItemActivated(item, column);
+                                    }
+                                    else if(isInput && !portName.isEmpty())
+                                    {
+                                        QString warnMsg = QString("itemClicked: Input port clicked but no active connection (activeTempLink=%1)")
+                                            .arg(m_owner && m_owner->m_activeTempLink ? "yes" : "no");
+                                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warnMsg.toStdString().c_str(), 0);
+                                    }
                                 }
+                                else
+                                {
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                                        "itemClicked: Port data is invalid", 0);
+                                }
+                            }
+                            else
+                            {
+                                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                                    "itemClicked: Item is null or is a component (not a port)", 0);
                             }
                         });
     }
@@ -2112,23 +2209,50 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
 {
     Q_UNUSED(column);
     
+    // Логируем вход в функцию в самом начале (используем qDebug для гарантированного вывода)
+    qDebug() << "onPortItemActivated: Function called";
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+        "onPortItemActivated: Function called", 0);
+    
     if(!item || !m_owner)
+    {
+        QString errorMsg = QString("onPortItemActivated: Invalid item or owner (item=%1, owner=%2)")
+            .arg(item ? "yes" : "no")
+            .arg(m_owner ? "yes" : "no");
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, errorMsg.toStdString().c_str(), 0);
         return;
+    }
     
     // Проверяем, что это элемент порта (не компонент)
     if(item->parent() == nullptr)
+    {
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+            "onPortItemActivated: Item is a component, not a port", 0);
         return; // Это элемент компонента, не порт
+    }
     
     // Получаем данные порта
     QVariant data = item->data(0, Qt::UserRole);
     if(!data.isValid())
+    {
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+            "onPortItemActivated: Port data is invalid", 0);
         return;
+    }
     
     QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
     bool isInput = portData["isInput"].toBool();
     QString portName = portData["name"].toString();
     QString componentName = portData["componentName"].toString();
     QString fullPath = portData["fullPath"].toString();
+    
+    // Логируем начало обработки
+    QString logMsg = QString("onPortItemActivated: Processing %1 port '%2' in component '%3', activeTempLink=%4")
+        .arg(isInput ? "input" : "output")
+        .arg(portName)
+        .arg(componentName)
+        .arg(m_owner->m_activeTempLink ? "yes" : "no");
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     
     // НЕ закрываем дерево портов сразу - оно закроется автоматически через таймер
     // Это предотвращает случайные клики на фон сразу после закрытия дерева
@@ -2139,14 +2263,68 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
     
     if(isInput)
     {
-        // Если выбран входной порт и есть активный исходный порт - завершаем связь
-        if(m_owner->m_activeSourceNode && m_owner->m_activeSourcePort)
+        qDebug() << "onPortItemActivated: Input port selected, portName:" << portName << "componentName:" << componentName;
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+            "onPortItemActivated: Input port selected", 0);
+        
+        // Если выбран входной порт и есть активное соединение - завершаем связь
+        // Проверяем наличие активного соединения через m_activeTempLink
+        if(m_owner->m_activeTempLink)
         {
+            qDebug() << "onPortItemActivated: Active connection exists";
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                "onPortItemActivated: Active connection exists", 0);
+            
+            // Дополнительная проверка: должны быть установлены исходные данные
+            if(!m_owner->m_activeSourceNode || 
+               m_owner->m_activeSourcePortName.isEmpty())
+            {
+                // Логируем ошибку: отсутствуют исходные данные
+                qDebug() << "onPortItemActivated: ERROR - source port data is missing, activeSourceNode:" 
+                         << (m_owner->m_activeSourceNode ? "exists" : "null") 
+                         << "activeSourcePortName:" << m_owner->m_activeSourcePortName;
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                    "onPortItemActivated: Cannot complete connection - source port data is missing", 0);
+                return;
+            }
+            
+            qDebug() << "onPortItemActivated: Source port data OK, sourceNode:" << m_owner->m_activeSourceNode->nodeName
+                     << "sourcePortName:" << m_owner->m_activeSourcePortName;
+            
             // Формируем полные имена компонентов
             QString srcName = m_owner->m_activeSourceNode->nodeName;
-            QString dstName = componentName.isEmpty() ? nodeName : componentName;
+            // Для собственных портов используем nodeName, для дочерних - componentName
+            // componentName равен nodeName для собственных портов, поэтому проверяем это
+            QString dstName = (componentName.isEmpty() || componentName == nodeName) ? nodeName : componentName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
-            QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
+            
+            // Формируем fullDst: если componentName == nodeName, это собственный порт,
+            // и мы должны использовать только nodeName (без добавления m_componentName, если оно уже содержит nodeName)
+            QString fullDst;
+            if(m_owner->m_componentName.isEmpty())
+            {
+                fullDst = dstName;
+            }
+            else
+            {
+                // Проверяем, не содержит ли m_componentName уже dstName (чтобы избежать дублирования)
+                if(m_owner->m_componentName == dstName || m_owner->m_componentName.endsWith("." + dstName))
+                {
+                    fullDst = m_owner->m_componentName;
+                }
+                else
+                {
+                    fullDst = m_owner->m_componentName + "." + dstName;
+                }
+            }
+            
+            // Логируем промежуточные значения для диагностики
+            qDebug() << "onPortItemActivated: Component path formation:";
+            qDebug() << "  nodeName:" << nodeName;
+            qDebug() << "  componentName:" << componentName;
+            qDebug() << "  dstName:" << dstName;
+            qDebug() << "  m_componentName:" << m_owner->m_componentName;
+            qDebug() << "  fullDst:" << fullDst;
             
             // Формируем пути свойств, используя сохраненные копии вместо указателя
             QString srcProp;
@@ -2167,18 +2345,47 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             {
                 srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
             }
-            if(!componentName.isEmpty() && componentName != dstName)
+            // Для дочерних компонентов добавляем componentName к dstProp только если он отличается от nodeName
+            if(!componentName.isEmpty() && componentName != nodeName)
             {
                 dstProp = componentName + "." + dstProp;
             }
             
+            // Логируем параметры перед созданием соединения
+            qDebug() << "onPortItemActivated: Creating connection:";
+            qDebug() << "  fullSrc:" << fullSrc;
+            qDebug() << "  srcProp:" << srcProp;
+            qDebug() << "  fullDst:" << fullDst;
+            qDebug() << "  dstProp:" << dstProp;
+            QString preMsg = QString("onPortItemActivated: Creating connection: %1.%2 -> %3.%4")
+                .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, preMsg.toStdString().c_str(), 0);
+            
             // Применяем связь к ядру
-            Model_CreateLinkByName(
+            int result = Model_CreateLinkByName(
                 fullSrc.toStdString().c_str(),
                 srcProp.toStdString().c_str(),
                 fullDst.toStdString().c_str(),
                 dstProp.toStdString().c_str()
             );
+            
+            qDebug() << "onPortItemActivated: Model_CreateLinkByName returned:" << result;
+            
+            // Логируем результат создания соединения
+            if(result == 0) // Предполагаем, что 0 означает успех
+            {
+                QString successMsg = QString("Connection created successfully: %1.%2 -> %3.%4")
+                    .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp);
+                qDebug() << "onPortItemActivated: SUCCESS -" << successMsg;
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, successMsg.toStdString().c_str(), 0);
+            }
+            else
+            {
+                QString errorMsg = QString("Failed to create connection: %1.%2 -> %3.%4 (error code: %5)")
+                    .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp).arg(result);
+                qDebug() << "onPortItemActivated: ERROR -" << errorMsg;
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_ERROR, errorMsg.toStdString().c_str(), 0);
+            }
             
             // Удаляем временную линию
             if(m_owner->m_activeTempLink)
@@ -2206,13 +2413,34 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 node->hidePortListWidget();
             }
             
-            // Обновляем схему
+            // Обновляем схему (перестраиваем связи)
+            // Сначала отправляем сигнал, затем перестраиваем связи (чтобы избежать обращения к удаленным объектам)
             emit m_owner->updateComponentsList();
+            if(result == 0) // Только при успешном создании связи
+            {
+                qDebug() << "onPortItemActivated: Calling rebuildLinks() to update links";
+                m_owner->rebuildLinks();
+            }
+            else
+            {
+                qDebug() << "onPortItemActivated: Not rebuilding links, result =" << result;
+            }
+        }
+        else
+        {
+            // Логируем предупреждение: попытка завершить соединение без активного соединения
+            qDebug() << "onPortItemActivated: WARNING - no active connection exists (m_activeTempLink is null)";
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                "onPortItemActivated: Attempted to complete connection but no active connection exists", 0);
+            return;
         }
     }
     else
     {
         // Если выбран выходной порт - начинаем pull-режим
+        QString logMsg = QString("onPortItemActivated: Starting connection from output port '%1'")
+            .arg(portName);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
         // Находим порт в реальных портах (не в категоризированных)
         const Port* selectedPort = nullptr;
         
@@ -2247,6 +2475,13 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         
         if(selectedPort)
         {
+            // Логируем успешное начало соединения
+            qDebug() << "onPortItemActivated: Starting connection from output port:" << portName 
+                     << "in component:" << nodeName;
+            QString successMsg = QString("Connection started from port '%1' in component '%2'")
+                .arg(portName).arg(nodeName);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, successMsg.toStdString().c_str(), 0);
+            
             // Сохраняем состояние активной связи
             m_owner->m_activeSourceNode = this;
             m_owner->m_activeSourcePort = selectedPort;
@@ -2260,6 +2495,9 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             catch(...)
             {
                 // Если произошла ошибка при копировании, отменяем операцию
+                QString errorMsg = QString("Failed to start connection: error copying port data for port '%1'")
+                    .arg(portName);
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_ERROR, errorMsg.toStdString().c_str(), 0);
                 m_owner->m_activeSourceNode = nullptr;
                 m_owner->m_activeSourcePort = nullptr;
                 return;
@@ -2300,6 +2538,13 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             
             // Закрываем дерево портов после создания временной линии
             hidePortListWidget();
+        }
+        else
+        {
+            // Логируем ошибку: порт не найден
+            QString errorMsg = QString("Failed to start connection: port '%1' not found in component '%2'")
+                .arg(portName).arg(nodeName);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, errorMsg.toStdString().c_str(), 0);
         }
     }
     
@@ -2997,8 +3242,56 @@ void UModernDiagramWidget::buildLinks()
     // Удалено избыточное логирование - создавало спам в INFO логах
 }
 
+void UModernDiagramWidget::rebuildLinks()
+{
+    // Удаляем все существующие связи
+    for(auto* link : m_links)
+    {
+        m_scene->removeItem(link);
+        delete link;
+    }
+    m_links.clear();
+    
+    // Перестраиваем связи
+    buildLinks();
+}
+
 void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
 {
+    // Обработка Enter для завершения соединения через окно выбора портов
+    if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+    {
+        qDebug() << "keyPressEvent: Enter/Return key pressed";
+        // Проверяем, есть ли открытое окно выбора портов
+        for(NodeItem* node : m_nodes)
+        {
+            if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+            {
+                qDebug() << "keyPressEvent: Found visible port list widget";
+                if(node->m_portListWidget)
+                {
+                    QTreeWidgetItem* currentItem = node->m_portListWidget->currentItem();
+                    if(currentItem && currentItem->parent() != nullptr) // Проверяем, что это элемент порта (не категория)
+                    {
+                        // Логируем через qDebug для гарантированного вывода
+                        qDebug() << "keyPressEvent: Enter pressed, currentItem found, calling onPortItemActivated";
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            "keyPressEvent: Enter pressed, processing current item from port list", 0);
+                        node->onPortItemActivated(currentItem, 0);
+                        event->accept();
+                        return;
+                    }
+                    else
+                    {
+                        qDebug() << "keyPressEvent: Enter pressed but currentItem is null or is a category";
+                    }
+                }
+            }
+        }
+        qDebug() << "keyPressEvent: Enter pressed but no visible port list widget found";
+        // Если окно выбора портов не открыто, передаем событие дальше (не отменяем соединение!)
+    }
+    
     // Обработка Esc для отмены активной связи и закрытия окон со списком портов
     if(event->key() == Qt::Key_Escape)
     {
@@ -3354,9 +3647,17 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     
                     if (hasPorts)
                     {
+                        qDebug() << "mousePressEvent: Opening input port list for category" << (int)inputPort->category;
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            "mousePressEvent: Opening input port list for category", 0);
+                        
                         // Если есть активная связь, активируем состояние ожидания выбора порта
                         if(m_owner->m_activeTempLink)
                         {
+                            qDebug() << "mousePressEvent: Active connection exists, setting waiting state";
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                                "mousePressEvent: Active connection exists, setting waiting state", 0);
+                            
                             // Получаем текущую позицию курсора в сцене
                             QPointF currentCursorPos;
                             if(m_owner->m_mainView)
@@ -3382,12 +3683,19 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                             // Обновляем геометрию временной линии один раз для заморозки
                             m_owner->m_activeTempLink->updateGeometry(freezePos);
                             
+                            qDebug() << "mousePressEvent: Connection frozen at position:" << freezePos;
+                            
                             // Принудительно обновляем сцену, чтобы изменения вступили в силу немедленно
                             if(m_owner->m_scene)
                             {
                                 m_owner->m_scene->update();
                             }
                         }
+                        else
+                        {
+                            qDebug() << "mousePressEvent: No active connection, just opening port list";
+                        }
+                        
                         node->showPortListWidget(event->scenePos());
                         event->accept();
                         return;
@@ -3576,6 +3884,9 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 if(widgetRect.contains(event->scenePos()))
                 {
                     clickedOnBackground = false;
+                    // Логируем, что клик попал в окно выбора портов
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                        "mousePressEvent: Click detected in port list widget, forwarding to widget", 0);
                     // Передаем событие виджету, чтобы он мог обработать клик
                     QGraphicsScene::mousePressEvent(event);
                     return;
@@ -3769,7 +4080,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
             
             // Применяем связь к ядру
-            Model_CreateLinkByName(
+            int result = Model_CreateLinkByName(
                 fullSrc.toStdString().c_str(),
                 srcProp.toStdString().c_str(),
                 fullDst.toStdString().c_str(),
@@ -3785,7 +4096,16 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_dragSourceNode = nullptr;
             m_owner->m_dragSourcePort = nullptr;
             
-            // Обновляем схему
+            // Обновляем схему (перестраиваем связи)
+            if(result == 0) // Только при успешном создании связи
+            {
+                qDebug() << "onPortItemActivated: Calling Reload() to rebuild links";
+                m_owner->Reload();
+            }
+            else
+            {
+                qDebug() << "onPortItemActivated: Not reloading, result =" << result;
+            }
             emit m_owner->updateComponentsList();
             
             event->accept();
@@ -3825,10 +4145,114 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
         }
         
-        // Если клик попал на окно выбора, не завершаем соединение
+        // Если клик попал на окно выбора, обрабатываем выбор порта напрямую
         if(clickedOnPortListWidget)
         {
-            event->accept();
+            qDebug() << "mouseReleaseEvent: Click detected on port list widget";
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                "mouseReleaseEvent: Click detected on port list widget", 0);
+            
+            // Находим узел с открытым окном выбора портов
+            for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+            {
+                if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+                {
+                    QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                        node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                    if(widgetRect.contains(event->scenePos()))
+                    {
+                        qDebug() << "mouseReleaseEvent: Found visible port list widget, scenePos:" << event->scenePos();
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            "mouseReleaseEvent: Found visible port list widget", 0);
+                        
+                        // Преобразуем позицию клика в локальные координаты виджета
+                        QPointF widgetLocalPos = node->m_portListWidgetProxy->mapFromScene(event->scenePos());
+                        QPoint widgetPoint = widgetLocalPos.toPoint();
+                        
+                        qDebug() << "mouseReleaseEvent: widgetLocalPos:" << widgetLocalPos << "widgetPoint:" << widgetPoint;
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            "mouseReleaseEvent: Converting coordinates for itemAt", 0);
+                        
+                        // Попробуем несколько способов найти элемент:
+                        // 1. Через itemAt с преобразованными координатами
+                        QTreeWidgetItem* itemUnderCursor = node->m_portListWidget->itemAt(widgetPoint);
+                        
+                        // 2. Если не нашли, попробуем через mapFromGlobal
+                        if(!itemUnderCursor)
+                        {
+                            QPointF screenPos = event->screenPos();
+                            QPoint globalPos = screenPos.toPoint();
+                            QPoint widgetGlobalPoint = node->m_portListWidget->mapFromGlobal(globalPos);
+                            itemUnderCursor = node->m_portListWidget->itemAt(widgetGlobalPoint);
+                            qDebug() << "mouseReleaseEvent: Trying mapFromGlobal, globalPos:" << globalPos 
+                                     << "widgetGlobalPoint:" << widgetGlobalPoint;
+                        }
+                        
+                        // 3. Если все еще не нашли, используем currentItem
+                        if(!itemUnderCursor)
+                        {
+                            itemUnderCursor = node->m_portListWidget->currentItem();
+                            qDebug() << "mouseReleaseEvent: Using currentItem as fallback";
+                        }
+                        
+                        if(itemUnderCursor)
+                        {
+                            qDebug() << "mouseReleaseEvent: itemUnderCursor found, has parent:" << (itemUnderCursor->parent() != nullptr);
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                                "mouseReleaseEvent: itemUnderCursor found", 0);
+                            
+                            if(itemUnderCursor->parent() != nullptr)
+                            {
+                                // Это элемент порта (не категория) - завершаем соединение
+                                QVariant data = itemUnderCursor->data(0, Qt::UserRole);
+                                if(data.isValid())
+                                {
+                                    QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
+                                    bool isInput = portData["isInput"].toBool();
+                                    QString portName = portData["name"].toString();
+                                    
+                                    qDebug() << "mouseReleaseEvent: Clicked on port item, isInput:" << isInput << "portName:" << portName;
+                                    QString logMsg = QString("mouseReleaseEvent: Clicked on %1 port '%2' in list, completing connection")
+                                        .arg(isInput ? "input" : "output").arg(portName);
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                                    
+                                    node->onPortItemActivated(itemUnderCursor, 0);
+                                    event->accept();
+                                    return;
+                                }
+                                else
+                                {
+                                    qDebug() << "mouseReleaseEvent: Item data is invalid";
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                                        "mouseReleaseEvent: Item data is invalid", 0);
+                                }
+                            }
+                            else
+                            {
+                                qDebug() << "mouseReleaseEvent: Clicked on category item (no parent)";
+                                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
+                                    "mouseReleaseEvent: Clicked on category item", 0);
+                            }
+                        }
+                        else
+                        {
+                            qDebug() << "mouseReleaseEvent: No item found at widgetPoint:" << widgetPoint;
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                                "mouseReleaseEvent: No item found at cursor position", 0);
+                        }
+                        
+                        // Если не удалось найти элемент напрямую, передаем событие виджету
+                        // чтобы он мог обработать клик через свой механизм
+                        qDebug() << "mouseReleaseEvent: Forwarding event to QTreeWidget for processing";
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            "mouseReleaseEvent: Forwarding event to QTreeWidget", 0);
+                    }
+                }
+            }
+            
+            // Если не попали на элемент порта, передаем событие дальше
+            qDebug() << "mouseReleaseEvent: No port item found, forwarding event";
+            QGraphicsScene::mouseReleaseEvent(event);
             return;
         }
         
@@ -3936,7 +4360,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
             
             // Применяем связь к ядру
-            Model_CreateLinkByName(
+            int result = Model_CreateLinkByName(
                 fullSrc.toStdString().c_str(),
                 srcProp.toStdString().c_str(),
                 fullDst.toStdString().c_str(),
@@ -3966,8 +4390,18 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 node->hidePortListWidget();
             }
             
-            // Обновляем схему
+            // Обновляем схему (перестраиваем связи)
+            // Сначала отправляем сигнал, затем перестраиваем связи (чтобы избежать обращения к удаленным объектам)
             emit m_owner->updateComponentsList();
+            if(result == 0) // Только при успешном создании связи
+            {
+                qDebug() << "mouseReleaseEvent (port tree): Calling rebuildLinks() to update links";
+                m_owner->rebuildLinks();
+            }
+            else
+            {
+                qDebug() << "mouseReleaseEvent (port tree): Not rebuilding links, result =" << result;
+            }
             
             event->accept();
             return;
@@ -4116,7 +4550,40 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     if(event->button() == Qt::LeftButton)
     {
-        // Сначала проверяем, попали ли мы в порт
+        // Сначала проверяем, попал ли двойной клик на окно выбора портов
+        for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+        {
+            if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+            {
+                QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                    node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                if(widgetRect.contains(event->scenePos()))
+                {
+                    // Преобразуем позицию клика в локальные координаты виджета
+                    QPointF widgetLocalPos = node->m_portListWidgetProxy->mapFromScene(event->scenePos());
+                    QPoint widgetPoint = widgetLocalPos.toPoint();
+                    
+                    // Находим элемент под курсором
+                    QTreeWidgetItem* itemUnderCursor = node->m_portListWidget->itemAt(widgetPoint);
+                    if(itemUnderCursor && itemUnderCursor->parent() != nullptr)
+                    {
+                        // Это элемент порта (не категория) - завершаем соединение
+                        qDebug() << "mouseDoubleClickEvent: Double-clicked on port item, calling onPortItemActivated";
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            "mouseDoubleClickEvent: Double-clicked on port item in list, completing connection", 0);
+                        node->onPortItemActivated(itemUnderCursor, 0);
+                        event->accept();
+                        return;
+                    }
+                    else
+                    {
+                        qDebug() << "mouseDoubleClickEvent: Double-clicked on category item or no item found";
+                    }
+                }
+            }
+        }
+        
+        // Проверяем, попали ли мы в порт
         QPointF portPos;
         UModernDiagramWidget::NodeItem* portNode = nullptr;
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, portNode, portPos);
@@ -4219,7 +4686,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 }
                 
                 // Применяем связь к ядру
-                Model_CreateLinkByName(
+                int result = Model_CreateLinkByName(
                     fullSrc.toStdString().c_str(),
                     srcProp.toStdString().c_str(),
                     fullDst.toStdString().c_str(),
@@ -4251,10 +4718,20 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     node->hidePortListWidget();
                 }
                 
-                // Обновляем схему
-                emit m_owner->updateComponentsList();
-                
-                event->accept();
+            // Обновляем схему (перестраиваем связи)
+            // Сначала отправляем сигнал, затем перестраиваем связи (чтобы избежать обращения к удаленным объектам)
+            emit m_owner->updateComponentsList();
+            if(result == 0) // Только при успешном создании связи
+            {
+                qDebug() << "mouseReleaseEvent (drag&drop): Calling rebuildLinks() to update links";
+                m_owner->rebuildLinks();
+            }
+            else
+            {
+                qDebug() << "mouseReleaseEvent (drag&drop): Not rebuilding links, result =" << result;
+            }
+            
+            event->accept();
                 return;
             }
         }
