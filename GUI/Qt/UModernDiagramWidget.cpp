@@ -298,6 +298,8 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     m_portListWidget->setMinimumWidth(250);
     m_portListWidget->setMaximumWidth(350);
     m_portListWidget->setStyleSheet(UStyleManager::instance()->getTreeWidgetStyleSheet());
+    // Устанавливаем политику фокуса при создании
+    m_portListWidget->setFocusPolicy(Qt::StrongFocus);
     
     // Таймер для отложенного скрытия списка портов
     m_hideTimer->setSingleShot(true);
@@ -319,33 +321,58 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         m_portListWidgetProxy = m_owner->m_scene->addWidget(m_portListWidget);
         m_portListWidgetProxy->setVisible(false);
         m_portListWidgetProxy->setZValue(1000);  // Поднимаем на передний план
+        // Настраиваем прокси для приема событий мыши
+        m_portListWidgetProxy->setFlag(QGraphicsItem::ItemIsFocusable, true);
+        m_portListWidgetProxy->setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+        m_portListWidgetProxy->setAcceptHoverEvents(true);
         
-        // Подключаем обработку двойного клика с проверкой кнопки мыши
+        // Подключаем обработку двойного клика
         QObject::connect(m_portListWidget, &QTreeWidget::itemDoubleClicked,
                         [this](QTreeWidgetItem* item, int column) {
-                            // Проверяем, что это левая кнопка мыши
-                            Qt::MouseButtons buttons = QApplication::mouseButtons();
-                            if(buttons & Qt::LeftButton)
-                            {
-                                onPortItemActivated(item, column);
-                            }
+                            // Двойной клик всегда активирует порт
+                            onPortItemActivated(item, column);
                         });
         
         // Обработка Enter через QShortcut
+        // Используем WindowShortcut для работы даже когда виджет не имеет фокуса
         QShortcut* enterShortcut = new QShortcut(QKeySequence(Qt::Key_Return), m_portListWidget);
         QShortcut* enterShortcut2 = new QShortcut(QKeySequence(Qt::Key_Enter), m_portListWidget);
+        // Используем WindowShortcut для работы даже когда виджет не имеет явного фокуса
+        enterShortcut->setContext(Qt::WindowShortcut);
+        enterShortcut2->setContext(Qt::WindowShortcut);
         QObject::connect(enterShortcut, &QShortcut::activated, [this]() {
-            if(m_portListWidget && m_portListWidget->currentItem())
+            if(m_portListWidget && m_portListWidget->currentItem() && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
             {
                 onPortItemActivated(m_portListWidget->currentItem(), 0);
             }
         });
         QObject::connect(enterShortcut2, &QShortcut::activated, [this]() {
-            if(m_portListWidget && m_portListWidget->currentItem())
+            if(m_portListWidget && m_portListWidget->currentItem() && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
             {
                 onPortItemActivated(m_portListWidget->currentItem(), 0);
             }
         });
+        
+        // Добавляем обработку одинарного клика для выходных портов
+        QObject::connect(m_portListWidget, &QTreeWidget::itemClicked,
+                        [this](QTreeWidgetItem* item, int column) {
+                            // Для выходных портов одинарный клик начинает соединение
+                            if(item && item->parent() != nullptr)
+                            {
+                                QVariant data = item->data(0, Qt::UserRole);
+                                if(data.isValid())
+                                {
+                                    QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
+                                    bool isInput = portData["isInput"].toBool();
+                                    QString portName = portData["name"].toString();
+                                    // Для выходных портов начинаем соединение
+                                    if(!isInput && !portName.isEmpty())
+                                    {
+                                        onPortItemActivated(item, column);
+                                    }
+                                }
+                            }
+                        });
     }
 
     // Константы для размеров
@@ -608,6 +635,9 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     for (const Port& p : inputs) {
         bool isHovered = (m_hoveredPort == &p);
         
+        // Проверяем, активна ли временная линия для создания соединения
+        bool isActiveConnection = (m_owner && m_owner->m_activeTempLink && m_owner->m_activeSourceNode);
+        
         // Проверяем, есть ли порты для этой категории
         bool hasPorts = false;
         if (p.category == PortCategory::Own)
@@ -632,11 +662,17 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         }
         
         // Определяем цвет порта:
+        // - Если активна временная линия и есть порты: подсвечиваем ярче
         // - Если есть соединения: активный цвет (даже если портов нет, но есть соединения - это означает, что соединения идут к скрытым портам)
         // - Если портов нет и соединений нет: серый (недоступный)
         // - Если порты есть, но соединений нет: обычный цвет
         QColor portColor;
-        if (hasConnections)
+        if (isActiveConnection && hasPorts)
+        {
+            // Подсветка входных портов при активном соединении
+            portColor = isHovered ? style->getPortInputHoverColor().lighter(120) : style->getPortInputColor().lighter(110);
+        }
+        else if (hasConnections)
         {
             // Порт с соединениями - активный цвет
             portColor = isHovered ? style->getPortInputHoverColor() : style->getPortInputColor();
@@ -1040,33 +1076,8 @@ void UModernDiagramWidget::NodeItem::refreshHoverAtScenePos(const QPointF& scene
     if(portChanged)
     {
         m_hoveredPort = port;
-        update();
-        
-        // Если порт изменился, закрываем все открытые деревья портов других узлов
-        if(port && m_owner)
-        {
-            for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
-            {
-                if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
-                {
-                    node->hidePortListWidget();
-                }
-            }
-        }
-    }
-
-    if(port)
-    {
-        if(m_hideTimer) m_hideTimer->stop();
-        showPortListWidget(scenePos);
-    }
-    else
-    {
-        // Если курсор ушел, плавно скрываем при активном окне списка
-        if(m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
-        {
-            if(m_hideTimer) m_hideTimer->start();
-        }
+        update(); // Только визуальная подсветка
+        // Убрано: showPortListWidget - окно открывается только при клике
     }
 }
 
@@ -1950,69 +1961,8 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
 {
     QGraphicsRectItem::hoverEnterEvent(event);
     m_hoveredPort = getPortAtPosition(event->pos());
-    update();
-    if(m_hideTimer) m_hideTimer->stop();
-    if(m_hoveredPort)
-    {
-        // Для категоризированных портов проверяем, есть ли порты для этой категории
-        bool shouldShowPortList = true;
-        if(m_hoveredPort->fullPath.isEmpty() && 
-           (m_hoveredPort->category == PortCategory::Own || 
-            m_hoveredPort->category == PortCategory::Child || 
-            m_hoveredPort->category == PortCategory::Alias))
-        {
-            bool hasPorts = false;
-            if (m_hoveredPort->isInput)
-            {
-                // Проверка для входных портов
-                if (m_hoveredPort->category == PortCategory::Own)
-                {
-                    hasPorts = !getOwnInputPorts().isEmpty();
-                }
-                else if (m_hoveredPort->category == PortCategory::Child)
-                {
-                    hasPorts = !getChildInputPorts().isEmpty();
-                }
-                else if (m_hoveredPort->category == PortCategory::Alias)
-                {
-                    hasPorts = !getAliasInputPorts().isEmpty();
-                }
-            }
-            else
-            {
-                // Проверка для выходных портов
-                if (m_hoveredPort->category == PortCategory::Own)
-                {
-                    hasPorts = !getOwnOutputPorts().isEmpty();
-                }
-                else if (m_hoveredPort->category == PortCategory::Child)
-                {
-                    hasPorts = !getChildOutputPorts().isEmpty();
-                }
-                else if (m_hoveredPort->category == PortCategory::Alias)
-                {
-                    hasPorts = !getAliasOutputPorts().isEmpty();
-                }
-            }
-            shouldShowPortList = hasPorts;
-        }
-        
-        if(shouldShowPortList)
-        {
-            // Закрываем все открытые деревья портов других узлов перед открытием нового
-            if(m_owner)
-            {
-                for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
-                {
-                    if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
-                    {
-                        node->hidePortListWidget();
-                    }
-                }
-            }
-            showPortListWidget(mapToScene(event->pos()));
-        }
-    }
+    update(); // Только визуальная подсветка
+    // Убрано: showPortListWidget - окно открывается только при клике
 }
 
 void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
@@ -2023,110 +1973,8 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
     if(portChanged)
     {
         m_hoveredPort = port;
-        update();
-        if(port)
-        {
-            // Для категоризированных портов проверяем, есть ли порты для этой категории
-            bool shouldShowPortList = true;
-            if(port->fullPath.isEmpty() && 
-               (port->category == PortCategory::Own || 
-                port->category == PortCategory::Child || 
-                port->category == PortCategory::Alias))
-            {
-                bool hasPorts = false;
-                if (port->isInput)
-                {
-                    // Проверка для входных портов
-                    if (port->category == PortCategory::Own)
-                    {
-                        hasPorts = !getOwnInputPorts().isEmpty();
-                    }
-                    else if (port->category == PortCategory::Child)
-                    {
-                        hasPorts = !getChildInputPorts().isEmpty();
-                    }
-                    else if (port->category == PortCategory::Alias)
-                    {
-                        hasPorts = !getAliasInputPorts().isEmpty();
-                    }
-                }
-                else
-                {
-                    // Проверка для выходных портов
-                    if (port->category == PortCategory::Own)
-                    {
-                        hasPorts = !getOwnOutputPorts().isEmpty();
-                    }
-                    else if (port->category == PortCategory::Child)
-                    {
-                        hasPorts = !getChildOutputPorts().isEmpty();
-                    }
-                    else if (port->category == PortCategory::Alias)
-                    {
-                        hasPorts = !getAliasOutputPorts().isEmpty();
-                    }
-                }
-                shouldShowPortList = hasPorts;
-            }
-            
-            if(shouldShowPortList)
-            {
-                // Закрываем все открытые деревья портов других узлов перед открытием нового
-                if(m_owner)
-                {
-                    for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
-                    {
-                        if(node != this && node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
-                        {
-                            node->hidePortListWidget();
-                        }
-                    }
-                }
-                
-                QPointF scenePos = mapToScene(event->pos());
-                bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
-                updatePortListWidget(port->isInput, shiftPressed);
-                if(m_portListWidgetProxy)
-                {
-                    m_portListWidgetProxy->setPos(scenePos + QPointF(20, 20));
-                    m_portListWidgetProxy->setVisible(true);
-                }
-            }
-            else
-            {
-                // Порт недоступен, скрываем дерево портов если оно было открыто
-                hidePortListWidget();
-            }
-        }
-        else
-        {
-            hidePortListWidget();
-        }
-    }
-    else if(port && m_portListWidgetProxy)
-    {
-        // Обновляем позицию виджета при движении мыши
-        QPointF scenePos = mapToScene(event->pos());
-        QPointF widgetPos = scenePos + QPointF(20, 20);
-        
-        // Проверяем границы viewport и корректируем позицию при необходимости
-        if(m_owner && m_owner->m_mainView)
-        {
-            QRectF viewportRect = m_owner->m_mainView->mapToScene(m_owner->m_mainView->viewport()->rect()).boundingRect();
-            QRectF widgetRect(widgetPos, QSizeF(m_portListWidget->width(), m_portListWidget->height()));
-            
-            if(widgetRect.right() > viewportRect.right())
-            {
-                widgetPos.setX(scenePos.x() - m_portListWidget->width() - 20);
-            }
-            
-            if(widgetRect.bottom() > viewportRect.bottom())
-            {
-                widgetPos.setY(scenePos.y() - m_portListWidget->height() - 20);
-            }
-        }
-        
-        m_portListWidgetProxy->setPos(widgetPos);
+        update(); // Только визуальная подсветка
+        // Убрано: showPortListWidget - окно открывается только при клике
     }
 }
 
@@ -2228,6 +2076,28 @@ void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
     
     m_portListWidgetProxy->setPos(widgetPos);
     m_portListWidgetProxy->setVisible(true);
+    
+    // ИСПРАВЛЕНИЕ: Устанавливаем фокус для работы клавиатуры
+    // Сначала устанавливаем фокус на прокси-виджет, затем на сам виджет
+    m_portListWidgetProxy->setFocus();
+    m_portListWidget->setFocus();
+    
+    // Принудительно обновляем сцену, чтобы окно стало видимым немедленно
+    if(m_owner && m_owner->m_scene)
+    {
+        m_owner->m_scene->update();
+    }
+    
+    // Устанавливаем текущий элемент, если есть
+    if(m_portListWidget->topLevelItemCount() > 0)
+    {
+        QTreeWidgetItem* firstItem = m_portListWidget->topLevelItem(0);
+        if(firstItem && firstItem->childCount() > 0)
+        {
+            m_portListWidget->setCurrentItem(firstItem->child(0));
+            m_portListWidget->expandItem(firstItem);
+        }
+    }
 }
 
 void UModernDiagramWidget::NodeItem::hidePortListWidget()
@@ -2278,16 +2148,24 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
             
-            // Формируем пути свойств
-            QString srcProp = m_owner->m_activeSourcePort->fullPath.isEmpty() ? 
-                             m_owner->m_activeSourcePort->name : m_owner->m_activeSourcePort->fullPath;
+            // Формируем пути свойств, используя сохраненные копии вместо указателя
+            QString srcProp;
+            if(m_owner->m_activeSourcePortFullPath.isEmpty())
+            {
+                srcProp = m_owner->m_activeSourcePortName;
+            }
+            else
+            {
+                srcProp = m_owner->m_activeSourcePortFullPath;
+            }
+            
             QString dstProp = fullPath.isEmpty() ? portName : fullPath;
             
             // Учитываем вложенные компоненты
-            if(!m_owner->m_activeSourcePort->componentName.isEmpty() && 
-               m_owner->m_activeSourcePort->componentName != srcName)
+            if(!m_owner->m_activeSourcePortComponentName.isEmpty() && 
+               m_owner->m_activeSourcePortComponentName != srcName)
             {
-                srcProp = m_owner->m_activeSourcePort->componentName + "." + srcProp;
+                srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
             }
             if(!componentName.isEmpty() && componentName != dstName)
             {
@@ -2314,6 +2192,13 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             m_owner->m_activeSourceNode = nullptr;
             m_owner->m_activeSourcePort = nullptr;
             m_owner->m_isLineFrozen = false;
+            m_owner->m_isWaitingForPortSelection = false;
+            
+            // Сбрасываем курсор
+            if(m_owner->m_mainView)
+            {
+                m_owner->m_mainView->unsetCursor();
+            }
             
             // Закрываем все открытые деревья портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -2328,9 +2213,16 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
     else
     {
         // Если выбран выходной порт - начинаем pull-режим
-        // Находим порт в текущем узле
+        // Находим порт в реальных портах (не в категоризированных)
         const Port* selectedPort = nullptr;
-        for(const Port& p : outputs)
+        
+        // Ищем порт во всех доступных выходных портах
+        QVector<Port> allOutputPorts;
+        allOutputPorts.append(getOwnOutputPorts());
+        allOutputPorts.append(getChildOutputPorts());
+        allOutputPorts.append(getAliasOutputPorts());
+        
+        for(const Port& p : allOutputPorts)
         {
             if(p.name == portName && (componentName.isEmpty() || p.componentName == componentName))
             {
@@ -2339,11 +2231,39 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             }
         }
         
+        // Если не нашли, проверяем также вложенные порты
+        if(!selectedPort)
+        {
+            QVector<Port> nestedPorts = getNestedPorts(false, true);
+            for(const Port& p : nestedPorts)
+            {
+                if(p.name == portName && (componentName.isEmpty() || p.componentName == componentName))
+                {
+                    selectedPort = &p;
+                    break;
+                }
+            }
+        }
+        
         if(selectedPort)
         {
             // Сохраняем состояние активной связи
             m_owner->m_activeSourceNode = this;
             m_owner->m_activeSourcePort = selectedPort;
+            // Сохраняем копии строковых полей для безопасного использования
+            try
+            {
+                m_owner->m_activeSourcePortName = selectedPort->name;
+                m_owner->m_activeSourcePortFullPath = selectedPort->fullPath;
+                m_owner->m_activeSourcePortComponentName = selectedPort->componentName;
+            }
+            catch(...)
+            {
+                // Если произошла ошибка при копировании, отменяем операцию
+                m_owner->m_activeSourceNode = nullptr;
+                m_owner->m_activeSourcePort = nullptr;
+                return;
+            }
             m_owner->m_activeSourcePortPos = mapToScene(selectedPort->pos);
             
             // Получаем текущую позицию курсора в сцене для начальной позиции временной линии
@@ -2369,6 +2289,15 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             // Обновляем геометрию линии сразу после создания
             m_owner->m_activeTempLink->updateGeometry(cursorScenePos);
             
+            // Визуальная обратная связь: изменяем курсор
+            if(m_owner->m_mainView)
+            {
+                m_owner->m_mainView->setCursor(Qt::CrossCursor);
+            }
+            
+            // Обновляем сцену для немедленного отображения временной линии
+            m_owner->m_scene->update();
+            
             // Закрываем дерево портов после создания временной линии
             hidePortListWidget();
         }
@@ -2388,61 +2317,85 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
     
     m_portListWidget->clear();
     
-    // Получаем список портов с фильтрацией по категории
+    // Получаем список портов с улучшенной логикой
     QVector<Port> availablePorts;
+    
+    // Проверяем модификаторы для показа всех портов
+    bool showAll = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+    
     if(m_hoveredPort->fullPath.isEmpty() && 
        (m_hoveredPort->category == PortCategory::Own || 
         m_hoveredPort->category == PortCategory::Child || 
         m_hoveredPort->category == PortCategory::Alias))
     {
-        // Если это категоризированный порт, фильтруем по категории
-        if(isInput)
+        // Если это категоризированный порт
+        if(showAll)
         {
-            // Фильтрация для входных портов
-            if(m_hoveredPort->category == PortCategory::Own)
+            // Показываем все категории портов при нажатии Shift
+            if(isInput)
             {
-                availablePorts = getOwnInputPorts();
-            }
-            else if(m_hoveredPort->category == PortCategory::Child)
-            {
-                availablePorts = getChildInputPorts();
-            }
-            else if(m_hoveredPort->category == PortCategory::Alias)
-            {
-                availablePorts = getAliasInputPorts();
+                availablePorts.append(getOwnInputPorts());
+                availablePorts.append(getChildInputPorts());
+                availablePorts.append(getAliasInputPorts());
             }
             else
             {
-                // Fallback: используем все порты
-                availablePorts = getNestedPorts(isInput, includeNested);
+                availablePorts.append(getOwnOutputPorts());
+                availablePorts.append(getChildOutputPorts());
+                availablePorts.append(getAliasOutputPorts());
             }
         }
         else
         {
-            // Фильтрация для выходных портов
-            if(m_hoveredPort->category == PortCategory::Own)
+            // Показываем только порты выбранной категории
+            if(isInput)
             {
-                availablePorts = getOwnOutputPorts();
-            }
-            else if(m_hoveredPort->category == PortCategory::Child)
-            {
-                availablePorts = getChildOutputPorts();
-            }
-            else if(m_hoveredPort->category == PortCategory::Alias)
-            {
-                availablePorts = getAliasOutputPorts();
+                // Фильтрация для входных портов
+                if(m_hoveredPort->category == PortCategory::Own)
+                {
+                    availablePorts = getOwnInputPorts();
+                }
+                else if(m_hoveredPort->category == PortCategory::Child)
+                {
+                    availablePorts = getChildInputPorts();
+                }
+                else if(m_hoveredPort->category == PortCategory::Alias)
+                {
+                    availablePorts = getAliasInputPorts();
+                }
+                else
+                {
+                    // Fallback: используем все порты
+                    availablePorts = getNestedPorts(isInput, includeNested);
+                }
             }
             else
             {
-                // Fallback: используем все порты
-                availablePorts = getNestedPorts(isInput, includeNested);
+                // Фильтрация для выходных портов
+                if(m_hoveredPort->category == PortCategory::Own)
+                {
+                    availablePorts = getOwnOutputPorts();
+                }
+                else if(m_hoveredPort->category == PortCategory::Child)
+                {
+                    availablePorts = getChildOutputPorts();
+                }
+                else if(m_hoveredPort->category == PortCategory::Alias)
+                {
+                    availablePorts = getAliasOutputPorts();
+                }
+                else
+                {
+                    // Fallback: используем все порты
+                    availablePorts = getNestedPorts(isInput, includeNested);
+                }
             }
         }
     }
     else
     {
-        // Для обычных портов используем стандартную логику
-        availablePorts = getNestedPorts(isInput, includeNested);
+        // Для обычных портов используем стандартную логику с улучшенной поддержкой вложенных портов
+        availablePorts = getNestedPorts(isInput, includeNested || showAll);
     }
     
     if(availablePorts.isEmpty())
@@ -2637,6 +2590,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     , m_activeTempLink(nullptr)
     , m_isLineFrozen(false)
     , m_frozenTargetPortPos(0, 0)
+    , m_isWaitingForPortSelection(false)
     , m_application(nullptr)
     , m_contextMenu(nullptr)
     , m_actionViewOrBreakLink(nullptr)
@@ -3048,6 +3002,23 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
     // Обработка Esc для отмены активной связи и закрытия окон со списком портов
     if(event->key() == Qt::Key_Escape)
     {
+        // Если ожидается выбор порта из окна выбора, отменяем это состояние
+        if(m_isWaitingForPortSelection)
+        {
+            m_isWaitingForPortSelection = false;
+            m_isLineFrozen = false;
+            
+            // Закрываем все открытые деревья портов
+            for(NodeItem* node : m_nodes)
+            {
+                node->hidePortListWidget();
+            }
+            
+            // Возвращаемся в состояние создания соединения (временная линия продолжает следовать за мышью)
+            event->accept();
+            return;
+        }
+        
         if(m_activeTempLink)
         {
             m_scene->removeItem(m_activeTempLink);
@@ -3056,6 +3027,13 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
             m_activeSourceNode = nullptr;
             m_activeSourcePort = nullptr;
             m_isLineFrozen = false;
+            m_isWaitingForPortSelection = false;
+            
+            // Сбрасываем курсор
+            if(m_mainView)
+            {
+                m_mainView->unsetCursor();
+            }
         }
         
         // Закрываем все открытые деревья портов (даже если нет активной связи)
@@ -3268,6 +3246,17 @@ void ModernScene::pollHover()
             }
         }
         
+        // Проверяем, есть ли видимое окно выбора портов - если есть, не обновляем временную линию
+        bool hasVisiblePortListWidget = false;
+        for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+        {
+            if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+            {
+                hasVisiblePortListWidget = true;
+                break;
+            }
+        }
+        
         // Обновляем состояние заморозки
         m_owner->m_isLineFrozen = shouldFreezeLine;
         if(shouldFreezeLine)
@@ -3275,10 +3264,14 @@ void ModernScene::pollHover()
             m_owner->m_frozenTargetPortPos = targetPortPos;
         }
         
-        // Обновляем геометрию временной линии
-        QPointF targetPos = m_owner->m_isLineFrozen ? 
-                            m_owner->m_frozenTargetPortPos : scenePos;
-        m_owner->m_activeTempLink->updateGeometry(targetPos);
+        // Обновляем геометрию временной линии только если не ожидается выбор порта
+        // и нет видимого окна выбора портов
+        if(!m_owner->m_isWaitingForPortSelection && !hasVisiblePortListWidget)
+        {
+            QPointF targetPos = m_owner->m_isLineFrozen ? 
+                                m_owner->m_frozenTargetPortPos : scenePos;
+            m_owner->m_activeTempLink->updateGeometry(targetPos);
+        }
     }
     else
     {
@@ -3304,6 +3297,13 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_owner->m_activeSourceNode = nullptr;
         m_owner->m_activeSourcePort = nullptr;
         m_owner->m_isLineFrozen = false;
+        m_owner->m_isWaitingForPortSelection = false;
+        
+        // Сбрасываем курсор
+        if(m_owner->m_mainView)
+        {
+            m_owner->m_mainView->unsetCursor();
+        }
         
         // Закрываем все открытые деревья портов
         for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -3317,7 +3317,153 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     
     if(event->button() == Qt::LeftButton)
     {
+        QPointF portPos;
+        UModernDiagramWidget::NodeItem* node = nullptr;
+        
+        // СНАЧАЛА проверяем входные порты (даже если есть активная связь)
+        // Это позволяет открывать окно выбора входов во время создания соединения
+        const UModernDiagramWidget::Port* inputPort = m_owner->pickPortDetailed(event->scenePos(), true, node, portPos);
+        if(node && inputPort && inputPort->isInput)
+        {
+            // Устанавливаем hoveredPort для корректной работы showPortListWidget
+            node->m_hoveredPort = inputPort;
+            
+            // Если есть активная связь - открываем список входов для выбора целевого порта
+            // Завершение связи будет обработано в mouseReleaseEvent при клике на выбранный порт
+            // Если нет активной связи - также открываем список входов для просмотра
+            
+            if(inputPort->fullPath.isEmpty() && 
+               (inputPort->category == UModernDiagramWidget::PortCategory::Own || 
+                inputPort->category == UModernDiagramWidget::PortCategory::Child || 
+                inputPort->category == UModernDiagramWidget::PortCategory::Alias))
+            {
+                // Проверяем, есть ли порты для этой категории
+                bool hasPorts = false;
+                if (inputPort->category == UModernDiagramWidget::PortCategory::Own)
+                {
+                    hasPorts = !node->getOwnInputPorts().isEmpty();
+                }
+                else if (inputPort->category == UModernDiagramWidget::PortCategory::Child)
+                {
+                    hasPorts = !node->getChildInputPorts().isEmpty();
+                }
+                    else if (inputPort->category == UModernDiagramWidget::PortCategory::Alias)
+                    {
+                        hasPorts = !node->getAliasInputPorts().isEmpty();
+                    }
+                    
+                    if (hasPorts)
+                    {
+                        // Если есть активная связь, активируем состояние ожидания выбора порта
+                        if(m_owner->m_activeTempLink)
+                        {
+                            // Получаем текущую позицию курсора в сцене
+                            QPointF currentCursorPos;
+                            if(m_owner->m_mainView)
+                            {
+                                QPoint globalPos = QCursor::pos();
+                                QPoint viewPos = m_owner->m_mainView->mapFromGlobal(globalPos);
+                                currentCursorPos = m_owner->m_mainView->mapToScene(viewPos);
+                            }
+                            else
+                            {
+                                currentCursorPos = event->scenePos();
+                            }
+                            
+                            // Устанавливаем состояние ДО вызова showPortListWidget, чтобы mouseMoveEvent мог его увидеть
+                            m_owner->m_isWaitingForPortSelection = true;
+                            // Замораживаем временную линию на текущей позиции курсора
+                            // Используем замороженную позицию, если уже заморожена, иначе текущую позицию курсора
+                            bool wasFrozen = m_owner->m_isLineFrozen;
+                            QPointF freezePos = wasFrozen ? 
+                                m_owner->m_frozenTargetPortPos : currentCursorPos;
+                            m_owner->m_isLineFrozen = true;
+                            m_owner->m_frozenTargetPortPos = freezePos;
+                            // Обновляем геометрию временной линии один раз для заморозки
+                            m_owner->m_activeTempLink->updateGeometry(freezePos);
+                            
+                            // Принудительно обновляем сцену, чтобы изменения вступили в силу немедленно
+                            if(m_owner->m_scene)
+                            {
+                                m_owner->m_scene->update();
+                            }
+                        }
+                        node->showPortListWidget(event->scenePos());
+                        event->accept();
+                        return;
+                    }
+                else
+                {
+                    // Порт недоступен, ничего не делаем
+                    event->accept();
+                    return;
+                }
+            }
+            else
+            {
+                // Для обычных входных портов (с полным путем) или портов без категории
+                // показываем список всех доступных входных портов
+                // Проверяем, есть ли вообще входные порты (проверяем все категории)
+                QVector<UModernDiagramWidget::Port> allInputPorts;
+                allInputPorts.append(node->getOwnInputPorts());
+                allInputPorts.append(node->getChildInputPorts());
+                allInputPorts.append(node->getAliasInputPorts());
+                
+                // Также проверяем вложенные порты
+                QVector<UModernDiagramWidget::Port> nestedPorts = node->getNestedPorts(true, false);
+                allInputPorts.append(nestedPorts);
+                
+                if(!allInputPorts.isEmpty())
+                {
+                    // Если есть активная связь, активируем состояние ожидания выбора порта
+                    if(m_owner->m_activeTempLink)
+                    {
+                        // Получаем текущую позицию курсора в сцене
+                        QPointF currentCursorPos;
+                        if(m_owner->m_mainView)
+                        {
+                            QPoint globalPos = QCursor::pos();
+                            QPoint viewPos = m_owner->m_mainView->mapFromGlobal(globalPos);
+                            currentCursorPos = m_owner->m_mainView->mapToScene(viewPos);
+                        }
+                        else
+                        {
+                            currentCursorPos = event->scenePos();
+                        }
+                        
+                        // Устанавливаем состояние ДО вызова showPortListWidget, чтобы mouseMoveEvent мог его увидеть
+                        m_owner->m_isWaitingForPortSelection = true;
+                        // Замораживаем временную линию на текущей позиции курсора
+                        // Используем замороженную позицию, если уже заморожена, иначе текущую позицию курсора
+                        bool wasFrozen = m_owner->m_isLineFrozen;
+                        QPointF freezePos = wasFrozen ? 
+                            m_owner->m_frozenTargetPortPos : currentCursorPos;
+                        m_owner->m_isLineFrozen = true;
+                        m_owner->m_frozenTargetPortPos = freezePos;
+                        // Обновляем геометрию временной линии один раз для заморозки
+                        m_owner->m_activeTempLink->updateGeometry(freezePos);
+                        
+                        // Принудительно обновляем сцену, чтобы изменения вступили в силу немедленно
+                        if(m_owner->m_scene)
+                        {
+                            m_owner->m_scene->update();
+                        }
+                    }
+                    node->showPortListWidget(event->scenePos());
+                    event->accept();
+                    return;
+                }
+                else
+                {
+                    // Входных портов нет, ничего не делаем
+                    event->accept();
+                    return;
+                }
+            }
+        }
+        
         // Если есть активная связь из дерева портов, не начинаем новую связь через drag & drop
+        // (только если мы НЕ кликнули на входной порт)
         if(m_owner->m_activeTempLink)
         {
             // Просто обновляем позицию временной линии, но не отменяем активную связь
@@ -3325,11 +3471,11 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
         
-        QPointF portPos;
-        UModernDiagramWidget::NodeItem* node = nullptr;
+        // Проверяем выходные порты
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, node, portPos);
-        if(node && port)
+        if(node && port && !port->isInput)
         {
+            // Обработка выходных портов
             // Если это категоризированный порт (с пустым fullPath), показываем дерево портов
             if(port->fullPath.isEmpty() && 
                (port->category == UModernDiagramWidget::PortCategory::Own || 
@@ -3338,37 +3484,17 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             {
                 // Проверяем, есть ли порты для этой категории
                 bool hasPorts = false;
-                if (port->isInput)
+                if (port->category == UModernDiagramWidget::PortCategory::Own)
                 {
-                    // Проверка для входных портов
-                    if (port->category == UModernDiagramWidget::PortCategory::Own)
-                    {
-                        hasPorts = !node->getOwnInputPorts().isEmpty();
-                    }
-                    else if (port->category == UModernDiagramWidget::PortCategory::Child)
-                    {
-                        hasPorts = !node->getChildInputPorts().isEmpty();
-                    }
-                    else if (port->category == UModernDiagramWidget::PortCategory::Alias)
-                    {
-                        hasPorts = !node->getAliasInputPorts().isEmpty();
-                    }
+                    hasPorts = !node->getOwnOutputPorts().isEmpty();
                 }
-                else
+                else if (port->category == UModernDiagramWidget::PortCategory::Child)
                 {
-                    // Проверка для выходных портов
-                    if (port->category == UModernDiagramWidget::PortCategory::Own)
-                    {
-                        hasPorts = !node->getOwnOutputPorts().isEmpty();
-                    }
-                    else if (port->category == UModernDiagramWidget::PortCategory::Child)
-                    {
-                        hasPorts = !node->getChildOutputPorts().isEmpty();
-                    }
-                    else if (port->category == UModernDiagramWidget::PortCategory::Alias)
-                    {
-                        hasPorts = !node->getAliasOutputPorts().isEmpty();
-                    }
+                    hasPorts = !node->getChildOutputPorts().isEmpty();
+                }
+                else if (port->category == UModernDiagramWidget::PortCategory::Alias)
+                {
+                    hasPorts = !node->getAliasOutputPorts().isEmpty();
                 }
                 
                 // Показываем дерево портов только если есть порты для этой категории
@@ -3387,16 +3513,13 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
             
             // Для обычных выходных портов начинаем drag & drop
-            if (!port->isInput)
-            {
-                m_owner->m_dragSourceNode = node;
-                m_owner->m_dragSourcePort = port;
-                m_owner->m_dragSourcePortPos = portPos;
-                m_owner->m_tempLink = new UModernDiagramWidget::LinkItem(node, event->scenePos());
-                m_owner->m_scene->addItem(m_owner->m_tempLink);
-                event->accept();
-                return;
-            }
+            m_owner->m_dragSourceNode = node;
+            m_owner->m_dragSourcePort = port;
+            m_owner->m_dragSourcePortPos = portPos;
+            m_owner->m_tempLink = new UModernDiagramWidget::LinkItem(node, event->scenePos());
+            m_owner->m_scene->addItem(m_owner->m_tempLink);
+            event->accept();
+            return;
         }
     }
     else if(event->button() == Qt::RightButton)
@@ -3453,7 +3576,9 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 if(widgetRect.contains(event->scenePos()))
                 {
                     clickedOnBackground = false;
-                    break;
+                    // Передаем событие виджету, чтобы он мог обработать клик
+                    QGraphicsScene::mousePressEvent(event);
+                    return;
                 }
             }
         }
@@ -3465,6 +3590,12 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
         {
             node->hidePortListWidget();
+        }
+        // Если было состояние ожидания выбора порта, сбрасываем его
+        if(m_owner->m_isWaitingForPortSelection)
+        {
+            m_owner->m_isWaitingForPortSelection = false;
+            m_owner->m_isLineFrozen = false;
         }
     }
     
@@ -3480,9 +3611,32 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
     
+    // Сначала проверяем, есть ли видимое окно выбора портов - если есть, не обновляем временную линию
+    bool hasVisiblePortListWidget = false;
+    for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+    {
+        if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+        {
+            hasVisiblePortListWidget = true;
+            break;
+        }
+    }
+    
     // Обновляем временную линию активной связи из дерева портов
     if(m_owner->m_activeTempLink)
     {
+        // Если ожидается выбор порта из окна выбора ИЛИ есть видимое окно выбора портов,
+        // не обновляем временную линию и передаем событие дальше
+        if(m_owner->m_isWaitingForPortSelection || hasVisiblePortListWidget)
+        {
+            // Передаем событие дальше в иерархию, чтобы оно могло обрабатываться окном выбора
+            // Но не обновляем геометрию временной линии
+            // ВАЖНО: Используем ignore() вместо accept(), чтобы событие могло быть обработано виджетом
+            event->ignore();
+            QGraphicsScene::mouseMoveEvent(event);
+            return;
+        }
+        
         const double portFreezeRadius = 35.0; // Радиус буферной зоны вокруг порта (пиксели)
         const double widgetFreezeDistance = 60.0; // Расстояние до окна дерева портов (пиксели)
         
@@ -3549,13 +3703,31 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_frozenTargetPortPos = targetPortPos;
         }
         
-        // Обновляем геометрию временной линии
-        QPointF targetPos = m_owner->m_isLineFrozen ? 
-                            m_owner->m_frozenTargetPortPos : event->scenePos();
-        m_owner->m_activeTempLink->updateGeometry(targetPos);
-        
-        event->accept();
-        return;
+        // Обновляем геометрию временной линии только если не ожидается выбор порта
+        // и нет видимого окна выбора портов
+        if(!m_owner->m_isWaitingForPortSelection && !hasVisiblePortListWidget)
+        {
+            QPointF targetPos = m_owner->m_isLineFrozen ? 
+                                m_owner->m_frozenTargetPortPos : event->scenePos();
+            m_owner->m_activeTempLink->updateGeometry(targetPos);
+            
+            // Обновляем узлы для отображения подсветки входных портов
+            for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+            {
+                node->update();
+            }
+            
+            event->accept();
+            return;
+        }
+        else
+        {
+            // Если окно выбора портов открыто, передаем событие дальше в иерархию
+            // и не обновляем временную линию
+            event->ignore();
+            QGraphicsScene::mouseMoveEvent(event);
+            return;
+        }
     }
     
     QGraphicsScene::mouseMoveEvent(event);
@@ -3563,37 +3735,204 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    // Обработка завершения связи из дерева портов
-    if(m_owner->m_activeTempLink && event->button() == Qt::LeftButton)
+    // Сначала обрабатываем drag & drop связь (m_tempLink), если она активна
+    if(m_owner->m_tempLink && event->button() == Qt::LeftButton)
     {
         QPointF portPos;
         UModernDiagramWidget::NodeItem* targetNode = nullptr;
         const UModernDiagramWidget::Port* targetPort = m_owner->pickPortDetailed(event->scenePos(), true, targetNode, portPos);
-        if(targetNode && targetPort && m_owner->m_activeSourceNode && m_owner->m_activeSourcePort &&
-           targetNode != m_owner->m_activeSourceNode)
+        if(targetNode && targetPort && m_owner->m_dragSourceNode && m_owner->m_dragSourcePort &&
+           targetNode != m_owner->m_dragSourceNode)
         {
             // Формируем полные имена компонентов
-            QString srcName = m_owner->m_activeSourceNode->nodeName;
+            QString srcName = m_owner->m_dragSourceNode->nodeName;
             QString dstName = targetNode->nodeName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
             
             // Формируем пути свойств
-            QString srcProp = m_owner->m_activeSourcePort->fullPath.isEmpty() ? 
-                             m_owner->m_activeSourcePort->name : m_owner->m_activeSourcePort->fullPath;
+            QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ? 
+                             m_owner->m_dragSourcePort->name : m_owner->m_dragSourcePort->fullPath;
             QString dstProp = targetPort->fullPath.isEmpty() ? 
                              targetPort->name : targetPort->fullPath;
             
             // Учитываем вложенные компоненты
-            if(!m_owner->m_activeSourcePort->componentName.isEmpty() && 
-               m_owner->m_activeSourcePort->componentName != srcName)
+            if(!m_owner->m_dragSourcePort->componentName.isEmpty() && 
+               m_owner->m_dragSourcePort->componentName != srcName)
             {
-                srcProp = m_owner->m_activeSourcePort->componentName + "." + srcProp;
+                srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
             }
             if(!targetPort->componentName.isEmpty() && 
                targetPort->componentName != dstName)
             {
                 dstProp = targetPort->componentName + "." + dstProp;
+            }
+            
+            // Применяем связь к ядру
+            Model_CreateLinkByName(
+                fullSrc.toStdString().c_str(),
+                srcProp.toStdString().c_str(),
+                fullDst.toStdString().c_str(),
+                dstProp.toStdString().c_str()
+            );
+            
+            // Удаляем временную линию
+            m_owner->m_scene->removeItem(m_owner->m_tempLink);
+            delete m_owner->m_tempLink;
+            m_owner->m_tempLink = nullptr;
+            
+            // Сбрасываем состояние
+            m_owner->m_dragSourceNode = nullptr;
+            m_owner->m_dragSourcePort = nullptr;
+            
+            // Обновляем схему
+            emit m_owner->updateComponentsList();
+            
+            event->accept();
+            return;
+        }
+        else
+        {
+            // Отменяем drag & drop, если не попали на входной порт
+            m_owner->m_scene->removeItem(m_owner->m_tempLink);
+            delete m_owner->m_tempLink;
+            m_owner->m_tempLink = nullptr;
+            m_owner->m_dragSourceNode = nullptr;
+            m_owner->m_dragSourcePort = nullptr;
+            event->accept();
+            return;
+        }
+    }
+    
+    // Обработка завершения связи из дерева портов
+    // ВАЖНО: Проверяем только если НЕТ активной drag & drop связи
+    if(m_owner->m_activeTempLink && !m_owner->m_tempLink && event->button() == Qt::LeftButton)
+    {
+        // Сначала проверяем, не попал ли клик на окно выбора входов
+        // Если да, не завершаем соединение - пользователь должен выбрать порт из списка
+        bool clickedOnPortListWidget = false;
+        for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+        {
+            if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+            {
+                QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                    node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                if(widgetRect.contains(event->scenePos()))
+                {
+                    clickedOnPortListWidget = true;
+                    break;
+                }
+            }
+        }
+        
+        // Если клик попал на окно выбора, не завершаем соединение
+        if(clickedOnPortListWidget)
+        {
+            event->accept();
+            return;
+        }
+        
+        QPointF portPos;
+        UModernDiagramWidget::NodeItem* targetNode = nullptr;
+        const UModernDiagramWidget::Port* targetPort = m_owner->pickPortDetailed(event->scenePos(), true, targetNode, portPos);
+        
+        // Проверяем, что все необходимые указатели валидны
+        // И что это НЕ категоризированный порт (для категоризированных портов нужно выбрать из списка)
+        if(targetNode && targetPort && m_owner->m_activeSourceNode && m_owner->m_activeSourcePort &&
+           targetNode != m_owner->m_activeSourceNode)
+        {
+            // Если это категоризированный порт (Own/Child/Alias), не завершаем соединение напрямую
+            // Пользователь должен выбрать конкретный порт из открытого окна выбора
+            if(targetPort->fullPath.isEmpty() && 
+               (targetPort->category == UModernDiagramWidget::PortCategory::Own || 
+                targetPort->category == UModernDiagramWidget::PortCategory::Child || 
+                targetPort->category == UModernDiagramWidget::PortCategory::Alias))
+            {
+                // Это категоризированный порт - не завершаем соединение, оставляем окно выбора открытым
+                event->accept();
+                return;
+            }
+            
+            // Это конкретный входной порт (не категоризированный) - завершаем соединение
+            // Дополнительная проверка валидности указателя на порт
+            // Сохраняем значения в локальные переменные для безопасности
+            const UModernDiagramWidget::Port* activeSourcePort = m_owner->m_activeSourcePort;
+            if(!activeSourcePort)
+            {
+                // Если указатель стал невалидным, отменяем операцию
+                event->accept();
+                return;
+            }
+            
+            // Дополнительная проверка: убеждаемся, что узел все еще валиден
+            UModernDiagramWidget::NodeItem* activeSourceNode = m_owner->m_activeSourceNode;
+            if(!activeSourceNode)
+            {
+                event->accept();
+                return;
+            }
+            
+            // Используем сохраненные копии строковых полей порта вместо обращения к указателю
+            // Это безопаснее, так как указатель может стать невалидным
+            QString srcPortFullPath = m_owner->m_activeSourcePortFullPath;
+            QString srcPortName = m_owner->m_activeSourcePortName;
+            QString srcPortComponentName = m_owner->m_activeSourcePortComponentName;
+            
+            // Копируем только строковые поля целевого порта
+            QString dstPortFullPath;
+            QString dstPortName;
+            QString dstPortComponentName;
+            
+            try
+            {
+                dstPortFullPath = targetPort->fullPath;
+                dstPortName = targetPort->name;
+                dstPortComponentName = targetPort->componentName;
+            }
+            catch(...)
+            {
+                // Если произошла ошибка при копировании, отменяем операцию
+                event->accept();
+                return;
+            }
+            
+            // Формируем полные имена компонентов
+            QString srcName = activeSourceNode->nodeName;
+            QString dstName = targetNode->nodeName;
+            QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
+            QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
+            
+            // Формируем пути свойств с использованием скопированных значений
+            QString srcProp;
+            if(srcPortFullPath.isEmpty())
+            {
+                srcProp = srcPortName;
+            }
+            else
+            {
+                srcProp = srcPortFullPath;
+            }
+            
+            QString dstProp;
+            if(dstPortFullPath.isEmpty())
+            {
+                dstProp = dstPortName;
+            }
+            else
+            {
+                dstProp = dstPortFullPath;
+            }
+            
+            // Учитываем вложенные компоненты
+            if(!srcPortComponentName.isEmpty() && 
+               srcPortComponentName != srcName)
+            {
+                srcProp = srcPortComponentName + "." + srcProp;
+            }
+            if(!dstPortComponentName.isEmpty() && 
+               dstPortComponentName != dstName)
+            {
+                dstProp = dstPortComponentName + "." + dstProp;
             }
             
             // Применяем связь к ядру
@@ -3613,6 +3952,13 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_activeSourceNode = nullptr;
             m_owner->m_activeSourcePort = nullptr;
             m_owner->m_isLineFrozen = false;
+            m_owner->m_isWaitingForPortSelection = false;
+            
+            // Сбрасываем курсор
+            if(m_owner->m_mainView)
+            {
+                m_owner->m_mainView->unsetCursor();
+            }
             
             // Закрываем все открытые деревья портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -3783,6 +4129,21 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 // Сохраняем состояние активной связи
                 m_owner->m_activeSourceNode = portNode;
                 m_owner->m_activeSourcePort = port;
+                // Сохраняем копии строковых полей для безопасного использования
+                try
+                {
+                    m_owner->m_activeSourcePortName = port->name;
+                    m_owner->m_activeSourcePortFullPath = port->fullPath;
+                    m_owner->m_activeSourcePortComponentName = port->componentName;
+                }
+                catch(...)
+                {
+                    // Если произошла ошибка при копировании, отменяем операцию
+                    m_owner->m_activeSourceNode = nullptr;
+                    m_owner->m_activeSourcePort = nullptr;
+                    event->accept();
+                    return;
+                }
                 m_owner->m_activeSourcePortPos = portPos;
                 
                 // Создаем временную линию с сохраненной позицией порта
@@ -3810,20 +4171,51 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
                 QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
                 
-                // Формируем пути свойств
-                QString srcProp = m_owner->m_activeSourcePort->fullPath.isEmpty() ? 
-                                 m_owner->m_activeSourcePort->name : m_owner->m_activeSourcePort->fullPath;
-                QString dstProp = port->fullPath.isEmpty() ? port->name : port->fullPath;
+                // Формируем пути свойств, используя сохраненные копии вместо указателя
+                QString srcProp;
+                if(m_owner->m_activeSourcePortFullPath.isEmpty())
+                {
+                    srcProp = m_owner->m_activeSourcePortName;
+                }
+                else
+                {
+                    srcProp = m_owner->m_activeSourcePortFullPath;
+                }
+                
+                QString dstProp;
+                QString dstPortFullPath;
+                QString dstPortName;
+                QString dstPortComponentName;
+                try
+                {
+                    dstPortFullPath = port->fullPath;
+                    dstPortName = port->name;
+                    dstPortComponentName = port->componentName;
+                }
+                catch(...)
+                {
+                    event->accept();
+                    return;
+                }
+                
+                if(dstPortFullPath.isEmpty())
+                {
+                    dstProp = dstPortName;
+                }
+                else
+                {
+                    dstProp = dstPortFullPath;
+                }
                 
                 // Учитываем вложенные компоненты
-                if(!m_owner->m_activeSourcePort->componentName.isEmpty() && 
-                   m_owner->m_activeSourcePort->componentName != srcName)
+                if(!m_owner->m_activeSourcePortComponentName.isEmpty() && 
+                   m_owner->m_activeSourcePortComponentName != srcName)
                 {
-                    srcProp = m_owner->m_activeSourcePort->componentName + "." + srcProp;
+                    srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
                 }
-                if(!port->componentName.isEmpty() && port->componentName != dstName)
+                if(!dstPortComponentName.isEmpty() && dstPortComponentName != dstName)
                 {
-                    dstProp = port->componentName + "." + dstProp;
+                    dstProp = dstPortComponentName + "." + dstProp;
                 }
                 
                 // Применяем связь к ядру
@@ -3846,6 +4238,12 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 m_owner->m_activeSourceNode = nullptr;
                 m_owner->m_activeSourcePort = nullptr;
                 m_owner->m_isLineFrozen = false;
+                
+                // Сбрасываем курсор
+                if(m_owner->m_mainView)
+                {
+                    m_owner->m_mainView->unsetCursor();
+                }
                 
                 // Закрываем все открытые деревья портов
                 for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)

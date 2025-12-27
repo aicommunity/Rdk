@@ -182,11 +182,16 @@ private:
     
     // Active connection state (for tree widget selection)
     NodeItem* m_activeSourceNode;
-    const Port* m_activeSourcePort;
+    const Port* m_activeSourcePort;  // Указатель для быстрого доступа (может стать невалидным)
+    // Копии данных порта для безопасного использования (избегаем проблем с невалидными указателями)
+    QString m_activeSourcePortName;
+    QString m_activeSourcePortFullPath;
+    QString m_activeSourcePortComponentName;
     QPointF m_activeSourcePortPos;
     LinkItem* m_activeTempLink;
     bool m_isLineFrozen;  // Флаг, указывающий, что соединение "заморожено" на порту
     QPointF m_frozenTargetPortPos;  // Позиция порта, к которому "прилипло" соединение
+    bool m_isWaitingForPortSelection;  // Флаг, указывающий, что ожидается выбор порта из окна выбора
 
     // Data
     RDK::UApplication* m_application;
