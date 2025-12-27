@@ -29,6 +29,7 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QResizeEvent>
+#include <QScrollBar>
 #include <cmath>
 #include <ctime>
 #include <sstream>
@@ -70,6 +71,59 @@ public:
         setAcceptDrops(true);
     }
 protected:
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        // Проверяем, нажата ли левая кнопка мыши вместе с Ctrl
+        if(event->button() == Qt::LeftButton && (event->modifiers() & Qt::ControlModifier))
+        {
+            // Начинаем прокрутку
+            m_isPanning = true;
+            m_lastPanPoint = event->pos();
+            setCursor(Qt::ClosedHandCursor);
+            event->accept();
+            return;
+        }
+        
+        // Иначе передаем событие в базовый класс
+        QGraphicsView::mousePressEvent(event);
+    }
+    
+    void mouseMoveEvent(QMouseEvent *event) override
+    {
+        if(m_isPanning)
+        {
+            // Вычисляем смещение
+            QPoint delta = event->pos() - m_lastPanPoint;
+            
+            // Прокручиваем viewport через scrollbars
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+            verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+            
+            // Обновляем последнюю позицию
+            m_lastPanPoint = event->pos();
+            event->accept();
+            return;
+        }
+        
+        // Иначе передаем событие в базовый класс
+        QGraphicsView::mouseMoveEvent(event);
+    }
+    
+    void mouseReleaseEvent(QMouseEvent *event) override
+    {
+        if(m_isPanning && event->button() == Qt::LeftButton)
+        {
+            // Завершаем прокрутку
+            m_isPanning = false;
+            unsetCursor();
+            event->accept();
+            return;
+        }
+        
+        // Иначе передаем событие в базовый класс
+        QGraphicsView::mouseReleaseEvent(event);
+    }
+    
     bool viewportEvent(QEvent *event) override
     {
         if(event->type() == QEvent::Wheel)
@@ -361,6 +415,8 @@ protected:
     
 private:
     UModernDiagramWidget* m_owner;
+    bool m_isPanning = false;
+    QPoint m_lastPanPoint;
 };
 
 // --------------------------- Helpers ---------------------------
