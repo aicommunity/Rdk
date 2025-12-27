@@ -1933,6 +1933,7 @@ void UContainer::SharesUnInit(void)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UContainer::Default(void)
 {
+ bool default_success = false;
  RDK_SYS_TRY
  {
   try
@@ -1966,6 +1967,7 @@ bool UContainer::Default(void)
    if(!ADefault())
 	return false;
    AfterDefault();
+   default_success = true;
   }
   catch(UException &exception)
   {
@@ -1991,6 +1993,21 @@ bool UContainer::Default(void)
 
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, log_line);
 
+   // Дополнительная диагностика для EIdError с Id=0 (ForbiddenId)
+   try
+   {
+    const EIdError* id_error = dynamic_cast<const EIdError*>(&exception);
+    if(id_error && id_error->Id == 0)
+    {
+     Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+      full_name + std::string(": EIdError with ForbiddenId (0) detected in Default(). Component may not be properly initialized."));
+    }
+   }
+   catch(...)
+   {
+    // Ignore dynamic_cast failures
+   }
+
    // Дополнительное целевое логирование для ADC / Neuron‑классов,
    // чтобы их ошибки было легче диагностировать в GUI‑логе.
    // Не меняет поведение, только добавляет отдельную строку.
@@ -1999,48 +2016,64 @@ bool UContainer::Default(void)
       || full_name.find("Neuron") != std::string::npos
       || full_name.find("NPNeuron") != std::string::npos)
    {
-    std::string short_detail = std::string("Build detail for ")
+    std::string short_detail = std::string("Default detail for ")
                              + full_name
                              + ": type=" + sntoa(exception.GetType())
                              + ", number=" + sntoa(exception.GetNumber())
                              + ", rtti=" + typeid(exception).name();
-    Logger->LogMessageEx(RDK_EX_INFO, "BuildDetail", short_detail);
+    Logger->LogMessageEx(RDK_EX_INFO, "DefaultDetail", short_detail);
    }
+   default_success = false;
 //   throw;
   }
   catch(std::exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
+   default_success = false;
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   default_success = false;
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
+   default_success = false;
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
+   default_success = false;
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
  RDK_SYS_CATCH
  {
-  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  std::string full_name;
+  GetFullName(full_name);
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  default_success = false;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return true;
+ return default_success;
 }
 
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
@@ -2086,6 +2119,21 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
             + std::string(", ex_rtti=") + typeid(exception).name() + "]";
 
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, log_line);
+
+   // Дополнительная диагностика для EIdError с Id=0 (ForbiddenId)
+   try
+   {
+    const EIdError* id_error = dynamic_cast<const EIdError*>(&exception);
+    if(id_error && id_error->Id == 0)
+    {
+     Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+      full_name + std::string(": EIdError with ForbiddenId (0) detected in DefaultAll(). Component may not be properly initialized."));
+    }
+   }
+   catch(...)
+   {
+    // Ignore dynamic_cast failures
+   }
 //   throw;
   }
   catch(std::exception &exception)
@@ -2135,6 +2183,7 @@ bool UContainer::Build(void)
  if(!Storage) // TODO: Заглушка в случае если хранилище не установлено.
   return true;
 
+ bool build_success = false;
  RDK_SYS_TRY
  {
   try
@@ -2167,45 +2216,103 @@ bool UContainer::Build(void)
 
    AfterBuild();
    UpdateComputationOrder();
+   build_success = true;
   }
   catch(UException &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   // Расширенное логирование: добавляем тип исключения и его числовые коды
+   std::string full_name;
+   GetFullName(full_name);
+
+   const char* what_str = nullptr;
+   try
+   {
+    what_str = exception.what();
+   }
+   catch(...)
+   {
+    what_str = "unknown UException";
+   }
+
+   std::string log_line = full_name + " throws exception: " + (what_str ? what_str : "");
+   log_line += std::string(" [ex_type=") + sntoa(exception.GetType())
+            + std::string(", ex_number=") + sntoa(exception.GetNumber())
+            + std::string(", ex_rtti=") + typeid(exception).name() + "]";
+
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, log_line);
+
+   // Дополнительная диагностика для EIdError с Id=0 (ForbiddenId)
+   try
+   {
+    const EIdError* id_error = dynamic_cast<const EIdError*>(&exception);
+    if(id_error && id_error->Id == 0)
+    {
+     Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+      full_name + std::string(": EIdError with ForbiddenId (0) detected. Component may not be properly initialized."));
+    }
+   }
+   catch(...)
+   {
+    // Ignore dynamic_cast failures
+   }
+
+   Ready = false;
+   build_success = false;
 //   throw;
   }
   catch(std::exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
+   Ready = false;
+   build_success = false;
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
+   Ready = false;
+   build_success = false;
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
+   Ready = false;
+   build_success = false;
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
+   std::string full_name;
+   GetFullName(full_name);
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
+   Ready = false;
+   build_success = false;
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
  RDK_SYS_CATCH
  {
-  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  std::string full_name;
+  GetFullName(full_name);
+  Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
+  Ready = false;
+  build_success = false;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return true;
+ return build_success;
 }
 
 // Метод сброса компонента.

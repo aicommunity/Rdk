@@ -7279,6 +7279,27 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	return;
    }
 
+   // КРИТИЧНО: Инициализируем Storage ПЕРЕД обработкой external_classes,
+   // чтобы классы были доступны во время Build() компонентов
+   if(external_libs != 0)
+   {
+	list<ULibrary*>::iterator I,J;
+	I=external_libs->begin();
+	J=external_libs->end();
+	while(I != J)
+	{
+	 Storage->AddCollection(*I);
+	 ++I;
+	}
+   }
+
+   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
+   Storage->InitRTlibs();
+
+   Storage->BuildStorage();
+   Storage->LoadClassesDescription();
+
+   // Теперь Storage полностью инициализирован, можно обрабатывать external_classes
    if(external_classes != 0)
    {
 
@@ -7332,24 +7353,6 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 	if(Logger)
 	 UExceptionLogger::SetInitializationMode(false);
    }
-
-   if(external_libs != 0)
-   {
-	list<ULibrary*>::iterator I,J;
-	I=external_libs->begin();
-	J=external_libs->end();
-	while(I != J)
-	{
-	 Storage->AddCollection(*I);
-	 ++I;
-	}
-   }
-
-   Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
-   Storage->InitRTlibs();
-
-   Storage->BuildStorage();
-   Storage->LoadClassesDescription();
    /*
    Storage->CreateMockLibs();
    Storage->SaveMockLibs();

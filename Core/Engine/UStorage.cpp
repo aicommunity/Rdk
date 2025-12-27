@@ -173,6 +173,13 @@ const UId& UStorage::FindClassId(const NameT &name) const
 // Возвращает имя класса по его Id
 const NameT UStorage::FindClassName(const UId &id) const
 {
+ // Специальная обработка для ForbiddenId - возвращаем понятное сообщение
+ // вместо исключения, чтобы избежать каскадных ошибок
+ if(id == ForbiddenId)
+ {
+  return std::string("(ForbiddenId/Uninitialized)");
+ }
+ 
  for(auto I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end();I != J;++I)
  {
@@ -433,9 +440,23 @@ void UStorage::ClearClassesStorage(bool force)
 // Флаг 'Activity' объекта выставляется в true
 UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
 {
+ // Защита от использования неинициализированных классов
+ if(classid == ForbiddenId)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+    std::string("Attempt to take object with ForbiddenId (0) - class not initialized"));
+  throw EClassIdNotExist(classid);
+ }
+ 
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+    std::string("Class with id ") + sntoa(classid) + std::string(" not found in Storage"));
   throw EClassIdNotExist(classid);
+ }
 
  UClassStorageElement tmpl=tmplI->second;
 
@@ -596,19 +617,90 @@ void UStorage::FreeObjectsStorage(bool force)
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
    std::string object_name=I->Object->GetName();
+   UEPtr<UContainer> object=I->Object;
+   
    if(I->UseFlag && force)
    {
 	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("FORCED destroy objects by name ")+object_name+": object in use!");
+	{
+	 std::string context_info = std::string("FORCED destroy objects by name ") + object_name + ": object in use!";
+	 
+	 // Добавляем информацию о контексте использования объекта
+	 try
+	 {
+	  if(object)
+	  {
+	   UEPtr<UContainer> owner = object->GetOwner();
+	   if(owner)
+	   {
+	    std::string owner_name = owner->GetName();
+	    context_info += std::string(" Owner=") + owner_name;
+	   }
+	   
+	   bool activity = object->Activity;
+	   context_info += std::string(" Activity=") + (activity ? "true" : "false");
+	   
+	   UId class_id = object->GetClass();
+	   if(class_id == 0)
+	    context_info += std::string(" ClassId=ForbiddenId(0)");
+	   else
+	    context_info += std::string(" ClassId=") + sntoa(class_id);
+	  }
+	 }
+	 catch(...)
+	 {
+	  context_info += " (failed to get context info)";
+	 }
+	 
+	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, context_info);
+	}
    }
 
+   // Проверяем, действительно ли объект используется перед принудительным уничтожением
+   bool actually_in_use = false;
+   if(I->UseFlag)
+   {
+	try
+	{
+	 if(object)
+	 {
+	  UEPtr<UContainer> owner = object->GetOwner();
+	  // Если объект имеет владельца, он может быть в использовании
+	  if(owner)
+	   actually_in_use = true;
+	   
+	  // Дополнительная проверка: если Activity=false и нет владельца,
+	  // объект скорее всего не используется, можно очистить UseFlag
+	  if(!actually_in_use && !object->Activity)
+	  {
+	   // Автоматически очищаем UseFlag для объектов без активных ссылок
+	   I->UseFlag = false;
+	   if(Logger)
+	    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+	     std::string("Auto-cleared UseFlag for object ") + object_name + 
+	     std::string(" - no active references detected"));
+	  }
+	 }
+	}
+	catch(...)
+	{
+	 // В случае ошибки считаем, что объект используется
+	 actually_in_use = true;
+	}
+   }
+
+   // Используем обновленное значение UseFlag после возможной автоматической очистки
    if(!I->UseFlag || force)
    {
 	list<UInstancesStorageElement>::iterator K;
 	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+	{
+	 std::string destroy_msg = std::string("Destroy objects by name ") + object_name;
+	 if(force && I->UseFlag)
+	  destroy_msg += " (FORCED - UseFlag was true)";
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, destroy_msg);
+	}
 	K=I; ++K;
-	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
 	RDK_SYS_TRY
 	{
@@ -638,6 +730,11 @@ void UStorage::FreeObjectsStorage(bool force)
    else
    {
 	++I;
+	if(Logger && actually_in_use)
+	{
+	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+	  std::string("Skipping object ") + object_name + " - object is actually in use (has owner)");
+	}
 //	if(!force)
 //	{
 //	if(!force)
@@ -1876,12 +1973,36 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
 
+ if(!obj)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
+    std::string("Attempt to return null object"));
+  return;
+ }
+
  obj->Activity = false;
  obj->BreakOwner();
 
- UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
- if(instances == ObjectsStorage.end())
+ UId class_id = object->GetClass();
+ 
+ // Если ClassId = ForbiddenId, объект уже был удален из хранилища
+ if(class_id == ForbiddenId)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+    std::string("Object ") + obj->GetName() + std::string(" has ForbiddenId - already removed from storage"));
   return;
+ }
+
+ UObjectsStorageIterator instances=ObjectsStorage.find(class_id);
+ if(instances == ObjectsStorage.end())
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+    std::string("Object ") + obj->GetName() + std::string(" class not found in ObjectsStorage"));
+  return;
+ }
 
  // Use index map for O(log n) lookup
  auto index_it = ObjectsIndex.find(obj);
@@ -1893,7 +2014,11 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
   {
    // Update index map
    ObjectsIndex[obj] = list_it;
+   // КРИТИЧНО: Очищаем UseFlag, чтобы объект мог быть переиспользован
    list_it->UseFlag=false;
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+     std::string("Object ") + obj->GetName() + std::string(" returned to storage, UseFlag cleared"));
    return;
   }
   else
@@ -1905,13 +2030,17 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
 
  // Fallback to linear search if index is missing or stale
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
-                     J=instances->second.end(); I!=J; ++I)
+					J=instances->second.end(); I!=J; ++I)
  {
   if(I->Object == obj)
   {
    // Update index map
    ObjectsIndex[obj] = I;
+   // КРИТИЧНО: Очищаем UseFlag, чтобы объект мог быть переиспользован
    I->UseFlag=false;
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+     std::string("Object ") + obj->GetName() + std::string(" returned to storage (linear search), UseFlag cleared"));
    break;
   }
  }
@@ -1929,7 +2058,13 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
  UId classid=object->GetClass();
  //object->SetObjectIterator(0);
  object->SetStorage(0);
- object->SetClass(ForbiddenId);
+ 
+ // НЕ сбрасываем ClassId на ForbiddenId здесь, так как объект может все еще существовать
+ // и использоваться. ClassId будет сброшен только при полном уничтожении объекта
+ // в деструкторе или явном удалении. Это предотвращает ошибки EClassIdNotExist
+ // при попытке получить имя класса через FindClassName().
+ // object->SetClass(ForbiddenId);
+ 
  return classid;
 }
 // --------------------------
