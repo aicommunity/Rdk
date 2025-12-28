@@ -3696,24 +3696,10 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
             }
         }
         
-        // Удаляем все выделенные компоненты
+        // Удаляем все выделенные компоненты через универсальный метод
         if(!nodesToDelete.isEmpty())
         {
-            for(NodeItem* node : nodesToDelete)
-            {
-                QString fullName = m_componentName.isEmpty() ? node->nodeName
-                                                             : m_componentName + "." + node->nodeName;
-                Model_DelComponent(fullName.toStdString().c_str(), node->nodeName.toStdString().c_str());
-            }
-            
-            // Очищаем сохраненные позиции удаленных узлов
-            for(NodeItem* node : nodesToDelete)
-            {
-                m_lastNodePositions.remove(node);
-            }
-            
-            Reload();
-            emit updateComponentsList();
+            deleteComponents(nodesToDelete);
         }
         event->accept();
         return;
@@ -5650,24 +5636,58 @@ void UModernDiagramWidget::actionClassDescriptionTriggered()
     Engine_FreeBufString(class_name);
 }
 
+void UModernDiagramWidget::deleteComponents(const QList<NodeItem*>& nodesToDelete)
+{
+    if(nodesToDelete.isEmpty())
+        return;
+    
+    // Запрос подтверждения пользователю (если не нажат Shift)
+    if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
+    {
+        QString message;
+        if(nodesToDelete.size() == 1)
+        {
+            QString fullName = m_componentName.isEmpty() ? nodesToDelete[0]->nodeName
+                                                         : m_componentName + "." + nodesToDelete[0]->nodeName;
+            message = "Are you sure you want to delete component " + fullName + "?";
+        }
+        else
+        {
+            message = "Are you sure you want to delete " + QString::number(nodesToDelete.size()) + " components?";
+        }
+        
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", message, 
+            QMessageBox::Yes|QMessageBox::Cancel);
+        if(reply == QMessageBox::Cancel)
+            return;
+    }
+    
+    // Удаляем все компоненты
+    for(NodeItem* node : nodesToDelete)
+    {
+        QString fullName = m_componentName.isEmpty() ? node->nodeName
+                                                     : m_componentName + "." + node->nodeName;
+        Model_DelComponent("", fullName.toLocal8Bit().constData());
+    }
+    
+    // Очищаем сохраненные позиции удаленных узлов
+    for(NodeItem* node : nodesToDelete)
+    {
+        m_lastNodePositions.remove(node);
+    }
+    
+    Reload();
+    emit updateComponentsList();
+}
+
 void UModernDiagramWidget::componentDelete()
 {
     if(!m_contextMenuNode)
         return;
-        
-    QString selectedComponentLongName = getSelectedComponentLongName();
-    if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
-    {
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", 
-            "Are you sure you want to delete component " + selectedComponentLongName + "?", 
-            QMessageBox::Yes|QMessageBox::Cancel);
-        if (reply == QMessageBox::Cancel) 
-            return;
-    }
     
-    Model_DelComponent("", selectedComponentLongName.toLocal8Bit().constData());
-    Reload();
-    emit updateComponentsList();
+    QList<NodeItem*> nodesToDelete;
+    nodesToDelete.append(m_contextMenuNode);
+    deleteComponents(nodesToDelete);
 }
 
 void UModernDiagramWidget::componentCopyNameToClipboard()

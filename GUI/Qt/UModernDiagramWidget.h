@@ -269,6 +269,10 @@ private:
     void createContextMenu();
     QString getSelectedComponentLongName() const;
     
+    /// Удаляет указанные компоненты с запросом подтверждения
+    /// @param nodesToDelete Список NodeItem для удаления
+    void deleteComponents(const QList<NodeItem*>& nodesToDelete);
+    
     // Context menu slots
 private slots:
     void componentViewOrBreakLink();
