@@ -6,6 +6,15 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QBrush>
+#include <QHash>
+#include "../../Core/Engine/UStorage.h"
+#include "../../Core/Engine/UContainerDescription.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseNeuron.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseSynapseCommon.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseMembraneCommon.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseChannelCommon.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NConstGenerator.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseLTZoneCommon.h"
 
 UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app), ModelScheme(nullptr),
@@ -54,41 +63,8 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     }
     ui->listWidgetStorageByName->sortItems(Qt::AscendingOrder);
 
-    //инициализация древовидного списка по библиотекам
-    stringBuff = Storage_GetClassLibrariesList();
-    componentNames = QString(stringBuff).split(",");
-    Engine_FreeBufString(stringBuff);
-    bool isRTlib = false;
-    foreach(str, componentNames)
-    {
-        if(str != "")
-        {
-            isRTlib = false;
-            // Если это RT библиотека
-            if(RTlibsNames.indexOf(str)!=-1)
-                isRTlib = true;
-            QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
-            item->setExpanded(true);
-            item->setText(0, str);
-            if(isRTlib)
-                item->setForeground(0, QBrush(Qt::darkBlue));
-            stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-            QStringList libClasses = QString(stringBuff).split(",");
-            Engine_FreeBufString(stringBuff);
-            QString className;
-            foreach(className, libClasses)
-            {
-                if(className != "")
-                {
-                     QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
-                     classItem->setText(0, className);
-                     if(isRTlib)
-                         classItem->setForeground(0, QBrush(Qt::darkCyan));
-                }
-            }
-        }
-    }
-    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
+    //инициализация древовидного списка по библиотекам (с использованием BuildGroupedTree)
+    BuildGroupedTree("");
 
     //инициализация runtime-библиотек
     ui->listWidgetRTlibs->addItems(RTlibsNames);
@@ -134,6 +110,15 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 
     connect(action_display_class_description, SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
 
+    // Инициализация combobox для выбора метода группировки
+    ui->comboBoxGroupingMethod->addItem("No Grouping", static_cast<int>(GroupingMethod::None));
+    ui->comboBoxGroupingMethod->addItem("By Description", static_cast<int>(GroupingMethod::ByDescription));
+    ui->comboBoxGroupingMethod->addItem("By Inheritance", static_cast<int>(GroupingMethod::ByInheritance));
+    ui->comboBoxGroupingMethod->addItem("By Base Component", static_cast<int>(GroupingMethod::ByBaseComponent));
+    ui->comboBoxGroupingMethod->setCurrentIndex(0); // По умолчанию без группировки
+    
+    connect(ui->comboBoxGroupingMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(on_comboBoxGroupingMethod_currentIndexChanged(int)));
+
     setAcceptDrops(true);
 }
 
@@ -155,11 +140,23 @@ QString UClassesListWidget::selctedClass() const
         return ui->listWidgetStorageByName->currentItem()->text();
     break;
     case 1:
-      if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
-        return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    {
+      QTreeWidgetItem* currentItem = ui->treeWidgetStorageByLibs->currentItem();
+      if (currentItem)
+      {
+        // Класс - это элемент без детей (лист дерева)
+        // В трехуровневой структуре: Библиотека -> Группа -> Класс
+        // В двухуровневой структуре: Библиотека -> Класс
+        if (currentItem->childCount() == 0)
+        {
+          return currentItem->text(0);
+        }
+      }
+    }
     break;
     case 2:
-      return ui->listWidgetRTlibClasses->currentItem()->text();
+      if(ui->listWidgetRTlibClasses->currentItem())
+        return ui->listWidgetRTlibClasses->currentItem()->text();
     break;
     default:
       return QString();
@@ -363,142 +360,8 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
 
 void UClassesListWidget::tab1_textChanged(const QString &arg1)
 {
-    ui->treeWidgetStorageByLibs->clear();
-
-    // Список RT библиотек
-    auto storage = RDK::GetStorageLock();
-    std::string buff;
-    storage->GetLibsNameListByType(buff,2);
-    QStringList RTlibsNames = QString(buff.c_str()).split(",");
-
-    // Список всех компонентов из RT библиотек
-    QStringList RTclassesNames;
-    QString str;
-    foreach(str, RTlibsNames)
-    {
-        const char * stringBuff;
-        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
-        if((stringBuff[0] == '\0'))
-        {
-            Engine_FreeBufString(stringBuff);
-            continue;
-        }
-        QStringList libClasses = QString(stringBuff).split(",");
-        Engine_FreeBufString(stringBuff);
-        RTclassesNames += libClasses;
-    }
-
-
-    // Список Mock библиотек
-    storage->GetLibsNameListByType(buff,3);
-    QStringList MockLibsNames = QString(buff.c_str()).split(",");
-
-    // Список всех компонентов из Mock библиотек
-    QStringList MockClassesNames;
-
-    foreach(str, MockLibsNames)
-    {
-        const char * stringBuff;
-        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // Если нет классов
-        if((stringBuff[0] == '\0'))
-        {
-            Engine_FreeBufString(stringBuff);
-            continue;
-        }
-        QStringList libClasses = QString(stringBuff).split(",");
-        Engine_FreeBufString(stringBuff);
-        MockClassesNames += libClasses;
-    }
-
-
-    //инициализация древовидного списка по библиотекам
-    const char * stringBuff = Storage_GetClassLibrariesList();
-    QStringList componentNames = QString(stringBuff).split(",");
-    Engine_FreeBufString(stringBuff);
-
-    bool isRTlib = false;
-    bool isMocklib = false;
-    foreach(str, componentNames)
-    {
-        if(str != "")
-        {
-            isMocklib = false;
-            isRTlib = false;
-
-            // Если это Mock библиотека
-            if(MockLibsNames.indexOf(str)!=-1)
-                isMocklib = true;
-
-            // Если это RT библиотека
-            if(RTlibsNames.indexOf(str)!=-1)
-                isRTlib = true;
-
-            if (str.contains(arg1, Qt::CaseInsensitive))
-            {
-                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
-                item->setExpanded(true);
-                item->setText(0, str);
-                if(isMocklib)
-                    item->setForeground(0, QBrush(Qt::darkMagenta));
-                if(isRTlib)
-                    item->setForeground(0, QBrush(Qt::darkBlue));
-                stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-                QStringList libClasses = QString(stringBuff).split(",");
-                Engine_FreeBufString(stringBuff);
-                QString className;
-                foreach(className, libClasses)
-                {
-                    if(className != "")
-                    {
-                         QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
-                         classItem->setText(0, className);
-                         if(isMocklib)
-                             classItem->setForeground(0, QBrush(Qt::darkYellow));
-                         if(isRTlib)
-                             classItem->setForeground(0, QBrush(Qt::darkCyan));
-                    }
-                }
-
-            }
-            else
-            {
-                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
-                bool isLibFind = false;
-                item->setExpanded(true);
-                item->setText(0, str);
-                if(isMocklib)
-                    item->setForeground(0, QBrush(Qt::darkMagenta));
-                if(isRTlib)
-                    item->setForeground(0, QBrush(Qt::darkBlue));
-                stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-                QStringList libClasses = QString(stringBuff).split(",");
-                Engine_FreeBufString(stringBuff);
-                QString className;
-                foreach(className, libClasses)
-                {
-                    if(className != "" && ((className.contains(arg1, Qt::CaseInsensitive))))
-                    {
-                         isLibFind = true;
-                         QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
-                         classItem->setText(0, className);
-                         if(isMocklib)
-                             classItem->setForeground(0, QBrush(Qt::darkYellow));
-                         if(isRTlib)
-                             classItem->setForeground(0, QBrush(Qt::darkCyan));
-                    }
-                }
-                if (!isLibFind)
-                {
-                    delete item;
-                }
-
-            }
-
-        }
-    }
-    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
+    // Используем BuildGroupedTree для построения дерева с учетом поиска
+    BuildGroupedTree(arg1);
 }
 
 void UClassesListWidget::tab2_textChanged(const QString &arg1)
@@ -924,9 +787,10 @@ void UClassesListWidget::on_action_cl_desc_triggered()
             QTreeWidgetItem* item = ui->treeWidgetStorageByLibs->currentItem();
             if(!item)
                 return;
-            // Если есть родитель - значит элемент класса (т.к. у элемента класса - родитель элемент бибилотеки)
-            // у элемента библиотеки отсутствует родительский элемент
-            if(item->parent())
+            // Класс - это элемент без детей (лист дерева)
+            // В трехуровневой структуре: Библиотека -> Группа -> Класс
+            // В двухуровневой структуре: Библиотека -> Класс
+            if(item->childCount() == 0)
                 ModelScheme->classDescription(item->text(0).toStdString());
             break;
         }
@@ -976,5 +840,429 @@ void UClassesListWidget::on_listWidgetStorageByName_itemDoubleClicked(QListWidge
 void UClassesListWidget::on_listWidgetRTlibClasses_itemDoubleClicked(QListWidgetItem *item)
 {
     on_action_cl_desc_triggered();
+}
+
+// Реализация методов группировки
+
+GroupingMethod UClassesListWidget::GetCurrentGroupingMethod() const
+{
+    int index = ui->comboBoxGroupingMethod->currentIndex();
+    if (index >= 0 && index < ui->comboBoxGroupingMethod->count())
+    {
+        return static_cast<GroupingMethod>(ui->comboBoxGroupingMethod->itemData(index).toInt());
+    }
+    return GroupingMethod::None;
+}
+
+QString UClassesListWidget::GetClassGroup(const QString& className, GroupingMethod method) const
+{
+    // Проверка кэша
+    QString cacheKey = QString("%1_%2").arg(className).arg(static_cast<int>(method));
+    if (GroupingCache.contains(cacheKey))
+    {
+        return GroupingCache[cacheKey];
+    }
+    
+    QString group;
+    switch (method)
+    {
+        case GroupingMethod::ByDescription:
+            group = GroupByDescription(className);
+            break;
+        case GroupingMethod::ByInheritance:
+            group = GroupByInheritance(className);
+            break;
+        case GroupingMethod::ByBaseComponent:
+            group = GroupByBaseComponent(className);
+            break;
+        case GroupingMethod::None:
+        default:
+            group = "";
+            break;
+    }
+    
+    // Сохранение в кэш
+    GroupingCache[cacheKey] = group;
+    return group;
+}
+
+QString UClassesListWidget::GroupByDescription(const QString& className) const
+{
+    auto storage = RDK::GetStorageLock();
+    if (!storage)
+        return "Other";
+    
+    RDK::UEPtr<RDK::UContainerDescription> desc = storage->GetClassDescription(className.toStdString(), true);
+    if (!desc)
+        return "Other";
+    
+    QString header = QString::fromStdString(desc->GetHeader()).toLower();
+    QString description = QString::fromStdString(desc->GetDescription()).toLower();
+    QString combined = header + " " + description;
+    
+    // Поиск ключевых слов
+    if (combined.contains("нейрон", Qt::CaseInsensitive) || combined.contains("neuron", Qt::CaseInsensitive))
+        return "Neurons";
+    if (combined.contains("синапс", Qt::CaseInsensitive) || combined.contains("synapse", Qt::CaseInsensitive))
+        return "Synapses";
+    if (combined.contains("мембрана", Qt::CaseInsensitive) || combined.contains("membrane", Qt::CaseInsensitive))
+        return "Membranes";
+    if (combined.contains("канал", Qt::CaseInsensitive) || combined.contains("channel", Qt::CaseInsensitive))
+        return "Channels";
+    if (combined.contains("генератор", Qt::CaseInsensitive) || combined.contains("generator", Qt::CaseInsensitive))
+        return "Generators";
+    if (combined.contains("зона", Qt::CaseInsensitive) || combined.contains("zone", Qt::CaseInsensitive))
+        return "Zones";
+    if (combined.contains("слой", Qt::CaseInsensitive) || combined.contains("layer", Qt::CaseInsensitive))
+        return "Layers";
+    if (combined.contains("модель", Qt::CaseInsensitive) || combined.contains("model", Qt::CaseInsensitive))
+        return "Models";
+    if (combined.contains("сеть", Qt::CaseInsensitive) || combined.contains("net", Qt::CaseInsensitive))
+        return "Networks";
+    
+    return "Other";
+}
+
+QString UClassesListWidget::GroupByInheritance(const QString& className) const
+{
+    // Используем анализ имени класса вместо создания объекта
+    // Это безопаснее, так как не требует инициализации объекта и его связей
+    QString classNameLower = className.toLower();
+    
+    // Анализ имен классов из NPulseLib и других библиотек
+    // Нейроны
+    if (classNameLower.contains("neuron", Qt::CaseInsensitive) || 
+        classNameLower.contains("нейрон", Qt::CaseInsensitive))
+    {
+        // Исключаем мембраны нейронов и другие компоненты
+        if (!classNameLower.contains("membrane", Qt::CaseInsensitive) &&
+            !classNameLower.contains("мембрана", Qt::CaseInsensitive))
+        {
+            return "Neurons";
+        }
+    }
+    
+    // Синапсы
+    if (classNameLower.contains("synapse", Qt::CaseInsensitive) || 
+        classNameLower.contains("синапс", Qt::CaseInsensitive))
+    {
+        return "Synapses";
+    }
+    
+    // Мембраны
+    if (classNameLower.contains("membrane", Qt::CaseInsensitive) || 
+        classNameLower.contains("мембрана", Qt::CaseInsensitive))
+    {
+        return "Membranes";
+    }
+    
+    // Каналы
+    if (classNameLower.contains("channel", Qt::CaseInsensitive) || 
+        classNameLower.contains("канал", Qt::CaseInsensitive))
+    {
+        return "Channels";
+    }
+    
+    // Генераторы
+    if (classNameLower.contains("generator", Qt::CaseInsensitive) || 
+        classNameLower.contains("генератор", Qt::CaseInsensitive))
+    {
+        return "Generators";
+    }
+    
+    // Зоны
+    if (classNameLower.contains("zone", Qt::CaseInsensitive) || 
+        classNameLower.contains("зона", Qt::CaseInsensitive) ||
+        classNameLower.contains("ltzone", Qt::CaseInsensitive))
+    {
+        return "Zones";
+    }
+    
+    // Слои
+    if (classNameLower.contains("layer", Qt::CaseInsensitive) || 
+        classNameLower.contains("слой", Qt::CaseInsensitive))
+    {
+        return "Layers";
+    }
+    
+    // Попытка определить через паттерны имен классов из известных библиотек
+    // NPulseLib паттерны
+    if (classNameLower.startsWith("np") || classNameLower.startsWith("nc"))
+    {
+        // NP - обычно нейроны в PulseLib
+        if (classNameLower.startsWith("np") && 
+            (classNameLower.contains("neuron") || 
+             classNameLower.contains("hebb") ||
+             classNameLower.contains("afferent")))
+        {
+            return "Neurons";
+        }
+        // NC - обычно компоненты кабелей
+        if (classNameLower.startsWith("nc"))
+        {
+            if (classNameLower.contains("synapse") || classNameLower.contains("syn"))
+                return "Synapses";
+            if (classNameLower.contains("membrane") || classNameLower.contains("mem"))
+                return "Membranes";
+            if (classNameLower.contains("channel") || classNameLower.contains("chan"))
+                return "Channels";
+            if (classNameLower.contains("generator") || classNameLower.contains("gen"))
+                return "Generators";
+            if (classNameLower.contains("neuron"))
+                return "Neurons";
+        }
+    }
+    
+    return "Other";
+}
+
+QString UClassesListWidget::GroupByBaseComponent(const QString& className) const
+{
+    // Анализ имени класса и библиотеки для определения базового компонента
+    QString classNameLower = className.toLower();
+    
+    // Для NPulseLib: анализ паттернов имен
+    if (classNameLower.contains("neuron", Qt::CaseInsensitive) || 
+        classNameLower.contains("нейрон", Qt::CaseInsensitive))
+    {
+        // Проверяем, не является ли это конкретным типом нейрона
+        if (classNameLower.contains("hebb", Qt::CaseInsensitive))
+            return "Neurons";
+        if (classNameLower.contains("afferent", Qt::CaseInsensitive))
+            return "Neurons";
+        if (classNameLower.startsWith("np") || classNameLower.startsWith("nc"))
+            return "Neurons";
+    }
+    
+    if (classNameLower.contains("synapse", Qt::CaseInsensitive) || 
+        classNameLower.contains("синапс", Qt::CaseInsensitive))
+    {
+        return "Synapses";
+    }
+    
+    if (classNameLower.contains("membrane", Qt::CaseInsensitive) || 
+        classNameLower.contains("мембрана", Qt::CaseInsensitive))
+    {
+        return "Membranes";
+    }
+    
+    if (classNameLower.contains("channel", Qt::CaseInsensitive) || 
+        classNameLower.contains("канал", Qt::CaseInsensitive))
+    {
+        return "Channels";
+    }
+    
+    if (classNameLower.contains("generator", Qt::CaseInsensitive) || 
+        classNameLower.contains("генератор", Qt::CaseInsensitive))
+    {
+        return "Generators";
+    }
+    
+    if (classNameLower.contains("zone", Qt::CaseInsensitive) || 
+        classNameLower.contains("зона", Qt::CaseInsensitive))
+    {
+        return "Zones";
+    }
+    
+    if (classNameLower.contains("layer", Qt::CaseInsensitive) || 
+        classNameLower.contains("слой", Qt::CaseInsensitive))
+    {
+        return "Layers";
+    }
+    
+    // Попытка определить через библиотеку
+    auto storage = RDK::GetStorageLock();
+    if (storage)
+    {
+        RDK::UEPtr<RDK::ULibrary> lib = storage->FindCollection(className.toStdString());
+        if (lib)
+        {
+            QString libName = QString::fromStdString(lib->GetName()).toLower();
+            // Для известных библиотек можно добавить специальную логику
+            if (libName.contains("pulse", Qt::CaseInsensitive))
+            {
+                // Дополнительный анализ для PulseLib
+                if (classNameLower.startsWith("np") && 
+                    (classNameLower.contains("neuron") || classNameLower.contains("neuron")))
+                {
+                    return "Neurons";
+                }
+            }
+        }
+    }
+    
+    return "Other";
+}
+
+void UClassesListWidget::on_comboBoxGroupingMethod_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    // Очищаем кэш при изменении метода группировки
+    GroupingCache.clear();
+    // Перестраиваем дерево
+    BuildGroupedTree(ui->lineEditSearch->text());
+}
+
+void UClassesListWidget::BuildGroupedTree(const QString& searchText)
+{
+    ui->treeWidgetStorageByLibs->clear();
+    
+    GroupingMethod method = GetCurrentGroupingMethod();
+    
+    // Список RT библиотек
+    auto storage = RDK::GetStorageLock();
+    std::string buff;
+    storage->GetLibsNameListByType(buff, 2);
+    QStringList RTlibsNames = QString(buff.c_str()).split(",");
+    
+    // Список всех компонентов из RT библиотек
+    QStringList RTclassesNames;
+    QString str;
+    foreach(str, RTlibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        RTclassesNames += libClasses;
+    }
+    
+    // Список Mock библиотек
+    storage->GetLibsNameListByType(buff, 3);
+    QStringList MockLibsNames = QString(buff.c_str()).split(",");
+    
+    // Список всех компонентов из Mock библиотек
+    QStringList MockClassesNames;
+    foreach(str, MockLibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        MockClassesNames += libClasses;
+    }
+    
+    // Получение списка всех библиотек
+    const char * stringBuff = Storage_GetClassLibrariesList();
+    QStringList libraryNames = QString(stringBuff).split(",");
+    Engine_FreeBufString(stringBuff);
+    
+    bool isRTlib = false;
+    bool isMocklib = false;
+    
+    foreach(str, libraryNames)
+    {
+        if(str == "")
+            continue;
+        
+        isMocklib = false;
+        isRTlib = false;
+        
+        if(MockLibsNames.indexOf(str) != -1)
+            isMocklib = true;
+        if(RTlibsNames.indexOf(str) != -1)
+            isRTlib = true;
+        
+        // Получение классов библиотеки
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        
+        // Фильтрация по поисковому запросу
+        QStringList filteredClasses;
+        bool libMatchesSearch = str.contains(searchText, Qt::CaseInsensitive);
+        
+        foreach(QString className, libClasses)
+        {
+            if(className == "")
+                continue;
+            
+            bool classMatchesSearch = className.contains(searchText, Qt::CaseInsensitive);
+            
+            if(searchText.isEmpty() || libMatchesSearch || classMatchesSearch)
+            {
+                filteredClasses.append(className);
+            }
+        }
+        
+        // Если нет классов после фильтрации, пропускаем библиотеку
+        if(filteredClasses.isEmpty() && !libMatchesSearch)
+            continue;
+        
+        // Создание элемента библиотеки
+        QTreeWidgetItem* libItem = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
+        libItem->setExpanded(true);
+        libItem->setText(0, str);
+        if(isMocklib)
+            libItem->setForeground(0, QBrush(Qt::darkMagenta));
+        if(isRTlib)
+            libItem->setForeground(0, QBrush(Qt::darkBlue));
+        
+        if(method == GroupingMethod::None)
+        {
+            // Без группировки - двухуровневая структура
+            foreach(QString className, filteredClasses)
+            {
+                QTreeWidgetItem* classItem = new QTreeWidgetItem(libItem);
+                classItem->setText(0, className);
+                if(isMocklib)
+                    classItem->setForeground(0, QBrush(Qt::darkYellow));
+                if(isRTlib)
+                    classItem->setForeground(0, QBrush(Qt::darkCyan));
+            }
+        }
+        else
+        {
+            // С группировкой - трехуровневая структура
+            QHash<QString, QStringList> groups;
+            
+            foreach(QString className, filteredClasses)
+            {
+                QString group = GetClassGroup(className, method);
+                if(group.isEmpty())
+                    group = "Other";
+                
+                if(!groups.contains(group))
+                    groups[group] = QStringList();
+                groups[group].append(className);
+            }
+            
+            // Создание групп и классов
+            QStringList groupNames = groups.keys();
+            groupNames.sort();
+            
+            foreach(QString groupName, groupNames)
+            {
+                QTreeWidgetItem* groupItem = new QTreeWidgetItem(libItem);
+                groupItem->setExpanded(true);
+                groupItem->setText(0, groupName);
+                
+                QStringList classesInGroup = groups[groupName];
+                classesInGroup.sort();
+                
+                foreach(QString className, classesInGroup)
+                {
+                    QTreeWidgetItem* classItem = new QTreeWidgetItem(groupItem);
+                    classItem->setText(0, className);
+                    if(isMocklib)
+                        classItem->setForeground(0, QBrush(Qt::darkYellow));
+                    if(isRTlib)
+                        classItem->setForeground(0, QBrush(Qt::darkCyan));
+                }
+            }
+        }
+    }
+    
+    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
 }
 

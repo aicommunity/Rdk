@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QMdiSubWindow>
+#include <QKeyEvent>
 
 #include <rdk_application.h>
 
@@ -29,6 +30,7 @@
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
 #include "UAboutDialog.h"
+#include "UHelpWindow.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -86,6 +88,9 @@ public:
 
     ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
     void loadProjectExternal(const QString &config_path);
+    
+    /// Open help window (public method for use by child widgets)
+    void openHelpWindow();
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -167,6 +172,7 @@ private slots:
     void delWatchesWidged(size_t index);
 
     void on_actionAbout_triggered();
+    void on_actionUserGuide_triggered();
 
     void on_actionWatches_triggered();
 
@@ -202,6 +208,7 @@ private:
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
     UAboutDialog *aboutDialog;
+    UHelpWindow *helpWindow;
 #ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 #endif
@@ -275,7 +282,8 @@ private:
     // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
-
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
 
 };
 
@@ -285,7 +293,8 @@ class SubWindowCloseIgnore: public QMdiSubWindow
 public:
     explicit SubWindowCloseIgnore(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags()):QMdiSubWindow(parent, flags){}
 protected:
-    void closeEvent(QCloseEvent *event){event->ignore();}
+    void closeEvent(QCloseEvent *event) override {event->ignore();}
+    void keyPressEvent(QKeyEvent *event) override;
 };
 
 /*

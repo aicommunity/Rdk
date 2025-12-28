@@ -12,11 +12,21 @@
 #include <QDialog>
 #include <QComboBox>
 #include <QMessageBox>
+#include <QTreeWidgetItem>
+#include <QString>
+#include <QHash>
 
 namespace Ui {
 class UClassesListWidget;
 }
 
+// Методы группировки классов
+enum class GroupingMethod {
+    None = 0,              // Без группировки
+    ByDescription = 1,     // По описанию
+    ByInheritance = 2,     // По наследованию
+    ByBaseComponent = 3    // По базовому компоненту
+};
 
 /// UClassesListWidget class - виджет отображения списка доступных компонентов из UStorage
 ///
@@ -86,9 +96,25 @@ public slots:
 
     void on_action_cl_desc_triggered();
 
+    // Слот для изменения метода группировки
+    void on_comboBoxGroupingMethod_currentIndexChanged(int index);
+
 private:
     UDrawEngineImageWidget* ModelScheme;
     Ui::UClassesListWidget *ui;
+
+    // Методы группировки классов
+    GroupingMethod GetCurrentGroupingMethod() const;
+    QString GetClassGroup(const QString& className, GroupingMethod method) const;
+    QString GroupByDescription(const QString& className) const;
+    QString GroupByInheritance(const QString& className) const;
+    QString GroupByBaseComponent(const QString& className) const;
+    
+    // Построение дерева с группировкой
+    void BuildGroupedTree(const QString& searchText = "");
+    
+    // Кэш для результатов группировки (для оптимизации)
+    mutable QHash<QString, QString> GroupingCache;
 
 };
 

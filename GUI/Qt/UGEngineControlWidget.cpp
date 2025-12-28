@@ -18,6 +18,7 @@
 #include <QInputDialog>
 #include <QActionGroup>
 #include <QTabBar>
+#include <QKeyEvent>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -296,9 +297,42 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     // Theme switcher menu
     createThemeMenu();
 
+    // Исправление проблемы с кликами в меню File
+    // На Linux нативное меню может блокировать клики, поэтому отключаем его
+    // и убеждаемся, что меню правильно позиционировано
+    if (ui->menuBar) {
+        ui->menuBar->setNativeMenuBar(false);
+        
+        // Убеждаемся, что меню видимо и правильно позиционировано
+        ui->menuBar->setVisible(true);
+        ui->menuBar->raise(); // Поднимаем меню наверх z-order
+        
+        // Диагностика: проверяем виджеты в области меню
+        QTimer::singleShot(100, this, [this]() {
+            if (ui->menuBar) {
+                QRect menuBarRect = ui->menuBar->geometry();
+                QPoint globalTopLeft = ui->menuBar->mapToGlobal(menuBarRect.topLeft());
+                
+                // Проверяем несколько точек в области меню File (первый пункт)
+                for (int x = 0; x < 100 && x < menuBarRect.width(); x += 20) {
+                    QPoint testPoint = globalTopLeft + QPoint(x, menuBarRect.height() / 2);
+                    QWidget* widget = QApplication::widgetAt(testPoint);
+                    
+                    if (widget && widget != ui->menuBar && !ui->menuBar->isAncestorOf(widget)) {
+                        qWarning() << "MenuBar: Potential blocking widget at position" << testPoint 
+                                   << ":" << widget->objectName() << widget->metaObject()->className();
+                        // Если найден блокирующий виджет, поднимаем меню еще выше
+                        ui->menuBar->raise();
+                    }
+                }
+            }
+        });
+    }
+
     readSettings();
 
     aboutDialog = 0;
+    helpWindow = 0;
 }
 
 
@@ -1156,6 +1190,22 @@ void UGEngineControlWidget::showChannelsWidget (void)
     channels->show();
 }
 
+void UGEngineControlWidget::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_F1)
+    {
+        openHelpWindow();
+        event->accept();
+        return;
+    }
+    UVisualControllerMainWidget::keyPressEvent(event);
+}
+
+void UGEngineControlWidget::openHelpWindow()
+{
+    on_actionUserGuide_triggered();
+}
+
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
  application->PauseChannel(-1);
@@ -1360,6 +1410,17 @@ void UGEngineControlWidget::on_actionAbout_triggered()
  aboutDialog->show();
 }
 
+void UGEngineControlWidget::on_actionUserGuide_triggered()
+{
+ if(!helpWindow)
+ {
+  helpWindow = new UHelpWindow(this, application);
+ }
+ helpWindow->show();
+ helpWindow->raise();
+ helpWindow->activateWindow();
+}
+
 
 void UGEngineControlWidget::on_actionWatches_triggered()
 {
@@ -1429,5 +1490,27 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
         QMessageBox::warning(this, tr("Theme Error"),
             tr("Failed to switch to theme: %1").arg(themeName));
     }
+}
+
+// --------------------------- SubWindowCloseIgnore ---------------------------
+
+void SubWindowCloseIgnore::keyPressEvent(QKeyEvent *event)
+{
+    // Forward F1 to parent window if it's UGEngineControlWidget
+    if(event->key() == Qt::Key_F1)
+    {
+        QWidget* parent = parentWidget();
+        while(parent)
+        {
+            if(auto* mainWidget = qobject_cast<UGEngineControlWidget*>(parent))
+            {
+                mainWidget->openHelpWindow();
+                event->accept();
+                return;
+            }
+            parent = parent->parentWidget();
+        }
+    }
+    QMdiSubWindow::keyPressEvent(event);
 }
 
