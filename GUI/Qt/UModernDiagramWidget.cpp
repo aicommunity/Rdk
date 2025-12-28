@@ -50,6 +50,8 @@ class ModernScene : public QGraphicsScene
 {
 public:
     explicit ModernScene(class UModernDiagramWidget* owner);
+    // Публичный метод для проверки, идет ли перемещение группы
+    bool isGroupMoving() const { return m_isGroupMoving; }
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -138,6 +140,23 @@ protected:
             return;
         }
         
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, не была ли перемещена группа объектов
+        // ВАЖНО: Проверяем ДО вызова базового класса, так как базовый класс может сбросить флаг
+        // и вызвать ModernScene::mouseReleaseEvent, который сбросит m_isGroupMoving
+        bool wasGroupMoved = false;
+        if(m_owner && m_owner->m_scene)
+        {
+            // Проверяем флаг через публичный метод isGroupMoving()
+            if(auto* modernScene = dynamic_cast<ModernScene*>(m_owner->m_scene))
+            {
+                wasGroupMoved = modernScene->isGroupMoving();
+                QString wasGroupMovedMsg = QString("ModernGraphicsView: wasGroupMoved = %1 (isGroupMoving = %2) ДО базового класса")
+                    .arg(wasGroupMoved ? "true" : "false").arg(modernScene->isGroupMoving() ? "true" : "false");
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, wasGroupMovedMsg.toStdString().c_str(), 0);
+                qDebug() << wasGroupMovedMsg;
+            }
+        }
+        
         // ДИАГНОСТИКА: Проверяем выделение ДО вызова базового класса
         QList<QGraphicsItem*> selectedBefore = m_owner->m_scene->selectedItems();
         int selectedCountBefore = 0;
@@ -180,9 +199,11 @@ protected:
         
         // После обработки базовым классом проверяем, был ли это RubberBand drag
         // и исправляем выделение, если нужно
+        // НО НЕ вызываем selectNodesInRect, если группа была перемещена
         if(event->button() == Qt::LeftButton && 
            !(event->modifiers() & Qt::ControlModifier) &&
-           m_isRubberBandDragging)
+           m_isRubberBandDragging &&
+           !wasGroupMoved)  // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: не вызываем selectNodesInRect после перемещения группы
         {
             // Вычисляем расстояние drag для проверки, был ли это реальный drag
             QPoint endPos = event->pos();
@@ -253,7 +274,37 @@ protected:
                 // ВАЖНО: Вызываем selectNodesInRect еще раз через QTimer::singleShot,
                 // чтобы исправить выделение ПОСЛЕ того, как ModernScene::mouseReleaseEvent
                 // завершится и базовый класс Qt сбросит выделение
-                QTimer::singleShot(0, [this, savedSelectionRect, savedAddToSelection]() {
+                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сохраняем флаг wasGroupMoved в лямбда-функцию,
+                // чтобы не вызывать selectNodesInRect, если группа была перемещена
+                QTimer::singleShot(0, [this, savedSelectionRect, savedAddToSelection, wasGroupMoved]() {
+                    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если группа была перемещена, НЕ вызываем selectNodesInRect,
+                    // чтобы не сбросить выделение, которое уже было восстановлено в ModernScene::mouseReleaseEvent
+                    if(wasGroupMoved)
+                    {
+                        QString logMsg = QString("ModernGraphicsView: ПРОПУСКАЕМ отложенный вызов selectNodesInRect, так как группа была перемещена");
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                        qDebug() << logMsg;
+                        
+                        // ДИАГНОСТИКА: Проверяем текущее выделение
+                        QList<QGraphicsItem*> currentSelected = m_owner->m_scene->selectedItems();
+                        int currentCount = 0;
+                        QStringList currentNames;
+                        for(QGraphicsItem* item : currentSelected)
+                        {
+                            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                            if(node && node->isSelected())
+                            {
+                                currentCount++;
+                                currentNames << node->nodeName;
+                            }
+                        }
+                        QString currentCheckMsg = QString("ModernGraphicsView: текущее выделение (после перемещения группы) - выделено %1 объектов: %2")
+                            .arg(currentCount).arg(currentNames.join(", "));
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, currentCheckMsg.toStdString().c_str(), 0);
+                        qDebug() << currentCheckMsg;
+                        return;
+                    }
+                    
                     int finalSelectedCount = m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
                     QString finalLogMsg = QString("ModernGraphicsView: ОТЛОЖЕННЫЙ вызов selectNodesInRect выделил %1 объектов")
                         .arg(finalSelectedCount);
@@ -1461,8 +1512,10 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             // Вычисляем смещение
             QPointF delta = newPos - oldPos;
             
-            // Если смещение не нулевое, перемещаем все другие выделенные объекты
-            if(!delta.isNull() && delta.manhattanLength() > 0.1)
+            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предотвращаем рекурсивное перемещение группы
+            // Если уже идет групповое перемещение (m_isMovingGroup == true), не перемещаем другие узлы,
+            // чтобы избежать бесконечной рекурсии
+            if(!delta.isNull() && delta.manhattanLength() > 0.1 && !m_owner->m_isMovingGroup)
             {
                 // Получаем все выделенные объекты
                 QList<QGraphicsItem*> selectedItems = scene()->selectedItems();
@@ -1480,18 +1533,21 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                     }
                 }
                 
-                // ДИАГНОСТИКА: Логируем движение группы
-                logMsg = QString("NodeItem::itemChange: перемещение группы - движется '%1', всего выделено %2 узлов: %3, смещение: (%4, %5)")
-                    .arg(nodeName)
-                    .arg(selectedNodeCount)
-                    .arg(selectedNodeNames.join(", "))
-                    .arg(delta.x()).arg(delta.y());
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-                qDebug() << logMsg;
-                
                 // Если выделено больше одного объекта, перемещаем всю группу
                 if(selectedNodeCount > 1)
                 {
+                    // Устанавливаем флаг группового перемещения, чтобы предотвратить рекурсию
+                    m_owner->m_isMovingGroup = true;
+                    
+                    // ДИАГНОСТИКА: Логируем движение группы
+                    logMsg = QString("NodeItem::itemChange: перемещение группы - движется '%1', всего выделено %2 узлов: %3, смещение: (%4, %5)")
+                        .arg(nodeName)
+                        .arg(selectedNodeCount)
+                        .arg(selectedNodeNames.join(", "))
+                        .arg(delta.x()).arg(delta.y());
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                    qDebug() << logMsg;
+                    
                     QStringList movedNodeNames;
                     for(QGraphicsItem* item : selectedItems)
                     {
@@ -1502,12 +1558,16 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                             // Получаем старую позицию другого объекта
                             QPointF otherOldPos = m_owner->m_lastNodePositions.value(otherNode, otherNode->pos());
                             // Перемещаем другой выделенный объект на то же смещение
+                            // m_isMovingGroup предотвратит рекурсивный вызов itemChange для других узлов
                             otherNode->setPos(otherOldPos + delta);
                             // Обновляем сохраненную позицию
                             m_owner->m_lastNodePositions[otherNode] = otherNode->pos();
                             movedNodeNames << otherNode->nodeName;
                         }
                     }
+                    
+                    // Сбрасываем флаг группового перемещения
+                    m_owner->m_isMovingGroup = false;
                     
                     // ДИАГНОСТИКА: Логируем, какие узлы были перемещены
                     if(!movedNodeNames.isEmpty())
@@ -3799,6 +3859,28 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
     // Обработка Esc для отмены активной связи и закрытия окон со списком портов
     if(event->key() == Qt::Key_Escape)
     {
+        // Сбрасываем выделение группы при нажатии Esc
+        if(m_scene)
+        {
+            QList<QGraphicsItem*> selectedItems = m_scene->selectedItems();
+            int selectedNodeCount = 0;
+            for(QGraphicsItem* item : selectedItems)
+            {
+                auto* node = dynamic_cast<NodeItem*>(item);
+                if(node && node->isSelected())
+                {
+                    selectedNodeCount++;
+                }
+            }
+            if(selectedNodeCount > 1)
+            {
+                // Сбрасываем выделение группы
+                m_scene->clearSelection();
+                event->accept();
+                return;
+            }
+        }
+        
         // Если ожидается выбор порта из окна выбора, отменяем это состояние
         if(m_isWaitingForPortSelection)
         {
@@ -5128,10 +5210,112 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
     
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если группа была перемещена, сохраняем выделение перед вызовом
+    // базового класса, чтобы восстановить его после, так как базовый класс может сбросить выделение
+    bool wasGroupMoving = m_isGroupMoving;
+    QList<UModernDiagramWidget::NodeItem*> savedSelectedNodes;
+    if(wasGroupMoving)
+    {
+        // Сохраняем все выделенные узлы перед вызовом базового класса
+        QList<QGraphicsItem*> selectedItems = m_owner->m_scene->selectedItems();
+        for(QGraphicsItem* item : selectedItems)
+        {
+            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+            if(node && node->isSelected())
+            {
+                savedSelectedNodes.append(node);
+            }
+        }
+    }
+    
     // Вызываем базовый класс для обработки событий
     // Базовый класс QGraphicsView::mouseReleaseEvent уже был вызван в ModernGraphicsView,
     // и он передал событие в сцену, поэтому здесь мы обрабатываем событие на уровне сцены
     QGraphicsScene::mouseReleaseEvent(event);
+    
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если группа была перемещена, восстанавливаем выделение,
+    // так как базовый класс мог его сбросить
+    // Используем отложенный вызов, чтобы восстановление произошло после всех обработчиков событий
+    if(wasGroupMoving && !savedSelectedNodes.isEmpty())
+    {
+        // ДИАГНОСТИКА: Логируем перед восстановлением
+        QString logMsg = QString("ModernScene::mouseReleaseEvent: восстанавливаем выделение для %1 узлов после перемещения группы")
+            .arg(savedSelectedNodes.size());
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        
+        // Сохраняем список узлов для отложенного восстановления
+        QList<UModernDiagramWidget::NodeItem*> nodesToRestore = savedSelectedNodes;
+        
+        // Восстанавливаем выделение немедленно
+        m_owner->m_isBatchSelecting = true;
+        m_owner->m_scene->blockSignals(true);
+        
+        for(UModernDiagramWidget::NodeItem* node : nodesToRestore)
+        {
+            if(node)
+            {
+                node->setSelected(true);
+            }
+        }
+        
+        m_owner->m_isBatchSelecting = false;
+        m_owner->m_scene->blockSignals(false);
+        
+        // ДИАГНОСТИКА: Проверяем выделение после немедленного восстановления
+        QList<QGraphicsItem*> selectedAfterImmediate = m_owner->m_scene->selectedItems();
+        int selectedAfterImmediateCount = 0;
+        QStringList selectedAfterImmediateNames;
+        for(QGraphicsItem* item : selectedAfterImmediate)
+        {
+            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+            if(node && node->isSelected())
+            {
+                selectedAfterImmediateCount++;
+                selectedAfterImmediateNames << node->nodeName;
+            }
+        }
+        logMsg = QString("ModernScene::mouseReleaseEvent: ПОСЛЕ немедленного восстановления выделено %1 объектов: %2")
+            .arg(selectedAfterImmediateCount).arg(selectedAfterImmediateNames.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        
+        // Отложенное восстановление выделения, чтобы оно произошло после всех обработчиков событий
+        QTimer::singleShot(0, [this, nodesToRestore]() {
+            // Восстанавливаем выделение для всех сохраненных узлов
+            m_owner->m_isBatchSelecting = true;
+            m_owner->m_scene->blockSignals(true);
+            
+            for(UModernDiagramWidget::NodeItem* node : nodesToRestore)
+            {
+                if(node)
+                {
+                    node->setSelected(true);
+                }
+            }
+            
+            m_owner->m_isBatchSelecting = false;
+            m_owner->m_scene->blockSignals(false);
+            
+            // ДИАГНОСТИКА: Проверяем выделение после отложенного восстановления
+            QList<QGraphicsItem*> selectedAfterDeferred = m_owner->m_scene->selectedItems();
+            int selectedAfterDeferredCount = 0;
+            QStringList selectedAfterDeferredNames;
+            for(QGraphicsItem* item : selectedAfterDeferred)
+            {
+                auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                if(node && node->isSelected())
+                {
+                    selectedAfterDeferredCount++;
+                    selectedAfterDeferredNames << node->nodeName;
+                }
+            }
+            QString logMsg = QString("ModernScene::mouseReleaseEvent: ПОСЛЕ отложенного восстановления выделено %1 объектов: %2")
+                .arg(selectedAfterDeferredCount).arg(selectedAfterDeferredNames.join(", "));
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            qDebug() << logMsg;
+        });
+    }
     
     // После обработки базовым классом проверяем выделение и устанавливаем флаги
     if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
@@ -5164,6 +5348,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
     
     // Сбрасываем флаг перемещения группы при отпускании кнопки
+    // НО НЕ сбрасываем выделение - оно должно остаться до клика на фоне или Esc
     if(m_isGroupMoving)
     {
         m_isGroupMoving = false;
