@@ -97,10 +97,6 @@ protected:
         {
             m_rubberBandStartViewPos = event->pos();
             m_isRubberBandDragging = true;
-            QString logMsg = QString("ModernGraphicsView::mousePressEvent: начальная позиция сохранена: %1,%2, m_isRubberBandDragging=true")
-                .arg(m_rubberBandStartViewPos.x()).arg(m_rubberBandStartViewPos.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-            qDebug() << logMsg;
         }
         
         // Иначе передаем событие в базовый класс
@@ -150,52 +146,12 @@ protected:
             if(auto* modernScene = dynamic_cast<ModernScene*>(m_owner->m_scene))
             {
                 wasGroupMoved = modernScene->isGroupMoving();
-                QString wasGroupMovedMsg = QString("ModernGraphicsView: wasGroupMoved = %1 (isGroupMoving = %2) ДО базового класса")
-                    .arg(wasGroupMoved ? "true" : "false").arg(modernScene->isGroupMoving() ? "true" : "false");
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, wasGroupMovedMsg.toStdString().c_str(), 0);
-                qDebug() << wasGroupMovedMsg;
             }
         }
-        
-        // ДИАГНОСТИКА: Проверяем выделение ДО вызова базового класса
-        QList<QGraphicsItem*> selectedBefore = m_owner->m_scene->selectedItems();
-        int selectedCountBefore = 0;
-        QStringList selectedNamesBefore;
-        for(QGraphicsItem* item : selectedBefore)
-        {
-            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-            if(node && node->isSelected())
-            {
-                selectedCountBefore++;
-                selectedNamesBefore << node->nodeName;
-            }
-        }
-        QString logMsg = QString("ModernGraphicsView::mouseReleaseEvent: ДО базового класса выделено %1 объектов: %2")
-            .arg(selectedCountBefore).arg(selectedNamesBefore.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
         
         // Сначала вызываем базовый класс, чтобы Qt обработал RubberBandDrag
         // Qt автоматически рисует прямоугольник и обрабатывает выделение
         QGraphicsView::mouseReleaseEvent(event);
-        
-        // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ вызова базового класса
-        QList<QGraphicsItem*> selectedAfterBase = m_owner->m_scene->selectedItems();
-        int selectedCountAfterBase = 0;
-        QStringList selectedNamesAfterBase;
-        for(QGraphicsItem* item : selectedAfterBase)
-        {
-            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-            if(node && node->isSelected())
-            {
-                selectedCountAfterBase++;
-                selectedNamesAfterBase << node->nodeName;
-            }
-        }
-        logMsg = QString("ModernGraphicsView::mouseReleaseEvent: ПОСЛЕ базового класса выделено %1 объектов: %2")
-            .arg(selectedCountAfterBase).arg(selectedNamesAfterBase.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
         
         // После обработки базовым классом проверяем, был ли это RubberBand drag
         // и исправляем выделение, если нужно
@@ -221,24 +177,6 @@ protected:
                 QPointF bottomRight = mapToScene(rubberBandRect.bottomRight());
                 QRectF selectionRect = QRectF(topLeft, bottomRight).normalized();
                 
-                // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД вызовом selectNodesInRect
-                QList<QGraphicsItem*> selectedBeforeSelect = m_owner->m_scene->selectedItems();
-                int selectedCountBeforeSelect = 0;
-                QStringList selectedNamesBeforeSelect;
-                for(QGraphicsItem* item : selectedBeforeSelect)
-                {
-                    auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-                    if(node && node->isSelected())
-                    {
-                        selectedCountBeforeSelect++;
-                        selectedNamesBeforeSelect << node->nodeName;
-                    }
-                }
-                logMsg = QString("ModernGraphicsView: ПЕРЕД selectNodesInRect выделено %1 объектов: %2")
-                    .arg(selectedCountBeforeSelect).arg(selectedNamesBeforeSelect.join(", "));
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-                qDebug() << logMsg;
-                
                 // ВАЖНО: Базовый класс QGraphicsView::mouseReleaseEvent уже передал событие в сцену,
                 // и базовый класс QGraphicsScene::mouseReleaseEvent сбросил выделение при клике на фоне.
                 // Поэтому мы должны исправить выделение ПОСЛЕ того, как все обработчики завершились.
@@ -251,25 +189,7 @@ protected:
                 bool savedAddToSelection = addToSelection;
                 
                 // Вызываем selectNodesInRect сразу (для немедленного выделения)
-                int selectedCount = m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
-                
-                // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ вызова selectNodesInRect
-                QList<QGraphicsItem*> selectedAfterSelect = m_owner->m_scene->selectedItems();
-                int selectedCountAfterSelect = 0;
-                QStringList selectedNamesAfterSelect;
-                for(QGraphicsItem* item : selectedAfterSelect)
-                {
-                    auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-                    if(node && node->isSelected())
-                    {
-                        selectedCountAfterSelect++;
-                        selectedNamesAfterSelect << node->nodeName;
-                    }
-                }
-                logMsg = QString("ModernGraphicsView: ПОСЛЕ selectNodesInRect выделено %1 объектов (метод вернул %2): %3")
-                    .arg(selectedCountAfterSelect).arg(selectedCount).arg(selectedNamesAfterSelect.join(", "));
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-                qDebug() << logMsg;
+                m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
                 
                 // ВАЖНО: Вызываем selectNodesInRect еще раз через QTimer::singleShot,
                 // чтобы исправить выделение ПОСЛЕ того, как ModernScene::mouseReleaseEvent
@@ -281,53 +201,10 @@ protected:
                     // чтобы не сбросить выделение, которое уже было восстановлено в ModernScene::mouseReleaseEvent
                     if(wasGroupMoved)
                     {
-                        QString logMsg = QString("ModernGraphicsView: ПРОПУСКАЕМ отложенный вызов selectNodesInRect, так как группа была перемещена");
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-                        qDebug() << logMsg;
-                        
-                        // ДИАГНОСТИКА: Проверяем текущее выделение
-                        QList<QGraphicsItem*> currentSelected = m_owner->m_scene->selectedItems();
-                        int currentCount = 0;
-                        QStringList currentNames;
-                        for(QGraphicsItem* item : currentSelected)
-                        {
-                            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-                            if(node && node->isSelected())
-                            {
-                                currentCount++;
-                                currentNames << node->nodeName;
-                            }
-                        }
-                        QString currentCheckMsg = QString("ModernGraphicsView: текущее выделение (после перемещения группы) - выделено %1 объектов: %2")
-                            .arg(currentCount).arg(currentNames.join(", "));
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, currentCheckMsg.toStdString().c_str(), 0);
-                        qDebug() << currentCheckMsg;
                         return;
                     }
                     
-                    int finalSelectedCount = m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
-                    QString finalLogMsg = QString("ModernGraphicsView: ОТЛОЖЕННЫЙ вызов selectNodesInRect выделил %1 объектов")
-                        .arg(finalSelectedCount);
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, finalLogMsg.toStdString().c_str(), 0);
-                    qDebug() << finalLogMsg;
-                    
-                    // ДИАГНОСТИКА: Проверяем финальное выделение
-                    QList<QGraphicsItem*> finalSelected = m_owner->m_scene->selectedItems();
-                    int finalCount = 0;
-                    QStringList finalNames;
-                    for(QGraphicsItem* item : finalSelected)
-                    {
-                        auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-                        if(node && node->isSelected())
-                        {
-                            finalCount++;
-                            finalNames << node->nodeName;
-                        }
-                    }
-                    QString finalCheckMsg = QString("ModernGraphicsView: ФИНАЛЬНАЯ проверка - выделено %1 объектов: %2")
-                        .arg(finalCount).arg(finalNames.join(", "));
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, finalCheckMsg.toStdString().c_str(), 0);
-                    qDebug() << finalCheckMsg;
+                    m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
                 });
             }
             
@@ -690,7 +567,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         QObject::connect(m_portListWidget, &QTreeWidget::itemDoubleClicked,
                         [this](QTreeWidgetItem* item, int column) {
                             // Логируем событие двойного клика (используем qDebug для гарантированного вывода)
-                            qDebug() << "itemDoubleClicked signal received";
                             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                                 "itemDoubleClicked signal received", 0);
                             // Двойной клик всегда активирует порт
@@ -701,7 +577,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         QObject::connect(m_portListWidget, &QTreeWidget::itemActivated,
                         [this](QTreeWidgetItem* item, int column) {
                             // Логируем событие активации (используем qDebug для гарантированного вывода)
-                            qDebug() << "itemActivated signal received";
                             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                                 "itemActivated signal received", 0);
                             // Активация всегда обрабатывает порт
@@ -716,7 +591,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         enterShortcut->setContext(Qt::WindowShortcut);
         enterShortcut2->setContext(Qt::WindowShortcut);
         QObject::connect(enterShortcut, &QShortcut::activated, [this]() {
-            qDebug() << "Enter shortcut activated";
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                 "Enter shortcut activated", 0);
             if(m_portListWidget && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
@@ -745,7 +619,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
             }
         });
         QObject::connect(enterShortcut2, &QShortcut::activated, [this]() {
-            qDebug() << "Enter (numpad) shortcut activated";
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                 "Enter (numpad) shortcut activated", 0);
             if(m_portListWidget && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
@@ -777,10 +650,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         // Добавляем обработку одинарного клика для выходных и входных портов
         QObject::connect(m_portListWidget, &QTreeWidget::itemClicked,
                         [this](QTreeWidgetItem* item, int column) {
-                            // Логируем событие клика
-                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                                "itemClicked signal received", 0);
-                            
                             // Для выходных портов одинарный клик начинает соединение
                             if(item && item->parent() != nullptr)
                             {
@@ -795,20 +664,15 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                                         .arg(isInput ? "input" : "output")
                                         .arg(portName)
                                         .arg(m_owner && m_owner->m_activeTempLink ? "yes" : "no");
-                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
                                     
                                     // Для выходных портов начинаем соединение
                                     if(!isInput && !portName.isEmpty())
                                     {
-                                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                                            "itemClicked: Calling onPortItemActivated for output port", 0);
                                         onPortItemActivated(item, column);
                                     }
                                     // Для входных портов завершаем соединение, если оно активно
                                     else if(isInput && !portName.isEmpty() && m_owner && m_owner->m_activeTempLink)
                                     {
-                                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                                            "itemClicked: Calling onPortItemActivated for input port", 0);
                                         onPortItemActivated(item, column);
                                     }
                                     else if(isInput && !portName.isEmpty())
@@ -823,11 +687,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                                     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
                                         "itemClicked: Port data is invalid", 0);
                                 }
-                            }
-                            else
-                            {
-                                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                                    "itemClicked: Item is null or is a component (not a port)", 0);
                             }
                         });
     }
@@ -1498,12 +1357,6 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
         // Перемещение группы выделенных объектов
         if(m_owner && isSelected())
         {
-            // ДИАГНОСТИКА: Логируем начало движения узла
-            QString logMsg = QString("NodeItem::itemChange: узел '%1' начал движение, isSelected=%2")
-                .arg(nodeName).arg(isSelected() ? "true" : "false");
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-            qDebug() << logMsg;
-            
             // Получаем текущую позицию
             QPointF newPos = pos();
             // Получаем старую позицию из хэш-таблицы
@@ -1540,15 +1393,6 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                     m_owner->m_isMovingGroup = true;
                     
                     // ДИАГНОСТИКА: Логируем движение группы
-                    logMsg = QString("NodeItem::itemChange: перемещение группы - движется '%1', всего выделено %2 узлов: %3, смещение: (%4, %5)")
-                        .arg(nodeName)
-                        .arg(selectedNodeCount)
-                        .arg(selectedNodeNames.join(", "))
-                        .arg(delta.x()).arg(delta.y());
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-                    qDebug() << logMsg;
-                    
-                    QStringList movedNodeNames;
                     for(QGraphicsItem* item : selectedItems)
                     {
                         auto* otherNode = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
@@ -1562,35 +1406,11 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                             otherNode->setPos(otherOldPos + delta);
                             // Обновляем сохраненную позицию
                             m_owner->m_lastNodePositions[otherNode] = otherNode->pos();
-                            movedNodeNames << otherNode->nodeName;
                         }
                     }
                     
                     // Сбрасываем флаг группового перемещения
                     m_owner->m_isMovingGroup = false;
-                    
-                    // ДИАГНОСТИКА: Логируем, какие узлы были перемещены
-                    if(!movedNodeNames.isEmpty())
-                    {
-                        logMsg = QString("NodeItem::itemChange: перемещены узлы: %1")
-                            .arg(movedNodeNames.join(", "));
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-                        qDebug() << logMsg;
-                    }
-                    else
-                    {
-                        logMsg = QString("NodeItem::itemChange: ВНИМАНИЕ - ни один узел не был перемещен вместе с '%1'")
-                            .arg(nodeName);
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, logMsg.toStdString().c_str(), 0);
-                        qDebug() << logMsg;
-                    }
-                }
-                else
-                {
-                    logMsg = QString("NodeItem::itemChange: выделен только один узел '%1', групповое перемещение не выполняется")
-                        .arg(nodeName);
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-                    qDebug() << logMsg;
                 }
             }
             
@@ -1623,35 +1443,8 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             return QGraphicsRectItem::itemChange(change, value);
         }
         
-        // ДИАГНОСТИКА: Логируем изменение выделения узла
-        bool isNowSelected = value.toBool();
-        QString logMsg = QString("NodeItem::itemChange: ItemSelectedHasChanged для узла '%1', новое состояние: %2")
-            .arg(nodeName).arg(isNowSelected ? "выделен" : "снято выделение");
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
-        
-        // ДИАГНОСТИКА: Проверяем текущее выделение в сцене
-        if(m_owner->m_scene)
-        {
-            QList<QGraphicsItem*> currentSelected = m_owner->m_scene->selectedItems();
-            int currentCount = 0;
-            QStringList currentNames;
-            for(QGraphicsItem* item : currentSelected)
-            {
-                auto* node = dynamic_cast<NodeItem*>(item);
-                if(node && node->isSelected())
-                {
-                    currentCount++;
-                    currentNames << node->nodeName;
-                }
-            }
-            QString currentLogMsg = QString("NodeItem::itemChange: после изменения выделения '%1' в сцене выделено %2 объектов: %3")
-                .arg(nodeName).arg(currentCount).arg(currentNames.join(", "));
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, currentLogMsg.toStdString().c_str(), 0);
-            qDebug() << currentLogMsg;
-        }
-        
         // Отслеживаем изменение выбора компонента
+        bool isNowSelected = value.toBool();
         if(isNowSelected)
         {
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
@@ -2724,7 +2517,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
     Q_UNUSED(column);
     
     // Логируем вход в функцию в самом начале (используем qDebug для гарантированного вывода)
-    qDebug() << "onPortItemActivated: Function called";
     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
         "onPortItemActivated: Function called", 0);
     
@@ -2740,8 +2532,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
     // Проверяем, что это элемент порта (не компонент)
     if(item->parent() == nullptr)
     {
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-            "onPortItemActivated: Item is a component, not a port", 0);
         return; // Это элемент компонента, не порт
     }
     
@@ -2777,7 +2567,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
     
     if(isInput)
     {
-        qDebug() << "onPortItemActivated: Input port selected, portName:" << portName << "componentName:" << componentName;
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
             "onPortItemActivated: Input port selected", 0);
         
@@ -2785,7 +2574,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         // Проверяем наличие активного соединения через m_activeTempLink
         if(m_owner->m_activeTempLink)
         {
-            qDebug() << "onPortItemActivated: Active connection exists";
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                 "onPortItemActivated: Active connection exists", 0);
             
@@ -2793,17 +2581,10 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             if(!m_owner->m_activeSourceNode || 
                m_owner->m_activeSourcePortName.isEmpty())
             {
-                // Логируем ошибку: отсутствуют исходные данные
-                qDebug() << "onPortItemActivated: ERROR - source port data is missing, activeSourceNode:" 
-                         << (m_owner->m_activeSourceNode ? "exists" : "null") 
-                         << "activeSourcePortName:" << m_owner->m_activeSourcePortName;
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
                     "onPortItemActivated: Cannot complete connection - source port data is missing", 0);
                 return;
             }
-            
-            qDebug() << "onPortItemActivated: Source port data OK, sourceNode:" << m_owner->m_activeSourceNode->nodeName
-                     << "sourcePortName:" << m_owner->m_activeSourcePortName;
             
             // Формируем полные имена компонентов
             QString srcName = m_owner->m_activeSourceNode->nodeName;
@@ -2833,12 +2614,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             }
             
             // Логируем промежуточные значения для диагностики
-            qDebug() << "onPortItemActivated: Component path formation:";
-            qDebug() << "  nodeName:" << nodeName;
-            qDebug() << "  componentName:" << componentName;
-            qDebug() << "  dstName:" << dstName;
-            qDebug() << "  m_componentName:" << m_owner->m_componentName;
-            qDebug() << "  fullDst:" << fullDst;
             
             // Формируем пути свойств, используя сохраненные копии вместо указателя
             QString srcProp;
@@ -2866,11 +2641,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             }
             
             // Логируем параметры перед созданием соединения
-            qDebug() << "onPortItemActivated: Creating connection:";
-            qDebug() << "  fullSrc:" << fullSrc;
-            qDebug() << "  srcProp:" << srcProp;
-            qDebug() << "  fullDst:" << fullDst;
-            qDebug() << "  dstProp:" << dstProp;
             QString preMsg = QString("onPortItemActivated: Creating connection: %1.%2 -> %3.%4")
                 .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, preMsg.toStdString().c_str(), 0);
@@ -2883,21 +2653,18 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 dstProp.toStdString().c_str()
             );
             
-            qDebug() << "onPortItemActivated: Model_CreateLinkByName returned:" << result;
             
             // Логируем результат создания соединения
             if(result == 0) // Предполагаем, что 0 означает успех
             {
                 QString successMsg = QString("Connection created successfully: %1.%2 -> %3.%4")
                     .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp);
-                qDebug() << "onPortItemActivated: SUCCESS -" << successMsg;
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, successMsg.toStdString().c_str(), 0);
             }
             else
             {
                 QString errorMsg = QString("Failed to create connection: %1.%2 -> %3.%4 (error code: %5)")
                     .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp).arg(result);
-                qDebug() << "onPortItemActivated: ERROR -" << errorMsg;
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_ERROR, errorMsg.toStdString().c_str(), 0);
             }
             
@@ -2932,18 +2699,15 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             emit m_owner->updateComponentsList();
             if(result == 0) // Только при успешном создании связи
             {
-                qDebug() << "onPortItemActivated: Calling rebuildLinks() to update links";
                 m_owner->rebuildLinks();
             }
             else
             {
-                qDebug() << "onPortItemActivated: Not rebuilding links, result =" << result;
             }
         }
         else
         {
             // Логируем предупреждение: попытка завершить соединение без активного соединения
-            qDebug() << "onPortItemActivated: WARNING - no active connection exists (m_activeTempLink is null)";
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
                 "onPortItemActivated: Attempted to complete connection but no active connection exists", 0);
             return;
@@ -2954,7 +2718,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         // Если выбран выходной порт - начинаем pull-режим
         QString logMsg = QString("onPortItemActivated: Starting connection from output port '%1'")
             .arg(portName);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
         // Находим порт в реальных портах (не в категоризированных)
         const Port* selectedPort = nullptr;
         
@@ -2990,8 +2753,6 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         if(selectedPort)
         {
             // Логируем успешное начало соединения
-            qDebug() << "onPortItemActivated: Starting connection from output port:" << portName 
-                     << "in component:" << nodeName;
             QString successMsg = QString("Connection started from port '%1' in component '%2'")
                 .arg(portName).arg(nodeName);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, successMsg.toStdString().c_str(), 0);
@@ -3825,20 +3586,17 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
     // Обработка Enter для завершения соединения через окно выбора портов
     if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
     {
-        qDebug() << "keyPressEvent: Enter/Return key pressed";
         // Проверяем, есть ли открытое окно выбора портов
         for(NodeItem* node : m_nodes)
         {
             if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
             {
-                qDebug() << "keyPressEvent: Found visible port list widget";
                 if(node->m_portListWidget)
                 {
                     QTreeWidgetItem* currentItem = node->m_portListWidget->currentItem();
                     if(currentItem && currentItem->parent() != nullptr) // Проверяем, что это элемент порта (не категория)
                     {
                         // Логируем через qDebug для гарантированного вывода
-                        qDebug() << "keyPressEvent: Enter pressed, currentItem found, calling onPortItemActivated";
                         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                             "keyPressEvent: Enter pressed, processing current item from port list", 0);
                         node->onPortItemActivated(currentItem, 0);
@@ -3847,12 +3605,10 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
                     }
                     else
                     {
-                        qDebug() << "keyPressEvent: Enter pressed but currentItem is null or is a category";
                     }
                 }
             }
         }
-        qDebug() << "keyPressEvent: Enter pressed but no visible port list widget found";
         // Если окно выбора портов не открыто, передаем событие дальше (не отменяем соединение!)
     }
     
@@ -4257,14 +4013,12 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     
                     if (hasPorts)
                     {
-                        qDebug() << "mousePressEvent: Opening input port list for category" << (int)inputPort->category;
                         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                             "mousePressEvent: Opening input port list for category", 0);
                         
                         // Если есть активная связь, активируем состояние ожидания выбора порта
                         if(m_owner->m_activeTempLink)
                         {
-                            qDebug() << "mousePressEvent: Active connection exists, setting waiting state";
                             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                                 "mousePressEvent: Active connection exists, setting waiting state", 0);
                             
@@ -4293,7 +4047,6 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                             // Обновляем геометрию временной линии один раз для заморозки
                             m_owner->m_activeTempLink->updateGeometry(freezePos);
                             
-                            qDebug() << "mousePressEvent: Connection frozen at position:" << freezePos;
                             
                             // Принудительно обновляем сцену, чтобы изменения вступили в силу немедленно
                             if(m_owner->m_scene)
@@ -4303,7 +4056,6 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                         }
                         else
                         {
-                            qDebug() << "mousePressEvent: No active connection, just opening port list";
                         }
                         
                         node->showPortListWidget(event->scenePos());
@@ -4526,8 +4278,6 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 {
                     clickedOnBackground = false;
                     // Логируем, что клик попал в окно выбора портов
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                        "mousePressEvent: Click detected in port list widget, forwarding to widget", 0);
                     // Передаем событие виджету, чтобы он мог обработать клик
                     QGraphicsScene::mousePressEvent(event);
                     return;
@@ -4765,12 +4515,10 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             // Обновляем схему (перестраиваем связи)
             if(result == 0) // Только при успешном создании связи
             {
-                qDebug() << "onPortItemActivated: Calling Reload() to rebuild links";
                 m_owner->Reload();
             }
             else
             {
-                qDebug() << "onPortItemActivated: Not reloading, result =" << result;
             }
             emit m_owner->updateComponentsList();
             
@@ -4814,7 +4562,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         // Если клик попал на окно выбора, обрабатываем выбор порта напрямую
         if(clickedOnPortListWidget)
         {
-            qDebug() << "mouseReleaseEvent: Click detected on port list widget";
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                 "mouseReleaseEvent: Click detected on port list widget", 0);
             
@@ -4827,7 +4574,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                         node->m_portListWidgetProxy->boundingRect()).boundingRect();
                     if(widgetRect.contains(event->scenePos()))
                     {
-                        qDebug() << "mouseReleaseEvent: Found visible port list widget, scenePos:" << event->scenePos();
                         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                             "mouseReleaseEvent: Found visible port list widget", 0);
                         
@@ -4835,7 +4581,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                         QPointF widgetLocalPos = node->m_portListWidgetProxy->mapFromScene(event->scenePos());
                         QPoint widgetPoint = widgetLocalPos.toPoint();
                         
-                        qDebug() << "mouseReleaseEvent: widgetLocalPos:" << widgetLocalPos << "widgetPoint:" << widgetPoint;
                         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                             "mouseReleaseEvent: Converting coordinates for itemAt", 0);
                         
@@ -4850,20 +4595,16 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                             QPoint globalPos = screenPos.toPoint();
                             QPoint widgetGlobalPoint = node->m_portListWidget->mapFromGlobal(globalPos);
                             itemUnderCursor = node->m_portListWidget->itemAt(widgetGlobalPoint);
-                            qDebug() << "mouseReleaseEvent: Trying mapFromGlobal, globalPos:" << globalPos 
-                                     << "widgetGlobalPoint:" << widgetGlobalPoint;
                         }
                         
                         // 3. Если все еще не нашли, используем currentItem
                         if(!itemUnderCursor)
                         {
                             itemUnderCursor = node->m_portListWidget->currentItem();
-                            qDebug() << "mouseReleaseEvent: Using currentItem as fallback";
                         }
                         
                         if(itemUnderCursor)
                         {
-                            qDebug() << "mouseReleaseEvent: itemUnderCursor found, has parent:" << (itemUnderCursor->parent() != nullptr);
                             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                                 "mouseReleaseEvent: itemUnderCursor found", 0);
                             
@@ -4877,7 +4618,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                                     bool isInput = portData["isInput"].toBool();
                                     QString portName = portData["name"].toString();
                                     
-                                    qDebug() << "mouseReleaseEvent: Clicked on port item, isInput:" << isInput << "portName:" << portName;
                                     QString logMsg = QString("mouseReleaseEvent: Clicked on %1 port '%2' in list, completing connection")
                                         .arg(isInput ? "input" : "output").arg(portName);
                                     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
@@ -4888,28 +4628,19 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                                 }
                                 else
                                 {
-                                    qDebug() << "mouseReleaseEvent: Item data is invalid";
                                     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
                                         "mouseReleaseEvent: Item data is invalid", 0);
                                 }
                             }
-                            else
-                            {
-                                qDebug() << "mouseReleaseEvent: Clicked on category item (no parent)";
-                                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, 
-                                    "mouseReleaseEvent: Clicked on category item", 0);
-                            }
                         }
                         else
                         {
-                            qDebug() << "mouseReleaseEvent: No item found at widgetPoint:" << widgetPoint;
                             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
                                 "mouseReleaseEvent: No item found at cursor position", 0);
                         }
                         
                         // Если не удалось найти элемент напрямую, передаем событие виджету
                         // чтобы он мог обработать клик через свой механизм
-                        qDebug() << "mouseReleaseEvent: Forwarding event to QTreeWidget for processing";
                         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                             "mouseReleaseEvent: Forwarding event to QTreeWidget", 0);
                     }
@@ -4917,7 +4648,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
             
             // Если не попали на элемент порта, передаем событие дальше
-            qDebug() << "mouseReleaseEvent: No port item found, forwarding event";
             QGraphicsScene::mouseReleaseEvent(event);
             return;
         }
@@ -5061,12 +4791,10 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             emit m_owner->updateComponentsList();
             if(result == 0) // Только при успешном создании связи
             {
-                qDebug() << "mouseReleaseEvent (port tree): Calling rebuildLinks() to update links";
                 m_owner->rebuildLinks();
             }
             else
             {
-                qDebug() << "mouseReleaseEvent (port tree): Not rebuilding links, result =" << result;
             }
             
             event->accept();
@@ -5238,12 +4966,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     // Используем отложенный вызов, чтобы восстановление произошло после всех обработчиков событий
     if(wasGroupMoving && !savedSelectedNodes.isEmpty())
     {
-        // ДИАГНОСТИКА: Логируем перед восстановлением
-        QString logMsg = QString("ModernScene::mouseReleaseEvent: восстанавливаем выделение для %1 узлов после перемещения группы")
-            .arg(savedSelectedNodes.size());
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
-        
         // Сохраняем список узлов для отложенного восстановления
         QList<UModernDiagramWidget::NodeItem*> nodesToRestore = savedSelectedNodes;
         
@@ -5262,24 +4984,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         m_owner->m_isBatchSelecting = false;
         m_owner->m_scene->blockSignals(false);
         
-        // ДИАГНОСТИКА: Проверяем выделение после немедленного восстановления
-        QList<QGraphicsItem*> selectedAfterImmediate = m_owner->m_scene->selectedItems();
-        int selectedAfterImmediateCount = 0;
-        QStringList selectedAfterImmediateNames;
-        for(QGraphicsItem* item : selectedAfterImmediate)
-        {
-            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-            if(node && node->isSelected())
-            {
-                selectedAfterImmediateCount++;
-                selectedAfterImmediateNames << node->nodeName;
-            }
-        }
-        logMsg = QString("ModernScene::mouseReleaseEvent: ПОСЛЕ немедленного восстановления выделено %1 объектов: %2")
-            .arg(selectedAfterImmediateCount).arg(selectedAfterImmediateNames.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
-        
         // Отложенное восстановление выделения, чтобы оно произошло после всех обработчиков событий
         QTimer::singleShot(0, [this, nodesToRestore]() {
             // Восстанавливаем выделение для всех сохраненных узлов
@@ -5296,24 +5000,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             
             m_owner->m_isBatchSelecting = false;
             m_owner->m_scene->blockSignals(false);
-            
-            // ДИАГНОСТИКА: Проверяем выделение после отложенного восстановления
-            QList<QGraphicsItem*> selectedAfterDeferred = m_owner->m_scene->selectedItems();
-            int selectedAfterDeferredCount = 0;
-            QStringList selectedAfterDeferredNames;
-            for(QGraphicsItem* item : selectedAfterDeferred)
-            {
-                auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
-                if(node && node->isSelected())
-                {
-                    selectedAfterDeferredCount++;
-                    selectedAfterDeferredNames << node->nodeName;
-                }
-            }
-            QString logMsg = QString("ModernScene::mouseReleaseEvent: ПОСЛЕ отложенного восстановления выделено %1 объектов: %2")
-                .arg(selectedAfterDeferredCount).arg(selectedAfterDeferredNames.join(", "));
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-            qDebug() << logMsg;
         });
     }
     
@@ -5333,12 +5019,6 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 selectedNodeNames << node->nodeName;
             }
         }
-        
-        // ДИАГНОСТИКА: Логируем выделение в ModernScene::mouseReleaseEvent
-        QString logMsg = QString("ModernScene::mouseReleaseEvent: выделено %1 объектов: %2")
-            .arg(selectedNodeCount).arg(selectedNodeNames.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
         
         // Устанавливаем флаг группы, если выделено больше одного объекта
         m_isGroupSelected = (selectedNodeCount > 1);
@@ -5378,7 +5058,6 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     if(itemUnderCursor && itemUnderCursor->parent() != nullptr)
                     {
                         // Это элемент порта (не категория) - завершаем соединение
-                        qDebug() << "mouseDoubleClickEvent: Double-clicked on port item, calling onPortItemActivated";
                         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
                             "mouseDoubleClickEvent: Double-clicked on port item in list, completing connection", 0);
                         node->onPortItemActivated(itemUnderCursor, 0);
@@ -5387,7 +5066,6 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     }
                     else
                     {
-                        qDebug() << "mouseDoubleClickEvent: Double-clicked on category item or no item found";
                     }
                 }
             }
@@ -5533,12 +5211,10 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             emit m_owner->updateComponentsList();
             if(result == 0) // Только при успешном создании связи
             {
-                qDebug() << "mouseReleaseEvent (drag&drop): Calling rebuildLinks() to update links";
                 m_owner->rebuildLinks();
             }
             else
             {
-                qDebug() << "mouseReleaseEvent (drag&drop): Not rebuilding links, result =" << result;
             }
             
             event->accept();
@@ -6287,52 +5963,13 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
     
     if(!m_scene)
     {
-        logMsg = "selectNodesInRect: m_scene is null";
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
         return 0;
     }
-    
-    // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД очисткой
-    QList<QGraphicsItem*> beforeClear = m_scene->selectedItems();
-    int beforeClearCount = 0;
-    QStringList beforeClearNames;
-    for(QGraphicsItem* item : beforeClear)
-    {
-        auto* node = dynamic_cast<NodeItem*>(item);
-        if(node && node->isSelected())
-        {
-            beforeClearCount++;
-            beforeClearNames << node->nodeName;
-        }
-    }
-    QString beforeClearMsg = QString("selectNodesInRect: ПЕРЕД clearSelection выделено %1 объектов: %2")
-        .arg(beforeClearCount).arg(beforeClearNames.join(", "));
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, beforeClearMsg.toStdString().c_str(), 0);
-    qDebug() << beforeClearMsg;
     
     // Очищаем предыдущее выделение, если не добавляем к выделению
     if(!addToSelection)
     {
         m_scene->clearSelection();
-        
-        // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ очистки
-        QList<QGraphicsItem*> afterClear = m_scene->selectedItems();
-        int afterClearCount = 0;
-        QStringList afterClearNames;
-        for(QGraphicsItem* item : afterClear)
-        {
-            auto* node = dynamic_cast<NodeItem*>(item);
-            if(node && node->isSelected())
-            {
-                afterClearCount++;
-                afterClearNames << node->nodeName;
-            }
-        }
-        QString afterClearMsg = QString("selectNodesInRect: ПОСЛЕ clearSelection выделено %1 объектов: %2")
-            .arg(afterClearCount).arg(afterClearNames.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, afterClearMsg.toStdString().c_str(), 0);
-        qDebug() << afterClearMsg;
     }
     
     // Используем прямой перебор всех узлов для более надежного выделения
@@ -6340,19 +5977,8 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
     int selectedCount = 0;
     int totalNodes = m_nodes.size();
     
-    logMsg = QString("selectNodesInRect: проверяем %1 узлов в прямоугольнике (%2,%3 %4x%5) addToSelection:%6")
-        .arg(totalNodes)
-        .arg(selectionRect.x()).arg(selectionRect.y())
-        .arg(selectionRect.width()).arg(selectionRect.height())
-        .arg(addToSelection ? "true" : "false");
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-    qDebug() << logMsg;
-    
     if(totalNodes == 0)
     {
-        logMsg = "selectNodesInRect: нет узлов для проверки";
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-        qDebug() << logMsg;
         return 0;
     }
     
@@ -6375,22 +6001,6 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         {
             nodesToSelect.append(node);
             selectedCount++;
-            
-            logMsg = QString("selectNodesInRect: ✓ узел '%1' nodeRect:(%2,%3 %4x%5) пересекается с selectionRect:(%6,%7 %8x%9)")
-                .arg(node->nodeName)
-                .arg(nodeRect.x()).arg(nodeRect.y()).arg(nodeRect.width()).arg(nodeRect.height())
-                .arg(selectionRect.x()).arg(selectionRect.y()).arg(selectionRect.width()).arg(selectionRect.height());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-            qDebug() << logMsg;
-        }
-        else
-        {
-            logMsg = QString("selectNodesInRect: ✗ узел '%1' nodeRect:(%2,%3 %4x%5) НЕ пересекается с selectionRect:(%6,%7 %8x%9)")
-                .arg(node->nodeName)
-                .arg(nodeRect.x()).arg(nodeRect.y()).arg(nodeRect.width()).arg(nodeRect.height())
-                .arg(selectionRect.x()).arg(selectionRect.y()).arg(selectionRect.width()).arg(selectionRect.height());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
-            qDebug() << logMsg;
         }
     }
     
@@ -6418,8 +6028,6 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         }
         QString beforeBatchMsg = QString("selectNodesInRect: ПЕРЕД batch setSelected выделено %1 объектов: %2")
             .arg(beforeBatchSelectCount).arg(beforeBatchSelectNames.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, beforeBatchMsg.toStdString().c_str(), 0);
-        qDebug() << beforeBatchMsg;
         
         // Устанавливаем выделение для всех узлов одновременно
         for(NodeItem* node : nodesToSelect)
@@ -6446,8 +6054,6 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         }
         QString afterBatchMsg = QString("selectNodesInRect: ПОСЛЕ batch setSelected выделено %1 объектов: %2")
             .arg(afterBatchSelectCount).arg(afterBatchSelectNames.join(", "));
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, afterBatchMsg.toStdString().c_str(), 0);
-        qDebug() << afterBatchMsg;
         
         if(afterBatchSelectCount != nodesToSelect.size())
         {
@@ -6459,13 +6065,8 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
                 .arg(expectedNames.join(", "))
                 .arg(afterBatchSelectNames.join(", "));
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warningMsg.toStdString().c_str(), 0);
-            qDebug() << warningMsg;
         }
     }
-    
-    logMsg = QString("selectNodesInRect: итого выделено %1 из %2 узлов").arg(selectedCount).arg(totalNodes);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-    qDebug() << logMsg;
     
     return selectedCount;
 }
