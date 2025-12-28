@@ -161,7 +161,16 @@ private:
         // Временная линия до курсора
         LinkItem(class NodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
         void updateGeometry(const QPointF& cursorOverride = QPointF());
+        
+        // Hover events for tooltips
+        void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+        void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+        
+        // Getters for tooltip generation
+        NodeItem* getSourceNode() const { return m_src; }
+        NodeItem* getDestinationNode() const { return m_dst; }
     private:
+        class UModernDiagramWidget* m_owner;
         class NodeItem* m_src;
         class NodeItem* m_dst;
         bool m_useOutput;
@@ -310,6 +319,13 @@ private slots:
     void saveCurrentViewState();
     void restoreViewState(const QString& componentName);
     void resetZoom();
+    
+    // Tooltip generation methods
+    QString generateNodeTooltip(NodeItem* node) const;
+    QString generatePortTooltip(const Port& port) const;
+    QString generateLinkTooltip(LinkItem* link) const;
+    QString generateCanvasTooltip() const;
+    QString getPortCategoryName(PortCategory category) const;
 };
 
 #endif // UMODERNDIAGRAMWIDGET_H

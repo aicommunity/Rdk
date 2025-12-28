@@ -2367,6 +2367,18 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
     m_hoveredPort = getPortAtPosition(event->pos());
     update(); // Только визуальная подсветка
     // Убрано: showPortListWidget - окно открывается только при клике
+    
+    // Set initial tooltip
+    if(m_hoveredPort && m_owner)
+    {
+        QString tooltip = m_owner->generatePortTooltip(*m_hoveredPort);
+        setToolTip(tooltip);
+    }
+    else if(m_owner)
+    {
+        QString tooltip = m_owner->generateNodeTooltip(this);
+        setToolTip(tooltip);
+    }
 }
 
 void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
@@ -2380,6 +2392,18 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
         update(); // Только визуальная подсветка
         // Убрано: showPortListWidget - окно открывается только при клике
     }
+    
+    // Set tooltip based on hover state
+    if(m_hoveredPort && m_owner)
+    {
+        QString tooltip = m_owner->generatePortTooltip(*m_hoveredPort);
+        setToolTip(tooltip);
+    }
+    else if(m_owner)
+    {
+        QString tooltip = m_owner->generateNodeTooltip(this);
+        setToolTip(tooltip);
+    }
 }
 
 void UModernDiagramWidget::NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -2388,6 +2412,7 @@ void UModernDiagramWidget::NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *e
     m_hoveredPort = nullptr;
     if(m_hideTimer)
         m_hideTimer->start();
+    setToolTip(QString()); // Clear tooltip on leave
     update();
 }
 
@@ -2991,6 +3016,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
 
 UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, bool useOutput, bool useInput)
     : QGraphicsPathItem()
+    , m_owner(src ? src->m_owner : nullptr)
     , m_src(src)
     , m_dst(dst)
     , m_useOutput(useOutput)
@@ -3003,11 +3029,13 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, bool useO
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
+    setAcceptHoverEvents(true);
     updateGeometry();
 }
 
 UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, PortCategory srcCategory, PortCategory dstCategory)
     : QGraphicsPathItem()
+    , m_owner(src ? src->m_owner : nullptr)
     , m_src(src)
     , m_dst(dst)
     , m_useOutput(true)
@@ -3020,11 +3048,13 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, PortCateg
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
+    setAcceptHoverEvents(true);
     updateGeometry();
 }
 
 UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, const QPointF& tempEnd, const QPointF& startPos)
     : QGraphicsPathItem()
+    , m_owner(src ? src->m_owner : nullptr)
     , m_src(src)
     , m_dst(nullptr)
     , m_useOutput(true)
@@ -3039,6 +3069,8 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, const QPointF& tempEnd, 
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkTempColor(), style->getLinkWidth(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
+    // Temporary links don't need hover events
+    setAcceptHoverEvents(false);
     updateGeometry(tempEnd);
 }
 
@@ -3096,6 +3128,22 @@ void UModernDiagramWidget::LinkItem::updateGeometry(const QPointF& cursorOverrid
     setPath(path);
 }
 
+void UModernDiagramWidget::LinkItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsPathItem::hoverEnterEvent(event);
+    if(m_owner && !m_isTemp)
+    {
+        QString tooltip = m_owner->generateLinkTooltip(this);
+        setToolTip(tooltip);
+    }
+}
+
+void UModernDiagramWidget::LinkItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsPathItem::hoverLeaveEvent(event);
+    setToolTip(QString());
+}
+
 // --------------------------- Widget ---------------------------
 
 UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
@@ -3149,7 +3197,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     // Создание кнопки сброса масштаба
     m_resetZoomButton = new QPushButton(this);
     m_resetZoomButton->setText("⟲");
-    m_resetZoomButton->setToolTip("Сбросить масштаб");
+    m_resetZoomButton->setToolTip(tr("Reset zoom"));
     m_resetZoomButton->setFixedSize(32, 32);
     m_resetZoomButton->setStyleSheet(
         "QPushButton {"
@@ -4444,6 +4492,24 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
     
     QGraphicsScene::mouseMoveEvent(event);
+    
+    // Set canvas tooltip when hovering over empty area (not over node or link)
+    if(m_owner && m_owner->m_mainView)
+    {
+        QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
+        // Only set canvas tooltip if not hovering over a node or link
+        if(!item || (!dynamic_cast<UModernDiagramWidget::NodeItem*>(item) && 
+                     !dynamic_cast<UModernDiagramWidget::LinkItem*>(item)))
+        {
+            QString tooltip = m_owner->generateCanvasTooltip();
+            m_owner->m_mainView->setToolTip(tooltip);
+        }
+        else
+        {
+            // Clear tooltip when hovering over items (they have their own tooltips)
+            m_owner->m_mainView->setToolTip(QString());
+        }
+    }
 }
 
 void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -6089,5 +6155,104 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
     }
     
     return selectedCount;
+}
+
+// --------------------------- Tooltip generation methods ---------------------------
+
+QString UModernDiagramWidget::getPortCategoryName(PortCategory category) const
+{
+    switch(category)
+    {
+    case PortCategory::Own:
+        return tr("Own");
+    case PortCategory::Child:
+        return tr("Child");
+    case PortCategory::Alias:
+        return tr("Alias");
+    default:
+        return tr("Unknown");
+    }
+}
+
+QString UModernDiagramWidget::generateNodeTooltip(NodeItem* node) const
+{
+    if(!node)
+        return QString();
+    
+    QString tooltip = tr(
+        "<b>%1</b><br/>"
+        "<i>Class: %2</i><br/><br/>"
+        "<b>Actions:</b><br/>"
+        "• Left Click - Select<br/>"
+        "• Double Left Click - Enter component<br/>"
+        "• Right Click - Context menu<br/>"
+        "• Drag - Move node<br/>"
+        "• Drag selected - Move group<br/><br/>"
+        "<b>Keys:</b><br/>"
+        "• Delete - Delete (with confirmation)<br/>"
+        "• Shift + Delete - Delete without confirmation<br/>"
+        "• Esc - Cancel operation"
+    ).arg(node->nodeName, node->className);
+    
+    return tooltip;
+}
+
+QString UModernDiagramWidget::generatePortTooltip(const Port& port) const
+{
+    QString portType = port.isInput ? tr("Input") : tr("Output");
+    QString categoryName = getPortCategoryName(port.category);
+    QString actionText = port.isInput 
+        ? tr("• Left Click - Complete connection")
+        : tr("• Left Click - Start connection");
+    
+    QString tooltip = tr(
+        "<b>%1</b><br/>"
+        "<i>%2</i><br/>"
+        "Type: %3 | Category: %4<br/><br/>"
+        "<b>Actions:</b><br/>"
+        "%5<br/>"
+        "• Shift + Left Click - Show nested ports<br/>"
+        "• Enter - Select port (in selection window)"
+    ).arg(port.displayName, port.fullPath, portType, categoryName, actionText);
+    
+    return tooltip;
+}
+
+QString UModernDiagramWidget::generateLinkTooltip(LinkItem* link) const
+{
+    if(!link || !link->getSourceNode())
+        return QString();
+    
+    QString srcName = link->getSourceNode()->nodeName;
+    NodeItem* dstNode = link->getDestinationNode();
+    QString dstName = dstNode ? dstNode->nodeName : tr("(temporary)");
+    
+    QString tooltip = tr(
+        "<b>Connection</b><br/>"
+        "From: %1<br/>"
+        "To: %2<br/><br/>"
+        "<b>Actions:</b><br/>"
+        "• Right Click - Context menu"
+    ).arg(srcName, dstName);
+    
+    return tooltip;
+}
+
+QString UModernDiagramWidget::generateCanvasTooltip() const
+{
+    QString tooltip = tr(
+        "<b>Diagram Canvas</b><br/><br/>"
+        "<b>Selection:</b><br/>"
+        "• Left Click + Drag - Select rectangle<br/>"
+        "• Shift + Left Click + Drag - Add to selection<br/><br/>"
+        "<b>Navigation:</b><br/>"
+        "• Ctrl + Left Click + Drag - Pan canvas<br/>"
+        "• Mouse Wheel - Zoom<br/>"
+        "• Double Right Click - Go up level<br/><br/>"
+        "<b>Connections:</b><br/>"
+        "• Right Click - Cancel connection"
+    );
+    
+    return tooltip;
 }
 
