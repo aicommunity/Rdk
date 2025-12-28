@@ -30,6 +30,7 @@
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QScrollBar>
+#include <QTimer>
 #include <cmath>
 #include <ctime>
 #include <sstream>
@@ -57,6 +58,11 @@ protected:
 private:
     UModernDiagramWidget* m_owner;
     QTimer* m_hoverTimer{nullptr};
+    QPointF m_rubberBandStartPos;  // Начальная позиция для RubberBandDrag
+    bool m_isRubberBandActive;  // Флаг активного RubberBandDrag
+    bool m_isGroupSelected = false;  // Есть ли выделенная группа объектов
+    bool m_isGroupMoving = false;    // Идет ли перемещение группы
+    QList<UModernDiagramWidget::NodeItem*> m_savedSelection; // Сохраненное выделение для перемещения
     void pollHover();
 };
 
@@ -82,6 +88,17 @@ protected:
             setCursor(Qt::ClosedHandCursor);
             event->accept();
             return;
+        }
+        
+        // Сохраняем начальную позицию для RubberBandDrag (если не Ctrl)
+        if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
+        {
+            m_rubberBandStartViewPos = event->pos();
+            m_isRubberBandDragging = true;
+            QString logMsg = QString("ModernGraphicsView::mousePressEvent: начальная позиция сохранена: %1,%2, m_isRubberBandDragging=true")
+                .arg(m_rubberBandStartViewPos.x()).arg(m_rubberBandStartViewPos.y());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+            qDebug() << logMsg;
         }
         
         // Иначе передаем событие в базовый класс
@@ -111,6 +128,7 @@ protected:
     
     void mouseReleaseEvent(QMouseEvent *event) override
     {
+        // Обработка прокрутки (Ctrl+ЛКМ)
         if(m_isPanning && event->button() == Qt::LeftButton)
         {
             // Завершаем прокрутку
@@ -120,8 +138,150 @@ protected:
             return;
         }
         
-        // Иначе передаем событие в базовый класс
+        // ДИАГНОСТИКА: Проверяем выделение ДО вызова базового класса
+        QList<QGraphicsItem*> selectedBefore = m_owner->m_scene->selectedItems();
+        int selectedCountBefore = 0;
+        QStringList selectedNamesBefore;
+        for(QGraphicsItem* item : selectedBefore)
+        {
+            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+            if(node && node->isSelected())
+            {
+                selectedCountBefore++;
+                selectedNamesBefore << node->nodeName;
+            }
+        }
+        QString logMsg = QString("ModernGraphicsView::mouseReleaseEvent: ДО базового класса выделено %1 объектов: %2")
+            .arg(selectedCountBefore).arg(selectedNamesBefore.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        
+        // Сначала вызываем базовый класс, чтобы Qt обработал RubberBandDrag
+        // Qt автоматически рисует прямоугольник и обрабатывает выделение
         QGraphicsView::mouseReleaseEvent(event);
+        
+        // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ вызова базового класса
+        QList<QGraphicsItem*> selectedAfterBase = m_owner->m_scene->selectedItems();
+        int selectedCountAfterBase = 0;
+        QStringList selectedNamesAfterBase;
+        for(QGraphicsItem* item : selectedAfterBase)
+        {
+            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+            if(node && node->isSelected())
+            {
+                selectedCountAfterBase++;
+                selectedNamesAfterBase << node->nodeName;
+            }
+        }
+        logMsg = QString("ModernGraphicsView::mouseReleaseEvent: ПОСЛЕ базового класса выделено %1 объектов: %2")
+            .arg(selectedCountAfterBase).arg(selectedNamesAfterBase.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        
+        // После обработки базовым классом проверяем, был ли это RubberBand drag
+        // и исправляем выделение, если нужно
+        if(event->button() == Qt::LeftButton && 
+           !(event->modifiers() & Qt::ControlModifier) &&
+           m_isRubberBandDragging)
+        {
+            // Вычисляем расстояние drag для проверки, был ли это реальный drag
+            QPoint endPos = event->pos();
+            QPoint delta = endPos - m_rubberBandStartViewPos;
+            int dragDistanceSquared = delta.x() * delta.x() + delta.y() * delta.y();
+            
+            // Если был реальный drag (не просто клик)
+            if(dragDistanceSquared > 25)  // 5 * 5 = 25
+            {
+                // Создаем прямоугольник выделения в координатах view
+                QRect rubberBandRect = QRect(m_rubberBandStartViewPos, endPos).normalized();
+                
+                // Преобразуем прямоугольник из координат view в координаты scene
+                QPointF topLeft = mapToScene(rubberBandRect.topLeft());
+                QPointF bottomRight = mapToScene(rubberBandRect.bottomRight());
+                QRectF selectionRect = QRectF(topLeft, bottomRight).normalized();
+                
+                // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД вызовом selectNodesInRect
+                QList<QGraphicsItem*> selectedBeforeSelect = m_owner->m_scene->selectedItems();
+                int selectedCountBeforeSelect = 0;
+                QStringList selectedNamesBeforeSelect;
+                for(QGraphicsItem* item : selectedBeforeSelect)
+                {
+                    auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                    if(node && node->isSelected())
+                    {
+                        selectedCountBeforeSelect++;
+                        selectedNamesBeforeSelect << node->nodeName;
+                    }
+                }
+                logMsg = QString("ModernGraphicsView: ПЕРЕД selectNodesInRect выделено %1 объектов: %2")
+                    .arg(selectedCountBeforeSelect).arg(selectedNamesBeforeSelect.join(", "));
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+                qDebug() << logMsg;
+                
+                // ВАЖНО: Базовый класс QGraphicsView::mouseReleaseEvent уже передал событие в сцену,
+                // и базовый класс QGraphicsScene::mouseReleaseEvent сбросил выделение при клике на фоне.
+                // Поэтому мы должны исправить выделение ПОСЛЕ того, как все обработчики завершились.
+                // Используем QTimer::singleShot для отложенного вызова, чтобы он выполнился после
+                // всех обработчиков событий, включая ModernScene::mouseReleaseEvent
+                bool addToSelection = (event->modifiers() & Qt::ShiftModifier) != 0;
+                
+                // Сохраняем параметры для отложенного вызова
+                QRectF savedSelectionRect = selectionRect;
+                bool savedAddToSelection = addToSelection;
+                
+                // Вызываем selectNodesInRect сразу (для немедленного выделения)
+                int selectedCount = m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
+                
+                // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ вызова selectNodesInRect
+                QList<QGraphicsItem*> selectedAfterSelect = m_owner->m_scene->selectedItems();
+                int selectedCountAfterSelect = 0;
+                QStringList selectedNamesAfterSelect;
+                for(QGraphicsItem* item : selectedAfterSelect)
+                {
+                    auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                    if(node && node->isSelected())
+                    {
+                        selectedCountAfterSelect++;
+                        selectedNamesAfterSelect << node->nodeName;
+                    }
+                }
+                logMsg = QString("ModernGraphicsView: ПОСЛЕ selectNodesInRect выделено %1 объектов (метод вернул %2): %3")
+                    .arg(selectedCountAfterSelect).arg(selectedCount).arg(selectedNamesAfterSelect.join(", "));
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                qDebug() << logMsg;
+                
+                // ВАЖНО: Вызываем selectNodesInRect еще раз через QTimer::singleShot,
+                // чтобы исправить выделение ПОСЛЕ того, как ModernScene::mouseReleaseEvent
+                // завершится и базовый класс Qt сбросит выделение
+                QTimer::singleShot(0, [this, savedSelectionRect, savedAddToSelection]() {
+                    int finalSelectedCount = m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
+                    QString finalLogMsg = QString("ModernGraphicsView: ОТЛОЖЕННЫЙ вызов selectNodesInRect выделил %1 объектов")
+                        .arg(finalSelectedCount);
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, finalLogMsg.toStdString().c_str(), 0);
+                    qDebug() << finalLogMsg;
+                    
+                    // ДИАГНОСТИКА: Проверяем финальное выделение
+                    QList<QGraphicsItem*> finalSelected = m_owner->m_scene->selectedItems();
+                    int finalCount = 0;
+                    QStringList finalNames;
+                    for(QGraphicsItem* item : finalSelected)
+                    {
+                        auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                        if(node && node->isSelected())
+                        {
+                            finalCount++;
+                            finalNames << node->nodeName;
+                        }
+                    }
+                    QString finalCheckMsg = QString("ModernGraphicsView: ФИНАЛЬНАЯ проверка - выделено %1 объектов: %2")
+                        .arg(finalCount).arg(finalNames.join(", "));
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, finalCheckMsg.toStdString().c_str(), 0);
+                    qDebug() << finalCheckMsg;
+                });
+            }
+            
+            m_isRubberBandDragging = false;
+        }
     }
     
     bool viewportEvent(QEvent *event) override
@@ -417,6 +577,8 @@ private:
     UModernDiagramWidget* m_owner;
     bool m_isPanning = false;
     QPoint m_lastPanPoint;
+    QPoint m_rubberBandStartViewPos;  // Начальная позиция RubberBand в координатах view
+    bool m_isRubberBandDragging = false;  // Флаг активного RubberBand drag
 };
 
 // --------------------------- Helpers ---------------------------
@@ -838,16 +1000,30 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     QLinearGradient gradient = style->getNodeGradient(rect());
     if (isSelected())
     {
-        // Для выделенного узла используем специальный цвет
-        gradient.setColorAt(0, style->getNodeFillSelectedColor());
-        gradient.setColorAt(1, style->getNodeFillSelectedColor().darker(105));
+        // Для выделенного узла используем специальный цвет с большим контрастом
+        QColor selectedColor = style->getNodeFillSelectedColor();
+        gradient.setColorAt(0, selectedColor.lighter(110));
+        gradient.setColorAt(1, selectedColor.darker(110));
     }
     
     // Рисуем основной прямоугольник узла
     QColor border = isSelected() ? style->getAccentColor() : style->getNodeBorderColor();
-    painter->setPen(QPen(border, style->getNodeBorderWidth()));
+    // Для выделенных узлов делаем границу толще и ярче
+    double borderWidth = isSelected() ? style->getNodeBorderWidth() * 2.5 : style->getNodeBorderWidth();
+    QColor borderColor = isSelected() ? border.lighter(120) : border;
+    painter->setPen(QPen(borderColor, borderWidth));
     painter->setBrush(gradient);
     painter->drawRoundedRect(rect(), cornerRadius, cornerRadius);
+    
+    // Для выделенных узлов добавляем дополнительную яркую рамку
+    if (isSelected())
+    {
+        QColor highlightColor = style->getAccentColor();
+        highlightColor.setAlpha(200);
+        painter->setPen(QPen(highlightColor, 3.0));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRoundedRect(rect().adjusted(1, 1, -1, -1), cornerRadius - 1, cornerRadius - 1);
+    }
     
     // Рисуем светлую линию сверху для эффекта объёма
     painter->setPen(QPen(QColor(255, 255, 255, 80), 1));
@@ -1267,6 +1443,101 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             if(link)
                 link->updateGeometry();
         }
+        
+        // Перемещение группы выделенных объектов
+        if(m_owner && isSelected())
+        {
+            // ДИАГНОСТИКА: Логируем начало движения узла
+            QString logMsg = QString("NodeItem::itemChange: узел '%1' начал движение, isSelected=%2")
+                .arg(nodeName).arg(isSelected() ? "true" : "false");
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+            qDebug() << logMsg;
+            
+            // Получаем текущую позицию
+            QPointF newPos = pos();
+            // Получаем старую позицию из хэш-таблицы
+            QPointF oldPos = m_owner->m_lastNodePositions.value(this, newPos);
+            
+            // Вычисляем смещение
+            QPointF delta = newPos - oldPos;
+            
+            // Если смещение не нулевое, перемещаем все другие выделенные объекты
+            if(!delta.isNull() && delta.manhattanLength() > 0.1)
+            {
+                // Получаем все выделенные объекты
+                QList<QGraphicsItem*> selectedItems = scene()->selectedItems();
+                
+                // Подсчитываем количество выделенных NodeItem
+                int selectedNodeCount = 0;
+                QStringList selectedNodeNames;
+                for(QGraphicsItem* item : selectedItems)
+                {
+                    auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                    if(node && node->isSelected())
+                    {
+                        selectedNodeCount++;
+                        selectedNodeNames << node->nodeName;
+                    }
+                }
+                
+                // ДИАГНОСТИКА: Логируем движение группы
+                logMsg = QString("NodeItem::itemChange: перемещение группы - движется '%1', всего выделено %2 узлов: %3, смещение: (%4, %5)")
+                    .arg(nodeName)
+                    .arg(selectedNodeCount)
+                    .arg(selectedNodeNames.join(", "))
+                    .arg(delta.x()).arg(delta.y());
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                qDebug() << logMsg;
+                
+                // Если выделено больше одного объекта, перемещаем всю группу
+                if(selectedNodeCount > 1)
+                {
+                    QStringList movedNodeNames;
+                    for(QGraphicsItem* item : selectedItems)
+                    {
+                        auto* otherNode = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                        // Пропускаем текущий объект (он уже перемещен)
+                        if(otherNode && otherNode != this && otherNode->isSelected())
+                        {
+                            // Получаем старую позицию другого объекта
+                            QPointF otherOldPos = m_owner->m_lastNodePositions.value(otherNode, otherNode->pos());
+                            // Перемещаем другой выделенный объект на то же смещение
+                            otherNode->setPos(otherOldPos + delta);
+                            // Обновляем сохраненную позицию
+                            m_owner->m_lastNodePositions[otherNode] = otherNode->pos();
+                            movedNodeNames << otherNode->nodeName;
+                        }
+                    }
+                    
+                    // ДИАГНОСТИКА: Логируем, какие узлы были перемещены
+                    if(!movedNodeNames.isEmpty())
+                    {
+                        logMsg = QString("NodeItem::itemChange: перемещены узлы: %1")
+                            .arg(movedNodeNames.join(", "));
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+                        qDebug() << logMsg;
+                    }
+                    else
+                    {
+                        logMsg = QString("NodeItem::itemChange: ВНИМАНИЕ - ни один узел не был перемещен вместе с '%1'")
+                            .arg(nodeName);
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, logMsg.toStdString().c_str(), 0);
+                        qDebug() << logMsg;
+                    }
+                }
+                else
+                {
+                    logMsg = QString("NodeItem::itemChange: выделен только один узел '%1', групповое перемещение не выполняется")
+                        .arg(nodeName);
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+                    qDebug() << logMsg;
+                }
+            }
+            
+            // Обновляем сохраненную позицию для текущего объекта
+            m_owner->m_lastNodePositions[this] = newPos;
+        }
+        
         // Сохранить координаты
         // Важно: сохраняем абсолютные координаты (с учетом визуальной нормализации)
         if(m_owner)
@@ -1284,8 +1555,44 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
     }
     else if(change == QGraphicsItem::ItemSelectedHasChanged && m_owner)
     {
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если идет batch-выделение, не обрабатываем ItemSelectedHasChanged,
+        // чтобы предотвратить сброс выделения Qt. Обработка будет выполнена после завершения batch-выделения.
+        if(m_owner->m_isBatchSelecting)
+        {
+            // Пропускаем обработку ItemSelectedHasChanged во время batch-выделения
+            return QGraphicsRectItem::itemChange(change, value);
+        }
+        
+        // ДИАГНОСТИКА: Логируем изменение выделения узла
+        bool isNowSelected = value.toBool();
+        QString logMsg = QString("NodeItem::itemChange: ItemSelectedHasChanged для узла '%1', новое состояние: %2")
+            .arg(nodeName).arg(isNowSelected ? "выделен" : "снято выделение");
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        
+        // ДИАГНОСТИКА: Проверяем текущее выделение в сцене
+        if(m_owner->m_scene)
+        {
+            QList<QGraphicsItem*> currentSelected = m_owner->m_scene->selectedItems();
+            int currentCount = 0;
+            QStringList currentNames;
+            for(QGraphicsItem* item : currentSelected)
+            {
+                auto* node = dynamic_cast<NodeItem*>(item);
+                if(node && node->isSelected())
+                {
+                    currentCount++;
+                    currentNames << node->nodeName;
+                }
+            }
+            QString currentLogMsg = QString("NodeItem::itemChange: после изменения выделения '%1' в сцене выделено %2 объектов: %3")
+                .arg(nodeName).arg(currentCount).arg(currentNames.join(", "));
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, currentLogMsg.toStdString().c_str(), 0);
+            qDebug() << currentLogMsg;
+        }
+        
         // Отслеживаем изменение выбора компонента
-        if(value.toBool())
+        if(isNowSelected)
         {
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                   : m_owner->m_componentName + "." + nodeName;
@@ -3109,6 +3416,7 @@ void UModernDiagramWidget::clearScene()
     m_nodes.clear();
     m_nodeByName.clear();
     m_links.clear();
+    m_lastNodePositions.clear();  // Очищаем сохраненные позиции
     m_scene->clear();  // Удаляет все элементы, включая NodeItem и прокси-виджеты
     m_tempLink = nullptr;
     m_dragSourceNode = nullptr;
@@ -3193,6 +3501,8 @@ void UModernDiagramWidget::buildScene()
         m_nodes.append(node);
         m_nodeByName.insert(comp, node);
         node->setPos(loaded);
+        // Инициализируем сохраненную позицию для перемещения группы
+        m_lastNodePositions[node] = loaded;
         idx++;
     }
     
@@ -3536,18 +3846,34 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
     if(event->key() == Qt::Key_Delete)
     {
         QList<QGraphicsItem*> selected = m_scene->selectedItems();
-        bool deleted = false;
+        
+        // Собираем все выделенные NodeItem
+        QList<NodeItem*> nodesToDelete;
         for(QGraphicsItem* it : selected)
         {
             auto* node = dynamic_cast<NodeItem*>(it);
-            if(!node) continue;
-            QString fullName = m_componentName.isEmpty() ? node->nodeName
-                                                         : m_componentName + "." + node->nodeName;
-            Model_DelComponent(fullName.toStdString().c_str(), node->nodeName.toStdString().c_str());
-            deleted = true;
+            if(node)
+            {
+                nodesToDelete.append(node);
+            }
         }
-        if(deleted)
+        
+        // Удаляем все выделенные компоненты
+        if(!nodesToDelete.isEmpty())
         {
+            for(NodeItem* node : nodesToDelete)
+            {
+                QString fullName = m_componentName.isEmpty() ? node->nodeName
+                                                             : m_componentName + "." + node->nodeName;
+                Model_DelComponent(fullName.toStdString().c_str(), node->nodeName.toStdString().c_str());
+            }
+            
+            // Очищаем сохраненные позиции удаленных узлов
+            for(NodeItem* node : nodesToDelete)
+            {
+                m_lastNodePositions.remove(node);
+            }
+            
             Reload();
             emit updateComponentsList();
         }
@@ -3652,7 +3978,7 @@ QPointF UModernDiagramWidget::currentMinScenePos() const
 // --------------------------- Scene events ---------------------------
 
 ModernScene::ModernScene(UModernDiagramWidget* owner)
-    : m_owner(owner)
+    : m_owner(owner), m_isRubberBandActive(false), m_isGroupSelected(false), m_isGroupMoving(false)
 {
     m_hoverTimer = new QTimer(this);
     m_hoverTimer->setInterval(80); // ~12 fps, достаточно для отслеживания
@@ -3800,6 +4126,14 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         
         event->accept();
         return;
+    }
+    
+    // Сохраняем начальную позицию для RubberBandDrag при ЛКМ без Ctrl
+    // Это нужно для корректной работы выделения прямоугольником
+    if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
+    {
+        m_rubberBandStartPos = event->scenePos();
+        m_isRubberBandActive = true;
     }
     
     if(event->button() == Qt::LeftButton)
@@ -4052,6 +4386,37 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(node)
     {
         clickedOnBackground = false;
+        
+        // Если клик на выделенном узле и есть группа выделенных объектов, сохраняем выделение для перемещения
+        if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier) && node->isSelected())
+        {
+            QList<QGraphicsItem*> selectedItems = m_owner->m_scene->selectedItems();
+            int selectedNodeCount = 0;
+            for(QGraphicsItem* item : selectedItems)
+            {
+                auto* selectedNode = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                if(selectedNode && selectedNode->isSelected())
+                {
+                    selectedNodeCount++;
+                }
+            }
+            
+            // Если выделено больше одного объекта, сохраняем выделение для перемещения группы
+            if(selectedNodeCount > 1)
+            {
+                m_savedSelection.clear();
+                for(QGraphicsItem* item : selectedItems)
+                {
+                    auto* selectedNode = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+                    if(selectedNode && selectedNode->isSelected())
+                    {
+                        m_savedSelection.append(selectedNode);
+                    }
+                }
+                m_isGroupMoving = true;
+                m_isGroupSelected = true;
+            }
+        }
     }
     
     // Проверяем, попали ли в порт
@@ -4102,8 +4467,33 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_isWaitingForPortSelection = false;
             m_owner->m_isLineFrozen = false;
         }
+        
+        // Сбрасываем выделение группы при клике на фоне (левой или правой кнопкой)
+        if(m_isGroupSelected || m_isGroupMoving)
+        {
+            m_owner->m_scene->clearSelection();
+            m_isGroupSelected = false;
+            m_isGroupMoving = false;
+            m_savedSelection.clear();
+        }
+        
+        // Если клик на фоне и ЛКМ без Ctrl (не прокрутка), передаем событие для RubberBandDrag
+        // Ctrl+ЛКМ обрабатывается в ModernGraphicsView для прокрутки
+        if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
+        {
+            // Начальная позиция уже сохранена в начале метода
+            // Передаем событие в базовый класс для обработки RubberBandDrag
+            QGraphicsScene::mousePressEvent(event);
+            return;
+        }
     }
     
+    // Если не клик на фоне, но это ЛКМ без Ctrl, флаг уже установлен в начале метода
+    // Иначе сбрасываем флаг RubberBandDrag
+    if(event->button() != Qt::LeftButton || (event->modifiers() & Qt::ControlModifier))
+    {
+        m_isRubberBandActive = false;
+    }
     QGraphicsScene::mousePressEvent(event);
 }
 
@@ -4737,7 +5127,48 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
         return;
     }
+    
+    // Вызываем базовый класс для обработки событий
+    // Базовый класс QGraphicsView::mouseReleaseEvent уже был вызван в ModernGraphicsView,
+    // и он передал событие в сцену, поэтому здесь мы обрабатываем событие на уровне сцены
     QGraphicsScene::mouseReleaseEvent(event);
+    
+    // После обработки базовым классом проверяем выделение и устанавливаем флаги
+    if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
+    {
+        // Подсчитываем количество выделенных NodeItem
+        QList<QGraphicsItem*> selectedItems = m_owner->m_scene->selectedItems();
+        int selectedNodeCount = 0;
+        QStringList selectedNodeNames;
+        for(QGraphicsItem* item : selectedItems)
+        {
+            auto* node = dynamic_cast<UModernDiagramWidget::NodeItem*>(item);
+            if(node && node->isSelected())
+            {
+                selectedNodeCount++;
+                selectedNodeNames << node->nodeName;
+            }
+        }
+        
+        // ДИАГНОСТИКА: Логируем выделение в ModernScene::mouseReleaseEvent
+        QString logMsg = QString("ModernScene::mouseReleaseEvent: выделено %1 объектов: %2")
+            .arg(selectedNodeCount).arg(selectedNodeNames.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        
+        // Устанавливаем флаг группы, если выделено больше одного объекта
+        m_isGroupSelected = (selectedNodeCount > 1);
+        
+        // Сбрасываем флаг RubberBandDrag
+        m_isRubberBandActive = false;
+    }
+    
+    // Сбрасываем флаг перемещения группы при отпускании кнопки
+    if(m_isGroupMoving)
+    {
+        m_isGroupMoving = false;
+        m_savedSelection.clear();
+    }
 }
 
 void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -5663,5 +6094,194 @@ void UModernDiagramWidget::LoadViewState()
     }
     
     settings.endGroup();
+}
+
+int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool addToSelection)
+{
+    QString logMsg;
+    
+    if(!m_scene)
+    {
+        logMsg = "selectNodesInRect: m_scene is null";
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        return 0;
+    }
+    
+    // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД очисткой
+    QList<QGraphicsItem*> beforeClear = m_scene->selectedItems();
+    int beforeClearCount = 0;
+    QStringList beforeClearNames;
+    for(QGraphicsItem* item : beforeClear)
+    {
+        auto* node = dynamic_cast<NodeItem*>(item);
+        if(node && node->isSelected())
+        {
+            beforeClearCount++;
+            beforeClearNames << node->nodeName;
+        }
+    }
+    QString beforeClearMsg = QString("selectNodesInRect: ПЕРЕД clearSelection выделено %1 объектов: %2")
+        .arg(beforeClearCount).arg(beforeClearNames.join(", "));
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, beforeClearMsg.toStdString().c_str(), 0);
+    qDebug() << beforeClearMsg;
+    
+    // Очищаем предыдущее выделение, если не добавляем к выделению
+    if(!addToSelection)
+    {
+        m_scene->clearSelection();
+        
+        // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ очистки
+        QList<QGraphicsItem*> afterClear = m_scene->selectedItems();
+        int afterClearCount = 0;
+        QStringList afterClearNames;
+        for(QGraphicsItem* item : afterClear)
+        {
+            auto* node = dynamic_cast<NodeItem*>(item);
+            if(node && node->isSelected())
+            {
+                afterClearCount++;
+                afterClearNames << node->nodeName;
+            }
+        }
+        QString afterClearMsg = QString("selectNodesInRect: ПОСЛЕ clearSelection выделено %1 объектов: %2")
+            .arg(afterClearCount).arg(afterClearNames.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, afterClearMsg.toStdString().c_str(), 0);
+        qDebug() << afterClearMsg;
+    }
+    
+    // Используем прямой перебор всех узлов для более надежного выделения
+    // Это гарантирует, что мы проверяем все NodeItem, а не только те, что вернул items()
+    int selectedCount = 0;
+    int totalNodes = m_nodes.size();
+    
+    logMsg = QString("selectNodesInRect: проверяем %1 узлов в прямоугольнике (%2,%3 %4x%5) addToSelection:%6")
+        .arg(totalNodes)
+        .arg(selectionRect.x()).arg(selectionRect.y())
+        .arg(selectionRect.width()).arg(selectionRect.height())
+        .arg(addToSelection ? "true" : "false");
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+    qDebug() << logMsg;
+    
+    if(totalNodes == 0)
+    {
+        logMsg = "selectNodesInRect: нет узлов для проверки";
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+        qDebug() << logMsg;
+        return 0;
+    }
+    
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Собираем все узлы для выделения в список,
+    // а затем устанавливаем выделение для всех одновременно.
+    // Это предотвращает автоматический сброс выделения Qt при последовательном вызове setSelected(true)
+    QList<NodeItem*> nodesToSelect;
+    
+    for(NodeItem* node : m_nodes)
+    {
+        if(!node)
+            continue;
+        
+        // Получаем boundingRect узла в координатах scene
+        QRectF nodeRect = node->sceneBoundingRect();
+        
+        // Проверяем, пересекается ли узел с прямоугольником выделения
+        bool intersects = selectionRect.intersects(nodeRect);
+        if(intersects)
+        {
+            nodesToSelect.append(node);
+            selectedCount++;
+            
+            logMsg = QString("selectNodesInRect: ✓ узел '%1' nodeRect:(%2,%3 %4x%5) пересекается с selectionRect:(%6,%7 %8x%9)")
+                .arg(node->nodeName)
+                .arg(nodeRect.x()).arg(nodeRect.y()).arg(nodeRect.width()).arg(nodeRect.height())
+                .arg(selectionRect.x()).arg(selectionRect.y()).arg(selectionRect.width()).arg(selectionRect.height());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+            qDebug() << logMsg;
+        }
+        else
+        {
+            logMsg = QString("selectNodesInRect: ✗ узел '%1' nodeRect:(%2,%3 %4x%5) НЕ пересекается с selectionRect:(%6,%7 %8x%9)")
+                .arg(node->nodeName)
+                .arg(nodeRect.x()).arg(nodeRect.y()).arg(nodeRect.width()).arg(nodeRect.height())
+                .arg(selectionRect.x()).arg(selectionRect.y()).arg(selectionRect.width()).arg(selectionRect.height());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, logMsg.toStdString().c_str(), 0);
+            qDebug() << logMsg;
+        }
+    }
+    
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем выделение для всех узлов одновременно,
+    // используя флаг m_isBatchSelecting, чтобы предотвратить обработку ItemSelectedHasChanged
+    // в itemChange, которая сбрасывает выделение Qt
+    if(!nodesToSelect.isEmpty())
+    {
+        // Блокируем сигналы сцены и устанавливаем флаг batch-выделения
+        m_scene->blockSignals(true);
+        m_isBatchSelecting = true;
+        
+        // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД установкой для всех узлов
+        QList<QGraphicsItem*> beforeBatchSelect = m_scene->selectedItems();
+        int beforeBatchSelectCount = 0;
+        QStringList beforeBatchSelectNames;
+        for(QGraphicsItem* item : beforeBatchSelect)
+        {
+            auto* n = dynamic_cast<NodeItem*>(item);
+            if(n && n->isSelected())
+            {
+                beforeBatchSelectCount++;
+                beforeBatchSelectNames << n->nodeName;
+            }
+        }
+        QString beforeBatchMsg = QString("selectNodesInRect: ПЕРЕД batch setSelected выделено %1 объектов: %2")
+            .arg(beforeBatchSelectCount).arg(beforeBatchSelectNames.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, beforeBatchMsg.toStdString().c_str(), 0);
+        qDebug() << beforeBatchMsg;
+        
+        // Устанавливаем выделение для всех узлов одновременно
+        for(NodeItem* node : nodesToSelect)
+        {
+            node->setSelected(true);
+        }
+        
+        // Сбрасываем флаг batch-выделения и разблокируем сигналы сцены
+        m_isBatchSelecting = false;
+        m_scene->blockSignals(false);
+        
+        // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ установки для всех узлов
+        QList<QGraphicsItem*> afterBatchSelect = m_scene->selectedItems();
+        int afterBatchSelectCount = 0;
+        QStringList afterBatchSelectNames;
+        for(QGraphicsItem* item : afterBatchSelect)
+        {
+            auto* n = dynamic_cast<NodeItem*>(item);
+            if(n && n->isSelected())
+            {
+                afterBatchSelectCount++;
+                afterBatchSelectNames << n->nodeName;
+            }
+        }
+        QString afterBatchMsg = QString("selectNodesInRect: ПОСЛЕ batch setSelected выделено %1 объектов: %2")
+            .arg(afterBatchSelectCount).arg(afterBatchSelectNames.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_DEBUG, afterBatchMsg.toStdString().c_str(), 0);
+        qDebug() << afterBatchMsg;
+        
+        if(afterBatchSelectCount != nodesToSelect.size())
+        {
+            QStringList expectedNames;
+            for(NodeItem* n : nodesToSelect) expectedNames << n->nodeName;
+            QString warningMsg = QString("selectNodesInRect: ВНИМАНИЕ - после batch setSelected выделено %1 объектов вместо ожидаемых %2! Ожидались: %3, фактически выделены: %4")
+                .arg(afterBatchSelectCount)
+                .arg(nodesToSelect.size())
+                .arg(expectedNames.join(", "))
+                .arg(afterBatchSelectNames.join(", "));
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warningMsg.toStdString().c_str(), 0);
+            qDebug() << warningMsg;
+        }
+    }
+    
+    logMsg = QString("selectNodesInRect: итого выделено %1 из %2 узлов").arg(selectedCount).arg(totalNodes);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    qDebug() << logMsg;
+    
+    return selectedCount;
 }
 

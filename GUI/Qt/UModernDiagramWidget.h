@@ -49,6 +49,11 @@ public slots:
     void SaveViewState();
     /// Загрузка состояния viewport из QSettings
     void LoadViewState();
+    /// Выделение всех NodeItem внутри указанного прямоугольника
+    /// @param selectionRect Прямоугольник выделения в координатах scene
+    /// @param addToSelection Если true, добавляет к текущему выделению, иначе очищает перед выделением
+    /// @return Количество выделенных объектов
+    int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
 
 signals:
     /// Компонент выбран (одиночный клик)
@@ -208,6 +213,9 @@ private:
     QList<NodeItem*> m_nodes;
     QHash<QString, NodeItem*> m_nodeByName;
     QList<LinkItem*> m_links;
+    
+    // Для перемещения группы объектов - храним предыдущие позиции
+    QHash<NodeItem*, QPointF> m_lastNodePositions;
 
     // Coord scaling (scene units per kernel unit)
     // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
@@ -225,6 +233,10 @@ private:
     };
     QHash<QString, ViewState> m_viewStates;  // Состояние viewport для каждого компонента
     static constexpr double DEFAULT_SCALE = 1.0;  // Начальный масштаб по умолчанию (уменьшен в 2.5 раза от предыдущего значения 2.5)
+    
+    // Флаг для временного отключения обработки ItemSelectedHasChanged в itemChange
+    // во время batch-выделения, чтобы предотвратить сброс выделения Qt
+    bool m_isBatchSelecting = false;
     
     // Кнопка сброса масштаба
     QPushButton* m_resetZoomButton;
