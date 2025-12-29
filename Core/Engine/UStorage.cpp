@@ -702,7 +702,6 @@ void UStorage::FreeObjectsStorage(bool force)
   if(instances->second.empty())
    continue;
 
-  size_t size=instances->second.size();
   size_t count=0;
 
   // Удалено избыточное логирование - создавало спам в INFO логах
@@ -797,12 +796,12 @@ void UStorage::FreeObjectsStorage(bool force)
 	   context_info += std::string(" Activity=") + (activity ? "true" : "false");
 	   
 	   // Используем восстановленный ClassId (если был восстановлен) или текущий
-	   UId class_id = restored_class_id != ForbiddenId ? restored_class_id : object->GetClass();
-	   if(class_id == 0)
+	   UId current_class_id = restored_class_id != ForbiddenId ? restored_class_id : object->GetClass();
+	   if(current_class_id == 0)
 	    context_info += std::string(" ClassId=ForbiddenId(0)");
 	   else
 	   {
-	    context_info += std::string(" ClassId=") + sntoa(class_id);
+	    context_info += std::string(" ClassId=") + sntoa(current_class_id);
 	    if(class_id_restored)
 	     context_info += std::string(" (restored)");
 	   }
@@ -885,7 +884,6 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
     if(instances->second.empty())
         return;
 
-    size_t size=instances->second.size();
     size_t count=0;
 
     // Удалено избыточное логирование - создавало спам в INFO логах

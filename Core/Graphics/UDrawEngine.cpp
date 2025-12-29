@@ -910,7 +910,6 @@ void UDrawEngine::PaintLinkBetweenPorts(int x1, int y1, int x2, int y2, int line
 
  // Вычисляем контрольные точки для плавной кривой
  int dx = abs(x2 - x1);
- int controlOffset = std::max(30, dx / 3);
 
  // Рисуем кривую Безье (упрощенно - через несколько сегментов)
  // Для простоты используем ломаную линию с горизонтальными отрезками
@@ -1013,7 +1012,7 @@ void UDrawEngine::CalcPortPositions(UGEDescription &ndescr)
  }
 
  // Автоматически подстраиваем высоту компонента под количество портов
- int maxPorts = std::max(ndescr.InputPorts.size(), ndescr.OutputPorts.size());
+ int maxPorts = static_cast<int>(std::max(ndescr.InputPorts.size(), ndescr.OutputPorts.size()));
  int requiredHeight = startOffset + maxPorts * portSpacing + ndescr.PortRadius;
  if(requiredHeight > ndescr.Height && ndescr.ShowPorts)
  {

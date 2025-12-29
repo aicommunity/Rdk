@@ -706,7 +706,6 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     const double portSpacing = 20.0;
     const double topMargin = 30.0;  // Отступ сверху для текста
     const double bottomMargin = 10.0;  // Отступ снизу
-    const double sideMargin = 10.0;  // Отступ для портов от края
 
     // Загружаем реальные порты компонента
     if(m_owner && m_owner->m_application)
@@ -2111,8 +2110,8 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                         if(parts.size() >= 2 && parts.first() == nodeName)
                         {
                             // Проверяем, является ли вторая часть дочерним компонентом
-                            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-                            const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+                            QString inner_fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+                            const char* compList = Model_GetComponentsNameList(inner_fullName.toStdString().c_str());
                             if(compList)
                             {
                                 QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
@@ -2352,8 +2351,8 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                         if(parts.size() >= 2 && parts.first() == nodeName)
                         {
                             // Проверяем, является ли вторая часть дочерним компонентом
-                            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-                            const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+                            QString inner_fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+                            const char* compList = Model_GetComponentsNameList(inner_fullName.toStdString().c_str());
                             if(compList)
                             {
                                 QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
@@ -2803,7 +2802,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
     else
     {
         // Если выбран выходной порт - начинаем pull-режим
-        QString logMsg = QString("onPortItemActivated: Starting connection from output port '%1'")
+        QString inner_logMsg = QString("onPortItemActivated: Starting connection from output port '%1'")
             .arg(portName);
         // Находим порт в реальных портах (не в категоризированных)
         const Port* selectedPort = nullptr;
@@ -3486,7 +3485,6 @@ UModernDiagramWidget::NodeItem* UModernDiagramWidget::pickPort(const QPointF& sc
 const UModernDiagramWidget::Port* UModernDiagramWidget::pickPortDetailed(
     const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos)
 {
-    const double portRadius = 8.0;
     for(auto* n : m_nodes)
     {
         QPointF localPos = n->mapFromScene(scenePos);
@@ -3569,8 +3567,6 @@ void UModernDiagramWidget::buildLinks()
 
     int added = 0;
     int skipped = 0;
-    int loggedSkip = 0;
-    int loggedPairs = 0;
     for(int i=0;i<linkslist.GetSize();++i)
     {
         const auto& link = linkslist[i]; // RDK::ULinkT<std::string>
@@ -4428,12 +4424,12 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     // Проверяем, попали ли в окно со списком портов
     if(clickedOnBackground)
     {
-        for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
+        for(UModernDiagramWidget::NodeItem* inner_node : m_owner->m_nodes)
         {
-            if(node->m_portListWidgetProxy && node->m_portListWidgetProxy->isVisible())
+            if(inner_node->m_portListWidgetProxy && inner_node->m_portListWidgetProxy->isVisible())
             {
-                QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
-                    node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                QRectF widgetRect = inner_node->m_portListWidgetProxy->mapToScene(
+                    inner_node->m_portListWidgetProxy->boundingRect()).boundingRect();
                 if(widgetRect.contains(event->scenePos()))
                 {
                     clickedOnBackground = false;
