@@ -12,6 +12,7 @@
 #include <QPoint>
 #include <QTreeWidget>
 #include <QHash>
+#include <QMap>
 #include <QPushButton>
 #include <QSettings>
 #include <rdk_init.h>
@@ -101,6 +102,9 @@ private:
             : pos(p), isInput(input), name(n), componentName(n), displayName(n), category(PortCategory::Own) {}
     };
 
+    // Forward declaration для LinkItem
+    class LinkItem;
+
     class NodeItem : public QGraphicsRectItem
     {
     public:
@@ -130,6 +134,17 @@ private:
         QGraphicsProxyWidget* m_portListWidgetProxy;
         QTreeWidget* m_portListWidget;
         QTimer* m_hideTimer;
+        // Кэш связей, подключенных к этому узлу (для оптимизации обновления при перемещении)
+        QList<LinkItem*> m_connectedLinks;
+        // Кэш для результатов дорогих вычислений в paint()
+        mutable bool m_cacheValid;
+        // Используем QMap вместо QHash, так как для QMap не нужна функция qHash
+        mutable QMap<PortCategory, bool> m_hasConnectionsToInputCache;
+        mutable QMap<PortCategory, bool> m_hasConnectionsToOutputCache;
+        mutable QMap<PortCategory, bool> m_hasInputPortsCache;
+        mutable QMap<PortCategory, bool> m_hasOutputPortsCache;
+        // Последняя позиция курсора для throttling в hoverMoveEvent
+        QPointF m_lastHoverMovePos;
         
         friend class ModernScene;
     public:

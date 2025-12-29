@@ -65,6 +65,7 @@ private:
     bool m_isGroupSelected = false;  // Есть ли выделенная группа объектов
     bool m_isGroupMoving = false;    // Идет ли перемещение группы
     QList<UModernDiagramWidget::NodeItem*> m_savedSelection; // Сохраненное выделение для перемещения
+    QPointF m_lastHoverPos;  // Последняя позиция курсора для оптимизации
     void pollHover();
 };
 
@@ -77,6 +78,11 @@ public:
         : QGraphicsView(scene), m_owner(owner)
     {
         setAcceptDrops(true);
+        // Оптимизация: настраиваем режим обновления viewport для лучшей производительности
+        // SmartViewportUpdate обновляет только измененные области
+        setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+        // Включаем кэширование фона для ускорения прокрутки
+        setCacheMode(QGraphicsView::CacheBackground);
     }
 protected:
     void mousePressEvent(QMouseEvent *event) override
@@ -520,11 +526,14 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     , m_portListWidgetProxy(nullptr)
     , m_portListWidget(nullptr)
     , m_hideTimer(new QTimer())
+    , m_cacheValid(false)
 {
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
     setAcceptHoverEvents(true);
+    // Включаем кэширование для оптимизации отрисовки
+    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     
     // Создаем QTreeWidget для отображения портов
     m_portListWidget = new QTreeWidget();
@@ -881,6 +890,28 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     Q_UNUSED(widget);
     Q_UNUSED(option);
     painter->setRenderHint(QPainter::Antialiasing, true);
+    
+    // Обновляем кэш, если он невалиден
+    if(!m_cacheValid)
+    {
+        // Кэшируем результаты проверки наличия портов
+        m_hasInputPortsCache[PortCategory::Own] = !getOwnInputPorts().isEmpty();
+        m_hasInputPortsCache[PortCategory::Child] = !getChildInputPorts().isEmpty();
+        m_hasInputPortsCache[PortCategory::Alias] = !getAliasInputPorts().isEmpty();
+        m_hasOutputPortsCache[PortCategory::Own] = !getOwnOutputPorts().isEmpty();
+        m_hasOutputPortsCache[PortCategory::Child] = !getChildOutputPorts().isEmpty();
+        m_hasOutputPortsCache[PortCategory::Alias] = !getAliasOutputPorts().isEmpty();
+        
+        // Кэшируем результаты проверки соединений
+        m_hasConnectionsToInputCache[PortCategory::Own] = hasConnectionsToInputCategory(PortCategory::Own);
+        m_hasConnectionsToInputCache[PortCategory::Child] = hasConnectionsToInputCategory(PortCategory::Child);
+        m_hasConnectionsToInputCache[PortCategory::Alias] = hasConnectionsToInputCategory(PortCategory::Alias);
+        m_hasConnectionsToOutputCache[PortCategory::Own] = hasConnectionsToOutputCategory(PortCategory::Own);
+        m_hasConnectionsToOutputCache[PortCategory::Child] = hasConnectionsToOutputCategory(PortCategory::Child);
+        m_hasConnectionsToOutputCache[PortCategory::Alias] = hasConnectionsToOutputCategory(PortCategory::Alias);
+        
+        m_cacheValid = true;
+    }
 
     UStyleManager* style = UStyleManager::instance();
     double cornerRadius = style->getNodeCornerRadius();
@@ -895,15 +926,20 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         QRectF shadowRect = rect().adjusted(2, 2, 2, 2).translated(0, shadowOffsetY);
         painter->setPen(Qt::NoPen);
         
-        // Многослойная тень для эффекта размытия
-        for (int i = 3; i >= 0; --i)
-        {
-            QColor layerColor = shadowColor;
-            layerColor.setAlpha(shadowColor.alpha() * (4 - i) / 8);
-            painter->setBrush(layerColor);
-            QRectF layerRect = shadowRect.adjusted(-i*2, -i*2, i*2, i*2);
-            painter->drawRoundedRect(layerRect, cornerRadius + i, cornerRadius + i);
-        }
+        // Оптимизация: используем только 2 слоя вместо 4 для ускорения отрисовки
+        // Внешний слой (более размытый)
+        QColor outerColor = shadowColor;
+        outerColor.setAlpha(shadowColor.alpha() / 3);
+        painter->setBrush(outerColor);
+        QRectF outerRect = shadowRect.adjusted(-shadowBlur, -shadowBlur, shadowBlur, shadowBlur);
+        painter->drawRoundedRect(outerRect, cornerRadius + shadowBlur, cornerRadius + shadowBlur);
+        
+        // Внутренний слой (более четкий)
+        QColor innerColor = shadowColor;
+        innerColor.setAlpha(shadowColor.alpha() / 2);
+        painter->setBrush(innerColor);
+        QRectF innerRect = shadowRect.adjusted(-shadowBlur/2, -shadowBlur/2, shadowBlur/2, shadowBlur/2);
+        painter->drawRoundedRect(innerRect, cornerRadius + shadowBlur/2, cornerRadius + shadowBlur/2);
     }
     
     // Градиентный фон узла
@@ -968,19 +1004,19 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         // Проверяем, активна ли временная линия для создания соединения
         bool isActiveConnection = (m_owner && m_owner->m_activeTempLink && m_owner->m_activeSourceNode);
         
-        // Проверяем, есть ли порты для этой категории
+        // Используем кэшированные значения вместо дорогих вызовов методов
         bool hasPorts = false;
         if (p.category == PortCategory::Own)
         {
-            hasPorts = !getOwnInputPorts().isEmpty();
+            hasPorts = m_hasInputPortsCache.value(PortCategory::Own, false);
         }
         else if (p.category == PortCategory::Child)
         {
-            hasPorts = !getChildInputPorts().isEmpty();
+            hasPorts = m_hasInputPortsCache.value(PortCategory::Child, false);
         }
         else if (p.category == PortCategory::Alias)
         {
-            hasPorts = !getAliasInputPorts().isEmpty();
+            hasPorts = m_hasInputPortsCache.value(PortCategory::Alias, false);
         }
         
         // Проверяем, есть ли соединения к портам этой категории
@@ -988,7 +1024,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         bool hasConnections = false;
         if (p.fullPath.isEmpty())  // Только для категоризированных портов
         {
-            hasConnections = hasConnectionsToInputCategory(p.category);
+            hasConnections = m_hasConnectionsToInputCache.value(p.category, false);
         }
         
         // Определяем цвет порта:
@@ -1085,19 +1121,19 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     for (const Port& p : outputs) {
         bool isHovered = (m_hoveredPort == &p);
         
-        // Проверяем, есть ли порты для этой категории
+        // Используем кэшированные значения вместо дорогих вызовов методов
         bool hasPorts = false;
         if (p.category == PortCategory::Own)
         {
-            hasPorts = !getOwnOutputPorts().isEmpty();
+            hasPorts = m_hasOutputPortsCache.value(PortCategory::Own, false);
         }
         else if (p.category == PortCategory::Child)
         {
-            hasPorts = !getChildOutputPorts().isEmpty();
+            hasPorts = m_hasOutputPortsCache.value(PortCategory::Child, false);
         }
         else if (p.category == PortCategory::Alias)
         {
-            hasPorts = !getAliasOutputPorts().isEmpty();
+            hasPorts = m_hasOutputPortsCache.value(PortCategory::Alias, false);
         }
         
         // Проверяем, есть ли соединения от портов этой категории
@@ -1105,7 +1141,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         bool hasConnections = false;
         if (p.fullPath.isEmpty())  // Только для категоризированных портов
         {
-            hasConnections = hasConnectionsToOutputCategory(p.category);
+            hasConnections = m_hasConnectionsToOutputCache.value(p.category, false);
         }
         
         // Определяем цвет порта:
@@ -1346,11 +1382,11 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
 {
     if(change == QGraphicsItem::ItemPositionHasChanged && scene())
     {
-        // Обновить линии
-        for(QGraphicsItem* it : scene()->items())
+        // Оптимизация: обновляем только связи, подключенные к этому узлу
+        // Вместо обновления всех связей в сцене используем кэш m_connectedLinks
+        for(LinkItem* link : m_connectedLinks)
         {
-            auto* link = dynamic_cast<UModernDiagramWidget::LinkItem*>(it);
-            if(link)
+            if(link && link->scene())
                 link->updateGeometry();
         }
         
@@ -2384,6 +2420,31 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
 void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsRectItem::hoverMoveEvent(event);
+    
+    // Throttling: обновляем только если позиция изменилась значительно (минимум 3 пикселя)
+    const double minUpdateDistance = 3.0;
+    QPointF currentPos = event->pos();
+    bool positionChanged = m_lastHoverMovePos.isNull() || 
+                          (QLineF(m_lastHoverMovePos, currentPos).length() > minUpdateDistance);
+    
+    if(!positionChanged)
+    {
+        // Позиция не изменилась значительно, только обновляем tooltip если нужно
+        if(m_hoveredPort && m_owner)
+        {
+            QString tooltip = m_owner->generatePortTooltip(*m_hoveredPort);
+            setToolTip(tooltip);
+        }
+        else if(m_owner)
+        {
+            QString tooltip = m_owner->generateNodeTooltip(this);
+            setToolTip(tooltip);
+        }
+        return;
+    }
+    
+    m_lastHoverMovePos = currentPos;
+    
     const Port* port = getPortAtPosition(event->pos());
     bool portChanged = (port != m_hoveredPort);
     if(portChanged)
@@ -2410,6 +2471,7 @@ void UModernDiagramWidget::NodeItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *e
 {
     QGraphicsRectItem::hoverLeaveEvent(event);
     m_hoveredPort = nullptr;
+    m_lastHoverMovePos = QPointF(); // Сбрасываем позицию при выходе
     if(m_hideTimer)
         m_hideTimer->start();
     setToolTip(QString()); // Clear tooltip on leave
@@ -3030,6 +3092,8 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, bool useO
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
     setAcceptHoverEvents(true);
+    // Включаем кэширование для оптимизации отрисовки
+    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     updateGeometry();
 }
 
@@ -3049,6 +3113,8 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, PortCateg
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
     setAcceptHoverEvents(true);
+    // Включаем кэширование для оптимизации отрисовки
+    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     updateGeometry();
 }
 
@@ -3071,6 +3137,7 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, const QPointF& tempEnd, 
     setZValue(-1);
     // Temporary links don't need hover events
     setAcceptHoverEvents(false);
+    // Временные связи не кэшируем, так как они часто меняются
     updateGeometry(tempEnd);
 }
 
@@ -3249,9 +3316,19 @@ void UModernDiagramWidget::Reload()
         saveCurrentViewState();
     }
     
+    // Оптимизация: отключаем обновления во время перестройки для ускорения
+    setUpdatesEnabled(false);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(false);
+    
     // Удалено избыточное логирование - создавало спам в INFO логах
     clearScene();
     buildScene();
+    
+    // Включаем обновления обратно
+    setUpdatesEnabled(true);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(true);
     
     // Восстанавливаем состояние viewport для текущего компонента
     restoreViewState(m_componentName);
@@ -3279,6 +3356,8 @@ void UModernDiagramWidget::clearScene()
             {
                 node->m_hideTimer->stop();
             }
+            // Очищаем кэш связей
+            node->m_connectedLinks.clear();
         }
     }
     
@@ -3596,15 +3675,31 @@ void UModernDiagramWidget::buildLinks()
             auto* l = new LinkItem(srcNode, dstNode, srcCategory, dstCategory);
             m_scene->addItem(l);
             m_links.append(l);
+            // Обновляем кэш связей для узлов
+            srcNode->m_connectedLinks.append(l);
+            dstNode->m_connectedLinks.append(l);
             added++;
             // Удалено избыточное логирование - создавало спам в INFO логах
         }
+    }
+    // Инвалидируем кэш paint() для всех узлов после создания связей
+    for(auto* node : m_nodes)
+    {
+        node->m_cacheValid = false;
     }
     // Удалено избыточное логирование - создавало спам в INFO логах
 }
 
 void UModernDiagramWidget::rebuildLinks()
 {
+    // Очищаем кэш связей для всех узлов перед удалением связей
+    for(auto* node : m_nodes)
+    {
+        node->m_connectedLinks.clear();
+        // Инвалидируем кэш paint() при изменении связей
+        node->m_cacheValid = false;
+    }
+    
     // Удаляем все существующие связи
     for(auto* link : m_links)
     {
@@ -3615,6 +3710,12 @@ void UModernDiagramWidget::rebuildLinks()
     
     // Перестраиваем связи
     buildLinks();
+    
+    // Инвалидируем кэш paint() для всех узлов после перестройки связей
+    for(auto* node : m_nodes)
+    {
+        node->m_cacheValid = false;
+    }
 }
 
 void UModernDiagramWidget::resizeEvent(QResizeEvent *event)
@@ -3850,7 +3951,7 @@ QPointF UModernDiagramWidget::currentMinScenePos() const
 // --------------------------- Scene events ---------------------------
 
 ModernScene::ModernScene(UModernDiagramWidget* owner)
-    : m_owner(owner), m_isRubberBandActive(false), m_isGroupSelected(false), m_isGroupMoving(false)
+    : m_owner(owner), m_isRubberBandActive(false), m_isGroupSelected(false), m_isGroupMoving(false), m_lastHoverPos()
 {
     m_hoverTimer = new QTimer(this);
     m_hoverTimer->setInterval(80); // ~12 fps, достаточно для отслеживания
@@ -3868,6 +3969,26 @@ void ModernScene::pollHover()
     // Берем первую view (у нас одна основная)
     QGraphicsView* view = views().first();
     QPointF scenePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+    
+    // Оптимизация: проверяем, изменилась ли позиция курсора значительно
+    // Если позиция не изменилась более чем на 5 пикселей, пропускаем обновление hover для узлов
+    const double minHoverDistance = 5.0;
+    bool positionChanged = (QLineF(m_lastHoverPos, scenePos).length() > minHoverDistance);
+    if(!positionChanged && !m_lastHoverPos.isNull())
+    {
+        // Позиция не изменилась значительно, но все равно обновляем временную линию если она активна
+        if(m_owner->m_activeTempLink && !m_owner->m_isWaitingForPortSelection)
+        {
+            QPointF targetPos = m_owner->m_isLineFrozen ? 
+                                m_owner->m_frozenTargetPortPos : scenePos;
+            m_owner->m_activeTempLink->updateGeometry(targetPos);
+        }
+        return;
+    }
+    m_lastHoverPos = scenePos;
+    
+    // Получаем видимую область viewport для оптимизации
+    QRectF visibleRect = view->mapToScene(view->viewport()->rect()).boundingRect();
 
     // Обновляем состояние заморозки соединения
     if(m_owner->m_activeTempLink)
@@ -3964,10 +4085,15 @@ void ModernScene::pollHover()
         m_owner->m_isLineFrozen = false;
     }
 
-    // Обновляем hover для всех узлов
+    // Оптимизация: обновляем hover только для узлов в видимой области или под курсором
     for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
     {
-        node->refreshHoverAtScenePos(scenePos);
+        // Проверяем, находится ли узел в видимой области или под курсором
+        QRectF nodeRect = node->sceneBoundingRect();
+        if(visibleRect.intersects(nodeRect) || nodeRect.contains(scenePos))
+        {
+            node->refreshHoverAtScenePos(scenePos);
+        }
     }
 }
 
@@ -4874,6 +5000,12 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             auto* finalLink = new UModernDiagramWidget::LinkItem(m_owner->m_dragSourceNode, targetNode, true, true);
             m_owner->m_scene->addItem(finalLink);
             m_owner->m_links.append(finalLink);
+            // Обновляем кэш связей для узлов
+            m_owner->m_dragSourceNode->m_connectedLinks.append(finalLink);
+            targetNode->m_connectedLinks.append(finalLink);
+            // Инвалидируем кэш paint() при создании новой связи
+            m_owner->m_dragSourceNode->m_cacheValid = false;
+            targetNode->m_cacheValid = false;
             m_owner->m_tempLink = nullptr;
             
             // Создание связи в ядре с использованием конкретных портов
