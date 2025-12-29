@@ -22,6 +22,8 @@ UHelpWindow::UHelpWindow(QWidget *parent, RDK::UApplication* app)
     , m_homeButton(nullptr)
     , m_backButton(nullptr)
     , m_forwardButton(nullptr)
+    , m_languageButton(nullptr)
+    , m_currentTopic(QString())
     , m_application(app)
 {
     setWindowTitle(tr("User Guide"));
@@ -98,6 +100,15 @@ void UHelpWindow::setupToolbar()
     
     toolbar->addSeparator();
     
+    // Language switcher button
+    m_languageButton = new QPushButton(this);
+    updateLanguageButtonText();
+    m_languageButton->setToolTip(tr("Switch language / Переключить язык"));
+    connect(m_languageButton, &QPushButton::clicked, this, &UHelpWindow::onLanguageChanged);
+    toolbar->addWidget(m_languageButton);
+    
+    toolbar->addSeparator();
+    
     // Search (placeholder for future implementation)
     m_searchEdit = new QLineEdit(this);
     m_searchEdit->setPlaceholderText(tr("Search..."));
@@ -110,6 +121,7 @@ void UHelpWindow::setupToolbar()
 
 void UHelpWindow::showHelp(const QString& topic)
 {
+    m_currentTopic = topic;
     loadHelpContent(topic);
 }
 
@@ -118,8 +130,35 @@ void UHelpWindow::setLanguage(const QString& langCode)
     if(langCode == "en" || langCode == "ru")
     {
         m_currentLanguage = langCode;
-        loadHelpContent(QString()); // Reload current page with new language
+        updateLanguageButtonText();
+        // Reload current page with new language
+        loadHelpContent(m_currentTopic);
     }
+}
+
+void UHelpWindow::updateLanguageButtonText()
+{
+    if(m_languageButton)
+    {
+        QString currentLang = getCurrentLanguage();
+        if(currentLang == "ru")
+        {
+            m_languageButton->setText("EN");
+            m_languageButton->setToolTip(tr("Switch to English / Переключить на английский"));
+        }
+        else
+        {
+            m_languageButton->setText("RU");
+            m_languageButton->setToolTip(tr("Switch to Russian / Переключить на русский"));
+        }
+    }
+}
+
+void UHelpWindow::onLanguageChanged()
+{
+    QString currentLang = getCurrentLanguage();
+    QString newLang = (currentLang == "ru") ? "en" : "ru";
+    setLanguage(newLang);
 }
 
 QString UHelpWindow::getHelpPath() const
@@ -268,6 +307,9 @@ void UHelpWindow::loadHelpContent(const QString& topic)
     // Ensure topic doesn't contain path separators for security
     fileName = QFileInfo(fileName).fileName();
     
+    // Store current topic for language switching (always store, even if empty means index.html)
+    m_currentTopic = fileName;
+    
     QString filePath = helpPath + "/" + lang + "/" + fileName;
     
     if(QFile::exists(filePath))
@@ -284,6 +326,9 @@ void UHelpWindow::loadHelpContent(const QString& topic)
             // Load content
             QString content = QString::fromUtf8(file.readAll());
             m_textBrowser->setHtml(content);
+            
+            // Update language button text after loading content
+            updateLanguageButtonText();
         }
         else
         {

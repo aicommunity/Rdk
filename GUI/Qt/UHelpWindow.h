@@ -27,6 +27,7 @@ private slots:
     void onSearchTextChanged(const QString& text);
     void onLinkClicked(const QUrl& url);
     void updateNavigationButtons();
+    void onLanguageChanged();
     
 private:
     void loadHelpContent(const QString& topic);
@@ -34,14 +35,17 @@ private:
     QString getCurrentLanguage() const;
     void setupUI();
     void setupToolbar();
+    void updateLanguageButtonText();
     
     QTextBrowser* m_textBrowser;
     QLineEdit* m_searchEdit;
     QPushButton* m_homeButton;
     QPushButton* m_backButton;
     QPushButton* m_forwardButton;
+    QPushButton* m_languageButton;
     QString m_currentLanguage;
     QString m_helpBasePath;
+    QString m_currentTopic; // Store current topic to reload after language change
     RDK::UApplication* m_application;
 };
 
