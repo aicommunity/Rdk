@@ -143,6 +143,14 @@ private:
         mutable QMap<PortCategory, bool> m_hasConnectionsToOutputCache;
         mutable QMap<PortCategory, bool> m_hasInputPortsCache;
         mutable QMap<PortCategory, bool> m_hasOutputPortsCache;
+        // Кэш для самих портов (ленивая загрузка)
+        mutable bool m_portsCacheValid = false;
+        mutable QVector<Port> m_cachedOwnInputPorts;
+        mutable QVector<Port> m_cachedChildInputPorts;
+        mutable QVector<Port> m_cachedAliasInputPorts;
+        mutable QVector<Port> m_cachedOwnOutputPorts;
+        mutable QVector<Port> m_cachedChildOutputPorts;
+        mutable QVector<Port> m_cachedAliasOutputPorts;
         // Последняя позиция курсора для throttling в hoverMoveEvent
         QPointF m_lastHoverMovePos;
         
@@ -184,6 +192,15 @@ private:
         // Getters for tooltip generation
         NodeItem* getSourceNode() const { return m_src; }
         NodeItem* getDestinationNode() const { return m_dst; }
+        
+        // Геттеры для доступа к данным связи (для оптимизации проверки соединений)
+        NodeItem* src() const { return m_src; }
+        NodeItem* dst() const { return m_dst; }
+        bool hasCategories() const { return m_hasCategories; }
+        PortCategory srcCategory() const { return m_srcCategory; }
+        PortCategory dstCategory() const { return m_dstCategory; }
+        bool useOutput() const { return m_useOutput; }
+        bool useInput() const { return m_useInput; }
     private:
         class UModernDiagramWidget* m_owner;
         class NodeItem* m_src;
@@ -206,6 +223,9 @@ private:
     NodeItem* pickNode(const QPointF& scenePos) const;
     void buildLinks();
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
+    void invalidateLevelCache(const QString& componentName = QString()); // Инвалидирует кэш уровня (пустая строка = все уровни)
+    void restoreSceneFromCache(const QString& componentName); // Восстанавливает сцену из кэша
+    void saveSceneToCache(const QString& componentName); // Сохраняет текущую сцену в кэш
 
     // UI
     QGraphicsScene* m_scene;
@@ -257,6 +277,20 @@ private:
     };
     QHash<QString, ViewState> m_viewStates;  // Состояние viewport для каждого компонента
     static constexpr double DEFAULT_SCALE = 1.0;  // Начальный масштаб по умолчанию (уменьшен в 2.5 раза от предыдущего значения 2.5)
+    
+    // Кэш загруженных уровней для быстрого повторного перехода
+    // ВАЖНО: не используем QPointer, так как элементы управляются сценой
+    // Вместо этого сохраняем указатели только если элементы еще в сцене
+    struct SceneCache {
+        QList<NodeItem*> nodes;
+        QList<LinkItem*> links;
+        QHash<QString, NodeItem*> nodeByName;
+        QHash<NodeItem*, QPointF> lastNodePositions;
+        QPointF normalizationOffset;
+        QStringList componentNames;  // Список компонентов для проверки изменений структуры
+        bool isValid = false;
+    };
+    QHash<QString, SceneCache> m_levelCache;  // Кэш уровней по имени компонента
     
     // Флаг для временного отключения обработки ItemSelectedHasChanged в itemChange
     // во время batch-выделения, чтобы предотвратить сброс выделения Qt

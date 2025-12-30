@@ -41,6 +41,7 @@
 #include "../Core/Engine/UNet.h"
 #include "../../Deploy/Include/rdk_init.h"
 #include "../Core/Application/UIVisualController.h"
+#include "UGuiTelemetry.h"
 #include <sstream>
 
 
@@ -66,6 +67,7 @@ private:
     bool m_isGroupMoving = false;    // Идет ли перемещение группы
     QList<UModernDiagramWidget::NodeItem*> m_savedSelection; // Сохраненное выделение для перемещения
     QPointF m_lastHoverPos;  // Последняя позиция курсора для оптимизации
+    bool m_isProcessingMouseEvent = false;  // Флаг обработки событий мыши для пропуска pollHover
     void pollHover();
 };
 
@@ -527,6 +529,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     , m_portListWidget(nullptr)
     , m_hideTimer(new QTimer())
     , m_cacheValid(false)
+    , m_portsCacheValid(false)
 {
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -891,25 +894,59 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     painter->setRenderHint(QPainter::Antialiasing, true);
     
     // Обновляем кэш, если он невалиден
+    // ОПТИМИЗАЦИЯ: используем кэшированные порты вместо вызова методов получения портов
+    // Это критично для производительности - вызовы API ядра очень медленные
     if(!m_cacheValid)
     {
-        // Кэшируем результаты проверки наличия портов
-        m_hasInputPortsCache[PortCategory::Own] = !getOwnInputPorts().isEmpty();
-        m_hasInputPortsCache[PortCategory::Child] = !getChildInputPorts().isEmpty();
-        m_hasInputPortsCache[PortCategory::Alias] = !getAliasInputPorts().isEmpty();
-        m_hasOutputPortsCache[PortCategory::Own] = !getOwnOutputPorts().isEmpty();
-        m_hasOutputPortsCache[PortCategory::Child] = !getChildOutputPorts().isEmpty();
-        m_hasOutputPortsCache[PortCategory::Alias] = !getAliasOutputPorts().isEmpty();
+        NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.NodeItem.paint"), nodeName);
         
-        // Кэшируем результаты проверки соединений
-        m_hasConnectionsToInputCache[PortCategory::Own] = hasConnectionsToInputCategory(PortCategory::Own);
-        m_hasConnectionsToInputCache[PortCategory::Child] = hasConnectionsToInputCategory(PortCategory::Child);
-        m_hasConnectionsToInputCache[PortCategory::Alias] = hasConnectionsToInputCategory(PortCategory::Alias);
-        m_hasConnectionsToOutputCache[PortCategory::Own] = hasConnectionsToOutputCategory(PortCategory::Own);
-        m_hasConnectionsToOutputCache[PortCategory::Child] = hasConnectionsToOutputCategory(PortCategory::Child);
-        m_hasConnectionsToOutputCache[PortCategory::Alias] = hasConnectionsToOutputCategory(PortCategory::Alias);
+        // ОПТИМИЗАЦИЯ: загружаем порты только если кэш портов невалиден
+        // Это позволяет избежать повторных вызовов API ядра при каждой инвалидации кэша paint
+        qint64 portsLoadTime = 0;
+        if(!m_portsCacheValid)
+        {
+            NMSDK::UGuiTelemetryScope portsTelemetry(QStringLiteral("UModernDiagramWidget.NodeItem.paint.loadPorts"), nodeName);
+            // Загружаем порты один раз - они не меняются при изменении связей
+            getOwnInputPorts();  // Загрузит и закэширует
+            getChildInputPorts();  // Загрузит и закэширует
+            getAliasInputPorts();  // Загрузит и закэширует
+            getOwnOutputPorts();  // Загрузит и закэширует
+            getChildOutputPorts();  // Загрузит и закэширует
+            getAliasOutputPorts();  // Загрузит и закэширует
+            portsLoadTime = portsTelemetry.Elapsed();
+        }
+        
+        // Кэшируем результаты проверки наличия портов (используем уже закэшированные порты)
+        m_hasInputPortsCache[PortCategory::Own] = !m_cachedOwnInputPorts.isEmpty();
+        m_hasInputPortsCache[PortCategory::Child] = !m_cachedChildInputPorts.isEmpty();
+        m_hasInputPortsCache[PortCategory::Alias] = !m_cachedAliasInputPorts.isEmpty();
+        m_hasOutputPortsCache[PortCategory::Own] = !m_cachedOwnOutputPorts.isEmpty();
+        m_hasOutputPortsCache[PortCategory::Child] = !m_cachedChildOutputPorts.isEmpty();
+        m_hasOutputPortsCache[PortCategory::Alias] = !m_cachedAliasOutputPorts.isEmpty();
+        
+        // Кэшируем результаты проверки соединений с детальным профилированием
+        qint64 connectionsCheckTime = 0;
+        {
+            NMSDK::UGuiTelemetryScope connectionsTelemetry(QStringLiteral("UModernDiagramWidget.NodeItem.paint.checkConnections"), nodeName);
+            m_hasConnectionsToInputCache[PortCategory::Own] = hasConnectionsToInputCategory(PortCategory::Own);
+            m_hasConnectionsToInputCache[PortCategory::Child] = hasConnectionsToInputCategory(PortCategory::Child);
+            m_hasConnectionsToInputCache[PortCategory::Alias] = hasConnectionsToInputCategory(PortCategory::Alias);
+            m_hasConnectionsToOutputCache[PortCategory::Own] = hasConnectionsToOutputCategory(PortCategory::Own);
+            m_hasConnectionsToOutputCache[PortCategory::Child] = hasConnectionsToOutputCategory(PortCategory::Child);
+            m_hasConnectionsToOutputCache[PortCategory::Alias] = hasConnectionsToOutputCategory(PortCategory::Alias);
+            connectionsCheckTime = connectionsTelemetry.Elapsed();
+        }
         
         m_cacheValid = true;
+        
+        // Логируем результат профилирования (только при инвалидации кэша)
+        qint64 elapsed = telemetry.Elapsed();
+        QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+        QString details = QString("cache invalidated, node: %1, portsLoaded: %2, portsTime: %3ms, connectionsTime: %4ms")
+            .arg(nodeName).arg(m_portsCacheValid ? "yes" : "no").arg(portsLoadTime).arg(connectionsCheckTime);
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: NodeItem.paint, Duration: %2ms, Details: %3")
+            .arg(componentDisplayName).arg(elapsed).arg(details);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     }
 
     UStyleManager* style = UStyleManager::instance();
@@ -1636,6 +1673,12 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnOutputPorts() const
 {
+    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    if(m_portsCacheValid && !m_cachedOwnOutputPorts.isEmpty())
+    {
+        return m_cachedOwnOutputPorts;
+    }
+    
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
@@ -1671,11 +1714,21 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnOutput
         Engine_FreeBufString(outputProps);
     }
     
+    // Сохраняем в кэш
+    m_cachedOwnOutputPorts = result;
+    m_portsCacheValid = true;
+    
     return result;
 }
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildOutputPorts() const
 {
+    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    if(m_portsCacheValid && !m_cachedChildOutputPorts.isEmpty())
+    {
+        return m_cachedChildOutputPorts;
+    }
+    
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
@@ -1717,11 +1770,21 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildOutp
         Engine_FreeBufString(compList);
     }
     
+    // Сохраняем в кэш
+    m_cachedChildOutputPorts = result;
+    m_portsCacheValid = true;
+    
     return result;
 }
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutputPorts() const
 {
+    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    if(m_portsCacheValid && !m_cachedAliasOutputPorts.isEmpty())
+    {
+        return m_cachedAliasOutputPorts;
+    }
+    
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
@@ -1770,11 +1833,21 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutp
         // Игнорируем ошибки при получении алиасов
     }
     
+    // Сохраняем в кэш
+    m_cachedAliasOutputPorts = result;
+    m_portsCacheValid = true;
+    
     return result;
 }
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputPorts() const
 {
+    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    if(m_portsCacheValid && !m_cachedOwnInputPorts.isEmpty())
+    {
+        return m_cachedOwnInputPorts;
+    }
+    
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
@@ -1810,11 +1883,21 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputP
         Engine_FreeBufString(inputProps);
     }
     
+    // Сохраняем в кэш
+    m_cachedOwnInputPorts = result;
+    m_portsCacheValid = true;
+    
     return result;
 }
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildInputPorts() const
 {
+    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    if(m_portsCacheValid && !m_cachedChildInputPorts.isEmpty())
+    {
+        return m_cachedChildInputPorts;
+    }
+    
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
@@ -1856,11 +1939,21 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildInpu
         Engine_FreeBufString(compList);
     }
     
+    // Сохраняем в кэш
+    m_cachedChildInputPorts = result;
+    m_portsCacheValid = true;
+    
     return result;
 }
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasInputPorts() const
 {
+    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    if(m_portsCacheValid && !m_cachedAliasInputPorts.isEmpty())
+    {
+        return m_cachedAliasInputPorts;
+    }
+    
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
@@ -1909,6 +2002,10 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasInpu
         // Игнорируем ошибки при получении алиасов
     }
     
+    // Сохраняем в кэш
+    m_cachedAliasInputPorts = result;
+    m_portsCacheValid = true;
+    
     return result;
 }
 
@@ -1917,6 +2014,101 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     if(!m_owner || !m_owner->m_application)
         return false;
     
+    // ОПТИМИЗАЦИЯ: используем m_connectedLinks для быстрой проверки вместо вызова API
+    // Это критично для производительности - вызов Model_GetComponentInternalLinks очень медленный
+    bool hasConnection = false;
+    bool usedFastPath = false;
+    int linksChecked = 0;
+    int linksWithCategories = 0;
+    int linksWithoutCategories = 0;
+    QList<PortCategory> foundCategories;  // Для отладки: собираем все найденные категории
+    
+    for(LinkItem* link : m_connectedLinks)
+    {
+        if(!link || link->dst() != this)
+            continue;  // Пропускаем связи, где этот узел не является получателем
+        
+        linksChecked++;
+        
+        // Проверяем категорию целевого порта
+        if(link->hasCategories())
+        {
+            linksWithCategories++;
+            PortCategory cat = link->dstCategory();
+            if(!foundCategories.contains(cat))
+                foundCategories.append(cat);
+            if(cat == category)
+            {
+                hasConnection = true;
+                usedFastPath = true;
+                break;
+            }
+        }
+        // Если категория не задана, но есть связь к входному порту, считаем что есть соединение
+        // (для обратной совместимости со старыми связями)
+        else if(!link->hasCategories() && link->useInput())
+        {
+            linksWithoutCategories++;
+            // Для старых связей без категорий используем быструю проверку через кэшированные порты
+            // Это быстрее, чем вызов API
+            bool hasPorts = false;
+            if(category == PortCategory::Own)
+            {
+                hasPorts = !m_cachedOwnInputPorts.isEmpty();
+            }
+            else if(category == PortCategory::Child)
+            {
+                hasPorts = !m_cachedChildInputPorts.isEmpty();
+            }
+            else if(category == PortCategory::Alias)
+            {
+                hasPorts = !m_cachedAliasInputPorts.isEmpty();
+            }
+            
+            if(hasPorts)
+            {
+                hasConnection = true;
+                usedFastPath = true;
+                break;
+            }
+        }
+    }
+    
+    // Если нашли соединение через быструю проверку, возвращаем результат
+    if(hasConnection)
+    {
+        return true;
+    }
+    
+    // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
+    // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
+    if(linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category))
+    {
+        // Все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией
+        // Значит, соединений для этой категории нет - возвращаем false без вызова API
+        return false;
+    }
+    
+    // Логируем информацию о быстрой проверке (только если она не сработала)
+    if(!usedFastPath && linksChecked > 0)
+    {
+        QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+        QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+        QString foundCategoriesStr;
+        for(PortCategory cat : foundCategories)
+        {
+            if(!foundCategoriesStr.isEmpty()) foundCategoriesStr += ",";
+            if(cat == PortCategory::Own) foundCategoriesStr += "Own";
+            else if(cat == PortCategory::Child) foundCategoriesStr += "Child";
+            else if(cat == PortCategory::Alias) foundCategoriesStr += "Alias";
+        }
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): fast path failed (checked %4 links, withCategories: %5, foundCategories: [%6]), using fallback")
+            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(foundCategoriesStr);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    }
+    
+    // Fallback: если быстрая проверка не дала результата, используем старый метод
+    // (для старых связей без категорий или для сложных случаев)
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
     
     // Получаем список портов категории
@@ -2161,6 +2353,101 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     if(!m_owner || !m_owner->m_application)
         return false;
     
+    // ОПТИМИЗАЦИЯ: используем m_connectedLinks для быстрой проверки вместо вызова API
+    // Это критично для производительности - вызов Model_GetComponentInternalLinks очень медленный
+    bool hasConnection = false;
+    bool usedFastPath = false;
+    int linksChecked = 0;
+    int linksWithCategories = 0;
+    int linksWithoutCategories = 0;
+    QList<PortCategory> foundCategories;  // Для отладки: собираем все найденные категории
+    
+    for(LinkItem* link : m_connectedLinks)
+    {
+        if(!link || link->src() != this)
+            continue;  // Пропускаем связи, где этот узел не является источником
+        
+        linksChecked++;
+        
+        // Проверяем категорию исходного порта
+        if(link->hasCategories())
+        {
+            linksWithCategories++;
+            PortCategory cat = link->srcCategory();
+            if(!foundCategories.contains(cat))
+                foundCategories.append(cat);
+            if(cat == category)
+            {
+                hasConnection = true;
+                usedFastPath = true;
+                break;
+            }
+        }
+        // Если категория не задана, но есть связь от выходного порта, считаем что есть соединение
+        // (для обратной совместимости со старыми связями)
+        else if(!link->hasCategories() && link->useOutput())
+        {
+            linksWithoutCategories++;
+            // Для старых связей без категорий используем быструю проверку через кэшированные порты
+            // Это быстрее, чем вызов API
+            bool hasPorts = false;
+            if(category == PortCategory::Own)
+            {
+                hasPorts = !m_cachedOwnOutputPorts.isEmpty();
+            }
+            else if(category == PortCategory::Child)
+            {
+                hasPorts = !m_cachedChildOutputPorts.isEmpty();
+            }
+            else if(category == PortCategory::Alias)
+            {
+                hasPorts = !m_cachedAliasOutputPorts.isEmpty();
+            }
+            
+            if(hasPorts)
+            {
+                hasConnection = true;
+                usedFastPath = true;
+                break;
+            }
+        }
+    }
+    
+    // Если нашли соединение через быструю проверку, возвращаем результат
+    if(hasConnection)
+    {
+        return true;
+    }
+    
+    // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
+    // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
+    if(linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category))
+    {
+        // Все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией
+        // Значит, соединений для этой категории нет - возвращаем false без вызова API
+        return false;
+    }
+    
+    // Логируем информацию о быстрой проверке (только если она не сработала)
+    if(!usedFastPath && linksChecked > 0)
+    {
+        QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+        QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+        QString foundCategoriesStr;
+        for(PortCategory cat : foundCategories)
+        {
+            if(!foundCategoriesStr.isEmpty()) foundCategoriesStr += ",";
+            if(cat == PortCategory::Own) foundCategoriesStr += "Own";
+            else if(cat == PortCategory::Child) foundCategoriesStr += "Child";
+            else if(cat == PortCategory::Alias) foundCategoriesStr += "Alias";
+        }
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): fast path failed (checked %4 links, withCategories: %5, foundCategories: [%6]), using fallback")
+            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(foundCategoriesStr);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    }
+    
+    // Fallback: если быстрая проверка не дала результата, используем старый метод
+    // (для старых связей без категорий или для сложных случаев)
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
     
     // Получаем список портов категории
@@ -3114,7 +3401,9 @@ UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, NodeItem* dst, PortCateg
     setAcceptHoverEvents(true);
     // Включаем кэширование для оптимизации отрисовки
     setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-    updateGeometry();
+    // ОПТИМИЗАЦИЯ: updateGeometry() вызывается отдельно после создания всех связей в buildLinks()
+    // для ускорения массового создания связей
+    // updateGeometry();
 }
 
 UModernDiagramWidget::LinkItem::LinkItem(NodeItem* src, const QPointF& tempEnd, const QPointF& startPos)
@@ -3308,11 +3597,65 @@ void UModernDiagramWidget::SetComponentName(const QString& name)
 
 void UModernDiagramWidget::Reload()
 {
+    // Профилирование: начало операции Reload
+    QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.Reload"), componentDisplayName);
+    
     // Сохраняем текущее состояние viewport перед перезагрузкой
     // Сохраняем только если сцена уже содержит элементы (компонент был загружен ранее)
     if(!m_componentName.isEmpty() && !m_scene->items().isEmpty())
     {
         saveCurrentViewState();
+    }
+    
+    // Оптимизация: проверяем кэш ПЕРЕД clearScene()
+    bool structureUnchanged = false;
+    if(!m_componentName.isEmpty() && m_levelCache.contains(m_componentName))
+    {
+        const SceneCache& cache = m_levelCache[m_componentName];
+        
+        // Проверяем, изменилась ли структура компонентов
+        const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
+        QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
+        QStringList currentComponents = compListStr.split(",", Qt::SkipEmptyParts);
+        Engine_FreeBufString(compRaw);
+        
+        // Сравниваем списки компонентов
+        bool structureChanged = (currentComponents.size() != cache.componentNames.size());
+        if(!structureChanged)
+        {
+            // Сортируем для сравнения
+            QStringList sortedCurrent = currentComponents;
+            QStringList sortedCached = cache.componentNames;
+            sortedCurrent.sort();
+            sortedCached.sort();
+            structureChanged = (sortedCurrent != sortedCached);
+        }
+        
+        structureUnchanged = !structureChanged;
+        
+        // ВРЕМЕННО ОТКЛЮЧЕНО: кэш указателей вызывает падения при повторном входе
+        // Проблема: после clearScene() указатели становятся невалидными
+        // TODO: переделать кэш на сохранение данных вместо указателей
+        /*
+        // Если структура не изменилась, восстанавливаем из кэша
+        if(!structureChanged && cache.isValid)
+        {
+            restoreSceneFromCache(m_componentName);
+            // Восстанавливаем состояние viewport для текущего компонента
+            restoreViewState(m_componentName);
+            qint64 elapsed = telemetry.Elapsed();
+            QString logMsg = QString("[UModernDiagramWidget] Component: %1, Reload: SKIPPED (structure unchanged), Duration: %2ms")
+                .arg(componentDisplayName).arg(elapsed);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            return;
+        }
+        */
+        if(structureChanged)
+        {
+            // Структура изменилась, инвалидируем кэш
+            invalidateLevelCache(m_componentName);
+        }
     }
     
     // Оптимизация: отключаем обновления во время перестройки для ускорения
@@ -3331,6 +3674,17 @@ void UModernDiagramWidget::Reload()
     
     // Восстанавливаем состояние viewport для текущего компонента
     restoreViewState(m_componentName);
+    
+    // Логируем результат профилирования
+    qint64 elapsed = telemetry.Elapsed();
+    QString details = QString("nodes: %1, links: %2").arg(m_nodes.size()).arg(m_links.size());
+    if(structureUnchanged)
+    {
+        details += ", structure unchanged";
+    }
+    QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: Reload, Duration: %2ms, Details: %3")
+        .arg(componentDisplayName).arg(elapsed).arg(details);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
 void UModernDiagramWidget::FitToView()
@@ -3342,6 +3696,24 @@ void UModernDiagramWidget::FitToView()
 
 void UModernDiagramWidget::clearScene()
 {
+    // Профилирование: начало операции clearScene
+    QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
+    int nodesCount = m_nodes.size();
+    int linksCount = m_links.size();
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.clearScene"), 
+        componentDisplayName + " (" + QString::number(nodesCount) + " nodes)");
+    
+    // ВРЕМЕННО ОТКЛЮЧЕНО: сохранение в кэш вызывает падения при повторном входе
+    // Проблема: после clearScene() указатели становятся невалидными
+    // TODO: переделать кэш на сохранение данных вместо указателей
+    /*
+    // Сохраняем текущую сцену в кэш перед очисткой (если есть компонент)
+    if(!m_componentName.isEmpty() && !m_nodes.isEmpty())
+    {
+        saveSceneToCache(m_componentName);
+    }
+    */
+    
     // Перед очисткой сцены обнуляем указатели на прокси-виджеты,
     // чтобы предотвратить двойное удаление в деструкторе NodeItem.
     // Сцена владеет прокси-виджетами и удалит их при clear().
@@ -3373,6 +3745,13 @@ void UModernDiagramWidget::clearScene()
     m_isLineFrozen = false;
     m_frozenTargetPortPos = QPointF(0, 0);
     m_normalizationOffset = QPointF(0, 0);
+    
+    // Логируем результат профилирования
+    qint64 elapsed = telemetry.Elapsed();
+    QString details = QString("removed %1 nodes, %2 links").arg(nodesCount).arg(linksCount);
+    QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: clearScene, Duration: %2ms, Details: %3")
+        .arg(componentDisplayName).arg(elapsed).arg(details);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
 void UModernDiagramWidget::buildScene()
@@ -3384,12 +3763,33 @@ void UModernDiagramWidget::buildScene()
         return;
     }
 
+    // Профилирование: начало операции buildScene
+    QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.buildScene"), componentDisplayName);
+
+    // Оптимизация: отключаем обновления во время массового создания узлов
+    setUpdatesEnabled(false);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(false);
+
     const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
     QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
     QStringList components = compListStr.split(",", Qt::SkipEmptyParts);
     Engine_FreeBufString(compRaw);
     // Удалено избыточное логирование - создавало спам в INFO логах
+    
+    // Обновляем имя телеметрии с количеством узлов
+    telemetry.Stop();
+    NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildScene"), 
+        componentDisplayName + " (" + QString::number(components.size()) + " nodes)");
 
+    // Оптимизация: кэшируем имена классов компонентов для минимизации вызовов API
+    QHash<QString, QString> classNameCache;
+    
+    // Оптимизация: кэшируем координаты компонентов, чтобы не вызывать loadCoord() дважды
+    QHash<QString, QPointF> coordCache;
+    QHash<QString, bool> coordLoadedCache;
+    
     int idx = 0;
     bool coordsLoaded = false;
     QPointF minKernel(0,0);
@@ -3399,7 +3799,11 @@ void UModernDiagramWidget::buildScene()
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
         QPointF kernelPos;
-        if(loadCoord(fullName, kernelPos))
+        bool loaded = loadCoord(fullName, kernelPos);
+        coordCache[fullName] = kernelPos;
+        coordLoadedCache[fullName] = loaded;
+        
+        if(loaded)
         {
             coordsLoaded = true;
             if(!minSet)
@@ -3423,17 +3827,33 @@ void UModernDiagramWidget::buildScene()
     m_normalizationOffset = minScenePos;
     // Удалено избыточное логирование - создавало спам в INFO логах
     
+    // Оптимизация: создаем все узлы сначала, затем добавляем в сцену пакетами
+    QList<NodeItem*> nodesToAdd;
+    QHash<QString, QPointF> nodePositions;
+    
     for(const QString& comp : components)
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
-        const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
-        QString cls = QString::fromUtf8(clsRaw ? clsRaw : "");
-        Engine_FreeBufString(clsRaw);
+        
+        // Кэшируем имя класса для минимизации вызовов API
+        QString cls;
+        if(classNameCache.contains(fullName))
+        {
+            cls = classNameCache[fullName];
+        }
+        else
+        {
+            const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
+            cls = QString::fromUtf8(clsRaw ? clsRaw : "");
+            Engine_FreeBufString(clsRaw);
+            classNameCache[fullName] = cls;
+        }
 
         auto* node = new NodeItem(this, comp, cls);
         QPointF loaded;
-        QPointF kernelPos;
-        if(loadCoord(fullName, kernelPos))
+        // Используем кэшированные координаты вместо повторного вызова loadCoord()
+        QPointF kernelPos = coordCache.value(fullName);
+        if(coordLoadedCache.value(fullName, false))
         {
             // Используем абсолютные координаты из ядра, нормализуем только для визуального отображения
             QPointF absoluteScenePos = scenePosFromKernel(kernelPos);
@@ -3444,13 +3864,23 @@ void UModernDiagramWidget::buildScene()
         {
             loaded = QPointF((idx%4)*180, (idx/4)*140);
         }
+        
+        nodesToAdd.append(node);
+        nodePositions[comp] = loaded;
+        m_nodeByName.insert(comp, node);
+        idx++;
+    }
+    
+    // Добавляем узлы в сцену пакетами
+    for(auto* node : nodesToAdd)
+    {
         m_scene->addItem(node);
         m_nodes.append(node);
-        m_nodeByName.insert(comp, node);
+        QString comp = node->nodeName;
+        QPointF loaded = nodePositions[comp];
         node->setPos(loaded);
         // Инициализируем сохраненную позицию для перемещения группы
         m_lastNodePositions[node] = loaded;
-        idx++;
     }
     
     if(!coordsLoaded)
@@ -3460,7 +3890,26 @@ void UModernDiagramWidget::buildScene()
         layoutGrid();
     }
 
+    // Создаем связи сразу после узлов (синхронно)
+    // Включаем обновления перед созданием связей для корректного отображения
+    setUpdatesEnabled(true);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(true);
+    
+    // Создаем связи после всех узлов
     buildLinks();
+    
+    // ВРЕМЕННО ОТКЛЮЧЕНО: сохранение в кэш вызывает падения при повторном входе
+    // Проблема: после clearScene() указатели становятся невалидными
+    // TODO: переделать кэш на сохранение данных вместо указателей
+    // saveSceneToCache(m_componentName);
+    
+    // Логируем результат профилирования buildScene
+    qint64 elapsed = telemetry2.Elapsed();
+    QString details = QString("created %1 nodes").arg(components.size());
+    QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildScene, Duration: %2ms, Details: %3")
+        .arg(componentDisplayName).arg(elapsed).arg(details);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
 void UModernDiagramWidget::layoutGrid()
@@ -3512,9 +3961,28 @@ UModernDiagramWidget::NodeItem* UModernDiagramWidget::pickNode(const QPointF& sc
 
 void UModernDiagramWidget::buildLinks()
 {
+    // Профилирование: начало операции buildLinks
+    QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.buildLinks"), componentDisplayName);
+    
+    // Оптимизация: отключаем обновления во время массового создания связей
+    bool updatesWereEnabled = updatesEnabled();
+    setUpdatesEnabled(false);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(false);
+    
     const char* xmlRaw = Model_GetComponentInternalLinks(m_componentName.toStdString().c_str(), nullptr);
     if(!xmlRaw)
+    {
+        setUpdatesEnabled(updatesWereEnabled);
+        if(m_mainView)
+            m_mainView->setUpdatesEnabled(updatesWereEnabled);
+        qint64 elapsed = telemetry.Elapsed();
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildLinks, Duration: %2ms, Details: no links")
+            .arg(componentDisplayName).arg(elapsed);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return;
+    }
     std::string raw(xmlRaw ? xmlRaw : "");
     // Удалено избыточное логирование - создавало спам в INFO логах
 
@@ -3522,7 +3990,14 @@ void UModernDiagramWidget::buildLinks()
     if(!xml.Load(raw, "Links"))
     {
         Engine_FreeBufString(xmlRaw);
+        setUpdatesEnabled(updatesWereEnabled);
+        if(m_mainView)
+            m_mainView->setUpdatesEnabled(updatesWereEnabled);
         // Удалено избыточное логирование - создавало спам в INFO логах
+        qint64 elapsed = telemetry.Elapsed();
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildLinks, Duration: %2ms, Details: failed to load XML")
+            .arg(componentDisplayName).arg(elapsed);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return;
     }
 
@@ -3530,6 +4005,11 @@ void UModernDiagramWidget::buildLinks()
     xml >> linkslist;
     Engine_FreeBufString(xmlRaw);
     // Удалено избыточное логирование - создавало спам в INFO логах
+    
+    // Обновляем имя телеметрии с количеством связей
+    telemetry.Stop();
+    NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildLinks"), 
+        componentDisplayName + " (" + QString::number(linkslist.GetSize()) + " links)");
 
     QPointF minPos = currentMinScenePos();
 
@@ -3565,6 +4045,10 @@ void UModernDiagramWidget::buildLinks()
         return nullptr;
     };
 
+    // Оптимизация: создаем все связи сначала, затем добавляем в сцену пакетами
+    QList<LinkItem*> linksToAdd;
+    QHash<QPair<NodeItem*, QString>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory
+    
     int added = 0;
     int skipped = 0;
     for(int i=0;i<linkslist.GetSize();++i)
@@ -3592,8 +4076,18 @@ void UModernDiagramWidget::buildLinks()
                 continue;
             }
             
-            // Определяем категории портов по именам свойств
-            PortCategory srcCategory = srcNode->determinePortCategory(itemName, false);
+            // Оптимизация: кэшируем результаты determinePortCategory
+            QPair<NodeItem*, QString> srcKey(srcNode, itemName);
+            PortCategory srcCategory;
+            if(portCategoryCache.contains(srcKey))
+            {
+                srcCategory = portCategoryCache[srcKey];
+            }
+            else
+            {
+                srcCategory = srcNode->determinePortCategory(itemName, false);
+                portCategoryCache[srcKey] = srcCategory;
+            }
             
             // Для определения категории входного порта нужно нормализовать connName относительно dstNode
             // connName может быть в любом формате, нужно извлечь часть, относящуюся к dstNode
@@ -3665,11 +4159,22 @@ void UModernDiagramWidget::buildLinks()
                 }
             }
             
-            PortCategory dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
+            // Оптимизация: кэшируем результаты determinePortCategory
+            QPair<NodeItem*, QString> dstKey(dstNode, normalizedConnName);
+            PortCategory dstCategory;
+            if(portCategoryCache.contains(dstKey))
+            {
+                dstCategory = portCategoryCache[dstKey];
+            }
+            else
+            {
+                dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
+                portCategoryCache[dstKey] = dstCategory;
+            }
             
-            // Создаем LinkItem с категориями портов
+            // Создаем LinkItem с категориями портов (БЕЗ добавления в сцену и БЕЗ updateGeometry)
             auto* l = new LinkItem(srcNode, dstNode, srcCategory, dstCategory);
-            m_scene->addItem(l);
+            linksToAdd.append(l);
             m_links.append(l);
             // Обновляем кэш связей для узлов
             srcNode->m_connectedLinks.append(l);
@@ -3678,12 +4183,43 @@ void UModernDiagramWidget::buildLinks()
             // Удалено избыточное логирование - создавало спам в INFO логах
         }
     }
+    
+    // Добавляем все связи в сцену пакетами
+    for(auto* l : linksToAdd)
+    {
+        m_scene->addItem(l);
+    }
+    
+    // Вызываем updateGeometry() для всех связей после добавления в сцену
+    // Профилирование: измеряем время обновления геометрии всех связей
+    NMSDK::UGuiTelemetryScope telemetry3(QStringLiteral("UModernDiagramWidget.LinkItem.updateGeometry"), 
+        componentDisplayName + " (" + QString::number(linksToAdd.size()) + " links)");
+    for(auto* l : linksToAdd)
+    {
+        l->updateGeometry();
+    }
+    telemetry3.Stop();
+    qint64 updateGeometryElapsed = telemetry3.Elapsed();
+    
     // Инвалидируем кэш paint() для всех узлов после создания связей
     for(auto* node : m_nodes)
     {
         node->m_cacheValid = false;
+        // НЕ инвалидируем кэш портов - они не меняются при создании связей
+        // node->m_portsCacheValid = false;
     }
-    // Удалено избыточное логирование - создавало спам в INFO логах
+    
+    // Включаем обновления обратно
+    setUpdatesEnabled(updatesWereEnabled);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(updatesWereEnabled);
+    
+    // Логируем результат профилирования
+    qint64 elapsed = telemetry2.Elapsed();
+    QString details = QString("created %1 links, skipped %2, updateGeometry: %3ms").arg(added).arg(skipped).arg(updateGeometryElapsed);
+    QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildLinks, Duration: %2ms, Details: %3")
+        .arg(componentDisplayName).arg(elapsed).arg(details);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
 void UModernDiagramWidget::rebuildLinks()
@@ -3711,6 +4247,140 @@ void UModernDiagramWidget::rebuildLinks()
     for(auto* node : m_nodes)
     {
         node->m_cacheValid = false;
+    }
+    
+    // Инвалидируем кэш уровня при изменении связей
+    if(!m_componentName.isEmpty())
+    {
+        invalidateLevelCache(m_componentName);
+    }
+}
+
+void UModernDiagramWidget::saveSceneToCache(const QString& componentName)
+{
+    if(componentName.isEmpty() || m_nodes.isEmpty())
+        return;
+    
+    // ВАЖНО: сохраняем кэш только если элементы еще в сцене (не были удалены)
+    // Проверяем, что хотя бы один узел еще в сцене
+    bool hasValidNodes = false;
+    for(auto* node : m_nodes)
+    {
+        if(node && node->scene() == m_scene)
+        {
+            hasValidNodes = true;
+            break;
+        }
+    }
+    if(!hasValidNodes)
+        return;  // Элементы уже удалены, не сохраняем в кэш
+    
+    SceneCache cache;
+    cache.nodes = m_nodes;
+    cache.links = m_links;
+    cache.nodeByName = m_nodeByName;
+    cache.lastNodePositions = m_lastNodePositions;
+    cache.normalizationOffset = m_normalizationOffset;
+    
+    // Сохраняем список компонентов для проверки изменений структуры
+    const char* compRaw = Model_GetComponentsNameList(componentName.toStdString().c_str());
+    QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
+    cache.componentNames = compListStr.split(",", Qt::SkipEmptyParts);
+    Engine_FreeBufString(compRaw);
+    
+    cache.isValid = true;
+    m_levelCache[componentName] = cache;
+}
+
+void UModernDiagramWidget::restoreSceneFromCache(const QString& componentName)
+{
+    if(componentName.isEmpty() || !m_levelCache.contains(componentName))
+        return;
+    
+    const SceneCache& cache = m_levelCache[componentName];
+    if(!cache.isValid)
+        return;
+    
+    // Оптимизация: отключаем обновления во время восстановления
+    setUpdatesEnabled(false);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(false);
+    
+    // Восстанавливаем данные
+    m_nodes = cache.nodes;
+    m_links = cache.links;
+    m_nodeByName = cache.nodeByName;
+    m_lastNodePositions = cache.lastNodePositions;
+    m_normalizationOffset = cache.normalizationOffset;
+    
+    // Добавляем узлы и связи обратно в сцену
+    // ВАЖНО: элементы из кэша должны быть валидными, так как мы не вызываем clearScene()
+    // при восстановлении из кэша. Но на всякий случай проверяем валидность через scene()
+    for(auto* node : m_nodes)
+    {
+        if(node)
+        {
+            // Проверяем валидность указателя через проверку scene()
+            // Если scene() возвращает nullptr, элемент был удален, пропускаем его
+            QGraphicsScene* nodeScene = nullptr;
+            try {
+                nodeScene = node->scene();
+            } catch (...) {
+                // Указатель невалидный, пропускаем этот узел
+                continue;
+            }
+            
+            if(!nodeScene)
+            {
+                m_scene->addItem(node);
+            }
+        }
+    }
+    
+    for(auto* link : m_links)
+    {
+        if(link)
+        {
+            // Проверяем валидность указателя
+            QGraphicsScene* linkScene = nullptr;
+            try {
+                linkScene = link->scene();
+            } catch (...) {
+                // Указатель невалидный, пропускаем эту связь
+                continue;
+            }
+            
+            if(!linkScene)
+            {
+                m_scene->addItem(link);
+                // Восстанавливаем кэш связей для узлов
+                NodeItem* srcNode = link->getSourceNode();
+                NodeItem* dstNode = link->getDestinationNode();
+                if(srcNode && m_nodes.contains(srcNode))
+                    srcNode->m_connectedLinks.append(link);
+                if(dstNode && m_nodes.contains(dstNode))
+                    dstNode->m_connectedLinks.append(link);
+            }
+        }
+    }
+    
+    // Включаем обновления обратно
+    setUpdatesEnabled(true);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(true);
+}
+
+void UModernDiagramWidget::invalidateLevelCache(const QString& componentName)
+{
+    if(componentName.isEmpty())
+    {
+        // Инвалидируем все кэши
+        m_levelCache.clear();
+    }
+    else
+    {
+        // Инвалидируем кэш конкретного уровня
+        m_levelCache.remove(componentName);
     }
 }
 
@@ -3983,6 +4653,13 @@ void ModernScene::pollHover()
     }
     m_lastHoverPos = scenePos;
     
+    // Оптимизация: пропускаем обновление hover во время обработки событий мыши
+    // Это предотвращает задержки при клике
+    if(m_isProcessingMouseEvent)
+    {
+        return;
+    }
+    
     // Получаем видимую область viewport для оптимизации
     QRectF visibleRect = view->mapToScene(view->viewport()->rect()).boundingRect();
 
@@ -4095,6 +4772,9 @@ void ModernScene::pollHover()
 
 void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    // Устанавливаем флаг обработки событий мыши для пропуска pollHover
+    m_isProcessingMouseEvent = true;
+    
     // Обработка правого клика для отмены активной связи
     if(event->button() == Qt::RightButton && m_owner->m_activeTempLink)
     {
@@ -4483,6 +5163,9 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_isRubberBandActive = false;
     }
     QGraphicsScene::mousePressEvent(event);
+    
+    // Сбрасываем флаг после обработки события
+    m_isProcessingMouseEvent = false;
 }
 
 void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -4636,6 +5319,9 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    // Устанавливаем флаг обработки событий мыши для пропуска pollHover
+    m_isProcessingMouseEvent = true;
+    
     // Сначала обрабатываем drag & drop связь (m_tempLink), если она активна
     if(m_owner->m_tempLink && event->button() == Qt::LeftButton)
     {
@@ -4696,6 +5382,8 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
             emit m_owner->updateComponentsList();
             
+            // Сбрасываем флаг после обработки события
+            m_isProcessingMouseEvent = false;
             event->accept();
             return;
         }
@@ -4707,6 +5395,8 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_tempLink = nullptr;
             m_owner->m_dragSourceNode = nullptr;
             m_owner->m_dragSourcePort = nullptr;
+            // Сбрасываем флаг после обработки события
+            m_isProcessingMouseEvent = false;
             event->accept();
             return;
         }
@@ -5206,6 +5896,9 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         // Сбрасываем флаг RubberBandDrag
         m_isRubberBandActive = false;
     }
+    
+    // Сбрасываем флаг после обработки события
+    m_isProcessingMouseEvent = false;
     
     // Сбрасываем флаг перемещения группы при отпускании кнопки
     // НО НЕ сбрасываем выделение - оно должно остаться до клика на фоне или Esc
