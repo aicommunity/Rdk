@@ -18,6 +18,10 @@ See file license.txt for more information
 #include <iomanip>
 #include <locale>
 #include <limits>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cwchar>
 #include "UPtr.h"
 
 #ifndef u_min
@@ -113,7 +117,152 @@ bool is_inf(NumT n)
 }
 
 
-// Функция, преобразующая число в строку
+// Оптимизированные перегрузки для преобразования чисел в строку
+// Для вещественных чисел используется максимальная точность для сохранения полной мантиссы
+
+// Перегрузка для double - сохраняет полную мантиссу (17 значащих цифр)
+inline string& ntoa(double n, string &buf)
+{
+ char buffer[64]; // Достаточно для double в любом формате
+ int len = snprintf(buffer, sizeof(buffer), "%.17g", n);
+ if(len < 0 || len >= (int)sizeof(buffer))
+ {
+  // Fallback на stringstream в случае ошибки
+  basic_stringstream<char> stream;
+  stream << std::setprecision(17) << n;
+  buf = stream.str();
+ }
+ else
+ {
+  buf.assign(buffer, len);
+ }
+ return buf;
+}
+
+// Перегрузка для float - сохраняет полную мантиссу (9 значащих цифр)
+inline string& ntoa(float n, string &buf)
+{
+ char buffer[64];
+ int len = snprintf(buffer, sizeof(buffer), "%.9g", n);
+ if(len < 0 || len >= (int)sizeof(buffer))
+ {
+  basic_stringstream<char> stream;
+  stream << std::setprecision(9) << n;
+  buf = stream.str();
+ }
+ else
+ {
+  buf.assign(buffer, len);
+ }
+ return buf;
+}
+
+// Перегрузка для long double - сохраняет полную мантиссу (21 значащая цифра)
+inline string& ntoa(long double n, string &buf)
+{
+ char buffer[128]; // Больше места для long double
+ int len = snprintf(buffer, sizeof(buffer), "%.21Lg", n);
+ if(len < 0 || len >= (int)sizeof(buffer))
+ {
+  basic_stringstream<char> stream;
+  stream << std::setprecision(21) << n;
+  buf = stream.str();
+ }
+ else
+ {
+  buf.assign(buffer, len);
+ }
+ return buf;
+}
+
+// Перегрузки для целых чисел - используют быстрые методы
+inline string& ntoa(int n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%d", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned int n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%u", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%ld", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%lu", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(long long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%lld", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned long long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%llu", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(short n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%d", (int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned short n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%u", (unsigned int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(char n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%d", (int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned char n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%u", (unsigned int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(bool n, string &buf)
+{
+ buf = n ? "1" : "0";
+ return buf;
+}
+
+// Общий шаблон для остальных типов (fallback на stringstream)
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
 {
@@ -136,6 +285,151 @@ wstring wntoa(NumT n)
  return ntoa(n,res);
 }
 
+// Оптимизированная версия ntoa с заданной точностью
+// Для вещественных чисел сохраняет полную мантиссу при digs >= необходимой точности
+
+// Перегрузка для double с точностью
+inline string& ntoa(double n, int digs, string &buf)
+{
+ char buffer[128];
+ char format[32];
+ if(digs >= 17)
+ {
+  // Используем максимальную точность для сохранения полной мантиссы
+  int len = snprintf(buffer, sizeof(buffer), "%.17g", n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream << std::setprecision(17) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   buf.assign(buffer, len);
+  }
+ }
+ else
+ {
+  snprintf(format, sizeof(format), "%%.%df", digs);
+  int len = snprintf(buffer, sizeof(buffer), format, n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.width(digs);
+   stream.fill('0');
+   stream << std::fixed << std::setprecision(digs) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   buf.assign(buffer, len);
+  }
+ }
+ return buf;
+}
+
+// Перегрузка для float с точностью
+inline string& ntoa(float n, int digs, string &buf)
+{
+ char buffer[128];
+ char format[32];
+ if(digs >= 9)
+ {
+  // Используем максимальную точность для сохранения полной мантиссы
+  int len = snprintf(buffer, sizeof(buffer), "%.9g", n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream << std::setprecision(9) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   buf.assign(buffer, len);
+  }
+ }
+ else
+ {
+  snprintf(format, sizeof(format), "%%.%df", digs);
+  int len = snprintf(buffer, sizeof(buffer), format, n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.width(digs);
+   stream.fill('0');
+   stream << std::fixed << std::setprecision(digs) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   buf.assign(buffer, len);
+  }
+ }
+ return buf;
+}
+
+// Перегрузка для long double с точностью
+inline string& ntoa(long double n, int digs, string &buf)
+{
+ char buffer[256];
+ char format[32];
+ if(digs >= 21)
+ {
+  // Используем максимальную точность для сохранения полной мантиссы
+  int len = snprintf(buffer, sizeof(buffer), "%.21Lg", n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream << std::setprecision(21) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   buf.assign(buffer, len);
+  }
+ }
+ else
+ {
+  snprintf(format, sizeof(format), "%%.%dLf", digs);
+  int len = snprintf(buffer, sizeof(buffer), format, n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.width(digs);
+   stream.fill('0');
+   stream << std::fixed << std::setprecision(digs) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   buf.assign(buffer, len);
+  }
+ }
+ return buf;
+}
+
+// Перегрузки для целых чисел с шириной
+inline string& ntoa(int n, int digs, string &buf)
+{
+ char buffer[64];
+ char format[32];
+ snprintf(format, sizeof(format), "%%0%dd", digs);
+ int len = snprintf(buffer, sizeof(buffer), format, n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned int n, int digs, string &buf)
+{
+ char buffer[64];
+ char format[32];
+ snprintf(format, sizeof(format), "%%0%du", digs);
+ int len = snprintf(buffer, sizeof(buffer), format, n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+// Общий шаблон для остальных типов (fallback на stringstream)
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, int digs, basic_string<CharT> &buf)
 {
@@ -208,24 +502,46 @@ wstring wntohex(NumT n, int digs)
  return ntohex(n,digs, res);
 }
 
-// Функция, преобразующая строку в вещественное число
+// Оптимизированная функция, преобразующая строку в вещественное число
+// Сохраняет полную точность при десериализации
 template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
 {
- basic_stringstream<CharT> stream(str);
- double res(0.0);
- stream>>res;
- return res;
+ if(str.empty())
+  return 0.0;
+ // Используем стандартную функцию C для быстрого преобразования
+ // strtod обеспечивает максимальную точность
+ return std::strtod(str.c_str(), nullptr);
 }
 
-// Функция, преобразующая строку в целое число
+// Специализация для wstring
+template<>
+inline double atof<wchar_t>(const std::basic_string<wchar_t> &str)
+{
+ if(str.empty())
+  return 0.0;
+ // Для wide string используем wcstod
+ return std::wcstod(str.c_str(), nullptr);
+}
+
+// Оптимизированная функция, преобразующая строку в целое число
 template<typename CharT>
 int atoi(const std::basic_string<CharT> &str)
 {
- basic_stringstream<CharT> stream(str);
- int res(0);
- stream>>res;
- return res;
+ if(str.empty())
+  return 0;
+ // Используем стандартную функцию C для быстрого преобразования
+ return std::atoi(str.c_str());
+}
+
+// Специализация для wstring
+template<>
+inline int atoi<wchar_t>(const std::basic_string<wchar_t> &str)
+{
+ if(str.empty())
+  return 0;
+ // Для wide string используем wcstol
+ return (int)std::wcstol(str.c_str(), nullptr, 10);
 }
 
 // Функция, преобразующая шестнадцатиричную строку в целое число

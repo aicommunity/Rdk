@@ -49,6 +49,13 @@ mutable std::string SBuffer;
 mutable std::wstring WBuffer,WBuffer2;
 #endif
 
+// Кэш для оптимизации навигации и работы со строками
+mutable std::string CachedNodeName;
+mutable std::string CachedNodeText;
+mutable XMLNode CachedNode; // Узел, для которого кэшированы данные
+mutable bool NodeNameCached;
+mutable bool NodeTextCached;
+
 
 public: // Методы
 // --------------------------
@@ -72,11 +79,15 @@ bool Destroy(void);
 bool Load(const std::string &str, const std::string &root);
 bool LoadToNode(const std::string &str, const std::string &root, bool node_clear);
 bool LoadToNode(USerStorageXML &node, bool node_clear);
+bool LoadToNode(USerStorageXML &&node, bool node_clear); // Move-версия для оптимизации
 bool LoadFieldsToNode(USerStorageXML &node, bool node_clear);
+bool LoadFieldsToNode(USerStorageXML &&node, bool node_clear); // Move-версия для оптимизации
 
 // Сохраняет xml в строку
 bool Save(std::string &str) const;
+bool Save(std::string &str, bool formatted) const; // formatted=true для форматирования, false для компактного вывода
 bool SaveFromNode(std::string &str);
+bool SaveFromNode(std::string &str, bool formatted); // formatted=true для форматирования, false для компактного вывода
 
 // Прочесть файл с диска
 // Метод не делает ничего, если FileName == ""

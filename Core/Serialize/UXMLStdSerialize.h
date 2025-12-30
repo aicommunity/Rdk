@@ -18,70 +18,120 @@ See file license.txt for more information
 //#include <strstream>
 #include <sstream>
 #include <typeinfo>
+#include <type_traits>
+#include <cstdio>
+#include <cstdlib>
 #include "USerStorageXML.h"
 #include "../Utilities/UTree.h"
 #include "../Utilities/USupport.h"
 
 namespace RDK {
 
-// Простые типы
+// Оптимизированные функции сериализации простых типов
+// Используют быстрые функции преобразования с сохранением полной точности для вещественных чисел
+
+// Перегрузка для double - сохраняет полную мантиссу (17 значащих цифр)
+inline USerStorageXML& USimpleToStorage(USerStorageXML& storage, const double data)
+{
+ storage.SetNodeAttribute("Type",typeid(double).name());
+ std::string str;
+ RDK::ntoa(data, str); // Использует оптимизированную функцию с %.17g
+ storage.SetNodeText(str);
+ return storage;
+}
+
+// Перегрузка для float - сохраняет полную мантиссу (9 значащих цифр)
+inline USerStorageXML& USimpleToStorage(USerStorageXML& storage, const float data)
+{
+ storage.SetNodeAttribute("Type",typeid(float).name());
+ std::string str;
+ RDK::ntoa(data, str); // Использует оптимизированную функцию с %.9g
+ storage.SetNodeText(str);
+ return storage;
+}
+
+// Перегрузка для long double - сохраняет полную мантиссу (21 значащая цифра)
+inline USerStorageXML& USimpleToStorage(USerStorageXML& storage, const long double data)
+{
+ storage.SetNodeAttribute("Type",typeid(long double).name());
+ std::string str;
+ RDK::ntoa(data, str); // Использует оптимизированную функцию с %.21Lg
+ storage.SetNodeText(str);
+ return storage;
+}
+
+// Общий шаблон для остальных типов (использует оптимизированные функции)
 template<typename T>
 USerStorageXML& USimpleToStorage (USerStorageXML& storage, const T data)
 {
  storage.SetNodeAttribute("Type",typeid(T).name());
- std::stringstream stream;
-
- stream<<std::setprecision(40)<<data;
-
  std::string str;
- str=stream.str();
-
+ RDK::ntoa(data, str); // Использует оптимизированные перегрузки
  storage.SetNodeText(str);
-
  return storage;
 }
 
+// Оптимизированные функции десериализации
+// Перегрузка для double - сохраняет полную точность
+inline USerStorageXML& USimpleFromStorage(USerStorageXML& storage, double &data)
+{
+ std::string text = storage.GetNodeText();
+ data = RDK::atof(text); // Использует оптимизированную функцию strtod
+ return storage;
+}
+
+// Перегрузка для float
+inline USerStorageXML& USimpleFromStorage(USerStorageXML& storage, float &data)
+{
+ std::string text = storage.GetNodeText();
+ data = (float)RDK::atof(text); // Использует оптимизированную функцию strtod
+ return storage;
+}
+
+// Перегрузка для long double
+inline USerStorageXML& USimpleFromStorage(USerStorageXML& storage, long double &data)
+{
+ std::string text = storage.GetNodeText();
+ data = (long double)RDK::atof(text); // Использует оптимизированную функцию strtod
+ return storage;
+}
+
+// Общий шаблон для остальных типов
 template<typename T>
 USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
 {
-// std::string type=typeid(T).name();
-// std::string rtype=storage.GetNodeAttribute("Type");
-// if(storage.GetNodeAttribute("Type") != typeid(T).name())
-//  return storage;
-
-// std::string rvalue=storage.GetNodeText();
-
- std::stringstream stream(storage.GetNodeText().c_str());
-
- stream>>data;
-
+ std::string text = storage.GetNodeText();
+ // Для целых чисел используем оптимизированную функцию
+ if constexpr (std::is_integral_v<T>)
+ {
+  data = (T)RDK::atoi(text);
+ }
+ else
+ {
+  // Fallback на stringstream для других типов
+  std::stringstream stream(text);
+  stream>>data;
+ }
  return storage;
 }
 
-// Простые вещественные типы
+// Оптимизированные функции для вещественных типов с заданной точностью
+// Сохраняют полную мантиссу при prec >= необходимой точности
 template<typename T>
 USerStorageXML& USimpleToStorageF(USerStorageXML& storage, const T data, int prec)
 {
  storage.SetNodeAttribute("Type",typeid(T).name());
- std::stringstream stream;
-
- stream<<std::setprecision(prec)<<data;
-
  std::string str;
- str=stream.str();
-
+ RDK::ntoa(data, prec, str); // Использует оптимизированную функцию с учетом точности
  storage.SetNodeText(str);
-
  return storage;
 }
 
 template<typename T>
 USerStorageXML& USimpleFromStorageF(USerStorageXML& storage, T &data)
 {
- std::stringstream stream(storage.GetNodeText().c_str());
-
- stream>>data;
-
+ std::string text = storage.GetNodeText();
+ data = (T)RDK::atof(text); // Использует оптимизированную функцию strtod для максимальной точности
  return storage;
 }
 
@@ -522,6 +572,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 }
 
 // C-массивы
+// Оптимизированная сериализация C-массивов с сохранением полной точности для вещественных чисел
 template<int Size>
 USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size])
 {
@@ -531,16 +582,18 @@ USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size])
  if(Size <= 0)
   return storage;
 
- std::stringstream stream;
+ // Оптимизированная сериализация - используем прямой вывод в буфер
+ std::string result;
+ result.reserve(Size * 2);
 
  for(unsigned i=0;i<Size;i++)
  {
-  stream<<int(data[i]);
-  if(i<Size-1)
-   stream<<" ";
+  if(i > 0)
+   result += " ";
+  result += (data[i] ? "1" : "0");
  }
 
- storage.SetNodeText(stream.str());
+ storage.SetNodeText(result);
  return storage;
 }
 
@@ -569,21 +622,34 @@ USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size])
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
   if(size>Size)
    size=Size;
 
   if(size>0)
   {
-   std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(rvalue.c_str());
-
-   for(unsigned i=0;i<size;i++)
+   // Оптимизированная десериализация - прямой парсинг строки
+   std::string text = storage.GetNodeText();
+   const char* start = text.c_str();
+   const char* end = start + text.length();
+   
+   for(unsigned i=0;i<size && start < end;i++)
    {
-	int temp;
-	stream>>temp;
-	data[i]=temp;
+    // Пропускаем пробелы
+    while(start < end && (*start == ' ' || *start == '\t' || *start == '\n' || *start == '\r'))
+     start++;
+    
+    if(start >= end)
+     break;
+    
+    // Парсим как int, затем преобразуем в bool
+    char* next;
+    int temp = (int)std::strtol(start, &next, 10);
+    data[i] = (temp != 0);
+    if(next == start)
+     break; // Ошибка парсинга
+    start = next;
    }
   }
  }
@@ -600,27 +666,44 @@ USerStorageXML& operator << (USerStorageXML& storage, double const (&data)[Size]
  if(Size <= 0)
   return storage;
 
- std::stringstream stream;
+ // Оптимизированная сериализация с сохранением полной мантиссы
+ std::string result;
+ result.reserve(Size * 32);
 
+ char buffer[64];
  for(unsigned i=0;i<Size;i++)
  {
-  stream<<data[i];
-  if(i<Size-1)
-   stream<<" ";
+  // Используем формат с максимальной точностью для сохранения полной мантиссы
+  int len = snprintf(buffer, sizeof(buffer), "%.17g", data[i]);
+  if(len > 0 && len < (int)sizeof(buffer))
+  {
+   if(i > 0)
+    result += " ";
+   result.append(buffer, len);
+  }
+  else
+  {
+   // Fallback на stringstream в случае ошибки
+   std::stringstream stream;
+   stream << std::setprecision(17) << data[i];
+   if(i > 0)
+    result += " ";
+   result += stream.str();
+  }
  }
 
- storage.SetNodeText(stream.str());
+ storage.SetNodeText(result);
 
  return storage;
 }
 
 template<int Size>
-USerStorageXML& operator >> (USerStorageXML& storage, double const (&data)[Size])
+USerStorageXML& operator >> (USerStorageXML& storage, double (&data)[Size])
 {
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
   unsigned int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
   if(size>Size)
    size=Size;
@@ -640,17 +723,33 @@ USerStorageXML& operator >> (USerStorageXML& storage, double const (&data)[Size]
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
   if(size>Size)
    size=Size;
 
   if(size>0)
   {
-   std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(rvalue.c_str());
-
-   for(unsigned i=0;i<size;i++)
-	stream>>data[i];
+   // Оптимизированная десериализация с сохранением полной точности
+   std::string text = storage.GetNodeText();
+   const char* start = text.c_str();
+   const char* end = start + text.length();
+   
+   for(unsigned i=0;i<size && start < end;i++)
+   {
+    // Пропускаем пробелы
+    while(start < end && (*start == ' ' || *start == '\t' || *start == '\n' || *start == '\r'))
+     start++;
+    
+    if(start >= end)
+     break;
+    
+    // Используем strtod для максимальной точности
+    char* next;
+    data[i] = std::strtod(start, &next);
+    if(next == start)
+     break; // Ошибка парсинга
+    start = next;
+   }
   }
  }
  return storage;
@@ -665,16 +764,32 @@ USerStorageXML& operator << (USerStorageXML& storage, const int (&data)[Size])
  if(Size <= 0)
   return storage;
 
- std::stringstream stream;
+ // Оптимизированная сериализация - используем прямой вывод в буфер
+ std::string result;
+ result.reserve(Size * 16);
 
+ char buffer[32];
  for(unsigned i=0;i<Size;i++)
  {
-  stream<<data[i];
-  if(i<Size-1)
-   stream<<" ";
+  int len = snprintf(buffer, sizeof(buffer), "%d", data[i]);
+  if(len > 0 && len < (int)sizeof(buffer))
+  {
+   if(i > 0)
+    result += " ";
+   result.append(buffer, len);
+  }
+  else
+  {
+   // Fallback на stringstream в случае ошибки
+   std::stringstream stream;
+   stream << data[i];
+   if(i > 0)
+    result += " ";
+   result += stream.str();
+  }
  }
 
- storage.SetNodeText(stream.str());
+ storage.SetNodeText(result);
 
  return storage;
 }
@@ -685,7 +800,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size])
  if(storage.GetNodeAttribute("Type") == "C-array")
  {
   unsigned int size=0;
-  size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
   if(size>Size)
    size=Size;
@@ -705,17 +820,33 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size])
  }
  else
  {
-  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size")); // TODO: заменить
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
   if(size>Size)
    size=Size;
 
   if(size>0)
   {
-   std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(rvalue.c_str());
-
-   for(unsigned i=0;i<size;i++)
-	stream>>data[i];
+   // Оптимизированная десериализация - прямой парсинг строки
+   std::string text = storage.GetNodeText();
+   const char* start = text.c_str();
+   const char* end = start + text.length();
+   
+   for(unsigned i=0;i<size && start < end;i++)
+   {
+    // Пропускаем пробелы
+    while(start < end && (*start == ' ' || *start == '\t' || *start == '\n' || *start == '\r'))
+     start++;
+    
+    if(start >= end)
+     break;
+    
+    // Используем strtol для быстрого парсинга
+    char* next;
+    data[i] = (int)std::strtol(start, &next, 10);
+    if(next == start)
+     break; // Ошибка парсинга
+    start = next;
+   }
   }
  }
  return storage;
