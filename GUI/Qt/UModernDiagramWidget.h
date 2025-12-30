@@ -307,6 +307,7 @@ private:
     
     // Кэш информации о компонентах для ускорения отрисовки
     struct ComponentCacheEntry {
+        // Кэш портов (для NodeItem::paint и determinePortCategory)
         QVector<Port> ownInputPorts;
         QVector<Port> childInputPorts;
         QVector<Port> aliasInputPorts;
@@ -314,6 +315,12 @@ private:
         QVector<Port> childOutputPorts;
         QVector<Port> aliasOutputPorts;
         QHash<QPair<QString, bool>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory: (propertyName, isInput) -> PortCategory
+        
+        // Данные, используемые в buildScene (для ускорения Reload)
+        QString className;      // Имя класса компонента
+        QPointF kernelPos;      // Координаты компонента в ядре
+        bool hasKernelPos = false; // Флаг, что kernelPos загружен и валиден
+        
         qint64 timestamp;  // Временная метка последнего обновления
         QString hash;      // Хеш содержимого компонента для инвалидации
         

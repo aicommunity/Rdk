@@ -3930,7 +3930,38 @@ void UModernDiagramWidget::buildScene()
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
         QPointF kernelPos;
-        bool loaded = loadCoord(fullName, kernelPos);
+        bool loaded = false;
+        
+        // Пытаемся взять координаты из сессионного кэша компонентов
+        ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
+        bool usedCache = false;
+        if(cacheEntry && cacheEntry->hasKernelPos)
+        {
+            kernelPos = cacheEntry->kernelPos;
+            loaded = true;
+            usedCache = true;
+        }
+        else
+        {
+            loaded = loadCoord(fullName, kernelPos);
+            
+            // Сохраняем координаты в кэш для ускорения последующих Reload
+            if(cacheEntry)
+            {
+                cacheEntry->kernelPos = kernelPos;
+                cacheEntry->hasKernelPos = loaded;
+                cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+            }
+            else
+            {
+                ComponentCacheEntry newEntry;
+                newEntry.kernelPos = kernelPos;
+                newEntry.hasKernelPos = loaded;
+                newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+                m_componentCache.setEntry(fullName, newEntry);
+            }
+        }
+        
         coordCache[fullName] = kernelPos;
         coordLoadedCache[fullName] = loaded;
         
@@ -3968,7 +3999,15 @@ void UModernDiagramWidget::buildScene()
         
         // Кэшируем имя класса для минимизации вызовов API
         QString cls;
-        if(classNameCache.contains(fullName))
+        bool classNameFromCache = false;
+        ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
+        if(cacheEntry && !cacheEntry->className.isEmpty())
+        {
+            // Берем имя класса из сессионного кэша
+            cls = cacheEntry->className;
+            classNameFromCache = true;
+        }
+        else if(classNameCache.contains(fullName))
         {
             cls = classNameCache[fullName];
         }
@@ -3978,6 +4017,20 @@ void UModernDiagramWidget::buildScene()
             cls = QString::fromUtf8(clsRaw ? clsRaw : "");
             Engine_FreeBufString(clsRaw);
             classNameCache[fullName] = cls;
+            
+            // Сохраняем имя класса в сессионный кэш для ускорения последующих Reload
+            if(cacheEntry)
+            {
+                cacheEntry->className = cls;
+                cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+            }
+            else
+            {
+                ComponentCacheEntry newEntry;
+                newEntry.className = cls;
+                newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+                m_componentCache.setEntry(fullName, newEntry);
+            }
         }
 
         auto* node = new NodeItem(this, comp, cls);
@@ -4037,7 +4090,25 @@ void UModernDiagramWidget::buildScene()
     
     // Логируем результат профилирования buildScene
     qint64 elapsed = telemetry2.Elapsed();
-    QString details = QString("created %1 nodes").arg(components.size());
+    
+    // Подсчитываем статистику использования кэша
+    int coordsFromCache = 0;
+    int classNamesFromCache = 0;
+    for(const QString& comp : components)
+    {
+        QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
+        ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
+        if(cacheEntry)
+        {
+            if(cacheEntry->hasKernelPos)
+                coordsFromCache++;
+            if(!cacheEntry->className.isEmpty())
+                classNamesFromCache++;
+        }
+    }
+    
+    QString details = QString("created %1 nodes, coordsFromCache: %2/%3, classNamesFromCache: %4/%3")
+        .arg(components.size()).arg(coordsFromCache).arg(components.size()).arg(classNamesFromCache);
     QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildScene, Duration: %2ms, Details: %3")
         .arg(componentDisplayName).arg(elapsed).arg(details);
     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
@@ -7412,6 +7483,17 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
         componentObj["timestamp"] = entry.timestamp;
         componentObj["hash"] = entry.hash;
         
+        // Сохраняем данные, используемые в buildScene
+        componentObj["className"] = entry.className;
+        componentObj["hasKernelPos"] = entry.hasKernelPos;
+        if(entry.hasKernelPos)
+        {
+            QJsonObject kernelPosObj;
+            kernelPosObj["x"] = entry.kernelPos.x();
+            kernelPosObj["y"] = entry.kernelPos.y();
+            componentObj["kernelPos"] = kernelPosObj;
+        }
+        
         QJsonObject portsObj;
         
         // Сериализуем порты
@@ -7553,6 +7635,16 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
         ComponentCacheEntry entry;
         entry.timestamp = componentObj["timestamp"].toVariant().toLongLong();
         entry.hash = componentObj["hash"].toString();
+        
+        // Восстанавливаем данные, используемые в buildScene
+        entry.className = componentObj["className"].toString();
+        entry.hasKernelPos = componentObj["hasKernelPos"].toBool(false);
+        if(entry.hasKernelPos && componentObj.contains("kernelPos"))
+        {
+            QJsonObject kernelPosObj = componentObj["kernelPos"].toObject();
+            entry.kernelPos.setX(kernelPosObj["x"].toDouble());
+            entry.kernelPos.setY(kernelPosObj["y"].toDouble());
+        }
         
         QJsonObject portsObj = componentObj["ports"].toObject();
         
